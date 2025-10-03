@@ -11,16 +11,41 @@ import {
   Target,
   TrendingUp,
   Award,
-  Play
+  Play,
+  LogOut
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 import goldRewards from "@/assets/gold-rewards.png";
 
 const Dashboard = () => {
   const navigate = useNavigate();
+  const { toast } = useToast();
   const [userGold] = useState(250);
   const [userLevel] = useState("Terminale");
   const [userName] = useState("Étudiant");
+
+  const handleLogout = async () => {
+    try {
+      const { error } = await supabase.auth.signOut();
+      if (error) throw error;
+      
+      toast({
+        title: "Déconnexion réussie",
+        description: "À bientôt!",
+      });
+      
+      navigate('/auth');
+    } catch (error) {
+      console.error('Error logging out:', error);
+      toast({
+        title: "Erreur",
+        description: "Impossible de se déconnecter",
+        variant: "destructive",
+      });
+    }
+  };
 
   const subjects = [
     { id: "math", name: "Mathématiques", progress: 45, icon: "📐", color: "text-primary" },
@@ -53,6 +78,15 @@ const Dashboard = () => {
                 <img src={goldRewards} alt="Gold" className="w-6 h-6" />
                 <span className="font-bold gold-text">{userGold}</span>
               </div>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={handleLogout}
+                className="gap-2"
+              >
+                <LogOut className="w-4 h-4" />
+                <span className="hidden sm:inline">Déconnexion</span>
+              </Button>
               <Avatar className="cursor-pointer hover:ring-2 ring-primary transition-all">
                 <AvatarFallback className="bg-gradient-to-br from-primary to-secondary text-white">
                   {userName[0]}
