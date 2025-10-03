@@ -5,11 +5,16 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
-import { Heart, MessageCircle, Send, Plus, ArrowLeft } from "lucide-react";
-import { formatDistanceToNow } from "date-fns";
-import { fr } from "date-fns/locale";
+import { Heart, MessageCircle, Send, Plus } from "lucide-react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+
+interface Profile {
+  id: string;
+  user_id: string;
+  full_name: string;
+  nickname: string;
+}
 
 interface Post {
   id: string;
@@ -17,12 +22,9 @@ interface Post {
   content: string;
   image_url: string | null;
   created_at: string;
-  profiles?: {
-    full_name: string;
-    nickname: string;
-  };
-  likes_count?: number;
-  is_liked?: boolean;
+  profile?: Profile;
+  likes?: number;
+  isLiked?: boolean;
 }
 
 const Feed = () => {
@@ -31,8 +33,7 @@ const Feed = () => {
   const [currentUser, setCurrentUser] = useState<any>(null);
   const [posts, setPosts] = useState<Post[]>([]);
   const [newPostContent, setNewPostContent] = useState("");
-  const [isCreatePostOpen, setIsCreatePostOpen] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
+  const [isCreatingPost, setIsCreatingPost] = useState(false);
 
   useEffect(() => {
     checkAuth();
@@ -53,50 +54,45 @@ const Feed = () => {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return;
 
-    // Fetch posts from users you follow and your own posts
-    const { data: postsData, error } = await supabase
+    // Fetch posts from followed users and own posts
+    const { data: postsData, error: postsError } = await supabase
       .from("posts")
       .select("*")
       .order("created_at", { ascending: false })
       .limit(50);
 
-    if (error) {
-      console.error("Error fetching posts:", error);
+    if (postsError) {
+      console.error("Error fetching posts:", postsError);
       return;
     }
 
-    // Fetch profiles and like counts for each post
-    const enrichedPosts = await Promise.all(
-      (postsData || []).map(async (post) => {
-        // Fetch profile
-        const { data: profile } = await supabase
-          .from("profiles")
-          .select("full_name, nickname")
-          .eq("user_id", post.user_id)
-          .maybeSingle();
+    // Fetch profiles for post authors
+    const userIds = [...new Set(postsData?.map(p => p.user_id) || [])];
+    const { data: profilesData } = await supabase
+      .from("profiles")
+      .select("*")
+      .in("user_id", userIds);
 
-        // Fetch like count
-        const { count } = await supabase
-          .from("post_likes")
-          .select("*", { count: "exact", head: true })
-          .eq("post_id", post.id);
+    // Fetch likes for all posts
+    const postIds = postsData?.map(p => p.id) || [];
+    const { data: likesData } = await supabase
+      .from("post_likes")
+      .select("post_id, user_id")
+      .in("post_id", postIds);
 
-        // Check if user liked this post
-        const { data: userLike } = await supabase
-          .from("post_likes")
-          .select("id")
-          .eq("post_id", post.id)
-          .eq("user_id", user.id)
-          .maybeSingle();
-
-        return {
-          ...post,
-          profiles: profile || { full_name: "Utilisateur", nickname: "user" },
-          likes_count: count || 0,
-          is_liked: !!userLike,
-        };
-      })
-    );
+    // Combine data
+    const enrichedPosts = postsData?.map(post => {
+      const profile = profilesData?.find(p => p.user_id === post.user_id);
+      const postLikes = likesData?.filter(l => l.post_id === post.id) || [];
+      const isLiked = postLikes.some(l => l.user_id === user.id);
+      
+      return {
+        ...post,
+        profile,
+        likes: postLikes.length,
+        isLiked
+      };
+    }) || [];
 
     setPosts(enrichedPosts);
   };
@@ -125,7 +121,7 @@ const Feed = () => {
   const createPost = async () => {
     if (!newPostContent.trim() || !currentUser) return;
 
-    setIsLoading(true);
+    setIsCreatingPost(true);
     const { error } = await supabase.from("posts").insert({
       user_id: currentUser.id,
       content: newPostContent.trim(),
@@ -134,25 +130,25 @@ const Feed = () => {
     if (error) {
       toast({
         title: "Erreur",
-        description: "Impossible de créer la publication",
+        description: "Impossible de créer le post",
         variant: "destructive",
       });
-    } else {
-      setNewPostContent("");
-      setIsCreatePostOpen(false);
-      fetchPosts();
-      toast({
-        title: "Succès",
-        description: "Publication créée",
-      });
+      setIsCreatingPost(false);
+      return;
     }
-    setIsLoading(false);
+
+    setNewPostContent("");
+    setIsCreatingPost(false);
+    toast({
+      title: "Succès",
+      description: "Post créé avec succès",
+    });
   };
 
-  const toggleLike = async (postId: string, isLiked: boolean) => {
+  const toggleLike = async (postId: string, isCurrentlyLiked: boolean) => {
     if (!currentUser) return;
 
-    if (isLiked) {
+    if (isCurrentlyLiked) {
       const { error } = await supabase
         .from("post_likes")
         .delete()
@@ -164,10 +160,12 @@ const Feed = () => {
         return;
       }
     } else {
-      const { error } = await supabase.from("post_likes").insert({
-        post_id: postId,
-        user_id: currentUser.id,
-      });
+      const { error } = await supabase
+        .from("post_likes")
+        .insert({
+          post_id: postId,
+          user_id: currentUser.id,
+        });
 
       if (error) {
         console.error("Error liking post:", error);
@@ -175,51 +173,65 @@ const Feed = () => {
       }
     }
 
-    fetchPosts();
+    // Update local state
+    setPosts(posts.map(post => {
+      if (post.id === postId) {
+        return {
+          ...post,
+          likes: isCurrentlyLiked ? (post.likes || 0) - 1 : (post.likes || 0) + 1,
+          isLiked: !isCurrentlyLiked
+        };
+      }
+      return post;
+    }));
+  };
+
+  const formatTimeAgo = (timestamp: string) => {
+    const now = new Date();
+    const postDate = new Date(timestamp);
+    const diffInSeconds = Math.floor((now.getTime() - postDate.getTime()) / 1000);
+
+    if (diffInSeconds < 60) return "À l'instant";
+    if (diffInSeconds < 3600) return `Il y a ${Math.floor(diffInSeconds / 60)}m`;
+    if (diffInSeconds < 86400) return `Il y a ${Math.floor(diffInSeconds / 3600)}h`;
+    if (diffInSeconds < 604800) return `Il y a ${Math.floor(diffInSeconds / 86400)}j`;
+    return postDate.toLocaleDateString("fr-FR", { day: "numeric", month: "short" });
   };
 
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
-      <div className="sticky top-0 z-10 bg-background/95 backdrop-blur border-b border-border/50">
+      <div className="sticky top-0 z-50 border-b border-border/50 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
         <div className="max-w-2xl mx-auto px-4 py-3 flex items-center justify-between">
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => navigate("/dashboard")}
-            className="hover:bg-accent/50"
-          >
-            <ArrowLeft size={20} />
-          </Button>
-          <h1 className="text-lg font-semibold">Fil d'actualité</h1>
-          <Dialog open={isCreatePostOpen} onOpenChange={setIsCreatePostOpen}>
+          <h1 className="text-xl font-semibold">Fil d'actualité</h1>
+          
+          {/* Create Post Button */}
+          <Dialog>
             <DialogTrigger asChild>
-              <Button
-                size="icon"
-                variant="ghost"
-                className="hover:bg-accent/50"
-              >
-                <Plus size={20} />
+              <Button size="icon" variant="ghost" className="hover:bg-accent/50">
+                <Plus size={24} />
               </Button>
             </DialogTrigger>
-            <DialogContent className="sm:max-w-md">
+            <DialogContent className="sm:max-w-[500px]">
               <DialogHeader>
-                <DialogTitle>Nouvelle publication</DialogTitle>
+                <DialogTitle>Créer un post</DialogTitle>
               </DialogHeader>
-              <div className="space-y-4">
+              <div className="space-y-4 pt-4">
                 <Textarea
                   placeholder="Quoi de neuf ?"
                   value={newPostContent}
                   onChange={(e) => setNewPostContent(e.target.value)}
-                  className="min-h-[120px] resize-none"
+                  className="min-h-[120px] resize-none border-none bg-muted/30 focus-visible:ring-1"
                 />
-                <Button
-                  onClick={createPost}
-                  disabled={!newPostContent.trim() || isLoading}
-                  className="w-full bg-gradient-to-r from-primary to-success"
-                >
-                  {isLoading ? "Publication..." : "Publier"}
-                </Button>
+                <div className="flex justify-end gap-2">
+                  <Button
+                    onClick={createPost}
+                    disabled={!newPostContent.trim() || isCreatingPost}
+                    className="bg-primary hover:bg-primary/90"
+                  >
+                    {isCreatingPost ? "Publication..." : "Publier"}
+                  </Button>
+                </div>
               </div>
             </DialogContent>
           </Dialog>
@@ -227,89 +239,85 @@ const Feed = () => {
       </div>
 
       {/* Feed */}
-      <ScrollArea className="h-[calc(100vh-57px)]">
-        <div className="max-w-2xl mx-auto py-4">
+      <ScrollArea className="h-[calc(100vh-60px)]">
+        <div className="max-w-2xl mx-auto pb-20">
           {posts.length === 0 ? (
-            <div className="flex flex-col items-center justify-center h-[60vh] text-center px-8">
+            <div className="flex flex-col items-center justify-center py-20 px-4 text-center">
               <div className="w-24 h-24 rounded-full bg-muted/30 flex items-center justify-center mb-4">
                 <MessageCircle size={32} className="text-muted-foreground" />
               </div>
-              <h3 className="text-xl font-light mb-2">Aucune publication</h3>
+              <h3 className="text-lg font-medium mb-2">Aucun post pour le moment</h3>
               <p className="text-sm text-muted-foreground max-w-xs">
-                Commencez à suivre des amis pour voir leurs publications ici
+                Suivez des personnes pour voir leurs posts ici
               </p>
             </div>
           ) : (
-            <div className="space-y-4">
-              {posts.map((post) => (
-                <div
-                  key={post.id}
-                  className="bg-card border border-border/50 rounded-lg overflow-hidden"
-                >
-                  {/* Post Header */}
-                  <div className="px-4 py-3 flex items-center gap-3">
-                    <Avatar className="h-10 w-10">
-                      <AvatarFallback className="bg-gradient-to-br from-primary/20 to-success/20 text-foreground">
-                        {post.profiles?.full_name?.[0] || "?"}
-                      </AvatarFallback>
-                    </Avatar>
-                    <div className="flex-1">
-                      <p className="font-semibold text-sm">
-                        {post.profiles?.full_name || "Utilisateur"}
-                      </p>
-                      <p className="text-xs text-muted-foreground">
-                        {formatDistanceToNow(new Date(post.created_at), {
-                          addSuffix: true,
-                          locale: fr,
-                        })}
-                      </p>
-                    </div>
-                  </div>
-
-                  {/* Post Image */}
-                  {post.image_url && (
-                    <img
-                      src={post.image_url}
-                      alt="Post"
-                      className="w-full object-cover"
-                    />
-                  )}
-
-                  {/* Post Content */}
-                  <div className="px-4 py-3">
-                    <p className="text-sm whitespace-pre-wrap">{post.content}</p>
-                  </div>
-
-                  {/* Post Actions */}
-                  <div className="px-4 py-2 flex items-center gap-4 border-t border-border/50">
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => toggleLike(post.id, post.is_liked || false)}
-                      className="gap-2 hover:bg-transparent"
-                    >
-                      <Heart
-                        size={20}
-                        className={
-                          post.is_liked
-                            ? "fill-red-500 text-red-500"
-                            : "text-foreground"
-                        }
-                      />
-                      <span className="text-sm">{post.likes_count || 0}</span>
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="gap-2 hover:bg-transparent"
-                    >
-                      <MessageCircle size={20} />
-                      <span className="text-sm">0</span>
-                    </Button>
+            posts.map((post) => (
+              <div
+                key={post.id}
+                className="border-b border-border/50 bg-background"
+              >
+                {/* Post Header */}
+                <div className="flex items-center gap-3 px-4 py-3">
+                  <Avatar className="h-10 w-10">
+                    <AvatarFallback className="bg-gradient-to-br from-primary/20 to-success/20 text-foreground">
+                      {post.profile?.full_name?.[0] || "?"}
+                    </AvatarFallback>
+                  </Avatar>
+                  <div className="flex-1">
+                    <p className="font-semibold text-sm">
+                      {post.profile?.full_name || "Utilisateur"}
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      {formatTimeAgo(post.created_at)}
+                    </p>
                   </div>
                 </div>
-              ))}
-            </div>
+
+                {/* Post Content */}
+                <div className="px-4 pb-3">
+                  <p className="text-sm whitespace-pre-wrap break-words">
+                    {post.content}
+                  </p>
+                </div>
+
+                {/* Post Actions */}
+                <div className="flex items-center gap-6 px-4 py-2">
+                  <button
+                    onClick={() => toggleLike(post.id, post.isLiked || false)}
+                    className="flex items-center gap-2 group"
+                  >
+                    <Heart
+                      size={20}
+                      className={`transition-colors ${
+                        post.isLiked
+                          ? "fill-red-500 text-red-500"
+                          : "text-foreground group-hover:text-red-500"
+                      }`}
+                    />
+                    {post.likes ? (
+                      <span className="text-sm text-muted-foreground">
+                        {post.likes}
+                      </span>
+                    ) : null}
+                  </button>
+                  
+                  <button className="flex items-center gap-2 group">
+                    <MessageCircle
+                      size={20}
+                      className="text-foreground group-hover:text-primary transition-colors"
+                    />
+                  </button>
+
+                  <button className="flex items-center gap-2 group ml-auto">
+                    <Send
+                      size={20}
+                      className="text-foreground group-hover:text-primary transition-colors"
+                    />
+                  </button>
+                </div>
+              </div>
+            ))
           )}
         </div>
       </ScrollArea>
