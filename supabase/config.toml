@@ -2,3 +2,9 @@ project_id = "xdyavylcmucjpueybdku"
 
 [functions.math-ai-tutor]
 verify_jwt = false
+
+[functions.send-confirmation-email]
+verify_jwt = false
+
+[functions.send-whatsapp-confirmation]
+verify_jwt = false

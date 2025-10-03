@@ -5,30 +5,137 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import authImage from "@/assets/auth00.png";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
 
 export default function Auth() {
   const navigate = useNavigate();
+  const { toast } = useToast();
   const [activeTab, setActiveTab] = useState<"login" | "signup">("login");
   const [loginData, setLoginData] = useState({ email: "", password: "" });
   const [signupData, setSignupData] = useState({
     email: "",
+    fullName: "",
     nickname: "",
-    grade: "",
-    phone: "",
+    academicGrade: "",
+    phoneNumber: "",
+    password: "",
     privacy: false,
     payment: "",
   });
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log("Login:", loginData);
-    navigate("/dashboard");
+    
+    try {
+      const { error } = await supabase.auth.signInWithPassword({
+        email: loginData.email,
+        password: loginData.password,
+      });
+
+      if (error) throw error;
+
+      toast({
+        title: "Connexion réussie",
+        description: "Bienvenue !",
+      });
+
+      navigate("/dashboard");
+    } catch (error: any) {
+      toast({
+        title: "Erreur de connexion",
+        description: error.message,
+        variant: "destructive",
+      });
+    }
   };
 
-  const handleSignup = (e: React.FormEvent) => {
+  const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log("Signup:", signupData);
-    navigate("/onboarding");
+    
+    if (!signupData.email || !signupData.password || !signupData.nickname || 
+        !signupData.academicGrade || !signupData.phoneNumber) {
+      toast({
+        title: "Champs requis",
+        description: "Veuillez remplir tous les champs obligatoires",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    try {
+      const { data: authData, error: authError } = await supabase.auth.signUp({
+        email: signupData.email,
+        password: signupData.password,
+        options: {
+          emailRedirectTo: `${window.location.origin}/`,
+        },
+      });
+
+      if (authError) throw authError;
+      if (!authData.user) throw new Error("Échec de la création du compte");
+
+      const confirmationCode = Math.floor(100000 + Math.random() * 900000).toString();
+
+      const { error: profileError } = await supabase
+        .from('profiles')
+        .insert({
+          user_id: authData.user.id,
+          full_name: signupData.fullName || signupData.nickname,
+          nickname: signupData.nickname,
+          academic_grade: signupData.academicGrade,
+          phone_number: signupData.phoneNumber,
+          confirmation_code: confirmationCode,
+          email_confirmed: false,
+          phone_confirmed: false,
+        });
+
+      if (profileError) throw profileError;
+
+      const emailPromise = supabase.functions.invoke('send-confirmation-email', {
+        body: {
+          email: signupData.email,
+          fullName: signupData.fullName || signupData.nickname,
+          nickname: signupData.nickname,
+          academicGrade: signupData.academicGrade,
+          confirmationCode,
+        },
+      });
+
+      const whatsappPromise = supabase.functions.invoke('send-whatsapp-confirmation', {
+        body: {
+          phoneNumber: signupData.phoneNumber,
+          fullName: signupData.fullName || signupData.nickname,
+          confirmationCode,
+        },
+      });
+
+      const [emailResult, whatsappResult] = await Promise.all([emailPromise, whatsappPromise]);
+
+      if (emailResult.error) {
+        console.error("Email error:", emailResult.error);
+      }
+
+      if (whatsappResult.error) {
+        console.error("WhatsApp error:", whatsappResult.error);
+      } else if (whatsappResult.data?.whatsappUrl) {
+        window.open(whatsappResult.data.whatsappUrl, '_blank');
+      }
+
+      toast({
+        title: "Inscription réussie ! 🎉",
+        description: "Vérifiez votre email et WhatsApp pour le code de confirmation",
+      });
+
+      navigate("/dashboard");
+    } catch (error: any) {
+      console.error("Signup error:", error);
+      toast({
+        title: "Erreur d'inscription",
+        description: error.message,
+        variant: "destructive",
+      });
+    }
   };
 
   return (
@@ -169,7 +276,7 @@ export default function Auth() {
                     <div className="grid md:grid-cols-2 gap-3">
                       <div className="space-y-2">
                         <Label htmlFor="signup-email" className="text-sm text-muted-foreground">
-                          Adresse e-mail
+                          Adresse e-mail *
                         </Label>
                         <Input
                           id="signup-email"
@@ -181,8 +288,36 @@ export default function Auth() {
                         />
                       </div>
                       <div className="space-y-2">
+                        <Label htmlFor="signup-password" className="text-sm text-muted-foreground">
+                          Mot de passe *
+                        </Label>
+                        <Input
+                          id="signup-password"
+                          type="password"
+                          required
+                          value={signupData.password}
+                          onChange={(e) => setSignupData({ ...signupData, password: e.target.value })}
+                          className="auth-input"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="grid md:grid-cols-2 gap-3">
+                      <div className="space-y-2">
+                        <Label htmlFor="signup-fullname" className="text-sm text-muted-foreground">
+                          Nom complet
+                        </Label>
+                        <Input
+                          id="signup-fullname"
+                          type="text"
+                          value={signupData.fullName}
+                          onChange={(e) => setSignupData({ ...signupData, fullName: e.target.value })}
+                          className="auth-input"
+                        />
+                      </div>
+                      <div className="space-y-2">
                         <Label htmlFor="signup-nickname" className="text-sm text-muted-foreground">
-                          Pseudo
+                          Pseudo *
                         </Label>
                         <Input
                           id="signup-nickname"
@@ -198,13 +333,13 @@ export default function Auth() {
                     <div className="grid md:grid-cols-2 gap-3">
                       <div className="space-y-2">
                         <Label htmlFor="signup-grade" className="text-sm text-muted-foreground">
-                          Niveau académique
+                          Niveau académique *
                         </Label>
                         <select
                           id="signup-grade"
                           required
-                          value={signupData.grade}
-                          onChange={(e) => setSignupData({ ...signupData, grade: e.target.value })}
+                          value={signupData.academicGrade}
+                          onChange={(e) => setSignupData({ ...signupData, academicGrade: e.target.value })}
                           className="auth-input flex h-10 w-full rounded-lg border border-input bg-muted/50 px-3 py-2 text-sm"
                         >
                           <option value="">Sélectionnez…</option>
@@ -218,14 +353,15 @@ export default function Auth() {
                       </div>
                       <div className="space-y-2">
                         <Label htmlFor="signup-phone" className="text-sm text-muted-foreground">
-                          Numéro (optionnel)
+                          Numéro *
                         </Label>
                         <Input
                           id="signup-phone"
                           type="tel"
+                          required
                           placeholder="ex: +509 3x xx xx xx"
-                          value={signupData.phone}
-                          onChange={(e) => setSignupData({ ...signupData, phone: e.target.value })}
+                          value={signupData.phoneNumber}
+                          onChange={(e) => setSignupData({ ...signupData, phoneNumber: e.target.value })}
                           className="auth-input"
                         />
                       </div>
