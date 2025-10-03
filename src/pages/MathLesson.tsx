@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { EricChatbot } from "@/components/EricChatbot";
 
 const MathLesson = () => {
   const { topicId } = useParams();
@@ -93,6 +94,9 @@ const MathLesson = () => {
 
   return (
     <div className="min-h-screen lesson-bg">
+      {/* Eric Chatbot */}
+      <EricChatbot />
+      
       {/* Gradient Header */}
       <header className="lesson-topbar sticky top-0 z-50">
         <div className="container mx-auto px-4 py-3 flex items-center justify-between">
