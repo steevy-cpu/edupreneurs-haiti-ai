@@ -104,11 +104,13 @@ All colors MUST be HSL.
   /* Lesson Page Styles */
   .lesson-bg {
     background: linear-gradient(180deg, hsl(180 60% 97%) 0%, hsl(165 50% 96%) 100%);
+    color: hsl(240 10% 15%);
   }
 
   .lesson-topbar {
     background: linear-gradient(90deg, hsl(180 88% 27%) 0%, hsl(160 84% 39%) 100%);
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    color: hsl(0 0% 100%);
   }
 
   .lesson-pill {
@@ -121,6 +123,8 @@ All colors MUST be HSL.
   .lesson-card {
     @apply border-none rounded-2xl shadow-lg relative overflow-hidden;
     border-left: 4px solid hsl(180 88% 27%);
+    background: hsl(0 0% 100%);
+    color: hsl(240 10% 15%);
   }
 
   .lesson-card::before {
