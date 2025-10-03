@@ -1,12 +1,19 @@
 import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/hooks/use-toast";
-import { Input } from "@/components/ui/input";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Home, BookOpen, MessageCircle, Trophy, Settings, Send, Search, ArrowLeft } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
+import { Send, Search, Menu, X, ArrowLeft } from "lucide-react";
+
+interface Profile {
+  id: string;
+  user_id: string;
+  full_name: string;
+  nickname: string;
+}
 
 interface Message {
   id: string;
@@ -19,34 +26,33 @@ interface Message {
 interface Conversation {
   id: string;
   updated_at: string;
-  other_user: {
-    id: string;
-    full_name: string;
-    nickname: string;
-  };
-  last_message?: string;
+  otherUser?: Profile;
+  lastMessage?: Message;
 }
 
 const Community = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
-  const [user, setUser] = useState<any>(null);
+  const [currentUser, setCurrentUser] = useState<any>(null);
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [selectedConversation, setSelectedConversation] = useState<string | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
   const [newMessage, setNewMessage] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
+  const [allUsers, setAllUsers] = useState<Profile[]>([]);
+  const [showUserList, setShowUserList] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
 
   useEffect(() => {
     checkAuth();
-    loadConversations();
+    fetchConversations();
+    fetchAllUsers();
   }, []);
 
   useEffect(() => {
     if (selectedConversation) {
-      loadMessages(selectedConversation);
+      fetchMessages(selectedConversation);
       subscribeToMessages(selectedConversation);
     }
   }, [selectedConversation]);
@@ -55,97 +61,127 @@ const Community = () => {
     scrollToBottom();
   }, [messages]);
 
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  };
+
   const checkAuth = async () => {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) {
       navigate("/auth");
       return;
     }
-    setUser(user);
+    setCurrentUser(user);
   };
 
-  const loadConversations = async () => {
+  const fetchAllUsers = async () => {
+    const { data, error } = await supabase
+      .from("profiles")
+      .select("*");
+    
+    if (error) {
+      console.error("Error fetching users:", error);
+      return;
+    }
+    setAllUsers(data || []);
+  };
+
+  const fetchConversations = async () => {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return;
 
-    const { data: participants } = await supabase
+    const { data: participantData, error: participantError } = await supabase
       .from("conversation_participants")
-      .select(`
-        conversation_id,
-        conversations:conversation_id (
-          id,
-          updated_at
-        )
-      `)
+      .select("conversation_id")
       .eq("user_id", user.id);
 
-    if (!participants) return;
+    if (participantError) {
+      console.error("Error fetching conversations:", participantError);
+      return;
+    }
 
-    const conversationsData = await Promise.all(
-      participants.map(async (p: any) => {
-        const { data: otherParticipants } = await supabase
+    const conversationIds = participantData?.map(p => p.conversation_id) || [];
+    
+    if (conversationIds.length === 0) {
+      setConversations([]);
+      return;
+    }
+
+    const { data: convData, error: convError } = await supabase
+      .from("conversations")
+      .select("*")
+      .in("id", conversationIds)
+      .order("updated_at", { ascending: false });
+
+    if (convError) {
+      console.error("Error fetching conversation details:", convError);
+      return;
+    }
+
+    // Fetch other participants and last messages
+    const enrichedConvs = await Promise.all(
+      (convData || []).map(async (conv) => {
+        const { data: participants } = await supabase
           .from("conversation_participants")
           .select("user_id")
-          .eq("conversation_id", p.conversation_id)
-          .neq("user_id", user.id)
-          .single();
+          .eq("conversation_id", conv.id)
+          .neq("user_id", user.id);
 
-        let otherUserProfile = null;
-        if (otherParticipants) {
+        const otherUserId = participants?.[0]?.user_id;
+        
+        if (otherUserId) {
           const { data: profile } = await supabase
             .from("profiles")
-            .select("full_name, nickname")
-            .eq("user_id", otherParticipants.user_id)
+            .select("*")
+            .eq("user_id", otherUserId)
             .single();
-          otherUserProfile = profile;
+
+          const { data: lastMsg } = await supabase
+            .from("messages")
+            .select("*")
+            .eq("conversation_id", conv.id)
+            .order("created_at", { ascending: false })
+            .limit(1)
+            .single();
+
+          return {
+            ...conv,
+            otherUser: profile,
+            lastMessage: lastMsg
+          };
         }
-
-        const { data: lastMessage } = await supabase
-          .from("messages")
-          .select("content")
-          .eq("conversation_id", p.conversation_id)
-          .order("created_at", { ascending: false })
-          .limit(1)
-          .maybeSingle();
-
-        return {
-          id: p.conversations.id,
-          updated_at: p.conversations.updated_at,
-          other_user: {
-            id: otherParticipants?.user_id || "",
-            full_name: otherUserProfile?.full_name || "User",
-            nickname: otherUserProfile?.nickname || "user"
-          },
-          last_message: lastMessage?.content || ""
-        };
+        return conv;
       })
     );
 
-    setConversations(conversationsData);
+    setConversations(enrichedConvs);
   };
 
-  const loadMessages = async (conversationId: string) => {
-    const { data } = await supabase
+  const fetchMessages = async (conversationId: string) => {
+    const { data, error } = await supabase
       .from("messages")
       .select("*")
       .eq("conversation_id", conversationId)
       .order("created_at", { ascending: true });
 
-    if (data) {
-      setMessages(data);
+    if (error) {
+      console.error("Error fetching messages:", error);
+      return;
     }
+
+    setMessages(data || []);
   };
 
   const subscribeToMessages = (conversationId: string) => {
     const channel = supabase
-      .channel(`messages:${conversationId}`)
+      .channel(`messages-${conversationId}`)
       .on(
         "postgres_changes",
         {
           event: "INSERT",
           schema: "public",
           table: "messages",
-          filter: `conversation_id=eq.${conversationId}`
+          filter: `conversation_id=eq.${conversationId}`,
         },
         (payload) => {
           setMessages((prev) => [...prev, payload.new as Message]);
@@ -159,19 +195,19 @@ const Community = () => {
   };
 
   const sendMessage = async () => {
-    if (!newMessage.trim() || !selectedConversation || !user) return;
+    if (!newMessage.trim() || !selectedConversation || !currentUser) return;
 
     const { error } = await supabase.from("messages").insert({
       conversation_id: selectedConversation,
-      sender_id: user.id,
-      content: newMessage.trim()
+      sender_id: currentUser.id,
+      content: newMessage.trim(),
     });
 
     if (error) {
       toast({
-        title: "Error",
-        description: "Failed to send message",
-        variant: "destructive"
+        title: "Erreur",
+        description: "Impossible d'envoyer le message",
+        variant: "destructive",
       });
       return;
     }
@@ -179,192 +215,255 @@ const Community = () => {
     setNewMessage("");
   };
 
-  const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  const startNewConversation = async (userId: string) => {
+    if (!currentUser) return;
+
+    // Check if conversation already exists
+    const { data: existingParticipants } = await supabase
+      .from("conversation_participants")
+      .select("conversation_id")
+      .eq("user_id", currentUser.id);
+
+    if (existingParticipants) {
+      for (const participant of existingParticipants) {
+        const { data: otherParticipant } = await supabase
+          .from("conversation_participants")
+          .select("*")
+          .eq("conversation_id", participant.conversation_id)
+          .eq("user_id", userId)
+          .single();
+
+        if (otherParticipant) {
+          setSelectedConversation(participant.conversation_id);
+          setShowUserList(false);
+          setIsMobileMenuOpen(false);
+          return;
+        }
+      }
+    }
+
+    // Create new conversation
+    const { data: newConv, error: convError } = await supabase
+      .from("conversations")
+      .insert({})
+      .select()
+      .single();
+
+    if (convError || !newConv) {
+      toast({
+        title: "Erreur",
+        description: "Impossible de créer la conversation",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Add participants
+    await supabase.from("conversation_participants").insert([
+      { conversation_id: newConv.id, user_id: currentUser.id },
+      { conversation_id: newConv.id, user_id: userId },
+    ]);
+
+    setSelectedConversation(newConv.id);
+    setShowUserList(false);
+    setIsMobileMenuOpen(false);
+    fetchConversations();
   };
 
-  const selectedConv = conversations.find((c) => c.id === selectedConversation);
+  const filteredUsers = allUsers.filter(
+    (user) =>
+      user.user_id !== currentUser?.id &&
+      (user.full_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        user.nickname.toLowerCase().includes(searchQuery.toLowerCase()))
+  );
+
+  const selectedConvData = conversations.find((c) => c.id === selectedConversation);
 
   return (
-    <div className="flex h-screen bg-gradient-to-br from-background via-background to-primary/5">
-      {/* Sidebar */}
-      <aside
+    <div className="flex h-screen bg-background">
+      {/* Sidebar - Conversations List */}
+      <div
         className={`${
-          isSidebarOpen ? "w-72" : "w-0"
-        } transition-all duration-300 overflow-hidden bg-card/50 backdrop-blur-xl border-r border-border/50`}
+          isMobileMenuOpen ? "flex" : "hidden"
+        } lg:flex flex-col w-full lg:w-96 border-r border-border`}
       >
-        <div className="flex flex-col h-full">
-          <div className="p-6 border-b border-border/50">
-            <h2 className="text-2xl font-bold bg-gradient-to-r from-primary to-success bg-clip-text text-transparent">
-              ÉducaNet
-            </h2>
-          </div>
-
-          <nav className="flex-1 px-3 py-6 space-y-2">
-            <a
-              href="/dashboard"
-              className="flex items-center gap-3 px-5 py-3.5 mx-3 my-1 rounded-xl text-foreground font-medium hover:bg-gradient-to-br hover:from-[hsl(var(--primary))] hover:to-[hsl(var(--success))] hover:text-white hover:translate-x-1 transition-all duration-300"
-            >
-              <Home size={18} />
-              Dashboard
-            </a>
-            <a
-              href="/matieres"
-              className="flex items-center gap-3 px-5 py-3.5 mx-3 my-1 rounded-xl text-foreground font-medium hover:bg-gradient-to-br hover:from-[hsl(var(--primary))] hover:to-[hsl(var(--success))] hover:text-white hover:translate-x-1 transition-all duration-300"
-            >
-              <BookOpen size={18} />
-              Matières
-            </a>
-            <a
-              href="/community"
-              className="flex items-center gap-3 px-5 py-3.5 mx-3 my-1 rounded-xl bg-gradient-to-br from-[hsl(var(--primary))] to-[hsl(var(--success))] text-white shadow-lg shadow-primary/20 translate-x-1"
-            >
-              <MessageCircle size={18} />
-              Communauté
-            </a>
-            <a
-              href="#"
-              className="flex items-center gap-3 px-5 py-3.5 mx-3 my-1 rounded-xl text-foreground font-medium hover:bg-gradient-to-br hover:from-[hsl(var(--primary))] hover:to-[hsl(var(--success))] hover:text-white hover:translate-x-1 transition-all duration-300"
-            >
-              <Trophy size={18} />
-              Récompenses
-            </a>
-            <a
-              href="#"
-              className="flex items-center gap-3 px-5 py-3.5 mx-3 my-1 rounded-xl text-foreground font-medium hover:bg-gradient-to-br hover:from-[hsl(var(--primary))] hover:to-[hsl(var(--success))] hover:text-white hover:translate-x-1 transition-all duration-300"
-            >
-              <Settings size={18} />
-              Paramètres
-            </a>
-          </nav>
+        <div className="p-4 border-b border-border flex items-center justify-between">
+          <h1 className="text-2xl font-bold bg-gradient-to-r from-primary to-success bg-clip-text text-transparent">
+            Communauté
+          </h1>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="lg:hidden"
+            onClick={() => setIsMobileMenuOpen(false)}
+          >
+            <X size={24} />
+          </Button>
         </div>
-      </aside>
 
-      {/* Main Content */}
-      <div className="flex-1 flex overflow-hidden">
-        {/* Conversations List */}
-        <div className="w-96 border-r border-border/50 bg-card/30 backdrop-blur-sm flex flex-col">
-          <div className="p-4 border-b border-border/50">
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground" size={18} />
-              <Input
-                placeholder="Rechercher..."
-                className="pl-10 bg-background/50"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-              />
-            </div>
-          </div>
+        <div className="p-4 space-y-3">
+          <Button
+            onClick={() => setShowUserList(!showUserList)}
+            className="w-full bg-gradient-to-r from-primary to-success hover:opacity-90"
+          >
+            Nouveau message
+          </Button>
 
-          <ScrollArea className="flex-1">
-            <div className="p-2">
-              {conversations
-                .filter((conv) =>
-                  conv.other_user.full_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                  conv.other_user.nickname.toLowerCase().includes(searchQuery.toLowerCase())
-                )
-                .map((conv) => (
-                  <button
-                    key={conv.id}
-                    onClick={() => setSelectedConversation(conv.id)}
-                    className={`w-full p-4 flex items-center gap-3 rounded-xl mb-2 transition-all hover:bg-accent/50 ${
-                      selectedConversation === conv.id ? "bg-accent" : ""
-                    }`}
+          {showUserList && (
+            <div className="space-y-2">
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" size={18} />
+                <Input
+                  placeholder="Rechercher un utilisateur..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="pl-10"
+                />
+              </div>
+              <ScrollArea className="h-64 border border-border rounded-lg">
+                {filteredUsers.map((user) => (
+                  <div
+                    key={user.id}
+                    onClick={() => startNewConversation(user.user_id)}
+                    className="flex items-center gap-3 p-3 hover:bg-accent rounded-lg cursor-pointer transition-colors"
                   >
-                    <Avatar className="h-12 w-12">
-                      <AvatarFallback className="bg-gradient-to-br from-primary to-success text-white">
-                        {conv.other_user.full_name.charAt(0)}
-                      </AvatarFallback>
+                    <Avatar>
+                      <AvatarFallback>{user.full_name[0]}</AvatarFallback>
                     </Avatar>
-                    <div className="flex-1 text-left">
-                      <p className="font-semibold text-sm">{conv.other_user.full_name}</p>
-                      <p className="text-xs text-muted-foreground truncate">
-                        {conv.last_message || "Pas de messages"}
-                      </p>
+                    <div>
+                      <p className="font-medium">{user.full_name}</p>
+                      <p className="text-sm text-muted-foreground">@{user.nickname}</p>
                     </div>
-                  </button>
+                  </div>
                 ))}
-            </div>
-          </ScrollArea>
-        </div>
-
-        {/* Messages Area */}
-        <div className="flex-1 flex flex-col">
-          {selectedConversation ? (
-            <>
-              {/* Chat Header */}
-              <div className="p-4 border-b border-border/50 bg-card/30 backdrop-blur-sm flex items-center gap-3">
-                <Avatar className="h-10 w-10">
-                  <AvatarFallback className="bg-gradient-to-br from-primary to-success text-white">
-                    {selectedConv?.other_user.full_name.charAt(0)}
-                  </AvatarFallback>
-                </Avatar>
-                <div>
-                  <p className="font-semibold">{selectedConv?.other_user.full_name}</p>
-                  <p className="text-xs text-muted-foreground">@{selectedConv?.other_user.nickname}</p>
-                </div>
-              </div>
-
-              {/* Messages */}
-              <ScrollArea className="flex-1 p-4">
-                <div className="space-y-4">
-                  {messages.map((message) => (
-                    <div
-                      key={message.id}
-                      className={`flex ${message.sender_id === user?.id ? "justify-end" : "justify-start"}`}
-                    >
-                      <div
-                        className={`max-w-[70%] px-4 py-2 rounded-2xl ${
-                          message.sender_id === user?.id
-                            ? "bg-gradient-to-br from-primary to-success text-white"
-                            : "bg-card"
-                        }`}
-                      >
-                        <p className="text-sm">{message.content}</p>
-                        <p className={`text-xs mt-1 ${
-                          message.sender_id === user?.id ? "text-white/70" : "text-muted-foreground"
-                        }`}>
-                          {new Date(message.created_at).toLocaleTimeString("fr-FR", {
-                            hour: "2-digit",
-                            minute: "2-digit"
-                          })}
-                        </p>
-                      </div>
-                    </div>
-                  ))}
-                  <div ref={messagesEndRef} />
-                </div>
               </ScrollArea>
-
-              {/* Input Area */}
-              <div className="p-4 border-t border-border/50 bg-card/30 backdrop-blur-sm">
-                <div className="flex gap-2">
-                  <Input
-                    placeholder="Envoyer un message..."
-                    value={newMessage}
-                    onChange={(e) => setNewMessage(e.target.value)}
-                    onKeyPress={(e) => e.key === "Enter" && sendMessage()}
-                    className="flex-1"
-                  />
-                  <Button
-                    onClick={sendMessage}
-                    size="icon"
-                    className="bg-gradient-to-br from-primary to-success hover:opacity-90"
-                  >
-                    <Send size={18} />
-                  </Button>
-                </div>
-              </div>
-            </>
-          ) : (
-            <div className="flex-1 flex items-center justify-center text-muted-foreground">
-              <div className="text-center">
-                <MessageCircle size={64} className="mx-auto mb-4 opacity-50" />
-                <p className="text-lg">Sélectionnez une conversation</p>
-              </div>
             </div>
           )}
         </div>
+
+        <ScrollArea className="flex-1">
+          {conversations.map((conv) => (
+            <div
+              key={conv.id}
+              onClick={() => {
+                setSelectedConversation(conv.id);
+                setIsMobileMenuOpen(false);
+              }}
+              className={`flex items-center gap-3 p-4 hover:bg-accent cursor-pointer transition-colors border-b border-border ${
+                selectedConversation === conv.id ? "bg-accent" : ""
+              }`}
+            >
+              <Avatar>
+                <AvatarFallback>
+                  {conv.otherUser?.full_name?.[0] || "?"}
+                </AvatarFallback>
+              </Avatar>
+              <div className="flex-1 min-w-0">
+                <p className="font-medium truncate">
+                  {conv.otherUser?.full_name || "Utilisateur inconnu"}
+                </p>
+                <p className="text-sm text-muted-foreground truncate">
+                  {conv.lastMessage?.content || "Aucun message"}
+                </p>
+              </div>
+            </div>
+          ))}
+        </ScrollArea>
+      </div>
+
+      {/* Chat Area */}
+      <div className="flex-1 flex flex-col">
+        {selectedConversation ? (
+          <>
+            {/* Chat Header */}
+            <div className="p-4 border-b border-border flex items-center gap-3">
+              <Button
+                variant="ghost"
+                size="icon"
+                className="lg:hidden"
+                onClick={() => setIsMobileMenuOpen(true)}
+              >
+                <ArrowLeft size={24} />
+              </Button>
+              <Avatar>
+                <AvatarFallback>
+                  {selectedConvData?.otherUser?.full_name?.[0] || "?"}
+                </AvatarFallback>
+              </Avatar>
+              <div>
+                <p className="font-medium">
+                  {selectedConvData?.otherUser?.full_name || "Utilisateur inconnu"}
+                </p>
+                <p className="text-sm text-muted-foreground">
+                  @{selectedConvData?.otherUser?.nickname}
+                </p>
+              </div>
+            </div>
+
+            {/* Messages */}
+            <ScrollArea className="flex-1 p-4">
+              <div className="space-y-4">
+                {messages.map((msg) => (
+                  <div
+                    key={msg.id}
+                    className={`flex ${
+                      msg.sender_id === currentUser?.id ? "justify-end" : "justify-start"
+                    }`}
+                  >
+                    <div
+                      className={`max-w-[70%] rounded-2xl px-4 py-2 ${
+                        msg.sender_id === currentUser?.id
+                          ? "bg-gradient-to-r from-primary to-success text-white"
+                          : "bg-accent"
+                      }`}
+                    >
+                      <p>{msg.content}</p>
+                      <p className="text-xs opacity-70 mt-1">
+                        {new Date(msg.created_at).toLocaleTimeString([], {
+                          hour: "2-digit",
+                          minute: "2-digit",
+                        })}
+                      </p>
+                    </div>
+                  </div>
+                ))}
+                <div ref={messagesEndRef} />
+              </div>
+            </ScrollArea>
+
+            {/* Message Input */}
+            <div className="p-4 border-t border-border">
+              <div className="flex gap-2">
+                <Input
+                  placeholder="Écrivez un message..."
+                  value={newMessage}
+                  onChange={(e) => setNewMessage(e.target.value)}
+                  onKeyPress={(e) => e.key === "Enter" && sendMessage()}
+                  className="flex-1"
+                />
+                <Button
+                  onClick={sendMessage}
+                  size="icon"
+                  className="bg-gradient-to-r from-primary to-success hover:opacity-90"
+                >
+                  <Send size={20} />
+                </Button>
+              </div>
+            </div>
+          </>
+        ) : (
+          <div className="flex-1 flex flex-col items-center justify-center text-muted-foreground">
+            <Button
+              variant="ghost"
+              size="icon"
+              className="lg:hidden mb-4"
+              onClick={() => setIsMobileMenuOpen(true)}
+            >
+              <Menu size={24} />
+            </Button>
+            <p className="text-lg">Sélectionnez une conversation pour commencer</p>
+          </div>
+        )}
       </div>
     </div>
   );
