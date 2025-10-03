@@ -72,13 +72,22 @@ const UserSearch = () => {
   }, [searchQuery, currentUser]);
 
   const startConversation = async (otherUserId: string) => {
-    if (!currentUser) return;
+    if (!currentUser) {
+      console.log("No current user found");
+      return;
+    }
+
+    console.log("Starting conversation with user:", otherUserId);
 
     // Check if conversation already exists
-    const { data: existingConversations } = await supabase
+    const { data: existingConversations, error: existingError } = await supabase
       .from("conversation_participants")
       .select("conversation_id")
       .eq("user_id", currentUser.id);
+
+    if (existingError) {
+      console.error("Error checking existing conversations:", existingError);
+    }
 
     if (existingConversations) {
       for (const conv of existingConversations) {
@@ -88,11 +97,14 @@ const UserSearch = () => {
           .eq("conversation_id", conv.conversation_id);
 
         if (participants?.length === 2 && participants.some(p => p.user_id === otherUserId)) {
+          console.log("Found existing conversation:", conv.conversation_id);
           navigate(`/community?conversation=${conv.conversation_id}`);
           return;
         }
       }
     }
+
+    console.log("Creating new conversation...");
 
     // Create new conversation
     const { data: newConversation, error: convError } = await supabase
@@ -101,14 +113,29 @@ const UserSearch = () => {
       .select()
       .single();
 
-    if (convError || !newConversation) {
+    console.log("Conversation creation result:", { newConversation, convError });
+
+    if (convError) {
+      console.error("Conversation creation error:", convError);
       toast({
         title: "Erreur",
-        description: "Impossible de créer la conversation",
+        description: `Impossible de créer la conversation: ${convError.message}`,
         variant: "destructive",
       });
       return;
     }
+
+    if (!newConversation) {
+      console.error("No conversation data returned");
+      toast({
+        title: "Erreur",
+        description: "Impossible de créer la conversation: aucune donnée retournée",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    console.log("Adding participants to conversation:", newConversation.id);
 
     // Add participants
     const { error: participantsError } = await supabase
@@ -118,15 +145,19 @@ const UserSearch = () => {
         { conversation_id: newConversation.id, user_id: otherUserId },
       ]);
 
+    console.log("Participants insertion result:", { participantsError });
+
     if (participantsError) {
+      console.error("Participants error:", participantsError);
       toast({
         title: "Erreur",
-        description: "Impossible d'ajouter les participants",
+        description: `Impossible d'ajouter les participants: ${participantsError.message}`,
         variant: "destructive",
       });
       return;
     }
 
+    console.log("Successfully created conversation, navigating...");
     navigate(`/community?conversation=${newConversation.id}`);
   };
 
