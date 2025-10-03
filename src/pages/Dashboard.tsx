@@ -115,7 +115,11 @@ const Dashboard = () => {
 
               <div className="grid gap-4">
                 {subjects.map((subject) => (
-                  <Card key={subject.id} className="p-6 hover:bg-card/80 transition-all cursor-pointer group">
+                  <Card 
+                    key={subject.id} 
+                    className="p-6 hover:bg-card/80 transition-all cursor-pointer group"
+                    onClick={() => subject.id === 'math' && navigate('/math-course')}
+                  >
                     <div className="flex items-center gap-4 mb-4">
                       <div className="text-4xl">{subject.icon}</div>
                       <div className="flex-1">
@@ -128,6 +132,10 @@ const Dashboard = () => {
                       <Button 
                         size="sm"
                         className="opacity-0 group-hover:opacity-100 transition-opacity"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          subject.id === 'math' && navigate('/math-course');
+                        }}
                       >
                         <Play className="w-4 h-4 mr-1" />
                         Continuer
