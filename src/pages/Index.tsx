@@ -17,7 +17,7 @@ const Index = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-background to-background/95">
+    <div className="min-h-screen bg-background">
       {/* Header */}
       <header className="sticky top-0 z-50 bg-card/80 backdrop-blur-md border-b border-border shadow-sm">
         <div className="container mx-auto px-4 py-4 flex justify-between items-center">
@@ -63,9 +63,8 @@ const Index = () => {
       </header>
 
       {/* Hero Section */}
-      <section id="accueil" className="py-16 md:py-20 px-4 relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-background to-secondary/5" />
-        <div className="container mx-auto grid md:grid-cols-2 gap-10 items-center relative z-10">
+      <section id="accueil" className="py-16 md:py-20 px-4 bg-background">
+        <div className="container mx-auto grid md:grid-cols-2 gap-10 items-center">
           <div className="space-y-6 z-10">
             <h1 className="text-4xl md:text-5xl lg:text-6xl font-black leading-tight">
               L'Éducation Haïtienne{" "}
@@ -119,7 +118,7 @@ const Index = () => {
       </section>
 
       {/* Revolution Section */}
-      <section className="py-20 px-4 bg-gradient-to-br from-card/50 to-background text-center">
+      <section className="py-20 px-4 bg-background text-center">
         <div className="container mx-auto">
           <h2 className="text-3xl md:text-5xl font-black text-primary mb-6">
             Une révolution nécessaire pour Haïti
@@ -133,7 +132,7 @@ const Index = () => {
       </section>
 
       {/* Features Highlight */}
-      <section id="features" className="py-20 px-4 bg-gradient-to-br from-background to-card/30">
+      <section id="features" className="py-20 px-4 bg-background">
         <div className="container mx-auto">
           <h2 className="text-3xl md:text-4xl font-black text-center text-primary mb-4">
             🇭🇹 Projet Phare 2025 : Révolutionner l'Éducation Haïtienne
@@ -163,7 +162,7 @@ const Index = () => {
       </section>
 
       {/* Categories */}
-      <section className="py-20 px-4 bg-gradient-to-br from-card/20 to-background">
+      <section className="py-20 px-4 bg-background">
         <div className="container mx-auto">
           <h2 className="text-3xl md:text-4xl font-bold text-center mb-4">
             🎯 Comment ça marche : <span className="text-primary">Apprentissage personnalisé avec Eric</span>
@@ -231,7 +230,7 @@ const Index = () => {
       </section>
 
       {/* Courses */}
-      <section id="courses" className="py-20 px-4 bg-gradient-to-br from-background to-card/20">
+      <section id="courses" className="py-20 px-4 bg-background">
         <div className="container mx-auto">
           <h2 className="text-3xl md:text-4xl font-black text-center text-primary mb-4">
             📚 Nos cours disponibles
@@ -299,7 +298,7 @@ const Index = () => {
       </section>
 
       {/* FAQ */}
-      <section className="py-20 px-4 bg-gradient-to-br from-card/30 to-background">
+      <section className="py-20 px-4 bg-background">
         <div className="container mx-auto max-w-3xl">
           <h2 className="text-3xl md:text-4xl font-bold text-center mb-12">Questions fréquentes</h2>
           <div className="space-y-4">
@@ -328,7 +327,7 @@ const Index = () => {
       </section>
 
       {/* About */}
-      <section id="about" className="py-20 px-4 bg-gradient-to-br from-background to-card/20">
+      <section id="about" className="py-20 px-4 bg-background">
         <div className="container mx-auto">
           <h2 className="text-3xl md:text-4xl font-black text-center text-primary mb-12">
             🇭🇹 À Propos d'EDUPRENEURS
