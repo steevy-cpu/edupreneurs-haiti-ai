@@ -100,4 +100,86 @@ All colors MUST be HSL.
   .card-glow {
     box-shadow: var(--shadow-card), var(--shadow-glow);
   }
+
+  /* Lesson Page Styles */
+  .lesson-bg {
+    background: linear-gradient(180deg, hsl(180 60% 97%) 0%, hsl(165 50% 96%) 100%);
+  }
+
+  .lesson-topbar {
+    background: linear-gradient(90deg, hsl(180 88% 27%) 0%, hsl(160 84% 39%) 100%);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  }
+
+  .lesson-pill {
+    @apply inline-block rounded-full px-3 py-1 text-xs font-bold;
+    background: hsl(165 65% 90%);
+    color: hsl(180 94% 22%);
+    border: 1px solid hsl(165 60% 82%);
+  }
+
+  .lesson-card {
+    @apply border-none rounded-2xl shadow-lg relative overflow-hidden;
+    border-left: 4px solid hsl(180 88% 27%);
+  }
+
+  .lesson-card::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 4px;
+    background: linear-gradient(180deg, hsl(180 88% 27%) 0%, hsl(160 84% 39%) 100%);
+  }
+
+  .lesson-markdown h2 {
+    @apply text-xl font-bold mb-3 pb-2 relative;
+    border-bottom: 2px solid hsl(180 88% 27% / 0.18);
+  }
+
+  .lesson-markdown h2::after {
+    content: "";
+    display: block;
+    height: 3px;
+    width: 72px;
+    margin-top: 6px;
+    background: linear-gradient(90deg, hsl(180 88% 27%), hsl(160 84% 39%));
+    border-radius: 2px;
+  }
+
+  .lesson-markdown h5 {
+    @apply text-sm font-bold uppercase tracking-wide mt-4 mb-2;
+    color: hsl(180 88% 27%);
+  }
+
+  .lesson-markdown p {
+    @apply mb-4 leading-relaxed;
+  }
+
+  .lesson-markdown ul, .lesson-markdown ol {
+    @apply mb-4 pl-6 space-y-2;
+  }
+
+  .lesson-markdown strong {
+    @apply font-bold;
+    color: hsl(180 88% 27%);
+  }
+
+  .lesson-markdown-title {
+    @apply text-sm font-bold uppercase tracking-wide;
+    color: hsl(180 88% 27%);
+  }
+
+  .video-placeholder {
+    @apply h-48 rounded-xl flex items-center justify-center text-center;
+    background: repeating-linear-gradient(
+      45deg,
+      hsl(165 65% 92%),
+      hsl(165 65% 92%) 10px,
+      hsl(165 60% 90%) 10px,
+      hsl(165 60% 90%) 20px
+    );
+    color: hsl(180 88% 27%);
+  }
 }
