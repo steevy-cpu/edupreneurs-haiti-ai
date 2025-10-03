@@ -63,8 +63,9 @@ const Index = () => {
       </header>
 
       {/* Hero Section */}
-      <section id="accueil" className="home-hero py-16 md:py-20 px-4">
-        <div className="container mx-auto grid md:grid-cols-2 gap-10 items-center">
+      <section id="accueil" className="py-16 md:py-20 px-4 relative overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-background to-secondary/5" />
+        <div className="container mx-auto grid md:grid-cols-2 gap-10 items-center relative z-10">
           <div className="space-y-6 z-10">
             <h1 className="text-4xl md:text-5xl lg:text-6xl font-black leading-tight">
               L'Éducation Haïtienne{" "}
