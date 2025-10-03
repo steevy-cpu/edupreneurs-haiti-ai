@@ -106,14 +106,11 @@ const UserSearch = () => {
 
     console.log("Creating new conversation...");
 
-    // Create new conversation
-    const { data: newConversation, error: convError } = await supabase
-      .from("conversations")
-      .insert({})
-      .select()
-      .single();
+    // Create new conversation using the database function
+    const { data: conversationId, error: convError } = await supabase
+      .rpc("create_conversation");
 
-    console.log("Conversation creation result:", { newConversation, convError });
+    console.log("Conversation creation result:", { conversationId, convError });
 
     if (convError) {
       console.error("Conversation creation error:", convError);
@@ -125,8 +122,8 @@ const UserSearch = () => {
       return;
     }
 
-    if (!newConversation) {
-      console.error("No conversation data returned");
+    if (!conversationId) {
+      console.error("No conversation ID returned");
       toast({
         title: "Erreur",
         description: "Impossible de créer la conversation: aucune donnée retournée",
@@ -135,14 +132,14 @@ const UserSearch = () => {
       return;
     }
 
-    console.log("Adding participants to conversation:", newConversation.id);
+    console.log("Adding participants to conversation:", conversationId);
 
     // Add participants
     const { error: participantsError } = await supabase
       .from("conversation_participants")
       .insert([
-        { conversation_id: newConversation.id, user_id: currentUser.id },
-        { conversation_id: newConversation.id, user_id: otherUserId },
+        { conversation_id: conversationId, user_id: currentUser.id },
+        { conversation_id: conversationId, user_id: otherUserId },
       ]);
 
     console.log("Participants insertion result:", { participantsError });
@@ -158,7 +155,7 @@ const UserSearch = () => {
     }
 
     console.log("Successfully created conversation, navigating...");
-    navigate(`/community?conversation=${newConversation.id}`);
+    navigate(`/community?conversation=${conversationId}`);
   };
 
   return (
