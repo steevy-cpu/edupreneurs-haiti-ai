@@ -285,183 +285,240 @@ const Community = () => {
       <div
         className={`${
           isMobileMenuOpen ? "flex" : "hidden"
-        } lg:flex flex-col w-full lg:w-96 border-r border-border`}
+        } lg:flex flex-col w-full lg:w-[420px] border-r border-border/50 bg-background`}
       >
-        <div className="p-4 border-b border-border flex items-center justify-between">
-          <h1 className="text-2xl font-bold bg-gradient-to-r from-primary to-success bg-clip-text text-transparent">
-            Communauté
-          </h1>
+        {/* Header */}
+        <div className="px-6 py-4 border-b border-border/50">
+          <div className="flex items-center justify-between mb-4">
+            <h1 className="text-xl font-semibold">Messages</h1>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="lg:hidden hover:bg-accent/50"
+              onClick={() => setIsMobileMenuOpen(false)}
+            >
+              <X size={20} />
+            </Button>
+          </div>
+          
+          {/* Search Bar */}
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" size={16} />
+            <Input
+              placeholder="Rechercher..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-10 bg-muted/30 border-none h-9 rounded-lg focus-visible:ring-1"
+            />
+          </div>
+        </div>
+
+        {/* New Message Button */}
+        <div className="px-4 py-2">
           <Button
+            onClick={() => setShowUserList(!showUserList)}
             variant="ghost"
-            size="icon"
-            className="lg:hidden"
-            onClick={() => setIsMobileMenuOpen(false)}
+            className="w-full justify-start text-primary hover:bg-accent/50 font-semibold"
           >
-            <X size={24} />
+            <Send size={16} className="mr-2" />
+            Nouveau message
           </Button>
         </div>
 
-        <div className="p-4 space-y-3">
-          <Button
-            onClick={() => setShowUserList(!showUserList)}
-            className="w-full bg-gradient-to-r from-primary to-success hover:opacity-90"
-          >
-            Nouveau message
-          </Button>
-
-          {showUserList && (
-            <div className="space-y-2">
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" size={18} />
+        {/* User List Modal */}
+        {showUserList && (
+          <div className="absolute inset-0 bg-background z-50 lg:relative">
+            <div className="p-4 border-b border-border/50 flex items-center justify-between">
+              <h2 className="font-semibold">Nouveau message</h2>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => setShowUserList(false)}
+                className="hover:bg-accent/50"
+              >
+                <X size={20} />
+              </Button>
+            </div>
+            <div className="p-4">
+              <div className="relative mb-4">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" size={16} />
                 <Input
                   placeholder="Rechercher un utilisateur..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-10"
+                  className="pl-10 bg-muted/30 border-none h-9 rounded-lg"
                 />
               </div>
-              <ScrollArea className="h-64 border border-border rounded-lg">
+              <ScrollArea className="h-[calc(100vh-200px)]">
                 {filteredUsers.map((user) => (
                   <div
                     key={user.id}
                     onClick={() => startNewConversation(user.user_id)}
-                    className="flex items-center gap-3 p-3 hover:bg-accent rounded-lg cursor-pointer transition-colors"
+                    className="flex items-center gap-3 p-3 hover:bg-accent/50 rounded-lg cursor-pointer transition-colors"
                   >
-                    <Avatar>
-                      <AvatarFallback>{user.full_name[0]}</AvatarFallback>
+                    <Avatar className="h-12 w-12">
+                      <AvatarFallback className="bg-gradient-to-br from-primary/20 to-success/20 text-foreground">
+                        {user.full_name[0]}
+                      </AvatarFallback>
                     </Avatar>
-                    <div>
-                      <p className="font-medium">{user.full_name}</p>
-                      <p className="text-sm text-muted-foreground">@{user.nickname}</p>
+                    <div className="flex-1 min-w-0">
+                      <p className="font-medium truncate">{user.full_name}</p>
+                      <p className="text-sm text-muted-foreground truncate">@{user.nickname}</p>
                     </div>
                   </div>
                 ))}
               </ScrollArea>
             </div>
-          )}
-        </div>
+          </div>
+        )}
 
+        {/* Conversations List */}
         <ScrollArea className="flex-1">
-          {conversations.map((conv) => (
-            <div
-              key={conv.id}
-              onClick={() => {
-                setSelectedConversation(conv.id);
-                setIsMobileMenuOpen(false);
-              }}
-              className={`flex items-center gap-3 p-4 hover:bg-accent cursor-pointer transition-colors border-b border-border ${
-                selectedConversation === conv.id ? "bg-accent" : ""
-              }`}
-            >
-              <Avatar>
-                <AvatarFallback>
-                  {conv.otherUser?.full_name?.[0] || "?"}
-                </AvatarFallback>
-              </Avatar>
-              <div className="flex-1 min-w-0">
-                <p className="font-medium truncate">
-                  {conv.otherUser?.full_name || "Utilisateur inconnu"}
-                </p>
-                <p className="text-sm text-muted-foreground truncate">
-                  {conv.lastMessage?.content || "Aucun message"}
-                </p>
+          {conversations.length === 0 ? (
+            <div className="flex flex-col items-center justify-center h-full p-8 text-center">
+              <div className="w-24 h-24 rounded-full bg-muted/30 flex items-center justify-center mb-4">
+                <Send size={32} className="text-muted-foreground" />
               </div>
+              <p className="text-sm text-muted-foreground">Aucune conversation</p>
+              <p className="text-xs text-muted-foreground mt-1">Commencez à chatter !</p>
             </div>
-          ))}
+          ) : (
+            conversations.map((conv) => (
+              <div
+                key={conv.id}
+                onClick={() => {
+                  setSelectedConversation(conv.id);
+                  setIsMobileMenuOpen(false);
+                }}
+                className={`flex items-center gap-3 px-4 py-3 hover:bg-accent/50 cursor-pointer transition-colors ${
+                  selectedConversation === conv.id ? "bg-accent/30" : ""
+                }`}
+              >
+                <Avatar className="h-14 w-14">
+                  <AvatarFallback className="bg-gradient-to-br from-primary/20 to-success/20 text-foreground text-lg">
+                    {conv.otherUser?.full_name?.[0] || "?"}
+                  </AvatarFallback>
+                </Avatar>
+                <div className="flex-1 min-w-0">
+                  <p className="font-medium truncate text-sm">
+                    {conv.otherUser?.full_name || "Utilisateur inconnu"}
+                  </p>
+                  <p className="text-sm text-muted-foreground truncate">
+                    {conv.lastMessage?.content || "Envoyez un message"}
+                  </p>
+                </div>
+              </div>
+            ))
+          )}
         </ScrollArea>
       </div>
 
       {/* Chat Area */}
-      <div className="flex-1 flex flex-col">
+      <div className="flex-1 flex flex-col bg-background">
         {selectedConversation ? (
           <>
             {/* Chat Header */}
-            <div className="p-4 border-b border-border flex items-center gap-3">
+            <div className="px-4 py-3 border-b border-border/50 flex items-center gap-3 bg-background">
               <Button
                 variant="ghost"
                 size="icon"
-                className="lg:hidden"
+                className="lg:hidden hover:bg-accent/50"
                 onClick={() => setIsMobileMenuOpen(true)}
               >
-                <ArrowLeft size={24} />
+                <ArrowLeft size={20} />
               </Button>
-              <Avatar>
-                <AvatarFallback>
+              <Avatar className="h-10 w-10">
+                <AvatarFallback className="bg-gradient-to-br from-primary/20 to-success/20 text-foreground">
                   {selectedConvData?.otherUser?.full_name?.[0] || "?"}
                 </AvatarFallback>
               </Avatar>
-              <div>
-                <p className="font-medium">
+              <div className="flex-1">
+                <p className="font-semibold text-sm">
                   {selectedConvData?.otherUser?.full_name || "Utilisateur inconnu"}
                 </p>
-                <p className="text-sm text-muted-foreground">
+                <p className="text-xs text-muted-foreground">
                   @{selectedConvData?.otherUser?.nickname}
                 </p>
               </div>
             </div>
 
             {/* Messages */}
-            <ScrollArea className="flex-1 p-4">
-              <div className="space-y-4">
-                {messages.map((msg) => (
-                  <div
-                    key={msg.id}
-                    className={`flex ${
-                      msg.sender_id === currentUser?.id ? "justify-end" : "justify-start"
-                    }`}
-                  >
+            <ScrollArea className="flex-1 px-4 py-6">
+              <div className="space-y-2 max-w-3xl mx-auto">
+                {messages.map((msg, index) => {
+                  const isOwn = msg.sender_id === currentUser?.id;
+                  const showAvatar = index === 0 || messages[index - 1].sender_id !== msg.sender_id;
+                  
+                  return (
                     <div
-                      className={`max-w-[70%] rounded-2xl px-4 py-2 ${
-                        msg.sender_id === currentUser?.id
-                          ? "bg-gradient-to-r from-primary to-success text-white"
-                          : "bg-accent"
-                      }`}
+                      key={msg.id}
+                      className={`flex items-end gap-2 ${isOwn ? "flex-row-reverse" : "flex-row"}`}
                     >
-                      <p>{msg.content}</p>
-                      <p className="text-xs opacity-70 mt-1">
-                        {new Date(msg.created_at).toLocaleTimeString([], {
-                          hour: "2-digit",
-                          minute: "2-digit",
-                        })}
-                      </p>
+                      {!isOwn && (
+                        <Avatar className={`h-7 w-7 ${showAvatar ? "" : "invisible"}`}>
+                          <AvatarFallback className="bg-gradient-to-br from-primary/20 to-success/20 text-foreground text-xs">
+                            {selectedConvData?.otherUser?.full_name?.[0] || "?"}
+                          </AvatarFallback>
+                        </Avatar>
+                      )}
+                      <div
+                        className={`group relative max-w-[70%] rounded-[18px] px-3 py-2 ${
+                          isOwn
+                            ? "bg-primary text-primary-foreground"
+                            : "bg-muted/70 text-foreground"
+                        }`}
+                      >
+                        <p className="text-[15px] leading-5 break-words">{msg.content}</p>
+                      </div>
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
                 <div ref={messagesEndRef} />
               </div>
             </ScrollArea>
 
             {/* Message Input */}
-            <div className="p-4 border-t border-border">
-              <div className="flex gap-2">
-                <Input
-                  placeholder="Écrivez un message..."
-                  value={newMessage}
-                  onChange={(e) => setNewMessage(e.target.value)}
-                  onKeyPress={(e) => e.key === "Enter" && sendMessage()}
-                  className="flex-1"
-                />
-                <Button
-                  onClick={sendMessage}
-                  size="icon"
-                  className="bg-gradient-to-r from-primary to-success hover:opacity-90"
-                >
-                  <Send size={20} />
-                </Button>
+            <div className="px-4 py-3 border-t border-border/50 bg-background">
+              <div className="flex items-center gap-2 max-w-3xl mx-auto">
+                <div className="flex-1 relative">
+                  <Input
+                    placeholder="Message..."
+                    value={newMessage}
+                    onChange={(e) => setNewMessage(e.target.value)}
+                    onKeyPress={(e) => e.key === "Enter" && !e.shiftKey && sendMessage()}
+                    className="pr-10 rounded-full border border-border/50 bg-background focus-visible:ring-1 h-10"
+                  />
+                  {newMessage.trim() && (
+                    <Button
+                      onClick={sendMessage}
+                      size="icon"
+                      variant="ghost"
+                      className="absolute right-1 top-1/2 -translate-y-1/2 h-8 w-8 hover:bg-transparent"
+                    >
+                      <Send size={18} className="text-primary" />
+                    </Button>
+                  )}
+                </div>
               </div>
             </div>
           </>
         ) : (
-          <div className="flex-1 flex flex-col items-center justify-center text-muted-foreground">
+          <div className="flex-1 flex flex-col items-center justify-center text-muted-foreground p-8">
             <Button
               variant="ghost"
               size="icon"
-              className="lg:hidden mb-4"
+              className="lg:hidden mb-6 hover:bg-accent/50"
               onClick={() => setIsMobileMenuOpen(true)}
             >
               <Menu size={24} />
             </Button>
-            <p className="text-lg">Sélectionnez une conversation pour commencer</p>
+            <div className="w-24 h-24 rounded-full border-2 border-foreground/20 flex items-center justify-center mb-4">
+              <Send size={32} />
+            </div>
+            <h3 className="text-xl font-light mb-2">Vos messages</h3>
+            <p className="text-sm text-muted-foreground text-center max-w-xs">
+              Envoyez des messages privés à vos amis
+            </p>
           </div>
         )}
       </div>
