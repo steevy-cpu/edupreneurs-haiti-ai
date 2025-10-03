@@ -1,0 +1,218 @@
+import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { useToast } from "@/hooks/use-toast";
+import { Search, MessageCircle, ArrowLeft } from "lucide-react";
+
+interface Profile {
+  id: string;
+  user_id: string;
+  full_name: string;
+  nickname: string;
+}
+
+const UserSearch = () => {
+  const navigate = useNavigate();
+  const { toast } = useToast();
+  const [searchQuery, setSearchQuery] = useState("");
+  const [profiles, setProfiles] = useState<Profile[]>([]);
+  const [currentUser, setCurrentUser] = useState<any>(null);
+  const [isLoading, setIsLoading] = useState(false);
+
+  useEffect(() => {
+    checkAuth();
+  }, []);
+
+  const checkAuth = async () => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) {
+      navigate("/auth");
+      return;
+    }
+    setCurrentUser(user);
+  };
+
+  const searchUsers = async (query: string) => {
+    if (!query.trim()) {
+      setProfiles([]);
+      return;
+    }
+
+    setIsLoading(true);
+    const { data, error } = await supabase
+      .from("profiles")
+      .select("*")
+      .or(`full_name.ilike.%${query}%,nickname.ilike.%${query}%`)
+      .neq("user_id", currentUser?.id)
+      .limit(20);
+
+    if (error) {
+      console.error("Error searching users:", error);
+      toast({
+        title: "Erreur",
+        description: "Impossible de rechercher des utilisateurs",
+        variant: "destructive",
+      });
+    } else {
+      setProfiles(data || []);
+    }
+    setIsLoading(false);
+  };
+
+  useEffect(() => {
+    const debounce = setTimeout(() => {
+      searchUsers(searchQuery);
+    }, 300);
+
+    return () => clearTimeout(debounce);
+  }, [searchQuery, currentUser]);
+
+  const startConversation = async (otherUserId: string) => {
+    if (!currentUser) return;
+
+    // Check if conversation already exists
+    const { data: existingConversations } = await supabase
+      .from("conversation_participants")
+      .select("conversation_id")
+      .eq("user_id", currentUser.id);
+
+    if (existingConversations) {
+      for (const conv of existingConversations) {
+        const { data: participants } = await supabase
+          .from("conversation_participants")
+          .select("user_id")
+          .eq("conversation_id", conv.conversation_id);
+
+        if (participants?.length === 2 && participants.some(p => p.user_id === otherUserId)) {
+          navigate(`/community?conversation=${conv.conversation_id}`);
+          return;
+        }
+      }
+    }
+
+    // Create new conversation
+    const { data: newConversation, error: convError } = await supabase
+      .from("conversations")
+      .insert({})
+      .select()
+      .single();
+
+    if (convError || !newConversation) {
+      toast({
+        title: "Erreur",
+        description: "Impossible de créer la conversation",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Add participants
+    const { error: participantsError } = await supabase
+      .from("conversation_participants")
+      .insert([
+        { conversation_id: newConversation.id, user_id: currentUser.id },
+        { conversation_id: newConversation.id, user_id: otherUserId },
+      ]);
+
+    if (participantsError) {
+      toast({
+        title: "Erreur",
+        description: "Impossible d'ajouter les participants",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    navigate(`/community?conversation=${newConversation.id}`);
+  };
+
+  return (
+    <div className="min-h-screen bg-background">
+      {/* Header */}
+      <div className="sticky top-0 z-50 border-b border-border/50 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+        <div className="max-w-2xl mx-auto px-4 py-3 flex items-center gap-3">
+          <Button
+            size="icon"
+            variant="ghost"
+            onClick={() => navigate("/dashboard")}
+          >
+            <ArrowLeft size={24} />
+          </Button>
+          <h1 className="text-xl font-semibold">Rechercher des utilisateurs</h1>
+        </div>
+      </div>
+
+      {/* Search Bar */}
+      <div className="max-w-2xl mx-auto px-4 py-4">
+        <div className="relative">
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground" size={20} />
+          <Input
+            type="text"
+            placeholder="Rechercher par nom ou pseudo..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="pl-10"
+          />
+        </div>
+      </div>
+
+      {/* Results */}
+      <ScrollArea className="h-[calc(100vh-140px)]">
+        <div className="max-w-2xl mx-auto pb-20">
+          {isLoading ? (
+            <div className="flex justify-center py-10">
+              <p className="text-muted-foreground">Recherche...</p>
+            </div>
+          ) : profiles.length === 0 ? (
+            <div className="flex flex-col items-center justify-center py-20 px-4 text-center">
+              <div className="w-24 h-24 rounded-full bg-muted/30 flex items-center justify-center mb-4">
+                <Search size={32} className="text-muted-foreground" />
+              </div>
+              <h3 className="text-lg font-medium mb-2">
+                {searchQuery ? "Aucun résultat" : "Commencez votre recherche"}
+              </h3>
+              <p className="text-sm text-muted-foreground max-w-xs">
+                {searchQuery
+                  ? "Essayez un autre nom ou pseudo"
+                  : "Tapez un nom ou pseudo pour trouver des utilisateurs"}
+              </p>
+            </div>
+          ) : (
+            <div className="space-y-2 px-4">
+              {profiles.map((profile) => (
+                <div
+                  key={profile.id}
+                  className="flex items-center gap-3 p-3 rounded-lg hover:bg-muted/30 transition-colors"
+                >
+                  <Avatar className="h-12 w-12">
+                    <AvatarFallback className="bg-gradient-to-br from-primary/20 to-success/20 text-foreground">
+                      {profile.full_name[0]}
+                    </AvatarFallback>
+                  </Avatar>
+                  <div className="flex-1">
+                    <p className="font-semibold">{profile.full_name}</p>
+                    <p className="text-sm text-muted-foreground">@{profile.nickname}</p>
+                  </div>
+                  <Button
+                    size="icon"
+                    variant="ghost"
+                    onClick={() => startConversation(profile.user_id)}
+                    className="hover:bg-primary/10"
+                  >
+                    <MessageCircle size={20} />
+                  </Button>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      </ScrollArea>
+    </div>
+  );
+};
+
+export default UserSearch;

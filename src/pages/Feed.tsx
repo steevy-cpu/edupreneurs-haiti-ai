@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useToast } from "@/hooks/use-toast";
-import { Heart, MessageCircle, Send, Plus } from "lucide-react";
+import { Heart, MessageCircle, Send, Plus, Image } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 
 interface Profile {
@@ -34,6 +34,9 @@ const Feed = () => {
   const [posts, setPosts] = useState<Post[]>([]);
   const [newPostContent, setNewPostContent] = useState("");
   const [isCreatingPost, setIsCreatingPost] = useState(false);
+  const [selectedImage, setSelectedImage] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     checkAuth();
@@ -118,13 +121,54 @@ const Feed = () => {
     };
   };
 
+  const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setSelectedImage(file);
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setImagePreview(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
   const createPost = async () => {
-    if (!newPostContent.trim() || !currentUser) return;
+    if ((!newPostContent.trim() && !selectedImage) || !currentUser) return;
 
     setIsCreatingPost(true);
+    let imageUrl = null;
+
+    // Upload image if selected
+    if (selectedImage) {
+      const fileExt = selectedImage.name.split('.').pop();
+      const fileName = `${currentUser.id}/${Math.random()}.${fileExt}`;
+      
+      const { error: uploadError } = await supabase.storage
+        .from('post-images')
+        .upload(fileName, selectedImage);
+
+      if (uploadError) {
+        toast({
+          title: "Erreur",
+          description: "Impossible de télécharger l'image",
+          variant: "destructive",
+        });
+        setIsCreatingPost(false);
+        return;
+      }
+
+      const { data: { publicUrl } } = supabase.storage
+        .from('post-images')
+        .getPublicUrl(fileName);
+      
+      imageUrl = publicUrl;
+    }
+
     const { error } = await supabase.from("posts").insert({
       user_id: currentUser.id,
       content: newPostContent.trim(),
+      image_url: imageUrl,
     });
 
     if (error) {
@@ -138,6 +182,8 @@ const Feed = () => {
     }
 
     setNewPostContent("");
+    setSelectedImage(null);
+    setImagePreview(null);
     setIsCreatingPost(false);
     toast({
       title: "Succès",
@@ -223,10 +269,44 @@ const Feed = () => {
                   onChange={(e) => setNewPostContent(e.target.value)}
                   className="min-h-[120px] resize-none border-none bg-muted/30 focus-visible:ring-1"
                 />
-                <div className="flex justify-end gap-2">
+                
+                {imagePreview && (
+                  <div className="relative">
+                    <img src={imagePreview} alt="Preview" className="w-full max-h-64 object-cover rounded-lg" />
+                    <Button
+                      size="icon"
+                      variant="destructive"
+                      className="absolute top-2 right-2"
+                      onClick={() => {
+                        setSelectedImage(null);
+                        setImagePreview(null);
+                      }}
+                    >
+                      ×
+                    </Button>
+                  </div>
+                )}
+
+                <div className="flex justify-between items-center gap-2">
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept="image/*"
+                    onChange={handleImageSelect}
+                    className="hidden"
+                  />
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => fileInputRef.current?.click()}
+                  >
+                    <Image size={20} />
+                  </Button>
+                  
                   <Button
                     onClick={createPost}
-                    disabled={!newPostContent.trim() || isCreatingPost}
+                    disabled={(!newPostContent.trim() && !selectedImage) || isCreatingPost}
                     className="bg-primary hover:bg-primary/90"
                   >
                     {isCreatingPost ? "Publication..." : "Publier"}
@@ -279,6 +359,13 @@ const Feed = () => {
                   <p className="text-sm whitespace-pre-wrap break-words">
                     {post.content}
                   </p>
+                  {post.image_url && (
+                    <img 
+                      src={post.image_url} 
+                      alt="Post" 
+                      className="mt-3 w-full rounded-lg object-cover max-h-96"
+                    />
+                  )}
                 </div>
 
                 {/* Post Actions */}
