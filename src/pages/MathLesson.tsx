@@ -43,7 +43,7 @@ const MathLesson = () => {
     try {
       const { data, error } = await supabase.functions.invoke('math-ai-tutor', {
         body: {
-          message: `Explique-moi de manière simple et amusante le chapitre "${currentTopic.title}" pour un élève de Terminale. Utilise des exemples concrets. Réponds uniquement en français.`,
+          message: `Explique-moi de manière simple et amusante le chapitre "${currentTopic.title}" pour un élève de Terminale. Utilise des exemples concrets et du créole haïtien quand c'est nécessaire pour mieux faire comprendre.`,
           lessonType: 'lesson',
           chatHistory: []
         }
