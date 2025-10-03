@@ -1,256 +1,300 @@
 import { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Card } from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Checkbox } from "@/components/ui/checkbox";
-import { GraduationCap, Sparkles } from "lucide-react";
-import { useNavigate } from "react-router-dom";
-import { toast } from "sonner";
+import authImage from "@/assets/auth00.png";
+import { ThemeToggle } from "@/components/ThemeToggle";
 
-const Auth = () => {
+export default function Auth() {
   const navigate = useNavigate();
-  const [loading, setLoading] = useState(false);
-  
+  const [activeTab, setActiveTab] = useState<"login" | "signup">("login");
+  const [loginData, setLoginData] = useState({ email: "", password: "" });
   const [signupData, setSignupData] = useState({
     email: "",
-    name: "",
-    password: "",
-    academicLevel: "",
+    nickname: "",
+    grade: "",
     phone: "",
-    acceptTerms: false
+    privacy: false,
+    payment: "",
   });
 
-  const [loginData, setLoginData] = useState({
-    email: "",
-    password: ""
-  });
-
-  const handleSignup = async (e: React.FormEvent) => {
+  const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
-    
-    if (!signupData.acceptTerms) {
-      toast.error("Veuillez accepter les conditions d'utilisation");
-      return;
-    }
-
-    setLoading(true);
-    
-    // Simulate signup
-    setTimeout(() => {
-      toast.success("Compte créé avec succès! Profitez de vos 7 jours gratuits 🎉");
-      navigate("/customize-ai");
-      setLoading(false);
-    }, 1500);
+    console.log("Login:", loginData);
+    navigate("/dashboard");
   };
 
-  const handleLogin = async (e: React.FormEvent) => {
+  const handleSignup = (e: React.FormEvent) => {
     e.preventDefault();
-    setLoading(true);
-    
-    // Simulate login
-    setTimeout(() => {
-      toast.success("Connexion réussie!");
-      navigate("/dashboard");
-      setLoading(false);
-    }, 1500);
+    console.log("Signup:", signupData);
+    navigate("/onboarding");
   };
 
   return (
-    <div className="min-h-screen bg-background flex items-center justify-center p-4">
-      {/* Background effects */}
-      <div className="absolute inset-0 overflow-hidden">
-        <div className="absolute top-20 left-20 w-96 h-96 bg-primary/10 rounded-full blur-3xl animate-pulse" />
-        <div className="absolute bottom-20 right-20 w-96 h-96 bg-secondary/10 rounded-full blur-3xl animate-pulse delay-700" />
-      </div>
+    <div className="auth-page min-h-screen bg-background">
+      {/* Header */}
+      <header className="auth-header sticky top-0 z-10 flex items-center justify-between px-4 md:px-8 py-4 bg-card border-b border-border">
+        <Link to="/" className="auth-brand flex items-center gap-2.5 font-bold text-primary">
+          <div className="auth-logo w-7 h-7 rounded-md bg-gradient-to-br from-primary to-primary/80"></div>
+          <span>EDUPRENEURS</span>
+        </Link>
+        <nav className="flex items-center gap-3">
+          <Link to="/" className="auth-btn-outline">
+            Accueil
+          </Link>
+          <Button 
+            onClick={() => setActiveTab("login")}
+            className="auth-btn-primary"
+          >
+            Se connecter
+          </Button>
+          <ThemeToggle />
+        </nav>
+      </header>
 
-      <Card className="relative w-full max-w-md p-8 bg-card border-border shadow-2xl">
-        {/* Logo */}
-        <div className="flex items-center justify-center gap-3 mb-8">
-          <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-primary to-secondary flex items-center justify-center">
-            <GraduationCap className="w-7 h-7 text-white" />
+      {/* Main Content */}
+      <div className="auth-wrap min-h-[calc(100vh-65px)] grid place-items-center p-4 md:p-8">
+        <div className="auth-container flex flex-col items-center gap-8 w-full max-w-[1000px]">
+          {/* Desktop Image */}
+          <div className="auth-image-container hidden md:flex justify-center items-center">
+            <img 
+              src={authImage} 
+              alt="Authentification EDUPRENEURS" 
+              className="auth-image w-full max-w-[280px] h-auto animate-gentle-float" 
+            />
           </div>
-          <span className="text-2xl font-bold gradient-text">EDUPRENEURS</span>
-        </div>
-
-        <Tabs defaultValue="login" className="w-full">
-          <TabsList className="grid w-full grid-cols-2 mb-8">
-            <TabsTrigger value="login">Connexion</TabsTrigger>
-            <TabsTrigger value="signup">Inscription</TabsTrigger>
-          </TabsList>
-
-          {/* Login Tab */}
-          <TabsContent value="login">
-            <form onSubmit={handleLogin} className="space-y-6">
-              <div className="space-y-2">
-                <Label htmlFor="login-email">Email</Label>
-                <Input
-                  id="login-email"
-                  type="email"
-                  placeholder="votre@email.com"
-                  value={loginData.email}
-                  onChange={(e) => setLoginData({ ...loginData, email: e.target.value })}
-                  required
-                  className="bg-background"
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="login-password">Mot de passe</Label>
-                <Input
-                  id="login-password"
-                  type="password"
-                  placeholder="••••••••"
-                  value={loginData.password}
-                  onChange={(e) => setLoginData({ ...loginData, password: e.target.value })}
-                  required
-                  className="bg-background"
-                />
-              </div>
-
-              <Button 
-                type="submit" 
-                className="w-full bg-gradient-to-r from-primary to-secondary hover:opacity-90"
-                disabled={loading}
-              >
-                {loading ? "Connexion..." : "Se Connecter"}
-              </Button>
-
-              <p className="text-center text-sm text-muted-foreground">
-                <a href="#" className="text-primary hover:underline">Mot de passe oublié?</a>
+          
+          <div className="auth-grid grid md:grid-cols-[1.1fr_0.9fr] gap-8 w-full">
+            {/* Info Panel */}
+            <aside className="auth-panel auth-info bg-card border border-border rounded-2xl shadow-lg p-7">
+              <h1 className="text-3xl font-bold mb-2">Bienvenue</h1>
+              <p className="text-muted-foreground mb-5">
+                Créez votre compte ou connectez-vous pour accéder à votre apprentissage personnalisé aligné au MENFP.
               </p>
-            </form>
-          </TabsContent>
+              <div className="flex flex-wrap gap-2 mb-4">
+                <span className="auth-badge">Essai 7 jours</span>
+                <span className="auth-badge">FR / HT</span>
+                <span className="auth-badge">IA personnalisée</span>
+              </div>
+              <ul className="auth-bullets list-none m-0 p-0 text-muted-foreground space-y-2">
+                <li className="flex items-center gap-2">• Leçons et schémas simples</li>
+                <li className="flex items-center gap-2">• Quiz amusants et golds</li>
+                <li className="flex items-center gap-2">• Paiement MonCash / NatCash</li>
+                <li className="flex items-center gap-2">• Prix cible ~200 HTG / mois</li>
+              </ul>
+            </aside>
 
-          {/* Signup Tab */}
-          <TabsContent value="signup">
-            <div className="mb-6 p-4 rounded-lg bg-accent/10 border border-accent/20 flex items-center gap-2">
-              <Sparkles className="w-5 h-5 text-accent" />
-              <span className="text-sm text-accent font-medium">7 jours d'essai gratuit inclus!</span>
+            {/* Mobile Image */}
+            <div className="auth-image-mobile flex md:hidden justify-center items-center my-5">
+              <img 
+                src={authImage} 
+                alt="Authentification EDUPRENEURS" 
+                className="auth-image max-w-[250px] h-auto animate-gentle-float" 
+              />
             </div>
 
-            <form onSubmit={handleSignup} className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="name">Nom / Pseudo</Label>
-                <Input
-                  id="name"
-                  type="text"
-                  placeholder="Votre nom"
-                  value={signupData.name}
-                  onChange={(e) => setSignupData({ ...signupData, name: e.target.value })}
-                  required
-                  className="bg-background"
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="email">Email</Label>
-                <Input
-                  id="email"
-                  type="email"
-                  placeholder="votre@email.com"
-                  value={signupData.email}
-                  onChange={(e) => setSignupData({ ...signupData, email: e.target.value })}
-                  required
-                  className="bg-background"
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="password">Mot de passe</Label>
-                <Input
-                  id="password"
-                  type="password"
-                  placeholder="••••••••"
-                  value={signupData.password}
-                  onChange={(e) => setSignupData({ ...signupData, password: e.target.value })}
-                  required
-                  minLength={6}
-                  className="bg-background"
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="level">Niveau académique</Label>
-                <Select 
-                  value={signupData.academicLevel}
-                  onValueChange={(value) => setSignupData({ ...signupData, academicLevel: value })}
-                  required
+            {/* Auth Card */}
+            <section className="auth-panel auth-card bg-card border border-border rounded-2xl shadow-lg overflow-hidden">
+              {/* Tabs */}
+              <div className="auth-tabs flex border-b border-border">
+                <button
+                  className={`auth-tab flex-1 text-center py-3.5 px-2.5 cursor-pointer font-bold ${
+                    activeTab === "login" 
+                      ? "text-primary border-b-[3px] border-primary" 
+                      : "text-muted-foreground"
+                  }`}
+                  onClick={() => setActiveTab("login")}
                 >
-                  <SelectTrigger id="level" className="bg-background">
-                    <SelectValue placeholder="Sélectionnez votre niveau" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="7eme">7ème année</SelectItem>
-                    <SelectItem value="8eme">8ème année</SelectItem>
-                    <SelectItem value="9eme">9ème année</SelectItem>
-                    <SelectItem value="seconde">Seconde</SelectItem>
-                    <SelectItem value="premiere">Première</SelectItem>
-                    <SelectItem value="terminale">Terminale</SelectItem>
-                    <SelectItem value="philo">Rhéto/Philo</SelectItem>
-                    <SelectItem value="universite">Préparation Université</SelectItem>
-                  </SelectContent>
-                </Select>
+                  Se connecter
+                </button>
+                <button
+                  className={`auth-tab flex-1 text-center py-3.5 px-2.5 cursor-pointer font-bold ${
+                    activeTab === "signup" 
+                      ? "text-primary border-b-[3px] border-primary" 
+                      : "text-muted-foreground"
+                  }`}
+                  onClick={() => setActiveTab("signup")}
+                >
+                  Créer un compte
+                </button>
               </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="phone">Numéro de téléphone (optionnel)</Label>
-                <Input
-                  id="phone"
-                  type="tel"
-                  placeholder="+509 XXXX XXXX"
-                  value={signupData.phone}
-                  onChange={(e) => setSignupData({ ...signupData, phone: e.target.value })}
-                  className="bg-background"
-                />
+              {/* Content */}
+              <div className="auth-content p-5">
+                {/* Login Form */}
+                {activeTab === "login" && (
+                  <form onSubmit={handleLogin} className="space-y-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="login-email" className="text-sm text-muted-foreground">
+                        Adresse e-mail
+                      </Label>
+                      <Input
+                        id="login-email"
+                        type="email"
+                        required
+                        placeholder="ex: nom@domaine.com"
+                        value={loginData.email}
+                        onChange={(e) => setLoginData({ ...loginData, email: e.target.value })}
+                        className="auth-input"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="login-password" className="text-sm text-muted-foreground">
+                        Mot de passe
+                      </Label>
+                      <Input
+                        id="login-password"
+                        type="password"
+                        required
+                        placeholder="Votre mot de passe"
+                        value={loginData.password}
+                        onChange={(e) => setLoginData({ ...loginData, password: e.target.value })}
+                        className="auth-input"
+                      />
+                    </div>
+                    <Button type="submit" className="auth-btn-submit w-full mt-6">
+                      Se connecter
+                    </Button>
+                    <p className="auth-note text-xs text-muted-foreground mt-2">
+                      Astuce test: <code className="bg-muted px-1 py-0.5 rounded text-xs">celestinsteeve738@gmail.com / test123</code> ou{" "}
+                      <code className="bg-muted px-1 py-0.5 rounded text-xs">djoodoodson@gmail.com / test123</code>
+                    </p>
+                  </form>
+                )}
+
+                {/* Signup Form */}
+                {activeTab === "signup" && (
+                  <form onSubmit={handleSignup} className="space-y-4">
+                    <div className="grid md:grid-cols-2 gap-3">
+                      <div className="space-y-2">
+                        <Label htmlFor="signup-email" className="text-sm text-muted-foreground">
+                          Adresse e-mail
+                        </Label>
+                        <Input
+                          id="signup-email"
+                          type="email"
+                          required
+                          value={signupData.email}
+                          onChange={(e) => setSignupData({ ...signupData, email: e.target.value })}
+                          className="auth-input"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="signup-nickname" className="text-sm text-muted-foreground">
+                          Pseudo
+                        </Label>
+                        <Input
+                          id="signup-nickname"
+                          type="text"
+                          required
+                          value={signupData.nickname}
+                          onChange={(e) => setSignupData({ ...signupData, nickname: e.target.value })}
+                          className="auth-input"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="grid md:grid-cols-2 gap-3">
+                      <div className="space-y-2">
+                        <Label htmlFor="signup-grade" className="text-sm text-muted-foreground">
+                          Niveau académique
+                        </Label>
+                        <select
+                          id="signup-grade"
+                          required
+                          value={signupData.grade}
+                          onChange={(e) => setSignupData({ ...signupData, grade: e.target.value })}
+                          className="auth-input flex h-10 w-full rounded-lg border border-input bg-muted/50 px-3 py-2 text-sm"
+                        >
+                          <option value="">Sélectionnez…</option>
+                          <option>7e</option>
+                          <option>8e</option>
+                          <option>9e</option>
+                          <option>S1</option>
+                          <option>S2</option>
+                          <option>Philo</option>
+                        </select>
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="signup-phone" className="text-sm text-muted-foreground">
+                          Numéro (optionnel)
+                        </Label>
+                        <Input
+                          id="signup-phone"
+                          type="tel"
+                          placeholder="ex: +509 3x xx xx xx"
+                          value={signupData.phone}
+                          onChange={(e) => setSignupData({ ...signupData, phone: e.target.value })}
+                          className="auth-input"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="flex items-center gap-2.5">
+                      <input
+                        type="checkbox"
+                        id="privacy"
+                        required
+                        checked={signupData.privacy}
+                        onChange={(e) => setSignupData({ ...signupData, privacy: e.target.checked })}
+                        className="w-4 h-4"
+                      />
+                      <Label htmlFor="privacy" className="text-sm text-muted-foreground">
+                        J'accepte les politiques de confidentialité.
+                      </Label>
+                    </div>
+
+                    <div className="auth-pay mt-6">
+                      <strong className="block mb-2 text-sm">Méthode de paiement</strong>
+                      <div className="flex flex-col gap-2">
+                        <label className="auth-radio flex items-center gap-2 p-3 border border-input rounded-lg bg-muted/50 cursor-pointer">
+                          <input
+                            type="radio"
+                            name="payment"
+                            value="moncash"
+                            required
+                            checked={signupData.payment === "moncash"}
+                            onChange={(e) => setSignupData({ ...signupData, payment: e.target.value })}
+                          />
+                          MonCash
+                        </label>
+                        <label className="auth-radio flex items-center gap-2 p-3 border border-input rounded-lg bg-muted/50 cursor-pointer">
+                          <input
+                            type="radio"
+                            name="payment"
+                            value="natcash"
+                            checked={signupData.payment === "natcash"}
+                            onChange={(e) => setSignupData({ ...signupData, payment: e.target.value })}
+                          />
+                          NatCash
+                        </label>
+                        <label className="auth-radio flex items-center gap-2 p-3 border border-input rounded-lg bg-muted/50 cursor-pointer">
+                          <input
+                            type="radio"
+                            name="payment"
+                            value="carte"
+                            checked={signupData.payment === "carte"}
+                            onChange={(e) => setSignupData({ ...signupData, payment: e.target.value })}
+                          />
+                          Carte bancaire
+                        </label>
+                      </div>
+                      <p className="auth-note text-xs text-muted-foreground mt-2">
+                        Essai gratuit 7 jours, puis ~200 HTG / mois.
+                      </p>
+                    </div>
+
+                    <Button type="submit" className="auth-btn-submit w-full mt-6">
+                      Créer mon compte
+                    </Button>
+                  </form>
+                )}
               </div>
-
-              <div className="flex items-start space-x-2">
-                <Checkbox 
-                  id="terms" 
-                  checked={signupData.acceptTerms}
-                  onCheckedChange={(checked) => 
-                    setSignupData({ ...signupData, acceptTerms: checked as boolean })
-                  }
-                />
-                <Label htmlFor="terms" className="text-sm leading-relaxed cursor-pointer">
-                  J'accepte les{" "}
-                  <a href="#" className="text-primary hover:underline">conditions d'utilisation</a>
-                  {" "}et la{" "}
-                  <a href="#" className="text-primary hover:underline">politique de confidentialité</a>
-                </Label>
-              </div>
-
-              <Button 
-                type="submit" 
-                className="w-full bg-gradient-to-r from-primary to-secondary hover:opacity-90"
-                disabled={loading}
-              >
-                {loading ? "Création..." : "Créer mon compte"}
-              </Button>
-
-              <p className="text-xs text-center text-muted-foreground leading-relaxed">
-                Après inscription, profitez de 7 jours gratuits. Ensuite, choisissez votre méthode 
-                de paiement pour continuer à seulement 200 gourdes/mois.
-              </p>
-            </form>
-          </TabsContent>
-        </Tabs>
-
-        <div className="mt-8 text-center">
-          <Button 
-            variant="ghost" 
-            onClick={() => navigate("/")}
-            className="text-muted-foreground hover:text-foreground"
-          >
-            ← Retour à l'accueil
-          </Button>
+            </section>
+          </div>
         </div>
-      </Card>
+      </div>
     </div>
   );
-};
-
-export default Auth;
+}
