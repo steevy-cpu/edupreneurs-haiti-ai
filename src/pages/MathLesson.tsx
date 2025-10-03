@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -13,7 +13,8 @@ import {
   Brain,
   Gamepad2,
   Trophy,
-  Zap
+  Zap,
+  RefreshCw
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
@@ -57,7 +58,24 @@ const MathLesson = () => {
 
   const currentTopic = topicInfo[topicId || ""] || topicInfo["nombres-entiers"];
 
-  const loadLesson = async () => {
+  // Load cached notes on component mount
+  useEffect(() => {
+    const savedNotes = localStorage.getItem(`notes:math:${topicId}`);
+    if (savedNotes) {
+      setNotes(savedNotes);
+    }
+  }, [topicId]);
+
+  const loadLesson = async (forceRegenerate = false) => {
+    // Check localStorage first (unless force regenerate)
+    if (!forceRegenerate) {
+      const cachedLesson = localStorage.getItem(`lesson:${topicId}`);
+      if (cachedLesson) {
+        setLessonContent(cachedLesson);
+        return;
+      }
+    }
+
     setIsLoadingLesson(true);
     try {
       const { data, error } = await supabase.functions.invoke('math-ai-tutor', {
@@ -69,7 +87,17 @@ const MathLesson = () => {
       });
 
       if (error) throw error;
+      
+      // Cache the lesson content
       setLessonContent(data.response);
+      localStorage.setItem(`lesson:${topicId}`, data.response);
+      
+      if (forceRegenerate) {
+        toast({
+          title: "Leçon régénérée",
+          description: "La leçon a été mise à jour avec du nouveau contenu",
+        });
+      }
     } catch (error) {
       console.error('Error loading lesson:', error);
       toast({
@@ -236,7 +264,18 @@ const MathLesson = () => {
                     {/* AI Generated Content */}
                     <Card className="lesson-card">
                       <div className="p-6 lesson-markdown">
-                        <h2>Contenu de la Leçon</h2>
+                        <div className="flex items-center justify-between mb-4">
+                          <h2>Contenu de la Leçon</h2>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => loadLesson(true)}
+                            disabled={isLoadingLesson}
+                          >
+                            <RefreshCw className={`w-4 h-4 mr-2 ${isLoadingLesson ? 'animate-spin' : ''}`} />
+                            Régénérer
+                          </Button>
+                        </div>
                         <div className="whitespace-pre-wrap text-base leading-relaxed">
                           {lessonContent}
                         </div>
