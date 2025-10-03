@@ -92,7 +92,7 @@ export default function Auth() {
 
       if (profileError) throw profileError;
 
-      const emailPromise = supabase.functions.invoke('send-confirmation-email', {
+      const { error: emailError } = await supabase.functions.invoke('send-confirmation-email', {
         body: {
           email: signupData.email,
           fullName: signupData.fullName || signupData.nickname,
@@ -102,29 +102,13 @@ export default function Auth() {
         },
       });
 
-      const whatsappPromise = supabase.functions.invoke('send-whatsapp-confirmation', {
-        body: {
-          phoneNumber: signupData.phoneNumber,
-          fullName: signupData.fullName || signupData.nickname,
-          confirmationCode,
-        },
-      });
-
-      const [emailResult, whatsappResult] = await Promise.all([emailPromise, whatsappPromise]);
-
-      if (emailResult.error) {
-        console.error("Email error:", emailResult.error);
-      }
-
-      if (whatsappResult.error) {
-        console.error("WhatsApp error:", whatsappResult.error);
-      } else if (whatsappResult.data?.whatsappUrl) {
-        window.open(whatsappResult.data.whatsappUrl, '_blank');
+      if (emailError) {
+        console.error("Email error:", emailError);
       }
 
       toast({
         title: "Inscription réussie ! 🎉",
-        description: "Vérifiez votre email et WhatsApp pour le code de confirmation",
+        description: "Vérifiez votre email pour le code de confirmation",
       });
 
       navigate("/dashboard");
