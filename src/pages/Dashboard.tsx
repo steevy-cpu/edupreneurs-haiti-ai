@@ -118,9 +118,13 @@ const Dashboard = () => {
             <FolderOpen size={18} />
             Ressources
           </a>
+          <a href="/feed" className="flex items-center gap-3 px-5 py-3.5 mx-3 my-1 rounded-xl text-foreground font-medium hover:bg-gradient-to-br hover:from-[hsl(var(--primary))] hover:to-[hsl(var(--success))] hover:text-white hover:translate-x-1 transition-all duration-300">
+            <Home size={18} />
+            Fil d'actualité
+          </a>
           <a href="/community" className="flex items-center gap-3 px-5 py-3.5 mx-3 my-1 rounded-xl text-foreground font-medium hover:bg-gradient-to-br hover:from-[hsl(var(--primary))] hover:to-[hsl(var(--success))] hover:text-white hover:translate-x-1 transition-all duration-300">
             <Users size={18} />
-            Communauté
+            Messages
           </a>
           <a href="#" className="flex items-center gap-3 px-5 py-3.5 mx-3 my-1 rounded-xl text-foreground font-medium hover:bg-gradient-to-br hover:from-[hsl(var(--primary))] hover:to-[hsl(var(--success))] hover:text-white hover:translate-x-1 transition-all duration-300">
             <LinkIcon size={18} />

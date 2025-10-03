@@ -11,6 +11,7 @@ import Onboarding from "./pages/Onboarding";
 import Dashboard from "./pages/Dashboard";
 import Matieres from "./pages/Matieres";
 import Community from "./pages/Community";
+import Feed from "./pages/Feed";
 import MathCourse from "./pages/MathCourse";
 import MathLesson from "./pages/MathLesson";
 import NotFound from "./pages/NotFound";
@@ -32,6 +33,7 @@ const App = () => (
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/matieres" element={<Matieres />} />
             <Route path="/community" element={<Community />} />
+            <Route path="/feed" element={<Feed />} />
             <Route path="/math-course" element={<MathCourse />} />
             <Route path="/math-lesson/:topicId" element={<MathLesson />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
