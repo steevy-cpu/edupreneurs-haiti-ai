@@ -257,8 +257,16 @@ const Dashboard = () => {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           {/* Subjects */}
           <Card className="border-none rounded-[20px] shadow-md">
-            <CardHeader>
+            <CardHeader className="flex flex-row items-center justify-between">
               <CardTitle className="text-xl">Matières (MENFP)</CardTitle>
+              <Button 
+                variant="ghost" 
+                size="sm"
+                onClick={() => navigate("/matieres")}
+                className="text-primary hover:text-primary"
+              >
+                Voir tout →
+              </Button>
             </CardHeader>
             <CardContent className="space-y-4">
               {subjects.map((subject) => (
