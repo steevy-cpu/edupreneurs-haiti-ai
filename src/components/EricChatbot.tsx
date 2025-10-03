@@ -4,7 +4,7 @@ import { Input } from "@/components/ui/input";
 import { X, Mic, Send, Volume2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import ericAvatar from "@/assets/ai-assistant.png";
+import ericAvatar from "@/assets/dashboard00.png";
 
 interface Message {
   content: string;
@@ -102,24 +102,26 @@ export const EricChatbot = () => {
         className="eric-floating-character"
         onClick={() => setIsOpen(true)}
       >
-        <div className="eric-tooltip">
+        <div className="eric-floating-tooltip">
           Cliquez sur moi
         </div>
         <img 
           src={ericAvatar} 
           alt="Eric - Assistant IA" 
+          title="Cliquez pour parler avec Eric"
           className="w-full h-auto"
         />
       </div>
 
       {/* Chat Interface */}
       {isOpen && (
-        <div className="eric-chat-interface animate-slide-in-right">
+        <div className="eric-chat-interface">
           <Button
             variant="destructive"
             size="icon"
             className="eric-close-btn"
             onClick={() => setIsOpen(false)}
+            title="Fermer le chat"
           >
             <X className="w-4 h-4" />
           </Button>
@@ -132,7 +134,7 @@ export const EricChatbot = () => {
                 className={`eric-message ${message.sender === "user" ? "eric-message-user" : "eric-message-eric"}`}
               >
                 <img 
-                  src={message.sender === "eric" ? ericAvatar : "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%2310b981'><path d='M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z'/></svg>"}
+                  src={message.sender === "eric" ? ericAvatar : "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23059669'><path d='M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z'/></svg>"}
                   alt={message.sender}
                   className="eric-message-avatar"
                 />
@@ -144,7 +146,7 @@ export const EricChatbot = () => {
                     <Button
                       variant="ghost"
                       size="icon"
-                      className={`eric-speaker-btn ${isSpeaking === index ? "speaking" : ""}`}
+                      className={`eric-message-speaker-btn ${isSpeaking === index ? "speaking" : ""}`}
                       onClick={() => speakMessage(message.content, index)}
                       title="Écouter ce message"
                     >
@@ -164,14 +166,14 @@ export const EricChatbot = () => {
 
           {/* Input Area */}
           <div className="eric-input-area">
-            <div className="flex gap-2 items-center">
+            <div className="eric-input-group">
               <Input
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 onKeyPress={handleKeyPress}
-                placeholder="Tapez votre question..."
+                placeholder="Tapez votre question ou cliquez sur 🎤..."
                 maxLength={200}
-                className="flex-1 border-none bg-transparent"
+                className="eric-input"
               />
               <Button
                 variant="ghost"
