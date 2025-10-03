@@ -17,6 +17,7 @@ import {
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { ThemeToggle } from "@/components/ThemeToggle";
 import goldRewards from "@/assets/gold-rewards.png";
 
 const Dashboard = () => {
@@ -78,6 +79,7 @@ const Dashboard = () => {
                 <img src={goldRewards} alt="Gold" className="w-6 h-6" />
                 <span className="font-bold gold-text">{userGold}</span>
               </div>
+              <ThemeToggle />
               <Button
                 variant="ghost"
                 size="sm"

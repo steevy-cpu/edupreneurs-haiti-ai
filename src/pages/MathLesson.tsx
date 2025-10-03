@@ -17,6 +17,7 @@ import {
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { ThemeToggle } from "@/components/ThemeToggle";
 import { EricChatbot } from "@/components/EricChatbot";
 import { QuizGame } from "@/components/math-activities/QuizGame";
 import { DragDropGame } from "@/components/math-activities/DragDropGame";
@@ -157,14 +158,17 @@ const MathLesson = () => {
             <ArrowLeft className="w-4 h-4 mr-2" />
             Retour — Cours
           </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            className="border-white/30 text-white hover:bg-white/20"
-            onClick={() => navigate('/dashboard')}
-          >
-            Tableau de bord
-          </Button>
+          <div className="flex items-center gap-2">
+            <ThemeToggle />
+            <Button
+              variant="outline"
+              size="sm"
+              className="border-white/30 text-white hover:bg-white/20"
+              onClick={() => navigate('/dashboard')}
+            >
+              Tableau de bord
+            </Button>
+          </div>
         </div>
       </header>
 
