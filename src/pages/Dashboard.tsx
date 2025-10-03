@@ -1,275 +1,332 @@
-import { useState } from "react";
-import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
-import { Progress } from "@/components/ui/progress";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { 
-  GraduationCap, 
-  Trophy, 
-  Sparkles, 
-  BookOpen, 
-  Target,
-  TrendingUp,
-  Award,
-  Play,
-  LogOut
-} from "lucide-react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { ThemeToggle } from "@/components/ThemeToggle";
-import goldRewards from "@/assets/gold-rewards.png";
+import { toast } from "sonner";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Progress } from "@/components/ui/progress";
+import { EricChatbot } from "@/components/EricChatbot";
+import {
+  Menu,
+  X,
+  Home,
+  BookOpen,
+  FolderOpen,
+  Users,
+  Link as LinkIcon,
+  Settings,
+  LogOut,
+  Coins,
+  ChartLine,
+  CreditCard,
+  UserCheck,
+} from "lucide-react";
+import dashboardImage from "@/assets/dashboard00.png";
 
 const Dashboard = () => {
   const navigate = useNavigate();
-  const { toast } = useToast();
-  const [userGold] = useState(250);
-  const [userLevel] = useState("Terminale");
-  const [userName] = useState("Étudiant");
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [userData, setUserData] = useState({
+    name: "Utilisateur",
+    gold: 0,
+    level: 1,
+    progress: 0,
+    affiliations: 0,
+  });
+
+  useEffect(() => {
+    checkAuth();
+  }, []);
+
+  const checkAuth = async () => {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) {
+      navigate("/auth");
+      return;
+    }
+    
+    const userName = session.user.user_metadata?.name || session.user.email?.split("@")[0] || "Utilisateur";
+    setUserData(prev => ({ ...prev, name: userName }));
+  };
 
   const handleLogout = async () => {
-    try {
-      const { error } = await supabase.auth.signOut();
-      if (error) throw error;
-      
-      toast({
-        title: "Déconnexion réussie",
-        description: "À bientôt!",
-      });
-      
-      navigate('/auth');
-    } catch (error) {
-      console.error('Error logging out:', error);
-      toast({
-        title: "Erreur",
-        description: "Impossible de se déconnecter",
-        variant: "destructive",
-      });
+    if (confirm("Êtes-vous sûr de vouloir vous déconnecter ?")) {
+      await supabase.auth.signOut();
+      toast.success("Déconnexion réussie");
+      navigate("/auth");
     }
   };
 
   const subjects = [
-    { id: "math", name: "Mathématiques", progress: 45, icon: "📐", color: "text-primary" },
-    { id: "physics", name: "Physique", progress: 30, icon: "⚛️", color: "text-secondary" },
-    { id: "chemistry", name: "Chimie", progress: 60, icon: "🧪", color: "text-success" },
-    { id: "french", name: "Français", progress: 75, icon: "🇫🇷", color: "text-accent" },
-  ];
-
-  const recentAchievements = [
-    { title: "Premier Quiz Réussi", gold: 50, icon: "🎯" },
-    { title: "Série de 5 jours", gold: 100, icon: "🔥" },
-    { title: "Expert Mathématiques", gold: 150, icon: "🏆" },
+    { id: "math", name: "Mathématiques", icon: "🔢", progress: 45, description: "Algèbre, géométrie et calcul" },
+    { id: "french", name: "Français", icon: "🇫🇷", progress: 60, description: "Grammaire, conjugaison et littérature" },
+    { id: "science", name: "Sciences", icon: "🔬", progress: 30, description: "Physique, chimie et biologie" },
+    { id: "history", name: "Histoire", icon: "📜", progress: 20, description: "Histoire d'Haïti et mondiale" },
   ];
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Header */}
-      <header className="border-b border-border bg-card/30 backdrop-blur-sm sticky top-0 z-50">
-        <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-secondary flex items-center justify-center">
-                <GraduationCap className="w-6 h-6 text-white" />
-              </div>
-              <span className="text-xl font-bold gradient-text">EDUPRENEURS</span>
-            </div>
+      {/* Menu Toggle Button */}
+      <button
+        onClick={() => setSidebarOpen(!sidebarOpen)}
+        className={`fixed top-5 left-5 z-[1001] bg-gradient-to-br from-[hsl(var(--primary))] to-[hsl(var(--success))] text-white p-3 rounded-xl shadow-md hover:shadow-lg transition-all duration-300 hover:scale-105 ${sidebarOpen ? "lg:left-[300px]" : ""}`}
+      >
+        {sidebarOpen ? <X size={20} /> : <Menu size={20} />}
+      </button>
 
-            <div className="flex items-center gap-4">
-              <div className="hidden sm:flex items-center gap-2 px-4 py-2 rounded-full bg-accent/10 border border-accent/20">
-                <img src={goldRewards} alt="Gold" className="w-6 h-6" />
-                <span className="font-bold gold-text">{userGold}</span>
-              </div>
-              <ThemeToggle />
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={handleLogout}
-                className="gap-2"
-              >
-                <LogOut className="w-4 h-4" />
-                <span className="hidden sm:inline">Déconnexion</span>
-              </Button>
-              <Avatar className="cursor-pointer hover:ring-2 ring-primary transition-all">
-                <AvatarFallback className="bg-gradient-to-br from-primary to-secondary text-white">
-                  {userName[0]}
-                </AvatarFallback>
-              </Avatar>
-            </div>
+      {/* Sidebar Overlay */}
+      {sidebarOpen && (
+        <div 
+          className="fixed inset-0 bg-black/50 z-[999] lg:hidden"
+          onClick={() => setSidebarOpen(false)}
+        />
+      )}
+
+      {/* Sidebar */}
+      <div className={`fixed top-0 left-0 h-screen w-[280px] bg-card border-r border-border shadow-lg z-[1000] transition-transform duration-300 overflow-y-auto ${sidebarOpen ? "translate-x-0" : "-translate-x-full"}`}>
+        {/* Sidebar Header */}
+        <div className="bg-gradient-to-br from-[hsl(var(--primary))] to-[hsl(var(--success))] text-white p-5 border-b border-white/10 flex items-center justify-between">
+          <div className="text-lg font-bold">EDUPRENEURS</div>
+          <button
+            onClick={() => setSidebarOpen(false)}
+            className="lg:hidden p-2 rounded-lg bg-white/20 hover:bg-white/30 transition-colors"
+          >
+            <X size={16} />
+          </button>
+        </div>
+
+        {/* Eric Agent Section */}
+        <div className="p-6 text-center border-b border-border bg-gradient-to-br from-muted/30 to-muted/10">
+          <div className="w-16 h-16 mx-auto mb-4 rounded-full overflow-hidden bg-gradient-to-br from-[hsl(var(--primary))] to-[hsl(var(--success))] shadow-md animate-[gentle-bob_8s_ease-in-out_infinite]">
+            <img src={dashboardImage} alt="Eric Avatar" className="w-full h-full object-cover" />
+          </div>
+          <div className="font-bold text-lg text-foreground mb-1">Eric</div>
+          <div className="text-sm text-muted-foreground">Votre assistant IA</div>
+        </div>
+
+        {/* Navigation */}
+        <nav className="py-5">
+          <a href="/dashboard" className="flex items-center gap-3 px-5 py-3.5 mx-3 rounded-xl bg-gradient-to-br from-[hsl(var(--primary))] to-[hsl(var(--success))] text-white font-medium transition-all duration-300">
+            <Home size={18} />
+            Dashboard
+          </a>
+          <a href="/math-course" className="flex items-center gap-3 px-5 py-3.5 mx-3 my-1 rounded-xl text-foreground font-medium hover:bg-gradient-to-br hover:from-[hsl(var(--primary))] hover:to-[hsl(var(--success))] hover:text-white hover:translate-x-1 transition-all duration-300">
+            <BookOpen size={18} />
+            Matières
+          </a>
+          <a href="#" className="flex items-center gap-3 px-5 py-3.5 mx-3 my-1 rounded-xl text-foreground font-medium hover:bg-gradient-to-br hover:from-[hsl(var(--primary))] hover:to-[hsl(var(--success))] hover:text-white hover:translate-x-1 transition-all duration-300">
+            <FolderOpen size={18} />
+            Ressources
+          </a>
+          <a href="#" className="flex items-center gap-3 px-5 py-3.5 mx-3 my-1 rounded-xl text-foreground font-medium hover:bg-gradient-to-br hover:from-[hsl(var(--primary))] hover:to-[hsl(var(--success))] hover:text-white hover:translate-x-1 transition-all duration-300">
+            <Users size={18} />
+            Communauté
+          </a>
+          <a href="#" className="flex items-center gap-3 px-5 py-3.5 mx-3 my-1 rounded-xl text-foreground font-medium hover:bg-gradient-to-br hover:from-[hsl(var(--primary))] hover:to-[hsl(var(--success))] hover:text-white hover:translate-x-1 transition-all duration-300">
+            <LinkIcon size={18} />
+            Affiliations
+          </a>
+          <a href="#" className="flex items-center gap-3 px-5 py-3.5 mx-3 my-1 rounded-xl text-foreground font-medium hover:bg-gradient-to-br hover:from-[hsl(var(--primary))] hover:to-[hsl(var(--success))] hover:text-white hover:translate-x-1 transition-all duration-300">
+            <Settings size={18} />
+            Paramètres
+          </a>
+          <hr className="border-border my-4 mx-3" />
+          <button
+            onClick={handleLogout}
+            className="flex items-center gap-3 px-5 py-3.5 mx-3 rounded-xl text-destructive font-medium hover:bg-destructive hover:text-white hover:translate-x-1 transition-all duration-300 w-[calc(100%-1.5rem)]"
+          >
+            <LogOut size={18} />
+            Déconnexion
+          </button>
+        </nav>
+      </div>
+
+      {/* Main Content */}
+      <div className={`transition-all duration-300 ${sidebarOpen ? "lg:ml-[280px]" : ""} pt-20 px-4 lg:px-8 pb-8`}>
+        {/* Welcome Header */}
+        <div className="bg-gradient-to-br from-[hsl(var(--primary))] to-[hsl(var(--success))] text-white p-8 rounded-[20px] mb-8 relative overflow-hidden">
+          <div className="absolute top-0 right-0 w-1/2 h-full opacity-10">
+            <div className="w-full h-full bg-gradient-radial from-white/20 to-transparent animate-[float_20s_ease-in-out_infinite]" />
+          </div>
+          <div className="relative z-10">
+            <h2 className="text-2xl lg:text-3xl font-bold mb-2">
+              Bienvenue, <span>{userData.name}</span>!
+            </h2>
+            <p className="opacity-75">
+              Continuez votre apprentissage personnalisé avec Eric, votre assistant IA
+            </p>
           </div>
         </div>
-      </header>
 
-      <div className="container mx-auto px-4 py-8">
-        {/* Welcome Section */}
-        <div className="mb-8">
-          <h1 className="text-4xl font-bold mb-2">
-            Bienvenue, <span className="gradient-text">{userName}</span>! 👋
-          </h1>
-          <p className="text-xl text-muted-foreground">
-            Prêt à continuer votre parcours d'apprentissage?
-          </p>
+        {/* KPI Cards */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 mb-8">
+          <Card className="border-none rounded-[20px] shadow-md hover:shadow-lg hover:-translate-y-2 transition-all duration-300 relative overflow-hidden group">
+            <CardContent className="p-7 text-center">
+              <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-[hsl(var(--accent))] to-[hsl(25_100%_50%)] flex items-center justify-center text-white text-2xl mx-auto mb-4">
+                <Coins />
+              </div>
+              <div className="text-3xl font-extrabold bg-gradient-to-br from-[hsl(var(--primary))] to-[hsl(var(--success))] bg-clip-text text-transparent mb-2">
+                {userData.gold}
+              </div>
+              <div className="text-sm font-semibold text-muted-foreground">Golds gagnés</div>
+            </CardContent>
+          </Card>
+
+          <Card className="border-none rounded-[20px] shadow-md hover:shadow-lg hover:-translate-y-2 transition-all duration-300 relative overflow-hidden group">
+            <CardContent className="p-7 text-center">
+              <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-[hsl(var(--primary))] to-[hsl(var(--success))] flex items-center justify-center text-white text-2xl mx-auto mb-4">
+                <UserCheck />
+              </div>
+              <div className="text-3xl font-extrabold bg-gradient-to-br from-[hsl(var(--primary))] to-[hsl(var(--success))] bg-clip-text text-transparent mb-2">
+                {userData.affiliations}
+              </div>
+              <div className="text-sm font-semibold text-muted-foreground">Affiliations</div>
+            </CardContent>
+          </Card>
+
+          <Card className="border-none rounded-[20px] shadow-md hover:shadow-lg hover:-translate-y-2 transition-all duration-300 relative overflow-hidden group">
+            <CardContent className="p-7 text-center">
+              <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-[hsl(var(--success))] to-[hsl(160_84%_32%)] flex items-center justify-center text-white text-2xl mx-auto mb-4">
+                <ChartLine />
+              </div>
+              <div className="text-3xl font-extrabold bg-gradient-to-br from-[hsl(var(--primary))] to-[hsl(var(--success))] bg-clip-text text-transparent mb-2">
+                {userData.progress}%
+              </div>
+              <div className="text-sm font-semibold text-muted-foreground">Progression</div>
+            </CardContent>
+          </Card>
+
+          <Card className="border-none rounded-[20px] shadow-md hover:shadow-lg hover:-translate-y-2 transition-all duration-300 relative overflow-hidden group">
+            <CardContent className="p-7 text-center">
+              <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-[hsl(262_83%_58%)] to-[hsl(262_83%_50%)] flex items-center justify-center text-white text-2xl mx-auto mb-4">
+                <CreditCard />
+              </div>
+              <div className="text-3xl font-extrabold bg-gradient-to-br from-[hsl(var(--primary))] to-[hsl(var(--success))] bg-clip-text text-transparent mb-2">
+                200 HTG
+              </div>
+              <div className="text-sm font-semibold text-muted-foreground">Abonnement / mois</div>
+            </CardContent>
+          </Card>
         </div>
 
-        <div className="grid lg:grid-cols-3 gap-8">
-          {/* Main Content */}
-          <div className="lg:col-span-2 space-y-8">
-            {/* Stats Cards */}
-            <div className="grid sm:grid-cols-3 gap-4">
-              <Card className="p-6 bg-gradient-to-br from-primary/10 to-primary/5 border-primary/20">
-                <div className="flex items-center gap-3 mb-2">
-                  <Trophy className="w-6 h-6 text-primary" />
-                  <span className="text-sm text-muted-foreground">Gold Total</span>
-                </div>
-                <p className="text-3xl font-bold gold-text">{userGold}</p>
-              </Card>
-
-              <Card className="p-6 bg-gradient-to-br from-secondary/10 to-secondary/5 border-secondary/20">
-                <div className="flex items-center gap-3 mb-2">
-                  <Target className="w-6 h-6 text-secondary" />
-                  <span className="text-sm text-muted-foreground">Niveau</span>
-                </div>
-                <p className="text-2xl font-bold">{userLevel}</p>
-              </Card>
-
-              <Card className="p-6 bg-gradient-to-br from-success/10 to-success/5 border-success/20">
-                <div className="flex items-center gap-3 mb-2">
-                  <TrendingUp className="w-6 h-6 text-success" />
-                  <span className="text-sm text-muted-foreground">Progression</span>
-                </div>
-                <p className="text-3xl font-bold">52%</p>
-              </Card>
-            </div>
-
-            {/* Subjects Progress */}
-            <div>
-              <div className="flex items-center justify-between mb-6">
-                <h2 className="text-2xl font-bold">Mes Matières</h2>
-                <Button variant="ghost" size="sm">
-                  Voir tout →
-                </Button>
-              </div>
-
-              <div className="grid gap-4">
-                {subjects.map((subject) => (
-                  <Card 
-                    key={subject.id} 
-                    className="p-6 hover:bg-card/80 transition-all cursor-pointer group"
-                    onClick={() => subject.id === 'math' && navigate('/math-course')}
+        {/* Parcours */}
+        <Card className="border-none rounded-[20px] shadow-md mb-8">
+          <CardHeader>
+            <CardTitle className="text-xl">Choisissez votre parcours</CardTitle>
+            <p className="text-muted-foreground text-sm mt-2">
+              Programme complet par chapitres ou rattrapage ciblé. Votre agent IA vous guidera, expliquera simplement, puis vous proposera des quiz.
+            </p>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <Card className="border border-border rounded-2xl hover:shadow-md transition-all">
+                <CardContent className="p-6">
+                  <strong className="block mb-2">Programme complet</strong>
+                  <p className="text-muted-foreground text-sm mb-4">
+                    Chapitres du MENFP pour votre niveau.
+                  </p>
+                  <Button 
+                    className="bg-gradient-to-br from-[hsl(var(--primary))] to-[hsl(var(--success))] hover:opacity-90"
+                    onClick={() => navigate("/math-course")}
                   >
-                    <div className="flex items-center gap-4 mb-4">
-                      <div className="text-4xl">{subject.icon}</div>
-                      <div className="flex-1">
-                        <h3 className="text-lg font-semibold mb-1">{subject.name}</h3>
-                        <div className="flex items-center gap-3">
-                          <Progress value={subject.progress} className="flex-1" />
-                          <span className="text-sm font-medium">{subject.progress}%</span>
-                        </div>
-                      </div>
-                      <Button 
-                        size="sm"
-                        className="opacity-0 group-hover:opacity-100 transition-opacity"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          subject.id === 'math' && navigate('/math-course');
-                        }}
-                      >
-                        <Play className="w-4 h-4 mr-1" />
-                        Continuer
-                      </Button>
-                    </div>
-                  </Card>
-                ))}
-              </div>
+                    Suivre le programme
+                  </Button>
+                </CardContent>
+              </Card>
+
+              <Card className="border border-border rounded-2xl hover:shadow-md transition-all">
+                <CardContent className="p-6">
+                  <strong className="block mb-2">Rattrapage</strong>
+                  <p className="text-muted-foreground text-sm mb-4">
+                    Révisez des matières précises.
+                  </p>
+                  <Button 
+                    variant="outline" 
+                    className="border-2 border-[hsl(var(--primary))] text-[hsl(var(--primary))] hover:bg-[hsl(var(--primary))] hover:text-white"
+                    onClick={() => navigate("/math-course")}
+                  >
+                    Je veux réviser
+                  </Button>
+                </CardContent>
+              </Card>
             </div>
+          </CardContent>
+        </Card>
 
-            {/* Quick Actions */}
-            <Card className="p-8 bg-gradient-to-br from-primary/10 via-secondary/10 to-accent/10 border-primary/20">
-              <div className="flex items-center gap-4 mb-4">
-                <Sparkles className="w-8 h-8 text-primary" />
-                <div>
-                  <h3 className="text-xl font-bold">Suggestion du jour</h3>
-                  <p className="text-muted-foreground">Votre assistant IA recommande</p>
-                </div>
-              </div>
-              <p className="text-lg mb-6">
-                Commencez par le chapitre "Équations du second degré" en Mathématiques. 
-                Vous êtes sur le point de maîtriser ce concept! 💪
-              </p>
-              <Button className="bg-gradient-to-r from-primary to-secondary hover:opacity-90">
-                Commencer maintenant
-              </Button>
-            </Card>
-          </div>
-
-          {/* Sidebar */}
-          <div className="space-y-8">
-            {/* Gold Card */}
-            <Card className="p-6 bg-gradient-to-br from-accent/10 to-yellow-500/10 border-accent/20">
-              <div className="flex items-center gap-3 mb-4">
-                <img src={goldRewards} alt="Récompenses" className="w-16 h-16" />
-                <div>
-                  <h3 className="text-xl font-bold gold-text">Vos Récompenses</h3>
-                  <p className="text-sm text-muted-foreground">Continuez à accumuler du gold!</p>
-                </div>
-              </div>
-              
-              <div className="space-y-3 mb-6">
-                <div className="flex items-center justify-between p-3 rounded-lg bg-background/50">
-                  <span className="text-sm">Avatar Premium</span>
-                  <span className="gold-text font-bold">100 🪙</span>
-                </div>
-                <div className="flex items-center justify-between p-3 rounded-lg bg-background/50">
-                  <span className="text-sm">Cours Particulier</span>
-                  <span className="gold-text font-bold">500 🪙</span>
-                </div>
-                <div className="flex items-center justify-between p-3 rounded-lg bg-background/50">
-                  <span className="text-sm">10 MB Internet</span>
-                  <span className="gold-text font-bold">150 🪙</span>
-                </div>
-              </div>
-
-              <Button className="w-full bg-gradient-to-r from-accent to-yellow-500 hover:opacity-90">
-                Boutique de récompenses
-              </Button>
-            </Card>
-
-            {/* Recent Achievements */}
-            <Card className="p-6">
-              <div className="flex items-center gap-3 mb-6">
-                <Award className="w-6 h-6 text-secondary" />
-                <h3 className="text-xl font-bold">Succès Récents</h3>
-              </div>
-
-              <div className="space-y-4">
-                {recentAchievements.map((achievement, index) => (
-                  <div key={index} className="flex items-center gap-3 p-3 rounded-lg bg-muted/30">
-                    <span className="text-2xl">{achievement.icon}</span>
-                    <div className="flex-1">
-                      <p className="font-medium text-sm">{achievement.title}</p>
-                      <p className="text-xs gold-text font-bold">+{achievement.gold} gold</p>
-                    </div>
+        {/* Subjects and Featured */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          {/* Subjects */}
+          <Card className="border-none rounded-[20px] shadow-md">
+            <CardHeader>
+              <CardTitle className="text-xl">Matières (MENFP)</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {subjects.map((subject) => (
+                <div
+                  key={subject.id}
+                  className="border border-border rounded-2xl p-5 bg-gradient-to-br from-muted/30 to-card hover:-translate-y-1 hover:shadow-md transition-all duration-300 cursor-pointer"
+                  onClick={() => navigate("/math-course")}
+                >
+                  <div className="flex items-center gap-3 mb-2">
+                    <span className="text-2xl">{subject.icon}</span>
+                    <h5 className="text-lg font-bold">{subject.name}</h5>
                   </div>
-                ))}
-              </div>
-            </Card>
-
-            {/* Study Streak */}
-            <Card className="p-6 bg-gradient-to-br from-success/10 to-success/5 border-success/20">
-              <div className="flex items-center gap-3 mb-4">
-                <div className="text-3xl">🔥</div>
-                <div>
-                  <h3 className="text-xl font-bold">Série d'étude</h3>
-                  <p className="text-sm text-muted-foreground">Continuez votre momentum!</p>
+                  <p className="text-sm text-muted-foreground mb-3">{subject.description}</p>
+                  <Progress value={subject.progress} className="h-2" />
+                  <p className="text-xs text-muted-foreground mt-2">{subject.progress}% complété</p>
                 </div>
+              ))}
+            </CardContent>
+          </Card>
+
+          {/* Featured */}
+          <Card className="border-none rounded-[20px] shadow-md">
+            <CardHeader>
+              <CardTitle className="text-xl">À la une pour votre niveau</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 rounded-xl p-4 mb-4 text-sm text-amber-800 dark:text-amber-200">
+                <strong>Astuce:</strong> commencez par « Nombres entiers » en Mathématiques (7e). Cliquez sur « Lire la leçon ».
               </div>
-              <p className="text-4xl font-bold text-success mb-2">5 jours</p>
-              <p className="text-sm text-muted-foreground">
-                Vous êtes à 2 jours de débloquer un badge spécial! 🎯
-              </p>
-            </Card>
-          </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <Card className="border border-border rounded-2xl hover:shadow-md transition-all">
+                  <CardContent className="p-5">
+                    <strong className="block mb-2">Nombres entiers — Lecture</strong>
+                    <p className="text-muted-foreground text-sm mb-4">
+                      Explications simples avec schémas.
+                    </p>
+                    <Button 
+                      className="w-full bg-gradient-to-br from-[hsl(var(--primary))] to-[hsl(var(--success))] hover:opacity-90"
+                      onClick={() => navigate("/math-lesson/integers")}
+                    >
+                      Lire la leçon
+                    </Button>
+                  </CardContent>
+                </Card>
+
+                <Card className="border border-border rounded-2xl hover:shadow-md transition-all">
+                  <CardContent className="p-5">
+                    <strong className="block mb-2">Nombres entiers — Quiz</strong>
+                    <p className="text-muted-foreground text-sm mb-4">
+                      Vérifiez votre compréhension et gagnez des golds.
+                    </p>
+                    <Button 
+                      variant="outline"
+                      className="w-full border-2 border-[hsl(var(--primary))] text-[hsl(var(--primary))] hover:bg-[hsl(var(--primary))] hover:text-white"
+                      onClick={() => navigate("/math-lesson/integers")}
+                    >
+                      Passer le quiz
+                    </Button>
+                  </CardContent>
+                </Card>
+              </div>
+            </CardContent>
+          </Card>
         </div>
       </div>
+
+      {/* Eric Chatbot */}
+      <EricChatbot />
     </div>
   );
 };

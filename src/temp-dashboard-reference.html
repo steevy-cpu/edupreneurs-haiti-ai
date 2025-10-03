@@ -1,0 +1,948 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="theme-color" content="#0a7d7d">
+  <title>EDUPRENEURS — Tableau de bord</title>
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <!-- Bootstrap 4 CDN -->
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" />
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" />
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <!-- Dashboard CSS -->
+  <link rel="stylesheet" href="dashboard.css">
+</head>
+<body>
+  <!-- Menu Toggle Button -->
+  <button class="menu-toggle" id="menuToggle">
+    <i class="fas fa-bars"></i>
+  </button>
+
+  <!-- Sidebar Overlay -->
+  <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+  <!-- Sidebar -->
+  <div class="sidebar collapsed" id="sidebar">
+    <div class="sidebar-header">
+      <div class="sidebar-title">EDUPRENEURS</div>
+      <button class="sidebar-toggle" id="sidebarClose">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+    
+    <div class="sidebar-content">
+      <!-- Eric Agent Section -->
+      <div class="eric-agent-section text-center">
+        <div class="eric-avatar" id="agent-avatar">
+          <img src="dashboard00.png" id="agent-avatar-img" alt="Eric Avatar" />
+        </div>
+        <div class="eric-name" id="agent-name">Eric</div>
+        <div class="eric-status">Votre assistant IA</div>
+      </div>
+
+      <!-- Navigation -->
+      <nav>
+        <a href="#" class="active"><i class="fas fa-tachometer-alt"></i>Dashboard</a>
+        <a href="matieres.html"><i class="fas fa-book"></i>Matières</a>
+        <a href="#"><i class="fas fa-folder-open"></i>Ressources</a>
+        <a href="#"><i class="fas fa-users"></i>Communauté</a>
+        <a href="#"><i class="fas fa-link"></i>Affiliations</a>
+        <a href="#"><i class="fas fa-cog"></i>Paramètres</a>
+        <hr style="border-color: #f1f5f9; margin: 16px 12px;">
+        <a href="#" id="btn-logout" style="color: #dc3545;"><i class="fas fa-sign-out-alt"></i>Déconnexion</a>
+      </nav>
+    </div>
+  </div>
+
+  <!-- Main Content -->
+  <div class="main-content" id="mainContent">
+        <!-- Welcome Header -->
+        <div class="welcome-header">
+          <div class="welcome-content">
+            <h2 class="mb-2">Bienvenue, <span id="user-name">—</span>!</h2>
+            <p class="mb-0 opacity-75">Continuez votre apprentissage personnalisé avec Eric, votre assistant IA</p>
+          </div>
+        </div>
+
+        <!-- KPI Cards -->
+        <div class="row">
+          <div class="col-md-3">
+            <div class="kpi-card">
+              <div class="kpi-icon" style="background: var(--gradient-accent);">
+                <i class="fas fa-coins"></i>
+              </div>
+              <div class="kpi-number"><span id="gold-count-top">0</span></div>
+              <div class="kpi-label">Golds gagnés</div>
+            </div>
+          </div>
+          <div class="col-md-3">
+            <div class="kpi-card">
+              <div class="kpi-icon" style="background: var(--gradient-primary);">
+                <i class="fas fa-users"></i>
+              </div>
+              <div class="kpi-number"><span id="aff-count-top">0</span></div>
+              <div class="kpi-label">Affiliations</div>
+            </div>
+          </div>
+          <div class="col-md-3">
+            <div class="kpi-card">
+              <div class="kpi-icon" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%);">
+                <i class="fas fa-chart-line"></i>
+              </div>
+              <div class="kpi-number"><span id="progress-top">0%</span></div>
+              <div class="kpi-label">Progression</div>
+            </div>
+          </div>
+          <div class="col-md-3">
+            <div class="kpi-card">
+              <div class="kpi-icon" style="background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);">
+                <i class="fas fa-credit-card"></i>
+              </div>
+              <div class="kpi-number">200 HTG</div>
+              <div class="kpi-label">Abonnement / mois</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Parcours -->
+        <div class="card mt-2">
+          <div class="card-body">
+            <h5 class="card-title mb-2">Choisissez votre parcours</h5>
+            <p class="mb-3">Programme complet par chapitres ou rattrapage ciblé. Votre agent IA vous guidera, expliquera simplement, puis vous proposera des quiz.</p>
+            <div class="row">
+              <div class="col-md-6 mb-2">
+                <div class="card h-100">
+                  <div class="card-body">
+                    <strong>Programme complet</strong>
+                    <p class="text-muted mb-2">Chapitres du MENFP pour votre niveau.</p>
+                    <button class="btn btn-primary" id="btn-path-program">Suivre le programme</button>
+                  </div>
+                </div>
+              </div>
+              <div class="col-md-6 mb-2">
+                <div class="card h-100">
+                  <div class="card-body">
+                    <strong>Rattrapage</strong>
+                    <p class="text-muted mb-2">Révisez des matières précises.</p>
+                    <button class="btn btn-outline-primary" id="btn-path-remedial">Je veux réviser</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Charts -->
+        <div class="row mt-3">
+          <div class="col-md-6 mb-3">
+            <div class="card">
+              <div class="card-body">
+                <h6 class="card-title">Répartition du temps d'étude</h6>
+                <div class="chart-wrap"><canvas id="doughnutChart"></canvas></div>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-6 mb-3">
+            <div class="card">
+              <div class="card-body">
+                <h6 class="card-title">Progression mensuelle</h6>
+                <div class="chart-wrap"><canvas id="barChart"></canvas></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Subjects and Featured -->
+        <div class="row mt-2">
+          <div class="col-md-6 mb-3">
+            <div class="card h-100">
+              <div class="card-body">
+                <h5 class="card-title">Matières (MENFP)</h5>
+                <div id="subjects"><!-- Rempli par JS --></div>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-6 mb-3">
+            <div class="card h-100">
+              <div class="card-body">
+                <h5 class="card-title">À la une pour votre niveau</h5>
+                <div class="alert alert-warning small" role="alert">
+                  Astuce: commencez par « Nombres entiers » en Mathématiques (7e). Cliquez sur « Lire la leçon ».
+                </div>
+                <div class="row">
+                  <div class="col-sm-6 mb-2">
+                    <div class="card h-100">
+                      <div class="card-body">
+                        <strong>Nombres entiers — Lecture</strong>
+                        <p class="text-muted mb-2">Explications simples avec schémas.</p>
+                        <button class="btn btn-primary" id="btn-read">Lire la leçon</button>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="col-sm-6 mb-2">
+                    <div class="card h-100">
+                      <div class="card-body">
+                        <strong>Nombres entiers — Quiz</strong>
+                        <p class="text-muted mb-2">Vérifiez votre compréhension et gagnez des golds.</p>
+                        <button class="btn btn-outline-primary" id="btn-quiz">Passer le quiz</button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+    </div>
+  </div>
+
+  <!-- Floating AI Character -->
+  <div class="floating-character" onclick="toggleChat()">
+    <div class="floating-tooltip">
+      Cliquez sur moi
+    </div>
+    <img src="dashboard00.png" alt="Eric - Assistant IA" title="Cliquez pour parler avec Eric">
+  </div>
+
+  <!-- Chat Interface -->
+  <div class="chat-interface" id="chatInterface">
+    <button class="chat-close-btn" onclick="toggleChat()" title="Fermer le chat">
+      <i class="fas fa-times"></i>
+    </button>
+    
+    <div class="chat-messages" id="chatMessages">
+      <div class="message eric">
+        <img src="dashboard00.png" alt="Eric" class="message-avatar">
+        <div class="message-content">
+          Bonjour ! Je suis Eric, votre assistant IA personnalisé. Je peux vous aider à naviguer dans votre tableau de bord et gérer vos études ! 😊
+          <br><br>
+          <strong>Essayez ces commandes :</strong><br>
+          • "Emmène-moi aux matières"<br>
+          • "Montre mes progrès"<br>
+          • "Ouvre le français"<br>
+          • "Aide-moi"
+          <div class="eric-actions" style="margin-top: 12px; display: flex; gap: 6px; flex-wrap: wrap;">
+            <button onclick="document.getElementById('chatInput').value='Emmène-moi aux matières'; sendMessage();" style="background: var(--gradient-primary); color: white; border: none; padding: 6px 12px; border-radius: 15px; font-size: 0.8rem; cursor: pointer;">📚 Matières</button>
+            <button onclick="document.getElementById('chatInput').value='Montre mes progrès'; sendMessage();" style="background: linear-gradient(135deg, #10b981, #059669); color: white; border: none; padding: 6px 12px; border-radius: 15px; font-size: 0.8rem; cursor: pointer;">📊 Progrès</button>
+            <button onclick="document.getElementById('chatInput').value='Ouvre le français'; sendMessage();" style="background: linear-gradient(135deg, #7c3aed, #c084fc); color: white; border: none; padding: 6px 12px; border-radius: 15px; font-size: 0.8rem; cursor: pointer;">🇫🇷 Français</button>
+          </div>
+        </div>
+        <div class="message-controls">
+          <button class="message-speaker-btn" onclick="speakMessage(this)" title="Écouter ce message">
+            <i class="fas fa-volume-up"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+    
+    <div class="typing-indicator" id="typingIndicator"></div>
+    
+    <div class="chat-input-area">
+      <div class="chat-input-group">
+        <input type="text" class="chat-input" id="chatInput" placeholder="Tapez votre question ou cliquez sur 🎤..." maxlength="200">
+        <button class="voice-btn" id="voiceBtn" onclick="toggleVoiceRecording()" title="Enregistrement vocal">
+          <i class="fas fa-microphone"></i>
+        </button>
+        <button class="chat-send" id="chatSend" onclick="sendMessage()">
+          <i class="fas fa-paper-plane"></i>
+        </button>
+      </div>
+      <div class="voice-status" id="voiceStatus" style="display: none;">
+        <div class="voice-indicator">
+          <i class="fas fa-circle"></i>
+          <span id="voiceStatusText">En écoute...</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Sidebar Menu Toggle Functionality
+    const menuToggle = document.getElementById('menuToggle');
+    const sidebar = document.getElementById('sidebar');
+    const sidebarClose = document.getElementById('sidebarClose');
+    const sidebarOverlay = document.getElementById('sidebarOverlay');
+    const mainContent = document.getElementById('mainContent');
+
+    let sidebarOpen = false;
+
+    function toggleSidebar() {
+      if (sidebarOpen) {
+        closeSidebar();
+      } else {
+        openSidebar();
+      }
+    }
+
+    function openSidebar() {
+      sidebar.classList.remove('collapsed');
+      mainContent.classList.add('sidebar-open');
+      menuToggle.classList.add('menu-open');
+      
+      if (window.innerWidth <= 768) {
+        sidebarOverlay.classList.add('active');
+      }
+      
+      sidebarOpen = true;
+      
+      // Update toggle button icon
+      menuToggle.innerHTML = '<i class="fas fa-times"></i>';
+    }
+
+    function closeSidebar() {
+      sidebar.classList.add('collapsed');
+      mainContent.classList.remove('sidebar-open');
+      menuToggle.classList.remove('menu-open');
+      sidebarOverlay.classList.remove('active');
+      
+      sidebarOpen = false;
+      
+      // Update toggle button icon
+      menuToggle.innerHTML = '<i class="fas fa-bars"></i>';
+    }
+
+    // Event listeners
+    menuToggle.addEventListener('click', toggleSidebar);
+    sidebarClose.addEventListener('click', closeSidebar);
+    sidebarOverlay.addEventListener('click', closeSidebar);
+
+    // Logout functionality
+    const logoutBtn = document.getElementById('btn-logout');
+    
+    function handleLogout() {
+      // Show confirmation dialog
+      if (confirm('Êtes-vous sûr de vouloir vous déconnecter ?')) {
+        // Clear any stored user data (localStorage, sessionStorage, etc.)
+        localStorage.clear();
+        sessionStorage.clear();
+        
+        // Redirect to login/auth page
+        window.location.href = 'auth.html';
+      }
+    }
+    
+    // Add logout event listener
+    logoutBtn.addEventListener('click', (e) => {
+      e.preventDefault();
+      handleLogout();
+    });
+
+    // Close sidebar when clicking on navigation links (mobile)
+    document.querySelectorAll('.sidebar nav a:not(#btn-logout)').forEach(link => {
+      link.addEventListener('click', () => {
+        if (window.innerWidth <= 768) {
+          closeSidebar();
+        }
+      });
+    });
+
+    // Handle window resize
+    window.addEventListener('resize', () => {
+      if (window.innerWidth > 768) {
+        // Desktop behavior - sidebar can stay open without overlay
+        sidebarOverlay.classList.remove('active');
+      } else {
+        // Mobile behavior - add overlay when sidebar is open
+        if (sidebarOpen) {
+          sidebarOverlay.classList.add('active');
+        }
+      }
+    });
+
+    // Initialize sidebar state - closed by default
+    closeSidebar();
+
+    // User Authentication Check and Name Display
+    function initializeUserData() {
+      // Check if user is authenticated
+      const eduUser = localStorage.getItem('edu_user');
+      const userEmail = localStorage.getItem('userEmail');
+      
+      if (!eduUser || !userEmail) {
+        // If no user data, redirect to auth page
+        window.location.href = 'auth.html';
+        return;
+      }
+      
+      try {
+        // Parse user data from auth system
+        const userData = JSON.parse(eduUser);
+        let userName = userData.nickname || 'Utilisateur';
+        
+        // Fallback: Set user name based on email if nickname not available
+        if (!userData.nickname) {
+          if (userEmail === 'celestinsteeve738@gmail.com') {
+            userName = 'Steeve';
+          } else if (userEmail === 'djoodoodson@gmail.com') {
+            userName = 'Djoodoodson';
+          }
+        }
+        
+        // Update the welcome message
+        const userNameElement = document.getElementById('user-name');
+        if (userNameElement) {
+          userNameElement.textContent = userName;
+        }
+        
+        console.log(`User authenticated: ${userName} (${userEmail})`);
+        
+      } catch (error) {
+        console.error('Error parsing user data:', error);
+        // Redirect to auth page if data is corrupted
+        window.location.href = 'auth.html';
+      }
+    }
+
+    // Initialize user data on page load
+    initializeUserData();
+
+    // Initialize AI Assistant and Whisper
+    let aiAssistant;
+    let whisperClient;
+
+    document.addEventListener('DOMContentLoaded', async function() {
+      try {
+        // Load mock service first
+        const mockScript = document.createElement('script');
+        mockScript.src = 'mock-ai-service.js';
+        document.head.appendChild(mockScript);
+        
+        // Load the AI exercise client
+        const script = document.createElement('script');
+        script.src = 'ai-exercise-client.js';
+        document.head.appendChild(script);
+        
+        script.onload = async function() {
+          aiAssistant = new AIExerciseClient();
+          await aiAssistant.initialize();
+          console.log('✅ Assistant IA connecté via Python');
+          
+          // Play success sound when AI connects
+          if (aiAssistant.playSuccessSound) {
+            aiAssistant.playSuccessSound();
+          }
+        };
+
+        // Load and initialize Whisper voice client
+        const whisperScript = document.createElement('script');
+        whisperScript.src = 'whisper-voice-client.js';
+        document.head.appendChild(whisperScript);
+        
+        // Load TTS client for Eric's voice
+        const ttsScript = document.createElement('script');
+        ttsScript.src = 'js/tts-client.js';
+        document.head.appendChild(ttsScript);
+        
+        whisperScript.onload = async function() {
+          whisperClient = new WhisperVoiceClient();
+          const whisperReady = await whisperClient.initialize();
+          
+          if (whisperReady) {
+            console.log('✅ Client vocal Whisper prêt');
+            // Update voice button to show it's available
+            document.getElementById('voiceBtn').style.opacity = '1';
+            document.getElementById('chatInput').placeholder = 'Tapez votre question ou cliquez sur 🎤 pour parler...';
+          } else {
+            console.warn('⚠️ Client vocal Whisper non disponible');
+            document.getElementById('voiceBtn').style.opacity = '0.5';
+            document.getElementById('voiceBtn').disabled = true;
+            document.getElementById('voiceBtn').title = 'Serveur Whisper non démarré (python whisper-server.py)';
+          }
+        };
+        
+        ttsScript.onload = function() {
+          console.log('🔊 Client TTS d\'Eric prêt');
+        };
+        
+      } catch (error) {
+        console.error('Erreur d\'initialisation de l\'assistant:', error);
+      }
+    });
+
+    // Chat Interface Functions
+    let chatOpen = false;
+
+    function toggleChat() {
+      const chatInterface = document.getElementById('chatInterface');
+      chatOpen = !chatOpen;
+      
+      if (chatOpen) {
+        chatInterface.style.display = 'block';
+        // Focus on input when chat opens
+        setTimeout(() => {
+          document.getElementById('chatInput').focus();
+        }, 300);
+      } else {
+        chatInterface.style.display = 'none';
+      }
+    }
+
+    async function sendMessage() {
+      const chatInput = document.getElementById('chatInput');
+      const message = chatInput.value.trim();
+      
+      if (!message) return;
+
+      // Add user message to chat
+      addMessageToChat(message, 'user');
+      chatInput.value = '';
+
+      // Show typing indicator
+      showTypingIndicator();
+
+      try {
+        // Check for agentic capabilities first
+        const agenticResponse = await handleAgenticCommands(message);
+        if (agenticResponse) {
+          hideTypingIndicator();
+          addMessageToChat(agenticResponse.text, 'eric', agenticResponse.actions);
+          
+          // Execute any actions
+          if (agenticResponse.execute) {
+            setTimeout(() => agenticResponse.execute(), 1500);
+          }
+          return;
+        }
+
+        // Get response from AI assistant
+        let response;
+        if (aiAssistant) {
+          response = await aiAssistant.askAssistant(
+            message, 
+            "Tu es Eric, un assistant IA bienveillant du tableau de bord EDUPRENEURS. Aide les utilisateurs avec leurs questions sur le tableau de bord, les cours, les progrès et l'apprentissage. Réponds de manière amicale et pédagogique. Si l'utilisateur demande d'aller quelque part ou de faire quelque chose sur le tableau de bord, suggère-lui d'utiliser des commandes comme 'emmène-moi aux matières', 'montre mes progrès', 'ouvre mes cours', etc."
+          );
+        } else {
+          response = "Désolé, je ne peux pas répondre pour le moment. L'assistant IA n'est pas encore connecté. Assurez-vous que le serveur Python est démarré.";
+        }
+
+        // Hide typing indicator and add Eric's response
+        hideTypingIndicator();
+        addMessageToChat(response, 'eric');
+
+      } catch (error) {
+        console.error('Erreur lors de l\'envoi du message:', error);
+        hideTypingIndicator();
+        addMessageToChat("Désolé, je rencontre un problème technique. Pouvez-vous réessayer ?", 'eric');
+      }
+    }
+
+    // Agentic capabilities for Eric
+    async function handleAgenticCommands(message) {
+      const lowerMessage = message.toLowerCase();
+      
+      // Navigation commands
+      if (lowerMessage.includes('matière') || lowerMessage.includes('cours') || lowerMessage.includes('leçon') || lowerMessage.includes('emmène-moi')) {
+        if (lowerMessage.includes('matière') || lowerMessage.includes('emmène-moi aux matières')) {
+          return {
+            text: "Parfait ! Je vous emmène à la section Matières où vous pourrez choisir vos cours. 📚",
+            actions: ['navigate'],
+            execute: () => window.location.href = 'matieres.html'
+          };
+        } else if (lowerMessage.includes('cours') || lowerMessage.includes('leçon')) {
+          return {
+            text: "Je vous dirige vers vos cours disponibles ! Vous y trouverez toutes les matières organisées par niveau. 🎓",
+            actions: ['navigate'],
+            execute: () => window.location.href = 'matieres.html'
+          };
+        }
+      }
+      
+      // Progress and stats
+      if (lowerMessage.includes('progrès') || lowerMessage.includes('statistique') || lowerMessage.includes('performance')) {
+        return {
+          text: "Regardons vos progrès ensemble ! Je vous scrolle vers vos statistiques d'apprentissage. 📊",
+          actions: ['scroll'],
+          execute: () => {
+            const kpiSection = document.querySelector('.kpi-card');
+            if (kpiSection) {
+              kpiSection.scrollIntoView({ behavior: 'smooth', block: 'center' });
+              // Highlight the KPI cards briefly
+              document.querySelectorAll('.kpi-card').forEach(card => {
+                card.style.transform = 'scale(1.05)';
+                card.style.boxShadow = '0 10px 30px rgba(10, 125, 125, 0.3)';
+                setTimeout(() => {
+                  card.style.transform = '';
+                  card.style.boxShadow = '';
+                }, 2000);
+              });
+            }
+          }
+        };
+      }
+      
+      // Dashboard navigation
+      if (lowerMessage.includes('accueil') || lowerMessage.includes('tableau de bord') || lowerMessage.includes('dashboard')) {
+        return {
+          text: "Vous êtes déjà sur votre tableau de bord ! Laissez-moi vous faire défiler vers le haut pour voir votre résumé. 🏠",
+          actions: ['scroll'],
+          execute: () => window.scrollTo({ top: 0, behavior: 'smooth' })
+        };
+      }
+      
+      // Quick actions
+      if (lowerMessage.includes('aide') || lowerMessage.includes('help') || lowerMessage.includes('que peux-tu faire')) {
+        return {
+          text: "Je peux vous aider de plusieurs façons ! 🤖\n\n• 'Emmène-moi aux matières' - Navigation vers vos cours\n• 'Montre mes progrès' - Voir vos statistiques\n• 'Ouvre le français' - Accès direct aux cours de français\n• 'Quels sont mes cours' - Liste de vos matières\n\nQue souhaitez-vous faire ?",
+          actions: ['help']
+        };
+      }
+      
+      // Subject-specific navigation
+      if (lowerMessage.includes('français') || lowerMessage.includes('french')) {
+        return {
+          text: "Excellent choix ! Le français vous attend. Je vous redirige vers les cours de français. 🇫🇷",
+          actions: ['navigate'],
+          execute: () => window.location.href = 'course.html?sub=fr'
+        };
+      }
+      
+      if (lowerMessage.includes('mathématiques') || lowerMessage.includes('math') || lowerMessage.includes('maths')) {
+        return {
+          text: "Les mathématiques, c'est formidable ! Direction les cours de maths. 🔢",
+          actions: ['navigate'],
+          execute: () => window.location.href = 'course.html?sub=math'
+        };
+      }
+      
+      if (lowerMessage.includes('science') || lowerMessage.includes('sciences')) {
+        return {
+          text: "La science nous attend ! Je vous emmène vers les cours de sciences. 🔬",
+          actions: ['navigate'],
+          execute: () => window.location.href = 'course.html?sub=science'
+        };
+      }
+      
+      if (lowerMessage.includes('histoire') || lowerMessage.includes('history')) {
+        return {
+          text: "Explorons l'histoire ensemble ! Direction les cours d'histoire. 📜",
+          actions: ['navigate'],
+          execute: () => window.location.href = 'course.html?sub=histoire'
+        };
+      }
+      
+      // User info and settings
+      if (lowerMessage.includes('profil') || lowerMessage.includes('compte') || lowerMessage.includes('information')) {
+        const userEmail = localStorage.getItem('userEmail');
+        const userName = localStorage.getItem('userName') || 'Utilisateur';
+        return {
+          text: `Voici vos informations :\n👤 Nom: ${userName}\n📧 Email: ${userEmail}\n\nPour modifier votre profil, utilisez le menu en haut à gauche !`,
+          actions: ['info']
+        };
+      }
+      
+      // Logout
+      if (lowerMessage.includes('déconnexion') || lowerMessage.includes('logout') || lowerMessage.includes('quitter')) {
+        return {
+          text: "Vous souhaitez vous déconnecter ? Je vais vous rediriger vers la page de connexion. À bientôt ! 👋",
+          actions: ['logout'],
+          execute: () => {
+            localStorage.removeItem('isLoggedIn');
+            localStorage.removeItem('userEmail');
+            localStorage.removeItem('userName');
+            setTimeout(() => window.location.href = 'auth.html', 1000);
+          }
+        };
+      }
+      
+      return null; // No agentic command found
+    }
+
+    function addMessageToChat(message, sender, actions = null) {
+      const chatMessages = document.getElementById('chatMessages');
+      const messageDiv = document.createElement('div');
+      messageDiv.className = `message ${sender}`;
+
+      const avatar = document.createElement('img');
+      avatar.className = 'message-avatar';
+      avatar.alt = sender === 'user' ? 'Vous' : 'Eric';
+      
+      if (sender === 'user') {
+        avatar.src = 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%23059669"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>';
+      } else {
+        avatar.src = 'dashboard00.png';
+      }
+
+      const messageContent = document.createElement('div');
+      messageContent.className = 'message-content';
+      messageContent.innerHTML = message.replace(/\n/g, '<br>');
+      messageContent.setAttribute('data-message', message); // Store original message for TTS
+
+      messageDiv.appendChild(avatar);
+      messageDiv.appendChild(messageContent);
+
+      // Add action buttons for agentic commands
+      if (actions && sender === 'eric') {
+        const actionsDiv = document.createElement('div');
+        actionsDiv.className = 'eric-actions';
+        actionsDiv.style.marginTop = '10px';
+        actionsDiv.style.display = 'flex';
+        actionsDiv.style.gap = '6px';
+        actionsDiv.style.flexWrap = 'wrap';
+        
+        if (actions.includes('navigate')) {
+          const navigateBtn = document.createElement('button');
+          navigateBtn.className = 'eric-action-btn';
+          navigateBtn.innerHTML = '<i class="fas fa-external-link-alt"></i> Aller maintenant';
+          navigateBtn.style.cssText = `
+            background: var(--gradient-primary);
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 15px;
+            font-size: 0.8rem;
+            cursor: pointer;
+            transition: all 0.2s;
+          `;
+          navigateBtn.onmouseover = () => navigateBtn.style.transform = 'translateY(-1px)';
+          navigateBtn.onmouseleave = () => navigateBtn.style.transform = '';
+          actionsDiv.appendChild(navigateBtn);
+        }
+        
+        if (actions.includes('scroll')) {
+          const scrollBtn = document.createElement('button');
+          scrollBtn.className = 'eric-action-btn';
+          scrollBtn.innerHTML = '<i class="fas fa-arrow-down"></i> Voir maintenant';
+          scrollBtn.style.cssText = `
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 15px;
+            font-size: 0.8rem;
+            cursor: pointer;
+            transition: all 0.2s;
+          `;
+          scrollBtn.onmouseover = () => scrollBtn.style.transform = 'translateY(-1px)';
+          scrollBtn.onmouseleave = () => scrollBtn.style.transform = '';
+          actionsDiv.appendChild(scrollBtn);
+        }
+        
+        if (actions.includes('help')) {
+          const quickBtns = [
+            { text: '📚 Matières', action: () => window.location.href = 'matieres.html' },
+            { text: '📊 Progrès', action: () => document.querySelector('.kpi-card')?.scrollIntoView({ behavior: 'smooth' }) },
+            { text: '🇫🇷 Français', action: () => window.location.href = 'course.html?sub=fr' }
+          ];
+          
+          quickBtns.forEach(btn => {
+            const quickBtn = document.createElement('button');
+            quickBtn.innerHTML = btn.text;
+            quickBtn.onclick = btn.action;
+            quickBtn.style.cssText = `
+              background: rgba(10, 125, 125, 0.1);
+              color: var(--primary);
+              border: 1px solid var(--primary);
+              padding: 4px 10px;
+              border-radius: 12px;
+              font-size: 0.75rem;
+              cursor: pointer;
+              transition: all 0.2s;
+            `;
+            quickBtn.onmouseover = () => {
+              quickBtn.style.background = 'var(--primary)';
+              quickBtn.style.color = 'white';
+            };
+            quickBtn.onmouseleave = () => {
+              quickBtn.style.background = 'rgba(10, 125, 125, 0.1)';
+              quickBtn.style.color = 'var(--primary)';
+            };
+            actionsDiv.appendChild(quickBtn);
+          });
+        }
+        
+        messageContent.appendChild(actionsDiv);
+      }
+
+      // Add speaker button for Eric's messages
+      if (sender === 'eric') {
+        const controlsDiv = document.createElement('div');
+        controlsDiv.className = 'message-controls';
+        
+        const speakerBtn = document.createElement('button');
+        speakerBtn.className = 'message-speaker-btn';
+        speakerBtn.innerHTML = '<i class="fas fa-volume-up"></i>';
+        speakerBtn.title = 'Écouter ce message';
+        speakerBtn.onclick = () => speakMessage(speakerBtn);
+        
+        controlsDiv.appendChild(speakerBtn);
+        messageDiv.appendChild(controlsDiv);
+      }
+
+      chatMessages.appendChild(messageDiv);
+
+      // Scroll to bottom
+      chatMessages.scrollTop = chatMessages.scrollHeight;
+    }
+
+    function speakMessage(speakerBtn) {
+      if (!window.ericTTS) {
+        console.warn('⚠️ TTS non disponible');
+        return;
+      }
+
+      // Get the message content
+      const messageContent = speakerBtn.closest('.message').querySelector('.message-content');
+      const message = messageContent.getAttribute('data-message') || messageContent.textContent;
+
+      // Update button state
+      const allSpeakerBtns = document.querySelectorAll('.message-speaker-btn');
+      allSpeakerBtns.forEach(btn => btn.classList.remove('speaking'));
+      
+      speakerBtn.classList.add('speaking');
+
+      // Configure TTS events
+      window.ericTTS.onSpeakStart = () => {
+        console.log('🎙️ Eric commence à parler ce message');
+      };
+
+      window.ericTTS.onSpeakEnd = () => {
+        console.log('🔇 Eric a fini de parler ce message');
+        speakerBtn.classList.remove('speaking');
+      };
+
+      window.ericTTS.onSpeakError = (error) => {
+        console.error('❌ Erreur TTS:', error);
+        speakerBtn.classList.remove('speaking');
+      };
+
+      // Stop any current speech and speak this message
+      window.ericTTS.stop();
+      window.ericTTS.speak(message).catch(error => {
+        console.error('Erreur lors de la synthèse vocale:', error);
+        speakerBtn.classList.remove('speaking');
+      });
+    }
+
+    function showTypingIndicator() {
+      document.getElementById('typingIndicator').style.display = 'block';
+      const chatMessages = document.getElementById('chatMessages');
+      chatMessages.scrollTop = chatMessages.scrollHeight;
+    }
+
+    function hideTypingIndicator() {
+      document.getElementById('typingIndicator').style.display = 'none';
+    }
+
+    // Enable Enter key to send messages
+    document.addEventListener('DOMContentLoaded', function() {
+      document.getElementById('chatInput').addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+          sendMessage();
+        }
+      });
+    });
+
+    // Voice Recording Functions
+    let isRecording = false;
+
+    async function toggleVoiceRecording() {
+      if (!whisperClient) {
+        alert('Client vocal non disponible. Démarrez le serveur Whisper avec: python whisper-server.py');
+        return;
+      }
+
+      const voiceBtn = document.getElementById('voiceBtn');
+      const voiceStatus = document.getElementById('voiceStatus');
+      const voiceStatusText = document.getElementById('voiceStatusText');
+
+      if (!isRecording) {
+        try {
+          // Start recording
+          await whisperClient.startRecording();
+          
+          // Update UI
+          isRecording = true;
+          voiceBtn.classList.add('recording');
+          voiceBtn.innerHTML = '<i class="fas fa-stop"></i>';
+          voiceBtn.title = 'Cliquez pour arrêter l\'enregistrement';
+          
+          voiceStatus.style.display = 'block';
+          voiceStatusText.textContent = 'En écoute... Cliquez sur ⏹️ pour arrêter';
+          
+          console.log('🎤 Enregistrement vocal démarré');
+          
+        } catch (error) {
+          console.error('Erreur lors du démarrage de l\'enregistrement:', error);
+          alert('Impossible de démarrer l\'enregistrement. Vérifiez vos permissions microphone.');
+          resetVoiceUI();
+        }
+      } else {
+        try {
+          // Stop recording and get transcription
+          voiceStatusText.textContent = 'Traitement en cours...';
+          const transcription = await whisperClient.stopRecording();
+          
+          resetVoiceUI();
+          
+          if (transcription && transcription.trim()) {
+            // Add transcription to chat input
+            document.getElementById('chatInput').value = transcription;
+            console.log('🎤 Transcription reçue:', transcription);
+            
+            // Auto-send the message
+            await sendMessage();
+          } else {
+            console.warn('⚠️ Aucune transcription reçue');
+          }
+          
+        } catch (error) {
+          console.error('Erreur lors de l\'arrêt de l\'enregistrement:', error);
+          resetVoiceUI();
+        }
+      }
+    }
+
+    function resetVoiceUI() {
+      const voiceBtn = document.getElementById('voiceBtn');
+      const voiceStatus = document.getElementById('voiceStatus');
+      
+      isRecording = false;
+      voiceBtn.classList.remove('recording');
+      voiceBtn.innerHTML = '<i class="fas fa-microphone"></i>';
+      voiceBtn.title = 'Enregistrement vocal';
+      voiceBtn.disabled = false;
+      voiceStatus.style.display = 'none';
+    }
+
+    // Doughnut Chart (démo)
+    try {
+      new Chart(document.getElementById('doughnutChart'), {
+        type: 'doughnut',
+        data: {
+          labels: ['Maths', 'Français', 'Sciences', 'Sociaux', 'Autres'],
+          datasets: [{
+            data: [40, 20, 15, 15, 10],
+            backgroundColor: ['#007bff', '#28a745', '#ffc107', '#dc3545', '#17a2b8']
+          }]
+        },
+        options: {responsive: true, maintainAspectRatio: false}
+      });
+    } catch(e) { /* noop */ }
+
+    // Bar Chart (démo)
+    try {
+      new Chart(document.getElementById('barChart'), {
+        type: 'bar',
+        data: {
+          labels: ['Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Juin', 'Juil'],
+          datasets: [
+            { label: 'Chapitres terminés', data: [2, 3, 4, 5, 6, 7, 8], backgroundColor: '#007bff' },
+            { label: 'Quiz réussis', data: [1, 2, 2, 3, 4, 5, 6], backgroundColor: '#28a745' }
+          ]
+        },
+        options: {responsive: true, maintainAspectRatio: false}
+      });
+    } catch(e) { /* noop */ }
+  </script>
+  <script src="dashboard.js"></script>
+</body>
+</html>
+
