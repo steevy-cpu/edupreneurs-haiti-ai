@@ -16,6 +16,7 @@ import UserSearch from "./pages/UserSearch";
 import MathCourse from "./pages/MathCourse";
 import MathLesson from "./pages/MathLesson";
 import Affiliations from "./pages/Affiliations";
+import Settings from "./pages/Settings";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -40,6 +41,7 @@ const App = () => (
             <Route path="/math-course" element={<MathCourse />} />
             <Route path="/math-lesson/:topicId" element={<MathLesson />} />
             <Route path="/affiliations" element={<Affiliations />} />
+            <Route path="/settings" element={<Settings />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
