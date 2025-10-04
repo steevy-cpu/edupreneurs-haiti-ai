@@ -12,7 +12,7 @@ serve(async (req) => {
   }
 
   try {
-    const { message, lessonType, chatHistory, language = 'fr' } = await req.json();
+    const { message, lessonType = 'activites', language = 'fr' } = await req.json();
     const GEMINI_API_KEY = Deno.env.get('GEMINI_API_KEY');
 
     if (!GEMINI_API_KEY) {
@@ -40,34 +40,7 @@ IMPORTANT - Formatage :
 
 Structure de réponse en ${languageText} :`;
 
-    if (lessonType === 'lesson') {
-      systemPrompt += `
-
-MODE LEÇON COMPLÈTE - Tu dois générer TROIS sections distinctes en réponse JSON :
-
-Réponds UNIQUEMENT avec un objet JSON ayant cette structure exacte :
-{
-  "objectif": "Le but principal de cette leçon en 2-3 phrases claires",
-  "introduction": "Une introduction engageante de 3-4 phrases qui motive l'élève et présente le sujet",
-  "contenu": "Le contenu complet structuré avec :
-    ## 🎯 Définitions clés
-    [Explique les concepts principaux de manière simple]
-    
-    ## 📚 Explications détaillées  
-    [Développe chaque concept avec des analogies et exemples concrets du quotidien haïtien]
-    
-    ## ✨ Propriétés et règles importantes
-    [Liste les formules, théorèmes ou règles essentielles]
-    
-    ## 💡 Méthodes et techniques
-    [Montre comment résoudre des problèmes types]
-    
-    ## 🔢 Exemples résolus
-    [Présente 2-3 exemples détaillés étape par étape]"
-}
-
-Utilise des emojis et des titres clairs (##) pour chaque section. Sois pédagogique, patient et encourage l'élève.`;
-    } else if (lessonType === 'activites') {
+    if (lessonType === 'activites') {
       systemPrompt += `
 
 MODE ACTIVITÉS - Génère des exemples d'exercices pratiques :
@@ -129,10 +102,6 @@ MODE EXERCICE INTERACTIF - Guide l'élève dans la résolution :
         role: 'user',
         parts: [{ text: systemPrompt }]
       },
-      ...(chatHistory || []).map((msg: any) => ({
-        role: msg.role === 'user' ? 'user' : 'model',
-        parts: [{ text: msg.content }]
-      })),
       {
         role: 'user',
         parts: [{ text: message }]
@@ -170,26 +139,6 @@ MODE EXERCICE INTERACTIF - Guide l'élève dans la résolution :
     
     // Clean asterisks from the response
     aiResponse = aiResponse.replace(/\*\*/g, '').replace(/\*/g, '');
-
-    // For lesson type, try to parse JSON response
-    if (lessonType === 'lesson') {
-      try {
-        // Extract JSON from potential markdown code blocks
-        const jsonMatch = aiResponse.match(/```json\s*([\s\S]*?)\s*```/) || aiResponse.match(/\{[\s\S]*\}/);
-        if (jsonMatch) {
-          const jsonStr = jsonMatch[1] || jsonMatch[0];
-          const parsed = JSON.parse(jsonStr);
-          return new Response(
-            JSON.stringify(parsed),
-            {
-              headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-            }
-          );
-        }
-      } catch (e) {
-        console.log('Failed to parse JSON, returning raw response');
-      }
-    }
 
     return new Response(
       JSON.stringify({ response: aiResponse }),

@@ -36,6 +36,7 @@ import {
   equationsQuiz,
   equationsMatching 
 } from "@/data/mathActivities";
+import { mathLessons } from "@/data/mathLessons";
 
 interface LessonData {
   objectif: string;
@@ -49,7 +50,6 @@ const MathLesson = () => {
   const { topicId } = useParams();
   const navigate = useNavigate();
   const { toast } = useToast();
-  const [isLoadingLesson, setIsLoadingLesson] = useState(false);
   const [isLoadingActivites, setIsLoadingActivites] = useState(false);
   const [isLoadingQuiz, setIsLoadingQuiz] = useState(false);
   const [lessonData, setLessonData] = useState<LessonData>({
@@ -66,6 +66,9 @@ const MathLesson = () => {
   const [language, setLanguage] = useState(() => {
     return localStorage.getItem("lessonLanguage") || "fr";
   });
+  
+  // Check if we have static content for this topic
+  const hasStaticContent = topicId ? topicId in mathLessons : false;
 
   const topicInfo: { [key: string]: { title: string; icon: string; goldReward: number } } = {
     "numeration-binaire": { 
@@ -169,107 +172,100 @@ const MathLesson = () => {
   // Load lesson data from cache or fetch
   useEffect(() => {
     if (topicId && topicInfo[topicId]) {
-      const cacheKey = `lesson_full_${topicId}_${language}`;
-      const cachedData = localStorage.getItem(cacheKey);
-
-      if (cachedData) {
-        setLessonData(JSON.parse(cachedData));
-      } else {
-        loadLesson();
+      // Load static content immediately if available
+      if (hasStaticContent) {
+        const staticContent = mathLessons[topicId];
+        setLessonData({
+          objectif: staticContent.objectif,
+          introduction: staticContent.introduction,
+          contenu: staticContent.contenu,
+          activites: "",
+          quiz: ""
+        });
       }
+      
+      // Load dynamic content (activities and quiz)
+      loadLesson();
     }
   }, [topicId, language]);
 
   const loadLesson = async (forceRegenerate = false) => {
     if (!topicId || !topicInfo[topicId]) return;
 
-    const cacheKey = `lesson_full_${topicId}_${language}`;
+    const activitiesCacheKey = `lesson_activites_${topicId}_${language}`;
+    const quizCacheKey = `lesson_quiz_${topicId}_${language}`;
     
-    // If not forcing regenerate, check cache
-    if (!forceRegenerate) {
-      const cachedData = localStorage.getItem(cacheKey);
-      if (cachedData) {
-        setLessonData(JSON.parse(cachedData));
-        return;
-      }
-    }
-
     const topic = topicInfo[topicId];
-    const languageText = language === "fr" ? "français" : "créole haïtien";
 
     try {
-      // First call: Objectif, Introduction, and Contenu
-      setIsLoadingLesson(true);
-      const { data: lessonResponse, error: lessonError } = await supabase.functions.invoke('math-ai-tutor', {
-        body: { 
-          message: `Génère le contenu de leçon pour le sujet "${topic.title}" niveau AF7.`,
-          lessonType: 'lesson',
-          language: language
-        }
-      });
+      // Check cache for activities
+      let activitiesContent = "";
+      let quizContent = "";
+      
+      if (!forceRegenerate) {
+        const cachedActivities = localStorage.getItem(activitiesCacheKey);
+        const cachedQuiz = localStorage.getItem(quizCacheKey);
+        
+        if (cachedActivities) activitiesContent = cachedActivities;
+        if (cachedQuiz) quizContent = cachedQuiz;
+      }
 
-      if (lessonError) throw lessonError;
+      // Load activities if not cached or regenerating
+      if (!activitiesContent || forceRegenerate) {
+        setIsLoadingActivites(true);
+        const { data: activitesResponse, error: activitesError } = await supabase.functions.invoke('math-ai-tutor', {
+          body: { 
+            message: `Génère des exemples d'exercices pratiques pour "${topic.title}" niveau AF7.`,
+            lessonType: 'activites',
+            language: language
+          }
+        });
 
-      const newLessonData: LessonData = {
-        objectif: lessonResponse?.objectif || "",
-        introduction: lessonResponse?.introduction || "",
-        contenu: lessonResponse?.contenu || "",
-        activites: "",
-        quiz: "",
-      };
+        if (activitesError) throw activitesError;
 
-      setLessonData(newLessonData);
-      setIsLoadingLesson(false);
+        activitiesContent = activitesResponse?.response || activitesResponse || "";
+        localStorage.setItem(activitiesCacheKey, activitiesContent);
+        setIsLoadingActivites(false);
+      }
 
-      // Second call: Activités (exercises)
-      setIsLoadingActivites(true);
-      const { data: activitesResponse, error: activitesError } = await supabase.functions.invoke('math-ai-tutor', {
-        body: { 
-          message: `Génère des exemples d'exercices pratiques pour "${topic.title}" niveau AF7.`,
-          lessonType: 'activites',
-          language: language
-        }
-      });
+      // Load quiz if not cached or regenerating
+      if (!quizContent || forceRegenerate) {
+        setIsLoadingQuiz(true);
+        const { data: quizResponse, error: quizError } = await supabase.functions.invoke('math-ai-tutor', {
+          body: { 
+            message: `Génère un quiz final de 5 questions pour évaluer la compréhension de "${topic.title}" niveau AF7.`,
+            lessonType: 'quiz',
+            language: language
+          }
+        });
 
-      if (activitesError) throw activitesError;
+        if (quizError) throw quizError;
 
-      newLessonData.activites = activitesResponse?.response || "";
-      setLessonData({...newLessonData});
-      setIsLoadingActivites(false);
+        quizContent = quizResponse?.response || quizResponse || "";
+        localStorage.setItem(quizCacheKey, quizContent);
+        setIsLoadingQuiz(false);
+      }
 
-      // Third call: Quiz
-      setIsLoadingQuiz(true);
-      const { data: quizResponse, error: quizError } = await supabase.functions.invoke('math-ai-tutor', {
-        body: { 
-          message: `Génère un quiz final de 5 questions pour évaluer la compréhension de "${topic.title}" niveau AF7.`,
-          lessonType: 'quiz',
-          language: language
-        }
-      });
-
-      if (quizError) throw quizError;
-
-      newLessonData.quiz = quizResponse?.response || "";
-      setLessonData({...newLessonData});
-      setIsLoadingQuiz(false);
-
-      // Cache the complete lesson data
-      localStorage.setItem(cacheKey, JSON.stringify(newLessonData));
+      // Update lesson data with dynamic content
+      setLessonData(prev => ({
+        ...prev,
+        activites: activitiesContent,
+        quiz: quizContent
+      }));
 
       if (forceRegenerate) {
         toast({
-          title: "Leçon régénérée",
-          description: "La leçon a été mise à jour avec du nouveau contenu",
+          title: "Activités régénérées",
+          description: "Les activités et le quiz ont été mis à jour",
         });
       }
     } catch (error) {
       console.error('Error loading lesson:', error);
       toast({
         title: "Erreur",
-        description: "Impossible de charger la leçon",
+        description: "Impossible de charger les activités",
         variant: "destructive"
       });
-      setIsLoadingLesson(false);
       setIsLoadingActivites(false);
       setIsLoadingQuiz(false);
     }
@@ -404,11 +400,7 @@ const MathLesson = () => {
                     </CardTitle>
                   </CardHeader>
                   <CardContent className="p-4 sm:p-6 pt-0">
-                    {isLoadingLesson ? (
-                      <div className="flex items-center justify-center py-4">
-                        <Loader2 className="h-6 w-6 animate-spin text-primary" />
-                      </div>
-                    ) : lessonData.objectif ? (
+                    {lessonData.objectif ? (
                       <div className="prose prose-sm sm:prose-base max-w-none dark:prose-invert">
                         <div className="whitespace-pre-wrap text-sm sm:text-base leading-relaxed bg-background/50 p-4 rounded-lg">
                           {lessonData.objectif}
@@ -429,15 +421,9 @@ const MathLesson = () => {
                     </CardTitle>
                   </CardHeader>
                   <CardContent className="p-4 sm:p-6 pt-0">
-                    {isLoadingLesson ? (
-                      <div className="flex items-center justify-center py-4">
-                        <Loader2 className="h-6 w-6 animate-spin text-primary" />
-                      </div>
-                    ) : lessonData.introduction ? (
+                    {lessonData.introduction ? (
                       <div className="prose prose-sm sm:prose-base max-w-none dark:prose-invert">
-                        <div className="whitespace-pre-wrap text-sm sm:text-base leading-relaxed bg-background/50 p-4 rounded-lg">
-                          {lessonData.introduction}
-                        </div>
+                        <div dangerouslySetInnerHTML={{ __html: lessonData.introduction }} />
                       </div>
                     ) : (
                       <p className="text-muted-foreground">Chargement...</p>
@@ -457,29 +443,21 @@ const MathLesson = () => {
                         variant="outline"
                         size="sm"
                         onClick={() => loadLesson(true)}
-                        disabled={isLoadingLesson}
+                        disabled={isLoadingActivites || isLoadingQuiz}
                       >
-                        <RefreshCw className={`w-4 h-4 mr-2 ${isLoadingLesson ? 'animate-spin' : ''}`} />
-                        Régénérer
+                        <RefreshCw className={`w-4 h-4 mr-2 ${(isLoadingActivites || isLoadingQuiz) ? 'animate-spin' : ''}`} />
+                        Régénérer activités
                       </Button>
                     </div>
                   </CardHeader>
                   <CardContent className="p-4 sm:p-6 pt-6">
-                    {isLoadingLesson ? (
-                      <div className="flex items-center justify-center py-8">
-                        <Loader2 className="h-8 w-8 animate-spin text-primary" />
-                      </div>
-                    ) : (
-                      <div className="prose prose-sm sm:prose-base max-w-none dark:prose-invert">
-                        {lessonData.contenu ? (
-                          <div className="whitespace-pre-wrap text-sm sm:text-base leading-loose space-y-4">
-                            {lessonData.contenu}
-                          </div>
-                        ) : (
-                          <p className="text-muted-foreground">Chargement du contenu...</p>
-                        )}
-                      </div>
-                    )}
+                    <div className="prose prose-sm sm:prose-base max-w-none dark:prose-invert">
+                      {lessonData.contenu ? (
+                        <div dangerouslySetInnerHTML={{ __html: lessonData.contenu }} />
+                      ) : (
+                        <p className="text-muted-foreground">Chargement du contenu...</p>
+                      )}
+                    </div>
                   </CardContent>
                 </Card>
 
