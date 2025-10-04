@@ -2,9 +2,11 @@ export interface StaticLessonContent {
   objectif: string;
   introduction: string;
   contenu: string;
+  exemplesExercices: string;
 }
 
-export const mathLessons: Record<string, StaticLessonContent> = {
+// 7th Grade Math Lessons (AF7)
+export const mathLessons7AF: Record<string, StaticLessonContent> = {
   "decimaux": {
     objectif: `À la fin de cette leçon, tu vas pouvoir:
 • Lire et écrire des nombres décimaux sous différentes formes
@@ -255,6 +257,137 @@ export const mathLessons: Record<string, StaticLessonContent> = {
     </div>
   </section>
 
+</div>`,
+
+    exemplesExercices: `<div class="space-y-6">
+  
+  <!-- Exercice 1: Comparer des décimaux -->
+  <div class="bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-950/40 dark:to-blue-900/30 p-5 rounded-xl border-l-4 border-blue-500">
+    <h4 class="font-bold text-lg mb-3 flex items-center gap-2 text-blue-700 dark:text-blue-300">
+      ✏️ Exercice 1 — Konparazon (Facile)
+    </h4>
+    <p class="mb-3 leading-relaxed">Konpare de a de chak pè ak mete siy ki kòrèk (&lt;, &gt;, ou =):</p>
+    <div class="space-y-2 font-mono text-base ml-4">
+      <p>a) 12,5 ___ 12,50</p>
+      <p>b) 8,75 ___ 8,8</p>
+      <p>c) 0,6 ___ 0,58</p>
+      <p>d) 25,03 ___ 25,3</p>
+    </div>
+    <div class="mt-4 bg-white/70 dark:bg-gray-900/50 p-4 rounded-lg">
+      <p class="font-semibold text-green-700 dark:text-green-300 mb-2">✅ Solutions:</p>
+      <div class="space-y-1 text-sm">
+        <p>a) 12,5 <span class="font-bold text-green-600">=</span> 12,50 (menm valè, zewo pa chanje anyen)</p>
+        <p>b) 8,75 <span class="font-bold text-green-600">&lt;</span> 8,8 (75/100 &lt; 80/100)</p>
+        <p>c) 0,6 <span class="font-bold text-green-600">&gt;</span> 0,58 (60/100 &gt; 58/100)</p>
+        <p>d) 25,03 <span class="font-bold text-green-600">&lt;</span> 25,3 (3/100 &lt; 30/100)</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Exercice 2: Addition et soustraction -->
+  <div class="bg-gradient-to-br from-green-50 to-green-100 dark:from-green-950/40 dark:to-green-900/30 p-5 rounded-xl border-l-4 border-green-500">
+    <h4 class="font-bold text-lg mb-3 flex items-center gap-2 text-green-700 dark:text-green-300">
+      ✏️ Exercice 2 — Adisyon ak Soustraksyon (Moyen)
+    </h4>
+    <p class="mb-3 leading-relaxed">Kalkile operasyon sa yo:</p>
+    <div class="space-y-3">
+      <div>
+        <p class="font-mono mb-2">a) 15,75 + 8,3 = ?</p>
+        <div class="bg-white/70 dark:bg-gray-900/50 p-3 rounded">
+          <p class="text-sm mb-1">Aliyen vigil yo:</p>
+          <pre class="font-mono text-xs">  15,75
++  8,30
+-------
+  24,05</pre>
+          <p class="mt-2 font-semibold text-green-600">Repons: 24,05</p>
+        </div>
+      </div>
+      <div>
+        <p class="font-mono mb-2">b) 50,00 - 17,85 = ?</p>
+        <div class="bg-white/70 dark:bg-gray-900/50 p-3 rounded">
+          <pre class="font-mono text-xs">  50,00
+- 17,85
+-------
+  32,15</pre>
+          <p class="mt-2 font-semibold text-green-600">Repons: 32,15</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Exercice 3: Multiplication -->
+  <div class="bg-gradient-to-br from-orange-50 to-orange-100 dark:from-orange-950/40 dark:to-orange-900/30 p-5 rounded-xl border-l-4 border-orange-500">
+    <h4 class="font-bold text-lg mb-3 flex items-center gap-2 text-orange-700 dark:text-orange-300">
+      ✏️ Exercice 3 — Miltiplikasyon (Moyen)
+    </h4>
+    <p class="mb-3 leading-relaxed">Mari achte 3,5 kg lalo a 40 goud/kg. Konbyen li peye total?</p>
+    <div class="bg-white/70 dark:bg-gray-900/50 p-4 rounded-lg">
+      <p class="font-semibold mb-2 text-orange-700 dark:text-orange-300">📝 Rezolisyon:</p>
+      <div class="space-y-2 text-sm">
+        <p><span class="font-semibold">Kalkil:</span> 3,5 × 40</p>
+        <p>→ 35 × 40 = 1400</p>
+        <p>→ 1 desimal → <span class="font-bold text-orange-600">140,0 goud</span></p>
+        <p class="mt-3 p-2 bg-orange-50 dark:bg-orange-950/30 rounded border border-orange-300 dark:border-orange-700">
+          <span class="font-bold text-orange-600">✅ Repons final:</span> Mari peye 140 goud
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Exercice 4: Division -->
+  <div class="bg-gradient-to-br from-purple-50 to-purple-100 dark:from-purple-950/40 dark:to-purple-900/30 p-5 rounded-xl border-l-4 border-purple-500">
+    <h4 class="font-bold text-lg mb-3 flex items-center gap-2 text-purple-700 dark:text-purple-300">
+      ✏️ Exercice 4 — Divizyon (Difficile)
+    </h4>
+    <p class="mb-3 leading-relaxed">4 zanmi pataje 87,60 goud egalman. Chak moun jwenn konbyen?</p>
+    <div class="bg-white/70 dark:bg-gray-900/50 p-4 rounded-lg">
+      <p class="font-semibold mb-2 text-purple-700 dark:text-purple-300">📝 Rezolisyon:</p>
+      <div class="space-y-2 text-sm">
+        <p><span class="font-semibold">Kalkil:</span> 87,60 ÷ 4</p>
+        <p>→ 876 ÷ 4 = 219</p>
+        <p>→ 2 desimal → <span class="font-bold text-purple-600">21,90 goud</span></p>
+        <div class="mt-3 p-3 bg-purple-50 dark:bg-purple-950/30 rounded border border-purple-300 dark:border-purple-700">
+          <p class="font-bold text-purple-600 mb-1">✅ Repons final:</p>
+          <p>Chak zanmi jwenn 21 goud 90 kòb (21,90 goud)</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Exercice 5: Problème complexe -->
+  <div class="bg-gradient-to-br from-pink-50 to-pink-100 dark:from-pink-950/40 dark:to-pink-900/30 p-5 rounded-xl border-l-4 border-pink-500">
+    <h4 class="font-bold text-lg mb-3 flex items-center gap-2 text-pink-700 dark:text-pink-300">
+      ✏️ Exercice 5 — Pwoblèm Konplèks (Difficile)
+    </h4>
+    <p class="mb-3 leading-relaxed">Yon twalyè gen 25,75m twal. Li vann 8,5m a 120 goud/m, epi 12,25m a 150 goud/m. Konbyen twal ki rete? Konbyen lajan li fè total?</p>
+    <div class="bg-white/70 dark:bg-gray-900/50 p-4 rounded-lg">
+      <p class="font-semibold mb-3 text-pink-700 dark:text-pink-300">📝 Rezolisyon etap pa etap:</p>
+      <div class="space-y-3 text-sm">
+        <div class="p-3 bg-blue-50 dark:bg-blue-950/30 rounded">
+          <p class="font-semibold text-blue-700 dark:text-blue-300 mb-1">Etap 1: Twal ki rete</p>
+          <p>Total twal vandi = 8,5 + 12,25 = 20,75m</p>
+          <p>Twal ki rete = 25,75 - 20,75 = <span class="font-bold text-blue-600">5m</span></p>
+        </div>
+        <div class="p-3 bg-green-50 dark:bg-green-950/30 rounded">
+          <p class="font-semibold text-green-700 dark:text-green-300 mb-1">Etap 2: Lajan premye vant</p>
+          <p>8,5 × 120 = <span class="font-bold text-green-600">1020 goud</span></p>
+        </div>
+        <div class="p-3 bg-green-50 dark:bg-green-950/30 rounded">
+          <p class="font-semibold text-green-700 dark:text-green-300 mb-1">Etap 3: Lajan dezyèm vant</p>
+          <p>12,25 × 150 = <span class="font-bold text-green-600">1837,50 goud</span></p>
+        </div>
+        <div class="p-3 bg-pink-50 dark:bg-pink-950/30 rounded border-2 border-pink-300 dark:border-pink-700">
+          <p class="font-bold text-pink-600 mb-2">✅ Repons Final:</p>
+          <p>• Twal ki rete: <span class="font-bold">5 mèt</span></p>
+          <p>• Lajan total: 1020 + 1837,50 = <span class="font-bold">2857,50 goud</span></p>
+        </div>
+      </div>
+    </div>
+  </div>
+
 </div>`
   }
 };
+
+// Export for backward compatibility and easy access
+export const mathLessons = mathLessons7AF;

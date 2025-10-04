@@ -63,9 +63,6 @@ const MathLesson = () => {
   const [notesSaved, setNotesSaved] = useState(true);
   const [activeActivity, setActiveActivity] = useState<string | null>(null);
   const [earnedGold, setEarnedGold] = useState(0);
-  const [language, setLanguage] = useState(() => {
-    return localStorage.getItem("lessonLanguage") || "fr";
-  });
   
   // Check if we have static content for this topic
   const hasStaticContent = topicId ? topicId in mathLessons : false;
@@ -163,12 +160,6 @@ const MathLesson = () => {
     }
   }, [topicId]);
 
-  // Update language from localStorage
-  useEffect(() => {
-    const savedLanguage = localStorage.getItem("lessonLanguage") || "fr";
-    setLanguage(savedLanguage);
-  }, []);
-
   // Load lesson data from cache or fetch
   useEffect(() => {
     if (topicId && topicInfo[topicId]) {
@@ -187,13 +178,13 @@ const MathLesson = () => {
       // Load dynamic content (activities and quiz)
       loadLesson();
     }
-  }, [topicId, language]);
+  }, [topicId]);
 
   const loadLesson = async (forceRegenerate = false) => {
     if (!topicId || !topicInfo[topicId]) return;
 
-    const activitiesCacheKey = `lesson_activites_${topicId}_${language}`;
-    const quizCacheKey = `lesson_quiz_${topicId}_${language}`;
+    const activitiesCacheKey = `lesson_activites_${topicId}`;
+    const quizCacheKey = `lesson_quiz_${topicId}`;
     
     const topic = topicInfo[topicId];
 
@@ -215,9 +206,8 @@ const MathLesson = () => {
         setIsLoadingActivites(true);
         const { data: activitesResponse, error: activitesError } = await supabase.functions.invoke('math-ai-tutor', {
           body: { 
-            message: `Génère des exemples d'exercices pratiques pour "${topic.title}" niveau AF7.`,
-            lessonType: 'activites',
-            language: language
+            message: `Génère des exercices pratiques variés pour le sujet "${topic.title}" niveau AF7.`,
+            lessonType: 'activites'
           }
         });
 
@@ -233,9 +223,8 @@ const MathLesson = () => {
         setIsLoadingQuiz(true);
         const { data: quizResponse, error: quizError } = await supabase.functions.invoke('math-ai-tutor', {
           body: { 
-            message: `Génère un quiz final de 5 questions pour évaluer la compréhension de "${topic.title}" niveau AF7.`,
-            lessonType: 'quiz',
-            language: language
+            message: `Génère un quiz d'évaluation de 5 questions pour le sujet "${topic.title}" niveau AF7.`,
+            lessonType: 'quiz'
           }
         });
 
@@ -461,35 +450,52 @@ const MathLesson = () => {
                   </CardContent>
                 </Card>
 
-                {/* Exemples d'exercices */}
-                <Card className="lesson-card border-none rounded-[20px] shadow-md border-2 border-primary/20">
-                  <CardHeader className="p-4 sm:p-6 bg-gradient-to-r from-success/10 to-primary/10 rounded-t-[20px]">
-                    <CardTitle className="flex items-center gap-2 text-lg sm:text-xl">
-                      <Dumbbell className="text-primary shrink-0" size={20} />
-                      ✏️ Exemples d'exercices
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className="p-4 sm:p-6 pt-6">
-                    {isLoadingActivites ? (
-                      <div className="flex items-center justify-center py-8">
-                        <Loader2 className="h-8 w-8 animate-spin text-primary" />
-                      </div>
-                    ) : lessonData.activites ? (
+                {/* Exemples d'exercices (Static) */}
+                {hasStaticContent && mathLessons[topicId!]?.exemplesExercices && (
+                  <Card className="lesson-card border-none rounded-[20px] shadow-md border-2 border-primary/20">
+                    <CardHeader className="p-4 sm:p-6 bg-gradient-to-r from-success/10 to-primary/10 rounded-t-[20px]">
+                      <CardTitle className="flex items-center gap-2 text-lg sm:text-xl">
+                        <Dumbbell className="text-primary shrink-0" size={20} />
+                        ✏️ Exemples d'exercices résolus
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="p-4 sm:p-6 pt-6">
                       <div className="prose prose-sm sm:prose-base max-w-none dark:prose-invert">
-                        <div className="whitespace-pre-wrap text-sm sm:text-base leading-loose space-y-4 bg-muted/30 p-4 rounded-lg">
-                          {lessonData.activites}
-                        </div>
+                        <div dangerouslySetInnerHTML={{ __html: mathLessons[topicId!].exemplesExercices }} />
                       </div>
-                    ) : (
-                      <p className="text-muted-foreground">Chargement des exercices...</p>
-                    )}
-                  </CardContent>
-                </Card>
+                    </CardContent>
+                  </Card>
+                )}
               </TabsContent>
 
               {/* ACTIVITIES TAB */}
               <TabsContent value="activities" className="space-y-4">
-                
+                {/* Dynamic Activities from AI */}
+                <Card className="lesson-card border-none rounded-[20px] shadow-lg border-2 border-accent/30 bg-gradient-to-br from-accent/5 to-primary/5">
+                  <CardHeader className="p-4 sm:p-6 bg-gradient-to-r from-accent/20 to-primary/20 rounded-t-[20px]">
+                    <CardTitle className="flex items-center gap-2 text-lg sm:text-xl">
+                      <Zap className="text-primary shrink-0" size={22} />
+                      🎯 Activités Pratiques — Génération IA
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="p-4 sm:p-6 pt-6">
+                    {isLoadingActivites ? (
+                      <div className="flex flex-col items-center justify-center py-12 space-y-4">
+                        <Loader2 className="h-12 w-12 animate-spin text-primary" />
+                        <p className="text-muted-foreground text-center">Génération d'exercices personnalisés...</p>
+                      </div>
+                    ) : lessonData.activites ? (
+                      <div className="prose prose-sm sm:prose-base max-w-none dark:prose-invert">
+                        <div className="whitespace-pre-wrap text-sm sm:text-base leading-loose space-y-4">
+                          {lessonData.activites}
+                        </div>
+                      </div>
+                    ) : (
+                      <p className="text-muted-foreground text-center py-8">Aucune activité disponible</p>
+                    )}
+                  </CardContent>
+                </Card>
+
                 {activeActivity === null ? (
                   <div className="grid md:grid-cols-2 gap-4">
                     <Card className="lesson-card p-6 hover:shadow-xl transition-all cursor-pointer group"
@@ -633,28 +639,30 @@ const MathLesson = () => {
 
               {/* QUIZ TAB */}
               <TabsContent value="quiz" className="space-y-4">
-                <Card className="lesson-card border-none rounded-[20px] shadow-md border-2 border-success/30">
-                  <CardHeader className="p-4 sm:p-6 bg-gradient-to-r from-success/10 to-accent/10 rounded-t-[20px]">
-                    <CardTitle className="flex items-center gap-2 text-lg sm:text-xl">
-                      <CheckCircle className="text-primary shrink-0" size={20} />
-                      ✅ Quiz Final
-                    </CardTitle>
+                <Card className="lesson-card border-none rounded-[20px] shadow-xl border-2 border-success/30 bg-gradient-to-br from-success/5 to-primary/5">
+                  <CardHeader className="p-4 sm:p-6 bg-gradient-to-r from-success/20 to-primary/20 rounded-t-[20px]">
+                    <div className="flex items-center justify-between">
+                      <CardTitle className="flex items-center gap-2 text-lg sm:text-xl">
+                        <Trophy className="text-primary shrink-0" size={22} />
+                        🏆 Quiz Final d'Évaluation
+                      </CardTitle>
+                      <Badge className="bg-success/20 text-success border-success/30">5 Questions</Badge>
+                    </div>
                   </CardHeader>
                   <CardContent className="p-4 sm:p-6 pt-6">
                     {isLoadingQuiz ? (
-                      <div className="flex items-center justify-center py-8">
-                        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                      <div className="flex flex-col items-center justify-center py-12 space-y-4">
+                        <Loader2 className="h-12 w-12 animate-spin text-success" />
+                        <p className="text-muted-foreground text-center">Génération du quiz d'évaluation...</p>
                       </div>
                     ) : lessonData.quiz ? (
                       <div className="prose prose-sm sm:prose-base max-w-none dark:prose-invert">
-                        <div className="whitespace-pre-wrap text-sm sm:text-base leading-loose space-y-4 bg-success/5 p-4 rounded-lg">
+                        <div className="whitespace-pre-wrap text-sm sm:text-base leading-loose space-y-6 bg-white/50 dark:bg-gray-900/30 p-5 rounded-xl">
                           {lessonData.quiz}
                         </div>
                       </div>
                     ) : (
-                      <p className="text-center text-muted-foreground py-8">
-                        Quiz en cours de chargement...
-                      </p>
+                      <p className="text-muted-foreground text-center py-8">Aucun quiz disponible</p>
                     )}
                   </CardContent>
                 </Card>

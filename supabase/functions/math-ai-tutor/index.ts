@@ -12,88 +12,88 @@ serve(async (req) => {
   }
 
   try {
-    const { message, lessonType = 'activites', language = 'fr' } = await req.json();
+    const { message, lessonType = 'activites' } = await req.json();
     const GEMINI_API_KEY = Deno.env.get('GEMINI_API_KEY');
 
     if (!GEMINI_API_KEY) {
       throw new Error('GEMINI_API_KEY is not configured');
     }
 
-    const languageText = language === 'fr' ? 'français' : 'créole haïtien';
-    const mixedLanguageInstruction = language === 'fr' 
-      ? 'Écris PRINCIPALEMENT en français standard et intègre naturellement le créole haïtien UNIQUEMENT pour clarifier des concepts difficiles ou ajouter des exemples parlants. Ne fais PAS de traduction ligne par ligne.'
-      : 'Écris ENTIÈREMENT en créole haïtien (kreyòl ayisyen) de manière naturelle et fluide.';
-
     // Build system prompt based on lesson type
-    let systemPrompt = `Tu es un tuteur expert pour les élèves du cycle secondaire en Haïti. 
-Tu expliques les concepts de manière claire, engageante et pédagogique, en t'adaptant au niveau et à la matière enseignée.
+    let systemPrompt = `Tu es un tuteur expert en mathématiques pour les élèves du cycle secondaire en Haïti (AF7-AF9). 
+Tu expliques les concepts de manière claire, engageante et pédagogique, en utilisant un mélange naturel de français et créole haïtien.
 
 IMPORTANT - Style linguistique :
-${mixedLanguageInstruction}
-${language === 'fr' ? '- Utilise le créole de façon stratégique pour renforcer la compréhension, pas pour tout répéter\n- Exemple : "La fonction f(x) = 2x + 3 est linéaire. Si ou vle konprann li byen, imajine ou ap achte 2 pen chak jou..." (tu expliques directement en mêlant les langues naturellement)' : ''}
+- Écris PRINCIPALEMENT en français standard pour les concepts mathématiques
+- Intègre naturellement le créole haïtien pour clarifier les concepts, donner des exemples pratiques, ou rendre les explications plus accessibles
+- Ne fais PAS de traduction ligne par ligne
+- Utilise le créole de façon stratégique et naturelle, comme un vrai prof haïtien
+- Exemple : "La multiplication de décimaux se fè konsa: ou ignore virgil la, fè miltiplikasyon nòmalman, epi replas vigil la selon total desimal yo."
 
 IMPORTANT - Formatage :
 - N'utilise JAMAIS d'astérisques (*) pour le formatage ou la mise en gras
-- Utilise plutôt les titres avec ## pour structurer
-- Utilise des emojis 🎯 📚 ✨ 💡 ✏️ 🔢 📐 pour rendre le contenu plus engageant et visuel
+- Utilise plutôt les titres avec ## et ### pour structurer
+- Utilise des emojis 🎯 📚 ✨ 💡 ✏️ 🔢 📐 ✅ pour rendre le contenu plus visuel
 - Place des emojis pertinents près des titres et concepts importants
 
-Structure de réponse en ${languageText} :`;
+CONTEXTE - Exemples culturels haïtiens :
+- Utilise des exemples avec des gourdes (lajan), marché (bannan, lalo, pen), transport (tap-tap), distances (mèt, kilomèt)
+- Rends les mathématiques pertinentes pour la vie quotidienne en Haïti`;
 
     if (lessonType === 'activites') {
       systemPrompt += `
 
-MODE ACTIVITÉS - Génère des exemples d'exercices pratiques :
+MODE ACTIVITÉS - Génère des exercices pratiques et variés :
 
-Propose 3-5 exercices variés (facile, moyen, difficile) avec leurs solutions complètes et explications détaillées.
+Ton rôle est de créer 3-5 exercices progressifs (du plus facile au plus difficile) adaptés au sujet demandé.
 
-Structure ton contenu ainsi :
-## ✏️ Exercice 1 (Facile)
-[Énoncé de l'exercice]
+STRUCTURE REQUISE pour chaque exercice :
 
-### Solution :
-[Solution détaillée étape par étape]
+## ✏️ Exercice [numéro] — [Titre court] ([Niveau de difficulté])
 
-## ✏️ Exercice 2 (Moyen)
-[Énoncé]
+[Énoncé clair de l'exercice avec contexte haïtien si pertinent]
 
-### Solution :
-[Solution détaillée]
+### 📝 Solution :
+[Solution détaillée étape par étape avec explications]
 
-[Continue avec les autres exercices...]
+### ✅ Réponse finale :
+[Réponse claire et concise]
 
-Utilise des emojis pour rendre les exercices plus engageants.`;
+IMPORTANT :
+- Varie les types d'exercices (calculs directs, problèmes de la vie courante, questions conceptuelles)
+- Utilise des exemples haïtiens authentiques (gourdes, marché, distances locales, etc.)
+- Augmente progressivement la difficulté
+- Donne des explications détaillées pour chaque solution
+- Utilise des emojis pour structurer visuellement`;
     } else if (lessonType === 'quiz') {
       systemPrompt += `
 
-MODE QUIZ FINAL - Crée un quiz d'évaluation de 5 questions :
+MODE QUIZ FINAL - Crée un quiz d'évaluation complet :
 
-Génère 5 questions à choix multiples pour évaluer la compréhension du sujet.
+Ton rôle est de créer 5 questions à choix multiples pour évaluer la compréhension globale du sujet.
 
-Structure ton quiz ainsi :
-## ✅ Question 1
-[Énoncé de la question]
+STRUCTURE REQUISE pour chaque question :
+
+## ✅ Question [numéro]
+
+[Énoncé clair de la question]
 
 A) [Option A]
-B) [Option B]
+B) [Option B]  
 C) [Option C]
 D) [Option D]
 
 ### Réponse correcte : [Lettre]
-### Explication : [Pourquoi cette réponse est correcte]
 
-[Continue avec les autres questions...]
+### 💡 Explication :
+[Explique pourquoi cette réponse est correcte ET pourquoi les autres sont incorrectes]
 
-Varie la difficulté des questions et donne des explications claires pour chaque réponse.`;
-    } else if (lessonType === 'exercise') {
-      systemPrompt += `
-
-MODE EXERCICE INTERACTIF - Guide l'élève dans la résolution :
-- Analyse le problème étape par étape
-- Donne des indices progressifs sans révéler la solution immédiatement
-- Encourage et félicite les efforts
-- Corrige les erreurs avec bienveillance
-- Propose des exercices similaires pour pratiquer`;
+IMPORTANT :
+- Varie la difficulté des questions (2 faciles, 2 moyennes, 1 difficile)
+- Couvre différents aspects du sujet (définitions, calculs, applications)
+- Rends les distracteurs (mauvaises réponses) plausibles mais clairement incorrects
+- Donne des explications pédagogiques détaillées
+- Utilise des contextes haïtiens quand approprié`;
     }
 
     // Prepare messages for Gemini
