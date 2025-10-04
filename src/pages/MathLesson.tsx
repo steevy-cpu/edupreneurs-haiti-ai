@@ -38,6 +38,8 @@ import {
 } from "@/data/mathActivities";
 import { mathLessons } from "@/data/mathLessons";
 import { YouTubeVideoSection } from "@/components/YouTubeVideoSection";
+import { InteractiveActivities } from "@/components/InteractiveActivities";
+import { InteractiveQuiz } from "@/components/InteractiveQuiz";
 
 interface LessonData {
   objectif: string;
@@ -480,202 +482,18 @@ const MathLesson = () => {
 
               {/* ACTIVITIES TAB */}
               <TabsContent value="activities" className="space-y-4">
-                {/* Dynamic Activities from AI */}
-                <Card className="lesson-card border-none rounded-[20px] shadow-lg border-2 border-accent/30 bg-gradient-to-br from-accent/5 to-primary/5">
-                  <CardHeader className="p-4 sm:p-6 bg-gradient-to-r from-accent/20 to-primary/20 rounded-t-[20px]">
-                    <CardTitle className="flex items-center gap-2 text-lg sm:text-xl">
-                      <Zap className="text-primary shrink-0" size={22} />
-                      🎯 Activités Pratiques — Génération IA
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className="p-4 sm:p-6 pt-6">
-                    {isLoadingActivites ? (
-                      <div className="flex flex-col items-center justify-center py-12 space-y-4">
-                        <Loader2 className="h-12 w-12 animate-spin text-primary" />
-                        <p className="text-muted-foreground text-center">Génération d'exercices personnalisés...</p>
-                      </div>
-                    ) : lessonData.activites ? (
-                      <div className="prose prose-sm sm:prose-base max-w-none dark:prose-invert">
-                        <div className="whitespace-pre-wrap text-sm sm:text-base leading-loose space-y-4">
-                          {lessonData.activites}
-                        </div>
-                      </div>
-                    ) : (
-                      <p className="text-muted-foreground text-center py-8">Aucune activité disponible</p>
-                    )}
-                  </CardContent>
-                </Card>
-
-                {activeActivity === null ? (
-                  <div className="grid md:grid-cols-2 gap-4">
-                    <Card className="lesson-card p-6 hover:shadow-xl transition-all cursor-pointer group"
-                      onClick={() => setActiveActivity('drag-drop')}>
-                      <div className="space-y-4">
-                        <div className="flex items-center gap-3">
-                          <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center text-2xl">
-                            🎯
-                          </div>
-                          <div>
-                            <h3 className="font-bold text-lg">Drag & Drop</h3>
-                            <p className="text-sm text-muted-foreground">Ordonne les nombres</p>
-                          </div>
-                        </div>
-                        <p className="text-sm">
-                          Place les nombres entiers dans le bon ordre
-                        </p>
-                        <div className="flex items-center justify-between">
-                          <Badge className="gap-1">
-                            <Trophy className="w-3 h-3" />
-                            +30 gold
-                          </Badge>
-                          <Button size="sm">Jouer</Button>
-                        </div>
-                      </div>
-                    </Card>
-
-                    <Card className="lesson-card p-6 hover:shadow-xl transition-all cursor-pointer group"
-                      onClick={() => setActiveActivity('speed-calc')}>
-                      <div className="space-y-4">
-                        <div className="flex items-center gap-3">
-                          <div className="w-12 h-12 rounded-lg bg-secondary/10 flex items-center justify-center text-2xl">
-                            <Zap className="w-6 h-6" />
-                          </div>
-                          <div>
-                            <h3 className="font-bold text-lg">Calcul Rapide</h3>
-                            <p className="text-sm text-muted-foreground">60 secondes chrono</p>
-                          </div>
-                        </div>
-                        <p className="text-sm">
-                          Résous un maximum d'opérations en 60 secondes!
-                        </p>
-                        <div className="flex items-center justify-between">
-                          <Badge className="gap-1">
-                            <Trophy className="w-3 h-3" />
-                            Score × 2 gold
-                          </Badge>
-                          <Button size="sm">Jouer</Button>
-                        </div>
-                      </div>
-                    </Card>
-
-                    <Card className="lesson-card p-6 hover:shadow-xl transition-all cursor-pointer group"
-                      onClick={() => setActiveActivity('matching')}>
-                      <div className="space-y-4">
-                        <div className="flex items-center gap-3">
-                          <div className="w-12 h-12 rounded-lg bg-success/10 flex items-center justify-center text-2xl">
-                            🔗
-                          </div>
-                          <div>
-                            <h3 className="font-bold text-lg">Association</h3>
-                            <p className="text-sm text-muted-foreground">Relie les paires</p>
-                          </div>
-                        </div>
-                        <p className="text-sm">
-                          Associe chaque opération à son résultat correct
-                        </p>
-                        <div className="flex items-center justify-between">
-                          <Badge className="gap-1">
-                            <Trophy className="w-3 h-3" />
-                            +40 gold
-                          </Badge>
-                          <Button size="sm">Jouer</Button>
-                        </div>
-                      </div>
-                    </Card>
-
-                    <Card className="lesson-card p-6 hover:shadow-xl transition-all cursor-pointer group"
-                      onClick={() => setActiveActivity('quiz')}>
-                      <div className="space-y-4">
-                        <div className="flex items-center gap-3">
-                          <div className="w-12 h-12 rounded-lg bg-accent/10 flex items-center justify-center text-2xl">
-                            🧠
-                          </div>
-                          <div>
-                            <h3 className="font-bold text-lg">Quiz</h3>
-                            <p className="text-sm text-muted-foreground">Questions à choix</p>
-                          </div>
-                        </div>
-                        <p className="text-sm">
-                          Réponds correctement aux questions
-                        </p>
-                        <div className="flex items-center justify-between">
-                          <Badge className="gap-1">
-                            <Trophy className="w-3 h-3" />
-                            +50 gold
-                          </Badge>
-                          <Button size="sm">Jouer</Button>
-                        </div>
-                      </div>
-                    </Card>
-                  </div>
-                ) : (
-                  <Card className="lesson-card p-6">
-                    <Button
-                      variant="ghost"
-                      onClick={() => setActiveActivity(null)}
-                      className="mb-4"
-                    >
-                      <ArrowLeft className="w-4 h-4 mr-2" />
-                      Retour aux activités
-                    </Button>
-
-                    {activeActivity === 'quiz' && (
-                      <QuizGame
-                        topic={currentTopic.title}
-                        questions={activityData.quiz}
-                        onComplete={(score) => handleActivityComplete('quiz', score * 10)}
-                      />
-                    )}
-                    {activeActivity === 'matching' && (
-                      <MatchingGame
-                        pairs={activityData.matching}
-                        onComplete={(score) => handleActivityComplete('matching', 40)}
-                      />
-                    )}
-                    {activeActivity === 'drag-drop' && (
-                      <DragDropGame
-                        numbers={activityData.dragDrop}
-                        onComplete={(score) => handleActivityComplete('drag-drop', 30)}
-                      />
-                    )}
-                    {activeActivity === 'speed-calc' && (
-                      <SpeedCalcGame
-                        onComplete={(score) => handleActivityComplete('speed-calc', score * 2)}
-                      />
-                    )}
-                  </Card>
-                )}
+                <InteractiveActivities 
+                  content={lessonData.activites} 
+                  isLoading={isLoadingActivites}
+                />
               </TabsContent>
 
-              {/* QUIZ TAB */}
+              {/* QUIZ FINAL TAB */}
               <TabsContent value="quiz" className="space-y-4">
-                <Card className="lesson-card border-none rounded-[20px] shadow-xl border-2 border-success/30 bg-gradient-to-br from-success/5 to-primary/5">
-                  <CardHeader className="p-4 sm:p-6 bg-gradient-to-r from-success/20 to-primary/20 rounded-t-[20px]">
-                    <div className="flex items-center justify-between">
-                      <CardTitle className="flex items-center gap-2 text-lg sm:text-xl">
-                        <Trophy className="text-primary shrink-0" size={22} />
-                        🏆 Quiz Final d'Évaluation
-                      </CardTitle>
-                      <Badge className="bg-success/20 text-success border-success/30">5 Questions</Badge>
-                    </div>
-                  </CardHeader>
-                  <CardContent className="p-4 sm:p-6 pt-6">
-                    {isLoadingQuiz ? (
-                      <div className="flex flex-col items-center justify-center py-12 space-y-4">
-                        <Loader2 className="h-12 w-12 animate-spin text-success" />
-                        <p className="text-muted-foreground text-center">Génération du quiz d'évaluation...</p>
-                      </div>
-                    ) : lessonData.quiz ? (
-                      <div className="prose prose-sm sm:prose-base max-w-none dark:prose-invert">
-                        <div className="whitespace-pre-wrap text-sm sm:text-base leading-loose space-y-6 bg-white/50 dark:bg-gray-900/30 p-5 rounded-xl">
-                          {lessonData.quiz}
-                        </div>
-                      </div>
-                    ) : (
-                      <p className="text-muted-foreground text-center py-8">Aucun quiz disponible</p>
-                    )}
-                  </CardContent>
-                </Card>
+                <InteractiveQuiz 
+                  content={lessonData.quiz} 
+                  isLoading={isLoadingQuiz}
+                />
               </TabsContent>
             </Tabs>
           </div>
