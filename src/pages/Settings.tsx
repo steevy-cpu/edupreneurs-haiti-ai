@@ -64,11 +64,17 @@ const Settings = () => {
     achievementAlerts: true,
     weeklyProgress: false,
   });
-  const [language, setLanguage] = useState("fr");
+  const [language, setLanguage] = useState(() => {
+    return localStorage.getItem("lessonLanguage") || "fr";
+  });
 
   useEffect(() => {
     fetchUserData();
   }, []);
+
+  useEffect(() => {
+    localStorage.setItem("lessonLanguage", language);
+  }, [language]);
 
   const fetchUserData = async () => {
     const { data: { session } } = await supabase.auth.getSession();

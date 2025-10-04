@@ -12,63 +12,115 @@ serve(async (req) => {
   }
 
   try {
-    const { message, lessonType, chatHistory } = await req.json();
+    const { message, lessonType, chatHistory, language = 'fr' } = await req.json();
     const GEMINI_API_KEY = Deno.env.get('GEMINI_API_KEY');
 
     if (!GEMINI_API_KEY) {
       throw new Error('GEMINI_API_KEY is not configured');
     }
 
+    const languageText = language === 'fr' ? 'français' : 'créole haïtien';
+    const mixedLanguageInstruction = language === 'fr' 
+      ? 'Écris PRINCIPALEMENT en français standard et intègre naturellement le créole haïtien UNIQUEMENT pour clarifier des concepts difficiles ou ajouter des exemples parlants. Ne fais PAS de traduction ligne par ligne.'
+      : 'Écris ENTIÈREMENT en créole haïtien (kreyòl ayisyen) de manière naturelle et fluide.';
+
     // Build system prompt based on lesson type
-    let systemPrompt = `Tu es un tuteur expert pour les élèves du cycle secondaire en Haïti (AF7 à NS4). 
+    let systemPrompt = `Tu es un tuteur expert pour les élèves du cycle secondaire en Haïti. 
 Tu expliques les concepts de manière claire, engageante et pédagogique, en t'adaptant au niveau et à la matière enseignée.
 
 IMPORTANT - Style linguistique :
-- Écris PRINCIPALEMENT en français standard
-- Intègre naturellement le créole haïtien UNIQUEMENT pour clarifier des concepts difficiles ou ajouter des exemples parlants
-- Ne fais PAS de traduction ligne par ligne (français puis créole)
-- Utilise le créole de façon stratégique pour renforcer la compréhension, pas pour tout répéter
-- Exemple : "La fonction f(x) = 2x + 3 est linéaire. Si ou vle konprann li byen, imajine ou ap achte 2 pen chak jou..." (tu expliques directement en mêlant les langues naturellement)
+${mixedLanguageInstruction}
+${language === 'fr' ? '- Utilise le créole de façon stratégique pour renforcer la compréhension, pas pour tout répéter\n- Exemple : "La fonction f(x) = 2x + 3 est linéaire. Si ou vle konprann li byen, imajine ou ap achte 2 pen chak jou..." (tu expliques directement en mêlant les langues naturellement)' : ''}
 
 IMPORTANT - Formatage :
 - N'utilise JAMAIS d'astérisques (*) pour le formatage ou la mise en gras
 - Utilise plutôt les titres avec ## pour structurer
-- Utilise des emojis 🎯 📚 ✨ 💡 pour rendre le contenu plus engageant et visuel
+- Utilise des emojis 🎯 📚 ✨ 💡 ✏️ 🔢 📐 pour rendre le contenu plus engageant et visuel
 - Place des emojis pertinents près des titres et concepts importants
 
-Structure de réponse :`;
+Structure de réponse en ${languageText} :`;
 
     if (lessonType === 'lesson') {
       systemPrompt += `
 
-MODE LEÇON - Fournis un contenu structuré et complet avec :
+MODE LEÇON COMPLÈTE - Tu dois générer TROIS sections distinctes en réponse JSON :
 
-1. **Définitions clés** : Explique les concepts principaux de manière simple
-2. **Explications détaillées** : Développe chaque concept avec des analogies et exemples concrets du quotidien haïtien
-3. **Propriétés et règles importantes** : Liste les formules, théorèmes ou règles essentielles
-4. **Méthodes et techniques** : Montre comment résoudre des problèmes types
-5. **Exemples résolus** : Présente 2-3 exemples détaillés étape par étape
-6. **Exemples d'exercices** : Propose 3-5 exercices variés (facile, moyen, difficile) avec leurs solutions complètes et explications. Formate cette section clairement avec un titre "## Exemples d'exercices" suivi des exercices numérotés.
+Réponds UNIQUEMENT avec un objet JSON ayant cette structure exacte :
+{
+  "objectif": "Le but principal de cette leçon en 2-3 phrases claires",
+  "introduction": "Une introduction engageante de 3-4 phrases qui motive l'élève et présente le sujet",
+  "contenu": "Le contenu complet structuré avec :
+    ## 🎯 Définitions clés
+    [Explique les concepts principaux de manière simple]
+    
+    ## 📚 Explications détaillées  
+    [Développe chaque concept avec des analogies et exemples concrets du quotidien haïtien]
+    
+    ## ✨ Propriétés et règles importantes
+    [Liste les formules, théorèmes ou règles essentielles]
+    
+    ## 💡 Méthodes et techniques
+    [Montre comment résoudre des problèmes types]
+    
+    ## 🔢 Exemples résolus
+    [Présente 2-3 exemples détaillés étape par étape]"
+}
 
-Utilise des titres clairs (##) pour chaque section. Sois pédagogique, patient et encourage l'élève.`;
+Utilise des emojis et des titres clairs (##) pour chaque section. Sois pédagogique, patient et encourage l'élève.`;
+    } else if (lessonType === 'activites') {
+      systemPrompt += `
+
+MODE ACTIVITÉS - Génère des exemples d'exercices pratiques :
+
+Propose 3-5 exercices variés (facile, moyen, difficile) avec leurs solutions complètes et explications détaillées.
+
+Structure ton contenu ainsi :
+## ✏️ Exercice 1 (Facile)
+[Énoncé de l'exercice]
+
+### Solution :
+[Solution détaillée étape par étape]
+
+## ✏️ Exercice 2 (Moyen)
+[Énoncé]
+
+### Solution :
+[Solution détaillée]
+
+[Continue avec les autres exercices...]
+
+Utilise des emojis pour rendre les exercices plus engageants.`;
+    } else if (lessonType === 'quiz') {
+      systemPrompt += `
+
+MODE QUIZ FINAL - Crée un quiz d'évaluation de 5 questions :
+
+Génère 5 questions à choix multiples pour évaluer la compréhension du sujet.
+
+Structure ton quiz ainsi :
+## ✅ Question 1
+[Énoncé de la question]
+
+A) [Option A]
+B) [Option B]
+C) [Option C]
+D) [Option D]
+
+### Réponse correcte : [Lettre]
+### Explication : [Pourquoi cette réponse est correcte]
+
+[Continue avec les autres questions...]
+
+Varie la difficulté des questions et donne des explications claires pour chaque réponse.`;
     } else if (lessonType === 'exercise') {
       systemPrompt += `
 
-MODE EXERCICE - Guide l'élève dans la résolution :
+MODE EXERCICE INTERACTIF - Guide l'élève dans la résolution :
 - Analyse le problème étape par étape
 - Donne des indices progressifs sans révéler la solution immédiatement
 - Encourage et félicite les efforts
 - Corrige les erreurs avec bienveillance
 - Propose des exercices similaires pour pratiquer`;
-    } else if (lessonType === 'quiz') {
-      systemPrompt += `
-
-MODE QUIZ - Évalue la compréhension :
-- Pose des questions ciblées sur les concepts clés
-- Varie la difficulté des questions
-- Donne un feedback constructif sur les réponses
-- Explique pourquoi une réponse est correcte ou incorrecte
-- Encourage l'élève à continuer`;
     }
 
     // Prepare messages for Gemini
@@ -118,6 +170,26 @@ MODE QUIZ - Évalue la compréhension :
     
     // Clean asterisks from the response
     aiResponse = aiResponse.replace(/\*\*/g, '').replace(/\*/g, '');
+
+    // For lesson type, try to parse JSON response
+    if (lessonType === 'lesson') {
+      try {
+        // Extract JSON from potential markdown code blocks
+        const jsonMatch = aiResponse.match(/```json\s*([\s\S]*?)\s*```/) || aiResponse.match(/\{[\s\S]*\}/);
+        if (jsonMatch) {
+          const jsonStr = jsonMatch[1] || jsonMatch[0];
+          const parsed = JSON.parse(jsonStr);
+          return new Response(
+            JSON.stringify(parsed),
+            {
+              headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+            }
+          );
+        }
+      } catch (e) {
+        console.log('Failed to parse JSON, returning raw response');
+      }
+    }
 
     return new Response(
       JSON.stringify({ response: aiResponse }),

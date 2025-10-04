@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -9,12 +9,17 @@ import {
   ArrowLeft,
   Save,
   Trash2,
-  Video,
   Brain,
   Gamepad2,
   Trophy,
   Zap,
-  RefreshCw
+  RefreshCw,
+  BookOpen,
+  Target,
+  Lightbulb,
+  Loader2,
+  Dumbbell,
+  CheckCircle
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
@@ -32,17 +37,35 @@ import {
   equationsMatching 
 } from "@/data/mathActivities";
 
+interface LessonData {
+  objectif: string;
+  introduction: string;
+  contenu: string;
+  activites: string;
+  quiz: string;
+}
+
 const MathLesson = () => {
   const { topicId } = useParams();
   const navigate = useNavigate();
   const { toast } = useToast();
   const [isLoadingLesson, setIsLoadingLesson] = useState(false);
-  const [lessonContent, setLessonContent] = useState("");
-  const [exerciseExamples, setExerciseExamples] = useState("");
+  const [isLoadingActivites, setIsLoadingActivites] = useState(false);
+  const [isLoadingQuiz, setIsLoadingQuiz] = useState(false);
+  const [lessonData, setLessonData] = useState<LessonData>({
+    objectif: "",
+    introduction: "",
+    contenu: "",
+    activites: "",
+    quiz: "",
+  });
   const [notes, setNotes] = useState("");
   const [notesSaved, setNotesSaved] = useState(true);
   const [activeActivity, setActiveActivity] = useState<string | null>(null);
   const [earnedGold, setEarnedGold] = useState(0);
+  const [language, setLanguage] = useState(() => {
+    return localStorage.getItem("lessonLanguage") || "fr";
+  });
 
   const topicInfo: { [key: string]: { title: string; icon: string; goldReward: number } } = {
     "numeration-binaire": { 
@@ -129,55 +152,110 @@ const MathLesson = () => {
 
   const currentTopic = topicInfo[topicId || ""] || topicInfo["numeration-binaire"];
 
-  // Load cached notes and exercises on component mount
+  // Load cached notes on mount
   useEffect(() => {
     const savedNotes = localStorage.getItem(`notes:math:${topicId}`);
     if (savedNotes) {
       setNotes(savedNotes);
     }
-    const savedExercises = localStorage.getItem(`exercises:${topicId}`);
-    if (savedExercises) {
-      setExerciseExamples(savedExercises);
-    }
   }, [topicId]);
 
+  // Update language from localStorage
+  useEffect(() => {
+    const savedLanguage = localStorage.getItem("lessonLanguage") || "fr";
+    setLanguage(savedLanguage);
+  }, []);
+
+  // Load lesson data from cache or fetch
+  useEffect(() => {
+    if (topicId && topicInfo[topicId]) {
+      const cacheKey = `lesson_full_${topicId}_${language}`;
+      const cachedData = localStorage.getItem(cacheKey);
+
+      if (cachedData) {
+        setLessonData(JSON.parse(cachedData));
+      } else {
+        loadLesson();
+      }
+    }
+  }, [topicId, language]);
+
   const loadLesson = async (forceRegenerate = false) => {
-    // Check localStorage first (unless force regenerate)
+    if (!topicId || !topicInfo[topicId]) return;
+
+    const cacheKey = `lesson_full_${topicId}_${language}`;
+    
+    // If not forcing regenerate, check cache
     if (!forceRegenerate) {
-      const cachedLesson = localStorage.getItem(`lesson:${topicId}`);
-      if (cachedLesson) {
-        setLessonContent(cachedLesson);
+      const cachedData = localStorage.getItem(cacheKey);
+      if (cachedData) {
+        setLessonData(JSON.parse(cachedData));
         return;
       }
     }
 
-    setIsLoadingLesson(true);
+    const topic = topicInfo[topicId];
+    const languageText = language === "fr" ? "français" : "créole haïtien";
+
     try {
-      const { data, error } = await supabase.functions.invoke('math-ai-tutor', {
-        body: {
-          message: `Présente le chapitre "${currentTopic.title}" de manière complète et pédagogique pour un élève du cycle secondaire en Haïti (niveau AF7). N'oublie pas d'inclure des exemples d'exercices avec leurs solutions.`,
+      // First call: Objectif, Introduction, and Contenu
+      setIsLoadingLesson(true);
+      const { data: lessonResponse, error: lessonError } = await supabase.functions.invoke('math-ai-tutor', {
+        body: { 
+          message: `Génère le contenu de leçon pour le sujet "${topic.title}" niveau AF7.`,
           lessonType: 'lesson',
-          chatHistory: []
+          language: language
         }
       });
 
-      if (error) throw error;
-      
-      // Split content into lesson and exercises if marker exists
-      const fullContent = data.response;
-      const exerciseMarker = "## Exemples d'exercices";
-      
-      if (fullContent.includes(exerciseMarker)) {
-        const [mainContent, exercises] = fullContent.split(exerciseMarker);
-        setLessonContent(mainContent.trim());
-        setExerciseExamples(exerciseMarker + "\n" + exercises.trim());
-        localStorage.setItem(`lesson:${topicId}`, mainContent.trim());
-        localStorage.setItem(`exercises:${topicId}`, exerciseMarker + "\n" + exercises.trim());
-      } else {
-        setLessonContent(fullContent);
-        localStorage.setItem(`lesson:${topicId}`, fullContent);
-      }
-      
+      if (lessonError) throw lessonError;
+
+      const newLessonData: LessonData = {
+        objectif: lessonResponse?.objectif || "",
+        introduction: lessonResponse?.introduction || "",
+        contenu: lessonResponse?.contenu || "",
+        activites: "",
+        quiz: "",
+      };
+
+      setLessonData(newLessonData);
+      setIsLoadingLesson(false);
+
+      // Second call: Activités (exercises)
+      setIsLoadingActivites(true);
+      const { data: activitesResponse, error: activitesError } = await supabase.functions.invoke('math-ai-tutor', {
+        body: { 
+          message: `Génère des exemples d'exercices pratiques pour "${topic.title}" niveau AF7.`,
+          lessonType: 'activites',
+          language: language
+        }
+      });
+
+      if (activitesError) throw activitesError;
+
+      newLessonData.activites = activitesResponse?.response || "";
+      setLessonData({...newLessonData});
+      setIsLoadingActivites(false);
+
+      // Third call: Quiz
+      setIsLoadingQuiz(true);
+      const { data: quizResponse, error: quizError } = await supabase.functions.invoke('math-ai-tutor', {
+        body: { 
+          message: `Génère un quiz final de 5 questions pour évaluer la compréhension de "${topic.title}" niveau AF7.`,
+          lessonType: 'quiz',
+          language: language
+        }
+      });
+
+      if (quizError) throw quizError;
+
+      newLessonData.quiz = quizResponse?.response || "";
+      setLessonData({...newLessonData});
+      setIsLoadingQuiz(false);
+
+      // Cache the complete lesson data
+      localStorage.setItem(cacheKey, JSON.stringify(newLessonData));
+
       if (forceRegenerate) {
         toast({
           title: "Leçon régénérée",
@@ -191,8 +269,9 @@ const MathLesson = () => {
         description: "Impossible de charger la leçon",
         variant: "destructive"
       });
-    } finally {
       setIsLoadingLesson(false);
+      setIsLoadingActivites(false);
+      setIsLoadingQuiz(false);
     }
   };
 
@@ -251,10 +330,6 @@ const MathLesson = () => {
   };
 
   const activityData = getActivityData();
-
-  if (!lessonContent && !isLoadingLesson) {
-    loadLesson();
-  }
 
   return (
     <div className="min-h-screen lesson-bg">
@@ -320,81 +395,123 @@ const MathLesson = () => {
 
               {/* LESSON TAB */}
               <TabsContent value="lesson" className="space-y-4">
-                {isLoadingLesson ? (
-                  <Card className="lesson-card p-8">
-                    <div className="flex items-center justify-center py-12">
-                      <div className="text-center space-y-4">
-                        <div className="w-16 h-16 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto" />
-                        <p className="text-muted-foreground">Chargement de la leçon...</p>
+                {/* Objectif */}
+                <Card className="lesson-card border-none rounded-[20px] shadow-md bg-gradient-to-br from-primary/5 to-success/5">
+                  <CardHeader className="p-4 sm:p-6">
+                    <CardTitle className="flex items-center gap-2 text-lg sm:text-xl">
+                      <Target className="text-primary shrink-0" size={20} />
+                      🎯 Objectif de la leçon
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="p-4 sm:p-6 pt-0">
+                    {isLoadingLesson ? (
+                      <div className="flex items-center justify-center py-4">
+                        <Loader2 className="h-6 w-6 animate-spin text-primary" />
                       </div>
-                    </div>
-                  </Card>
-                ) : (
-                  <>
-                    {/* Objectifs */}
-                    <Card className="lesson-card">
-                      <div className="p-6 lesson-markdown">
-                        <h2>Objectifs</h2>
-                        <p>Comprendre, lire, comparer, ordonner et utiliser les nombres entiers naturels dans des situations variées; maîtriser la valeur de position et les critères de divisibilité principaux afin de renforcer le calcul mental et la justification écrite.</p>
-                      </div>
-                    </Card>
-
-                    {/* Introduction */}
-                    <Card className="lesson-card">
-                      <div className="p-6 lesson-markdown">
-                        <h2>Introduction</h2>
-                        <p>Les <strong>nombres entiers naturels</strong> (0,1,2,3,...) sont la base de presque toute activité mathématique au cycle fondamental. Savoir les manipuler structure le raisonnement : compter, mesurer, coder, ordonner, estimer. Cette leçon consolide la compréhension de la structure décimale (valeur de position), des écritures, des comparaisons et amorce les critères de divisibilité utilisés plus tard pour les fractions et le calcul algébrique élémentaire.</p>
-                      </div>
-                    </Card>
-
-                    {/* AI Generated Content */}
-                    <Card className="lesson-card">
-                      <div className="p-6 lesson-markdown">
-                        <div className="flex items-center justify-between mb-4">
-                          <h2>Contenu de la Leçon</h2>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => loadLesson(true)}
-                            disabled={isLoadingLesson}
-                          >
-                            <RefreshCw className={`w-4 h-4 mr-2 ${isLoadingLesson ? 'animate-spin' : ''}`} />
-                            Régénérer
-                          </Button>
-                        </div>
-                        <div className="whitespace-pre-wrap text-base leading-relaxed">
-                          {lessonContent}
+                    ) : lessonData.objectif ? (
+                      <div className="prose prose-sm sm:prose-base max-w-none dark:prose-invert">
+                        <div className="whitespace-pre-wrap text-sm sm:text-base leading-relaxed bg-background/50 p-4 rounded-lg">
+                          {lessonData.objectif}
                         </div>
                       </div>
-                    </Card>
-
-                    {/* Examples d'exercices */}
-                    {exerciseExamples && (
-                      <Card className="lesson-card">
-                        <div className="p-6 lesson-markdown">
-                          <div className="whitespace-pre-wrap text-base leading-relaxed">
-                            {exerciseExamples}
-                          </div>
-                        </div>
-                      </Card>
+                    ) : (
+                      <p className="text-muted-foreground">Chargement...</p>
                     )}
+                  </CardContent>
+                </Card>
 
-                    {/* Video Placeholder */}
-                    <Card className="lesson-card">
-                      <div className="p-6">
-                        <h5 className="lesson-markdown-title mb-3">Vidéo de cours</h5>
-                        <div className="video-placeholder">
-                          <Video className="w-6 h-6 mr-2" />
-                          Vidéo à venir — {currentTopic.title.toLowerCase()}
+                {/* Introduction */}
+                <Card className="lesson-card border-none rounded-[20px] shadow-md bg-gradient-to-br from-accent/5 to-primary/5">
+                  <CardHeader className="p-4 sm:p-6">
+                    <CardTitle className="flex items-center gap-2 text-lg sm:text-xl">
+                      <Lightbulb className="text-primary shrink-0" size={20} />
+                      💡 Introduction
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="p-4 sm:p-6 pt-0">
+                    {isLoadingLesson ? (
+                      <div className="flex items-center justify-center py-4">
+                        <Loader2 className="h-6 w-6 animate-spin text-primary" />
+                      </div>
+                    ) : lessonData.introduction ? (
+                      <div className="prose prose-sm sm:prose-base max-w-none dark:prose-invert">
+                        <div className="whitespace-pre-wrap text-sm sm:text-base leading-relaxed bg-background/50 p-4 rounded-lg">
+                          {lessonData.introduction}
                         </div>
                       </div>
-                    </Card>
-                  </>
-                )}
+                    ) : (
+                      <p className="text-muted-foreground">Chargement...</p>
+                    )}
+                  </CardContent>
+                </Card>
+
+                {/* Contenu de la leçon */}
+                <Card className="lesson-card border-none rounded-[20px] shadow-md">
+                  <CardHeader className="p-4 sm:p-6 bg-gradient-to-r from-primary/10 to-success/10 rounded-t-[20px]">
+                    <div className="flex items-center justify-between">
+                      <CardTitle className="flex items-center gap-2 text-lg sm:text-xl">
+                        <BookOpen className="text-primary shrink-0" size={20} />
+                        📚 Contenu de la leçon
+                      </CardTitle>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => loadLesson(true)}
+                        disabled={isLoadingLesson}
+                      >
+                        <RefreshCw className={`w-4 h-4 mr-2 ${isLoadingLesson ? 'animate-spin' : ''}`} />
+                        Régénérer
+                      </Button>
+                    </div>
+                  </CardHeader>
+                  <CardContent className="p-4 sm:p-6 pt-6">
+                    {isLoadingLesson ? (
+                      <div className="flex items-center justify-center py-8">
+                        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                      </div>
+                    ) : (
+                      <div className="prose prose-sm sm:prose-base max-w-none dark:prose-invert">
+                        {lessonData.contenu ? (
+                          <div className="whitespace-pre-wrap text-sm sm:text-base leading-loose space-y-4">
+                            {lessonData.contenu}
+                          </div>
+                        ) : (
+                          <p className="text-muted-foreground">Chargement du contenu...</p>
+                        )}
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+
+                {/* Exemples d'exercices */}
+                <Card className="lesson-card border-none rounded-[20px] shadow-md border-2 border-primary/20">
+                  <CardHeader className="p-4 sm:p-6 bg-gradient-to-r from-success/10 to-primary/10 rounded-t-[20px]">
+                    <CardTitle className="flex items-center gap-2 text-lg sm:text-xl">
+                      <Dumbbell className="text-primary shrink-0" size={20} />
+                      ✏️ Exemples d'exercices
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="p-4 sm:p-6 pt-6">
+                    {isLoadingActivites ? (
+                      <div className="flex items-center justify-center py-8">
+                        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                      </div>
+                    ) : lessonData.activites ? (
+                      <div className="prose prose-sm sm:prose-base max-w-none dark:prose-invert">
+                        <div className="whitespace-pre-wrap text-sm sm:text-base leading-loose space-y-4 bg-muted/30 p-4 rounded-lg">
+                          {lessonData.activites}
+                        </div>
+                      </div>
+                    ) : (
+                      <p className="text-muted-foreground">Chargement des exercices...</p>
+                    )}
+                  </CardContent>
+                </Card>
               </TabsContent>
 
               {/* ACTIVITIES TAB */}
               <TabsContent value="activities" className="space-y-4">
+                
                 {activeActivity === null ? (
                   <div className="grid md:grid-cols-2 gap-4">
                     <Card className="lesson-card p-6 hover:shadow-xl transition-all cursor-pointer group"
@@ -465,7 +582,32 @@ const MathLesson = () => {
                         <div className="flex items-center justify-between">
                           <Badge className="gap-1">
                             <Trophy className="w-3 h-3" />
-                            +25 gold
+                            +40 gold
+                          </Badge>
+                          <Button size="sm">Jouer</Button>
+                        </div>
+                      </div>
+                    </Card>
+
+                    <Card className="lesson-card p-6 hover:shadow-xl transition-all cursor-pointer group"
+                      onClick={() => setActiveActivity('quiz')}>
+                      <div className="space-y-4">
+                        <div className="flex items-center gap-3">
+                          <div className="w-12 h-12 rounded-lg bg-accent/10 flex items-center justify-center text-2xl">
+                            🧠
+                          </div>
+                          <div>
+                            <h3 className="font-bold text-lg">Quiz</h3>
+                            <p className="text-sm text-muted-foreground">Questions à choix</p>
+                          </div>
+                        </div>
+                        <p className="text-sm">
+                          Réponds correctement aux questions
+                        </p>
+                        <div className="flex items-center justify-between">
+                          <Badge className="gap-1">
+                            <Trophy className="w-3 h-3" />
+                            +50 gold
                           </Badge>
                           <Button size="sm">Jouer</Button>
                         </div>
@@ -473,99 +615,122 @@ const MathLesson = () => {
                     </Card>
                   </div>
                 ) : (
-                  <div>
-                    <Button 
-                      variant="ghost" 
-                      className="mb-4"
+                  <Card className="lesson-card p-6">
+                    <Button
+                      variant="ghost"
                       onClick={() => setActiveActivity(null)}
+                      className="mb-4"
                     >
                       <ArrowLeft className="w-4 h-4 mr-2" />
                       Retour aux activités
                     </Button>
-                    
-                    {activeActivity === 'drag-drop' && (
-                      <DragDropGame 
-                        numbers={activityData.dragDrop}
-                        onComplete={(gold) => handleActivityComplete('drag-drop', gold)}
-                      />
-                    )}
-                    {activeActivity === 'speed-calc' && (
-                      <SpeedCalcGame 
-                        onComplete={(score, gold) => handleActivityComplete('speed-calc', gold)}
+
+                    {activeActivity === 'quiz' && (
+                      <QuizGame
+                        topic={currentTopic.title}
+                        questions={activityData.quiz}
+                        onComplete={(score) => handleActivityComplete('quiz', score * 10)}
                       />
                     )}
                     {activeActivity === 'matching' && (
-                      <MatchingGame 
+                      <MatchingGame
                         pairs={activityData.matching}
-                        onComplete={(gold) => handleActivityComplete('matching', gold)}
+                        onComplete={(score) => handleActivityComplete('matching', 40)}
                       />
                     )}
-                  </div>
+                    {activeActivity === 'drag-drop' && (
+                      <DragDropGame
+                        numbers={activityData.dragDrop}
+                        onComplete={(score) => handleActivityComplete('drag-drop', 30)}
+                      />
+                    )}
+                    {activeActivity === 'speed-calc' && (
+                      <SpeedCalcGame
+                        onComplete={(score) => handleActivityComplete('speed-calc', score * 2)}
+                      />
+                    )}
+                  </Card>
                 )}
               </TabsContent>
 
               {/* QUIZ TAB */}
-              <TabsContent value="quiz">
-                <QuizGame 
-                  topic={currentTopic.title}
-                  questions={activityData.quiz}
-                  onComplete={(score, gold) => {
-                    handleActivityComplete('quiz', gold);
-                    toast({
-                      title: "Félicitations! 🏆",
-                      description: `Tu as complété le chapitre "${currentTopic.title}"!`,
-                    });
-                  }}
-                />
+              <TabsContent value="quiz" className="space-y-4">
+                <Card className="lesson-card border-none rounded-[20px] shadow-md border-2 border-success/30">
+                  <CardHeader className="p-4 sm:p-6 bg-gradient-to-r from-success/10 to-accent/10 rounded-t-[20px]">
+                    <CardTitle className="flex items-center gap-2 text-lg sm:text-xl">
+                      <CheckCircle className="text-primary shrink-0" size={20} />
+                      ✅ Quiz Final
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="p-4 sm:p-6 pt-6">
+                    {isLoadingQuiz ? (
+                      <div className="flex items-center justify-center py-8">
+                        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                      </div>
+                    ) : lessonData.quiz ? (
+                      <div className="prose prose-sm sm:prose-base max-w-none dark:prose-invert">
+                        <div className="whitespace-pre-wrap text-sm sm:text-base leading-loose space-y-4 bg-success/5 p-4 rounded-lg">
+                          {lessonData.quiz}
+                        </div>
+                      </div>
+                    ) : (
+                      <p className="text-center text-muted-foreground py-8">
+                        Quiz en cours de chargement...
+                      </p>
+                    )}
+                  </CardContent>
+                </Card>
               </TabsContent>
             </Tabs>
           </div>
 
           {/* Sidebar */}
-          <div className="space-y-4 lg:sticky lg:top-24 lg:self-start">
-            {/* Gold Display */}
-            <Card className="lesson-card bg-gradient-to-br from-accent/10 to-yellow-500/10 border-accent/20">
-              <div className="p-6 text-center">
-                <Trophy className="w-12 h-12 text-accent mx-auto mb-2" />
-                <p className="text-sm text-muted-foreground mb-1">Gold gagné</p>
-                <p className="text-3xl font-bold gold-text">+{earnedGold}</p>
+          <div className="space-y-4">
+            {/* Gold Progress */}
+            <Card className="lesson-card p-6 bg-gradient-to-br from-[hsl(var(--accent))]/10 to-[hsl(var(--primary))]/10">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-sm font-medium">Gold gagné</span>
+                <Trophy className="w-5 h-5 text-[hsl(var(--accent))]" />
               </div>
+              <div className="text-3xl font-extrabold bg-gradient-to-r from-[hsl(var(--accent))] to-[hsl(25_100%_50%)] bg-clip-text text-transparent">
+                {earnedGold}
+              </div>
+              <p className="text-xs text-muted-foreground mt-1">Cette leçon: jusqu'à {currentTopic.goldReward} gold</p>
             </Card>
 
-            {/* Personal Notes */}
-            <Card className="lesson-card">
-              <div className="p-6">
-                <h5 className="lesson-markdown-title mb-3">Notes personnelles</h5>
-                <Textarea
-                  value={notes}
-                  onChange={(e) => handleNotesChange(e.target.value)}
-                  placeholder="Idées, stratégies, critères…"
-                  className="min-h-[200px] resize-y mb-3"
-                />
-                <div className="flex items-center justify-between">
-                  <span className="text-xs text-muted-foreground">
-                    {notesSaved ? "Sauvegardé" : "Non sauvegardé"}
-                  </span>
-                  <div className="flex gap-2">
-                    <Button size="sm" onClick={saveNotes}>
-                      <Save className="w-4 h-4 mr-1" />
-                      Sauvegarder
-                    </Button>
-                    <Button size="sm" variant="outline" onClick={clearNotes}>
-                      <Trash2 className="w-4 h-4" />
-                    </Button>
-                  </div>
-                </div>
+            {/* Notes */}
+            <Card className="lesson-card p-6">
+              <div className="flex items-center justify-between mb-3">
+                <h5 className="lesson-markdown-title">Mes Notes</h5>
+                {!notesSaved && (
+                  <Badge variant="outline" className="text-xs">
+                    Non sauvegardé
+                  </Badge>
+                )}
               </div>
-            </Card>
-
-            {/* Tip Card */}
-            <Card className="lesson-card bg-success/5 border-success/20">
-              <div className="p-4">
-                <h6 className="font-semibold mb-2 text-sm">Conseil</h6>
-                <p className="text-sm text-muted-foreground">
-                  Avant de vérifier 9 ou 3, additionne les chiffres une seule fois.
-                </p>
+              <Textarea
+                placeholder="Prends des notes ici..."
+                value={notes}
+                onChange={(e) => handleNotesChange(e.target.value)}
+                className="min-h-[200px] mb-3 bg-background"
+              />
+              <div className="flex gap-2">
+                <Button
+                  onClick={saveNotes}
+                  className="flex-1"
+                  size="sm"
+                  disabled={notesSaved}
+                >
+                  <Save className="w-4 h-4 mr-2" />
+                  Sauvegarder
+                </Button>
+                <Button
+                  onClick={clearNotes}
+                  variant="outline"
+                  size="sm"
+                >
+                  <Trash2 className="w-4 h-4" />
+                </Button>
               </div>
             </Card>
           </div>
@@ -576,3 +741,4 @@ const MathLesson = () => {
 };
 
 export default MathLesson;
+
