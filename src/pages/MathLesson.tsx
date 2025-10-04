@@ -45,19 +45,89 @@ const MathLesson = () => {
   const [earnedGold, setEarnedGold] = useState(0);
 
   const topicInfo: { [key: string]: { title: string; icon: string; goldReward: number } } = {
-    "nombres-entiers": { 
-      title: "Les Nombres Entiers", 
-      icon: "🔢",
+    "numeration-binaire": { 
+      title: "Numération Binaire", 
+      icon: "💻",
+      goldReward: 80
+    },
+    "polygones": { 
+      title: "Les Polygones", 
+      icon: "⬡",
       goldReward: 100
     },
-    "equations-second-degre": { 
-      title: "Équations du Second Degré", 
+    "unites-mesures": { 
+      title: "Unités de Mesures", 
+      icon: "📏",
+      goldReward: 90
+    },
+    "divisibilite": { 
+      title: "Divisibilité", 
+      icon: "➗",
+      goldReward: 100
+    },
+    "decimaux": { 
+      title: "Décimaux", 
+      icon: "🔢",
+      goldReward: 120
+    },
+    "cercle-disque": { 
+      title: "Cercle et Disque", 
+      icon: "⭕",
+      goldReward: 110
+    },
+    "triangles": { 
+      title: "Les Triangles", 
+      icon: "🔺",
+      goldReward: 100
+    },
+    "aires-perimetres": { 
+      title: "Aires et Périmètres", 
+      icon: "📐",
+      goldReward: 120
+    },
+    "proportionnalite": { 
+      title: "Proportionnalité", 
+      icon: "📊",
+      goldReward: 130
+    },
+    "entiers-relatifs": { 
+      title: "Entiers Relatifs", 
+      icon: "➕➖",
+      goldReward: 110
+    },
+    "volumes-solides": { 
+      title: "Volumes de Solides", 
+      icon: "📦",
+      goldReward: 140
+    },
+    "fractions": { 
+      title: "Les Fractions", 
+      icon: "🍕",
+      goldReward: 150
+    },
+    "parallelogrammes": { 
+      title: "Les Parallélogrammes", 
+      icon: "◇",
+      goldReward: 100
+    },
+    "reperage-quadrillage": { 
+      title: "Repérage sur Quadrillage", 
+      icon: "🗺️",
+      goldReward: 110
+    },
+    "transformations": { 
+      title: "Les Transformations", 
+      icon: "🔄",
+      goldReward: 140
+    },
+    "statistiques": { 
+      title: "Statistiques Élémentaires", 
       icon: "📈",
       goldReward: 150
     }
   };
 
-  const currentTopic = topicInfo[topicId || ""] || topicInfo["nombres-entiers"];
+  const currentTopic = topicInfo[topicId || ""] || topicInfo["numeration-binaire"];
 
   // Load cached notes and exercises on component mount
   useEffect(() => {
@@ -85,7 +155,7 @@ const MathLesson = () => {
     try {
       const { data, error } = await supabase.functions.invoke('math-ai-tutor', {
         body: {
-          message: `Présente le chapitre "${currentTopic.title}" de manière complète et pédagogique pour un élève de Terminale. N'oublie pas d'inclure des exemples d'exercices avec leurs solutions.`,
+          message: `Présente le chapitre "${currentTopic.title}" de manière complète et pédagogique pour un élève du cycle secondaire en Haïti (niveau AF7). N'oublie pas d'inclure des exemples d'exercices avec leurs solutions.`,
           lessonType: 'lesson',
           chatHistory: []
         }

@@ -30,66 +30,174 @@ const MathCourse = () => {
   const navigate = useNavigate();
   const [userGold] = useState(250);
 
+  // AF7 Mathematics Topics - MENFP Program
   const topics: Topic[] = [
+    // Janvier - Semaine 2
     {
-      id: "nombres-entiers",
-      title: "Les Nombres Entiers",
-      description: "Comprendre les opérations sur les nombres entiers positifs et négatifs",
-      progress: 75,
+      id: "numeration-binaire",
+      title: "Numération Binaire",
+      description: "Écrire des nombres en binaire, calculer sommes et différences",
+      progress: 0,
+      goldReward: 80,
+      isLocked: false,
+      isCompleted: false,
+      icon: "💻"
+    },
+    {
+      id: "polygones",
+      title: "Les Polygones",
+      description: "Lignes polygonales, définition et description des polygones",
+      progress: 0,
       goldReward: 100,
+      isLocked: false,
+      isCompleted: false,
+      icon: "⬡"
+    },
+    {
+      id: "unites-mesures",
+      title: "Unités de Mesures",
+      description: "Système métrique: longueur, aire, volume, masse, capacité",
+      progress: 0,
+      goldReward: 90,
+      isLocked: false,
+      isCompleted: false,
+      icon: "📏"
+    },
+    // Janvier - Semaine 3
+    {
+      id: "divisibilite",
+      title: "Divisibilité",
+      description: "Critères de divisibilité par 2, 3, 4, 5, 9, 10, 11",
+      progress: 0,
+      goldReward: 100,
+      isLocked: false,
+      isCompleted: false,
+      icon: "➗"
+    },
+    {
+      id: "decimaux",
+      title: "Décimaux",
+      description: "Opérations, comparaison et ordre sur les nombres décimaux",
+      progress: 0,
+      goldReward: 120,
       isLocked: false,
       isCompleted: false,
       icon: "🔢"
     },
+    // Février
     {
-      id: "equations-second-degre",
-      title: "Équations du Second Degré",
-      description: "Résoudre les équations quadratiques avec plusieurs méthodes",
+      id: "cercle-disque",
+      title: "Cercle et Disque",
+      description: "Définition, construction, calcul de circonférence et d'aire",
+      progress: 0,
+      goldReward: 110,
+      isLocked: false,
+      isCompleted: false,
+      icon: "⭕"
+    },
+    {
+      id: "triangles",
+      title: "Les Triangles",
+      description: "Définition, notation, description et construction",
+      progress: 0,
+      goldReward: 100,
+      isLocked: false,
+      isCompleted: false,
+      icon: "🔺"
+    },
+    // Mars
+    {
+      id: "aires-perimetres",
+      title: "Aires et Périmètres",
+      description: "Calcul des aires et périmètres de triangles et quadrilatères",
+      progress: 0,
+      goldReward: 120,
+      isLocked: false,
+      isCompleted: false,
+      icon: "📐"
+    },
+    {
+      id: "proportionnalite",
+      title: "Proportionnalité",
+      description: "Tableaux, graphiques, pourcentages et échelles",
+      progress: 0,
+      goldReward: 130,
+      isLocked: false,
+      isCompleted: false,
+      icon: "📊"
+    },
+    // Avril
+    {
+      id: "entiers-relatifs",
+      title: "Entiers Relatifs",
+      description: "Nombres négatifs et positifs, représentation sur un axe",
+      progress: 0,
+      goldReward: 110,
+      isLocked: false,
+      isCompleted: false,
+      icon: "➕➖"
+    },
+    {
+      id: "volumes-solides",
+      title: "Volumes de Solides",
+      description: "Calcul du volume et aire latérale: cube, parallélépipède, cylindre",
+      progress: 0,
+      goldReward: 140,
+      isLocked: false,
+      isCompleted: false,
+      icon: "📦"
+    },
+    // Mai
+    {
+      id: "fractions",
+      title: "Les Fractions",
+      description: "Lecture, écriture, comparaison et opérations sur les fractions",
+      progress: 0,
+      goldReward: 150,
+      isLocked: false,
+      isCompleted: false,
+      icon: "🍕"
+    },
+    {
+      id: "parallelogrammes",
+      title: "Les Parallélogrammes",
+      description: "Description et construction des différents parallélogrammes",
+      progress: 0,
+      goldReward: 100,
+      isLocked: false,
+      isCompleted: false,
+      icon: "◇"
+    },
+    {
+      id: "reperage-quadrillage",
+      title: "Repérage sur Quadrillage",
+      description: "Chemins, coordonnées et repérage de points",
+      progress: 0,
+      goldReward: 110,
+      isLocked: false,
+      isCompleted: false,
+      icon: "🗺️"
+    },
+    // Juin
+    {
+      id: "transformations",
+      title: "Les Transformations",
+      description: "Translation et symétrie orthogonale de figures géométriques",
+      progress: 0,
+      goldReward: 140,
+      isLocked: false,
+      isCompleted: false,
+      icon: "🔄"
+    },
+    {
+      id: "statistiques",
+      title: "Statistiques Élémentaires",
+      description: "Tableaux, moyennes, médianes, modes et diagrammes",
       progress: 0,
       goldReward: 150,
       isLocked: false,
       isCompleted: false,
       icon: "📈"
-    },
-    {
-      id: "fonctions",
-      title: "Les Fonctions",
-      description: "Étudier les fonctions linéaires, affines et polynomiales",
-      progress: 0,
-      goldReward: 150,
-      isLocked: true,
-      isCompleted: false,
-      icon: "📊"
-    },
-    {
-      id: "geometrie",
-      title: "Géométrie dans l'Espace",
-      description: "Volumes, surfaces et calculs dans l'espace 3D",
-      progress: 0,
-      goldReward: 200,
-      isLocked: true,
-      isCompleted: false,
-      icon: "📐"
-    },
-    {
-      id: "probabilites",
-      title: "Probabilités",
-      description: "Calculer des probabilités et analyser des situations aléatoires",
-      progress: 0,
-      goldReward: 150,
-      isLocked: true,
-      isCompleted: false,
-      icon: "🎲"
-    },
-    {
-      id: "suites",
-      title: "Suites Numériques",
-      description: "Suites arithmétiques, géométriques et leur convergence",
-      progress: 0,
-      goldReward: 200,
-      isLocked: true,
-      isCompleted: false,
-      icon: "🔄"
     }
   ];
 
@@ -113,7 +221,7 @@ const MathCourse = () => {
                 </div>
                 <div>
                   <h1 className="text-xl font-bold">Mathématiques 📐</h1>
-                  <p className="text-sm text-muted-foreground">Niveau Terminale</p>
+                  <p className="text-sm text-muted-foreground">Niveau AF7</p>
                 </div>
               </div>
             </div>
@@ -128,9 +236,12 @@ const MathCourse = () => {
       <div className="container mx-auto px-4 py-8 max-w-6xl">
         {/* Course Overview */}
         <div className="mb-8">
-          <h2 className="text-3xl font-bold mb-2">Programme de Mathématiques</h2>
+          <h2 className="text-3xl font-bold mb-2">Programme MENFP - AF7</h2>
           <p className="text-lg text-muted-foreground">
-            Apprends en t'amusant avec des activités interactives, des jeux et des quiz! 🎮
+            Suis le programme officiel du MENFP avec des leçons interactives, des jeux et des quiz! 🎮
+          </p>
+          <p className="text-sm text-muted-foreground mt-2">
+            16 chapitres couvrant l'algèbre, la géométrie, les mesures et les applications 📚
           </p>
         </div>
 

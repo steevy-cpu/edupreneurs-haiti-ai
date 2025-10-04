@@ -21,7 +21,7 @@ serve(async (req) => {
 
     // Build system prompt based on lesson type
     let systemPrompt = `Tu es un tuteur expert pour les élèves du cycle secondaire en Haïti (AF7 à NS4). 
-Tu expliques les concepts de manière claire, engageante et pédagogique.
+Tu expliques les concepts de manière claire, engageante et pédagogique, en t'adaptant au niveau et à la matière enseignée.
 
 IMPORTANT - Style linguistique :
 - Écris PRINCIPALEMENT en français standard
