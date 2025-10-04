@@ -15,9 +15,10 @@ interface Question {
 interface InteractiveActivitiesProps {
   content: string;
   isLoading: boolean;
+  onRegenerate?: () => void;
 }
 
-export const InteractiveActivities = ({ content, isLoading }: InteractiveActivitiesProps) => {
+export const InteractiveActivities = ({ content, isLoading, onRegenerate }: InteractiveActivitiesProps) => {
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [selectedAnswer, setSelectedAnswer] = useState<number | null>(null);
   const [showFeedback, setShowFeedback] = useState(false);
@@ -83,7 +84,7 @@ export const InteractiveActivities = ({ content, isLoading }: InteractiveActivit
       <Card className="lesson-card border-none rounded-[20px] shadow-lg border-2 border-orange-300 dark:border-orange-700 bg-gradient-to-br from-orange-50 to-red-50 dark:from-orange-950/30 dark:to-red-950/30">
         <CardHeader className="p-4 sm:p-6 bg-gradient-to-r from-orange-200 to-red-200 dark:from-orange-900/40 dark:to-red-900/40 rounded-t-[20px]">
           <CardTitle className="flex items-center gap-2 text-lg sm:text-xl">
-            ⚠️ Pwoblèm ak fòma (Problème de format)
+            ⚠️ Problème de format
           </CardTitle>
         </CardHeader>
         <CardContent className="p-6 space-y-4">
@@ -94,6 +95,12 @@ export const InteractiveActivities = ({ content, isLoading }: InteractiveActivit
           <div className="prose prose-sm max-w-none dark:prose-invert">
             <div dangerouslySetInnerHTML={{ __html: content }} />
           </div>
+          {onRegenerate && (
+            <Button onClick={onRegenerate} variant="outline" className="w-full">
+              <ArrowRight className="w-4 h-4 mr-2" />
+              Régénérer les activités
+            </Button>
+          )}
         </CardContent>
       </Card>
     );
@@ -141,9 +148,17 @@ export const InteractiveActivities = ({ content, isLoading }: InteractiveActivit
     return (
       <Card className="lesson-card border-none rounded-[20px] shadow-lg border-2 border-accent/30 bg-gradient-to-br from-accent/5 to-primary/5">
         <CardHeader className="p-4 sm:p-6 bg-gradient-to-r from-accent/20 to-primary/20 rounded-t-[20px]">
-          <CardTitle className="flex items-center gap-2 text-lg sm:text-xl">
-            🎯 Activités Pratiques Interactives
-          </CardTitle>
+          <div className="flex items-center justify-between">
+            <CardTitle className="flex items-center gap-2 text-lg sm:text-xl">
+              🎯 Activités Pratiques Interactives
+            </CardTitle>
+            {onRegenerate && (
+              <Button onClick={onRegenerate} variant="ghost" size="sm">
+                <ArrowRight className="w-4 h-4 mr-2" />
+                Régénérer
+              </Button>
+            )}
+          </div>
         </CardHeader>
         <CardContent className="p-4 sm:p-6 pt-6">
           <div className="flex flex-col items-center justify-center py-12 space-y-4">
@@ -163,7 +178,7 @@ export const InteractiveActivities = ({ content, isLoading }: InteractiveActivit
       <Card className="lesson-card border-none rounded-[20px] shadow-lg border-2 border-success/30 bg-gradient-to-br from-success/10 to-primary/10">
         <CardHeader className="p-4 sm:p-6 bg-gradient-to-r from-success/20 to-primary/20 rounded-t-[20px]">
           <CardTitle className="flex items-center gap-2 text-lg sm:text-xl">
-            {emoji} Aktivite Konplete! (Activités Complétées!)
+            {emoji} Activités Complétées!
           </CardTitle>
         </CardHeader>
         <CardContent className="p-6 text-center space-y-6">
@@ -177,30 +192,38 @@ export const InteractiveActivities = ({ content, isLoading }: InteractiveActivit
           <div className="p-6 bg-gradient-to-r from-success/10 to-primary/10 rounded-lg border-2 border-success/30">
             {percentage >= 80 ? (
               <p className="text-lg">
-                <span className="font-bold text-success">Ekselan!</span> Ou metrize sujet la! 
-                <span className="italic"> (Excellent! Tu maîtrises le sujet!)</span>
+                <span className="font-bold text-success">Excellent!</span> Tu maîtrises le sujet!
               </p>
             ) : percentage >= 60 ? (
               <p className="text-lg">
-                <span className="font-bold text-primary">Byen!</span> Kontinye pratike. 
-                <span className="italic"> (Bien! Continue à pratiquer.)</span>
+                <span className="font-bold text-primary">Bien!</span> Continue à pratiquer.
               </p>
             ) : (
               <p className="text-lg">
-                <span className="font-bold text-orange-600">Kontinye eseye!</span> Revize leçon an ankò. 
-                <span className="italic"> (Continue d'essayer! Révise la leçon.)</span>
+                <span className="font-bold text-orange-600">Continue d'essayer!</span> Révise la leçon.
               </p>
             )}
           </div>
 
-          <Button 
-            onClick={handleRestart} 
-            size="lg"
-            className="w-full sm:w-auto"
-          >
-            <ArrowRight className="w-4 h-4 mr-2" />
-            Rekòmanse Aktivite yo (Recommencer)
-          </Button>
+          <div className="flex flex-col sm:flex-row gap-3 justify-center">
+            <Button 
+              onClick={handleRestart} 
+              size="lg"
+              variant="outline"
+            >
+              <ArrowRight className="w-4 h-4 mr-2" />
+              Recommencer
+            </Button>
+            {onRegenerate && (
+              <Button 
+                onClick={onRegenerate} 
+                size="lg"
+              >
+                <ArrowRight className="w-4 h-4 mr-2" />
+                Nouvelles activités
+              </Button>
+            )}
+          </div>
         </CardContent>
       </Card>
     );
@@ -210,9 +233,17 @@ export const InteractiveActivities = ({ content, isLoading }: InteractiveActivit
     <Card className="lesson-card border-none rounded-[20px] shadow-lg border-2 border-accent/30 bg-gradient-to-br from-accent/5 to-primary/5">
       <CardHeader className="p-4 sm:p-6 bg-gradient-to-r from-accent/20 to-primary/20 rounded-t-[20px]">
         <div className="space-y-3">
-          <CardTitle className="flex items-center gap-2 text-lg sm:text-xl">
-            🎯 Aktivite {currentQuestionIndex + 1} sou {questions.length}
-          </CardTitle>
+          <div className="flex items-center justify-between">
+            <CardTitle className="flex items-center gap-2 text-lg sm:text-xl">
+              🎯 Activité {currentQuestionIndex + 1} sur {questions.length}
+            </CardTitle>
+            {onRegenerate && (
+              <Button onClick={onRegenerate} variant="ghost" size="sm">
+                <ArrowRight className="w-4 h-4 mr-2" />
+                Régénérer
+              </Button>
+            )}
+          </div>
           <Progress value={progress} className="h-2" />
         </div>
       </CardHeader>
@@ -274,7 +305,7 @@ export const InteractiveActivities = ({ content, isLoading }: InteractiveActivit
             }
           `}>
             <p className="font-semibold mb-2">
-              {selectedAnswer === currentQuestion.correctAnswer ? '✅ Correct!' : '📚 Aprann sou sa:'}
+              {selectedAnswer === currentQuestion.correctAnswer ? '✅ Correct!' : '📚 Explications:'}
             </p>
             <p className="text-sm leading-relaxed">{currentQuestion.explanation}</p>
           </div>
@@ -288,9 +319,9 @@ export const InteractiveActivities = ({ content, isLoading }: InteractiveActivit
             className="w-full animate-fade-in"
           >
             {currentQuestionIndex < questions.length - 1 ? (
-              <>Pwochèn Kesyon (Suivant) <ArrowRight className="w-4 h-4 ml-2" /></>
+              <>Question suivante <ArrowRight className="w-4 h-4 ml-2" /></>
             ) : (
-              <>Wè Rezilta (Voir Résultats) <CheckCircle className="w-4 h-4 ml-2" /></>
+              <>Voir les résultats <CheckCircle className="w-4 h-4 ml-2" /></>
             )}
           </Button>
         )}
@@ -298,7 +329,7 @@ export const InteractiveActivities = ({ content, isLoading }: InteractiveActivit
         {/* Original Content (collapsed) */}
         <details className="mt-6">
           <summary className="cursor-pointer text-sm text-muted-foreground hover:text-foreground transition-colors">
-            Wè tout egzèsis yo (Voir tous les exercices)
+            Voir tous les exercices
           </summary>
           <div className="mt-4 prose prose-sm max-w-none dark:prose-invert">
             <div dangerouslySetInnerHTML={{ __html: content }} />

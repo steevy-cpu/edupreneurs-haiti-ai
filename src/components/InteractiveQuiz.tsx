@@ -15,9 +15,10 @@ interface QuizQuestion {
 interface InteractiveQuizProps {
   content: string;
   isLoading: boolean;
+  onRegenerate?: () => void;
 }
 
-export const InteractiveQuiz = ({ content, isLoading }: InteractiveQuizProps) => {
+export const InteractiveQuiz = ({ content, isLoading, onRegenerate }: InteractiveQuizProps) => {
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [selectedAnswer, setSelectedAnswer] = useState<number | null>(null);
   const [showFeedback, setShowFeedback] = useState(false);
@@ -81,7 +82,7 @@ export const InteractiveQuiz = ({ content, isLoading }: InteractiveQuizProps) =>
       <Card className="lesson-card border-none rounded-[20px] shadow-lg border-2 border-orange-300 dark:border-orange-700 bg-gradient-to-br from-orange-50 to-red-50 dark:from-orange-950/30 dark:to-red-950/30">
         <CardHeader className="p-4 sm:p-6 bg-gradient-to-r from-orange-200 to-red-200 dark:from-orange-900/40 dark:to-red-900/40 rounded-t-[20px]">
           <CardTitle className="flex items-center gap-2 text-lg sm:text-xl">
-            ⚠️ Pwoblèm ak fòma (Problème de format)
+            ⚠️ Problème de format
           </CardTitle>
         </CardHeader>
         <CardContent className="p-6 space-y-4">
@@ -92,6 +93,12 @@ export const InteractiveQuiz = ({ content, isLoading }: InteractiveQuizProps) =>
           <div className="prose prose-sm max-w-none dark:prose-invert">
             <div dangerouslySetInnerHTML={{ __html: content }} />
           </div>
+          {onRegenerate && (
+            <Button onClick={onRegenerate} variant="outline" className="w-full">
+              <ArrowRight className="w-4 h-4 mr-2" />
+              Régénérer le quiz
+            </Button>
+          )}
         </CardContent>
       </Card>
     );
@@ -139,9 +146,17 @@ export const InteractiveQuiz = ({ content, isLoading }: InteractiveQuizProps) =>
     return (
       <Card className="lesson-card border-none rounded-[20px] shadow-lg border-2 border-primary/30 bg-gradient-to-br from-primary/5 to-success/5">
         <CardHeader className="p-4 sm:p-6 bg-gradient-to-r from-primary/20 to-success/20 rounded-t-[20px]">
-          <CardTitle className="flex items-center gap-2 text-lg sm:text-xl">
-            🏆 Quiz d'Évaluation Final
-          </CardTitle>
+          <div className="flex items-center justify-between">
+            <CardTitle className="flex items-center gap-2 text-lg sm:text-xl">
+              🏆 Quiz d'Évaluation Final
+            </CardTitle>
+            {onRegenerate && (
+              <Button onClick={onRegenerate} variant="ghost" size="sm">
+                <ArrowRight className="w-4 h-4 mr-2" />
+                Régénérer
+              </Button>
+            )}
+          </div>
         </CardHeader>
         <CardContent className="p-4 sm:p-6 pt-6">
           <div className="flex flex-col items-center justify-center py-12 space-y-4">
@@ -173,7 +188,7 @@ export const InteractiveQuiz = ({ content, isLoading }: InteractiveQuizProps) =>
           }
         `}>
           <CardTitle className="flex items-center gap-2 text-lg sm:text-xl">
-            {passGrade ? '🎉' : '📚'} Quiz Konplete!
+            {passGrade ? '🎉' : '📚'} Quiz Complété!
           </CardTitle>
         </CardHeader>
         <CardContent className="p-6 text-center space-y-6">
@@ -198,25 +213,19 @@ export const InteractiveQuiz = ({ content, isLoading }: InteractiveQuizProps) =>
             {passGrade ? (
               <>
                 <p className="text-xl font-bold text-success mb-2">
-                  🌟 Félicitations! Ou pase egzamen an!
-                </p>
-                <p className="text-sm italic">
-                  (Congratulations! Tu as réussi l'examen!)
+                  🌟 Félicitations! Tu as réussi l'examen!
                 </p>
                 <p className="mt-3 text-sm">
-                  Ou ka ale nan pwochèn leçon! (Tu peux aller à la prochaine leçon!)
+                  Tu peux aller à la prochaine leçon!
                 </p>
               </>
             ) : (
               <>
                 <p className="text-xl font-bold text-orange-700 dark:text-orange-400 mb-2">
-                  💪 Pa dekouraje! Revize epi eseye ankò!
-                </p>
-                <p className="text-sm italic">
-                  (Ne te décourage pas! Révise et réessaie!)
+                  💪 Ne te décourage pas! Révise et réessaie!
                 </p>
                 <p className="mt-3 text-sm">
-                  Ou bezwen omwen 70% pou pase. (Tu as besoin d'au moins 70% pour passer.)
+                  Tu as besoin d'au moins 70% pour passer.
                 </p>
               </>
             )}
@@ -229,15 +238,25 @@ export const InteractiveQuiz = ({ content, isLoading }: InteractiveQuizProps) =>
               size="lg"
             >
               <ArrowRight className="w-4 h-4 mr-2" />
-              Rekòmanse Quiz (Recommencer)
+              Recommencer
             </Button>
+            {onRegenerate && (
+              <Button 
+                onClick={onRegenerate} 
+                variant="outline"
+                size="lg"
+              >
+                <ArrowRight className="w-4 h-4 mr-2" />
+                Nouveau quiz
+              </Button>
+            )}
             {passGrade && (
               <Button 
                 size="lg"
                 onClick={() => window.location.href = '/math-course'}
               >
                 <Trophy className="w-4 h-4 mr-2" />
-                Pwochèn Leçon (Prochaine leçon)
+                Prochaine leçon
               </Button>
             )}
           </div>
@@ -250,10 +269,18 @@ export const InteractiveQuiz = ({ content, isLoading }: InteractiveQuizProps) =>
     <Card className="lesson-card border-none rounded-[20px] shadow-lg border-2 border-primary/30 bg-gradient-to-br from-primary/5 to-success/5">
       <CardHeader className="p-4 sm:p-6 bg-gradient-to-r from-primary/20 to-success/20 rounded-t-[20px]">
         <div className="space-y-3">
-          <CardTitle className="flex items-center justify-between text-lg sm:text-xl">
-            <span>🏆 Quiz Final — Kesyon {currentQuestionIndex + 1}/{questions.length}</span>
-            <Trophy className="text-primary w-6 h-6" />
-          </CardTitle>
+          <div className="flex items-center justify-between">
+            <CardTitle className="flex items-center gap-2 text-lg sm:text-xl">
+              <span>🏆 Quiz Final — Question {currentQuestionIndex + 1}/{questions.length}</span>
+              <Trophy className="text-primary w-6 h-6" />
+            </CardTitle>
+            {onRegenerate && (
+              <Button onClick={onRegenerate} variant="ghost" size="sm">
+                <ArrowRight className="w-4 h-4 mr-2" />
+                Régénérer
+              </Button>
+            )}
+          </div>
           <Progress value={progress} className="h-2" />
         </div>
       </CardHeader>
@@ -315,7 +342,7 @@ export const InteractiveQuiz = ({ content, isLoading }: InteractiveQuizProps) =>
             }
           `}>
             <p className="font-semibold mb-2">
-              {selectedAnswer === currentQuestion.correctAnswer ? '✅ Ekselan!' : '❌ Pa kòrèk'}
+              {selectedAnswer === currentQuestion.correctAnswer ? '✅ Excellent!' : '❌ Incorrect'}
             </p>
             <p className="text-sm leading-relaxed">{currentQuestion.explanation}</p>
           </div>
@@ -329,9 +356,9 @@ export const InteractiveQuiz = ({ content, isLoading }: InteractiveQuizProps) =>
             className="w-full animate-fade-in"
           >
             {currentQuestionIndex < questions.length - 1 ? (
-              <>Pwochèn Kesyon <ArrowRight className="w-4 h-4 ml-2" /></>
+              <>Question suivante <ArrowRight className="w-4 h-4 ml-2" /></>
             ) : (
-              <>Fini Quiz la <CheckCircle className="w-4 h-4 ml-2" /></>
+              <>Terminer le quiz <CheckCircle className="w-4 h-4 ml-2" /></>
             )}
           </Button>
         )}
@@ -339,7 +366,7 @@ export const InteractiveQuiz = ({ content, isLoading }: InteractiveQuizProps) =>
         {/* Original Content (collapsed) */}
         <details className="mt-6">
           <summary className="cursor-pointer text-sm text-muted-foreground hover:text-foreground transition-colors">
-            Wè kontni konplè a (Voir le contenu complet)
+            Voir le contenu complet
           </summary>
           <div className="mt-4 prose prose-sm max-w-none dark:prose-invert">
             <div dangerouslySetInnerHTML={{ __html: content }} />

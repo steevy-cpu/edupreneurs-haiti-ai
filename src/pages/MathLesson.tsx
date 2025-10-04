@@ -485,6 +485,14 @@ const MathLesson = () => {
                 <InteractiveActivities 
                   content={lessonData.activites} 
                   isLoading={isLoadingActivites}
+                  onRegenerate={() => {
+                    // Clear cache for activities and regenerate
+                    if (topicId) {
+                      const activitiesCacheKey = `lesson:${topicId}:activites`;
+                      localStorage.removeItem(activitiesCacheKey);
+                      loadLesson(true);
+                    }
+                  }}
                 />
               </TabsContent>
 
@@ -493,6 +501,14 @@ const MathLesson = () => {
                 <InteractiveQuiz 
                   content={lessonData.quiz} 
                   isLoading={isLoadingQuiz}
+                  onRegenerate={() => {
+                    // Clear cache for quiz and regenerate
+                    if (topicId) {
+                      const quizCacheKey = `lesson:${topicId}:quiz`;
+                      localStorage.removeItem(quizCacheKey);
+                      loadLesson(true);
+                    }
+                  }}
                 />
               </TabsContent>
             </Tabs>
