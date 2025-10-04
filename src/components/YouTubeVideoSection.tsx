@@ -124,42 +124,32 @@ export const YouTubeVideoSection = ({ lessonTitle, objectives }: YouTubeVideoSec
         </p>
       </CardHeader>
       <CardContent className="p-4 sm:p-6 pt-6">
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="space-y-6">
           {videos.map((video) => (
             <div
               key={video.id}
-              className="group relative rounded-xl overflow-hidden shadow-lg hover:shadow-xl transition-all duration-300 bg-background/50 backdrop-blur-sm border border-purple-200 dark:border-purple-800"
+              className="rounded-xl overflow-hidden shadow-lg bg-background/50 backdrop-blur-sm border border-purple-200 dark:border-purple-800"
             >
-              <a
-                href={`https://www.youtube.com/watch?v=${video.id}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="block"
-              >
-                {/* Thumbnail */}
-                <div className="relative aspect-video overflow-hidden bg-muted">
-                  <img
-                    src={video.thumbnail}
-                    alt={video.title}
-                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
-                  />
-                  <div className="absolute inset-0 bg-black/40 group-hover:bg-black/20 transition-colors duration-300 flex items-center justify-center">
-                    <div className="w-16 h-16 rounded-full bg-red-600 flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
-                      <div className="w-0 h-0 border-t-8 border-t-transparent border-l-12 border-l-white border-b-8 border-b-transparent ml-1"></div>
-                    </div>
-                  </div>
-                </div>
+              {/* YouTube Embed */}
+              <div className="relative aspect-video overflow-hidden bg-muted">
+                <iframe
+                  src={`https://www.youtube.com/embed/${video.id}`}
+                  title={video.title}
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                  allowFullScreen
+                  className="w-full h-full"
+                />
+              </div>
 
-                {/* Video Info */}
-                <div className="p-3">
-                  <h3 className="font-semibold text-sm line-clamp-2 mb-2 group-hover:text-primary transition-colors">
-                    {video.title}
-                  </h3>
-                  <p className="text-xs text-muted-foreground line-clamp-2">
-                    {video.description}
-                  </p>
-                </div>
-              </a>
+              {/* Video Info */}
+              <div className="p-4 bg-gradient-to-r from-purple-50/50 to-pink-50/50 dark:from-purple-900/20 dark:to-pink-900/20">
+                <h3 className="font-semibold text-sm mb-2">
+                  {video.title}
+                </h3>
+                <p className="text-xs text-muted-foreground line-clamp-2">
+                  {video.description}
+                </p>
+              </div>
             </div>
           ))}
         </div>
