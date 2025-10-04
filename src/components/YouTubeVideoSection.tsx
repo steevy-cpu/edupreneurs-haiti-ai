@@ -95,6 +95,8 @@ export const YouTubeVideoSection = ({ lessonTitle, objectives, gradeLevel = "AF7
         `videoEmbeddable=true&` +
         `videoDuration=medium&` + // Prefer 4-20 min videos
         `relevanceLanguage=fr&` +
+        `regionCode=HT&` + // Prioritize Haiti region for French/Creole content
+        `videoDefinition=any&` +
         `safeSearch=strict&` +
         `order=relevance&` +
         `key=${YOUTUBE_API_KEY}`

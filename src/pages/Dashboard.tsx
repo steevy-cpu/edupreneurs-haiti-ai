@@ -9,7 +9,16 @@ import {
   ChartLine,
   CreditCard,
   UserCheck,
+  BookOpen,
+  Calendar
 } from "lucide-react";
+
+interface Note {
+  id: string;
+  lesson_topic: string;
+  content: string;
+  updated_at: string;
+}
 
 const Dashboard = () => {
   const navigate = useNavigate();
@@ -20,9 +29,11 @@ const Dashboard = () => {
     progress: 0,
     affiliations: 0,
   });
+  const [recentNotes, setRecentNotes] = useState<Note[]>([]);
 
   useEffect(() => {
     fetchUserData();
+    fetchRecentNotes();
   }, []);
 
   const fetchUserData = async () => {
@@ -31,6 +42,50 @@ const Dashboard = () => {
       const userName = session.user.user_metadata?.name || session.user.email?.split("@")[0] || "Utilisateur";
       setUserData(prev => ({ ...prev, name: userName }));
     }
+  };
+
+  const fetchRecentNotes = async () => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      const { data, error } = await supabase
+        .from('notes')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('updated_at', { ascending: false })
+        .limit(5);
+
+      if (data && !error) {
+        setRecentNotes(data);
+      }
+    } catch (error) {
+      console.error('Error fetching notes:', error);
+    }
+  };
+
+  const topicInfo: { [key: string]: { title: string; icon: string } } = {
+    "numeration-binaire": { title: "Numération Binaire", icon: "💻" },
+    "polygones": { title: "Les Polygones", icon: "⬡" },
+    "unites-mesures": { title: "Unités de Mesures", icon: "📏" },
+    "divisibilite": { title: "Divisibilité", icon: "➗" },
+    "decimaux": { title: "Décimaux", icon: "🔢" },
+    "cercle-disque": { title: "Cercle et Disque", icon: "⭕" },
+    "triangles": { title: "Les Triangles", icon: "🔺" },
+    "aires-perimetres": { title: "Aires et Périmètres", icon: "📐" },
+    "proportionnalite": { title: "Proportionnalité", icon: "📊" },
+    "entiers-relatifs": { title: "Entiers Relatifs", icon: "➕➖" },
+    "volumes-solides": { title: "Volumes de Solides", icon: "📦" },
+    "fractions": { title: "Les Fractions", icon: "🍕" },
+    "parallelogrammes": { title: "Les Parallélogrammes", icon: "◇" },
+    "reperage-quadrillage": { title: "Repérage sur Quadrillage", icon: "🗺️" },
+    "transformations": { title: "Les Transformations", icon: "🔄" },
+    "statistiques": { title: "Statistiques Élémentaires", icon: "📈" }
+  };
+
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', year: 'numeric' });
   };
 
   const subjects = [
@@ -151,6 +206,48 @@ const Dashboard = () => {
             </div>
           </CardContent>
         </Card>
+
+        {/* Recent Notes Section */}
+        {recentNotes.length > 0 && (
+          <Card className="border-none rounded-[20px] shadow-md mb-8">
+            <CardHeader>
+              <CardTitle className="text-xl flex items-center gap-2">
+                <BookOpen className="text-primary" size={20} />
+                Mes notes récentes
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              {recentNotes.map((note) => {
+                const topic = topicInfo[note.lesson_topic];
+                return (
+                  <div
+                    key={note.id}
+                    className="border border-border rounded-2xl p-4 bg-gradient-to-br from-muted/30 to-card hover:-translate-y-1 hover:shadow-md transition-all duration-300 cursor-pointer"
+                    onClick={() => navigate(`/math-lesson/${note.lesson_topic}`)}
+                  >
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 mb-1">
+                          <span className="text-xl">{topic?.icon || "📝"}</span>
+                          <h5 className="text-sm font-bold truncate">
+                            {topic?.title || note.lesson_topic}
+                          </h5>
+                        </div>
+                        <p className="text-xs text-muted-foreground line-clamp-2">
+                          {note.content.substring(0, 100)}...
+                        </p>
+                      </div>
+                      <div className="flex items-center gap-1 text-xs text-muted-foreground shrink-0">
+                        <Calendar size={12} />
+                        {formatDate(note.updated_at)}
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </CardContent>
+          </Card>
+        )}
 
         {/* Subjects and Featured */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">

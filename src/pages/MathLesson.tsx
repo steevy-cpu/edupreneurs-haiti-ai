@@ -155,13 +155,33 @@ const MathLesson = () => {
 
   const currentTopic = topicInfo[topicId || ""] || topicInfo["numeration-binaire"];
 
-  // Load cached notes on mount
+  // Load notes from database on mount
   useEffect(() => {
-    const savedNotes = localStorage.getItem(`notes:math:${topicId}`);
-    if (savedNotes) {
-      setNotes(savedNotes);
-    }
+    loadNotesFromDatabase();
   }, [topicId]);
+
+  const loadNotesFromDatabase = async () => {
+    if (!topicId) return;
+    
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      const { data, error } = await supabase
+        .from('notes')
+        .select('content')
+        .eq('user_id', user.id)
+        .eq('lesson_topic', topicId)
+        .single();
+
+      if (data && !error) {
+        setNotes(data.content || "");
+        setNotesSaved(true);
+      }
+    } catch (error) {
+      console.error('Error loading notes:', error);
+    }
+  };
 
   // Load lesson data from cache or fetch
   useEffect(() => {
@@ -263,23 +283,76 @@ const MathLesson = () => {
     }
   };
 
-  const saveNotes = () => {
-    localStorage.setItem(`notes:math:${topicId}`, notes);
-    setNotesSaved(true);
-    toast({
-      title: "Notes sauvegardées",
-      description: "Tes notes ont été enregistrées localement",
-    });
+  const saveNotes = async () => {
+    if (!topicId) return;
+    
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        toast({
+          title: "Erreur",
+          description: "Vous devez être connecté pour sauvegarder vos notes",
+          variant: "destructive"
+        });
+        return;
+      }
+
+      const { error } = await supabase
+        .from('notes')
+        .upsert({
+          user_id: user.id,
+          lesson_topic: topicId,
+          content: notes
+        }, {
+          onConflict: 'user_id,lesson_topic'
+        });
+
+      if (error) throw error;
+
+      setNotesSaved(true);
+      toast({
+        title: "Notes sauvegardées",
+        description: "Tes notes ont été enregistrées",
+      });
+    } catch (error) {
+      console.error('Error saving notes:', error);
+      toast({
+        title: "Erreur",
+        description: "Impossible de sauvegarder les notes",
+        variant: "destructive"
+      });
+    }
   };
 
-  const clearNotes = () => {
-    setNotes("");
-    localStorage.removeItem(`notes:math:${topicId}`);
-    setNotesSaved(true);
-    toast({
-      title: "Notes effacées",
-      description: "Tes notes ont été supprimées",
-    });
+  const clearNotes = async () => {
+    if (!topicId) return;
+    
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      const { error } = await supabase
+        .from('notes')
+        .delete()
+        .eq('user_id', user.id)
+        .eq('lesson_topic', topicId);
+
+      if (error) throw error;
+
+      setNotes("");
+      setNotesSaved(true);
+      toast({
+        title: "Notes effacées",
+        description: "Tes notes ont été supprimées",
+      });
+    } catch (error) {
+      console.error('Error deleting notes:', error);
+      toast({
+        title: "Erreur",
+        description: "Impossible de supprimer les notes",
+        variant: "destructive"
+      });
+    }
   };
 
   const handleNotesChange = (value: string) => {
