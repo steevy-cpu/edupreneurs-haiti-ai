@@ -294,59 +294,62 @@ const Settings = () => {
       </div>
 
       {/* Main Content */}
-      <div className={`transition-all duration-300 ${sidebarOpen ? "lg:ml-[280px]" : ""} pt-20 px-4 lg:px-8 pb-8`}>
+      <div className={`transition-all duration-300 ${sidebarOpen ? "lg:ml-[280px]" : ""} pt-20 px-4 sm:px-6 lg:px-8 pb-8 max-w-7xl mx-auto`}>
         {/* Header */}
-        <div className="bg-gradient-to-br from-[hsl(var(--primary))] to-[hsl(var(--success))] text-white p-8 rounded-[20px] mb-8 relative overflow-hidden">
+        <div className="bg-gradient-to-br from-[hsl(var(--primary))] to-[hsl(var(--success))] text-white p-6 sm:p-8 rounded-[20px] mb-6 sm:mb-8 relative overflow-hidden">
           <div className="absolute top-0 right-0 w-1/2 h-full opacity-10">
             <div className="w-full h-full bg-gradient-radial from-white/20 to-transparent animate-[float_20s_ease-in-out_infinite]" />
           </div>
           <div className="relative z-10">
-            <h1 className="text-2xl lg:text-3xl font-bold mb-2">Paramètres</h1>
-            <p className="opacity-75">
+            <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold mb-2">Paramètres</h1>
+            <p className="text-sm sm:text-base opacity-90">
               Gérez votre profil, votre compte et vos préférences
             </p>
           </div>
         </div>
 
         {/* Settings Tabs */}
-        <Tabs defaultValue="profile" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-2 lg:grid-cols-5 gap-2">
-            <TabsTrigger value="profile" className="flex items-center gap-2">
-              <User size={16} />
-              <span className="hidden sm:inline">Profil</span>
+        <Tabs defaultValue="profile" className="space-y-4 sm:space-y-6">
+          <TabsList className="grid w-full grid-cols-5 gap-1 sm:gap-2 h-auto p-1">
+            <TabsTrigger value="profile" className="flex flex-col sm:flex-row items-center gap-1 sm:gap-2 py-2 px-1 sm:px-3">
+              <User size={16} className="shrink-0" />
+              <span className="text-xs sm:text-sm">Profil</span>
             </TabsTrigger>
-            <TabsTrigger value="account" className="flex items-center gap-2">
-              <Lock size={16} />
-              <span className="hidden sm:inline">Compte</span>
+            <TabsTrigger value="account" className="flex flex-col sm:flex-row items-center gap-1 sm:gap-2 py-2 px-1 sm:px-3">
+              <Lock size={16} className="shrink-0" />
+              <span className="text-xs sm:text-sm">Compte</span>
             </TabsTrigger>
-            <TabsTrigger value="notifications" className="flex items-center gap-2">
-              <Bell size={16} />
-              <span className="hidden sm:inline">Notifications</span>
+            <TabsTrigger value="notifications" className="flex flex-col sm:flex-row items-center gap-1 sm:gap-2 py-2 px-1 sm:px-3">
+              <Bell size={16} className="shrink-0" />
+              <span className="text-xs sm:text-sm hidden sm:inline">Notifications</span>
+              <span className="text-xs sm:hidden">Notifs</span>
             </TabsTrigger>
-            <TabsTrigger value="subscription" className="flex items-center gap-2">
-              <CreditCard size={16} />
-              <span className="hidden sm:inline">Abonnement</span>
+            <TabsTrigger value="subscription" className="flex flex-col sm:flex-row items-center gap-1 sm:gap-2 py-2 px-1 sm:px-3">
+              <CreditCard size={16} className="shrink-0" />
+              <span className="text-xs sm:text-sm hidden sm:inline">Abonnement</span>
+              <span className="text-xs sm:hidden">Abon.</span>
             </TabsTrigger>
-            <TabsTrigger value="preferences" className="flex items-center gap-2">
-              <Globe size={16} />
-              <span className="hidden sm:inline">Préférences</span>
+            <TabsTrigger value="preferences" className="flex flex-col sm:flex-row items-center gap-1 sm:gap-2 py-2 px-1 sm:px-3">
+              <Globe size={16} className="shrink-0" />
+              <span className="text-xs sm:text-sm hidden sm:inline">Préférences</span>
+              <span className="text-xs sm:hidden">Prefs</span>
             </TabsTrigger>
           </TabsList>
 
           {/* Profile Tab */}
-          <TabsContent value="profile">
+          <TabsContent value="profile" className="mt-4 sm:mt-6">
             <Card className="border-none rounded-[20px] shadow-md">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <User className="text-primary" />
+              <CardHeader className="p-4 sm:p-6">
+                <CardTitle className="flex items-center gap-2 text-lg sm:text-xl">
+                  <User className="text-primary shrink-0" size={20} />
                   Informations du profil
                 </CardTitle>
-                <CardDescription>
+                <CardDescription className="text-sm">
                   Mettez à jour vos informations personnelles
                 </CardDescription>
               </CardHeader>
-              <CardContent>
-                <form onSubmit={handleProfileUpdate} className="space-y-6">
+              <CardContent className="p-4 sm:p-6 pt-0">
+                <form onSubmit={handleProfileUpdate} className="space-y-4 sm:space-y-6">
                   <div className="grid md:grid-cols-2 gap-6">
                     <div className="space-y-2">
                       <Label htmlFor="fullName" className="flex items-center gap-2">
@@ -426,37 +429,37 @@ const Settings = () => {
           </TabsContent>
 
           {/* Account Tab */}
-          <TabsContent value="account">
-            <div className="space-y-6">
+          <TabsContent value="account" className="mt-4 sm:mt-6">
+            <div className="space-y-4 sm:space-y-6">
               <Card className="border-none rounded-[20px] shadow-md">
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Mail className="text-primary" />
+                <CardHeader className="p-4 sm:p-6">
+                  <CardTitle className="flex items-center gap-2 text-lg sm:text-xl">
+                    <Mail className="text-primary shrink-0" size={20} />
                     Email du compte
                   </CardTitle>
-                  <CardDescription>
+                  <CardDescription className="text-sm">
                     Votre adresse email actuelle
                   </CardDescription>
                 </CardHeader>
-                <CardContent>
-                  <div className="flex items-center justify-between p-4 bg-muted rounded-lg">
-                    <span className="font-medium">{userEmail}</span>
-                    <span className="text-xs text-muted-foreground">Email vérifié ✓</span>
+                <CardContent className="p-4 sm:p-6 pt-0">
+                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 p-4 bg-muted rounded-lg">
+                    <span className="font-medium text-sm sm:text-base break-all">{userEmail}</span>
+                    <span className="text-xs text-muted-foreground whitespace-nowrap">Email vérifié ✓</span>
                   </div>
                 </CardContent>
               </Card>
 
               <Card className="border-none rounded-[20px] shadow-md">
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Lock className="text-primary" />
+                <CardHeader className="p-4 sm:p-6">
+                  <CardTitle className="flex items-center gap-2 text-lg sm:text-xl">
+                    <Lock className="text-primary shrink-0" size={20} />
                     Changer le mot de passe
                   </CardTitle>
-                  <CardDescription>
+                  <CardDescription className="text-sm">
                     Assurez-vous d'utiliser un mot de passe sécurisé
                   </CardDescription>
                 </CardHeader>
-                <CardContent>
+                <CardContent className="p-4 sm:p-6 pt-0">
                   <form onSubmit={handlePasswordChange} className="space-y-4">
                     <div className="space-y-2">
                       <Label htmlFor="newPassword">Nouveau mot de passe</Label>
@@ -491,17 +494,17 @@ const Settings = () => {
                 </CardContent>
               </Card>
 
-              <Card className="border-none rounded-[20px] shadow-md border-destructive">
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2 text-destructive">
-                    <Trash2 />
+              <Card className="border-none rounded-[20px] shadow-md border-2 border-destructive">
+                <CardHeader className="p-4 sm:p-6">
+                  <CardTitle className="flex items-center gap-2 text-destructive text-lg sm:text-xl">
+                    <Trash2 size={20} className="shrink-0" />
                     Zone dangereuse
                   </CardTitle>
-                  <CardDescription>
+                  <CardDescription className="text-sm">
                     Actions irréversibles sur votre compte
                   </CardDescription>
                 </CardHeader>
-                <CardContent>
+                <CardContent className="p-4 sm:p-6 pt-0">
                   <AlertDialog>
                     <AlertDialogTrigger asChild>
                       <Button variant="destructive" className="w-full">
@@ -534,18 +537,18 @@ const Settings = () => {
           </TabsContent>
 
           {/* Notifications Tab */}
-          <TabsContent value="notifications">
+          <TabsContent value="notifications" className="mt-4 sm:mt-6">
             <Card className="border-none rounded-[20px] shadow-md">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Bell className="text-primary" />
+              <CardHeader className="p-4 sm:p-6">
+                <CardTitle className="flex items-center gap-2 text-lg sm:text-xl">
+                  <Bell className="text-primary shrink-0" size={20} />
                   Préférences de notification
                 </CardTitle>
-                <CardDescription>
+                <CardDescription className="text-sm">
                   Choisissez comment vous souhaitez être informé
                 </CardDescription>
               </CardHeader>
-              <CardContent className="space-y-6">
+              <CardContent className="p-4 sm:p-6 pt-0 space-y-4 sm:space-y-6">
                 <div className="flex items-center justify-between">
                   <div className="space-y-0.5">
                     <Label htmlFor="email-notifs">Notifications par email</Label>
@@ -614,26 +617,26 @@ const Settings = () => {
           </TabsContent>
 
           {/* Subscription Tab */}
-          <TabsContent value="subscription">
+          <TabsContent value="subscription" className="mt-4 sm:mt-6">
             <Card className="border-none rounded-[20px] shadow-md">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <CreditCard className="text-primary" />
+              <CardHeader className="p-4 sm:p-6">
+                <CardTitle className="flex items-center gap-2 text-lg sm:text-xl">
+                  <CreditCard className="text-primary shrink-0" size={20} />
                   Abonnement actuel
                 </CardTitle>
-                <CardDescription>
+                <CardDescription className="text-sm">
                   Gérez votre abonnement et votre facturation
                 </CardDescription>
               </CardHeader>
-              <CardContent className="space-y-6">
-                <div className="p-6 bg-gradient-to-br from-[hsl(var(--primary))]/10 to-[hsl(var(--success))]/10 rounded-xl border-2 border-[hsl(var(--primary))]/20">
-                  <div className="flex items-center justify-between mb-4">
+              <CardContent className="p-4 sm:p-6 pt-0 space-y-4 sm:space-y-6">
+                <div className="p-4 sm:p-6 bg-gradient-to-br from-[hsl(var(--primary))]/10 to-[hsl(var(--success))]/10 rounded-xl border-2 border-[hsl(var(--primary))]/20">
+                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-4">
                     <div>
-                      <h3 className="text-2xl font-bold">Plan Mensuel</h3>
-                      <p className="text-muted-foreground">Accès complet à toutes les fonctionnalités</p>
+                      <h3 className="text-xl sm:text-2xl font-bold">Plan Mensuel</h3>
+                      <p className="text-sm text-muted-foreground">Accès complet à toutes les fonctionnalités</p>
                     </div>
-                    <div className="text-right">
-                      <div className="text-3xl font-extrabold bg-gradient-to-br from-[hsl(var(--primary))] to-[hsl(var(--success))] bg-clip-text text-transparent">
+                    <div className="text-left sm:text-right">
+                      <div className="text-2xl sm:text-3xl font-extrabold bg-gradient-to-br from-[hsl(var(--primary))] to-[hsl(var(--success))] bg-clip-text text-transparent">
                         200 HTG
                       </div>
                       <div className="text-sm text-muted-foreground">par mois</div>
@@ -696,18 +699,18 @@ const Settings = () => {
           </TabsContent>
 
           {/* Preferences Tab */}
-          <TabsContent value="preferences">
+          <TabsContent value="preferences" className="mt-4 sm:mt-6">
             <Card className="border-none rounded-[20px] shadow-md">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Globe className="text-primary" />
+              <CardHeader className="p-4 sm:p-6">
+                <CardTitle className="flex items-center gap-2 text-lg sm:text-xl">
+                  <Globe className="text-primary shrink-0" size={20} />
                   Préférences de l'application
                 </CardTitle>
-                <CardDescription>
+                <CardDescription className="text-sm">
                   Personnalisez votre expérience d'apprentissage
                 </CardDescription>
               </CardHeader>
-              <CardContent className="space-y-6">
+              <CardContent className="p-4 sm:p-6 pt-0 space-y-4 sm:space-y-6">
                 <div className="space-y-4">
                   <Label htmlFor="language">Langue de l'interface</Label>
                   <select
