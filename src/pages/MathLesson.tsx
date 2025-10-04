@@ -37,6 +37,7 @@ import {
   equationsMatching 
 } from "@/data/mathActivities";
 import { mathLessons } from "@/data/mathLessons";
+import { YouTubeVideoSection } from "@/components/YouTubeVideoSection";
 
 interface LessonData {
   objectif: string;
@@ -449,6 +450,14 @@ const MathLesson = () => {
                     </div>
                   </CardContent>
                 </Card>
+
+                {/* YouTube Videos Section */}
+                {lessonData.objectif && (
+                  <YouTubeVideoSection 
+                    lessonTitle={currentTopic.title}
+                    objectives={lessonData.objectif}
+                  />
+                )}
 
                 {/* Exemples d'exercices (Static) */}
                 {hasStaticContent && mathLessons[topicId!]?.exemplesExercices && (
