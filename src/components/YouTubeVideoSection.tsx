@@ -12,11 +12,12 @@ interface YouTubeVideo {
 interface YouTubeVideoSectionProps {
   lessonTitle: string;
   objectives: string;
+  gradeLevel?: string; // e.g., "AF7", "AF8", "AF9"
 }
 
 const YOUTUBE_API_KEY = "AIzaSyDu6sWsM5NEgb48nFFIz49guKR5amdsGWA";
 
-export const YouTubeVideoSection = ({ lessonTitle, objectives }: YouTubeVideoSectionProps) => {
+export const YouTubeVideoSection = ({ lessonTitle, objectives, gradeLevel = "AF7" }: YouTubeVideoSectionProps) => {
   const [videos, setVideos] = useState<YouTubeVideo[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -26,14 +27,54 @@ export const YouTubeVideoSection = ({ lessonTitle, objectives }: YouTubeVideoSec
   }, [lessonTitle, objectives]);
 
   const extractKeywords = (text: string): string[] => {
-    // Extract important keywords from objectives
+    // Common French/Creole stop words to exclude
+    const stopWords = [
+      "pouvoir", "savoir", "cette", "leçon", "être", "avoir", "faire", 
+      "pour", "dans", "avec", "plus", "tout", "mais", "vous", "nous",
+      "que", "qui", "sur", "une", "des", "les", "aux", "par"
+    ];
+
+    // Extract important mathematical and educational keywords
     const keywords = text
       .toLowerCase()
-      .replace(/[•\-]/g, " ")
+      .replace(/[•\-:;,]/g, " ")
       .split(/\s+/)
-      .filter(word => word.length > 4 && !["pouvoir", "savoir", "cette", "leçon"].includes(word))
-      .slice(0, 5);
+      .filter(word => 
+        word.length > 3 && 
+        !stopWords.includes(word) &&
+        !word.match(/^\d+$/) // exclude pure numbers
+      )
+      .slice(0, 6); // Get top 6 keywords
+
     return keywords;
+  };
+
+  const buildOptimalSearchQuery = (): string => {
+    // Extract key concepts from objectives
+    const keywords = extractKeywords(objectives);
+    
+    // Convert grade level to more searchable format
+    const gradeMapping: Record<string, string> = {
+      "AF7": "7ème année",
+      "AF8": "8ème année", 
+      "AF9": "9ème année",
+      "NS1": "1ère secondaire",
+      "NS2": "2ème secondaire",
+      "NS3": "3ème secondaire",
+      "NS4": "4ème secondaire"
+    };
+    
+    const gradeTerm = gradeMapping[gradeLevel] || "collège";
+    
+    // Build educational-focused query
+    // Format: [topic] + [grade] + educational keywords + [key concepts]
+    const educationalTerms = ["cours", "leçon", "explication", "tutoriel"];
+    const randomEducationalTerm = educationalTerms[Math.floor(Math.random() * educationalTerms.length)];
+    
+    // Combine: topic + grade + educational term + top keywords
+    const searchQuery = `${lessonTitle} mathématiques ${gradeTerm} ${randomEducationalTerm} ${keywords.slice(0, 3).join(" ")}`;
+    
+    return searchQuery;
   };
 
   const searchVideos = async () => {
@@ -41,14 +82,22 @@ export const YouTubeVideoSection = ({ lessonTitle, objectives }: YouTubeVideoSec
     setError(null);
 
     try {
-      // Build search query with lesson title and keywords from objectives
-      const keywords = extractKeywords(objectives);
-      const searchQuery = `${lessonTitle} mathématiques ${keywords.join(" ")} explication`;
+      const searchQuery = buildOptimalSearchQuery();
+      
+      console.log("YouTube search query:", searchQuery); // For debugging
 
       const response = await fetch(
-        `https://www.googleapis.com/youtube/v3/search?part=snippet&maxResults=3&q=${encodeURIComponent(
-          searchQuery
-        )}&type=video&videoEmbeddable=true&relevanceLanguage=fr&key=${YOUTUBE_API_KEY}`
+        `https://www.googleapis.com/youtube/v3/search?` +
+        `part=snippet&` +
+        `maxResults=3&` +
+        `q=${encodeURIComponent(searchQuery)}&` +
+        `type=video&` +
+        `videoEmbeddable=true&` +
+        `videoDuration=medium&` + // Prefer 4-20 min videos
+        `relevanceLanguage=fr&` +
+        `safeSearch=strict&` +
+        `order=relevance&` +
+        `key=${YOUTUBE_API_KEY}`
       );
 
       if (!response.ok) {

@@ -456,6 +456,7 @@ const MathLesson = () => {
                   <YouTubeVideoSection 
                     lessonTitle={currentTopic.title}
                     objectives={lessonData.objectif}
+                    gradeLevel="AF7"
                   />
                 )}
 
