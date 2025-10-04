@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -11,8 +11,10 @@ import { useToast } from "@/hooks/use-toast";
 export default function Auth() {
   const navigate = useNavigate();
   const { toast } = useToast();
+  const [searchParams] = useSearchParams();
   const [activeTab, setActiveTab] = useState<"login" | "signup" | "verify">("login");
   const [loginData, setLoginData] = useState({ email: "", password: "" });
+  const [referralCode, setReferralCode] = useState<string | null>(null);
   const [signupData, setSignupData] = useState({
     email: "",
     fullName: "",
@@ -28,6 +30,19 @@ export default function Auth() {
     email: "",
     code: "",
   });
+
+  useEffect(() => {
+    // Check for referral code in URL
+    const refCode = searchParams.get("ref");
+    if (refCode) {
+      setReferralCode(refCode);
+      setActiveTab("signup"); // Switch to signup tab if coming from referral link
+      toast({
+        title: "Code de parrainage détecté! 🎉",
+        description: "Inscrivez-vous pour bénéficier du parrainage",
+      });
+    }
+  }, [searchParams]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -139,6 +154,50 @@ export default function Auth() {
         });
 
       if (profileError) throw profileError;
+
+      // Handle referral if present
+      if (referralCode) {
+        try {
+          // Find the referrer's profile
+          const { data: referrerProfile, error: referrerError } = await supabase
+            .from("profiles")
+            .select("id")
+            .eq("referral_code", referralCode)
+            .single();
+
+          if (!referrerError && referrerProfile) {
+            // Get the new user's profile
+            const { data: newUserProfile, error: newProfileError } = await supabase
+              .from("profiles")
+              .select("id")
+              .eq("user_id", authData.user.id)
+              .single();
+
+            if (!newProfileError && newUserProfile) {
+              // Create referral entry
+              await supabase.from("referrals").insert({
+                referrer_id: referrerProfile.id,
+                referred_id: newUserProfile.id,
+                status: "pending",
+              });
+
+              // Update the new user's referred_by field
+              await supabase
+                .from("profiles")
+                .update({ referred_by: referrerProfile.id })
+                .eq("id", newUserProfile.id);
+
+              toast({
+                title: "Parrainage enregistré! 🎉",
+                description: "Vous avez été parrainé avec succès",
+              });
+            }
+          }
+        } catch (refError) {
+          console.error("Referral error:", refError);
+          // Don't block signup if referral fails
+        }
+      }
 
       const { error: emailError } = await supabase.functions.invoke('send-confirmation-email', {
         body: {

@@ -176,6 +176,7 @@ export type Database = {
       profiles: {
         Row: {
           academic_grade: string
+          affiliation_points: number | null
           confirmation_code: string | null
           created_at: string | null
           email_confirmed: boolean | null
@@ -184,11 +185,14 @@ export type Database = {
           nickname: string
           phone_confirmed: boolean | null
           phone_number: string
+          referral_code: string | null
+          referred_by: string | null
           updated_at: string | null
           user_id: string
         }
         Insert: {
           academic_grade: string
+          affiliation_points?: number | null
           confirmation_code?: string | null
           created_at?: string | null
           email_confirmed?: boolean | null
@@ -197,11 +201,14 @@ export type Database = {
           nickname: string
           phone_confirmed?: boolean | null
           phone_number: string
+          referral_code?: string | null
+          referred_by?: string | null
           updated_at?: string | null
           user_id: string
         }
         Update: {
           academic_grade?: string
+          affiliation_points?: number | null
           confirmation_code?: string | null
           created_at?: string | null
           email_confirmed?: boolean | null
@@ -210,17 +217,84 @@ export type Database = {
           nickname?: string
           phone_confirmed?: boolean | null
           phone_number?: string
+          referral_code?: string | null
+          referred_by?: string | null
           updated_at?: string | null
           user_id?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "profiles_referred_by_fkey"
+            columns: ["referred_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      referrals: {
+        Row: {
+          created_at: string | null
+          id: string
+          points_awarded: number | null
+          referred_id: string
+          referrer_id: string
+          rewarded_at: string | null
+          status: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          points_awarded?: number | null
+          referred_id: string
+          referrer_id: string
+          rewarded_at?: string | null
+          status?: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          points_awarded?: number | null
+          referred_id?: string
+          referrer_id?: string
+          rewarded_at?: string | null
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "referrals_referred_id_fkey"
+            columns: ["referred_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "referrals_referrer_id_fkey"
+            columns: ["referrer_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
+      award_referral_points: {
+        Args: {
+          p_points?: number
+          p_referred_id: string
+          p_referrer_id: string
+        }
+        Returns: undefined
+      }
       create_conversation: {
+        Args: Record<PropertyKey, never>
+        Returns: string
+      }
+      generate_referral_code: {
         Args: Record<PropertyKey, never>
         Returns: string
       }
