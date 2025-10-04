@@ -230,6 +230,13 @@ export type Database = {
             referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "profiles_referred_by_fkey"
+            columns: ["referred_by"]
+            isOneToOne: false
+            referencedRelation: "public_profiles"
+            referencedColumns: ["id"]
+          },
         ]
       }
       referrals: {
@@ -269,17 +276,60 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "referrals_referred_id_fkey"
+            columns: ["referred_id"]
+            isOneToOne: false
+            referencedRelation: "public_profiles"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "referrals_referrer_id_fkey"
             columns: ["referrer_id"]
             isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "referrals_referrer_id_fkey"
+            columns: ["referrer_id"]
+            isOneToOne: false
+            referencedRelation: "public_profiles"
+            referencedColumns: ["id"]
+          },
         ]
       }
     }
     Views: {
-      [_ in never]: never
+      public_profiles: {
+        Row: {
+          academic_grade: string | null
+          affiliation_points: number | null
+          created_at: string | null
+          full_name: string | null
+          id: string | null
+          nickname: string | null
+          user_id: string | null
+        }
+        Insert: {
+          academic_grade?: string | null
+          affiliation_points?: number | null
+          created_at?: string | null
+          full_name?: string | null
+          id?: string | null
+          nickname?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          academic_grade?: string | null
+          affiliation_points?: number | null
+          created_at?: string | null
+          full_name?: string | null
+          id?: string | null
+          nickname?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       award_referral_points: {
