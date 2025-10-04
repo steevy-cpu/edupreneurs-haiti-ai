@@ -38,6 +38,7 @@ const MathLesson = () => {
   const { toast } = useToast();
   const [isLoadingLesson, setIsLoadingLesson] = useState(false);
   const [lessonContent, setLessonContent] = useState("");
+  const [exerciseExamples, setExerciseExamples] = useState("");
   const [notes, setNotes] = useState("");
   const [notesSaved, setNotesSaved] = useState(true);
   const [activeActivity, setActiveActivity] = useState<string | null>(null);
@@ -58,11 +59,15 @@ const MathLesson = () => {
 
   const currentTopic = topicInfo[topicId || ""] || topicInfo["nombres-entiers"];
 
-  // Load cached notes on component mount
+  // Load cached notes and exercises on component mount
   useEffect(() => {
     const savedNotes = localStorage.getItem(`notes:math:${topicId}`);
     if (savedNotes) {
       setNotes(savedNotes);
+    }
+    const savedExercises = localStorage.getItem(`exercises:${topicId}`);
+    if (savedExercises) {
+      setExerciseExamples(savedExercises);
     }
   }, [topicId]);
 
@@ -80,7 +85,7 @@ const MathLesson = () => {
     try {
       const { data, error } = await supabase.functions.invoke('math-ai-tutor', {
         body: {
-          message: `Explique-moi de manière simple et amusante le chapitre "${currentTopic.title}" pour un élève de Terminale. Utilise des exemples concrets et du créole haïtien quand c'est nécessaire pour mieux faire comprendre.`,
+          message: `Présente le chapitre "${currentTopic.title}" de manière complète et pédagogique pour un élève de Terminale. N'oublie pas d'inclure des exemples d'exercices avec leurs solutions.`,
           lessonType: 'lesson',
           chatHistory: []
         }
@@ -88,9 +93,20 @@ const MathLesson = () => {
 
       if (error) throw error;
       
-      // Cache the lesson content
-      setLessonContent(data.response);
-      localStorage.setItem(`lesson:${topicId}`, data.response);
+      // Split content into lesson and exercises if marker exists
+      const fullContent = data.response;
+      const exerciseMarker = "## Exemples d'exercices";
+      
+      if (fullContent.includes(exerciseMarker)) {
+        const [mainContent, exercises] = fullContent.split(exerciseMarker);
+        setLessonContent(mainContent.trim());
+        setExerciseExamples(exerciseMarker + "\n" + exercises.trim());
+        localStorage.setItem(`lesson:${topicId}`, mainContent.trim());
+        localStorage.setItem(`exercises:${topicId}`, exerciseMarker + "\n" + exercises.trim());
+      } else {
+        setLessonContent(fullContent);
+        localStorage.setItem(`lesson:${topicId}`, fullContent);
+      }
       
       if (forceRegenerate) {
         toast({
@@ -281,6 +297,17 @@ const MathLesson = () => {
                         </div>
                       </div>
                     </Card>
+
+                    {/* Examples d'exercices */}
+                    {exerciseExamples && (
+                      <Card className="lesson-card">
+                        <div className="p-6 lesson-markdown">
+                          <div className="whitespace-pre-wrap text-base leading-relaxed">
+                            {exerciseExamples}
+                          </div>
+                        </div>
+                      </Card>
+                    )}
 
                     {/* Video Placeholder */}
                     <Card className="lesson-card">
