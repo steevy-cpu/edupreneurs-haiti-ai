@@ -4,6 +4,8 @@ import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { CheckCircle, XCircle, ArrowRight, Trophy, Loader2 } from "lucide-react";
 import { useSoundEffects } from "@/hooks/useSoundEffects";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
 
 interface QuizQuestion {
   question: string;
@@ -25,6 +27,30 @@ export const InteractiveQuiz = ({ content, isLoading, onRegenerate }: Interactiv
   const [score, setScore] = useState(0);
   const [completed, setCompleted] = useState(false);
   const { playSound } = useSoundEffects();
+  const { toast } = useToast();
+
+  const awardGold = async () => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      // Fetch current gold
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('gold_earned')
+        .eq('user_id', user.id)
+        .single();
+
+      if (profile) {
+        await supabase
+          .from('profiles')
+          .update({ gold_earned: (profile.gold_earned || 0) + 1 })
+          .eq('user_id', user.id);
+      }
+    } catch (error) {
+      console.error('Error awarding gold:', error);
+    }
+  };
 
   const parseQuestions = (content: string): QuizQuestion[] => {
     const questions: QuizQuestion[] = [];
@@ -107,7 +133,7 @@ export const InteractiveQuiz = ({ content, isLoading, onRegenerate }: Interactiv
   const currentQuestion = questions[currentQuestionIndex];
   const progress = ((currentQuestionIndex + 1) / questions.length) * 100;
 
-  const handleAnswerSelect = (index: number) => {
+  const handleAnswerSelect = async (index: number) => {
     if (showFeedback) return;
     
     setSelectedAnswer(index);
@@ -118,6 +144,12 @@ export const InteractiveQuiz = ({ content, isLoading, onRegenerate }: Interactiv
     
     if (isCorrect) {
       setScore(prev => prev + 1);
+      await awardGold();
+      toast({
+        title: "🎉 +1 Gold!",
+        description: "Bonne réponse!",
+        duration: 2000,
+      });
     }
   };
 

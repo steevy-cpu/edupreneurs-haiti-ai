@@ -1,9 +1,11 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { CheckCircle, XCircle, ArrowRight, Loader2 } from "lucide-react";
 import { useSoundEffects } from "@/hooks/useSoundEffects";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
 
 interface Question {
   question: string;
@@ -109,7 +111,32 @@ export const InteractiveActivities = ({ content, isLoading, onRegenerate }: Inte
   const currentQuestion = questions[currentQuestionIndex];
   const progress = ((currentQuestionIndex + 1) / questions.length) * 100;
 
-  const handleAnswerSelect = (index: number) => {
+  const { toast } = useToast();
+
+  const awardGold = async () => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      // Fetch current gold
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('gold_earned')
+        .eq('user_id', user.id)
+        .single();
+
+      if (profile) {
+        await supabase
+          .from('profiles')
+          .update({ gold_earned: (profile.gold_earned || 0) + 1 })
+          .eq('user_id', user.id);
+      }
+    } catch (error) {
+      console.error('Error awarding gold:', error);
+    }
+  };
+
+  const handleAnswerSelect = async (index: number) => {
     if (showFeedback) return;
     
     setSelectedAnswer(index);
@@ -120,6 +147,12 @@ export const InteractiveActivities = ({ content, isLoading, onRegenerate }: Inte
     
     if (isCorrect) {
       setScore(prev => prev + 1);
+      await awardGold();
+      toast({
+        title: "🎉 +1 Gold!",
+        description: "Bonne réponse!",
+        duration: 2000,
+      });
     }
   };
 

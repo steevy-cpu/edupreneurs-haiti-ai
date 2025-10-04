@@ -31,10 +31,28 @@ const Dashboard = () => {
   });
   const [recentNotes, setRecentNotes] = useState<Note[]>([]);
 
+  const [goldEarned, setGoldEarned] = useState<number>(0);
+
   useEffect(() => {
     fetchUserData();
     fetchRecentNotes();
+    fetchGoldEarned();
   }, []);
+
+  const fetchGoldEarned = async () => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+
+    const { data } = await supabase
+      .from('profiles')
+      .select('gold_earned')
+      .eq('user_id', user.id)
+      .single();
+
+    if (data) {
+      setGoldEarned(data.gold_earned || 0);
+    }
+  };
 
   const fetchUserData = async () => {
     const { data: { session } } = await supabase.auth.getSession();
@@ -120,7 +138,7 @@ const Dashboard = () => {
                 <Coins />
               </div>
               <div className="text-3xl font-extrabold bg-gradient-to-br from-[hsl(var(--primary))] to-[hsl(var(--success))] bg-clip-text text-transparent mb-2">
-                {userData.gold}
+                {goldEarned}
               </div>
               <div className="text-sm font-semibold text-muted-foreground">Golds gagnés</div>
             </CardContent>

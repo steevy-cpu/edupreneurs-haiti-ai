@@ -208,6 +208,7 @@ export type Database = {
           created_at: string | null
           email_confirmed: boolean | null
           full_name: string
+          gold_earned: number
           id: string
           nickname: string
           phone_confirmed: boolean | null
@@ -224,6 +225,7 @@ export type Database = {
           created_at?: string | null
           email_confirmed?: boolean | null
           full_name: string
+          gold_earned?: number
           id?: string
           nickname: string
           phone_confirmed?: boolean | null
@@ -240,6 +242,7 @@ export type Database = {
           created_at?: string | null
           email_confirmed?: boolean | null
           full_name?: string
+          gold_earned?: number
           id?: string
           nickname?: string
           phone_confirmed?: boolean | null

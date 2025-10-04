@@ -3,6 +3,8 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { CheckCircle, XCircle, Trophy } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
 
 interface QuizQuestion {
   question: string;
@@ -23,18 +25,48 @@ export const QuizGame = ({ topic, questions, onComplete }: QuizGameProps) => {
   const [showResult, setShowResult] = useState(false);
   const [score, setScore] = useState(0);
   const [isComplete, setIsComplete] = useState(false);
+  const { toast } = useToast();
+
+  const awardGold = async () => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      // Fetch current gold
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('gold_earned')
+        .eq('user_id', user.id)
+        .single();
+
+      if (profile) {
+        await supabase
+          .from('profiles')
+          .update({ gold_earned: (profile.gold_earned || 0) + 1 })
+          .eq('user_id', user.id);
+      }
+    } catch (error) {
+      console.error('Error awarding gold:', error);
+    }
+  };
 
   const handleAnswerSelect = (index: number) => {
     if (showResult) return;
     setSelectedAnswer(index);
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (selectedAnswer === null) return;
     
     const isCorrect = selectedAnswer === questions[currentQuestion].correctAnswer;
     if (isCorrect) {
       setScore(score + 1);
+      await awardGold();
+      toast({
+        title: "🎉 +1 Gold!",
+        description: "Bonne réponse!",
+        duration: 2000,
+      });
     }
     setShowResult(true);
   };
