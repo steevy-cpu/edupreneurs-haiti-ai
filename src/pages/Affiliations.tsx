@@ -91,7 +91,7 @@ const Affiliations = () => {
 
     setProfile(profileData);
 
-    // Fetch referrals
+    // Fetch referrals with only public profile information
     const { data: referralsData, error: referralsError } = await supabase
       .from("referrals")
       .select(`
@@ -99,8 +99,7 @@ const Affiliations = () => {
         referred_id,
         status,
         points_awarded,
-        created_at,
-        profiles!referrals_referred_id_fkey(full_name, nickname)
+        created_at
       `)
       .eq("referrer_id", profileData.id)
       .order("created_at", { ascending: false });
@@ -109,14 +108,36 @@ const Affiliations = () => {
       console.error("Error fetching referrals:", referralsError);
       return;
     }
+    
+    // Fetch public profile info for referred users and merge
+    const enrichedReferrals: Referral[] = [];
+    if (referralsData && referralsData.length > 0) {
+      const referredIds = referralsData.map(r => r.referred_id);
+      const { data: publicProfiles } = await supabase
+        .from("public_profiles")
+        .select("id, full_name, nickname")
+        .in("id", referredIds);
+      
+      // Create properly typed referral objects
+      referralsData.forEach((referral) => {
+        const profile = publicProfiles?.find(p => p.id === referral.referred_id);
+        enrichedReferrals.push({
+          ...referral,
+          profiles: {
+            full_name: profile?.full_name || "Utilisateur",
+            nickname: profile?.nickname || "utilisateur"
+          }
+        });
+      });
+    }
 
-    setReferrals(referralsData || []);
+    setReferrals(enrichedReferrals);
 
     // Calculate stats
-    const total = referralsData?.length || 0;
-    const active = referralsData?.filter((r) => r.status === "active" || r.status === "rewarded").length || 0;
-    const pending = referralsData?.filter((r) => r.status === "pending").length || 0;
-    const totalPoints = referralsData?.reduce((sum, r) => sum + (r.points_awarded || 0), 0) || 0;
+    const total = enrichedReferrals.length;
+    const active = enrichedReferrals.filter((r) => r.status === "active" || r.status === "rewarded").length;
+    const pending = enrichedReferrals.filter((r) => r.status === "pending").length;
+    const totalPoints = enrichedReferrals.reduce((sum, r) => sum + (r.points_awarded || 0), 0);
 
     setStats({ total, active, pending, totalPoints });
   };

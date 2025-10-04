@@ -43,9 +43,10 @@ const UserSearch = () => {
     }
 
     setIsLoading(true);
+    // Use public_profiles view to only access non-sensitive user data
     const { data, error } = await supabase
-      .from("profiles")
-      .select("*")
+      .from("public_profiles")
+      .select("id, user_id, full_name, nickname")
       .or(`full_name.ilike.%${query}%,nickname.ilike.%${query}%`)
       .neq("user_id", currentUser?.id)
       .limit(20);
