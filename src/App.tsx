@@ -4,6 +4,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { ThemeProvider } from "@/components/ThemeProvider";
+import { Layout } from "@/components/Layout";
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
 import CustomizeAI from "./pages/CustomizeAI";
@@ -33,15 +34,15 @@ const App = () => (
             <Route path="/auth" element={<Auth />} />
             <Route path="/customize-ai" element={<CustomizeAI />} />
             <Route path="/onboarding" element={<Onboarding />} />
-            <Route path="/dashboard" element={<Dashboard />} />
-            <Route path="/matieres" element={<Matieres />} />
-          <Route path="/community" element={<Community />} />
-          <Route path="/feed" element={<Feed />} />
-          <Route path="/user-search" element={<UserSearch />} />
-            <Route path="/math-course" element={<MathCourse />} />
-            <Route path="/math-lesson/:topicId" element={<MathLesson />} />
-            <Route path="/affiliations" element={<Affiliations />} />
-            <Route path="/settings" element={<Settings />} />
+            <Route path="/dashboard" element={<Layout><Dashboard /></Layout>} />
+            <Route path="/matieres" element={<Layout><Matieres /></Layout>} />
+            <Route path="/community" element={<Layout><Community /></Layout>} />
+            <Route path="/feed" element={<Layout><Feed /></Layout>} />
+            <Route path="/user-search" element={<Layout><UserSearch /></Layout>} />
+            <Route path="/math-course" element={<Layout><MathCourse /></Layout>} />
+            <Route path="/math-lesson/:topicId" element={<Layout><MathLesson /></Layout>} />
+            <Route path="/affiliations" element={<Layout><Affiliations /></Layout>} />
+            <Route path="/settings" element={<Layout><Settings /></Layout>} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
