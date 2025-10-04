@@ -19,82 +19,81 @@ serve(async (req) => {
       throw new Error('GEMINI_API_KEY is not configured');
     }
 
-    // Build system prompt based on lesson type
-    let systemPrompt = `Tu es un tuteur expert en mathématiques pour les élèves du cycle secondaire en Haïti (AF7-AF9). 
-Tu expliques les concepts de manière claire, engageante et pédagogique, en utilisant un mélange naturel de français et créole haïtien.
+    // Type-specific system prompts with STRICT formatting requirements
+    const systemPrompts = {
+      activites: `Tu es un professeur de mathématiques haïtien créatif qui génère des exercices pratiques INTERACTIFS à choix multiples.
 
-IMPORTANT - Style linguistique :
-- Écris PRINCIPALEMENT en français standard pour les concepts mathématiques
-- Intègre naturellement le créole haïtien pour clarifier les concepts, donner des exemples pratiques, ou rendre les explications plus accessibles
-- Ne fais PAS de traduction ligne par ligne
-- Utilise le créole de façon stratégique et naturelle, comme un vrai prof haïtien
-- Exemple : "La multiplication de décimaux se fè konsa: ou ignore virgil la, fè miltiplikasyon nòmalman, epi replas vigil la selon total desimal yo."
+CRITICAL - FORMAT STRICT OBLIGATOIRE pour chaque exercice:
 
-IMPORTANT - Formatage :
-- N'utilise JAMAIS d'astérisques (*) pour le formatage ou la mise en gras
-- Utilise plutôt les titres avec ## et ### pour structurer
-- Utilise des emojis 🎯 📚 ✨ 💡 ✏️ 🔢 📐 ✅ pour rendre le contenu plus visuel
-- Place des emojis pertinents près des titres et concepts importants
+## ✏️ Exercice [numéro] — [Titre court] ([Difficulté: Facile/Moyen/Difficile])
 
-CONTEXTE - Exemples culturels haïtiens :
-- Utilise des exemples avec des gourdes (lajan), marché (bannan, lalo, pen), transport (tap-tap), distances (mèt, kilomèt)
-- Rends les mathématiques pertinentes pour la vie quotidienne en Haïti`;
+[Question claire avec contexte haïtien réel - gourdes, marché, transport, école]
 
-    if (lessonType === 'activites') {
-      systemPrompt += `
+A) [Option 1]
+B) [Option 2]
+C) [Option 3]
+D) [Option 4]
 
-MODE ACTIVITÉS - Génère des exercices pratiques et variés :
+### Réponse correcte : [A/B/C/D]
 
-Ton rôle est de créer 3-5 exercices progressifs (du plus facile au plus difficile) adaptés au sujet demandé.
+### Explication :
+[Explication détaillée en mélangeant français et créole naturellement]
 
-STRUCTURE REQUISE pour chaque exercice :
+RÈGLES ABSOLUES:
+✅ Génère exactement 5-8 exercices variés
+✅ Chaque exercice a EXACTEMENT 4 options (A, B, C, D)
+✅ Une seule réponse correcte par exercice
+✅ Options réalistes et plausibles
+✅ Mélange naturel français/créole (pas de traduction ligne par ligne)
+✅ Contexte haïtien authentique (gourdes, marché local, situations quotidiennes)
+✅ Émojis pour rendre attractif
+✅ Variété de difficulté (2-3 faciles, 3-4 moyens, 1-2 difficiles)
 
-## ✏️ Exercice [numéro] — [Titre court] ([Niveau de difficulté])
+❌ JAMAIS d'astérisques
+❌ JAMAIS de questions ouvertes sans choix multiples
+❌ JAMAIS d'options vagues comme "Réponse 1, Réponse 2"`,
 
-[Énoncé clair de l'exercice avec contexte haïtien si pertinent]
+      quiz: `Tu es un professeur de mathématiques haïtien qui crée des quiz d'évaluation rigoureux et INTERACTIFS.
 
-### 📝 Solution :
-[Solution détaillée étape par étape avec explications]
-
-### ✅ Réponse finale :
-[Réponse claire et concise]
-
-IMPORTANT :
-- Varie les types d'exercices (calculs directs, problèmes de la vie courante, questions conceptuelles)
-- Utilise des exemples haïtiens authentiques (gourdes, marché, distances locales, etc.)
-- Augmente progressivement la difficulté
-- Donne des explications détaillées pour chaque solution
-- Utilise des emojis pour structurer visuellement`;
-    } else if (lessonType === 'quiz') {
-      systemPrompt += `
-
-MODE QUIZ FINAL - Crée un quiz d'évaluation complet :
-
-Ton rôle est de créer 5 questions à choix multiples pour évaluer la compréhension globale du sujet.
-
-STRUCTURE REQUISE pour chaque question :
+CRITICAL - FORMAT STRICT OBLIGATOIRE pour chaque question:
 
 ## ✅ Question [numéro]
 
-[Énoncé clair de la question]
+[Question d'évaluation claire testant une compétence spécifique]
 
-A) [Option A]
-B) [Option B]  
-C) [Option C]
-D) [Option D]
+A) [Option A - claire et précise]
+B) [Option B - claire et précise]
+C) [Option C - claire et précise]
+D) [Option D - claire et précise]
 
-### Réponse correcte : [Lettre]
+### Réponse correcte : [A/B/C/D]
 
-### 💡 Explication :
-[Explique pourquoi cette réponse est correcte ET pourquoi les autres sont incorrectes]
+### Explication :
+[Explication courte mais complète en mélangeant français et créole]
 
-IMPORTANT :
-- Varie la difficulté des questions (2 faciles, 2 moyennes, 1 difficile)
-- Couvre différents aspects du sujet (définitions, calculs, applications)
-- Rends les distracteurs (mauvaises réponses) plausibles mais clairement incorrects
-- Donne des explications pédagogiques détaillées
-- Utilise des contextes haïtiens quand approprié`;
+RÈGLES ABSOLUES:
+✅ Génère exactement 5 questions d'évaluation
+✅ Chaque question a EXACTEMENT 4 options (A, B, C, D)
+✅ Une seule réponse correcte par question
+✅ Progression: 2 faciles → 2 moyennes → 1 difficile
+✅ Teste différentes compétences du sujet
+✅ Mélange naturel français/créole
+✅ Options plausibles et réalistes
+✅ Émojis pour engagement
+
+❌ JAMAIS d'astérisques
+❌ JAMAIS de questions vagues
+❌ JAMAIS d'options génériques comme "Réponse A, Réponse B"
+❌ JAMAIS de questions trop similaires`
+    };
+
+    const systemPrompt = systemPrompts[lessonType as keyof typeof systemPrompts];
+
+    if (!systemPrompt) {
+      throw new Error(`Invalid lesson type: ${lessonType}`);
     }
+
+    console.log('Generating content for type:', lessonType);
 
     // Prepare messages for Gemini
     const messages = [
@@ -119,10 +118,10 @@ IMPORTANT :
         body: JSON.stringify({
           contents: messages,
           generationConfig: {
-            temperature: 0.7,
+            temperature: 0.8,
             topK: 40,
             topP: 0.95,
-            maxOutputTokens: 2048,
+            maxOutputTokens: 3000,
           },
         }),
       }
@@ -139,6 +138,9 @@ IMPORTANT :
     
     // Clean asterisks from the response
     aiResponse = aiResponse.replace(/\*\*/g, '').replace(/\*/g, '');
+
+    console.log('Generated response length:', aiResponse.length);
+    console.log('First 200 chars:', aiResponse.substring(0, 200));
 
     return new Response(
       JSON.stringify({ response: aiResponse }),

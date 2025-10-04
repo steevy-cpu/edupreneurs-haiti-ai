@@ -28,17 +28,17 @@ export const InteractiveQuiz = ({ content, isLoading }: InteractiveQuizProps) =>
   const parseQuestions = (content: string): QuizQuestion[] => {
     const questions: QuizQuestion[] = [];
     
-    // Parse markdown-style questions
+    // Split by question headers
     const sections = content.split(/##\s+✅\s+Question\s+\d+/i);
     
     sections.slice(1).forEach((section) => {
-      // Extract question
-      const questionMatch = section.match(/^(.+?)(?=\n[A-D]\))/is);
+      // Extract question text - everything before first option
+      const questionMatch = section.match(/^\s*(.+?)(?=\n[A-D]\))/is);
       if (!questionMatch) return;
       
       const questionText = questionMatch[1].trim();
       
-      // Extract options
+      // Extract options (A, B, C, D format)
       const optionMatches = section.matchAll(/([A-D])\)\s*(.+?)(?=\n[A-D]\)|\n###|\n\n|$)/gis);
       const options: string[] = [];
       Array.from(optionMatches).forEach(match => {
@@ -46,15 +46,18 @@ export const InteractiveQuiz = ({ content, isLoading }: InteractiveQuizProps) =>
       });
       
       // Extract correct answer
-      const correctMatch = section.match(/###\s+(?:Réponse correcte|Correct)[:\s]+([A-D])/i);
-      const correctLetter = correctMatch ? correctMatch[1].toUpperCase() : 'A';
+      const correctMatch = section.match(/###\s+Réponse correcte\s*:\s*([A-D])/i);
+      if (!correctMatch) return;
+      
+      const correctLetter = correctMatch[1].toUpperCase();
       const correctIndex = correctLetter.charCodeAt(0) - 'A'.charCodeAt(0);
       
       // Extract explanation
-      const explanationMatch = section.match(/###\s+Explication[:\s]+(.+?)(?=##|$)/is);
+      const explanationMatch = section.match(/###\s+Explication\s*:\s*(.+?)(?=##|$)/is);
       const explanation = explanationMatch ? explanationMatch[1].trim() : "";
       
-      if (questionText && options.length >= 2) {
+      // Only add if we have valid data
+      if (questionText && options.length === 4 && correctIndex >= 0 && correctIndex < 4) {
         questions.push({
           question: questionText,
           options,
@@ -64,19 +67,33 @@ export const InteractiveQuiz = ({ content, isLoading }: InteractiveQuizProps) =>
       }
     });
     
-    return questions.length > 0 ? questions : generateFallbackQuestions();
-  };
-
-  const generateFallbackQuestions = (): QuizQuestion[] => {
-    return [{
-      question: "Question d'évaluation (basée sur le contenu)",
-      options: ["Option A", "Option B", "Option C", "Option D"],
-      correctAnswer: 0,
-      explanation: "Consultez le contenu du quiz ci-dessous."
-    }];
+    return questions;
   };
 
   const questions = parseQuestions(content);
+  
+  // Show error if no questions were parsed
+  if (!isLoading && questions.length === 0 && content) {
+    return (
+      <Card className="lesson-card border-none rounded-[20px] shadow-lg border-2 border-orange-300 dark:border-orange-700 bg-gradient-to-br from-orange-50 to-red-50 dark:from-orange-950/30 dark:to-red-950/30">
+        <CardHeader className="p-4 sm:p-6 bg-gradient-to-r from-orange-200 to-red-200 dark:from-orange-900/40 dark:to-red-900/40 rounded-t-[20px]">
+          <CardTitle className="flex items-center gap-2 text-lg sm:text-xl">
+            ⚠️ Pwoblèm ak fòma (Problème de format)
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="p-6 space-y-4">
+          <p className="text-sm text-muted-foreground">
+            Le quiz n'a pas pu être chargé dans le format interactif. 
+            Voici le contenu original:
+          </p>
+          <div className="prose prose-sm max-w-none dark:prose-invert">
+            <div dangerouslySetInnerHTML={{ __html: content }} />
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+  
   const currentQuestion = questions[currentQuestionIndex];
   const progress = ((currentQuestionIndex + 1) / questions.length) * 100;
 
