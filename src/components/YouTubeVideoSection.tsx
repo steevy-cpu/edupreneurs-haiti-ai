@@ -66,13 +66,13 @@ export const YouTubeVideoSection = ({ lessonTitle, objectives, gradeLevel = "AF7
     
     const gradeTerm = gradeMapping[gradeLevel] || "collège";
     
-    // Build educational-focused query
-    // Format: [topic] + [grade] + educational keywords + [key concepts]
-    const educationalTerms = ["cours", "leçon", "explication", "tutoriel"];
+    // Build educational-focused query with French language indicators
+    // Format: [topic] + French educational keywords + [grade] + [key concepts]
+    const educationalTerms = ["cours français", "leçon en français", "explication française", "tutoriel français"];
     const randomEducationalTerm = educationalTerms[Math.floor(Math.random() * educationalTerms.length)];
     
-    // Combine: topic + grade + educational term + top keywords
-    const searchQuery = `${lessonTitle} mathématiques ${gradeTerm} ${randomEducationalTerm} ${keywords.slice(0, 3).join(" ")}`;
+    // Add "français" and "francophone" to ensure French content
+    const searchQuery = `${lessonTitle} ${randomEducationalTerm} mathématiques ${gradeTerm} français ${keywords.slice(0, 2).join(" ")}`;
     
     return searchQuery;
   };
@@ -108,12 +108,40 @@ export const YouTubeVideoSection = ({ lessonTitle, objectives, gradeLevel = "AF7
 
       const data = await response.json();
 
-      const videoList: YouTubeVideo[] = data.items.map((item: any) => ({
-        id: item.id.videoId,
-        title: item.snippet.title,
-        description: item.snippet.description,
-        thumbnail: item.snippet.thumbnails.medium.url,
-      }));
+      // Filter videos to ensure French/Creole content
+      const videoList: YouTubeVideo[] = data.items
+        .filter((item: any) => {
+          const title = item.snippet.title.toLowerCase();
+          const description = item.snippet.description.toLowerCase();
+          const channelTitle = item.snippet.channelTitle.toLowerCase();
+          
+          // Keywords that indicate French content
+          const frenchIndicators = ['français', 'french', 'cm1', 'cm2', '6ème', '5ème', '4ème', '3ème', 
+                                     'primaire', 'collège', 'lycée', 'mathématiques', 'maths'];
+          
+          // Keywords that indicate English content (to exclude)
+          const englishIndicators = ['english', 'mathematics in english', 'english lesson', 
+                                      'learn in english', 'tutorial in english'];
+          
+          // Check if video has English indicators
+          const hasEnglishIndicators = englishIndicators.some(indicator => 
+            title.includes(indicator) || description.includes(indicator)
+          );
+          
+          // Check if video has French indicators
+          const hasFrenchIndicators = frenchIndicators.some(indicator => 
+            title.includes(indicator) || description.includes(indicator) || channelTitle.includes(indicator)
+          );
+          
+          // Include only if has French indicators and no English indicators
+          return hasFrenchIndicators && !hasEnglishIndicators;
+        })
+        .map((item: any) => ({
+          id: item.id.videoId,
+          title: item.snippet.title,
+          description: item.snippet.description,
+          thumbnail: item.snippet.thumbnails.medium.url,
+        }));
 
       setVideos(videoList);
     } catch (err) {
