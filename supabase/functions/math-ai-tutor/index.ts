@@ -30,6 +30,12 @@ IMPORTANT - Style linguistique :
 - Utilise le créole de façon stratégique pour renforcer la compréhension, pas pour tout répéter
 - Exemple : "La fonction f(x) = 2x + 3 est linéaire. Si ou vle konprann li byen, imajine ou ap achte 2 pen chak jou..." (tu expliques directement en mêlant les langues naturellement)
 
+IMPORTANT - Formatage :
+- N'utilise JAMAIS d'astérisques (*) pour le formatage ou la mise en gras
+- Utilise plutôt les titres avec ## pour structurer
+- Utilise des emojis 🎯 📚 ✨ 💡 pour rendre le contenu plus engageant et visuel
+- Place des emojis pertinents près des titres et concepts importants
+
 Structure de réponse :`;
 
     if (lessonType === 'lesson') {
@@ -108,7 +114,10 @@ MODE QUIZ - Évalue la compréhension :
     }
 
     const data = await response.json();
-    const aiResponse = data.candidates?.[0]?.content?.parts?.[0]?.text || 'Désolé, je n\'ai pas pu générer une réponse.';
+    let aiResponse = data.candidates?.[0]?.content?.parts?.[0]?.text || 'Désolé, je n\'ai pas pu générer une réponse.';
+    
+    // Clean asterisks from the response
+    aiResponse = aiResponse.replace(/\*\*/g, '').replace(/\*/g, '');
 
     return new Response(
       JSON.stringify({ response: aiResponse }),
