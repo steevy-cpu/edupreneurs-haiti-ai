@@ -28,36 +28,39 @@ export const InteractiveQuiz = ({ content, isLoading }: InteractiveQuizProps) =>
   const parseQuestions = (content: string): QuizQuestion[] => {
     const questions: QuizQuestion[] = [];
     
-    // Split by question headers
-    const sections = content.split(/##\s+✅\s+Question\s+\d+/i);
+    // Split by question headers - more flexible regex
+    const sections = content.split(/#{2,3}\s*✅?\s*Question\s+\d+/i);
     
     sections.slice(1).forEach((section) => {
-      // Extract question text - everything before first option
-      const questionMatch = section.match(/^\s*(.+?)(?=\n[A-D]\))/is);
+      // Extract question text - everything before first option, more flexible
+      const questionMatch = section.match(/^\s*(.+?)(?=\n\s*[A-D][\):])/is);
       if (!questionMatch) return;
       
-      const questionText = questionMatch[1].trim();
+      const questionText = questionMatch[1].trim().replace(/\*\*/g, '');
       
-      // Extract options (A, B, C, D format)
-      const optionMatches = section.matchAll(/([A-D])\)\s*(.+?)(?=\n[A-D]\)|\n###|\n\n|$)/gis);
+      // Extract options - handle both A) and A: formats
+      const optionMatches = section.matchAll(/([A-D])[\):]\s*(.+?)(?=\n\s*[A-D][\):]|\n\s*#{2,3}|\n\n|$)/gis);
       const options: string[] = [];
       Array.from(optionMatches).forEach(match => {
-        options.push(match[2].trim());
+        const optionText = match[2].trim().replace(/\*\*/g, '');
+        if (optionText) {
+          options.push(optionText);
+        }
       });
       
-      // Extract correct answer
-      const correctMatch = section.match(/###\s+Réponse correcte\s*:\s*([A-D])/i);
-      if (!correctMatch) return;
+      // Extract correct answer - more flexible
+      const correctMatch = section.match(/#{2,3}\s*Réponse\s+correcte\s*:?\s*([A-D])/i);
+      if (!correctMatch || options.length !== 4) return;
       
       const correctLetter = correctMatch[1].toUpperCase();
       const correctIndex = correctLetter.charCodeAt(0) - 'A'.charCodeAt(0);
       
-      // Extract explanation
-      const explanationMatch = section.match(/###\s+Explication\s*:\s*(.+?)(?=##|$)/is);
-      const explanation = explanationMatch ? explanationMatch[1].trim() : "";
+      // Extract explanation - handle various formats
+      const explanationMatch = section.match(/#{2,3}\s*Explication\s*:?\s*\n?\s*(.+?)(?=#{2,3}|$)/is);
+      const explanation = explanationMatch ? explanationMatch[1].trim().replace(/\*\*/g, '') : "";
       
-      // Only add if we have valid data
-      if (questionText && options.length === 4 && correctIndex >= 0 && correctIndex < 4) {
+      // Only add if we have complete valid data
+      if (questionText && options.length === 4 && correctIndex >= 0 && correctIndex < 4 && explanation) {
         questions.push({
           question: questionText,
           options,
