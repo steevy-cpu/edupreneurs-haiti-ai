@@ -7,6 +7,7 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useToast } from "@/hooks/use-toast";
 import { Send, ArrowLeft, Search } from "lucide-react";
+import { useMessageSounds } from "@/hooks/useMessageSounds";
 
 interface Profile {
   id: string;
@@ -36,6 +37,7 @@ const Community = () => {
   const { toast } = useToast();
   const [searchParams] = useSearchParams();
   const conversationId = searchParams.get("conversation");
+  const { playSendSound, playReceiveSound } = useMessageSounds();
   
   const [user, setUser] = useState<any>(null);
   const [conversations, setConversations] = useState<Conversation[]>([]);
@@ -43,10 +45,13 @@ const Community = () => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [newMessage, setNewMessage] = useState("");
   const [isSending, setIsSending] = useState(false);
+  const [notificationPermission, setNotificationPermission] = useState<NotificationPermission>("default");
+  const previousMessagesCount = useRef<number>(0);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     checkUser();
+    requestNotificationPermission();
   }, []);
 
   useEffect(() => {
@@ -64,10 +69,27 @@ const Community = () => {
 
   useEffect(() => {
     scrollToBottom();
-  }, [messages]);
+    // Play sound when receiving new messages
+    if (messages.length > previousMessagesCount.current && previousMessagesCount.current > 0) {
+      const lastMessage = messages[messages.length - 1];
+      if (lastMessage.sender_id !== user?.id) {
+        playReceiveSound();
+      }
+    }
+    previousMessagesCount.current = messages.length;
+  }, [messages, user, playReceiveSound]);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  };
+
+  const requestNotificationPermission = async () => {
+    if ("Notification" in window && Notification.permission === "default") {
+      const permission = await Notification.requestPermission();
+      setNotificationPermission(permission);
+    } else if ("Notification" in window) {
+      setNotificationPermission(Notification.permission);
+    }
   };
 
   const checkUser = async () => {
@@ -201,6 +223,7 @@ const Community = () => {
         variant: "destructive",
       });
     } else {
+      playSendSound();
       setNewMessage("");
     }
     setIsSending(false);
