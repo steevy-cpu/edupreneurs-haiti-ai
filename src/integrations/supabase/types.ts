@@ -67,18 +67,21 @@ export type Database = {
           follower_id: string
           following_id: string
           id: string
+          status: Database["public"]["Enums"]["follow_status"]
         }
         Insert: {
           created_at?: string
           follower_id: string
           following_id: string
           id?: string
+          status?: Database["public"]["Enums"]["follow_status"]
         }
         Update: {
           created_at?: string
           follower_id?: string
           following_id?: string
           id?: string
+          status?: Database["public"]["Enums"]["follow_status"]
         }
         Relationships: []
       }
@@ -204,6 +207,7 @@ export type Database = {
         Row: {
           academic_grade: string
           affiliation_points: number | null
+          bio: string | null
           confirmation_code: string | null
           created_at: string | null
           email_confirmed: boolean | null
@@ -215,12 +219,14 @@ export type Database = {
           phone_number: string
           referral_code: string | null
           referred_by: string | null
+          school: string | null
           updated_at: string | null
           user_id: string
         }
         Insert: {
           academic_grade: string
           affiliation_points?: number | null
+          bio?: string | null
           confirmation_code?: string | null
           created_at?: string | null
           email_confirmed?: boolean | null
@@ -232,12 +238,14 @@ export type Database = {
           phone_number: string
           referral_code?: string | null
           referred_by?: string | null
+          school?: string | null
           updated_at?: string | null
           user_id: string
         }
         Update: {
           academic_grade?: string
           affiliation_points?: number | null
+          bio?: string | null
           confirmation_code?: string | null
           created_at?: string | null
           email_confirmed?: boolean | null
@@ -249,6 +257,7 @@ export type Database = {
           phone_number?: string
           referral_code?: string | null
           referred_by?: string | null
+          school?: string | null
           updated_at?: string | null
           user_id?: string
         }
@@ -408,7 +417,7 @@ export type Database = {
       }
     }
     Enums: {
-      [_ in never]: never
+      follow_status: "pending" | "accepted" | "rejected"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -535,6 +544,8 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      follow_status: ["pending", "accepted", "rejected"],
+    },
   },
 } as const

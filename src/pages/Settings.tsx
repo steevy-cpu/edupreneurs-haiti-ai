@@ -20,6 +20,8 @@ import {
   Mail,
   Phone,
   GraduationCap,
+  School,
+  FileText,
 } from "lucide-react";
 import {
   AlertDialog,
@@ -40,6 +42,8 @@ interface UserProfile {
   academic_grade: string;
   phone_number: string;
   user_id: string;
+  bio: string | null;
+  school: string | null;
 }
 
 const Settings = () => {
@@ -52,6 +56,8 @@ const Settings = () => {
     nickname: "",
     academicGrade: "",
     phoneNumber: "",
+    bio: "",
+    school: "",
   });
   const [passwordForm, setPasswordForm] = useState({
     currentPassword: "",
@@ -101,6 +107,8 @@ const Settings = () => {
       nickname: profileData.nickname || "",
       academicGrade: profileData.academic_grade || "",
       phoneNumber: profileData.phone_number || "",
+      bio: profileData.bio || "",
+      school: profileData.school || "",
     });
   };
 
@@ -122,6 +130,8 @@ const Settings = () => {
           nickname: profileForm.nickname,
           academic_grade: profileForm.academicGrade,
           phone_number: profileForm.phoneNumber,
+          bio: profileForm.bio,
+          school: profileForm.school,
         })
         .eq("user_id", profile?.user_id);
 
@@ -317,6 +327,35 @@ const Settings = () => {
                         required
                       />
                     </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="bio" className="flex items-center gap-2">
+                      <FileText size={16} />
+                      Bio
+                    </Label>
+                    <textarea
+                      id="bio"
+                      value={profileForm.bio}
+                      onChange={(e) => setProfileForm({ ...profileForm, bio: e.target.value })}
+                      placeholder="Parlez-nous de vous..."
+                      className="flex min-h-[100px] w-full rounded-lg border border-input bg-background px-3 py-2 text-sm"
+                      maxLength={500}
+                    />
+                    <p className="text-xs text-muted-foreground">{profileForm.bio.length}/500 caractères</p>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="school" className="flex items-center gap-2">
+                      <School size={16} />
+                      École
+                    </Label>
+                    <Input
+                      id="school"
+                      value={profileForm.school}
+                      onChange={(e) => setProfileForm({ ...profileForm, school: e.target.value })}
+                      placeholder="Nom de votre école"
+                    />
                   </div>
 
                   <Button 

@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useToast } from "@/hooks/use-toast";
-import { Search, MessageCircle, ArrowLeft } from "lucide-react";
+import { Search, MessageCircle, ArrowLeft, Eye } from "lucide-react";
 
 interface Profile {
   id: string;
@@ -217,15 +217,23 @@ const UserSearch = () => {
                   key={profile.id}
                   className="flex items-center gap-3 p-3 rounded-lg hover:bg-muted/30 transition-colors"
                 >
-                  <Avatar className="h-12 w-12">
+                  <Avatar className="h-12 w-12 cursor-pointer" onClick={() => navigate(`/profile/${profile.user_id}`)}>
                     <AvatarFallback className="bg-gradient-to-br from-primary/20 to-success/20 text-foreground">
                       {profile.full_name[0]}
                     </AvatarFallback>
                   </Avatar>
-                  <div className="flex-1">
+                  <div className="flex-1 cursor-pointer" onClick={() => navigate(`/profile/${profile.user_id}`)}>
                     <p className="font-semibold">{profile.full_name}</p>
                     <p className="text-sm text-muted-foreground">@{profile.nickname}</p>
                   </div>
+                  <Button
+                    size="icon"
+                    variant="ghost"
+                    onClick={() => navigate(`/profile/${profile.user_id}`)}
+                    className="hover:bg-primary/10"
+                  >
+                    <Eye size={20} />
+                  </Button>
                   <Button
                     size="icon"
                     variant="ghost"

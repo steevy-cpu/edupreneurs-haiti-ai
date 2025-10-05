@@ -14,6 +14,8 @@ import Matieres from "./pages/Matieres";
 import Community from "./pages/Community";
 import Feed from "./pages/Feed";
 import UserSearch from "./pages/UserSearch";
+import Profile from "./pages/Profile";
+import FollowRequests from "./pages/FollowRequests";
 import MathCourse from "./pages/MathCourse";
 import MathLesson from "./pages/MathLesson";
 import Affiliations from "./pages/Affiliations";
@@ -39,6 +41,8 @@ const App = () => (
             <Route path="/community" element={<Layout><Community /></Layout>} />
             <Route path="/feed" element={<Layout><Feed /></Layout>} />
             <Route path="/user-search" element={<Layout><UserSearch /></Layout>} />
+            <Route path="/profile/:userId" element={<Layout><Profile /></Layout>} />
+            <Route path="/follow-requests" element={<Layout><FollowRequests /></Layout>} />
             <Route path="/math-course" element={<Layout><MathCourse /></Layout>} />
             <Route path="/math-lesson/:topicId" element={<Layout><MathLesson /></Layout>} />
             <Route path="/affiliations" element={<Layout><Affiliations /></Layout>} />
