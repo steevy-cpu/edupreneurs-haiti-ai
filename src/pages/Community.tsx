@@ -10,6 +10,7 @@ import { Send, ArrowLeft, Search, Smile } from "lucide-react";
 import { useMessageSounds } from "@/hooks/useMessageSounds";
 import EmojiPicker from "emoji-picker-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { initializePushNotifications } from "@/utils/pushNotifications";
 
 interface Profile {
   id: string;
@@ -56,13 +57,13 @@ const Community = () => {
 
   useEffect(() => {
     checkUser();
-    requestNotificationPermission();
   }, []);
 
   useEffect(() => {
     if (user) {
       fetchConversations();
       subscribeToMessages();
+      initializePushNotifications(user.id);
     }
   }, [user]);
 
@@ -117,14 +118,6 @@ const Community = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   };
 
-  const requestNotificationPermission = async () => {
-    if ("Notification" in window && Notification.permission === "default") {
-      const permission = await Notification.requestPermission();
-      setNotificationPermission(permission);
-    } else if ("Notification" in window) {
-      setNotificationPermission(Notification.permission);
-    }
-  };
 
   const checkUser = async () => {
     const { data: { user } } = await supabase.auth.getUser();
