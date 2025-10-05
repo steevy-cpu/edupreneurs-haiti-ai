@@ -14,6 +14,7 @@ import {
   LogOut,
   MessageSquare,
   Search,
+  Bell,
 } from "lucide-react";
 import dashboardImage from "@/assets/dashboard00.png";
 import { EricChatbot } from "@/components/EricChatbot";
@@ -27,14 +28,16 @@ export const Layout = ({ children }: LayoutProps) => {
   const location = useLocation();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [totalUnreadMessages, setTotalUnreadMessages] = useState(0);
+  const [pendingFollowRequests, setPendingFollowRequests] = useState(0);
 
   useEffect(() => {
     checkAuth();
     fetchUnreadCount();
+    fetchPendingFollowRequests();
   }, []);
 
   useEffect(() => {
-    const channel = supabase
+    const messagesChannel = supabase
       .channel("message-notifications")
       .on(
         "postgres_changes",
@@ -44,14 +47,29 @@ export const Layout = ({ children }: LayoutProps) => {
           table: "messages",
         },
         async (payload) => {
-          // Immediately update count on any message change
           await fetchUnreadCount();
         }
       )
       .subscribe();
 
+    const followsChannel = supabase
+      .channel("follow-notifications")
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "follows",
+        },
+        async (payload) => {
+          await fetchPendingFollowRequests();
+        }
+      )
+      .subscribe();
+
     return () => {
-      supabase.removeChannel(channel);
+      supabase.removeChannel(messagesChannel);
+      supabase.removeChannel(followsChannel);
     };
   }, []);
 
@@ -68,6 +86,19 @@ export const Layout = ({ children }: LayoutProps) => {
     if (unreadMessages) {
       setTotalUnreadMessages(unreadMessages.length);
     }
+  };
+
+  const fetchPendingFollowRequests = async () => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+
+    const { data: pendingRequests, count } = await supabase
+      .from("follows")
+      .select("id", { count: "exact", head: true })
+      .eq("following_id", user.id)
+      .eq("status", "pending");
+
+    setPendingFollowRequests(count || 0);
   };
 
   const checkAuth = async () => {
@@ -193,6 +224,22 @@ export const Layout = ({ children }: LayoutProps) => {
           >
             <Search size={18} />
             Rechercher
+          </a>
+          <a 
+            href="/follow-requests" 
+            className={`flex items-center gap-3 px-5 py-3.5 mx-3 my-1 rounded-xl font-medium transition-all duration-300 ${
+              isActive("/follow-requests") 
+                ? "bg-gradient-to-br from-[hsl(var(--primary))] to-[hsl(var(--success))] text-white" 
+                : "text-foreground hover:bg-gradient-to-br hover:from-[hsl(var(--primary))] hover:to-[hsl(var(--success))] hover:text-white hover:translate-x-1"
+            }`}
+          >
+            <Bell size={18} />
+            Notifications
+            {pendingFollowRequests > 0 && (
+              <span className="ml-auto flex items-center justify-center h-5 min-w-[20px] px-1.5 rounded-full bg-destructive text-destructive-foreground text-xs font-semibold">
+                {pendingFollowRequests}
+              </span>
+            )}
           </a>
           <a 
             href="/affiliations" 
