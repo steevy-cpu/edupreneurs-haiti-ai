@@ -63,8 +63,48 @@ const Community = () => {
       fetchConversations();
       subscribeToMessages();
       initializePushNotifications(user.id);
+      subscribeToNotifications();
     }
   }, [user]);
+
+  const subscribeToNotifications = () => {
+    if (!user) return;
+
+    const channel = supabase
+      .channel(`user-notifications-${user.id}`)
+      .on(
+        'broadcast',
+        { event: 'new_message' },
+        (payload) => {
+          console.log('New message notification:', payload);
+          const { title, body, conversationId } = payload.payload;
+          
+          // Show browser notification if permission granted
+          if ('Notification' in window && Notification.permission === 'granted') {
+            const notification = new Notification(title, {
+              body,
+              icon: '/favicon.ico',
+              tag: conversationId,
+              requireInteraction: false
+            });
+
+            notification.onclick = () => {
+              window.focus();
+              navigate(`/community?conversation=${conversationId}`);
+              notification.close();
+            };
+
+            // Play sound
+            playReceiveSound();
+          }
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  };
 
   useEffect(() => {
     if (selectedConversation) {
@@ -320,7 +360,7 @@ const Community = () => {
       playSendSound();
       setNewMessage("");
       
-      // Send push notification to recipient
+      // Send notification to recipient
       const conversation = conversations.find(c => c.id === selectedConversation);
       if (conversation?.otherUser) {
         // Get sender's profile for better notification
@@ -332,19 +372,17 @@ const Community = () => {
         
         const senderName = senderProfile?.full_name || user.email || 'Someone';
         
-        try {
-          await supabase.functions.invoke('send-push-notification', {
-            body: {
-              recipientUserId: conversation.otherUser.user_id,
-              title: `${senderName} vous a envoyé un message`,
-              body: messageContent.substring(0, 100),
-              conversationId: selectedConversation
-            }
-          });
-        } catch (notifError) {
-          console.log('Push notification error:', notifError);
-          // Don't show error to user - notifications are optional
-        }
+        // Broadcast notification via realtime
+        const notificationChannel = supabase.channel(`user-notifications-${conversation.otherUser.user_id}`);
+        await notificationChannel.send({
+          type: 'broadcast',
+          event: 'new_message',
+          payload: {
+            title: `${senderName} vous a envoyé un message`,
+            body: messageContent.substring(0, 100),
+            conversationId: selectedConversation
+          }
+        });
       }
     }
     setIsSending(false);
