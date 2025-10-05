@@ -24,6 +24,7 @@ interface Conversation {
   otherUser?: Profile;
   lastMessage?: string;
   lastMessageTime?: string;
+  unreadCount?: number;
 }
 
 interface Message {
@@ -68,6 +69,7 @@ const Community = () => {
   useEffect(() => {
     if (selectedConversation) {
       fetchMessages(selectedConversation);
+      markMessagesAsRead(selectedConversation);
       subscribeToConversationMessages(selectedConversation);
     }
     return () => {
@@ -76,6 +78,20 @@ const Community = () => {
       }
     };
   }, [selectedConversation]);
+
+  const markMessagesAsRead = async (conversationId: string) => {
+    if (!user) return;
+    
+    await supabase
+      .from("messages")
+      .update({ read: true })
+      .eq("conversation_id", conversationId)
+      .neq("sender_id", user.id)
+      .eq("read", false);
+
+    // Update local state to reflect read status
+    fetchConversations();
+  };
 
   useEffect(() => {
     scrollToBottom();
@@ -144,6 +160,14 @@ const Community = () => {
       .in("conversation_id", conversationIds)
       .order("created_at", { ascending: false });
 
+    // Fetch unread counts for each conversation
+    const { data: allMessages } = await supabase
+      .from("messages")
+      .select("conversation_id, sender_id, read")
+      .in("conversation_id", conversationIds)
+      .eq("read", false)
+      .neq("sender_id", user.id);
+
     const conversationsData: Conversation[] = conversationIds.map(convId => {
       const otherUserId = allParticipants?.find(
         p => p.conversation_id === convId && p.user_id !== user.id
@@ -151,6 +175,7 @@ const Community = () => {
       
       const otherUserProfile = profiles?.find(p => p.user_id === otherUserId);
       const lastMsg = lastMessages?.find(m => m.conversation_id === convId);
+      const unreadCount = allMessages?.filter(m => m.conversation_id === convId).length || 0;
 
       return {
         id: convId,
@@ -158,6 +183,7 @@ const Community = () => {
         otherUser: otherUserProfile,
         lastMessage: lastMsg?.content,
         lastMessageTime: lastMsg?.created_at,
+        unreadCount,
       };
     });
 
@@ -334,9 +360,16 @@ const Community = () => {
                   </AvatarFallback>
                 </Avatar>
                 <div className="flex-1 min-w-0">
-                  <p className="font-semibold truncate">
-                    {conv.otherUser?.full_name || "Utilisateur"}
-                  </p>
+                  <div className="flex items-center gap-2">
+                    <p className="font-semibold truncate">
+                      {conv.otherUser?.full_name || "Utilisateur"}
+                    </p>
+                    {conv.unreadCount && conv.unreadCount > 0 && (
+                      <span className="flex items-center justify-center h-5 min-w-[20px] px-1.5 rounded-full bg-primary text-primary-foreground text-xs font-semibold">
+                        {conv.unreadCount}
+                      </span>
+                    )}
+                  </div>
                   <p className="text-sm text-muted-foreground truncate">
                     {conv.lastMessage || "Aucun message"}
                   </p>

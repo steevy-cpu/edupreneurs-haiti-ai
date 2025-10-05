@@ -26,10 +26,59 @@ export const Layout = ({ children }: LayoutProps) => {
   const navigate = useNavigate();
   const location = useLocation();
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [totalUnreadMessages, setTotalUnreadMessages] = useState(0);
 
   useEffect(() => {
     checkAuth();
+    fetchUnreadCount();
   }, []);
+
+  useEffect(() => {
+    const channel = supabase
+      .channel("message-notifications")
+      .on(
+        "postgres_changes",
+        {
+          event: "INSERT",
+          schema: "public",
+          table: "messages",
+        },
+        () => {
+          fetchUnreadCount();
+        }
+      )
+      .on(
+        "postgres_changes",
+        {
+          event: "UPDATE",
+          schema: "public",
+          table: "messages",
+        },
+        () => {
+          fetchUnreadCount();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, []);
+
+  const fetchUnreadCount = async () => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+
+    const { data: unreadMessages } = await supabase
+      .from("messages")
+      .select("id, conversation_id")
+      .eq("read", false)
+      .neq("sender_id", user.id);
+
+    if (unreadMessages) {
+      setTotalUnreadMessages(unreadMessages.length);
+    }
+  };
 
   const checkAuth = async () => {
     const { data: { session } } = await supabase.auth.getSession();
@@ -138,6 +187,11 @@ export const Layout = ({ children }: LayoutProps) => {
           >
             <MessageSquare size={18} />
             Messages
+            {totalUnreadMessages > 0 && (
+              <span className="ml-auto flex items-center justify-center h-5 min-w-[20px] px-1.5 rounded-full bg-destructive text-destructive-foreground text-xs font-semibold">
+                {totalUnreadMessages}
+              </span>
+            )}
           </a>
           <a 
             href="/user-search" 
