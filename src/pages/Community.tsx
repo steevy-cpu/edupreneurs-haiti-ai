@@ -82,15 +82,23 @@ const Community = () => {
   const markMessagesAsRead = async (conversationId: string) => {
     if (!user) return;
     
-    await supabase
+    const { error } = await supabase
       .from("messages")
       .update({ read: true })
       .eq("conversation_id", conversationId)
       .neq("sender_id", user.id)
       .eq("read", false);
 
-    // Update local state to reflect read status
-    fetchConversations();
+    if (!error) {
+      // Immediately update local conversations state to remove badge
+      setConversations(prev => 
+        prev.map(conv => 
+          conv.id === conversationId 
+            ? { ...conv, unreadCount: 0 }
+            : conv
+        )
+      );
+    }
   };
 
   useEffect(() => {

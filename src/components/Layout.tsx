@@ -39,23 +39,13 @@ export const Layout = ({ children }: LayoutProps) => {
       .on(
         "postgres_changes",
         {
-          event: "INSERT",
+          event: "*",
           schema: "public",
           table: "messages",
         },
-        () => {
-          fetchUnreadCount();
-        }
-      )
-      .on(
-        "postgres_changes",
-        {
-          event: "UPDATE",
-          schema: "public",
-          table: "messages",
-        },
-        () => {
-          fetchUnreadCount();
+        async (payload) => {
+          // Immediately update count on any message change
+          await fetchUnreadCount();
         }
       )
       .subscribe();
