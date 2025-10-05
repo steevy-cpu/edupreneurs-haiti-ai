@@ -254,6 +254,22 @@ const Community = () => {
           };
 
           setMessages((prev) => [...prev, newMessage]);
+
+          // Show browser notification if message is from another user
+          if (payload.new.sender_id !== user?.id && Notification.permission === 'granted') {
+            const senderName = profile?.full_name || 'Quelqu\'un';
+            const notification = new Notification(`${senderName} vous a envoyé un message`, {
+              body: payload.new.content.substring(0, 100),
+              icon: '/favicon.ico',
+              tag: conversationId,
+              requireInteraction: false,
+            });
+
+            notification.onclick = () => {
+              window.focus();
+              notification.close();
+            };
+          }
         }
       )
       .subscribe();
