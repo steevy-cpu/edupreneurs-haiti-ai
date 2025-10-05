@@ -232,8 +232,8 @@ export const Layout = ({ children }: LayoutProps) => {
         {children}
       </div>
 
-      {/* Eric Chatbot */}
-      <EricChatbot />
+      {/* Eric Chatbot - Hidden on Community page */}
+      {location.pathname !== "/community" && <EricChatbot />}
     </div>
   );
 };
