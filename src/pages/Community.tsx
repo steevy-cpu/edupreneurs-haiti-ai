@@ -49,7 +49,6 @@ const Community = () => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [newMessage, setNewMessage] = useState("");
   const [isSending, setIsSending] = useState(false);
-  const [notificationPermission, setNotificationPermission] = useState<NotificationPermission>("default");
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const previousMessagesCount = useRef<number>(0);
   const messagesEndRef = useRef<HTMLDivElement>(null);
