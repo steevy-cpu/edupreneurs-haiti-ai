@@ -6,8 +6,10 @@ import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useToast } from "@/hooks/use-toast";
-import { Send, ArrowLeft, Search } from "lucide-react";
+import { Send, ArrowLeft, Search, Smile } from "lucide-react";
 import { useMessageSounds } from "@/hooks/useMessageSounds";
+import EmojiPicker from "emoji-picker-react";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 
 interface Profile {
   id: string;
@@ -46,8 +48,10 @@ const Community = () => {
   const [newMessage, setNewMessage] = useState("");
   const [isSending, setIsSending] = useState(false);
   const [notificationPermission, setNotificationPermission] = useState<NotificationPermission>("default");
+  const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const previousMessagesCount = useRef<number>(0);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const messageChannelRef = useRef<any>(null);
 
   useEffect(() => {
     checkUser();
@@ -64,7 +68,13 @@ const Community = () => {
   useEffect(() => {
     if (selectedConversation) {
       fetchMessages(selectedConversation);
+      subscribeToConversationMessages(selectedConversation);
     }
+    return () => {
+      if (messageChannelRef.current) {
+        supabase.removeChannel(messageChannelRef.current);
+      }
+    };
   }, [selectedConversation]);
 
   useEffect(() => {
@@ -182,20 +192,60 @@ const Community = () => {
     setMessages(enrichedMessages);
   };
 
+  const subscribeToConversationMessages = (conversationId: string) => {
+    // Unsubscribe from previous channel if exists
+    if (messageChannelRef.current) {
+      supabase.removeChannel(messageChannelRef.current);
+    }
+
+    // Subscribe to real-time updates for this specific conversation
+    const channel = supabase
+      .channel(`messages-${conversationId}`)
+      .on(
+        "postgres_changes",
+        {
+          event: "INSERT",
+          schema: "public",
+          table: "messages",
+          filter: `conversation_id=eq.${conversationId}`,
+        },
+        async (payload) => {
+          // Fetch the sender profile
+          const { data: profile } = await supabase
+            .from("profiles")
+            .select("*")
+            .eq("user_id", payload.new.sender_id)
+            .single();
+
+          // Add the new message with profile to the messages array
+          const newMessage: Message = {
+            id: payload.new.id,
+            content: payload.new.content,
+            sender_id: payload.new.sender_id,
+            created_at: payload.new.created_at,
+            profile,
+          };
+
+          setMessages((prev) => [...prev, newMessage]);
+        }
+      )
+      .subscribe();
+
+    messageChannelRef.current = channel;
+  };
+
   const subscribeToMessages = () => {
     const channel = supabase
       .channel("messages-changes")
       .on(
         "postgres_changes",
         {
-          event: "*",
+          event: "INSERT",
           schema: "public",
           table: "messages",
         },
         () => {
-          if (selectedConversation) {
-            fetchMessages(selectedConversation);
-          }
+          // Update conversations list when new message arrives
           fetchConversations();
         }
       )
@@ -371,6 +421,28 @@ const Community = () => {
             {/* Message Input */}
             <div className="border-t border-border/50 p-4">
               <div className="flex gap-2">
+                <Popover open={showEmojiPicker} onOpenChange={setShowEmojiPicker}>
+                  <PopoverTrigger asChild>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon"
+                      className="shrink-0"
+                    >
+                      <Smile size={20} />
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-full p-0 border-0" align="start">
+                    <EmojiPicker
+                      onEmojiClick={(emojiData) => {
+                        setNewMessage((prev) => prev + emojiData.emoji);
+                        setShowEmojiPicker(false);
+                      }}
+                      width="100%"
+                      height="400px"
+                    />
+                  </PopoverContent>
+                </Popover>
                 <Input
                   placeholder="Écrivez un message..."
                   value={newMessage}
