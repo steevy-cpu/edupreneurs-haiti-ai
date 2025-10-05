@@ -302,10 +302,12 @@ const Community = () => {
     if (!newMessage.trim() || !selectedConversation || !user) return;
 
     setIsSending(true);
+    const messageContent = newMessage.trim();
+    
     const { error } = await supabase.from("messages").insert({
       conversation_id: selectedConversation,
       sender_id: user.id,
-      content: newMessage.trim(),
+      content: messageContent,
     });
 
     if (error) {
@@ -317,6 +319,33 @@ const Community = () => {
     } else {
       playSendSound();
       setNewMessage("");
+      
+      // Send push notification to recipient
+      const conversation = conversations.find(c => c.id === selectedConversation);
+      if (conversation?.otherUser) {
+        // Get sender's profile for better notification
+        const { data: senderProfile } = await supabase
+          .from('profiles')
+          .select('full_name')
+          .eq('user_id', user.id)
+          .single();
+        
+        const senderName = senderProfile?.full_name || user.email || 'Someone';
+        
+        try {
+          await supabase.functions.invoke('send-push-notification', {
+            body: {
+              recipientUserId: conversation.otherUser.user_id,
+              title: `${senderName} vous a envoyé un message`,
+              body: messageContent.substring(0, 100),
+              conversationId: selectedConversation
+            }
+          });
+        } catch (notifError) {
+          console.log('Push notification error:', notifError);
+          // Don't show error to user - notifications are optional
+        }
+      }
     }
     setIsSending(false);
   };
