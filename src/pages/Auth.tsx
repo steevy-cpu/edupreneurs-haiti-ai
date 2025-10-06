@@ -598,7 +598,7 @@ export default function Auth() {
                           id="signup-school"
                           type="text"
                           required
-                          placeholder="ex: Lycée Alexandre Pétion"
+                          placeholder="ex: Collège Sacré-coeur de Papaye"
                           value={signupData.school}
                           onChange={(e) => setSignupData({ ...signupData, school: e.target.value })}
                           className="auth-input"
