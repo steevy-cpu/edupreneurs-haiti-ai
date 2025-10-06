@@ -5,7 +5,6 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Trophy, Medal, Award, Crown } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
-import ericCelebrating from "@/assets/eric-main01.png";
 
 interface LeaderboardUser {
   id: string;
@@ -114,27 +113,20 @@ const Leaderboard = () => {
           <div className="w-full h-full bg-gradient-radial from-white/20 to-transparent animate-[float_20s_ease-in-out_infinite]" />
         </div>
         <div className="relative z-10 max-w-4xl mx-auto px-3 sm:px-0">
-          <div className="flex items-center justify-between gap-4">
-            <div className="flex-1">
-              <div className="flex items-center gap-2 sm:gap-3 mb-1 sm:mb-2">
-                <Trophy size={24} className="sm:w-8 sm:h-8" />
-                <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold">Classement</h1>
-              </div>
-              <p className="text-xs sm:text-sm lg:text-base opacity-90 leading-relaxed">
-                Les meilleurs apprenants de la plateforme
-              </p>
-              {currentUserRank && (
-                <div className="mt-3 sm:mt-4 inline-flex items-center gap-1.5 sm:gap-2 bg-white/10 backdrop-blur-sm rounded-full px-3 sm:px-4 py-1.5 sm:py-2">
-                  <span className="text-xs sm:text-sm font-medium">Votre rang:</span>
-                  <span className="text-base sm:text-lg font-bold">#{currentUserRank}</span>
-                </div>
-              )}
+          <div className="flex-1">
+            <div className="flex items-center gap-2 sm:gap-3 mb-1 sm:mb-2">
+              <Trophy size={24} className="sm:w-8 sm:h-8" />
+              <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold">Classement</h1>
             </div>
-            <img 
-              src={ericCelebrating} 
-              alt="Eric célèbre votre succès" 
-              className="w-24 h-24 sm:w-32 sm:h-32 object-contain animate-[float_3s_ease-in-out_infinite] hidden sm:block"
-            />
+            <p className="text-xs sm:text-sm lg:text-base opacity-90 leading-relaxed">
+              Les meilleurs apprenants de la plateforme
+            </p>
+            {currentUserRank && (
+              <div className="mt-3 sm:mt-4 inline-flex items-center gap-1.5 sm:gap-2 bg-white/10 backdrop-blur-sm rounded-full px-3 sm:px-4 py-1.5 sm:py-2">
+                <span className="text-xs sm:text-sm font-medium">Votre rang:</span>
+                <span className="text-base sm:text-lg font-bold">#{currentUserRank}</span>
+              </div>
+            )}
           </div>
         </div>
       </div>
