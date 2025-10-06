@@ -494,9 +494,9 @@ const Feed = () => {
         ]);
       }
 
-      // Send message with post reference
-      const postUrl = `${window.location.origin}/feed#post-${selectedPostToShare.id}`;
-      const messageContent = `📝 Post partagé:\n"${selectedPostToShare.content.substring(0, 100)}${selectedPostToShare.content.length > 100 ? '...' : ''}"\n\n${postUrl}`;
+      // Send message with full post content
+      const authorProfile = selectedPostToShare.profile;
+      const messageContent = `📝 Post partagé de ${authorProfile?.nickname || authorProfile?.full_name || "un utilisateur"}:\n\n${selectedPostToShare.content}${selectedPostToShare.image_url ? '\n\n[Image jointe]' : ''}`;
 
       const { error: messageError } = await supabase
         .from("messages")
@@ -505,6 +505,24 @@ const Feed = () => {
           sender_id: currentUser.id,
           content: messageContent
         });
+
+      if (messageError) throw messageError;
+
+      // If post has an image, send it as a separate message
+      if (selectedPostToShare.image_url) {
+        await supabase
+          .from("messages")
+          .insert({
+            conversation_id: conversationId,
+            sender_id: currentUser.id,
+            content: selectedPostToShare.image_url
+          });
+      }
+
+      // Record the share
+      await supabase
+        .from("post_shares")
+        .insert({ post_id: selectedPostToShare.id, user_id: currentUser.id });
 
       if (messageError) throw messageError;
 
