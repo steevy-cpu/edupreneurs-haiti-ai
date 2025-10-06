@@ -61,11 +61,11 @@ const Onboarding = () => {
       <div className="relative w-full max-w-4xl">
         {/* Header */}
         <div className="text-center mb-12">
-          <div className="flex justify-center mb-6">
+          <div className="flex justify-center mb-6 bg-transparent">
             <img 
               src={ericWaving} 
               alt="Eric vous souhaite la bienvenue" 
-              className="w-32 h-32 sm:w-40 sm:h-40 object-contain animate-[float_4s_ease-in-out_infinite]"
+              className="w-32 h-32 sm:w-40 sm:h-40 object-contain animate-[float_4s_ease-in-out_infinite] bg-transparent"
             />
           </div>
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-accent/10 border border-accent/20 mb-6">

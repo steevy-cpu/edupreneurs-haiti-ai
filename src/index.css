@@ -524,6 +524,11 @@ All colors MUST be HSL.
 /* Eric Chatbot Styles - Updated with glassmorphism design */
 .eric-floating-character {
     @apply fixed top-24 right-5 z-[1000] w-28 cursor-pointer transition-transform duration-300 hover:scale-105;
+    background: transparent;
+  }
+
+  .eric-floating-character img {
+    background: transparent;
   }
 
   .eric-floating-tooltip {
@@ -605,8 +610,9 @@ All colors MUST be HSL.
     width: 35px;
     height: 35px;
     margin-right: 10px;
-    border: 2px solid rgba(255, 255, 255, 0.8);
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    background: transparent;
+    border: none;
+    box-shadow: none;
   }
 
   .eric-message-content {
