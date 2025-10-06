@@ -139,7 +139,7 @@ const Dashboard = () => {
         </div>
 
         {/* KPI Cards */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3 lg:gap-5 mb-4 sm:mb-6 lg:mb-8">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3 lg:gap-5 mb-4 sm:mb-6 lg:mb-8" data-tour="stats-section">
           <Card className="border-none rounded-xl sm:rounded-2xl lg:rounded-[20px] shadow-md hover:shadow-lg hover:-translate-y-1 sm:hover:-translate-y-2 transition-all duration-300 relative overflow-hidden group">
             <CardContent className="p-3 sm:p-5 lg:p-7 text-center">
               <div className="w-8 h-8 sm:w-10 sm:h-10 lg:w-14 lg:h-14 rounded-lg sm:rounded-xl lg:rounded-2xl bg-gradient-to-br from-[hsl(var(--accent))] to-[hsl(25_100%_50%)] flex items-center justify-center text-white text-base sm:text-xl lg:text-2xl mx-auto mb-1.5 sm:mb-2 lg:mb-4">

@@ -12,9 +12,9 @@ interface OnboardingStep {
   title: string;
   description: string;
   image: string;
-  action?: string;
-  highlightSelector?: string;
-  position: "left" | "right" | "bottom" | "center";
+  targetSelector?: string; // Element to highlight
+  action?: "click" | "wait"; // What user needs to do
+  position: "left" | "right" | "top" | "bottom" | "center";
 }
 
 const steps: OnboardingStep[] = [
@@ -23,39 +23,45 @@ const steps: OnboardingStep[] = [
     description: "Salut! Je suis Eric, ton guide personnel. Je vais te montrer comment naviguer sur la plateforme. Clique sur 'Suivant' pour commencer!",
     image: ericWaving,
     position: "center",
+    action: "wait",
   },
   {
-    title: "Découvre la navigation",
-    description: "Clique sur le bouton menu en haut à gauche pour ouvrir la barre de navigation. C'est là que tu trouveras toutes les sections de la plateforme!",
+    title: "Ouvre le menu",
+    description: "Clique sur ce bouton pour ouvrir la barre de navigation latérale!",
     image: ericPointingLeft,
-    position: "left",
-    action: "open-sidebar",
+    targetSelector: "button[data-tour='menu-button']",
+    position: "right",
+    action: "click",
   },
   {
     title: "Tes statistiques",
-    description: "Voici tes statistiques! Tu peux voir tes golds gagnés, tes affiliations, ta progression et ton abonnement. Plus tu apprends, plus tu gagnes!",
+    description: "Voici tes statistiques! Tu peux voir tes golds gagnés, tes affiliations, ta progression et ton abonnement. Super non?",
     image: ericPointingUp,
-    position: "right",
+    targetSelector: "[data-tour='stats-section']",
+    position: "bottom",
+    action: "wait",
   },
   {
-    title: "Explore les matières",
-    description: "Maintenant, clique sur 'Matières' dans le menu pour découvrir tous les cours disponibles. C'est parti!",
+    title: "Navigation principale",
+    description: "Ici tu trouveras toutes les sections: Matières, Ressources, Fil d'actualité, et plus encore!",
     image: ericThinking,
-    position: "left",
-    action: "click-matieres",
+    targetSelector: "[data-tour='nav-section']",
+    position: "right",
+    action: "wait",
   },
   {
     title: "Prêt à apprendre!",
-    description: "Super! Tu sais maintenant comment naviguer. Explore les leçons, fais des quiz et gagne des golds. Bonne chance!",
+    description: "Tu sais maintenant comment naviguer. Explore les leçons, fais des quiz et gagne des golds. Bonne chance!",
     image: ericThumbUp,
     position: "center",
+    action: "wait",
   },
 ];
 
 export default function OnboardingTour() {
   const [isActive, setIsActive] = useState(false);
   const [currentStep, setCurrentStep] = useState(0);
-  const [sidebarOpened, setSidebarOpened] = useState(false);
+  const [highlightedElement, setHighlightedElement] = useState<HTMLElement | null>(null);
 
   useEffect(() => {
     const hasCompletedOnboarding = localStorage.getItem("onboarding_completed");
@@ -71,39 +77,29 @@ export default function OnboardingTour() {
 
     const step = steps[currentStep];
     
-    // Handle automatic sidebar opening for certain steps
-    if (step.action === "open-sidebar" && !sidebarOpened) {
-      const menuButton = document.querySelector('button') as HTMLButtonElement;
-      if (menuButton) {
-        const handleSidebarOpen = () => {
-          setSidebarOpened(true);
-          setTimeout(() => {
-            if (currentStep === 1) {
+    // Find and highlight the target element
+    if (step.targetSelector) {
+      const element = document.querySelector(step.targetSelector) as HTMLElement;
+      if (element) {
+        setHighlightedElement(element);
+        element.scrollIntoView({ behavior: "smooth", block: "center" });
+
+        // If action is click, wait for user to click the element
+        if (step.action === "click") {
+          const handleClick = () => {
+            setTimeout(() => {
               handleNext();
-            }
-          }, 800);
-        };
+            }, 300);
+          };
 
-        menuButton.addEventListener("click", handleSidebarOpen);
-        return () => menuButton.removeEventListener("click", handleSidebarOpen);
+          element.addEventListener("click", handleClick, { once: true });
+          return () => element.removeEventListener("click", handleClick);
+        }
       }
+    } else {
+      setHighlightedElement(null);
     }
-
-    // Handle clicking on Matières
-    if (step.action === "click-matieres") {
-      const matieresLink = document.querySelector('a[href="/matieres"]') as HTMLAnchorElement;
-      if (matieresLink) {
-        const handleMatieresClick = (e: Event) => {
-          e.preventDefault();
-          completeOnboarding();
-          window.location.href = "/matieres";
-        };
-
-        matieresLink.addEventListener("click", handleMatieresClick);
-        return () => matieresLink.removeEventListener("click", handleMatieresClick);
-      }
-    }
-  }, [currentStep, isActive, sidebarOpened]);
+  }, [currentStep, isActive]);
 
   const handleNext = () => {
     if (currentStep < steps.length - 1) {
@@ -122,6 +118,7 @@ export default function OnboardingTour() {
   const completeOnboarding = () => {
     localStorage.setItem("onboarding_completed", "true");
     setIsActive(false);
+    setHighlightedElement(null);
   };
 
   if (!isActive) return null;
@@ -129,53 +126,100 @@ export default function OnboardingTour() {
   const progress = ((currentStep + 1) / steps.length) * 100;
   const step = steps[currentStep];
 
-  // Position classes based on step position
-  const getPositionClasses = () => {
-    switch (step.position) {
-      case "left":
-        return "left-4 top-1/2 -translate-y-1/2";
-      case "right":
-        return "right-4 top-1/2 -translate-y-1/2";
-      case "bottom":
-        return "bottom-8 left-1/2 -translate-x-1/2";
-      case "center":
-      default:
-        return "top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2";
+  // Get position for Eric and the card
+  const getCardPosition = () => {
+    if (!highlightedElement) {
+      return "fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2";
     }
+
+    const rect = highlightedElement.getBoundingClientRect();
+    const isMobile = window.innerWidth < 768;
+
+    switch (step.position) {
+      case "right":
+        if (isMobile) {
+          return "fixed bottom-4 left-1/2 -translate-x-1/2";
+        }
+        return `fixed left-4 top-1/2 -translate-y-1/2`;
+      case "left":
+        if (isMobile) {
+          return "fixed bottom-4 left-1/2 -translate-x-1/2";
+        }
+        return `fixed right-4 top-1/2 -translate-y-1/2`;
+      case "bottom":
+        return "fixed bottom-4 left-1/2 -translate-x-1/2";
+      case "top":
+        return "fixed top-20 left-1/2 -translate-x-1/2";
+      default:
+        return "fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2";
+    }
+  };
+
+  const getHighlightStyle = () => {
+    if (!highlightedElement) return {};
+    
+    const rect = highlightedElement.getBoundingClientRect();
+    return {
+      top: `${rect.top - 8}px`,
+      left: `${rect.left - 8}px`,
+      width: `${rect.width + 16}px`,
+      height: `${rect.height + 16}px`,
+    };
   };
 
   return (
     <>
-      {/* Overlay */}
-      <div className="fixed inset-0 bg-black/70 z-[9998] animate-fade-in" />
-
-      {/* Tour Card */}
+      {/* Dark overlay with spotlight cutout */}
       <div 
-        className={`fixed ${getPositionClasses()} z-[9999] max-w-md w-[90%] sm:w-full animate-scale-in`}
+        className="fixed inset-0 z-[9998] pointer-events-none"
+        style={{
+          background: highlightedElement 
+            ? "rgba(0, 0, 0, 0.75)"
+            : "rgba(0, 0, 0, 0.7)",
+        }}
+      />
+
+      {/* Spotlight highlight on target element */}
+      {highlightedElement && (
+        <>
+          <div
+            className="fixed z-[9999] rounded-lg border-4 border-primary shadow-[0_0_0_9999px_rgba(0,0,0,0.75)] animate-pulse"
+            style={getHighlightStyle()}
+          />
+          <div
+            className="fixed z-[9999] rounded-lg bg-primary/10 animate-pulse"
+            style={getHighlightStyle()}
+          />
+        </>
+      )}
+
+      {/* Eric's Tour Card */}
+      <div 
+        className={`${getCardPosition()} z-[10000] max-w-[90vw] sm:max-w-md w-full animate-scale-in`}
       >
         <div className="bg-card border-2 border-primary rounded-2xl shadow-2xl overflow-hidden">
           {/* Close button */}
           <Button
             variant="ghost"
             size="icon"
-            className="absolute top-3 right-3 z-10 rounded-full hover:bg-primary/10"
+            className="absolute top-2 right-2 z-10 rounded-full hover:bg-primary/10 h-8 w-8"
             onClick={completeOnboarding}
           >
             <X className="h-4 w-4" />
           </Button>
 
           {/* Eric Image */}
-          <div className="bg-gradient-to-br from-primary/10 to-success/10 p-6 flex items-center justify-center border-b border-border">
+          <div className="bg-gradient-to-br from-primary/10 to-success/10 p-4 sm:p-6 flex items-center justify-center border-b border-border">
             <img
               src={step.image}
               alt={step.title}
-              className="w-48 h-48 object-contain animate-fade-in"
+              className="w-32 h-32 sm:w-40 sm:h-40 object-contain animate-fade-in"
               key={currentStep}
             />
           </div>
 
           {/* Content */}
-          <div className="p-6">
+          <div className="p-4 sm:p-6">
             <div className="mb-4">
               <span className="text-xs text-muted-foreground">
                 Étape {currentStep + 1} sur {steps.length}
@@ -183,20 +227,29 @@ export default function OnboardingTour() {
               <Progress value={progress} className="mt-2 h-1.5" />
             </div>
 
-            <h3 className="text-xl font-bold text-foreground mb-3">
+            <h3 className="text-lg sm:text-xl font-bold text-foreground mb-2">
               {step.title}
             </h3>
-            <p className="text-sm text-muted-foreground leading-relaxed mb-6">
+            <p className="text-sm text-muted-foreground leading-relaxed mb-4">
               {step.description}
             </p>
 
+            {step.action === "click" && (
+              <div className="mb-4 p-3 bg-primary/10 rounded-lg border border-primary/20">
+                <p className="text-xs font-semibold text-primary flex items-center gap-2">
+                  <span className="animate-pulse">👆</span> Clique sur l'élément surligné pour continuer
+                </p>
+              </div>
+            )}
+
             {/* Navigation buttons */}
-            <div className="flex items-center justify-between gap-3">
+            <div className="flex items-center justify-between gap-2">
               <Button
                 variant="ghost"
                 onClick={handlePrevious}
                 disabled={currentStep === 0}
                 size="sm"
+                className="text-xs sm:text-sm"
               >
                 Précédent
               </Button>
@@ -206,13 +259,14 @@ export default function OnboardingTour() {
                   variant="outline" 
                   onClick={completeOnboarding}
                   size="sm"
+                  className="text-xs sm:text-sm"
                 >
                   Passer
                 </Button>
-                {(!step.action || step.action === "open-sidebar" && sidebarOpened) && (
+                {step.action === "wait" && (
                   <Button 
                     onClick={handleNext}
-                    className="bg-gradient-to-br from-primary to-success"
+                    className="bg-gradient-to-br from-primary to-success text-xs sm:text-sm"
                     size="sm"
                   >
                     {currentStep === steps.length - 1 ? "Terminer" : "Suivant"}
@@ -223,12 +277,22 @@ export default function OnboardingTour() {
           </div>
         </div>
 
-        {/* Arrow pointer for specific positions */}
-        {step.position === "left" && (
-          <div className="absolute -right-3 top-1/2 -translate-y-1/2 w-0 h-0 border-t-[12px] border-t-transparent border-b-[12px] border-b-transparent border-l-[12px] border-l-primary" />
-        )}
-        {step.position === "right" && (
-          <div className="absolute -left-3 top-1/2 -translate-y-1/2 w-0 h-0 border-t-[12px] border-t-transparent border-b-[12px] border-b-transparent border-r-[12px] border-r-primary" />
+        {/* Arrow pointer for desktop */}
+        {highlightedElement && !window.matchMedia("(max-width: 768px)").matches && (
+          <>
+            {step.position === "right" && (
+              <div className="absolute -right-3 top-1/2 -translate-y-1/2 w-0 h-0 border-t-[12px] border-t-transparent border-b-[12px] border-b-transparent border-l-[12px] border-l-primary" />
+            )}
+            {step.position === "left" && (
+              <div className="absolute -left-3 top-1/2 -translate-y-1/2 w-0 h-0 border-t-[12px] border-t-transparent border-b-[12px] border-b-transparent border-r-[12px] border-r-primary" />
+            )}
+            {step.position === "bottom" && (
+              <div className="absolute -bottom-3 left-1/2 -translate-x-1/2 w-0 h-0 border-l-[12px] border-l-transparent border-r-[12px] border-r-transparent border-t-[12px] border-t-primary" />
+            )}
+            {step.position === "top" && (
+              <div className="absolute -top-3 left-1/2 -translate-x-1/2 w-0 h-0 border-l-[12px] border-l-transparent border-r-[12px] border-r-transparent border-b-[12px] border-b-primary" />
+            )}
+          </>
         )}
       </div>
     </>

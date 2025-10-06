@@ -196,6 +196,7 @@ export const Layout = ({ children }: LayoutProps) => {
       <OnboardingTour />
       {/* Menu Toggle Button */}
       <button
+        data-tour="menu-button"
         onClick={() => setSidebarOpen(!sidebarOpen)}
         className={`fixed top-3 left-3 z-[1001] bg-gradient-to-br from-[hsl(var(--primary))] to-[hsl(var(--success))] text-white p-2 sm:p-2.5 rounded-lg sm:rounded-xl shadow-md hover:shadow-lg transition-all duration-300 hover:scale-105 ${sidebarOpen ? "lg:left-[300px]" : ""}`}
       >
@@ -233,7 +234,7 @@ export const Layout = ({ children }: LayoutProps) => {
         </div>
 
         {/* Navigation */}
-        <nav className="py-5">
+        <nav className="py-5" data-tour="nav-section">
           <a 
             href="/dashboard" 
             className={`flex items-center gap-3 px-5 py-3.5 mx-3 rounded-xl font-medium transition-all duration-300 ${

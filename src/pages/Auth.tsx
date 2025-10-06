@@ -419,10 +419,38 @@ export default function Auth() {
                     <Button type="submit" className="auth-btn-submit w-full mt-6">
                       Se connecter
                     </Button>
-                    <p className="auth-note text-xs text-muted-foreground mt-2">
-                      Astuce test: <code className="bg-muted px-1 py-0.5 rounded text-xs">celestinsteeve738@gmail.com / test123</code> ou{" "}
-                      <code className="bg-muted px-1 py-0.5 rounded text-xs">djoodoodson@gmail.com / test123</code>
-                    </p>
+                    <div className="flex flex-col gap-2 mt-4">
+                      <Button 
+                        type="button"
+                        variant="outline"
+                        className="w-full"
+                        onClick={async () => {
+                          try {
+                            const { error } = await supabase.auth.signInWithPassword({
+                              email: "celestinsteeve738@gmail.com",
+                              password: "test123",
+                            });
+                            if (error) throw error;
+                            toast({
+                              title: "Connexion test réussie",
+                              description: "Mode test activé",
+                            });
+                            navigate("/dashboard");
+                          } catch (error: any) {
+                            toast({
+                              title: "Erreur",
+                              description: error.message,
+                              variant: "destructive",
+                            });
+                          }
+                        }}
+                      >
+                        🧪 Connexion Test Rapide
+                      </Button>
+                      <p className="auth-note text-xs text-muted-foreground text-center">
+                        ou utilisez: <code className="bg-muted px-1 py-0.5 rounded text-xs">celestinsteeve738@gmail.com / test123</code>
+                      </p>
+                    </div>
                   </form>
                 )}
 
