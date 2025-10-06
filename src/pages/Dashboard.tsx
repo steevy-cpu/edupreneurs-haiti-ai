@@ -316,18 +316,18 @@ const Dashboard = () => {
             </CardHeader>
             <CardContent>
               <div className="bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 rounded-xl p-4 mb-4 text-sm text-amber-800 dark:text-amber-200">
-                <strong>Astuce:</strong> commencez par « Nombres entiers » en Mathématiques (7e). Cliquez sur « Lire la leçon ».
+                <strong>Astuce:</strong> commencez par « Décimaux » en Mathématiques (7e). Cliquez sur « Lire la leçon ».
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <Card className="border border-border rounded-2xl hover:shadow-md transition-all">
                   <CardContent className="p-5">
-                    <strong className="block mb-2">Nombres entiers — Lecture</strong>
+                    <strong className="block mb-2">Décimaux — Lecture</strong>
                     <p className="text-muted-foreground text-sm mb-4">
                       Explications simples avec schémas.
                     </p>
                     <Button 
                       className="w-full bg-gradient-to-br from-[hsl(var(--primary))] to-[hsl(var(--success))] hover:opacity-90"
-                      onClick={() => navigate("/math-lesson/integers")}
+                      onClick={() => navigate("/math-lesson/decimaux")}
                     >
                       Lire la leçon
                     </Button>
@@ -336,14 +336,14 @@ const Dashboard = () => {
 
                 <Card className="border border-border rounded-2xl hover:shadow-md transition-all">
                   <CardContent className="p-5">
-                    <strong className="block mb-2">Nombres entiers — Quiz</strong>
+                    <strong className="block mb-2">Décimaux — Quiz</strong>
                     <p className="text-muted-foreground text-sm mb-4">
                       Vérifiez votre compréhension et gagnez des golds.
                     </p>
                     <Button 
                       variant="outline"
                       className="w-full border-2 border-[hsl(var(--primary))] text-[hsl(var(--primary))] hover:bg-[hsl(var(--primary))] hover:text-white"
-                      onClick={() => navigate("/math-lesson/integers")}
+                      onClick={() => navigate("/math-lesson/decimaux")}
                     >
                       Passer le quiz
                     </Button>
