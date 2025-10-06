@@ -4,9 +4,10 @@ import { supabase } from "@/integrations/supabase/client";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
+import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useToast } from "@/hooks/use-toast";
-import { Heart, MessageCircle, Send, Plus, Image } from "lucide-react";
+import { Heart, MessageCircle, Send, Plus, Image, Share2 } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 
 interface Profile {
@@ -14,6 +15,14 @@ interface Profile {
   user_id: string;
   full_name: string;
   nickname: string;
+}
+
+interface Comment {
+  id: string;
+  content: string;
+  created_at: string;
+  user_id: string;
+  profile: Profile;
 }
 
 interface Post {
@@ -25,6 +34,10 @@ interface Post {
   profile?: Profile;
   likes?: number;
   isLiked?: boolean;
+  comments?: Comment[];
+  commentCount?: number;
+  shareCount?: number;
+  isShared?: boolean;
 }
 
 const Feed = () => {
@@ -36,6 +49,8 @@ const Feed = () => {
   const [isCreatingPost, setIsCreatingPost] = useState(false);
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [commentInputs, setCommentInputs] = useState<{ [key: string]: string }>({});
+  const [showComments, setShowComments] = useState<{ [key: string]: boolean }>({});
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -57,7 +72,6 @@ const Feed = () => {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return;
 
-    // Fetch posts from followed users and own posts
     const { data: postsData, error: postsError } = await supabase
       .from("posts")
       .select("*")
@@ -69,31 +83,57 @@ const Feed = () => {
       return;
     }
 
-    // Fetch profiles for post authors
     const userIds = [...new Set(postsData?.map(p => p.user_id) || [])];
     const { data: profilesData } = await supabase
       .from("profiles")
       .select("*")
       .in("user_id", userIds);
 
-    // Fetch likes for all posts
     const postIds = postsData?.map(p => p.id) || [];
     const { data: likesData } = await supabase
       .from("post_likes")
       .select("post_id, user_id")
       .in("post_id", postIds);
 
-    // Combine data
+    const { data: commentsData } = await supabase
+      .from("post_comments")
+      .select("*")
+      .in("post_id", postIds)
+      .order("created_at", { ascending: true });
+
+    const commentUserIds = [...new Set(commentsData?.map(c => c.user_id) || [])];
+    const { data: commentProfilesData } = await supabase
+      .from("profiles")
+      .select("*")
+      .in("user_id", commentUserIds);
+
+    const { data: sharesData } = await supabase
+      .from("post_shares")
+      .select("post_id, user_id")
+      .in("post_id", postIds);
+
     const enrichedPosts = postsData?.map(post => {
       const profile = profilesData?.find(p => p.user_id === post.user_id);
       const postLikes = likesData?.filter(l => l.post_id === post.id) || [];
       const isLiked = postLikes.some(l => l.user_id === user.id);
       
+      const postComments = commentsData?.filter(c => c.post_id === post.id).map(comment => ({
+        ...comment,
+        profile: commentProfilesData?.find(p => p.user_id === comment.user_id) as Profile
+      })) || [];
+
+      const postShares = sharesData?.filter(s => s.post_id === post.id) || [];
+      const isShared = postShares.some(s => s.user_id === user.id);
+      
       return {
         ...post,
         profile,
         likes: postLikes.length,
-        isLiked
+        isLiked,
+        comments: postComments,
+        commentCount: postComments.length,
+        shareCount: postShares.length,
+        isShared
       };
     }) || [];
 
@@ -139,7 +179,6 @@ const Feed = () => {
     setIsCreatingPost(true);
     let imageUrl = null;
 
-    // Upload image if selected
     if (selectedImage) {
       const fileExt = selectedImage.name.split('.').pop();
       const fileName = `${currentUser.id}/${Math.random()}.${fileExt}`;
@@ -194,6 +233,8 @@ const Feed = () => {
   const toggleLike = async (postId: string, isCurrentlyLiked: boolean) => {
     if (!currentUser) return;
 
+    const post = posts.find(p => p.id === postId);
+
     if (isCurrentlyLiked) {
       const { error } = await supabase
         .from("post_likes")
@@ -217,18 +258,126 @@ const Feed = () => {
         console.error("Error liking post:", error);
         return;
       }
+
+      // Create notification
+      if (post && post.user_id !== currentUser.id) {
+        await supabase.from("notifications").insert({
+          user_id: post.user_id,
+          actor_id: currentUser.id,
+          post_id: postId,
+          type: "like",
+        });
+      }
     }
 
-    // Update local state
-    setPosts(posts.map(post => {
-      if (post.id === postId) {
+    setPosts(posts.map(p => {
+      if (p.id === postId) {
         return {
-          ...post,
-          likes: isCurrentlyLiked ? (post.likes || 0) - 1 : (post.likes || 0) + 1,
+          ...p,
+          likes: isCurrentlyLiked ? (p.likes || 0) - 1 : (p.likes || 0) + 1,
           isLiked: !isCurrentlyLiked
         };
       }
-      return post;
+      return p;
+    }));
+  };
+
+  const addComment = async (postId: string) => {
+    if (!currentUser) return;
+
+    const commentContent = commentInputs[postId]?.trim();
+    if (!commentContent) return;
+
+    const { error } = await supabase
+      .from("post_comments")
+      .insert({
+        post_id: postId,
+        user_id: currentUser.id,
+        content: commentContent,
+      });
+
+    if (error) {
+      console.error("Error adding comment:", error);
+      toast({
+        title: "Erreur",
+        description: "Impossible d'ajouter le commentaire",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const post = posts.find(p => p.id === postId);
+    
+    // Create notification
+    if (post && post.user_id !== currentUser.id) {
+      await supabase.from("notifications").insert({
+        user_id: post.user_id,
+        actor_id: currentUser.id,
+        post_id: postId,
+        type: "comment",
+        content: commentContent,
+      });
+    }
+
+    setCommentInputs({ ...commentInputs, [postId]: "" });
+    await fetchPosts();
+    toast({
+      title: "Succès",
+      description: "Commentaire ajouté",
+    });
+  };
+
+  const toggleShare = async (postId: string, isCurrentlyShared: boolean) => {
+    if (!currentUser) return;
+
+    const post = posts.find(p => p.id === postId);
+
+    if (isCurrentlyShared) {
+      const { error } = await supabase
+        .from("post_shares")
+        .delete()
+        .eq("post_id", postId)
+        .eq("user_id", currentUser.id);
+
+      if (error) {
+        console.error("Error unsharing post:", error);
+        return;
+      }
+    } else {
+      const { error } = await supabase
+        .from("post_shares")
+        .insert({ post_id: postId, user_id: currentUser.id });
+
+      if (error) {
+        console.error("Error sharing post:", error);
+        return;
+      }
+
+      // Create notification
+      if (post && post.user_id !== currentUser.id) {
+        await supabase.from("notifications").insert({
+          user_id: post.user_id,
+          actor_id: currentUser.id,
+          post_id: postId,
+          type: "share",
+        });
+      }
+
+      toast({
+        title: "Succès",
+        description: "Post partagé",
+      });
+    }
+
+    setPosts(posts.map(p => {
+      if (p.id === postId) {
+        return {
+          ...p,
+          shareCount: isCurrentlyShared ? (p.shareCount || 0) - 1 : (p.shareCount || 0) + 1,
+          isShared: !isCurrentlyShared
+        };
+      }
+      return p;
     }));
   };
 
@@ -389,20 +538,90 @@ const Feed = () => {
                     ) : null}
                   </button>
                   
-                  <button className="flex items-center gap-2 group">
+                  <button 
+                    onClick={() => setShowComments({ ...showComments, [post.id]: !showComments[post.id] })}
+                    className="flex items-center gap-2 group"
+                  >
                     <MessageCircle
                       size={20}
                       className="text-foreground group-hover:text-primary transition-colors"
                     />
+                    {post.commentCount ? (
+                      <span className="text-sm text-muted-foreground">
+                        {post.commentCount}
+                      </span>
+                    ) : null}
                   </button>
 
-                  <button className="flex items-center gap-2 group ml-auto">
-                    <Send
+                  <button 
+                    onClick={() => toggleShare(post.id, post.isShared || false)}
+                    className="flex items-center gap-2 group ml-auto"
+                  >
+                    <Share2
                       size={20}
-                      className="text-foreground group-hover:text-primary transition-colors"
+                      className={`transition-colors ${
+                        post.isShared
+                          ? "fill-primary text-primary"
+                          : "text-foreground group-hover:text-primary"
+                      }`}
                     />
+                    {post.shareCount ? (
+                      <span className="text-sm text-muted-foreground">
+                        {post.shareCount}
+                      </span>
+                    ) : null}
                   </button>
                 </div>
+
+                {/* Comments Section */}
+                {showComments[post.id] && (
+                  <div className="px-4 pb-3 pt-2 space-y-3 border-t border-border/50">
+                    {post.comments && post.comments.map((comment) => (
+                      <div key={comment.id} className="flex gap-2">
+                        <Avatar className="h-7 w-7">
+                          <AvatarFallback className="text-xs">
+                            {comment.profile?.nickname?.[0] || "?"}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div className="flex-1">
+                          <div className="bg-muted/30 rounded-lg px-3 py-2">
+                            <p className="font-semibold text-xs">
+                              {comment.profile?.nickname || "Utilisateur"}
+                            </p>
+                            <p className="text-sm">{comment.content}</p>
+                          </div>
+                          <p className="text-xs text-muted-foreground mt-1 px-1">
+                            {formatTimeAgo(comment.created_at)}
+                          </p>
+                        </div>
+                      </div>
+                    ))}
+
+                    {/* Add Comment Input */}
+                    <div className="flex gap-2">
+                      <Input
+                        value={commentInputs[post.id] || ""}
+                        onChange={(e) =>
+                          setCommentInputs({ ...commentInputs, [post.id]: e.target.value })
+                        }
+                        placeholder="Ajouter un commentaire..."
+                        onKeyPress={(e) => {
+                          if (e.key === "Enter") {
+                            addComment(post.id);
+                          }
+                        }}
+                        className="flex-1"
+                      />
+                      <Button
+                        size="sm"
+                        onClick={() => addComment(post.id)}
+                        disabled={!commentInputs[post.id]?.trim()}
+                      >
+                        <Send size={16} />
+                      </Button>
+                    </div>
+                  </div>
+                )}
               </div>
             ))
           )}

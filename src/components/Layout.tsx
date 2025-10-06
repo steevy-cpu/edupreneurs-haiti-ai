@@ -29,11 +29,13 @@ export const Layout = ({ children }: LayoutProps) => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [totalUnreadMessages, setTotalUnreadMessages] = useState(0);
   const [pendingFollowRequests, setPendingFollowRequests] = useState(0);
+  const [unreadNotifications, setUnreadNotifications] = useState(0);
 
   useEffect(() => {
     checkAuth();
     fetchUnreadCount();
     fetchPendingFollowRequests();
+    fetchUnreadNotifications();
   }, []);
 
   useEffect(() => {
@@ -67,9 +69,25 @@ export const Layout = ({ children }: LayoutProps) => {
       )
       .subscribe();
 
+    const notificationsChannel = supabase
+      .channel("notification-updates")
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "notifications",
+        },
+        async (payload) => {
+          await fetchUnreadNotifications();
+        }
+      )
+      .subscribe();
+
     return () => {
       supabase.removeChannel(messagesChannel);
       supabase.removeChannel(followsChannel);
+      supabase.removeChannel(notificationsChannel);
     };
   }, []);
 
@@ -99,6 +117,19 @@ export const Layout = ({ children }: LayoutProps) => {
       .eq("status", "pending");
 
     setPendingFollowRequests(count || 0);
+  };
+
+  const fetchUnreadNotifications = async () => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+
+    const { count } = await supabase
+      .from("notifications")
+      .select("id", { count: "exact", head: true })
+      .eq("user_id", user.id)
+      .eq("read", false);
+
+    setUnreadNotifications(count || 0);
   };
 
   const checkAuth = async () => {
@@ -226,18 +257,18 @@ export const Layout = ({ children }: LayoutProps) => {
             Rechercher
           </a>
           <a 
-            href="/follow-requests" 
+            href="/notifications" 
             className={`flex items-center gap-3 px-5 py-3.5 mx-3 my-1 rounded-xl font-medium transition-all duration-300 ${
-              isActive("/follow-requests") 
+              isActive("/notifications") 
                 ? "bg-gradient-to-br from-[hsl(var(--primary))] to-[hsl(var(--success))] text-white" 
                 : "text-foreground hover:bg-gradient-to-br hover:from-[hsl(var(--primary))] hover:to-[hsl(var(--success))] hover:text-white hover:translate-x-1"
             }`}
           >
             <Bell size={18} />
             Notifications
-            {pendingFollowRequests > 0 && (
+            {(unreadNotifications + pendingFollowRequests) > 0 && (
               <span className="ml-auto flex items-center justify-center h-5 min-w-[20px] px-1.5 rounded-full bg-destructive text-destructive-foreground text-xs font-semibold">
-                {pendingFollowRequests}
+                {unreadNotifications + pendingFollowRequests}
               </span>
             )}
           </a>
