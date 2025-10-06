@@ -19,6 +19,7 @@ import {
 } from "lucide-react";
 import dashboardImage from "@/assets/dashboard00.png";
 import { EricChatbot } from "@/components/EricChatbot";
+import OnboardingTour from "@/components/OnboardingTour";
 
 interface LayoutProps {
   children: ReactNode;
@@ -192,6 +193,7 @@ export const Layout = ({ children }: LayoutProps) => {
 
   return (
     <div className="min-h-screen bg-background">
+      <OnboardingTour />
       {/* Menu Toggle Button */}
       <button
         onClick={() => setSidebarOpen(!sidebarOpen)}
