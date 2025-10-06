@@ -538,7 +538,7 @@ const Community = () => {
       </div>
 
       {/* Messages View */}
-      <div className={`${selectedConversation ? "block" : "hidden md:block"} flex-1 flex flex-col`}>
+      <div className={`${selectedConversation ? "block" : "hidden md:block"} flex-1 flex flex-col h-screen md:h-auto`}>
         {selectedConversation ? (
           <>
             {/* Header */}
@@ -564,8 +564,8 @@ const Community = () => {
             </div>
 
             {/* Messages */}
-            <ScrollArea className="flex-1 p-3 sm:p-4">
-              <div className="space-y-3 sm:space-y-4 pb-4">
+            <ScrollArea className="flex-1 p-2 sm:p-4 h-[calc(100vh-140px)] md:h-auto">
+              <div className="space-y-2 sm:space-y-4 pb-4">
                 {messages.map((message) => {
                   const isOwn = message.sender_id === user?.id;
                   return (
@@ -573,7 +573,7 @@ const Community = () => {
                       key={message.id}
                       className={`flex ${isOwn ? "justify-end" : "justify-start"}`}
                     >
-                      <div className={`flex gap-1.5 sm:gap-2 max-w-[85%] sm:max-w-[70%] ${isOwn ? "flex-row-reverse" : "flex-row"}`}>
+                      <div className={`flex gap-1.5 sm:gap-2 max-w-[90%] sm:max-w-[75%] ${isOwn ? "flex-row-reverse" : "flex-row"}`}>
                         <Avatar className="h-7 w-7 sm:h-8 sm:w-8 shrink-0">
                           <AvatarFallback className="bg-gradient-to-br from-primary/20 to-success/20 text-[10px] sm:text-xs">
                             {message.profile?.full_name?.[0] || "?"}
@@ -584,7 +584,7 @@ const Community = () => {
                             // Shared Post Display
                             <div
                               onClick={() => navigate("/feed")}
-                              className={`rounded-2xl px-4 py-3 cursor-pointer hover:opacity-90 transition-opacity ${
+                              className={`rounded-2xl px-3 py-2 sm:px-4 sm:py-3 cursor-pointer hover:opacity-90 transition-opacity ${
                                 isOwn
                                   ? "bg-primary/90 text-primary-foreground"
                                   : "bg-muted"
@@ -595,14 +595,14 @@ const Community = () => {
                                   📝 Post partagé de {message.shared_post.profile?.nickname || message.shared_post.profile?.full_name}
                                 </span>
                               </div>
-                              <p className="text-sm whitespace-pre-wrap break-words mb-2">
+                              <p className="text-xs sm:text-sm whitespace-pre-wrap break-words mb-2">
                                 {message.shared_post.content}
                               </p>
                               {message.shared_post.image_url && (
                                 <img
                                   src={message.shared_post.image_url}
                                   alt="Post"
-                                  className="rounded-lg w-full max-h-48 object-cover"
+                                  className="rounded-lg w-full max-h-32 sm:max-h-48 object-cover"
                                 />
                               )}
                               <p className="text-xs opacity-70 mt-2">Cliquez pour voir le post</p>
@@ -610,13 +610,13 @@ const Community = () => {
                           ) : (
                             // Regular Message Display
                             <div
-                              className={`rounded-2xl px-4 py-2 ${
+                              className={`rounded-2xl px-3 py-2 sm:px-4 ${
                                 isOwn
                                   ? "bg-primary text-primary-foreground"
                                   : "bg-muted"
                               }`}
                             >
-                              <p className="text-sm whitespace-pre-wrap break-words">
+                              <p className="text-xs sm:text-sm whitespace-pre-wrap break-words">
                                 {message.content}
                               </p>
                             </div>
