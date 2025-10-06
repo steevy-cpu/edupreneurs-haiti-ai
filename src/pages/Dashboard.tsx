@@ -57,7 +57,14 @@ const Dashboard = () => {
   const fetchUserData = async () => {
     const { data: { session } } = await supabase.auth.getSession();
     if (session) {
-      const userName = session.user.user_metadata?.name || session.user.email?.split("@")[0] || "Utilisateur";
+      // Fetch nickname from profiles table
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('nickname')
+        .eq('user_id', session.user.id)
+        .single();
+
+      const userName = profile?.nickname || session.user.email?.split("@")[0] || "Utilisateur";
       setUserData(prev => ({ ...prev, name: userName }));
     }
   };
