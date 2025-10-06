@@ -146,6 +146,48 @@ export const Layout = ({ children }: LayoutProps) => {
     navigate("/auth");
   };
 
+  const handleMessagesClick = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    
+    // Mark all messages as read
+    const { data: { user } } = await supabase.auth.getUser();
+    if (user) {
+      const { data: unreadMessages } = await supabase
+        .from("messages")
+        .select("id")
+        .eq("read", false)
+        .neq("sender_id", user.id);
+
+      if (unreadMessages && unreadMessages.length > 0) {
+        const messageIds = unreadMessages.map(m => m.id);
+        await supabase
+          .from("messages")
+          .update({ read: true })
+          .in("id", messageIds);
+      }
+    }
+    
+    navigate("/community");
+    setSidebarOpen(false);
+  };
+
+  const handleNotificationsClick = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    
+    // Mark all notifications as read
+    const { data: { user } } = await supabase.auth.getUser();
+    if (user) {
+      await supabase
+        .from("notifications")
+        .update({ read: true })
+        .eq("user_id", user.id)
+        .eq("read", false);
+    }
+    
+    navigate("/notifications");
+    setSidebarOpen(false);
+  };
+
   const isActive = (path: string) => location.pathname === path;
 
   return (
@@ -232,6 +274,7 @@ export const Layout = ({ children }: LayoutProps) => {
           </a>
           <a 
             href="/community" 
+            onClick={handleMessagesClick}
             className={`flex items-center gap-3 px-5 py-3.5 mx-3 my-1 rounded-xl font-medium transition-all duration-300 ${
               isActive("/community") 
                 ? "bg-gradient-to-br from-[hsl(var(--primary))] to-[hsl(var(--success))] text-white" 
@@ -259,6 +302,7 @@ export const Layout = ({ children }: LayoutProps) => {
           </a>
           <a 
             href="/notifications" 
+            onClick={handleNotificationsClick}
             className={`flex items-center gap-3 px-5 py-3.5 mx-3 my-1 rounded-xl font-medium transition-all duration-300 ${
               isActive("/notifications") 
                 ? "bg-gradient-to-br from-[hsl(var(--primary))] to-[hsl(var(--success))] text-white" 
