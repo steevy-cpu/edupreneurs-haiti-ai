@@ -7,8 +7,24 @@ import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useToast } from "@/hooks/use-toast";
-import { Heart, MessageCircle, Send, Plus, Image, Share2 } from "lucide-react";
+import { Heart, MessageCircle, Send, Plus, Image, Share2, Trash2, Smile, Reply } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import EmojiPicker from "emoji-picker-react";
 
 interface Profile {
   id: string;
@@ -22,7 +38,9 @@ interface Comment {
   content: string;
   created_at: string;
   user_id: string;
+  parent_comment_id: string | null;
   profile: Profile;
+  replies?: Comment[];
 }
 
 interface Post {
@@ -50,7 +68,11 @@ const Feed = () => {
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [commentInputs, setCommentInputs] = useState<{ [key: string]: string }>({});
+  const [replyInputs, setReplyInputs] = useState<{ [key: string]: string }>({});
   const [showComments, setShowComments] = useState<{ [key: string]: boolean }>({});
+  const [replyingTo, setReplyingTo] = useState<{ [key: string]: string | null }>({});
+  const [deletePostId, setDeletePostId] = useState<string | null>(null);
+  const [deleteCommentId, setDeleteCommentId] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -117,10 +139,18 @@ const Feed = () => {
       const postLikes = likesData?.filter(l => l.post_id === post.id) || [];
       const isLiked = postLikes.some(l => l.user_id === user.id);
       
+      // Organize comments with replies
       const postComments = commentsData?.filter(c => c.post_id === post.id).map(comment => ({
         ...comment,
         profile: commentProfilesData?.find(p => p.user_id === comment.user_id) as Profile
       })) || [];
+
+      // Build nested comment structure
+      const topLevelComments = postComments.filter(c => !c.parent_comment_id);
+      const commentsWithReplies = topLevelComments.map(comment => ({
+        ...comment,
+        replies: postComments.filter(c => c.parent_comment_id === comment.id)
+      }));
 
       const postShares = sharesData?.filter(s => s.post_id === post.id) || [];
       const isShared = postShares.some(s => s.user_id === user.id);
@@ -130,7 +160,7 @@ const Feed = () => {
         profile,
         likes: postLikes.length,
         isLiked,
-        comments: postComments,
+        comments: commentsWithReplies,
         commentCount: postComments.length,
         shareCount: postShares.length,
         isShared
@@ -230,6 +260,52 @@ const Feed = () => {
     });
   };
 
+  const deletePost = async (postId: string) => {
+    const { error } = await supabase
+      .from("posts")
+      .delete()
+      .eq("id", postId);
+
+    if (error) {
+      toast({
+        title: "Erreur",
+        description: "Impossible de supprimer le post",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    toast({
+      title: "Succès",
+      description: "Post supprimé",
+    });
+    setDeletePostId(null);
+    await fetchPosts();
+  };
+
+  const deleteComment = async (commentId: string) => {
+    const { error } = await supabase
+      .from("post_comments")
+      .delete()
+      .eq("id", commentId);
+
+    if (error) {
+      toast({
+        title: "Erreur",
+        description: "Impossible de supprimer le commentaire",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    toast({
+      title: "Succès",
+      description: "Commentaire supprimé",
+    });
+    setDeleteCommentId(null);
+    await fetchPosts();
+  };
+
   const toggleLike = async (postId: string, isCurrentlyLiked: boolean) => {
     if (!currentUser) return;
 
@@ -259,7 +335,6 @@ const Feed = () => {
         return;
       }
 
-      // Create notification
       if (post && post.user_id !== currentUser.id) {
         await supabase.from("notifications").insert({
           user_id: post.user_id,
@@ -282,10 +357,13 @@ const Feed = () => {
     }));
   };
 
-  const addComment = async (postId: string) => {
+  const addComment = async (postId: string, parentCommentId: string | null = null) => {
     if (!currentUser) return;
 
-    const commentContent = commentInputs[postId]?.trim();
+    const commentContent = parentCommentId 
+      ? replyInputs[parentCommentId]?.trim() 
+      : commentInputs[postId]?.trim();
+    
     if (!commentContent) return;
 
     const { error } = await supabase
@@ -294,6 +372,7 @@ const Feed = () => {
         post_id: postId,
         user_id: currentUser.id,
         content: commentContent,
+        parent_comment_id: parentCommentId,
       });
 
     if (error) {
@@ -308,7 +387,6 @@ const Feed = () => {
 
     const post = posts.find(p => p.id === postId);
     
-    // Create notification
     if (post && post.user_id !== currentUser.id) {
       await supabase.from("notifications").insert({
         user_id: post.user_id,
@@ -319,7 +397,13 @@ const Feed = () => {
       });
     }
 
-    setCommentInputs({ ...commentInputs, [postId]: "" });
+    if (parentCommentId) {
+      setReplyInputs({ ...replyInputs, [parentCommentId]: "" });
+      setReplyingTo({ ...replyingTo, [postId]: null });
+    } else {
+      setCommentInputs({ ...commentInputs, [postId]: "" });
+    }
+    
     await fetchPosts();
     toast({
       title: "Succès",
@@ -353,7 +437,6 @@ const Feed = () => {
         return;
       }
 
-      // Create notification
       if (post && post.user_id !== currentUser.id) {
         await supabase.from("notifications").insert({
           user_id: post.user_id,
@@ -381,6 +464,20 @@ const Feed = () => {
     }));
   };
 
+  const handleEmojiSelect = (emojiData: any, postId: string, commentId?: string) => {
+    if (commentId) {
+      setReplyInputs({
+        ...replyInputs,
+        [commentId]: (replyInputs[commentId] || "") + emojiData.emoji
+      });
+    } else {
+      setCommentInputs({
+        ...commentInputs,
+        [postId]: (commentInputs[postId] || "") + emojiData.emoji
+      });
+    }
+  };
+
   const formatTimeAgo = (timestamp: string) => {
     const now = new Date();
     const postDate = new Date(timestamp);
@@ -393,6 +490,93 @@ const Feed = () => {
     return postDate.toLocaleDateString("fr-FR", { day: "numeric", month: "short" });
   };
 
+  const renderComment = (comment: Comment, postId: string, isReply: boolean = false) => (
+    <div key={comment.id} className={`flex gap-2 ${isReply ? "ml-8" : ""}`}>
+      <Avatar className="h-7 w-7 flex-shrink-0">
+        <AvatarFallback className="text-xs">
+          {comment.profile?.nickname?.[0] || "?"}
+        </AvatarFallback>
+      </Avatar>
+      <div className="flex-1 min-w-0">
+        <div className="bg-muted/30 rounded-lg px-3 py-2">
+          <p className="font-semibold text-xs">
+            {comment.profile?.nickname || "Utilisateur"}
+          </p>
+          <p className="text-sm break-words">{comment.content}</p>
+        </div>
+        <div className="flex items-center gap-3 mt-1 px-1">
+          <p className="text-xs text-muted-foreground">
+            {formatTimeAgo(comment.created_at)}
+          </p>
+          {!isReply && (
+            <button
+              onClick={() => setReplyingTo({ ...replyingTo, [postId]: comment.id })}
+              className="text-xs text-muted-foreground hover:text-primary flex items-center gap-1"
+            >
+              <Reply size={12} />
+              Répondre
+            </button>
+          )}
+          {comment.user_id === currentUser?.id && (
+            <button
+              onClick={() => setDeleteCommentId(comment.id)}
+              className="text-xs text-destructive hover:text-destructive/80 flex items-center gap-1"
+            >
+              <Trash2 size={12} />
+              Supprimer
+            </button>
+          )}
+        </div>
+
+        {/* Reply input */}
+        {replyingTo[postId] === comment.id && (
+          <div className="flex gap-2 mt-2">
+            <Input
+              value={replyInputs[comment.id] || ""}
+              onChange={(e) =>
+                setReplyInputs({ ...replyInputs, [comment.id]: e.target.value })
+              }
+              placeholder="Écrire une réponse..."
+              onKeyPress={(e) => {
+                if (e.key === "Enter") {
+                  addComment(postId, comment.id);
+                }
+              }}
+              className="flex-1"
+            />
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button size="sm" variant="ghost">
+                  <Smile size={16} />
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-full p-0" align="end">
+                <EmojiPicker
+                  onEmojiClick={(emojiData) => handleEmojiSelect(emojiData, postId, comment.id)}
+                  width="100%"
+                />
+              </PopoverContent>
+            </Popover>
+            <Button
+              size="sm"
+              onClick={() => addComment(postId, comment.id)}
+              disabled={!replyInputs[comment.id]?.trim()}
+            >
+              <Send size={16} />
+            </Button>
+          </div>
+        )}
+
+        {/* Render replies */}
+        {comment.replies && comment.replies.length > 0 && (
+          <div className="mt-3 space-y-3">
+            {comment.replies.map(reply => renderComment(reply, postId, true))}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
@@ -400,7 +584,6 @@ const Feed = () => {
         <div className="max-w-2xl mx-auto px-4 py-3 flex items-center justify-between">
           <h1 className="text-xl font-semibold">Fil d'actualité</h1>
           
-          {/* Create Post Button */}
           <Dialog>
             <DialogTrigger asChild>
               <Button size="icon" variant="ghost" className="hover:bg-accent/50">
@@ -501,6 +684,15 @@ const Feed = () => {
                       {formatTimeAgo(post.created_at)}
                     </p>
                   </div>
+                  {post.user_id === currentUser?.id && (
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      onClick={() => setDeletePostId(post.id)}
+                    >
+                      <Trash2 size={16} className="text-destructive" />
+                    </Button>
+                  )}
                 </div>
 
                 {/* Post Content */}
@@ -576,29 +768,10 @@ const Feed = () => {
                 {/* Comments Section */}
                 {showComments[post.id] && (
                   <div className="px-4 pb-3 pt-2 space-y-3 border-t border-border/50">
-                    {post.comments && post.comments.map((comment) => (
-                      <div key={comment.id} className="flex gap-2">
-                        <Avatar className="h-7 w-7">
-                          <AvatarFallback className="text-xs">
-                            {comment.profile?.nickname?.[0] || "?"}
-                          </AvatarFallback>
-                        </Avatar>
-                        <div className="flex-1">
-                          <div className="bg-muted/30 rounded-lg px-3 py-2">
-                            <p className="font-semibold text-xs">
-                              {comment.profile?.nickname || "Utilisateur"}
-                            </p>
-                            <p className="text-sm">{comment.content}</p>
-                          </div>
-                          <p className="text-xs text-muted-foreground mt-1 px-1">
-                            {formatTimeAgo(comment.created_at)}
-                          </p>
-                        </div>
-                      </div>
-                    ))}
+                    {post.comments && post.comments.map((comment) => renderComment(comment, post.id))}
 
                     {/* Add Comment Input */}
-                    <div className="flex gap-2">
+                    <div className="flex gap-2 pt-2">
                       <Input
                         value={commentInputs[post.id] || ""}
                         onChange={(e) =>
@@ -612,6 +785,19 @@ const Feed = () => {
                         }}
                         className="flex-1"
                       />
+                      <Popover>
+                        <PopoverTrigger asChild>
+                          <Button size="sm" variant="ghost">
+                            <Smile size={16} />
+                          </Button>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-full p-0" align="end">
+                          <EmojiPicker
+                            onEmojiClick={(emojiData) => handleEmojiSelect(emojiData, post.id)}
+                            width="100%"
+                          />
+                        </PopoverContent>
+                      </Popover>
                       <Button
                         size="sm"
                         onClick={() => addComment(post.id)}
@@ -627,6 +813,48 @@ const Feed = () => {
           )}
         </div>
       </ScrollArea>
+
+      {/* Delete Post Dialog */}
+      <AlertDialog open={!!deletePostId} onOpenChange={() => setDeletePostId(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Supprimer le post</AlertDialogTitle>
+            <AlertDialogDescription>
+              Êtes-vous sûr de vouloir supprimer ce post ? Cette action est irréversible.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Annuler</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => deletePostId && deletePost(deletePostId)}
+              className="bg-destructive hover:bg-destructive/90"
+            >
+              Supprimer
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Delete Comment Dialog */}
+      <AlertDialog open={!!deleteCommentId} onOpenChange={() => setDeleteCommentId(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Supprimer le commentaire</AlertDialogTitle>
+            <AlertDialogDescription>
+              Êtes-vous sûr de vouloir supprimer ce commentaire ? Cette action est irréversible.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Annuler</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => deleteCommentId && deleteComment(deleteCommentId)}
+              className="bg-destructive hover:bg-destructive/90"
+            >
+              Supprimer
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };
