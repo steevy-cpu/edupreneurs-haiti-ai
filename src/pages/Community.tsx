@@ -538,7 +538,7 @@ const Community = () => {
       </div>
 
       {/* Messages View */}
-      <div className={`${selectedConversation ? "block" : "hidden md:block"} flex-1 flex flex-col h-screen md:h-auto`}>
+      <div className={`${selectedConversation ? "block" : "hidden md:block"} flex-1 flex flex-col max-h-screen md:h-auto`}>
         {selectedConversation ? (
           <>
             {/* Header */}
@@ -551,12 +551,24 @@ const Community = () => {
               >
                 <ArrowLeft size={18} className="sm:w-5 sm:h-5" />
               </Button>
-              <Avatar className="h-9 w-9 sm:h-10 sm:w-10 shrink-0">
+              <Avatar 
+                className="h-9 w-9 sm:h-10 sm:w-10 shrink-0 cursor-pointer hover:opacity-80 transition-opacity"
+                onClick={() => {
+                  const otherUser = conversations.find(c => c.id === selectedConversation)?.otherUser;
+                  if (otherUser) navigate(`/profile?userId=${otherUser.user_id}`);
+                }}
+              >
                 <AvatarFallback className="bg-gradient-to-br from-primary/20 to-success/20 text-sm sm:text-base">
                   {conversations.find(c => c.id === selectedConversation)?.otherUser?.full_name?.[0] || "?"}
                 </AvatarFallback>
               </Avatar>
-              <div className="min-w-0 flex-1">
+              <div 
+                className="min-w-0 flex-1 cursor-pointer hover:opacity-80 transition-opacity"
+                onClick={() => {
+                  const otherUser = conversations.find(c => c.id === selectedConversation)?.otherUser;
+                  if (otherUser) navigate(`/profile?userId=${otherUser.user_id}`);
+                }}
+              >
                 <p className="font-semibold text-sm sm:text-base truncate">
                   {conversations.find(c => c.id === selectedConversation)?.otherUser?.full_name || "Utilisateur"}
                 </p>
@@ -564,7 +576,7 @@ const Community = () => {
             </div>
 
             {/* Messages */}
-            <ScrollArea className="flex-1 p-2 sm:p-4 h-[calc(100vh-140px)] md:h-auto">
+            <ScrollArea className="flex-1 p-2 sm:p-4">
               <div className="space-y-2 sm:space-y-4 pb-4">
                 {messages.map((message) => {
                   const isOwn = message.sender_id === user?.id;
@@ -574,7 +586,14 @@ const Community = () => {
                       className={`flex ${isOwn ? "justify-end" : "justify-start"}`}
                     >
                       <div className={`flex gap-1.5 sm:gap-2 max-w-[90%] sm:max-w-[75%] ${isOwn ? "flex-row-reverse" : "flex-row"}`}>
-                        <Avatar className="h-7 w-7 sm:h-8 sm:w-8 shrink-0">
+                        <Avatar 
+                          className="h-7 w-7 sm:h-8 sm:w-8 shrink-0 cursor-pointer hover:opacity-80 transition-opacity"
+                          onClick={() => {
+                            if (message.profile?.user_id) {
+                              navigate(`/profile?userId=${message.profile.user_id}`);
+                            }
+                          }}
+                        >
                           <AvatarFallback className="bg-gradient-to-br from-primary/20 to-success/20 text-[10px] sm:text-xs">
                             {message.profile?.full_name?.[0] || "?"}
                           </AvatarFallback>
