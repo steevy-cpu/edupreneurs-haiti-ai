@@ -115,11 +115,11 @@ const Index = () => {
               ))}
             </div>
           </div>
-          <div className="flex justify-center items-center relative order-first md:order-last mt-4 sm:mt-0 bg-transparent">
+          <div className="flex justify-center items-center relative order-first md:order-last mt-4 sm:mt-0">
             <img 
               src={ericMain00} 
               alt="Eric - Assistant IA EDUPRENEURS" 
-              className="w-full max-w-[200px] sm:max-w-[280px] md:max-w-md animate-[float_4s_ease-in-out_infinite] drop-shadow-2xl bg-transparent"
+              className="w-full max-w-[200px] sm:max-w-[280px] md:max-w-md animate-[float_4s_ease-in-out_infinite] drop-shadow-2xl"
             />
           </div>
         </div>
@@ -151,11 +151,11 @@ const Index = () => {
                 Système d'instruction entièrement basé sur le programme du MENFP avec des méthodes d'apprentissage technologiques innovantes
               </p>
             </div>
-            <div className="flex-shrink-0 bg-transparent">
+            <div className="flex-shrink-0">
               <img 
                 src={ericPointingRight} 
                 alt="Eric vous guide" 
-                className="w-32 h-32 sm:w-40 sm:h-40 object-contain animate-[float_4s_ease-in-out_infinite] bg-transparent"
+                className="w-32 h-32 sm:w-40 sm:h-40 object-contain animate-[float_4s_ease-in-out_infinite] drop-shadow-2xl"
               />
             </div>
           </div>
