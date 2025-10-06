@@ -494,45 +494,22 @@ const Feed = () => {
         ]);
       }
 
-      // Send message with full post content
-      const authorProfile = selectedPostToShare.profile;
-      const messageContent = `📝 Post partagé de ${authorProfile?.nickname || authorProfile?.full_name || "un utilisateur"}:\n\n${selectedPostToShare.content}${selectedPostToShare.image_url ? '\n\n[Image jointe]' : ''}`;
-
+      // Send message with reference to the shared post
       const { error: messageError } = await supabase
         .from("messages")
         .insert({
           conversation_id: conversationId,
           sender_id: currentUser.id,
-          content: messageContent
+          content: "📝 Post partagé",
+          shared_post_id: selectedPostToShare.id
         });
 
       if (messageError) throw messageError;
-
-      // If post has an image, send it as a separate message
-      if (selectedPostToShare.image_url) {
-        await supabase
-          .from("messages")
-          .insert({
-            conversation_id: conversationId,
-            sender_id: currentUser.id,
-            content: selectedPostToShare.image_url
-          });
-      }
 
       // Record the share
       await supabase
         .from("post_shares")
         .insert({ post_id: selectedPostToShare.id, user_id: currentUser.id });
-
-      if (messageError) throw messageError;
-
-      // Create notification for recipient
-      await supabase.from("notifications").insert({
-        user_id: recipientUserId,
-        actor_id: currentUser.id,
-        type: "message",
-        content: "Vous a envoyé un post"
-      });
 
       toast({
         title: "Succès",

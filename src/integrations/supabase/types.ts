@@ -93,6 +93,7 @@ export type Database = {
           id: string
           read: boolean
           sender_id: string
+          shared_post_id: string | null
         }
         Insert: {
           content: string
@@ -101,6 +102,7 @@ export type Database = {
           id?: string
           read?: boolean
           sender_id: string
+          shared_post_id?: string | null
         }
         Update: {
           content?: string
@@ -109,6 +111,7 @@ export type Database = {
           id?: string
           read?: boolean
           sender_id?: string
+          shared_post_id?: string | null
         }
         Relationships: [
           {
@@ -116,6 +119,13 @@ export type Database = {
             columns: ["conversation_id"]
             isOneToOne: false
             referencedRelation: "conversations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "messages_shared_post_id_fkey"
+            columns: ["shared_post_id"]
+            isOneToOne: false
+            referencedRelation: "posts"
             referencedColumns: ["id"]
           },
         ]

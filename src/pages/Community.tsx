@@ -34,6 +34,14 @@ interface Message {
   sender_id: string;
   created_at: string;
   profile?: Profile;
+  shared_post_id?: string | null;
+  shared_post?: {
+    id: string;
+    content: string;
+    image_url: string | null;
+    user_id: string;
+    profile?: Profile;
+  };
 }
 
 const Community = () => {
@@ -250,10 +258,42 @@ const Community = () => {
       .select("*")
       .in("user_id", senderIds);
 
-    const enrichedMessages = messagesData.map(msg => ({
-      ...msg,
-      profile: profiles?.find(p => p.user_id === msg.sender_id),
-    }));
+    // Get shared post IDs
+    const sharedPostIds = messagesData
+      .filter(m => m.shared_post_id)
+      .map(m => m.shared_post_id);
+
+    let sharedPosts: any[] = [];
+    let sharedPostProfiles: any[] = [];
+
+    if (sharedPostIds.length > 0) {
+      const { data: postsData } = await supabase
+        .from("posts")
+        .select("*")
+        .in("id", sharedPostIds);
+
+      sharedPosts = postsData || [];
+
+      const postUserIds = [...new Set(sharedPosts.map(p => p.user_id))];
+      const { data: postProfilesData } = await supabase
+        .from("profiles")
+        .select("*")
+        .in("user_id", postUserIds);
+
+      sharedPostProfiles = postProfilesData || [];
+    }
+
+    const enrichedMessages = messagesData.map(msg => {
+      const sharedPost = sharedPosts.find(p => p.id === msg.shared_post_id);
+      return {
+        ...msg,
+        profile: profiles?.find(p => p.user_id === msg.sender_id),
+        shared_post: sharedPost ? {
+          ...sharedPost,
+          profile: sharedPostProfiles.find(p => p.user_id === sharedPost.user_id)
+        } : undefined
+      };
+    });
 
     setMessages(enrichedMessages);
   };
@@ -283,13 +323,38 @@ const Community = () => {
             .eq("user_id", payload.new.sender_id)
             .single();
 
+          // Fetch shared post if exists
+          let sharedPost = undefined;
+          if (payload.new.shared_post_id) {
+            const { data: postData } = await supabase
+              .from("posts")
+              .select("*")
+              .eq("id", payload.new.shared_post_id)
+              .single();
+
+            if (postData) {
+              const { data: postProfile } = await supabase
+                .from("profiles")
+                .select("*")
+                .eq("user_id", postData.user_id)
+                .single();
+
+              sharedPost = {
+                ...postData,
+                profile: postProfile
+              };
+            }
+          }
+
           // Add the new message with profile to the messages array
           const newMessage: Message = {
             id: payload.new.id,
             content: payload.new.content,
             sender_id: payload.new.sender_id,
             created_at: payload.new.created_at,
+            shared_post_id: payload.new.shared_post_id,
             profile,
+            shared_post: sharedPost,
           };
 
           setMessages((prev) => [...prev, newMessage]);
@@ -297,8 +362,11 @@ const Community = () => {
           // Show browser notification if message is from another user
           if (payload.new.sender_id !== user?.id && Notification.permission === 'granted') {
             const senderName = profile?.full_name || 'Quelqu\'un';
+            const messageContent = sharedPost 
+              ? `${senderName} vous a partagé un post` 
+              : payload.new.content.substring(0, 100);
             const notification = new Notification(`${senderName} vous a envoyé un message`, {
-              body: payload.new.content.substring(0, 100),
+              body: messageContent,
               icon: '/favicon.ico',
               tag: conversationId,
               requireInteraction: false,
@@ -511,17 +579,47 @@ const Community = () => {
                           </AvatarFallback>
                         </Avatar>
                         <div>
-                          <div
-                            className={`rounded-2xl px-4 py-2 ${
-                              isOwn
-                                ? "bg-primary text-primary-foreground"
-                                : "bg-muted"
-                            }`}
-                          >
-                            <p className="text-sm whitespace-pre-wrap break-words">
-                              {message.content}
-                            </p>
-                          </div>
+                          {message.shared_post ? (
+                            // Shared Post Display
+                            <div
+                              onClick={() => navigate("/feed")}
+                              className={`rounded-2xl px-4 py-3 cursor-pointer hover:opacity-90 transition-opacity ${
+                                isOwn
+                                  ? "bg-primary/90 text-primary-foreground"
+                                  : "bg-muted"
+                              }`}
+                            >
+                              <div className="flex items-center gap-2 mb-2 pb-2 border-b border-border/20">
+                                <span className="text-xs font-semibold opacity-80">
+                                  📝 Post partagé de {message.shared_post.profile?.nickname || message.shared_post.profile?.full_name}
+                                </span>
+                              </div>
+                              <p className="text-sm whitespace-pre-wrap break-words mb-2">
+                                {message.shared_post.content}
+                              </p>
+                              {message.shared_post.image_url && (
+                                <img
+                                  src={message.shared_post.image_url}
+                                  alt="Post"
+                                  className="rounded-lg w-full max-h-48 object-cover"
+                                />
+                              )}
+                              <p className="text-xs opacity-70 mt-2">Cliquez pour voir le post</p>
+                            </div>
+                          ) : (
+                            // Regular Message Display
+                            <div
+                              className={`rounded-2xl px-4 py-2 ${
+                                isOwn
+                                  ? "bg-primary text-primary-foreground"
+                                  : "bg-muted"
+                              }`}
+                            >
+                              <p className="text-sm whitespace-pre-wrap break-words">
+                                {message.content}
+                              </p>
+                            </div>
+                          )}
                           <span className="text-xs text-muted-foreground mt-1 block">
                             {formatTime(message.created_at)}
                           </span>
