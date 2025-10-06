@@ -63,10 +63,10 @@ const Index = () => {
       </header>
 
       {/* Hero Section */}
-      <section id="accueil" className="py-12 sm:py-16 md:py-20 px-4 bg-background">
-        <div className="container mx-auto grid md:grid-cols-2 gap-8 sm:gap-10 items-center">
-          <div className="space-y-4 sm:space-y-6 z-10">
-            <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-black leading-tight">
+      <section id="accueil" className="py-8 sm:py-12 md:py-16 lg:py-20 px-3 sm:px-4 bg-background">
+        <div className="container mx-auto grid md:grid-cols-2 gap-6 sm:gap-8 lg:gap-10 items-center">
+          <div className="space-y-3 sm:space-y-4 lg:space-y-6 z-10">
+            <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-black leading-tight">
               L'Éducation Haïtienne{" "}
               <span className="gradient-text relative">
                 révolutionnée
@@ -74,60 +74,60 @@ const Index = () => {
               </span>{" "}
               par l'Intelligence Artificielle
             </h1>
-            <p className="text-base sm:text-lg text-muted-foreground leading-relaxed">
+            <p className="text-sm sm:text-base lg:text-lg text-muted-foreground leading-relaxed">
               "L'éducation est l'arme la plus puissante pour transformer une nation" - Nelson Mandela. 
               En 2025, le système éducatif haïtien peine encore à répondre aux besoins du pays. 
               EDUPRENEURS change la donne avec un apprentissage entièrement personnalisé, basé sur le programme MENFP.
             </p>
-            <div className="flex flex-wrap gap-3 sm:gap-4">
-              <Link to="/dashboard">
-                <Button size="lg" className="bg-gradient-to-r from-primary to-primary/80 hover:opacity-90 shadow-lg text-sm sm:text-base">
+            <div className="flex flex-col sm:flex-row flex-wrap gap-2 sm:gap-3 lg:gap-4">
+              <Link to="/dashboard" className="w-full sm:w-auto">
+                <Button size="lg" className="w-full sm:w-auto bg-gradient-to-r from-primary to-primary/80 hover:opacity-90 shadow-lg text-xs sm:text-sm lg:text-base">
                   🚀 Commencer Maintenant
                 </Button>
               </Link>
-              <Link to="/auth">
-                <Button size="lg" variant="outline" className="border-primary text-primary hover:bg-primary hover:text-primary-foreground text-sm sm:text-base">
+              <Link to="/auth" className="w-full sm:w-auto">
+                <Button size="lg" variant="outline" className="w-full sm:w-auto border-primary text-primary hover:bg-primary hover:text-primary-foreground text-xs sm:text-sm lg:text-base">
                   📱 Essai Gratuit 7 Jours
                 </Button>
               </Link>
             </div>
-            <div className="flex flex-wrap gap-3 sm:gap-4 pt-4 sm:pt-6">
+            <div className="grid grid-cols-2 sm:flex sm:flex-wrap gap-2 sm:gap-3 lg:gap-4 pt-3 sm:pt-4 lg:pt-6">
               {[
                 { number: "200", label: "Gourdes/mois" },
                 { number: "7j", label: "Essai gratuit" },
                 { number: "24/7", label: "Assistant IA" },
                 { number: "7ème-Term", label: "Tous niveaux" }
               ].map((stat, idx) => (
-                <Card key={idx} className="flex-1 min-w-[80px] sm:min-w-[100px] bg-card/80 backdrop-blur-sm">
-                  <CardContent className="p-3 sm:p-4 text-center">
-                    <div className="text-xl sm:text-2xl font-black text-primary">{stat.number}</div>
-                    <div className="text-[10px] sm:text-xs text-muted-foreground font-semibold uppercase">{stat.label}</div>
+                <Card key={idx} className="flex-1 min-w-0 sm:min-w-[90px] lg:min-w-[100px] bg-card/80 backdrop-blur-sm">
+                  <CardContent className="p-2 sm:p-3 lg:p-4 text-center">
+                    <div className="text-base sm:text-xl lg:text-2xl font-black text-primary">{stat.number}</div>
+                    <div className="text-[9px] sm:text-[10px] lg:text-xs text-muted-foreground font-semibold uppercase leading-tight">{stat.label}</div>
                   </CardContent>
                 </Card>
               ))}
             </div>
           </div>
-          <div className="flex justify-center items-center relative order-first md:order-last">
+          <div className="flex justify-center items-center relative order-first md:order-last mt-4 sm:mt-0">
             <img 
               src={ericMain00} 
               alt="Eric - Assistant IA EDUPRENEURS" 
-              className="w-full max-w-[250px] sm:max-w-md animate-[float_4s_ease-in-out_infinite] drop-shadow-2xl"
+              className="w-full max-w-[200px] sm:max-w-[280px] md:max-w-md animate-[float_4s_ease-in-out_infinite] drop-shadow-2xl"
             />
           </div>
         </div>
       </section>
 
       {/* Revolution Section */}
-      <section className="py-20 px-4 bg-background text-center">
+      <section className="py-12 sm:py-16 lg:py-20 px-3 sm:px-4 bg-background text-center">
         <div className="container mx-auto">
-          <h2 className="text-3xl md:text-5xl font-black text-primary mb-6">
+          <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-black text-primary mb-4 sm:mb-6 leading-tight">
             Une révolution nécessaire pour Haïti
           </h2>
-          <p className="text-lg md:text-xl text-muted-foreground max-w-4xl mx-auto leading-relaxed mb-8">
+          <p className="text-sm sm:text-base md:text-lg lg:text-xl text-muted-foreground max-w-4xl mx-auto leading-relaxed mb-6 sm:mb-8 px-2">
             En 2025, le système éducatif peine à répondre au besoin éducatif. Nous croyons fermement qu'avec les bonnes méthodes 
             et la technologie, le programme du MENFP peut enfin impacter positivement notre jeunesse.
           </p>
-          <img src={heroImage} alt="EDUPRENEURS Logo" className="h-44 rounded-2xl shadow-xl mx-auto" />
+          <img src={heroImage} alt="EDUPRENEURS Logo" className="h-32 sm:h-40 lg:h-44 rounded-xl sm:rounded-2xl shadow-xl mx-auto" />
         </div>
       </section>
 

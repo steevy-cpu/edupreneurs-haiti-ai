@@ -121,69 +121,69 @@ const Dashboard = () => {
   ];
 
   return (
-    <div className="pt-16 sm:pt-20 px-3 sm:px-4 lg:px-8 pb-8">
+    <div className="pt-14 sm:pt-16 px-3 sm:px-4 lg:px-8 pb-8 sm:pb-12">
         {/* Welcome Header */}
-        <div className="bg-gradient-to-br from-[hsl(var(--primary))] to-[hsl(var(--success))] text-white p-6 sm:p-8 rounded-[20px] mb-6 sm:mb-8 relative overflow-hidden">
+        <div className="bg-gradient-to-br from-[hsl(var(--primary))] to-[hsl(var(--success))] text-white p-4 sm:p-6 lg:p-8 rounded-2xl sm:rounded-[20px] mb-4 sm:mb-6 lg:mb-8 relative overflow-hidden">
           <div className="absolute top-0 right-0 w-1/2 h-full opacity-10">
             <div className="w-full h-full bg-gradient-radial from-white/20 to-transparent animate-[float_20s_ease-in-out_infinite]" />
           </div>
           <div className="relative z-10">
-            <h2 className="text-xl sm:text-2xl lg:text-3xl font-bold mb-2">
+            <h2 className="text-lg sm:text-xl lg:text-2xl xl:text-3xl font-bold mb-1 sm:mb-2">
               Bienvenue, <span>{userData.name}</span>!
             </h2>
-            <p className="text-sm sm:text-base opacity-75">
+            <p className="text-xs sm:text-sm lg:text-base opacity-75 leading-relaxed">
               Continuez votre apprentissage personnalisé avec Eric, votre assistant IA
             </p>
           </div>
         </div>
 
         {/* KPI Cards */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-5 mb-6 sm:mb-8">
-          <Card className="border-none rounded-[16px] sm:rounded-[20px] shadow-md hover:shadow-lg hover:-translate-y-2 transition-all duration-300 relative overflow-hidden group">
-            <CardContent className="p-4 sm:p-7 text-center">
-              <div className="w-10 h-10 sm:w-14 sm:h-14 rounded-xl sm:rounded-2xl bg-gradient-to-br from-[hsl(var(--accent))] to-[hsl(25_100%_50%)] flex items-center justify-center text-white text-xl sm:text-2xl mx-auto mb-2 sm:mb-4">
-                <Coins className="w-5 h-5 sm:w-6 sm:h-6" />
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3 lg:gap-5 mb-4 sm:mb-6 lg:mb-8">
+          <Card className="border-none rounded-xl sm:rounded-2xl lg:rounded-[20px] shadow-md hover:shadow-lg hover:-translate-y-1 sm:hover:-translate-y-2 transition-all duration-300 relative overflow-hidden group">
+            <CardContent className="p-3 sm:p-5 lg:p-7 text-center">
+              <div className="w-8 h-8 sm:w-10 sm:h-10 lg:w-14 lg:h-14 rounded-lg sm:rounded-xl lg:rounded-2xl bg-gradient-to-br from-[hsl(var(--accent))] to-[hsl(25_100%_50%)] flex items-center justify-center text-white text-base sm:text-xl lg:text-2xl mx-auto mb-1.5 sm:mb-2 lg:mb-4">
+                <Coins className="w-4 h-4 sm:w-5 sm:h-5 lg:w-6 lg:h-6" />
               </div>
-              <div className="text-2xl sm:text-3xl font-extrabold bg-gradient-to-br from-[hsl(var(--primary))] to-[hsl(var(--success))] bg-clip-text text-transparent mb-1 sm:mb-2">
+              <div className="text-xl sm:text-2xl lg:text-3xl font-extrabold bg-gradient-to-br from-[hsl(var(--primary))] to-[hsl(var(--success))] bg-clip-text text-transparent mb-0.5 sm:mb-1 lg:mb-2">
                 {goldEarned}
               </div>
-              <div className="text-xs sm:text-sm font-semibold text-muted-foreground">Golds gagnés</div>
+              <div className="text-[10px] sm:text-xs lg:text-sm font-semibold text-muted-foreground">Golds gagnés</div>
             </CardContent>
           </Card>
 
-          <Card className="border-none rounded-[16px] sm:rounded-[20px] shadow-md hover:shadow-lg hover:-translate-y-2 transition-all duration-300 relative overflow-hidden group">
-            <CardContent className="p-4 sm:p-7 text-center">
-              <div className="w-10 h-10 sm:w-14 sm:h-14 rounded-xl sm:rounded-2xl bg-gradient-to-br from-[hsl(var(--primary))] to-[hsl(var(--success))] flex items-center justify-center text-white text-xl sm:text-2xl mx-auto mb-2 sm:mb-4">
-                <UserCheck className="w-5 h-5 sm:w-6 sm:h-6" />
+          <Card className="border-none rounded-xl sm:rounded-2xl lg:rounded-[20px] shadow-md hover:shadow-lg hover:-translate-y-1 sm:hover:-translate-y-2 transition-all duration-300 relative overflow-hidden group">
+            <CardContent className="p-3 sm:p-5 lg:p-7 text-center">
+              <div className="w-8 h-8 sm:w-10 sm:h-10 lg:w-14 lg:h-14 rounded-lg sm:rounded-xl lg:rounded-2xl bg-gradient-to-br from-[hsl(var(--primary))] to-[hsl(var(--success))] flex items-center justify-center text-white text-base sm:text-xl lg:text-2xl mx-auto mb-1.5 sm:mb-2 lg:mb-4">
+                <UserCheck className="w-4 h-4 sm:w-5 sm:h-5 lg:w-6 lg:h-6" />
               </div>
-              <div className="text-2xl sm:text-3xl font-extrabold bg-gradient-to-br from-[hsl(var(--primary))] to-[hsl(var(--success))] bg-clip-text text-transparent mb-1 sm:mb-2">
+              <div className="text-xl sm:text-2xl lg:text-3xl font-extrabold bg-gradient-to-br from-[hsl(var(--primary))] to-[hsl(var(--success))] bg-clip-text text-transparent mb-0.5 sm:mb-1 lg:mb-2">
                 {userData.affiliations}
               </div>
-              <div className="text-xs sm:text-sm font-semibold text-muted-foreground">Affiliations</div>
+              <div className="text-[10px] sm:text-xs lg:text-sm font-semibold text-muted-foreground">Affiliations</div>
             </CardContent>
           </Card>
 
-          <Card className="border-none rounded-[16px] sm:rounded-[20px] shadow-md hover:shadow-lg hover:-translate-y-2 transition-all duration-300 relative overflow-hidden group">
-            <CardContent className="p-4 sm:p-7 text-center">
-              <div className="w-10 h-10 sm:w-14 sm:h-14 rounded-xl sm:rounded-2xl bg-gradient-to-br from-[hsl(var(--success))] to-[hsl(160_84%_32%)] flex items-center justify-center text-white text-xl sm:text-2xl mx-auto mb-2 sm:mb-4">
-                <ChartLine className="w-5 h-5 sm:w-6 sm:h-6" />
+          <Card className="border-none rounded-xl sm:rounded-2xl lg:rounded-[20px] shadow-md hover:shadow-lg hover:-translate-y-1 sm:hover:-translate-y-2 transition-all duration-300 relative overflow-hidden group">
+            <CardContent className="p-3 sm:p-5 lg:p-7 text-center">
+              <div className="w-8 h-8 sm:w-10 sm:h-10 lg:w-14 lg:h-14 rounded-lg sm:rounded-xl lg:rounded-2xl bg-gradient-to-br from-[hsl(var(--success))] to-[hsl(160_84%_32%)] flex items-center justify-center text-white text-base sm:text-xl lg:text-2xl mx-auto mb-1.5 sm:mb-2 lg:mb-4">
+                <ChartLine className="w-4 h-4 sm:w-5 sm:h-5 lg:w-6 lg:h-6" />
               </div>
-              <div className="text-2xl sm:text-3xl font-extrabold bg-gradient-to-br from-[hsl(var(--primary))] to-[hsl(var(--success))] bg-clip-text text-transparent mb-1 sm:mb-2">
+              <div className="text-xl sm:text-2xl lg:text-3xl font-extrabold bg-gradient-to-br from-[hsl(var(--primary))] to-[hsl(var(--success))] bg-clip-text text-transparent mb-0.5 sm:mb-1 lg:mb-2">
                 {userData.progress}%
               </div>
-              <div className="text-xs sm:text-sm font-semibold text-muted-foreground">Progression</div>
+              <div className="text-[10px] sm:text-xs lg:text-sm font-semibold text-muted-foreground">Progression</div>
             </CardContent>
           </Card>
 
-          <Card className="border-none rounded-[16px] sm:rounded-[20px] shadow-md hover:shadow-lg hover:-translate-y-2 transition-all duration-300 relative overflow-hidden group">
-            <CardContent className="p-4 sm:p-7 text-center">
-              <div className="w-10 h-10 sm:w-14 sm:h-14 rounded-xl sm:rounded-2xl bg-gradient-to-br from-[hsl(262_83%_58%)] to-[hsl(262_83%_50%)] flex items-center justify-center text-white text-xl sm:text-2xl mx-auto mb-2 sm:mb-4">
-                <CreditCard className="w-5 h-5 sm:w-6 sm:h-6" />
+          <Card className="border-none rounded-xl sm:rounded-2xl lg:rounded-[20px] shadow-md hover:shadow-lg hover:-translate-y-1 sm:hover:-translate-y-2 transition-all duration-300 relative overflow-hidden group">
+            <CardContent className="p-3 sm:p-5 lg:p-7 text-center">
+              <div className="w-8 h-8 sm:w-10 sm:h-10 lg:w-14 lg:h-14 rounded-lg sm:rounded-xl lg:rounded-2xl bg-gradient-to-br from-[hsl(262_83%_58%)] to-[hsl(262_83%_50%)] flex items-center justify-center text-white text-base sm:text-xl lg:text-2xl mx-auto mb-1.5 sm:mb-2 lg:mb-4">
+                <CreditCard className="w-4 h-4 sm:w-5 sm:h-5 lg:w-6 lg:h-6" />
               </div>
-              <div className="text-xl sm:text-3xl font-extrabold bg-gradient-to-br from-[hsl(var(--primary))] to-[hsl(var(--success))] bg-clip-text text-transparent mb-1 sm:mb-2">
+              <div className="text-base sm:text-xl lg:text-2xl xl:text-3xl font-extrabold bg-gradient-to-br from-[hsl(var(--primary))] to-[hsl(var(--success))] bg-clip-text text-transparent mb-0.5 sm:mb-1 lg:mb-2">
                 200 HTG
               </div>
-              <div className="text-xs sm:text-sm font-semibold text-muted-foreground">Abonnement / mois</div>
+              <div className="text-[10px] sm:text-xs lg:text-sm font-semibold text-muted-foreground">Abonnement / mois</div>
             </CardContent>
           </Card>
         </div>
