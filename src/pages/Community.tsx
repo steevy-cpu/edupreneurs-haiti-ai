@@ -614,7 +614,7 @@ const Community = () => {
                                   📝 Post partagé de {message.shared_post.profile?.nickname || message.shared_post.profile?.full_name}
                                 </span>
                               </div>
-                              <p className="text-xs sm:text-sm whitespace-pre-wrap break-words mb-2">
+                              <p className="text-xs sm:text-sm whitespace-pre-wrap break-all mb-2">
                                 {message.shared_post.content}
                               </p>
                               {message.shared_post.image_url && (
@@ -635,7 +635,7 @@ const Community = () => {
                                   : "bg-muted"
                               }`}
                             >
-                              <p className="text-xs sm:text-sm whitespace-pre-wrap break-words">
+                              <p className="text-xs sm:text-sm whitespace-pre-wrap break-all">
                                 {message.content}
                               </p>
                             </div>
