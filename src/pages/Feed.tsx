@@ -73,6 +73,10 @@ const Feed = () => {
   const [replyingTo, setReplyingTo] = useState<{ [key: string]: string | null }>({});
   const [deletePostId, setDeletePostId] = useState<string | null>(null);
   const [deleteCommentId, setDeleteCommentId] = useState<string | null>(null);
+  const [shareDialogOpen, setShareDialogOpen] = useState(false);
+  const [selectedPostToShare, setSelectedPostToShare] = useState<Post | null>(null);
+  const [followingUsers, setFollowingUsers] = useState<Profile[]>([]);
+  const [sendingMessage, setSendingMessage] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -411,6 +415,126 @@ const Feed = () => {
     });
   };
 
+  const openShareDialog = async (post: Post) => {
+    setSelectedPostToShare(post);
+    
+    // Fetch users that current user is following
+    const { data: followsData, error } = await supabase
+      .from("follows")
+      .select("following_id")
+      .eq("follower_id", currentUser.id)
+      .eq("status", "accepted");
+
+    if (error) {
+      console.error("Error fetching follows:", error);
+      return;
+    }
+
+    const followingIds = followsData?.map(f => f.following_id) || [];
+    
+    if (followingIds.length === 0) {
+      toast({
+        title: "Aucun contact",
+        description: "Vous ne suivez personne pour le moment",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    const { data: profilesData } = await supabase
+      .from("profiles")
+      .select("*")
+      .in("user_id", followingIds);
+
+    setFollowingUsers(profilesData || []);
+    setShareDialogOpen(true);
+  };
+
+  const sendPostAsMessage = async (recipientUserId: string) => {
+    if (!currentUser || !selectedPostToShare) return;
+
+    setSendingMessage(true);
+
+    try {
+      // Find existing conversation or create new one
+      const { data: existingConversations } = await supabase
+        .from("conversation_participants")
+        .select("conversation_id")
+        .eq("user_id", currentUser.id);
+
+      let conversationId: string | null = null;
+
+      if (existingConversations) {
+        for (const conv of existingConversations) {
+          const { data: participants } = await supabase
+            .from("conversation_participants")
+            .select("user_id")
+            .eq("conversation_id", conv.conversation_id);
+
+          const userIds = participants?.map(p => p.user_id) || [];
+          if (userIds.length === 2 && userIds.includes(recipientUserId)) {
+            conversationId = conv.conversation_id;
+            break;
+          }
+        }
+      }
+
+      // Create new conversation if none exists
+      if (!conversationId) {
+        const { data: newConv, error: convError } = await supabase
+          .rpc("create_conversation");
+
+        if (convError) throw convError;
+        conversationId = newConv;
+
+        // Add participants
+        await supabase.from("conversation_participants").insert([
+          { conversation_id: conversationId, user_id: currentUser.id },
+          { conversation_id: conversationId, user_id: recipientUserId }
+        ]);
+      }
+
+      // Send message with post reference
+      const postUrl = `${window.location.origin}/feed#post-${selectedPostToShare.id}`;
+      const messageContent = `📝 Post partagé:\n"${selectedPostToShare.content.substring(0, 100)}${selectedPostToShare.content.length > 100 ? '...' : ''}"\n\n${postUrl}`;
+
+      const { error: messageError } = await supabase
+        .from("messages")
+        .insert({
+          conversation_id: conversationId,
+          sender_id: currentUser.id,
+          content: messageContent
+        });
+
+      if (messageError) throw messageError;
+
+      // Create notification for recipient
+      await supabase.from("notifications").insert({
+        user_id: recipientUserId,
+        actor_id: currentUser.id,
+        type: "message",
+        content: "Vous a envoyé un post"
+      });
+
+      toast({
+        title: "Succès",
+        description: "Post envoyé en message"
+      });
+
+      setShareDialogOpen(false);
+      setSelectedPostToShare(null);
+    } catch (error) {
+      console.error("Error sending message:", error);
+      toast({
+        title: "Erreur",
+        description: "Impossible d'envoyer le message",
+        variant: "destructive"
+      });
+    } finally {
+      setSendingMessage(false);
+    }
+  };
+
   const toggleShare = async (postId: string, isCurrentlyShared: boolean) => {
     if (!currentUser) return;
 
@@ -746,16 +870,12 @@ const Feed = () => {
                   </button>
 
                   <button 
-                    onClick={() => toggleShare(post.id, post.isShared || false)}
+                    onClick={() => openShareDialog(post)}
                     className="flex items-center gap-2 group ml-auto"
                   >
                     <Share2
                       size={20}
-                      className={`transition-colors ${
-                        post.isShared
-                          ? "fill-primary text-primary"
-                          : "text-foreground group-hover:text-primary"
-                      }`}
+                      className="text-foreground group-hover:text-primary transition-colors"
                     />
                     {post.shareCount ? (
                       <span className="text-sm text-muted-foreground">
@@ -855,6 +975,38 @@ const Feed = () => {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* Share Post Dialog */}
+      <Dialog open={shareDialogOpen} onOpenChange={setShareDialogOpen}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>Partager le post</DialogTitle>
+          </DialogHeader>
+          <ScrollArea className="max-h-[400px] pr-4">
+            <div className="space-y-2">
+              {followingUsers.map((user) => (
+                <button
+                  key={user.id}
+                  onClick={() => sendPostAsMessage(user.user_id)}
+                  disabled={sendingMessage}
+                  className="w-full flex items-center gap-3 p-3 rounded-lg hover:bg-accent transition-colors disabled:opacity-50"
+                >
+                  <Avatar>
+                    <AvatarFallback>
+                      {user.nickname?.[0] || user.full_name?.[0] || "?"}
+                    </AvatarFallback>
+                  </Avatar>
+                  <div className="flex-1 text-left">
+                    <p className="font-medium">{user.nickname || user.full_name}</p>
+                    <p className="text-sm text-muted-foreground">{user.full_name}</p>
+                  </div>
+                  <Send size={16} className="text-muted-foreground" />
+                </button>
+              ))}
+            </div>
+          </ScrollArea>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
