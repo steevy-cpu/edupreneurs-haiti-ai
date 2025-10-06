@@ -20,6 +20,7 @@ import Notifications from "./pages/Notifications";
 import MathCourse from "./pages/MathCourse";
 import MathLesson from "./pages/MathLesson";
 import Affiliations from "./pages/Affiliations";
+import Leaderboard from "./pages/Leaderboard";
 import Settings from "./pages/Settings";
 import NotFound from "./pages/NotFound";
 
@@ -48,6 +49,7 @@ const App = () => (
             <Route path="/math-course" element={<Layout><MathCourse /></Layout>} />
             <Route path="/math-lesson/:topicId" element={<Layout><MathLesson /></Layout>} />
             <Route path="/affiliations" element={<Layout><Affiliations /></Layout>} />
+            <Route path="/leaderboard" element={<Layout><Leaderboard /></Layout>} />
             <Route path="/settings" element={<Layout><Settings /></Layout>} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />

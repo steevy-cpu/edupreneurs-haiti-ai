@@ -15,6 +15,7 @@ import {
   MessageSquare,
   Search,
   Bell,
+  Trophy,
 } from "lucide-react";
 import dashboardImage from "@/assets/dashboard00.png";
 import { EricChatbot } from "@/components/EricChatbot";
@@ -282,6 +283,17 @@ export const Layout = ({ children }: LayoutProps) => {
           >
             <LinkIcon size={18} />
             Affiliations
+          </a>
+          <a 
+            href="/leaderboard" 
+            className={`flex items-center gap-3 px-5 py-3.5 mx-3 my-1 rounded-xl font-medium transition-all duration-300 ${
+              isActive("/leaderboard") 
+                ? "bg-gradient-to-br from-[hsl(var(--primary))] to-[hsl(var(--success))] text-white" 
+                : "text-foreground hover:bg-gradient-to-br hover:from-[hsl(var(--primary))] hover:to-[hsl(var(--success))] hover:text-white hover:translate-x-1"
+            }`}
+          >
+            <Trophy size={18} />
+            Classement
           </a>
           <a 
             href="/settings" 
