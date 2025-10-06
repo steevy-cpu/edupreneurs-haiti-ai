@@ -334,6 +334,7 @@ export type Database = {
           created_at: string | null
           email_confirmed: boolean | null
           full_name: string
+          gender: string | null
           gold_earned: number
           id: string
           nickname: string
@@ -353,6 +354,7 @@ export type Database = {
           created_at?: string | null
           email_confirmed?: boolean | null
           full_name: string
+          gender?: string | null
           gold_earned?: number
           id?: string
           nickname: string
@@ -372,6 +374,7 @@ export type Database = {
           created_at?: string | null
           email_confirmed?: boolean | null
           full_name?: string
+          gender?: string | null
           gold_earned?: number
           id?: string
           nickname?: string

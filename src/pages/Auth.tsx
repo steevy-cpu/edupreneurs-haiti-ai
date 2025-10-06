@@ -17,14 +17,19 @@ export default function Auth() {
   const [referralCode, setReferralCode] = useState<string | null>(null);
   const [signupData, setSignupData] = useState({
     email: "",
+    emailConfirm: "",
     fullName: "",
     nickname: "",
     academicGrade: "",
     phoneNumber: "",
     password: "",
+    school: "",
+    gender: "",
     privacy: false,
     payment: "",
   });
+  const [nicknameAvailable, setNicknameAvailable] = useState<boolean | null>(null);
+  const [checkingNickname, setCheckingNickname] = useState(false);
   const [verificationData, setVerificationData] = useState({
     userId: "",
     email: "",
@@ -113,14 +118,57 @@ export default function Auth() {
     }
   };
 
+  const checkNicknameAvailability = async (nickname: string) => {
+    if (!nickname || nickname.length < 3) {
+      setNicknameAvailable(null);
+      return;
+    }
+
+    setCheckingNickname(true);
+    try {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('nickname')
+        .eq('nickname', nickname)
+        .maybeSingle();
+
+      if (error) throw error;
+      setNicknameAvailable(!data);
+    } catch (error) {
+      console.error("Error checking nickname:", error);
+      setNicknameAvailable(null);
+    } finally {
+      setCheckingNickname(false);
+    }
+  };
+
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!signupData.email || !signupData.password || !signupData.nickname || 
-        !signupData.academicGrade || !signupData.phoneNumber) {
+    if (!signupData.email || !signupData.emailConfirm || !signupData.password || 
+        !signupData.nickname || !signupData.academicGrade || !signupData.phoneNumber ||
+        !signupData.school || !signupData.gender) {
       toast({
         title: "Champs requis",
         description: "Veuillez remplir tous les champs obligatoires",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (signupData.email !== signupData.emailConfirm) {
+      toast({
+        title: "Emails ne correspondent pas",
+        description: "Veuillez vérifier que les deux emails sont identiques",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (nicknameAvailable === false) {
+      toast({
+        title: "Pseudo non disponible",
+        description: "Ce pseudo est déjà utilisé, veuillez en choisir un autre",
         variant: "destructive",
       });
       return;
@@ -148,6 +196,8 @@ export default function Auth() {
           nickname: signupData.nickname,
           academic_grade: signupData.academicGrade,
           phone_number: signupData.phoneNumber,
+          school: signupData.school,
+          gender: signupData.gender,
           confirmation_code: confirmationCode,
           email_confirmed: false,
           phone_confirmed: false,
@@ -434,18 +484,32 @@ export default function Auth() {
                         />
                       </div>
                       <div className="space-y-2">
-                        <Label htmlFor="signup-password" className="text-sm text-muted-foreground">
-                          Mot de passe *
+                        <Label htmlFor="signup-email-confirm" className="text-sm text-muted-foreground">
+                          Confirmer l'e-mail *
                         </Label>
                         <Input
-                          id="signup-password"
-                          type="password"
+                          id="signup-email-confirm"
+                          type="email"
                           required
-                          value={signupData.password}
-                          onChange={(e) => setSignupData({ ...signupData, password: e.target.value })}
+                          value={signupData.emailConfirm}
+                          onChange={(e) => setSignupData({ ...signupData, emailConfirm: e.target.value })}
                           className="auth-input"
                         />
                       </div>
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="signup-password" className="text-sm text-muted-foreground">
+                        Mot de passe *
+                      </Label>
+                      <Input
+                        id="signup-password"
+                        type="password"
+                        required
+                        value={signupData.password}
+                        onChange={(e) => setSignupData({ ...signupData, password: e.target.value })}
+                        className="auth-input"
+                      />
                     </div>
 
                     <div className="grid md:grid-cols-2 gap-3">
@@ -470,9 +534,21 @@ export default function Auth() {
                           type="text"
                           required
                           value={signupData.nickname}
-                          onChange={(e) => setSignupData({ ...signupData, nickname: e.target.value })}
+                          onChange={(e) => {
+                            setSignupData({ ...signupData, nickname: e.target.value });
+                            checkNicknameAvailability(e.target.value);
+                          }}
                           className="auth-input"
                         />
+                        {checkingNickname && (
+                          <p className="text-xs text-muted-foreground">Vérification...</p>
+                        )}
+                        {nicknameAvailable === false && (
+                          <p className="text-xs text-destructive">Ce pseudo est déjà utilisé</p>
+                        )}
+                        {nicknameAvailable === true && (
+                          <p className="text-xs text-success">Ce pseudo est disponible ✓</p>
+                        )}
                       </div>
                     </div>
 
@@ -513,6 +589,39 @@ export default function Auth() {
                       </div>
                     </div>
 
+                    <div className="grid md:grid-cols-2 gap-3">
+                      <div className="space-y-2">
+                        <Label htmlFor="signup-school" className="text-sm text-muted-foreground">
+                          Nom de l'école *
+                        </Label>
+                        <Input
+                          id="signup-school"
+                          type="text"
+                          required
+                          placeholder="ex: Lycée Alexandre Pétion"
+                          value={signupData.school}
+                          onChange={(e) => setSignupData({ ...signupData, school: e.target.value })}
+                          className="auth-input"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="signup-gender" className="text-sm text-muted-foreground">
+                          Genre *
+                        </Label>
+                        <select
+                          id="signup-gender"
+                          required
+                          value={signupData.gender}
+                          onChange={(e) => setSignupData({ ...signupData, gender: e.target.value })}
+                          className="auth-input flex h-10 w-full rounded-lg border border-input bg-muted/50 px-3 py-2 text-sm"
+                        >
+                          <option value="">Sélectionnez…</option>
+                          <option value="Masculin">Masculin</option>
+                          <option value="Féminin">Féminin</option>
+                        </select>
+                      </div>
+                    </div>
+
                     <div className="flex items-center gap-2.5">
                       <input
                         type="checkbox"
@@ -523,7 +632,11 @@ export default function Auth() {
                         className="w-4 h-4"
                       />
                       <Label htmlFor="privacy" className="text-sm text-muted-foreground">
-                        J'accepte les politiques de confidentialité.
+                        J'accepte les{" "}
+                        <Link to="/privacy-policy" className="text-primary underline" target="_blank">
+                          politiques de confidentialité
+                        </Link>
+                        .
                       </Label>
                     </div>
 
