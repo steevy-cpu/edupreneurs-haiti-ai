@@ -192,27 +192,28 @@ export default function Profile() {
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      <div className="max-w-2xl mx-auto p-4 space-y-6">
+    <div className="min-h-screen bg-background pb-20">
+      <div className="max-w-2xl mx-auto p-3 sm:p-4 space-y-4 sm:space-y-6">
         <Button
           variant="ghost"
           onClick={() => navigate(-1)}
-          className="mb-4"
+          className="mb-2 sm:mb-4"
+          size="sm"
         >
           <ArrowLeft className="w-4 h-4 mr-2" />
           Back
         </Button>
 
-        <Card className="p-8">
-          <div className="flex flex-col items-center space-y-4">
-            <Avatar className="w-32 h-32">
+        <Card className="p-4 sm:p-8">
+          <div className="flex flex-col items-center space-y-3 sm:space-y-4">
+            <Avatar className="w-24 h-24 sm:w-32 sm:h-32">
               <AvatarImage src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${profile.nickname}`} />
               <AvatarFallback>{profile.nickname[0].toUpperCase()}</AvatarFallback>
             </Avatar>
 
-            <div className="text-center space-y-2">
-              <h1 className="text-3xl font-bold">{profile.nickname}</h1>
-              <p className="text-muted-foreground">{profile.full_name}</p>
+            <div className="text-center space-y-1 sm:space-y-2">
+              <h1 className="text-2xl sm:text-3xl font-bold">{profile.nickname}</h1>
+              <p className="text-sm sm:text-base text-muted-foreground">{profile.full_name}</p>
             </div>
 
             <div className="flex gap-8 py-4">

@@ -121,69 +121,69 @@ const Dashboard = () => {
   ];
 
   return (
-    <div className="pt-20 px-4 lg:px-8 pb-8">
+    <div className="pt-16 sm:pt-20 px-3 sm:px-4 lg:px-8 pb-8">
         {/* Welcome Header */}
-        <div className="bg-gradient-to-br from-[hsl(var(--primary))] to-[hsl(var(--success))] text-white p-8 rounded-[20px] mb-8 relative overflow-hidden">
+        <div className="bg-gradient-to-br from-[hsl(var(--primary))] to-[hsl(var(--success))] text-white p-6 sm:p-8 rounded-[20px] mb-6 sm:mb-8 relative overflow-hidden">
           <div className="absolute top-0 right-0 w-1/2 h-full opacity-10">
             <div className="w-full h-full bg-gradient-radial from-white/20 to-transparent animate-[float_20s_ease-in-out_infinite]" />
           </div>
           <div className="relative z-10">
-            <h2 className="text-2xl lg:text-3xl font-bold mb-2">
+            <h2 className="text-xl sm:text-2xl lg:text-3xl font-bold mb-2">
               Bienvenue, <span>{userData.name}</span>!
             </h2>
-            <p className="opacity-75">
+            <p className="text-sm sm:text-base opacity-75">
               Continuez votre apprentissage personnalisé avec Eric, votre assistant IA
             </p>
           </div>
         </div>
 
         {/* KPI Cards */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 mb-8">
-          <Card className="border-none rounded-[20px] shadow-md hover:shadow-lg hover:-translate-y-2 transition-all duration-300 relative overflow-hidden group">
-            <CardContent className="p-7 text-center">
-              <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-[hsl(var(--accent))] to-[hsl(25_100%_50%)] flex items-center justify-center text-white text-2xl mx-auto mb-4">
-                <Coins />
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-5 mb-6 sm:mb-8">
+          <Card className="border-none rounded-[16px] sm:rounded-[20px] shadow-md hover:shadow-lg hover:-translate-y-2 transition-all duration-300 relative overflow-hidden group">
+            <CardContent className="p-4 sm:p-7 text-center">
+              <div className="w-10 h-10 sm:w-14 sm:h-14 rounded-xl sm:rounded-2xl bg-gradient-to-br from-[hsl(var(--accent))] to-[hsl(25_100%_50%)] flex items-center justify-center text-white text-xl sm:text-2xl mx-auto mb-2 sm:mb-4">
+                <Coins className="w-5 h-5 sm:w-6 sm:h-6" />
               </div>
-              <div className="text-3xl font-extrabold bg-gradient-to-br from-[hsl(var(--primary))] to-[hsl(var(--success))] bg-clip-text text-transparent mb-2">
+              <div className="text-2xl sm:text-3xl font-extrabold bg-gradient-to-br from-[hsl(var(--primary))] to-[hsl(var(--success))] bg-clip-text text-transparent mb-1 sm:mb-2">
                 {goldEarned}
               </div>
-              <div className="text-sm font-semibold text-muted-foreground">Golds gagnés</div>
+              <div className="text-xs sm:text-sm font-semibold text-muted-foreground">Golds gagnés</div>
             </CardContent>
           </Card>
 
-          <Card className="border-none rounded-[20px] shadow-md hover:shadow-lg hover:-translate-y-2 transition-all duration-300 relative overflow-hidden group">
-            <CardContent className="p-7 text-center">
-              <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-[hsl(var(--primary))] to-[hsl(var(--success))] flex items-center justify-center text-white text-2xl mx-auto mb-4">
-                <UserCheck />
+          <Card className="border-none rounded-[16px] sm:rounded-[20px] shadow-md hover:shadow-lg hover:-translate-y-2 transition-all duration-300 relative overflow-hidden group">
+            <CardContent className="p-4 sm:p-7 text-center">
+              <div className="w-10 h-10 sm:w-14 sm:h-14 rounded-xl sm:rounded-2xl bg-gradient-to-br from-[hsl(var(--primary))] to-[hsl(var(--success))] flex items-center justify-center text-white text-xl sm:text-2xl mx-auto mb-2 sm:mb-4">
+                <UserCheck className="w-5 h-5 sm:w-6 sm:h-6" />
               </div>
-              <div className="text-3xl font-extrabold bg-gradient-to-br from-[hsl(var(--primary))] to-[hsl(var(--success))] bg-clip-text text-transparent mb-2">
+              <div className="text-2xl sm:text-3xl font-extrabold bg-gradient-to-br from-[hsl(var(--primary))] to-[hsl(var(--success))] bg-clip-text text-transparent mb-1 sm:mb-2">
                 {userData.affiliations}
               </div>
-              <div className="text-sm font-semibold text-muted-foreground">Affiliations</div>
+              <div className="text-xs sm:text-sm font-semibold text-muted-foreground">Affiliations</div>
             </CardContent>
           </Card>
 
-          <Card className="border-none rounded-[20px] shadow-md hover:shadow-lg hover:-translate-y-2 transition-all duration-300 relative overflow-hidden group">
-            <CardContent className="p-7 text-center">
-              <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-[hsl(var(--success))] to-[hsl(160_84%_32%)] flex items-center justify-center text-white text-2xl mx-auto mb-4">
-                <ChartLine />
+          <Card className="border-none rounded-[16px] sm:rounded-[20px] shadow-md hover:shadow-lg hover:-translate-y-2 transition-all duration-300 relative overflow-hidden group">
+            <CardContent className="p-4 sm:p-7 text-center">
+              <div className="w-10 h-10 sm:w-14 sm:h-14 rounded-xl sm:rounded-2xl bg-gradient-to-br from-[hsl(var(--success))] to-[hsl(160_84%_32%)] flex items-center justify-center text-white text-xl sm:text-2xl mx-auto mb-2 sm:mb-4">
+                <ChartLine className="w-5 h-5 sm:w-6 sm:h-6" />
               </div>
-              <div className="text-3xl font-extrabold bg-gradient-to-br from-[hsl(var(--primary))] to-[hsl(var(--success))] bg-clip-text text-transparent mb-2">
+              <div className="text-2xl sm:text-3xl font-extrabold bg-gradient-to-br from-[hsl(var(--primary))] to-[hsl(var(--success))] bg-clip-text text-transparent mb-1 sm:mb-2">
                 {userData.progress}%
               </div>
-              <div className="text-sm font-semibold text-muted-foreground">Progression</div>
+              <div className="text-xs sm:text-sm font-semibold text-muted-foreground">Progression</div>
             </CardContent>
           </Card>
 
-          <Card className="border-none rounded-[20px] shadow-md hover:shadow-lg hover:-translate-y-2 transition-all duration-300 relative overflow-hidden group">
-            <CardContent className="p-7 text-center">
-              <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-[hsl(262_83%_58%)] to-[hsl(262_83%_50%)] flex items-center justify-center text-white text-2xl mx-auto mb-4">
-                <CreditCard />
+          <Card className="border-none rounded-[16px] sm:rounded-[20px] shadow-md hover:shadow-lg hover:-translate-y-2 transition-all duration-300 relative overflow-hidden group">
+            <CardContent className="p-4 sm:p-7 text-center">
+              <div className="w-10 h-10 sm:w-14 sm:h-14 rounded-xl sm:rounded-2xl bg-gradient-to-br from-[hsl(262_83%_58%)] to-[hsl(262_83%_50%)] flex items-center justify-center text-white text-xl sm:text-2xl mx-auto mb-2 sm:mb-4">
+                <CreditCard className="w-5 h-5 sm:w-6 sm:h-6" />
               </div>
-              <div className="text-3xl font-extrabold bg-gradient-to-br from-[hsl(var(--primary))] to-[hsl(var(--success))] bg-clip-text text-transparent mb-2">
+              <div className="text-xl sm:text-3xl font-extrabold bg-gradient-to-br from-[hsl(var(--primary))] to-[hsl(var(--success))] bg-clip-text text-transparent mb-1 sm:mb-2">
                 200 HTG
               </div>
-              <div className="text-sm font-semibold text-muted-foreground">Abonnement / mois</div>
+              <div className="text-xs sm:text-sm font-semibold text-muted-foreground">Abonnement / mois</div>
             </CardContent>
           </Card>
         </div>

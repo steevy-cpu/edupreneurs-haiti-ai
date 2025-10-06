@@ -469,18 +469,19 @@ const Community = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background flex">
+    <div className="min-h-screen bg-background flex pb-16 md:pb-0">
       {/* Conversations List */}
-      <div className={`${selectedConversation ? "hidden md:block" : "block"} w-full md:w-96 border-r border-border/50`}>
-        <div className="sticky top-0 z-50 border-b border-border/50 bg-background/95 backdrop-blur p-4">
-          <div className="flex items-center justify-between mb-3">
-            <h1 className="text-xl font-semibold">Messages</h1>
+      <div className={`${selectedConversation ? "hidden md:block" : "block"} w-full md:w-80 lg:w-96 border-r border-border/50`}>
+        <div className="sticky top-0 z-50 border-b border-border/50 bg-background/95 backdrop-blur p-3 sm:p-4">
+          <div className="flex items-center justify-between mb-2 sm:mb-3">
+            <h1 className="text-lg sm:text-xl font-semibold">Messages</h1>
             <Button
               size="icon"
               variant="ghost"
               onClick={() => navigate("/user-search")}
+              className="shrink-0"
             >
-              <Search size={20} />
+              <Search size={18} className="sm:w-5 sm:h-5" />
             </Button>
           </div>
         </div>
@@ -501,32 +502,32 @@ const Community = () => {
               <div
                 key={conv.id}
                 onClick={() => setSelectedConversation(conv.id)}
-                className={`flex items-center gap-3 p-4 cursor-pointer hover:bg-muted/30 transition-colors border-b border-border/50 ${
+                className={`flex items-center gap-2 sm:gap-3 p-3 sm:p-4 cursor-pointer hover:bg-muted/30 transition-colors border-b border-border/50 ${
                   selectedConversation === conv.id ? "bg-muted/50" : ""
                 }`}
               >
-                <Avatar className="h-12 w-12">
-                  <AvatarFallback className="bg-gradient-to-br from-primary/20 to-success/20">
+                <Avatar className="h-10 w-10 sm:h-12 sm:w-12 shrink-0">
+                  <AvatarFallback className="bg-gradient-to-br from-primary/20 to-success/20 text-sm sm:text-base">
                     {conv.otherUser?.full_name?.[0] || "?"}
                   </AvatarFallback>
                 </Avatar>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2">
-                    <p className="font-semibold truncate">
+                    <p className="font-semibold truncate text-sm sm:text-base">
                       {conv.otherUser?.full_name || "Utilisateur"}
                     </p>
                     {conv.unreadCount && conv.unreadCount > 0 && (
-                      <span className="flex items-center justify-center h-5 min-w-[20px] px-1.5 rounded-full bg-primary text-primary-foreground text-xs font-semibold">
+                      <span className="flex items-center justify-center h-4 sm:h-5 min-w-[16px] sm:min-w-[20px] px-1 sm:px-1.5 rounded-full bg-primary text-primary-foreground text-[10px] sm:text-xs font-semibold">
                         {conv.unreadCount}
                       </span>
                     )}
                   </div>
-                  <p className="text-sm text-muted-foreground truncate">
+                  <p className="text-xs sm:text-sm text-muted-foreground truncate">
                     {conv.lastMessage || "Aucun message"}
                   </p>
                 </div>
                 {conv.lastMessageTime && (
-                  <span className="text-xs text-muted-foreground">
+                  <span className="text-[10px] sm:text-xs text-muted-foreground shrink-0">
                     {formatTime(conv.lastMessageTime)}
                   </span>
                 )}
@@ -541,30 +542,30 @@ const Community = () => {
         {selectedConversation ? (
           <>
             {/* Header */}
-            <div className="sticky top-0 z-50 border-b border-border/50 bg-background/95 backdrop-blur p-4 flex items-center gap-3">
+            <div className="sticky top-0 z-50 border-b border-border/50 bg-background/95 backdrop-blur p-3 sm:p-4 flex items-center gap-2 sm:gap-3">
               <Button
                 size="icon"
                 variant="ghost"
-                className="md:hidden"
+                className="md:hidden shrink-0"
                 onClick={() => setSelectedConversation(null)}
               >
-                <ArrowLeft size={20} />
+                <ArrowLeft size={18} className="sm:w-5 sm:h-5" />
               </Button>
-              <Avatar className="h-10 w-10">
-                <AvatarFallback className="bg-gradient-to-br from-primary/20 to-success/20">
+              <Avatar className="h-9 w-9 sm:h-10 sm:w-10 shrink-0">
+                <AvatarFallback className="bg-gradient-to-br from-primary/20 to-success/20 text-sm sm:text-base">
                   {conversations.find(c => c.id === selectedConversation)?.otherUser?.full_name?.[0] || "?"}
                 </AvatarFallback>
               </Avatar>
-              <div>
-                <p className="font-semibold">
+              <div className="min-w-0 flex-1">
+                <p className="font-semibold text-sm sm:text-base truncate">
                   {conversations.find(c => c.id === selectedConversation)?.otherUser?.full_name || "Utilisateur"}
                 </p>
               </div>
             </div>
 
             {/* Messages */}
-            <ScrollArea className="flex-1 p-4">
-              <div className="space-y-4 pb-4">
+            <ScrollArea className="flex-1 p-3 sm:p-4">
+              <div className="space-y-3 sm:space-y-4 pb-4">
                 {messages.map((message) => {
                   const isOwn = message.sender_id === user?.id;
                   return (
@@ -572,9 +573,9 @@ const Community = () => {
                       key={message.id}
                       className={`flex ${isOwn ? "justify-end" : "justify-start"}`}
                     >
-                      <div className={`flex gap-2 max-w-[70%] ${isOwn ? "flex-row-reverse" : "flex-row"}`}>
-                        <Avatar className="h-8 w-8">
-                          <AvatarFallback className="bg-gradient-to-br from-primary/20 to-success/20 text-xs">
+                      <div className={`flex gap-1.5 sm:gap-2 max-w-[85%] sm:max-w-[70%] ${isOwn ? "flex-row-reverse" : "flex-row"}`}>
+                        <Avatar className="h-7 w-7 sm:h-8 sm:w-8 shrink-0">
+                          <AvatarFallback className="bg-gradient-to-br from-primary/20 to-success/20 text-[10px] sm:text-xs">
                             {message.profile?.full_name?.[0] || "?"}
                           </AvatarFallback>
                         </Avatar>

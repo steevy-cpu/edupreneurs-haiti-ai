@@ -202,70 +202,71 @@ const MathCourse = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background pb-20">
       {/* Header */}
       <header className="border-b border-border bg-card/30 backdrop-blur-sm sticky top-0 z-50">
-        <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
+        <div className="container mx-auto px-3 sm:px-4 py-3 sm:py-4">
+          <div className="flex items-center justify-between gap-2">
+            <div className="flex items-center gap-2 sm:gap-4 min-w-0">
               <Button
                 variant="ghost"
                 size="icon"
                 onClick={() => navigate('/dashboard')}
+                className="shrink-0"
               >
-                <ArrowLeft className="w-5 h-5" />
+                <ArrowLeft className="w-4 h-4 sm:w-5 sm:h-5" />
               </Button>
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-secondary flex items-center justify-center">
-                  <GraduationCap className="w-6 h-6 text-white" />
+              <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+                <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-gradient-to-br from-primary to-secondary flex items-center justify-center shrink-0">
+                  <GraduationCap className="w-4 h-4 sm:w-6 sm:h-6 text-white" />
                 </div>
-                <div>
-                  <h1 className="text-xl font-bold">Mathématiques 📐</h1>
-                  <p className="text-sm text-muted-foreground">Niveau AF7</p>
+                <div className="min-w-0">
+                  <h1 className="text-base sm:text-xl font-bold truncate">Mathématiques 📐</h1>
+                  <p className="text-xs sm:text-sm text-muted-foreground">Niveau AF7</p>
                 </div>
               </div>
             </div>
-            <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-accent/10 border border-accent/20">
-              <Trophy className="w-5 h-5 text-accent" />
-              <span className="font-bold gold-text">{userGold}</span>
+            <div className="flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-4 py-1.5 sm:py-2 rounded-full bg-accent/10 border border-accent/20 shrink-0">
+              <Trophy className="w-4 h-4 sm:w-5 sm:h-5 text-accent" />
+              <span className="font-bold gold-text text-sm sm:text-base">{userGold}</span>
             </div>
           </div>
         </div>
       </header>
 
-      <div className="container mx-auto px-4 py-8 max-w-6xl">
+      <div className="container mx-auto px-3 sm:px-4 py-6 sm:py-8 max-w-6xl">
         {/* Course Overview */}
-        <div className="mb-8">
-          <h2 className="text-3xl font-bold mb-2">Programme MENFP - AF7</h2>
-          <p className="text-lg text-muted-foreground">
+        <div className="mb-6 sm:mb-8">
+          <h2 className="text-2xl sm:text-3xl font-bold mb-2">Programme MENFP - AF7</h2>
+          <p className="text-base sm:text-lg text-muted-foreground">
             Suis le programme officiel du MENFP avec des leçons interactives, des jeux et des quiz! 🎮
           </p>
-          <p className="text-sm text-muted-foreground mt-2">
+          <p className="text-xs sm:text-sm text-muted-foreground mt-2">
             16 chapitres couvrant l'algèbre, la géométrie, les mesures et les applications 📚
           </p>
         </div>
 
         {/* Topics Grid */}
-        <div className="grid md:grid-cols-2 gap-6">
+        <div className="grid sm:grid-cols-2 gap-4 sm:gap-6">
           {topics.map((topic) => (
             <Card 
               key={topic.id}
-              className={`p-6 transition-all ${
+              className={`p-4 sm:p-6 transition-all ${
                 topic.isLocked 
                   ? 'opacity-60 cursor-not-allowed' 
                   : 'hover:shadow-lg cursor-pointer hover:-translate-y-1'
               }`}
               onClick={() => !topic.isLocked && navigate(`/math-lesson/${topic.id}`)}
             >
-              <div className="flex items-start gap-4">
-                <div className="text-5xl">{topic.icon}</div>
-                <div className="flex-1">
-                  <div className="flex items-center gap-2 mb-2">
-                    <h3 className="text-xl font-bold">{topic.title}</h3>
-                    {topic.isLocked && <Lock className="w-4 h-4 text-muted-foreground" />}
-                    {topic.isCompleted && <CheckCircle className="w-5 h-5 text-success" />}
+              <div className="flex items-start gap-3 sm:gap-4">
+                <div className="text-3xl sm:text-5xl shrink-0">{topic.icon}</div>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2 mb-2 flex-wrap">
+                    <h3 className="text-lg sm:text-xl font-bold">{topic.title}</h3>
+                    {topic.isLocked && <Lock className="w-3 h-3 sm:w-4 sm:h-4 text-muted-foreground shrink-0" />}
+                    {topic.isCompleted && <CheckCircle className="w-4 h-4 sm:w-5 sm:h-5 text-success shrink-0" />}
                   </div>
-                  <p className="text-sm text-muted-foreground mb-4">
+                  <p className="text-xs sm:text-sm text-muted-foreground mb-3 sm:mb-4">
                     {topic.description}
                   </p>
 

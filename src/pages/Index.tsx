@@ -63,55 +63,55 @@ const Index = () => {
       </header>
 
       {/* Hero Section */}
-      <section id="accueil" className="py-16 md:py-20 px-4 bg-background">
-        <div className="container mx-auto grid md:grid-cols-2 gap-10 items-center">
-          <div className="space-y-6 z-10">
-            <h1 className="text-4xl md:text-5xl lg:text-6xl font-black leading-tight">
+      <section id="accueil" className="py-12 sm:py-16 md:py-20 px-4 bg-background">
+        <div className="container mx-auto grid md:grid-cols-2 gap-8 sm:gap-10 items-center">
+          <div className="space-y-4 sm:space-y-6 z-10">
+            <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-black leading-tight">
               L'Éducation Haïtienne{" "}
               <span className="gradient-text relative">
                 révolutionnée
-                <span className="absolute -right-8 -top-2 text-2xl animate-pulse">✨</span>
+                <span className="absolute -right-6 sm:-right-8 -top-2 text-xl sm:text-2xl animate-pulse">✨</span>
               </span>{" "}
               par l'Intelligence Artificielle
             </h1>
-            <p className="text-lg text-muted-foreground leading-relaxed">
+            <p className="text-base sm:text-lg text-muted-foreground leading-relaxed">
               "L'éducation est l'arme la plus puissante pour transformer une nation" - Nelson Mandela. 
               En 2025, le système éducatif haïtien peine encore à répondre aux besoins du pays. 
               EDUPRENEURS change la donne avec un apprentissage entièrement personnalisé, basé sur le programme MENFP.
             </p>
-            <div className="flex flex-wrap gap-4">
+            <div className="flex flex-wrap gap-3 sm:gap-4">
               <Link to="/dashboard">
-                <Button size="lg" className="bg-gradient-to-r from-primary to-primary/80 hover:opacity-90 shadow-lg">
+                <Button size="lg" className="bg-gradient-to-r from-primary to-primary/80 hover:opacity-90 shadow-lg text-sm sm:text-base">
                   🚀 Commencer Maintenant
                 </Button>
               </Link>
               <Link to="/auth">
-                <Button size="lg" variant="outline" className="border-primary text-primary hover:bg-primary hover:text-primary-foreground">
+                <Button size="lg" variant="outline" className="border-primary text-primary hover:bg-primary hover:text-primary-foreground text-sm sm:text-base">
                   📱 Essai Gratuit 7 Jours
                 </Button>
               </Link>
             </div>
-            <div className="flex flex-wrap gap-4 pt-6">
+            <div className="flex flex-wrap gap-3 sm:gap-4 pt-4 sm:pt-6">
               {[
                 { number: "200", label: "Gourdes/mois" },
                 { number: "7j", label: "Essai gratuit" },
                 { number: "24/7", label: "Assistant IA" },
                 { number: "7ème-Term", label: "Tous niveaux" }
               ].map((stat, idx) => (
-                <Card key={idx} className="flex-1 min-w-[100px] bg-card/80 backdrop-blur-sm">
-                  <CardContent className="p-4 text-center">
-                    <div className="text-2xl font-black text-primary">{stat.number}</div>
-                    <div className="text-xs text-muted-foreground font-semibold uppercase">{stat.label}</div>
+                <Card key={idx} className="flex-1 min-w-[80px] sm:min-w-[100px] bg-card/80 backdrop-blur-sm">
+                  <CardContent className="p-3 sm:p-4 text-center">
+                    <div className="text-xl sm:text-2xl font-black text-primary">{stat.number}</div>
+                    <div className="text-[10px] sm:text-xs text-muted-foreground font-semibold uppercase">{stat.label}</div>
                   </CardContent>
                 </Card>
               ))}
             </div>
           </div>
-          <div className="flex justify-center items-center relative">
+          <div className="flex justify-center items-center relative order-first md:order-last">
             <img 
               src={ericMain00} 
               alt="Eric - Assistant IA EDUPRENEURS" 
-              className="w-full max-w-md animate-[float_4s_ease-in-out_infinite] drop-shadow-2xl"
+              className="w-full max-w-[250px] sm:max-w-md animate-[float_4s_ease-in-out_infinite] drop-shadow-2xl"
             />
           </div>
         </div>
@@ -132,15 +132,15 @@ const Index = () => {
       </section>
 
       {/* Features Highlight */}
-      <section id="features" className="py-20 px-4 bg-background">
+      <section id="features" className="py-12 sm:py-16 md:py-20 px-4 bg-background">
         <div className="container mx-auto">
-          <h2 className="text-3xl md:text-4xl font-black text-center text-primary mb-4">
+          <h2 className="text-2xl sm:text-3xl md:text-4xl font-black text-center text-primary mb-3 sm:mb-4">
             🇭🇹 Projet Phare 2025 : Révolutionner l'Éducation Haïtienne
           </h2>
-          <p className="text-center text-muted-foreground mb-12 max-w-3xl mx-auto">
+          <p className="text-sm sm:text-base text-center text-muted-foreground mb-8 sm:mb-12 max-w-3xl mx-auto px-4">
             Système d'instruction entièrement basé sur le programme du MENFP avec des méthodes d'apprentissage technologiques innovantes
           </p>
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
             {[
               { icon: "🎯", title: "Apprentissage 100% Personnalisé", desc: "L'agent IA s'adapte à votre niveau, de la 7ème à la préparation universitaire" },
               { icon: "💰", title: "Prix Dérisoire - 200 Gdes/mois", desc: "Accessible à tous avec une semaine d'essai gratuite" },
@@ -148,12 +148,12 @@ const Index = () => {
               { icon: "🌐", title: "Multilingue Intelligent", desc: "Créole, Français, Anglais, Espagnol - Votre IA parle votre langue" }
             ].map((feature, idx) => (
               <Card key={idx} className="hover:scale-105 transition-transform duration-300 card-glow">
-                <CardHeader>
-                  <div className="text-5xl mb-4">{feature.icon}</div>
-                  <CardTitle className="text-xl">{feature.title}</CardTitle>
+                <CardHeader className="p-4 sm:p-6">
+                  <div className="text-4xl sm:text-5xl mb-3 sm:mb-4">{feature.icon}</div>
+                  <CardTitle className="text-lg sm:text-xl">{feature.title}</CardTitle>
                 </CardHeader>
-                <CardContent>
-                  <p className="text-muted-foreground">{feature.desc}</p>
+                <CardContent className="p-4 sm:p-6 pt-0">
+                  <p className="text-sm sm:text-base text-muted-foreground">{feature.desc}</p>
                 </CardContent>
               </Card>
             ))}
@@ -162,15 +162,15 @@ const Index = () => {
       </section>
 
       {/* Categories */}
-      <section className="py-20 px-4 bg-background">
+      <section className="py-12 sm:py-16 md:py-20 px-4 bg-background">
         <div className="container mx-auto">
-          <h2 className="text-3xl md:text-4xl font-bold text-center mb-4">
+          <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-center mb-3 sm:mb-4">
             🎯 Comment ça marche : <span className="text-primary">Apprentissage personnalisé avec Eric</span>
           </h2>
-          <p className="text-center text-muted-foreground mb-12 max-w-2xl mx-auto">
+          <p className="text-sm sm:text-base text-center text-muted-foreground mb-8 sm:mb-12 max-w-2xl mx-auto px-4">
             Votre assistant IA personnalisé vous accompagne dans chaque matière du programme MENFP
           </p>
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
             {[
               { 
                 icon: "🤖", 
@@ -230,15 +230,15 @@ const Index = () => {
       </section>
 
       {/* Courses */}
-      <section id="courses" className="py-20 px-4 bg-background">
+      <section id="courses" className="py-12 sm:py-16 md:py-20 px-4 bg-background">
         <div className="container mx-auto">
-          <h2 className="text-3xl md:text-4xl font-black text-center text-primary mb-4">
+          <h2 className="text-2xl sm:text-3xl md:text-4xl font-black text-center text-primary mb-3 sm:mb-4">
             📚 Nos cours disponibles
           </h2>
-          <p className="text-center text-muted-foreground mb-12 max-w-3xl mx-auto">
+          <p className="text-sm sm:text-base text-center text-muted-foreground mb-8 sm:mb-12 max-w-3xl mx-auto px-4">
             Programme complet du MENFP de la 7ème à la Terminale, avec préparation universitaire
           </p>
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
             {[
               { icon: "🔢", title: "Mathématiques", desc: "Algèbre, géométrie, statistiques, probabilités. Tous les chapitres du programme MENFP avec explications simples et quiz amusants.", levels: ["7ème - Terminale", "Prépa Université"] },
               { icon: "📝", title: "Français", desc: "Grammaire, conjugaison, expression écrite et orale. Maîtrisez la langue française avec votre assistant IA personnalisé.", levels: ["7ème - Terminale", "Prépa Université"] },
@@ -298,9 +298,9 @@ const Index = () => {
       </section>
 
       {/* FAQ */}
-      <section className="py-20 px-4 bg-background">
+      <section className="py-12 sm:py-16 md:py-20 px-4 bg-background">
         <div className="container mx-auto max-w-3xl">
-          <h2 className="text-3xl md:text-4xl font-bold text-center mb-12">Questions fréquentes</h2>
+          <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-center mb-8 sm:mb-12">Questions fréquentes</h2>
           <div className="space-y-4">
             {[
               { q: "Comment m'inscrire à EDUPRENEURS ?", a: "Créez un compte avec votre email, choisissez votre niveau académique et profitez de votre semaine d'essai gratuite. Ensuite, abonnez-vous pour seulement 200 gourdes par mois." },

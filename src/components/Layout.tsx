@@ -153,9 +153,9 @@ export const Layout = ({ children }: LayoutProps) => {
       {/* Menu Toggle Button */}
       <button
         onClick={() => setSidebarOpen(!sidebarOpen)}
-        className={`fixed top-5 left-5 z-[1001] bg-gradient-to-br from-[hsl(var(--primary))] to-[hsl(var(--success))] text-white p-3 rounded-xl shadow-md hover:shadow-lg transition-all duration-300 hover:scale-105 ${sidebarOpen ? "lg:left-[300px]" : ""}`}
+        className={`fixed top-4 left-4 z-[1001] bg-gradient-to-br from-[hsl(var(--primary))] to-[hsl(var(--success))] text-white p-2.5 sm:p-3 rounded-xl shadow-md hover:shadow-lg transition-all duration-300 hover:scale-105 ${sidebarOpen ? "lg:left-[300px]" : ""}`}
       >
-        {sidebarOpen ? <X size={20} /> : <Menu size={20} />}
+        {sidebarOpen ? <X size={18} className="sm:w-5 sm:h-5" /> : <Menu size={18} className="sm:w-5 sm:h-5" />}
       </button>
 
       {/* Sidebar Overlay */}
@@ -167,7 +167,7 @@ export const Layout = ({ children }: LayoutProps) => {
       )}
 
       {/* Sidebar */}
-      <div className={`fixed top-0 left-0 h-screen w-[280px] bg-card border-r border-border shadow-lg z-[1000] transition-transform duration-300 overflow-y-auto ${sidebarOpen ? "translate-x-0" : "-translate-x-full"}`}>
+      <div className={`fixed top-0 left-0 h-screen w-[260px] sm:w-[280px] bg-card border-r border-border shadow-lg z-[1000] transition-transform duration-300 overflow-y-auto ${sidebarOpen ? "translate-x-0" : "-translate-x-full"}`}>
         {/* Sidebar Header */}
         <div className="bg-gradient-to-br from-[hsl(var(--primary))] to-[hsl(var(--success))] text-white p-5 border-b border-white/10 flex items-center justify-between">
           <div className="text-lg font-bold">EDUPRENEURS</div>
