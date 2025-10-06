@@ -20,10 +20,10 @@ const Index = () => {
     <div className="min-h-screen bg-background">
       {/* Header */}
       <header className="sticky top-0 z-50 bg-card/80 backdrop-blur-md border-b border-border shadow-sm">
-        <div className="container mx-auto px-4 py-4 flex justify-between items-center">
-          <Link to="/" className="flex items-center gap-3">
-            <img src={heroImage} alt="EDUPRENEURS Logo" className="h-10 rounded-lg shadow-sm" />
-            <span className="text-xl font-bold text-primary">EDUPRENEURS</span>
+        <div className="container mx-auto px-2 sm:px-4 py-2 sm:py-4 flex justify-between items-center">
+          <Link to="/" className="flex items-center gap-1.5 sm:gap-3">
+            <img src={heroImage} alt="EDUPRENEURS Logo" className="h-7 sm:h-10 rounded-lg shadow-sm hidden sm:block" />
+            <span className="text-sm sm:text-lg md:text-xl font-bold text-primary">EDUPRENEURS</span>
           </Link>
           
           <nav className="hidden md:flex items-center gap-6">
@@ -33,18 +33,18 @@ const Index = () => {
             <a href="#about" className="text-foreground hover:text-primary transition-colors font-medium">À propos</a>
           </nav>
 
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-1 sm:gap-2 md:gap-3">
             <ThemeToggle />
-            <Link to="/auth">
-              <Button className="bg-gradient-to-r from-accent to-yellow-500 hover:opacity-90">
+            <Link to="/auth" className="hidden sm:inline-block">
+              <Button size="sm" className="bg-gradient-to-r from-accent to-yellow-500 hover:opacity-90 text-xs sm:text-sm">
                 Se connecter
               </Button>
             </Link>
             <button 
-              className="md:hidden p-2"
+              className="md:hidden p-1.5 sm:p-2"
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
             >
-              {mobileMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+              {mobileMenuOpen ? <X className="h-5 w-5 sm:h-6 sm:w-6" /> : <Menu className="h-5 w-5 sm:h-6 sm:w-6" />}
             </button>
           </div>
         </div>
@@ -52,11 +52,16 @@ const Index = () => {
         {/* Mobile Menu */}
         {mobileMenuOpen && (
           <div className="md:hidden bg-card border-t border-border">
-            <nav className="flex flex-col p-4 gap-2">
-              <a href="#accueil" className="py-2 px-4 hover:bg-muted rounded-md transition-colors" onClick={() => setMobileMenuOpen(false)}>Accueil</a>
-              <a href="#features" className="py-2 px-4 hover:bg-muted rounded-md transition-colors" onClick={() => setMobileMenuOpen(false)}>Fonctionnalités</a>
-              <a href="#courses" className="py-2 px-4 hover:bg-muted rounded-md transition-colors" onClick={() => setMobileMenuOpen(false)}>Cours</a>
-              <a href="#about" className="py-2 px-4 hover:bg-muted rounded-md transition-colors" onClick={() => setMobileMenuOpen(false)}>À propos</a>
+            <nav className="flex flex-col p-3 gap-2">
+              <a href="#accueil" className="py-2 px-3 hover:bg-muted rounded-md transition-colors text-sm" onClick={() => setMobileMenuOpen(false)}>Accueil</a>
+              <a href="#features" className="py-2 px-3 hover:bg-muted rounded-md transition-colors text-sm" onClick={() => setMobileMenuOpen(false)}>Fonctionnalités</a>
+              <a href="#courses" className="py-2 px-3 hover:bg-muted rounded-md transition-colors text-sm" onClick={() => setMobileMenuOpen(false)}>Cours</a>
+              <a href="#about" className="py-2 px-3 hover:bg-muted rounded-md transition-colors text-sm" onClick={() => setMobileMenuOpen(false)}>À propos</a>
+              <Link to="/auth" className="sm:hidden">
+                <Button size="sm" className="w-full bg-gradient-to-r from-accent to-yellow-500 hover:opacity-90 text-sm">
+                  Se connecter
+                </Button>
+              </Link>
             </nav>
           </div>
         )}

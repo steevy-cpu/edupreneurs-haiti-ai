@@ -634,17 +634,17 @@ const Community = () => {
             </ScrollArea>
 
             {/* Message Input */}
-            <div className="border-t border-border/50 p-4">
-              <div className="flex gap-2">
+            <div className="border-t border-border/50 p-2 sm:p-4">
+              <div className="flex gap-1.5 sm:gap-2">
                 <Popover open={showEmojiPicker} onOpenChange={setShowEmojiPicker}>
                   <PopoverTrigger asChild>
                     <Button
                       type="button"
                       variant="ghost"
                       size="icon"
-                      className="shrink-0"
+                      className="shrink-0 h-8 w-8 sm:h-10 sm:w-10"
                     >
-                      <Smile size={20} />
+                      <Smile size={18} className="sm:w-5 sm:h-5" />
                     </Button>
                   </PopoverTrigger>
                   <PopoverContent className="w-full p-0 border-0" align="start">
@@ -668,13 +668,15 @@ const Community = () => {
                       sendMessage();
                     }
                   }}
+                  className="text-sm sm:text-base"
                 />
                 <Button
                   size="icon"
                   onClick={sendMessage}
                   disabled={!newMessage.trim() || isSending}
+                  className="shrink-0 h-8 w-8 sm:h-10 sm:w-10"
                 >
-                  <Send size={20} />
+                  <Send size={18} className="sm:w-5 sm:h-5" />
                 </Button>
               </div>
             </div>
