@@ -26,7 +26,7 @@ import {
   Users,
   UserCheck,
 } from "lucide-react";
-import ericArmsCrossed from "@/assets/eric-arms-crossed.png";
+import ericArmsCrossed from "@/assets/eric-main01.png";
 import {
   AlertDialog,
   AlertDialogAction,

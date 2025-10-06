@@ -5,7 +5,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Trophy, Medal, Award, Crown } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
-import ericCelebrating from "@/assets/eric-celebrating.png";
+import ericCelebrating from "@/assets/eric-main01.png";
 
 interface LeaderboardUser {
   id: string;

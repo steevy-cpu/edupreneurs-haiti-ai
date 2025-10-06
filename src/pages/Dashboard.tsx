@@ -12,7 +12,7 @@ import {
   BookOpen,
   Calendar
 } from "lucide-react";
-import ericThumbsUp from "@/assets/eric-thumbs-up.png";
+import ericThumbsUp from "@/assets/eric-main01.png";
 
 interface Note {
   id: string;

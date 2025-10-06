@@ -5,8 +5,8 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import ericMain00 from "@/assets/eric-main00.png";
 import ericMain01 from "@/assets/eric-main01.png";
 import ericWelcome from "@/assets/eric-welcome.png";
-import ericThinking from "@/assets/eric-thinking.png";
-import ericPointingRight from "@/assets/eric-pointing-right.png";
+import ericThinking from "@/assets/eric-main01.png";
+import ericPointingRight from "@/assets/eric-main01.png";
 import heroImage from "@/assets/hero-education.jpg";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { Menu, X } from "lucide-react";

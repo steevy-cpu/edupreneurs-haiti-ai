@@ -26,7 +26,7 @@ import {
   Share2,
 } from "lucide-react";
 import dashboardImage from "@/assets/dashboard00.png";
-import ericExcited from "@/assets/eric-excited.png";
+import ericExcited from "@/assets/eric-main01.png";
 
 interface UserProfile {
   id: string;

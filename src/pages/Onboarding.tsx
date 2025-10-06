@@ -7,7 +7,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Sparkles, ArrowRight, BookOpen, Target } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
-import ericWaving from "@/assets/eric-waving.png";
+import ericWaving from "@/assets/eric-main01.png";
 
 const subjects = [
   { id: "math", name: "Mathématiques", icon: "📐" },
