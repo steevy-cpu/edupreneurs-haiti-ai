@@ -22,6 +22,7 @@ import MathLesson from "./pages/MathLesson";
 import Affiliations from "./pages/Affiliations";
 import Leaderboard from "./pages/Leaderboard";
 import Settings from "./pages/Settings";
+import Resources from "./pages/Resources";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -51,6 +52,7 @@ const App = () => (
             <Route path="/affiliations" element={<Layout><Affiliations /></Layout>} />
             <Route path="/leaderboard" element={<Layout><Leaderboard /></Layout>} />
             <Route path="/settings" element={<Layout><Settings /></Layout>} />
+            <Route path="/resources" element={<Layout><Resources /></Layout>} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
