@@ -76,6 +76,14 @@ export const EricChatbot = () => {
         content: data.response, 
         sender: "eric" 
       }]);
+
+      // Handle navigation if present
+      if (data.navigate) {
+        console.log('Navigating to:', data.navigate);
+        setTimeout(() => {
+          window.location.href = data.navigate;
+        }, 1500); // Wait 1.5s so user can read the message
+      }
     } catch (error) {
       console.error('Error sending message:', error);
       toast({

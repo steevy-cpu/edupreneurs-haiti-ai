@@ -12,7 +12,7 @@ serve(async (req) => {
   }
 
   try {
-    const { message, lessonType = 'activites' } = await req.json();
+    const { message, lessonType = 'activites', chatHistory = [] } = await req.json();
     const GEMINI_API_KEY = Deno.env.get('GEMINI_API_KEY');
 
     if (!GEMINI_API_KEY) {
@@ -29,6 +29,33 @@ serve(async (req) => {
 - Expliquer des concepts de mathématiques, sciences, langues, histoire, géographie, etc.
 - Donner des méthodes d'apprentissage et d'enseignement efficaces
 - Encourager et motiver les étudiants dans leur parcours éducatif
+- Guider les utilisateurs dans la plateforme Edupreneurs
+
+📱 NAVIGATION DE LA PLATEFORME EDUPRENEURS:
+Tu peux diriger les utilisateurs vers différentes pages en utilisant la commande NAVIGATE. Voici les pages disponibles:
+
+- /dashboard - Tableau de bord principal (accueil)
+- /matieres - Liste de toutes les matières disponibles
+- /cours/mathematiques - Cours de mathématiques avec leçons
+- /feed - Fil d'actualité de la communauté
+- /community - Page communauté pour voir les utilisateurs
+- /leaderboard - Classement des meilleurs étudiants
+- /profile - Profil de l'utilisateur
+- /settings - Paramètres du compte
+- /notifications - Notifications
+- /affiliations - Programme d'affiliation et parrainage
+
+Pour naviguer, utilise ce format EXACT:
+[NAVIGATE:/chemin/de/la/page]
+
+Exemple: "Je vais vous rediriger vers vos cours de mathématiques ! [NAVIGATE:/cours/mathematiques]"
+
+🏫 À PROPOS DE LA PLATEFORME EDUPRENEURS:
+- Plateforme éducative créée par deux jeunes passionnés: **Djoodooson Florent** et **Steeve Andolf Celestin**
+- Mission: Démocratiser l'éducation en Haïti et dans le monde francophone
+- Offre des cours interactifs, exercices, quiz et une communauté d'apprentissage
+- Système de points et récompenses pour encourager l'apprentissage
+- Programme d'affiliation pour récompenser les parrainages
 
 ✅ SUJETS QUE TU PEUX TRAITER:
 - Toutes les matières scolaires (maths, français, sciences, histoire, etc.)
@@ -38,6 +65,7 @@ serve(async (req) => {
 - Gestion d'établissements scolaires
 - Pédagogie et méthodologie d'enseignement
 - Orientation académique et professionnelle dans l'éducation
+- Questions sur la plateforme Edupreneurs et son utilisation
 
 ❌ SUJETS HORS DE TA COMPÉTENCE:
 Si on te demande quelque chose qui n'a RIEN à voir avec l'éducation, les études ou l'edupreneuriat, réponds POLIMENT:
@@ -53,6 +81,13 @@ Avez-vous une question sur vos cours, devoirs, ou projets éducatifs ?"
 - Donne des exemples concrets et contextualisés
 - En FRANÇAIS STANDARD uniquement
 - Encourage toujours l'élève à progresser
+- Utilise la navigation quand c'est pertinent pour aider l'utilisateur
+
+🎯 QUESTIONS FRÉQUENTES À ANTICIPER:
+- "Qui a créé Edupreneurs?" → Mentionne Djoodooson Florent et Steeve Andolf Celestin
+- "Comment utiliser la plateforme?" → Explique et navigue vers la page appropriée
+- "Où trouver mes cours?" → Dirige vers /matieres ou /cours/mathematiques
+- "Comment gagner des points?" → Explique le système de récompenses
 
 RAPPEL IMPORTANT: Si la question n'est PAS liée à l'éducation, aux études, ou à l'edupreneuriat, utilise le message de refus poli ci-dessus.`,
 
@@ -181,11 +216,26 @@ RÈGLES ABSOLUES:
     // Clean asterisks from the response
     aiResponse = aiResponse.replace(/\*\*/g, '').replace(/\*/g, '');
 
+    // Extract navigation command if present
+    let navigationPath = null;
+    const navMatch = aiResponse.match(/\[NAVIGATE:(\/[^\]]+)\]/);
+    if (navMatch) {
+      navigationPath = navMatch[1];
+      // Remove the navigation command from the visible response
+      aiResponse = aiResponse.replace(/\[NAVIGATE:\/[^\]]+\]/g, '').trim();
+    }
+
     console.log('Generated response length:', aiResponse.length);
     console.log('First 200 chars:', aiResponse.substring(0, 200));
+    if (navigationPath) {
+      console.log('Navigation detected:', navigationPath);
+    }
 
     return new Response(
-      JSON.stringify({ response: aiResponse }),
+      JSON.stringify({ 
+        response: aiResponse,
+        navigate: navigationPath 
+      }),
       {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       }
