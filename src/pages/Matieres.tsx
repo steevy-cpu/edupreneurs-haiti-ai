@@ -20,6 +20,7 @@ import {
 } from "lucide-react";
 import { EricChatbot } from "@/components/EricChatbot";
 import ericPointingImage from "@/assets/eric-right-pointing.png";
+import ericTeaching from "@/assets/eric-teaching.png";
 
 type GradeLevel = "AF7" | "AF8" | "AF9" | "NS1" | "NS2" | "NS3" | "NS4";
 
@@ -157,7 +158,7 @@ export default function Matieres() {
         </div>
       </nav>
 
-      {/* Hero Header */}
+      {/* Hero Header with Eric */}
       <div className="relative bg-gradient-to-r from-primary to-primary-dark text-primary-foreground pt-32 pb-16 overflow-hidden">
         <div className="absolute inset-0 opacity-10">
           <div className="absolute inset-0" style={{
@@ -166,27 +167,36 @@ export default function Matieres() {
         </div>
         
         <div className="container mx-auto px-4 relative z-10">
-          <div className="text-center max-w-3xl mx-auto">
-            <h1 className="text-5xl font-bold mb-4 flex items-center justify-center gap-3">
-              <GraduationCap className="w-12 h-12" />
-              Programmes Académiques
-            </h1>
-            <p className="text-xl opacity-90 mb-6">
-              Explorez nos matières du programme haïtien - De la 7ème année fondamentale à la 4ème secondaire
-            </p>
-            <div className="flex gap-3 justify-center flex-wrap">
-              <Badge variant="secondary" className="px-4 py-2 text-sm">
-                <Flag className="w-4 h-4 mr-2" />
-                Aligné MENFP
-              </Badge>
-              <Badge variant="secondary" className="px-4 py-2 text-sm">
-                <Globe className="w-4 h-4 mr-2" />
-                FR / HT
-              </Badge>
-              <Badge variant="secondary" className="px-4 py-2 text-sm">
-                <Award className="w-4 h-4 mr-2" />
-                Certifié
-              </Badge>
+          <div className="flex flex-col md:flex-row items-center gap-8">
+            <div className="flex-1 text-center md:text-left">
+              <h1 className="text-5xl font-bold mb-4 flex items-center justify-center md:justify-start gap-3">
+                <GraduationCap className="w-12 h-12" />
+                Programmes Académiques
+              </h1>
+              <p className="text-xl opacity-90 mb-6">
+                Explorez nos matières du programme haïtien - De la 7ème année fondamentale à la 4ème secondaire
+              </p>
+              <div className="flex gap-3 justify-center md:justify-start flex-wrap">
+                <Badge variant="secondary" className="px-4 py-2 text-sm">
+                  <Flag className="w-4 h-4 mr-2" />
+                  Aligné MENFP
+                </Badge>
+                <Badge variant="secondary" className="px-4 py-2 text-sm">
+                  <Globe className="w-4 h-4 mr-2" />
+                  FR / HT
+                </Badge>
+                <Badge variant="secondary" className="px-4 py-2 text-sm">
+                  <Award className="w-4 h-4 mr-2" />
+                  Certifié
+                </Badge>
+              </div>
+            </div>
+            <div className="flex-shrink-0">
+              <img 
+                src={ericTeaching} 
+                alt="Eric vous guide dans vos matières" 
+                className="w-48 h-48 object-contain animate-[float_4s_ease-in-out_infinite]"
+              />
             </div>
           </div>
         </div>

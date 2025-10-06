@@ -4,6 +4,8 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import ericMain00 from "@/assets/eric-main00.png";
 import ericMain01 from "@/assets/eric-main01.png";
+import ericWelcome from "@/assets/eric-welcome.png";
+import ericThinking from "@/assets/eric-thinking.png";
 import heroImage from "@/assets/hero-education.jpg";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { Menu, X } from "lucide-react";
@@ -114,7 +116,7 @@ const Index = () => {
           </div>
           <div className="flex justify-center items-center relative order-first md:order-last mt-4 sm:mt-0">
             <img 
-              src={ericMain00} 
+              src={ericWelcome} 
               alt="Eric - Assistant IA EDUPRENEURS" 
               className="w-full max-w-[200px] sm:max-w-[280px] md:max-w-md animate-[float_4s_ease-in-out_infinite] drop-shadow-2xl"
             />
@@ -305,7 +307,19 @@ const Index = () => {
       {/* FAQ */}
       <section className="py-12 sm:py-16 md:py-20 px-4 bg-background">
         <div className="container mx-auto max-w-3xl">
-          <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-center mb-8 sm:mb-12">Questions fréquentes</h2>
+          <div className="flex flex-col md:flex-row items-center gap-8 mb-8 sm:mb-12">
+            <div className="flex-1 text-center md:text-left">
+              <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-4">Questions fréquentes</h2>
+              <p className="text-muted-foreground">Tout ce que vous devez savoir sur EDUPRENEURS</p>
+            </div>
+            <div className="flex-shrink-0">
+              <img 
+                src={ericThinking} 
+                alt="Eric réfléchit à vos questions" 
+                className="w-32 h-32 sm:w-40 sm:h-40 object-contain animate-[float_4s_ease-in-out_infinite]"
+              />
+            </div>
+          </div>
           <div className="space-y-4">
             {[
               { q: "Comment m'inscrire à EDUPRENEURS ?", a: "Créez un compte avec votre email, choisissez votre niveau académique et profitez de votre semaine d'essai gratuite. Ensuite, abonnez-vous pour seulement 200 gourdes par mois." },

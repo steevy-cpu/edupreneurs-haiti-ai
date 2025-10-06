@@ -14,6 +14,7 @@ import {
   Star,
   GraduationCap
 } from "lucide-react";
+import ericTeaching from "@/assets/eric-teaching.png";
 
 interface Topic {
   id: string;
@@ -236,14 +237,23 @@ const MathCourse = () => {
 
       <div className="container mx-auto px-3 sm:px-4 py-6 sm:py-8 max-w-6xl">
         {/* Course Overview */}
-        <div className="mb-6 sm:mb-8">
-          <h2 className="text-2xl sm:text-3xl font-bold mb-2">Programme MENFP - AF7</h2>
-          <p className="text-base sm:text-lg text-muted-foreground">
-            Suis le programme officiel du MENFP avec des leçons interactives, des jeux et des quiz! 🎮
-          </p>
-          <p className="text-xs sm:text-sm text-muted-foreground mt-2">
-            16 chapitres couvrant l'algèbre, la géométrie, les mesures et les applications 📚
-          </p>
+        <div className="mb-6 sm:mb-8 flex flex-col md:flex-row items-center gap-6">
+          <div className="flex-1">
+            <h2 className="text-2xl sm:text-3xl font-bold mb-2">Programme MENFP - AF7</h2>
+            <p className="text-base sm:text-lg text-muted-foreground">
+              Suis le programme officiel du MENFP avec des leçons interactives, des jeux et des quiz! 🎮
+            </p>
+            <p className="text-xs sm:text-sm text-muted-foreground mt-2">
+              16 chapitres couvrant l'algèbre, la géométrie, les mesures et les applications 📚
+            </p>
+          </div>
+          <div className="flex-shrink-0">
+            <img 
+              src={ericTeaching} 
+              alt="Eric enseigne les mathématiques" 
+              className="w-40 h-40 sm:w-48 sm:h-48 object-contain animate-[float_4s_ease-in-out_infinite]"
+            />
+          </div>
         </div>
 
         {/* Topics Grid */}
