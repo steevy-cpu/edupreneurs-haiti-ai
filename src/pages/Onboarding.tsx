@@ -7,6 +7,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Sparkles, ArrowRight, BookOpen, Target } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
+import ericWaving from "@/assets/eric-waving.png";
 
 const subjects = [
   { id: "math", name: "Mathématiques", icon: "📐" },
@@ -60,6 +61,13 @@ const Onboarding = () => {
       <div className="relative w-full max-w-4xl">
         {/* Header */}
         <div className="text-center mb-12">
+          <div className="flex justify-center mb-6">
+            <img 
+              src={ericWaving} 
+              alt="Eric vous souhaite la bienvenue" 
+              className="w-32 h-32 sm:w-40 sm:h-40 object-contain animate-[float_4s_ease-in-out_infinite]"
+            />
+          </div>
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-accent/10 border border-accent/20 mb-6">
             <Sparkles className="w-4 h-4 text-accent" />
             <span className="text-sm text-accent font-medium">Étape 2 sur 2</span>

@@ -6,6 +6,7 @@ import ericMain00 from "@/assets/eric-main00.png";
 import ericMain01 from "@/assets/eric-main01.png";
 import ericWelcome from "@/assets/eric-welcome.png";
 import ericThinking from "@/assets/eric-thinking.png";
+import ericPointingRight from "@/assets/eric-pointing-right.png";
 import heroImage from "@/assets/hero-education.jpg";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { Menu, X } from "lucide-react";
@@ -116,7 +117,7 @@ const Index = () => {
           </div>
           <div className="flex justify-center items-center relative order-first md:order-last mt-4 sm:mt-0">
             <img 
-              src={ericWelcome} 
+              src={ericMain00} 
               alt="Eric - Assistant IA EDUPRENEURS" 
               className="w-full max-w-[200px] sm:max-w-[280px] md:max-w-md animate-[float_4s_ease-in-out_infinite] drop-shadow-2xl"
             />
@@ -141,12 +142,23 @@ const Index = () => {
       {/* Features Highlight */}
       <section id="features" className="py-12 sm:py-16 md:py-20 px-4 bg-background">
         <div className="container mx-auto">
-          <h2 className="text-2xl sm:text-3xl md:text-4xl font-black text-center text-primary mb-3 sm:mb-4">
-            🇭🇹 Projet Phare 2025 : Révolutionner l'Éducation Haïtienne
-          </h2>
-          <p className="text-sm sm:text-base text-center text-muted-foreground mb-8 sm:mb-12 max-w-3xl mx-auto px-4">
-            Système d'instruction entièrement basé sur le programme du MENFP avec des méthodes d'apprentissage technologiques innovantes
-          </p>
+          <div className="flex flex-col md:flex-row items-center gap-6 mb-8 sm:mb-12">
+            <div className="flex-1 text-center md:text-left">
+              <h2 className="text-2xl sm:text-3xl md:text-4xl font-black text-primary mb-3 sm:mb-4">
+                🇭🇹 Projet Phare 2025 : Révolutionner l'Éducation Haïtienne
+              </h2>
+              <p className="text-sm sm:text-base text-muted-foreground max-w-3xl">
+                Système d'instruction entièrement basé sur le programme du MENFP avec des méthodes d'apprentissage technologiques innovantes
+              </p>
+            </div>
+            <div className="flex-shrink-0">
+              <img 
+                src={ericPointingRight} 
+                alt="Eric vous guide" 
+                className="w-32 h-32 sm:w-40 sm:h-40 object-contain animate-[float_4s_ease-in-out_infinite]"
+              />
+            </div>
+          </div>
           <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
             {[
               { icon: "🎯", title: "Apprentissage 100% Personnalisé", desc: "L'agent IA s'adapte à votre niveau, de la 7ème à la préparation universitaire" },

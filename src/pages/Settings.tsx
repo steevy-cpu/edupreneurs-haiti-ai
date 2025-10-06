@@ -26,6 +26,7 @@ import {
   Users,
   UserCheck,
 } from "lucide-react";
+import ericArmsCrossed from "@/assets/eric-arms-crossed.png";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -236,11 +237,20 @@ const Settings = () => {
           <div className="absolute top-0 right-0 w-1/2 h-full opacity-10">
             <div className="w-full h-full bg-gradient-radial from-white/20 to-transparent animate-[float_20s_ease-in-out_infinite]" />
           </div>
-          <div className="relative z-10">
-            <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold mb-2">Paramètres</h1>
-            <p className="text-sm sm:text-base opacity-90">
-              Gérez votre profil, votre compte et vos préférences
-            </p>
+          <div className="flex flex-col md:flex-row items-center gap-6">
+            <div className="flex-1 relative z-10">
+              <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold mb-2">Paramètres</h1>
+              <p className="text-sm sm:text-base opacity-90">
+                Gérez votre profil, votre compte et vos préférences
+              </p>
+            </div>
+            <div className="flex-shrink-0 relative z-10">
+              <img 
+                src={ericArmsCrossed} 
+                alt="Eric - Confident" 
+                className="w-24 h-24 sm:w-32 sm:h-32 object-contain animate-[float_4s_ease-in-out_infinite]"
+              />
+            </div>
           </div>
         </div>
 

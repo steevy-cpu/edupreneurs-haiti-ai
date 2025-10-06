@@ -26,6 +26,7 @@ import {
   Share2,
 } from "lucide-react";
 import dashboardImage from "@/assets/dashboard00.png";
+import ericExcited from "@/assets/eric-excited.png";
 
 interface UserProfile {
   id: string;
@@ -274,11 +275,20 @@ const Affiliations = () => {
           <div className="absolute top-0 right-0 w-1/2 h-full opacity-10">
             <div className="w-full h-full bg-gradient-radial from-white/20 to-transparent animate-[float_20s_ease-in-out_infinite]" />
           </div>
-          <div className="relative z-10">
-            <h1 className="text-2xl lg:text-3xl font-bold mb-2">Programme d'Affiliation</h1>
-            <p className="opacity-75">
-              Partagez votre lien et gagnez des points pour chaque nouvel utilisateur
-            </p>
+          <div className="flex flex-col md:flex-row items-center gap-6">
+            <div className="flex-1 relative z-10">
+              <h1 className="text-2xl lg:text-3xl font-bold mb-2">Programme d'Affiliation</h1>
+              <p className="opacity-75">
+                Partagez votre lien et gagnez des points pour chaque nouvel utilisateur
+              </p>
+            </div>
+            <div className="flex-shrink-0 relative z-10">
+              <img 
+                src={ericExcited} 
+                alt="Eric - Excited" 
+                className="w-28 h-28 sm:w-36 sm:h-36 object-contain animate-[float_4s_ease-in-out_infinite]"
+              />
+            </div>
           </div>
         </div>
 
