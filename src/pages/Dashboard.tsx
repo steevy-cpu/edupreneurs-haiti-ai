@@ -128,20 +128,13 @@ const Dashboard = () => {
           <div className="absolute top-0 right-0 w-1/2 h-full opacity-10">
             <div className="w-full h-full bg-gradient-radial from-white/20 to-transparent animate-[float_20s_ease-in-out_infinite]" />
           </div>
-          <div className="relative z-10 flex items-center justify-between gap-4">
-            <div className="flex-1">
-              <h2 className="text-lg sm:text-xl lg:text-2xl xl:text-3xl font-bold mb-1 sm:mb-2">
-                Bienvenue, <span>{userData.name}</span>!
-              </h2>
-              <p className="text-xs sm:text-sm lg:text-base opacity-75 leading-relaxed">
-                Continuez votre apprentissage personnalisé avec Eric, votre assistant IA
-              </p>
-            </div>
-            <img 
-              src={ericThumbsUp} 
-              alt="Eric vous encourage" 
-              className="w-20 h-20 sm:w-28 sm:h-28 lg:w-32 lg:h-32 object-contain animate-[float_3s_ease-in-out_infinite] hidden sm:block"
-            />
+          <div className="relative z-10">
+            <h2 className="text-lg sm:text-xl lg:text-2xl xl:text-3xl font-bold mb-1 sm:mb-2">
+              Bienvenue, <span>{userData.name}</span>!
+            </h2>
+            <p className="text-xs sm:text-sm lg:text-base opacity-75 leading-relaxed">
+              Continuez votre apprentissage personnalisé avec Eric, votre assistant IA
+            </p>
           </div>
         </div>
 
