@@ -555,7 +555,7 @@ const Community = () => {
                 className="h-9 w-9 sm:h-10 sm:w-10 shrink-0 cursor-pointer hover:opacity-80 transition-opacity"
                 onClick={() => {
                   const otherUser = conversations.find(c => c.id === selectedConversation)?.otherUser;
-                  if (otherUser) navigate(`/profile?userId=${otherUser.user_id}`);
+                  if (otherUser) navigate(`/profile/${otherUser.user_id}`);
                 }}
               >
                 <AvatarFallback className="bg-gradient-to-br from-primary/20 to-success/20 text-sm sm:text-base">
@@ -566,7 +566,7 @@ const Community = () => {
                 className="min-w-0 flex-1 cursor-pointer hover:opacity-80 transition-opacity"
                 onClick={() => {
                   const otherUser = conversations.find(c => c.id === selectedConversation)?.otherUser;
-                  if (otherUser) navigate(`/profile?userId=${otherUser.user_id}`);
+                  if (otherUser) navigate(`/profile/${otherUser.user_id}`);
                 }}
               >
                 <p className="font-semibold text-sm sm:text-base truncate">
@@ -590,7 +590,7 @@ const Community = () => {
                           className="h-7 w-7 sm:h-8 sm:w-8 shrink-0 cursor-pointer hover:opacity-80 transition-opacity"
                           onClick={() => {
                             if (message.profile?.user_id) {
-                              navigate(`/profile?userId=${message.profile.user_id}`);
+                              navigate(`/profile/${message.profile.user_id}`);
                             }
                           }}
                         >
