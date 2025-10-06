@@ -9,6 +9,7 @@ import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Switch } from "@/components/ui/switch";
 import { Separator } from "@/components/ui/separator";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import {
   User,
   Lock,
@@ -22,6 +23,8 @@ import {
   GraduationCap,
   School,
   FileText,
+  Users,
+  UserCheck,
 } from "lucide-react";
 import {
   AlertDialog,
@@ -51,6 +54,8 @@ const Settings = () => {
   const [loading, setLoading] = useState(false);
   const [userEmail, setUserEmail] = useState("");
   const [profile, setProfile] = useState<UserProfile | null>(null);
+  const [followerCount, setFollowerCount] = useState(0);
+  const [followingCount, setFollowingCount] = useState(0);
   const [profileForm, setProfileForm] = useState({
     fullName: "",
     nickname: "",
@@ -110,6 +115,23 @@ const Settings = () => {
       bio: profileData.bio || "",
       school: profileData.school || "",
     });
+
+    // Fetch follower count
+    const { count: followersCount } = await supabase
+      .from("follows")
+      .select("*", { count: "exact", head: true })
+      .eq("following_id", session.user.id)
+      .eq("status", "accepted");
+
+    // Fetch following count
+    const { count: followingsCount } = await supabase
+      .from("follows")
+      .select("*", { count: "exact", head: true })
+      .eq("follower_id", session.user.id)
+      .eq("status", "accepted");
+
+    setFollowerCount(followersCount || 0);
+    setFollowingCount(followingsCount || 0);
   };
 
   const handleLogout = async () => {
@@ -252,6 +274,47 @@ const Settings = () => {
 
           {/* Profile Tab */}
           <TabsContent value="profile" className="mt-4 sm:mt-6">
+            {/* Profile Overview Card */}
+            <Card className="border-none rounded-[20px] shadow-md mb-6">
+              <CardContent className="p-6">
+                <div className="flex flex-col sm:flex-row items-center gap-6">
+                  {/* Profile Avatar */}
+                  <Avatar className="h-24 w-24">
+                    <AvatarFallback className="bg-gradient-to-br from-primary/20 to-success/20 text-3xl font-semibold">
+                      {profile?.nickname?.[0] || profile?.full_name?.[0] || "?"}
+                    </AvatarFallback>
+                  </Avatar>
+
+                  {/* Profile Info */}
+                  <div className="flex-1 text-center sm:text-left">
+                    <h2 className="text-2xl font-bold">{profile?.nickname || "Utilisateur"}</h2>
+                    <p className="text-muted-foreground">{profile?.full_name}</p>
+                    {profile?.bio && (
+                      <p className="text-sm text-muted-foreground mt-2 line-clamp-2">{profile.bio}</p>
+                    )}
+                  </div>
+
+                  {/* Stats */}
+                  <div className="flex gap-6">
+                    <div className="text-center">
+                      <div className="flex items-center gap-2 text-2xl font-bold">
+                        <Users size={20} className="text-primary" />
+                        {followerCount}
+                      </div>
+                      <p className="text-xs text-muted-foreground">Abonnés</p>
+                    </div>
+                    <div className="text-center">
+                      <div className="flex items-center gap-2 text-2xl font-bold">
+                        <UserCheck size={20} className="text-success" />
+                        {followingCount}
+                      </div>
+                      <p className="text-xs text-muted-foreground">Abonnements</p>
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
             <Card className="border-none rounded-[20px] shadow-md">
               <CardHeader className="p-4 sm:p-6">
                 <CardTitle className="flex items-center gap-2 text-lg sm:text-xl">
