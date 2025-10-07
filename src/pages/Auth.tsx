@@ -426,6 +426,9 @@ export default function Auth() {
                         className="w-full"
                         onClick={async () => {
                           try {
+                            // Clear onboarding flag to show tour again
+                            localStorage.removeItem("onboarding_completed");
+                            
                             const { error } = await supabase.auth.signInWithPassword({
                               email: "celestinsteeve738@gmail.com",
                               password: "test123",
