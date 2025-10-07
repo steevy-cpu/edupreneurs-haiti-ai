@@ -1,7 +1,6 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { Progress } from "@/components/ui/progress";
-import { X } from "lucide-react";
+import { X, ArrowRight } from "lucide-react";
 import ericWaving from "@/assets/eric-waving.png";
 import ericPointingLeft from "@/assets/eric-pointing-left.png";
 import ericPointingUp from "@/assets/eric-pointing-up.png";
@@ -127,31 +126,85 @@ export default function OnboardingTour() {
   const step = steps[currentStep];
 
   // Get position for Eric and the card
-  const getCardPosition = () => {
+  const getEricPosition = () => {
     if (!highlightedElement) {
-      return "fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2";
+      return { top: "50%", left: "50%", transform: "translate(-50%, -50%)" };
     }
 
     const rect = highlightedElement.getBoundingClientRect();
     const isMobile = window.innerWidth < 768;
+    const ericSize = isMobile ? 80 : 120;
 
     switch (step.position) {
       case "right":
         if (isMobile) {
-          return "fixed bottom-4 left-1/2 -translate-x-1/2";
+          return { 
+            top: `${rect.bottom + 20}px`, 
+            left: `${rect.left + rect.width / 2}px`,
+            transform: "translateX(-50%)"
+          };
         }
-        return `fixed left-4 top-1/2 -translate-y-1/2`;
+        return { 
+          top: `${rect.top + rect.height / 2}px`, 
+          left: `${rect.right + 40}px`,
+          transform: "translateY(-50%)"
+        };
       case "left":
         if (isMobile) {
-          return "fixed bottom-4 left-1/2 -translate-x-1/2";
+          return { 
+            top: `${rect.bottom + 20}px`, 
+            left: `${rect.left + rect.width / 2}px`,
+            transform: "translateX(-50%)"
+          };
         }
-        return `fixed right-4 top-1/2 -translate-y-1/2`;
+        return { 
+          top: `${rect.top + rect.height / 2}px`, 
+          left: `${rect.left - ericSize - 40}px`,
+          transform: "translateY(-50%)"
+        };
+      case "bottom":
+        return { 
+          top: `${rect.bottom + 40}px`, 
+          left: `${rect.left + rect.width / 2}px`,
+          transform: "translateX(-50%)"
+        };
+      case "top":
+        return { 
+          top: `${rect.top - ericSize - 40}px`, 
+          left: `${rect.left + rect.width / 2}px`,
+          transform: "translateX(-50%)"
+        };
+      default:
+        return { top: "50%", left: "50%", transform: "translate(-50%, -50%)" };
+    }
+  };
+
+  const getSpeechBubblePosition = () => {
+    const isMobile = window.innerWidth < 768;
+    
+    if (!highlightedElement) {
+      return "fixed top-1/2 left-1/2 -translate-x-1/2 translate-y-20";
+    }
+
+    const rect = highlightedElement.getBoundingClientRect();
+
+    switch (step.position) {
+      case "right":
+        if (isMobile) {
+          return `fixed bottom-20 left-1/2 -translate-x-1/2`;
+        }
+        return `fixed left-4`;
+      case "left":
+        if (isMobile) {
+          return `fixed bottom-20 left-1/2 -translate-x-1/2`;
+        }
+        return `fixed right-4`;
       case "bottom":
         return "fixed bottom-4 left-1/2 -translate-x-1/2";
       case "top":
         return "fixed top-20 left-1/2 -translate-x-1/2";
       default:
-        return "fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2";
+        return "fixed top-1/2 left-1/2 -translate-x-1/2 translate-y-20";
     }
   };
 
@@ -167,89 +220,105 @@ export default function OnboardingTour() {
     };
   };
 
+  const isMobile = window.innerWidth < 768;
+  const ericSize = isMobile ? 80 : 120;
+
   return (
     <>
-      {/* Dark overlay with spotlight cutout */}
+      {/* Semi-transparent overlay */}
       <div 
-        className="fixed inset-0 z-[9998] pointer-events-none"
-        style={{
-          background: highlightedElement 
-            ? "rgba(0, 0, 0, 0.75)"
-            : "rgba(0, 0, 0, 0.7)",
-        }}
+        className="fixed inset-0 z-[9998] pointer-events-none bg-black/60"
       />
 
       {/* Spotlight highlight on target element */}
       {highlightedElement && (
         <>
           <div
-            className="fixed z-[9999] rounded-lg border-4 border-primary shadow-[0_0_0_9999px_rgba(0,0,0,0.75)] animate-pulse pointer-events-none"
+            className="fixed z-[9999] rounded-lg border-4 border-primary shadow-[0_0_40px_rgba(var(--primary),0.6)] animate-pulse pointer-events-none"
             style={getHighlightStyle()}
           />
           <div
-            className="fixed z-[9999] rounded-lg bg-primary/10 animate-pulse pointer-events-none"
+            className="fixed z-[9999] rounded-lg bg-primary/5 pointer-events-none"
             style={getHighlightStyle()}
           />
         </>
       )}
 
-      {/* Eric's Tour Card */}
+      {/* Floating Eric Character */}
       <div 
-        className={`${getCardPosition()} z-[10000] max-w-[90vw] sm:max-w-md w-full animate-scale-in`}
+        className="fixed z-[10000] pointer-events-none animate-[float_3s_ease-in-out_infinite]"
+        style={getEricPosition()}
       >
-        <div className="bg-card border-2 border-primary rounded-2xl shadow-2xl overflow-hidden">
-          {/* Close button */}
-          <Button
-            variant="ghost"
-            size="icon"
-            className="absolute top-2 right-2 z-10 rounded-full hover:bg-primary/10 h-8 w-8"
-            onClick={completeOnboarding}
-          >
-            <X className="h-4 w-4" />
-          </Button>
+        <img
+          src={step.image}
+          alt="Eric"
+          className="drop-shadow-2xl"
+          style={{ width: `${ericSize}px`, height: `${ericSize}px` }}
+          key={currentStep}
+        />
+      </div>
 
-          {/* Eric Image */}
-          <div className="bg-gradient-to-br from-primary/10 to-success/10 p-4 sm:p-6 flex items-center justify-center border-b border-border">
-            <img
-              src={step.image}
-              alt={step.title}
-              className="w-32 h-32 sm:w-40 sm:h-40 object-contain animate-fade-in"
-              key={currentStep}
-            />
-          </div>
+      {/* Floating Speech Bubble */}
+      <div 
+        className={`${getSpeechBubblePosition()} z-[10000] max-w-[85vw] sm:max-w-sm animate-[float_3s_ease-in-out_infinite] animate-fade-in`}
+        style={{ animationDelay: "0.5s" }}
+      >
+        <div className="relative">
+          {/* Speech bubble tail */}
+          <div className="absolute -top-3 left-8 w-6 h-6 bg-card rotate-45 border-l-2 border-t-2 border-primary/30" />
+          
+          {/* Speech bubble content */}
+          <div className="relative bg-card border-2 border-primary/30 rounded-3xl shadow-2xl p-4 sm:p-5 backdrop-blur-sm">
+            {/* Close button */}
+            <Button
+              variant="ghost"
+              size="icon"
+              className="absolute -top-2 -right-2 rounded-full bg-destructive hover:bg-destructive/90 text-destructive-foreground h-7 w-7 shadow-lg pointer-events-auto"
+              onClick={completeOnboarding}
+            >
+              <X className="h-3 w-3" />
+            </Button>
 
-          {/* Content */}
-          <div className="p-4 sm:p-6">
-            <div className="mb-4">
-              <span className="text-xs text-muted-foreground">
-                Étape {currentStep + 1} sur {steps.length}
-              </span>
-              <Progress value={progress} className="mt-2 h-1.5" />
+            {/* Progress indicator */}
+            <div className="mb-3 flex items-center gap-2">
+              {steps.map((_, idx) => (
+                <div
+                  key={idx}
+                  className={`h-1.5 flex-1 rounded-full transition-all ${
+                    idx === currentStep
+                      ? "bg-primary scale-110"
+                      : idx < currentStep
+                      ? "bg-primary/60"
+                      : "bg-muted"
+                  }`}
+                />
+              ))}
             </div>
 
-            <h3 className="text-lg sm:text-xl font-bold text-foreground mb-2">
+            <h3 className="text-base sm:text-lg font-bold text-foreground mb-2">
               {step.title}
             </h3>
-            <p className="text-sm text-muted-foreground leading-relaxed mb-4">
+            <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed mb-4">
               {step.description}
             </p>
 
             {step.action === "click" && (
-              <div className="mb-4 p-3 bg-primary/10 rounded-lg border border-primary/20">
+              <div className="mb-3 p-2.5 bg-primary/10 rounded-xl border border-primary/30 animate-pulse">
                 <p className="text-xs font-semibold text-primary flex items-center gap-2">
-                  <span className="animate-pulse">👆</span> Clique sur l'élément surligné pour continuer
+                  <span className="text-base">👆</span> 
+                  <span>Clique sur l'élément surligné!</span>
                 </p>
               </div>
             )}
 
             {/* Navigation buttons */}
-            <div className="flex items-center justify-between gap-2">
+            <div className="flex items-center justify-between gap-2 pointer-events-auto">
               <Button
                 variant="ghost"
                 onClick={handlePrevious}
                 disabled={currentStep === 0}
                 size="sm"
-                className="text-xs sm:text-sm"
+                className="text-xs h-8"
               >
                 Précédent
               </Button>
@@ -259,42 +328,36 @@ export default function OnboardingTour() {
                   variant="outline" 
                   onClick={completeOnboarding}
                   size="sm"
-                  className="text-xs sm:text-sm"
+                  className="text-xs h-8"
                 >
                   Passer
                 </Button>
                 {step.action === "wait" && (
                   <Button 
                     onClick={handleNext}
-                    className="bg-gradient-to-br from-primary to-success text-xs sm:text-sm"
+                    className="bg-gradient-to-r from-primary to-success text-xs h-8 gap-1"
                     size="sm"
                   >
                     {currentStep === steps.length - 1 ? "Terminer" : "Suivant"}
+                    <ArrowRight className="h-3 w-3" />
                   </Button>
                 )}
               </div>
             </div>
           </div>
         </div>
-
-        {/* Arrow pointer for desktop */}
-        {highlightedElement && !window.matchMedia("(max-width: 768px)").matches && (
-          <>
-            {step.position === "right" && (
-              <div className="absolute -right-3 top-1/2 -translate-y-1/2 w-0 h-0 border-t-[12px] border-t-transparent border-b-[12px] border-b-transparent border-l-[12px] border-l-primary" />
-            )}
-            {step.position === "left" && (
-              <div className="absolute -left-3 top-1/2 -translate-y-1/2 w-0 h-0 border-t-[12px] border-t-transparent border-b-[12px] border-b-transparent border-r-[12px] border-r-primary" />
-            )}
-            {step.position === "bottom" && (
-              <div className="absolute -bottom-3 left-1/2 -translate-x-1/2 w-0 h-0 border-l-[12px] border-l-transparent border-r-[12px] border-r-transparent border-t-[12px] border-t-primary" />
-            )}
-            {step.position === "top" && (
-              <div className="absolute -top-3 left-1/2 -translate-x-1/2 w-0 h-0 border-l-[12px] border-l-transparent border-r-[12px] border-r-transparent border-b-[12px] border-b-primary" />
-            )}
-          </>
-        )}
       </div>
+
+      <style>{`
+        @keyframes float {
+          0%, 100% {
+            transform: translateY(0px);
+          }
+          50% {
+            transform: translateY(-10px);
+          }
+        }
+      `}</style>
     </>
   );
 }
