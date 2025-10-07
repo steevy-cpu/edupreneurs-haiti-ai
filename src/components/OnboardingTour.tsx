@@ -130,58 +130,69 @@ export default function OnboardingTour() {
   const progress = ((currentStep + 1) / steps.length) * 100;
   const step = steps[currentStep];
 
-  // Get position for Eric and the card
+  // Get position for Eric - he should be visible and prominent
   const getEricPosition = () => {
+    const isMobile = window.innerWidth < 768;
+    const isTablet = window.innerWidth >= 768 && window.innerWidth < 1024;
+    
     if (!highlightedElement) {
-      return { top: "50%", left: "50%", transform: "translate(-50%, -50%)" };
+      // Center Eric above the speech bubble when no element is highlighted
+      return { 
+        top: "35%", 
+        left: "50%", 
+        transform: "translate(-50%, -50%)" 
+      };
     }
 
     const rect = highlightedElement.getBoundingClientRect();
-    const isMobile = window.innerWidth < 768;
-    const isTablet = window.innerWidth >= 768 && window.innerWidth < 1024;
-    const ericSize = isMobile ? 70 : isTablet ? 90 : 120;
+    const ericSize = isMobile ? 80 : isTablet ? 100 : 130;
+    const viewportHeight = window.innerHeight;
+    const viewportWidth = window.innerWidth;
 
+    // Calculate safe positions that keep Eric visible
     switch (step.position) {
       case "right":
         if (isMobile || isTablet) {
+          // On mobile, put Eric above the highlighted element
           return { 
-            top: `${Math.max(rect.bottom + 15, 100)}px`, 
+            top: `${Math.max(rect.top - ericSize - 20, 80)}px`, 
             left: "50%",
             transform: "translateX(-50%)"
           };
         }
+        // Desktop: Eric on the right side
         return { 
-          top: `${rect.top + rect.height / 2}px`, 
-          left: `${Math.min(rect.right + 30, window.innerWidth - ericSize - 20)}px`,
+          top: `${Math.max(Math.min(rect.top + rect.height / 2, viewportHeight - ericSize - 20), 80)}px`, 
+          left: `${Math.min(rect.right + 40, viewportWidth - ericSize - 20)}px`,
           transform: "translateY(-50%)"
         };
       case "left":
         if (isMobile || isTablet) {
           return { 
-            top: `${Math.max(rect.bottom + 15, 100)}px`, 
+            top: `${Math.max(rect.top - ericSize - 20, 80)}px`, 
             left: "50%",
             transform: "translateX(-50%)"
           };
         }
         return { 
-          top: `${rect.top + rect.height / 2}px`, 
-          left: `${Math.max(rect.left - ericSize - 30, 20)}px`,
+          top: `${Math.max(Math.min(rect.top + rect.height / 2, viewportHeight - ericSize - 20), 80)}px`, 
+          left: `${Math.max(rect.left - ericSize - 40, 20)}px`,
           transform: "translateY(-50%)"
         };
       case "bottom":
         return { 
-          top: `${Math.max(rect.bottom + 30, 100)}px`, 
+          top: `${Math.max(rect.top - ericSize - 20, 80)}px`, 
           left: "50%",
           transform: "translateX(-50%)"
         };
       case "top":
         return { 
-          top: `${Math.max(rect.top - ericSize - 30, 70)}px`, 
+          top: `${Math.max(rect.top - ericSize - 20, 80)}px`, 
           left: "50%",
           transform: "translateX(-50%)"
         };
       default:
-        return { top: "50%", left: "50%", transform: "translate(-50%, -50%)" };
+        return { top: "35%", left: "50%", transform: "translate(-50%, -50%)" };
     }
   };
 
@@ -190,22 +201,26 @@ export default function OnboardingTour() {
     const isTablet = window.innerWidth >= 768 && window.innerWidth < 1024;
     
     if (!highlightedElement) {
-      return "fixed top-1/2 left-1/2 -translate-x-1/2 translate-y-20 w-[90vw] sm:w-auto";
+      // Center below Eric when no element is highlighted
+      return "fixed top-[50%] left-1/2 -translate-x-1/2 w-[90vw] sm:w-auto";
     }
 
+    // Speech bubble should be at the bottom on mobile/tablet for better visibility
+    if (isMobile || isTablet) {
+      return "fixed bottom-4 left-1/2 -translate-x-1/2 w-[90vw]";
+    }
+
+    // On desktop, position speech bubble away from Eric
     switch (step.position) {
       case "right":
+        return "fixed left-6 top-1/2 -translate-y-1/2 max-w-md";
       case "left":
-        if (isMobile || isTablet) {
-          return "fixed bottom-4 left-1/2 -translate-x-1/2 w-[90vw]";
-        }
-        return step.position === "right" ? "fixed left-4 top-1/2 -translate-y-1/2" : "fixed right-4 top-1/2 -translate-y-1/2";
+        return "fixed right-6 top-1/2 -translate-y-1/2 max-w-md";
       case "bottom":
-        return "fixed bottom-4 left-1/2 -translate-x-1/2 w-[90vw] sm:w-auto";
       case "top":
-        return isMobile ? "fixed top-16 left-1/2 -translate-x-1/2 w-[90vw]" : "fixed top-20 left-1/2 -translate-x-1/2";
+        return "fixed bottom-6 left-1/2 -translate-x-1/2 max-w-md";
       default:
-        return "fixed top-1/2 left-1/2 -translate-x-1/2 translate-y-20 w-[90vw] sm:w-auto";
+        return "fixed top-[50%] left-1/2 -translate-x-1/2 max-w-md";
     }
   };
 
@@ -223,7 +238,7 @@ export default function OnboardingTour() {
 
   const isMobile = window.innerWidth < 768;
   const isTablet = window.innerWidth >= 768 && window.innerWidth < 1024;
-  const ericSize = isMobile ? 70 : isTablet ? 90 : 120;
+  const ericSize = isMobile ? 80 : isTablet ? 100 : 130;
 
   return (
     <>
@@ -246,31 +261,35 @@ export default function OnboardingTour() {
         </>
       )}
 
-      {/* Floating Eric Character */}
+      {/* Floating Eric Character - Always visible and prominent */}
       <div 
-        className="fixed z-[10000] pointer-events-none animate-[float_3s_ease-in-out_infinite]"
+        className="fixed z-[10001] pointer-events-none animate-[float_3s_ease-in-out_infinite]"
         style={getEricPosition()}
       >
-        <img
-          src={step.image}
-          alt="Eric"
-          className="drop-shadow-2xl"
-          style={{ width: `${ericSize}px`, height: `${ericSize}px` }}
-          key={currentStep}
-        />
+        <div className="relative">
+          <img
+            src={step.image}
+            alt="Eric le guide"
+            className="drop-shadow-2xl transition-all duration-300"
+            style={{ width: `${ericSize}px`, height: `${ericSize}px` }}
+            key={currentStep}
+          />
+          {/* Glow effect around Eric */}
+          <div className="absolute inset-0 -z-10 rounded-full bg-primary/20 blur-2xl animate-pulse" />
+        </div>
       </div>
 
       {/* Floating Speech Bubble */}
       <div 
-        className={`${getSpeechBubblePosition()} z-[10000] max-w-sm animate-[float_3s_ease-in-out_infinite] animate-fade-in`}
+        className={`${getSpeechBubblePosition()} z-[10000] animate-[float_3s_ease-in-out_infinite] animate-fade-in`}
         style={{ animationDelay: "0.5s" }}
       >
         <div className="relative">
-          {/* Speech bubble tail - hide on mobile for cleaner look */}
-          <div className="absolute -top-3 left-8 w-6 h-6 bg-card rotate-45 border-l-2 border-t-2 border-primary/30 hidden sm:block" />
+          {/* Speech bubble tail pointing toward Eric */}
+          <div className="absolute -top-2 left-8 w-5 h-5 bg-card rotate-45 border-l border-t border-primary/30" />
           
           {/* Speech bubble content */}
-          <div className="relative bg-card border-2 border-primary/30 rounded-2xl sm:rounded-3xl shadow-2xl p-3 sm:p-5 backdrop-blur-sm">
+          <div className="relative bg-card/95 border-2 border-primary/40 rounded-2xl shadow-2xl backdrop-blur-md p-4 sm:p-5">
             {/* Close button */}
             <Button
               variant="ghost"
