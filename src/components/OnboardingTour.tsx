@@ -202,25 +202,25 @@ export default function OnboardingTour() {
     
     if (!highlightedElement) {
       // Center below Eric when no element is highlighted
-      return "fixed top-[50%] left-1/2 -translate-x-1/2 w-[90vw] sm:w-auto";
+      return "fixed top-[50%] left-1/2 -translate-x-1/2 w-[85vw] sm:max-w-md";
     }
 
     // Speech bubble should be at the bottom on mobile/tablet for better visibility
     if (isMobile || isTablet) {
-      return "fixed bottom-4 left-1/2 -translate-x-1/2 w-[90vw]";
+      return "fixed bottom-4 left-1/2 -translate-x-1/2 w-[85vw] sm:max-w-md";
     }
 
     // On desktop, position speech bubble away from Eric
     switch (step.position) {
       case "right":
-        return "fixed left-6 top-1/2 -translate-y-1/2 max-w-md";
+        return "fixed left-6 top-1/2 -translate-y-1/2 w-full max-w-md";
       case "left":
-        return "fixed right-6 top-1/2 -translate-y-1/2 max-w-md";
+        return "fixed right-6 top-1/2 -translate-y-1/2 w-full max-w-md";
       case "bottom":
       case "top":
-        return "fixed bottom-6 left-1/2 -translate-x-1/2 max-w-md";
+        return "fixed bottom-6 left-1/2 -translate-x-1/2 w-full max-w-md";
       default:
-        return "fixed top-[50%] left-1/2 -translate-x-1/2 max-w-md";
+        return "fixed top-[50%] left-1/2 -translate-x-1/2 w-full max-w-md";
     }
   };
 
@@ -316,10 +316,10 @@ export default function OnboardingTour() {
               ))}
             </div>
 
-            <h3 className="text-sm sm:text-lg font-bold text-foreground mb-2 pr-6">
+            <h3 className="text-sm sm:text-lg font-bold text-foreground mb-2 pr-8 break-words">
               {step.title}
             </h3>
-            <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed mb-3 sm:mb-4">
+            <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed mb-3 sm:mb-4 break-words">
               {step.description}
             </p>
 
@@ -333,13 +333,13 @@ export default function OnboardingTour() {
             )}
 
             {/* Navigation buttons */}
-            <div className="flex items-center justify-between gap-2 pointer-events-auto">
+            <div className="flex items-center justify-between gap-2 pointer-events-auto flex-wrap">
               <Button
                 variant="ghost"
                 onClick={handlePrevious}
                 disabled={currentStep === 0}
                 size="sm"
-                className="text-xs h-9 px-3 touch-manipulation"
+                className="text-xs h-9 px-3 touch-manipulation whitespace-nowrap"
               >
                 Précédent
               </Button>
@@ -349,14 +349,14 @@ export default function OnboardingTour() {
                   variant="outline" 
                   onClick={completeOnboarding}
                   size="sm"
-                  className="text-xs h-9 px-3 touch-manipulation"
+                  className="text-xs h-9 px-3 touch-manipulation whitespace-nowrap"
                 >
                   Passer
                 </Button>
                 {step.action === "wait" && (
                   <Button 
                     onClick={handleNext}
-                    className="bg-gradient-to-r from-primary to-success text-xs h-9 gap-1 px-3 touch-manipulation"
+                    className="bg-gradient-to-r from-primary to-success text-xs h-9 gap-1 px-3 touch-manipulation whitespace-nowrap"
                     size="sm"
                   >
                     {currentStep === steps.length - 1 ? "Terminer" : "Suivant"}
