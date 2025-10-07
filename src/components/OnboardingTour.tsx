@@ -183,11 +183,11 @@ export default function OnboardingTour() {
       {highlightedElement && (
         <>
           <div
-            className="fixed z-[9999] rounded-lg border-4 border-primary shadow-[0_0_0_9999px_rgba(0,0,0,0.75)] animate-pulse"
+            className="fixed z-[9999] rounded-lg border-4 border-primary shadow-[0_0_0_9999px_rgba(0,0,0,0.75)] animate-pulse pointer-events-none"
             style={getHighlightStyle()}
           />
           <div
-            className="fixed z-[9999] rounded-lg bg-primary/10 animate-pulse"
+            className="fixed z-[9999] rounded-lg bg-primary/10 animate-pulse pointer-events-none"
             style={getHighlightStyle()}
           />
         </>
