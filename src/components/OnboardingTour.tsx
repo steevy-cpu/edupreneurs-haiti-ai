@@ -81,7 +81,12 @@ export default function OnboardingTour() {
       const element = document.querySelector(step.targetSelector) as HTMLElement;
       if (element) {
         setHighlightedElement(element);
-        element.scrollIntoView({ behavior: "smooth", block: "center" });
+        // Better scroll behavior for mobile
+        element.scrollIntoView({ 
+          behavior: "smooth", 
+          block: window.innerWidth < 768 ? "start" : "center",
+          inline: "center"
+        });
 
         // If action is click, wait for user to click the element
         if (step.action === "click") {
@@ -133,45 +138,46 @@ export default function OnboardingTour() {
 
     const rect = highlightedElement.getBoundingClientRect();
     const isMobile = window.innerWidth < 768;
-    const ericSize = isMobile ? 80 : 120;
+    const isTablet = window.innerWidth >= 768 && window.innerWidth < 1024;
+    const ericSize = isMobile ? 70 : isTablet ? 90 : 120;
 
     switch (step.position) {
       case "right":
-        if (isMobile) {
+        if (isMobile || isTablet) {
           return { 
-            top: `${rect.bottom + 20}px`, 
-            left: `${rect.left + rect.width / 2}px`,
+            top: `${Math.max(rect.bottom + 15, 100)}px`, 
+            left: "50%",
             transform: "translateX(-50%)"
           };
         }
         return { 
           top: `${rect.top + rect.height / 2}px`, 
-          left: `${rect.right + 40}px`,
+          left: `${Math.min(rect.right + 30, window.innerWidth - ericSize - 20)}px`,
           transform: "translateY(-50%)"
         };
       case "left":
-        if (isMobile) {
+        if (isMobile || isTablet) {
           return { 
-            top: `${rect.bottom + 20}px`, 
-            left: `${rect.left + rect.width / 2}px`,
+            top: `${Math.max(rect.bottom + 15, 100)}px`, 
+            left: "50%",
             transform: "translateX(-50%)"
           };
         }
         return { 
           top: `${rect.top + rect.height / 2}px`, 
-          left: `${rect.left - ericSize - 40}px`,
+          left: `${Math.max(rect.left - ericSize - 30, 20)}px`,
           transform: "translateY(-50%)"
         };
       case "bottom":
         return { 
-          top: `${rect.bottom + 40}px`, 
-          left: `${rect.left + rect.width / 2}px`,
+          top: `${Math.max(rect.bottom + 30, 100)}px`, 
+          left: "50%",
           transform: "translateX(-50%)"
         };
       case "top":
         return { 
-          top: `${rect.top - ericSize - 40}px`, 
-          left: `${rect.left + rect.width / 2}px`,
+          top: `${Math.max(rect.top - ericSize - 30, 70)}px`, 
+          left: "50%",
           transform: "translateX(-50%)"
         };
       default:
@@ -181,30 +187,25 @@ export default function OnboardingTour() {
 
   const getSpeechBubblePosition = () => {
     const isMobile = window.innerWidth < 768;
+    const isTablet = window.innerWidth >= 768 && window.innerWidth < 1024;
     
     if (!highlightedElement) {
-      return "fixed top-1/2 left-1/2 -translate-x-1/2 translate-y-20";
+      return "fixed top-1/2 left-1/2 -translate-x-1/2 translate-y-20 w-[90vw] sm:w-auto";
     }
-
-    const rect = highlightedElement.getBoundingClientRect();
 
     switch (step.position) {
       case "right":
-        if (isMobile) {
-          return `fixed bottom-20 left-1/2 -translate-x-1/2`;
-        }
-        return `fixed left-4`;
       case "left":
-        if (isMobile) {
-          return `fixed bottom-20 left-1/2 -translate-x-1/2`;
+        if (isMobile || isTablet) {
+          return "fixed bottom-4 left-1/2 -translate-x-1/2 w-[90vw]";
         }
-        return `fixed right-4`;
+        return step.position === "right" ? "fixed left-4 top-1/2 -translate-y-1/2" : "fixed right-4 top-1/2 -translate-y-1/2";
       case "bottom":
-        return "fixed bottom-4 left-1/2 -translate-x-1/2";
+        return "fixed bottom-4 left-1/2 -translate-x-1/2 w-[90vw] sm:w-auto";
       case "top":
-        return "fixed top-20 left-1/2 -translate-x-1/2";
+        return isMobile ? "fixed top-16 left-1/2 -translate-x-1/2 w-[90vw]" : "fixed top-20 left-1/2 -translate-x-1/2";
       default:
-        return "fixed top-1/2 left-1/2 -translate-x-1/2 translate-y-20";
+        return "fixed top-1/2 left-1/2 -translate-x-1/2 translate-y-20 w-[90vw] sm:w-auto";
     }
   };
 
@@ -221,7 +222,8 @@ export default function OnboardingTour() {
   };
 
   const isMobile = window.innerWidth < 768;
-  const ericSize = isMobile ? 80 : 120;
+  const isTablet = window.innerWidth >= 768 && window.innerWidth < 1024;
+  const ericSize = isMobile ? 70 : isTablet ? 90 : 120;
 
   return (
     <>
@@ -260,27 +262,27 @@ export default function OnboardingTour() {
 
       {/* Floating Speech Bubble */}
       <div 
-        className={`${getSpeechBubblePosition()} z-[10000] max-w-[85vw] sm:max-w-sm animate-[float_3s_ease-in-out_infinite] animate-fade-in`}
+        className={`${getSpeechBubblePosition()} z-[10000] max-w-sm animate-[float_3s_ease-in-out_infinite] animate-fade-in`}
         style={{ animationDelay: "0.5s" }}
       >
         <div className="relative">
-          {/* Speech bubble tail */}
-          <div className="absolute -top-3 left-8 w-6 h-6 bg-card rotate-45 border-l-2 border-t-2 border-primary/30" />
+          {/* Speech bubble tail - hide on mobile for cleaner look */}
+          <div className="absolute -top-3 left-8 w-6 h-6 bg-card rotate-45 border-l-2 border-t-2 border-primary/30 hidden sm:block" />
           
           {/* Speech bubble content */}
-          <div className="relative bg-card border-2 border-primary/30 rounded-3xl shadow-2xl p-4 sm:p-5 backdrop-blur-sm">
+          <div className="relative bg-card border-2 border-primary/30 rounded-2xl sm:rounded-3xl shadow-2xl p-3 sm:p-5 backdrop-blur-sm">
             {/* Close button */}
             <Button
               variant="ghost"
               size="icon"
-              className="absolute -top-2 -right-2 rounded-full bg-destructive hover:bg-destructive/90 text-destructive-foreground h-7 w-7 shadow-lg pointer-events-auto"
+              className="absolute -top-2 -right-2 rounded-full bg-destructive hover:bg-destructive/90 text-destructive-foreground h-8 w-8 shadow-lg pointer-events-auto touch-manipulation"
               onClick={completeOnboarding}
             >
-              <X className="h-3 w-3" />
+              <X className="h-4 w-4" />
             </Button>
 
             {/* Progress indicator */}
-            <div className="mb-3 flex items-center gap-2">
+            <div className="mb-3 flex items-center gap-1.5 sm:gap-2 pr-6">
               {steps.map((_, idx) => (
                 <div
                   key={idx}
@@ -295,15 +297,15 @@ export default function OnboardingTour() {
               ))}
             </div>
 
-            <h3 className="text-base sm:text-lg font-bold text-foreground mb-2">
+            <h3 className="text-sm sm:text-lg font-bold text-foreground mb-2 pr-6">
               {step.title}
             </h3>
-            <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed mb-4">
+            <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed mb-3 sm:mb-4">
               {step.description}
             </p>
 
             {step.action === "click" && (
-              <div className="mb-3 p-2.5 bg-primary/10 rounded-xl border border-primary/30 animate-pulse">
+              <div className="mb-3 p-2 sm:p-2.5 bg-primary/10 rounded-xl border border-primary/30 animate-pulse">
                 <p className="text-xs font-semibold text-primary flex items-center gap-2">
                   <span className="text-base">👆</span> 
                   <span>Clique sur l'élément surligné!</span>
@@ -318,7 +320,7 @@ export default function OnboardingTour() {
                 onClick={handlePrevious}
                 disabled={currentStep === 0}
                 size="sm"
-                className="text-xs h-8"
+                className="text-xs h-9 px-3 touch-manipulation"
               >
                 Précédent
               </Button>
@@ -328,14 +330,14 @@ export default function OnboardingTour() {
                   variant="outline" 
                   onClick={completeOnboarding}
                   size="sm"
-                  className="text-xs h-8"
+                  className="text-xs h-9 px-3 touch-manipulation"
                 >
                   Passer
                 </Button>
                 {step.action === "wait" && (
                   <Button 
                     onClick={handleNext}
-                    className="bg-gradient-to-r from-primary to-success text-xs h-8 gap-1"
+                    className="bg-gradient-to-r from-primary to-success text-xs h-9 gap-1 px-3 touch-manipulation"
                     size="sm"
                   >
                     {currentStep === steps.length - 1 ? "Terminer" : "Suivant"}
