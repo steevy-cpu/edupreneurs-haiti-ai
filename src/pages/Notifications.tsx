@@ -4,7 +4,8 @@ import { useNavigate } from "react-router-dom";
 import { Card } from "@/components/ui/card";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import { Heart, MessageCircle, Share2, UserPlus } from "lucide-react";
+import { Heart, MessageCircle, Share2, UserPlus, Check, X } from "lucide-react";
+import { toast } from "@/hooks/use-toast";
 
 interface Profile {
   id: string;
@@ -208,10 +209,76 @@ export default function Notifications() {
     return `${days}d`;
   };
 
+  const handleAcceptFollow = async (notification: Notification) => {
+    try {
+      // Find the follow record
+      const { data: followData, error: fetchError } = await supabase
+        .from("follows")
+        .select("id")
+        .eq("follower_id", notification.actor_id)
+        .eq("following_id", notification.user_id)
+        .eq("status", "pending")
+        .single();
+
+      if (fetchError) {
+        console.error("Error finding follow request:", fetchError);
+        return;
+      }
+
+      // Update the follow status to accepted
+      const { error: updateError } = await supabase
+        .from("follows")
+        .update({ status: "accepted" })
+        .eq("id", followData.id);
+
+      if (updateError) throw updateError;
+
+      // Mark notification as read
+      await markAsRead(notification.id);
+      
+      toast({ title: "Follow request accepted!" });
+      fetchNotifications();
+    } catch (error: any) {
+      console.error("Error accepting follow request:", error);
+      toast({ 
+        title: "Failed to accept follow request",
+        variant: "destructive" 
+      });
+    }
+  };
+
+  const handleDeclineFollow = async (notification: Notification) => {
+    try {
+      // Delete the follow record
+      const { error } = await supabase
+        .from("follows")
+        .delete()
+        .eq("follower_id", notification.actor_id)
+        .eq("following_id", notification.user_id)
+        .eq("status", "pending");
+
+      if (error) throw error;
+
+      // Mark notification as read
+      await markAsRead(notification.id);
+      
+      toast({ title: "Follow request declined" });
+      fetchNotifications();
+    } catch (error: any) {
+      console.error("Error declining follow request:", error);
+      toast({ 
+        title: "Failed to decline follow request",
+        variant: "destructive" 
+      });
+    }
+  };
+
   const handleNotificationClick = (notification: Notification) => {
-    markAsRead(notification.id);
-    if (notification.post_id) {
-      navigate("/feed");
+    if (notification.type !== "follow_request") {
+      markAsRead(notification.id);
+      if (notification.post_id) {
+        navigate("/feed");
+      }
     }
   };
 
@@ -263,6 +330,33 @@ export default function Notifications() {
                         {formatTimeAgo(notification.created_at)}
                       </span>
                     </div>
+                    {notification.type === "follow_request" && !notification.read && (
+                      <div className="flex gap-2 mt-3">
+                        <Button
+                          size="sm"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleAcceptFollow(notification);
+                          }}
+                          className="flex items-center gap-1"
+                        >
+                          <Check size={14} />
+                          Accept
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleDeclineFollow(notification);
+                          }}
+                          className="flex items-center gap-1"
+                        >
+                          <X size={14} />
+                          Decline
+                        </Button>
+                      </div>
+                    )}
                   </div>
                 </div>
               </Card>
