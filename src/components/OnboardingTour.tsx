@@ -146,26 +146,11 @@ export default function OnboardingTour() {
 
   // Get position for Eric - he should be visible and prominent
   const getEricPosition = () => {
-    if (!highlightedElement) {
-      // Center Eric above the bottom sheet
-      return { 
-        bottom: "180px",
-        left: "50%", 
-        transform: "translateX(-50%)" 
-      };
-    }
-
-    // Position Eric near highlighted element
-    const rect = highlightedElement.getBoundingClientRect();
-    const viewportHeight = window.innerHeight;
-    
-    // Keep Eric above the bottom sheet (min 180px from bottom)
-    const topPosition = Math.min(rect.top - ericSize - 20, viewportHeight - 200);
-    
+    // Always center Eric in the middle of the screen
     return { 
-      top: `${Math.max(topPosition, 60)}px`, 
-      left: "50%",
-      transform: "translateX(-50%)"
+      top: "50%",
+      left: "50%", 
+      transform: "translate(-50%, -50%)" 
     };
   };
 
@@ -188,7 +173,7 @@ export default function OnboardingTour() {
 
   const isMobile = window.innerWidth < 768;
   const isTablet = window.innerWidth >= 768 && window.innerWidth < 1024;
-  const ericSize = isMobile ? 80 : isTablet ? 100 : 120;
+  const ericSize = isMobile ? 140 : isTablet ? 180 : 200;
 
   return (
     <>
@@ -233,13 +218,13 @@ export default function OnboardingTour() {
       <div 
         className={`${getSpeechBubblePosition()} z-[10000]`}
       >
-        <div className="bg-card/98 backdrop-blur-lg border-t-2 border-primary/40 shadow-2xl rounded-t-3xl max-h-[50vh] overflow-y-auto">
+        <div className="bg-card/98 backdrop-blur-lg border-t-2 border-primary/40 shadow-2xl rounded-t-3xl max-h-[35vh] overflow-y-auto">
           {/* Handle bar */}
           <div className="flex justify-center pt-2 pb-1">
             <div className="w-12 h-1 bg-muted rounded-full" />
           </div>
           
-          <div className="p-4 pb-safe">
+          <div className="p-3 pb-safe">
             {/* Close button */}
             <Button
               variant="ghost"
@@ -266,51 +251,51 @@ export default function OnboardingTour() {
               ))}
             </div>
 
-            <h3 className="text-lg sm:text-xl font-bold text-foreground mb-3">
+            <h3 className="text-base sm:text-lg font-bold text-foreground mb-2">
               {step.title}
             </h3>
-            <p className="text-base sm:text-lg text-foreground leading-relaxed mb-4">
+            <p className="text-sm sm:text-base text-foreground leading-snug mb-3">
               {step.description}
             </p>
 
             {step.action === "click" && (
-              <div className="mb-4 p-3 bg-primary/10 rounded-xl border border-primary/30 animate-pulse">
-                <p className="text-sm font-semibold text-primary flex items-center gap-2">
-                  <span className="text-xl">👆</span> 
+              <div className="mb-3 p-2 bg-primary/10 rounded-xl border border-primary/30 animate-pulse">
+                <p className="text-xs sm:text-sm font-semibold text-primary flex items-center gap-2">
+                  <span className="text-lg">👆</span> 
                   <span>Clique sur l'élément surligné!</span>
                 </p>
               </div>
             )}
 
             {/* Navigation buttons */}
-            <div className="flex items-center justify-between gap-3 pointer-events-auto pt-2">
+            <div className="flex items-center justify-between gap-2 pointer-events-auto pt-1">
               <Button
                 variant="ghost"
                 onClick={handlePrevious}
                 disabled={currentStep === 0}
-                size="lg"
-                className="flex-1 h-11"
+                size="sm"
+                className="flex-1 h-9"
               >
                 Précédent
               </Button>
 
-              <div className="flex gap-3 flex-1">
+              <div className="flex gap-2 flex-1">
                 <Button 
                   variant="outline" 
                   onClick={completeOnboarding}
-                  size="lg"
-                  className="flex-1 h-11"
+                  size="sm"
+                  className="flex-1 h-9"
                 >
                   Passer
                 </Button>
                 {step.action === "wait" && (
                   <Button 
                     onClick={handleNext}
-                    className="flex-1 bg-gradient-to-r from-primary to-success h-11 gap-2"
-                    size="lg"
+                    className="flex-1 bg-gradient-to-r from-primary to-success h-9 gap-2"
+                    size="sm"
                   >
                     {currentStep === steps.length - 1 ? "Terminer" : "Suivant"}
-                    <ArrowRight className="h-4 w-4" />
+                    <ArrowRight className="h-3 w-3" />
                   </Button>
                 )}
               </div>
