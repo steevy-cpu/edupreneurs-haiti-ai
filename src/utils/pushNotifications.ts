@@ -58,9 +58,10 @@ export const subscribeToPushNotifications = async (
     // Public VAPID key - in production, this should be from your backend
     const vapidPublicKey = 'BEl62iUYgUivxIkv69yViEuiBIa-Ib9-SkvMeAtA3LFgDzkrxZJjSgSnfckjBJuBkr3qBroV5VGqq84s6cVRwCg';
     
+    const vapidKey = urlBase64ToUint8Array(vapidPublicKey);
     const subscription = await registration.pushManager.subscribe({
       userVisibleOnly: true,
-      applicationServerKey: urlBase64ToUint8Array(vapidPublicKey)
+      applicationServerKey: vapidKey.buffer as ArrayBuffer
     });
 
     // Save subscription to Supabase
