@@ -387,9 +387,9 @@ export const Layout = ({ children }: LayoutProps) => {
           >
             <Bell size={16} className="sm:w-[17px] sm:h-[17px] lg:w-[18px] lg:h-[18px]" />
             Notifications
-            {(unreadNotifications + pendingFollowRequests) > 0 && (
+            {unreadNotifications > 0 && (
               <span className="ml-auto flex items-center justify-center h-4 sm:h-5 min-w-[16px] sm:min-w-[20px] px-1 sm:px-1.5 rounded-full bg-destructive text-destructive-foreground text-[10px] sm:text-xs font-semibold">
-                {unreadNotifications + pendingFollowRequests}
+                {unreadNotifications}
               </span>
             )}
           </a>

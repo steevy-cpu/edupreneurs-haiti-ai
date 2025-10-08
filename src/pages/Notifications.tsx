@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { Card } from "@/components/ui/card";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import { Heart, MessageCircle, Share2 } from "lucide-react";
+import { Heart, MessageCircle, Share2, UserPlus } from "lucide-react";
 
 interface Profile {
   id: string;
@@ -20,7 +20,7 @@ interface Notification {
   user_id: string;
   actor_id: string;
   post_id: string | null;
-  type: "like" | "comment" | "share";
+  type: "like" | "comment" | "share" | "follow_request";
   content: string | null;
   read: boolean;
   created_at: string;
@@ -93,7 +93,7 @@ export default function Notifications() {
 
           return {
             ...notification,
-            type: notification.type as "like" | "comment" | "share",
+            type: notification.type as "like" | "comment" | "share" | "follow_request",
             actorProfile: actorProfile || {
               id: "",
               user_id: notification.actor_id,
@@ -171,6 +171,8 @@ export default function Notifications() {
         return <MessageCircle size={16} className="text-blue-500" />;
       case "share":
         return <Share2 size={16} className="text-green-500" />;
+      case "follow_request":
+        return <UserPlus size={16} className="text-purple-500" />;
       default:
         return null;
     }
@@ -180,11 +182,13 @@ export default function Notifications() {
     const actor = notification.actorProfile.nickname;
     switch (notification.type) {
       case "like":
-        return `${actor} liked your post`;
+        return `${actor} a aimé votre publication`;
       case "comment":
-        return `${actor} commented: "${notification.content}"`;
+        return `${actor} a commenté: "${notification.content}"`;
       case "share":
-        return `${actor} shared your post`;
+        return `${actor} a partagé votre publication`;
+      case "follow_request":
+        return `${actor} a demandé à vous suivre`;
       default:
         return "";
     }
