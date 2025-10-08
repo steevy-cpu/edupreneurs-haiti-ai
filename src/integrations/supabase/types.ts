@@ -92,6 +92,7 @@ export type Database = {
           created_at: string
           id: string
           read: boolean
+          replied_to_id: string | null
           sender_id: string
           shared_post_id: string | null
         }
@@ -101,6 +102,7 @@ export type Database = {
           created_at?: string
           id?: string
           read?: boolean
+          replied_to_id?: string | null
           sender_id: string
           shared_post_id?: string | null
         }
@@ -110,6 +112,7 @@ export type Database = {
           created_at?: string
           id?: string
           read?: boolean
+          replied_to_id?: string | null
           sender_id?: string
           shared_post_id?: string | null
         }
@@ -119,6 +122,13 @@ export type Database = {
             columns: ["conversation_id"]
             isOneToOne: false
             referencedRelation: "conversations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "messages_replied_to_id_fkey"
+            columns: ["replied_to_id"]
+            isOneToOne: false
+            referencedRelation: "messages"
             referencedColumns: ["id"]
           },
           {

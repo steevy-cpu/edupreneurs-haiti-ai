@@ -36,6 +36,8 @@ interface Message {
   read: boolean;
   profile?: Profile;
   shared_post_id?: string | null;
+  replied_to_id?: string | null;
+  replied_to?: Message;
   shared_post?: {
     id: string;
     content: string;
@@ -59,6 +61,7 @@ const Community = () => {
   const [newMessage, setNewMessage] = useState("");
   const [isSending, setIsSending] = useState(false);
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
+  const [replyingTo, setReplyingTo] = useState<Message | null>(null);
   const previousMessagesCount = useRef<number>(0);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const messageChannelRef = useRef<any>(null);
@@ -259,7 +262,7 @@ const Community = () => {
   const fetchMessages = async (conversationId: string) => {
     const { data: messagesData } = await supabase
       .from("messages")
-      .select("id, content, sender_id, created_at, read, shared_post_id, conversation_id")
+      .select("id, content, sender_id, created_at, read, shared_post_id, conversation_id, replied_to_id")
       .eq("conversation_id", conversationId)
       .order("created_at", { ascending: true });
 
@@ -298,6 +301,10 @@ const Community = () => {
 
     const enrichedMessages = messagesData.map(msg => {
       const sharedPost = sharedPosts.find(p => p.id === msg.shared_post_id);
+      const repliedTo = msg.replied_to_id 
+        ? messagesData.find(m => m.id === msg.replied_to_id)
+        : null;
+      
       return {
         id: msg.id,
         content: msg.content,
@@ -305,8 +312,18 @@ const Community = () => {
         created_at: msg.created_at,
         conversation_id: msg.conversation_id,
         shared_post_id: msg.shared_post_id,
+        replied_to_id: msg.replied_to_id,
         read: msg.read ?? false,
         profile: profiles?.find(p => p.user_id === msg.sender_id),
+        replied_to: repliedTo ? {
+          id: repliedTo.id,
+          content: repliedTo.content,
+          sender_id: repliedTo.sender_id,
+          created_at: repliedTo.created_at,
+          read: repliedTo.read ?? false,
+          profile: profiles?.find(p => p.user_id === repliedTo.sender_id),
+          shared_post_id: repliedTo.shared_post_id,
+        } : undefined,
         shared_post: sharedPost ? {
           ...sharedPost,
           profile: sharedPostProfiles.find(p => p.user_id === sharedPost.user_id)
@@ -463,6 +480,7 @@ const Community = () => {
       sender_id: user.id,
       content: messageContent,
       read: false,
+      replied_to_id: replyingTo?.id || null,
     });
 
     if (error) {
@@ -474,6 +492,7 @@ const Community = () => {
     } else {
       playSendSound();
       setNewMessage("");
+      setReplyingTo(null);
       
       // Send notification to recipient
       const conversation = conversations.find(c => c.id === selectedConversation);
@@ -632,7 +651,10 @@ const Community = () => {
                       key={message.id}
                       className={`flex ${isOwn ? "justify-end" : "justify-start"}`}
                     >
-                      <div className={`flex gap-1.5 sm:gap-2 max-w-[90%] sm:max-w-[75%] ${isOwn ? "flex-row-reverse" : "flex-row"}`}>
+                      <div 
+                        className={`flex gap-1.5 sm:gap-2 max-w-[90%] sm:max-w-[75%] ${isOwn ? "flex-row-reverse" : "flex-row"}`}
+                        onClick={() => setReplyingTo(message)}
+                      >
                         <Avatar 
                           className="h-7 w-7 sm:h-8 sm:w-8 shrink-0 cursor-pointer hover:opacity-80 transition-opacity"
                           onClick={() => {
@@ -645,7 +667,20 @@ const Community = () => {
                             {message.profile?.full_name?.[0] || "?"}
                           </AvatarFallback>
                         </Avatar>
-                        <div>
+                        <div className="flex flex-col gap-1">
+                          {message.replied_to && (
+                            <div className={`text-xs px-2 py-1 rounded-lg border ${
+                              isOwn ? "bg-primary/20 border-primary/30" : "bg-muted/60 border-border/30"
+                            }`}>
+                              <div className="font-semibold opacity-70">
+                                {message.replied_to.profile?.nickname || message.replied_to.profile?.full_name}
+                              </div>
+                              <div className="opacity-60 truncate">
+                                {message.replied_to.content.substring(0, 50)}
+                                {message.replied_to.content.length > 50 && "..."}
+                              </div>
+                            </div>
+                          )}
                           {message.shared_post ? (
                             // Shared Post Display
                             <div
@@ -712,6 +747,27 @@ const Community = () => {
 
             {/* Message Input */}
             <div className="border-t border-border/50 p-2 sm:p-4">
+              {replyingTo && (
+                <div className="mb-2 px-3 py-2 bg-muted/50 rounded-lg border border-border/30 flex items-start justify-between">
+                  <div className="flex-1 min-w-0">
+                    <div className="text-xs font-semibold text-primary mb-0.5">
+                      Répondre à {replyingTo.profile?.nickname || replyingTo.profile?.full_name}
+                    </div>
+                    <div className="text-xs text-muted-foreground truncate">
+                      {replyingTo.content}
+                    </div>
+                  </div>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    className="h-6 w-6 p-0 shrink-0"
+                    onClick={() => setReplyingTo(null)}
+                  >
+                    ✕
+                  </Button>
+                </div>
+              )}
               <div className="flex gap-1.5 sm:gap-2">
                 <Popover open={showEmojiPicker} onOpenChange={setShowEmojiPicker}>
                   <PopoverTrigger asChild>
