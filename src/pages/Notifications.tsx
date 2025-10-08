@@ -50,7 +50,12 @@ export default function Notifications() {
     const {
       data: { user },
     } = await supabase.auth.getUser();
-    if (!user) return;
+    if (!user) {
+      console.log("No user found");
+      return;
+    }
+
+    console.log("Fetching notifications for user:", user.id);
 
     const { data: notificationsData, error } = await supabase
       .from("notifications")
@@ -58,41 +63,55 @@ export default function Notifications() {
       .eq("user_id", user.id)
       .order("created_at", { ascending: false });
 
+    console.log("Notifications query result:", { notificationsData, error });
+
     if (error) {
       console.error("Error fetching notifications:", error);
       return;
     }
 
-    if (!notificationsData) return;
+    if (!notificationsData || notificationsData.length === 0) {
+      console.log("No notifications data found");
+      setNotifications([]);
+      return;
+    }
 
-    const notificationsWithProfiles = await Promise.all(
-      notificationsData.map(async (notification) => {
-        const { data: actorProfile, error: profileError } = await supabase
-          .from("profiles")
-          .select("id, user_id, nickname, full_name, affiliation_points, academic_grade")
-          .eq("user_id", notification.actor_id)
-          .maybeSingle();
+    console.log(`Found ${notificationsData.length} notifications`);
 
-        if (profileError) {
-          console.error("Error fetching actor profile:", profileError);
-        }
+    try {
+      const notificationsWithProfiles = await Promise.all(
+        notificationsData.map(async (notification) => {
+          const { data: actorProfile, error: profileError } = await supabase
+            .from("profiles")
+            .select("id, user_id, nickname, full_name, affiliation_points, academic_grade")
+            .eq("user_id", notification.actor_id)
+            .maybeSingle();
 
-        return {
-          ...notification,
-          type: notification.type as "like" | "comment" | "share",
-          actorProfile: actorProfile || {
-            id: "",
-            user_id: notification.actor_id,
-            nickname: "Unknown User",
-            full_name: "Unknown User",
-            affiliation_points: 0,
-            academic_grade: "",
-          } as Profile,
-        };
-      })
-    );
+          if (profileError) {
+            console.error("Error fetching actor profile:", profileError);
+          }
 
-    setNotifications(notificationsWithProfiles);
+          return {
+            ...notification,
+            type: notification.type as "like" | "comment" | "share",
+            actorProfile: actorProfile || {
+              id: "",
+              user_id: notification.actor_id,
+              nickname: "Unknown User",
+              full_name: "Unknown User",
+              affiliation_points: 0,
+              academic_grade: "",
+            } as Profile,
+          };
+        })
+      );
+
+      console.log("Notifications with profiles:", notificationsWithProfiles);
+      setNotifications(notificationsWithProfiles);
+    } catch (err) {
+      console.error("Error processing notifications:", err);
+      setNotifications([]);
+    }
   };
 
   const subscribeToNotifications = () => {
