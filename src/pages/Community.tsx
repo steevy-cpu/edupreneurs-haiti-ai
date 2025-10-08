@@ -569,8 +569,16 @@ const Community = () => {
       {/* Conversations List */}
       <div className={`${selectedConversation ? "hidden md:block" : "block"} w-full md:w-80 lg:w-96 border-r border-border/50`}>
         <div className="sticky top-0 z-50 border-b border-border/50 bg-background/95 backdrop-blur p-3 sm:p-4">
-          <div className="flex items-center justify-between mb-2 sm:mb-3">
-            <h1 className="text-lg sm:text-xl font-semibold">Messages</h1>
+          <div className="flex items-center gap-2 sm:gap-3 mb-2 sm:mb-3">
+            <Button
+              size="icon"
+              variant="ghost"
+              onClick={() => navigate("/dashboard")}
+              className="shrink-0"
+            >
+              <ArrowLeft size={18} className="sm:w-5 sm:h-5" />
+            </Button>
+            <h1 className="text-lg sm:text-xl font-semibold flex-1">Messages</h1>
             <Button
               size="icon"
               variant="ghost"
