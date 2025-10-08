@@ -117,8 +117,11 @@ const Community = () => {
 
   useEffect(() => {
     if (selectedConversation) {
-      fetchMessages(selectedConversation);
-      markMessagesAsRead(selectedConversation);
+      const loadConversation = async () => {
+        await fetchMessages(selectedConversation);
+        await markMessagesAsRead(selectedConversation);
+      };
+      loadConversation();
       subscribeToConversationMessages(selectedConversation);
     }
     return () => {
