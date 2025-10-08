@@ -26,6 +26,7 @@ interface Notification {
   read: boolean;
   created_at: string;
   actorProfile: Profile;
+  followRequestPending?: boolean;
 }
 
 export default function Notifications() {
@@ -92,9 +93,24 @@ export default function Notifications() {
             console.error("Error fetching actor profile:", profileError);
           }
 
+          // Check if follow request is still pending
+          let followRequestPending = false;
+          if (notification.type === "follow_request") {
+            const { data: followData } = await supabase
+              .from("follows")
+              .select("status")
+              .eq("follower_id", notification.actor_id)
+              .eq("following_id", notification.user_id)
+              .eq("status", "pending")
+              .maybeSingle();
+            
+            followRequestPending = !!followData;
+          }
+
           return {
             ...notification,
             type: notification.type as "like" | "comment" | "share" | "follow_request",
+            followRequestPending,
             actorProfile: actorProfile || {
               id: "",
               user_id: notification.actor_id,
@@ -330,7 +346,7 @@ export default function Notifications() {
                         {formatTimeAgo(notification.created_at)}
                       </span>
                     </div>
-                    {notification.type === "follow_request" && !notification.read && (
+                    {notification.type === "follow_request" && notification.followRequestPending && (
                       <div className="flex gap-2 mt-3">
                         <Button
                           size="sm"
@@ -341,7 +357,7 @@ export default function Notifications() {
                           className="flex items-center gap-1"
                         >
                           <Check size={14} />
-                          Accept
+                          Accepter
                         </Button>
                         <Button
                           size="sm"
@@ -353,7 +369,7 @@ export default function Notifications() {
                           className="flex items-center gap-1"
                         >
                           <X size={14} />
-                          Decline
+                          Refuser
                         </Button>
                       </div>
                     )}
