@@ -52,26 +52,42 @@ export default function Notifications() {
     } = await supabase.auth.getUser();
     if (!user) return;
 
-    const { data: notificationsData } = await supabase
+    const { data: notificationsData, error } = await supabase
       .from("notifications")
       .select("*")
       .eq("user_id", user.id)
       .order("created_at", { ascending: false });
 
+    if (error) {
+      console.error("Error fetching notifications:", error);
+      return;
+    }
+
     if (!notificationsData) return;
 
     const notificationsWithProfiles = await Promise.all(
       notificationsData.map(async (notification) => {
-        const { data: actorProfile } = await supabase
+        const { data: actorProfile, error: profileError } = await supabase
           .from("profiles")
           .select("id, user_id, nickname, full_name, affiliation_points, academic_grade")
           .eq("user_id", notification.actor_id)
-          .single();
+          .maybeSingle();
+
+        if (profileError) {
+          console.error("Error fetching actor profile:", profileError);
+        }
 
         return {
           ...notification,
           type: notification.type as "like" | "comment" | "share",
-          actorProfile: actorProfile as Profile,
+          actorProfile: actorProfile || {
+            id: "",
+            user_id: notification.actor_id,
+            nickname: "Unknown User",
+            full_name: "Unknown User",
+            affiliation_points: 0,
+            academic_grade: "",
+          } as Profile,
         };
       })
     );
