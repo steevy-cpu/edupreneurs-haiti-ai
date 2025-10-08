@@ -109,6 +109,42 @@ export const Layout = ({ children }: LayoutProps) => {
         },
         async (payload) => {
           await fetchUnreadNotifications();
+          
+          // Show toast for new notifications
+          if (payload.eventType === "INSERT" && payload.new) {
+            const notification = payload.new as any;
+            
+            // Fetch actor profile
+            const { data: actorProfile } = await supabase
+              .from("profiles")
+              .select("nickname, full_name")
+              .eq("user_id", notification.actor_id)
+              .single();
+            
+            const actorName = actorProfile?.nickname || actorProfile?.full_name || "Quelqu'un";
+            
+            // Show different messages based on notification type
+            let message = "";
+            if (notification.type === "follow_request") {
+              message = `${actorName} a demandé à vous suivre`;
+            } else if (notification.type === "like") {
+              message = `${actorName} a aimé votre publication`;
+            } else if (notification.type === "comment") {
+              message = `${actorName} a commenté votre publication`;
+            } else if (notification.type === "share") {
+              message = `${actorName} a partagé votre publication`;
+            } else {
+              message = notification.content || "Nouvelle notification";
+            }
+            
+            toast.info(message, {
+              duration: 5000,
+              action: {
+                label: "Voir",
+                onClick: () => navigate("/notifications"),
+              },
+            });
+          }
         }
       )
       .subscribe();
