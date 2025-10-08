@@ -17,6 +17,7 @@ interface Profile {
   school: string | null;
   academic_grade: string;
   affiliation_points: number;
+  avatar_url: string | null;
 }
 
 interface FollowStatus {
@@ -207,7 +208,7 @@ export default function Profile() {
         <Card className="p-4 sm:p-8">
           <div className="flex flex-col items-center space-y-3 sm:space-y-4">
             <Avatar className="w-24 h-24 sm:w-32 sm:h-32">
-              <AvatarImage src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${profile.nickname}`} />
+              <AvatarImage src={profile.avatar_url || undefined} />
               <AvatarFallback>{profile.nickname[0].toUpperCase()}</AvatarFallback>
             </Avatar>
 
