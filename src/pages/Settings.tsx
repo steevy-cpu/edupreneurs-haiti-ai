@@ -9,7 +9,7 @@ import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Switch } from "@/components/ui/switch";
 import { Separator } from "@/components/ui/separator";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   User,
   Lock,
@@ -38,6 +38,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import { AvatarSelector } from "@/components/AvatarSelector";
 
 interface UserProfile {
   id: string;
@@ -48,6 +49,7 @@ interface UserProfile {
   user_id: string;
   bio: string | null;
   school: string | null;
+  avatar_url: string | null;
 }
 
 const Settings = () => {
@@ -57,6 +59,7 @@ const Settings = () => {
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [followerCount, setFollowerCount] = useState(0);
   const [followingCount, setFollowingCount] = useState(0);
+  const [selectedAvatar, setSelectedAvatar] = useState<string>("");
   const [profileForm, setProfileForm] = useState({
     fullName: "",
     nickname: "",
@@ -108,6 +111,7 @@ const Settings = () => {
     }
 
     setProfile(profileData);
+    setSelectedAvatar(profileData.avatar_url || "");
     setProfileForm({
       fullName: profileData.full_name || "",
       nickname: profileData.nickname || "",
@@ -139,6 +143,23 @@ const Settings = () => {
     await supabase.auth.signOut();
     toast.success("Déconnexion réussie");
     navigate("/auth");
+  };
+
+  const handleAvatarSelect = async (avatarUrl: string) => {
+    setSelectedAvatar(avatarUrl);
+    
+    try {
+      const { error } = await supabase
+        .from("profiles")
+        .update({ avatar_url: avatarUrl })
+        .eq("user_id", profile?.user_id);
+
+      if (error) throw error;
+      
+      toast.success("Avatar mis à jour!");
+    } catch (error: any) {
+      toast.error("Erreur lors de la mise à jour de l'avatar");
+    }
   };
 
   const handleProfileUpdate = async (e: React.FormEvent) => {
@@ -290,6 +311,7 @@ const Settings = () => {
                 <div className="flex flex-col sm:flex-row items-center gap-6">
                   {/* Profile Avatar */}
                   <Avatar className="h-24 w-24">
+                    {selectedAvatar && <AvatarImage src={selectedAvatar} alt="Avatar" />}
                     <AvatarFallback className="bg-gradient-to-br from-primary/20 to-success/20 text-3xl font-semibold">
                       {profile?.nickname?.[0] || profile?.full_name?.[0] || "?"}
                     </AvatarFallback>
@@ -337,6 +359,20 @@ const Settings = () => {
               </CardHeader>
               <CardContent className="p-4 sm:p-6 pt-0">
                 <form onSubmit={handleProfileUpdate} className="space-y-4 sm:space-y-6">
+                  {/* Avatar Selection */}
+                  <div className="space-y-3">
+                    <Label className="text-base font-semibold">Photo de profil</Label>
+                    <p className="text-sm text-muted-foreground mb-3">
+                      Choisis un avatar qui te représente
+                    </p>
+                    <AvatarSelector 
+                      selectedAvatar={selectedAvatar}
+                      onSelect={handleAvatarSelect}
+                    />
+                  </div>
+
+                  <Separator />
+
                   <div className="grid md:grid-cols-2 gap-6">
                     <div className="space-y-2">
                       <Label htmlFor="fullName" className="flex items-center gap-2">
