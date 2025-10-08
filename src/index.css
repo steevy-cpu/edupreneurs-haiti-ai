@@ -535,7 +535,7 @@ All colors MUST be HSL.
 
 /* Eric Chatbot Styles - Updated with glassmorphism design */
 .eric-floating-character {
-    @apply fixed bottom-24 right-5 z-[100] w-28 cursor-pointer transition-transform duration-300 hover:scale-105;
+    @apply fixed top-24 right-5 z-[1000] w-28 cursor-pointer transition-transform duration-300 hover:scale-105;
   }
 
   .eric-floating-character img {
@@ -552,8 +552,8 @@ All colors MUST be HSL.
   }
 
   .eric-chat-interface {
-    @apply fixed right-5 z-[101] w-[380px] rounded-3xl p-5;
-    bottom: 180px;
+    @apply fixed right-5 z-[1001] w-[380px] rounded-3xl p-5;
+    top: 250px;
     max-height: calc(100vh - 280px);
     background: transparent;
     backdrop-filter: none;
@@ -570,7 +570,7 @@ All colors MUST be HSL.
   }
 
   .eric-close-btn {
-    @apply absolute z-[102] w-8 h-8 rounded-full flex items-center justify-center;
+    @apply absolute z-[1002] w-8 h-8 rounded-full flex items-center justify-center;
     top: -15px;
     right: -10px;
     background: rgba(239, 68, 68, 0.9) !important;
@@ -779,7 +779,7 @@ All colors MUST be HSL.
 
   @media (max-width: 768px) {
     .eric-floating-character {
-      @apply w-20 bottom-20 right-2.5;
+      @apply w-20 top-20 right-2.5;
     }
     
     .eric-floating-tooltip {
@@ -792,7 +792,7 @@ All colors MUST be HSL.
       @apply w-[320px] right-2.5 left-2.5;
       width: calc(100vw - 20px);
       max-width: 360px;
-      bottom: 120px;
+      top: 200px;
       max-height: calc(100vh - 230px);
     }
     
