@@ -202,12 +202,12 @@ export default function OnboardingTour() {
     
     if (!highlightedElement) {
       // Center below Eric when no element is highlighted
-      return "fixed top-[50%] left-1/2 -translate-x-1/2 w-[85vw] sm:max-w-md";
+      return "fixed top-[50%] left-1/2 -translate-x-1/2 w-[90vw] max-w-md";
     }
 
     // Speech bubble should be at the bottom on mobile/tablet for better visibility
     if (isMobile || isTablet) {
-      return "fixed bottom-4 left-1/2 -translate-x-1/2 w-[85vw] sm:max-w-md";
+      return "fixed bottom-4 left-1/2 -translate-x-1/2 w-[90vw] max-w-md";
     }
 
     // On desktop, position speech bubble away from Eric
@@ -289,7 +289,7 @@ export default function OnboardingTour() {
           <div className="absolute -top-2 left-8 w-5 h-5 bg-card rotate-45 border-l border-t border-primary/30" />
           
           {/* Speech bubble content */}
-          <div className="relative bg-card/95 border-2 border-primary/40 rounded-2xl shadow-2xl backdrop-blur-md p-4 sm:p-5">
+          <div className="relative bg-card/95 border-2 border-primary/40 rounded-2xl shadow-2xl backdrop-blur-md p-3 sm:p-5">
             {/* Close button */}
             <Button
               variant="ghost"
@@ -316,10 +316,10 @@ export default function OnboardingTour() {
               ))}
             </div>
 
-            <h3 className="text-sm sm:text-lg font-bold text-foreground mb-2 pr-8 break-words">
+            <h3 className="text-sm sm:text-lg font-bold text-foreground mb-2 pr-6 break-words hyphens-auto">
               {step.title}
             </h3>
-            <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed mb-3 sm:mb-4 break-words">
+            <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed mb-3 sm:mb-4 break-words hyphens-auto">
               {step.description}
             </p>
 
