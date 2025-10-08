@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -12,6 +12,7 @@ interface Profile {
   user_id: string;
   full_name: string;
   nickname: string;
+  avatar_url: string | null;
 }
 
 const UserSearch = () => {
@@ -45,7 +46,7 @@ const UserSearch = () => {
     // Use public_profiles view to only access non-sensitive user data
     const { data, error } = await supabase
       .from("public_profiles")
-      .select("user_id, full_name, nickname")
+      .select("user_id, full_name, nickname, avatar_url")
       .or(`full_name.ilike.%${query}%,nickname.ilike.%${query}%`)
       .neq("user_id", currentUser?.id)
       .limit(20)
@@ -218,6 +219,7 @@ const UserSearch = () => {
                   className="flex items-center gap-3 p-3 rounded-lg hover:bg-muted/30 transition-colors"
                 >
                   <Avatar className="h-12 w-12 cursor-pointer" onClick={() => navigate(`/profile/${profile.user_id}`)}>
+                    <AvatarImage src={profile.avatar_url || undefined} alt={profile.full_name} />
                     <AvatarFallback className="bg-gradient-to-br from-primary/20 to-success/20 text-foreground">
                       {profile.full_name[0]}
                     </AvatarFallback>
