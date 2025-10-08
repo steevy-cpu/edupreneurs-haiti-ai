@@ -248,8 +248,7 @@ export const Layout = ({ children }: LayoutProps) => {
           <img 
             src={edupreneursLogo} 
             alt="EDUPRENEURS" 
-            className="h-12 sm:h-14 w-auto object-contain" 
-            style={{ filter: 'none' }}
+            className="h-12 sm:h-14 w-auto object-contain logo-no-filter"
           />
           <button
             onClick={() => setSidebarOpen(false)}

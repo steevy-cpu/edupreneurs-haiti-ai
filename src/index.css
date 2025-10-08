@@ -104,6 +104,18 @@ All colors MUST be HSL.
     box-shadow: var(--shadow-card), var(--shadow-glow);
   }
 
+  .logo-no-filter {
+    filter: none !important;
+    -webkit-filter: none !important;
+    opacity: 1 !important;
+  }
+
+  .dark .logo-no-filter {
+    filter: none !important;
+    -webkit-filter: none !important;
+    opacity: 1 !important;
+  }
+
   @keyframes float {
     0%, 100% { transform: translateY(0px); }
     50% { transform: translateY(-10px); }
