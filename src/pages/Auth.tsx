@@ -165,6 +165,43 @@ export default function Auth() {
       return;
     }
 
+    // Validate password requirements
+    if (signupData.password.length < 6) {
+      toast({
+        title: "Mot de passe trop court",
+        description: "Le mot de passe doit contenir au moins 6 caractères",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (!/[0-9]/.test(signupData.password)) {
+      toast({
+        title: "Mot de passe invalide",
+        description: "Le mot de passe doit contenir au moins un chiffre",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (!/[A-Z]/.test(signupData.password)) {
+      toast({
+        title: "Mot de passe invalide",
+        description: "Le mot de passe doit contenir au moins une majuscule",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (!/[!@#$%^&*(),.?":{}|<>]/.test(signupData.password)) {
+      toast({
+        title: "Mot de passe invalide",
+        description: "Le mot de passe doit contenir au moins un caractère spécial",
+        variant: "destructive",
+      });
+      return;
+    }
+
     if (nicknameAvailable === false) {
       toast({
         title: "Pseudo non disponible",
@@ -537,10 +574,27 @@ export default function Auth() {
                         id="signup-password"
                         type="password"
                         required
+                        minLength={6}
                         value={signupData.password}
                         onChange={(e) => setSignupData({ ...signupData, password: e.target.value })}
                         className="auth-input"
                       />
+                      {signupData.password && (
+                        <div className="space-y-1 text-xs mt-2">
+                          <p className={`flex items-center gap-1 ${signupData.password.length >= 6 ? 'text-success' : 'text-muted-foreground'}`}>
+                            {signupData.password.length >= 6 ? '✓' : '○'} Au moins 6 caractères
+                          </p>
+                          <p className={`flex items-center gap-1 ${/[0-9]/.test(signupData.password) ? 'text-success' : 'text-muted-foreground'}`}>
+                            {/[0-9]/.test(signupData.password) ? '✓' : '○'} Au moins un chiffre
+                          </p>
+                          <p className={`flex items-center gap-1 ${/[A-Z]/.test(signupData.password) ? 'text-success' : 'text-muted-foreground'}`}>
+                            {/[A-Z]/.test(signupData.password) ? '✓' : '○'} Au moins une majuscule
+                          </p>
+                          <p className={`flex items-center gap-1 ${/[!@#$%^&*(),.?":{}|<>]/.test(signupData.password) ? 'text-success' : 'text-muted-foreground'}`}>
+                            {/[!@#$%^&*(),.?":{}|<>]/.test(signupData.password) ? '✓' : '○'} Au moins un caractère spécial (!@#$%...)
+                          </p>
+                        </div>
+                      )}
                     </div>
 
                     <div className="grid md:grid-cols-2 gap-3">
