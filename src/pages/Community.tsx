@@ -134,20 +134,14 @@ const Community = () => {
   const markMessagesAsRead = async (conversationId: string) => {
     if (!user) return;
     
-    console.log('📖 Marking messages as read for conversation:', conversationId);
-    
-    const { data, error } = await supabase
+    const { error } = await supabase
       .from("messages")
       .update({ read: true })
       .eq("conversation_id", conversationId)
       .neq("sender_id", user.id)
-      .eq("read", false)
-      .select();
+      .eq("read", false);
 
-    if (error) {
-      console.error('Error marking messages as read:', error);
-    } else {
-      console.log('✓ Messages marked as read:', data);
+    if (!error) {
       // Immediately update local state for messages
       setMessages(prev =>
         prev.map(msg =>
@@ -348,7 +342,6 @@ const Community = () => {
           filter: `conversation_id=eq.${conversationId}`,
         },
         async (payload) => {
-          console.log('📨 New message INSERT event:', payload);
           // Fetch the sender profile
           const { data: profile } = await supabase
             .from("profiles")
@@ -422,29 +415,17 @@ const Community = () => {
           filter: `conversation_id=eq.${conversationId}`,
         },
         (payload) => {
-          console.log("✅ Message UPDATE event received:", payload);
-          console.log("Updated message ID:", payload.new.id);
-          console.log("New read status:", payload.new.read);
-          
           // Update message read status in real-time
-          setMessages((prev) => {
-            const updated = prev.map((msg) => {
-              if (msg.id === payload.new.id) {
-                console.log(`Updating message ${msg.id} read status from ${msg.read} to ${payload.new.read}`);
-                return { ...msg, read: payload.new.read };
-              }
-              return msg;
-            });
-            return updated;
-          });
+          setMessages((prev) =>
+            prev.map((msg) =>
+              msg.id === payload.new.id 
+                ? { ...msg, read: payload.new.read }
+                : msg
+            )
+          );
         }
       )
-      .subscribe((status, err) => {
-        console.log('📡 Subscription status:', status);
-        if (err) {
-          console.error('Subscription error:', err);
-        }
-      });
+      .subscribe();
 
     messageChannelRef.current = channel;
   };
@@ -481,6 +462,7 @@ const Community = () => {
       conversation_id: selectedConversation,
       sender_id: user.id,
       content: messageContent,
+      read: false,
     });
 
     if (error) {
@@ -645,9 +627,6 @@ const Community = () => {
               <div className="space-y-2 sm:space-y-4 pb-4">
                 {messages.map((message) => {
                   const isOwn = message.sender_id === user?.id;
-                  if (isOwn) {
-                    console.log(`Message ${message.id.slice(0, 8)}: read=${message.read}, content="${message.content.slice(0, 20)}"`);
-                  }
                   return (
                     <div
                       key={message.id}
