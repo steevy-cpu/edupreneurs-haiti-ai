@@ -4,8 +4,8 @@ import { X, ArrowRight } from "lucide-react";
 import ericWaving from "@/assets/eric-waving.png";
 import ericPointingLeft from "@/assets/eric-pointing-left.png";
 import ericPointingUp from "@/assets/eric-pointing-up.png";
-import ericThinking from "@/assets/eric-thinking-pose.png";
 import ericThumbUp from "@/assets/eric-thumb-up.png";
+import { useSoundEffects } from "@/hooks/useSoundEffects";
 
 interface OnboardingStep {
   title: string;
@@ -34,16 +34,15 @@ const steps: OnboardingStep[] = [
   },
   {
     title: "Tes statistiques",
-    description: "Voici tes statistiques! Tu peux voir tes golds gagnés, tes affiliations, ta progression et ton abonnement. Super non?",
+    description: "Voici ton tableau de bord! Tu peux voir tes golds gagnés, tes affiliations, ta progression et ton abonnement. Super non?",
     image: ericPointingUp,
-    targetSelector: "[data-tour='stats-section']",
-    position: "bottom",
+    position: "center",
     action: "wait",
   },
   {
     title: "Navigation principale",
     description: "Ici tu trouveras toutes les sections: Matières, Ressources, Fil d'actualité, et plus encore!",
-    image: ericThinking,
+    image: ericPointingLeft,
     targetSelector: "[data-tour='nav-section']",
     position: "right",
     action: "wait",
@@ -61,6 +60,7 @@ export default function OnboardingTour() {
   const [isActive, setIsActive] = useState(false);
   const [currentStep, setCurrentStep] = useState(0);
   const [highlightedElement, setHighlightedElement] = useState<HTMLElement | null>(null);
+  const { playSound } = useSoundEffects();
 
   useEffect(() => {
     const hasCompletedOnboarding = localStorage.getItem("onboarding_completed");
@@ -76,11 +76,23 @@ export default function OnboardingTour() {
 
     const step = steps[currentStep];
     
+    // Play sound when step changes
+    playSound("next");
+    
     // Find and highlight the target element
     if (step.targetSelector) {
       const element = document.querySelector(step.targetSelector) as HTMLElement;
       if (element) {
         setHighlightedElement(element);
+        
+        // Special handling for navigation section - scroll sidebar down
+        if (step.targetSelector === "[data-tour='nav-section']") {
+          const sidebar = document.querySelector("[data-tour='sidebar-content']") as HTMLElement;
+          if (sidebar) {
+            sidebar.scrollTo({ top: 200, behavior: "smooth" });
+          }
+        }
+        
         // Better scroll behavior for mobile
         element.scrollIntoView({ 
           behavior: "smooth", 
@@ -91,6 +103,7 @@ export default function OnboardingTour() {
         // If action is click, wait for user to click the element
         if (step.action === "click") {
           const handleClick = () => {
+            playSound("correct");
             setTimeout(() => {
               handleNext();
             }, 300);
@@ -106,6 +119,7 @@ export default function OnboardingTour() {
   }, [currentStep, isActive]);
 
   const handleNext = () => {
+    playSound("correct");
     if (currentStep < steps.length - 1) {
       setCurrentStep(currentStep + 1);
     } else {
@@ -202,16 +216,16 @@ export default function OnboardingTour() {
         className="fixed z-[10001] pointer-events-none transition-all duration-500 ease-out"
         style={getEricPosition()}
       >
-        <div className="relative animate-bounce">
+        <div className="relative">
           <img
             src={step.image}
             alt="Eric le guide"
-            className="drop-shadow-2xl"
+            className="drop-shadow-2xl transition-transform duration-500"
             style={{ width: `${ericSize}px`, height: `${ericSize}px` }}
             key={currentStep}
           />
           {/* Glow effect around Eric */}
-          <div className="absolute inset-0 -z-10 rounded-full bg-primary/30 blur-xl" />
+          <div className="absolute inset-0 -z-10 rounded-full bg-primary/30 blur-xl animate-pulse" />
         </div>
       </div>
 
@@ -252,10 +266,10 @@ export default function OnboardingTour() {
               ))}
             </div>
 
-            <h3 className="text-base sm:text-xl font-bold text-foreground mb-2">
+            <h3 className="text-lg sm:text-xl font-bold text-foreground mb-3">
               {step.title}
             </h3>
-            <p className="text-sm sm:text-base text-muted-foreground leading-relaxed mb-4">
+            <p className="text-base sm:text-lg text-foreground leading-relaxed mb-4">
               {step.description}
             </p>
 
@@ -306,15 +320,6 @@ export default function OnboardingTour() {
       </div>
 
       <style>{`
-        @keyframes bounce {
-          0%, 100% {
-            transform: translateY(0px);
-          }
-          50% {
-            transform: translateY(-15px);
-          }
-        }
-        
         .pb-safe {
           padding-bottom: env(safe-area-inset-bottom, 16px);
         }
