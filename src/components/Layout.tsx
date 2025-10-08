@@ -48,11 +48,16 @@ export const Layout = ({ children }: LayoutProps) => {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return;
     
-    const { data: profile } = await supabase
+    const { data: profile, error } = await supabase
       .from("profiles")
       .select("avatar_url, nickname")
       .eq("user_id", user.id)
       .single();
+    
+    if (error) {
+      console.error("Error fetching profile:", error);
+      return;
+    }
     
     if (profile?.avatar_url) {
       setUserAvatar(profile.avatar_url);
@@ -240,7 +245,12 @@ export const Layout = ({ children }: LayoutProps) => {
       >
         {/* Sidebar Header */}
         <div className="bg-gradient-to-br from-[hsl(var(--primary))] to-[hsl(var(--success))] text-white p-3 sm:p-4 lg:p-5 border-b border-white/10 flex items-center justify-between">
-          <img src={edupreneursLogo} alt="EDUPRENEURS" className="h-12 sm:h-14 w-auto object-contain brightness-100 contrast-100 [filter:none]" />
+          <img 
+            src={edupreneursLogo} 
+            alt="EDUPRENEURS" 
+            className="h-12 sm:h-14 w-auto object-contain" 
+            style={{ filter: 'none' }}
+          />
           <button
             onClick={() => setSidebarOpen(false)}
             className="lg:hidden p-1.5 sm:p-2 rounded-lg bg-white/20 hover:bg-white/30 transition-colors"
