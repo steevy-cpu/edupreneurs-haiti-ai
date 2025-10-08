@@ -132,96 +132,32 @@ export default function OnboardingTour() {
 
   // Get position for Eric - he should be visible and prominent
   const getEricPosition = () => {
-    const isMobile = window.innerWidth < 768;
-    const isTablet = window.innerWidth >= 768 && window.innerWidth < 1024;
-    
     if (!highlightedElement) {
-      // Center Eric above the speech bubble when no element is highlighted
+      // Center Eric above the bottom sheet
       return { 
-        top: "35%", 
+        bottom: "180px",
         left: "50%", 
-        transform: "translate(-50%, -50%)" 
+        transform: "translateX(-50%)" 
       };
     }
 
+    // Position Eric near highlighted element
     const rect = highlightedElement.getBoundingClientRect();
-    const ericSize = isMobile ? 60 : isTablet ? 80 : 120;
     const viewportHeight = window.innerHeight;
-    const viewportWidth = window.innerWidth;
-
-    // Calculate safe positions that keep Eric visible
-    switch (step.position) {
-      case "right":
-        if (isMobile || isTablet) {
-          // On mobile, put Eric above the highlighted element
-          return { 
-            top: `${Math.max(rect.top - ericSize - 20, 80)}px`, 
-            left: "50%",
-            transform: "translateX(-50%)"
-          };
-        }
-        // Desktop: Eric on the right side
-        return { 
-          top: `${Math.max(Math.min(rect.top + rect.height / 2, viewportHeight - ericSize - 20), 80)}px`, 
-          left: `${Math.min(rect.right + 40, viewportWidth - ericSize - 20)}px`,
-          transform: "translateY(-50%)"
-        };
-      case "left":
-        if (isMobile || isTablet) {
-          return { 
-            top: `${Math.max(rect.top - ericSize - 20, 80)}px`, 
-            left: "50%",
-            transform: "translateX(-50%)"
-          };
-        }
-        return { 
-          top: `${Math.max(Math.min(rect.top + rect.height / 2, viewportHeight - ericSize - 20), 80)}px`, 
-          left: `${Math.max(rect.left - ericSize - 40, 20)}px`,
-          transform: "translateY(-50%)"
-        };
-      case "bottom":
-        return { 
-          top: `${Math.max(rect.top - ericSize - 20, 80)}px`, 
-          left: "50%",
-          transform: "translateX(-50%)"
-        };
-      case "top":
-        return { 
-          top: `${Math.max(rect.top - ericSize - 20, 80)}px`, 
-          left: "50%",
-          transform: "translateX(-50%)"
-        };
-      default:
-        return { top: "35%", left: "50%", transform: "translate(-50%, -50%)" };
-    }
+    
+    // Keep Eric above the bottom sheet (min 180px from bottom)
+    const topPosition = Math.min(rect.top - ericSize - 20, viewportHeight - 200);
+    
+    return { 
+      top: `${Math.max(topPosition, 60)}px`, 
+      left: "50%",
+      transform: "translateX(-50%)"
+    };
   };
 
   const getSpeechBubblePosition = () => {
-    const isMobile = window.innerWidth < 768;
-    const isTablet = window.innerWidth >= 768 && window.innerWidth < 1024;
-    
-    if (!highlightedElement) {
-      // Center below Eric when no element is highlighted
-      return "fixed top-[55%] left-1/2 -translate-x-1/2 w-[95vw] max-w-md";
-    }
-
-    // Speech bubble should be at the bottom on mobile/tablet for better visibility
-    if (isMobile || isTablet) {
-      return "fixed bottom-2 left-1/2 -translate-x-1/2 w-[95vw] max-w-md max-h-[45vh] overflow-y-auto";
-    }
-
-    // On desktop, position speech bubble away from Eric
-    switch (step.position) {
-      case "right":
-        return "fixed left-6 top-1/2 -translate-y-1/2 w-full max-w-md";
-      case "left":
-        return "fixed right-6 top-1/2 -translate-y-1/2 w-full max-w-md";
-      case "bottom":
-      case "top":
-        return "fixed bottom-6 left-1/2 -translate-x-1/2 w-full max-w-md";
-      default:
-        return "fixed top-[55%] left-1/2 -translate-x-1/2 w-full max-w-md";
-    }
+    // Always at the bottom on mobile for reliability
+    return "fixed bottom-0 left-0 right-0 w-full";
   };
 
   const getHighlightStyle = () => {
@@ -238,7 +174,7 @@ export default function OnboardingTour() {
 
   const isMobile = window.innerWidth < 768;
   const isTablet = window.innerWidth >= 768 && window.innerWidth < 1024;
-  const ericSize = isMobile ? 60 : isTablet ? 80 : 120;
+  const ericSize = isMobile ? 80 : isTablet ? 100 : 120;
 
   return (
     <>
@@ -263,49 +199,49 @@ export default function OnboardingTour() {
 
       {/* Floating Eric Character - Always visible and prominent */}
       <div 
-        className="fixed z-[10001] pointer-events-none animate-[float_3s_ease-in-out_infinite]"
+        className="fixed z-[10001] pointer-events-none transition-all duration-500 ease-out"
         style={getEricPosition()}
       >
-        <div className="relative">
+        <div className="relative animate-bounce">
           <img
             src={step.image}
             alt="Eric le guide"
-            className="drop-shadow-2xl transition-all duration-300"
+            className="drop-shadow-2xl"
             style={{ width: `${ericSize}px`, height: `${ericSize}px` }}
             key={currentStep}
           />
           {/* Glow effect around Eric */}
-          <div className="absolute inset-0 -z-10 rounded-full bg-primary/20 blur-2xl animate-pulse" />
+          <div className="absolute inset-0 -z-10 rounded-full bg-primary/30 blur-xl" />
         </div>
       </div>
 
-      {/* Floating Speech Bubble */}
+      {/* Bottom Sheet Speech Bubble */}
       <div 
-        className={`${getSpeechBubblePosition()} z-[10000] animate-[float_3s_ease-in-out_infinite] animate-fade-in`}
-        style={{ animationDelay: "0.5s" }}
+        className={`${getSpeechBubblePosition()} z-[10000]`}
       >
-        <div className="relative">
-          {/* Speech bubble tail pointing toward Eric */}
-          <div className="absolute -top-2 left-8 w-5 h-5 bg-card rotate-45 border-l border-t border-primary/30" />
+        <div className="bg-card/98 backdrop-blur-lg border-t-2 border-primary/40 shadow-2xl rounded-t-3xl max-h-[50vh] overflow-y-auto">
+          {/* Handle bar */}
+          <div className="flex justify-center pt-2 pb-1">
+            <div className="w-12 h-1 bg-muted rounded-full" />
+          </div>
           
-          {/* Speech bubble content */}
-          <div className="relative bg-card/95 border-2 border-primary/40 rounded-xl sm:rounded-2xl shadow-2xl backdrop-blur-md p-3 sm:p-4 min-h-[120px] sm:min-h-0">
+          <div className="p-4 pb-safe">
             {/* Close button */}
             <Button
               variant="ghost"
               size="icon"
-              className="absolute -top-1.5 -right-1.5 rounded-full bg-destructive hover:bg-destructive/90 text-destructive-foreground h-7 w-7 sm:h-8 sm:w-8 shadow-lg pointer-events-auto touch-manipulation"
+              className="absolute top-3 right-3 rounded-full bg-destructive/10 hover:bg-destructive/20 text-destructive h-8 w-8 pointer-events-auto z-10"
               onClick={completeOnboarding}
             >
-              <X className="h-3 w-3 sm:h-4 sm:w-4" />
+              <X className="h-4 w-4" />
             </Button>
 
             {/* Progress indicator */}
-            <div className="mb-2 sm:mb-3 flex items-center gap-1 sm:gap-1.5 pr-5 sm:pr-6">
+            <div className="mb-4 flex items-center gap-2 pr-10">
               {steps.map((_, idx) => (
                 <div
                   key={idx}
-                  className={`h-1 sm:h-1.5 flex-1 rounded-full transition-all ${
+                  className={`h-2 flex-1 rounded-full transition-all duration-300 ${
                     idx === currentStep
                       ? "bg-primary scale-110"
                       : idx < currentStep
@@ -316,51 +252,51 @@ export default function OnboardingTour() {
               ))}
             </div>
 
-            <h3 className="text-xs sm:text-base font-bold text-foreground mb-1.5 sm:mb-2 pr-5 sm:pr-6 break-words leading-tight">
+            <h3 className="text-base sm:text-xl font-bold text-foreground mb-2">
               {step.title}
             </h3>
-            <p className="text-[11px] sm:text-sm text-muted-foreground leading-relaxed mb-2 sm:mb-3 break-words">
+            <p className="text-sm sm:text-base text-muted-foreground leading-relaxed mb-4">
               {step.description}
             </p>
 
             {step.action === "click" && (
-              <div className="mb-2 sm:mb-3 p-2 sm:p-2 bg-primary/10 rounded-lg sm:rounded-xl border border-primary/30 animate-pulse">
-                <p className="text-[11px] sm:text-xs font-semibold text-primary flex items-center gap-1.5 sm:gap-2">
-                  <span className="text-sm sm:text-base">👆</span> 
-                  <span className="leading-tight">Clique sur l'élément surligné!</span>
+              <div className="mb-4 p-3 bg-primary/10 rounded-xl border border-primary/30 animate-pulse">
+                <p className="text-sm font-semibold text-primary flex items-center gap-2">
+                  <span className="text-xl">👆</span> 
+                  <span>Clique sur l'élément surligné!</span>
                 </p>
               </div>
             )}
 
             {/* Navigation buttons */}
-            <div className="flex items-center justify-between gap-2 pointer-events-auto flex-wrap">
+            <div className="flex items-center justify-between gap-3 pointer-events-auto pt-2">
               <Button
                 variant="ghost"
                 onClick={handlePrevious}
                 disabled={currentStep === 0}
-                size="sm"
-                className="text-[11px] sm:text-xs h-8 sm:h-8 px-2.5 sm:px-3 touch-manipulation whitespace-nowrap"
+                size="lg"
+                className="flex-1 h-11"
               >
                 Précédent
               </Button>
 
-              <div className="flex gap-2">
+              <div className="flex gap-3 flex-1">
                 <Button 
                   variant="outline" 
                   onClick={completeOnboarding}
-                  size="sm"
-                  className="text-[11px] sm:text-xs h-8 sm:h-8 px-2.5 sm:px-3 touch-manipulation whitespace-nowrap"
+                  size="lg"
+                  className="flex-1 h-11"
                 >
                   Passer
                 </Button>
                 {step.action === "wait" && (
                   <Button 
                     onClick={handleNext}
-                    className="bg-gradient-to-r from-primary to-success text-[11px] sm:text-xs h-8 sm:h-8 gap-1 px-2.5 sm:px-3 touch-manipulation whitespace-nowrap"
-                    size="sm"
+                    className="flex-1 bg-gradient-to-r from-primary to-success h-11 gap-2"
+                    size="lg"
                   >
                     {currentStep === steps.length - 1 ? "Terminer" : "Suivant"}
-                    <ArrowRight className="h-3 w-3" />
+                    <ArrowRight className="h-4 w-4" />
                   </Button>
                 )}
               </div>
@@ -370,13 +306,17 @@ export default function OnboardingTour() {
       </div>
 
       <style>{`
-        @keyframes float {
+        @keyframes bounce {
           0%, 100% {
             transform: translateY(0px);
           }
           50% {
-            transform: translateY(-10px);
+            transform: translateY(-15px);
           }
+        }
+        
+        .pb-safe {
+          padding-bottom: env(safe-area-inset-bottom, 16px);
         }
       `}</style>
     </>
