@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useToast } from "@/hooks/use-toast";
-import { Send, ArrowLeft, Search, Smile } from "lucide-react";
+import { Send, ArrowLeft, Search, Smile, Check, CheckCheck } from "lucide-react";
 import { useMessageSounds } from "@/hooks/useMessageSounds";
 import EmojiPicker from "emoji-picker-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
@@ -33,6 +33,7 @@ interface Message {
   content: string;
   sender_id: string;
   created_at: string;
+  read: boolean;
   profile?: Profile;
   shared_post_id?: string | null;
   shared_post?: {
@@ -352,6 +353,7 @@ const Community = () => {
             content: payload.new.content,
             sender_id: payload.new.sender_id,
             created_at: payload.new.created_at,
+            read: payload.new.read || false,
             shared_post_id: payload.new.shared_post_id,
             profile,
             shared_post: sharedPost,
@@ -377,6 +379,25 @@ const Community = () => {
               notification.close();
             };
           }
+        }
+      )
+      .on(
+        "postgres_changes",
+        {
+          event: "UPDATE",
+          schema: "public",
+          table: "messages",
+          filter: `conversation_id=eq.${conversationId}`,
+        },
+        (payload) => {
+          // Update message read status in real-time
+          setMessages((prev) =>
+            prev.map((msg) =>
+              msg.id === payload.new.id
+                ? { ...msg, read: payload.new.read }
+                : msg
+            )
+          );
         }
       )
       .subscribe();
@@ -640,9 +661,18 @@ const Community = () => {
                               </p>
                             </div>
                           )}
-                          <span className="text-xs text-muted-foreground mt-1 block">
-                            {formatTime(message.created_at)}
-                          </span>
+                          <div className="flex items-center gap-1 mt-1">
+                            <span className="text-xs text-muted-foreground">
+                              {formatTime(message.created_at)}
+                            </span>
+                            {isOwn && (
+                              message.read ? (
+                                <CheckCheck size={14} className="text-primary" />
+                              ) : (
+                                <Check size={14} className="text-muted-foreground" />
+                              )
+                            )}
+                          </div>
                         </div>
                       </div>
                     </div>
