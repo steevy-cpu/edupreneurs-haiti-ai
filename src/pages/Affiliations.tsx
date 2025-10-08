@@ -35,6 +35,12 @@ interface UserProfile {
   full_name: string;
 }
 
+interface PublicProfile {
+  user_id: string;
+  full_name: string;
+  nickname: string;
+}
+
 interface Referral {
   id: string;
   referred_id: string;
@@ -117,7 +123,8 @@ const Affiliations = () => {
       const { data: publicProfiles } = await supabase
         .from("public_profiles")
         .select("user_id, full_name, nickname")
-        .in("user_id", referredIds);
+        .in("user_id", referredIds)
+        .returns<PublicProfile[]>();
       
       // Create properly typed referral objects
       referralsData.forEach((referral) => {

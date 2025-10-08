@@ -48,7 +48,8 @@ const UserSearch = () => {
       .select("user_id, full_name, nickname")
       .or(`full_name.ilike.%${query}%,nickname.ilike.%${query}%`)
       .neq("user_id", currentUser?.id)
-      .limit(20);
+      .limit(20)
+      .returns<Profile[]>();
 
     if (error) {
       console.error("Error searching users:", error);
