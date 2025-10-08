@@ -256,7 +256,7 @@ const Community = () => {
   const fetchMessages = async (conversationId: string) => {
     const { data: messagesData } = await supabase
       .from("messages")
-      .select("*")
+      .select("id, content, sender_id, created_at, read, shared_post_id, conversation_id")
       .eq("conversation_id", conversationId)
       .order("created_at", { ascending: true });
 
@@ -297,6 +297,7 @@ const Community = () => {
       const sharedPost = sharedPosts.find(p => p.id === msg.shared_post_id);
       return {
         ...msg,
+        read: msg.read || false,
         profile: profiles?.find(p => p.user_id === msg.sender_id),
         shared_post: sharedPost ? {
           ...sharedPost,
