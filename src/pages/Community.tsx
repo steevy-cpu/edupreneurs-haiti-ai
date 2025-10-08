@@ -645,6 +645,9 @@ const Community = () => {
               <div className="space-y-2 sm:space-y-4 pb-4">
                 {messages.map((message) => {
                   const isOwn = message.sender_id === user?.id;
+                  if (isOwn) {
+                    console.log(`Message ${message.id.slice(0, 8)}: read=${message.read}, content="${message.content.slice(0, 20)}"`);
+                  }
                   return (
                     <div
                       key={message.id}
@@ -710,11 +713,13 @@ const Community = () => {
                               {formatTime(message.created_at)}
                             </span>
                             {isOwn && (
-                              message.read ? (
-                                <CheckCheck size={14} className="text-primary" />
-                              ) : (
-                                <Check size={14} className="text-muted-foreground" />
-                              )
+                              <span className="inline-flex">
+                                {message.read ? (
+                                  <CheckCheck size={14} className="text-primary" />
+                                ) : (
+                                  <Check size={14} className="text-muted-foreground" />
+                                )}
+                              </span>
                             )}
                           </div>
                         </div>
