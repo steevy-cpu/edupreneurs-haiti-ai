@@ -145,7 +145,7 @@ export default function OnboardingTour() {
     }
 
     const rect = highlightedElement.getBoundingClientRect();
-    const ericSize = isMobile ? 80 : isTablet ? 100 : 130;
+    const ericSize = isMobile ? 60 : isTablet ? 80 : 120;
     const viewportHeight = window.innerHeight;
     const viewportWidth = window.innerWidth;
 
@@ -202,12 +202,12 @@ export default function OnboardingTour() {
     
     if (!highlightedElement) {
       // Center below Eric when no element is highlighted
-      return "fixed top-[50%] left-1/2 -translate-x-1/2 w-[92vw] max-w-md";
+      return "fixed top-[55%] left-1/2 -translate-x-1/2 w-[95vw] max-w-md";
     }
 
     // Speech bubble should be at the bottom on mobile/tablet for better visibility
     if (isMobile || isTablet) {
-      return "fixed bottom-2 left-1/2 -translate-x-1/2 w-[92vw] max-w-md max-h-[40vh] overflow-y-auto";
+      return "fixed bottom-2 left-1/2 -translate-x-1/2 w-[95vw] max-w-md max-h-[45vh] overflow-y-auto";
     }
 
     // On desktop, position speech bubble away from Eric
@@ -220,7 +220,7 @@ export default function OnboardingTour() {
       case "top":
         return "fixed bottom-6 left-1/2 -translate-x-1/2 w-full max-w-md";
       default:
-        return "fixed top-[50%] left-1/2 -translate-x-1/2 w-full max-w-md";
+        return "fixed top-[55%] left-1/2 -translate-x-1/2 w-full max-w-md";
     }
   };
 
@@ -238,7 +238,7 @@ export default function OnboardingTour() {
 
   const isMobile = window.innerWidth < 768;
   const isTablet = window.innerWidth >= 768 && window.innerWidth < 1024;
-  const ericSize = isMobile ? 70 : isTablet ? 90 : 130;
+  const ericSize = isMobile ? 60 : isTablet ? 80 : 120;
 
   return (
     <>
@@ -289,7 +289,7 @@ export default function OnboardingTour() {
           <div className="absolute -top-2 left-8 w-5 h-5 bg-card rotate-45 border-l border-t border-primary/30" />
           
           {/* Speech bubble content */}
-          <div className="relative bg-card/95 border-2 border-primary/40 rounded-xl sm:rounded-2xl shadow-2xl backdrop-blur-md p-2.5 sm:p-4">
+          <div className="relative bg-card/95 border-2 border-primary/40 rounded-xl sm:rounded-2xl shadow-2xl backdrop-blur-md p-3 sm:p-4 min-h-[120px] sm:min-h-0">
             {/* Close button */}
             <Button
               variant="ghost"
@@ -316,16 +316,16 @@ export default function OnboardingTour() {
               ))}
             </div>
 
-            <h3 className="text-xs sm:text-base font-bold text-foreground mb-1.5 sm:mb-2 pr-5 sm:pr-6 break-words hyphens-auto leading-tight">
+            <h3 className="text-xs sm:text-base font-bold text-foreground mb-1.5 sm:mb-2 pr-5 sm:pr-6 break-words leading-tight">
               {step.title}
             </h3>
-            <p className="text-[10px] sm:text-sm text-muted-foreground leading-snug sm:leading-relaxed mb-2 sm:mb-3 break-words hyphens-auto">
+            <p className="text-[11px] sm:text-sm text-muted-foreground leading-relaxed mb-2 sm:mb-3 break-words">
               {step.description}
             </p>
 
             {step.action === "click" && (
-              <div className="mb-2 sm:mb-3 p-1.5 sm:p-2 bg-primary/10 rounded-lg sm:rounded-xl border border-primary/30 animate-pulse">
-                <p className="text-[10px] sm:text-xs font-semibold text-primary flex items-center gap-1.5 sm:gap-2">
+              <div className="mb-2 sm:mb-3 p-2 sm:p-2 bg-primary/10 rounded-lg sm:rounded-xl border border-primary/30 animate-pulse">
+                <p className="text-[11px] sm:text-xs font-semibold text-primary flex items-center gap-1.5 sm:gap-2">
                   <span className="text-sm sm:text-base">👆</span> 
                   <span className="leading-tight">Clique sur l'élément surligné!</span>
                 </p>
@@ -333,34 +333,34 @@ export default function OnboardingTour() {
             )}
 
             {/* Navigation buttons */}
-            <div className="flex items-center justify-between gap-1.5 sm:gap-2 pointer-events-auto flex-wrap">
+            <div className="flex items-center justify-between gap-2 pointer-events-auto flex-wrap">
               <Button
                 variant="ghost"
                 onClick={handlePrevious}
                 disabled={currentStep === 0}
                 size="sm"
-                className="text-[10px] sm:text-xs h-7 sm:h-8 px-2 sm:px-3 touch-manipulation whitespace-nowrap"
+                className="text-[11px] sm:text-xs h-8 sm:h-8 px-2.5 sm:px-3 touch-manipulation whitespace-nowrap"
               >
                 Précédent
               </Button>
 
-              <div className="flex gap-1.5 sm:gap-2">
+              <div className="flex gap-2">
                 <Button 
                   variant="outline" 
                   onClick={completeOnboarding}
                   size="sm"
-                  className="text-[10px] sm:text-xs h-7 sm:h-8 px-2 sm:px-3 touch-manipulation whitespace-nowrap"
+                  className="text-[11px] sm:text-xs h-8 sm:h-8 px-2.5 sm:px-3 touch-manipulation whitespace-nowrap"
                 >
                   Passer
                 </Button>
                 {step.action === "wait" && (
                   <Button 
                     onClick={handleNext}
-                    className="bg-gradient-to-r from-primary to-success text-[10px] sm:text-xs h-7 sm:h-8 gap-1 px-2 sm:px-3 touch-manipulation whitespace-nowrap"
+                    className="bg-gradient-to-r from-primary to-success text-[11px] sm:text-xs h-8 sm:h-8 gap-1 px-2.5 sm:px-3 touch-manipulation whitespace-nowrap"
                     size="sm"
                   >
                     {currentStep === steps.length - 1 ? "Terminer" : "Suivant"}
-                    <ArrowRight className="h-2.5 w-2.5 sm:h-3 sm:w-3" />
+                    <ArrowRight className="h-3 w-3" />
                   </Button>
                 )}
               </div>
