@@ -34,6 +34,7 @@ export const Layout = ({ children }: LayoutProps) => {
   const [pendingFollowRequests, setPendingFollowRequests] = useState(0);
   const [unreadNotifications, setUnreadNotifications] = useState(0);
   const [userAvatar, setUserAvatar] = useState<string>(dashboardImage);
+  const [userNickname, setUserNickname] = useState<string>("Étudiant");
 
   useEffect(() => {
     checkAuth();
@@ -49,12 +50,15 @@ export const Layout = ({ children }: LayoutProps) => {
     
     const { data: profile } = await supabase
       .from("profiles")
-      .select("avatar_url")
+      .select("avatar_url, nickname")
       .eq("user_id", user.id)
       .single();
     
     if (profile?.avatar_url) {
       setUserAvatar(profile.avatar_url);
+    }
+    if (profile?.nickname) {
+      setUserNickname(profile.nickname);
     }
   };
 
@@ -236,7 +240,7 @@ export const Layout = ({ children }: LayoutProps) => {
       >
         {/* Sidebar Header */}
         <div className="bg-gradient-to-br from-[hsl(var(--primary))] to-[hsl(var(--success))] text-white p-3 sm:p-4 lg:p-5 border-b border-white/10 flex items-center justify-between">
-          <img src={edupreneursLogo} alt="EDUPRENEURS" className="h-12 sm:h-14 w-auto object-contain" />
+          <img src={edupreneursLogo} alt="EDUPRENEURS" className="h-12 sm:h-14 w-auto object-contain brightness-100 contrast-100 [filter:none]" />
           <button
             onClick={() => setSidebarOpen(false)}
             className="lg:hidden p-1.5 sm:p-2 rounded-lg bg-white/20 hover:bg-white/30 transition-colors"
@@ -250,8 +254,7 @@ export const Layout = ({ children }: LayoutProps) => {
           <div className="w-12 h-12 sm:w-14 sm:h-14 lg:w-16 lg:h-16 mx-auto mb-2 sm:mb-3 lg:mb-4 rounded-full overflow-hidden bg-gradient-to-br from-[hsl(var(--primary))] to-[hsl(var(--success))] shadow-md animate-[gentle-bob_8s_ease-in-out_infinite]">
             <img src={userAvatar} alt="User Avatar" className="w-full h-full object-cover" />
           </div>
-          <div className="font-bold text-sm sm:text-base lg:text-lg text-foreground mb-0.5 sm:mb-1">Mon Profil</div>
-          <div className="text-xs sm:text-sm text-muted-foreground">Étudiant</div>
+          <div className="font-bold text-sm sm:text-base lg:text-lg text-foreground">{userNickname}</div>
         </div>
 
         {/* Navigation */}
