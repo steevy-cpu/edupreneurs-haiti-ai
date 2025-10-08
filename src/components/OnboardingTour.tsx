@@ -6,13 +6,15 @@ import ericPointingLeft from "@/assets/eric-pointing-left.png";
 import ericPointingUp from "@/assets/eric-pointing-up.png";
 import ericThumbUp from "@/assets/eric-thumb-up.png";
 import { useSoundEffects } from "@/hooks/useSoundEffects";
+import { AvatarSelector } from "@/components/AvatarSelector";
+import { supabase } from "@/integrations/supabase/client";
 
 interface OnboardingStep {
   title: string;
   description: string;
   image: string;
   targetSelector?: string; // Element to highlight
-  action?: "click" | "wait"; // What user needs to do
+  action?: "click" | "wait" | "avatar-select"; // What user needs to do
   position: "left" | "right" | "top" | "bottom" | "center";
 }
 
@@ -23,6 +25,13 @@ const steps: OnboardingStep[] = [
     image: ericWaving,
     position: "center",
     action: "wait",
+  },
+  {
+    title: "Choisis ton avatar!",
+    description: "Personnalise ton profil en choisissant l'avatar qui te représente le mieux. Sélectionne-en un pour continuer!",
+    image: ericThumbUp,
+    position: "center",
+    action: "avatar-select",
   },
   {
     title: "Ouvre le menu",
@@ -60,6 +69,7 @@ export default function OnboardingTour() {
   const [isActive, setIsActive] = useState(false);
   const [currentStep, setCurrentStep] = useState(0);
   const [highlightedElement, setHighlightedElement] = useState<HTMLElement | null>(null);
+  const [selectedAvatar, setSelectedAvatar] = useState<string>("");
   const { playSound } = useSoundEffects();
 
   useEffect(() => {
@@ -118,13 +128,30 @@ export default function OnboardingTour() {
     }
   }, [currentStep, isActive]);
 
-  const handleNext = () => {
+  const handleNext = async () => {
     playSound("correct");
+    
+    // Save avatar if on avatar selection step
+    if (steps[currentStep].action === "avatar-select" && selectedAvatar) {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        await supabase
+          .from("profiles")
+          .update({ avatar_url: selectedAvatar })
+          .eq("user_id", user.id);
+      }
+    }
+    
     if (currentStep < steps.length - 1) {
       setCurrentStep(currentStep + 1);
     } else {
       completeOnboarding();
     }
+  };
+  
+  const handleAvatarSelect = (avatarUrl: string) => {
+    setSelectedAvatar(avatarUrl);
+    playSound("correct");
   };
 
   const handlePrevious = () => {
@@ -258,6 +285,15 @@ export default function OnboardingTour() {
               {step.description}
             </p>
 
+            {step.action === "avatar-select" && (
+              <div className="mb-4">
+                <AvatarSelector 
+                  selectedAvatar={selectedAvatar} 
+                  onSelect={handleAvatarSelect} 
+                />
+              </div>
+            )}
+
             {step.action === "click" && (
               <div className="mb-3 p-2 bg-primary/10 rounded-xl border border-primary/30 animate-pulse">
                 <p className="text-xs sm:text-sm font-semibold text-primary flex items-center gap-2">
@@ -288,10 +324,11 @@ export default function OnboardingTour() {
                 >
                   Passer
                 </Button>
-                {step.action === "wait" && (
+                {(step.action === "wait" || step.action === "avatar-select") && (
                   <Button 
                     onClick={handleNext}
-                    className="flex-1 bg-gradient-to-r from-primary to-success h-9 gap-2"
+                    disabled={step.action === "avatar-select" && !selectedAvatar}
+                    className="flex-1 bg-gradient-to-r from-primary to-success h-9 gap-2 disabled:opacity-50"
                     size="sm"
                   >
                     {currentStep === steps.length - 1 ? "Terminer" : "Suivant"}

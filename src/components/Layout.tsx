@@ -32,13 +32,30 @@ export const Layout = ({ children }: LayoutProps) => {
   const [totalUnreadMessages, setTotalUnreadMessages] = useState(0);
   const [pendingFollowRequests, setPendingFollowRequests] = useState(0);
   const [unreadNotifications, setUnreadNotifications] = useState(0);
+  const [userAvatar, setUserAvatar] = useState<string>(dashboardImage);
 
   useEffect(() => {
     checkAuth();
     fetchUnreadCount();
     fetchPendingFollowRequests();
     fetchUnreadNotifications();
+    fetchUserAvatar();
   }, []);
+  
+  const fetchUserAvatar = async () => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+    
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("avatar_url")
+      .eq("user_id", user.id)
+      .single();
+    
+    if (profile?.avatar_url) {
+      setUserAvatar(profile.avatar_url);
+    }
+  };
 
   useEffect(() => {
     const messagesChannel = supabase
@@ -212,7 +229,10 @@ export const Layout = ({ children }: LayoutProps) => {
       )}
 
       {/* Sidebar */}
-      <div className={`fixed top-0 left-0 h-screen w-[240px] sm:w-[260px] lg:w-[280px] bg-card border-r border-border shadow-lg z-[1000] transition-transform duration-300 overflow-y-auto ${sidebarOpen ? "translate-x-0" : "-translate-x-full"}`}>
+      <div 
+        data-tour="sidebar-content"
+        className={`fixed top-0 left-0 h-screen w-[240px] sm:w-[260px] lg:w-[280px] bg-card border-r border-border shadow-lg z-[1000] transition-transform duration-300 overflow-y-auto ${sidebarOpen ? "translate-x-0" : "-translate-x-full"}`}
+      >
         {/* Sidebar Header */}
         <div className="bg-gradient-to-br from-[hsl(var(--primary))] to-[hsl(var(--success))] text-white p-3 sm:p-4 lg:p-5 border-b border-white/10 flex items-center justify-between">
           <div className="text-sm sm:text-base lg:text-lg font-bold">EDUPRENEURS</div>
@@ -224,13 +244,13 @@ export const Layout = ({ children }: LayoutProps) => {
           </button>
         </div>
 
-        {/* Eric Agent Section */}
+        {/* User Profile Section */}
         <div className="p-3 sm:p-4 lg:p-6 text-center border-b border-border bg-gradient-to-br from-muted/30 to-muted/10">
           <div className="w-12 h-12 sm:w-14 sm:h-14 lg:w-16 lg:h-16 mx-auto mb-2 sm:mb-3 lg:mb-4 rounded-full overflow-hidden bg-gradient-to-br from-[hsl(var(--primary))] to-[hsl(var(--success))] shadow-md animate-[gentle-bob_8s_ease-in-out_infinite]">
-            <img src={dashboardImage} alt="Eric Avatar" className="w-full h-full object-cover" />
+            <img src={userAvatar} alt="User Avatar" className="w-full h-full object-cover" />
           </div>
-          <div className="font-bold text-sm sm:text-base lg:text-lg text-foreground mb-0.5 sm:mb-1">Eric</div>
-          <div className="text-xs sm:text-sm text-muted-foreground">Votre assistant IA</div>
+          <div className="font-bold text-sm sm:text-base lg:text-lg text-foreground mb-0.5 sm:mb-1">Mon Profil</div>
+          <div className="text-xs sm:text-sm text-muted-foreground">Étudiant</div>
         </div>
 
         {/* Navigation */}

@@ -329,6 +329,7 @@ export type Database = {
         Row: {
           academic_grade: string
           affiliation_points: number | null
+          avatar_url: string | null
           bio: string | null
           confirmation_code: string | null
           created_at: string | null
@@ -349,6 +350,7 @@ export type Database = {
         Insert: {
           academic_grade: string
           affiliation_points?: number | null
+          avatar_url?: string | null
           bio?: string | null
           confirmation_code?: string | null
           created_at?: string | null
@@ -369,6 +371,7 @@ export type Database = {
         Update: {
           academic_grade?: string
           affiliation_points?: number | null
+          avatar_url?: string | null
           bio?: string | null
           confirmation_code?: string | null
           created_at?: string | null
