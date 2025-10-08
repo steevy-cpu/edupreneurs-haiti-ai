@@ -723,7 +723,7 @@ const Feed = () => {
                 
                 {imagePreview && (
                   <div className="relative">
-                    <img src={imagePreview} alt="Preview" className="w-full max-h-64 object-cover rounded-lg" />
+                    <img src={imagePreview} alt="Preview" className="w-full max-h-96 object-contain rounded-lg bg-muted/20" />
                     <Button
                       size="icon"
                       variant="destructive"
@@ -823,7 +823,7 @@ const Feed = () => {
                     <img 
                       src={post.image_url} 
                       alt="Post" 
-                      className="mt-3 w-full rounded-lg object-cover max-h-96"
+                      className="mt-3 w-full rounded-lg object-contain bg-muted/20"
                     />
                   )}
                 </div>

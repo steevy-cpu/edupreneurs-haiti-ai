@@ -621,7 +621,7 @@ const Community = () => {
                                 <img
                                   src={message.shared_post.image_url}
                                   alt="Post"
-                                  className="rounded-lg w-full max-h-32 sm:max-h-48 object-cover"
+                                  className="rounded-lg w-full max-h-48 object-contain bg-muted/20"
                                 />
                               )}
                               <p className="text-xs opacity-70 mt-2">Cliquez pour voir le post</p>
