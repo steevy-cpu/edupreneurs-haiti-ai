@@ -643,7 +643,7 @@ const Community = () => {
               <Button
                 size="icon"
                 variant="ghost"
-                className="md:hidden shrink-0"
+                className="shrink-0"
                 onClick={() => setSelectedConversation(null)}
               >
                 <ArrowLeft size={18} className="sm:w-5 sm:h-5" />

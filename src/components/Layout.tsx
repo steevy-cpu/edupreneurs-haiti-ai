@@ -254,20 +254,24 @@ export const Layout = ({ children }: LayoutProps) => {
 
   const isActive = (path: string) => location.pathname === path;
 
+  const isCommunityPage = location.pathname === "/community";
+
   return (
     <div className="min-h-screen bg-background">
       <OnboardingTour />
       {/* Menu Toggle Button */}
-      <button
-        data-tour="menu-button"
-        onClick={() => setSidebarOpen(!sidebarOpen)}
-        className={`fixed top-3 left-3 z-[1001] bg-gradient-to-br from-[hsl(var(--primary))] to-[hsl(var(--success))] text-white p-2 sm:p-2.5 rounded-lg sm:rounded-xl shadow-md hover:shadow-lg transition-all duration-300 hover:scale-105 ${sidebarOpen ? "lg:left-[240px] xl:left-[260px] 2xl:left-[280px]" : ""}`}
-      >
-        {sidebarOpen ? <X size={20} className="sm:w-5 sm:h-5" /> : <Menu size={20} className="sm:w-5 sm:h-5" />}
-      </button>
+      {!isCommunityPage && (
+        <button
+          data-tour="menu-button"
+          onClick={() => setSidebarOpen(!sidebarOpen)}
+          className={`fixed top-3 left-3 z-[1001] bg-gradient-to-br from-[hsl(var(--primary))] to-[hsl(var(--success))] text-white p-2 sm:p-2.5 rounded-lg sm:rounded-xl shadow-md hover:shadow-lg transition-all duration-300 hover:scale-105 ${sidebarOpen ? "lg:left-[240px] xl:left-[260px] 2xl:left-[280px]" : ""}`}
+        >
+          {sidebarOpen ? <X size={20} className="sm:w-5 sm:h-5" /> : <Menu size={20} className="sm:w-5 sm:h-5" />}
+        </button>
+      )}
 
       {/* Sidebar Overlay */}
-      {sidebarOpen && (
+      {!isCommunityPage && sidebarOpen && (
         <div 
           className="fixed inset-0 bg-black/50 z-[999] lg:hidden"
           onClick={() => setSidebarOpen(false)}
@@ -275,10 +279,11 @@ export const Layout = ({ children }: LayoutProps) => {
       )}
 
       {/* Sidebar */}
-      <div 
-        data-tour="sidebar-content"
-        className={`fixed top-0 left-0 h-screen w-[240px] sm:w-[260px] lg:w-[280px] bg-card border-r border-border shadow-lg z-[1000] transition-transform duration-300 overflow-y-auto ${sidebarOpen ? "translate-x-0" : "-translate-x-full"}`}
-      >
+      {!isCommunityPage && (
+        <div 
+          data-tour="sidebar-content"
+          className={`fixed top-0 left-0 h-screen w-[240px] sm:w-[260px] lg:w-[280px] bg-card border-r border-border shadow-lg z-[1000] transition-transform duration-300 overflow-y-auto ${sidebarOpen ? "translate-x-0" : "-translate-x-full"}`}
+        >
         {/* Sidebar Header */}
         <div className="bg-gradient-to-br from-[hsl(var(--primary))] to-[hsl(var(--success))] text-white p-3 sm:p-4 lg:p-5 border-b border-white/10 flex items-center justify-between">
           <img 
@@ -435,10 +440,11 @@ export const Layout = ({ children }: LayoutProps) => {
             Déconnexion
           </button>
         </nav>
-      </div>
+        </div>
+      )}
 
       {/* Main Content */}
-      <div className={`transition-all duration-300 ${sidebarOpen ? "lg:ml-[240px] xl:ml-[260px] 2xl:ml-[280px]" : ""}`}>
+      <div className={`transition-all duration-300 ${!isCommunityPage && sidebarOpen ? "lg:ml-[240px] xl:ml-[260px] 2xl:ml-[280px]" : ""}`}>
         {children}
       </div>
 
