@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useToast } from "@/hooks/use-toast";
 import { Search, MessageCircle, ArrowLeft, Eye } from "lucide-react";
+import { getAvatarUrl } from "@/lib/avatarMap";
 
 interface Profile {
   user_id: string;
@@ -219,7 +220,7 @@ const UserSearch = () => {
                   className="flex items-center gap-3 p-3 rounded-lg hover:bg-muted/30 transition-colors"
                 >
                   <Avatar className="h-12 w-12 cursor-pointer" onClick={() => navigate(`/profile/${profile.user_id}`)}>
-                    <AvatarImage src={profile.avatar_url || undefined} alt={profile.full_name} />
+                    <AvatarImage src={getAvatarUrl(profile.avatar_url)} alt={profile.full_name} />
                     <AvatarFallback className="bg-gradient-to-br from-primary/20 to-success/20 text-foreground">
                       {profile.full_name[0]}
                     </AvatarFallback>

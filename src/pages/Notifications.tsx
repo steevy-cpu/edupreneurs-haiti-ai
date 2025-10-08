@@ -6,6 +6,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Heart, MessageCircle, Share2, UserPlus, Check, X, FileText } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
+import { getAvatarUrl } from "@/lib/avatarMap";
 
 interface Profile {
   id: string;
@@ -334,7 +335,7 @@ export default function Notifications() {
               >
                 <div className="flex items-start gap-3">
                   <Avatar className="h-10 w-10">
-                    <AvatarImage src={notification.actorProfile.avatar_url || undefined} />
+                    <AvatarImage src={getAvatarUrl(notification.actorProfile.avatar_url)} />
                     <AvatarFallback>
                       {notification.actorProfile.nickname
                         .substring(0, 2)

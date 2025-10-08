@@ -7,6 +7,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Skeleton } from '@/components/ui/skeleton';
 import { toast } from 'sonner';
 import { User, UserPlus, UserCheck, Clock, ArrowLeft } from 'lucide-react';
+import { getAvatarUrl } from '@/lib/avatarMap';
 
 interface Profile {
   id: string;
@@ -213,7 +214,7 @@ export default function Profile() {
         <Card className="p-4 sm:p-8">
           <div className="flex flex-col items-center space-y-3 sm:space-y-4">
             <Avatar className="w-24 h-24 sm:w-32 sm:h-32">
-              <AvatarImage src={profile.avatar_url || undefined} />
+              <AvatarImage src={getAvatarUrl(profile.avatar_url)} />
               <AvatarFallback>{profile.nickname[0].toUpperCase()}</AvatarFallback>
             </Avatar>
 

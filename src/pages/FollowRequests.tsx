@@ -8,6 +8,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { toast } from 'sonner';
 import { ArrowLeft, Check, X } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { getAvatarUrl } from '@/lib/avatarMap';
 
 interface FollowRequest {
   id: string;
@@ -215,7 +216,7 @@ export default function FollowRequests() {
                       className="h-12 w-12 cursor-pointer"
                       onClick={() => navigate(`/profile/${request.profile.user_id}`)}
                     >
-                      <AvatarImage src={request.profile.avatar_url || undefined} />
+                      <AvatarImage src={getAvatarUrl(request.profile.avatar_url)} />
                       <AvatarFallback>
                         {request.profile.full_name[0].toUpperCase()}
                       </AvatarFallback>
@@ -262,7 +263,7 @@ export default function FollowRequests() {
                       className="h-12 w-12 cursor-pointer"
                       onClick={() => navigate(`/profile/${request.profile.user_id}`)}
                     >
-                      <AvatarImage src={request.profile.avatar_url || undefined} />
+                      <AvatarImage src={getAvatarUrl(request.profile.avatar_url)} />
                       <AvatarFallback>
                         {request.profile.full_name[0].toUpperCase()}
                       </AvatarFallback>

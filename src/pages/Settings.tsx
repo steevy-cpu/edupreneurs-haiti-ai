@@ -39,6 +39,7 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { AvatarSelector } from "@/components/AvatarSelector";
+import { getAvatarUrl } from "@/lib/avatarMap";
 
 interface UserProfile {
   id: string;
@@ -311,7 +312,7 @@ const Settings = () => {
                 <div className="flex flex-col sm:flex-row items-center gap-6">
                   {/* Profile Avatar */}
                   <Avatar className="h-24 w-24">
-                    {selectedAvatar && <AvatarImage src={selectedAvatar} alt="Avatar" />}
+                    {selectedAvatar && <AvatarImage src={getAvatarUrl(selectedAvatar)} alt="Avatar" />}
                     <AvatarFallback className="bg-gradient-to-br from-primary/20 to-success/20 text-3xl font-semibold">
                       {profile?.nickname?.[0] || profile?.full_name?.[0] || "?"}
                     </AvatarFallback>

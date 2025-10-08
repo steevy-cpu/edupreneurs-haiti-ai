@@ -25,6 +25,7 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import EmojiPicker from "emoji-picker-react";
+import { getAvatarUrl } from "@/lib/avatarMap";
 
 interface Profile {
   id: string;
@@ -613,7 +614,7 @@ const Feed = () => {
   const renderComment = (comment: Comment, postId: string, isReply: boolean = false) => (
     <div key={comment.id} className={`flex gap-2 ${isReply ? "ml-8" : ""}`}>
       <Avatar className="h-7 w-7 flex-shrink-0">
-        <AvatarImage src={comment.profile?.avatar_url || undefined} />
+        <AvatarImage src={getAvatarUrl(comment.profile?.avatar_url)} />
         <AvatarFallback className="text-xs">
           {comment.profile?.nickname?.[0] || "?"}
         </AvatarFallback>
@@ -793,7 +794,7 @@ const Feed = () => {
                 {/* Post Header */}
                 <div className="flex items-center gap-3 px-4 py-3">
                   <Avatar className="h-10 w-10">
-                    <AvatarImage src={post.profile?.avatar_url || undefined} />
+                    <AvatarImage src={getAvatarUrl(post.profile?.avatar_url)} />
                     <AvatarFallback className="bg-gradient-to-br from-primary/20 to-success/20 text-foreground">
                       {post.profile?.full_name?.[0] || "?"}
                     </AvatarFallback>
@@ -990,7 +991,7 @@ const Feed = () => {
                   className="w-full flex items-center gap-3 p-3 rounded-lg hover:bg-accent transition-colors disabled:opacity-50"
                 >
                   <Avatar>
-                    <AvatarImage src={user.avatar_url || undefined} />
+                    <AvatarImage src={getAvatarUrl(user.avatar_url)} />
                     <AvatarFallback>
                       {user.nickname?.[0] || user.full_name?.[0] || "?"}
                     </AvatarFallback>

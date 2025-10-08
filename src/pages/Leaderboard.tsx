@@ -5,6 +5,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Trophy, Medal, Award, Crown } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
+import { getAvatarUrl } from "@/lib/avatarMap";
 
 interface LeaderboardUser {
   id: string;
@@ -174,7 +175,7 @@ const Leaderboard = () => {
 
                       {/* Avatar */}
                       <Avatar className="h-10 w-10 sm:h-12 sm:w-12">
-                        <AvatarImage src={user.avatar_url || undefined} />
+                        <AvatarImage src={getAvatarUrl(user.avatar_url)} />
                         <AvatarFallback className="bg-gradient-to-br from-primary/20 to-success/20 font-semibold text-xs sm:text-base">
                           {user.nickname?.[0] || user.full_name?.[0] || "?"}
                         </AvatarFallback>

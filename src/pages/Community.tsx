@@ -11,6 +11,7 @@ import { useMessageSounds } from "@/hooks/useMessageSounds";
 import EmojiPicker from "emoji-picker-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { initializePushNotifications } from "@/utils/pushNotifications";
+import { getAvatarUrl } from "@/lib/avatarMap";
 
 interface Profile {
   id: string;
@@ -611,7 +612,7 @@ const Community = () => {
                 }`}
               >
                 <Avatar className="h-10 w-10 sm:h-12 sm:w-12 shrink-0">
-                  <AvatarImage src={conv.otherUser?.avatar_url || undefined} />
+                  <AvatarImage src={getAvatarUrl(conv.otherUser?.avatar_url)} />
                   <AvatarFallback className="bg-gradient-to-br from-primary/20 to-success/20 text-sm sm:text-base">
                     {conv.otherUser?.full_name?.[0] || "?"}
                   </AvatarFallback>
@@ -663,7 +664,7 @@ const Community = () => {
                   if (otherUser) navigate(`/profile/${otherUser.user_id}`);
                 }}
               >
-                <AvatarImage src={conversations.find(c => c.id === selectedConversation)?.otherUser?.avatar_url || undefined} />
+                <AvatarImage src={getAvatarUrl(conversations.find(c => c.id === selectedConversation)?.otherUser?.avatar_url)} />
                 <AvatarFallback className="bg-gradient-to-br from-primary/20 to-success/20 text-sm sm:text-base">
                   {conversations.find(c => c.id === selectedConversation)?.otherUser?.full_name?.[0] || "?"}
                 </AvatarFallback>
@@ -709,7 +710,7 @@ const Community = () => {
                             }
                           }}
                         >
-                          <AvatarImage src={message.profile?.avatar_url || undefined} />
+                          <AvatarImage src={getAvatarUrl(message.profile?.avatar_url)} />
                           <AvatarFallback className="bg-gradient-to-br from-primary/20 to-success/20 text-[10px] sm:text-xs">
                             {message.profile?.full_name?.[0] || "?"}
                           </AvatarFallback>
