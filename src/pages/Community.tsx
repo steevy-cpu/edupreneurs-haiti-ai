@@ -139,7 +139,16 @@ const Community = () => {
       .eq("read", false);
 
     if (!error) {
-      // Immediately update local conversations state to remove badge
+      // Immediately update local state for messages
+      setMessages(prev =>
+        prev.map(msg =>
+          msg.sender_id !== user.id && !msg.read
+            ? { ...msg, read: true }
+            : msg
+        )
+      );
+      
+      // Update conversations state to remove badge
       setConversations(prev => 
         prev.map(conv => 
           conv.id === conversationId 
