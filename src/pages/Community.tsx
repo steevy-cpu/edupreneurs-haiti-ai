@@ -3,7 +3,7 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useToast } from "@/hooks/use-toast";
 import { Send, ArrowLeft, Search, Smile, Check, CheckCheck } from "lucide-react";
@@ -17,6 +17,7 @@ interface Profile {
   user_id: string;
   full_name: string;
   nickname: string;
+  avatar_url: string | null;
 }
 
 interface Conversation {
@@ -602,6 +603,7 @@ const Community = () => {
                 }`}
               >
                 <Avatar className="h-10 w-10 sm:h-12 sm:w-12 shrink-0">
+                  <AvatarImage src={conv.otherUser?.avatar_url || undefined} />
                   <AvatarFallback className="bg-gradient-to-br from-primary/20 to-success/20 text-sm sm:text-base">
                     {conv.otherUser?.full_name?.[0] || "?"}
                   </AvatarFallback>
@@ -653,6 +655,7 @@ const Community = () => {
                   if (otherUser) navigate(`/profile/${otherUser.user_id}`);
                 }}
               >
+                <AvatarImage src={conversations.find(c => c.id === selectedConversation)?.otherUser?.avatar_url || undefined} />
                 <AvatarFallback className="bg-gradient-to-br from-primary/20 to-success/20 text-sm sm:text-base">
                   {conversations.find(c => c.id === selectedConversation)?.otherUser?.full_name?.[0] || "?"}
                 </AvatarFallback>
@@ -698,6 +701,7 @@ const Community = () => {
                             }
                           }}
                         >
+                          <AvatarImage src={message.profile?.avatar_url || undefined} />
                           <AvatarFallback className="bg-gradient-to-br from-primary/20 to-success/20 text-[10px] sm:text-xs">
                             {message.profile?.full_name?.[0] || "?"}
                           </AvatarFallback>

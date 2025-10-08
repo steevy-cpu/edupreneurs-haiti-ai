@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Skeleton } from '@/components/ui/skeleton';
 import { toast } from 'sonner';
 import { ArrowLeft, Check, X } from 'lucide-react';
@@ -19,6 +19,7 @@ interface FollowRequest {
     full_name: string;
     nickname: string;
     user_id: string;
+    avatar_url: string | null;
   };
 }
 
@@ -64,7 +65,7 @@ export default function FollowRequests() {
       const incomingUserIds = incomingFollows?.map(f => f.follower_id) || [];
       const { data: incomingProfiles } = await supabase
         .from('profiles')
-        .select('full_name, nickname, user_id')
+        .select('full_name, nickname, user_id, avatar_url')
         .in('user_id', incomingUserIds);
 
       const incoming = incomingFollows?.map(follow => ({
@@ -72,7 +73,8 @@ export default function FollowRequests() {
         profile: incomingProfiles?.find(p => p.user_id === follow.follower_id) || {
           full_name: 'Unknown',
           nickname: 'unknown',
-          user_id: follow.follower_id
+          user_id: follow.follower_id,
+          avatar_url: null
         }
       })) || [];
 
@@ -90,7 +92,7 @@ export default function FollowRequests() {
       const outgoingUserIds = outgoingFollows?.map(f => f.following_id) || [];
       const { data: outgoingProfiles } = await supabase
         .from('profiles')
-        .select('full_name, nickname, user_id')
+        .select('full_name, nickname, user_id, avatar_url')
         .in('user_id', outgoingUserIds);
 
       const outgoing = outgoingFollows?.map(follow => ({
@@ -98,7 +100,8 @@ export default function FollowRequests() {
         profile: outgoingProfiles?.find(p => p.user_id === follow.following_id) || {
           full_name: 'Unknown',
           nickname: 'unknown',
-          user_id: follow.following_id
+          user_id: follow.following_id,
+          avatar_url: null
         }
       })) || [];
 
@@ -212,6 +215,7 @@ export default function FollowRequests() {
                       className="h-12 w-12 cursor-pointer"
                       onClick={() => navigate(`/profile/${request.profile.user_id}`)}
                     >
+                      <AvatarImage src={request.profile.avatar_url || undefined} />
                       <AvatarFallback>
                         {request.profile.full_name[0].toUpperCase()}
                       </AvatarFallback>
@@ -258,6 +262,7 @@ export default function FollowRequests() {
                       className="h-12 w-12 cursor-pointer"
                       onClick={() => navigate(`/profile/${request.profile.user_id}`)}
                     >
+                      <AvatarImage src={request.profile.avatar_url || undefined} />
                       <AvatarFallback>
                         {request.profile.full_name[0].toUpperCase()}
                       </AvatarFallback>

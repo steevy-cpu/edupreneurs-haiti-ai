@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent } from "@/components/ui/card";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Trophy, Medal, Award, Crown } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 
@@ -11,6 +11,7 @@ interface LeaderboardUser {
   user_id: string;
   full_name: string;
   nickname: string;
+  avatar_url: string | null;
   gold_earned: number;
   academic_grade: string;
   rank: number;
@@ -45,7 +46,7 @@ const Leaderboard = () => {
     // Fetch top 10 users by gold earned
     const { data: topUsers, error } = await supabase
       .from("profiles")
-      .select("id, user_id, full_name, nickname, gold_earned, academic_grade")
+      .select("id, user_id, full_name, nickname, avatar_url, gold_earned, academic_grade")
       .order("gold_earned", { ascending: false })
       .limit(10);
 
@@ -173,6 +174,7 @@ const Leaderboard = () => {
 
                       {/* Avatar */}
                       <Avatar className="h-10 w-10 sm:h-12 sm:w-12">
+                        <AvatarImage src={user.avatar_url || undefined} />
                         <AvatarFallback className="bg-gradient-to-br from-primary/20 to-success/20 font-semibold text-xs sm:text-base">
                           {user.nickname?.[0] || user.full_name?.[0] || "?"}
                         </AvatarFallback>

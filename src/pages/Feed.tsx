@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
@@ -31,6 +31,7 @@ interface Profile {
   user_id: string;
   full_name: string;
   nickname: string;
+  avatar_url: string | null;
 }
 
 interface Comment {
@@ -612,6 +613,7 @@ const Feed = () => {
   const renderComment = (comment: Comment, postId: string, isReply: boolean = false) => (
     <div key={comment.id} className={`flex gap-2 ${isReply ? "ml-8" : ""}`}>
       <Avatar className="h-7 w-7 flex-shrink-0">
+        <AvatarImage src={comment.profile?.avatar_url || undefined} />
         <AvatarFallback className="text-xs">
           {comment.profile?.nickname?.[0] || "?"}
         </AvatarFallback>
@@ -791,6 +793,7 @@ const Feed = () => {
                 {/* Post Header */}
                 <div className="flex items-center gap-3 px-4 py-3">
                   <Avatar className="h-10 w-10">
+                    <AvatarImage src={post.profile?.avatar_url || undefined} />
                     <AvatarFallback className="bg-gradient-to-br from-primary/20 to-success/20 text-foreground">
                       {post.profile?.full_name?.[0] || "?"}
                     </AvatarFallback>
@@ -987,6 +990,7 @@ const Feed = () => {
                   className="w-full flex items-center gap-3 p-3 rounded-lg hover:bg-accent transition-colors disabled:opacity-50"
                 >
                   <Avatar>
+                    <AvatarImage src={user.avatar_url || undefined} />
                     <AvatarFallback>
                       {user.nickname?.[0] || user.full_name?.[0] || "?"}
                     </AvatarFallback>

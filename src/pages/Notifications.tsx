@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
 import { Card } from "@/components/ui/card";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Heart, MessageCircle, Share2, UserPlus, Check, X } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
@@ -12,6 +12,7 @@ interface Profile {
   user_id: string;
   nickname: string;
   full_name: string;
+  avatar_url: string | null;
   affiliation_points: number;
   academic_grade: string;
 }
@@ -85,7 +86,7 @@ export default function Notifications() {
         notificationsData.map(async (notification) => {
           const { data: actorProfile, error: profileError } = await supabase
             .from("profiles")
-            .select("id, user_id, nickname, full_name, affiliation_points, academic_grade")
+            .select("id, user_id, nickname, full_name, avatar_url, affiliation_points, academic_grade")
             .eq("user_id", notification.actor_id)
             .maybeSingle();
 
@@ -116,6 +117,7 @@ export default function Notifications() {
               user_id: notification.actor_id,
               nickname: "Unknown User",
               full_name: "Unknown User",
+              avatar_url: null,
               affiliation_points: 0,
               academic_grade: "",
             } as Profile,
@@ -328,6 +330,7 @@ export default function Notifications() {
               >
                 <div className="flex items-start gap-3">
                   <Avatar className="h-10 w-10">
+                    <AvatarImage src={notification.actorProfile.avatar_url || undefined} />
                     <AvatarFallback>
                       {notification.actorProfile.nickname
                         .substring(0, 2)
