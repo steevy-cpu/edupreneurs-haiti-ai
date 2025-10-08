@@ -366,6 +366,29 @@ const Community = () => {
             .eq("user_id", payload.new.sender_id)
             .single();
 
+          // Fetch replied message if exists
+          let repliedToMessage = undefined;
+          if (payload.new.replied_to_id) {
+            const { data: repliedData } = await supabase
+              .from("messages")
+              .select("id, content, sender_id, created_at, read")
+              .eq("id", payload.new.replied_to_id)
+              .single();
+
+            if (repliedData) {
+              const { data: repliedProfile } = await supabase
+                .from("profiles")
+                .select("*")
+                .eq("user_id", repliedData.sender_id)
+                .single();
+
+              repliedToMessage = {
+                ...repliedData,
+                profile: repliedProfile
+              };
+            }
+          }
+
           // Fetch shared post if exists
           let sharedPost = undefined;
           if (payload.new.shared_post_id) {
@@ -397,7 +420,9 @@ const Community = () => {
             created_at: payload.new.created_at,
             read: payload.new.read || false,
             shared_post_id: payload.new.shared_post_id,
+            replied_to_id: payload.new.replied_to_id,
             profile,
+            replied_to: repliedToMessage,
             shared_post: sharedPost,
           };
 
@@ -432,11 +457,15 @@ const Community = () => {
           filter: `conversation_id=eq.${conversationId}`,
         },
         (payload) => {
-          // Update message read status in real-time
+          // Update message in real-time (for read status and other updates)
           setMessages((prev) =>
             prev.map((msg) =>
               msg.id === payload.new.id 
-                ? { ...msg, read: payload.new.read }
+                ? { 
+                    ...msg, 
+                    read: payload.new.read,
+                    content: payload.new.content,
+                  }
                 : msg
             )
           );
@@ -652,12 +681,18 @@ const Community = () => {
                       className={`flex ${isOwn ? "justify-end" : "justify-start"}`}
                     >
                       <div 
-                        className={`flex gap-1.5 sm:gap-2 max-w-[90%] sm:max-w-[75%] ${isOwn ? "flex-row-reverse" : "flex-row"}`}
-                        onClick={() => setReplyingTo(message)}
+                        className={`flex gap-1.5 sm:gap-2 max-w-[90%] sm:max-w-[75%] ${isOwn ? "flex-row-reverse" : "flex-row"} cursor-pointer group`}
+                        onClick={(e) => {
+                          // Don't trigger reply if clicking on avatar or post
+                          if (!(e.target as HTMLElement).closest('.no-reply-trigger')) {
+                            setReplyingTo(message);
+                          }
+                        }}
                       >
                         <Avatar 
-                          className="h-7 w-7 sm:h-8 sm:w-8 shrink-0 cursor-pointer hover:opacity-80 transition-opacity"
-                          onClick={() => {
+                          className="h-7 w-7 sm:h-8 sm:w-8 shrink-0 cursor-pointer hover:opacity-80 transition-opacity no-reply-trigger"
+                          onClick={(e) => {
+                            e.stopPropagation();
                             if (message.profile?.user_id) {
                               navigate(`/profile/${message.profile.user_id}`);
                             }
@@ -684,8 +719,11 @@ const Community = () => {
                           {message.shared_post ? (
                             // Shared Post Display
                             <div
-                              onClick={() => navigate("/feed")}
-                              className={`rounded-2xl px-3 py-2 sm:px-4 sm:py-3 cursor-pointer hover:opacity-90 transition-opacity ${
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                navigate("/feed");
+                              }}
+                              className={`rounded-2xl px-3 py-2 sm:px-4 sm:py-3 cursor-pointer hover:opacity-90 transition-opacity no-reply-trigger ${
                                 isOwn
                                   ? "bg-primary/90 text-primary-foreground"
                                   : "bg-muted"
