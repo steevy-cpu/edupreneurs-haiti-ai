@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { Card } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import { Heart, MessageCircle, Share2, UserPlus, Check, X } from "lucide-react";
+import { Heart, MessageCircle, Share2, UserPlus, Check, X, FileText } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 
 interface Profile {
@@ -22,7 +22,7 @@ interface Notification {
   user_id: string;
   actor_id: string;
   post_id: string | null;
-  type: "like" | "comment" | "share" | "follow_request";
+  type: "like" | "comment" | "share" | "follow_request" | "new_post";
   content: string | null;
   read: boolean;
   created_at: string;
@@ -110,7 +110,7 @@ export default function Notifications() {
 
           return {
             ...notification,
-            type: notification.type as "like" | "comment" | "share" | "follow_request",
+            type: notification.type as "like" | "comment" | "share" | "follow_request" | "new_post",
             followRequestPending,
             actorProfile: actorProfile || {
               id: "",
@@ -192,6 +192,8 @@ export default function Notifications() {
         return <Share2 size={16} className="text-green-500" />;
       case "follow_request":
         return <UserPlus size={16} className="text-purple-500" />;
+      case "new_post":
+        return <FileText size={16} className="text-primary" />;
       default:
         return null;
     }
@@ -208,6 +210,8 @@ export default function Notifications() {
         return `${actor} a partagé votre publication`;
       case "follow_request":
         return `${actor} a demandé à vous suivre`;
+      case "new_post":
+        return `${actor} a publié un nouveau post`;
       default:
         return "";
     }
