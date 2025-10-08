@@ -296,8 +296,13 @@ const Community = () => {
     const enrichedMessages = messagesData.map(msg => {
       const sharedPost = sharedPosts.find(p => p.id === msg.shared_post_id);
       return {
-        ...msg,
-        read: msg.read || false,
+        id: msg.id,
+        content: msg.content,
+        sender_id: msg.sender_id,
+        created_at: msg.created_at,
+        conversation_id: msg.conversation_id,
+        shared_post_id: msg.shared_post_id,
+        read: msg.read ?? false,
         profile: profiles?.find(p => p.user_id === msg.sender_id),
         shared_post: sharedPost ? {
           ...sharedPost,
@@ -400,14 +405,17 @@ const Community = () => {
           filter: `conversation_id=eq.${conversationId}`,
         },
         (payload) => {
+          console.log("Message read status updated:", payload.new);
           // Update message read status in real-time
-          setMessages((prev) =>
-            prev.map((msg) =>
+          setMessages((prev) => {
+            const updated = prev.map((msg) =>
               msg.id === payload.new.id
                 ? { ...msg, read: payload.new.read }
                 : msg
-            )
-          );
+            );
+            console.log("Updated messages:", updated.filter(m => m.id === payload.new.id));
+            return updated;
+          });
         }
       )
       .subscribe();
