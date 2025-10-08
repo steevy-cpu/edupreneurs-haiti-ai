@@ -116,12 +116,12 @@ const Affiliations = () => {
       const referredIds = referralsData.map(r => r.referred_id);
       const { data: publicProfiles } = await supabase
         .from("public_profiles")
-        .select("id, full_name, nickname")
-        .in("id", referredIds);
+        .select("user_id, full_name, nickname")
+        .in("user_id", referredIds);
       
       // Create properly typed referral objects
       referralsData.forEach((referral) => {
-        const profile = publicProfiles?.find(p => p.id === referral.referred_id);
+        const profile = publicProfiles?.find(p => p.user_id === referral.referred_id);
         enrichedReferrals.push({
           ...referral,
           profiles: {

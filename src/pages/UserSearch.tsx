@@ -9,7 +9,6 @@ import { useToast } from "@/hooks/use-toast";
 import { Search, MessageCircle, ArrowLeft, Eye } from "lucide-react";
 
 interface Profile {
-  id: string;
   user_id: string;
   full_name: string;
   nickname: string;
@@ -46,7 +45,7 @@ const UserSearch = () => {
     // Use public_profiles view to only access non-sensitive user data
     const { data, error } = await supabase
       .from("public_profiles")
-      .select("id, user_id, full_name, nickname")
+      .select("user_id, full_name, nickname")
       .or(`full_name.ilike.%${query}%,nickname.ilike.%${query}%`)
       .neq("user_id", currentUser?.id)
       .limit(20);
@@ -214,7 +213,7 @@ const UserSearch = () => {
             <div className="space-y-2 px-4">
               {profiles.map((profile) => (
                 <div
-                  key={profile.id}
+                  key={profile.user_id}
                   className="flex items-center gap-3 p-3 rounded-lg hover:bg-muted/30 transition-colors"
                 >
                   <Avatar className="h-12 w-12 cursor-pointer" onClick={() => navigate(`/profile/${profile.user_id}`)}>
