@@ -198,7 +198,7 @@ export const Layout = ({ children }: LayoutProps) => {
       <button
         data-tour="menu-button"
         onClick={() => setSidebarOpen(!sidebarOpen)}
-        className={`fixed top-3 left-3 z-[1001] bg-gradient-to-br from-[hsl(var(--primary))] to-[hsl(var(--success))] text-white p-2 sm:p-2.5 rounded-lg sm:rounded-xl shadow-md hover:shadow-lg transition-all duration-300 hover:scale-105 ${sidebarOpen ? "lg:left-[300px]" : ""}`}
+        className={`fixed top-3 left-3 z-[1001] bg-gradient-to-br from-[hsl(var(--primary))] to-[hsl(var(--success))] text-white p-2 sm:p-2.5 rounded-lg sm:rounded-xl shadow-md hover:shadow-lg transition-all duration-300 hover:scale-105 ${sidebarOpen ? "lg:left-[240px] xl:left-[260px] 2xl:left-[280px]" : ""}`}
       >
         {sidebarOpen ? <X size={20} className="sm:w-5 sm:h-5" /> : <Menu size={20} className="sm:w-5 sm:h-5" />}
       </button>
@@ -212,164 +212,164 @@ export const Layout = ({ children }: LayoutProps) => {
       )}
 
       {/* Sidebar */}
-      <div className={`fixed top-0 left-0 h-screen w-[280px] sm:w-[280px] bg-card border-r border-border shadow-lg z-[1000] transition-transform duration-300 overflow-y-auto ${sidebarOpen ? "translate-x-0" : "-translate-x-full"}`}>
+      <div className={`fixed top-0 left-0 h-screen w-[240px] sm:w-[260px] lg:w-[280px] bg-card border-r border-border shadow-lg z-[1000] transition-transform duration-300 overflow-y-auto ${sidebarOpen ? "translate-x-0" : "-translate-x-full"}`}>
         {/* Sidebar Header */}
-        <div className="bg-gradient-to-br from-[hsl(var(--primary))] to-[hsl(var(--success))] text-white p-5 border-b border-white/10 flex items-center justify-between">
-          <div className="text-lg font-bold">EDUPRENEURS</div>
+        <div className="bg-gradient-to-br from-[hsl(var(--primary))] to-[hsl(var(--success))] text-white p-3 sm:p-4 lg:p-5 border-b border-white/10 flex items-center justify-between">
+          <div className="text-sm sm:text-base lg:text-lg font-bold">EDUPRENEURS</div>
           <button
             onClick={() => setSidebarOpen(false)}
-            className="lg:hidden p-2 rounded-lg bg-white/20 hover:bg-white/30 transition-colors"
+            className="lg:hidden p-1.5 sm:p-2 rounded-lg bg-white/20 hover:bg-white/30 transition-colors"
           >
-            <X size={16} />
+            <X size={14} className="sm:w-4 sm:h-4" />
           </button>
         </div>
 
         {/* Eric Agent Section */}
-        <div className="p-6 text-center border-b border-border bg-gradient-to-br from-muted/30 to-muted/10">
-          <div className="w-16 h-16 mx-auto mb-4 rounded-full overflow-hidden bg-gradient-to-br from-[hsl(var(--primary))] to-[hsl(var(--success))] shadow-md animate-[gentle-bob_8s_ease-in-out_infinite]">
+        <div className="p-3 sm:p-4 lg:p-6 text-center border-b border-border bg-gradient-to-br from-muted/30 to-muted/10">
+          <div className="w-12 h-12 sm:w-14 sm:h-14 lg:w-16 lg:h-16 mx-auto mb-2 sm:mb-3 lg:mb-4 rounded-full overflow-hidden bg-gradient-to-br from-[hsl(var(--primary))] to-[hsl(var(--success))] shadow-md animate-[gentle-bob_8s_ease-in-out_infinite]">
             <img src={dashboardImage} alt="Eric Avatar" className="w-full h-full object-cover" />
           </div>
-          <div className="font-bold text-lg text-foreground mb-1">Eric</div>
-          <div className="text-sm text-muted-foreground">Votre assistant IA</div>
+          <div className="font-bold text-sm sm:text-base lg:text-lg text-foreground mb-0.5 sm:mb-1">Eric</div>
+          <div className="text-xs sm:text-sm text-muted-foreground">Votre assistant IA</div>
         </div>
 
         {/* Navigation */}
-        <nav className="py-5" data-tour="nav-section">
+        <nav className="py-3 sm:py-4 lg:py-5" data-tour="nav-section">
           <a 
             href="/dashboard" 
-            className={`flex items-center gap-3 px-5 py-3.5 mx-3 rounded-xl font-medium transition-all duration-300 ${
+            className={`flex items-center gap-2 sm:gap-2.5 lg:gap-3 px-3 sm:px-4 lg:px-5 py-2.5 sm:py-3 lg:py-3.5 mx-2 sm:mx-2.5 lg:mx-3 rounded-lg sm:rounded-xl text-sm sm:text-base font-medium transition-all duration-300 ${
               isActive("/dashboard") 
                 ? "bg-gradient-to-br from-[hsl(var(--primary))] to-[hsl(var(--success))] text-white" 
                 : "text-foreground hover:bg-gradient-to-br hover:from-[hsl(var(--primary))] hover:to-[hsl(var(--success))] hover:text-white hover:translate-x-1"
             }`}
           >
-            <Home size={18} />
+            <Home size={16} className="sm:w-[17px] sm:h-[17px] lg:w-[18px] lg:h-[18px]" />
             Dashboard
           </a>
           <a 
             href="/matieres" 
-            className={`flex items-center gap-3 px-5 py-3.5 mx-3 my-1 rounded-xl font-medium transition-all duration-300 ${
+            className={`flex items-center gap-2 sm:gap-2.5 lg:gap-3 px-3 sm:px-4 lg:px-5 py-2.5 sm:py-3 lg:py-3.5 mx-2 sm:mx-2.5 lg:mx-3 my-0.5 sm:my-1 rounded-lg sm:rounded-xl text-sm sm:text-base font-medium transition-all duration-300 ${
               isActive("/matieres") 
                 ? "bg-gradient-to-br from-[hsl(var(--primary))] to-[hsl(var(--success))] text-white" 
                 : "text-foreground hover:bg-gradient-to-br hover:from-[hsl(var(--primary))] hover:to-[hsl(var(--success))] hover:text-white hover:translate-x-1"
             }`}
           >
-            <BookOpen size={18} />
+            <BookOpen size={16} className="sm:w-[17px] sm:h-[17px] lg:w-[18px] lg:h-[18px]" />
             Matières
           </a>
           <a 
             href="/resources" 
-            className={`flex items-center gap-3 px-5 py-3.5 mx-3 my-1 rounded-xl font-medium transition-all duration-300 ${
+            className={`flex items-center gap-2 sm:gap-2.5 lg:gap-3 px-3 sm:px-4 lg:px-5 py-2.5 sm:py-3 lg:py-3.5 mx-2 sm:mx-2.5 lg:mx-3 my-0.5 sm:my-1 rounded-lg sm:rounded-xl text-sm sm:text-base font-medium transition-all duration-300 ${
               isActive("/resources") 
                 ? "bg-gradient-to-br from-[hsl(var(--primary))] to-[hsl(var(--success))] text-white" 
                 : "text-foreground hover:bg-gradient-to-br hover:from-[hsl(var(--primary))] hover:to-[hsl(var(--success))] hover:text-white hover:translate-x-1"
             }`}
           >
-            <FolderOpen size={18} />
+            <FolderOpen size={16} className="sm:w-[17px] sm:h-[17px] lg:w-[18px] lg:h-[18px]" />
             Ressources
           </a>
           <a 
             href="/feed" 
-            className={`flex items-center gap-3 px-5 py-3.5 mx-3 my-1 rounded-xl font-medium transition-all duration-300 ${
+            className={`flex items-center gap-2 sm:gap-2.5 lg:gap-3 px-3 sm:px-4 lg:px-5 py-2.5 sm:py-3 lg:py-3.5 mx-2 sm:mx-2.5 lg:mx-3 my-0.5 sm:my-1 rounded-lg sm:rounded-xl text-sm sm:text-base font-medium transition-all duration-300 ${
               isActive("/feed") 
                 ? "bg-gradient-to-br from-[hsl(var(--primary))] to-[hsl(var(--success))] text-white" 
                 : "text-foreground hover:bg-gradient-to-br hover:from-[hsl(var(--primary))] hover:to-[hsl(var(--success))] hover:text-white hover:translate-x-1"
             }`}
           >
-            <Users size={18} />
+            <Users size={16} className="sm:w-[17px] sm:h-[17px] lg:w-[18px] lg:h-[18px]" />
             Fil d'actualité
           </a>
           <a 
             href="/community" 
             onClick={handleMessagesClick}
-            className={`flex items-center gap-3 px-5 py-3.5 mx-3 my-1 rounded-xl font-medium transition-all duration-300 ${
+            className={`flex items-center gap-2 sm:gap-2.5 lg:gap-3 px-3 sm:px-4 lg:px-5 py-2.5 sm:py-3 lg:py-3.5 mx-2 sm:mx-2.5 lg:mx-3 my-0.5 sm:my-1 rounded-lg sm:rounded-xl text-sm sm:text-base font-medium transition-all duration-300 ${
               isActive("/community") 
                 ? "bg-gradient-to-br from-[hsl(var(--primary))] to-[hsl(var(--success))] text-white" 
                 : "text-foreground hover:bg-gradient-to-br hover:from-[hsl(var(--primary))] hover:to-[hsl(var(--success))] hover:text-white hover:translate-x-1"
             }`}
           >
-            <MessageSquare size={18} />
+            <MessageSquare size={16} className="sm:w-[17px] sm:h-[17px] lg:w-[18px] lg:h-[18px]" />
             Messages
             {totalUnreadMessages > 0 && (
-              <span className="ml-auto flex items-center justify-center h-5 min-w-[20px] px-1.5 rounded-full bg-destructive text-destructive-foreground text-xs font-semibold">
+              <span className="ml-auto flex items-center justify-center h-4 sm:h-5 min-w-[16px] sm:min-w-[20px] px-1 sm:px-1.5 rounded-full bg-destructive text-destructive-foreground text-[10px] sm:text-xs font-semibold">
                 {totalUnreadMessages}
               </span>
             )}
           </a>
           <a 
             href="/user-search" 
-            className={`flex items-center gap-3 px-5 py-3.5 mx-3 my-1 rounded-xl font-medium transition-all duration-300 ${
+            className={`flex items-center gap-2 sm:gap-2.5 lg:gap-3 px-3 sm:px-4 lg:px-5 py-2.5 sm:py-3 lg:py-3.5 mx-2 sm:mx-2.5 lg:mx-3 my-0.5 sm:my-1 rounded-lg sm:rounded-xl text-sm sm:text-base font-medium transition-all duration-300 ${
               isActive("/user-search") 
                 ? "bg-gradient-to-br from-[hsl(var(--primary))] to-[hsl(var(--success))] text-white" 
                 : "text-foreground hover:bg-gradient-to-br hover:from-[hsl(var(--primary))] hover:to-[hsl(var(--success))] hover:text-white hover:translate-x-1"
             }`}
           >
-            <Search size={18} />
+            <Search size={16} className="sm:w-[17px] sm:h-[17px] lg:w-[18px] lg:h-[18px]" />
             Rechercher
           </a>
           <a 
             href="/notifications" 
             onClick={handleNotificationsClick}
-            className={`flex items-center gap-3 px-5 py-3.5 mx-3 my-1 rounded-xl font-medium transition-all duration-300 ${
+            className={`flex items-center gap-2 sm:gap-2.5 lg:gap-3 px-3 sm:px-4 lg:px-5 py-2.5 sm:py-3 lg:py-3.5 mx-2 sm:mx-2.5 lg:mx-3 my-0.5 sm:my-1 rounded-lg sm:rounded-xl text-sm sm:text-base font-medium transition-all duration-300 ${
               isActive("/notifications") 
                 ? "bg-gradient-to-br from-[hsl(var(--primary))] to-[hsl(var(--success))] text-white" 
                 : "text-foreground hover:bg-gradient-to-br hover:from-[hsl(var(--primary))] hover:to-[hsl(var(--success))] hover:text-white hover:translate-x-1"
             }`}
           >
-            <Bell size={18} />
+            <Bell size={16} className="sm:w-[17px] sm:h-[17px] lg:w-[18px] lg:h-[18px]" />
             Notifications
             {(unreadNotifications + pendingFollowRequests) > 0 && (
-              <span className="ml-auto flex items-center justify-center h-5 min-w-[20px] px-1.5 rounded-full bg-destructive text-destructive-foreground text-xs font-semibold">
+              <span className="ml-auto flex items-center justify-center h-4 sm:h-5 min-w-[16px] sm:min-w-[20px] px-1 sm:px-1.5 rounded-full bg-destructive text-destructive-foreground text-[10px] sm:text-xs font-semibold">
                 {unreadNotifications + pendingFollowRequests}
               </span>
             )}
           </a>
           <a 
             href="/affiliations" 
-            className={`flex items-center gap-3 px-5 py-3.5 mx-3 my-1 rounded-xl font-medium transition-all duration-300 ${
+            className={`flex items-center gap-2 sm:gap-2.5 lg:gap-3 px-3 sm:px-4 lg:px-5 py-2.5 sm:py-3 lg:py-3.5 mx-2 sm:mx-2.5 lg:mx-3 my-0.5 sm:my-1 rounded-lg sm:rounded-xl text-sm sm:text-base font-medium transition-all duration-300 ${
               isActive("/affiliations") 
                 ? "bg-gradient-to-br from-[hsl(var(--primary))] to-[hsl(var(--success))] text-white" 
                 : "text-foreground hover:bg-gradient-to-br hover:from-[hsl(var(--primary))] hover:to-[hsl(var(--success))] hover:text-white hover:translate-x-1"
             }`}
           >
-            <LinkIcon size={18} />
+            <LinkIcon size={16} className="sm:w-[17px] sm:h-[17px] lg:w-[18px] lg:h-[18px]" />
             Affiliations
           </a>
           <a 
             href="/leaderboard" 
-            className={`flex items-center gap-3 px-5 py-3.5 mx-3 my-1 rounded-xl font-medium transition-all duration-300 ${
+            className={`flex items-center gap-2 sm:gap-2.5 lg:gap-3 px-3 sm:px-4 lg:px-5 py-2.5 sm:py-3 lg:py-3.5 mx-2 sm:mx-2.5 lg:mx-3 my-0.5 sm:my-1 rounded-lg sm:rounded-xl text-sm sm:text-base font-medium transition-all duration-300 ${
               isActive("/leaderboard") 
                 ? "bg-gradient-to-br from-[hsl(var(--primary))] to-[hsl(var(--success))] text-white" 
                 : "text-foreground hover:bg-gradient-to-br hover:from-[hsl(var(--primary))] hover:to-[hsl(var(--success))] hover:text-white hover:translate-x-1"
             }`}
           >
-            <Trophy size={18} />
+            <Trophy size={16} className="sm:w-[17px] sm:h-[17px] lg:w-[18px] lg:h-[18px]" />
             Classement
           </a>
           <a 
             href="/settings" 
-            className={`flex items-center gap-3 px-5 py-3.5 mx-3 my-1 rounded-xl font-medium transition-all duration-300 ${
+            className={`flex items-center gap-2 sm:gap-2.5 lg:gap-3 px-3 sm:px-4 lg:px-5 py-2.5 sm:py-3 lg:py-3.5 mx-2 sm:mx-2.5 lg:mx-3 my-0.5 sm:my-1 rounded-lg sm:rounded-xl text-sm sm:text-base font-medium transition-all duration-300 ${
               isActive("/settings") 
                 ? "bg-gradient-to-br from-[hsl(var(--primary))] to-[hsl(var(--success))] text-white" 
                 : "text-foreground hover:bg-gradient-to-br hover:from-[hsl(var(--primary))] hover:to-[hsl(var(--success))] hover:text-white hover:translate-x-1"
             }`}
           >
-            <Settings size={18} />
+            <Settings size={16} className="sm:w-[17px] sm:h-[17px] lg:w-[18px] lg:h-[18px]" />
             Paramètres
           </a>
-          <hr className="border-border my-4 mx-3" />
+          <hr className="border-border my-2 sm:my-3 lg:my-4 mx-2 sm:mx-2.5 lg:mx-3" />
           <button
             onClick={handleLogout}
-            className="flex items-center gap-3 px-5 py-3.5 mx-3 rounded-xl text-destructive font-medium hover:bg-destructive hover:text-white hover:translate-x-1 transition-all duration-300 w-[calc(100%-1.5rem)]"
+            className="flex items-center gap-2 sm:gap-2.5 lg:gap-3 px-3 sm:px-4 lg:px-5 py-2.5 sm:py-3 lg:py-3.5 mx-2 sm:mx-2.5 lg:mx-3 rounded-lg sm:rounded-xl text-sm sm:text-base text-destructive font-medium hover:bg-destructive hover:text-white hover:translate-x-1 transition-all duration-300 w-[calc(100%-1rem)] sm:w-[calc(100%-1.25rem)] lg:w-[calc(100%-1.5rem)]"
           >
-            <LogOut size={18} />
+            <LogOut size={16} className="sm:w-[17px] sm:h-[17px] lg:w-[18px] lg:h-[18px]" />
             Déconnexion
           </button>
         </nav>
       </div>
 
       {/* Main Content */}
-      <div className={`transition-all duration-300 ${sidebarOpen ? "lg:ml-[280px]" : ""}`}>
+      <div className={`transition-all duration-300 ${sidebarOpen ? "lg:ml-[240px] xl:ml-[260px] 2xl:ml-[280px]" : ""}`}>
         {children}
       </div>
 
