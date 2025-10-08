@@ -134,7 +134,10 @@ export default function Profile() {
           status: 'pending',
         });
 
-      if (error) throw error;
+      if (error) {
+        console.error('Full error details:', JSON.stringify(error, null, 2));
+        throw error;
+      }
 
       setFollowStatus({ following: true, status: 'pending', followId: null });
       toast.success('Follow request sent!');
@@ -142,6 +145,8 @@ export default function Profile() {
     } catch (error: any) {
       toast.error('Failed to send follow request');
       console.error('Error following user:', error);
+      console.error('Error message:', error?.message);
+      console.error('Error details:', error?.details);
     }
   };
 
