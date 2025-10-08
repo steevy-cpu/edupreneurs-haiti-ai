@@ -18,6 +18,7 @@ import {
   Trophy,
 } from "lucide-react";
 import dashboardImage from "@/assets/dashboard00.png";
+import edupreneursLogo from "@/assets/edupreneurs-logo.jpeg";
 import { EricChatbot } from "@/components/EricChatbot";
 import OnboardingTour from "@/components/OnboardingTour";
 
@@ -235,7 +236,7 @@ export const Layout = ({ children }: LayoutProps) => {
       >
         {/* Sidebar Header */}
         <div className="bg-gradient-to-br from-[hsl(var(--primary))] to-[hsl(var(--success))] text-white p-3 sm:p-4 lg:p-5 border-b border-white/10 flex items-center justify-between">
-          <div className="text-sm sm:text-base lg:text-lg font-bold">EDUPRENEURS</div>
+          <img src={edupreneursLogo} alt="EDUPRENEURS" className="h-12 sm:h-14 w-auto object-contain" />
           <button
             onClick={() => setSidebarOpen(false)}
             className="lg:hidden p-1.5 sm:p-2 rounded-lg bg-white/20 hover:bg-white/30 transition-colors"

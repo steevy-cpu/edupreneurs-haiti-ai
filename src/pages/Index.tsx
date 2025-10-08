@@ -8,6 +8,7 @@ import ericWelcome from "@/assets/eric-welcome.png";
 import ericThinking from "@/assets/eric-main01.png";
 import ericPointingRight from "@/assets/eric-main01.png";
 import heroImage from "@/assets/hero-education.jpg";
+import edupreneursLogo from "@/assets/edupreneurs-logo.jpeg";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { Menu, X } from "lucide-react";
 
@@ -25,8 +26,7 @@ const Index = () => {
       <header className="sticky top-0 z-50 bg-card/80 backdrop-blur-md border-b border-border shadow-sm">
         <div className="container mx-auto px-2 sm:px-4 py-2 sm:py-4 flex justify-between items-center">
           <Link to="/" className="flex items-center gap-1.5 sm:gap-3">
-            <img src={heroImage} alt="EDUPRENEURS Logo" className="h-7 sm:h-10 rounded-lg shadow-sm hidden sm:block" />
-            <span className="text-sm sm:text-lg md:text-xl font-bold text-primary">EDUPRENEURS</span>
+            <img src={edupreneursLogo} alt="EDUPRENEURS Logo" className="h-8 sm:h-12 w-auto object-contain" />
           </Link>
           
           <nav className="hidden md:flex items-center gap-6">

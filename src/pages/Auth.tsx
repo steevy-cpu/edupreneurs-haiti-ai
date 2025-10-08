@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import authImage from "@/assets/auth00.png";
+import edupreneursLogo from "@/assets/edupreneurs-logo.jpeg";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -326,9 +327,8 @@ export default function Auth() {
     <div className="auth-page min-h-screen bg-background">
       {/* Header */}
       <header className="auth-header sticky top-0 z-10 flex items-center justify-between px-2 sm:px-4 md:px-8 py-2 sm:py-4 bg-card border-b border-border">
-        <Link to="/" className="auth-brand flex items-center gap-1.5 sm:gap-2.5 font-bold text-primary">
-          <div className="auth-logo w-5 h-5 sm:w-7 sm:h-7 rounded-md bg-gradient-to-br from-primary to-primary/80 hidden sm:block"></div>
-          <span className="text-sm sm:text-base">EDUPRENEURS</span>
+        <Link to="/" className="auth-brand flex items-center gap-1.5 sm:gap-2.5">
+          <img src={edupreneursLogo} alt="EDUPRENEURS" className="h-8 sm:h-10 w-auto object-contain" />
         </Link>
         <nav className="flex items-center gap-1.5 sm:gap-3">
           <Link to="/" className="auth-btn-outline text-xs sm:text-sm px-2 sm:px-3 py-1.5 sm:py-2">
