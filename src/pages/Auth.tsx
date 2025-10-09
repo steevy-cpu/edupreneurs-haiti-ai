@@ -50,18 +50,19 @@ export default function Auth() {
     e.preventDefault();
     
     try {
-      const { error } = await supabase.auth.signInWithPassword({
+      const { data: authData, error } = await supabase.auth.signInWithPassword({
         email: loginData.email,
         password: loginData.password,
       });
 
       if (error) throw error;
+      if (!authData.user) throw new Error("Échec de connexion");
 
       // Get user profile for full name
       const { data: profile } = await supabase
         .from('profiles')
         .select('full_name')
-        .eq('user_id', (await supabase.auth.getUser()).data.user?.id)
+        .eq('user_id', authData.user.id)
         .single();
 
       // Send login notification (optional)
