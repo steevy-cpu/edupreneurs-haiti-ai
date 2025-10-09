@@ -9,6 +9,7 @@ import ericAvatar from "@/assets/dashboard00.png";
 interface Message {
   content: string;
   sender: "user" | "eric";
+  navigationPath?: string;
 }
 
 export const EricChatbot = () => {
@@ -74,16 +75,9 @@ export const EricChatbot = () => {
 
       setMessages(prev => [...prev, { 
         content: data.response, 
-        sender: "eric" 
+        sender: "eric",
+        navigationPath: data.navigate || undefined
       }]);
-
-      // Handle navigation if present
-      if (data.navigate) {
-        console.log('Navigating to:', data.navigate);
-        setTimeout(() => {
-          window.location.href = data.navigate;
-        }, 1500); // Wait 1.5s so user can read the message
-      }
     } catch (error) {
       console.error('Error sending message:', error);
       toast({
@@ -148,6 +142,14 @@ export const EricChatbot = () => {
                 />
                 <div className="eric-message-content">
                   {message.content}
+                  {message.navigationPath && (
+                    <Button
+                      className="mt-3 w-full"
+                      onClick={() => window.location.href = message.navigationPath!}
+                    >
+                      Aller à cette page
+                    </Button>
+                  )}
                 </div>
                 {message.sender === "eric" && (
                   <div className="eric-message-controls">
