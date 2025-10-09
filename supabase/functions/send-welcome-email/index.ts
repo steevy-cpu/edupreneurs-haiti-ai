@@ -40,9 +40,11 @@ const handler = async (req: Request): Promise<Response> => {
               body {
                 font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
                 line-height: 1.6;
-                color: #1f2937;
-                background: #f3f4f6;
+                color: #1a1a1a;
+                background: #f5f5f5;
                 padding: 20px;
+                -webkit-font-smoothing: antialiased;
+                -moz-osx-font-smoothing: grayscale;
               }
               .container {
                 max-width: 600px;
@@ -68,8 +70,9 @@ const handler = async (req: Request): Promise<Response> => {
               }
               .welcome-text {
                 font-size: 18px;
-                color: #374151;
+                color: #2d2d2d;
                 margin-bottom: 20px;
+                line-height: 1.7;
               }
               .feature-list {
                 background: #f9fafb;
@@ -91,8 +94,9 @@ const handler = async (req: Request): Promise<Response> => {
                 flex-shrink: 0;
               }
               .feature-text {
-                color: #4b5563;
+                color: #3d3d3d;
                 font-size: 15px;
+                line-height: 1.6;
               }
               .cta-button {
                 display: inline-block;

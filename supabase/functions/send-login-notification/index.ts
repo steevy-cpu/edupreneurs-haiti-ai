@@ -42,9 +42,11 @@ const handler = async (req: Request): Promise<Response> => {
               body {
                 font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
                 line-height: 1.6;
-                color: #1f2937;
-                background: #f3f4f6;
+                color: #1a1a1a;
+                background: #f5f5f5;
                 padding: 20px;
+                -webkit-font-smoothing: antialiased;
+                -moz-osx-font-smoothing: grayscale;
               }
               .container {
                 max-width: 600px;
@@ -129,10 +131,10 @@ const handler = async (req: Request): Promise<Response> => {
               </div>
               
               <div class="content">
-                <p style="font-size: 18px; color: #374151; margin-bottom: 20px;">
+                <p style="font-size: 18px; color: #2d2d2d; margin-bottom: 20px; line-height: 1.7;">
                   Bonjour <strong>${fullName}</strong>,
                 </p>
-                <p style="color: #4b5563; margin-bottom: 20px;">
+                <p style="color: #3d3d3d; margin-bottom: 20px; line-height: 1.7;">
                   Nous vous informons qu'une connexion a été effectuée sur votre compte Edupreneurs.
                 </p>
 
