@@ -49,6 +49,14 @@ interface Message {
   };
 }
 
+interface Reaction {
+  id: string;
+  message_id: string;
+  user_id: string;
+  emoji: string;
+  created_at: string;
+}
+
 const Community = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -64,9 +72,12 @@ const Community = () => {
   const [isSending, setIsSending] = useState(false);
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const [replyingTo, setReplyingTo] = useState<Message | null>(null);
+  const [reactions, setReactions] = useState<Record<string, Reaction[]>>({});
+  const [showReactionPicker, setShowReactionPicker] = useState<string | null>(null);
   const previousMessagesCount = useRef<number>(0);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const messageChannelRef = useRef<any>(null);
+  const reactionChannelRef = useRef<any>(null);
 
   useEffect(() => {
     checkUser();
@@ -125,13 +136,18 @@ const Community = () => {
       const loadConversation = async () => {
         await fetchMessages(selectedConversation);
         await markMessagesAsRead(selectedConversation);
+        await fetchReactions(selectedConversation);
       };
       loadConversation();
       subscribeToConversationMessages(selectedConversation);
+      subscribeToReactions(selectedConversation);
     }
     return () => {
       if (messageChannelRef.current) {
         supabase.removeChannel(messageChannelRef.current);
+      }
+      if (reactionChannelRef.current) {
+        supabase.removeChannel(reactionChannelRef.current);
       }
     };
   }, [selectedConversation]);
@@ -553,6 +569,115 @@ const Community = () => {
     setIsSending(false);
   };
 
+  const fetchReactions = async (conversationId: string) => {
+    const { data: messagesData } = await supabase
+      .from("messages")
+      .select("id")
+      .eq("conversation_id", conversationId);
+
+    if (!messagesData) return;
+
+    const messageIds = messagesData.map(m => m.id);
+    
+    const { data: reactionsData } = await supabase
+      .from("message_reactions")
+      .select("*")
+      .in("message_id", messageIds);
+
+    if (reactionsData) {
+      const reactionsByMessage = reactionsData.reduce((acc, reaction) => {
+        if (!acc[reaction.message_id]) {
+          acc[reaction.message_id] = [];
+        }
+        acc[reaction.message_id].push(reaction);
+        return acc;
+      }, {} as Record<string, Reaction[]>);
+      
+      setReactions(reactionsByMessage);
+    }
+  };
+
+  const subscribeToReactions = (conversationId: string) => {
+    if (reactionChannelRef.current) {
+      supabase.removeChannel(reactionChannelRef.current);
+    }
+
+    const channel = supabase
+      .channel(`reactions-${conversationId}`)
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'message_reactions',
+        },
+        async (payload) => {
+          if (payload.eventType === 'INSERT') {
+            const newReaction = payload.new as Reaction;
+            setReactions(prev => ({
+              ...prev,
+              [newReaction.message_id]: [...(prev[newReaction.message_id] || []), newReaction]
+            }));
+          } else if (payload.eventType === 'DELETE') {
+            const deletedReaction = payload.old as Reaction;
+            setReactions(prev => ({
+              ...prev,
+              [deletedReaction.message_id]: (prev[deletedReaction.message_id] || []).filter(
+                r => r.id !== deletedReaction.id
+              )
+            }));
+          }
+        }
+      )
+      .subscribe();
+
+    reactionChannelRef.current = channel;
+  };
+
+  const toggleReaction = async (messageId: string, emoji: string) => {
+    if (!user) return;
+
+    // Check if user already reacted with this emoji
+    const existingReaction = reactions[messageId]?.find(
+      r => r.user_id === user.id && r.emoji === emoji
+    );
+
+    if (existingReaction) {
+      // Remove reaction
+      const { error } = await supabase
+        .from("message_reactions")
+        .delete()
+        .eq("id", existingReaction.id);
+
+      if (error) {
+        toast({
+          title: "Erreur",
+          description: "Impossible de retirer la réaction",
+          variant: "destructive",
+        });
+      }
+    } else {
+      // Add reaction
+      const { error } = await supabase
+        .from("message_reactions")
+        .insert({
+          message_id: messageId,
+          user_id: user.id,
+          emoji: emoji,
+        });
+
+      if (error) {
+        toast({
+          title: "Erreur",
+          description: "Impossible d'ajouter la réaction",
+          variant: "destructive",
+        });
+      }
+    }
+
+    setShowReactionPicker(null);
+  };
+
   const formatTime = (timestamp: string) => {
     const date = new Date(timestamp);
     const now = new Date();
@@ -787,6 +912,113 @@ const Community = () => {
                               </span>
                             )}
                           </div>
+                          
+                          {/* Reactions Display */}
+                          {reactions[message.id] && reactions[message.id].length > 0 && (
+                            <div className="flex flex-wrap gap-1 mt-1">
+                              {Object.entries(
+                                reactions[message.id].reduce((acc, reaction) => {
+                                  if (!acc[reaction.emoji]) {
+                                    acc[reaction.emoji] = [];
+                                  }
+                                  acc[reaction.emoji].push(reaction.user_id);
+                                  return acc;
+                                }, {} as Record<string, string[]>)
+                              ).map(([emoji, userIds]) => {
+                                const hasUserReacted = userIds.includes(user?.id);
+                                return (
+                                  <button
+                                    key={emoji}
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      toggleReaction(message.id, emoji);
+                                    }}
+                                    className={`flex items-center gap-1 px-2 py-0.5 rounded-full text-xs transition-colors no-reply-trigger ${
+                                      hasUserReacted 
+                                        ? "bg-primary/20 border border-primary/50" 
+                                        : "bg-muted border border-border hover:bg-muted/80"
+                                    }`}
+                                  >
+                                    <span>{emoji}</span>
+                                    <span className="text-[10px] font-medium">{userIds.length}</span>
+                                  </button>
+                                );
+                              })}
+                              
+                              {/* Add Reaction Button */}
+                              <Popover 
+                                open={showReactionPicker === message.id} 
+                                onOpenChange={(open) => setShowReactionPicker(open ? message.id : null)}
+                              >
+                                <PopoverTrigger asChild>
+                                  <button
+                                    onClick={(e) => e.stopPropagation()}
+                                    className="px-2 py-0.5 rounded-full text-xs bg-muted border border-border hover:bg-muted/80 transition-colors no-reply-trigger"
+                                  >
+                                    ➕
+                                  </button>
+                                </PopoverTrigger>
+                                <PopoverContent 
+                                  className="w-auto p-2" 
+                                  onClick={(e) => e.stopPropagation()}
+                                >
+                                  <div className="flex gap-2">
+                                    {['❤️', '😂', '😮', '😢', '😡', '👍', '👎', '🔥', '🎉'].map((emoji) => (
+                                      <button
+                                        key={emoji}
+                                        onClick={(e) => {
+                                          e.stopPropagation();
+                                          toggleReaction(message.id, emoji);
+                                        }}
+                                        className="text-xl hover:scale-125 transition-transform"
+                                      >
+                                        {emoji}
+                                      </button>
+                                    ))}
+                                  </div>
+                                </PopoverContent>
+                              </Popover>
+                            </div>
+                          )}
+                          
+                          {/* Add Reaction Button (when no reactions exist) */}
+                          {(!reactions[message.id] || reactions[message.id].length === 0) && (
+                            <div className="opacity-0 group-hover:opacity-100 transition-opacity mt-1">
+                              <Popover 
+                                open={showReactionPicker === message.id} 
+                                onOpenChange={(open) => setShowReactionPicker(open ? message.id : null)}
+                              >
+                                <PopoverTrigger asChild>
+                                  <button
+                                    onClick={(e) => e.stopPropagation()}
+                                    className="px-2 py-0.5 rounded-full text-xs bg-muted border border-border hover:bg-muted/80 transition-colors no-reply-trigger flex items-center gap-1"
+                                  >
+                                    <Smile size={12} />
+                                    <span className="text-[10px]">Réagir</span>
+                                  </button>
+                                </PopoverTrigger>
+                                <PopoverContent 
+                                  className="w-auto p-2" 
+                                  onClick={(e) => e.stopPropagation()}
+                                >
+                                  <div className="flex gap-2">
+                                    {['❤️', '😂', '😮', '😢', '😡', '👍', '👎', '🔥', '🎉'].map((emoji) => (
+                                      <button
+                                        key={emoji}
+                                        onClick={(e) => {
+                                          e.stopPropagation();
+                                          toggleReaction(message.id, emoji);
+                                        }}
+                                        className="text-xl hover:scale-125 transition-transform"
+                                      >
+                                        {emoji}
+                                      </button>
+                                    ))}
+                                  </div>
+                                </PopoverContent>
+                              </Popover>
+                            </div>
+                          )}
                         </div>
                       </div>
                     </div>
