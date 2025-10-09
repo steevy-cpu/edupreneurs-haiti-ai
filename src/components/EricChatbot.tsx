@@ -14,12 +14,7 @@ interface Message {
 
 export const EricChatbot = () => {
   const [isOpen, setIsOpen] = useState(false);
-  const [messages, setMessages] = useState<Message[]>([
-    {
-      content: "Salut ! Je suis Eric, votre professeur. Comment puis-je vous aider ? 😊",
-      sender: "eric"
-    }
-  ]);
+  const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [isTyping, setIsTyping] = useState(false);
   const [isSpeaking, setIsSpeaking] = useState<number | null>(null);
@@ -39,12 +34,34 @@ export const EricChatbot = () => {
             .eq('user_id', user.id)
             .single();
           
-          if (profile?.nickname) {
-            setUserNickname(profile.nickname);
+          const nickname = profile?.nickname || "l'élève";
+          setUserNickname(nickname);
+          
+          // Set initial greeting with nickname
+          const now = new Date();
+          const haitiOffset = -5;
+          const haitiTime = new Date(now.getTime() + (haitiOffset * 60 * 60 * 1000) + (now.getTimezoneOffset() * 60 * 1000));
+          const currentHour = haitiTime.getHours();
+          
+          let greeting = "Bonjour";
+          if (currentHour >= 18 || currentHour < 5) {
+            greeting = "Bonsoir";
+          } else if (currentHour >= 12 && currentHour < 18) {
+            greeting = "Bon après-midi";
           }
+          
+          setMessages([{
+            content: `${greeting} ${nickname} ! Je suis Eric, votre professeur. Comment puis-je vous aider ? 😊`,
+            sender: "eric"
+          }]);
         }
       } catch (error) {
         console.error('Error fetching user profile:', error);
+        // Fallback greeting without nickname
+        setMessages([{
+          content: "Salut ! Je suis Eric, votre professeur. Comment puis-je vous aider ? 😊",
+          sender: "eric"
+        }]);
       }
     };
 
