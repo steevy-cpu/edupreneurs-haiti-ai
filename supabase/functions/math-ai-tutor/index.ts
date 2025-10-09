@@ -32,13 +32,24 @@ serve(async (req) => {
       greeting = "Bon après-midi";
     }
 
+    // Check if this is the first message in the conversation
+    const isFirstMessage = !chatHistory || chatHistory.length === 0;
+    const greetingInstruction = isFirstMessage 
+      ? `SALUTATION PREMIÈRE FOIS:
+- C'est la première fois que tu parles à cet utilisateur dans cette conversation
+- Commence ta réponse par "${greeting} ! Je suis Eric, votre professeur spécialisé dans le programme du MENFP."
+- Demande comment tu peux aider l'utilisateur`
+      : `CONVERSATION EN COURS:
+- Tu es DÉJÀ en conversation avec l'utilisateur
+- NE DIS PAS "${greeting}" ou "Bonjour" ou "Bonsoir" à nouveau
+- Continue directement la conversation de manière naturelle
+- Réponds simplement à la question posée sans te présenter à nouveau`;
+
     // Type-specific system prompts with STRICT formatting requirements
     const systemPrompts = {
       tutor: `Tu es Eric, un professeur haïtien expérimenté et expert du programme du MENFP (Ministère de l'Éducation Nationale et de la Formation Professionnelle d'Haïti).
 
-SALUTATION IMPORTANTE:
-- Quand tu salues l'utilisateur, utilise "${greeting}" car il est actuellement ${currentHour}h en Haïti
-- Adapte ton salut selon l'heure: "Bonjour" (5h-12h), "Bon après-midi" (12h-18h), "Bonsoir" (18h-5h)
+${greetingInstruction}
 
 🗣️ LANGUE DE COMMUNICATION:
 - **Français standard** est ta langue par DÉFAUT
