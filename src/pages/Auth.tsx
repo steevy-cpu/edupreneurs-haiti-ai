@@ -57,6 +57,33 @@ export default function Auth() {
 
       if (error) throw error;
 
+      // Get user profile for full name
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('full_name')
+        .eq('user_id', (await supabase.auth.getUser()).data.user?.id)
+        .single();
+
+      // Send login notification (optional)
+      try {
+        const timestamp = new Date().toLocaleString('fr-FR', {
+          dateStyle: 'full',
+          timeStyle: 'short',
+        });
+        
+        await supabase.functions.invoke('send-login-notification', {
+          body: {
+            email: loginData.email,
+            fullName: profile?.full_name || 'Utilisateur',
+            timestamp,
+            device: navigator.userAgent.includes('Mobile') ? 'Mobile' : 'Desktop',
+          }
+        });
+      } catch (emailError) {
+        console.error("Error sending login notification:", emailError);
+        // Don't block login if email fails
+      }
+
       toast({
         title: "Connexion réussie",
         description: "Bienvenue !",
@@ -76,11 +103,26 @@ export default function Auth() {
     e.preventDefault();
 
     try {
+      const resetUrl = `${window.location.origin}/auth?reset=true`;
+      
       const { error } = await supabase.auth.resetPasswordForEmail(forgotPasswordEmail, {
-        redirectTo: `${window.location.origin}/auth?reset=true`,
+        redirectTo: resetUrl,
       });
 
       if (error) throw error;
+
+      // Send custom password reset email with our beautiful template
+      try {
+        await supabase.functions.invoke('send-password-reset-email', {
+          body: {
+            email: forgotPasswordEmail,
+            resetUrl: resetUrl,
+          }
+        });
+      } catch (emailError) {
+        console.error("Error sending custom reset email:", emailError);
+        // Supabase's built-in email will still be sent
+      }
 
       toast({
         title: "Email envoyé ✅",
@@ -261,6 +303,20 @@ export default function Auth() {
           console.error("Referral error:", refError);
           // Don't block signup if referral fails
         }
+      }
+
+      // Send welcome email
+      try {
+        await supabase.functions.invoke('send-welcome-email', {
+          body: {
+            email: signupData.email,
+            fullName: signupData.fullName || signupData.nickname,
+            verificationUrl: `${window.location.origin}/dashboard`,
+          }
+        });
+      } catch (emailError) {
+        console.error("Error sending welcome email:", emailError);
+        // Don't block signup if email fails
       }
 
       toast({
