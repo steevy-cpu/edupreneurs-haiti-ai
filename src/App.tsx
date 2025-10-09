@@ -26,6 +26,7 @@ import Resources from "./pages/Resources";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
 import NotFound from "./pages/NotFound";
 import TestEmail from "./pages/TestEmail";
+import EmailTest from "./pages/EmailTest";
 
 const queryClient = new QueryClient();
 
@@ -57,6 +58,7 @@ const App = () => (
             <Route path="/resources" element={<Layout><Resources /></Layout>} />
             <Route path="/privacy-policy" element={<PrivacyPolicy />} />
             <Route path="/test-email" element={<TestEmail />} />
+            <Route path="/email-test" element={<EmailTest />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
