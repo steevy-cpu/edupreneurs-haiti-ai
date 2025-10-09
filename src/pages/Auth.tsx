@@ -13,7 +13,8 @@ export default function Auth() {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [searchParams] = useSearchParams();
-  const [activeTab, setActiveTab] = useState<"login" | "signup" | "verify">("login");
+  const [activeTab, setActiveTab] = useState<"login" | "signup" | "verify" | "forgot-password">("login");
+  const [forgotPasswordEmail, setForgotPasswordEmail] = useState("");
   const [loginData, setLoginData] = useState({ email: "", password: "" });
   const [referralCode, setReferralCode] = useState<string | null>(null);
   const [signupData, setSignupData] = useState({
@@ -31,11 +32,6 @@ export default function Auth() {
   });
   const [nicknameAvailable, setNicknameAvailable] = useState<boolean | null>(null);
   const [checkingNickname, setCheckingNickname] = useState(false);
-  const [verificationData, setVerificationData] = useState({
-    userId: "",
-    email: "",
-    code: "",
-  });
 
   useEffect(() => {
     // Check for referral code in URL
@@ -76,43 +72,26 @@ export default function Auth() {
     }
   };
 
-  const handleVerification = async (e: React.FormEvent) => {
+  const handleForgotPassword = async (e: React.FormEvent) => {
     e.preventDefault();
 
     try {
-      const { data: profile, error: fetchError } = await supabase
-        .from('profiles')
-        .select('confirmation_code')
-        .eq('user_id', verificationData.userId)
-        .single();
-
-      if (fetchError) throw fetchError;
-
-      if (profile.confirmation_code !== verificationData.code) {
-        toast({
-          title: "Code invalide",
-          description: "Le code de vérification est incorrect",
-          variant: "destructive",
-        });
-        return;
-      }
-
-      const { error: updateError } = await supabase
-        .from('profiles')
-        .update({ email_confirmed: true })
-        .eq('user_id', verificationData.userId);
-
-      if (updateError) throw updateError;
-
-      toast({
-        title: "Email vérifié ! ✅",
-        description: "Votre compte est maintenant actif",
+      const { error } = await supabase.auth.resetPasswordForEmail(forgotPasswordEmail, {
+        redirectTo: `${window.location.origin}/auth?reset=true`,
       });
 
-      navigate("/dashboard");
+      if (error) throw error;
+
+      toast({
+        title: "Email envoyé ✅",
+        description: "Vérifiez votre boîte de réception pour réinitialiser votre mot de passe",
+      });
+
+      setForgotPasswordEmail("");
+      setActiveTab("login");
     } catch (error: any) {
       toast({
-        title: "Erreur de vérification",
+        title: "Erreur",
         description: error.message,
         variant: "destructive",
       });
@@ -217,14 +196,12 @@ export default function Auth() {
         email: signupData.email,
         password: signupData.password,
         options: {
-          emailRedirectTo: `${window.location.origin}/`,
+          emailRedirectTo: `${window.location.origin}/dashboard`,
         },
       });
 
       if (authError) throw authError;
       if (!authData.user) throw new Error("Échec de la création du compte");
-
-      const confirmationCode = Math.floor(100000 + Math.random() * 900000).toString();
 
       const { error: profileError } = await supabase
         .from('profiles')
@@ -236,7 +213,6 @@ export default function Auth() {
           phone_number: signupData.phoneNumber,
           school: signupData.school,
           gender: signupData.gender,
-          confirmation_code: confirmationCode,
           email_confirmed: false,
           phone_confirmed: false,
         });
@@ -287,32 +263,12 @@ export default function Auth() {
         }
       }
 
-      const { error: emailError } = await supabase.functions.invoke('send-confirmation-email', {
-        body: {
-          email: signupData.email,
-          fullName: signupData.fullName || signupData.nickname,
-          nickname: signupData.nickname,
-          academicGrade: signupData.academicGrade,
-          confirmationCode,
-        },
-      });
-
-      if (emailError) {
-        console.error("Email error:", emailError);
-      }
-
-      setVerificationData({
-        userId: authData.user.id,
-        email: signupData.email,
-        code: "",
-      });
-
-      setActiveTab("verify");
-
       toast({
         title: "Inscription réussie ! 🎉",
-        description: "Vérifiez votre email pour le code de confirmation",
+        description: "Vérifiez votre email pour confirmer votre compte",
       });
+
+      setActiveTab("login");
     } catch (error: any) {
       console.error("Signup error:", error);
       toast({
@@ -389,7 +345,7 @@ export default function Auth() {
             <section className="auth-panel auth-card bg-card border border-border rounded-2xl shadow-lg overflow-hidden">
               {/* Tabs */}
               <div className="auth-tabs flex border-b border-border">
-                {activeTab !== "verify" && (
+                {activeTab !== "verify" && activeTab !== "forgot-password" && (
                   <>
                     <button
                       className={`auth-tab flex-1 text-center py-3.5 px-2.5 cursor-pointer font-bold ${
@@ -413,9 +369,9 @@ export default function Auth() {
                     </button>
                   </>
                 )}
-                {activeTab === "verify" && (
+                {activeTab === "forgot-password" && (
                   <div className="auth-tab flex-1 text-center py-3.5 px-2.5 font-bold text-primary border-b-[3px] border-primary">
-                    Vérification Email
+                    Réinitialiser le mot de passe
                   </div>
                 )}
               </div>
@@ -456,6 +412,15 @@ export default function Auth() {
                     <Button type="submit" className="auth-btn-submit w-full mt-6">
                       Se connecter
                     </Button>
+                    
+                    <button
+                      type="button"
+                      onClick={() => setActiveTab("forgot-password")}
+                      className="text-sm text-primary hover:underline mt-4 text-center w-full"
+                    >
+                      Mot de passe oublié ?
+                    </button>
+
                     <div className="flex flex-col gap-2 mt-4">
                       <Button 
                         type="button"
@@ -494,43 +459,39 @@ export default function Auth() {
                   </form>
                 )}
 
-                {/* Verification Form */}
-                {activeTab === "verify" && (
-                  <form onSubmit={handleVerification} className="space-y-4">
+                {/* Forgot Password Form */}
+                {activeTab === "forgot-password" && (
+                  <form onSubmit={handleForgotPassword} className="space-y-4">
                     <div className="text-center mb-6">
-                      <h2 className="text-xl font-bold mb-2">Vérifiez votre email</h2>
+                      <h2 className="text-xl font-bold mb-2">Mot de passe oublié ?</h2>
                       <p className="text-sm text-muted-foreground">
-                        Nous avons envoyé un code à <strong>{verificationData.email}</strong>
+                        Entrez votre adresse email pour recevoir un lien de réinitialisation
                       </p>
                     </div>
                     <div className="space-y-2">
-                      <Label htmlFor="verification-code" className="text-sm text-muted-foreground">
-                        Code de vérification *
+                      <Label htmlFor="forgot-email" className="text-sm text-muted-foreground">
+                        Adresse e-mail
                       </Label>
                       <Input
-                        id="verification-code"
-                        type="text"
+                        id="forgot-email"
+                        type="email"
                         required
-                        placeholder="Entrez le code à 6 chiffres"
-                        value={verificationData.code}
-                        onChange={(e) => setVerificationData({ ...verificationData, code: e.target.value })}
-                        className="auth-input text-center text-lg tracking-widest"
-                        maxLength={6}
+                        placeholder="ex: nom@domaine.com"
+                        value={forgotPasswordEmail}
+                        onChange={(e) => setForgotPasswordEmail(e.target.value)}
+                        className="auth-input"
                       />
                     </div>
                     <Button type="submit" className="auth-btn-submit w-full mt-6">
-                      Vérifier
+                      Envoyer le lien
                     </Button>
-                    <p className="text-xs text-muted-foreground text-center mt-4">
-                      Vous n'avez pas reçu le code ?{" "}
-                      <button
-                        type="button"
-                        onClick={() => setActiveTab("signup")}
-                        className="text-primary underline"
-                      >
-                        Réessayer
-                      </button>
-                    </p>
+                    <button
+                      type="button"
+                      onClick={() => setActiveTab("login")}
+                      className="text-sm text-muted-foreground hover:text-primary mt-4 text-center w-full"
+                    >
+                      Retour à la connexion
+                    </button>
                   </form>
                 )}
 
