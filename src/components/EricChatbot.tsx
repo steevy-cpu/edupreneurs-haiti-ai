@@ -23,8 +23,33 @@ export const EricChatbot = () => {
   const [input, setInput] = useState("");
   const [isTyping, setIsTyping] = useState(false);
   const [isSpeaking, setIsSpeaking] = useState<number | null>(null);
+  const [userNickname, setUserNickname] = useState<string>("");
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
+
+  // Fetch user profile on mount
+  useEffect(() => {
+    const fetchUserProfile = async () => {
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (user) {
+          const { data: profile } = await supabase
+            .from('profiles')
+            .select('nickname')
+            .eq('user_id', user.id)
+            .single();
+          
+          if (profile?.nickname) {
+            setUserNickname(profile.nickname);
+          }
+        }
+      } catch (error) {
+        console.error('Error fetching user profile:', error);
+      }
+    };
+
+    fetchUserProfile();
+  }, []);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -64,6 +89,7 @@ export const EricChatbot = () => {
         body: {
           message: userMessage,
           lessonType: 'tutor',
+          userNickname: userNickname,
           chatHistory: messages.map(m => ({
             role: m.sender === "user" ? "user" : "assistant",
             content: m.content

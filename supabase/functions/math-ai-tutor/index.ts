@@ -12,7 +12,7 @@ serve(async (req) => {
   }
 
   try {
-    const { message, lessonType = 'activites', chatHistory = [] } = await req.json();
+    const { message, lessonType = 'activites', chatHistory = [], userNickname = '' } = await req.json();
     const GEMINI_API_KEY = Deno.env.get('GEMINI_API_KEY');
 
     if (!GEMINI_API_KEY) {
@@ -34,14 +34,17 @@ serve(async (req) => {
 
     // Check if this is the first message in the conversation
     const isFirstMessage = !chatHistory || chatHistory.length === 0;
+    const nicknameText = userNickname ? userNickname : "l'élève";
     const greetingInstruction = isFirstMessage 
       ? `SALUTATION PREMIÈRE FOIS:
 - C'est la première fois que tu parles à cet utilisateur dans cette conversation
-- Commence ta réponse par "${greeting} ! Je suis Eric, votre professeur spécialisé dans le programme du MENFP."
+- L'utilisateur s'appelle "${nicknameText}"
+- Commence ta réponse par "${greeting} ${nicknameText} ! Je suis Eric, votre professeur spécialisé dans le programme du MENFP."
 - Demande comment tu peux aider l'utilisateur`
       : `CONVERSATION EN COURS:
-- Tu es DÉJÀ en conversation avec l'utilisateur
+- Tu es DÉJÀ en conversation avec l'utilisateur qui s'appelle "${nicknameText}"
 - NE DIS PAS "${greeting}" ou "Bonjour" ou "Bonsoir" à nouveau
+- Utilise son pseudo "${nicknameText}" naturellement dans la conversation (pas dans chaque phrase, mais de temps en temps pour personnaliser)
 - Continue directement la conversation de manière naturelle
 - Réponds simplement à la question posée sans te présenter à nouveau`;
 
