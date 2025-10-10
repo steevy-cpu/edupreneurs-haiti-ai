@@ -6,7 +6,7 @@ import { Card } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Skeleton } from '@/components/ui/skeleton';
 import { toast } from 'sonner';
-import { User, UserPlus, UserCheck, Clock, ArrowLeft } from 'lucide-react';
+import { User, UserPlus, UserCheck, Clock, ArrowLeft, BadgeCheck } from 'lucide-react';
 import { getAvatarUrl } from '@/lib/avatarMap';
 
 interface Profile {
@@ -19,6 +19,8 @@ interface Profile {
   academic_grade: string;
   affiliation_points: number;
   avatar_url: string | null;
+  verified: boolean;
+  is_system_account: boolean;
 }
 
 interface FollowStatus {
@@ -219,7 +221,12 @@ export default function Profile() {
             </Avatar>
 
             <div className="text-center space-y-1 sm:space-y-2">
-              <h1 className="text-2xl sm:text-3xl font-bold">{profile.nickname}</h1>
+              <div className="flex items-center justify-center gap-2">
+                <h1 className="text-2xl sm:text-3xl font-bold">{profile.nickname}</h1>
+                {profile.verified && (
+                  <BadgeCheck className="w-6 h-6 text-primary fill-primary/20" />
+                )}
+              </div>
               <p className="text-sm sm:text-base text-muted-foreground">{profile.full_name}</p>
             </div>
 

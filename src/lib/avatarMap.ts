@@ -6,6 +6,7 @@ import avatar5 from "@/assets/avatars/avatar-5.png";
 import avatar6 from "@/assets/avatars/avatar-6.png";
 import avatar7 from "@/assets/avatars/avatar-7.png";
 import avatar8 from "@/assets/avatars/avatar-8.png";
+import ericAvatar from "@/assets/eric-welcome.png";
 
 export const avatarMap: Record<string, string> = {
   "avatar-1": avatar1,
@@ -16,6 +17,7 @@ export const avatarMap: Record<string, string> = {
   "avatar-6": avatar6,
   "avatar-7": avatar7,
   "avatar-8": avatar8,
+  "eric": ericAvatar,
 };
 
 export const getAvatarUrl = (avatarId: string | null | undefined): string | undefined => {

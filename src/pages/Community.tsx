@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useToast } from "@/hooks/use-toast";
-import { Send, ArrowLeft, Search, Smile, Check, CheckCheck } from "lucide-react";
+import { Send, ArrowLeft, Search, Smile, Check, CheckCheck, BadgeCheck } from "lucide-react";
 import { useMessageSounds } from "@/hooks/useMessageSounds";
 import EmojiPicker from "emoji-picker-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
@@ -19,6 +19,7 @@ interface Profile {
   full_name: string;
   nickname: string;
   avatar_url: string | null;
+  verified: boolean;
 }
 
 interface Conversation {
@@ -743,10 +744,13 @@ const Community = () => {
                   </AvatarFallback>
                 </Avatar>
                 <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-1.5">
                     <p className="font-semibold truncate text-sm sm:text-base">
                       {conv.otherUser?.full_name || "Utilisateur"}
                     </p>
+                    {conv.otherUser?.verified && (
+                      <BadgeCheck className="w-4 h-4 text-primary fill-primary/20 shrink-0" />
+                    )}
                     {conv.unreadCount && conv.unreadCount > 0 && (
                       <span className="flex items-center justify-center h-4 sm:h-5 min-w-[16px] sm:min-w-[20px] px-1 sm:px-1.5 rounded-full bg-primary text-primary-foreground text-[10px] sm:text-xs font-semibold">
                         {conv.unreadCount}
@@ -801,9 +805,14 @@ const Community = () => {
                   if (otherUser) navigate(`/profile/${otherUser.user_id}`);
                 }}
               >
-                <p className="font-semibold text-sm sm:text-base truncate">
-                  {conversations.find(c => c.id === selectedConversation)?.otherUser?.full_name || "Utilisateur"}
-                </p>
+                <div className="flex items-center gap-1.5">
+                  <p className="font-semibold text-sm sm:text-base truncate">
+                    {conversations.find(c => c.id === selectedConversation)?.otherUser?.full_name || "Utilisateur"}
+                  </p>
+                  {conversations.find(c => c.id === selectedConversation)?.otherUser?.verified && (
+                    <BadgeCheck className="w-4 h-4 text-primary fill-primary/20 shrink-0" />
+                  )}
+                </div>
               </div>
             </div>
 

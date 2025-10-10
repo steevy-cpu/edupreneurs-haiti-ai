@@ -380,6 +380,7 @@ export type Database = {
           gender: string | null
           gold_earned: number
           id: string
+          is_system_account: boolean | null
           nickname: string
           phone_confirmed: boolean | null
           phone_number: string
@@ -388,6 +389,7 @@ export type Database = {
           school: string | null
           updated_at: string | null
           user_id: string
+          verified: boolean | null
         }
         Insert: {
           academic_grade: string
@@ -401,6 +403,7 @@ export type Database = {
           gender?: string | null
           gold_earned?: number
           id?: string
+          is_system_account?: boolean | null
           nickname: string
           phone_confirmed?: boolean | null
           phone_number: string
@@ -409,6 +412,7 @@ export type Database = {
           school?: string | null
           updated_at?: string | null
           user_id: string
+          verified?: boolean | null
         }
         Update: {
           academic_grade?: string
@@ -422,6 +426,7 @@ export type Database = {
           gender?: string | null
           gold_earned?: number
           id?: string
+          is_system_account?: boolean | null
           nickname?: string
           phone_confirmed?: boolean | null
           phone_number?: string
@@ -430,6 +435,7 @@ export type Database = {
           school?: string | null
           updated_at?: string | null
           user_id?: string
+          verified?: boolean | null
         }
         Relationships: [
           {

@@ -7,7 +7,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useToast } from "@/hooks/use-toast";
-import { Heart, MessageCircle, Send, Plus, Image, Share2, Trash2, Smile, Reply } from "lucide-react";
+import { Heart, MessageCircle, Send, Plus, Image, Share2, Trash2, Smile, Reply, BadgeCheck } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import {
   AlertDialog,
@@ -33,6 +33,7 @@ interface Profile {
   full_name: string;
   nickname: string;
   avatar_url: string | null;
+  verified: boolean;
 }
 
 interface Comment {
@@ -621,9 +622,14 @@ const Feed = () => {
       </Avatar>
       <div className="flex-1 min-w-0">
         <div className="bg-muted/30 rounded-lg px-3 py-2">
-          <p className="font-semibold text-xs">
-            {comment.profile?.nickname || "Utilisateur"}
-          </p>
+          <div className="flex items-center gap-1.5">
+            <p className="font-semibold text-xs">
+              {comment.profile?.nickname || "Utilisateur"}
+            </p>
+            {comment.profile?.verified && (
+              <BadgeCheck className="w-3 h-3 text-primary fill-primary/20" />
+            )}
+          </div>
           <p className="text-sm break-words">{comment.content}</p>
         </div>
         <div className="flex items-center gap-3 mt-1 px-1">
@@ -800,9 +806,14 @@ const Feed = () => {
                     </AvatarFallback>
                   </Avatar>
                   <div className="flex-1">
-                    <p className="font-semibold text-sm">
-                      {post.profile?.full_name || "Utilisateur"}
-                    </p>
+                    <div className="flex items-center gap-1.5">
+                      <p className="font-semibold text-sm">
+                        {post.profile?.full_name || "Utilisateur"}
+                      </p>
+                      {post.profile?.verified && (
+                        <BadgeCheck className="w-4 h-4 text-primary fill-primary/20" />
+                      )}
+                    </div>
                     <p className="text-xs text-muted-foreground">
                       {formatTimeAgo(post.created_at)}
                     </p>
