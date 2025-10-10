@@ -7,6 +7,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Sparkles, ArrowRight, BookOpen, Target } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
+import { ThemeToggle } from "@/components/ThemeToggle";
 import ericWaving from "@/assets/eric-main01.png";
 
 const subjects = [
@@ -52,6 +53,9 @@ const Onboarding = () => {
 
   return (
     <div className="min-h-screen bg-background flex items-center justify-center p-4">
+      <div className="fixed top-4 right-4 z-50">
+        <ThemeToggle />
+      </div>
       {/* Background effects */}
       <div className="absolute inset-0 overflow-hidden">
         <div className="absolute top-20 left-20 w-96 h-96 bg-primary/10 rounded-full blur-3xl animate-pulse" />

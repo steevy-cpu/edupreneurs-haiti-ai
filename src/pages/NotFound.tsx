@@ -2,6 +2,7 @@ import { useLocation, Link } from "react-router-dom";
 import { useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Home } from "lucide-react";
+import { ThemeToggle } from "@/components/ThemeToggle";
 import ericSad from "@/assets/eric-404.png";
 
 const NotFound = () => {
@@ -13,6 +14,9 @@ const NotFound = () => {
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-background">
+      <div className="fixed top-4 right-4 z-50">
+        <ThemeToggle />
+      </div>
       <div className="text-center px-4 py-8 max-w-2xl">
         <img 
           src={ericSad} 
