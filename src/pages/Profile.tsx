@@ -107,25 +107,18 @@ export default function Profile() {
 
   const fetchFollowCounts = async () => {
     try {
-      console.log('Fetching follow counts for userId:', userId);
-      
       const [followersRes, followingRes] = await Promise.all([
         supabase
           .from('follows')
-          .select('*', { count: 'exact' })
+          .select('id', { count: 'exact', head: true })
           .eq('following_id', userId)
           .eq('status', 'accepted'),
         supabase
           .from('follows')
-          .select('*', { count: 'exact' })
+          .select('id', { count: 'exact', head: true })
           .eq('follower_id', userId)
           .eq('status', 'accepted'),
       ]);
-
-      console.log('Followers response:', followersRes);
-      console.log('Followers count:', followersRes.count);
-      console.log('Followers data:', followersRes.data);
-      console.log('Following response:', followingRes);
 
       setFollowersCount(followersRes.count || 0);
       setFollowingCount(followingRes.count || 0);
