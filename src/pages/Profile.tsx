@@ -215,7 +215,7 @@ export default function Profile() {
 
         <Card className="p-4 sm:p-8">
           <div className="flex flex-col items-center space-y-3 sm:space-y-4">
-            <Avatar className="w-24 h-24 sm:w-32 sm:h-32">
+            <Avatar className={profile.is_system_account ? "w-48 h-48 sm:w-64 sm:h-64" : "w-24 h-24 sm:w-32 sm:h-32"}>
               <AvatarImage src={getAvatarUrl(profile.avatar_url)} />
               <AvatarFallback>{profile.nickname[0].toUpperCase()}</AvatarFallback>
             </Avatar>
@@ -283,18 +283,20 @@ export default function Profile() {
               </div>
             )}
 
-            <div className="grid grid-cols-2 gap-4">
-              {profile.school && (
+            {!profile.is_system_account && (
+              <div className="grid grid-cols-2 gap-4">
+                {profile.school && (
+                  <div>
+                    <h3 className="font-semibold mb-1">School</h3>
+                    <p className="text-muted-foreground">{profile.school}</p>
+                  </div>
+                )}
                 <div>
-                  <h3 className="font-semibold mb-1">School</h3>
-                  <p className="text-muted-foreground">{profile.school}</p>
+                  <h3 className="font-semibold mb-1">Grade</h3>
+                  <p className="text-muted-foreground">{profile.academic_grade}</p>
                 </div>
-              )}
-              <div>
-                <h3 className="font-semibold mb-1">Grade</h3>
-                <p className="text-muted-foreground">{profile.academic_grade}</p>
               </div>
-            </div>
+            )}
           </div>
         </Card>
       </div>
