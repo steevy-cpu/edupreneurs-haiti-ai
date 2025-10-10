@@ -565,24 +565,71 @@ const Community = () => {
         description: "Impossible d'envoyer le message",
         variant: "destructive",
       });
-    } else {
-      playSendSound();
-      setNewMessage("");
-      setReplyingTo(null);
+      setIsSending(false);
+      return;
+    }
+
+    playSendSound();
+    setNewMessage("");
+    setReplyingTo(null);
+    
+    // Send notification to recipient
+    const conversation = conversations.find(c => c.id === selectedConversation);
+    if (conversation?.otherUser) {
+      // Get sender's profile for better notification
+      const { data: senderProfile } = await supabase
+        .from('profiles')
+        .select('full_name, nickname')
+        .eq('user_id', user.id)
+        .single();
       
-      // Send notification to recipient
-      const conversation = conversations.find(c => c.id === selectedConversation);
-      if (conversation?.otherUser) {
-        // Get sender's profile for better notification
-        const { data: senderProfile } = await supabase
-          .from('profiles')
-          .select('full_name')
-          .eq('user_id', user.id)
-          .single();
-        
-        const senderName = senderProfile?.full_name || user.email || 'Someone';
-        
-        // Broadcast notification via realtime
+      const senderName = senderProfile?.full_name || user.email || 'Someone';
+      
+      // Check if messaging Eric (AI assistant)
+      const ERIC_USER_ID = '68f2f959-e14a-47f9-8277-07df3a6fcd79';
+      if (conversation.otherUser.user_id === ERIC_USER_ID) {
+        try {
+          // Get conversation history for context
+          const conversationHistory = messages.map(msg => ({
+            role: msg.sender_id === user.id ? 'user' : 'assistant',
+            content: msg.content
+          }));
+
+          // Call Eric's AI function
+          const { data: aiData, error: aiError } = await supabase.functions.invoke('math-ai-tutor', {
+            body: { 
+              message: messageContent,
+              lessonType: 'tutor',
+              chatHistory: conversationHistory,
+              userNickname: senderProfile?.nickname || senderProfile?.full_name || 'élève'
+            }
+          });
+
+          if (aiError) throw aiError;
+
+          if (aiData?.response) {
+            // Insert Eric's AI response
+            const { error: ericError } = await supabase.from("messages").insert({
+              conversation_id: selectedConversation,
+              sender_id: ERIC_USER_ID,
+              content: aiData.response,
+              read: false,
+            });
+
+            if (ericError) {
+              console.error('Error inserting Eric response:', ericError);
+            }
+          }
+        } catch (aiError) {
+          console.error('Error getting AI response:', aiError);
+          toast({
+            title: "Erreur",
+            description: "Impossible d'obtenir une réponse d'Eric",
+            variant: "destructive",
+          });
+        }
+      } else {
+        // Regular user - send notification
         const notificationChannel = supabase.channel(`user-notifications-${conversation.otherUser.user_id}`);
         await notificationChannel.send({
           type: 'broadcast',
