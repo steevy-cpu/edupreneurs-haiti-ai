@@ -44,10 +44,11 @@ const Leaderboard = () => {
     
     const { data: { user } } = await supabase.auth.getUser();
     
-    // Fetch top 10 users by gold earned
+    // Fetch top 10 users by gold earned (excluding system accounts)
     const { data: topUsers, error } = await supabase
       .from("profiles")
       .select("id, user_id, full_name, nickname, avatar_url, gold_earned, academic_grade")
+      .eq("is_system_account", false)
       .order("gold_earned", { ascending: false })
       .limit(10);
 
@@ -65,11 +66,12 @@ const Leaderboard = () => {
 
     setLeaderboard(rankedUsers);
 
-    // Find current user's rank
+    // Find current user's rank (excluding system accounts)
     if (user) {
       const { data: allUsers } = await supabase
         .from("profiles")
         .select("user_id, gold_earned")
+        .eq("is_system_account", false)
         .order("gold_earned", { ascending: false });
 
       const userRank = allUsers?.findIndex(u => u.user_id === user.id);
