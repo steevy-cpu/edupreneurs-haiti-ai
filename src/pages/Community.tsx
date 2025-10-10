@@ -589,36 +589,23 @@ const Community = () => {
       const ERIC_USER_ID = '68f2f959-e14a-47f9-8277-07df3a6fcd79';
       if (conversation.otherUser.user_id === ERIC_USER_ID) {
         try {
-          // Get conversation history for context
-          const conversationHistory = messages.map(msg => ({
-            role: msg.sender_id === user.id ? 'user' : 'assistant',
-            content: msg.content
-          }));
-
-          // Call Eric's AI function
-          const { data: aiData, error: aiError } = await supabase.functions.invoke('math-ai-tutor', {
+          // Call Eric's chat function (handles AI and message insertion)
+          const { error: ericError } = await supabase.functions.invoke('eric-chat', {
             body: { 
-              message: messageContent,
-              lessonType: 'tutor',
-              chatHistory: conversationHistory,
-              userNickname: senderProfile?.nickname || senderProfile?.full_name || 'élève'
+              conversationId: selectedConversation,
+              userMessage: messageContent,
+              userId: user.id,
+              userNickname: senderProfile?.nickname || senderProfile?.full_name
             }
           });
 
-          if (aiError) throw aiError;
-
-          if (aiData?.response) {
-            // Insert Eric's AI response
-            const { error: ericError } = await supabase.from("messages").insert({
-              conversation_id: selectedConversation,
-              sender_id: ERIC_USER_ID,
-              content: aiData.response,
-              read: false,
+          if (ericError) {
+            console.error('Error calling Eric chat:', ericError);
+            toast({
+              title: "Erreur",
+              description: "Impossible d'obtenir une réponse d'Eric",
+              variant: "destructive",
             });
-
-            if (ericError) {
-              console.error('Error inserting Eric response:', ericError);
-            }
           }
         } catch (aiError) {
           console.error('Error getting AI response:', aiError);
