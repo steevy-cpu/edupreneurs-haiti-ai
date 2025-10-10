@@ -161,6 +161,18 @@ Je ne peux malheureusement pas répondre à des questions en dehors de l'éducat
 
     console.log('Generated response length:', aiResponse.length);
 
+    // Mark the user's message as read (Eric has "seen" it)
+    const { error: markReadError } = await supabase
+      .from('messages')
+      .update({ read: true })
+      .eq('conversation_id', conversationId)
+      .eq('sender_id', userId)
+      .eq('read', false);
+
+    if (markReadError) {
+      console.error('Error marking user message as read:', markReadError);
+    }
+
     // Insert Eric's response using service role (bypasses RLS)
     const { error: insertError } = await supabase
       .from('messages')
