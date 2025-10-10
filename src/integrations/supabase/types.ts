@@ -445,6 +445,13 @@ export type Database = {
             referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "profiles_referred_by_fkey"
+            columns: ["referred_by"]
+            isOneToOne: false
+            referencedRelation: "public_profiles"
+            referencedColumns: ["id"]
+          },
         ]
       }
       push_subscriptions: {
@@ -508,10 +515,24 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "referrals_referred_id_fkey"
+            columns: ["referred_id"]
+            isOneToOne: false
+            referencedRelation: "public_profiles"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "referrals_referrer_id_fkey"
             columns: ["referrer_id"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "referrals_referrer_id_fkey"
+            columns: ["referrer_id"]
+            isOneToOne: false
+            referencedRelation: "public_profiles"
             referencedColumns: ["id"]
           },
         ]
@@ -527,8 +548,10 @@ export type Database = {
           created_at: string | null
           full_name: string | null
           gold_earned: number | null
+          id: string | null
           nickname: string | null
           user_id: string | null
+          verified: boolean | null
         }
         Insert: {
           academic_grade?: string | null
@@ -538,8 +561,10 @@ export type Database = {
           created_at?: string | null
           full_name?: string | null
           gold_earned?: number | null
+          id?: string | null
           nickname?: string | null
           user_id?: string | null
+          verified?: boolean | null
         }
         Update: {
           academic_grade?: string | null
@@ -549,8 +574,10 @@ export type Database = {
           created_at?: string | null
           full_name?: string | null
           gold_earned?: number | null
+          id?: string | null
           nickname?: string | null
           user_id?: string | null
+          verified?: boolean | null
         }
         Relationships: []
       }
