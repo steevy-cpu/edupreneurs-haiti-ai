@@ -909,7 +909,7 @@ const Community = () => {
                     {conv.otherUser?.verified && (
                       <BadgeCheck className="w-4 h-4 text-primary fill-primary/20 shrink-0" />
                     )}
-                    {conv.unreadCount && conv.unreadCount > 0 && (
+                    {conv.unreadCount !== undefined && conv.unreadCount > 0 && (
                       <span className="flex items-center justify-center h-4 sm:h-5 min-w-[16px] sm:min-w-[20px] px-1 sm:px-1.5 rounded-full bg-primary text-primary-foreground text-[10px] sm:text-xs font-semibold">
                         {conv.unreadCount}
                       </span>
