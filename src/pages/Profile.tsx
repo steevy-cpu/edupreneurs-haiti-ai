@@ -6,7 +6,7 @@ import { Card } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Skeleton } from '@/components/ui/skeleton';
 import { toast } from 'sonner';
-import { User, UserPlus, UserCheck, Clock, ArrowLeft, BadgeCheck } from 'lucide-react';
+import { User, UserPlus, UserCheck, Clock, ArrowLeft, BadgeCheck, MessageCircle } from 'lucide-react';
 import { getAvatarUrl } from '@/lib/avatarMap';
 
 interface Profile {
@@ -172,6 +172,61 @@ export default function Profile() {
     }
   };
 
+  const startConversation = async () => {
+    try {
+      // Check if conversation already exists
+      const { data: existingConversations, error: fetchError } = await supabase
+        .from('conversation_participants')
+        .select('conversation_id')
+        .eq('user_id', currentUser.id);
+
+      if (fetchError) throw fetchError;
+
+      // Check if any of these conversations include the target user
+      if (existingConversations && existingConversations.length > 0) {
+        for (const conv of existingConversations) {
+          const { data: participants, error: participantsError } = await supabase
+            .from('conversation_participants')
+            .select('user_id')
+            .eq('conversation_id', conv.conversation_id);
+
+          if (participantsError) throw participantsError;
+
+          const participantIds = participants.map(p => p.user_id);
+          if (participantIds.includes(userId)) {
+            // Conversation exists, navigate to it
+            navigate(`/community?conversation=${conv.conversation_id}`);
+            return;
+          }
+        }
+      }
+
+      // Create new conversation
+      const { data: conversationData, error: conversationError } = await supabase
+        .rpc('create_conversation');
+
+      if (conversationError) throw conversationError;
+
+      const conversationId = conversationData;
+
+      // Add both users as participants
+      const { error: participantsError } = await supabase
+        .from('conversation_participants')
+        .insert([
+          { conversation_id: conversationId, user_id: currentUser.id },
+          { conversation_id: conversationId, user_id: userId }
+        ]);
+
+      if (participantsError) throw participantsError;
+
+      toast.success('Conversation started!');
+      navigate(`/community?conversation=${conversationId}`);
+    } catch (error: any) {
+      toast.error('Failed to start conversation');
+      console.error('Error starting conversation:', error);
+    }
+  };
+
   const isOwnProfile = currentUser?.id === userId;
 
   if (loading) {
@@ -246,25 +301,33 @@ export default function Profile() {
             </div>
 
             {!isOwnProfile && (
-              <div className="w-full max-w-xs">
-                {!followStatus.following && (
-                  <Button onClick={handleFollow} className="w-full">
-                    <UserPlus className="w-4 h-4 mr-2" />
-                    Follow
-                  </Button>
+              <div className="w-full max-w-xs space-y-2">
+                {!profile.is_system_account && (
+                  <>
+                    {!followStatus.following && (
+                      <Button onClick={handleFollow} className="w-full">
+                        <UserPlus className="w-4 h-4 mr-2" />
+                        Follow
+                      </Button>
+                    )}
+                    {followStatus.following && followStatus.status === 'pending' && (
+                      <Button onClick={handleUnfollow} variant="outline" className="w-full">
+                        <Clock className="w-4 h-4 mr-2" />
+                        Pending
+                      </Button>
+                    )}
+                    {followStatus.following && followStatus.status === 'accepted' && (
+                      <Button onClick={handleUnfollow} variant="outline" className="w-full">
+                        <UserCheck className="w-4 h-4 mr-2" />
+                        Following
+                      </Button>
+                    )}
+                  </>
                 )}
-                {followStatus.following && followStatus.status === 'pending' && (
-                  <Button onClick={handleUnfollow} variant="outline" className="w-full">
-                    <Clock className="w-4 h-4 mr-2" />
-                    Pending
-                  </Button>
-                )}
-                {followStatus.following && followStatus.status === 'accepted' && (
-                  <Button onClick={handleUnfollow} variant="outline" className="w-full">
-                    <UserCheck className="w-4 h-4 mr-2" />
-                    Following
-                  </Button>
-                )}
+                <Button onClick={startConversation} variant="default" className="w-full">
+                  <MessageCircle className="w-4 h-4 mr-2" />
+                  Send Message
+                </Button>
               </div>
             )}
 
