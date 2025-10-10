@@ -275,7 +275,35 @@ const Community = () => {
       new Date(a.lastMessageTime || a.created_at).getTime()
     );
 
-    setConversations(conversationsData);
+    // Group conversations by user (consolidate multiple conversations with same user)
+    const groupedConversations = new Map<string, Conversation>();
+    conversationsData.forEach(conv => {
+      const userId = conv.otherUser?.user_id;
+      if (!userId) return;
+      
+      const existing = groupedConversations.get(userId);
+      if (!existing) {
+        groupedConversations.set(userId, conv);
+      } else {
+        // Keep the most recent conversation and sum unread counts
+        const existingTime = new Date(existing.lastMessageTime || existing.created_at).getTime();
+        const currentTime = new Date(conv.lastMessageTime || conv.created_at).getTime();
+        
+        if (currentTime > existingTime) {
+          groupedConversations.set(userId, {
+            ...conv,
+            unreadCount: (conv.unreadCount || 0) + (existing.unreadCount || 0)
+          });
+        } else {
+          groupedConversations.set(userId, {
+            ...existing,
+            unreadCount: (conv.unreadCount || 0) + (existing.unreadCount || 0)
+          });
+        }
+      }
+    });
+
+    setConversations(Array.from(groupedConversations.values()));
   };
 
   const fetchMessages = async (conversationId: string) => {
@@ -881,7 +909,7 @@ const Community = () => {
                                   📝 Post partagé de {message.shared_post.profile?.nickname || message.shared_post.profile?.full_name}
                                 </span>
                               </div>
-                              <p className="text-xs sm:text-sm whitespace-pre-wrap break-all mb-2">
+                              <p className="text-xs sm:text-sm whitespace-pre-wrap break-words mb-2">
                                 {message.shared_post.content}
                               </p>
                               {message.shared_post.image_url && (
@@ -902,7 +930,7 @@ const Community = () => {
                                   : "bg-muted"
                               }`}
                             >
-                              <p className="text-xs sm:text-sm whitespace-pre-wrap break-all">
+                              <p className="text-xs sm:text-sm whitespace-pre-wrap break-words">
                                 {message.content}
                               </p>
                             </div>
