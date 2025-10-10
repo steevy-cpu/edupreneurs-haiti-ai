@@ -8,6 +8,7 @@ import { Bot, Sparkles, ArrowRight } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import aiAssistant from "@/assets/ai-assistant.png";
+import { ThemeToggle } from "@/components/ThemeToggle";
 
 const avatarOptions = [
   { id: "default", name: "Assistant Bleu", emoji: "🤖" },
@@ -40,6 +41,11 @@ const CustomizeAI = () => {
 
   return (
     <div className="min-h-screen bg-background flex items-center justify-center p-4">
+      {/* Theme Toggle */}
+      <div className="fixed top-4 right-4 z-50">
+        <ThemeToggle />
+      </div>
+
       {/* Background effects */}
       <div className="absolute inset-0 overflow-hidden">
         <div className="absolute top-20 left-20 w-96 h-96 bg-primary/10 rounded-full blur-3xl animate-pulse" />
