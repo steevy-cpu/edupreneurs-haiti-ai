@@ -589,7 +589,7 @@ All colors MUST be HSL.
 
   .eric-chat-messages {
     @apply flex-1 overflow-y-auto p-0;
-    margin-bottom: 15px;
+    margin-bottom: 8px;
     min-height: 200px;
     max-height: 450px;
   }
