@@ -294,10 +294,12 @@ export default function Profile() {
                 <p className="text-2xl font-bold">{followingCount}</p>
                 <p className="text-sm text-muted-foreground">Following</p>
               </div>
-              <div className="text-center">
-                <p className="text-2xl font-bold">{profile.affiliation_points}</p>
-                <p className="text-sm text-muted-foreground">Points</p>
-              </div>
+              {!profile.is_system_account && (
+                <div className="text-center">
+                  <p className="text-2xl font-bold">{profile.affiliation_points}</p>
+                  <p className="text-sm text-muted-foreground">Points</p>
+                </div>
+              )}
             </div>
 
             {!isOwnProfile && (
