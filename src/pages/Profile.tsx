@@ -260,7 +260,7 @@ export default function Profile() {
       <div className="max-w-2xl mx-auto p-3 sm:p-4 space-y-4 sm:space-y-6">
         <Button
           variant="ghost"
-          onClick={() => navigate(-1)}
+          onClick={() => navigate('/community')}
           className="mb-2 sm:mb-4"
           size="sm"
         >
