@@ -6,10 +6,11 @@ import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useToast } from "@/hooks/use-toast";
-import { Send, ArrowLeft, Search, Smile, Check, CheckCheck, BadgeCheck } from "lucide-react";
+import { Send, ArrowLeft, Search, Smile, Check, CheckCheck, BadgeCheck, Edit2, Trash2, X } from "lucide-react";
 import { useMessageSounds } from "@/hooks/useMessageSounds";
 import EmojiPicker from "emoji-picker-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Textarea } from "@/components/ui/textarea";
 import { initializePushNotifications } from "@/utils/pushNotifications";
 import { getAvatarUrl } from "@/lib/avatarMap";
 
@@ -75,6 +76,8 @@ const Community = () => {
   const [replyingTo, setReplyingTo] = useState<Message | null>(null);
   const [reactions, setReactions] = useState<Record<string, Reaction[]>>({});
   const [showReactionPicker, setShowReactionPicker] = useState<string | null>(null);
+  const [editingMessageId, setEditingMessageId] = useState<string | null>(null);
+  const [editedContent, setEditedContent] = useState("");
   const previousMessagesCount = useRef<number>(0);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const messageChannelRef = useRef<any>(null);
@@ -697,6 +700,84 @@ const Community = () => {
     reactionChannelRef.current = channel;
   };
 
+  const handleEditMessage = (messageId: string, currentContent: string) => {
+    setEditingMessageId(messageId);
+    setEditedContent(currentContent);
+  };
+
+  const handleCancelEdit = () => {
+    setEditingMessageId(null);
+    setEditedContent("");
+  };
+
+  const handleSaveEdit = async (messageId: string) => {
+    if (!editedContent.trim()) {
+      toast({
+        title: "Erreur",
+        description: "Le message ne peut pas être vide",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    try {
+      const { error } = await supabase
+        .from("messages")
+        .update({ content: editedContent.trim() })
+        .eq("id", messageId);
+
+      if (error) throw error;
+
+      setMessages(messages.map(msg => 
+        msg.id === messageId ? { ...msg, content: editedContent.trim() } : msg
+      ));
+
+      setEditingMessageId(null);
+      setEditedContent("");
+
+      toast({
+        title: "Succès",
+        description: "Message modifié",
+      });
+    } catch (error) {
+      console.error("Error updating message:", error);
+      toast({
+        title: "Erreur",
+        description: "Impossible de modifier le message",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleDeleteMessage = async (messageId: string) => {
+    if (!confirm("Êtes-vous sûr de vouloir supprimer ce message ?")) {
+      return;
+    }
+
+    try {
+      const { error } = await supabase
+        .from("messages")
+        .delete()
+        .eq("id", messageId);
+
+      if (error) throw error;
+
+      setMessages(messages.filter(msg => msg.id !== messageId));
+
+      toast({
+        title: "Succès",
+        description: "Message supprimé",
+      });
+    } catch (error) {
+      console.error("Error deleting message:", error);
+      toast({
+        title: "Erreur",
+        description: "Impossible de supprimer le message",
+        variant: "destructive",
+      });
+    }
+  };
+
   const toggleReaction = async (messageId: string, emoji: string) => {
     if (!user) return;
 
@@ -955,18 +1036,82 @@ const Community = () => {
                               )}
                               <p className="text-xs opacity-70 mt-2">Cliquez pour voir le post</p>
                             </div>
+                          ) : editingMessageId === message.id ? (
+                            // Editing Mode
+                            <div className="flex flex-col gap-2 w-full">
+                              <Textarea
+                                value={editedContent}
+                                onChange={(e) => setEditedContent(e.target.value)}
+                                className="min-h-[60px] resize-none"
+                                autoFocus
+                                onClick={(e) => e.stopPropagation()}
+                              />
+                              <div className="flex gap-2 justify-end">
+                                <Button
+                                  size="sm"
+                                  variant="ghost"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleCancelEdit();
+                                  }}
+                                  className="no-reply-trigger"
+                                >
+                                  <X size={14} className="mr-1" />
+                                  Annuler
+                                </Button>
+                                <Button
+                                  size="sm"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleSaveEdit(message.id);
+                                  }}
+                                  className="no-reply-trigger"
+                                >
+                                  <Check size={14} className="mr-1" />
+                                  Enregistrer
+                                </Button>
+                              </div>
+                            </div>
                           ) : (
                             // Regular Message Display
-                            <div
-                              className={`rounded-2xl px-3 py-2 sm:px-4 ${
-                                isOwn
-                                  ? "bg-primary text-primary-foreground"
-                                  : "bg-muted"
-                              }`}
-                            >
-                              <p className="text-xs sm:text-sm whitespace-pre-wrap break-words">
-                                {message.content}
-                              </p>
+                            <div className="relative group/message">
+                              <div
+                                className={`rounded-2xl px-3 py-2 sm:px-4 ${
+                                  isOwn
+                                    ? "bg-primary text-primary-foreground"
+                                    : "bg-muted"
+                                }`}
+                              >
+                                <p className="text-xs sm:text-sm whitespace-pre-wrap break-words">
+                                  {message.content}
+                                </p>
+                              </div>
+                              {isOwn && (
+                                <div className="absolute -right-2 top-0 opacity-0 group-hover/message:opacity-100 transition-opacity flex gap-1">
+                                  <Button
+                                    size="sm"
+                                    variant="ghost"
+                                    className="h-6 w-6 p-0 bg-background/90 hover:bg-background no-reply-trigger"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      handleEditMessage(message.id, message.content);
+                                    }}
+                                  >
+                                    <Edit2 size={12} />
+                                  </Button>
+                                  <Button
+                                    size="sm"
+                                    variant="ghost"
+                                    className="h-6 w-6 p-0 bg-background/90 hover:bg-destructive hover:text-destructive-foreground no-reply-trigger"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      handleDeleteMessage(message.id);
+                                    }}
+                                  >
+                                    <Trash2 size={12} />
+                                  </Button>
+                                </div>
+                              )}
                             </div>
                           )}
                           <div className="flex items-center gap-1 mt-1">
