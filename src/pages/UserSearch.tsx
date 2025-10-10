@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useToast } from "@/hooks/use-toast";
-import { Search, MessageCircle, ArrowLeft, Eye } from "lucide-react";
+import { Search, MessageCircle, ArrowLeft, Eye, BadgeCheck } from "lucide-react";
 import { getAvatarUrl } from "@/lib/avatarMap";
 
 interface Profile {
@@ -14,6 +14,7 @@ interface Profile {
   full_name: string;
   nickname: string;
   avatar_url: string | null;
+  verified: boolean;
 }
 
 const UserSearch = () => {
@@ -47,7 +48,7 @@ const UserSearch = () => {
     // Use public_profiles view to only access non-sensitive user data
     const { data, error } = await supabase
       .from("public_profiles")
-      .select("user_id, full_name, nickname, avatar_url")
+      .select("user_id, full_name, nickname, avatar_url, verified")
       .or(`full_name.ilike.%${query}%,nickname.ilike.%${query}%`)
       .neq("user_id", currentUser?.id)
       .limit(20)
@@ -226,7 +227,12 @@ const UserSearch = () => {
                     </AvatarFallback>
                   </Avatar>
                   <div className="flex-1 cursor-pointer" onClick={() => navigate(`/profile/${profile.user_id}`)}>
-                    <p className="font-semibold">{profile.full_name}</p>
+                    <div className="flex items-center gap-1.5">
+                      <p className="font-semibold">{profile.full_name}</p>
+                      {profile.verified && (
+                        <BadgeCheck className="w-4 h-4 text-primary fill-primary/20" />
+                      )}
+                    </div>
                     <p className="text-sm text-muted-foreground">@{profile.nickname}</p>
                   </div>
                   <Button
