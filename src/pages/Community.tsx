@@ -541,6 +541,21 @@ const Community = () => {
           fetchConversations();
         }
       )
+      .on(
+        "postgres_changes",
+        {
+          event: "UPDATE",
+          schema: "public",
+          table: "messages",
+        },
+        async (payload) => {
+          // If message was marked as read, update the conversation's unread count
+          if (payload.new.read && !payload.old.read) {
+            // Refetch conversations to update unread counts
+            fetchConversations();
+          }
+        }
+      )
       .subscribe();
 
     return () => {
