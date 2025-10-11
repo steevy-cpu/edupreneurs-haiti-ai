@@ -73,6 +73,10 @@ export const Layout = ({ children }: LayoutProps) => {
   };
 
   useEffect(() => {
+    fetchUnreadCount();
+    fetchPendingFollowRequests();
+    fetchUnreadNotifications();
+
     const messagesChannel = supabase
       .channel("message-notifications")
       .on(
@@ -83,6 +87,7 @@ export const Layout = ({ children }: LayoutProps) => {
           table: "messages",
         },
         async (payload) => {
+          console.log("Message change detected:", payload);
           await fetchUnreadCount();
         }
       )

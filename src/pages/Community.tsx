@@ -166,6 +166,11 @@ const Community = () => {
       .eq("conversation_id", conversationId)
       .neq("sender_id", user.id)
       .eq("read", false);
+    
+    if (!error) {
+      // Refresh conversations to update unread counts
+      await fetchConversations();
+    }
 
     if (!error) {
       // Immediately update local state for messages
