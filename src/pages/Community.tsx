@@ -86,6 +86,9 @@ const Community = () => {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const messageChannelRef = useRef<any>(null);
   const reactionChannelRef = useRef<any>(null);
+  const presenceChannelRef = useRef<any>(null);
+  const typingTimeoutRef = useRef<any>(null);
+  const [typingUsers, setTypingUsers] = useState<Record<string, any>>({});
 
   useEffect(() => {
     checkUser();
@@ -162,6 +165,7 @@ const Community = () => {
       loadConversation();
       subscribeToConversationMessages(selectedConversation);
       subscribeToReactions(selectedConversation);
+      subscribeToTypingPresence(selectedConversation);
     }
     return () => {
       if (messageChannelRef.current) {
@@ -169,6 +173,9 @@ const Community = () => {
       }
       if (reactionChannelRef.current) {
         supabase.removeChannel(reactionChannelRef.current);
+      }
+      if (presenceChannelRef.current) {
+        supabase.removeChannel(presenceChannelRef.current);
       }
     };
   }, [selectedConversation]);
@@ -612,6 +619,9 @@ const Community = () => {
     setIsSending(true);
     const messageContent = newMessage.trim();
     
+    // Clear typing indicator when sending
+    sendTypingStatus(false);
+    
     const { error } = await supabase.from("messages").insert({
       conversation_id: selectedConversation,
       sender_id: user.id,
@@ -847,38 +857,100 @@ const Community = () => {
     if (existingReaction) {
       // Remove reaction
       const { error } = await supabase
-        .from("message_reactions")
+        .from('message_reactions')
         .delete()
-        .eq("id", existingReaction.id);
+        .eq('id', existingReaction.id);
 
-      if (error) {
-        toast({
-          title: "Erreur",
-          description: "Impossible de retirer la réaction",
-          variant: "destructive",
-        });
+      if (!error) {
+        setShowReactionPicker(null);
       }
     } else {
       // Add reaction
       const { error } = await supabase
-        .from("message_reactions")
+        .from('message_reactions')
         .insert({
           message_id: messageId,
           user_id: user.id,
           emoji: emoji,
         });
 
-      if (error) {
-        toast({
-          title: "Erreur",
-          description: "Impossible d'ajouter la réaction",
-          variant: "destructive",
-        });
+      if (!error) {
+        setShowReactionPicker(null);
       }
     }
-
-    setShowReactionPicker(null);
   };
+
+  const subscribeToTypingPresence = (conversationId: string) => {
+    if (presenceChannelRef.current) {
+      supabase.removeChannel(presenceChannelRef.current);
+    }
+
+    const channel = supabase.channel(`typing-${conversationId}`, {
+      config: {
+        presence: {
+          key: user?.id || '',
+        },
+      },
+    });
+
+    channel
+      .on('presence', { event: 'sync' }, () => {
+        const state = channel.presenceState();
+        console.log('👥 Presence state:', state);
+        setTypingUsers(state);
+      })
+      .on('presence', { event: 'join' }, ({ key, newPresences }) => {
+        console.log('👋 User joined:', key, newPresences);
+      })
+      .on('presence', { event: 'leave' }, ({ key, leftPresences }) => {
+        console.log('👋 User left:', key, leftPresences);
+      })
+      .subscribe(async (status) => {
+        if (status === 'SUBSCRIBED') {
+          await channel.track({
+            user_id: user?.id,
+            typing: false,
+          });
+        }
+      });
+
+    presenceChannelRef.current = channel;
+  };
+
+  const sendTypingStatus = async (isTyping: boolean) => {
+    if (!presenceChannelRef.current || !user) return;
+
+    try {
+      await presenceChannelRef.current.track({
+        user_id: user.id,
+        typing: isTyping,
+      });
+    } catch (error) {
+      console.error('Error sending typing status:', error);
+    }
+  };
+
+  const handleTyping = (value: string) => {
+    setNewMessage(value);
+
+    // Clear existing timeout
+    if (typingTimeoutRef.current) {
+      clearTimeout(typingTimeoutRef.current);
+    }
+
+    // Send typing status
+    if (value.trim()) {
+      sendTypingStatus(true);
+
+      // Auto-clear typing status after 3 seconds of inactivity
+      typingTimeoutRef.current = setTimeout(() => {
+        sendTypingStatus(false);
+      }, 3000);
+    } else {
+      sendTypingStatus(false);
+    }
+  };
+
 
   const handleDeleteConversation = async (conversationId: string) => {
     try {
@@ -1376,6 +1448,34 @@ const Community = () => {
                     </div>
                   );
                 })}
+                
+                {/* Typing Indicator */}
+                {Object.entries(typingUsers).map(([key, value]) => {
+                  const presence = Array.isArray(value) ? value[0] : value;
+                  if (presence?.typing && presence?.user_id !== user?.id) {
+                    const conversation = conversations.find(c => c.id === selectedConversation);
+                    return (
+                      <div key={key} className="flex items-center gap-2 px-2 py-1">
+                        <Avatar className="h-6 w-6 shrink-0">
+                          <AvatarImage src={getAvatarUrl(conversation?.otherUser?.avatar_url)} />
+                          <AvatarFallback className="text-xs">
+                            {conversation?.otherUser?.nickname?.[0] || "?"}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div className="flex items-center gap-1 text-muted-foreground text-sm">
+                          <span className="italic">en train d'écrire</span>
+                          <span className="flex gap-1">
+                            <span className="animate-bounce" style={{ animationDelay: '0ms' }}>.</span>
+                            <span className="animate-bounce" style={{ animationDelay: '150ms' }}>.</span>
+                            <span className="animate-bounce" style={{ animationDelay: '300ms' }}>.</span>
+                          </span>
+                        </div>
+                      </div>
+                    );
+                  }
+                  return null;
+                })}
+                
                 <div ref={messagesEndRef} />
               </div>
             </div>
@@ -1429,7 +1529,7 @@ const Community = () => {
                 <Textarea
                   placeholder="Écrivez un message..."
                   value={newMessage}
-                  onChange={(e) => setNewMessage(e.target.value)}
+                  onChange={(e) => handleTyping(e.target.value)}
                   onKeyPress={(e) => {
                     if (e.key === "Enter" && !e.shiftKey) {
                       e.preventDefault();
