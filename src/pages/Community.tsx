@@ -998,11 +998,11 @@ const Community = () => {
       </div>
 
       {/* Messages View */}
-      <div className={`${selectedConversation ? "block" : "hidden md:block"} flex-1 flex flex-col max-h-screen md:h-auto overflow-hidden`}>
+      <div className={`${selectedConversation ? "block" : "hidden md:block"} flex-1 flex flex-col max-h-screen md:h-screen overflow-hidden`}>
         {selectedConversation ? (
           <>
             {/* Header */}
-            <div className="sticky top-0 z-50 border-b border-border/50 bg-background/95 backdrop-blur p-3 sm:p-4 flex items-center gap-2 sm:gap-3">
+            <div className="sticky top-0 z-50 border-b border-border/50 bg-background backdrop-blur-sm p-3 sm:p-4 flex items-center gap-2 sm:gap-3 shrink-0">
               <Button
                 size="icon"
                 variant="ghost"
@@ -1060,7 +1060,7 @@ const Community = () => {
             </div>
 
             {/* Messages */}
-            <ScrollArea className="flex-1 p-2 sm:p-4 overflow-x-hidden">
+            <ScrollArea className="flex-1 p-2 sm:p-4 overflow-x-hidden overflow-y-auto">
               <div className="space-y-2 sm:space-y-4 pb-4 max-w-full">
                 {messages.map((message) => {
                   const isOwn = message.sender_id === user?.id;
@@ -1345,7 +1345,7 @@ const Community = () => {
             </ScrollArea>
 
             {/* Message Input */}
-            <div className="border-t border-border/50 p-2 sm:p-4 bg-background">
+            <div className="border-t border-border/50 p-2 sm:p-4 bg-background shrink-0">
               {replyingTo && (
                 <div className="mb-2 px-3 py-2 bg-muted/50 rounded-lg border border-border/30 flex items-start justify-between max-w-full overflow-hidden">
                   <div className="flex-1 min-w-0">
