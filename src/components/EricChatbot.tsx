@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { X, Send, Volume2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
@@ -223,13 +223,14 @@ export const EricChatbot = () => {
           {/* Input Area */}
           <div className="eric-input-area">
             <div className="eric-input-group">
-              <Input
+              <Textarea
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 onKeyPress={handleKeyPress}
                 placeholder="Tapez votre question..."
                 maxLength={200}
-                className="eric-input"
+                className="eric-input resize-none"
+                rows={1}
               />
               <Button
                 size="icon"

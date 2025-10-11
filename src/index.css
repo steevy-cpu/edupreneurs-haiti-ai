@@ -722,6 +722,11 @@ All colors MUST be HSL.
     padding: 10px 15px;
     font-size: 0.9rem;
     outline: none;
+    min-height: 40px;
+    max-height: 120px;
+    overflow-y: auto;
+    word-wrap: break-word;
+    white-space: pre-wrap;
   }
   
   .eric-input::placeholder {
