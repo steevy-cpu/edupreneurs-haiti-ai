@@ -379,7 +379,7 @@ const Community = () => {
   const fetchMessages = async (conversationId: string) => {
     const { data: messagesData } = await supabase
       .from("messages")
-      .select("id, content, sender_id, created_at, read, shared_post_id, conversation_id, replied_to_id")
+      .select("id, content, sender_id, created_at, read, shared_post_id, conversation_id, replied_to_id, image_url, video_url")
       .eq("conversation_id", conversationId)
       .order("created_at", { ascending: true });
 
@@ -431,6 +431,8 @@ const Community = () => {
         shared_post_id: msg.shared_post_id,
         replied_to_id: msg.replied_to_id,
         read: msg.read ?? false,
+        image_url: msg.image_url,
+        video_url: msg.video_url,
         profile: profiles?.find(p => p.user_id === msg.sender_id),
         replied_to: repliedTo ? {
           id: repliedTo.id,
@@ -538,6 +540,8 @@ const Community = () => {
             read: payload.new.read || false,
             shared_post_id: payload.new.shared_post_id,
             replied_to_id: payload.new.replied_to_id,
+            image_url: payload.new.image_url,
+            video_url: payload.new.video_url,
             profile,
             replied_to: repliedToMessage,
             shared_post: sharedPost,

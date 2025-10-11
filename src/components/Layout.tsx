@@ -247,12 +247,13 @@ export const Layout = ({ children }: LayoutProps) => {
 
   const isCommunityPage = location.pathname === "/community";
   const isLessonPage = location.pathname.startsWith("/math-lesson");
+  const isFeedPage = location.pathname === "/feed";
 
   return (
     <div className="min-h-screen bg-background">
       <OnboardingTour />
       {/* Menu Toggle Button */}
-      {!isCommunityPage && !isLessonPage && (
+      {!isCommunityPage && !isLessonPage && !isFeedPage && (
         <button
           data-tour="menu-button"
           onClick={() => setSidebarOpen(!sidebarOpen)}
@@ -263,7 +264,7 @@ export const Layout = ({ children }: LayoutProps) => {
       )}
 
       {/* Sidebar Overlay */}
-      {!isCommunityPage && !isLessonPage && sidebarOpen && (
+      {!isCommunityPage && !isLessonPage && !isFeedPage && sidebarOpen && (
         <div 
           className="fixed inset-0 bg-black/50 z-[999] lg:hidden"
           onClick={() => setSidebarOpen(false)}
@@ -271,8 +272,8 @@ export const Layout = ({ children }: LayoutProps) => {
       )}
 
       {/* Sidebar */}
-      {!isCommunityPage && !isLessonPage && (
-        <div 
+      {!isCommunityPage && !isLessonPage && !isFeedPage && (
+        <div
           data-tour="sidebar-content"
           className={`fixed top-0 left-0 h-screen w-[240px] sm:w-[260px] lg:w-[280px] bg-card border-r border-border shadow-lg z-[1000] transition-transform duration-300 overflow-y-auto ${sidebarOpen ? "translate-x-0" : "-translate-x-full"}`}
         >
