@@ -52,6 +52,7 @@ interface Post {
   user_id: string;
   content: string;
   image_url: string | null;
+  video_url: string | null;
   created_at: string;
   profile?: Profile;
   likes?: number;
@@ -70,7 +71,9 @@ const Feed = () => {
   const [newPostContent, setNewPostContent] = useState("");
   const [isCreatingPost, setIsCreatingPost] = useState(false);
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
+  const [selectedVideo, setSelectedVideo] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [videoPreview, setVideoPreview] = useState<string | null>(null);
   const [commentInputs, setCommentInputs] = useState<{ [key: string]: string }>({});
   const [replyInputs, setReplyInputs] = useState<{ [key: string]: string }>({});
   const [showComments, setShowComments] = useState<{ [key: string]: boolean }>({});
@@ -203,6 +206,8 @@ const Feed = () => {
     const file = e.target.files?.[0];
     if (file) {
       setSelectedImage(file);
+      setSelectedVideo(null);
+      setVideoPreview(null);
       const reader = new FileReader();
       reader.onloadend = () => {
         setImagePreview(reader.result as string);
@@ -211,11 +216,26 @@ const Feed = () => {
     }
   };
 
+  const handleVideoSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setSelectedVideo(file);
+      setSelectedImage(null);
+      setImagePreview(null);
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setVideoPreview(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
   const createPost = async () => {
-    if ((!newPostContent.trim() && !selectedImage) || !currentUser) return;
+    if ((!newPostContent.trim() && !selectedImage && !selectedVideo) || !currentUser) return;
 
     setIsCreatingPost(true);
     let imageUrl = null;
+    let videoUrl = null;
 
     if (selectedImage) {
       const fileExt = selectedImage.name.split('.').pop();
@@ -242,10 +262,36 @@ const Feed = () => {
       imageUrl = publicUrl;
     }
 
+    if (selectedVideo) {
+      const fileExt = selectedVideo.name.split('.').pop();
+      const fileName = `${currentUser.id}/${Math.random()}.${fileExt}`;
+      
+      const { error: uploadError } = await supabase.storage
+        .from('post-images')
+        .upload(fileName, selectedVideo);
+
+      if (uploadError) {
+        toast({
+          title: "Erreur",
+          description: "Impossible de télécharger la vidéo",
+          variant: "destructive",
+        });
+        setIsCreatingPost(false);
+        return;
+      }
+
+      const { data: { publicUrl } } = supabase.storage
+        .from('post-images')
+        .getPublicUrl(fileName);
+      
+      videoUrl = publicUrl;
+    }
+
     const { error } = await supabase.from("posts").insert({
       user_id: currentUser.id,
       content: newPostContent.trim(),
       image_url: imageUrl,
+      video_url: videoUrl,
     });
 
     if (error) {
@@ -759,26 +805,64 @@ const Feed = () => {
                   </div>
                 )}
 
+                {videoPreview && (
+                  <div className="relative">
+                    <video src={videoPreview} controls className="w-full max-h-96 rounded-lg bg-muted/20" />
+                    <Button
+                      size="icon"
+                      variant="destructive"
+                      className="absolute top-2 right-2"
+                      onClick={() => {
+                        setSelectedVideo(null);
+                        setVideoPreview(null);
+                      }}
+                    >
+                      ×
+                    </Button>
+                  </div>
+                )}
+
                 <div className="flex justify-between items-center gap-2">
-                  <input
-                    ref={fileInputRef}
-                    type="file"
-                    accept="image/*"
-                    onChange={handleImageSelect}
-                    className="hidden"
-                  />
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => fileInputRef.current?.click()}
-                  >
-                    <Image size={20} />
-                  </Button>
+                  <div className="flex gap-2">
+                    <input
+                      ref={fileInputRef}
+                      type="file"
+                      accept="image/*"
+                      onChange={handleImageSelect}
+                      className="hidden"
+                      id="image-upload"
+                    />
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => fileInputRef.current?.click()}
+                      title="Ajouter une image"
+                    >
+                      <Image size={20} />
+                    </Button>
+                    
+                    <input
+                      type="file"
+                      accept="video/*"
+                      onChange={handleVideoSelect}
+                      className="hidden"
+                      id="video-upload"
+                    />
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => document.getElementById('video-upload')?.click()}
+                      title="Ajouter une vidéo"
+                    >
+                      <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="23 7 16 12 23 17 23 7"></polygon><rect x="1" y="5" width="15" height="14" rx="2" ry="2"></rect></svg>
+                    </Button>
+                  </div>
                   
                   <Button
                     onClick={createPost}
-                    disabled={(!newPostContent.trim() && !selectedImage) || isCreatingPost}
+                    disabled={(!newPostContent.trim() && !selectedImage && !selectedVideo) || isCreatingPost}
                     className="bg-primary hover:bg-primary/90"
                   >
                     {isCreatingPost ? "Publication..." : "Publier"}
@@ -852,6 +936,14 @@ const Feed = () => {
                       src={post.image_url} 
                       alt="Post" 
                       className="mt-3 w-full rounded-lg object-contain bg-muted/20"
+                    />
+                  )}
+                  {post.video_url && (
+                    <video 
+                      src={post.video_url} 
+                      controls 
+                      className="mt-3 w-full rounded-lg bg-muted/20"
+                      preload="metadata"
                     />
                   )}
                 </div>

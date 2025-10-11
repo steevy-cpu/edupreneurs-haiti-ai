@@ -123,30 +123,36 @@ export type Database = {
           conversation_id: string
           created_at: string
           id: string
+          image_url: string | null
           read: boolean
           replied_to_id: string | null
           sender_id: string
           shared_post_id: string | null
+          video_url: string | null
         }
         Insert: {
           content: string
           conversation_id: string
           created_at?: string
           id?: string
+          image_url?: string | null
           read?: boolean
           replied_to_id?: string | null
           sender_id: string
           shared_post_id?: string | null
+          video_url?: string | null
         }
         Update: {
           content?: string
           conversation_id?: string
           created_at?: string
           id?: string
+          image_url?: string | null
           read?: boolean
           replied_to_id?: string | null
           sender_id?: string
           shared_post_id?: string | null
+          video_url?: string | null
         }
         Relationships: [
           {
@@ -348,6 +354,7 @@ export type Database = {
           image_url: string | null
           updated_at: string
           user_id: string
+          video_url: string | null
         }
         Insert: {
           content: string
@@ -356,6 +363,7 @@ export type Database = {
           image_url?: string | null
           updated_at?: string
           user_id: string
+          video_url?: string | null
         }
         Update: {
           content?: string
@@ -364,6 +372,7 @@ export type Database = {
           image_url?: string | null
           updated_at?: string
           user_id?: string
+          video_url?: string | null
         }
         Relationships: []
       }

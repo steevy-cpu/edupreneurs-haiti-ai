@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useToast } from "@/hooks/use-toast";
-import { Send, ArrowLeft, Search, Smile, Check, CheckCheck, BadgeCheck, Edit2, Trash2, X, MoreVertical } from "lucide-react";
+import { Send, ArrowLeft, Search, Smile, Check, CheckCheck, BadgeCheck, Edit2, Trash2, X, MoreVertical, ImageIcon } from "lucide-react";
 import { useMessageSounds } from "@/hooks/useMessageSounds";
 import EmojiPicker from "emoji-picker-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
@@ -45,6 +45,8 @@ interface Message {
   shared_post_id?: string | null;
   replied_to_id?: string | null;
   replied_to?: Message;
+  image_url?: string | null;
+  video_url?: string | null;
   shared_post?: {
     id: string;
     content: string;
@@ -77,6 +79,9 @@ const Community = () => {
   const [isSending, setIsSending] = useState(false);
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const [replyingTo, setReplyingTo] = useState<Message | null>(null);
+  const [selectedMediaFile, setSelectedMediaFile] = useState<File | null>(null);
+  const [mediaPreview, setMediaPreview] = useState<string | null>(null);
+  const [mediaType, setMediaType] = useState<'image' | 'video' | null>(null);
   const [reactions, setReactions] = useState<Record<string, Reaction[]>>({});
   const [showReactionPicker, setShowReactionPicker] = useState<string | null>(null);
   const [editingMessageId, setEditingMessageId] = useState<string | null>(null);
@@ -632,19 +637,85 @@ const Community = () => {
     };
   };
 
+  const handleMediaSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const isImage = file.type.startsWith('image/');
+    const isVideo = file.type.startsWith('video/');
+
+    if (!isImage && !isVideo) {
+      toast({
+        title: "Erreur",
+        description: "Veuillez sélectionner une image ou une vidéo",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setSelectedMediaFile(file);
+    setMediaType(isImage ? 'image' : 'video');
+
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setMediaPreview(reader.result as string);
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const clearMedia = () => {
+    setSelectedMediaFile(null);
+    setMediaPreview(null);
+    setMediaType(null);
+  };
+
   const sendMessage = async () => {
-    if (!newMessage.trim() || !selectedConversation || !user) return;
+    if ((!newMessage.trim() && !selectedMediaFile) || !selectedConversation || !user) return;
 
     setIsSending(true);
     const messageContent = newMessage.trim();
+    let imageUrl = null;
+    let videoUrl = null;
     
     // Clear typing indicator when sending
     sendTypingStatus(false);
+
+    // Upload media if present
+    if (selectedMediaFile) {
+      const fileExt = selectedMediaFile.name.split('.').pop();
+      const fileName = `${user.id}/${Date.now()}.${fileExt}`;
+      
+      const { error: uploadError } = await supabase.storage
+        .from('message-media')
+        .upload(fileName, selectedMediaFile);
+
+      if (uploadError) {
+        toast({
+          title: "Erreur",
+          description: `Impossible de télécharger le ${mediaType === 'image' ? 'image' : 'vidéo'}`,
+          variant: "destructive",
+        });
+        setIsSending(false);
+        return;
+      }
+
+      const { data: { publicUrl } } = supabase.storage
+        .from('message-media')
+        .getPublicUrl(fileName);
+      
+      if (mediaType === 'image') {
+        imageUrl = publicUrl;
+      } else {
+        videoUrl = publicUrl;
+      }
+    }
     
     const { error } = await supabase.from("messages").insert({
       conversation_id: selectedConversation,
       sender_id: user.id,
-      content: messageContent,
+      content: messageContent || (mediaType === 'image' ? '📷 Image' : '🎥 Vidéo'),
+      image_url: imageUrl,
+      video_url: videoUrl,
       read: false,
       replied_to_id: replyingTo?.id || null,
     });
@@ -662,6 +733,7 @@ const Community = () => {
     playSendSound();
     setNewMessage("");
     setReplyingTo(null);
+    clearMedia();
     
     // Send notification to recipient
     const conversation = conversations.find(c => c.id === selectedConversation);
@@ -1354,6 +1426,21 @@ const Community = () => {
                                 <p className="text-xs sm:text-sm whitespace-pre-wrap break-words overflow-wrap-anywhere">
                                   {message.content}
                                 </p>
+                                {message.image_url && (
+                                  <img
+                                    src={message.image_url}
+                                    alt="Image"
+                                    className="mt-2 rounded-lg w-full max-h-64 object-contain bg-muted/20"
+                                  />
+                                )}
+                                {message.video_url && (
+                                  <video
+                                    src={message.video_url}
+                                    controls
+                                    className="mt-2 rounded-lg w-full max-h-64 bg-muted/20"
+                                    preload="metadata"
+                                  />
+                                )}
                               </div>
                               {isOwn && (
                                 <div className="absolute -right-2 top-0 opacity-0 group-hover/message:opacity-100 transition-opacity flex gap-1">
@@ -1574,6 +1661,26 @@ const Community = () => {
                   </Button>
                 </div>
               )}
+              
+              {/* Media Preview */}
+              {mediaPreview && (
+                <div className="mb-2 relative">
+                  {mediaType === 'image' ? (
+                    <img src={mediaPreview} alt="Preview" className="max-h-48 rounded-lg object-contain bg-muted/20" />
+                  ) : (
+                    <video src={mediaPreview} controls className="max-h-48 rounded-lg bg-muted/20" />
+                  )}
+                  <Button
+                    size="icon"
+                    variant="destructive"
+                    className="absolute top-2 right-2 h-6 w-6"
+                    onClick={clearMedia}
+                  >
+                    ×
+                  </Button>
+                </div>
+              )}
+
               <div className="flex gap-1.5 sm:gap-2 items-end">
                 <Popover open={showEmojiPicker} onOpenChange={setShowEmojiPicker}>
                   <PopoverTrigger asChild>
@@ -1597,6 +1704,26 @@ const Community = () => {
                     />
                   </PopoverContent>
                 </Popover>
+
+                {/* Media Upload Button */}
+                <input
+                  type="file"
+                  accept="image/*,video/*"
+                  onChange={handleMediaSelect}
+                  className="hidden"
+                  id="media-upload"
+                />
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  className="shrink-0 h-8 w-8 sm:h-10 sm:w-10"
+                  onClick={() => document.getElementById('media-upload')?.click()}
+                  title="Joindre une image ou vidéo"
+                >
+                  <ImageIcon size={18} className="sm:w-5 sm:h-5" />
+                </Button>
+
                 <Textarea
                   placeholder="Écrivez un message..."
                   value={newMessage}
@@ -1622,7 +1749,7 @@ const Community = () => {
                 <Button
                   size="icon"
                   onClick={sendMessage}
-                  disabled={!newMessage.trim() || isSending}
+                  disabled={(!newMessage.trim() && !selectedMediaFile) || isSending}
                   className="shrink-0 h-8 w-8 sm:h-10 sm:w-10"
                 >
                   <Send size={18} className="sm:w-5 sm:h-5" />
