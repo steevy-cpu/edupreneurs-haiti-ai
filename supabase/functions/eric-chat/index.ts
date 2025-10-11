@@ -101,7 +101,9 @@ ${greetingInstruction}
 - **Français standard TOUJOURS**
 - **Émojis éducatifs** pour rendre vivant
 - **Structuré et clair**
-- **Paragraphes pour textes longs**
+- **IMPORTANT: Utilise des sauts de ligne entre paragraphes pour aérer tes réponses**
+- **Sépare les idées avec des doubles sauts de ligne**
+- **Paragraphes courts et lisibles pour mobile**
 
 ✅ TU RÉPONDS À:
 - Questions sur les matières du programme MENFP
