@@ -19,7 +19,8 @@ import {
   Lightbulb,
   Loader2,
   Dumbbell,
-  CheckCircle
+  CheckCircle,
+  Coins
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
@@ -66,6 +67,7 @@ const MathLesson = () => {
   const [notesSaved, setNotesSaved] = useState(true);
   const [activeActivity, setActiveActivity] = useState<string | null>(null);
   const [earnedGold, setEarnedGold] = useState(0);
+  const [userGold, setUserGold] = useState(0);
   
   // Check if we have static content for this topic
   const hasStaticContent = topicId ? topicId in mathLessons : false;
@@ -155,10 +157,30 @@ const MathLesson = () => {
 
   const currentTopic = topicInfo[topicId || ""] || topicInfo["numeration-binaire"];
 
-  // Load notes from database on mount
+  // Load notes and user gold from database on mount
   useEffect(() => {
     loadNotesFromDatabase();
+    loadUserGold();
   }, [topicId]);
+
+  const loadUserGold = async () => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('gold_earned')
+        .eq('user_id', user.id)
+        .single();
+
+      if (data && !error) {
+        setUserGold(data.gold_earned || 0);
+      }
+    } catch (error) {
+      console.error('Error loading user gold:', error);
+    }
+  };
 
   const loadNotesFromDatabase = async () => {
     if (!topicId) return;
@@ -362,6 +384,7 @@ const MathLesson = () => {
 
   const handleActivityComplete = (activityName: string, gold: number) => {
     setEarnedGold(prev => prev + gold);
+    setUserGold(prev => prev + gold);
     toast({
       title: "Bravo! 🎉",
       description: `Tu as gagné ${gold} gold!`,
@@ -402,22 +425,18 @@ const MathLesson = () => {
         <div className="container mx-auto px-4 py-3 flex items-center justify-between">
           <Button
             variant="ghost"
+            size="icon"
             className="text-white hover:bg-white/20"
             onClick={() => navigate('/math-course')}
           >
-            <ArrowLeft className="w-4 h-4 mr-2" />
-            Retour — Cours
+            <ArrowLeft className="w-5 h-5" />
           </Button>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2 bg-white/20 backdrop-blur-sm px-4 py-2 rounded-full">
+              <Coins className="w-5 h-5 text-yellow-300" />
+              <span className="text-white font-bold">{userGold}</span>
+            </div>
             <ThemeToggle />
-            <Button
-              variant="outline"
-              size="sm"
-              className="border-white/30 text-white hover:bg-white/20"
-              onClick={() => navigate('/dashboard')}
-            >
-              Tableau de bord
-            </Button>
           </div>
         </div>
       </header>
@@ -432,7 +451,6 @@ const MathLesson = () => {
             </h1>
             <p className="text-sm text-muted-foreground">AF7 — Aligné MENFP</p>
           </div>
-          <Badge className="lesson-pill">Hors-ligne</Badge>
         </div>
 
         <div className="grid lg:grid-cols-[1fr_350px] gap-6">
