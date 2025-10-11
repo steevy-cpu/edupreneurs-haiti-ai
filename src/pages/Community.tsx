@@ -337,7 +337,11 @@ const Community = () => {
       }
     });
 
-    setConversations(Array.from(groupedConversations.values()));
+    const sortedConversations = Array.from(groupedConversations.values()).sort((a, b) => 
+      new Date(b.lastMessageTime || b.created_at).getTime() - 
+      new Date(a.lastMessageTime || a.created_at).getTime()
+    );
+    setConversations(sortedConversations);
   };
 
   const fetchMessages = async (conversationId: string) => {
