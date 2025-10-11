@@ -234,6 +234,11 @@ const Community = () => {
     if (!participations) return;
 
     const conversationIds = participations.map(p => p.conversation_id);
+    
+    if (conversationIds.length === 0) {
+      setConversations([]);
+      return;
+    }
 
     const { data: allParticipants } = await supabase
       .from("conversation_participants")
@@ -255,13 +260,15 @@ const Community = () => {
       .in("conversation_id", conversationIds)
       .order("created_at", { ascending: false });
 
-    // Fetch unread counts for each conversation
-    const { data: allMessages } = await supabase
+    // Fetch unread counts for each conversation - only messages not sent by current user and not read
+    const { data: allMessages, error: unreadError } = await supabase
       .from("messages")
-      .select("conversation_id, sender_id, read")
+      .select("conversation_id, sender_id, read, id")
       .in("conversation_id", conversationIds)
       .eq("read", false)
       .neq("sender_id", user.id);
+    
+    console.log('📊 Unread messages query:', { allMessages, unreadError, conversationIds });
 
     const conversationsData: Conversation[] = conversationIds.map(convId => {
       const otherUserId = allParticipants?.find(
@@ -537,7 +544,11 @@ const Community = () => {
 
   const subscribeToMessages = () => {
     const channel = supabase
-      .channel("messages-changes")
+      .channel("messages-changes", {
+        config: {
+          broadcast: { self: false }, // Don't receive our own messages
+        },
+      })
       .on(
         "postgres_changes",
         {
@@ -545,7 +556,8 @@ const Community = () => {
           schema: "public",
           table: "messages",
         },
-        () => {
+        (payload) => {
+          console.log('📨 New message received, refreshing conversations:', payload);
           // Update conversations list when new message arrives
           fetchConversations();
         }
@@ -558,6 +570,7 @@ const Community = () => {
           table: "messages",
         },
         async (payload) => {
+          console.log('✅ Message updated:', payload);
           // If message was marked as read, update the conversation's unread count
           if (payload.new.read && !payload.old.read) {
             // Refetch conversations to update unread counts
@@ -565,7 +578,9 @@ const Community = () => {
           }
         }
       )
-      .subscribe();
+      .subscribe((status) => {
+        console.log('📡 Messages subscription status:', status);
+      });
 
     return () => {
       supabase.removeChannel(channel);
