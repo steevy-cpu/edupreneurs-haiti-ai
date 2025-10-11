@@ -155,6 +155,25 @@ const Community = () => {
     };
   };
 
+  // Subscribe to typing presence for all conversations
+  useEffect(() => {
+    if (user && conversations.length > 0) {
+      console.log('🔔 Setting up typing presence for all conversations');
+      conversations.forEach(conv => {
+        subscribeToTypingPresence(conv.id);
+      });
+    }
+    
+    return () => {
+      // Cleanup all presence channels
+      Object.keys(presenceChannelsRef.current).forEach(convId => {
+        console.log('🧹 Cleaning up typing presence channel for conversation:', convId);
+        supabase.removeChannel(presenceChannelsRef.current[convId]);
+      });
+      presenceChannelsRef.current = {};
+    };
+  }, [conversations, user]);
+
   useEffect(() => {
     console.log('🔍 useEffect triggered - selectedConversation:', selectedConversation, 'user:', user?.id);
     if (selectedConversation && user) {
@@ -167,7 +186,6 @@ const Community = () => {
       loadConversation();
       subscribeToConversationMessages(selectedConversation);
       subscribeToReactions(selectedConversation);
-      subscribeToTypingPresence(selectedConversation);
     } else {
       console.log('❌ Conditions not met - selectedConversation:', !!selectedConversation, 'user:', !!user);
     }
@@ -177,11 +195,6 @@ const Community = () => {
       }
       if (reactionChannelRef.current) {
         supabase.removeChannel(reactionChannelRef.current);
-      }
-      if (selectedConversation && presenceChannelsRef.current[selectedConversation]) {
-        console.log('🧹 Cleaning up typing presence channel for conversation:', selectedConversation);
-        supabase.removeChannel(presenceChannelsRef.current[selectedConversation]);
-        delete presenceChannelsRef.current[selectedConversation];
       }
     };
   }, [selectedConversation, user]);
