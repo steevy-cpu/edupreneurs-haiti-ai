@@ -892,7 +892,7 @@ const Community = () => {
   };
 
   return (
-    <div className="h-screen bg-background flex pb-16 md:pb-0 overflow-hidden">
+    <div className="fixed inset-0 bg-background flex overflow-hidden pb-16 md:pb-0">
       {/* Conversations List */}
       <div className={`${selectedConversation ? "hidden md:block" : "block"} w-full md:w-80 lg:w-96 border-r border-border/50 overflow-hidden`}>
         <div className="sticky top-0 z-50 border-b border-border/50 bg-background/95 backdrop-blur p-3 sm:p-4">
@@ -998,7 +998,7 @@ const Community = () => {
       </div>
 
       {/* Messages View */}
-      <div className={`${selectedConversation ? "block" : "hidden md:block"} flex-1 flex flex-col h-screen overflow-hidden`}>
+      <div className={`${selectedConversation ? "block" : "hidden md:block"} flex-1 flex flex-col overflow-hidden`}>
         {selectedConversation ? (
           <>
             {/* Header */}
