@@ -156,7 +156,7 @@ const Community = () => {
   };
 
   useEffect(() => {
-    if (selectedConversation) {
+    if (selectedConversation && user) {
       const loadConversation = async () => {
         await fetchMessages(selectedConversation);
         await markMessagesAsRead(selectedConversation);
@@ -175,10 +175,12 @@ const Community = () => {
         supabase.removeChannel(reactionChannelRef.current);
       }
       if (presenceChannelRef.current) {
+        console.log('🧹 Cleaning up typing presence channel');
         supabase.removeChannel(presenceChannelRef.current);
+        presenceChannelRef.current = null;
       }
     };
-  }, [selectedConversation]);
+  }, [selectedConversation, user]);
 
   const markMessagesAsRead = async (conversationId: string) => {
     if (!user) return;
@@ -881,14 +883,21 @@ const Community = () => {
   };
 
   const subscribeToTypingPresence = (conversationId: string) => {
+    if (!user) {
+      console.log('❌ Cannot setup typing presence - no user');
+      return;
+    }
+
     if (presenceChannelRef.current) {
       supabase.removeChannel(presenceChannelRef.current);
     }
 
+    console.log('🔄 Setting up typing presence for conversation:', conversationId, 'User:', user.id);
+
     const channel = supabase.channel(`typing-${conversationId}`, {
       config: {
         presence: {
-          key: user?.id || '',
+          key: user.id,
         },
       },
     });
@@ -906,11 +915,14 @@ const Community = () => {
         console.log('👋 User left:', key, leftPresences);
       })
       .subscribe(async (status) => {
+        console.log('📡 Typing presence subscription status:', status);
         if (status === 'SUBSCRIBED') {
-          await channel.track({
-            user_id: user?.id,
+          console.log('✅ Tracking initial typing state for user:', user.id);
+          const trackResult = await channel.track({
+            user_id: user.id,
             typing: false,
           });
+          console.log('Track result:', trackResult);
         }
       });
 
@@ -918,15 +930,20 @@ const Community = () => {
   };
 
   const sendTypingStatus = async (isTyping: boolean) => {
-    if (!presenceChannelRef.current || !user) return;
+    if (!presenceChannelRef.current || !user) {
+      console.log('❌ Cannot send typing status - no channel or user');
+      return;
+    }
 
     try {
-      await presenceChannelRef.current.track({
+      console.log('📤 Sending typing status:', isTyping, 'for user:', user.id);
+      const result = await presenceChannelRef.current.track({
         user_id: user.id,
         typing: isTyping,
       });
+      console.log('✅ Typing status sent:', result);
     } catch (error) {
-      console.error('Error sending typing status:', error);
+      console.error('❌ Error sending typing status:', error);
     }
   };
 
