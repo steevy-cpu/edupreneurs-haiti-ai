@@ -892,7 +892,7 @@ const Community = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background flex pb-16 md:pb-0 overflow-hidden">
+    <div className="h-screen bg-background flex pb-16 md:pb-0 overflow-hidden">
       {/* Conversations List */}
       <div className={`${selectedConversation ? "hidden md:block" : "block"} w-full md:w-80 lg:w-96 border-r border-border/50 overflow-hidden`}>
         <div className="sticky top-0 z-50 border-b border-border/50 bg-background/95 backdrop-blur p-3 sm:p-4">
