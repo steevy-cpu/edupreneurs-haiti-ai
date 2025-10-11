@@ -892,9 +892,9 @@ const Community = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background flex pb-16 md:pb-0">
+    <div className="min-h-screen bg-background flex pb-16 md:pb-0 overflow-hidden">
       {/* Conversations List */}
-      <div className={`${selectedConversation ? "hidden md:block" : "block"} w-full md:w-80 lg:w-96 border-r border-border/50`}>
+      <div className={`${selectedConversation ? "hidden md:block" : "block"} w-full md:w-80 lg:w-96 border-r border-border/50 overflow-hidden`}>
         <div className="sticky top-0 z-50 border-b border-border/50 bg-background/95 backdrop-blur p-3 sm:p-4">
           <div className="flex items-center gap-2 sm:gap-3 mb-2 sm:mb-3">
             <Button
@@ -998,7 +998,7 @@ const Community = () => {
       </div>
 
       {/* Messages View */}
-      <div className={`${selectedConversation ? "block" : "hidden md:block"} flex-1 flex flex-col max-h-screen md:h-auto`}>
+      <div className={`${selectedConversation ? "block" : "hidden md:block"} flex-1 flex flex-col max-h-screen md:h-auto overflow-hidden`}>
         {selectedConversation ? (
           <>
             {/* Header */}
@@ -1060,17 +1060,17 @@ const Community = () => {
             </div>
 
             {/* Messages */}
-            <ScrollArea className="flex-1 p-2 sm:p-4">
-              <div className="space-y-2 sm:space-y-4 pb-4">
+            <ScrollArea className="flex-1 p-2 sm:p-4 overflow-x-hidden">
+              <div className="space-y-2 sm:space-y-4 pb-4 max-w-full">
                 {messages.map((message) => {
                   const isOwn = message.sender_id === user?.id;
                   return (
                     <div
                       key={message.id}
-                      className={`flex ${isOwn ? "justify-end" : "justify-start"}`}
+                      className={`flex ${isOwn ? "justify-end" : "justify-start"} px-2`}
                     >
                       <div 
-                        className={`flex gap-1.5 sm:gap-2 max-w-[90%] sm:max-w-[75%] ${isOwn ? "flex-row-reverse" : "flex-row"} cursor-pointer group`}
+                        className={`flex gap-1.5 sm:gap-2 max-w-[85%] sm:max-w-[70%] ${isOwn ? "flex-row-reverse" : "flex-row"} cursor-pointer group`}
                         onClick={(e) => {
                           // Don't trigger reply if clicking on avatar or post
                           if (!(e.target as HTMLElement).closest('.no-reply-trigger')) {
@@ -1092,9 +1092,9 @@ const Community = () => {
                             {message.profile?.full_name?.[0] || "?"}
                           </AvatarFallback>
                         </Avatar>
-                        <div className="flex flex-col gap-1">
+                        <div className="flex flex-col gap-1 min-w-0 max-w-full">
                           {message.replied_to && (
-                            <div className={`text-xs px-2 py-1 rounded-lg border ${
+                            <div className={`text-xs px-2 py-1 rounded-lg border break-words ${
                               isOwn ? "bg-primary/20 border-primary/30" : "bg-muted/60 border-border/30"
                             }`}>
                               <div className="font-semibold opacity-70">
@@ -1113,7 +1113,7 @@ const Community = () => {
                                 e.stopPropagation();
                                 navigate("/feed");
                               }}
-                              className={`rounded-2xl px-3 py-2 sm:px-4 sm:py-3 cursor-pointer hover:opacity-90 transition-opacity no-reply-trigger ${
+                              className={`rounded-2xl px-3 py-2 sm:px-4 sm:py-3 cursor-pointer hover:opacity-90 transition-opacity no-reply-trigger break-words ${
                                 isOwn
                                   ? "bg-primary/90 text-primary-foreground"
                                   : "bg-muted"
@@ -1176,13 +1176,13 @@ const Community = () => {
                             // Regular Message Display
                             <div className="relative group/message">
                               <div
-                                className={`rounded-2xl px-3 py-2 sm:px-4 ${
+                                className={`rounded-2xl px-3 py-2 sm:px-4 break-words overflow-wrap-anywhere ${
                                   isOwn
                                     ? "bg-primary text-primary-foreground"
                                     : "bg-muted"
                                 }`}
                               >
-                                <p className="text-xs sm:text-sm whitespace-pre-wrap break-words">
+                                <p className="text-xs sm:text-sm whitespace-pre-wrap break-words overflow-wrap-anywhere">
                                   {message.content}
                                 </p>
                               </div>
@@ -1345,9 +1345,9 @@ const Community = () => {
             </ScrollArea>
 
             {/* Message Input */}
-            <div className="border-t border-border/50 p-2 sm:p-4">
+            <div className="border-t border-border/50 p-2 sm:p-4 bg-background">
               {replyingTo && (
-                <div className="mb-2 px-3 py-2 bg-muted/50 rounded-lg border border-border/30 flex items-start justify-between">
+                <div className="mb-2 px-3 py-2 bg-muted/50 rounded-lg border border-border/30 flex items-start justify-between max-w-full overflow-hidden">
                   <div className="flex-1 min-w-0">
                     <div className="text-xs font-semibold text-primary mb-0.5">
                       Répondre à {replyingTo.profile?.nickname || replyingTo.profile?.full_name}

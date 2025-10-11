@@ -821,3 +821,11 @@ All colors MUST be HSL.
     }
   }
 }
+
+/* Utility class for proper text wrapping and word breaking */
+@layer utilities {
+  .overflow-wrap-anywhere {
+    overflow-wrap: anywhere;
+    word-break: break-word;
+  }
+}
