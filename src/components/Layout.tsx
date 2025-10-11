@@ -21,6 +21,7 @@ import dashboardImage from "@/assets/dashboard00.png";
 import edupreneursLogo from "@/assets/edupreneurs-logo.jpeg";
 import { EricChatbot } from "@/components/EricChatbot";
 import OnboardingTour from "@/components/OnboardingTour";
+import { getAvatarUrl } from "@/lib/avatarMap";
 
 interface LayoutProps {
   children: ReactNode;
@@ -60,7 +61,11 @@ export const Layout = ({ children }: LayoutProps) => {
     }
     
     if (profile?.avatar_url) {
-      setUserAvatar(profile.avatar_url);
+      // Use getAvatarUrl to properly map avatar IDs to image paths
+      const avatarUrl = getAvatarUrl(profile.avatar_url);
+      if (avatarUrl) {
+        setUserAvatar(avatarUrl);
+      }
     }
     if (profile?.nickname) {
       setUserNickname(profile.nickname);
@@ -285,18 +290,12 @@ export const Layout = ({ children }: LayoutProps) => {
           className={`fixed top-0 left-0 h-screen w-[240px] sm:w-[260px] lg:w-[280px] bg-card border-r border-border shadow-lg z-[1000] transition-transform duration-300 overflow-y-auto ${sidebarOpen ? "translate-x-0" : "-translate-x-full"}`}
         >
         {/* Sidebar Header */}
-        <div className="bg-gradient-to-br from-[hsl(var(--primary))] to-[hsl(var(--success))] text-white p-3 sm:p-4 lg:p-5 border-b border-white/10 flex items-center justify-between">
+        <div className="bg-gradient-to-br from-[hsl(var(--primary))] to-[hsl(var(--success))] text-white p-3 sm:p-4 lg:p-5 border-b border-white/10 flex items-center justify-center">
           <img 
             src={edupreneursLogo} 
             alt="EDUPRENEURS" 
             className="h-12 sm:h-14 w-auto object-contain logo-no-filter"
           />
-          <button
-            onClick={() => setSidebarOpen(false)}
-            className="lg:hidden p-1.5 sm:p-2 rounded-lg bg-white/20 hover:bg-white/30 transition-colors"
-          >
-            <X size={14} className="sm:w-4 sm:h-4" />
-          </button>
         </div>
 
         {/* User Profile Section */}
