@@ -4,10 +4,12 @@ import { useNavigate } from "react-router-dom";
 import { Card } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import { Heart, MessageCircle, Share2, UserPlus, Check, X, FileText } from "lucide-react";
+import { Heart, MessageCircle, Share2, UserPlus, Check, X, FileText, MoreVertical, Trash2 } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { getAvatarUrl } from "@/lib/avatarMap";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 
 interface Profile {
   id: string;
@@ -34,6 +36,7 @@ interface Notification {
 
 export default function Notifications() {
   const [notifications, setNotifications] = useState<Notification[]>([]);
+  const [deleteNotificationId, setDeleteNotificationId] = useState<string | null>(null);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -306,6 +309,32 @@ export default function Notifications() {
     }
   };
 
+  const handleDeleteNotification = async (notificationId: string) => {
+    try {
+      const { error } = await supabase
+        .from("notifications")
+        .delete()
+        .eq("id", notificationId);
+
+      if (error) throw error;
+
+      toast({ 
+        title: "Notification supprimée",
+      });
+
+      await fetchNotifications();
+    } catch (error) {
+      console.error("Error deleting notification:", error);
+      toast({ 
+        title: "Erreur",
+        description: "Impossible de supprimer la notification",
+        variant: "destructive" 
+      });
+    } finally {
+      setDeleteNotificationId(null);
+    }
+  };
+
   const unreadCount = notifications.filter((n) => !n.read).length;
 
   return (
@@ -335,9 +364,8 @@ export default function Notifications() {
                 className={`p-4 cursor-pointer hover:bg-accent transition-colors ${
                   !notification.read ? "bg-accent/50" : ""
                 }`}
-                onClick={() => handleNotificationClick(notification)}
               >
-                <div className="flex items-start gap-3">
+                <div className="flex items-start gap-3" onClick={() => handleNotificationClick(notification)}>
                   <Avatar className="h-10 w-10">
                     <AvatarImage src={getAvatarUrl(notification.actorProfile.avatar_url)} />
                     <AvatarFallback>
@@ -354,9 +382,30 @@ export default function Notifications() {
                           {getNotificationText(notification)}
                         </p>
                       </div>
-                      <span className="text-xs text-muted-foreground">
-                        {formatTimeAgo(notification.created_at)}
-                      </span>
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs text-muted-foreground">
+                          {formatTimeAgo(notification.created_at)}
+                        </span>
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
+                            <Button variant="ghost" size="icon" className="h-8 w-8">
+                              <MoreVertical className="h-4 w-4" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            <DropdownMenuItem
+                              className="text-destructive focus:text-destructive"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setDeleteNotificationId(notification.id);
+                              }}
+                            >
+                              <Trash2 className="h-4 w-4 mr-2" />
+                              Supprimer
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      </div>
                     </div>
                     {notification.type === "follow_request" && notification.followRequestPending && (
                       <div className="flex gap-2 mt-3">
@@ -392,6 +441,27 @@ export default function Notifications() {
           </div>
         )}
       </div>
+      
+      {/* Delete Notification Confirmation Dialog */}
+      <AlertDialog open={!!deleteNotificationId} onOpenChange={(open) => !open && setDeleteNotificationId(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Supprimer la notification?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Cette action est irréversible. Cette notification sera définitivement supprimée.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Annuler</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => deleteNotificationId && handleDeleteNotification(deleteNotificationId)}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              Supprimer
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

@@ -6,10 +6,12 @@ import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useToast } from "@/hooks/use-toast";
-import { Send, ArrowLeft, Search, Smile, Check, CheckCheck, BadgeCheck, Edit2, Trash2, X } from "lucide-react";
+import { Send, ArrowLeft, Search, Smile, Check, CheckCheck, BadgeCheck, Edit2, Trash2, X, MoreVertical } from "lucide-react";
 import { useMessageSounds } from "@/hooks/useMessageSounds";
 import EmojiPicker from "emoji-picker-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { Textarea } from "@/components/ui/textarea";
 import { initializePushNotifications } from "@/utils/pushNotifications";
 import { getAvatarUrl } from "@/lib/avatarMap";
@@ -79,6 +81,7 @@ const Community = () => {
   const [showReactionPicker, setShowReactionPicker] = useState<string | null>(null);
   const [editingMessageId, setEditingMessageId] = useState<string | null>(null);
   const [editedContent, setEditedContent] = useState("");
+  const [deleteConversationId, setDeleteConversationId] = useState<string | null>(null);
   const previousMessagesCount = useRef<number>(0);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const messageChannelRef = useRef<any>(null);
@@ -843,6 +846,39 @@ const Community = () => {
     setShowReactionPicker(null);
   };
 
+  const handleDeleteConversation = async (conversationId: string) => {
+    try {
+      const { error } = await supabase
+        .from("conversations")
+        .delete()
+        .eq("id", conversationId);
+
+      if (error) throw error;
+
+      toast({
+        title: "Succès",
+        description: "Conversation supprimée",
+      });
+
+      // Clear selection if this conversation was selected
+      if (selectedConversation === conversationId) {
+        setSelectedConversation(null);
+      }
+
+      // Refresh conversations list
+      await fetchConversations();
+    } catch (error) {
+      console.error("Error deleting conversation:", error);
+      toast({
+        title: "Erreur",
+        description: "Impossible de supprimer la conversation",
+        variant: "destructive",
+      });
+    } finally {
+      setDeleteConversationId(null);
+    }
+  };
+
   const formatTime = (timestamp: string) => {
     const date = new Date(timestamp);
     const now = new Date();
@@ -897,40 +933,64 @@ const Community = () => {
             conversations.map((conv) => (
               <div
                 key={conv.id}
-                onClick={() => setSelectedConversation(conv.id)}
                 className={`flex items-center gap-2 sm:gap-3 p-3 sm:p-4 cursor-pointer hover:bg-muted/30 transition-colors border-b border-border/50 ${
                   selectedConversation === conv.id ? "bg-muted/50" : ""
                 }`}
               >
-                <Avatar className="h-10 w-10 sm:h-12 sm:w-12 shrink-0">
-                  <AvatarImage src={getAvatarUrl(conv.otherUser?.avatar_url)} />
-                  <AvatarFallback className="bg-gradient-to-br from-primary/20 to-success/20 text-sm sm:text-base">
-                    {conv.otherUser?.full_name?.[0] || "?"}
-                  </AvatarFallback>
-                </Avatar>
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-1.5">
-                    <p className="font-semibold truncate text-sm sm:text-base">
-                      {conv.otherUser?.full_name || "Utilisateur"}
+                <div 
+                  className="flex items-center gap-2 sm:gap-3 flex-1 min-w-0"
+                  onClick={() => setSelectedConversation(conv.id)}
+                >
+                  <Avatar className="h-10 w-10 sm:h-12 sm:w-12 shrink-0">
+                    <AvatarImage src={getAvatarUrl(conv.otherUser?.avatar_url)} />
+                    <AvatarFallback className="bg-gradient-to-br from-primary/20 to-success/20 text-sm sm:text-base">
+                      {conv.otherUser?.full_name?.[0] || "?"}
+                    </AvatarFallback>
+                  </Avatar>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-1.5">
+                      <p className="font-semibold truncate text-sm sm:text-base">
+                        {conv.otherUser?.full_name || "Utilisateur"}
+                      </p>
+                      {conv.otherUser?.verified && (
+                        <BadgeCheck className="w-4 h-4 text-primary fill-primary/20 shrink-0" />
+                      )}
+                      {conv.unreadCount !== undefined && conv.unreadCount > 0 && (
+                        <span className="flex items-center justify-center h-4 sm:h-5 min-w-[16px] sm:min-w-[20px] px-1 sm:px-1.5 rounded-full bg-primary text-primary-foreground text-[10px] sm:text-xs font-semibold">
+                          {conv.unreadCount}
+                        </span>
+                      )}
+                    </div>
+                    <p className="text-xs sm:text-sm text-muted-foreground truncate">
+                      {conv.lastMessage || "Aucun message"}
                     </p>
-                    {conv.otherUser?.verified && (
-                      <BadgeCheck className="w-4 h-4 text-primary fill-primary/20 shrink-0" />
-                    )}
-                    {conv.unreadCount !== undefined && conv.unreadCount > 0 && (
-                      <span className="flex items-center justify-center h-4 sm:h-5 min-w-[16px] sm:min-w-[20px] px-1 sm:px-1.5 rounded-full bg-primary text-primary-foreground text-[10px] sm:text-xs font-semibold">
-                        {conv.unreadCount}
-                      </span>
-                    )}
                   </div>
-                  <p className="text-xs sm:text-sm text-muted-foreground truncate">
-                    {conv.lastMessage || "Aucun message"}
-                  </p>
+                  {conv.lastMessageTime && (
+                    <span className="text-[10px] sm:text-xs text-muted-foreground shrink-0">
+                      {formatTime(conv.lastMessageTime)}
+                    </span>
+                  )}
                 </div>
-                {conv.lastMessageTime && (
-                  <span className="text-[10px] sm:text-xs text-muted-foreground shrink-0">
-                    {formatTime(conv.lastMessageTime)}
-                  </span>
-                )}
+                
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
+                    <Button variant="ghost" size="icon" className="h-8 w-8 shrink-0">
+                      <MoreVertical className="h-4 w-4" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    <DropdownMenuItem
+                      className="text-destructive focus:text-destructive"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setDeleteConversationId(conv.id);
+                      }}
+                    >
+                      <Trash2 className="h-4 w-4 mr-2" />
+                      Supprimer la conversation
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
               </div>
             ))
           )}
@@ -1341,6 +1401,27 @@ const Community = () => {
           </div>
         )}
       </div>
+      
+      {/* Delete Conversation Confirmation Dialog */}
+      <AlertDialog open={!!deleteConversationId} onOpenChange={(open) => !open && setDeleteConversationId(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Supprimer la conversation?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Cette action est irréversible. Tous les messages de cette conversation seront définitivement supprimés.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Annuler</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => deleteConversationId && handleDeleteConversation(deleteConversationId)}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              Supprimer
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };
