@@ -1039,6 +1039,24 @@ const Community = () => {
                   )}
                 </div>
               </div>
+              
+              {/* Three-dot menu in header */}
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" size="icon" className="h-9 w-9 shrink-0">
+                    <MoreVertical className="h-5 w-5" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuItem
+                    className="text-destructive focus:text-destructive"
+                    onClick={() => setDeleteConversationId(selectedConversation)}
+                  >
+                    <Trash2 className="h-4 w-4 mr-2" />
+                    Supprimer la conversation
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             </div>
 
             {/* Messages */}
