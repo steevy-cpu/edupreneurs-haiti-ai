@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Heart, MessageCircle, Share2, UserPlus, Check, X, FileText } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { getAvatarUrl } from "@/lib/avatarMap";
+import { ThemeToggle } from "@/components/ThemeToggle";
 
 interface Profile {
   id: string;
@@ -309,6 +310,9 @@ export default function Notifications() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background to-background/80 p-6">
+      <div className="fixed top-4 right-4 z-50">
+        <ThemeToggle />
+      </div>
       <div className="max-w-2xl mx-auto">
         <div className="flex items-center justify-between mb-6">
           <h1 className="text-3xl font-bold">Notifications</h1>

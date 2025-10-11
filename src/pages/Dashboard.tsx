@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
+import { ThemeToggle } from "@/components/ThemeToggle";
 import {
   Coins,
   ChartLine,
@@ -123,6 +124,9 @@ const Dashboard = () => {
 
   return (
     <div className="pt-14 sm:pt-16 px-3 sm:px-4 lg:px-8 pb-8 sm:pb-12">
+        <div className="fixed top-4 right-4 z-50">
+          <ThemeToggle />
+        </div>
         {/* Welcome Header */}
         <div className="bg-gradient-to-br from-[hsl(var(--primary))] to-[hsl(var(--success))] text-white p-4 sm:p-6 lg:p-8 rounded-2xl sm:rounded-[20px] mb-4 sm:mb-6 lg:mb-8 relative overflow-hidden">
           <div className="absolute top-0 right-0 w-1/2 h-full opacity-10">

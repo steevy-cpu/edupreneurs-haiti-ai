@@ -40,6 +40,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { AvatarSelector } from "@/components/AvatarSelector";
 import { getAvatarUrl } from "@/lib/avatarMap";
+import { ThemeToggle } from "@/components/ThemeToggle";
 
 interface UserProfile {
   id: string;
@@ -254,6 +255,9 @@ const Settings = () => {
 
   return (
     <div className="pt-20 px-4 sm:px-6 lg:px-8 pb-8 max-w-7xl mx-auto">
+        <div className="fixed top-4 right-4 z-50">
+          <ThemeToggle />
+        </div>
         {/* Header */}
         <div className="bg-gradient-to-br from-[hsl(var(--primary))] to-[hsl(var(--success))] text-white p-6 sm:p-8 rounded-[20px] mb-6 sm:mb-8 relative overflow-hidden">
           <div className="absolute top-0 right-0 w-1/2 h-full opacity-10">

@@ -8,6 +8,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { toast } from 'sonner';
 import { User, UserPlus, UserCheck, Clock, ArrowLeft, BadgeCheck, MessageCircle } from 'lucide-react';
 import { getAvatarUrl } from '@/lib/avatarMap';
+import { ThemeToggle } from '@/components/ThemeToggle';
 
 interface Profile {
   id: string;
@@ -257,6 +258,9 @@ export default function Profile() {
 
   return (
     <div className="min-h-screen bg-background pb-20">
+      <div className="fixed top-4 right-4 z-50">
+        <ThemeToggle />
+      </div>
       <div className="max-w-2xl mx-auto p-3 sm:p-4 space-y-4 sm:space-y-6">
         <Button
           variant="ghost"
