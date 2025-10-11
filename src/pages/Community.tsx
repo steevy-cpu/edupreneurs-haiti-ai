@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useToast } from "@/hooks/use-toast";
-import { Send, ArrowLeft, Search, Smile, Check, CheckCheck, BadgeCheck, Edit2, Trash2, X, MoreVertical } from "lucide-react";
+import { Send, ArrowLeft, Search, Smile, Check, CheckCheck, BadgeCheck, Edit2, Trash2, X, MoreVertical, RefreshCw } from "lucide-react";
 import { useMessageSounds } from "@/hooks/useMessageSounds";
 import EmojiPicker from "emoji-picker-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
@@ -98,6 +98,19 @@ const Community = () => {
       initializePushNotifications(user.id);
       subscribeToNotifications();
     }
+  }, [user]);
+
+  // Refresh conversations when page becomes visible
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible' && user) {
+        console.log('📱 Page visible, refreshing conversations');
+        fetchConversations();
+      }
+    };
+    
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
   }, [user]);
 
   const subscribeToNotifications = () => {
@@ -278,6 +291,8 @@ const Community = () => {
       const otherUserProfile = profiles?.find(p => p.user_id === otherUserId);
       const lastMsg = lastMessages?.find(m => m.conversation_id === convId);
       const unreadCount = allMessages?.filter(m => m.conversation_id === convId).length || 0;
+
+      console.log(`💬 Conversation ${convId} with ${otherUserProfile?.full_name}: ${unreadCount} unread`);
 
       return {
         id: convId,
@@ -922,6 +937,18 @@ const Community = () => {
             </Button>
             <h1 className="text-lg sm:text-xl font-semibold flex-1">Messages</h1>
             <ThemeToggle />
+            <Button
+              size="icon"
+              variant="ghost"
+              onClick={() => {
+                console.log('🔄 Manual refresh triggered');
+                fetchConversations();
+              }}
+              className="shrink-0"
+              title="Rafraîchir"
+            >
+              <RefreshCw size={18} className="sm:w-5 sm:h-5" />
+            </Button>
             <Button
               size="icon"
               variant="ghost"
