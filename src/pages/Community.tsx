@@ -1171,7 +1171,7 @@ const Community = () => {
         {selectedConversation ? (
           <>
             {/* Header */}
-            <div className="border-b border-border/50 bg-background p-3 sm:p-4 flex items-center gap-2 sm:gap-3 shrink-0 z-10">
+            <div className="sticky top-0 border-b border-border/50 bg-background p-3 sm:p-4 flex items-center gap-2 sm:gap-3 shrink-0 z-10">
               <Button
                 size="icon"
                 variant="ghost"
