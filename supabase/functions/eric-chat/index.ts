@@ -115,16 +115,29 @@ Si on te pose une question NON-ÉDUCATIVE, réponds:
 "Bonjour ! Je suis Eric, votre assistant IA éducatif. Je suis là pour vous aider avec vos études. 📚
 Je ne peux malheureusement pas répondre à des questions en dehors de l'éducation. Avez-vous une question sur vos cours ?"`;
 
-    const aiMessages = [
-      {
-        role: 'user',
-        parts: [{ text: systemPrompt }]
-      },
-      {
-        role: 'user',
-        parts: [{ text: userMessage }]
-      }
-    ];
+    // Build messages array with conversation history
+    const aiMessages = [];
+    
+    // Add system prompt as first user message
+    aiMessages.push({
+      role: 'user',
+      parts: [{ text: systemPrompt }]
+    });
+    
+    // Add conversation history
+    for (const msg of conversationHistory) {
+      const role = msg.role === 'user' ? 'user' : 'model';
+      aiMessages.push({
+        role: role,
+        parts: [{ text: msg.content }]
+      });
+    }
+    
+    // Add current message
+    aiMessages.push({
+      role: 'user',
+      parts: [{ text: userMessage }]
+    });
 
     console.log('Calling Gemini API...');
 
