@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
@@ -16,6 +16,7 @@ import {
 } from "lucide-react";
 import ericTeaching from "@/assets/eric-teaching.png";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import { supabase } from "@/integrations/supabase/client";
 
 interface Topic {
   id: string;
@@ -30,7 +31,26 @@ interface Topic {
 
 const MathCourse = () => {
   const navigate = useNavigate();
-  const [userGold] = useState(250);
+  const [userGold, setUserGold] = useState(0);
+
+  useEffect(() => {
+    const fetchUserGold = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('gold_earned')
+          .eq('user_id', user.id)
+          .single();
+        
+        if (profile) {
+          setUserGold(profile.gold_earned || 0);
+        }
+      }
+    };
+
+    fetchUserGold();
+  }, []);
 
   // AF7 Mathematics Topics - MENFP Program
   const topics: Topic[] = [
@@ -205,11 +225,6 @@ const MathCourse = () => {
 
   return (
     <div className="min-h-screen bg-background pb-20">
-      {/* Theme Toggle */}
-      <div className="fixed top-4 right-4 z-50">
-        <ThemeToggle />
-      </div>
-
       {/* Header */}
       <header className="border-b border-border bg-card/30 backdrop-blur-sm sticky top-0 z-50">
         <div className="container mx-auto px-3 sm:px-4 py-3 sm:py-4">
@@ -218,7 +233,7 @@ const MathCourse = () => {
               <Button
                 variant="ghost"
                 size="icon"
-                onClick={() => navigate('/dashboard')}
+                onClick={() => navigate('/matieres')}
                 className="shrink-0"
               >
                 <ArrowLeft className="w-4 h-4 sm:w-5 sm:h-5" />
@@ -233,9 +248,12 @@ const MathCourse = () => {
                 </div>
               </div>
             </div>
-            <div className="flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-4 py-1.5 sm:py-2 rounded-full bg-accent/10 border border-accent/20 shrink-0">
-              <Trophy className="w-4 h-4 sm:w-5 sm:h-5 text-accent" />
-              <span className="font-bold gold-text text-sm sm:text-base">{userGold}</span>
+            <div className="flex items-center gap-2 sm:gap-3 shrink-0">
+              <div className="flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-4 py-1.5 sm:py-2 rounded-full bg-accent/10 border border-accent/20">
+                <Trophy className="w-4 h-4 sm:w-5 sm:h-5 text-accent" />
+                <span className="font-bold gold-text text-sm sm:text-base">{userGold}</span>
+              </div>
+              <ThemeToggle />
             </div>
           </div>
         </div>
