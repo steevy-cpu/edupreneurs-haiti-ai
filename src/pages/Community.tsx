@@ -1089,9 +1089,29 @@ const Community = () => {
                         <BadgeCheck className="w-4 h-4 text-primary fill-primary/20 shrink-0" />
                       )}
                     </div>
-                    <p className="text-xs sm:text-sm text-muted-foreground line-clamp-2">
-                      {conv.lastMessage || "Aucun message"}
-                    </p>
+                    {(() => {
+                      // Check if the other user is typing in this conversation
+                      const otherUserTyping = selectedConversation === conv.id && 
+                        Object.entries(typingUsers).some(([key, value]) => {
+                          const presence = Array.isArray(value) ? value[0] : value;
+                          return presence?.typing && presence?.user_id === conv.otherUser?.user_id;
+                        });
+                      
+                      return otherUserTyping ? (
+                        <div className="flex items-center gap-1 text-muted-foreground text-xs italic">
+                          <span>en train d'écrire</span>
+                          <span className="flex gap-0.5">
+                            <span className="animate-bounce" style={{ animationDelay: '0ms' }}>.</span>
+                            <span className="animate-bounce" style={{ animationDelay: '150ms' }}>.</span>
+                            <span className="animate-bounce" style={{ animationDelay: '300ms' }}>.</span>
+                          </span>
+                        </div>
+                      ) : (
+                        <p className="text-xs sm:text-sm text-muted-foreground line-clamp-2">
+                          {conv.lastMessage || "Aucun message"}
+                        </p>
+                      );
+                    })()}
                   </div>
                   <div className="flex flex-col items-end gap-1 shrink-0">
                     {conv.lastMessageTime && (
