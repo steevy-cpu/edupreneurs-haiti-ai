@@ -961,7 +961,7 @@ const Community = () => {
                         </span>
                       )}
                     </div>
-                    <p className="text-xs sm:text-sm text-muted-foreground truncate">
+                    <p className="text-xs sm:text-sm text-muted-foreground line-clamp-2">
                       {conv.lastMessage || "Aucun message"}
                     </p>
                   </div>
