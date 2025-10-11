@@ -86,9 +86,9 @@ const Community = () => {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const messageChannelRef = useRef<any>(null);
   const reactionChannelRef = useRef<any>(null);
-  const presenceChannelRef = useRef<any>(null);
+  const presenceChannelsRef = useRef<Record<string, any>>({});
   const typingTimeoutRef = useRef<any>(null);
-  const [typingUsers, setTypingUsers] = useState<Record<string, any>>({});
+  const [typingUsers, setTypingUsers] = useState<Record<string, Record<string, any>>>({});
 
   useEffect(() => {
     checkUser();
@@ -178,10 +178,10 @@ const Community = () => {
       if (reactionChannelRef.current) {
         supabase.removeChannel(reactionChannelRef.current);
       }
-      if (presenceChannelRef.current) {
-        console.log('🧹 Cleaning up typing presence channel');
-        supabase.removeChannel(presenceChannelRef.current);
-        presenceChannelRef.current = null;
+      if (selectedConversation && presenceChannelsRef.current[selectedConversation]) {
+        console.log('🧹 Cleaning up typing presence channel for conversation:', selectedConversation);
+        supabase.removeChannel(presenceChannelsRef.current[selectedConversation]);
+        delete presenceChannelsRef.current[selectedConversation];
       }
     };
   }, [selectedConversation, user]);
@@ -892,8 +892,8 @@ const Community = () => {
       return;
     }
 
-    if (presenceChannelRef.current) {
-      supabase.removeChannel(presenceChannelRef.current);
+    if (presenceChannelsRef.current[conversationId]) {
+      supabase.removeChannel(presenceChannelsRef.current[conversationId]);
     }
 
     console.log('🔄 Setting up typing presence for conversation:', conversationId, 'User:', user.id);
@@ -909,10 +909,11 @@ const Community = () => {
     channel
       .on('presence', { event: 'sync' }, () => {
         const state = channel.presenceState();
-        console.log('👥 Presence state synced:', state);
-        console.log('👥 Presence state keys:', Object.keys(state));
-        console.log('👥 Presence state values:', Object.values(state));
-        setTypingUsers(state);
+        console.log('👥 Presence state synced for conversation:', conversationId, state);
+        setTypingUsers(prev => ({
+          ...prev,
+          [conversationId]: state
+        }));
       })
       .on('presence', { event: 'join' }, ({ key, newPresences }) => {
         console.log('👋 User joined:', key, newPresences);
@@ -932,18 +933,18 @@ const Community = () => {
         }
       });
 
-    presenceChannelRef.current = channel;
+    presenceChannelsRef.current[conversationId] = channel;
   };
 
   const sendTypingStatus = async (isTyping: boolean) => {
-    if (!presenceChannelRef.current || !user) {
+    if (!selectedConversation || !presenceChannelsRef.current[selectedConversation] || !user) {
       console.log('❌ Cannot send typing status - no channel or user');
       return;
     }
 
     try {
       console.log('📤 Sending typing status:', isTyping, 'for user:', user.id);
-      const result = await presenceChannelRef.current.track({
+      const result = await presenceChannelsRef.current[selectedConversation].track({
         user_id: user.id,
         typing: isTyping,
       });
@@ -1091,11 +1092,11 @@ const Community = () => {
                     </div>
                     {(() => {
                       // Check if the other user is typing in this conversation
-                      const otherUserTyping = selectedConversation === conv.id && 
-                        Object.entries(typingUsers).some(([key, value]) => {
-                          const presence = Array.isArray(value) ? value[0] : value;
-                          return presence?.typing && presence?.user_id === conv.otherUser?.user_id;
-                        });
+                      const conversationTypingUsers = typingUsers[conv.id] || {};
+                      const otherUserTyping = Object.entries(conversationTypingUsers).some(([key, value]) => {
+                        const presence = Array.isArray(value) ? value[0] : value;
+                        return presence?.typing && presence?.user_id === conv.otherUser?.user_id;
+                      });
                       
                       return otherUserTyping ? (
                         <div className="flex items-center gap-1 text-muted-foreground text-xs italic">
@@ -1498,31 +1499,34 @@ const Community = () => {
                 
                 {/* Typing Indicator */}
                 {(() => {
-                  console.log('🎨 Rendering typing indicator, typingUsers:', typingUsers);
-                  return Object.entries(typingUsers).map(([key, value]) => {
-                    console.log('🔍 Checking key:', key, 'value:', value);
+                  if (!selectedConversation) return null;
+                  
+                  const conversationTypingUsers = typingUsers[selectedConversation] || {};
+                  console.log('🎨 Rendering typing indicator for conversation:', selectedConversation, conversationTypingUsers);
+                  
+                  return Object.entries(conversationTypingUsers).map(([key, value]) => {
                     const presence = Array.isArray(value) ? value[0] : value;
                     console.log('🔍 Presence:', presence, 'typing:', presence?.typing, 'user_id:', presence?.user_id, 'current user:', user?.id);
                     if (presence?.typing && presence?.user_id !== user?.id) {
                       console.log('✅ Showing typing indicator for user:', presence?.user_id);
                       const conversation = conversations.find(c => c.id === selectedConversation);
                       return (
-                      <div key={key} className="flex items-center gap-2 px-2 py-1">
-                        <Avatar className="h-6 w-6 shrink-0">
-                          <AvatarImage src={getAvatarUrl(conversation?.otherUser?.avatar_url)} />
-                          <AvatarFallback className="text-xs">
-                            {conversation?.otherUser?.nickname?.[0] || "?"}
-                          </AvatarFallback>
-                        </Avatar>
-                        <div className="flex items-center gap-1 text-muted-foreground text-sm">
-                          <span className="italic">en train d'écrire</span>
-                          <span className="flex gap-1">
-                            <span className="animate-bounce" style={{ animationDelay: '0ms' }}>.</span>
-                            <span className="animate-bounce" style={{ animationDelay: '150ms' }}>.</span>
-                            <span className="animate-bounce" style={{ animationDelay: '300ms' }}>.</span>
-                          </span>
+                        <div key={key} className="flex items-center gap-2 px-2 py-1">
+                          <Avatar className="h-6 w-6 shrink-0">
+                            <AvatarImage src={getAvatarUrl(conversation?.otherUser?.avatar_url)} />
+                            <AvatarFallback className="text-xs">
+                              {conversation?.otherUser?.nickname?.[0] || "?"}
+                            </AvatarFallback>
+                          </Avatar>
+                          <div className="flex items-center gap-1 text-muted-foreground text-sm">
+                            <span className="italic">en train d'écrire</span>
+                            <span className="flex gap-1">
+                              <span className="animate-bounce" style={{ animationDelay: '0ms' }}>.</span>
+                              <span className="animate-bounce" style={{ animationDelay: '150ms' }}>.</span>
+                              <span className="animate-bounce" style={{ animationDelay: '300ms' }}>.</span>
+                            </span>
+                          </div>
                         </div>
-                      </div>
                       );
                     }
                     console.log('❌ Not showing typing indicator for this presence');
