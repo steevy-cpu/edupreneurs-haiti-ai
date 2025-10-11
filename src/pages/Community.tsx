@@ -1167,7 +1167,7 @@ const Community = () => {
       </div>
 
       {/* Messages View */}
-      <div className={`${selectedConversation ? "fixed top-0 left-0 right-0 h-[100dvh] md:relative md:h-auto md:flex-1" : "hidden md:block md:flex-1"} flex flex-col overflow-hidden bg-background z-40 md:z-auto`}>
+      <div className={`${selectedConversation ? "fixed inset-0 md:relative md:flex-1" : "hidden md:block md:flex-1"} flex flex-col overflow-hidden bg-background z-40 md:z-auto`}>
         {selectedConversation ? (
           <>
             {/* Header */}
