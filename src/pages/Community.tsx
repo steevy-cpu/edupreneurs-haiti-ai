@@ -944,13 +944,13 @@ const Community = () => {
                   <Avatar className="h-10 w-10 sm:h-12 sm:w-12 shrink-0">
                     <AvatarImage src={getAvatarUrl(conv.otherUser?.avatar_url)} />
                     <AvatarFallback className="bg-gradient-to-br from-primary/20 to-success/20 text-sm sm:text-base">
-                      {conv.otherUser?.full_name?.[0] || "?"}
+                      {(conv.otherUser?.nickname || conv.otherUser?.full_name)?.[0] || "?"}
                     </AvatarFallback>
                   </Avatar>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-1.5">
                       <p className="font-semibold truncate text-sm sm:text-base">
-                        {conv.otherUser?.full_name || "Utilisateur"}
+                        {conv.otherUser?.nickname || conv.otherUser?.full_name || "Utilisateur"}
                       </p>
                       {conv.otherUser?.verified && (
                         <BadgeCheck className="w-4 h-4 text-primary fill-primary/20 shrink-0" />
@@ -1020,7 +1020,7 @@ const Community = () => {
               >
                 <AvatarImage src={getAvatarUrl(conversations.find(c => c.id === selectedConversation)?.otherUser?.avatar_url)} />
                 <AvatarFallback className="bg-gradient-to-br from-primary/20 to-success/20 text-sm sm:text-base">
-                  {conversations.find(c => c.id === selectedConversation)?.otherUser?.full_name?.[0] || "?"}
+                  {(conversations.find(c => c.id === selectedConversation)?.otherUser?.nickname || conversations.find(c => c.id === selectedConversation)?.otherUser?.full_name)?.[0] || "?"}
                 </AvatarFallback>
               </Avatar>
               <div 
@@ -1032,7 +1032,7 @@ const Community = () => {
               >
                 <div className="flex items-center gap-1.5">
                   <p className="font-semibold text-sm sm:text-base truncate">
-                    {conversations.find(c => c.id === selectedConversation)?.otherUser?.full_name || "Utilisateur"}
+                    {conversations.find(c => c.id === selectedConversation)?.otherUser?.nickname || conversations.find(c => c.id === selectedConversation)?.otherUser?.full_name || "Utilisateur"}
                   </p>
                   {conversations.find(c => c.id === selectedConversation)?.otherUser?.verified && (
                     <BadgeCheck className="w-4 h-4 text-primary fill-primary/20 shrink-0" />
@@ -1089,7 +1089,7 @@ const Community = () => {
                         >
                           <AvatarImage src={getAvatarUrl(message.profile?.avatar_url)} />
                           <AvatarFallback className="bg-gradient-to-br from-primary/20 to-success/20 text-[10px] sm:text-xs">
-                            {message.profile?.full_name?.[0] || "?"}
+                            {(message.profile?.nickname || message.profile?.full_name)?.[0] || "?"}
                           </AvatarFallback>
                         </Avatar>
                         <div className="flex flex-col gap-1 min-w-0 max-w-full">
