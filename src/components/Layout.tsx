@@ -220,27 +220,8 @@ export const Layout = ({ children }: LayoutProps) => {
     navigate("/auth");
   };
 
-  const handleMessagesClick = async (e: React.MouseEvent) => {
+  const handleMessagesClick = (e: React.MouseEvent) => {
     e.preventDefault();
-    
-    // Mark all messages as read
-    const { data: { user } } = await supabase.auth.getUser();
-    if (user) {
-      const { data: unreadMessages } = await supabase
-        .from("messages")
-        .select("id")
-        .eq("read", false)
-        .neq("sender_id", user.id);
-
-      if (unreadMessages && unreadMessages.length > 0) {
-        const messageIds = unreadMessages.map(m => m.id);
-        await supabase
-          .from("messages")
-          .update({ read: true })
-          .in("id", messageIds);
-      }
-    }
-    
     navigate("/community");
     setSidebarOpen(false);
   };
