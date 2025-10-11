@@ -21,6 +21,7 @@ import {
 import { EricChatbot } from "@/components/EricChatbot";
 import ericPointingImage from "@/assets/eric-right-pointing.png";
 import ericTeaching from "@/assets/eric-teaching.png";
+import { ThemeToggle } from "@/components/ThemeToggle";
 
 type GradeLevel = "AF7" | "AF8" | "AF9" | "NS1" | "NS2" | "NS3" | "NS4";
 
@@ -129,6 +130,11 @@ export default function Matieres() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5">
+      {/* Theme Toggle */}
+      <div className="fixed top-4 right-4 z-50">
+        <ThemeToggle />
+      </div>
+
       {/* Eric Chatbot */}
       <EricChatbot />
 

@@ -15,6 +15,7 @@ import {
   GraduationCap
 } from "lucide-react";
 import ericTeaching from "@/assets/eric-teaching.png";
+import { ThemeToggle } from "@/components/ThemeToggle";
 
 interface Topic {
   id: string;
@@ -204,6 +205,11 @@ const MathCourse = () => {
 
   return (
     <div className="min-h-screen bg-background pb-20">
+      {/* Theme Toggle */}
+      <div className="fixed top-4 right-4 z-50">
+        <ThemeToggle />
+      </div>
+
       {/* Header */}
       <header className="border-b border-border bg-card/30 backdrop-blur-sm sticky top-0 z-50">
         <div className="container mx-auto px-3 sm:px-4 py-3 sm:py-4">

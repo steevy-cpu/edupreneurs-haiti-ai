@@ -6,6 +6,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Trophy, Medal, Award, Crown } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { getAvatarUrl } from "@/lib/avatarMap";
+import { ThemeToggle } from "@/components/ThemeToggle";
 
 interface LeaderboardUser {
   id: string;
@@ -111,6 +112,11 @@ const Leaderboard = () => {
 
   return (
     <div className="min-h-screen bg-background pb-16 sm:pb-20 pt-14 sm:pt-16">
+      {/* Theme Toggle */}
+      <div className="fixed top-4 right-4 z-50">
+        <ThemeToggle />
+      </div>
+
       {/* Header */}
       <div className="bg-gradient-to-br from-[hsl(var(--primary))] to-[hsl(var(--success))] text-white p-4 sm:p-6 lg:p-8 relative overflow-hidden">
         <div className="absolute top-0 right-0 w-1/2 h-full opacity-10">

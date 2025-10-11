@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { EricChatbot } from "@/components/EricChatbot";
+import { ThemeToggle } from "@/components/ThemeToggle";
 import {
   Menu,
   X,
@@ -192,6 +193,11 @@ const Affiliations = () => {
 
   return (
     <div className="min-h-screen bg-background">
+      {/* Theme Toggle */}
+      <div className="fixed top-4 right-4 z-50">
+        <ThemeToggle />
+      </div>
+
       {/* Menu Toggle Button */}
       <button
         onClick={() => setSidebarOpen(!sidebarOpen)}

@@ -8,6 +8,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { useToast } from "@/hooks/use-toast";
 import { Search, MessageCircle, ArrowLeft, Eye, BadgeCheck } from "lucide-react";
 import { getAvatarUrl } from "@/lib/avatarMap";
+import { ThemeToggle } from "@/components/ThemeToggle";
 
 interface Profile {
   user_id: string;
@@ -164,6 +165,11 @@ const UserSearch = () => {
 
   return (
     <div className="min-h-screen bg-background">
+      {/* Theme Toggle */}
+      <div className="fixed top-4 right-4 z-50">
+        <ThemeToggle />
+      </div>
+
       {/* Header */}
       <div className="sticky top-0 z-50 border-b border-border/50 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
         <div className="max-w-2xl mx-auto px-4 py-3 flex items-center gap-3">
