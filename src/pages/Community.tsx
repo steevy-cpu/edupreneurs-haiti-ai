@@ -156,7 +156,9 @@ const Community = () => {
   };
 
   useEffect(() => {
+    console.log('🔍 useEffect triggered - selectedConversation:', selectedConversation, 'user:', user?.id);
     if (selectedConversation && user) {
+      console.log('✅ Conditions met, loading conversation and subscribing');
       const loadConversation = async () => {
         await fetchMessages(selectedConversation);
         await markMessagesAsRead(selectedConversation);
@@ -166,6 +168,8 @@ const Community = () => {
       subscribeToConversationMessages(selectedConversation);
       subscribeToReactions(selectedConversation);
       subscribeToTypingPresence(selectedConversation);
+    } else {
+      console.log('❌ Conditions not met - selectedConversation:', !!selectedConversation, 'user:', !!user);
     }
     return () => {
       if (messageChannelRef.current) {
@@ -905,7 +909,9 @@ const Community = () => {
     channel
       .on('presence', { event: 'sync' }, () => {
         const state = channel.presenceState();
-        console.log('👥 Presence state:', state);
+        console.log('👥 Presence state synced:', state);
+        console.log('👥 Presence state keys:', Object.keys(state));
+        console.log('👥 Presence state values:', Object.values(state));
         setTypingUsers(state);
       })
       .on('presence', { event: 'join' }, ({ key, newPresences }) => {
@@ -948,6 +954,7 @@ const Community = () => {
   };
 
   const handleTyping = (value: string) => {
+    console.log('⌨️ handleTyping called with value length:', value.length);
     setNewMessage(value);
 
     // Clear existing timeout
@@ -957,13 +964,16 @@ const Community = () => {
 
     // Send typing status
     if (value.trim()) {
+      console.log('⌨️ User is typing, sending status true');
       sendTypingStatus(true);
 
       // Auto-clear typing status after 3 seconds of inactivity
       typingTimeoutRef.current = setTimeout(() => {
+        console.log('⌨️ Typing timeout reached, sending status false');
         sendTypingStatus(false);
       }, 3000);
     } else {
+      console.log('⌨️ Input empty, sending status false');
       sendTypingStatus(false);
     }
   };
@@ -1467,11 +1477,16 @@ const Community = () => {
                 })}
                 
                 {/* Typing Indicator */}
-                {Object.entries(typingUsers).map(([key, value]) => {
-                  const presence = Array.isArray(value) ? value[0] : value;
-                  if (presence?.typing && presence?.user_id !== user?.id) {
-                    const conversation = conversations.find(c => c.id === selectedConversation);
-                    return (
+                {(() => {
+                  console.log('🎨 Rendering typing indicator, typingUsers:', typingUsers);
+                  return Object.entries(typingUsers).map(([key, value]) => {
+                    console.log('🔍 Checking key:', key, 'value:', value);
+                    const presence = Array.isArray(value) ? value[0] : value;
+                    console.log('🔍 Presence:', presence, 'typing:', presence?.typing, 'user_id:', presence?.user_id, 'current user:', user?.id);
+                    if (presence?.typing && presence?.user_id !== user?.id) {
+                      console.log('✅ Showing typing indicator for user:', presence?.user_id);
+                      const conversation = conversations.find(c => c.id === selectedConversation);
+                      return (
                       <div key={key} className="flex items-center gap-2 px-2 py-1">
                         <Avatar className="h-6 w-6 shrink-0">
                           <AvatarImage src={getAvatarUrl(conversation?.otherUser?.avatar_url)} />
@@ -1488,10 +1503,12 @@ const Community = () => {
                           </span>
                         </div>
                       </div>
-                    );
-                  }
-                  return null;
-                })}
+                      );
+                    }
+                    console.log('❌ Not showing typing indicator for this presence');
+                    return null;
+                  });
+                })()}
                 
                 <div ref={messagesEndRef} />
               </div>
