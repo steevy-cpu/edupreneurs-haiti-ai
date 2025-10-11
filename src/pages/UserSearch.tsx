@@ -165,11 +165,6 @@ const UserSearch = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Theme Toggle */}
-      <div className="fixed top-4 right-4 z-50">
-        <ThemeToggle />
-      </div>
-
       {/* Header */}
       <div className="sticky top-0 z-50 border-b border-border/50 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
         <div className="max-w-2xl mx-auto px-4 py-3 flex items-center gap-3">
@@ -180,7 +175,8 @@ const UserSearch = () => {
           >
             <ArrowLeft size={24} />
           </Button>
-          <h1 className="text-xl font-semibold">Rechercher des utilisateurs</h1>
+          <h1 className="text-xl font-semibold flex-1">Rechercher des utilisateurs</h1>
+          <ThemeToggle />
         </div>
       </div>
 

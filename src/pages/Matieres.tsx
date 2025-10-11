@@ -130,11 +130,6 @@ export default function Matieres() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5">
-      {/* Theme Toggle */}
-      <div className="fixed top-4 right-4 z-50">
-        <ThemeToggle />
-      </div>
-
       {/* Eric Chatbot */}
       <EricChatbot />
 
@@ -150,16 +145,7 @@ export default function Matieres() {
               <ChevronLeft className="w-4 h-4" />
               <span className="font-semibold">EDUPRENEURS</span>
             </Button>
-            <div className="flex items-center gap-3">
-              <Badge variant="secondary">Invité</Badge>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => navigate("/dashboard")}
-              >
-                Tableau de bord
-              </Button>
-            </div>
+            <ThemeToggle />
           </div>
         </div>
       </nav>
