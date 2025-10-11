@@ -1367,7 +1367,7 @@ const Community = () => {
                   </Button>
                 </div>
               )}
-              <div className="flex gap-1.5 sm:gap-2">
+              <div className="flex gap-1.5 sm:gap-2 items-end">
                 <Popover open={showEmojiPicker} onOpenChange={setShowEmojiPicker}>
                   <PopoverTrigger asChild>
                     <Button
@@ -1390,7 +1390,7 @@ const Community = () => {
                     />
                   </PopoverContent>
                 </Popover>
-                <Input
+                <Textarea
                   placeholder="Écrivez un message..."
                   value={newMessage}
                   onChange={(e) => setNewMessage(e.target.value)}
@@ -1400,7 +1400,17 @@ const Community = () => {
                       sendMessage();
                     }
                   }}
-                  className="text-sm sm:text-base"
+                  className="text-sm sm:text-base resize-none min-h-[40px] max-h-[120px] overflow-y-auto"
+                  rows={1}
+                  style={{
+                    height: 'auto',
+                    minHeight: '40px',
+                  }}
+                  onInput={(e) => {
+                    const target = e.target as HTMLTextAreaElement;
+                    target.style.height = 'auto';
+                    target.style.height = Math.min(target.scrollHeight, 120) + 'px';
+                  }}
                 />
                 <Button
                   size="icon"
