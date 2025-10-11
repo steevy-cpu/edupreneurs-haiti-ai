@@ -27,6 +27,7 @@ import {
 } from "@/components/ui/popover";
 import EmojiPicker from "emoji-picker-react";
 import { getAvatarUrl } from "@/lib/avatarMap";
+import { optimizeMediaFile, formatFileSize } from "@/utils/mediaOptimization";
 
 interface Profile {
   id: string;
@@ -202,31 +203,76 @@ const Feed = () => {
     };
   };
 
-  const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImageSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (file) {
-      setSelectedImage(file);
+    if (!file) return;
+
+    try {
+      toast({
+        title: "Optimisation...",
+        description: "Compression de l'image en cours...",
+      });
+
+      const { file: optimizedFile, originalSize, optimizedSize, savings } = await optimizeMediaFile(file, 'image');
+      
+      setSelectedImage(optimizedFile);
       setSelectedVideo(null);
       setVideoPreview(null);
+      
       const reader = new FileReader();
       reader.onloadend = () => {
         setImagePreview(reader.result as string);
       };
-      reader.readAsDataURL(file);
+      reader.readAsDataURL(optimizedFile);
+
+      if (savings > 10) {
+        toast({
+          title: "Image optimisée!",
+          description: `Taille réduite de ${savings.toFixed(0)}% (${formatFileSize(originalSize)} → ${formatFileSize(optimizedSize)})`,
+        });
+      }
+    } catch (error) {
+      console.error('Error optimizing image:', error);
+      toast({
+        title: "Erreur",
+        description: "Impossible d'optimiser l'image",
+        variant: "destructive",
+      });
     }
   };
 
-  const handleVideoSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleVideoSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (file) {
-      setSelectedVideo(file);
+    if (!file) return;
+
+    try {
+      const { file: validatedFile } = await optimizeMediaFile(file, 'video');
+      
+      setSelectedVideo(validatedFile);
       setSelectedImage(null);
       setImagePreview(null);
+      
       const reader = new FileReader();
       reader.onloadend = () => {
         setVideoPreview(reader.result as string);
       };
-      reader.readAsDataURL(file);
+      reader.readAsDataURL(validatedFile);
+
+      const sizeInMB = validatedFile.size / (1024 * 1024);
+      if (sizeInMB > 10) {
+        toast({
+          title: "Vidéo volumineuse",
+          description: `Taille: ${formatFileSize(validatedFile.size)}. Envisagez de compresser pour économiser de l'espace.`,
+        });
+      }
+    } catch (error: any) {
+      console.error('Error validating video:', error);
+      toast({
+        title: "Erreur",
+        description: error.message || "Impossible de charger la vidéo",
+        variant: "destructive",
+      });
+      e.target.value = ''; // Reset input
     }
   };
 

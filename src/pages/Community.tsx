@@ -16,6 +16,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { initializePushNotifications } from "@/utils/pushNotifications";
 import { getAvatarUrl } from "@/lib/avatarMap";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import { optimizeMediaFile, formatFileSize } from "@/utils/mediaOptimization";
 
 interface Profile {
   id: string;
@@ -637,7 +638,7 @@ const Community = () => {
     };
   };
 
-  const handleMediaSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleMediaSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
@@ -653,14 +654,50 @@ const Community = () => {
       return;
     }
 
-    setSelectedMediaFile(file);
-    setMediaType(isImage ? 'image' : 'video');
+    try {
+      const mediaType = isImage ? 'image' : 'video';
+      
+      if (isImage) {
+        toast({
+          title: "Optimisation...",
+          description: "Compression de l'image en cours...",
+        });
+      }
 
-    const reader = new FileReader();
-    reader.onloadend = () => {
-      setMediaPreview(reader.result as string);
-    };
-    reader.readAsDataURL(file);
+      const { file: optimizedFile, originalSize, optimizedSize, savings } = await optimizeMediaFile(file, mediaType);
+      
+      setSelectedMediaFile(optimizedFile);
+      setMediaType(mediaType);
+
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setMediaPreview(reader.result as string);
+      };
+      reader.readAsDataURL(optimizedFile);
+
+      if (isImage && savings > 10) {
+        toast({
+          title: "Image optimisée!",
+          description: `Taille réduite de ${savings.toFixed(0)}% (${formatFileSize(originalSize)} → ${formatFileSize(optimizedSize)})`,
+        });
+      } else if (isVideo) {
+        const sizeInMB = optimizedSize / (1024 * 1024);
+        if (sizeInMB > 10) {
+          toast({
+            title: "Vidéo volumineuse",
+            description: `Taille: ${formatFileSize(optimizedSize)}. La compression peut prendre du temps lors de l'envoi.`,
+          });
+        }
+      }
+    } catch (error: any) {
+      console.error('Error optimizing media:', error);
+      toast({
+        title: "Erreur",
+        description: error.message || `Impossible d'optimiser ${isImage ? "l'image" : "la vidéo"}`,
+        variant: "destructive",
+      });
+      e.target.value = ''; // Reset input
+    }
   };
 
   const clearMedia = () => {
