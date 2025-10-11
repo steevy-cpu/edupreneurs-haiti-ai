@@ -1002,7 +1002,7 @@ const Community = () => {
         {selectedConversation ? (
           <>
             {/* Header */}
-            <div className="sticky top-0 z-50 border-b border-border/50 bg-background backdrop-blur-sm p-3 sm:p-4 flex items-center gap-2 sm:gap-3 shrink-0">
+            <div className="border-b border-border/50 bg-background p-3 sm:p-4 flex items-center gap-2 sm:gap-3 shrink-0 z-10">
               <Button
                 size="icon"
                 variant="ghost"
@@ -1060,7 +1060,7 @@ const Community = () => {
             </div>
 
             {/* Messages */}
-            <ScrollArea className="flex-1 p-2 sm:p-4 overflow-x-hidden overflow-y-auto">
+            <div className="flex-1 overflow-y-auto overflow-x-hidden p-2 sm:p-4">
               <div className="space-y-2 sm:space-y-4 pb-4 max-w-full">
                 {messages.map((message) => {
                   const isOwn = message.sender_id === user?.id;
@@ -1342,7 +1342,7 @@ const Community = () => {
                 })}
                 <div ref={messagesEndRef} />
               </div>
-            </ScrollArea>
+            </div>
 
             {/* Message Input */}
             <div className="border-t border-border/50 p-2 sm:p-4 bg-background shrink-0">
