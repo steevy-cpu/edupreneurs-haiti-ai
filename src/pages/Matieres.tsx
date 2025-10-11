@@ -217,46 +217,48 @@ export default function Matieres() {
           </p>
         </div>
 
-        {/* Stats Section */}
-        <Card className="p-6 mb-8">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-            <div className="text-center">
-              <div className="text-4xl font-bold text-primary mb-2">
-                {subjects.length}
+        {selectedGrade === "AF7" ? (
+          <>
+            {/* Stats Section */}
+            <Card className="p-6 mb-8">
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+                <div className="text-center">
+                  <div className="text-4xl font-bold text-primary mb-2">
+                    {subjects.length}
+                  </div>
+                  <div className="text-sm text-muted-foreground font-semibold">
+                    Matières
+                  </div>
+                </div>
+                <div className="text-center">
+                  <div className="text-4xl font-bold text-primary mb-2">
+                    {totalLessons}+
+                  </div>
+                  <div className="text-sm text-muted-foreground font-semibold">
+                    Leçons
+                  </div>
+                </div>
+                <div className="text-center">
+                  <div className="text-4xl font-bold text-primary mb-2">
+                    {totalExercises}+
+                  </div>
+                  <div className="text-sm text-muted-foreground font-semibold">
+                    Exercices
+                  </div>
+                </div>
+                <div className="text-center">
+                  <div className="text-4xl font-bold text-primary mb-2">
+                    ∞
+                  </div>
+                  <div className="text-sm text-muted-foreground font-semibold">
+                    Possibilités
+                  </div>
+                </div>
               </div>
-              <div className="text-sm text-muted-foreground font-semibold">
-                Matières
-              </div>
-            </div>
-            <div className="text-center">
-              <div className="text-4xl font-bold text-primary mb-2">
-                {totalLessons}+
-              </div>
-              <div className="text-sm text-muted-foreground font-semibold">
-                Leçons
-              </div>
-            </div>
-            <div className="text-center">
-              <div className="text-4xl font-bold text-primary mb-2">
-                {totalExercises}+
-              </div>
-              <div className="text-sm text-muted-foreground font-semibold">
-                Exercices
-              </div>
-            </div>
-            <div className="text-center">
-              <div className="text-4xl font-bold text-primary mb-2">
-                ∞
-              </div>
-              <div className="text-sm text-muted-foreground font-semibold">
-                Possibilités
-              </div>
-            </div>
-          </div>
-        </Card>
+            </Card>
 
-        {/* Subjects Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mb-8">
+            {/* Subjects Grid */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mb-8">
           {subjects.map((subject, index) => {
             const IconComponent = subject.icon;
             return (
@@ -302,7 +304,28 @@ export default function Matieres() {
               </Card>
             );
           })}
-        </div>
+            </div>
+          </>
+        ) : (
+          <Card className="p-12 mb-8 text-center">
+            <div className="max-w-md mx-auto">
+              <div className="text-6xl mb-4">🚧</div>
+              <h3 className="text-2xl font-bold mb-3">Bientôt Disponible!</h3>
+              <p className="text-muted-foreground mb-4">
+                Le contenu pour {currentGrade?.fullName} ({currentGrade?.label}) sera disponible très prochainement.
+              </p>
+              <p className="text-sm text-muted-foreground">
+                Pour l'instant, explorez notre programme complet pour AF7 👆
+              </p>
+              <Button 
+                onClick={() => setSelectedGrade("AF7")}
+                className="mt-6"
+              >
+                Voir le programme AF7
+              </Button>
+            </div>
+          </Card>
+        )}
 
         {/* Eric Mascot Section */}
         <Card className="p-8 mb-8 bg-gradient-to-r from-primary/10 to-secondary/10">
