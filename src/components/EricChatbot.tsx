@@ -5,6 +5,7 @@ import { X, Send, Volume2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import ericAvatar from "@/assets/dashboard00.png";
+import { getAvatarUrl } from "@/lib/avatarMap";
 
 interface Message {
   content: string;
@@ -19,6 +20,7 @@ export const EricChatbot = () => {
   const [isTyping, setIsTyping] = useState(false);
   const [isSpeaking, setIsSpeaking] = useState<number | null>(null);
   const [userNickname, setUserNickname] = useState<string>("");
+  const [userAvatarUrl, setUserAvatarUrl] = useState<string>("");
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
 
@@ -30,12 +32,13 @@ export const EricChatbot = () => {
         if (user) {
           const { data: profile } = await supabase
             .from('profiles')
-            .select('nickname')
+            .select('nickname, avatar_url')
             .eq('user_id', user.id)
             .single();
           
           const nickname = profile?.nickname || "l'élève";
           setUserNickname(nickname);
+          setUserAvatarUrl(profile?.avatar_url || "");
           
           // Set initial greeting with nickname
           const now = new Date();
@@ -179,7 +182,7 @@ export const EricChatbot = () => {
                 className={`eric-message ${message.sender === "user" ? "eric-message-user" : "eric-message-eric"}`}
               >
                 <img 
-                  src={message.sender === "eric" ? ericAvatar : "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23059669'><path d='M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z'/></svg>"}
+                  src={message.sender === "eric" ? ericAvatar : (getAvatarUrl(userAvatarUrl) || "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23059669'><path d='M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z'/></svg>")}
                   alt={message.sender}
                   className="eric-message-avatar"
                 />
