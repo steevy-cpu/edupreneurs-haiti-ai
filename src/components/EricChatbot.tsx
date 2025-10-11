@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { X, Mic, Send, Volume2 } from "lucide-react";
+import { X, Send, Volume2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import ericAvatar from "@/assets/dashboard00.png";
@@ -224,18 +224,10 @@ export const EricChatbot = () => {
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 onKeyPress={handleKeyPress}
-                placeholder="Tapez votre question ou cliquez sur 🎤..."
+                placeholder="Tapez votre question..."
                 maxLength={200}
                 className="eric-input"
               />
-              <Button
-                variant="ghost"
-                size="icon"
-                className="eric-voice-btn"
-                title="Enregistrement vocal"
-              >
-                <Mic className="w-4 h-4" />
-              </Button>
               <Button
                 size="icon"
                 className="eric-send-btn"

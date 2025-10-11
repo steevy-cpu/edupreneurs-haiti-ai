@@ -562,6 +562,7 @@ All colors MUST be HSL.
     animation: slideInRight 0.3s ease-out;
     display: flex;
     flex-direction: column;
+    gap: 0;
   }
   
   @keyframes slideInRight {
@@ -590,6 +591,7 @@ All colors MUST be HSL.
   .eric-chat-messages {
     @apply flex-1 overflow-y-auto p-0;
     margin-bottom: 0;
+    padding-bottom: 0;
     min-height: 200px;
     max-height: 450px;
   }
