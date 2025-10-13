@@ -19,6 +19,7 @@ import { getAvatarUrl } from "@/lib/avatarMap";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { optimizeMediaFile, formatFileSize } from "@/utils/mediaOptimization";
 import { CreateGroupDialog } from "@/components/CreateGroupDialog";
+import { GroupInfoDialog } from "@/components/GroupInfoDialog";
 
 interface Profile {
   id: string;
@@ -122,6 +123,8 @@ const Community = () => {
   const globalPresenceChannelRef = useRef<any>(null);
   const [showCreateGroup, setShowCreateGroup] = useState(false);
   const [followers, setFollowers] = useState<Profile[]>([]);
+  const [showGroupInfo, setShowGroupInfo] = useState(false);
+  const [selectedGroupId, setSelectedGroupId] = useState<string | null>(null);
 
   // Save lastSeenTimes to localStorage whenever it changes
   useEffect(() => {
@@ -1577,11 +1580,11 @@ const Community = () => {
                   selectedConversation === conv.id ? "bg-muted/50" : ""
                 }`}
               >
-                <div 
-                  className="flex items-center gap-2 sm:gap-3 flex-1 min-w-0"
-                  onClick={() => setSelectedConversation(conv.id)}
-                >
-                  <div className="relative">
+                <div className="flex items-center gap-2 sm:gap-3 flex-1 min-w-0">
+                  <div 
+                    className="relative"
+                    onClick={() => setSelectedConversation(conv.id)}
+                  >
                     <Avatar className="h-10 w-10 sm:h-12 sm:w-12 shrink-0">
                       {conv.is_group ? (
                         <>
@@ -1603,7 +1606,18 @@ const Community = () => {
                       <div className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 rounded-full border-2 border-background" />
                     )}
                   </div>
-                  <div className="flex-1 min-w-0">
+                  <div 
+                    className="flex-1 min-w-0"
+                    onClick={() => {
+                      if (conv.is_group && conv.group) {
+                        setSelectedGroupId(conv.group.id);
+                        setSelectedConversation(conv.id);
+                        setShowGroupInfo(true);
+                      } else {
+                        setSelectedConversation(conv.id);
+                      }
+                    }}
+                  >
                     <div className="flex items-center gap-1.5">
                       <p className="font-semibold truncate text-sm sm:text-base">
                         {conv.is_group 
@@ -1713,9 +1727,12 @@ const Community = () => {
                 return (
                   <>
                     <Avatar 
-                      className={`h-9 w-9 sm:h-10 sm:w-10 shrink-0 ${!isGroup ? 'cursor-pointer hover:opacity-80 transition-opacity' : ''}`}
+                      className={`h-9 w-9 sm:h-10 sm:w-10 shrink-0 cursor-pointer hover:opacity-80 transition-opacity`}
                       onClick={() => {
-                        if (!isGroup && currentConv?.otherUser) {
+                        if (isGroup && currentConv?.group) {
+                          setSelectedGroupId(currentConv.group.id);
+                          setShowGroupInfo(true);
+                        } else if (!isGroup && currentConv?.otherUser) {
                           navigate(`/profile/${currentConv.otherUser.user_id}`);
                         }
                       }}
@@ -1737,9 +1754,12 @@ const Community = () => {
                       )}
                     </Avatar>
                     <div 
-                      className={`min-w-0 flex-1 ${!isGroup ? 'cursor-pointer hover:opacity-80 transition-opacity' : ''}`}
+                      className="min-w-0 flex-1 cursor-pointer hover:opacity-80 transition-opacity"
                       onClick={() => {
-                        if (!isGroup && currentConv?.otherUser) {
+                        if (isGroup && currentConv?.group) {
+                          setSelectedGroupId(currentConv.group.id);
+                          setShowGroupInfo(true);
+                        } else if (!isGroup && currentConv?.otherUser) {
                           navigate(`/profile/${currentConv.otherUser.user_id}`);
                         }
                       }}
@@ -2358,6 +2378,22 @@ const Community = () => {
            </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* Group Info Dialog */}
+      {selectedGroupId && selectedConversation && (
+        <GroupInfoDialog
+          open={showGroupInfo}
+          onOpenChange={setShowGroupInfo}
+          groupId={selectedGroupId}
+          conversationId={selectedConversation}
+          currentUserId={user?.id}
+          onLeaveGroup={() => {
+            setSelectedConversation(null);
+            setShowGroupInfo(false);
+            fetchConversations();
+          }}
+        />
+      )}
 
       {/* Full-size Image Viewer Dialog */}
       <Dialog open={!!fullSizeImage} onOpenChange={() => setFullSizeImage(null)}>
