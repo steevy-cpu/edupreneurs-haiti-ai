@@ -1455,7 +1455,23 @@ const Community = () => {
                                 {message.shared_post.content}
                               </p>
                               {message.shared_post.image_url && (
-                                <div className="relative group/media">
+                                <div>
+                                  <div className="flex items-center gap-2 mb-1">
+                                    <span className="text-xs font-medium flex items-center gap-1">
+                                      📷 Image
+                                    </span>
+                                    <Button
+                                      size="sm"
+                                      variant="ghost"
+                                      className="h-6 w-6 p-0 hover:bg-background/50 no-reply-trigger"
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        handleDownloadMedia(message.shared_post.image_url, 'image');
+                                      }}
+                                    >
+                                      <Download size={14} />
+                                    </Button>
+                                  </div>
                                   <img
                                     src={message.shared_post.image_url}
                                     alt="Post"
@@ -1465,17 +1481,6 @@ const Community = () => {
                                       setFullSizeImage(message.shared_post.image_url);
                                     }}
                                   />
-                                  <Button
-                                    size="sm"
-                                    variant="secondary"
-                                    className="absolute top-2 right-2 h-8 w-8 p-0 opacity-0 group-hover/media:opacity-100 transition-opacity bg-background/90 hover:bg-background no-reply-trigger shadow-lg"
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      handleDownloadMedia(message.shared_post.image_url, 'image');
-                                    }}
-                                  >
-                                    <Download size={16} />
-                                  </Button>
                                 </div>
                               )}
                               <p className="text-xs opacity-70 mt-2">Cliquez pour voir le post</p>
@@ -1530,7 +1535,23 @@ const Community = () => {
                                   {message.content}
                                 </p>
                                 {message.image_url && (
-                                  <div className="relative group/media mt-2">
+                                  <div className="mt-2">
+                                    <div className="flex items-center gap-2 mb-1">
+                                      <span className="text-xs font-medium flex items-center gap-1">
+                                        📷 Image
+                                      </span>
+                                      <Button
+                                        size="sm"
+                                        variant="ghost"
+                                        className="h-6 w-6 p-0 hover:bg-background/50 no-reply-trigger"
+                                        onClick={(e) => {
+                                          e.stopPropagation();
+                                          handleDownloadMedia(message.image_url, 'image');
+                                        }}
+                                      >
+                                        <Download size={14} />
+                                      </Button>
+                                    </div>
                                     <img
                                       src={message.image_url}
                                       alt="Image"
@@ -1540,38 +1561,32 @@ const Community = () => {
                                         setFullSizeImage(message.image_url);
                                       }}
                                     />
-                                    <Button
-                                      size="sm"
-                                      variant="secondary"
-                                      className="absolute top-2 right-2 h-8 w-8 p-0 opacity-0 group-hover/media:opacity-100 transition-opacity bg-background/90 hover:bg-background no-reply-trigger shadow-lg"
-                                      onClick={(e) => {
-                                        e.stopPropagation();
-                                        handleDownloadMedia(message.image_url, 'image');
-                                      }}
-                                    >
-                                      <Download size={16} />
-                                    </Button>
                                   </div>
                                 )}
                                 {message.video_url && (
-                                  <div className="relative group/media mt-2">
+                                  <div className="mt-2">
+                                    <div className="flex items-center gap-2 mb-1">
+                                      <span className="text-xs font-medium flex items-center gap-1">
+                                        🎥 Vidéo
+                                      </span>
+                                      <Button
+                                        size="sm"
+                                        variant="ghost"
+                                        className="h-6 w-6 p-0 hover:bg-background/50 no-reply-trigger"
+                                        onClick={(e) => {
+                                          e.stopPropagation();
+                                          handleDownloadMedia(message.video_url, 'video');
+                                        }}
+                                      >
+                                        <Download size={14} />
+                                      </Button>
+                                    </div>
                                     <video
                                       src={message.video_url}
                                       controls
                                       className="rounded-lg w-full max-h-64 bg-muted/20"
                                       preload="metadata"
                                     />
-                                    <Button
-                                      size="sm"
-                                      variant="secondary"
-                                      className="absolute top-2 right-2 h-8 w-8 p-0 opacity-0 group-hover/media:opacity-100 transition-opacity bg-background/90 hover:bg-background no-reply-trigger shadow-lg"
-                                      onClick={(e) => {
-                                        e.stopPropagation();
-                                        handleDownloadMedia(message.video_url, 'video');
-                                      }}
-                                    >
-                                      <Download size={16} />
-                                    </Button>
                                   </div>
                                 )}
                               </div>
