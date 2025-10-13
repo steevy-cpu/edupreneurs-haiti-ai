@@ -270,7 +270,7 @@ export const GroupInfoDialog = ({
                 </Avatar>
               </div>
               <div className="flex-1">
-                <DialogTitle className="text-2xl font-bold bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
+                <DialogTitle className="text-2xl font-bold text-foreground">
                   {group.name}
                 </DialogTitle>
                 <DialogDescription className="text-sm">
