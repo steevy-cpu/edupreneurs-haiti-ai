@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useToast } from "@/hooks/use-toast";
-import { ArrowLeft, Users, LogOut, BadgeCheck, UserPlus, X } from "lucide-react";
+import { ArrowLeft, Users, LogOut, BadgeCheck, UserPlus, X, Upload, Trash2 } from "lucide-react";
 import { getAvatarUrl } from "@/lib/avatarMap";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { Input } from "@/components/ui/input";
@@ -54,6 +54,8 @@ export const GroupInfoDialog = ({
   const [availableFollowers, setAvailableFollowers] = useState<Profile[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [addingMember, setAddingMember] = useState(false);
+  const [updatingAvatar, setUpdatingAvatar] = useState(false);
+  const [showDeleteAvatarConfirm, setShowDeleteAvatarConfirm] = useState(false);
 
   useEffect(() => {
     if (open && groupId) {
@@ -173,6 +175,18 @@ export const GroupInfoDialog = ({
 
       if (participantError) throw participantError;
 
+      // Create system message announcing the new member
+      const { error: messageError } = await supabase
+        .from('messages')
+        .insert({
+          conversation_id: conversationId,
+          sender_id: currentUserId,
+          content: `${userName} a rejoint le groupe`,
+          read: false
+        });
+
+      if (messageError) throw messageError;
+
       // Create notification for the added user
       const { error: notificationError } = await supabase
         .from('notifications')
@@ -205,6 +219,83 @@ export const GroupInfoDialog = ({
       });
     } finally {
       setAddingMember(false);
+    }
+  };
+
+  const handleAvatarChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !group) return;
+
+    try {
+      setUpdatingAvatar(true);
+
+      // Upload new avatar
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${groupId}-${Date.now()}.${fileExt}`;
+      const { error: uploadError } = await supabase.storage
+        .from('group-avatars')
+        .upload(fileName, file);
+
+      if (uploadError) throw uploadError;
+
+      const { data: { publicUrl } } = supabase.storage
+        .from('group-avatars')
+        .getPublicUrl(fileName);
+
+      // Update group avatar URL
+      const { error: updateError } = await supabase
+        .from('group_chats')
+        .update({ avatar_url: publicUrl })
+        .eq('id', groupId);
+
+      if (updateError) throw updateError;
+
+      toast({
+        title: "Succès",
+        description: "Photo de groupe mise à jour",
+      });
+
+      await fetchGroupInfo();
+    } catch (error) {
+      console.error('Error updating avatar:', error);
+      toast({
+        title: "Erreur",
+        description: "Impossible de mettre à jour la photo",
+        variant: "destructive",
+      });
+    } finally {
+      setUpdatingAvatar(false);
+    }
+  };
+
+  const handleDeleteAvatar = async () => {
+    try {
+      setUpdatingAvatar(true);
+
+      // Update group to remove avatar URL
+      const { error: updateError } = await supabase
+        .from('group_chats')
+        .update({ avatar_url: null })
+        .eq('id', groupId);
+
+      if (updateError) throw updateError;
+
+      toast({
+        title: "Succès",
+        description: "Photo de groupe supprimée",
+      });
+
+      await fetchGroupInfo();
+      setShowDeleteAvatarConfirm(false);
+    } catch (error) {
+      console.error('Error deleting avatar:', error);
+      toast({
+        title: "Erreur",
+        description: "Impossible de supprimer la photo",
+        variant: "destructive",
+      });
+    } finally {
+      setUpdatingAvatar(false);
     }
   };
 
@@ -282,7 +373,7 @@ export const GroupInfoDialog = ({
         <DialogContent className="sm:max-w-[550px] max-h-[90vh] overflow-hidden flex flex-col">
           <DialogHeader className="space-y-4">
             <div className="flex items-center gap-4">
-              <div className="relative">
+              <div className="relative group/avatar">
                 <Avatar className="h-20 w-20 ring-2 ring-primary/20">
                   <AvatarImage 
                     src={group.avatar_url || undefined} 
@@ -292,6 +383,26 @@ export const GroupInfoDialog = ({
                     <Users className="h-10 w-10 text-primary" />
                   </AvatarFallback>
                 </Avatar>
+                {(group.created_by === currentUserId || members.some(m => m.user_id === currentUserId)) && (
+                  <div className="absolute inset-0 bg-black/60 rounded-full opacity-0 group-hover/avatar:opacity-100 transition-opacity flex items-center justify-center gap-1">
+                    <label htmlFor="group-avatar" className="cursor-pointer">
+                      <Upload className="h-5 w-5 text-white hover:text-primary transition-colors" />
+                    </label>
+                    {group.avatar_url && (
+                      <button onClick={() => setShowDeleteAvatarConfirm(true)}>
+                        <Trash2 className="h-5 w-5 text-white hover:text-destructive transition-colors" />
+                      </button>
+                    )}
+                  </div>
+                )}
+                <input
+                  id="group-avatar"
+                  type="file"
+                  accept="image/*"
+                  onChange={handleAvatarChange}
+                  className="hidden"
+                  disabled={updatingAvatar}
+                />
               </div>
               <div className="flex-1">
                 <DialogTitle className="text-2xl font-bold text-foreground">
@@ -488,6 +599,23 @@ export const GroupInfoDialog = ({
             <AlertDialogCancel>Annuler</AlertDialogCancel>
             <AlertDialogAction onClick={handleLeaveGroup}>
               Quitter
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      <AlertDialog open={showDeleteAvatarConfirm} onOpenChange={setShowDeleteAvatarConfirm}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Supprimer la photo?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Êtes-vous sûr de vouloir supprimer la photo de groupe?
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Annuler</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDeleteAvatar} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+              Supprimer
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

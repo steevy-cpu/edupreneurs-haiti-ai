@@ -637,17 +637,22 @@ const Community = () => {
       .eq("id", conversationId)
       .single();
 
+    console.log('🔍 Conversation info:', conversationInfo);
+
     let userJoinedAt: string | null = null;
     if (conversationInfo?.is_group && conversationInfo.group_id) {
-      const { data: memberData } = await supabase
+      const { data: memberData, error: memberError } = await supabase
         .from("group_members")
         .select("joined_at")
         .eq("group_id", conversationInfo.group_id)
         .eq("user_id", user?.id)
         .single();
       
+      console.log('👤 Member data:', memberData, 'Error:', memberError);
+      
       userJoinedAt = memberData?.joined_at || null;
       console.log('👥 Group conversation detected. User joined at:', userJoinedAt);
+      console.log('📊 User ID:', user?.id, 'Group ID:', conversationInfo.group_id);
     }
 
     // Fetch messages, filtering by join time for group members
@@ -661,11 +666,19 @@ const Community = () => {
     if (userJoinedAt) {
       query = query.gte("created_at", userJoinedAt);
       console.log('📅 Filtering messages from:', userJoinedAt);
+      console.log('🔎 Filter applied: messages.created_at >= ', userJoinedAt);
+    } else if (conversationInfo?.is_group) {
+      console.log('⚠️ No join timestamp found for group member!');
     }
 
-    const { data: messagesData } = await query;
+    const { data: messagesData, error: messagesError } = await query;
     
     console.log('💬 Fetched messages count:', messagesData?.length);
+    console.log('❌ Messages error:', messagesError);
+    if (messagesData && messagesData.length > 0) {
+      console.log('📝 First message created at:', messagesData[0]?.created_at);
+      console.log('📝 Last message created at:', messagesData[messagesData.length - 1]?.created_at);
+    }
 
     if (!messagesData) return;
 
@@ -1868,6 +1881,20 @@ const Community = () => {
               <div className="space-y-2 sm:space-y-4 pb-4 max-w-full">
                 {messages.map((message) => {
                   const isOwn = message.sender_id === user?.id;
+                  const isSystemMessage = message.content.includes('a rejoint le groupe') || message.content.includes('a quitté le groupe');
+                  
+                  // System message rendering (centered)
+                  if (isSystemMessage) {
+                    return (
+                      <div key={message.id} className="flex justify-center px-2">
+                        <div className="bg-muted/50 text-muted-foreground text-xs sm:text-sm px-4 py-2 rounded-full border border-border/50 max-w-[90%] text-center">
+                          {message.content}
+                        </div>
+                      </div>
+                    );
+                  }
+                  
+                  // Regular message rendering
                   return (
                     <div
                       key={message.id}
