@@ -291,14 +291,8 @@ const Community = () => {
 
     console.log('🌐 [Community] Setting up presence listener for user:', user.id);
     
-    // Use the same channel as Layout but as a listener only (no tracking)
-    const channel = supabase.channel('online-users', {
-      config: {
-        presence: {
-          key: `community_${user.id}`, // Unique key to avoid conflicts
-        },
-      },
-    });
+    // Listen to the exact same channel as Layout (no config needed for listening)
+    const channel = supabase.channel('online-users');
 
     channel
       .on('presence', { event: 'sync' }, () => {
