@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useToast } from "@/hooks/use-toast";
-import { Send, ArrowLeft, Search, Smile, Check, CheckCheck, BadgeCheck, Edit2, Trash2, X, MoreVertical, ImageIcon, Download } from "lucide-react";
+import { Send, ArrowLeft, Search, Smile, Check, CheckCheck, BadgeCheck, Edit2, Trash2, X, MoreVertical, ImageIcon, Download, Users } from "lucide-react";
 import { useMessageSounds } from "@/hooks/useMessageSounds";
 import EmojiPicker from "emoji-picker-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
@@ -18,6 +18,7 @@ import { initializePushNotifications } from "@/utils/pushNotifications";
 import { getAvatarUrl } from "@/lib/avatarMap";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { optimizeMediaFile, formatFileSize } from "@/utils/mediaOptimization";
+import { CreateGroupDialog } from "@/components/CreateGroupDialog";
 
 interface Profile {
   id: string;
@@ -28,9 +29,20 @@ interface Profile {
   verified: boolean;
 }
 
+interface GroupChat {
+  id: string;
+  name: string;
+  avatar_url: string | null;
+  description: string | null;
+  created_by: string;
+  member_count?: number;
+}
+
 interface Conversation {
   id: string;
   created_at: string;
+  is_group: boolean;
+  group?: GroupChat;
   otherUser?: Profile;
   lastMessage?: string;
   lastMessageTime?: string;
@@ -108,6 +120,8 @@ const Community = () => {
     }
   });
   const globalPresenceChannelRef = useRef<any>(null);
+  const [showCreateGroup, setShowCreateGroup] = useState(false);
+  const [followers, setFollowers] = useState<Profile[]>([]);
 
   // Save lastSeenTimes to localStorage whenever it changes
   useEffect(() => {
@@ -125,6 +139,7 @@ const Community = () => {
   useEffect(() => {
     if (user) {
       fetchConversations();
+      fetchFollowers();
       subscribeToMessages();
       initializePushNotifications(user.id);
       subscribeToNotifications();
@@ -424,6 +439,7 @@ const Community = () => {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return;
 
+    // Fetch all conversations (both 1-on-1 and group)
     const { data: participations } = await supabase
       .from("conversation_participants")
       .select("conversation_id")
@@ -438,6 +454,42 @@ const Community = () => {
       return;
     }
 
+    // Fetch conversation details including group info
+    const { data: conversationData } = await supabase
+      .from("conversations")
+      .select("id, created_at, is_group, group_id")
+      .in("id", conversationIds);
+
+    // Fetch group details for group conversations
+    const groupIds = conversationData
+      ?.filter(c => c.is_group && c.group_id)
+      .map(c => c.group_id!) || [];
+
+    let groupDetails: any[] = [];
+    if (groupIds.length > 0) {
+      const { data: groups } = await supabase
+        .from("group_chats")
+        .select("*")
+        .in("id", groupIds);
+      
+      // Fetch member counts for each group
+      const { data: memberCounts } = await supabase
+        .from("group_members")
+        .select("group_id")
+        .in("group_id", groupIds);
+      
+      const memberCountMap = new Map<string, number>();
+      memberCounts?.forEach(m => {
+        memberCountMap.set(m.group_id, (memberCountMap.get(m.group_id) || 0) + 1);
+      });
+
+      groupDetails = groups?.map(g => ({
+        ...g,
+        member_count: memberCountMap.get(g.id) || 0
+      })) || [];
+    }
+
+    // Fetch 1-on-1 conversation participants
     const { data: allParticipants } = await supabase
       .from("conversation_participants")
       .select("conversation_id, user_id")
@@ -458,7 +510,7 @@ const Community = () => {
       .in("conversation_id", conversationIds)
       .order("created_at", { ascending: false });
 
-    // Fetch unread counts for each conversation - only messages not sent by current user and not read
+    // Fetch unread counts for each conversation
     const { data: allMessages, error: unreadError } = await supabase
       .from("messages")
       .select("conversation_id, sender_id, read, id")
@@ -468,59 +520,110 @@ const Community = () => {
     
     console.log('📊 Unread messages query:', { allMessages, unreadError, conversationIds });
 
-    // Group conversations by user first (before sorting)
-    const groupedConversations = new Map<string, Conversation>();
-    
+    // Build conversations list
+    const conversations: Conversation[] = [];
+    const groupedByUser = new Map<string, Conversation>();
+
     conversationIds.forEach(convId => {
-      const otherUserId = allParticipants?.find(
-        p => p.conversation_id === convId && p.user_id !== user.id
-      )?.user_id;
-      
-      if (!otherUserId) return;
-      
-      const otherUserProfile = profiles?.find(p => p.user_id === otherUserId);
+      const convInfo = conversationData?.find(c => c.id === convId);
+      if (!convInfo) return;
+
       const lastMsg = lastMessages?.find(m => m.conversation_id === convId);
       const unreadCount = allMessages?.filter(m => m.conversation_id === convId).length || 0;
 
-      const conv: Conversation = {
-        id: convId,
-        created_at: lastMsg?.created_at || "",
-        otherUser: otherUserProfile,
-        lastMessage: lastMsg?.content,
-        lastMessageTime: lastMsg?.created_at,
-        unreadCount,
-      };
-      
-      const existing = groupedConversations.get(otherUserId);
-      if (!existing) {
-        groupedConversations.set(otherUserId, conv);
-      } else {
-        // Keep the most recent conversation and sum unread counts
-        const existingTime = new Date(existing.lastMessageTime || existing.created_at).getTime();
-        const currentTime = new Date(conv.lastMessageTime || conv.created_at).getTime();
-        
-        if (currentTime > existingTime) {
-          groupedConversations.set(otherUserId, {
-            ...conv,
-            unreadCount: (conv.unreadCount || 0) + (existing.unreadCount || 0)
-          });
-        } else {
-          groupedConversations.set(otherUserId, {
-            ...existing,
-            unreadCount: (conv.unreadCount || 0) + (existing.unreadCount || 0)
+      if (convInfo.is_group && convInfo.group_id) {
+        // Group conversation
+        const groupData = groupDetails.find(g => g.id === convInfo.group_id);
+        if (groupData) {
+          conversations.push({
+            id: convId,
+            created_at: lastMsg?.created_at || convInfo.created_at,
+            is_group: true,
+            group: groupData,
+            lastMessage: lastMsg?.content,
+            lastMessageTime: lastMsg?.created_at,
+            unreadCount,
           });
         }
+      } else {
+        // 1-on-1 conversation
+        const otherUserId = allParticipants?.find(
+          p => p.conversation_id === convId && p.user_id !== user.id
+        )?.user_id;
+        
+        if (!otherUserId) return;
+        
+        const otherUserProfile = profiles?.find(p => p.user_id === otherUserId);
+        
+        const conv: Conversation = {
+          id: convId,
+          created_at: lastMsg?.created_at || convInfo.created_at,
+          is_group: false,
+          otherUser: otherUserProfile,
+          lastMessage: lastMsg?.content,
+          lastMessageTime: lastMsg?.created_at,
+          unreadCount,
+        };
+        
+        // Group by user to merge duplicate conversations
+        const existing = groupedByUser.get(otherUserId);
+        if (!existing) {
+          groupedByUser.set(otherUserId, conv);
+        } else {
+          const existingTime = new Date(existing.lastMessageTime || existing.created_at).getTime();
+          const currentTime = new Date(conv.lastMessageTime || conv.created_at).getTime();
+          
+          if (currentTime > existingTime) {
+            groupedByUser.set(otherUserId, {
+              ...conv,
+              unreadCount: (conv.unreadCount || 0) + (existing.unreadCount || 0)
+            });
+          } else {
+            groupedByUser.set(otherUserId, {
+              ...existing,
+              unreadCount: (conv.unreadCount || 0) + (existing.unreadCount || 0)
+            });
+          }
+        }
+        
+        console.log(`💬 Conversation ${convId} with ${otherUserProfile?.full_name}: ${unreadCount} unread`);
       }
-      
-      console.log(`💬 Conversation ${convId} with ${otherUserProfile?.full_name}: ${unreadCount} unread`);
     });
 
-    // Now sort the grouped conversations
-    const sortedConversations = Array.from(groupedConversations.values()).sort((a, b) => 
+    // Combine group and 1-on-1 conversations and sort
+    const allConversations = [...conversations, ...Array.from(groupedByUser.values())];
+    const sortedConversations = allConversations.sort((a, b) => 
       new Date(b.lastMessageTime || b.created_at).getTime() - 
       new Date(a.lastMessageTime || a.created_at).getTime()
     );
+    
     setConversations(sortedConversations);
+  };
+
+  const fetchFollowers = async () => {
+    if (!user) return;
+
+    const { data: followsData } = await supabase
+      .from("follows")
+      .select("following_id")
+      .eq("follower_id", user.id)
+      .eq("status", "accepted");
+
+    if (!followsData) return;
+
+    const followingIds = followsData.map(f => f.following_id);
+    
+    if (followingIds.length === 0) {
+      setFollowers([]);
+      return;
+    }
+
+    const { data: profiles } = await supabase
+      .from("profiles")
+      .select("*")
+      .in("user_id", followingIds);
+
+    setFollowers(profiles || []);
   };
 
   const fetchMessages = async (conversationId: string) => {
@@ -1434,6 +1537,15 @@ const Community = () => {
               <ArrowLeft size={18} className="sm:w-5 sm:h-5" />
             </Button>
             <h1 className="text-lg sm:text-xl font-semibold flex-1">Messages</h1>
+            <Button
+              size="icon"
+              variant="ghost"
+              onClick={() => setShowCreateGroup(true)}
+              className="shrink-0"
+              title="Créer un groupe"
+            >
+              <Users size={18} className="sm:w-5 sm:h-5" />
+            </Button>
             <ThemeToggle />
             <Button
               size="icon"
@@ -1471,45 +1583,70 @@ const Community = () => {
                 >
                   <div className="relative">
                     <Avatar className="h-10 w-10 sm:h-12 sm:w-12 shrink-0">
-                      <AvatarImage src={getAvatarUrl(conv.otherUser?.avatar_url)} />
-                      <AvatarFallback className="bg-gradient-to-br from-primary/20 to-success/20 text-sm sm:text-base">
-                        {(conv.otherUser?.nickname || conv.otherUser?.full_name)?.[0] || "?"}
-                      </AvatarFallback>
+                      {conv.is_group ? (
+                        <>
+                          <AvatarImage src={conv.group?.avatar_url || undefined} />
+                          <AvatarFallback className="bg-gradient-to-br from-primary/20 to-success/20 text-sm sm:text-base">
+                            <Users className="h-5 w-5" />
+                          </AvatarFallback>
+                        </>
+                      ) : (
+                        <>
+                          <AvatarImage src={getAvatarUrl(conv.otherUser?.avatar_url)} />
+                          <AvatarFallback className="bg-gradient-to-br from-primary/20 to-success/20 text-sm sm:text-base">
+                            {(conv.otherUser?.nickname || conv.otherUser?.full_name)?.[0] || "?"}
+                          </AvatarFallback>
+                        </>
+                      )}
                     </Avatar>
-                    {conv.otherUser?.user_id && onlineUsers.has(conv.otherUser.user_id) && (
+                    {!conv.is_group && conv.otherUser?.user_id && onlineUsers.has(conv.otherUser.user_id) && (
                       <div className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 rounded-full border-2 border-background" />
                     )}
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-1.5">
                       <p className="font-semibold truncate text-sm sm:text-base">
-                        {conv.otherUser?.nickname || conv.otherUser?.full_name || "Utilisateur"}
+                        {conv.is_group 
+                          ? conv.group?.name 
+                          : (conv.otherUser?.nickname || conv.otherUser?.full_name || "Utilisateur")
+                        }
                       </p>
-                      {conv.otherUser?.verified && (
+                      {conv.is_group && (
+                        <span className="text-xs text-muted-foreground">
+                          ({conv.group?.member_count} membres)
+                        </span>
+                      )}
+                      {!conv.is_group && conv.otherUser?.verified && (
                         <BadgeCheck className="w-4 h-4 text-primary fill-primary/20 shrink-0" />
                       )}
-                      {conv.otherUser?.user_id && onlineUsers.has(conv.otherUser.user_id) && (
+                      {!conv.is_group && conv.otherUser?.user_id && onlineUsers.has(conv.otherUser.user_id) && (
                         <span className="text-xs text-green-500 font-medium">En ligne</span>
                       )}
                     </div>
                     {(() => {
-                      // Check if the other user is typing in this conversation
-                      const conversationTypingUsers = typingUsers[conv.id] || {};
-                      const otherUserTyping = Object.entries(conversationTypingUsers).some(([key, value]) => {
-                        const presence = Array.isArray(value) ? value[0] : value;
-                        return presence?.typing && presence?.user_id === conv.otherUser?.user_id;
-                      });
+                      if (!conv.is_group) {
+                        // Check if the other user is typing in this conversation
+                        const conversationTypingUsers = typingUsers[conv.id] || {};
+                        const otherUserTyping = Object.entries(conversationTypingUsers).some(([key, value]) => {
+                          const presence = Array.isArray(value) ? value[0] : value;
+                          return presence?.typing && presence?.user_id === conv.otherUser?.user_id;
+                        });
+                        
+                        if (otherUserTyping) {
+                          return (
+                            <div className="flex items-center gap-1 text-muted-foreground text-xs italic">
+                              <span>en train d'écrire</span>
+                              <span className="flex gap-0.5">
+                                <span className="animate-bounce" style={{ animationDelay: '0ms' }}>.</span>
+                                <span className="animate-bounce" style={{ animationDelay: '150ms' }}>.</span>
+                                <span className="animate-bounce" style={{ animationDelay: '300ms' }}>.</span>
+                              </span>
+                            </div>
+                          );
+                        }
+                      }
                       
-                      return otherUserTyping ? (
-                        <div className="flex items-center gap-1 text-muted-foreground text-xs italic">
-                          <span>en train d'écrire</span>
-                          <span className="flex gap-0.5">
-                            <span className="animate-bounce" style={{ animationDelay: '0ms' }}>.</span>
-                            <span className="animate-bounce" style={{ animationDelay: '150ms' }}>.</span>
-                            <span className="animate-bounce" style={{ animationDelay: '300ms' }}>.</span>
-                          </span>
-                        </div>
-                      ) : (
+                      return (
                         <p className="text-xs sm:text-sm text-muted-foreground line-clamp-2">
                           {conv.lastMessage || "Aucun message"}
                         </p>
@@ -1569,54 +1706,89 @@ const Community = () => {
               >
                 <ArrowLeft size={18} className="sm:w-5 sm:h-5" />
               </Button>
-              <Avatar 
-                className="h-9 w-9 sm:h-10 sm:w-10 shrink-0 cursor-pointer hover:opacity-80 transition-opacity"
-                onClick={() => {
-                  const otherUser = conversations.find(c => c.id === selectedConversation)?.otherUser;
-                  if (otherUser) navigate(`/profile/${otherUser.user_id}`);
-                }}
-              >
-                <AvatarImage src={getAvatarUrl(conversations.find(c => c.id === selectedConversation)?.otherUser?.avatar_url)} />
-                <AvatarFallback className="bg-gradient-to-br from-primary/20 to-success/20 text-sm sm:text-base">
-                  {(conversations.find(c => c.id === selectedConversation)?.otherUser?.nickname || conversations.find(c => c.id === selectedConversation)?.otherUser?.full_name)?.[0] || "?"}
-                </AvatarFallback>
-              </Avatar>
-              <div 
-                className="min-w-0 flex-1 cursor-pointer hover:opacity-80 transition-opacity"
-                onClick={() => {
-                  const otherUser = conversations.find(c => c.id === selectedConversation)?.otherUser;
-                  if (otherUser) navigate(`/profile/${otherUser.user_id}`);
-                }}
-              >
-                <div className="flex items-center gap-1.5">
-                  <p className="font-semibold text-sm sm:text-base truncate">
-                    {conversations.find(c => c.id === selectedConversation)?.otherUser?.nickname || conversations.find(c => c.id === selectedConversation)?.otherUser?.full_name || "Utilisateur"}
-                  </p>
-                  {conversations.find(c => c.id === selectedConversation)?.otherUser?.verified && (
-                    <BadgeCheck className="w-4 h-4 text-primary fill-primary/20 shrink-0" />
-                  )}
-                </div>
-                {(() => {
-                  const otherUserId = conversations.find(c => c.id === selectedConversation)?.otherUser?.user_id;
-                  if (!otherUserId) return null;
-                  
-                  if (onlineUsers.has(otherUserId)) {
-                    return (
-                      <p className="text-xs text-green-500 font-medium flex items-center gap-1">
-                        <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
-                        En ligne
-                      </p>
-                    );
-                  } else if (lastSeenTimes[otherUserId]) {
-                    return (
-                      <p className="text-xs text-muted-foreground">
-                        {formatLastSeen(lastSeenTimes[otherUserId])}
-                      </p>
-                    );
-                  }
-                  return null;
-                })()}
-              </div>
+              {(() => {
+                const currentConv = conversations.find(c => c.id === selectedConversation);
+                const isGroup = currentConv?.is_group;
+                
+                return (
+                  <>
+                    <Avatar 
+                      className={`h-9 w-9 sm:h-10 sm:w-10 shrink-0 ${!isGroup ? 'cursor-pointer hover:opacity-80 transition-opacity' : ''}`}
+                      onClick={() => {
+                        if (!isGroup && currentConv?.otherUser) {
+                          navigate(`/profile/${currentConv.otherUser.user_id}`);
+                        }
+                      }}
+                    >
+                      {isGroup ? (
+                        <>
+                          <AvatarImage src={currentConv.group?.avatar_url || undefined} />
+                          <AvatarFallback className="bg-gradient-to-br from-primary/20 to-success/20 text-sm sm:text-base">
+                            <Users className="h-5 w-5" />
+                          </AvatarFallback>
+                        </>
+                      ) : (
+                        <>
+                          <AvatarImage src={getAvatarUrl(currentConv?.otherUser?.avatar_url)} />
+                          <AvatarFallback className="bg-gradient-to-br from-primary/20 to-success/20 text-sm sm:text-base">
+                            {(currentConv?.otherUser?.nickname || currentConv?.otherUser?.full_name)?.[0] || "?"}
+                          </AvatarFallback>
+                        </>
+                      )}
+                    </Avatar>
+                    <div 
+                      className={`min-w-0 flex-1 ${!isGroup ? 'cursor-pointer hover:opacity-80 transition-opacity' : ''}`}
+                      onClick={() => {
+                        if (!isGroup && currentConv?.otherUser) {
+                          navigate(`/profile/${currentConv.otherUser.user_id}`);
+                        }
+                      }}
+                    >
+                      <div className="flex items-center gap-1.5">
+                        <p className="font-semibold text-sm sm:text-base truncate">
+                          {isGroup 
+                            ? currentConv.group?.name 
+                            : (currentConv?.otherUser?.nickname || currentConv?.otherUser?.full_name || "Utilisateur")
+                          }
+                        </p>
+                        {isGroup && (
+                          <span className="text-xs text-muted-foreground">
+                            ({currentConv.group?.member_count} membres)
+                          </span>
+                        )}
+                        {!isGroup && currentConv?.otherUser?.verified && (
+                          <BadgeCheck className="w-4 h-4 text-primary fill-primary/20 shrink-0" />
+                        )}
+                      </div>
+                      {!isGroup && (() => {
+                        const otherUserId = currentConv?.otherUser?.user_id;
+                        if (!otherUserId) return null;
+                        
+                        if (onlineUsers.has(otherUserId)) {
+                          return (
+                            <p className="text-xs text-green-500 font-medium flex items-center gap-1">
+                              <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
+                              En ligne
+                            </p>
+                          );
+                        } else if (lastSeenTimes[otherUserId]) {
+                          return (
+                            <p className="text-xs text-muted-foreground">
+                              {formatLastSeen(lastSeenTimes[otherUserId])}
+                            </p>
+                          );
+                        }
+                        return null;
+                      })()}
+                      {isGroup && currentConv.group?.description && (
+                        <p className="text-xs text-muted-foreground truncate">
+                          {currentConv.group.description}
+                        </p>
+                      )}
+                    </div>
+                  </>
+                );
+              })()}
               
               {/* Three-dot menu in header */}
               <DropdownMenu>
@@ -2154,6 +2326,17 @@ const Community = () => {
           </div>
         )}
       </div>
+      
+      {/* Create Group Dialog */}
+      <CreateGroupDialog
+        open={showCreateGroup}
+        onOpenChange={setShowCreateGroup}
+        followers={followers}
+        onGroupCreated={() => {
+          fetchConversations();
+          setShowCreateGroup(false);
+        }}
+      />
       
       {/* Delete Conversation Confirmation Dialog */}
       <AlertDialog open={!!deleteConversationId} onOpenChange={(open) => !open && setDeleteConversationId(null)}>
