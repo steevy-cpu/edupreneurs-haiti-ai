@@ -98,8 +98,25 @@ const Community = () => {
   const typingTimeoutRef = useRef<any>(null);
   const [typingUsers, setTypingUsers] = useState<Record<string, Record<string, any>>>({});
   const [onlineUsers, setOnlineUsers] = useState<Set<string>>(new Set());
-  const [lastSeenTimes, setLastSeenTimes] = useState<Record<string, string>>({});
+  const [lastSeenTimes, setLastSeenTimes] = useState<Record<string, string>>(() => {
+    // Initialize from localStorage
+    try {
+      const stored = localStorage.getItem('lastSeenTimes');
+      return stored ? JSON.parse(stored) : {};
+    } catch {
+      return {};
+    }
+  });
   const globalPresenceChannelRef = useRef<any>(null);
+
+  // Save lastSeenTimes to localStorage whenever it changes
+  useEffect(() => {
+    try {
+      localStorage.setItem('lastSeenTimes', JSON.stringify(lastSeenTimes));
+    } catch (error) {
+      console.error('Failed to save lastSeenTimes:', error);
+    }
+  }, [lastSeenTimes]);
 
   useEffect(() => {
     checkUser();
@@ -321,13 +338,21 @@ const Community = () => {
           
           // Initialize last seen times for offline users
           setLastSeenTimes(prevTimes => {
+            console.log('🔍 [Community] Current lastSeenTimes:', prevTimes);
             const newTimes = { ...prevTimes };
             conversations.forEach(conv => {
               const otherUserId = conv.otherUser?.user_id;
-              if (otherUserId && !userIds.has(otherUserId) && !newTimes[otherUserId]) {
-                newTimes[otherUserId] = new Date(Date.now() - 300000).toISOString();
+              if (otherUserId && !userIds.has(otherUserId)) {
+                if (!newTimes[otherUserId]) {
+                  // User is offline and we don't have a last seen time, set a default
+                  newTimes[otherUserId] = new Date(Date.now() - 300000).toISOString();
+                  console.log('⏰ [Community] Set default last seen for:', otherUserId);
+                } else {
+                  console.log('✅ [Community] Already have last seen for:', otherUserId, newTimes[otherUserId]);
+                }
               }
             });
+            console.log('📦 [Community] Final lastSeenTimes:', newTimes);
             return newTimes;
           });
         }
