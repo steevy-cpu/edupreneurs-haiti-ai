@@ -679,6 +679,11 @@ const Community = () => {
         async (payload) => {
           console.log('📨 New message received, refreshing conversations:', payload);
           
+          // Play sound if message is from another user
+          if (payload.new.sender_id !== user?.id) {
+            playReceiveSound();
+          }
+          
           // Get the sender's profile for the new message
           const { data: senderProfile } = await supabase
             .from("profiles")
