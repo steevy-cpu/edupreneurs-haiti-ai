@@ -1531,63 +1531,45 @@ const Community = () => {
                                     : "bg-muted"
                                 }`}
                               >
-                                <p className="text-xs sm:text-sm whitespace-pre-wrap break-words overflow-wrap-anywhere">
-                                  {message.content}
-                                </p>
-                                {message.image_url && (
-                                  <div className="mt-2">
-                                    <div className="flex items-center gap-2 mb-1">
-                                      <span className="text-xs font-medium flex items-center gap-1">
-                                        📷 Image
-                                      </span>
-                                      <Button
-                                        size="sm"
-                                        variant="ghost"
-                                        className="h-6 w-6 p-0 hover:bg-background/50 no-reply-trigger"
-                                        onClick={(e) => {
-                                          e.stopPropagation();
-                                          handleDownloadMedia(message.image_url, 'image');
-                                        }}
-                                      >
-                                        <Download size={14} />
-                                      </Button>
-                                    </div>
-                                    <img
-                                      src={message.image_url}
-                                      alt="Image"
-                                      className="rounded-lg w-full max-h-64 object-contain bg-muted/20 cursor-pointer hover:opacity-90 transition-opacity"
+                                <div className="flex items-start justify-between gap-2">
+                                  <p className="text-xs sm:text-sm whitespace-pre-wrap break-words overflow-wrap-anywhere flex-1">
+                                    {message.content}
+                                  </p>
+                                  {(message.image_url || message.video_url) && (
+                                    <Button
+                                      size="sm"
+                                      variant="ghost"
+                                      className="h-6 w-6 p-0 hover:bg-background/50 no-reply-trigger shrink-0"
                                       onClick={(e) => {
                                         e.stopPropagation();
-                                        setFullSizeImage(message.image_url);
+                                        handleDownloadMedia(
+                                          message.image_url || message.video_url, 
+                                          message.image_url ? 'image' : 'video'
+                                        );
                                       }}
-                                    />
-                                  </div>
+                                    >
+                                      <Download size={14} />
+                                    </Button>
+                                  )}
+                                </div>
+                                {message.image_url && (
+                                  <img
+                                    src={message.image_url}
+                                    alt="Image"
+                                    className="mt-2 rounded-lg w-full max-h-64 object-contain bg-muted/20 cursor-pointer hover:opacity-90 transition-opacity"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      setFullSizeImage(message.image_url);
+                                    }}
+                                  />
                                 )}
                                 {message.video_url && (
-                                  <div className="mt-2">
-                                    <div className="flex items-center gap-2 mb-1">
-                                      <span className="text-xs font-medium flex items-center gap-1">
-                                        🎥 Vidéo
-                                      </span>
-                                      <Button
-                                        size="sm"
-                                        variant="ghost"
-                                        className="h-6 w-6 p-0 hover:bg-background/50 no-reply-trigger"
-                                        onClick={(e) => {
-                                          e.stopPropagation();
-                                          handleDownloadMedia(message.video_url, 'video');
-                                        }}
-                                      >
-                                        <Download size={14} />
-                                      </Button>
-                                    </div>
-                                    <video
-                                      src={message.video_url}
-                                      controls
-                                      className="rounded-lg w-full max-h-64 bg-muted/20"
-                                      preload="metadata"
-                                    />
-                                  </div>
+                                  <video
+                                    src={message.video_url}
+                                    controls
+                                    className="mt-2 rounded-lg w-full max-h-64 bg-muted/20"
+                                    preload="metadata"
+                                  />
                                 )}
                               </div>
                               {isOwn && (
