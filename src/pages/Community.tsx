@@ -630,11 +630,38 @@ const Community = () => {
   };
 
   const fetchMessages = async (conversationId: string) => {
-    const { data: messagesData } = await supabase
+    // Get user's join time if this is a group conversation
+    const { data: conversationInfo } = await supabase
+      .from("conversations")
+      .select("is_group, group_id")
+      .eq("id", conversationId)
+      .single();
+
+    let userJoinedAt: string | null = null;
+    if (conversationInfo?.is_group && conversationInfo.group_id) {
+      const { data: memberData } = await supabase
+        .from("group_members")
+        .select("joined_at")
+        .eq("group_id", conversationInfo.group_id)
+        .eq("user_id", user?.id)
+        .single();
+      
+      userJoinedAt = memberData?.joined_at || null;
+    }
+
+    // Fetch messages, filtering by join time for group members
+    let query = supabase
       .from("messages")
       .select("id, content, sender_id, created_at, read, shared_post_id, conversation_id, replied_to_id, image_url, video_url")
       .eq("conversation_id", conversationId)
       .order("created_at", { ascending: true });
+
+    // Only show messages after user joined the group
+    if (userJoinedAt) {
+      query = query.gte("created_at", userJoinedAt);
+    }
+
+    const { data: messagesData } = await query;
 
     if (!messagesData) return;
 
@@ -1419,16 +1446,18 @@ const Community = () => {
 
   const handleDeleteConversation = async (conversationId: string) => {
     try {
+      // Remove user from conversation participants instead of deleting the conversation
       const { error } = await supabase
-        .from("conversations")
+        .from("conversation_participants")
         .delete()
-        .eq("id", conversationId);
+        .eq("conversation_id", conversationId)
+        .eq("user_id", user?.id);
 
       if (error) throw error;
 
       toast({
         title: "Succès",
-        description: "Conversation supprimée",
+        description: "Conversation supprimée de votre liste",
       });
 
       // Clear selection if this conversation was selected
