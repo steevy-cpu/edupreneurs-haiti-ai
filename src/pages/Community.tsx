@@ -292,6 +292,19 @@ const Community = () => {
   const setupGlobalPresenceListener = () => {
     if (!user) return;
 
+    // Check if channel already exists and is active
+    if (globalPresenceChannelRef.current) {
+      const state = globalPresenceChannelRef.current.state;
+      if (state === 'joined') {
+        console.log('✅ [Community] Global presence listener already active');
+        return;
+      } else {
+        console.log('🧹 [Community] Cleaning up stale presence channel, state:', state);
+        supabase.removeChannel(globalPresenceChannelRef.current);
+        globalPresenceChannelRef.current = null;
+      }
+    }
+
     console.log('🌐 [Community] Setting up presence listener for user:', user.id);
     
     // Listen to the exact same channel as Layout (no config needed for listening)
