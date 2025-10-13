@@ -136,7 +136,7 @@ export function CreateGroupDialog({ open, onOpenChange, followers, onGroupCreate
       }
       setProgress(70);
 
-      // Step 5: Create conversation (90%)
+      // Step 5: Create conversation (80%)
       const { data: conversation, error: convError } = await supabase
         .from('conversations')
         .insert({
@@ -147,9 +147,23 @@ export function CreateGroupDialog({ open, onOpenChange, followers, onGroupCreate
         .single();
 
       if (convError) throw convError;
+      setProgress(80);
+
+      // Step 6: Add all participants to conversation (90%)
+      const allParticipantIds = [user.id, ...Array.from(selectedMembers)];
+      const participantEntries = allParticipantIds.map(userId => ({
+        conversation_id: conversation.id,
+        user_id: userId
+      }));
+
+      const { error: participantsError } = await supabase
+        .from('conversation_participants')
+        .insert(participantEntries);
+
+      if (participantsError) throw participantsError;
       setProgress(90);
 
-      // Step 6: Complete (100%)
+      // Step 7: Complete (100%)
       setProgress(100);
       toast.success("Groupe créé avec succès!");
       onGroupCreated();
