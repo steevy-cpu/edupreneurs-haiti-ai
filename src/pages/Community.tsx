@@ -630,54 +630,50 @@ const Community = () => {
   };
 
   const fetchMessages = async (conversationId: string) => {
-    // Get user's join time from conversation_participants (this is updated on each rejoin)
-    const { data: conversationInfo } = await supabase
-      .from("conversations")
-      .select("is_group, group_id")
-      .eq("id", conversationId)
-      .single();
-
-    console.log('🔍 Conversation info:', conversationInfo);
-
-    let userJoinedAt: string | null = null;
+    // NEW APPROACH: Use message ID-based filtering instead of timestamps
+    // This is more reliable and handles rejoin scenarios correctly
     
-    // Get the user's most recent join time from conversation_participants
-    // This table is updated each time a user is added, ensuring fresh timestamps for rejoins
+    // Get the visibility threshold for this user in this conversation
     const { data: participantData, error: participantError } = await supabase
       .from("conversation_participants")
-      .select("joined_at")
+      .select("visible_from_message_id")
       .eq("conversation_id", conversationId)
       .eq("user_id", user?.id)
       .single();
     
     if (participantError) {
-      console.error('❌ Error fetching participant data:', participantError);
-    } else if (participantData) {
-      userJoinedAt = participantData.joined_at;
-      console.log('👥 User joined conversation at:', userJoinedAt);
+      console.error('❌ Error fetching participant visibility:', participantError);
     }
 
-    // Fetch messages, filtering by join time
+    const visibilityThreshold = participantData?.visible_from_message_id;
+    console.log('🔍 Message visibility threshold:', visibilityThreshold || 'ALL MESSAGES');
+
+    // Fetch all messages for this conversation first
     let query = supabase
       .from("messages")
       .select("id, content, sender_id, created_at, read, shared_post_id, conversation_id, replied_to_id, image_url, video_url")
       .eq("conversation_id", conversationId)
       .order("created_at", { ascending: true });
 
-    // Only show messages after user joined (applies to all conversations, especially groups)
-    if (userJoinedAt) {
-      query = query.gte("created_at", userJoinedAt);
-      console.log('📅 Filtering messages created after:', userJoinedAt);
+    const { data: allMessages, error: messagesError } = await query;
+    
+    if (messagesError) {
+      console.error('❌ Messages error:', messagesError);
     }
 
-    const { data: messagesData, error: messagesError } = await query;
-    
-    console.log('💬 Fetched messages count:', messagesData?.length);
-    console.log('❌ Messages error:', messagesError);
-    if (messagesData && messagesData.length > 0) {
-      console.log('📝 First message created at:', messagesData[0]?.created_at);
-      console.log('📝 Last message created at:', messagesData[messagesData.length - 1]?.created_at);
+    // Filter messages on the client side based on visibility threshold
+    let messagesData = allMessages || [];
+    if (visibilityThreshold && allMessages) {
+      // Find the index of the threshold message
+      const thresholdIndex = allMessages.findIndex(m => m.id === visibilityThreshold);
+      if (thresholdIndex !== -1) {
+        // Only show messages AFTER the threshold (not including it)
+        messagesData = allMessages.slice(thresholdIndex + 1);
+        console.log(`📊 Filtered from ${allMessages.length} to ${messagesData.length} messages`);
+      }
     }
+    
+    console.log('💬 Final visible messages count:', messagesData.length);
 
     if (!messagesData) return;
 
@@ -1932,6 +1928,24 @@ const Community = () => {
                   
                   // Regular message rendering
                   return (
+                    <>
+                      {/* System messages like "X a rejoint le groupe" */}
+                      {(message.content.includes('a rejoint le groupe') || 
+                        message.content.includes('a quitté le groupe') ||
+                        message.content.includes('Bienvenue dans')) && (
+                        <div key={message.id} className="flex justify-center my-2 px-2">
+                          <div className="bg-muted/50 rounded-full px-4 py-1.5">
+                            <p className="text-xs text-muted-foreground text-center">
+                              {message.content}
+                            </p>
+                          </div>
+                        </div>
+                      )}
+                      
+                      {/* Regular messages */}
+                      {!message.content.includes('a rejoint le groupe') && 
+                       !message.content.includes('a quitté le groupe') &&
+                       !message.content.includes('Bienvenue dans') && (
                     <div
                       key={message.id}
                       className={`flex ${isOwn ? "justify-end" : "justify-start"} px-2`}
@@ -2274,6 +2288,8 @@ const Community = () => {
                         </div>
                       </div>
                     </div>
+                      )}
+                    </>
                   );
                 })}
                 

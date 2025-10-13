@@ -154,6 +154,15 @@ export const GroupInfoDialog = ({
     try {
       setAddingMember(true);
 
+      // Get the latest message ID to set as visibility threshold
+      const { data: latestMessage } = await supabase
+        .from('messages')
+        .select('id')
+        .eq('conversation_id', conversationId)
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .single();
+
       // Add to group_members
       const { error: memberError } = await supabase
         .from('group_members')
@@ -165,12 +174,14 @@ export const GroupInfoDialog = ({
 
       if (memberError) throw memberError;
 
-      // Add to conversation_participants
+      // Add to conversation_participants with visibility threshold
+      // New members will only see messages AFTER this point
       const { error: participantError } = await supabase
         .from('conversation_participants')
         .insert({
           conversation_id: conversationId,
-          user_id: userId
+          user_id: userId,
+          visible_from_message_id: latestMessage?.id || null
         });
 
       if (participantError) throw participantError;
@@ -325,23 +336,24 @@ export const GroupInfoDialog = ({
 
       if (messageError) throw messageError;
 
-      // Remove from conversation_participants FIRST (this doesn't affect the group itself)
-      const { error: participantError } = await supabase
-        .from('conversation_participants')
-        .delete()
-        .eq('conversation_id', conversationId)
-        .eq('user_id', currentUserId);
-
-      if (participantError) throw participantError;
-
-      // Then remove from group_members
-      const { error: memberError } = await supabase
+      // Remove from group_members first
+      const { error: memberRemoveError } = await supabase
         .from('group_members')
         .delete()
         .eq('group_id', groupId)
         .eq('user_id', currentUserId);
 
-      if (memberError) throw memberError;
+      if (memberRemoveError) throw memberRemoveError;
+
+      // Then remove from conversation_participants
+      // When they rejoin, they'll get a new entry with a fresh visibility threshold
+      const { error: participantRemoveError } = await supabase
+        .from('conversation_participants')
+        .delete()
+        .eq('conversation_id', conversationId)
+        .eq('user_id', currentUserId);
+
+      if (participantRemoveError) throw participantRemoveError;
 
       toast({
         title: "Succès",

@@ -163,7 +163,26 @@ export function CreateGroupDialog({ open, onOpenChange, followers, onGroupCreate
       if (participantsError) throw participantsError;
       setProgress(90);
 
-      // Step 7: Complete (100%)
+      // Step 7: Send welcome message (95%)
+      setProgress(95);
+      const { data: groupData } = await supabase
+        .from('group_chats')
+        .select('name')
+        .eq('id', groupId)
+        .single();
+
+      if (groupData) {
+        await supabase
+          .from('messages')
+          .insert({
+            conversation_id: conversation.id,
+            sender_id: user.id,
+            content: `Bienvenue dans ${groupData.name}`,
+            read: false
+          });
+      }
+
+      // Step 8: Complete (100%)
       setProgress(100);
       toast.success("Groupe créé avec succès!");
       onGroupCreated();

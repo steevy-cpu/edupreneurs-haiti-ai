@@ -20,18 +20,21 @@ export type Database = {
           id: string
           joined_at: string
           user_id: string
+          visible_from_message_id: string | null
         }
         Insert: {
           conversation_id: string
           id?: string
           joined_at?: string
           user_id: string
+          visible_from_message_id?: string | null
         }
         Update: {
           conversation_id?: string
           id?: string
           joined_at?: string
           user_id?: string
+          visible_from_message_id?: string | null
         }
         Relationships: [
           {
