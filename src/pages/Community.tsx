@@ -98,6 +98,7 @@ const Community = () => {
   const typingTimeoutRef = useRef<any>(null);
   const [typingUsers, setTypingUsers] = useState<Record<string, Record<string, any>>>({});
   const [onlineUsers, setOnlineUsers] = useState<Set<string>>(new Set());
+  const [lastSeenTimes, setLastSeenTimes] = useState<Record<string, string>>({});
   const globalPresenceChannelRef = useRef<any>(null);
 
   useEffect(() => {
@@ -321,7 +322,14 @@ const Community = () => {
         setOnlineUsers(prev => {
           const updated = new Set(prev);
           leftPresences.forEach((p: any) => {
-            if (p.user_id) updated.delete(p.user_id);
+            if (p.user_id) {
+              updated.delete(p.user_id);
+              // Store last seen time
+              setLastSeenTimes(prevTimes => ({
+                ...prevTimes,
+                [p.user_id]: new Date().toISOString()
+              }));
+            }
           });
           return updated;
         });
@@ -1285,6 +1293,26 @@ const Community = () => {
     return date.toLocaleDateString("fr-FR", { day: "numeric", month: "short" });
   };
 
+  const formatLastSeen = (timestamp: string) => {
+    const date = new Date(timestamp);
+    const now = new Date();
+    const diff = now.getTime() - date.getTime();
+    const minutes = Math.floor(diff / 60000);
+    const hours = Math.floor(diff / 3600000);
+    const days = Math.floor(diff / 86400000);
+
+    if (minutes < 1) return "Vu à l'instant";
+    if (minutes < 60) return `Vu il y a ${minutes}min`;
+    if (hours < 24) return `Vu il y a ${hours}h`;
+    if (days === 1) return "Vu hier";
+    if (days < 7) return `Vu il y a ${days}j`;
+    
+    return `Vu le ${date.toLocaleDateString('fr-FR', { 
+      day: 'numeric', 
+      month: 'short' 
+    })}`;
+  };
+
   return (
     <div className="fixed inset-0 bg-background flex overflow-hidden pb-16 md:pb-0">
       {/* Conversations List */}
@@ -1464,12 +1492,23 @@ const Community = () => {
                 </div>
                 {(() => {
                   const otherUserId = conversations.find(c => c.id === selectedConversation)?.otherUser?.user_id;
-                  return otherUserId && onlineUsers.has(otherUserId) && (
-                    <p className="text-xs text-green-500 font-medium flex items-center gap-1">
-                      <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
-                      En ligne
-                    </p>
-                  );
+                  if (!otherUserId) return null;
+                  
+                  if (onlineUsers.has(otherUserId)) {
+                    return (
+                      <p className="text-xs text-green-500 font-medium flex items-center gap-1">
+                        <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
+                        En ligne
+                      </p>
+                    );
+                  } else if (lastSeenTimes[otherUserId]) {
+                    return (
+                      <p className="text-xs text-muted-foreground">
+                        {formatLastSeen(lastSeenTimes[otherUserId])}
+                      </p>
+                    );
+                  }
+                  return null;
                 })()}
               </div>
               
