@@ -292,10 +292,13 @@ const Community = () => {
   const setupGlobalPresenceListener = () => {
     if (!user) return;
 
-    // If we already have a listener, don't create another one
+    // Only skip if channel exists AND is still subscribed
     if (globalPresenceChannelRef.current) {
-      console.log('✅ [Community] Global presence listener already exists');
-      return;
+      const state = globalPresenceChannelRef.current.state;
+      if (state === 'joined' || state === 'joining') {
+        console.log('✅ [Community] Global presence listener already active, state:', state);
+        return;
+      }
     }
 
     console.log('🌐 [Community] Setting up presence listener for user:', user.id);
