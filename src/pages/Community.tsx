@@ -292,27 +292,23 @@ const Community = () => {
   const setupGlobalPresenceListener = () => {
     if (!user) return;
 
-    // Check if channel already exists and is active
-    if (globalPresenceChannelRef.current) {
-      const state = globalPresenceChannelRef.current.state;
-      if (state === 'joined') {
-        console.log('✅ [Community] Global presence listener already active');
-        return;
-      } else {
-        console.log('🧹 [Community] Cleaning up stale presence channel, state:', state);
-        supabase.removeChannel(globalPresenceChannelRef.current);
-        globalPresenceChannelRef.current = null;
-      }
-    }
-
     console.log('🌐 [Community] Setting up presence listener for user:', user.id);
     
-    // Listen to the exact same channel as Layout (no config needed for listening)
-    const channel = supabase.channel('online-users');
+    // Get the existing channel that Layout created - don't create a new one
+    const existingChannels = supabase.getChannels();
+    const onlineUsersChannel = existingChannels.find(ch => ch.topic === 'realtime:online-users');
+    
+    if (!onlineUsersChannel) {
+      console.warn('⚠️ [Community] No online-users channel found from Layout');
+      return;
+    }
 
-    channel
+    console.log('✅ [Community] Found existing online-users channel from Layout');
+    
+    // Use the existing channel to listen to presence
+    onlineUsersChannel
       .on('presence', { event: 'sync' }, () => {
-        const state = channel.presenceState();
+        const state = onlineUsersChannel.presenceState();
         console.log('🔄 [Community] Presence sync:', state);
         const userIds = new Set<string>();
         Object.values(state).forEach((presences: any) => {
@@ -326,12 +322,10 @@ const Community = () => {
         // Initialize last seen times for users who are offline
         setLastSeenTimes(prevTimes => {
           const newTimes = { ...prevTimes };
-          // For each conversation user who is NOT online, set a default last seen if not already set
           conversations.forEach(conv => {
             const otherUserId = conv.otherUser?.user_id;
             if (otherUserId && !userIds.has(otherUserId) && !newTimes[otherUserId]) {
-              // Set to a past time if we don't have one (will show as "il y a X" based on actual activity)
-              newTimes[otherUserId] = new Date(Date.now() - 300000).toISOString(); // 5 minutes ago as default
+              newTimes[otherUserId] = new Date(Date.now() - 300000).toISOString();
             }
           });
           return newTimes;
@@ -369,12 +363,10 @@ const Community = () => {
             }));
           }
         });
-      })
-      .subscribe((status) => {
-        console.log('📡 [Community] Listener channel status:', status);
       });
 
-    globalPresenceChannelRef.current = channel;
+    // Store reference but don't manage lifecycle - Layout handles that
+    globalPresenceChannelRef.current = onlineUsersChannel;
   };
 
   const checkUser = async () => {
