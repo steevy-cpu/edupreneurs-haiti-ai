@@ -647,6 +647,7 @@ const Community = () => {
         .single();
       
       userJoinedAt = memberData?.joined_at || null;
+      console.log('👥 Group conversation detected. User joined at:', userJoinedAt);
     }
 
     // Fetch messages, filtering by join time for group members
@@ -659,9 +660,12 @@ const Community = () => {
     // Only show messages after user joined the group
     if (userJoinedAt) {
       query = query.gte("created_at", userJoinedAt);
+      console.log('📅 Filtering messages from:', userJoinedAt);
     }
 
     const { data: messagesData } = await query;
+    
+    console.log('💬 Fetched messages count:', messagesData?.length);
 
     if (!messagesData) return;
 

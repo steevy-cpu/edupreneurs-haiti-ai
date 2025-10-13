@@ -221,7 +221,20 @@ export const GroupInfoDialog = ({
 
       const userName = userProfile.nickname || userProfile.full_name;
 
-      // Remove from group_members
+      // IMPORTANT: Insert the system message BEFORE removing user from participants
+      // Otherwise RLS policy will block the insert
+      const { error: messageError } = await supabase
+        .from('messages')
+        .insert({
+          conversation_id: conversationId,
+          sender_id: currentUserId,
+          content: `${userName} a quitté le groupe`,
+          read: false
+        });
+
+      if (messageError) throw messageError;
+
+      // Now remove from group_members
       const { error: memberError } = await supabase
         .from('group_members')
         .delete()
@@ -238,18 +251,6 @@ export const GroupInfoDialog = ({
         .eq('user_id', currentUserId);
 
       if (participantError) throw participantError;
-
-      // Create system message in the conversation
-      const { error: messageError } = await supabase
-        .from('messages')
-        .insert({
-          conversation_id: conversationId,
-          sender_id: currentUserId,
-          content: `${userName} a quitté le groupe`,
-          read: false
-        });
-
-      if (messageError) throw messageError;
 
       toast({
         title: "Succès",
