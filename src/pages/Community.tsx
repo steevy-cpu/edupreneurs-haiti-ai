@@ -97,6 +97,8 @@ const Community = () => {
   const presenceChannelsRef = useRef<Record<string, any>>({});
   const typingTimeoutRef = useRef<any>(null);
   const [typingUsers, setTypingUsers] = useState<Record<string, Record<string, any>>>({});
+  const [onlineUsers, setOnlineUsers] = useState<Set<string>>(new Set());
+  const globalPresenceChannelRef = useRef<any>(null);
 
   useEffect(() => {
     checkUser();
@@ -108,7 +110,14 @@ const Community = () => {
       subscribeToMessages();
       initializePushNotifications(user.id);
       subscribeToNotifications();
+      setupGlobalPresence();
     }
+    
+    return () => {
+      if (globalPresenceChannelRef.current) {
+        supabase.removeChannel(globalPresenceChannelRef.current);
+      }
+    };
   }, [user]);
 
   // Refresh conversations when page becomes visible
@@ -259,6 +268,54 @@ const Community = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   };
 
+  const setupGlobalPresence = () => {
+    if (!user) return;
+
+    console.log('🌐 Setting up global presence tracking for user:', user.id);
+    
+    const channel = supabase.channel('online-users', {
+      config: {
+        presence: {
+          key: user.id,
+        },
+      },
+    });
+
+    channel
+      .on('presence', { event: 'sync' }, () => {
+        const state = channel.presenceState();
+        console.log('👥 Presence sync:', state);
+        
+        const online = new Set<string>();
+        Object.values(state).forEach((presences: any) => {
+          presences.forEach((presence: any) => {
+            if (presence.user_id) {
+              online.add(presence.user_id);
+            }
+          });
+        });
+        
+        console.log('✅ Online users:', Array.from(online));
+        setOnlineUsers(online);
+      })
+      .on('presence', { event: 'join' }, ({ key, newPresences }) => {
+        console.log('👋 User joined:', key, newPresences);
+      })
+      .on('presence', { event: 'leave' }, ({ key, leftPresences }) => {
+        console.log('👋 User left:', key, leftPresences);
+      })
+      .subscribe(async (status) => {
+        if (status === 'SUBSCRIBED') {
+          console.log('✅ Subscribed to presence, tracking user:', user.id);
+          await channel.track({
+            user_id: user.id,
+            online_at: new Date().toISOString(),
+          });
+        }
+      });
+
+    globalPresenceChannelRef.current = channel;
+  };
 
   const checkUser = async () => {
     const { data: { user } } = await supabase.auth.getUser();
@@ -1246,12 +1303,17 @@ const Community = () => {
                   className="flex items-center gap-2 sm:gap-3 flex-1 min-w-0"
                   onClick={() => setSelectedConversation(conv.id)}
                 >
-                  <Avatar className="h-10 w-10 sm:h-12 sm:w-12 shrink-0">
-                    <AvatarImage src={getAvatarUrl(conv.otherUser?.avatar_url)} />
-                    <AvatarFallback className="bg-gradient-to-br from-primary/20 to-success/20 text-sm sm:text-base">
-                      {(conv.otherUser?.nickname || conv.otherUser?.full_name)?.[0] || "?"}
-                    </AvatarFallback>
-                  </Avatar>
+                  <div className="relative">
+                    <Avatar className="h-10 w-10 sm:h-12 sm:w-12 shrink-0">
+                      <AvatarImage src={getAvatarUrl(conv.otherUser?.avatar_url)} />
+                      <AvatarFallback className="bg-gradient-to-br from-primary/20 to-success/20 text-sm sm:text-base">
+                        {(conv.otherUser?.nickname || conv.otherUser?.full_name)?.[0] || "?"}
+                      </AvatarFallback>
+                    </Avatar>
+                    {conv.otherUser?.user_id && onlineUsers.has(conv.otherUser.user_id) && (
+                      <div className="absolute bottom-0 right-0 w-3 h-3 bg-success rounded-full border-2 border-background" />
+                    )}
+                  </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-1.5">
                       <p className="font-semibold truncate text-sm sm:text-base">
@@ -1259,6 +1321,9 @@ const Community = () => {
                       </p>
                       {conv.otherUser?.verified && (
                         <BadgeCheck className="w-4 h-4 text-primary fill-primary/20 shrink-0" />
+                      )}
+                      {conv.otherUser?.user_id && onlineUsers.has(conv.otherUser.user_id) && (
+                        <span className="text-xs text-success font-medium">En ligne</span>
                       )}
                     </div>
                     {(() => {
@@ -1365,6 +1430,15 @@ const Community = () => {
                     <BadgeCheck className="w-4 h-4 text-primary fill-primary/20 shrink-0" />
                   )}
                 </div>
+                {(() => {
+                  const otherUserId = conversations.find(c => c.id === selectedConversation)?.otherUser?.user_id;
+                  return otherUserId && onlineUsers.has(otherUserId) && (
+                    <p className="text-xs text-success font-medium flex items-center gap-1">
+                      <span className="w-2 h-2 bg-success rounded-full animate-pulse" />
+                      En ligne
+                    </p>
+                  );
+                })()}
               </div>
               
               {/* Three-dot menu in header */}
