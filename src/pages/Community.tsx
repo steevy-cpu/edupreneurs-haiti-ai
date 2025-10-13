@@ -292,15 +292,6 @@ const Community = () => {
   const setupGlobalPresenceListener = () => {
     if (!user) return;
 
-    // Only skip if channel exists AND is still subscribed
-    if (globalPresenceChannelRef.current) {
-      const state = globalPresenceChannelRef.current.state;
-      if (state === 'joined' || state === 'joining') {
-        console.log('✅ [Community] Global presence listener already active, state:', state);
-        return;
-      }
-    }
-
     console.log('🌐 [Community] Setting up presence listener for user:', user.id);
     
     // Listen to the exact same channel as Layout (no config needed for listening)
