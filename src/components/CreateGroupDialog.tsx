@@ -101,42 +101,39 @@ export function CreateGroupDialog({ open, onOpenChange, followers, onGroupCreate
         setProgress(30);
       }
 
-      // Step 3: Create group (50%)
+      // Step 3: Create group using secure function (50%)
       setProgress(40);
-      console.log("Creating group with user_id:", user.id);
+      console.log("Creating group with secure function");
       
-      const { data: group, error: groupError } = await supabase
-        .from('group_chats')
-        .insert({
-          name: groupName,
-          description: description || null,
-          avatar_url: avatarUrl,
-          created_by: user.id
-        })
-        .select()
-        .single();
+      const { data: groupId, error: groupError } = await supabase
+        .rpc('create_group_chat', {
+          p_name: groupName,
+          p_description: description || null,
+          p_avatar_url: avatarUrl
+        });
 
       if (groupError) {
         console.error("Group creation error:", groupError);
         throw groupError;
       }
       
-      console.log("Group created successfully:", group.id);
+      console.log("Group created successfully:", groupId);
       setProgress(50);
 
-      // Step 4: Add members (70%)
-      const members = [
-        { group_id: group.id, user_id: user.id, role: 'admin' },
-        ...Array.from(selectedMembers).map(userId => ({
-          group_id: group.id,
+      // Step 4: Add additional members (70%)
+      if (selectedMembers.size > 0) {
+        const members = Array.from(selectedMembers).map(userId => ({
+          group_id: groupId,
           user_id: userId,
           role: 'member'
-        }))
-      ];
+        }));
 
-      const { error: membersError } = await supabase
-        .from('group_members')
-        .insert(members);
+        const { error: membersError } = await supabase
+          .from('group_members')
+          .insert(members);
+
+        if (membersError) throw membersError;
+      }
 
       if (membersError) throw membersError;
       setProgress(70);
@@ -146,7 +143,7 @@ export function CreateGroupDialog({ open, onOpenChange, followers, onGroupCreate
         .from('conversations')
         .insert({
           is_group: true,
-          group_id: group.id
+          group_id: groupId
         })
         .select()
         .single();

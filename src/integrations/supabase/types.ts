@@ -680,6 +680,10 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: string
       }
+      create_group_chat: {
+        Args: { p_avatar_url?: string; p_description?: string; p_name: string }
+        Returns: string
+      }
       generate_referral_code: {
         Args: Record<PropertyKey, never>
         Returns: string
