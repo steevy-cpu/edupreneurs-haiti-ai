@@ -1479,56 +1479,20 @@ const Community = () => {
 
   const handleDeleteConversation = async (conversationId: string) => {
     try {
-      // Check if this is a group conversation
-      const { data: conversationData, error: convError } = await supabase
-        .from('conversations')
-        .select('is_group, group_id')
-        .eq('id', conversationId)
-        .single();
+      // For both group and 1-on-1 conversations, just remove from participants
+      // This hides the conversation from the user's list without leaving the group
+      const { error } = await supabase
+        .from("conversation_participants")
+        .delete()
+        .eq("conversation_id", conversationId)
+        .eq("user_id", user?.id);
 
-      if (convError) throw convError;
+      if (error) throw error;
 
-      if (conversationData?.is_group && conversationData.group_id) {
-        // For group conversations, remove user from both tables
-        // This makes them "leave" the group without deleting it for others
-        
-        // Remove from conversation_participants
-        const { error: participantError } = await supabase
-          .from("conversation_participants")
-          .delete()
-          .eq("conversation_id", conversationId)
-          .eq("user_id", user?.id);
-
-        if (participantError) throw participantError;
-
-        // Remove from group_members
-        const { error: memberError } = await supabase
-          .from("group_members")
-          .delete()
-          .eq("group_id", conversationData.group_id)
-          .eq("user_id", user?.id);
-
-        if (memberError) throw memberError;
-
-        toast({
-          title: "Succès",
-          description: "Vous avez quitté le groupe",
-        });
-      } else {
-        // For 1-on-1 conversations, just remove from participants
-        const { error } = await supabase
-          .from("conversation_participants")
-          .delete()
-          .eq("conversation_id", conversationId)
-          .eq("user_id", user?.id);
-
-        if (error) throw error;
-
-        toast({
-          title: "Succès",
-          description: "Conversation supprimée de votre liste",
-        });
-      }
+      toast({
+        title: "Succès",
+        description: "Conversation supprimée de votre liste",
+      });
 
       // Clear selection if this conversation was selected
       if (selectedConversation === conversationId) {
