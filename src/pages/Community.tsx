@@ -523,9 +523,9 @@ const Community = () => {
     
     console.log('📊 Unread messages query:', { allMessages, unreadError, conversationIds });
 
-    // Build conversations list
-    const conversations: Conversation[] = [];
+    // Build conversations list - deduplicate both group and 1-on-1
     const groupedByUser = new Map<string, Conversation>();
+    const groupedByGroup = new Map<string, Conversation>();
 
     conversationIds.forEach(convId => {
       const convInfo = conversationData?.find(c => c.id === convId);
@@ -535,10 +535,10 @@ const Community = () => {
       const unreadCount = allMessages?.filter(m => m.conversation_id === convId).length || 0;
 
       if (convInfo.is_group && convInfo.group_id) {
-        // Group conversation
+        // Group conversation - deduplicate by group_id
         const groupData = groupDetails.find(g => g.id === convInfo.group_id);
         if (groupData) {
-          conversations.push({
+          const conv: Conversation = {
             id: convId,
             created_at: lastMsg?.created_at || convInfo.created_at,
             is_group: true,
@@ -546,7 +546,28 @@ const Community = () => {
             lastMessage: lastMsg?.content,
             lastMessageTime: lastMsg?.created_at,
             unreadCount,
-          });
+          };
+          
+          // Deduplicate by group_id - keep the most recent conversation
+          const existing = groupedByGroup.get(convInfo.group_id);
+          if (!existing) {
+            groupedByGroup.set(convInfo.group_id, conv);
+          } else {
+            const existingTime = new Date(existing.lastMessageTime || existing.created_at).getTime();
+            const currentTime = new Date(conv.lastMessageTime || conv.created_at).getTime();
+            
+            if (currentTime > existingTime) {
+              groupedByGroup.set(convInfo.group_id, {
+                ...conv,
+                unreadCount: (conv.unreadCount || 0) + (existing.unreadCount || 0)
+              });
+            } else {
+              groupedByGroup.set(convInfo.group_id, {
+                ...existing,
+                unreadCount: (conv.unreadCount || 0) + (existing.unreadCount || 0)
+              });
+            }
+          }
         }
       } else {
         // 1-on-1 conversation
@@ -594,7 +615,7 @@ const Community = () => {
     });
 
     // Combine group and 1-on-1 conversations and sort
-    const allConversations = [...conversations, ...Array.from(groupedByUser.values())];
+    const allConversations = [...Array.from(groupedByGroup.values()), ...Array.from(groupedByUser.values())];
     const sortedConversations = allConversations.sort((a, b) => 
       new Date(b.lastMessageTime || b.created_at).getTime() - 
       new Date(a.lastMessageTime || a.created_at).getTime()
