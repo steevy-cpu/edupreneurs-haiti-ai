@@ -115,10 +115,12 @@ const Community = () => {
     
     return () => {
       if (globalPresenceChannelRef.current) {
+        console.log('🧹 [Community] Cleaning up global presence channel');
         supabase.removeChannel(globalPresenceChannelRef.current);
+        globalPresenceChannelRef.current = null;
       }
     };
-  }, [user]);
+  }, [user?.id]);
 
   // Refresh conversations when page becomes visible
   useEffect(() => {
@@ -271,26 +273,29 @@ const Community = () => {
   const setupGlobalPresenceListener = () => {
     if (!user) return;
 
+    // Clean up existing channel before creating a new one
+    if (globalPresenceChannelRef.current) {
+      console.log('🧹 [Community] Removing existing presence channel before setup');
+      supabase.removeChannel(globalPresenceChannelRef.current);
+      globalPresenceChannelRef.current = null;
+    }
+
     console.log('🌐 [Community] Setting up presence listener for user:', user.id);
     
     const channel = supabase.channel('online-users');
+    let hasTracked = false;
 
     channel
       .on('presence', { event: 'sync' }, () => {
         const state = channel.presenceState();
-        console.log('👥 [Community] Presence sync:', state);
-        
-        const online = new Set<string>();
+        console.log('🔄 [Community] Presence sync:', state);
+        const userIds = new Set<string>();
         Object.values(state).forEach((presences: any) => {
-          presences.forEach((presence: any) => {
-            if (presence.user_id) {
-              online.add(presence.user_id);
-            }
+          presences.forEach((p: any) => {
+            if (p.user_id) userIds.add(p.user_id);
           });
         });
-        
-        console.log('✅ [Community] Online users:', Array.from(online));
-        setOnlineUsers(online);
+        setOnlineUsers(userIds);
       })
       .on('presence', { event: 'join' }, ({ key, newPresences }) => {
         console.log('👋 [Community] User joined:', key, newPresences);
@@ -315,7 +320,8 @@ const Community = () => {
       .subscribe(async (status) => {
         console.log('📡 [Community] Listener channel status:', status);
         
-        if (status === 'SUBSCRIBED') {
+        if (status === 'SUBSCRIBED' && !hasTracked) {
+          hasTracked = true;
           const trackStatus = await channel.track({
             user_id: user.id,
             online_at: new Date().toISOString()
