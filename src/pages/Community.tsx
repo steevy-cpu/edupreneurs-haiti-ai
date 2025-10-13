@@ -140,16 +140,6 @@ const Community = () => {
     return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
   }, [user]);
 
-  // Periodically refresh to update "last seen" times display
-  useEffect(() => {
-    const interval = setInterval(() => {
-      // Force a re-render to update the relative time display
-      setLastSeenTimes(prev => ({ ...prev }));
-    }, 30000); // Update every 30 seconds
-    
-    return () => clearInterval(interval);
-  }, []);
-
 
   const subscribeToNotifications = () => {
     if (!user) return;
@@ -369,10 +359,15 @@ const Community = () => {
                   // Track who went offline
                   prev.forEach(userId => {
                     if (!userIds.has(userId)) {
-                      setLastSeenTimes(prevTimes => ({
-                        ...prevTimes,
-                        [userId]: new Date().toISOString()
-                      }));
+                      console.log('📴 [Community] User went offline:', userId);
+                      setLastSeenTimes(prevTimes => {
+                        const newTimes = {
+                          ...prevTimes,
+                          [userId]: new Date().toISOString()
+                        };
+                        console.log('⏰ [Community] Updated lastSeenTimes:', newTimes);
+                        return newTimes;
+                      });
                     }
                   });
                   
@@ -1370,21 +1365,33 @@ const Community = () => {
   const formatLastSeen = (timestamp: string) => {
     const date = new Date(timestamp);
     const now = new Date();
-    const diff = now.getTime() - date.getTime();
-    const minutes = Math.floor(diff / 60000);
-    const hours = Math.floor(diff / 3600000);
-    const days = Math.floor(diff / 86400000);
-
-    if (minutes < 1) return "Dernière connexion à l'instant";
-    if (minutes < 60) return `Dernière connexion il y a ${minutes}min`;
-    if (hours < 24) return `Dernière connexion il y a ${hours}h`;
-    if (days === 1) return "Dernière connexion hier";
-    if (days < 7) return `Dernière connexion il y a ${days}j`;
+    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const messageDate = new Date(date.getFullYear(), date.getMonth(), date.getDate());
     
-    return `Dernière connexion le ${date.toLocaleDateString('fr-FR', { 
+    const time = date.toLocaleTimeString('fr-FR', { 
+      hour: 'numeric', 
+      minute: '2-digit',
+      hour12: false 
+    });
+    
+    // If today, show "Dernière connexion à HH:MM"
+    if (messageDate.getTime() === today.getTime()) {
+      return `Dernière connexion à ${time}`;
+    }
+    
+    // If yesterday
+    const yesterday = new Date(today);
+    yesterday.setDate(yesterday.getDate() - 1);
+    if (messageDate.getTime() === yesterday.getTime()) {
+      return `Dernière connexion hier à ${time}`;
+    }
+    
+    // For older dates, show date and time
+    const dateStr = date.toLocaleDateString('fr-FR', { 
       day: 'numeric', 
       month: 'short' 
-    })}`;
+    });
+    return `Dernière connexion le ${dateStr} à ${time}`;
   };
 
   return (
