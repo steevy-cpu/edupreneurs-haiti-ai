@@ -12,6 +12,7 @@ import EmojiPicker from "emoji-picker-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
+import { Dialog, DialogContent, DialogTitle, DialogHeader } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
 import { initializePushNotifications } from "@/utils/pushNotifications";
 import { getAvatarUrl } from "@/lib/avatarMap";
@@ -83,6 +84,7 @@ const Community = () => {
   const [selectedMediaFile, setSelectedMediaFile] = useState<File | null>(null);
   const [mediaPreview, setMediaPreview] = useState<string | null>(null);
   const [mediaType, setMediaType] = useState<'image' | 'video' | null>(null);
+  const [fullSizeImage, setFullSizeImage] = useState<string | null>(null);
   const [reactions, setReactions] = useState<Record<string, Reaction[]>>({});
   const [showReactionPicker, setShowReactionPicker] = useState<string | null>(null);
   const [editingMessageId, setEditingMessageId] = useState<string | null>(null);
@@ -673,11 +675,19 @@ const Community = () => {
       setSelectedMediaFile(optimizedFile);
       setMediaType(mediaType);
 
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setMediaPreview(reader.result as string);
-      };
-      reader.readAsDataURL(optimizedFile);
+      // For images, use FileReader for preview
+      // For videos, use createObjectURL for instant preview (much faster)
+      if (isImage) {
+        const reader = new FileReader();
+        reader.onloadend = () => {
+          setMediaPreview(reader.result as string);
+        };
+        reader.readAsDataURL(optimizedFile);
+      } else {
+        // For videos, createObjectURL is instant (no file reading needed)
+        const videoUrl = URL.createObjectURL(optimizedFile);
+        setMediaPreview(videoUrl);
+      }
 
       if (isImage && savings > 10) {
         toast({
@@ -688,8 +698,8 @@ const Community = () => {
         const sizeInMB = optimizedSize / (1024 * 1024);
         if (sizeInMB > 10) {
           toast({
-            title: "Vidéo volumineuse",
-            description: `Taille: ${formatFileSize(optimizedSize)}. La compression peut prendre du temps lors de l'envoi.`,
+            title: "Vidéo prête",
+            description: `Taille: ${formatFileSize(optimizedSize)}. Prête à être envoyée!`,
           });
         }
       }
@@ -705,6 +715,10 @@ const Community = () => {
   };
 
   const clearMedia = () => {
+    // Revoke object URL if it was created for video preview
+    if (mediaPreview && mediaType === 'video') {
+      URL.revokeObjectURL(mediaPreview);
+    }
     setSelectedMediaFile(null);
     setMediaPreview(null);
     setMediaType(null);
@@ -1413,7 +1427,11 @@ const Community = () => {
                                 <img
                                   src={message.shared_post.image_url}
                                   alt="Post"
-                                  className="rounded-lg w-full max-h-48 object-contain bg-muted/20"
+                                  className="rounded-lg w-full max-h-48 object-contain bg-muted/20 cursor-pointer hover:opacity-90 transition-opacity"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    setFullSizeImage(message.shared_post.image_url);
+                                  }}
                                 />
                               )}
                               <p className="text-xs opacity-70 mt-2">Cliquez pour voir le post</p>
@@ -1471,7 +1489,11 @@ const Community = () => {
                                   <img
                                     src={message.image_url}
                                     alt="Image"
-                                    className="mt-2 rounded-lg w-full max-h-64 object-contain bg-muted/20"
+                                    className="mt-2 rounded-lg w-full max-h-64 object-contain bg-muted/20 cursor-pointer hover:opacity-90 transition-opacity"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      setFullSizeImage(message.image_url);
+                                    }}
                                   />
                                 )}
                                 {message.video_url && (
@@ -1822,9 +1844,25 @@ const Community = () => {
             >
               Supprimer
             </AlertDialogAction>
-          </AlertDialogFooter>
+           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* Full-size Image Viewer Dialog */}
+      <Dialog open={!!fullSizeImage} onOpenChange={() => setFullSizeImage(null)}>
+        <DialogContent className="max-w-[95vw] max-h-[95vh] p-2">
+          <DialogHeader>
+            <DialogTitle className="sr-only">Image en taille réelle</DialogTitle>
+          </DialogHeader>
+          {fullSizeImage && (
+            <img
+              src={fullSizeImage}
+              alt="Image en taille réelle"
+              className="w-full h-full object-contain rounded-lg"
+            />
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
