@@ -136,6 +136,17 @@ const Community = () => {
     return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
   }, [user]);
 
+  // Periodically refresh to update "last seen" times display
+  useEffect(() => {
+    const interval = setInterval(() => {
+      // Force a re-render to update the relative time display
+      setLastSeenTimes(prev => ({ ...prev }));
+    }, 30000); // Update every 30 seconds
+    
+    return () => clearInterval(interval);
+  }, []);
+
+
   const subscribeToNotifications = () => {
     if (!user) return;
 
@@ -306,6 +317,20 @@ const Community = () => {
         });
         console.log('👥 [Community] Online users:', Array.from(userIds));
         setOnlineUsers(userIds);
+        
+        // Initialize last seen times for users who are offline
+        setLastSeenTimes(prevTimes => {
+          const newTimes = { ...prevTimes };
+          // For each conversation user who is NOT online, set a default last seen if not already set
+          conversations.forEach(conv => {
+            const otherUserId = conv.otherUser?.user_id;
+            if (otherUserId && !userIds.has(otherUserId) && !newTimes[otherUserId]) {
+              // Set to a past time if we don't have one (will show as "il y a X" based on actual activity)
+              newTimes[otherUserId] = new Date(Date.now() - 300000).toISOString(); // 5 minutes ago as default
+            }
+          });
+          return newTimes;
+        });
       })
       .on('presence', { event: 'join' }, ({ key, newPresences }) => {
         console.log('👋 [Community] User joined:', key, newPresences);
@@ -319,19 +344,25 @@ const Community = () => {
       })
       .on('presence', { event: 'leave' }, ({ key, leftPresences }) => {
         console.log('👋 [Community] User left:', key, leftPresences);
+        const now = new Date().toISOString();
         setOnlineUsers(prev => {
           const updated = new Set(prev);
           leftPresences.forEach((p: any) => {
             if (p.user_id) {
               updated.delete(p.user_id);
-              // Store last seen time
-              setLastSeenTimes(prevTimes => ({
-                ...prevTimes,
-                [p.user_id]: new Date().toISOString()
-              }));
             }
           });
           return updated;
+        });
+        
+        // Always update last seen time when user leaves
+        leftPresences.forEach((p: any) => {
+          if (p.user_id) {
+            setLastSeenTimes(prevTimes => ({
+              ...prevTimes,
+              [p.user_id]: now
+            }));
+          }
         });
       })
       .subscribe((status) => {
@@ -1231,6 +1262,15 @@ const Community = () => {
     }
   };
 
+  // Periodically refresh to update "last seen" times
+  useEffect(() => {
+    const interval = setInterval(() => {
+      // Force a re-render to update the relative time display
+      setLastSeenTimes(prev => ({ ...prev }));
+    }, 30000); // Update every 30 seconds
+    
+    return () => clearInterval(interval);
+  }, []);
 
   const handleDeleteConversation = async (conversationId: string) => {
     try {
