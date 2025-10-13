@@ -114,12 +114,11 @@ const Community = () => {
       setupGlobalPresenceListener();
     }
     
+    // Don't clean up the global presence channel - let Layout manage it
+    // Only clean up conversation-specific subscriptions
     return () => {
-      if (globalPresenceChannelRef.current) {
-        console.log('🧹 [Community] Cleaning up global presence channel');
-        supabase.removeChannel(globalPresenceChannelRef.current);
-        globalPresenceChannelRef.current = null;
-      }
+      // The global presence channel is managed by Layout.tsx
+      // We just listen to it, so no cleanup needed here
     };
   }, [user?.id]);
 
@@ -293,11 +292,10 @@ const Community = () => {
   const setupGlobalPresenceListener = () => {
     if (!user) return;
 
-    // Clean up existing channel before creating a new one
+    // If we already have a listener, don't create another one
     if (globalPresenceChannelRef.current) {
-      console.log('🧹 [Community] Removing existing presence channel before setup');
-      supabase.removeChannel(globalPresenceChannelRef.current);
-      globalPresenceChannelRef.current = null;
+      console.log('✅ [Community] Global presence listener already exists');
+      return;
     }
 
     console.log('🌐 [Community] Setting up presence listener for user:', user.id);
