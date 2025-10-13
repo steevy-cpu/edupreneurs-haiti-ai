@@ -7,6 +7,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Checkbox } from "@/components/ui/checkbox";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { Progress } from "@/components/ui/progress";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Upload, Users, X } from "lucide-react";
@@ -32,6 +33,7 @@ export function CreateGroupDialog({ open, onOpenChange, followers, onGroupCreate
   const [avatarFile, setAvatarFile] = useState<File | null>(null);
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
   const [isCreating, setIsCreating] = useState(false);
+  const [progress, setProgress] = useState(0);
 
   const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -67,18 +69,23 @@ export function CreateGroupDialog({ open, onOpenChange, followers, onGroupCreate
     }
 
     setIsCreating(true);
+    setProgress(0);
 
     try {
+      // Step 1: Get user (10%)
+      setProgress(10);
       const { data: { user } } = await supabase.auth.getUser();
+      console.log("User authenticated:", user?.id);
       if (!user) throw new Error("Non authentifié");
 
       let avatarUrl = null;
 
-      // Upload avatar if provided
+      // Step 2: Upload avatar if provided (30%)
       if (avatarFile) {
+        setProgress(20);
         const fileExt = avatarFile.name.split('.').pop();
         const fileName = `${user.id}-${Date.now()}.${fileExt}`;
-        const { error: uploadError, data } = await supabase.storage
+        const { error: uploadError } = await supabase.storage
           .from('group-avatars')
           .upload(fileName, avatarFile);
 
@@ -89,9 +96,15 @@ export function CreateGroupDialog({ open, onOpenChange, followers, onGroupCreate
           .getPublicUrl(fileName);
         
         avatarUrl = publicUrl;
+        setProgress(30);
+      } else {
+        setProgress(30);
       }
 
-      // Create group
+      // Step 3: Create group (50%)
+      setProgress(40);
+      console.log("Creating group with user_id:", user.id);
+      
       const { data: group, error: groupError } = await supabase
         .from('group_chats')
         .insert({
@@ -103,9 +116,15 @@ export function CreateGroupDialog({ open, onOpenChange, followers, onGroupCreate
         .select()
         .single();
 
-      if (groupError) throw groupError;
+      if (groupError) {
+        console.error("Group creation error:", groupError);
+        throw groupError;
+      }
+      
+      console.log("Group created successfully:", group.id);
+      setProgress(50);
 
-      // Add creator as admin
+      // Step 4: Add members (70%)
       const members = [
         { group_id: group.id, user_id: user.id, role: 'admin' },
         ...Array.from(selectedMembers).map(userId => ({
@@ -120,8 +139,9 @@ export function CreateGroupDialog({ open, onOpenChange, followers, onGroupCreate
         .insert(members);
 
       if (membersError) throw membersError;
+      setProgress(70);
 
-      // Create conversation for the group
+      // Step 5: Create conversation (90%)
       const { data: conversation, error: convError } = await supabase
         .from('conversations')
         .insert({
@@ -132,7 +152,10 @@ export function CreateGroupDialog({ open, onOpenChange, followers, onGroupCreate
         .single();
 
       if (convError) throw convError;
+      setProgress(90);
 
+      // Step 6: Complete (100%)
+      setProgress(100);
       toast.success("Groupe créé avec succès!");
       onGroupCreated();
       onOpenChange(false);
@@ -143,9 +166,11 @@ export function CreateGroupDialog({ open, onOpenChange, followers, onGroupCreate
       setSelectedMembers(new Set());
       setAvatarFile(null);
       setAvatarPreview(null);
+      setProgress(0);
     } catch (error: any) {
       console.error("Error creating group:", error);
-      toast.error("Erreur lors de la création du groupe");
+      toast.error(`Erreur: ${error.message || "Impossible de créer le groupe"}`);
+      setProgress(0);
     } finally {
       setIsCreating(false);
     }
@@ -265,6 +290,16 @@ export function CreateGroupDialog({ open, onOpenChange, followers, onGroupCreate
               </div>
             </ScrollArea>
           </div>
+
+          {/* Progress Bar */}
+          {isCreating && (
+            <div className="space-y-2">
+              <Progress value={progress} className="h-2" />
+              <p className="text-xs text-center text-muted-foreground">
+                Création du groupe... {progress}%
+              </p>
+            </div>
+          )}
 
           {/* Actions */}
           <div className="flex gap-2 pt-2">
