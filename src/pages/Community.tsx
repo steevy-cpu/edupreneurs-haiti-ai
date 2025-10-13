@@ -610,23 +610,27 @@ const Community = () => {
 
           setMessages((prev) => [...prev, newMessage]);
 
-          // Show browser notification if message is from another user
-          if (payload.new.sender_id !== user?.id && Notification.permission === 'granted') {
-            const senderName = profile?.full_name || 'Quelqu\'un';
-            const messageContent = sharedPost 
-              ? `${senderName} vous a partagé un post` 
-              : payload.new.content.substring(0, 100);
-            const notification = new Notification(`${senderName} vous a envoyé un message`, {
-              body: messageContent,
-              icon: '/favicon.ico',
-              tag: conversationId,
-              requireInteraction: false,
-            });
+          // Play sound and show notification if message is from another user
+          if (payload.new.sender_id !== user?.id) {
+            playReceiveSound();
+            
+            if (Notification.permission === 'granted') {
+              const senderName = profile?.full_name || 'Quelqu\'un';
+              const messageContent = sharedPost 
+                ? `${senderName} vous a partagé un post` 
+                : payload.new.content.substring(0, 100);
+              const notification = new Notification(`${senderName} vous a envoyé un message`, {
+                body: messageContent,
+                icon: '/favicon.ico',
+                tag: conversationId,
+                requireInteraction: false,
+              });
 
-            notification.onclick = () => {
-              window.focus();
-              notification.close();
-            };
+              notification.onclick = () => {
+                window.focus();
+                notification.close();
+              };
+            }
           }
         }
       )
