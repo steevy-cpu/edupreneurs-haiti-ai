@@ -117,7 +117,6 @@ const Community = () => {
     return () => {
       if (globalPresenceChannelRef.current) {
         console.log('🧹 [Community] Cleaning up global presence channel');
-        globalPresenceChannelRef.current.untrack();
         supabase.removeChannel(globalPresenceChannelRef.current);
         globalPresenceChannelRef.current = null;
       }
@@ -286,14 +285,20 @@ const Community = () => {
     // Clean up existing channel before creating a new one
     if (globalPresenceChannelRef.current) {
       console.log('🧹 [Community] Removing existing presence channel before setup');
-      globalPresenceChannelRef.current.untrack();
       supabase.removeChannel(globalPresenceChannelRef.current);
       globalPresenceChannelRef.current = null;
     }
 
     console.log('🌐 [Community] Setting up presence listener for user:', user.id);
     
-    const channel = supabase.channel('online-users');
+    // Use the same channel as Layout but as a listener only (no tracking)
+    const channel = supabase.channel('online-users', {
+      config: {
+        presence: {
+          key: `community_${user.id}`, // Unique key to avoid conflicts
+        },
+      },
+    });
 
     channel
       .on('presence', { event: 'sync' }, () => {
@@ -305,6 +310,7 @@ const Community = () => {
             if (p.user_id) userIds.add(p.user_id);
           });
         });
+        console.log('👥 [Community] Online users:', Array.from(userIds));
         setOnlineUsers(userIds);
       })
       .on('presence', { event: 'join' }, ({ key, newPresences }) => {
@@ -334,16 +340,8 @@ const Community = () => {
           return updated;
         });
       })
-      .subscribe(async (status) => {
+      .subscribe((status) => {
         console.log('📡 [Community] Listener channel status:', status);
-        
-        if (status === 'SUBSCRIBED') {
-          const trackStatus = await channel.track({
-            user_id: user.id,
-            online_at: new Date().toISOString()
-          });
-          console.log('✅ [Community] Track status:', trackStatus);
-        }
       });
 
     globalPresenceChannelRef.current = channel;
