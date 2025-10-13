@@ -312,8 +312,16 @@ const Community = () => {
           return updated;
         });
       })
-      .subscribe((status) => {
+      .subscribe(async (status) => {
         console.log('📡 [Community] Listener channel status:', status);
+        
+        if (status === 'SUBSCRIBED') {
+          const trackStatus = await channel.track({
+            user_id: user.id,
+            online_at: new Date().toISOString()
+          });
+          console.log('✅ [Community] Track status:', trackStatus);
+        }
       });
 
     globalPresenceChannelRef.current = channel;
