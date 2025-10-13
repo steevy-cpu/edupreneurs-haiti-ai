@@ -698,8 +698,31 @@ const Community = () => {
             playReceiveSound();
           }
           
-          // Refresh conversations to get accurate data and proper ordering
-          await fetchConversations();
+          // Immediately update the conversation order in local state
+          const conversationId = payload.new.conversation_id;
+          const newMessageTime = payload.new.created_at;
+          
+          setConversations(prev => {
+            // Find and update the conversation with the new message time
+            const updated = prev.map(conv => 
+              conv.id === conversationId 
+                ? { 
+                    ...conv, 
+                    lastMessage: payload.new.content,
+                    lastMessageTime: newMessageTime,
+                  }
+                : conv
+            );
+            
+            // Re-sort immediately
+            return updated.sort((a, b) => 
+              new Date(b.lastMessageTime || b.created_at).getTime() - 
+              new Date(a.lastMessageTime || a.created_at).getTime()
+            );
+          });
+          
+          // Also refresh from database after a small delay to ensure consistency
+          setTimeout(() => fetchConversations(), 100);
         }
       )
       .on(
