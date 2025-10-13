@@ -116,6 +116,7 @@ const Community = () => {
     return () => {
       if (globalPresenceChannelRef.current) {
         console.log('🧹 [Community] Cleaning up global presence channel');
+        globalPresenceChannelRef.current.untrack();
         supabase.removeChannel(globalPresenceChannelRef.current);
         globalPresenceChannelRef.current = null;
       }
@@ -174,24 +175,38 @@ const Community = () => {
     };
   };
 
-  // Subscribe to typing presence for all conversations
+  // Subscribe to typing presence for all conversations - only when conversation IDs change
   useEffect(() => {
     if (user && conversations.length > 0) {
       console.log('🔔 Setting up typing presence for all conversations');
+      
+      // Only set up channels for new conversations
       conversations.forEach(conv => {
-        subscribeToTypingPresence(conv.id);
+        if (!presenceChannelsRef.current[conv.id]) {
+          subscribeToTypingPresence(conv.id);
+        }
+      });
+      
+      // Clean up channels for conversations that no longer exist
+      const currentConvIds = new Set(conversations.map(c => c.id));
+      Object.keys(presenceChannelsRef.current).forEach(convId => {
+        if (!currentConvIds.has(convId)) {
+          console.log('🧹 Cleaning up removed conversation presence channel:', convId);
+          supabase.removeChannel(presenceChannelsRef.current[convId]);
+          delete presenceChannelsRef.current[convId];
+        }
       });
     }
     
     return () => {
-      // Cleanup all presence channels
+      // Cleanup all presence channels on unmount
       Object.keys(presenceChannelsRef.current).forEach(convId => {
         console.log('🧹 Cleaning up typing presence channel for conversation:', convId);
         supabase.removeChannel(presenceChannelsRef.current[convId]);
       });
       presenceChannelsRef.current = {};
     };
-  }, [conversations, user]);
+  }, [conversations.map(c => c.id).join(','), user?.id]);
 
   useEffect(() => {
     console.log('🔍 useEffect triggered - selectedConversation:', selectedConversation, 'user:', user?.id);
@@ -256,15 +271,9 @@ const Community = () => {
 
   useEffect(() => {
     scrollToBottom();
-    // Play sound when receiving new messages
-    if (messages.length > previousMessagesCount.current && previousMessagesCount.current > 0) {
-      const lastMessage = messages[messages.length - 1];
-      if (lastMessage.sender_id !== user?.id) {
-        playReceiveSound();
-      }
-    }
+    // Don't play sound here - it's already handled in subscribeToConversationMessages
     previousMessagesCount.current = messages.length;
-  }, [messages, user, playReceiveSound]);
+  }, [messages]);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -276,6 +285,7 @@ const Community = () => {
     // Clean up existing channel before creating a new one
     if (globalPresenceChannelRef.current) {
       console.log('🧹 [Community] Removing existing presence channel before setup');
+      globalPresenceChannelRef.current.untrack();
       supabase.removeChannel(globalPresenceChannelRef.current);
       globalPresenceChannelRef.current = null;
     }
@@ -283,7 +293,6 @@ const Community = () => {
     console.log('🌐 [Community] Setting up presence listener for user:', user.id);
     
     const channel = supabase.channel('online-users');
-    let hasTracked = false;
 
     channel
       .on('presence', { event: 'sync' }, () => {
@@ -320,8 +329,7 @@ const Community = () => {
       .subscribe(async (status) => {
         console.log('📡 [Community] Listener channel status:', status);
         
-        if (status === 'SUBSCRIBED' && !hasTracked) {
-          hasTracked = true;
+        if (status === 'SUBSCRIBED') {
           const trackStatus = await channel.track({
             user_id: user.id,
             online_at: new Date().toISOString()
@@ -390,18 +398,21 @@ const Community = () => {
     
     console.log('📊 Unread messages query:', { allMessages, unreadError, conversationIds });
 
-    const conversationsData: Conversation[] = conversationIds.map(convId => {
+    // Group conversations by user first (before sorting)
+    const groupedConversations = new Map<string, Conversation>();
+    
+    conversationIds.forEach(convId => {
       const otherUserId = allParticipants?.find(
         p => p.conversation_id === convId && p.user_id !== user.id
       )?.user_id;
+      
+      if (!otherUserId) return;
       
       const otherUserProfile = profiles?.find(p => p.user_id === otherUserId);
       const lastMsg = lastMessages?.find(m => m.conversation_id === convId);
       const unreadCount = allMessages?.filter(m => m.conversation_id === convId).length || 0;
 
-      console.log(`💬 Conversation ${convId} with ${otherUserProfile?.full_name}: ${unreadCount} unread`);
-
-      return {
+      const conv: Conversation = {
         id: convId,
         created_at: lastMsg?.created_at || "",
         otherUser: otherUserProfile,
@@ -409,41 +420,32 @@ const Community = () => {
         lastMessageTime: lastMsg?.created_at,
         unreadCount,
       };
-    });
-
-    conversationsData.sort((a, b) => 
-      new Date(b.lastMessageTime || b.created_at).getTime() - 
-      new Date(a.lastMessageTime || a.created_at).getTime()
-    );
-
-    // Group conversations by user (consolidate multiple conversations with same user)
-    const groupedConversations = new Map<string, Conversation>();
-    conversationsData.forEach(conv => {
-      const userId = conv.otherUser?.user_id;
-      if (!userId) return;
       
-      const existing = groupedConversations.get(userId);
+      const existing = groupedConversations.get(otherUserId);
       if (!existing) {
-        groupedConversations.set(userId, conv);
+        groupedConversations.set(otherUserId, conv);
       } else {
         // Keep the most recent conversation and sum unread counts
         const existingTime = new Date(existing.lastMessageTime || existing.created_at).getTime();
         const currentTime = new Date(conv.lastMessageTime || conv.created_at).getTime();
         
         if (currentTime > existingTime) {
-          groupedConversations.set(userId, {
+          groupedConversations.set(otherUserId, {
             ...conv,
             unreadCount: (conv.unreadCount || 0) + (existing.unreadCount || 0)
           });
         } else {
-          groupedConversations.set(userId, {
+          groupedConversations.set(otherUserId, {
             ...existing,
             unreadCount: (conv.unreadCount || 0) + (existing.unreadCount || 0)
           });
         }
       }
+      
+      console.log(`💬 Conversation ${convId} with ${otherUserProfile?.full_name}: ${unreadCount} unread`);
     });
 
+    // Now sort the grouped conversations
     const sortedConversations = Array.from(groupedConversations.values()).sort((a, b) => 
       new Date(b.lastMessageTime || b.created_at).getTime() - 
       new Date(a.lastMessageTime || a.created_at).getTime()
@@ -624,10 +626,8 @@ const Community = () => {
 
           setMessages((prev) => [...prev, newMessage]);
 
-          // Play sound and show notification if message is from another user
+          // Show notification if message is from another user (sound already played in subscribeToMessages)
           if (payload.new.sender_id !== user?.id) {
-            playReceiveSound();
-            
             if (Notification.permission === 'granted') {
               const senderName = profile?.full_name || 'Quelqu\'un';
               const messageContent = sharedPost 
@@ -691,46 +691,15 @@ const Community = () => {
           table: "messages",
         },
         async (payload) => {
-          console.log('📨 New message received, refreshing conversations:', payload);
+          console.log('📨 New message received:', payload);
           
-          // Play sound if message is from another user
+          // Only play sound once here (not in conversation-specific subscription)
           if (payload.new.sender_id !== user?.id) {
             playReceiveSound();
           }
           
-          // Get the sender's profile for the new message
-          const { data: senderProfile } = await supabase
-            .from("profiles")
-            .select("*")
-            .eq("user_id", payload.new.sender_id)
-            .single();
-
-          // Update conversations state immediately - move conversation to top
-          setConversations(prev => {
-            const convIndex = prev.findIndex(c => c.id === payload.new.conversation_id);
-            
-            if (convIndex !== -1) {
-              // Update existing conversation
-              const updatedConv = {
-                ...prev[convIndex],
-                lastMessage: payload.new.content,
-                lastMessageTime: payload.new.created_at,
-                // Increment unread count only if message is from another user
-                unreadCount: payload.new.sender_id !== user?.id 
-                  ? (prev[convIndex].unreadCount || 0) + 1 
-                  : prev[convIndex].unreadCount || 0
-              };
-              
-              // Remove from current position and add to top
-              const newConversations = [...prev];
-              newConversations.splice(convIndex, 1);
-              return [updatedConv, ...newConversations];
-            } else {
-              // New conversation - fetch all conversations to include it
-              fetchConversations();
-              return prev;
-            }
-          });
+          // Refresh conversations to get accurate data and proper ordering
+          await fetchConversations();
         }
       )
       .on(
