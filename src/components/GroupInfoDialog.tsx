@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -69,29 +69,24 @@ export const GroupInfoDialog = ({
       if (groupError) throw groupError;
       setGroup(groupData);
 
-      // Fetch group members
+      // Fetch group members with their user IDs
       const { data: memberData, error: memberError } = await supabase
         .from('group_members')
-        .select(`
-          user_id,
-          role,
-          profiles:user_id (
-            id,
-            user_id,
-            full_name,
-            nickname,
-            avatar_url,
-            verified
-          )
-        `)
+        .select('user_id, role')
         .eq('group_id', groupId);
 
       if (memberError) throw memberError;
 
-      const memberProfiles = memberData
-        .map((m: any) => m.profiles)
-        .filter(Boolean);
-      setMembers(memberProfiles);
+      // Fetch profiles for all members
+      const userIds = memberData.map((m: any) => m.user_id);
+      const { data: profileData, error: profileError } = await supabase
+        .from('profiles')
+        .select('id, user_id, full_name, nickname, avatar_url, verified')
+        .in('user_id', userIds);
+
+      if (profileError) throw profileError;
+      
+      setMembers(profileData || []);
     } catch (error) {
       console.error('Error fetching group info:', error);
       toast({
@@ -160,9 +155,9 @@ export const GroupInfoDialog = ({
               </Avatar>
               <div className="flex-1">
                 <DialogTitle className="text-xl">{group.name}</DialogTitle>
-                <p className="text-sm text-muted-foreground">
+                <DialogDescription className="text-sm text-muted-foreground">
                   {members.length} {members.length === 1 ? 'membre' : 'membres'}
-                </p>
+                </DialogDescription>
               </div>
             </div>
           </DialogHeader>

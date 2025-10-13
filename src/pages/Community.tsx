@@ -1608,18 +1608,19 @@ const Community = () => {
                   </div>
                   <div 
                     className="flex-1 min-w-0"
-                    onClick={() => {
-                      if (conv.is_group && conv.group) {
-                        setSelectedGroupId(conv.group.id);
-                        setSelectedConversation(conv.id);
-                        setShowGroupInfo(true);
-                      } else {
-                        setSelectedConversation(conv.id);
-                      }
-                    }}
+                    onClick={() => setSelectedConversation(conv.id)}
                   >
                     <div className="flex items-center gap-1.5">
-                      <p className="font-semibold truncate text-sm sm:text-base">
+                      <p 
+                        className="font-semibold truncate text-sm sm:text-base cursor-pointer hover:underline"
+                        onClick={(e) => {
+                          if (conv.is_group && conv.group) {
+                            e.stopPropagation();
+                            setSelectedGroupId(conv.group.id);
+                            setShowGroupInfo(true);
+                          }
+                        }}
+                      >
                         {conv.is_group 
                           ? conv.group?.name 
                           : (conv.otherUser?.nickname || conv.otherUser?.full_name || "Utilisateur")
@@ -1753,19 +1754,19 @@ const Community = () => {
                         </>
                       )}
                     </Avatar>
-                    <div 
-                      className="min-w-0 flex-1 cursor-pointer hover:opacity-80 transition-opacity"
-                      onClick={() => {
-                        if (isGroup && currentConv?.group) {
-                          setSelectedGroupId(currentConv.group.id);
-                          setShowGroupInfo(true);
-                        } else if (!isGroup && currentConv?.otherUser) {
-                          navigate(`/profile/${currentConv.otherUser.user_id}`);
-                        }
-                      }}
-                    >
+                    <div className="min-w-0 flex-1">
                       <div className="flex items-center gap-1.5">
-                        <p className="font-semibold text-sm sm:text-base truncate">
+                        <p 
+                          className="font-semibold text-sm sm:text-base truncate cursor-pointer hover:opacity-80 transition-opacity hover:underline"
+                          onClick={() => {
+                            if (isGroup && currentConv?.group) {
+                              setSelectedGroupId(currentConv.group.id);
+                              setShowGroupInfo(true);
+                            } else if (!isGroup && currentConv?.otherUser) {
+                              navigate(`/profile/${currentConv.otherUser.user_id}`);
+                            }
+                          }}
+                        >
                           {isGroup 
                             ? currentConv.group?.name 
                             : (currentConv?.otherUser?.nickname || currentConv?.otherUser?.full_name || "Utilisateur")
