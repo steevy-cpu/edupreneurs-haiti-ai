@@ -325,16 +325,7 @@ export const GroupInfoDialog = ({
 
       if (messageError) throw messageError;
 
-      // Now remove from group_members
-      const { error: memberError } = await supabase
-        .from('group_members')
-        .delete()
-        .eq('group_id', groupId)
-        .eq('user_id', currentUserId);
-
-      if (memberError) throw memberError;
-
-      // Remove from conversation_participants
+      // Remove from conversation_participants FIRST (this doesn't affect the group itself)
       const { error: participantError } = await supabase
         .from('conversation_participants')
         .delete()
@@ -342,6 +333,15 @@ export const GroupInfoDialog = ({
         .eq('user_id', currentUserId);
 
       if (participantError) throw participantError;
+
+      // Then remove from group_members
+      const { error: memberError } = await supabase
+        .from('group_members')
+        .delete()
+        .eq('group_id', groupId)
+        .eq('user_id', currentUserId);
+
+      if (memberError) throw memberError;
 
       toast({
         title: "Succès",

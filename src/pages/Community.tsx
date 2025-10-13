@@ -630,7 +630,7 @@ const Community = () => {
   };
 
   const fetchMessages = async (conversationId: string) => {
-    // Get user's join time if this is a group conversation
+    // Get user's join time from conversation_participants (this is updated on each rejoin)
     const { data: conversationInfo } = await supabase
       .from("conversations")
       .select("is_group, group_id")
@@ -640,35 +640,34 @@ const Community = () => {
     console.log('🔍 Conversation info:', conversationInfo);
 
     let userJoinedAt: string | null = null;
-    if (conversationInfo?.is_group && conversationInfo.group_id) {
-      const { data: memberData, error: memberError } = await supabase
-        .from("group_members")
-        .select("joined_at")
-        .eq("group_id", conversationInfo.group_id)
-        .eq("user_id", user?.id)
-        .single();
-      
-      console.log('👤 Member data:', memberData, 'Error:', memberError);
-      
-      userJoinedAt = memberData?.joined_at || null;
-      console.log('👥 Group conversation detected. User joined at:', userJoinedAt);
-      console.log('📊 User ID:', user?.id, 'Group ID:', conversationInfo.group_id);
+    
+    // Get the user's most recent join time from conversation_participants
+    // This table is updated each time a user is added, ensuring fresh timestamps for rejoins
+    const { data: participantData, error: participantError } = await supabase
+      .from("conversation_participants")
+      .select("joined_at")
+      .eq("conversation_id", conversationId)
+      .eq("user_id", user?.id)
+      .single();
+    
+    if (participantError) {
+      console.error('❌ Error fetching participant data:', participantError);
+    } else if (participantData) {
+      userJoinedAt = participantData.joined_at;
+      console.log('👥 User joined conversation at:', userJoinedAt);
     }
 
-    // Fetch messages, filtering by join time for group members
+    // Fetch messages, filtering by join time
     let query = supabase
       .from("messages")
       .select("id, content, sender_id, created_at, read, shared_post_id, conversation_id, replied_to_id, image_url, video_url")
       .eq("conversation_id", conversationId)
       .order("created_at", { ascending: true });
 
-    // Only show messages after user joined the group
+    // Only show messages after user joined (applies to all conversations, especially groups)
     if (userJoinedAt) {
       query = query.gte("created_at", userJoinedAt);
-      console.log('📅 Filtering messages from:', userJoinedAt);
-      console.log('🔎 Filter applied: messages.created_at >= ', userJoinedAt);
-    } else if (conversationInfo?.is_group) {
-      console.log('⚠️ No join timestamp found for group member!');
+      console.log('📅 Filtering messages created after:', userJoinedAt);
     }
 
     const { data: messagesData, error: messagesError } = await query;
@@ -1463,19 +1462,56 @@ const Community = () => {
 
   const handleDeleteConversation = async (conversationId: string) => {
     try {
-      // Remove user from conversation participants instead of deleting the conversation
-      const { error } = await supabase
-        .from("conversation_participants")
-        .delete()
-        .eq("conversation_id", conversationId)
-        .eq("user_id", user?.id);
+      // Check if this is a group conversation
+      const { data: conversationData, error: convError } = await supabase
+        .from('conversations')
+        .select('is_group, group_id')
+        .eq('id', conversationId)
+        .single();
 
-      if (error) throw error;
+      if (convError) throw convError;
 
-      toast({
-        title: "Succès",
-        description: "Conversation supprimée de votre liste",
-      });
+      if (conversationData?.is_group && conversationData.group_id) {
+        // For group conversations, remove user from both tables
+        // This makes them "leave" the group without deleting it for others
+        
+        // Remove from conversation_participants
+        const { error: participantError } = await supabase
+          .from("conversation_participants")
+          .delete()
+          .eq("conversation_id", conversationId)
+          .eq("user_id", user?.id);
+
+        if (participantError) throw participantError;
+
+        // Remove from group_members
+        const { error: memberError } = await supabase
+          .from("group_members")
+          .delete()
+          .eq("group_id", conversationData.group_id)
+          .eq("user_id", user?.id);
+
+        if (memberError) throw memberError;
+
+        toast({
+          title: "Succès",
+          description: "Vous avez quitté le groupe",
+        });
+      } else {
+        // For 1-on-1 conversations, just remove from participants
+        const { error } = await supabase
+          .from("conversation_participants")
+          .delete()
+          .eq("conversation_id", conversationId)
+          .eq("user_id", user?.id);
+
+        if (error) throw error;
+
+        toast({
+          title: "Succès",
+          description: "Conversation supprimée de votre liste",
+        });
+      }
 
       // Clear selection if this conversation was selected
       if (selectedConversation === conversationId) {
