@@ -1311,7 +1311,7 @@ const Community = () => {
                       </AvatarFallback>
                     </Avatar>
                     {conv.otherUser?.user_id && onlineUsers.has(conv.otherUser.user_id) && (
-                      <div className="absolute bottom-0 right-0 w-3 h-3 bg-success rounded-full border-2 border-background" />
+                      <div className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 rounded-full border-2 border-background" />
                     )}
                   </div>
                   <div className="flex-1 min-w-0">
@@ -1323,7 +1323,7 @@ const Community = () => {
                         <BadgeCheck className="w-4 h-4 text-primary fill-primary/20 shrink-0" />
                       )}
                       {conv.otherUser?.user_id && onlineUsers.has(conv.otherUser.user_id) && (
-                        <span className="text-xs text-success font-medium">En ligne</span>
+                        <span className="text-xs text-green-500 font-medium">En ligne</span>
                       )}
                     </div>
                     {(() => {
@@ -1433,8 +1433,8 @@ const Community = () => {
                 {(() => {
                   const otherUserId = conversations.find(c => c.id === selectedConversation)?.otherUser?.user_id;
                   return otherUserId && onlineUsers.has(otherUserId) && (
-                    <p className="text-xs text-success font-medium flex items-center gap-1">
-                      <span className="w-2 h-2 bg-success rounded-full animate-pulse" />
+                    <p className="text-xs text-green-500 font-medium flex items-center gap-1">
+                      <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
                       En ligne
                     </p>
                   );
