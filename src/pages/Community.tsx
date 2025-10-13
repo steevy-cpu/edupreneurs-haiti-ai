@@ -110,7 +110,7 @@ const Community = () => {
       subscribeToMessages();
       initializePushNotifications(user.id);
       subscribeToNotifications();
-      setupGlobalPresence();
+      setupGlobalPresenceListener();
     }
     
     return () => {
@@ -268,18 +268,12 @@ const Community = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   };
 
-  const setupGlobalPresence = () => {
+  const setupGlobalPresenceListener = () => {
     if (!user) return;
 
-    console.log('🌐 Setting up global presence tracking for user:', user.id);
+    console.log('🌐 Setting up global presence listener for user:', user.id);
     
-    const channel = supabase.channel('online-users', {
-      config: {
-        presence: {
-          key: user.id,
-        },
-      },
-    });
+    const channel = supabase.channel('online-users');
 
     channel
       .on('presence', { event: 'sync' }, () => {
@@ -304,15 +298,7 @@ const Community = () => {
       .on('presence', { event: 'leave' }, ({ key, leftPresences }) => {
         console.log('👋 User left:', key, leftPresences);
       })
-      .subscribe(async (status) => {
-        if (status === 'SUBSCRIBED') {
-          console.log('✅ Subscribed to presence, tracking user:', user.id);
-          await channel.track({
-            user_id: user.id,
-            online_at: new Date().toISOString(),
-          });
-        }
-      });
+      .subscribe();
 
     globalPresenceChannelRef.current = channel;
   };

@@ -36,6 +36,7 @@ export const Layout = ({ children }: LayoutProps) => {
   const [unreadNotifications, setUnreadNotifications] = useState(0);
   const [userAvatar, setUserAvatar] = useState<string>(dashboardImage);
   const [userNickname, setUserNickname] = useState<string>("Étudiant");
+  const presenceChannelRef = useState<{ current: any | null }>({ current: null })[0];
 
   useEffect(() => {
     checkAuth();
@@ -43,6 +44,13 @@ export const Layout = ({ children }: LayoutProps) => {
     fetchPendingFollowRequests();
     fetchUnreadNotifications();
     fetchUserAvatar();
+    setupGlobalPresence();
+    
+    return () => {
+      if (presenceChannelRef.current) {
+        supabase.removeChannel(presenceChannelRef.current);
+      }
+    };
   }, []);
   
   const fetchUserAvatar = async () => {
@@ -165,6 +173,34 @@ export const Layout = ({ children }: LayoutProps) => {
       supabase.removeChannel(notificationsChannel);
     };
   }, []);
+
+  const setupGlobalPresence = async () => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+
+    console.log('🌐 Setting up global presence for user:', user.id);
+    
+    const channel = supabase.channel('online-users', {
+      config: {
+        presence: {
+          key: user.id,
+        },
+      },
+    });
+
+    channel.subscribe(async (status) => {
+      if (status === 'SUBSCRIBED') {
+        console.log('✅ Broadcasting presence for user:', user.id);
+        await channel.track({
+          user_id: user.id,
+          online_at: new Date().toISOString(),
+        });
+      }
+    });
+
+    // Store in ref for cleanup
+    presenceChannelRef.current = channel;
+  };
 
   const fetchUnreadCount = async () => {
     const { data: { user } } = await supabase.auth.getUser();
