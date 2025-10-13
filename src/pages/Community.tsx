@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useToast } from "@/hooks/use-toast";
-import { Send, ArrowLeft, Search, Smile, Check, CheckCheck, BadgeCheck, Edit2, Trash2, X, MoreVertical, ImageIcon } from "lucide-react";
+import { Send, ArrowLeft, Search, Smile, Check, CheckCheck, BadgeCheck, Edit2, Trash2, X, MoreVertical, ImageIcon, Download } from "lucide-react";
 import { useMessageSounds } from "@/hooks/useMessageSounds";
 import EmojiPicker from "emoji-picker-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
@@ -1153,6 +1153,37 @@ const Community = () => {
     }
   };
 
+  const handleDownloadMedia = async (url: string, type: 'image' | 'video') => {
+    try {
+      const response = await fetch(url);
+      const blob = await response.blob();
+      const blobUrl = URL.createObjectURL(blob);
+      
+      const link = document.createElement('a');
+      link.href = blobUrl;
+      const timestamp = new Date().getTime();
+      const extension = type === 'image' ? 'jpg' : 'mp4';
+      link.download = `edupreneurs-${type}-${timestamp}.${extension}`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      
+      URL.revokeObjectURL(blobUrl);
+      
+      toast({
+        title: "Téléchargement réussi",
+        description: `${type === 'image' ? 'L\'image' : 'La vidéo'} a été enregistrée sur votre appareil`,
+      });
+    } catch (error) {
+      console.error('Error downloading media:', error);
+      toast({
+        title: "Erreur",
+        description: "Impossible de télécharger le fichier",
+        variant: "destructive",
+      });
+    }
+  };
+
   const formatTime = (timestamp: string) => {
     const date = new Date(timestamp);
     const now = new Date();
@@ -1424,15 +1455,28 @@ const Community = () => {
                                 {message.shared_post.content}
                               </p>
                               {message.shared_post.image_url && (
-                                <img
-                                  src={message.shared_post.image_url}
-                                  alt="Post"
-                                  className="rounded-lg w-full max-h-48 object-contain bg-muted/20 cursor-pointer hover:opacity-90 transition-opacity"
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    setFullSizeImage(message.shared_post.image_url);
-                                  }}
-                                />
+                                <div className="relative group/media">
+                                  <img
+                                    src={message.shared_post.image_url}
+                                    alt="Post"
+                                    className="rounded-lg w-full max-h-48 object-contain bg-muted/20 cursor-pointer hover:opacity-90 transition-opacity"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      setFullSizeImage(message.shared_post.image_url);
+                                    }}
+                                  />
+                                  <Button
+                                    size="sm"
+                                    variant="secondary"
+                                    className="absolute top-2 right-2 h-8 w-8 p-0 opacity-0 group-hover/media:opacity-100 transition-opacity bg-background/90 hover:bg-background no-reply-trigger shadow-lg"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      handleDownloadMedia(message.shared_post.image_url, 'image');
+                                    }}
+                                  >
+                                    <Download size={16} />
+                                  </Button>
+                                </div>
                               )}
                               <p className="text-xs opacity-70 mt-2">Cliquez pour voir le post</p>
                             </div>
@@ -1486,23 +1530,49 @@ const Community = () => {
                                   {message.content}
                                 </p>
                                 {message.image_url && (
-                                  <img
-                                    src={message.image_url}
-                                    alt="Image"
-                                    className="mt-2 rounded-lg w-full max-h-64 object-contain bg-muted/20 cursor-pointer hover:opacity-90 transition-opacity"
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      setFullSizeImage(message.image_url);
-                                    }}
-                                  />
+                                  <div className="relative group/media mt-2">
+                                    <img
+                                      src={message.image_url}
+                                      alt="Image"
+                                      className="rounded-lg w-full max-h-64 object-contain bg-muted/20 cursor-pointer hover:opacity-90 transition-opacity"
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        setFullSizeImage(message.image_url);
+                                      }}
+                                    />
+                                    <Button
+                                      size="sm"
+                                      variant="secondary"
+                                      className="absolute top-2 right-2 h-8 w-8 p-0 opacity-0 group-hover/media:opacity-100 transition-opacity bg-background/90 hover:bg-background no-reply-trigger shadow-lg"
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        handleDownloadMedia(message.image_url, 'image');
+                                      }}
+                                    >
+                                      <Download size={16} />
+                                    </Button>
+                                  </div>
                                 )}
                                 {message.video_url && (
-                                  <video
-                                    src={message.video_url}
-                                    controls
-                                    className="mt-2 rounded-lg w-full max-h-64 bg-muted/20"
-                                    preload="metadata"
-                                  />
+                                  <div className="relative group/media mt-2">
+                                    <video
+                                      src={message.video_url}
+                                      controls
+                                      className="rounded-lg w-full max-h-64 bg-muted/20"
+                                      preload="metadata"
+                                    />
+                                    <Button
+                                      size="sm"
+                                      variant="secondary"
+                                      className="absolute top-2 right-2 h-8 w-8 p-0 opacity-0 group-hover/media:opacity-100 transition-opacity bg-background/90 hover:bg-background no-reply-trigger shadow-lg"
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        handleDownloadMedia(message.video_url, 'video');
+                                      }}
+                                    >
+                                      <Download size={16} />
+                                    </Button>
+                                  </div>
                                 )}
                               </div>
                               {isOwn && (
