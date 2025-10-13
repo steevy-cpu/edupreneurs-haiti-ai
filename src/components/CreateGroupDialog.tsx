@@ -103,7 +103,7 @@ export function CreateGroupDialog({ open, onOpenChange, followers, onGroupCreate
 
       // Step 3: Create group using secure function (50%)
       setProgress(40);
-      console.log("Creating group with secure function");
+      console.log("Creating group with secure function for user:", user.id);
       
       const { data: groupId, error: groupError } = await supabase
         .rpc('create_group_chat', {
@@ -120,7 +120,7 @@ export function CreateGroupDialog({ open, onOpenChange, followers, onGroupCreate
       console.log("Group created successfully:", groupId);
       setProgress(50);
 
-      // Step 4: Add additional members (70%)
+      // Step 4: Add other members (70%)
       if (selectedMembers.size > 0) {
         const members = Array.from(selectedMembers).map(userId => ({
           group_id: groupId,
@@ -134,8 +134,6 @@ export function CreateGroupDialog({ open, onOpenChange, followers, onGroupCreate
 
         if (membersError) throw membersError;
       }
-
-      if (membersError) throw membersError;
       setProgress(70);
 
       // Step 5: Create conversation (90%)
