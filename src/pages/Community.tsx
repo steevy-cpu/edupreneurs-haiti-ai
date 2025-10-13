@@ -1316,13 +1316,13 @@ const Community = () => {
     const hours = Math.floor(diff / 3600000);
     const days = Math.floor(diff / 86400000);
 
-    if (minutes < 1) return "Vu à l'instant";
-    if (minutes < 60) return `Vu il y a ${minutes}min`;
-    if (hours < 24) return `Vu il y a ${hours}h`;
-    if (days === 1) return "Vu hier";
-    if (days < 7) return `Vu il y a ${days}j`;
+    if (minutes < 1) return "Dernière connexion à l'instant";
+    if (minutes < 60) return `Dernière connexion il y a ${minutes}min`;
+    if (hours < 24) return `Dernière connexion il y a ${hours}h`;
+    if (days === 1) return "Dernière connexion hier";
+    if (days < 7) return `Dernière connexion il y a ${days}j`;
     
-    return `Vu le ${date.toLocaleDateString('fr-FR', { 
+    return `Dernière connexion le ${date.toLocaleDateString('fr-FR', { 
       day: 'numeric', 
       month: 'short' 
     })}`;
