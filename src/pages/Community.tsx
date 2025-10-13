@@ -1531,21 +1531,18 @@ const Community = () => {
                                     : "bg-muted"
                                 }`}
                               >
-                                <div className="flex items-start justify-between gap-2">
+                                <div className={`flex items-start ${message.image_url ? 'justify-between' : 'justify-start'} gap-2`}>
                                   <p className="text-xs sm:text-sm whitespace-pre-wrap break-words overflow-wrap-anywhere flex-1">
                                     {message.content}
                                   </p>
-                                  {(message.image_url || message.video_url) && (
+                                  {message.image_url && (
                                     <Button
                                       size="sm"
                                       variant="ghost"
                                       className="h-6 w-6 p-0 hover:bg-background/50 no-reply-trigger shrink-0"
                                       onClick={(e) => {
                                         e.stopPropagation();
-                                        handleDownloadMedia(
-                                          message.image_url || message.video_url, 
-                                          message.image_url ? 'image' : 'video'
-                                        );
+                                        handleDownloadMedia(message.image_url, 'image');
                                       }}
                                     >
                                       <Download size={14} />
@@ -1564,12 +1561,25 @@ const Community = () => {
                                   />
                                 )}
                                 {message.video_url && (
-                                  <video
-                                    src={message.video_url}
-                                    controls
-                                    className="mt-2 rounded-lg w-full max-h-64 bg-muted/20"
-                                    preload="metadata"
-                                  />
+                                  <div className="relative group/video mt-2">
+                                    <video
+                                      src={message.video_url}
+                                      controls
+                                      className="rounded-lg w-full max-h-64 bg-muted/20"
+                                      preload="metadata"
+                                    />
+                                    <Button
+                                      size="sm"
+                                      variant="secondary"
+                                      className="absolute bottom-2 right-2 h-8 w-8 p-0 opacity-0 group-hover/video:opacity-100 transition-opacity bg-background/90 hover:bg-background no-reply-trigger shadow-lg"
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        handleDownloadMedia(message.video_url, 'video');
+                                      }}
+                                    >
+                                      <Download size={16} />
+                                    </Button>
+                                  </div>
                                 )}
                               </div>
                               {isOwn && (
