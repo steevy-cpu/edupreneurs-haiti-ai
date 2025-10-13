@@ -210,6 +210,17 @@ export const GroupInfoDialog = ({
 
   const handleLeaveGroup = async () => {
     try {
+      // Get current user's profile for the system message
+      const { data: userProfile, error: profileError } = await supabase
+        .from('profiles')
+        .select('nickname, full_name')
+        .eq('user_id', currentUserId)
+        .single();
+
+      if (profileError) throw profileError;
+
+      const userName = userProfile.nickname || userProfile.full_name;
+
       // Remove from group_members
       const { error: memberError } = await supabase
         .from('group_members')
@@ -227,6 +238,18 @@ export const GroupInfoDialog = ({
         .eq('user_id', currentUserId);
 
       if (participantError) throw participantError;
+
+      // Create system message in the conversation
+      const { error: messageError } = await supabase
+        .from('messages')
+        .insert({
+          conversation_id: conversationId,
+          sender_id: currentUserId,
+          content: `${userName} a quitté le groupe`,
+          read: false
+        });
+
+      if (messageError) throw messageError;
 
       toast({
         title: "Succès",
