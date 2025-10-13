@@ -178,7 +178,7 @@ export const Layout = ({ children }: LayoutProps) => {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return;
 
-    console.log('🌐 Setting up global presence for user:', user.id);
+    console.log('🌐 [Layout] Setting up global presence for user:', user.id);
     
     const channel = supabase.channel('online-users', {
       config: {
@@ -188,13 +188,28 @@ export const Layout = ({ children }: LayoutProps) => {
       },
     });
 
+    // Add event listeners first
+    channel
+      .on('presence', { event: 'sync' }, () => {
+        console.log('🔄 [Layout] Presence synced');
+      })
+      .on('presence', { event: 'join' }, ({ key }) => {
+        console.log('👋 [Layout] User joined global presence:', key);
+      })
+      .on('presence', { event: 'leave' }, ({ key }) => {
+        console.log('👋 [Layout] User left global presence:', key);
+      });
+
+    // Then subscribe and track
     channel.subscribe(async (status) => {
+      console.log('📡 [Layout] Channel status:', status);
       if (status === 'SUBSCRIBED') {
-        console.log('✅ Broadcasting presence for user:', user.id);
-        await channel.track({
+        console.log('✅ [Layout] Broadcasting presence for user:', user.id);
+        const trackStatus = await channel.track({
           user_id: user.id,
           online_at: new Date().toISOString(),
         });
+        console.log('📡 [Layout] Track status:', trackStatus);
       }
     });
 

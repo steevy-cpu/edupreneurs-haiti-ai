@@ -271,14 +271,14 @@ const Community = () => {
   const setupGlobalPresenceListener = () => {
     if (!user) return;
 
-    console.log('🌐 Setting up global presence listener for user:', user.id);
+    console.log('🌐 [Community] Setting up presence listener for user:', user.id);
     
     const channel = supabase.channel('online-users');
 
     channel
       .on('presence', { event: 'sync' }, () => {
         const state = channel.presenceState();
-        console.log('👥 Presence sync:', state);
+        console.log('👥 [Community] Presence sync:', state);
         
         const online = new Set<string>();
         Object.values(state).forEach((presences: any) => {
@@ -289,16 +289,32 @@ const Community = () => {
           });
         });
         
-        console.log('✅ Online users:', Array.from(online));
+        console.log('✅ [Community] Online users:', Array.from(online));
         setOnlineUsers(online);
       })
       .on('presence', { event: 'join' }, ({ key, newPresences }) => {
-        console.log('👋 User joined:', key, newPresences);
+        console.log('👋 [Community] User joined:', key, newPresences);
+        setOnlineUsers(prev => {
+          const updated = new Set(prev);
+          newPresences.forEach((p: any) => {
+            if (p.user_id) updated.add(p.user_id);
+          });
+          return updated;
+        });
       })
       .on('presence', { event: 'leave' }, ({ key, leftPresences }) => {
-        console.log('👋 User left:', key, leftPresences);
+        console.log('👋 [Community] User left:', key, leftPresences);
+        setOnlineUsers(prev => {
+          const updated = new Set(prev);
+          leftPresences.forEach((p: any) => {
+            if (p.user_id) updated.delete(p.user_id);
+          });
+          return updated;
+        });
       })
-      .subscribe();
+      .subscribe((status) => {
+        console.log('📡 [Community] Listener channel status:', status);
+      });
 
     globalPresenceChannelRef.current = channel;
   };
