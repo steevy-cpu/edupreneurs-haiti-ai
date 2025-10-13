@@ -688,9 +688,9 @@ const Community = () => {
       // Find the index of the threshold message
       const thresholdIndex = allMessages.findIndex(m => m.id === visibilityThreshold);
       if (thresholdIndex !== -1) {
-        // Only show messages AFTER the threshold (not including it)
-        messagesData = allMessages.slice(thresholdIndex + 1);
-        console.log(`📊 Filtered from ${allMessages.length} to ${messagesData.length} messages`);
+        // Show messages FROM the threshold message onwards (inclusive)
+        messagesData = allMessages.slice(thresholdIndex);
+        console.log(`📊 Filtered from ${allMessages.length} to ${messagesData.length} messages (starting from threshold)`);
       }
     }
     

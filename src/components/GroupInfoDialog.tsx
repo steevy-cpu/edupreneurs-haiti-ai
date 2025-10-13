@@ -154,16 +154,7 @@ export const GroupInfoDialog = ({
     try {
       setAddingMember(true);
 
-      // Get the latest message ID to set as visibility threshold
-      const { data: latestMessage } = await supabase
-        .from('messages')
-        .select('id')
-        .eq('conversation_id', conversationId)
-        .order('created_at', { ascending: false })
-        .limit(1)
-        .single();
-
-      // Add to group_members
+      // Add to group_members first
       const { error: memberError } = await supabase
         .from('group_members')
         .insert({
@@ -174,29 +165,31 @@ export const GroupInfoDialog = ({
 
       if (memberError) throw memberError;
 
-      // Add to conversation_participants with visibility threshold
-      // New members will only see messages AFTER this point
-      const { error: participantError } = await supabase
-        .from('conversation_participants')
-        .insert({
-          conversation_id: conversationId,
-          user_id: userId,
-          visible_from_message_id: latestMessage?.id || null
-        });
-
-      if (participantError) throw participantError;
-
       // Create system message announcing the new member
-      const { error: messageError } = await supabase
+      const { data: systemMessage, error: messageError } = await supabase
         .from('messages')
         .insert({
           conversation_id: conversationId,
           sender_id: currentUserId,
           content: `${userName} a rejoint le groupe`,
           read: false
-        });
+        })
+        .select()
+        .single();
 
       if (messageError) throw messageError;
+
+      // Add to conversation_participants with visibility set to the system message
+      // This way they ONLY see the "joined" message and future messages
+      const { error: participantError } = await supabase
+        .from('conversation_participants')
+        .insert({
+          conversation_id: conversationId,
+          user_id: userId,
+          visible_from_message_id: systemMessage?.id || null
+        });
+
+      if (participantError) throw participantError;
 
       // Create notification for the added user
       const { error: notificationError } = await supabase

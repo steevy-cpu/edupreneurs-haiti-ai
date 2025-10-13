@@ -149,11 +149,40 @@ export function CreateGroupDialog({ open, onOpenChange, followers, onGroupCreate
       if (convError) throw convError;
       setProgress(80);
 
-      // Step 6: Add all participants to conversation (90%)
+      // Step 6: Send welcome message first (90%)
+      setProgress(90);
+      const { data: groupData } = await supabase
+        .from('group_chats')
+        .select('name')
+        .eq('id', groupId)
+        .single();
+
+      let welcomeMessageId = null;
+      if (groupData) {
+        const { data: welcomeMsg, error: msgError } = await supabase
+          .from('messages')
+          .insert({
+            conversation_id: conversation.id,
+            sender_id: user.id,
+            content: `Bienvenue dans ${groupData.name}`,
+            read: false
+          })
+          .select()
+          .single();
+        
+        if (!msgError && welcomeMsg) {
+          welcomeMessageId = welcomeMsg.id;
+        }
+      }
+
+      // Step 7: Add all participants to conversation with proper visibility (95%)
+      setProgress(95);
       const allParticipantIds = [user.id, ...Array.from(selectedMembers)];
       const participantEntries = allParticipantIds.map(userId => ({
         conversation_id: conversation.id,
-        user_id: userId
+        user_id: userId,
+        // All members (including creator) start seeing from the welcome message
+        visible_from_message_id: welcomeMessageId
       }));
 
       const { error: participantsError } = await supabase
@@ -161,26 +190,6 @@ export function CreateGroupDialog({ open, onOpenChange, followers, onGroupCreate
         .insert(participantEntries);
 
       if (participantsError) throw participantsError;
-      setProgress(90);
-
-      // Step 7: Send welcome message (95%)
-      setProgress(95);
-      const { data: groupData } = await supabase
-        .from('group_chats')
-        .select('name')
-        .eq('id', groupId)
-        .single();
-
-      if (groupData) {
-        await supabase
-          .from('messages')
-          .insert({
-            conversation_id: conversation.id,
-            sender_id: user.id,
-            content: `Bienvenue dans ${groupData.name}`,
-            read: false
-          });
-      }
 
       // Step 8: Complete (100%)
       setProgress(100);
