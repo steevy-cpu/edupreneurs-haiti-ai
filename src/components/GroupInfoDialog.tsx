@@ -5,9 +5,11 @@ import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useToast } from "@/hooks/use-toast";
-import { ArrowLeft, Users, LogOut, BadgeCheck } from "lucide-react";
+import { ArrowLeft, Users, LogOut, BadgeCheck, UserPlus, X } from "lucide-react";
 import { getAvatarUrl } from "@/lib/avatarMap";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
+import { Input } from "@/components/ui/input";
+import { Separator } from "@/components/ui/separator";
 
 interface Profile {
   id: string;
@@ -48,10 +50,15 @@ export const GroupInfoDialog = ({
   const [members, setMembers] = useState<Profile[]>([]);
   const [loading, setLoading] = useState(true);
   const [showLeaveConfirm, setShowLeaveConfirm] = useState(false);
+  const [showAddMembers, setShowAddMembers] = useState(false);
+  const [availableFollowers, setAvailableFollowers] = useState<Profile[]>([]);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [addingMember, setAddingMember] = useState(false);
 
   useEffect(() => {
     if (open && groupId) {
       fetchGroupInfo();
+      fetchAvailableFollowers();
     }
   }, [open, groupId]);
 
@@ -99,6 +106,108 @@ export const GroupInfoDialog = ({
     }
   };
 
+  const fetchAvailableFollowers = async () => {
+    try {
+      // Get current user's accepted followers
+      const { data: followsData, error: followsError } = await supabase
+        .from('follows')
+        .select('following_id')
+        .eq('follower_id', currentUserId)
+        .eq('status', 'accepted');
+
+      if (followsError) throw followsError;
+
+      const followerIds = followsData.map((f) => f.following_id);
+
+      // Get current group members
+      const { data: memberData, error: memberError } = await supabase
+        .from('group_members')
+        .select('user_id')
+        .eq('group_id', groupId);
+
+      if (memberError) throw memberError;
+
+      const memberIds = memberData.map((m: any) => m.user_id);
+
+      // Filter out users already in the group
+      const availableIds = followerIds.filter((id) => !memberIds.includes(id));
+
+      if (availableIds.length > 0) {
+        const { data: profilesData, error: profilesError } = await supabase
+          .from('profiles')
+          .select('id, user_id, full_name, nickname, avatar_url, verified')
+          .in('user_id', availableIds);
+
+        if (profilesError) throw profilesError;
+        setAvailableFollowers(profilesData || []);
+      } else {
+        setAvailableFollowers([]);
+      }
+    } catch (error) {
+      console.error('Error fetching available followers:', error);
+    }
+  };
+
+  const handleAddMember = async (userId: string, userName: string) => {
+    try {
+      setAddingMember(true);
+
+      // Add to group_members
+      const { error: memberError } = await supabase
+        .from('group_members')
+        .insert({
+          group_id: groupId,
+          user_id: userId,
+          role: 'member'
+        });
+
+      if (memberError) throw memberError;
+
+      // Add to conversation_participants
+      const { error: participantError } = await supabase
+        .from('conversation_participants')
+        .insert({
+          conversation_id: conversationId,
+          user_id: userId
+        });
+
+      if (participantError) throw participantError;
+
+      // Create notification for the added user
+      const { error: notificationError } = await supabase
+        .from('notifications')
+        .insert({
+          user_id: userId,
+          actor_id: currentUserId,
+          type: 'group_invitation',
+          content: `Vous avez été ajouté au groupe "${group?.name}"`,
+          read: false
+        });
+
+      if (notificationError) throw notificationError;
+
+      toast({
+        title: "Succès",
+        description: `${userName} a été ajouté au groupe`,
+      });
+
+      // Refresh data
+      await fetchGroupInfo();
+      await fetchAvailableFollowers();
+      setShowAddMembers(false);
+      setSearchQuery("");
+    } catch (error) {
+      console.error('Error adding member:', error);
+      toast({
+        title: "Erreur",
+        description: "Impossible d'ajouter ce membre au groupe",
+        variant: "destructive",
+      });
+    } finally {
+      setAddingMember(false);
+    }
+  };
+
   const handleLeaveGroup = async () => {
     try {
       // Remove from group_members
@@ -138,61 +247,172 @@ export const GroupInfoDialog = ({
 
   if (!group) return null;
 
+  const filteredFollowers = availableFollowers.filter((follower) =>
+    follower.full_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    follower.nickname.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
   return (
     <>
       <Dialog open={open} onOpenChange={onOpenChange}>
-        <DialogContent className="sm:max-w-[500px]">
-          <DialogHeader>
-            <div className="flex items-center gap-3">
-              <Avatar className="h-16 w-16">
-                <AvatarImage 
-                  src={group.avatar_url || undefined} 
-                  alt={group.name}
-                />
-                <AvatarFallback>
-                  <Users className="h-8 w-8" />
-                </AvatarFallback>
-              </Avatar>
+        <DialogContent className="sm:max-w-[550px] max-h-[90vh] overflow-hidden flex flex-col">
+          <DialogHeader className="space-y-4">
+            <div className="flex items-center gap-4">
+              <div className="relative">
+                <Avatar className="h-20 w-20 ring-2 ring-primary/20">
+                  <AvatarImage 
+                    src={group.avatar_url || undefined} 
+                    alt={group.name}
+                  />
+                  <AvatarFallback className="bg-gradient-to-br from-primary/30 to-primary/10">
+                    <Users className="h-10 w-10 text-primary" />
+                  </AvatarFallback>
+                </Avatar>
+              </div>
               <div className="flex-1">
-                <DialogTitle className="text-xl">{group.name}</DialogTitle>
-                <DialogDescription className="text-sm text-muted-foreground">
+                <DialogTitle className="text-2xl font-bold bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
+                  {group.name}
+                </DialogTitle>
+                <DialogDescription className="text-sm">
                   {members.length} {members.length === 1 ? 'membre' : 'membres'}
                 </DialogDescription>
               </div>
             </div>
           </DialogHeader>
 
-          <div className="space-y-4 mt-4">
+          <div className="flex-1 overflow-y-auto space-y-4 py-4">
             {group.description && (
-              <div>
-                <h4 className="text-sm font-semibold mb-2">Description</h4>
-                <p className="text-sm text-muted-foreground">{group.description}</p>
+              <div className="p-3 rounded-lg bg-muted/50 border border-border/50">
+                <h4 className="text-sm font-semibold mb-1.5 flex items-center gap-2">
+                  <span className="w-1 h-4 bg-primary rounded-full"></span>
+                  Description
+                </h4>
+                <p className="text-sm text-muted-foreground pl-3">{group.description}</p>
               </div>
             )}
 
             <div>
-              <h4 className="text-sm font-semibold mb-3">Membres ({members.length})</h4>
-              <ScrollArea className="h-[300px] pr-4">
-                <div className="space-y-2">
+              <div className="flex items-center justify-between mb-3">
+                <h4 className="text-sm font-semibold flex items-center gap-2">
+                  <span className="w-1 h-4 bg-primary rounded-full"></span>
+                  Membres ({members.length})
+                </h4>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="h-8 gap-1.5"
+                  onClick={() => setShowAddMembers(!showAddMembers)}
+                >
+                  <UserPlus className="h-3.5 w-3.5" />
+                  Ajouter
+                </Button>
+              </div>
+
+              {showAddMembers && (
+                <div className="mb-4 p-4 rounded-lg bg-primary/5 border border-primary/20 space-y-3 animate-in fade-in slide-in-from-top-2">
+                  <div className="flex items-center justify-between">
+                    <h5 className="text-sm font-medium">Ajouter des membres</h5>
+                    <Button
+                      size="icon"
+                      variant="ghost"
+                      className="h-6 w-6"
+                      onClick={() => {
+                        setShowAddMembers(false);
+                        setSearchQuery("");
+                      }}
+                    >
+                      <X className="h-4 w-4" />
+                    </Button>
+                  </div>
+                  
+                  <Input
+                    placeholder="Rechercher dans vos abonnements..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="h-9"
+                  />
+
+                  <ScrollArea className="h-[200px] pr-2">
+                    <div className="space-y-1.5">
+                      {filteredFollowers.length === 0 ? (
+                        <p className="text-sm text-muted-foreground text-center py-4">
+                          {searchQuery ? "Aucun résultat trouvé" : "Tous vos abonnements sont déjà dans ce groupe"}
+                        </p>
+                      ) : (
+                        filteredFollowers.map((follower) => (
+                          <div
+                            key={follower.id}
+                            className="flex items-center gap-2 p-2 rounded-lg hover:bg-background transition-colors"
+                          >
+                            <Avatar className="h-9 w-9">
+                              <AvatarImage 
+                                src={getAvatarUrl(follower.avatar_url)} 
+                                alt={follower.full_name}
+                              />
+                              <AvatarFallback className="text-xs">
+                                {follower.full_name[0]}
+                              </AvatarFallback>
+                            </Avatar>
+                            <div className="flex-1 min-w-0">
+                              <div className="flex items-center gap-1">
+                                <p className="text-sm font-medium truncate">
+                                  {follower.full_name}
+                                </p>
+                                {follower.verified && (
+                                  <BadgeCheck className="h-3.5 w-3.5 text-primary flex-shrink-0" />
+                                )}
+                              </div>
+                              <p className="text-xs text-muted-foreground truncate">
+                                @{follower.nickname}
+                              </p>
+                            </div>
+                            <Button
+                              size="sm"
+                              className="h-7 px-3 text-xs"
+                              onClick={() => handleAddMember(follower.user_id, follower.full_name)}
+                              disabled={addingMember}
+                            >
+                              Ajouter
+                            </Button>
+                          </div>
+                        ))
+                      )}
+                    </div>
+                  </ScrollArea>
+                </div>
+              )}
+
+              <ScrollArea className="h-[250px] pr-2">
+                <div className="space-y-1.5">
                   {loading ? (
-                    <p className="text-sm text-muted-foreground">Chargement...</p>
+                    <div className="space-y-2 py-4">
+                      {[1, 2, 3].map((i) => (
+                        <div key={i} className="flex items-center gap-3 p-2">
+                          <div className="h-10 w-10 rounded-full bg-muted animate-pulse" />
+                          <div className="flex-1 space-y-2">
+                            <div className="h-4 w-32 bg-muted animate-pulse rounded" />
+                            <div className="h-3 w-24 bg-muted animate-pulse rounded" />
+                          </div>
+                        </div>
+                      ))}
+                    </div>
                   ) : (
                     members.map((member) => (
                       <div
                         key={member.id}
-                        className="flex items-center gap-3 p-2 rounded-lg hover:bg-accent/50 transition-colors"
+                        className="flex items-center gap-3 p-2.5 rounded-lg hover:bg-accent/50 transition-all hover:scale-[1.01]"
                       >
-                        <Avatar className="h-10 w-10">
+                        <Avatar className="h-11 w-11 ring-2 ring-primary/10">
                           <AvatarImage 
                             src={getAvatarUrl(member.avatar_url)} 
                             alt={member.full_name}
                           />
-                          <AvatarFallback>
+                          <AvatarFallback className="bg-gradient-to-br from-primary/20 to-primary/10">
                             {member.full_name[0]}
                           </AvatarFallback>
                         </Avatar>
                         <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-1">
+                          <div className="flex items-center gap-1.5">
                             <p className="text-sm font-medium truncate">
                               {member.full_name}
                             </p>
@@ -205,7 +425,7 @@ export const GroupInfoDialog = ({
                           </p>
                         </div>
                         {member.user_id === group.created_by && (
-                          <span className="text-xs bg-primary/10 text-primary px-2 py-1 rounded">
+                          <span className="text-xs bg-gradient-to-r from-primary to-primary/70 text-primary-foreground px-2.5 py-1 rounded-full font-medium">
                             Admin
                           </span>
                         )}
@@ -215,7 +435,11 @@ export const GroupInfoDialog = ({
                 </div>
               </ScrollArea>
             </div>
+          </div>
 
+          <Separator className="my-2" />
+
+          <div className="pt-2">
             <Button
               variant="destructive"
               className="w-full"
