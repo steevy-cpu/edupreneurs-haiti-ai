@@ -114,11 +114,16 @@ const Community = () => {
       setupGlobalPresenceListener();
     }
     
-    // Don't clean up the global presence channel - let Layout manage it
-    // Only clean up conversation-specific subscriptions
     return () => {
-      // The global presence channel is managed by Layout.tsx
-      // We just listen to it, so no cleanup needed here
+      // Clean up the presence listener and polling interval
+      if (globalPresenceChannelRef.current) {
+        const channel = globalPresenceChannelRef.current;
+        if ((channel as any).pollInterval) {
+          clearInterval((channel as any).pollInterval);
+        }
+        supabase.removeChannel(channel);
+        globalPresenceChannelRef.current = null;
+      }
     };
   }, [user?.id]);
 
@@ -292,81 +297,98 @@ const Community = () => {
   const setupGlobalPresenceListener = () => {
     if (!user) return;
 
-    console.log('🌐 [Community] Setting up presence listener for user:', user.id);
-    
-    // Get the existing channel that Layout created - don't create a new one
-    const existingChannels = supabase.getChannels();
-    const onlineUsersChannel = existingChannels.find(ch => ch.topic === 'realtime:online-users');
-    
-    if (!onlineUsersChannel) {
-      console.warn('⚠️ [Community] No online-users channel found from Layout');
-      return;
+    // Check if we already have an active listener
+    if (globalPresenceChannelRef.current) {
+      const state = globalPresenceChannelRef.current.state;
+      if (state === 'joined') {
+        console.log('✅ [Community] Global presence listener already active');
+        return;
+      }
     }
 
-    console.log('✅ [Community] Found existing online-users channel from Layout');
+    console.log('🌐 [Community] Setting up presence listener for user:', user.id);
     
-    // Use the existing channel to listen to presence
-    onlineUsersChannel
+    // Create a unique channel name for Community's listener
+    const channel = supabase.channel(`community-presence-${user.id}`);
+
+    channel
       .on('presence', { event: 'sync' }, () => {
-        const state = onlineUsersChannel.presenceState();
-        console.log('🔄 [Community] Presence sync:', state);
-        const userIds = new Set<string>();
-        Object.values(state).forEach((presences: any) => {
-          presences.forEach((p: any) => {
-            if (p.user_id) userIds.add(p.user_id);
-          });
-        });
-        console.log('👥 [Community] Online users:', Array.from(userIds));
-        setOnlineUsers(userIds);
+        // Get presence from the shared online-users channel via Layout
+        const allChannels = supabase.getChannels();
+        const onlineChannel = allChannels.find(ch => ch.topic === 'realtime:online-users');
         
-        // Initialize last seen times for users who are offline
-        setLastSeenTimes(prevTimes => {
-          const newTimes = { ...prevTimes };
-          conversations.forEach(conv => {
-            const otherUserId = conv.otherUser?.user_id;
-            if (otherUserId && !userIds.has(otherUserId) && !newTimes[otherUserId]) {
-              newTimes[otherUserId] = new Date(Date.now() - 300000).toISOString();
-            }
+        if (onlineChannel) {
+          const state = onlineChannel.presenceState();
+          console.log('🔄 [Community] Presence sync from Layout channel:', state);
+          const userIds = new Set<string>();
+          Object.values(state).forEach((presences: any) => {
+            presences.forEach((p: any) => {
+              if (p.user_id) userIds.add(p.user_id);
+            });
           });
-          return newTimes;
-        });
+          console.log('👥 [Community] Online users:', Array.from(userIds));
+          setOnlineUsers(userIds);
+          
+          // Initialize last seen times for offline users
+          setLastSeenTimes(prevTimes => {
+            const newTimes = { ...prevTimes };
+            conversations.forEach(conv => {
+              const otherUserId = conv.otherUser?.user_id;
+              if (otherUserId && !userIds.has(otherUserId) && !newTimes[otherUserId]) {
+                newTimes[otherUserId] = new Date(Date.now() - 300000).toISOString();
+              }
+            });
+            return newTimes;
+          });
+        }
       })
-      .on('presence', { event: 'join' }, ({ key, newPresences }) => {
-        console.log('👋 [Community] User joined:', key, newPresences);
-        setOnlineUsers(prev => {
-          const updated = new Set(prev);
-          newPresences.forEach((p: any) => {
-            if (p.user_id) updated.add(p.user_id);
-          });
-          return updated;
-        });
-      })
-      .on('presence', { event: 'leave' }, ({ key, leftPresences }) => {
-        console.log('👋 [Community] User left:', key, leftPresences);
-        const now = new Date().toISOString();
-        setOnlineUsers(prev => {
-          const updated = new Set(prev);
-          leftPresences.forEach((p: any) => {
-            if (p.user_id) {
-              updated.delete(p.user_id);
-            }
-          });
-          return updated;
-        });
+      .subscribe((status) => {
+        console.log('📡 [Community] Presence listener status:', status);
         
-        // Always update last seen time when user leaves
-        leftPresences.forEach((p: any) => {
-          if (p.user_id) {
-            setLastSeenTimes(prevTimes => ({
-              ...prevTimes,
-              [p.user_id]: now
-            }));
-          }
-        });
+        // Poll for presence updates every 5 seconds
+        if (status === 'SUBSCRIBED') {
+          const pollInterval = setInterval(() => {
+            const allChannels = supabase.getChannels();
+            const onlineChannel = allChannels.find(ch => ch.topic === 'realtime:online-users');
+            
+            if (onlineChannel) {
+              const state = onlineChannel.presenceState();
+              const userIds = new Set<string>();
+              Object.values(state).forEach((presences: any) => {
+                presences.forEach((p: any) => {
+                  if (p.user_id) userIds.add(p.user_id);
+                });
+              });
+              
+              setOnlineUsers(prev => {
+                const prevArray = Array.from(prev).sort();
+                const newArray = Array.from(userIds).sort();
+                if (JSON.stringify(prevArray) !== JSON.stringify(newArray)) {
+                  console.log('👥 [Community] Online users updated:', Array.from(userIds));
+                  
+                  // Track who went offline
+                  prev.forEach(userId => {
+                    if (!userIds.has(userId)) {
+                      setLastSeenTimes(prevTimes => ({
+                        ...prevTimes,
+                        [userId]: new Date().toISOString()
+                      }));
+                    }
+                  });
+                  
+                  return userIds;
+                }
+                return prev;
+              });
+            }
+          }, 5000);
+          
+          // Store interval for cleanup
+          (channel as any).pollInterval = pollInterval;
+        }
       });
 
-    // Store reference but don't manage lifecycle - Layout handles that
-    globalPresenceChannelRef.current = onlineUsersChannel;
+    globalPresenceChannelRef.current = channel;
   };
 
   const checkUser = async () => {
