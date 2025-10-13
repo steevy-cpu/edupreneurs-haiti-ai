@@ -672,10 +672,42 @@ const Community = () => {
           schema: "public",
           table: "messages",
         },
-        (payload) => {
+        async (payload) => {
           console.log('📨 New message received, refreshing conversations:', payload);
-          // Update conversations list when new message arrives
-          fetchConversations();
+          
+          // Get the sender's profile for the new message
+          const { data: senderProfile } = await supabase
+            .from("profiles")
+            .select("*")
+            .eq("user_id", payload.new.sender_id)
+            .single();
+
+          // Update conversations state immediately - move conversation to top
+          setConversations(prev => {
+            const convIndex = prev.findIndex(c => c.id === payload.new.conversation_id);
+            
+            if (convIndex !== -1) {
+              // Update existing conversation
+              const updatedConv = {
+                ...prev[convIndex],
+                lastMessage: payload.new.content,
+                lastMessageTime: payload.new.created_at,
+                // Increment unread count only if message is from another user
+                unreadCount: payload.new.sender_id !== user?.id 
+                  ? (prev[convIndex].unreadCount || 0) + 1 
+                  : prev[convIndex].unreadCount || 0
+              };
+              
+              // Remove from current position and add to top
+              const newConversations = [...prev];
+              newConversations.splice(convIndex, 1);
+              return [updatedConv, ...newConversations];
+            } else {
+              // New conversation - fetch all conversations to include it
+              fetchConversations();
+              return prev;
+            }
+          });
         }
       )
       .on(
@@ -689,8 +721,14 @@ const Community = () => {
           console.log('✅ Message updated:', payload);
           // If message was marked as read, update the conversation's unread count
           if (payload.new.read && !payload.old.read) {
-            // Refetch conversations to update unread counts
-            fetchConversations();
+            // Update conversation unread count immediately
+            setConversations(prev => 
+              prev.map(conv => 
+                conv.id === payload.new.conversation_id 
+                  ? { ...conv, unreadCount: Math.max(0, (conv.unreadCount || 0) - 1) }
+                  : conv
+              )
+            );
           }
         }
       )
