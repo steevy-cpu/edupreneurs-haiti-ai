@@ -689,6 +689,10 @@ export type Database = {
         }
         Returns: undefined
       }
+      check_nickname_available: {
+        Args: { nickname_input: string }
+        Returns: boolean
+      }
       create_conversation: {
         Args: Record<PropertyKey, never>
         Returns: string

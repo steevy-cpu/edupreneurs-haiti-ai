@@ -146,14 +146,12 @@ export default function Auth() {
 
     setCheckingNickname(true);
     try {
-      const { data, error } = await supabase
-        .from('profiles')
-        .select('nickname')
-        .ilike('nickname', nickname);
+      const { data, error } = await supabase.rpc('check_nickname_available', {
+        nickname_input: nickname
+      });
 
       if (error) throw error;
-      // Check if any matching nickname exists (case-insensitive)
-      setNicknameAvailable(!data || data.length === 0);
+      setNicknameAvailable(data === true);
     } catch (error) {
       console.error("Error checking nickname:", error);
       setNicknameAvailable(null);
