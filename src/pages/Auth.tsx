@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -138,26 +138,43 @@ export default function Auth() {
     }
   };
 
+  // Debounce timer ref
+  const nicknameCheckTimer = useRef<NodeJS.Timeout>();
+
   const checkNicknameAvailability = async (nickname: string) => {
+    // Clear previous timer
+    if (nicknameCheckTimer.current) {
+      clearTimeout(nicknameCheckTimer.current);
+    }
+
     if (!nickname || nickname.length < 3) {
       setNicknameAvailable(null);
+      setCheckingNickname(false);
       return;
     }
 
     setCheckingNickname(true);
-    try {
-      const { data, error } = await supabase.rpc('check_nickname_available', {
-        nickname_input: nickname
-      });
 
-      if (error) throw error;
-      setNicknameAvailable(data === true);
-    } catch (error) {
-      console.error("Error checking nickname:", error);
-      setNicknameAvailable(null);
-    } finally {
-      setCheckingNickname(false);
-    }
+    // Debounce the API call
+    nicknameCheckTimer.current = setTimeout(async () => {
+      try {
+        console.log('🔍 Checking nickname availability for:', nickname);
+        const { data, error } = await supabase.rpc('check_nickname_available', {
+          nickname_input: nickname
+        });
+
+        if (error) throw error;
+        
+        const isAvailable = data === true;
+        console.log('✅ Nickname check result:', { nickname, isAvailable });
+        setNicknameAvailable(isAvailable);
+      } catch (error) {
+        console.error("❌ Error checking nickname:", error);
+        setNicknameAvailable(null);
+      } finally {
+        setCheckingNickname(false);
+      }
+    }, 500); // Wait 500ms after user stops typing
   };
 
   const handleSignup = async (e: React.FormEvent) => {
