@@ -163,7 +163,7 @@ export default function Auth() {
       // Check if email is verified
       const { data: profile, error: profileError } = await supabase
         .from('profiles')
-        .select('email_confirmed, full_name')
+        .select('email_confirmed, full_name, nickname, academic_grade')
         .eq('user_id', authData.user.id)
         .single();
 
@@ -172,10 +172,42 @@ export default function Auth() {
       }
 
       if (profile && !profile.email_confirmed) {
+        // User not verified - generate new code, send email, show verify screen
         await supabase.auth.signOut();
+        
+        // Generate new verification code
+        const newCode = generateConfirmationCode();
+        
+        // Update profile with new code
+        const { error: updateError } = await supabase
+          .from('profiles')
+          .update({ confirmation_code: newCode })
+          .eq('user_id', authData.user.id);
+        
+        if (updateError) {
+          console.error("Error updating verification code:", updateError);
+        }
+        
+        // Send verification email with new code
+        try {
+          await sendVerificationEmail({
+            to_email: loginData.email,
+            to_name: profile.full_name || profile.nickname,
+            confirmation_code: newCode,
+            nickname: profile.nickname,
+            academic_grade: profile.academic_grade,
+          });
+        } catch (emailError) {
+          console.error("Error sending verification email:", emailError);
+        }
+        
+        // Set pending user and show verify tab
+        setPendingUserId(authData.user.id);
+        setActiveTab("verify");
+        
         toast({
           title: "Email non vérifié",
-          description: "Veuillez vérifier votre email avant de vous connecter. Vérifiez votre boîte de réception.",
+          description: "Un nouveau code de vérification a été envoyé à votre adresse email.",
           variant: "destructive",
         });
         return;
