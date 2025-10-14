@@ -35,8 +35,11 @@ interface PasswordResetParams {
 export const sendVerificationEmail = async (params: VerificationEmailParams) => {
   try {
     const templateParams = {
+      user_email: params.to_email,
       to_email: params.to_email,
+      reply_to: params.to_email,
       to_name: params.to_name,
+      user_name: params.to_name,
       confirmation_code: params.confirmation_code,
       nickname: params.nickname || params.to_name,
       academic_grade: params.academic_grade || '',
