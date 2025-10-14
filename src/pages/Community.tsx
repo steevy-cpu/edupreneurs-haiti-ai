@@ -1691,9 +1691,9 @@ const Community = () => {
                     className="flex-1 min-w-0"
                     onClick={() => setSelectedConversation(conv.id)}
                   >
-                    <div className="flex items-center gap-1.5">
+                    <div className="flex items-center gap-1.5 min-w-0">
                       <p 
-                        className="font-semibold truncate text-sm sm:text-base cursor-pointer hover:underline"
+                        className="font-semibold truncate text-sm sm:text-base cursor-pointer hover:underline flex-shrink"
                         onClick={(e) => {
                           if (conv.is_group && conv.group) {
                             e.stopPropagation();
@@ -1708,15 +1708,15 @@ const Community = () => {
                         }
                       </p>
                       {conv.is_group && (
-                        <span className="text-xs text-muted-foreground">
-                          ({conv.group?.member_count} membres)
+                        <span className="text-xs text-muted-foreground shrink-0">
+                          ({conv.group?.member_count})
                         </span>
                       )}
                       {!conv.is_group && conv.otherUser?.verified && (
                         <BadgeCheck className="w-4 h-4 text-primary fill-primary/20 shrink-0" />
                       )}
                       {!conv.is_group && conv.otherUser?.user_id && onlineUsers.has(conv.otherUser.user_id) && (
-                        <span className="text-xs text-green-500 font-medium">En ligne</span>
+                        <span className="text-xs text-green-500 font-medium shrink-0 whitespace-nowrap">En ligne</span>
                       )}
                     </div>
                     {(() => {
@@ -1836,9 +1836,9 @@ const Community = () => {
                       )}
                     </Avatar>
                     <div className="min-w-0 flex-1">
-                      <div className="flex items-center gap-1.5">
+                      <div className="flex items-center gap-1.5 min-w-0">
                         <p 
-                          className="font-semibold text-sm sm:text-base truncate cursor-pointer hover:opacity-80 transition-opacity hover:underline"
+                          className="font-semibold text-sm sm:text-base truncate cursor-pointer hover:opacity-80 transition-opacity hover:underline flex-shrink"
                           onClick={() => {
                             if (isGroup && currentConv?.group) {
                               setSelectedGroupId(currentConv.group.id);
@@ -1854,8 +1854,8 @@ const Community = () => {
                           }
                         </p>
                         {isGroup && (
-                          <span className="text-xs text-muted-foreground">
-                            ({currentConv.group?.member_count} membres)
+                          <span className="text-xs text-muted-foreground shrink-0 whitespace-nowrap">
+                            ({currentConv.group?.member_count})
                           </span>
                         )}
                         {!isGroup && currentConv?.otherUser?.verified && (
