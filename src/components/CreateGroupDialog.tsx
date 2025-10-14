@@ -215,13 +215,13 @@ export function CreateGroupDialog({ open, onOpenChange, followers, onGroupCreate
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-md">
-        <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
-            <Users className="h-5 w-5" />
-            Créer un groupe
+      <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto">
+        <DialogHeader className="space-y-3">
+          <DialogTitle className="flex items-center gap-2 text-lg sm:text-xl">
+            <Users className="h-5 w-5 shrink-0" />
+            <span className="truncate">Créer un groupe</span>
           </DialogTitle>
-          <DialogDescription>
+          <DialogDescription className="text-sm">
             Créez un groupe pour discuter avec plusieurs personnes
           </DialogDescription>
         </DialogHeader>
