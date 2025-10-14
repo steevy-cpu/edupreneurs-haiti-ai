@@ -260,8 +260,26 @@ export const Layout = ({ children }: LayoutProps) => {
 
   const checkAuth = async () => {
     const { data: { session } } = await supabase.auth.getSession();
+    
     if (!session && location.pathname !== "/auth") {
       navigate("/auth");
+      return;
+    }
+    
+    // If user has a session, check if email is verified
+    if (session?.user) {
+      const { data: profile, error } = await supabase
+        .from('profiles')
+        .select('email_confirmed')
+        .eq('user_id', session.user.id)
+        .single();
+      
+      if (!error && profile && !profile.email_confirmed) {
+        // User is logged in but email not verified - sign them out and redirect to auth
+        await supabase.auth.signOut();
+        toast.error("Veuillez vérifier votre email avant d'accéder à votre compte");
+        navigate("/auth");
+      }
     }
   };
 

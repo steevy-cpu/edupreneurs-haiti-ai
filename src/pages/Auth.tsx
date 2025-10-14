@@ -37,6 +37,33 @@ export default function Auth() {
   const [pendingUserId, setPendingUserId] = useState<string | null>(null);
 
   useEffect(() => {
+    // Check if user is logged in but not verified
+    const checkVerificationStatus = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      if (session?.user) {
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('email_confirmed, user_id')
+          .eq('user_id', session.user.id)
+          .single();
+        
+        if (profile && !profile.email_confirmed) {
+          // User exists but not verified - sign them out and show verify tab
+          await supabase.auth.signOut();
+          setPendingUserId(profile.user_id);
+          setActiveTab("verify");
+          toast({
+            title: "Email non vérifié",
+            description: "Veuillez entrer votre code de vérification pour accéder à votre compte",
+            variant: "destructive",
+          });
+        }
+      }
+    };
+    
+    checkVerificationStatus();
+    
     // Check for referral code in URL
     const refCode = searchParams.get("ref");
     if (refCode) {
