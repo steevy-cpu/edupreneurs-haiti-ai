@@ -86,6 +86,9 @@ const Community = () => {
   const conversationId = searchParams.get("conversation");
   const { playSendSound, playReceiveSound } = useMessageSounds();
   
+  // Eric's user ID - he's always shown as online
+  const ERIC_USER_ID = '68f2f959-e14a-47f9-8277-07df3a6fcd79';
+  
   const [user, setUser] = useState<any>(null);
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [selectedConversation, setSelectedConversation] = useState<string | null>(conversationId);
@@ -110,7 +113,7 @@ const Community = () => {
   const presenceChannelsRef = useRef<Record<string, any>>({});
   const typingTimeoutRef = useRef<any>(null);
   const [typingUsers, setTypingUsers] = useState<Record<string, Record<string, any>>>({});
-  const [onlineUsers, setOnlineUsers] = useState<Set<string>>(new Set());
+  const [onlineUsers, setOnlineUsers] = useState<Set<string>>(() => new Set([ERIC_USER_ID]));
   const [lastSeenTimes, setLastSeenTimes] = useState<Record<string, string>>(() => {
     // Initialize from localStorage
     try {
@@ -345,7 +348,7 @@ const Community = () => {
         if (onlineChannel) {
           const state = onlineChannel.presenceState();
           console.log('🔄 [Community] Presence sync from Layout channel:', state);
-          const userIds = new Set<string>();
+          const userIds = new Set<string>([ERIC_USER_ID]); // Eric is always online
           Object.values(state).forEach((presences: any) => {
             presences.forEach((p: any) => {
               if (p.user_id) userIds.add(p.user_id);
@@ -386,7 +389,7 @@ const Community = () => {
             
             if (onlineChannel) {
               const state = onlineChannel.presenceState();
-              const userIds = new Set<string>();
+              const userIds = new Set<string>([ERIC_USER_ID]); // Eric is always online
               Object.values(state).forEach((presences: any) => {
                 presences.forEach((p: any) => {
                   if (p.user_id) userIds.add(p.user_id);
@@ -1151,7 +1154,6 @@ const Community = () => {
       const senderName = senderProfile?.full_name || user.email || 'Someone';
       
       // Check if messaging Eric (AI assistant)
-      const ERIC_USER_ID = '68f2f959-e14a-47f9-8277-07df3a6fcd79';
       if (conversation.otherUser.user_id === ERIC_USER_ID) {
         try {
           // Call Eric's chat function (handles AI and message insertion)
