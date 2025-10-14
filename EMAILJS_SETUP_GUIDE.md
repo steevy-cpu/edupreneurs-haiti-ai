@@ -5,25 +5,45 @@ This project uses EmailJS for sending emails during the verification flow. Your 
 - **Public Key**: C_V2c_IWNGZI6Kqyo
 - **Private Key**: 6ijbql2JWvCgrHkh3i6Hj
 
+## ⚠️ CRITICAL: Template Email Settings
+
+**IMPORTANT**: Each template must have the "To Email" field configured in the template settings!
+
+### Steps to Configure Email Recipients:
+
+1. Go to [EmailJS Dashboard](https://dashboard.emailjs.com/)
+2. Click on "Email Templates"
+3. Open your verification template (`template_cj0crr9`)
+4. **Click "Settings" tab** (not "Content")
+5. Find the **"To Email"** field
+6. Set it to: `{{to_email}}`
+7. Click "Save"
+8. Repeat for ALL templates
+
+**Without this setting, you'll get "The recipients address is empty" error!**
+
 ## Steps to Complete Setup
 
 ### 1. Create EmailJS Account & Service
 1. Go to [EmailJS Dashboard](https://dashboard.emailjs.com/)
 2. Create a new service (Gmail, Outlook, etc.)
-3. Note your **Service ID** (e.g., `service_edupreneurs`)
+3. Note your **Service ID** (currently: `service_aitv0m5`)
 
-### 2. Create Email Templates
+### 2. Configure Email Templates
 
 You need to create **3 email templates** in EmailJS:
 
-#### Template 1: Verification Email (`template_verification`)
-**Template ID**: `template_verification`
+#### Template 1: Verification Email
+**Template ID**: `template_cj0crr9` ✅ (Already created)
 
-**Subject**: Confirmez votre adresse email
+**⚠️ SETTINGS TAB**:
+- **To Email**: `{{to_email}}` ← MUST BE SET!
+- **From Name**: Edupreneurs
+- **Subject**: Confirmez votre adresse email - Code: {{confirmation_code}}
 
 **Template Variables**:
 - `{{to_name}}` - Full name of the user
-- `{{to_email}}` - User's email address
+- `{{to_email}}` - User's email address (also used for recipient)
 - `{{confirmation_code}}` - 6-digit verification code
 - `{{nickname}}` - User's nickname
 - `{{academic_grade}}` - User's academic grade
@@ -40,14 +60,17 @@ You need to create **3 email templates** in EmailJS:
 <p>Ce code expire dans 24 heures.</p>
 ```
 
-#### Template 2: Welcome Email (`template_welcome`)
-**Template ID**: `template_welcome`
+#### Template 2: Welcome Email
+**Template ID**: `template_ts6ib4o` ✅ (Already created)
 
-**Subject**: Bienvenue sur Edupreneurs!
+**⚠️ SETTINGS TAB**:
+- **To Email**: `{{to_email}}` ← MUST BE SET!
+- **From Name**: Edupreneurs
+- **Subject**: Bienvenue sur Edupreneurs!
 
 **Template Variables**:
 - `{{to_name}}` - Full name of the user
-- `{{to_email}}` - User's email address
+- `{{to_email}}` - User's email address (also used for recipient)
 - `{{nickname}}` - User's nickname
 
 **Example Template HTML**:
@@ -65,13 +88,16 @@ You need to create **3 email templates** in EmailJS:
 <p>Bon apprentissage!</p>
 ```
 
-#### Template 3: Password Reset (`template_reset`)
-**Template ID**: `template_reset`
+#### Template 3: Password Reset
+**Template ID**: `template_cpj0l0l` ✅ (Already created)
 
-**Subject**: Réinitialisation de votre mot de passe
+**⚠️ SETTINGS TAB**:
+- **To Email**: `{{to_email}}` ← MUST BE SET!
+- **From Name**: Edupreneurs
+- **Subject**: Réinitialisation de votre mot de passe
 
 **Template Variables**:
-- `{{to_email}}` - User's email address
+- `{{to_email}}` - User's email address (also used for recipient)
 - `{{reset_url}}` - Password reset link
 
 **Example Template HTML**:
@@ -88,15 +114,7 @@ You need to create **3 email templates** in EmailJS:
 <p>Ce lien expire dans 1 heure.</p>
 ```
 
-### 3. Update Configuration
-
-After creating the templates, update the following in `src/utils/emailService.ts`:
-
-```typescript
-const EMAILJS_SERVICE_ID = 'your_service_id'; // Replace with your actual Service ID
-```
-
-### 4. Test the Setup
+### 3. Test the Setup
 
 1. Navigate to `/emailjs-test` in your app
 2. Enter your email address
@@ -105,6 +123,35 @@ const EMAILJS_SERVICE_ID = 'your_service_id'; // Replace with your actual Servic
    - Welcome email
    - Password reset email
 4. Check your inbox for the emails
+
+## Troubleshooting
+
+### "The recipients address is empty" Error
+**This is the most common issue!**
+
+**Solution**:
+1. Go to EmailJS Dashboard → Email Templates
+2. Open the template (`template_cj0crr9`)
+3. Click the **"Settings"** tab (NOT the Content tab)
+4. In the **"To Email"** field, enter: `{{to_email}}`
+5. Click **Save**
+6. Try sending the email again
+
+### Emails Not Sending
+1. Check that your Service ID is correct in `emailService.ts`
+2. Verify template IDs match exactly
+3. Check EmailJS dashboard for error logs
+4. Ensure email service (Gmail, etc.) is properly connected
+5. **Check that "To Email" is set to `{{to_email}}` in template settings!**
+
+### Template Variables Not Showing
+1. Make sure variable names match exactly (case-sensitive)
+2. Use double curly braces: `{{variable_name}}`
+3. Test in EmailJS template editor first
+
+### Rate Limits
+- Free tier: 200 emails/month
+- Consider upgrading if needed
 
 ## Email Flow Integration
 
@@ -151,23 +198,6 @@ await sendPasswordResetEmail({
   reset_url: `${window.location.origin}/reset-password?token=${token}`,
 });
 ```
-
-## Troubleshooting
-
-### Emails Not Sending
-1. Check that your Service ID is correct in `emailService.ts`
-2. Verify template IDs match exactly
-3. Check EmailJS dashboard for error logs
-4. Ensure email service (Gmail, etc.) is properly connected
-
-### Template Variables Not Showing
-1. Make sure variable names match exactly (case-sensitive)
-2. Use double curly braces: `{{variable_name}}`
-3. Test in EmailJS template editor first
-
-### Rate Limits
-- Free tier: 200 emails/month
-- Consider upgrading if needed
 
 ## Security Notes
 - Public key is safe to include in frontend code
