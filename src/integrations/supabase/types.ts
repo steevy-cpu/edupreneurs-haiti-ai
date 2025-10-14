@@ -671,6 +671,16 @@ export type Database = {
       }
     }
     Functions: {
+      add_user_to_group: {
+        Args: {
+          p_conversation_id: string
+          p_group_id: string
+          p_role?: string
+          p_user_id: string
+          p_visible_from_message_id?: string
+        }
+        Returns: undefined
+      }
       award_referral_points: {
         Args: {
           p_points?: number
@@ -702,6 +712,14 @@ export type Database = {
       is_group_member: {
         Args: { _group_id: string; _user_id: string }
         Returns: boolean
+      }
+      remove_user_from_group: {
+        Args: {
+          p_conversation_id: string
+          p_group_id: string
+          p_user_id: string
+        }
+        Returns: undefined
       }
     }
     Enums: {

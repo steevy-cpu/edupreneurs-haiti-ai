@@ -1479,20 +1479,38 @@ const Community = () => {
 
   const handleDeleteConversation = async (conversationId: string) => {
     try {
-      // For both group and 1-on-1 conversations, just remove from participants
-      // This hides the conversation from the user's list without leaving the group
-      const { error } = await supabase
-        .from("conversation_participants")
-        .delete()
-        .eq("conversation_id", conversationId)
-        .eq("user_id", user?.id);
+      // Check if this is a group conversation
+      const conversation = conversations.find(c => c.id === conversationId);
+      
+      if (conversation?.is_group && conversation.group?.id) {
+        // For group conversations, properly remove from the group
+        const { error } = await supabase.rpc('remove_user_from_group', {
+          p_group_id: conversation.group.id,
+          p_user_id: user?.id,
+          p_conversation_id: conversationId
+        });
 
-      if (error) throw error;
+        if (error) throw error;
 
-      toast({
-        title: "Succès",
-        description: "Conversation supprimée de votre liste",
-      });
+        toast({
+          title: "Succès",
+          description: "Vous avez quitté le groupe",
+        });
+      } else {
+        // For 1-on-1 conversations, just hide by removing from participants
+        const { error } = await supabase
+          .from("conversation_participants")
+          .delete()
+          .eq("conversation_id", conversationId)
+          .eq("user_id", user?.id);
+
+        if (error) throw error;
+
+        toast({
+          title: "Succès",
+          description: "Conversation supprimée de votre liste",
+        });
+      }
 
       // Clear selection if this conversation was selected
       if (selectedConversation === conversationId) {

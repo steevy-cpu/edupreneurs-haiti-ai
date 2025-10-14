@@ -154,17 +154,6 @@ export const GroupInfoDialog = ({
     try {
       setAddingMember(true);
 
-      // Add to group_members first
-      const { error: memberError } = await supabase
-        .from('group_members')
-        .insert({
-          group_id: groupId,
-          user_id: userId,
-          role: 'member'
-        });
-
-      if (memberError) throw memberError;
-
       // Create system message announcing the new member
       const { data: systemMessage, error: messageError } = await supabase
         .from('messages')
@@ -179,17 +168,16 @@ export const GroupInfoDialog = ({
 
       if (messageError) throw messageError;
 
-      // Add to conversation_participants with visibility set to the system message
-      // This way they ONLY see the "joined" message and future messages
-      const { error: participantError } = await supabase
-        .from('conversation_participants')
-        .insert({
-          conversation_id: conversationId,
-          user_id: userId,
-          visible_from_message_id: systemMessage?.id || null
-        });
+      // Use helper function to safely add member to both tables
+      const { error: addError } = await supabase.rpc('add_user_to_group', {
+        p_group_id: groupId,
+        p_user_id: userId,
+        p_conversation_id: conversationId,
+        p_role: 'member',
+        p_visible_from_message_id: systemMessage?.id || null
+      });
 
-      if (participantError) throw participantError;
+      if (addError) throw addError;
 
       // Create notification for the added user
       const { error: notificationError } = await supabase
@@ -316,7 +304,7 @@ export const GroupInfoDialog = ({
 
       const userName = userProfile.nickname || userProfile.full_name;
 
-      // IMPORTANT: Insert the system message BEFORE removing user from participants
+      // IMPORTANT: Insert the system message BEFORE removing user
       // Otherwise RLS policy will block the insert
       const { error: messageError } = await supabase
         .from('messages')
@@ -329,24 +317,14 @@ export const GroupInfoDialog = ({
 
       if (messageError) throw messageError;
 
-      // Remove from group_members first
-      const { error: memberRemoveError } = await supabase
-        .from('group_members')
-        .delete()
-        .eq('group_id', groupId)
-        .eq('user_id', currentUserId);
+      // Use helper function to safely remove from both tables atomically
+      const { error: removeError } = await supabase.rpc('remove_user_from_group', {
+        p_group_id: groupId,
+        p_user_id: currentUserId,
+        p_conversation_id: conversationId
+      });
 
-      if (memberRemoveError) throw memberRemoveError;
-
-      // Then remove from conversation_participants
-      // When they rejoin, they'll get a new entry with a fresh visibility threshold
-      const { error: participantRemoveError } = await supabase
-        .from('conversation_participants')
-        .delete()
-        .eq('conversation_id', conversationId)
-        .eq('user_id', currentUserId);
-
-      if (participantRemoveError) throw participantRemoveError;
+      if (removeError) throw removeError;
 
       toast({
         title: "Succès",
