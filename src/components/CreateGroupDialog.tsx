@@ -11,6 +11,7 @@ import { Progress } from "@/components/ui/progress";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Upload, Users, X } from "lucide-react";
+import { getAvatarUrl } from "@/lib/avatarMap";
 
 interface Follower {
   user_id: string;
@@ -310,7 +311,7 @@ export function CreateGroupDialog({ open, onOpenChange, followers, onGroupCreate
                         onCheckedChange={() => toggleMember(follower.user_id)}
                       />
                       <Avatar className="h-8 w-8">
-                        <AvatarImage src={follower.avatar_url} />
+                        <AvatarImage src={getAvatarUrl(follower.avatar_url)} />
                         <AvatarFallback>
                           {follower.full_name.charAt(0)}
                         </AvatarFallback>
