@@ -7,7 +7,7 @@ import avatar6 from "@/assets/avatars/avatar-6.png";
 import avatar7 from "@/assets/avatars/avatar-7.png";
 import avatar8 from "@/assets/avatars/avatar-8.png";
 import ericAvatar from "@/assets/eric-welcome.png";
-import ericProfile from "@/assets/eric-profile.png";
+import ericProfile from "@/assets/eric-new-profile.png";
 
 export const avatarMap: Record<string, string> = {
   "avatar-1": avatar1,
