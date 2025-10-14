@@ -1760,7 +1760,7 @@ const Community = () => {
                       }
                       
                       return (
-                        <p className="text-xs sm:text-sm text-muted-foreground line-clamp-2">
+                        <p className="text-xs sm:text-sm text-muted-foreground line-clamp-2 break-words overflow-hidden">
                           {conv.lastMessage || "Aucun message"}
                         </p>
                       );

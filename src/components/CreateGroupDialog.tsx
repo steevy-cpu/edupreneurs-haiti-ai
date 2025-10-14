@@ -228,18 +228,20 @@ export function CreateGroupDialog({ open, onOpenChange, followers, onGroupCreate
 
         <div className="space-y-4">
           {/* Avatar Upload */}
-          <div className="flex flex-col items-center gap-2">
+          <div className="flex flex-col items-center gap-3 py-2">
             <Label htmlFor="avatar" className="cursor-pointer">
               <div className="relative">
-                <Avatar className="h-24 w-24">
+                <div className="h-32 w-32 rounded-full bg-muted/30 border-2 border-dashed border-muted-foreground/30 flex items-center justify-center hover:border-primary/50 transition-colors">
                   {avatarPreview ? (
-                    <AvatarImage src={avatarPreview} />
+                    <Avatar className="h-full w-full">
+                      <AvatarImage src={avatarPreview} className="object-cover" />
+                    </Avatar>
                   ) : (
-                    <AvatarFallback className="bg-primary/10">
+                    <div className="flex flex-col items-center gap-2">
                       <Upload className="h-8 w-8 text-muted-foreground" />
-                    </AvatarFallback>
+                    </div>
                   )}
-                </Avatar>
+                </div>
                 {avatarPreview && (
                   <button
                     onClick={(e) => {
@@ -247,7 +249,7 @@ export function CreateGroupDialog({ open, onOpenChange, followers, onGroupCreate
                       setAvatarFile(null);
                       setAvatarPreview(null);
                     }}
-                    className="absolute -top-2 -right-2 bg-destructive text-destructive-foreground rounded-full p-1"
+                    className="absolute top-0 right-0 bg-destructive text-destructive-foreground rounded-full p-1.5 shadow-md hover:bg-destructive/90 transition-colors"
                   >
                     <X className="h-4 w-4" />
                   </button>
@@ -261,7 +263,7 @@ export function CreateGroupDialog({ open, onOpenChange, followers, onGroupCreate
               onChange={handleAvatarChange}
               className="hidden"
             />
-            <p className="text-xs text-muted-foreground">Ajouter une photo de groupe</p>
+            <p className="text-sm text-muted-foreground text-center">Ajouter une photo de groupe</p>
           </div>
 
           {/* Group Name */}
