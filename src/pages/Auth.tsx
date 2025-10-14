@@ -89,41 +89,33 @@ export default function Auth() {
     }
 
     try {
-      // Get the profile with the confirmation code
-      const { data: profile, error: profileError } = await supabase
-        .from('profiles')
-        .select('confirmation_code, email_confirmed')
-        .eq('user_id', pendingUserId)
-        .single();
+      // Use secure database function to verify code
+      const { data, error } = await supabase.rpc('verify_email_code', {
+        p_user_id: pendingUserId,
+        p_code: verificationCode
+      });
 
-      if (profileError) throw profileError;
+      if (error) throw error;
 
-      if (profile.confirmation_code !== verificationCode) {
+      // Type assertion for the response
+      const result = data as { success: boolean; error?: string; full_name?: string; nickname?: string };
+
+      // Check the result
+      if (!result.success) {
         toast({
           title: "Code incorrect",
-          description: "Le code de vérification est incorrect",
+          description: result.error || "Le code de vérification est incorrect",
           variant: "destructive",
         });
         return;
       }
 
-      // Update profile to mark email as confirmed
-      const { error: updateError } = await supabase
-        .from('profiles')
-        .update({ 
-          email_confirmed: true,
-          confirmation_code: null // Clear the code after verification
-        })
-        .eq('user_id', pendingUserId);
-
-      if (updateError) throw updateError;
-
       // Send welcome email
       try {
         await sendWelcomeEmail({
-          to_email: signupData.email,
-          to_name: signupData.fullName || signupData.nickname,
-          nickname: signupData.nickname,
+          to_email: signupData.email || loginData.email,
+          to_name: result.full_name || result.nickname || 'Utilisateur',
+          nickname: result.nickname,
         });
       } catch (emailError) {
         console.error("Error sending welcome email:", emailError);

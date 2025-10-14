@@ -725,6 +725,10 @@ export type Database = {
         }
         Returns: undefined
       }
+      verify_email_code: {
+        Args: { p_code: string; p_user_id: string }
+        Returns: Json
+      }
     }
     Enums: {
       follow_status: "pending" | "accepted" | "rejected"
