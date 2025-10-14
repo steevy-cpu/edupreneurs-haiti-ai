@@ -8,7 +8,7 @@ import edupreneursLogo from "@/assets/edupreneurs-logo.jpeg";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { sendWelcomeEmail, sendPasswordResetEmail } from "@/utils/emailService";
+import { sendWelcomeEmail, sendPasswordResetEmail, sendVerificationEmail, generateConfirmationCode } from "@/utils/emailService";
 
 export default function Auth() {
   const navigate = useNavigate();
@@ -33,6 +33,8 @@ export default function Auth() {
   });
   const [nicknameAvailable, setNicknameAvailable] = useState<boolean | null>(null);
   const [checkingNickname, setCheckingNickname] = useState(false);
+  const [verificationCode, setVerificationCode] = useState("");
+  const [pendingUserId, setPendingUserId] = useState<string | null>(null);
 
   useEffect(() => {
     // Check for referral code in URL
@@ -47,6 +49,78 @@ export default function Auth() {
     }
   }, [searchParams]);
 
+  const handleVerifyCode = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    if (!verificationCode || verificationCode.length !== 6) {
+      toast({
+        title: "Code invalide",
+        description: "Veuillez entrer un code à 6 chiffres",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    try {
+      // Get the profile with the confirmation code
+      const { data: profile, error: profileError } = await supabase
+        .from('profiles')
+        .select('confirmation_code, email_confirmed')
+        .eq('user_id', pendingUserId)
+        .single();
+
+      if (profileError) throw profileError;
+
+      if (profile.confirmation_code !== verificationCode) {
+        toast({
+          title: "Code incorrect",
+          description: "Le code de vérification est incorrect",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      // Update profile to mark email as confirmed
+      const { error: updateError } = await supabase
+        .from('profiles')
+        .update({ 
+          email_confirmed: true,
+          confirmation_code: null // Clear the code after verification
+        })
+        .eq('user_id', pendingUserId);
+
+      if (updateError) throw updateError;
+
+      // Send welcome email
+      try {
+        await sendWelcomeEmail({
+          to_email: signupData.email,
+          to_name: signupData.fullName || signupData.nickname,
+          nickname: signupData.nickname,
+        });
+      } catch (emailError) {
+        console.error("Error sending welcome email:", emailError);
+      }
+
+      toast({
+        title: "Email vérifié ! ✅",
+        description: "Votre compte est maintenant actif. Vous pouvez vous connecter.",
+      });
+
+      // Reset form and go to login
+      setPendingUserId(null);
+      setVerificationCode("");
+      setActiveTab("login");
+    } catch (error: any) {
+      console.error("Verification error:", error);
+      toast({
+        title: "Erreur de vérification",
+        description: error.message,
+        variant: "destructive",
+      });
+    }
+  };
+
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -59,12 +133,26 @@ export default function Auth() {
       if (error) throw error;
       if (!authData.user) throw new Error("Échec de connexion");
 
-      // Get user profile for full name
-      const { data: profile } = await supabase
+      // Check if email is verified
+      const { data: profile, error: profileError } = await supabase
         .from('profiles')
-        .select('full_name')
+        .select('email_confirmed, full_name')
         .eq('user_id', authData.user.id)
         .single();
+
+      if (profileError) {
+        console.error("Profile error:", profileError);
+      }
+
+      if (profile && !profile.email_confirmed) {
+        await supabase.auth.signOut();
+        toast({
+          title: "Email non vérifié",
+          description: "Veuillez vérifier votre email avant de vous connecter. Vérifiez votre boîte de réception.",
+          variant: "destructive",
+        });
+        return;
+      }
 
       // Send login notification (optional)
       try {
@@ -258,6 +346,9 @@ export default function Auth() {
       if (authError) throw authError;
       if (!authData.user) throw new Error("Échec de la création du compte");
 
+      // Generate verification code
+      const confirmationCode = generateConfirmationCode();
+
       const { error: profileError } = await supabase
         .from('profiles')
         .insert({
@@ -270,9 +361,13 @@ export default function Auth() {
           gender: signupData.gender,
           email_confirmed: false,
           phone_confirmed: false,
+          confirmation_code: confirmationCode,
         });
 
       if (profileError) throw profileError;
+
+      // Sign out the user immediately after signup to prevent access
+      await supabase.auth.signOut();
 
       // Handle referral if present
       if (referralCode) {
@@ -318,24 +413,33 @@ export default function Auth() {
         }
       }
 
-      // Send welcome email via EmailJS
+      // Send verification email with code
       try {
-        await sendWelcomeEmail({
+        await sendVerificationEmail({
           to_email: signupData.email,
           to_name: signupData.fullName || signupData.nickname,
+          confirmation_code: confirmationCode,
           nickname: signupData.nickname,
+          academic_grade: signupData.academicGrade,
         });
       } catch (emailError) {
-        console.error("Error sending welcome email:", emailError);
-        // Don't block signup if email fails
+        console.error("Error sending verification email:", emailError);
+        toast({
+          title: "Erreur d'envoi",
+          description: "Impossible d'envoyer l'email de vérification",
+          variant: "destructive",
+        });
+        return;
       }
 
       toast({
         title: "Inscription réussie ! 🎉",
-        description: "Vérifiez votre email pour confirmer votre compte",
+        description: "Un code de vérification a été envoyé à votre email",
       });
 
-      setActiveTab("login");
+      // Set pending user and switch to verification tab
+      setPendingUserId(authData.user.id);
+      setActiveTab("verify");
     } catch (error: any) {
       console.error("Signup error:", error);
       toast({
@@ -439,6 +543,11 @@ export default function Auth() {
                 {activeTab === "forgot-password" && (
                   <div className="auth-tab flex-1 text-center py-3.5 px-2.5 font-bold text-primary border-b-[3px] border-primary">
                     Réinitialiser le mot de passe
+                  </div>
+                )}
+                {activeTab === "verify" && (
+                  <div className="auth-tab flex-1 text-center py-3.5 px-2.5 font-bold text-primary border-b-[3px] border-primary">
+                    Vérification de l'email
                   </div>
                 )}
               </div>
@@ -558,6 +667,50 @@ export default function Auth() {
                       className="text-sm text-muted-foreground hover:text-primary mt-4 text-center w-full"
                     >
                       Retour à la connexion
+                    </button>
+                  </form>
+                )}
+
+                {/* Verification Code Form */}
+                {activeTab === "verify" && (
+                  <form onSubmit={handleVerifyCode} className="space-y-4">
+                    <div className="text-center mb-6">
+                      <h2 className="text-xl font-bold mb-2">Vérification de l'email 📧</h2>
+                      <p className="text-sm text-muted-foreground">
+                        Un code à 6 chiffres a été envoyé à <strong>{signupData.email}</strong>
+                      </p>
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="verification-code" className="text-sm text-muted-foreground">
+                        Code de vérification
+                      </Label>
+                      <Input
+                        id="verification-code"
+                        type="text"
+                        required
+                        maxLength={6}
+                        placeholder="123456"
+                        value={verificationCode}
+                        onChange={(e) => setVerificationCode(e.target.value.replace(/\D/g, ''))}
+                        className="auth-input text-center text-2xl tracking-widest font-bold"
+                      />
+                      <p className="text-xs text-muted-foreground text-center">
+                        Veuillez entrer le code reçu par email
+                      </p>
+                    </div>
+                    <Button type="submit" className="auth-btn-submit w-full mt-6">
+                      Vérifier le code
+                    </Button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setActiveTab("signup");
+                        setPendingUserId(null);
+                        setVerificationCode("");
+                      }}
+                      className="text-sm text-muted-foreground hover:text-primary mt-4 text-center w-full"
+                    >
+                      Retour à l'inscription
                     </button>
                   </form>
                 )}
