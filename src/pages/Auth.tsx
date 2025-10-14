@@ -149,7 +149,7 @@ export default function Auth() {
       const { data, error } = await supabase
         .from('profiles')
         .select('nickname')
-        .eq('nickname', nickname)
+        .ilike('nickname', nickname)
         .maybeSingle();
 
       if (error) throw error;
