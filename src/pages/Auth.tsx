@@ -149,11 +149,11 @@ export default function Auth() {
       const { data, error } = await supabase
         .from('profiles')
         .select('nickname')
-        .ilike('nickname', nickname)
-        .maybeSingle();
+        .ilike('nickname', nickname);
 
       if (error) throw error;
-      setNicknameAvailable(!data);
+      // Check if any matching nickname exists (case-insensitive)
+      setNicknameAvailable(!data || data.length === 0);
     } catch (error) {
       console.error("Error checking nickname:", error);
       setNicknameAvailable(null);
