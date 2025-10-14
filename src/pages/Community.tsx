@@ -1479,6 +1479,15 @@ const Community = () => {
 
   const handleDeleteConversation = async (conversationId: string) => {
     try {
+      if (!user?.id) {
+        toast({
+          title: "Erreur",
+          description: "Utilisateur non authentifié",
+          variant: "destructive",
+        });
+        return;
+      }
+
       // Check if this is a group conversation
       const conversation = conversations.find(c => c.id === conversationId);
       
@@ -1486,11 +1495,14 @@ const Community = () => {
         // For group conversations, properly remove from the group
         const { error } = await supabase.rpc('remove_user_from_group', {
           p_group_id: conversation.group.id,
-          p_user_id: user?.id,
+          p_user_id: user.id,
           p_conversation_id: conversationId
         });
 
-        if (error) throw error;
+        if (error) {
+          console.error("RPC error:", error);
+          throw error;
+        }
 
         toast({
           title: "Succès",
@@ -1502,9 +1514,12 @@ const Community = () => {
           .from("conversation_participants")
           .delete()
           .eq("conversation_id", conversationId)
-          .eq("user_id", user?.id);
+          .eq("user_id", user.id);
 
-        if (error) throw error;
+        if (error) {
+          console.error("Delete error:", error);
+          throw error;
+        }
 
         toast({
           title: "Succès",
