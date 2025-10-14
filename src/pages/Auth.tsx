@@ -8,6 +8,7 @@ import edupreneursLogo from "@/assets/edupreneurs-logo.jpeg";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { sendWelcomeEmail, sendPasswordResetEmail } from "@/utils/emailService";
 
 export default function Auth() {
   const navigate = useNavigate();
@@ -106,32 +107,28 @@ export default function Auth() {
     try {
       const resetUrl = `${window.location.origin}/auth?reset=true`;
       
-      const { error } = await supabase.auth.resetPasswordForEmail(forgotPasswordEmail, {
-        redirectTo: resetUrl,
-      });
-
-      if (error) throw error;
-
-      // Send custom password reset email with our beautiful template
+      // Send password reset email via EmailJS
       try {
-        await supabase.functions.invoke('send-password-reset-email', {
-          body: {
-            email: forgotPasswordEmail,
-            resetUrl: resetUrl,
-          }
+        await sendPasswordResetEmail({
+          to_email: forgotPasswordEmail,
+          reset_url: resetUrl,
         });
+        
+        toast({
+          title: "Email envoyé ✅",
+          description: "Vérifiez votre boîte de réception pour réinitialiser votre mot de passe",
+        });
+
+        setForgotPasswordEmail("");
+        setActiveTab("login");
       } catch (emailError) {
-        console.error("Error sending custom reset email:", emailError);
-        // Supabase's built-in email will still be sent
+        console.error("Error sending password reset email:", emailError);
+        toast({
+          title: "Erreur d'envoi",
+          description: "Impossible d'envoyer l'email. Veuillez réessayer.",
+          variant: "destructive",
+        });
       }
-
-      toast({
-        title: "Email envoyé ✅",
-        description: "Vérifiez votre boîte de réception pour réinitialiser votre mot de passe",
-      });
-
-      setForgotPasswordEmail("");
-      setActiveTab("login");
     } catch (error: any) {
       toast({
         title: "Erreur",
@@ -306,14 +303,12 @@ export default function Auth() {
         }
       }
 
-      // Send welcome email
+      // Send welcome email via EmailJS
       try {
-        await supabase.functions.invoke('send-welcome-email', {
-          body: {
-            email: signupData.email,
-            fullName: signupData.fullName || signupData.nickname,
-            verificationUrl: `${window.location.origin}/dashboard`,
-          }
+        await sendWelcomeEmail({
+          to_email: signupData.email,
+          to_name: signupData.fullName || signupData.nickname,
+          nickname: signupData.nickname,
         });
       } catch (emailError) {
         console.error("Error sending welcome email:", emailError);
