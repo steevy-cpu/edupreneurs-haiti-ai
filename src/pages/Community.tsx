@@ -983,6 +983,67 @@ const Community = () => {
             );
           });
           
+          // Show browser notification for messages in other conversations
+          // (messages in the current conversation are handled by subscribeToConversationMessages)
+          if (payload.new.sender_id !== user?.id && conversationId !== selectedConversation) {
+            console.log('🔔 Showing browser notification for new message');
+            
+            // Fetch sender profile for notification
+            const { data: senderProfile } = await supabase
+              .from('profiles')
+              .select('full_name, nickname')
+              .eq('user_id', payload.new.sender_id)
+              .single();
+            
+            const senderName = senderProfile?.nickname || senderProfile?.full_name || 'Quelqu\'un';
+            
+            // Fetch conversation details for notification
+            const { data: conversationData } = await supabase
+              .from('conversations')
+              .select('is_group, group_id')
+              .eq('id', conversationId)
+              .single();
+            
+            let conversationName = senderName;
+            
+            // If it's a group, get the group name
+            if (conversationData?.is_group && conversationData?.group_id) {
+              const { data: groupData } = await supabase
+                .from('group_chats')
+                .select('name')
+                .eq('id', conversationData.group_id)
+                .single();
+              
+              conversationName = groupData?.name || 'Groupe';
+            }
+            
+            // Show browser notification
+            if ('Notification' in window && Notification.permission === 'granted') {
+              const messagePreview = payload.new.content.substring(0, 100) || 'Nouveau message';
+              const notificationTitle = conversationData?.is_group 
+                ? `${senderName} dans ${conversationName}`
+                : `${senderName}`;
+              
+              const notification = new Notification(notificationTitle, {
+                body: messagePreview,
+                icon: '/logo.png',
+                badge: '/logo.png',
+                tag: conversationId,
+                requireInteraction: false,
+                data: {
+                  url: `/community?conversation=${conversationId}`,
+                  conversationId: conversationId
+                }
+              });
+              
+              notification.onclick = function() {
+                window.focus();
+                window.location.href = `/community?conversation=${conversationId}`;
+                this.close();
+              };
+            }
+          }
+          
           // Also refresh from database after a small delay to ensure consistency
           setTimeout(() => fetchConversations(), 100);
         }
