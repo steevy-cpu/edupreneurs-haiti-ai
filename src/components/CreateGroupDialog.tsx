@@ -150,7 +150,23 @@ export function CreateGroupDialog({ open, onOpenChange, followers, onGroupCreate
       if (convError) throw convError;
       setProgress(80);
 
-      // Step 6: Send welcome message first (90%)
+      // Step 6: Add all participants to conversation FIRST (85%)
+      setProgress(85);
+      const allParticipantIds = [user.id, ...Array.from(selectedMembers)];
+      const participantEntries = allParticipantIds.map(userId => ({
+        conversation_id: conversation.id,
+        user_id: userId,
+        // Initially null, will be updated after welcome message
+        visible_from_message_id: null
+      }));
+
+      const { error: participantsError } = await supabase
+        .from('conversation_participants')
+        .insert(participantEntries);
+
+      if (participantsError) throw participantsError;
+
+      // Step 7: Send welcome message AFTER participants are added (90%)
       setProgress(90);
       const { data: groupData } = await supabase
         .from('group_chats')
@@ -171,28 +187,28 @@ export function CreateGroupDialog({ open, onOpenChange, followers, onGroupCreate
           .select()
           .single();
         
-        if (!msgError && welcomeMsg) {
+        if (msgError) {
+          console.error('Error creating welcome message:', msgError);
+        } else if (welcomeMsg) {
           welcomeMessageId = welcomeMsg.id;
+          console.log('✅ Welcome message created:', welcomeMessageId);
         }
       }
 
-      // Step 7: Add all participants to conversation with proper visibility (95%)
-      setProgress(95);
-      const allParticipantIds = [user.id, ...Array.from(selectedMembers)];
-      const participantEntries = allParticipantIds.map(userId => ({
-        conversation_id: conversation.id,
-        user_id: userId,
-        // All members (including creator) start seeing from the welcome message
-        visible_from_message_id: welcomeMessageId
-      }));
+      // Step 8: Update participants with visibility from welcome message (95%)
+      if (welcomeMessageId) {
+        setProgress(95);
+        const { error: updateError } = await supabase
+          .from('conversation_participants')
+          .update({ visible_from_message_id: welcomeMessageId })
+          .eq('conversation_id', conversation.id);
+        
+        if (updateError) {
+          console.error('Error updating participant visibility:', updateError);
+        }
+      }
 
-      const { error: participantsError } = await supabase
-        .from('conversation_participants')
-        .insert(participantEntries);
-
-      if (participantsError) throw participantsError;
-
-      // Step 8: Complete (100%)
+      // Step 9: Complete (100%)
       setProgress(100);
       toast.success("Groupe créé avec succès!");
       onGroupCreated(conversation.id);
