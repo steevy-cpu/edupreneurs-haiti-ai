@@ -43,17 +43,10 @@ const Dashboard = () => {
     fetchRecentNotes();
     fetchGoldEarned();
     
-    // Get current user ID and request notification permission immediately
+    // Get current user ID for notification dialog
     supabase.auth.getUser().then(({ data: { user } }) => {
       if (user) {
         setCurrentUserId(user.id);
-        
-        // Request notification permission on page load if not already decided
-        if ('Notification' in window && Notification.permission === 'default') {
-          Notification.requestPermission().then(permission => {
-            console.log('Notification permission:', permission);
-          });
-        }
       }
     });
   }, []);
