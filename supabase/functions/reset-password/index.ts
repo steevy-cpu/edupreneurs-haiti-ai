@@ -34,8 +34,21 @@ const handler = async (req: Request): Promise<Response> => {
         reset_token: token
       });
 
-    if (tokenError || !tokenData || tokenData.length === 0) {
-      console.error("Invalid or expired token:", tokenError);
+    console.log("Token verification result:", { tokenData, tokenError });
+
+    if (tokenError) {
+      console.error("Token error:", tokenError);
+      return new Response(
+        JSON.stringify({ error: "Token invalide ou expiré", details: tokenError.message }),
+        {
+          status: 400,
+          headers: { "Content-Type": "application/json", ...corsHeaders },
+        }
+      );
+    }
+
+    if (!tokenData || (Array.isArray(tokenData) && tokenData.length === 0)) {
+      console.error("No token data returned");
       return new Response(
         JSON.stringify({ error: "Token invalide ou expiré" }),
         {
@@ -45,7 +58,11 @@ const handler = async (req: Request): Promise<Response> => {
       );
     }
 
-    const { valid, user_id } = tokenData[0];
+    // Handle both array and object responses
+    const tokenResult = Array.isArray(tokenData) ? tokenData[0] : tokenData;
+    console.log("Token result:", tokenResult);
+    
+    const { valid, user_id } = tokenResult;
 
     if (!valid) {
       return new Response(
