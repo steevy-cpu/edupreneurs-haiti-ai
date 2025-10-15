@@ -39,12 +39,12 @@ export default function ResetPassword() {
         return;
       }
 
-      // Verify token with database
-      const { data, error } = await supabase.rpc('verify_reset_token', {
+      // Check token validity without consuming it
+      const { data, error } = await supabase.rpc('check_reset_token' as any, {
         reset_token: token
       });
 
-      if (error || !data || data.length === 0) {
+      if (error || !data) {
         setValidToken(false);
         toast({
           title: "Lien invalide ou expiré",
@@ -58,9 +58,9 @@ export default function ResetPassword() {
         return;
       }
 
-      const tokenData = data as unknown as Array<{ valid: boolean; user_id: string; email: string }>;
+      const tokenData = Array.isArray(data) ? data[0] : data as { valid: boolean; user_id: string; email: string };
       
-      if (tokenData[0].valid) {
+      if (tokenData.valid) {
         setValidToken(true);
       } else {
         setValidToken(false);
