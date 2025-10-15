@@ -89,16 +89,20 @@ export default function Auth() {
     }
 
     try {
+      console.log('🔍 Verifying code:', verificationCode.trim(), 'for user:', pendingUserId);
+      
       // Use secure database function to verify code
       const { data, error } = await supabase.rpc('verify_email_code', {
         p_user_id: pendingUserId,
-        p_code: verificationCode
+        p_code: verificationCode.trim() // Ensure no whitespace
       });
 
       if (error) throw error;
 
       // Type assertion for the response
       const result = data as { success: boolean; error?: string; full_name?: string; nickname?: string };
+      
+      console.log('✅ Verification result:', result);
 
       // Check the result
       if (!result.success) {
@@ -169,11 +173,12 @@ export default function Auth() {
         
         // Generate new verification code
         const newCode = generateConfirmationCode();
+        console.log('🔑 Generated new verification code for login:', newCode);
         
         // Update profile with new code
         const { error: updateError } = await supabase
           .from('profiles')
-          .update({ confirmation_code: newCode })
+          .update({ confirmation_code: newCode.trim() }) // Ensure no whitespace
           .eq('user_id', authData.user.id);
         
         if (updateError) {
@@ -189,6 +194,7 @@ export default function Auth() {
             nickname: profile.nickname,
             academic_grade: profile.academic_grade,
           });
+          console.log('✅ Verification email sent with code:', newCode);
         } catch (emailError) {
           console.error("Error sending verification email:", emailError);
         }
@@ -399,6 +405,7 @@ export default function Auth() {
 
       // Generate verification code
       const confirmationCode = generateConfirmationCode();
+      console.log('🔑 Generated verification code for signup:', confirmationCode);
 
       const { error: profileError } = await supabase
         .from('profiles')
@@ -412,7 +419,7 @@ export default function Auth() {
           gender: signupData.gender,
           email_confirmed: false,
           phone_confirmed: false,
-          confirmation_code: confirmationCode,
+          confirmation_code: confirmationCode.trim(), // Ensure no whitespace
         });
 
       if (profileError) throw profileError;
