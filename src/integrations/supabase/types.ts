@@ -720,6 +720,14 @@ export type Database = {
         Args: { nickname_input: string }
         Returns: boolean
       }
+      check_reset_token: {
+        Args: { reset_token: string }
+        Returns: {
+          email: string
+          user_id: string
+          valid: boolean
+        }[]
+      }
       create_conversation: {
         Args: Record<PropertyKey, never>
         Returns: string
