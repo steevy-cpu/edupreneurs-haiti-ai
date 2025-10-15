@@ -911,8 +911,11 @@ export default function Auth() {
                   <form onSubmit={handleVerifyCode} className="space-y-4">
                     <div className="text-center mb-6">
                       <h2 className="text-xl font-bold mb-2">Vérification de l'email 📧</h2>
-                      <p className="text-sm text-muted-foreground">
-                        Un code à 6 chiffres a été envoyé à <strong>{signupData.email}</strong>
+                      <p className="text-sm text-muted-foreground mb-2">
+                        Un code à 6 chiffres a été envoyé à <strong>{signupData.email || loginData.email}</strong>
+                      </p>
+                      <p className="text-xs text-muted-foreground">
+                        💡 N'oubliez pas de vérifier votre dossier <strong>spam/courrier indésirable</strong> si vous ne voyez pas l'email.
                       </p>
                     </div>
                     <div className="space-y-2">
