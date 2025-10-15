@@ -1490,57 +1490,32 @@ const Community = () => {
         return;
       }
 
-      // Check if this is a group conversation
-      const conversation = conversations.find(c => c.id === conversationId);
-      
-      if (conversation?.is_group && conversation.group?.id) {
-        // For group conversations, properly remove from the group
-        const { error } = await supabase.rpc('remove_user_from_group', {
-          p_group_id: conversation.group.id,
-          p_user_id: user.id,
-          p_conversation_id: conversationId
-        });
+      // Delete all messages in this conversation
+      const { error: deleteError } = await supabase
+        .from("messages")
+        .delete()
+        .eq("conversation_id", conversationId);
 
-        if (error) {
-          console.error("RPC error:", error);
-          throw error;
-        }
-
-        toast({
-          title: "Succès",
-          description: "Vous avez quitté le groupe",
-        });
-      } else {
-        // For 1-on-1 conversations, just hide by removing from participants
-        const { error } = await supabase
-          .from("conversation_participants")
-          .delete()
-          .eq("conversation_id", conversationId)
-          .eq("user_id", user.id);
-
-        if (error) {
-          console.error("Delete error:", error);
-          throw error;
-        }
-
-        toast({
-          title: "Succès",
-          description: "Conversation supprimée de votre liste",
-        });
+      if (deleteError) {
+        console.error("Delete messages error:", deleteError);
+        throw deleteError;
       }
 
-      // Clear selection if this conversation was selected
-      if (selectedConversation === conversationId) {
-        setSelectedConversation(null);
-      }
+      // Clear local messages state
+      setMessages([]);
 
-      // Refresh conversations list
+      toast({
+        title: "Succès",
+        description: "Tous les messages ont été supprimés",
+      });
+
+      // Refresh conversations list to update last message
       await fetchConversations();
     } catch (error) {
-      console.error("Error deleting conversation:", error);
+      console.error("Error deleting messages:", error);
       toast({
         title: "Erreur",
-        description: "Impossible de supprimer la conversation",
+        description: "Impossible de supprimer les messages",
         variant: "destructive",
       });
     } finally {
@@ -2500,9 +2475,9 @@ const Community = () => {
       <AlertDialog open={!!deleteConversationId} onOpenChange={(open) => !open && setDeleteConversationId(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Supprimer la conversation?</AlertDialogTitle>
+            <AlertDialogTitle>Supprimer les messages?</AlertDialogTitle>
             <AlertDialogDescription>
-              Cette action est irréversible. Tous les messages de cette conversation seront définitivement supprimés.
+              Cette action est irréversible. Tous les messages de cette conversation seront définitivement supprimés. Vous resterez membre du groupe.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
