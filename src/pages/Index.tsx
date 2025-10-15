@@ -8,7 +8,7 @@ import ericWelcome from "@/assets/eric-welcome.png";
 import ericThinking from "@/assets/eric-main01.png";
 import ericPointingRight from "@/assets/eric-main01.png";
 import heroImage from "@/assets/hero-education.jpg";
-import edupreneursLogo from "@/assets/edupreneurs-logo.jpeg";
+import edupreneursLogo from "@/assets/edupreneurs-new-logo.png";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { Menu, X } from "lucide-react";
 

@@ -18,7 +18,7 @@ import {
   Trophy,
 } from "lucide-react";
 import dashboardImage from "@/assets/dashboard00.png";
-import edupreneursLogo from "@/assets/edupreneurs-logo.jpeg";
+import edupreneursLogo from "@/assets/edupreneurs-new-logo.png";
 import { EricChatbot } from "@/components/EricChatbot";
 import OnboardingTour from "@/components/OnboardingTour";
 import { getAvatarUrl } from "@/lib/avatarMap";

@@ -6,7 +6,7 @@ import { Label } from "@/components/ui/label";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { ThemeToggle } from "@/components/ThemeToggle";
-import edupreneursLogo from "@/assets/edupreneurs-logo.jpeg";
+import edupreneursLogo from "@/assets/edupreneurs-new-logo.png";
 import { Loader2, Eye, EyeOff } from "lucide-react";
 
 export default function ResetPassword() {

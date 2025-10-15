@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import authImage from "@/assets/auth00.png";
-import edupreneursLogo from "@/assets/edupreneurs-logo.jpeg";
+import edupreneursLogo from "@/assets/edupreneurs-new-logo.png";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
