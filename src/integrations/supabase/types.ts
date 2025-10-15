@@ -760,6 +760,15 @@ export type Database = {
         Args: { _group_id: string; _user_id: string }
         Returns: boolean
       }
+      notify_group_deletion: {
+        Args: {
+          p_admin_id: string
+          p_admin_name: string
+          p_group_id: string
+          p_group_name: string
+        }
+        Returns: undefined
+      }
       remove_user_from_group: {
         Args: {
           p_conversation_id: string

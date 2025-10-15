@@ -362,32 +362,18 @@ export const GroupInfoDialog = ({
 
       const adminName = adminProfile.nickname || adminProfile.full_name;
 
-      // Get all group members except the admin
-      const { data: groupMembers, error: membersError } = await supabase
-        .from('group_members')
-        .select('user_id')
-        .eq('group_id', groupId)
-        .neq('user_id', currentUserId);
+      // Call the database function to create notifications for all members
+      // This runs with SECURITY DEFINER so it bypasses RLS
+      const { error: notificationError } = await supabase.rpc('notify_group_deletion', {
+        p_group_id: groupId,
+        p_group_name: group?.name || 'Unknown Group',
+        p_admin_id: currentUserId,
+        p_admin_name: adminName
+      });
 
-      if (membersError) throw membersError;
-
-      // Create notifications for all members
-      if (groupMembers && groupMembers.length > 0) {
-        const notifications = groupMembers.map((member: any) => ({
-          user_id: member.user_id,
-          actor_id: currentUserId,
-          type: 'group_deleted',
-          content: `Le groupe "${group?.name}" a été supprimé par ${adminName}`,
-          read: false
-        }));
-
-        const { error: notificationError } = await supabase
-          .from('notifications')
-          .insert(notifications);
-
-        if (notificationError) {
-          console.error('Error creating notifications:', notificationError);
-        }
+      if (notificationError) {
+        console.error('Error creating notifications:', notificationError);
+        // Don't throw - continue with deletion even if notifications fail
       }
 
       // Delete the group (cascade will handle related records)
