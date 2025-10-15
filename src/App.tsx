@@ -25,6 +25,7 @@ import Settings from "./pages/Settings";
 import Resources from "./pages/Resources";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
 import NotFound from "./pages/NotFound";
+import ResetPassword from "./pages/ResetPassword";
 import TestEmail from "./pages/TestEmail";
 import EmailTest from "./pages/EmailTest";
 import EmailJSTest from "./pages/EmailJSTest";
@@ -42,6 +43,7 @@ const App = () => (
           <Routes>
             <Route path="/" element={<Index />} />
             <Route path="/auth" element={<Auth />} />
+            <Route path="/reset-password" element={<ResetPassword />} />
             <Route path="/customize-ai" element={<CustomizeAI />} />
             <Route path="/onboarding" element={<Onboarding />} />
             <Route path="/dashboard" element={<Layout><Dashboard /></Layout>} />

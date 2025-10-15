@@ -397,13 +397,18 @@ export default function Auth() {
 
     setIsResettingPassword(true);
     try {
-      const resetUrl = `${window.location.origin}/auth?reset=true`;
+      // Request password reset from Supabase
+      const { error } = await supabase.auth.resetPasswordForEmail(forgotPasswordEmail, {
+        redirectTo: `${window.location.origin}/reset-password`,
+      });
+
+      if (error) throw error;
       
       // Send password reset email via EmailJS
       try {
         await sendPasswordResetEmail({
           to_email: forgotPasswordEmail,
-          reset_url: resetUrl,
+          reset_url: `${window.location.origin}/reset-password`,
         });
         
         toast({
