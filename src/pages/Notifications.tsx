@@ -26,7 +26,7 @@ interface Notification {
   user_id: string;
   actor_id: string;
   post_id: string | null;
-  type: "like" | "comment" | "share" | "follow_request" | "new_post" | "group_invitation";
+  type: "like" | "comment" | "share" | "follow_request" | "new_post" | "group_invitation" | "group_deleted";
   content: string | null;
   read: boolean;
   created_at: string;
@@ -115,7 +115,7 @@ export default function Notifications() {
 
           return {
             ...notification,
-            type: notification.type as "like" | "comment" | "share" | "follow_request" | "new_post" | "group_invitation",
+            type: notification.type as "like" | "comment" | "share" | "follow_request" | "new_post" | "group_invitation" | "group_deleted",
             followRequestPending,
             actorProfile: actorProfile || {
               id: "",
@@ -201,6 +201,8 @@ export default function Notifications() {
         return <FileText size={16} className="text-primary" />;
       case "group_invitation":
         return <UserPlus size={16} className="text-primary" />;
+      case "group_deleted":
+        return <Trash2 size={16} className="text-destructive" />;
       default:
         return null;
     }
@@ -221,6 +223,8 @@ export default function Notifications() {
         return `${actor} a publié un nouveau post`;
       case "group_invitation":
         return notification.content || `${actor} vous a ajouté à un groupe`;
+      case "group_deleted":
+        return notification.content || `Un groupe a été supprimé`;
       default:
         return "";
     }
