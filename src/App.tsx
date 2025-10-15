@@ -30,6 +30,7 @@ import TestEmail from "./pages/TestEmail";
 import EmailTest from "./pages/EmailTest";
 import EmailJSTest from "./pages/EmailJSTest";
 import UploadEmailAssets from "./pages/UploadEmailAssets";
+import DevPush from "./pages/DevPush";
 
 const queryClient = new QueryClient();
 
@@ -65,6 +66,7 @@ const App = () => (
             <Route path="/email-test" element={<EmailTest />} />
             <Route path="/emailjs-test" element={<EmailJSTest />} />
             <Route path="/upload-email-assets" element={<UploadEmailAssets />} />
+            <Route path="/dev/push" element={<DevPush />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>

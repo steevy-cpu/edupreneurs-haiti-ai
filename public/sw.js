@@ -1,60 +1,134 @@
 // Service Worker for Push Notifications
+const SW_VERSION = '1.0.0';
+const CACHE_NAME = `edupreneurs-v${SW_VERSION}`;
+
 self.addEventListener('install', (event) => {
-  console.log('Service Worker installed');
+  console.log(`📦 Service Worker ${SW_VERSION} installing...`);
   self.skipWaiting();
 });
 
 self.addEventListener('activate', (event) => {
-  console.log('Service Worker activated');
+  console.log(`✅ Service Worker ${SW_VERSION} activated`);
   event.waitUntil(clients.claim());
 });
 
+// Handle push events
 self.addEventListener('push', (event) => {
-  console.log('Push notification received', event);
+  console.log('📬 Push received:', event);
   
-  const data = event.data ? event.data.json() : {};
-  const title = data.title || 'Nouveau message';
-  const options = {
-    body: data.body || 'Vous avez reçu un nouveau message',
-    icon: '/favicon.ico',
-    badge: '/favicon.ico',
+  let payload = {};
+  
+  try {
+    payload = event.data ? event.data.json() : {};
+  } catch (e) {
+    console.error('❌ Failed to parse push data:', e);
+    payload = {
+      type: 'message',
+      title: 'Nouveau message',
+      body: 'Vous avez reçu un nouveau message'
+    };
+  }
+
+  const {
+    type = 'message',
+    title = 'Edupreneurs',
+    body = 'Nouvelle notification',
+    icon = '/logo.png',
+    badge = '/logo.png',
+    tag,
+    renotify = false,
+    data = {},
+    actions = []
+  } = payload;
+
+  const notificationOptions = {
+    body,
+    icon,
+    badge,
+    tag: tag || `${type}-${Date.now()}`,
+    renotify,
     data: {
-      url: data.url || '/community',
-      conversationId: data.conversationId
+      type,
+      deeplink: data.deeplink || '/community',
+      ...data
     },
-    tag: data.conversationId || 'message-notification',
-    requireInteraction: true
+    actions: actions.length > 0 ? actions : [
+      { action: 'open', title: 'Ouvrir' },
+      { action: 'dismiss', title: 'Ignorer' }
+    ],
+    requireInteraction: type === 'message', // Keep message notifications until clicked
+    vibrate: [200, 100, 200],
+    timestamp: Date.now()
   };
 
   event.waitUntil(
-    self.registration.showNotification(title, options)
+    self.registration.showNotification(title, notificationOptions)
+      .then(() => console.log('✅ Notification displayed'))
+      .catch(err => console.error('❌ Notification failed:', err))
   );
 });
 
+// Handle notification clicks
 self.addEventListener('notificationclick', (event) => {
-  console.log('Notification clicked', event);
+  console.log('🖱️ Notification clicked:', event.action, event.notification.data);
+  
   event.notification.close();
 
-  const urlToOpen = event.notification.data.url || '/community';
-  const conversationId = event.notification.data.conversationId;
-  
-  const finalUrl = conversationId 
-    ? `${urlToOpen}?conversation=${conversationId}`
-    : urlToOpen;
+  const notificationData = event.notification.data || {};
+  const action = event.action;
 
   event.waitUntil(
-    clients.matchAll({ type: 'window', includeUncontrolled: true })
-      .then((clientList) => {
-        // Check if there's already a window open
-        for (const client of clientList) {
-          if (client.url.includes('/community') && 'focus' in client) {
-            return client.focus().then(() => client.navigate(finalUrl));
-          }
+    (async () => {
+      // Handle specific actions
+      if (action === 'dismiss') {
+        console.log('🚫 Notification dismissed');
+        return;
+      }
+
+      if (action === 'mark_read' && notificationData.threadId) {
+        // Mark as read (would need backend endpoint)
+        console.log('✅ Mark as read:', notificationData.threadId);
+      }
+
+      // Focus or open window
+      const urlToOpen = new URL(notificationData.deeplink || '/community', self.location.origin).href;
+      console.log('🔗 Opening:', urlToOpen);
+
+      const clientList = await clients.matchAll({ 
+        type: 'window', 
+        includeUncontrolled: true 
+      });
+
+      // Try to focus existing window
+      for (const client of clientList) {
+        if (client.url === urlToOpen && 'focus' in client) {
+          console.log('🎯 Focusing existing window');
+          return client.focus();
         }
-        // If no window is open, open a new one
-        if (clients.openWindow) {
-          return clients.openWindow(finalUrl);
+      }
+
+      // Focus any window and navigate
+      if (clientList.length > 0) {
+        const client = clientList[0];
+        console.log('🔄 Navigating existing window');
+        await client.focus();
+        if ('navigate' in client) {
+          return client.navigate(urlToOpen);
         }
-      })
+      }
+
+      // Open new window
+      if (clients.openWindow) {
+        console.log('🆕 Opening new window');
+        return clients.openWindow(urlToOpen);
+      }
+    })()
   );
 });
+
+// Handle notification close
+self.addEventListener('notificationclose', (event) => {
+  console.log('🔕 Notification closed:', event.notification.tag);
+});
+
+console.log(`🚀 Service Worker ${SW_VERSION} loaded`);

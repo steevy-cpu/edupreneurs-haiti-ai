@@ -18,18 +18,45 @@ interface PushSubscription {
 const VAPID_PUBLIC_KEY = 'BEl62iUYgUivxIkv69yViEuiBIa-Ib9-SkvMeAtA3LFgDzkrxZJjSgSnfckjBJuBkr3qBroV5VGqq84s6cVRwCg';
 const VAPID_PRIVATE_KEY = 'bdSiNzUhUP6PHxtS1-7Zne7WMlmBXXSTlsCgSlMkN7c';
 
+// Base64url decode helper
+function base64UrlDecode(input: string): Uint8Array {
+  input = input.replace(/-/g, '+').replace(/_/g, '/');
+  const padding = input.length % 4 === 0 ? 0 : 4 - (input.length % 4);
+  const base64 = input + '='.repeat(padding);
+  const binary = atob(base64);
+  const bytes = new Uint8Array(binary.length);
+  for (let i = 0; i < binary.length; i++) {
+    bytes[i] = binary.charCodeAt(i);
+  }
+  return bytes;
+}
+
+// Base64url encode helper
+function base64UrlEncode(input: Uint8Array | ArrayBuffer): string {
+  const bytes = input instanceof Uint8Array ? input : new Uint8Array(input);
+  let binary = '';
+  for (let i = 0; i < bytes.length; i++) {
+    binary += String.fromCharCode(bytes[i]);
+  }
+  return btoa(binary)
+    .replace(/\+/g, '-')
+    .replace(/\//g, '_')
+    .replace(/=+$/, '');
+}
+
 // Generate VAPID JWT for authorization
 async function generateVAPIDHeaders(endpoint: string): Promise<{ Authorization: string; 'Crypto-Key'?: string }> {
   const urlParts = new URL(endpoint);
   const audience = `${urlParts.protocol}//${urlParts.host}`;
   
-  // JWT header and payload
+  // JWT header
   const jwtHeader = {
     typ: 'JWT',
     alg: 'ES256'
   };
   
-  const exp = Math.floor(Date.now() / 1000) + (12 * 60 * 60); // 12 hours from now
+  // JWT payload - expires in 12 hours
+  const exp = Math.floor(Date.now() / 1000) + (12 * 60 * 60);
   const jwtPayload = {
     aud: audience,
     exp: exp,
@@ -38,54 +65,60 @@ async function generateVAPIDHeaders(endpoint: string): Promise<{ Authorization: 
   
   // Encode header and payload
   const encoder = new TextEncoder();
-  const headerStr = JSON.stringify(jwtHeader);
-  const payloadStr = JSON.stringify(jwtPayload);
-  
-  const headerB64 = btoa(String.fromCharCode(...encoder.encode(headerStr)))
-    .replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
-  const payloadB64 = btoa(String.fromCharCode(...encoder.encode(payloadStr)))
-    .replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
-  
+  const headerB64 = base64UrlEncode(encoder.encode(JSON.stringify(jwtHeader)));
+  const payloadB64 = base64UrlEncode(encoder.encode(JSON.stringify(jwtPayload)));
   const unsignedToken = `${headerB64}.${payloadB64}`;
   
-  // Convert VAPID private key from base64url to bytes
-  const privateKeyBytes = Uint8Array.from(
-    atob(VAPID_PRIVATE_KEY.replace(/-/g, '+').replace(/_/g, '/')),
-    c => c.charCodeAt(0)
-  );
+  // Decode the private key (32 bytes for P-256)
+  const privateKeyBytes = base64UrlDecode(VAPID_PRIVATE_KEY);
   
-  // Import private key for signing
-  const privateKey = await crypto.subtle.importKey(
-    'pkcs8',
-    privateKeyBytes,
-    {
-      name: 'ECDSA',
-      namedCurve: 'P-256'
-    },
-    false,
-    ['sign']
-  );
-  
-  // Sign the token
-  const signature = await crypto.subtle.sign(
-    {
-      name: 'ECDSA',
-      hash: { name: 'SHA-256' }
-    },
-    privateKey,
-    encoder.encode(unsignedToken)
-  );
-  
-  // Convert signature to base64url
-  const signatureB64 = btoa(String.fromCharCode(...new Uint8Array(signature)))
-    .replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
-  
-  const jwt = `${unsignedToken}.${signatureB64}`;
-  
-  return {
-    'Authorization': `WebPush ${jwt}`,
-    'Crypto-Key': `p256ecdsa=${VAPID_PUBLIC_KEY}`
+  // Import the private key for ECDSA signing
+  // For P-256, we need to import as JWK format
+  const jwk = {
+    kty: 'EC',
+    crv: 'P-256',
+    d: base64UrlEncode(privateKeyBytes),
+    x: VAPID_PUBLIC_KEY.substring(1, 44), // Skip first byte (0x04 uncompressed indicator)
+    y: VAPID_PUBLIC_KEY.substring(44),
+    ext: true
   };
+  
+  try {
+    const privateKey = await crypto.subtle.importKey(
+      'jwk',
+      jwk,
+      {
+        name: 'ECDSA',
+        namedCurve: 'P-256'
+      },
+      false,
+      ['sign']
+    );
+    
+    // Sign the token
+    const signature = await crypto.subtle.sign(
+      {
+        name: 'ECDSA',
+        hash: { name: 'SHA-256' }
+      },
+      privateKey,
+      encoder.encode(unsignedToken)
+    );
+    
+    // Encode signature
+    const signatureB64 = base64UrlEncode(signature);
+    const jwt = `${unsignedToken}.${signatureB64}`;
+    
+    return {
+      'Authorization': `vapid t=${jwt}, k=${VAPID_PUBLIC_KEY}`
+    };
+  } catch (error) {
+    console.error('❌ VAPID key import/signing failed:', error);
+    // Fallback to simple auth (may not work with all push services)
+    return {
+      'Authorization': `WebPush ${VAPID_PUBLIC_KEY}`
+    };
+  }
 }
 
 
