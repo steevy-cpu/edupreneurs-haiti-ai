@@ -97,15 +97,18 @@ export default function Auth() {
             if (result.success && result.confirmation_code) {
               console.log('✅ Generated verification code for existing user');
               
-              // Send verification email
-              await sendVerificationEmail({
-                to_email: session.user.email || '',
-                to_name: result.full_name || result.nickname || 'Utilisateur',
-                confirmation_code: result.confirmation_code,
-                nickname: result.nickname,
-                academic_grade: result.academic_grade,
+              // Send verification email using backend edge function
+              const { error: emailError } = await supabase.functions.invoke('send-confirmation-email', {
+                body: {
+                  email: session.user.email || '',
+                  fullName: result.full_name || result.nickname || 'Utilisateur',
+                  nickname: result.nickname,
+                  academicGrade: result.academic_grade,
+                  confirmationCode: result.confirmation_code
+                }
               });
               
+              if (emailError) throw emailError;
               console.log('📧 Verification email sent to existing user');
             }
           } catch (error) {
@@ -248,15 +251,18 @@ export default function Auth() {
         throw new Error("Email not found");
       }
 
-      // Send new verification email
-      await sendVerificationEmail({
-        to_email: userEmail,
-        to_name: result.full_name || result.nickname || 'Utilisateur',
-        confirmation_code: result.confirmation_code!,
-        nickname: result.nickname,
-        academic_grade: result.academic_grade,
+      // Send new verification email using backend edge function
+      const { error: emailError } = await supabase.functions.invoke('send-confirmation-email', {
+        body: {
+          email: userEmail,
+          fullName: result.full_name || result.nickname || 'Utilisateur',
+          nickname: result.nickname,
+          academicGrade: result.academic_grade,
+          confirmationCode: result.confirmation_code!
+        }
       });
 
+      if (emailError) throw emailError;
       console.log('📧 Verification email sent successfully');
 
       // Reset countdown
@@ -327,15 +333,19 @@ export default function Auth() {
         // NOW sign out after successful update
         await supabase.auth.signOut();
         
-        // Send verification email with new code
+        // Send verification email using backend edge function for better reliability
         try {
-          await sendVerificationEmail({
-            to_email: loginData.email,
-            to_name: profile.full_name || profile.nickname,
-            confirmation_code: newCode,
-            nickname: profile.nickname,
-            academic_grade: profile.academic_grade,
+          const { error: emailError } = await supabase.functions.invoke('send-confirmation-email', {
+            body: {
+              email: loginData.email,
+              fullName: profile.full_name || profile.nickname || 'Utilisateur',
+              nickname: profile.nickname,
+              academicGrade: profile.academic_grade,
+              confirmationCode: newCode
+            }
           });
+          
+          if (emailError) throw emailError;
           console.log('✅ Verification email sent with code:', newCode);
         } catch (emailError) {
           console.error("Error sending verification email:", emailError);
