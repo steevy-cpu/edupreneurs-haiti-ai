@@ -10,7 +10,6 @@ import { getAvatarUrl } from "@/lib/avatarMap";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
-import { initializePushNotifications } from "@/utils/pushNotifications";
 
 interface Profile {
   id: string;
@@ -44,15 +43,6 @@ export default function Notifications() {
     checkAuth();
     fetchNotifications();
     subscribeToNotifications();
-    
-    // Initialize push notifications
-    supabase.auth.getUser().then(({ data: { user } }) => {
-      if (user) {
-        initializePushNotifications(user.id).catch(err => {
-          console.log('Failed to initialize push notifications:', err);
-        });
-      }
-    });
   }, []);
 
   const checkAuth = async () => {

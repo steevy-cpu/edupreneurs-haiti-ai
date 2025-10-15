@@ -14,7 +14,7 @@ import {
   Calendar
 } from "lucide-react";
 import ericThumbsUp from "@/assets/eric-main01.png";
-import { initializePushNotifications } from "@/utils/pushNotifications";
+import { NotificationPermissionBanner } from "@/components/NotificationPermissionBanner";
 
 interface Note {
   id: string;
@@ -36,17 +36,17 @@ const Dashboard = () => {
 
   const [goldEarned, setGoldEarned] = useState<number>(0);
 
+  const [currentUserId, setCurrentUserId] = useState<string>('');
+
   useEffect(() => {
     fetchUserData();
     fetchRecentNotes();
     fetchGoldEarned();
     
-    // Initialize push notifications
+    // Get current user ID for notification banner
     supabase.auth.getUser().then(({ data: { user } }) => {
       if (user) {
-        initializePushNotifications(user.id).catch(err => {
-          console.log('Failed to initialize push notifications:', err);
-        });
+        setCurrentUserId(user.id);
       }
     });
   }, []);
@@ -137,6 +137,10 @@ const Dashboard = () => {
         <div className="fixed top-4 right-4 z-50">
           <ThemeToggle />
         </div>
+        
+        {/* Notification Permission Banner */}
+        {currentUserId && <NotificationPermissionBanner userId={currentUserId} />}
+        
         {/* Welcome Header */}
         <div className="bg-gradient-to-br from-[hsl(var(--primary))] to-[hsl(var(--success))] text-white p-4 sm:p-6 lg:p-8 rounded-2xl sm:rounded-[20px] mb-4 sm:mb-6 lg:mb-8 relative overflow-hidden">
           <div className="absolute top-0 right-0 w-1/2 h-full opacity-10">
