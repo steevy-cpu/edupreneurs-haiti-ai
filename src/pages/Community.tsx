@@ -1939,7 +1939,7 @@ const Community = () => {
               if (!isGroup) return null;
               
               return (
-                <div className="mx-2 sm:mx-4 mt-2 px-3 py-2 bg-gradient-to-r from-primary/10 to-success/10 border border-primary/20 rounded-lg">
+                <div className="sticky top-0 z-10 mx-2 sm:mx-4 mt-2 mb-2 px-3 py-2 bg-gradient-to-r from-primary/10 to-success/10 border border-primary/20 rounded-lg backdrop-blur-sm">
                   <div className="flex items-start gap-2">
                     <div className="text-2xl shrink-0">🤖</div>
                     <div className="flex-1 min-w-0">
