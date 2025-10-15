@@ -181,7 +181,7 @@ export function CreateGroupDialog({ open, onOpenChange, followers, onGroupCreate
           .insert({
             conversation_id: conversation.id,
             sender_id: user.id,
-            content: `Bienvenue dans ${groupData.name}`,
+            content: `🎉 Bienvenue dans ${groupData.name} ! 👋✨`,
             read: false
           })
           .select()
