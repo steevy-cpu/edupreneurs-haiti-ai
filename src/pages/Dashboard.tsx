@@ -14,6 +14,7 @@ import {
   Calendar
 } from "lucide-react";
 import ericThumbsUp from "@/assets/eric-main01.png";
+import { initializePushNotifications } from "@/utils/pushNotifications";
 
 interface Note {
   id: string;
@@ -39,6 +40,15 @@ const Dashboard = () => {
     fetchUserData();
     fetchRecentNotes();
     fetchGoldEarned();
+    
+    // Initialize push notifications
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      if (user) {
+        initializePushNotifications(user.id).catch(err => {
+          console.log('Failed to initialize push notifications:', err);
+        });
+      }
+    });
   }, []);
 
   const fetchGoldEarned = async () => {

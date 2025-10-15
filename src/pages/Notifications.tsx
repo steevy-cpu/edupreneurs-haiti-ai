@@ -10,6 +10,7 @@ import { getAvatarUrl } from "@/lib/avatarMap";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
+import { initializePushNotifications } from "@/utils/pushNotifications";
 
 interface Profile {
   id: string;
@@ -43,6 +44,15 @@ export default function Notifications() {
     checkAuth();
     fetchNotifications();
     subscribeToNotifications();
+    
+    // Initialize push notifications
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      if (user) {
+        initializePushNotifications(user.id).catch(err => {
+          console.log('Failed to initialize push notifications:', err);
+        });
+      }
+    });
   }, []);
 
   const checkAuth = async () => {
@@ -144,11 +154,46 @@ export default function Notifications() {
       .on(
         "postgres_changes",
         {
-          event: "*",
+          event: "INSERT",
           schema: "public",
           table: "notifications",
         },
-        () => {
+        async (payload) => {
+          console.log('New notification received:', payload);
+          
+          // Fetch the actor's profile for the notification
+          const { data: actorProfile } = await supabase
+            .from('profiles')
+            .select('full_name, nickname, avatar_url')
+            .eq('user_id', payload.new.actor_id)
+            .single();
+
+          const actorName = actorProfile?.nickname || actorProfile?.full_name || 'Someone';
+          
+          // Show browser notification
+          if ('Notification' in window && Notification.permission === 'granted') {
+            const notificationText = getNotificationTextForBrowser(payload.new, actorName);
+            const notification = new Notification('EDUPRENEURS', {
+              body: notificationText,
+              icon: '/logo.png',
+              badge: '/logo.png',
+              tag: payload.new.id,
+              requireInteraction: false,
+              data: {
+                url: payload.new.post_id ? `/feed?post=${payload.new.post_id}` : '/notifications'
+              }
+            });
+            
+            notification.onclick = function() {
+              window.focus();
+              if (this.data?.url) {
+                window.location.href = this.data.url;
+              }
+              this.close();
+            };
+          }
+          
+          // Refresh the notifications list
           fetchNotifications();
         }
       )
@@ -157,6 +202,27 @@ export default function Notifications() {
     return () => {
       supabase.removeChannel(channel);
     };
+  };
+
+  const getNotificationTextForBrowser = (notification: any, actorName: string): string => {
+    switch (notification.type) {
+      case 'follow_request':
+        return `${actorName} vous a envoyé une demande d'abonnement`;
+      case 'follow_accepted':
+        return `${actorName} a accepté votre demande d'abonnement`;
+      case 'new_post':
+        return `${actorName} a publié quelque chose`;
+      case 'post_like':
+      case 'like':
+        return `${actorName} a aimé votre publication`;
+      case 'post_comment':
+      case 'comment':
+        return `${actorName} a commenté votre publication`;
+      case 'group_deleted':
+        return notification.content || 'Un groupe a été supprimé';
+      default:
+        return notification.content || 'Nouvelle notification';
+    }
   };
 
   const markAsRead = async (notificationId: string) => {

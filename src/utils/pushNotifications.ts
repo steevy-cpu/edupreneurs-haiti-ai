@@ -110,3 +110,26 @@ export const initializePushNotifications = async (userId: string): Promise<void>
   // Subscribe to push notifications
   await subscribeToPushNotifications(registration, userId);
 };
+
+export const showBrowserNotification = (title: string, options: NotificationOptions = {}) => {
+  if (!('Notification' in window)) {
+    console.log('Browser notifications not supported');
+    return;
+  }
+
+  if (Notification.permission === 'granted') {
+    const notification = new Notification(title, {
+      icon: '/logo.png',
+      badge: '/logo.png',
+      ...options
+    });
+
+    notification.onclick = () => {
+      window.focus();
+      if (options.data?.url) {
+        window.location.href = options.data.url;
+      }
+      notification.close();
+    };
+  }
+};
