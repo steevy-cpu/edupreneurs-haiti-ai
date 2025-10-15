@@ -35,6 +35,25 @@ export default function Auth() {
   const [checkingNickname, setCheckingNickname] = useState(false);
   const [verificationCode, setVerificationCode] = useState("");
   const [pendingUserId, setPendingUserId] = useState<string | null>(null);
+  const [resendCooldown, setResendCooldown] = useState(60); // 60 seconds cooldown
+  const [canResend, setCanResend] = useState(false);
+
+  // Countdown timer for resend cooldown
+  useEffect(() => {
+    let timer: NodeJS.Timeout;
+    if (activeTab === "verify" && resendCooldown > 0 && !canResend) {
+      timer = setInterval(() => {
+        setResendCooldown((prev) => {
+          if (prev <= 1) {
+            setCanResend(true);
+            return 0;
+          }
+          return prev - 1;
+        });
+      }, 1000);
+    }
+    return () => clearInterval(timer);
+  }, [activeTab, resendCooldown, canResend]);
 
   useEffect(() => {
     // Check if user is logged in but not verified
@@ -53,6 +72,8 @@ export default function Auth() {
           await supabase.auth.signOut();
           setPendingUserId(profile.user_id);
           setActiveTab("verify");
+          setResendCooldown(60);
+          setCanResend(false);
           toast({
             title: "Email non vérifié",
             description: "Veuillez entrer votre code de vérification pour accéder à votre compte",
@@ -144,6 +165,77 @@ export default function Auth() {
     }
   };
 
+  const handleResendCode = async () => {
+    if (!pendingUserId || !canResend) return;
+
+    try {
+      // Generate new verification code
+      const newCode = generateConfirmationCode();
+      console.log('🔑 Resending verification code:', newCode);
+
+      // First, sign in temporarily to update the code
+      const userEmail = signupData.email || loginData.email;
+      
+      if (!userEmail) {
+        throw new Error("Email not found");
+      }
+
+      // Sign in the user temporarily to update their profile
+      const { data: authData, error: signInError } = await supabase.auth.signInWithPassword({
+        email: userEmail,
+        password: signupData.password || loginData.password,
+      });
+
+      if (signInError) throw signInError;
+
+      // Update profile with new code while authenticated
+      const { error: updateError } = await supabase
+        .from('profiles')
+        .update({ confirmation_code: newCode.trim() })
+        .eq('user_id', pendingUserId);
+
+      if (updateError) {
+        console.error("Error updating verification code:", updateError);
+        throw updateError;
+      }
+
+      // Get profile info for email
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('full_name, nickname, academic_grade')
+        .eq('user_id', pendingUserId)
+        .single();
+
+      // Sign out after update
+      await supabase.auth.signOut();
+
+      // Send new verification email
+      await sendVerificationEmail({
+        to_email: userEmail,
+        to_name: profile?.full_name || profile?.nickname || 'Utilisateur',
+        confirmation_code: newCode,
+        nickname: profile?.nickname,
+        academic_grade: profile?.academic_grade,
+      });
+
+      // Reset countdown
+      setResendCooldown(60);
+      setCanResend(false);
+
+      toast({
+        title: "Code renvoyé ✅",
+        description: "Un nouveau code de vérification a été envoyé à votre email",
+      });
+    } catch (error: any) {
+      console.error("Resend error:", error);
+      toast({
+        title: "Erreur",
+        description: "Impossible de renvoyer le code. Veuillez réessayer.",
+        variant: "destructive",
+      });
+    }
+  };
+
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -208,6 +300,8 @@ export default function Auth() {
         // Set pending user and show verify tab
         setPendingUserId(authData.user.id);
         setActiveTab("verify");
+        setResendCooldown(60);
+        setCanResend(false);
         
         toast({
           title: "Email non vérifié",
@@ -504,6 +598,8 @@ export default function Auth() {
       // Set pending user and switch to verification tab
       setPendingUserId(authData.user.id);
       setActiveTab("verify");
+      setResendCooldown(60);
+      setCanResend(false);
     } catch (error: any) {
       console.error("Signup error:", error);
       toast({
@@ -765,12 +861,34 @@ export default function Auth() {
                     <Button type="submit" className="auth-btn-submit w-full mt-6">
                       Vérifier le code
                     </Button>
+                    
+                    {/* Resend verification code */}
+                    <div className="mt-4 text-center">
+                      <button
+                        type="button"
+                        onClick={handleResendCode}
+                        disabled={!canResend}
+                        className={`text-sm font-medium ${
+                          canResend 
+                            ? 'text-primary hover:underline cursor-pointer' 
+                            : 'text-muted-foreground cursor-not-allowed'
+                        }`}
+                      >
+                        {canResend 
+                          ? "Renvoyer le code de vérification" 
+                          : `Renvoyer le code (${resendCooldown}s)`
+                        }
+                      </button>
+                    </div>
+
                     <button
                       type="button"
                       onClick={() => {
                         setActiveTab("signup");
                         setPendingUserId(null);
                         setVerificationCode("");
+                        setResendCooldown(60);
+                        setCanResend(false);
                       }}
                       className="text-sm text-muted-foreground hover:text-primary mt-4 text-center w-full"
                     >
