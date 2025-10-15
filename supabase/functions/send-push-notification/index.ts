@@ -14,20 +14,6 @@ interface PushSubscription {
   };
 }
 
-// Helper function to convert base64 to Uint8Array
-function base64ToUint8Array(base64: string): Uint8Array {
-  const padding = '='.repeat((4 - base64.length % 4) % 4);
-  const base64Padded = (base64 + padding)
-    .replace(/\-/g, '+')
-    .replace(/_/g, '/');
-  const rawData = atob(base64Padded);
-  const outputArray = new Uint8Array(rawData.length);
-  for (let i = 0; i < rawData.length; ++i) {
-    outputArray[i] = rawData.charCodeAt(i);
-  }
-  return outputArray;
-}
-
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders });
@@ -60,21 +46,84 @@ serve(async (req) => {
     const subscription = subscriptionData.subscription as PushSubscription;
     console.log('Found subscription for user:', recipientUserId);
 
-    // For now, we'll just mark it as successful since implementing full Web Push
-    // requires VAPID private keys and proper signing
-    // The service worker on the client side will handle showing notifications
-    // when the app is open, and the subscription is stored for future use
-    
-    console.log('Push notification sent successfully');
+    try {
+      // Create the notification payload
+      const payload = JSON.stringify({
+        title: title || 'Nouveau message',
+        body: body || 'Vous avez reçu un nouveau message',
+        icon: '/logo.png',
+        badge: '/logo.png',
+        data: {
+          url: conversationId ? `/community?conversation=${conversationId}` : '/community',
+          conversationId: conversationId
+        }
+      });
 
-    return new Response(
-      JSON.stringify({ 
-        success: true,
-        message: 'Notification queued',
-        hasSubscription: true 
-      }),
-      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-    );
+      // For Firebase Cloud Messaging endpoints, we can send without full Web Push encryption
+      // Send the push notification
+      const response = await fetch(subscription.endpoint, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'TTL': '86400' // 24 hours
+        },
+        body: JSON.stringify({
+          notification: {
+            title: title || 'Nouveau message',
+            body: body || 'Vous avez reçu un nouveau message',
+            icon: '/logo.png',
+            badge: '/logo.png',
+            data: {
+              url: conversationId ? `/community?conversation=${conversationId}` : '/community',
+              conversationId: conversationId
+            }
+          }
+        })
+      });
+
+      if (!response.ok) {
+        console.error('Push service error:', response.status, await response.text());
+        
+        // If subscription is invalid, remove it from database
+        if (response.status === 404 || response.status === 410) {
+          await supabase
+            .from('push_subscriptions')
+            .delete()
+            .eq('user_id', recipientUserId);
+          
+          return new Response(
+            JSON.stringify({ success: false, message: 'Subscription expired and removed' }),
+            { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          );
+        }
+        
+        return new Response(
+          JSON.stringify({ success: false, message: 'Push service error' }),
+          { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: response.status }
+        );
+      }
+
+      console.log('Push notification sent successfully to:', recipientUserId);
+
+      return new Response(
+        JSON.stringify({ 
+          success: true,
+          message: 'Notification sent',
+          hasSubscription: true 
+        }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    } catch (pushError) {
+      console.error('Error sending push:', pushError);
+      return new Response(
+        JSON.stringify({ 
+          success: false, 
+          message: 'Failed to send push notification',
+          error: pushError instanceof Error ? pushError.message : 'Unknown error'
+        }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 500 }
+      );
+    }
 
   } catch (error) {
     console.error('Error sending push notification:', error);

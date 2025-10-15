@@ -1229,17 +1229,58 @@ const Community = () => {
           });
         }
       } else {
-        // Regular user - send notification
-        const notificationChannel = supabase.channel(`user-notifications-${conversation.otherUser.user_id}`);
-        await notificationChannel.send({
-          type: 'broadcast',
-          event: 'new_message',
-          payload: {
-            title: `${senderName} vous a envoyé un message`,
-            body: messageContent.substring(0, 100),
-            conversationId: selectedConversation
+        // Regular user - send push notification
+        try {
+          await supabase.functions.invoke('send-push-notification', {
+            body: {
+              recipientUserId: conversation.otherUser.user_id,
+              title: `${senderName}`,
+              body: messageContent.substring(0, 100) || '📷 Image',
+              conversationId: selectedConversation
+            }
+          });
+        } catch (pushError) {
+          console.error('Error sending push notification:', pushError);
+        }
+      }
+    } else if (conversation?.is_group && conversation?.group?.id) {
+      // Group message - send push notifications to all members except sender
+      try {
+        const { data: groupMembers } = await supabase
+          .from('group_members')
+          .select('user_id')
+          .eq('group_id', conversation.group.id)
+          .neq('user_id', user.id);
+
+        if (groupMembers) {
+          // Get sender profile
+          const { data: senderProfile } = await supabase
+            .from('profiles')
+            .select('full_name, nickname')
+            .eq('user_id', user.id)
+            .single();
+
+          const senderName = senderProfile?.nickname || senderProfile?.full_name || 'Someone';
+          const groupName = conversation.group?.name || 'Group';
+
+          // Send push notification to each group member
+          for (const member of groupMembers) {
+            try {
+              await supabase.functions.invoke('send-push-notification', {
+                body: {
+                  recipientUserId: member.user_id,
+                  title: `${senderName} dans ${groupName}`,
+                  body: messageContent.substring(0, 100) || '📷 Image',
+                  conversationId: selectedConversation
+                }
+              });
+            } catch (error) {
+              console.error(`Error sending push to ${member.user_id}:`, error);
+            }
           }
-        });
+        }
+      } catch (error) {
+        console.error('Error sending group push notifications:', error);
       }
     }
     setIsSending(false);
