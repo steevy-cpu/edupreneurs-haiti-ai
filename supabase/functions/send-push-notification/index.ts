@@ -1,6 +1,5 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-import webpush from "npm:web-push@3.6.7";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -18,13 +17,6 @@ interface PushSubscription {
 // VAPID keys - these must match the public key in pushNotifications.ts
 const VAPID_PUBLIC_KEY = 'BEl62iUYgUivxIkv69yViEuiBIa-Ib9-SkvMeAtA3LFgDzkrxZJjSgSnfckjBJuBkr3qBroV5VGqq84s6cVRwCg';
 const VAPID_PRIVATE_KEY = 'bdSiNzUhUP6PHxtS1-7Zne7WMlmBXXSTlsCgSlMkN7c';
-
-// Configure web-push with VAPID details
-webpush.setVapidDetails(
-  'mailto:support@edupreneurs.app',
-  VAPID_PUBLIC_KEY,
-  VAPID_PRIVATE_KEY
-);
 
 
 serve(async (req) => {
@@ -60,51 +52,73 @@ serve(async (req) => {
     console.log('✅ Found subscription for user:', recipientUserId);
     console.log('📍 Endpoint:', subscription.endpoint.substring(0, 50) + '...');
 
+    // Create the notification payload
+    const payload = JSON.stringify({
+      title: title || 'Nouveau message',
+      body: body || 'Vous avez reçu un nouveau message',
+      icon: '/logo.png',
+      badge: '/logo.png',
+      data: {
+        url: conversationId ? `/community?conversation=${conversationId}` : '/community',
+        conversationId: conversationId
+      }
+    });
+
+    console.log('📦 Sending notification payload');
+
     try {
-      // Create the notification payload
-      const payload = {
-        title: title || 'Nouveau message',
-        body: body || 'Vous avez reçu un nouveau message',
-        icon: '/logo.png',
-        badge: '/logo.png',
-        data: {
-          url: conversationId ? `/community?conversation=${conversationId}` : '/community',
-          conversationId: conversationId
-        }
-      };
+      // Send using standard fetch with proper headers
+      const response = await fetch(subscription.endpoint, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'TTL': '86400'
+        },
+        body: payload
+      });
 
-      console.log('📦 Sending notification with web-push library');
+      if (response.ok) {
+        console.log('✅ Push notification sent successfully to:', recipientUserId);
+        console.log('📬 Status:', response.status);
 
-      // Use web-push library to send the notification
-      const result = await webpush.sendNotification(subscription, JSON.stringify(payload));
-      
-      console.log('✅ Push notification sent successfully to:', recipientUserId);
-      console.log('📬 Status:', result.statusCode);
-
-      return new Response(
-        JSON.stringify({ 
-          success: true,
-          message: 'Notification sent',
-          hasSubscription: true 
-        }),
-        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
-    } catch (pushError: any) {
-      console.error('❌ Error sending push:', pushError);
-      
-      // If subscription is invalid, remove it from database
-      if (pushError.statusCode === 404 || pushError.statusCode === 410) {
-        console.log('🗑️ Removing expired subscription');
-        await supabase
-          .from('push_subscriptions')
-          .delete()
-          .eq('user_id', recipientUserId);
-        
         return new Response(
-          JSON.stringify({ success: false, message: 'Subscription expired and removed' }),
+          JSON.stringify({ 
+            success: true,
+            message: 'Notification sent',
+            hasSubscription: true 
+          }),
           { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         );
+      } else {
+        console.error('❌ Push send failed with status:', response.status);
+        const errorText = await response.text();
+        console.error('Error details:', errorText);
+
+        // If subscription is invalid, remove it from database
+        if (response.status === 404 || response.status === 410) {
+          console.log('🗑️ Removing expired subscription');
+          await supabase
+            .from('push_subscriptions')
+            .delete()
+            .eq('user_id', recipientUserId);
+          
+          return new Response(
+            JSON.stringify({ success: false, message: 'Subscription expired and removed' }),
+            { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          );
+        }
+
+        return new Response(
+          JSON.stringify({ 
+            success: false, 
+            message: 'Failed to send push notification',
+            error: `Status ${response.status}: ${errorText}`
+          }),
+          { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 500 }
+        );
       }
+    } catch (pushError: any) {
+      console.error('❌ Error sending push:', pushError);
       
       return new Response(
         JSON.stringify({ 
