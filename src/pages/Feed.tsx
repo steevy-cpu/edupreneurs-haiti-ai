@@ -85,6 +85,7 @@ const Feed = () => {
   const [selectedPostToShare, setSelectedPostToShare] = useState<Post | null>(null);
   const [followingUsers, setFollowingUsers] = useState<Profile[]>([]);
   const [sendingMessage, setSendingMessage] = useState(false);
+  const [isRefreshing, setIsRefreshing] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -102,7 +103,9 @@ const Feed = () => {
     setCurrentUser(user);
   };
 
-  const fetchPosts = async () => {
+  const fetchPosts = async (showToast = false) => {
+    if (showToast) setIsRefreshing(true);
+    
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return;
 
@@ -114,6 +117,7 @@ const Feed = () => {
 
     if (postsError) {
       console.error("Error fetching posts:", postsError);
+      setIsRefreshing(false);
       return;
     }
 
@@ -180,6 +184,14 @@ const Feed = () => {
     }) || [];
 
     setPosts(enrichedPosts);
+    
+    if (showToast) {
+      setIsRefreshing(false);
+      toast({
+        title: "Actualisation réussie",
+        description: "Le fil d'actualité a été mis à jour.",
+      });
+    }
   };
 
   const subscribeToNewPosts = () => {
@@ -818,11 +830,12 @@ const Feed = () => {
             <Button
               size="icon"
               variant="ghost"
-              onClick={fetchPosts}
+              onClick={() => fetchPosts(true)}
+              disabled={isRefreshing}
               className="hover:bg-accent/50"
               title="Actualiser"
             >
-              <RefreshCw size={20} />
+              <RefreshCw size={20} className={isRefreshing ? "animate-spin" : ""} />
             </Button>
             <ThemeToggle />
             <Dialog>
