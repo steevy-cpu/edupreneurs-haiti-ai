@@ -2525,6 +2525,11 @@ const Community = () => {
             setShowGroupInfo(false);
             fetchConversations();
           }}
+          onDeleteGroup={() => {
+            setSelectedConversation(null);
+            setShowGroupInfo(false);
+            fetchConversations();
+          }}
         />
       )}
 

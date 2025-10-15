@@ -35,6 +35,7 @@ interface GroupInfoDialogProps {
   conversationId: string;
   currentUserId: string;
   onLeaveGroup: () => void;
+  onDeleteGroup?: () => void;
 }
 
 export const GroupInfoDialog = ({
@@ -44,6 +45,7 @@ export const GroupInfoDialog = ({
   conversationId,
   currentUserId,
   onLeaveGroup,
+  onDeleteGroup,
 }: GroupInfoDialogProps) => {
   const { toast } = useToast();
   const [group, setGroup] = useState<GroupChat | null>(null);
@@ -56,6 +58,8 @@ export const GroupInfoDialog = ({
   const [addingMember, setAddingMember] = useState(false);
   const [updatingAvatar, setUpdatingAvatar] = useState(false);
   const [showDeleteAvatarConfirm, setShowDeleteAvatarConfirm] = useState(false);
+  const [showDeleteGroupConfirm, setShowDeleteGroupConfirm] = useState(false);
+  const [isDeletingGroup, setIsDeletingGroup] = useState(false);
 
   useEffect(() => {
     if (open && groupId) {
@@ -343,6 +347,38 @@ export const GroupInfoDialog = ({
     }
   };
 
+  const handleDeleteGroup = async () => {
+    try {
+      setIsDeletingGroup(true);
+
+      // Delete the group (cascade will handle related records)
+      const { error: deleteError } = await supabase
+        .from('group_chats')
+        .delete()
+        .eq('id', groupId);
+
+      if (deleteError) throw deleteError;
+
+      toast({
+        title: "Succès",
+        description: "Le groupe a été supprimé",
+      });
+
+      onDeleteGroup?.();
+      onOpenChange(false);
+    } catch (error) {
+      console.error('Error deleting group:', error);
+      toast({
+        title: "Erreur",
+        description: "Impossible de supprimer le groupe",
+        variant: "destructive",
+      });
+    } finally {
+      setIsDeletingGroup(false);
+      setShowDeleteGroupConfirm(false);
+    }
+  };
+
   if (!group) return null;
 
   const filteredFollowers = availableFollowers.filter((follower) =>
@@ -557,15 +593,27 @@ export const GroupInfoDialog = ({
 
           <Separator className="my-2" />
 
-          <div className="pt-2">
-            <Button
-              variant="destructive"
-              className="w-full"
-              onClick={() => setShowLeaveConfirm(true)}
-            >
-              <LogOut className="h-4 w-4 mr-2" />
-              Quitter le groupe
-            </Button>
+          <div className="pt-2 space-y-2">
+            {group.created_by === currentUserId ? (
+              <Button
+                variant="destructive"
+                className="w-full"
+                onClick={() => setShowDeleteGroupConfirm(true)}
+                disabled={isDeletingGroup}
+              >
+                <Trash2 className="h-4 w-4 mr-2" />
+                {isDeletingGroup ? "Suppression..." : "Supprimer le groupe"}
+              </Button>
+            ) : (
+              <Button
+                variant="destructive"
+                className="w-full"
+                onClick={() => setShowLeaveConfirm(true)}
+              >
+                <LogOut className="h-4 w-4 mr-2" />
+                Quitter le groupe
+              </Button>
+            )}
           </div>
         </DialogContent>
       </Dialog>
@@ -599,6 +647,27 @@ export const GroupInfoDialog = ({
             <AlertDialogCancel>Annuler</AlertDialogCancel>
             <AlertDialogAction onClick={handleDeleteAvatar} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
               Supprimer
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      <AlertDialog open={showDeleteGroupConfirm} onOpenChange={setShowDeleteGroupConfirm}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Supprimer le groupe?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Êtes-vous sûr de vouloir supprimer définitivement "{group?.name}"? Cette action est irréversible et supprimera tous les messages et membres du groupe.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Annuler</AlertDialogCancel>
+            <AlertDialogAction 
+              onClick={handleDeleteGroup} 
+              disabled={isDeletingGroup}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {isDeletingGroup ? "Suppression..." : "Supprimer définitivement"}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
