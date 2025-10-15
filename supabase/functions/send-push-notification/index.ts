@@ -14,8 +14,64 @@ interface PushSubscription {
   };
 }
 
-// Note: For WNS (Windows Push Notification Service used by Edge on Windows),
-// the authentication is embedded in the endpoint URL itself, so we don't need VAPID
+// VAPID keys - these must match the public key in pushNotifications.ts
+const VAPID_PUBLIC_KEY = 'BEl62iUYgUivxIkv69yViEuiBIa-Ib9-SkvMeAtA3LFgDzkrxZJjSgSnfckjBJuBkr3qBroV5VGqq84s6cVRwCg';
+const VAPID_PRIVATE_KEY = 'bdSiNzUhUP6PHxtS1-7Zne7WMlmBXXSTlsCgSlMkN7c';
+
+// Helper to convert base64 to Uint8Array
+function base64ToUint8Array(base64: string): Uint8Array {
+  const padding = '='.repeat((4 - base64.length % 4) % 4);
+  const b64 = (base64 + padding).replace(/\-/g, '+').replace(/_/g, '/');
+  const rawData = atob(b64);
+  const outputArray = new Uint8Array(rawData.length);
+  for (let i = 0; i < rawData.length; ++i) {
+    outputArray[i] = rawData.charCodeAt(i);
+  }
+  return outputArray;
+}
+
+// Generate VAPID JWT for Web Push authentication
+async function generateVAPIDJWT(audience: string): Promise<string> {
+  const header = { typ: 'JWT', alg: 'ES256' };
+  const now = Math.floor(Date.now() / 1000);
+  const payload = {
+    aud: audience,
+    exp: now + 43200, // 12 hours
+    sub: 'mailto:support@edupreneurs.app'
+  };
+
+  // Base64url encode header and payload
+  const encoder = new TextEncoder();
+  const headerB64 = btoa(JSON.stringify(header)).replace(/=/g, '').replace(/\+/g, '-').replace(/\//g, '_');
+  const payloadB64 = btoa(JSON.stringify(payload)).replace(/=/g, '').replace(/\+/g, '-').replace(/\//g, '_');
+  const unsignedToken = `${headerB64}.${payloadB64}`;
+
+  // Import VAPID private key
+  const privateKeyBytes = base64ToUint8Array(VAPID_PRIVATE_KEY);
+  const cryptoKey = await crypto.subtle.importKey(
+    'raw',
+    privateKeyBytes.buffer as ArrayBuffer,
+    { name: 'ECDSA', namedCurve: 'P-256' },
+    false,
+    ['sign']
+  );
+
+  // Sign the token
+  const signature = await crypto.subtle.sign(
+    { name: 'ECDSA', hash: 'SHA-256' },
+    cryptoKey,
+    encoder.encode(unsignedToken)
+  );
+
+  // Convert signature to base64url
+  const signatureArray = new Uint8Array(signature);
+  const signatureB64 = btoa(String.fromCharCode(...signatureArray))
+    .replace(/=/g, '')
+    .replace(/\+/g, '-')
+    .replace(/\//g, '_');
+
+  return `${unsignedToken}.${signatureB64}`;
+}
 
 
 serve(async (req) => {
@@ -71,12 +127,21 @@ serve(async (req) => {
       let response;
 
       if (endpoint.includes('fcm.googleapis.com')) {
-        // Firebase Cloud Messaging
-        console.log('🔥 Using FCM endpoint');
+        // Firebase Cloud Messaging (Chrome, Android)
+        console.log('🔥 Using FCM endpoint (Chrome browser)');
+        
+        const url = new URL(endpoint);
+        const audience = `${url.protocol}//${url.host}`;
+        const jwt = await generateVAPIDJWT(audience);
+        const vapidKey = VAPID_PUBLIC_KEY.replace(/=/g, '').replace(/\+/g, '-').replace(/\//g, '_');
+        
+        console.log('🔑 Generated VAPID JWT for FCM');
+        
         response = await fetch(endpoint, {
           method: 'POST',
           headers: {
-            'Content-Type': 'application/json',
+            'Authorization': `vapid t=${jwt}, k=${vapidKey}`,
+            'Content-Type': 'application/octet-stream',
             'TTL': '86400'
           },
           body: payload
@@ -106,13 +171,19 @@ serve(async (req) => {
           body: wnsPayload
         });
       } else {
-        // Generic Web Push - send as JSON
-        console.log('🌐 Using generic Web Push endpoint');
+        // Generic Web Push with VAPID
+        console.log('🌐 Using generic Web Push endpoint with VAPID');
+        
+        const url = new URL(endpoint);
+        const audience = `${url.protocol}//${url.host}`;
+        const jwt = await generateVAPIDJWT(audience);
+        const vapidKey = VAPID_PUBLIC_KEY.replace(/=/g, '').replace(/\+/g, '-').replace(/\//g, '_');
         
         response = await fetch(endpoint, {
           method: 'POST',
           headers: {
-            'Content-Type': 'application/json',
+            'Authorization': `vapid t=${jwt}, k=${vapidKey}`,
+            'Content-Type': 'application/octet-stream',
             'TTL': '86400'
           },
           body: payload
