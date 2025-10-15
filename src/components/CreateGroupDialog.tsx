@@ -24,7 +24,7 @@ interface CreateGroupDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   followers: Follower[];
-  onGroupCreated: () => void;
+  onGroupCreated: (conversationId: string) => void;
 }
 
 export function CreateGroupDialog({ open, onOpenChange, followers, onGroupCreated }: CreateGroupDialogProps) {
@@ -195,7 +195,7 @@ export function CreateGroupDialog({ open, onOpenChange, followers, onGroupCreate
       // Step 8: Complete (100%)
       setProgress(100);
       toast.success("Groupe créé avec succès!");
-      onGroupCreated();
+      onGroupCreated(conversation.id);
       onOpenChange(false);
       
       // Reset form

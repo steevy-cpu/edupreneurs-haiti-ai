@@ -2485,9 +2485,14 @@ const Community = () => {
         open={showCreateGroup}
         onOpenChange={setShowCreateGroup}
         followers={followers}
-        onGroupCreated={() => {
-          fetchConversations();
+        onGroupCreated={async (conversationId) => {
+          await fetchConversations();
           setShowCreateGroup(false);
+          // Navigate to the new conversation
+          setSelectedConversation(conversationId);
+          navigate(`/community?conversation=${conversationId}`);
+          // Fetch messages for the new conversation
+          await fetchMessages(conversationId);
         }}
       />
       
