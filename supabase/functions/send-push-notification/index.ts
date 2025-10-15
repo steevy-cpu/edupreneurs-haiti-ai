@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import webpush from "npm:web-push@3.6.7";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -18,60 +19,12 @@ interface PushSubscription {
 const VAPID_PUBLIC_KEY = 'BEl62iUYgUivxIkv69yViEuiBIa-Ib9-SkvMeAtA3LFgDzkrxZJjSgSnfckjBJuBkr3qBroV5VGqq84s6cVRwCg';
 const VAPID_PRIVATE_KEY = 'bdSiNzUhUP6PHxtS1-7Zne7WMlmBXXSTlsCgSlMkN7c';
 
-// Helper to convert base64 to Uint8Array
-function base64ToUint8Array(base64: string): Uint8Array {
-  const padding = '='.repeat((4 - base64.length % 4) % 4);
-  const b64 = (base64 + padding).replace(/\-/g, '+').replace(/_/g, '/');
-  const rawData = atob(b64);
-  const outputArray = new Uint8Array(rawData.length);
-  for (let i = 0; i < rawData.length; ++i) {
-    outputArray[i] = rawData.charCodeAt(i);
-  }
-  return outputArray;
-}
-
-// Generate VAPID JWT for Web Push authentication
-async function generateVAPIDJWT(audience: string): Promise<string> {
-  const header = { typ: 'JWT', alg: 'ES256' };
-  const now = Math.floor(Date.now() / 1000);
-  const payload = {
-    aud: audience,
-    exp: now + 43200, // 12 hours
-    sub: 'mailto:support@edupreneurs.app'
-  };
-
-  // Base64url encode header and payload
-  const encoder = new TextEncoder();
-  const headerB64 = btoa(JSON.stringify(header)).replace(/=/g, '').replace(/\+/g, '-').replace(/\//g, '_');
-  const payloadB64 = btoa(JSON.stringify(payload)).replace(/=/g, '').replace(/\+/g, '-').replace(/\//g, '_');
-  const unsignedToken = `${headerB64}.${payloadB64}`;
-
-  // Import VAPID private key
-  const privateKeyBytes = base64ToUint8Array(VAPID_PRIVATE_KEY);
-  const cryptoKey = await crypto.subtle.importKey(
-    'raw',
-    privateKeyBytes.buffer as ArrayBuffer,
-    { name: 'ECDSA', namedCurve: 'P-256' },
-    false,
-    ['sign']
-  );
-
-  // Sign the token
-  const signature = await crypto.subtle.sign(
-    { name: 'ECDSA', hash: 'SHA-256' },
-    cryptoKey,
-    encoder.encode(unsignedToken)
-  );
-
-  // Convert signature to base64url
-  const signatureArray = new Uint8Array(signature);
-  const signatureB64 = btoa(String.fromCharCode(...signatureArray))
-    .replace(/=/g, '')
-    .replace(/\+/g, '-')
-    .replace(/\//g, '_');
-
-  return `${unsignedToken}.${signatureB64}`;
-}
+// Configure web-push with VAPID details
+webpush.setVapidDetails(
+  'mailto:support@edupreneurs.app',
+  VAPID_PUBLIC_KEY,
+  VAPID_PRIVATE_KEY
+);
 
 
 serve(async (req) => {
@@ -109,7 +62,7 @@ serve(async (req) => {
 
     try {
       // Create the notification payload
-      const payload = JSON.stringify({
+      const payload = {
         title: title || 'Nouveau message',
         body: body || 'Vous avez reçu un nouveau message',
         icon: '/logo.png',
@@ -118,108 +71,15 @@ serve(async (req) => {
           url: conversationId ? `/community?conversation=${conversationId}` : '/community',
           conversationId: conversationId
         }
-      });
+      };
 
-      console.log('📦 Payload:', payload);
+      console.log('📦 Sending notification with web-push library');
 
-      // Determine the push service type
-      const endpoint = subscription.endpoint;
-      let response;
-
-      if (endpoint.includes('fcm.googleapis.com')) {
-        // Firebase Cloud Messaging (Chrome, Android)
-        console.log('🔥 Using FCM endpoint (Chrome browser)');
-        
-        const url = new URL(endpoint);
-        const audience = `${url.protocol}//${url.host}`;
-        const jwt = await generateVAPIDJWT(audience);
-        const vapidKey = VAPID_PUBLIC_KEY.replace(/=/g, '').replace(/\+/g, '-').replace(/\//g, '_');
-        
-        console.log('🔑 Generated VAPID JWT for FCM');
-        
-        response = await fetch(endpoint, {
-          method: 'POST',
-          headers: {
-            'Authorization': `vapid t=${jwt}, k=${vapidKey}`,
-            'Content-Type': 'application/octet-stream',
-            'TTL': '86400'
-          },
-          body: payload
-        });
-      } else if (endpoint.includes('notify.windows.com')) {
-        // Windows Push Notification Service (Edge on Windows)
-        console.log('🪟 Using WNS endpoint (Edge browser)');
-        
-        // WNS requires different format
-        const wnsPayload = `<?xml version="1.0" encoding="utf-8"?>
-<toast>
-    <visual>
-        <binding template="ToastText02">
-            <text id="1">${title || 'Nouveau message'}</text>
-            <text id="2">${body || 'Vous avez reçu un nouveau message'}</text>
-        </binding>
-    </visual>
-</toast>`;
-
-        response = await fetch(endpoint, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'text/xml',
-            'X-WNS-Type': 'wns/toast',
-            'X-WNS-RequestForStatus': 'true'
-          },
-          body: wnsPayload
-        });
-      } else {
-        // Generic Web Push with VAPID
-        console.log('🌐 Using generic Web Push endpoint with VAPID');
-        
-        const url = new URL(endpoint);
-        const audience = `${url.protocol}//${url.host}`;
-        const jwt = await generateVAPIDJWT(audience);
-        const vapidKey = VAPID_PUBLIC_KEY.replace(/=/g, '').replace(/\+/g, '-').replace(/\//g, '_');
-        
-        response = await fetch(endpoint, {
-          method: 'POST',
-          headers: {
-            'Authorization': `vapid t=${jwt}, k=${vapidKey}`,
-            'Content-Type': 'application/octet-stream',
-            'TTL': '86400'
-          },
-          body: payload
-        });
-      }
-
-      if (!response.ok) {
-        const errorText = await response.text();
-        console.error('❌ Push service error:', response.status, errorText);
-        
-        // If subscription is invalid, remove it from database
-        if (response.status === 404 || response.status === 410) {
-          console.log('🗑️ Removing expired subscription');
-          await supabase
-            .from('push_subscriptions')
-            .delete()
-            .eq('user_id', recipientUserId);
-          
-          return new Response(
-            JSON.stringify({ success: false, message: 'Subscription expired and removed' }),
-            { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-          );
-        }
-        
-        return new Response(
-          JSON.stringify({ 
-            success: false, 
-            message: 'Push service error',
-            details: errorText,
-            status: response.status 
-          }),
-          { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: response.status }
-        );
-      }
-
+      // Use web-push library to send the notification
+      const result = await webpush.sendNotification(subscription, JSON.stringify(payload));
+      
       console.log('✅ Push notification sent successfully to:', recipientUserId);
+      console.log('📬 Status:', result.statusCode);
 
       return new Response(
         JSON.stringify({ 
@@ -229,8 +89,23 @@ serve(async (req) => {
         }),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
-    } catch (pushError) {
+    } catch (pushError: any) {
       console.error('❌ Error sending push:', pushError);
+      
+      // If subscription is invalid, remove it from database
+      if (pushError.statusCode === 404 || pushError.statusCode === 410) {
+        console.log('🗑️ Removing expired subscription');
+        await supabase
+          .from('push_subscriptions')
+          .delete()
+          .eq('user_id', recipientUserId);
+        
+        return new Response(
+          JSON.stringify({ success: false, message: 'Subscription expired and removed' }),
+          { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+      
       return new Response(
         JSON.stringify({ 
           success: false, 
