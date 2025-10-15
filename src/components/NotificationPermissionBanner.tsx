@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Bell, X } from "lucide-react";
+import { Bell, X, Settings } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { requestNotificationPermission, registerServiceWorker, subscribeToPushNotifications } from "@/utils/pushNotifications";
@@ -11,6 +11,7 @@ interface NotificationPermissionBannerProps {
 export const NotificationPermissionBanner = ({ userId }: NotificationPermissionBannerProps) => {
   const [showBanner, setShowBanner] = useState(false);
   const [isRequesting, setIsRequesting] = useState(false);
+  const [isDenied, setIsDenied] = useState(false);
 
   useEffect(() => {
     // Check if we should show the banner
@@ -22,8 +23,10 @@ export const NotificationPermissionBanner = ({ userId }: NotificationPermissionB
         console.log('Notification permission status:', permission);
         console.log('Banner dismissed:', dismissed);
         
-        // Show banner if permission is default (not yet asked) and not dismissed
-        if (permission === 'default' && !dismissed) {
+        if (permission === 'denied') {
+          setIsDenied(true);
+          setShowBanner(!dismissed);
+        } else if (permission === 'default' && !dismissed) {
           setShowBanner(true);
         }
       }
@@ -33,6 +36,18 @@ export const NotificationPermissionBanner = ({ userId }: NotificationPermissionB
   }, []);
 
   const handleEnableNotifications = async () => {
+    if (isDenied) {
+      // Show instructions for enabling in browser settings
+      alert(
+        '🔔 Pour activer les notifications:\n\n' +
+        '1. Cliquez sur l\'icône de cadenas/info dans la barre d\'adresse\n' +
+        '2. Trouvez "Notifications" dans les paramètres\n' +
+        '3. Changez à "Autoriser"\n' +
+        '4. Rechargez la page'
+      );
+      return;
+    }
+
     setIsRequesting(true);
     
     try {
@@ -54,10 +69,10 @@ export const NotificationPermissionBanner = ({ userId }: NotificationPermissionB
         }
         
         setShowBanner(false);
+        localStorage.removeItem('notification-banner-dismissed');
       } else if (permission === 'denied') {
         console.log('Permission denied by user');
-        alert('Vous avez refusé les notifications. Pour les activer, allez dans les paramètres de votre navigateur.');
-        setShowBanner(false);
+        setIsDenied(true);
       }
     } catch (error) {
       console.error('Error enabling notifications:', error);
@@ -74,23 +89,38 @@ export const NotificationPermissionBanner = ({ userId }: NotificationPermissionB
   if (!showBanner) return null;
 
   return (
-    <Alert className="mb-4 border-primary/20 bg-primary/5">
-      <Bell className="h-4 w-4 text-primary" />
+    <Alert className={`mb-4 border-primary/20 ${isDenied ? 'bg-yellow-500/10 border-yellow-500/20' : 'bg-primary/5'}`}>
+      {isDenied ? (
+        <Settings className="h-4 w-4 text-yellow-600" />
+      ) : (
+        <Bell className="h-4 w-4 text-primary" />
+      )}
       <AlertDescription className="flex items-center justify-between gap-4">
         <div className="flex-1">
-          <p className="font-medium text-sm">Activez les notifications pour ne rien manquer!</p>
-          <p className="text-xs text-muted-foreground mt-1">
-            Recevez des notifications pour les nouveaux messages et les activités importantes.
-          </p>
+          {isDenied ? (
+            <>
+              <p className="font-medium text-sm">Les notifications sont bloquées</p>
+              <p className="text-xs text-muted-foreground mt-1">
+                Cliquez sur "Paramètres" pour savoir comment les réactiver dans votre navigateur.
+              </p>
+            </>
+          ) : (
+            <>
+              <p className="font-medium text-sm">Activez les notifications pour ne rien manquer!</p>
+              <p className="text-xs text-muted-foreground mt-1">
+                Recevez des notifications pour les nouveaux messages et les activités importantes.
+              </p>
+            </>
+          )}
         </div>
         <div className="flex items-center gap-2">
           <Button
             size="sm"
             onClick={handleEnableNotifications}
             disabled={isRequesting}
-            className="bg-primary hover:bg-primary/90"
+            className={isDenied ? 'bg-yellow-600 hover:bg-yellow-700' : 'bg-primary hover:bg-primary/90'}
           >
-            {isRequesting ? 'Activation...' : 'Activer'}
+            {isRequesting ? 'Activation...' : isDenied ? 'Paramètres' : 'Activer'}
           </Button>
           <Button
             size="sm"

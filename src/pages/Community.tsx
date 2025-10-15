@@ -14,7 +14,6 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { Dialog, DialogContent, DialogTitle, DialogHeader } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
-import { initializePushNotifications } from "@/utils/pushNotifications";
 import { getAvatarUrl } from "@/lib/avatarMap";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { optimizeMediaFile, formatFileSize } from "@/utils/mediaOptimization";
@@ -148,8 +147,6 @@ const Community = () => {
       fetchConversations();
       fetchFollowers();
       subscribeToMessages();
-      initializePushNotifications(user.id);
-      subscribeToNotifications();
       setupGlobalPresenceListener();
     }
     
@@ -178,46 +175,6 @@ const Community = () => {
     document.addEventListener('visibilitychange', handleVisibilityChange);
     return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
   }, [user]);
-
-
-  const subscribeToNotifications = () => {
-    if (!user) return;
-
-    const channel = supabase
-      .channel(`user-notifications-${user.id}`)
-      .on(
-        'broadcast',
-        { event: 'new_message' },
-        (payload) => {
-          console.log('New message notification:', payload);
-          const { title, body, conversationId } = payload.payload;
-          
-          // Show browser notification if permission granted
-          if ('Notification' in window && Notification.permission === 'granted') {
-            const notification = new Notification(title, {
-              body,
-              icon: '/favicon.ico',
-              tag: conversationId,
-              requireInteraction: false
-            });
-
-            notification.onclick = () => {
-              window.focus();
-              navigate(`/community?conversation=${conversationId}`);
-              notification.close();
-            };
-
-            // Play sound
-            playReceiveSound();
-          }
-        }
-      )
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(channel);
-    };
-  };
 
   // Subscribe to typing presence for all conversations - only when conversation IDs change
   useEffect(() => {
@@ -888,16 +845,20 @@ const Community = () => {
             });
           }
 
-          // Show notification if message is from another user (sound already played in subscribeToMessages)
-          if (payload.new.sender_id !== user?.id) {
-            if (Notification.permission === 'granted') {
-              const senderName = profile?.full_name || 'Quelqu\'un';
+          // Show notification if message is from another user AND this is the CURRENT conversation
+          // (notifications for other conversations are handled in subscribeToMessages)
+          if (payload.new.sender_id !== user?.id && conversationId === selectedConversation) {
+            console.log('🔔 Message in current conversation, showing notification');
+            if ('Notification' in window && Notification.permission === 'granted') {
+              const senderName = profile?.nickname || profile?.full_name || 'Quelqu\'un';
               const messageContent = sharedPost 
-                ? `${senderName} vous a partagé un post` 
-                : payload.new.content.substring(0, 100);
-              const notification = new Notification(`${senderName} vous a envoyé un message`, {
+                ? 'a partagé un post' 
+                : (payload.new.content || 'Nouveau message').substring(0, 100);
+              
+              const notification = new Notification(senderName, {
                 body: messageContent,
-                icon: '/favicon.ico',
+                icon: '/logo.png',
+                badge: '/logo.png',
                 tag: conversationId,
                 requireInteraction: false,
               });
