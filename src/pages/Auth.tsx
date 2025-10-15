@@ -168,22 +168,28 @@ export default function Auth() {
       }
 
       if (profile && !profile.email_confirmed) {
-        // User not verified - generate new code, send email, show verify screen
-        await supabase.auth.signOut();
-        
-        // Generate new verification code
+        // User not verified - generate new code, UPDATE BEFORE SIGNOUT
         const newCode = generateConfirmationCode();
         console.log('🔑 Generated new verification code for login:', newCode);
         
-        // Update profile with new code
+        // Update profile with new code WHILE STILL AUTHENTICATED
         const { error: updateError } = await supabase
           .from('profiles')
-          .update({ confirmation_code: newCode.trim() }) // Ensure no whitespace
+          .update({ confirmation_code: newCode.trim() })
           .eq('user_id', authData.user.id);
         
         if (updateError) {
           console.error("Error updating verification code:", updateError);
+          toast({
+            title: "Erreur",
+            description: "Impossible de générer un nouveau code de vérification",
+            variant: "destructive",
+          });
+          return;
         }
+        
+        // NOW sign out after successful update
+        await supabase.auth.signOut();
         
         // Send verification email with new code
         try {
