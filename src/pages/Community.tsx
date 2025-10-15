@@ -20,6 +20,7 @@ import { ThemeToggle } from "@/components/ThemeToggle";
 import { optimizeMediaFile, formatFileSize } from "@/utils/mediaOptimization";
 import { CreateGroupDialog } from "@/components/CreateGroupDialog";
 import { GroupInfoDialog } from "@/components/GroupInfoDialog";
+import ericAiHelper from "@/assets/eric-ai-helper.png";
 
 interface Profile {
   id: string;
@@ -1941,7 +1942,7 @@ const Community = () => {
               return (
                 <div className="sticky top-0 z-10 mx-2 sm:mx-4 mt-2 mb-2 px-3 py-2 bg-gradient-to-r from-primary/10 to-success/10 border border-primary/20 rounded-lg backdrop-blur-sm">
                   <div className="flex items-start gap-2">
-                    <div className="text-2xl shrink-0">🤖</div>
+                    <img src={ericAiHelper} alt="Eric AI Assistant" className="w-10 h-10 sm:w-12 sm:h-12 rounded-full object-cover shrink-0" />
                     <div className="flex-1 min-w-0">
                       <p className="text-xs sm:text-sm text-foreground font-medium">
                         Eric, votre assistant IA est dans ce groupe !
