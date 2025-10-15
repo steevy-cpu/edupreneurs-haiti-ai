@@ -351,6 +351,45 @@ export const GroupInfoDialog = ({
     try {
       setIsDeletingGroup(true);
 
+      // Get admin's profile for notification
+      const { data: adminProfile, error: adminProfileError } = await supabase
+        .from('profiles')
+        .select('nickname, full_name')
+        .eq('user_id', currentUserId)
+        .single();
+
+      if (adminProfileError) throw adminProfileError;
+
+      const adminName = adminProfile.nickname || adminProfile.full_name;
+
+      // Get all group members except the admin
+      const { data: groupMembers, error: membersError } = await supabase
+        .from('group_members')
+        .select('user_id')
+        .eq('group_id', groupId)
+        .neq('user_id', currentUserId);
+
+      if (membersError) throw membersError;
+
+      // Create notifications for all members
+      if (groupMembers && groupMembers.length > 0) {
+        const notifications = groupMembers.map((member: any) => ({
+          user_id: member.user_id,
+          actor_id: currentUserId,
+          type: 'group_deleted',
+          content: `Le groupe "${group?.name}" a été supprimé par ${adminName}`,
+          read: false
+        }));
+
+        const { error: notificationError } = await supabase
+          .from('notifications')
+          .insert(notifications);
+
+        if (notificationError) {
+          console.error('Error creating notifications:', notificationError);
+        }
+      }
+
       // Delete the group (cascade will handle related records)
       const { error: deleteError } = await supabase
         .from('group_chats')
