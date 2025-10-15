@@ -30,19 +30,64 @@ function base64ToUint8Array(base64: string): Uint8Array {
   return outputArray;
 }
 
+// Generate JWT for VAPID
+async function generateVAPIDJWT(audience: string): Promise<string> {
+  const header = {
+    typ: 'JWT',
+    alg: 'ES256'
+  };
+
+  const now = Math.floor(Date.now() / 1000);
+  const payload = {
+    aud: audience,
+    exp: now + 86400, // 24 hours
+    sub: 'mailto:support@edupreneurs.app'
+  };
+
+  // Create the unsigned token
+  const encoder = new TextEncoder();
+  const headerB64 = btoa(JSON.stringify(header)).replace(/=/g, '').replace(/\+/g, '-').replace(/\//g, '_');
+  const payloadB64 = btoa(JSON.stringify(payload)).replace(/=/g, '').replace(/\+/g, '-').replace(/\//g, '_');
+  const unsignedToken = `${headerB64}.${payloadB64}`;
+
+  // Import the VAPID private key for signing
+  const privateKeyBytes = base64ToUint8Array(VAPID_PRIVATE_KEY);
+  const cryptoKey = await crypto.subtle.importKey(
+    'raw',
+    privateKeyBytes,
+    { name: 'ECDSA', namedCurve: 'P-256' },
+    false,
+    ['sign']
+  );
+
+  // Sign the token
+  const signature = await crypto.subtle.sign(
+    { name: 'ECDSA', hash: 'SHA-256' },
+    cryptoKey,
+    encoder.encode(unsignedToken)
+  );
+
+  // Convert signature to base64url
+  const signatureArray = new Uint8Array(signature);
+  let signatureB64 = btoa(String.fromCharCode(...signatureArray));
+  signatureB64 = signatureB64.replace(/=/g, '').replace(/\+/g, '-').replace(/\//g, '_');
+
+  return `${unsignedToken}.${signatureB64}`;
+}
+
 // Generate VAPID headers
 async function generateVAPIDHeaders(endpoint: string): Promise<{ [key: string]: string }> {
   const url = new URL(endpoint);
   const audience = `${url.protocol}//${url.host}`;
   
-  const vapidHeaders = {
+  const jwt = await generateVAPIDJWT(audience);
+  const vapidKey = VAPID_PUBLIC_KEY.replace(/=/g, '').replace(/\+/g, '-').replace(/\//g, '_');
+  
+  return {
+    'Authorization': `vapid t=${jwt}, k=${vapidKey}`,
     'Content-Type': 'application/octet-stream',
     'TTL': '86400',
   };
-
-  // For development/testing with common push services
-  // In production, you'd implement full VAPID JWT signing
-  return vapidHeaders;
 }
 
 // Encrypt payload for Web Push
@@ -150,17 +195,15 @@ serve(async (req) => {
           body: wnsPayload
         });
       } else {
-        // Generic Web Push (including Edge on other platforms, Safari, etc.)
-        console.log('🌐 Using generic Web Push endpoint');
+        // Generic Web Push (including Edge, Safari, Chrome, Firefox, etc.)
+        console.log('🌐 Using Web Push with VAPID authentication');
         
         const vapidHeaders = await generateVAPIDHeaders(endpoint);
+        console.log('🔑 VAPID headers generated');
         
         response = await fetch(endpoint, {
           method: 'POST',
-          headers: {
-            ...vapidHeaders,
-            'Content-Type': 'application/octet-stream',
-          },
+          headers: vapidHeaders,
           body: payload
         });
       }
