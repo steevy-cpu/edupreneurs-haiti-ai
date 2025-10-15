@@ -69,21 +69,60 @@ export default function Auth() {
       if (session?.user) {
         const { data: profile } = await supabase
           .from('profiles')
-          .select('email_confirmed, user_id')
+          .select('email_confirmed, user_id, full_name, nickname, academic_grade')
           .eq('user_id', session.user.id)
           .single();
         
         if (profile && !profile.email_confirmed) {
-          // User exists but not verified - sign them out and show verify tab
+          // User exists but not verified - generate and send verification code
+          console.log('🔍 Detected unverified user on page load');
+          
+          // Use secure database function to generate new code
+          try {
+            const { data, error } = await supabase.rpc('resend_verification_code', {
+              p_user_id: session.user.id
+            });
+
+            if (error) throw error;
+
+            const result = data as { 
+              success: boolean; 
+              error?: string; 
+              full_name?: string; 
+              nickname?: string; 
+              academic_grade?: string;
+              confirmation_code?: string;
+            };
+
+            if (result.success && result.confirmation_code) {
+              console.log('✅ Generated verification code for existing user');
+              
+              // Send verification email
+              await sendVerificationEmail({
+                to_email: session.user.email || '',
+                to_name: result.full_name || result.nickname || 'Utilisateur',
+                confirmation_code: result.confirmation_code,
+                nickname: result.nickname,
+                academic_grade: result.academic_grade,
+              });
+              
+              console.log('📧 Verification email sent to existing user');
+            }
+          } catch (error) {
+            console.error('Error generating verification code:', error);
+          }
+          
+          // Sign them out and show verify tab
           await supabase.auth.signOut();
           setPendingUserId(profile.user_id);
+          setLoginData({ email: session.user.email || '', password: '' });
           setActiveTab("verify");
           setResendCooldown(60);
           setCanResend(false);
           toast({
             title: "Email non vérifié",
-            description: "Veuillez entrer votre code de vérification pour accéder à votre compte",
-            variant: "destructive",
+            description: "Un code de vérification a été envoyé à votre email",
+            variant: "default",
           });
         }
       }
