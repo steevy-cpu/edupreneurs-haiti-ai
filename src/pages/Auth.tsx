@@ -9,6 +9,7 @@ import { ThemeToggle } from "@/components/ThemeToggle";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { sendWelcomeEmail, sendPasswordResetEmail, sendVerificationEmail, generateConfirmationCode } from "@/utils/emailService";
+import { Loader2 } from "lucide-react";
 
 export default function Auth() {
   const navigate = useNavigate();
@@ -38,6 +39,10 @@ export default function Auth() {
   const [resendCooldown, setResendCooldown] = useState(60);
   const [canResend, setCanResend] = useState(false);
   const [isResending, setIsResending] = useState(false);
+  const [isLoggingIn, setIsLoggingIn] = useState(false);
+  const [isSigningUp, setIsSigningUp] = useState(false);
+  const [isVerifying, setIsVerifying] = useState(false);
+  const [isResettingPassword, setIsResettingPassword] = useState(false);
 
   // Countdown timer for resend cooldown
   useEffect(() => {
@@ -110,6 +115,7 @@ export default function Auth() {
       return;
     }
 
+    setIsVerifying(true);
     try {
       console.log('🔍 Verifying code:', verificationCode.trim(), 'for user:', pendingUserId);
       
@@ -163,6 +169,8 @@ export default function Auth() {
         description: error.message,
         variant: "destructive",
       });
+    } finally {
+      setIsVerifying(false);
     }
   };
 
@@ -235,6 +243,7 @@ export default function Auth() {
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     
+    setIsLoggingIn(true);
     try {
       const { data: authData, error } = await supabase.auth.signInWithPassword({
         email: loginData.email,
@@ -339,12 +348,15 @@ export default function Auth() {
         description: error.message,
         variant: "destructive",
       });
+    } finally {
+      setIsLoggingIn(false);
     }
   };
 
   const handleForgotPassword = async (e: React.FormEvent) => {
     e.preventDefault();
 
+    setIsResettingPassword(true);
     try {
       const resetUrl = `${window.location.origin}/auth?reset=true`;
       
@@ -431,6 +443,8 @@ export default function Auth() {
       });
       return;
     }
+
+    setIsSigningUp(true);
 
     if (signupData.email !== signupData.emailConfirm) {
       toast({
@@ -603,6 +617,8 @@ export default function Auth() {
         description: error.message,
         variant: "destructive",
       });
+    } finally {
+      setIsSigningUp(false);
     }
   };
 
@@ -741,8 +757,15 @@ export default function Auth() {
                         className="auth-input"
                       />
                     </div>
-                    <Button type="submit" className="auth-btn-submit w-full mt-6">
-                      Se connecter
+                    <Button type="submit" disabled={isLoggingIn} className="auth-btn-submit w-full mt-6">
+                      {isLoggingIn ? (
+                        <>
+                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                          Connexion en cours...
+                        </>
+                      ) : (
+                        "Se connecter"
+                      )}
                     </Button>
                     
                     <button
@@ -814,8 +837,15 @@ export default function Auth() {
                         className="auth-input"
                       />
                     </div>
-                    <Button type="submit" className="auth-btn-submit w-full mt-6">
-                      Envoyer le lien
+                    <Button type="submit" disabled={isResettingPassword} className="auth-btn-submit w-full mt-6">
+                      {isResettingPassword ? (
+                        <>
+                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                          Envoi en cours...
+                        </>
+                      ) : (
+                        "Envoyer le lien"
+                      )}
                     </Button>
                     <button
                       type="button"
@@ -854,8 +884,15 @@ export default function Auth() {
                         Veuillez entrer le code reçu par email
                       </p>
                     </div>
-                    <Button type="submit" className="auth-btn-submit w-full mt-6">
-                      Vérifier le code
+                    <Button type="submit" disabled={isVerifying} className="auth-btn-submit w-full mt-6">
+                      {isVerifying ? (
+                        <>
+                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                          Vérification...
+                        </>
+                      ) : (
+                        "Vérifier le code"
+                      )}
                     </Button>
                     
                     {/* Resend verification code */}
@@ -1126,8 +1163,15 @@ export default function Auth() {
                       </p>
                     </div>
 
-                    <Button type="submit" className="auth-btn-submit w-full mt-6">
-                      Créer mon compte
+                    <Button type="submit" disabled={isSigningUp} className="auth-btn-submit w-full mt-6">
+                      {isSigningUp ? (
+                        <>
+                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                          Création en cours...
+                        </>
+                      ) : (
+                        "Créer mon compte"
+                      )}
                     </Button>
                   </form>
                 )}
