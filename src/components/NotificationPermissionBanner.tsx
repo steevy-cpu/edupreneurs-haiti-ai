@@ -84,24 +84,33 @@ export const NotificationPermissionBanner = ({ userId }: NotificationPermissionB
             <Bell className="h-6 w-6 text-primary" />
           </div>
           <DialogTitle className="text-center text-xl">
-            Activez les notifications
+            Restez connecté, même hors ligne
           </DialogTitle>
           <DialogDescription className="text-center">
-            Recevez des notifications instantanées pour:
+            <p className="mb-3 font-medium">
+              Autorisez les notifications pour rester informé même quand vous n'êtes pas sur le site
+            </p>
             <ul className="mt-3 space-y-2 text-left text-sm">
               <li className="flex items-center gap-2">
                 <span className="text-primary">✓</span>
-                Nouveaux messages de vos amis
+                Nouveaux messages instantanés (même si le site est fermé)
               </li>
               <li className="flex items-center gap-2">
                 <span className="text-primary">✓</span>
-                Activités importantes dans vos groupes
+                Activités dans vos groupes en temps réel
               </li>
               <li className="flex items-center gap-2">
                 <span className="text-primary">✓</span>
-                Mises à jour de votre progression
+                Alertes importantes sur votre progression
+              </li>
+              <li className="flex items-center gap-2">
+                <span className="text-primary">✓</span>
+                Notifications en arrière-plan 24/7
               </li>
             </ul>
+            <p className="mt-3 text-xs text-muted-foreground">
+              Vous recevrez des notifications même lorsque vous ne visitez pas le site
+            </p>
           </DialogDescription>
         </DialogHeader>
         <DialogFooter className="flex-col sm:flex-col gap-2">
