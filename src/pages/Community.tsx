@@ -865,6 +865,28 @@ const Community = () => {
 
           setMessages((prev) => [...prev, newMessage]);
 
+          // Check if this is a group message mentioning Eric
+          const currentConversation = conversations.find(c => c.id === conversationId);
+          const isGroupChat = currentConversation?.is_group;
+          const mentionsEric = payload.new.content.toLowerCase().includes('hey eric');
+          
+          // If in group chat and mentions Eric, trigger Eric's response (including user's own messages)
+          if (isGroupChat && mentionsEric && payload.new.sender_id !== ERIC_USER_ID) {
+            console.log('🤖 Eric mentioned in group chat, triggering response...');
+            
+            // Get sender's profile info
+            supabase.functions.invoke('eric-chat', {
+              body: { 
+                conversationId: conversationId,
+                userMessage: payload.new.content,
+                userId: payload.new.sender_id,
+                userNickname: profile?.nickname || profile?.full_name
+              }
+            }).catch(error => {
+              console.error('Error calling Eric chat:', error);
+            });
+          }
+
           // Show notification if message is from another user (sound already played in subscribeToMessages)
           if (payload.new.sender_id !== user?.id) {
             if (Notification.permission === 'granted') {
@@ -1908,6 +1930,30 @@ const Community = () => {
                 </DropdownMenuContent>
               </DropdownMenu>
             </div>
+
+            {/* Eric Help Banner for Group Chats */}
+            {(() => {
+              const currentConv = conversations.find(c => c.id === selectedConversation);
+              const isGroup = currentConv?.is_group;
+              
+              if (!isGroup) return null;
+              
+              return (
+                <div className="mx-2 sm:mx-4 mt-2 px-3 py-2 bg-gradient-to-r from-primary/10 to-success/10 border border-primary/20 rounded-lg">
+                  <div className="flex items-start gap-2">
+                    <div className="text-2xl shrink-0">🤖</div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-xs sm:text-sm text-foreground font-medium">
+                        Eric, votre assistant IA est dans ce groupe !
+                      </p>
+                      <p className="text-xs text-muted-foreground mt-0.5">
+                        Pour lui parler, commencez votre message par <span className="font-semibold text-primary">"Hey eric"</span>
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              );
+            })()}
 
             {/* Messages */}
             <div className="flex-1 overflow-y-auto overflow-x-hidden p-2 sm:p-4">

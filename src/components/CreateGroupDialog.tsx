@@ -152,7 +152,9 @@ export function CreateGroupDialog({ open, onOpenChange, followers, onGroupCreate
 
       // Step 6: Add all participants to conversation FIRST (85%)
       setProgress(85);
-      const allParticipantIds = [user.id, ...Array.from(selectedMembers)];
+      // Add Eric (AI assistant) to all group chats
+      const ERIC_USER_ID = '68f2f959-e14a-47f9-8277-07df3a6fcd79';
+      const allParticipantIds = [user.id, ERIC_USER_ID, ...Array.from(selectedMembers)];
       const participantEntries = allParticipantIds.map(userId => ({
         conversation_id: conversation.id,
         user_id: userId,
