@@ -397,12 +397,27 @@ export default function Auth() {
 
     setIsResettingPassword(true);
     try {
-      // Use Supabase's native password reset (handles token generation and email)
-      const { error } = await supabase.auth.resetPasswordForEmail(forgotPasswordEmail, {
-        redirectTo: `${window.location.origin}/reset-password`,
+      // Generate custom reset token using database function
+      const { data, error } = await supabase.rpc('generate_password_reset_token', {
+        user_email: forgotPasswordEmail
       });
 
       if (error) throw error;
+
+      const tokenData = data as unknown as Array<{ token: string; user_id: string; full_name: string }>;
+      
+      if (!tokenData || tokenData.length === 0) {
+        throw new Error("Utilisateur non trouvé");
+      }
+
+      const { token, full_name } = tokenData[0];
+      const resetUrl = `${window.location.origin}/reset-password?token=${token}`;
+      
+      // Send password reset email via EmailJS only
+      await sendPasswordResetEmail({
+        to_email: forgotPasswordEmail,
+        reset_url: resetUrl,
+      });
       
       toast({
         title: "Email envoyé ✅",

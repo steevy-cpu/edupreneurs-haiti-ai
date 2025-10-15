@@ -23,12 +23,28 @@ export default function ResetPassword() {
   useEffect(() => {
     // Check if we have a valid token in the URL
     const checkToken = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
+      const token = searchParams.get('token');
       
-      if (session) {
-        setValidToken(true);
-      } else {
-        // No session means invalid or expired token
+      if (!token) {
+        setValidToken(false);
+        toast({
+          title: "Lien invalide",
+          description: "Aucun token de réinitialisation trouvé",
+          variant: "destructive",
+        });
+        
+        setTimeout(() => {
+          navigate("/auth");
+        }, 3000);
+        return;
+      }
+
+      // Verify token with database
+      const { data, error } = await supabase.rpc('verify_reset_token', {
+        reset_token: token
+      });
+
+      if (error || !data || data.length === 0) {
         setValidToken(false);
         toast({
           title: "Lien invalide ou expiré",
@@ -36,7 +52,24 @@ export default function ResetPassword() {
           variant: "destructive",
         });
         
-        // Redirect to auth page after 3 seconds
+        setTimeout(() => {
+          navigate("/auth");
+        }, 3000);
+        return;
+      }
+
+      const tokenData = data as unknown as Array<{ valid: boolean; user_id: string; email: string }>;
+      
+      if (tokenData[0].valid) {
+        setValidToken(true);
+      } else {
+        setValidToken(false);
+        toast({
+          title: "Lien invalide ou expiré",
+          description: "Veuillez demander un nouveau lien de réinitialisation",
+          variant: "destructive",
+        });
+        
         setTimeout(() => {
           navigate("/auth");
         }, 3000);
@@ -44,7 +77,7 @@ export default function ResetPassword() {
     };
 
     checkToken();
-  }, [navigate, toast]);
+  }, [navigate, toast, searchParams]);
 
   const handleResetPassword = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -70,20 +103,33 @@ export default function ResetPassword() {
 
     setIsResetting(true);
     try {
-      const { error } = await supabase.auth.updateUser({
-        password: newPassword,
+      const token = searchParams.get('token');
+      
+      if (!token) {
+        throw new Error("Token manquant");
+      }
+
+      // Call edge function to reset password
+      const { data, error } = await supabase.functions.invoke('reset-password', {
+        body: {
+          token,
+          newPassword
+        }
       });
 
       if (error) throw error;
 
+      if (data?.error) {
+        throw new Error(data.error);
+      }
+
       toast({
         title: "Mot de passe réinitialisé ✅",
-        description: "Votre mot de passe a été modifié avec succès. Vous allez être redirigé...",
+        description: "Votre mot de passe a été modifié avec succès. Vous pouvez maintenant vous connecter.",
       });
 
-      // Sign out and redirect to login after success
-      setTimeout(async () => {
-        await supabase.auth.signOut();
+      // Redirect to login
+      setTimeout(() => {
         navigate("/auth");
       }, 2000);
     } catch (error: any) {

@@ -325,6 +325,33 @@ export type Database = {
           },
         ]
       }
+      password_reset_tokens: {
+        Row: {
+          created_at: string | null
+          expires_at: string
+          id: string
+          token: string
+          used: boolean | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          expires_at: string
+          id?: string
+          token: string
+          used?: boolean | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          expires_at?: string
+          id?: string
+          token?: string
+          used?: boolean | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       post_comments: {
         Row: {
           content: string
@@ -701,6 +728,14 @@ export type Database = {
         Args: { p_avatar_url?: string; p_description?: string; p_name: string }
         Returns: string
       }
+      generate_password_reset_token: {
+        Args: { user_email: string }
+        Returns: {
+          full_name: string
+          token: string
+          user_id: string
+        }[]
+      }
       generate_referral_code: {
         Args: Record<PropertyKey, never>
         Returns: string
@@ -732,6 +767,14 @@ export type Database = {
       verify_email_code: {
         Args: { p_code: string; p_user_id: string }
         Returns: Json
+      }
+      verify_reset_token: {
+        Args: { reset_token: string }
+        Returns: {
+          email: string
+          user_id: string
+          valid: boolean
+        }[]
       }
     }
     Enums: {
