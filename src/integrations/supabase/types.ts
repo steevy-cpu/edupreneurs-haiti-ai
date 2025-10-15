@@ -725,6 +725,10 @@ export type Database = {
         }
         Returns: undefined
       }
+      resend_verification_code: {
+        Args: { p_user_id: string }
+        Returns: Json
+      }
       verify_email_code: {
         Args: { p_code: string; p_user_id: string }
         Returns: Json

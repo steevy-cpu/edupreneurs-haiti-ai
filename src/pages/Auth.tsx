@@ -35,8 +35,9 @@ export default function Auth() {
   const [checkingNickname, setCheckingNickname] = useState(false);
   const [verificationCode, setVerificationCode] = useState("");
   const [pendingUserId, setPendingUserId] = useState<string | null>(null);
-  const [resendCooldown, setResendCooldown] = useState(60); // 60 seconds cooldown
+  const [resendCooldown, setResendCooldown] = useState(60);
   const [canResend, setCanResend] = useState(false);
+  const [isResending, setIsResending] = useState(false);
 
   // Countdown timer for resend cooldown
   useEffect(() => {
@@ -166,57 +167,50 @@ export default function Auth() {
   };
 
   const handleResendCode = async () => {
-    if (!pendingUserId || !canResend) return;
+    if (!pendingUserId || !canResend || isResending) return;
 
+    setIsResending(true);
     try {
-      // Generate new verification code
-      const newCode = generateConfirmationCode();
-      console.log('🔑 Resending verification code:', newCode);
+      console.log('🔄 Resending verification code for user:', pendingUserId);
 
-      // First, sign in temporarily to update the code
+      // Use secure database function to generate and update code
+      const { data, error } = await supabase.rpc('resend_verification_code', {
+        p_user_id: pendingUserId
+      });
+
+      if (error) throw error;
+
+      const result = data as { 
+        success: boolean; 
+        error?: string; 
+        full_name?: string; 
+        nickname?: string; 
+        academic_grade?: string;
+        confirmation_code?: string;
+      };
+
+      if (!result.success) {
+        throw new Error(result.error || 'Failed to generate new code');
+      }
+
+      console.log('✅ New verification code generated:', result.confirmation_code);
+
+      // Get email
       const userEmail = signupData.email || loginData.email;
-      
       if (!userEmail) {
         throw new Error("Email not found");
       }
 
-      // Sign in the user temporarily to update their profile
-      const { data: authData, error: signInError } = await supabase.auth.signInWithPassword({
-        email: userEmail,
-        password: signupData.password || loginData.password,
-      });
-
-      if (signInError) throw signInError;
-
-      // Update profile with new code while authenticated
-      const { error: updateError } = await supabase
-        .from('profiles')
-        .update({ confirmation_code: newCode.trim() })
-        .eq('user_id', pendingUserId);
-
-      if (updateError) {
-        console.error("Error updating verification code:", updateError);
-        throw updateError;
-      }
-
-      // Get profile info for email
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('full_name, nickname, academic_grade')
-        .eq('user_id', pendingUserId)
-        .single();
-
-      // Sign out after update
-      await supabase.auth.signOut();
-
       // Send new verification email
       await sendVerificationEmail({
         to_email: userEmail,
-        to_name: profile?.full_name || profile?.nickname || 'Utilisateur',
-        confirmation_code: newCode,
-        nickname: profile?.nickname,
-        academic_grade: profile?.academic_grade,
+        to_name: result.full_name || result.nickname || 'Utilisateur',
+        confirmation_code: result.confirmation_code!,
+        nickname: result.nickname,
+        academic_grade: result.academic_grade,
       });
+
+      console.log('📧 Verification email sent successfully');
 
       // Reset countdown
       setResendCooldown(60);
@@ -230,9 +224,11 @@ export default function Auth() {
       console.error("Resend error:", error);
       toast({
         title: "Erreur",
-        description: "Impossible de renvoyer le code. Veuillez réessayer.",
+        description: error.message || "Impossible de renvoyer le code. Veuillez réessayer.",
         variant: "destructive",
       });
+    } finally {
+      setIsResending(false);
     }
   };
 
@@ -867,16 +863,18 @@ export default function Auth() {
                       <button
                         type="button"
                         onClick={handleResendCode}
-                        disabled={!canResend}
+                        disabled={!canResend || isResending}
                         className={`text-sm font-medium ${
-                          canResend 
+                          canResend && !isResending
                             ? 'text-primary hover:underline cursor-pointer' 
                             : 'text-muted-foreground cursor-not-allowed'
                         }`}
                       >
-                        {canResend 
-                          ? "Renvoyer le code de vérification" 
-                          : `Renvoyer le code (${resendCooldown}s)`
+                        {isResending
+                          ? "Envoi en cours..."
+                          : canResend 
+                            ? "Renvoyer le code de vérification" 
+                            : `Renvoyer le code (${resendCooldown}s)`
                         }
                       </button>
                     </div>
