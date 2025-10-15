@@ -19,6 +19,7 @@ import { ThemeToggle } from "@/components/ThemeToggle";
 import { optimizeMediaFile, formatFileSize } from "@/utils/mediaOptimization";
 import { CreateGroupDialog } from "@/components/CreateGroupDialog";
 import { GroupInfoDialog } from "@/components/GroupInfoDialog";
+import { NotificationPermissionBanner } from "@/components/NotificationPermissionBanner";
 import ericAiHelper from "@/assets/eric-ai-helper.png";
 
 interface Profile {
@@ -1651,6 +1652,9 @@ const Community = () => {
 
   return (
     <div className="fixed inset-0 bg-background flex overflow-hidden pb-16 md:pb-0">
+      {/* Notification Permission Dialog */}
+      {user && <NotificationPermissionBanner userId={user.id} />}
+      
       {/* Conversations List */}
       <div className={`${selectedConversation ? "hidden md:block" : "block"} w-full md:w-80 lg:w-96 border-r border-border/50 overflow-hidden`}>
         <div className="sticky top-0 z-50 border-b border-border/50 bg-background/95 backdrop-blur p-3 sm:p-4">

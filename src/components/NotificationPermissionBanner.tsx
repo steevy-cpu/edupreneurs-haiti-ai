@@ -24,11 +24,12 @@ export const NotificationPermissionBanner = ({ userId }: NotificationPermissionB
     const checkPermission = () => {
       if ('Notification' in window) {
         const permission = Notification.permission;
-        const dismissed = localStorage.getItem('notification-permission-asked');
         
-        console.log('Notification permission status:', permission);
+        console.log('🔔 Notification permission status:', permission);
         
-        if (permission === 'default' && !dismissed) {
+        // Always show if permission is default (not yet asked)
+        if (permission === 'default') {
+          console.log('🔔 Showing notification dialog...');
           // Show dialog after a short delay for better UX
           setTimeout(() => setShowDialog(true), 1000);
         }
@@ -60,11 +61,9 @@ export const NotificationPermissionBanner = ({ userId }: NotificationPermissionB
         }
         
         setShowDialog(false);
-        localStorage.setItem('notification-permission-asked', 'true');
       } else if (permission === 'denied') {
         console.log('Permission denied by user');
         setShowDialog(false);
-        localStorage.setItem('notification-permission-asked', 'true');
       }
     } catch (error) {
       console.error('Error enabling notifications:', error);
@@ -75,7 +74,6 @@ export const NotificationPermissionBanner = ({ userId }: NotificationPermissionB
 
   const handleDeny = () => {
     setShowDialog(false);
-    localStorage.setItem('notification-permission-asked', 'true');
   };
 
   return (
