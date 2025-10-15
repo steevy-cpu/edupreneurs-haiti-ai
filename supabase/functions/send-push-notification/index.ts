@@ -18,6 +18,76 @@ interface PushSubscription {
 const VAPID_PUBLIC_KEY = 'BEl62iUYgUivxIkv69yViEuiBIa-Ib9-SkvMeAtA3LFgDzkrxZJjSgSnfckjBJuBkr3qBroV5VGqq84s6cVRwCg';
 const VAPID_PRIVATE_KEY = 'bdSiNzUhUP6PHxtS1-7Zne7WMlmBXXSTlsCgSlMkN7c';
 
+// Generate VAPID JWT for authorization
+async function generateVAPIDHeaders(endpoint: string): Promise<{ Authorization: string; 'Crypto-Key'?: string }> {
+  const urlParts = new URL(endpoint);
+  const audience = `${urlParts.protocol}//${urlParts.host}`;
+  
+  // JWT header and payload
+  const jwtHeader = {
+    typ: 'JWT',
+    alg: 'ES256'
+  };
+  
+  const exp = Math.floor(Date.now() / 1000) + (12 * 60 * 60); // 12 hours from now
+  const jwtPayload = {
+    aud: audience,
+    exp: exp,
+    sub: 'mailto:admin@edupreneurs.com'
+  };
+  
+  // Encode header and payload
+  const encoder = new TextEncoder();
+  const headerStr = JSON.stringify(jwtHeader);
+  const payloadStr = JSON.stringify(jwtPayload);
+  
+  const headerB64 = btoa(String.fromCharCode(...encoder.encode(headerStr)))
+    .replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+  const payloadB64 = btoa(String.fromCharCode(...encoder.encode(payloadStr)))
+    .replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+  
+  const unsignedToken = `${headerB64}.${payloadB64}`;
+  
+  // Convert VAPID private key from base64url to bytes
+  const privateKeyBytes = Uint8Array.from(
+    atob(VAPID_PRIVATE_KEY.replace(/-/g, '+').replace(/_/g, '/')),
+    c => c.charCodeAt(0)
+  );
+  
+  // Import private key for signing
+  const privateKey = await crypto.subtle.importKey(
+    'pkcs8',
+    privateKeyBytes,
+    {
+      name: 'ECDSA',
+      namedCurve: 'P-256'
+    },
+    false,
+    ['sign']
+  );
+  
+  // Sign the token
+  const signature = await crypto.subtle.sign(
+    {
+      name: 'ECDSA',
+      hash: { name: 'SHA-256' }
+    },
+    privateKey,
+    encoder.encode(unsignedToken)
+  );
+  
+  // Convert signature to base64url
+  const signatureB64 = btoa(String.fromCharCode(...new Uint8Array(signature)))
+    .replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+  
+  const jwt = `${unsignedToken}.${signatureB64}`;
+  
+  return {
+    'Authorization': `WebPush ${jwt}`,
+    'Crypto-Key': `p256ecdsa=${VAPID_PUBLIC_KEY}`
+  };
+}
+
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -67,12 +137,17 @@ serve(async (req) => {
     console.log('📦 Sending notification payload');
 
     try {
-      // Send using standard fetch with proper headers
+      // Generate VAPID headers for authentication
+      const vapidHeaders = await generateVAPIDHeaders(subscription.endpoint);
+      console.log('🔐 Generated VAPID auth headers');
+      
+      // Send using standard fetch with proper headers including VAPID auth
       const response = await fetch(subscription.endpoint, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'TTL': '86400'
+          'TTL': '86400',
+          ...vapidHeaders
         },
         body: payload
       });
