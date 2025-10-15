@@ -1490,11 +1490,12 @@ const Community = () => {
         return;
       }
 
-      // Delete all messages in this conversation
+      // Only delete messages sent by the current user (due to RLS restrictions)
       const { error: deleteError } = await supabase
         .from("messages")
         .delete()
-        .eq("conversation_id", conversationId);
+        .eq("conversation_id", conversationId)
+        .eq("sender_id", user.id);
 
       if (deleteError) {
         console.error("Delete messages error:", deleteError);
@@ -1504,9 +1505,14 @@ const Community = () => {
       // Clear local messages state
       setMessages([]);
 
+      // Clear selection if this conversation was selected
+      if (selectedConversation === conversationId) {
+        setSelectedConversation(null);
+      }
+
       toast({
         title: "Succès",
-        description: "Tous les messages ont été supprimés",
+        description: "Vos messages ont été supprimés",
       });
 
       // Refresh conversations list to update last message
@@ -2301,12 +2307,21 @@ const Community = () => {
                     if (presence?.typing && presence?.user_id !== user?.id) {
                       console.log('✅ Showing typing indicator for user:', presence?.user_id);
                       const conversation = conversations.find(c => c.id === selectedConversation);
+                      
+                      // Find the actual user profile for group chats
+                      let typingUserProfile = conversation?.otherUser;
+                      if (conversation?.is_group) {
+                        // For group chats, find the user from messages or participants
+                        const userMessage = messages.find(m => m.profile?.user_id === presence?.user_id);
+                        typingUserProfile = userMessage?.profile;
+                      }
+                      
                       return (
                         <div key={key} className="flex items-center gap-2 px-2 py-1">
                           <Avatar className="h-6 w-6 shrink-0">
-                            <AvatarImage src={getAvatarUrl(conversation?.otherUser?.avatar_url)} />
+                            <AvatarImage src={getAvatarUrl(typingUserProfile?.avatar_url)} />
                             <AvatarFallback className="text-xs">
-                              {conversation?.otherUser?.nickname?.[0] || "?"}
+                              {typingUserProfile?.nickname?.[0] || typingUserProfile?.full_name?.[0] || "?"}
                             </AvatarFallback>
                           </Avatar>
                           <div className="flex items-center gap-1 text-muted-foreground text-sm">
@@ -2475,9 +2490,9 @@ const Community = () => {
       <AlertDialog open={!!deleteConversationId} onOpenChange={(open) => !open && setDeleteConversationId(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Supprimer les messages?</AlertDialogTitle>
+          <AlertDialogTitle>Supprimer vos messages?</AlertDialogTitle>
             <AlertDialogDescription>
-              Cette action est irréversible. Tous les messages de cette conversation seront définitivement supprimés. Vous resterez membre du groupe.
+              Cette action est irréversible. Tous vos messages dans cette conversation seront définitivement supprimés. Vous resterez membre du groupe.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
