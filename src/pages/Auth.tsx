@@ -397,35 +397,20 @@ export default function Auth() {
 
     setIsResettingPassword(true);
     try {
-      // Request password reset from Supabase
+      // Use Supabase's native password reset (handles token generation and email)
       const { error } = await supabase.auth.resetPasswordForEmail(forgotPasswordEmail, {
         redirectTo: `${window.location.origin}/reset-password`,
       });
 
       if (error) throw error;
       
-      // Send password reset email via EmailJS
-      try {
-        await sendPasswordResetEmail({
-          to_email: forgotPasswordEmail,
-          reset_url: `${window.location.origin}/reset-password`,
-        });
-        
-        toast({
-          title: "Email envoyé ✅",
-          description: "Vérifiez votre boîte de réception pour réinitialiser votre mot de passe",
-        });
+      toast({
+        title: "Email envoyé ✅",
+        description: "Vérifiez votre boîte de réception pour réinitialiser votre mot de passe",
+      });
 
-        setForgotPasswordEmail("");
-        setActiveTab("login");
-      } catch (emailError) {
-        console.error("Error sending password reset email:", emailError);
-        toast({
-          title: "Erreur d'envoi",
-          description: "Impossible d'envoyer l'email. Veuillez réessayer.",
-          variant: "destructive",
-        });
-      }
+      setForgotPasswordEmail("");
+      setActiveTab("login");
     } catch (error: any) {
       toast({
         title: "Erreur",
