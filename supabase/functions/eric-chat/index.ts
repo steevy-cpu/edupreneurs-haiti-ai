@@ -205,6 +205,27 @@ Je ne peux malheureusement pas répondre à des questions en dehors de l'éducat
 
     console.log('Eric response inserted successfully');
 
+    // Send push notification to the user
+    try {
+      const { error: pushError } = await supabase.functions.invoke('send-push-notification', {
+        body: {
+          recipientUserId: userId,
+          title: 'Eric',
+          body: aiResponse.substring(0, 100) + (aiResponse.length > 100 ? '...' : ''),
+          conversationId: conversationId
+        }
+      });
+
+      if (pushError) {
+        console.error('Error sending push notification:', pushError);
+      } else {
+        console.log('Push notification sent to user');
+      }
+    } catch (pushError) {
+      console.error('Exception sending push notification:', pushError);
+      // Don't throw error, just log it
+    }
+
     return new Response(
       JSON.stringify({ success: true, response: aiResponse }),
       {

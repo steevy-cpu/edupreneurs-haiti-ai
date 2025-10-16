@@ -10,6 +10,7 @@ import { getAvatarUrl } from "@/lib/avatarMap";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
+import { NotificationPermissionBanner } from "@/components/NotificationPermissionBanner";
 
 interface Profile {
   id: string;
@@ -37,6 +38,7 @@ interface Notification {
 export default function Notifications() {
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [deleteNotificationId, setDeleteNotificationId] = useState<string | null>(null);
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -51,6 +53,8 @@ export default function Notifications() {
     } = await supabase.auth.getUser();
     if (!user) {
       navigate("/auth");
+    } else {
+      setCurrentUserId(user.id);
     }
   };
 
@@ -160,27 +164,25 @@ export default function Notifications() {
 
           const actorName = actorProfile?.nickname || actorProfile?.full_name || 'Someone';
           
-          // Show browser notification
-          if ('Notification' in window && Notification.permission === 'granted') {
-            const notificationText = getNotificationTextForBrowser(payload.new, actorName);
-            const notification = new Notification('EDUPRENEURS', {
-              body: notificationText,
-              icon: '/logo.png',
-              badge: '/logo.png',
-              tag: payload.new.id,
-              requireInteraction: false,
-              data: {
-                url: payload.new.post_id ? `/feed?post=${payload.new.post_id}` : '/notifications'
-              }
-            });
-            
-            notification.onclick = function() {
-              window.focus();
-              if (this.data?.url) {
-                window.location.href = this.data.url;
-              }
-              this.close();
-            };
+          // Show browser notification using service worker
+          if ('serviceWorker' in navigator && 'Notification' in window && Notification.permission === 'granted') {
+            try {
+              const registration = await navigator.serviceWorker.ready;
+              const notificationText = getNotificationTextForBrowser(payload.new, actorName);
+              
+              await registration.showNotification('EDUPRENEURS', {
+                body: notificationText,
+                icon: '/logo.png',
+                badge: '/logo.png',
+                tag: payload.new.id,
+                requireInteraction: false,
+                data: {
+                  deeplink: payload.new.post_id ? `/feed?post=${payload.new.post_id}` : '/notifications'
+                }
+              });
+            } catch (error) {
+              console.error('Error showing notification:', error);
+            }
           }
           
           // Refresh the notifications list
@@ -403,6 +405,9 @@ export default function Notifications() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background to-background/80 p-6">
+      {/* Notification Permission Banner */}
+      {currentUserId && <NotificationPermissionBanner userId={currentUserId} />}
+      
       <div className="fixed top-4 right-4 z-50">
         <ThemeToggle />
       </div>
