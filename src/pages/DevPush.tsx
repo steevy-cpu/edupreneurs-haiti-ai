@@ -221,32 +221,32 @@ export default function DevPush() {
       const payloads: Record<string, any> = {
         message: {
           recipientUserId: user.id,
-          title: 'Nouveau message de Test User',
-          body: 'Salut! Ceci est un message de test 🎉',
+          title: 'Eric',
+          body: '👋 Salut! J\'ai une nouvelle ressource à partager avec toi!',
           conversationId: 'test-conv-123'
         },
         comment: {
           recipientUserId: user.id,
-          title: 'Nouveau commentaire',
-          body: 'Test User a commenté votre publication',
+          title: 'Eric a commenté',
+          body: '💬 Super travail sur cette publication! Continue comme ça! 🌟',
           conversationId: null
         },
         like: {
           recipientUserId: user.id,
-          title: 'Nouveau J\'aime',
-          body: 'Test User a aimé votre publication',
+          title: 'Eric a aimé',
+          body: '❤️ Eric a aimé votre publication',
           conversationId: null
         },
         post: {
           recipientUserId: user.id,
-          title: 'Nouvelle publication',
-          body: 'Test User a publié quelque chose',
+          title: 'Nouvelle publication d\'Eric',
+          body: '📚 Eric a partagé un nouveau cours de mathématiques',
           conversationId: null
         },
         mention: {
           recipientUserId: user.id,
-          title: 'Vous avez été mentionné',
-          body: 'Test User vous a mentionné dans un commentaire',
+          title: 'Eric vous a mentionné',
+          body: '🏆 Eric vous a mentionné dans un défi hebdomadaire!',
           conversationId: null
         }
       };
