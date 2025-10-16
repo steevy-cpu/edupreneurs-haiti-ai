@@ -857,18 +857,22 @@ const Community = () => {
                 ? 'a partagé un post' 
                 : (payload.new.content || 'Nouveau message').substring(0, 100);
               
-              const notification = new Notification(senderName, {
-                body: messageContent,
-                icon: '/logo.png',
-                badge: '/logo.png',
-                tag: conversationId,
-                requireInteraction: false,
-              });
-
-              notification.onclick = () => {
-                window.focus();
-                notification.close();
-              };
+              // Use service worker for better compatibility
+              if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
+                navigator.serviceWorker.ready.then(registration => {
+                  registration.showNotification(senderName, {
+                    body: messageContent,
+                    icon: '/logo.png',
+                    badge: '/logo.png',
+                    tag: conversationId,
+                    requireInteraction: false,
+                    data: {
+                      url: `/community?conversation=${conversationId}`,
+                      conversationId: conversationId
+                    }
+                  });
+                });
+              }
             }
           }
         }
@@ -980,30 +984,29 @@ const Community = () => {
               conversationName = groupData?.name || 'Groupe';
             }
             
-            // Show browser notification
+            // Show browser notification using service worker
             if ('Notification' in window && Notification.permission === 'granted') {
               const messagePreview = payload.new.content.substring(0, 100) || 'Nouveau message';
               const notificationTitle = conversationData?.is_group 
                 ? `${senderName} dans ${conversationName}`
                 : `${senderName}`;
               
-              const notification = new Notification(notificationTitle, {
-                body: messagePreview,
-                icon: '/logo.png',
-                badge: '/logo.png',
-                tag: conversationId,
-                requireInteraction: false,
-                data: {
-                  url: `/community?conversation=${conversationId}`,
-                  conversationId: conversationId
-                }
-              });
-              
-              notification.onclick = function() {
-                window.focus();
-                window.location.href = `/community?conversation=${conversationId}`;
-                this.close();
-              };
+              // Use service worker for better compatibility and offline support
+              if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
+                navigator.serviceWorker.ready.then(registration => {
+                  registration.showNotification(notificationTitle, {
+                    body: messagePreview,
+                    icon: '/logo.png',
+                    badge: '/logo.png',
+                    tag: conversationId,
+                    requireInteraction: false,
+                    data: {
+                      url: `/community?conversation=${conversationId}`,
+                      conversationId: conversationId
+                    }
+                  });
+                });
+              }
             }
           }
           
