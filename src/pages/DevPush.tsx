@@ -263,19 +263,16 @@ export default function DevPush() {
       log('success', `${type} notification sent: ${JSON.stringify(data)}`);
       
       // Also show a local notification immediately for testing
-      if (state.permission === 'granted' && 'Notification' in window) {
-        const notification = new Notification(payload.title, {
+      if (state.permission === 'granted' && 'serviceWorker' in navigator) {
+        const registration = await navigator.serviceWorker.ready;
+        await registration.showNotification(payload.title, {
           body: payload.body,
           icon: '/logo.png',
           badge: '/logo.png',
           tag: `test-${type}-${Date.now()}`,
-          requireInteraction: false
+          requireInteraction: false,
+          data: { deeplink: '/community' }
         });
-        
-        notification.onclick = () => {
-          window.focus();
-          notification.close();
-        };
         
         log('success', 'Local notification displayed');
       }
