@@ -69,21 +69,28 @@ async function generateVAPIDHeaders(endpoint: string): Promise<{ Authorization: 
   const payloadB64 = base64UrlEncode(encoder.encode(JSON.stringify(jwtPayload)));
   const unsignedToken = `${headerB64}.${payloadB64}`;
   
-  // Decode the private key (32 bytes for P-256)
-  const privateKeyBytes = base64UrlDecode(VAPID_PRIVATE_KEY);
-  
-  // Import the private key for ECDSA signing
-  // For P-256, we need to import as JWK format
-  const jwk = {
-    kty: 'EC',
-    crv: 'P-256',
-    d: base64UrlEncode(privateKeyBytes),
-    x: VAPID_PUBLIC_KEY.substring(1, 44), // Skip first byte (0x04 uncompressed indicator)
-    y: VAPID_PUBLIC_KEY.substring(44),
-    ext: true
-  };
-  
   try {
+    // Decode the private key (32 bytes for P-256)
+    const privateKeyBytes = base64UrlDecode(VAPID_PRIVATE_KEY);
+    
+    // Decode the public key to extract x and y coordinates
+    // Public key format: 0x04 (1 byte) + x (32 bytes) + y (32 bytes)
+    const publicKeyBytes = base64UrlDecode(VAPID_PUBLIC_KEY);
+    
+    // Extract x and y coordinates (skip first byte which is 0x04)
+    const x = publicKeyBytes.slice(1, 33);
+    const y = publicKeyBytes.slice(33, 65);
+    
+    // Create JWK for private key
+    const jwk = {
+      kty: 'EC',
+      crv: 'P-256',
+      d: base64UrlEncode(privateKeyBytes),
+      x: base64UrlEncode(x),
+      y: base64UrlEncode(y),
+      ext: true
+    };
+    
     const privateKey = await crypto.subtle.importKey(
       'jwk',
       jwk,
@@ -114,10 +121,7 @@ async function generateVAPIDHeaders(endpoint: string): Promise<{ Authorization: 
     };
   } catch (error) {
     console.error('❌ VAPID key import/signing failed:', error);
-    // Fallback to simple auth (may not work with all push services)
-    return {
-      'Authorization': `WebPush ${VAPID_PUBLIC_KEY}`
-    };
+    throw error;
   }
 }
 
