@@ -1,6 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-import { create } from "https://deno.land/x/djwt@v3.0.2/mod.ts";
+import webpush from "https://esm.sh/web-push@3.6.7";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -19,93 +19,12 @@ interface PushSubscription {
 const VAPID_PUBLIC_KEY = 'BOQ0Fn35WtOTVFKRkrQRxYzb9oRwi2IldpPeSU3VHbHLoiNwheYEpklA2YVBh3Ah3h2De8743ShfRYx61lVhNUM';
 const VAPID_PRIVATE_KEY = 'l8hOAmgFFSaCTcVsqy0D56k5pvTvvMks3M6bbMhGS00';
 
-// Base64url decode helper
-function base64UrlDecode(input: string): Uint8Array {
-  input = input.replace(/-/g, '+').replace(/_/g, '/');
-  const padding = input.length % 4 === 0 ? 0 : 4 - (input.length % 4);
-  const base64 = input + '='.repeat(padding);
-  const binary = atob(base64);
-  const bytes = new Uint8Array(binary.length);
-  for (let i = 0; i < binary.length; i++) {
-    bytes[i] = binary.charCodeAt(i);
-  }
-  return bytes;
-}
-
-// Base64url encode helper
-function base64UrlEncode(input: Uint8Array | ArrayBuffer): string {
-  const bytes = input instanceof Uint8Array ? input : new Uint8Array(input);
-  let binary = '';
-  for (let i = 0; i < bytes.length; i++) {
-    binary += String.fromCharCode(bytes[i]);
-  }
-  return btoa(binary)
-    .replace(/\+/g, '-')
-    .replace(/\//g, '_')
-    .replace(/=+$/, '');
-}
-
-// Generate VAPID JWT for authorization using djwt library
-async function generateVAPIDHeaders(endpoint: string): Promise<{ Authorization: string }> {
-  const urlParts = new URL(endpoint);
-  const audience = `${urlParts.protocol}//${urlParts.host}`;
-  
-  try {
-    // Decode the private key (32 bytes for P-256)
-    const privateKeyBytes = base64UrlDecode(VAPID_PRIVATE_KEY);
-    
-    // Decode the public key to extract x and y coordinates
-    // Public key format: 0x04 (1 byte) + x (32 bytes) + y (32 bytes)
-    const publicKeyBytes = base64UrlDecode(VAPID_PUBLIC_KEY);
-    
-    // Extract x and y coordinates (skip first byte which is 0x04)
-    const x = publicKeyBytes.slice(1, 33);
-    const y = publicKeyBytes.slice(33, 65);
-    
-    // Create JWK for private key
-    const jwk = {
-      kty: 'EC',
-      crv: 'P-256',
-      d: base64UrlEncode(privateKeyBytes),
-      x: base64UrlEncode(x),
-      y: base64UrlEncode(y),
-    };
-    
-    const privateKey = await crypto.subtle.importKey(
-      'jwk',
-      jwk,
-      {
-        name: 'ECDSA',
-        namedCurve: 'P-256'
-      },
-      false,
-      ['sign']
-    );
-    
-    // JWT payload - expires in 12 hours
-    const exp = Math.floor(Date.now() / 1000) + (12 * 60 * 60);
-    const payload = {
-      aud: audience,
-      exp: exp,
-      sub: 'mailto:admin@edupreneurs.com'
-    };
-    
-    // Create JWT using djwt
-    const jwt = await create(
-      { alg: 'ES256', typ: 'JWT' },
-      payload,
-      privateKey
-    );
-    
-    return {
-      'Authorization': `vapid t=${jwt}, k=${VAPID_PUBLIC_KEY}`
-    };
-  } catch (error) {
-    console.error('❌ VAPID key import/signing failed:', error);
-    throw error;
-  }
-}
-
+// Configure web-push with VAPID details
+webpush.setVapidDetails(
+  'mailto:admin@edupreneurs.com',
+  VAPID_PUBLIC_KEY,
+  VAPID_PRIVATE_KEY
+);
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -155,69 +74,44 @@ serve(async (req) => {
     console.log('📦 Sending notification payload');
 
     try {
-      // Generate VAPID headers for authentication
-      const vapidHeaders = await generateVAPIDHeaders(subscription.endpoint);
-      console.log('🔐 Generated VAPID auth headers');
+      // Send push notification using web-push library
+      const result = await webpush.sendNotification(subscription, payload);
       
-      // Send using standard fetch with proper headers including VAPID auth
-      const response = await fetch(subscription.endpoint, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'TTL': '86400',
-          ...vapidHeaders
-        },
-        body: payload
-      });
+      console.log('✅ Push notification sent successfully to:', recipientUserId);
+      console.log('📬 Status:', result.statusCode);
 
-      if (response.ok) {
-        console.log('✅ Push notification sent successfully to:', recipientUserId);
-        console.log('📬 Status:', response.status);
-
-        return new Response(
-          JSON.stringify({ 
-            success: true,
-            message: 'Notification sent',
-            hasSubscription: true 
-          }),
-          { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-        );
-      } else {
-        console.error('❌ Push send failed with status:', response.status);
-        const errorText = await response.text();
-        console.error('Error details:', errorText);
-
-        // If subscription is invalid, remove it from database
-        if (response.status === 404 || response.status === 410) {
-          console.log('🗑️ Removing expired subscription');
-          await supabase
-            .from('push_subscriptions')
-            .delete()
-            .eq('user_id', recipientUserId);
-          
-          return new Response(
-            JSON.stringify({ success: false, message: 'Subscription expired and removed' }),
-            { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-          );
-        }
-
-        return new Response(
-          JSON.stringify({ 
-            success: false, 
-            message: 'Failed to send push notification',
-            error: `Status ${response.status}: ${errorText}`
-          }),
-          { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 500 }
-        );
-      }
+      return new Response(
+        JSON.stringify({ 
+          success: true,
+          message: 'Notification sent',
+          hasSubscription: true 
+        }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
     } catch (pushError: any) {
       console.error('❌ Error sending push:', pushError);
+      console.error('Error details:', pushError.body);
       
+      // If subscription is invalid, remove it from database
+      if (pushError.statusCode === 404 || pushError.statusCode === 410) {
+        console.log('🗑️ Removing expired subscription');
+        await supabase
+          .from('push_subscriptions')
+          .delete()
+          .eq('user_id', recipientUserId);
+        
+        return new Response(
+          JSON.stringify({ success: false, message: 'Subscription expired and removed' }),
+          { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+
       return new Response(
         JSON.stringify({ 
           success: false, 
           message: 'Failed to send push notification',
-          error: pushError instanceof Error ? pushError.message : 'Unknown error'
+          error: pushError.message || 'Unknown error',
+          statusCode: pushError.statusCode
         }),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 500 }
       );
