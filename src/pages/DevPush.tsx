@@ -253,6 +253,7 @@ export default function DevPush() {
 
       const payload = payloads[type];
       
+      // Send to edge function (for real push notification)
       const { data, error } = await supabase.functions.invoke('send-push-notification', {
         body: payload
       });
@@ -260,8 +261,30 @@ export default function DevPush() {
       if (error) throw error;
 
       log('success', `${type} notification sent: ${JSON.stringify(data)}`);
+      
+      // Also show a local notification immediately for testing
+      if (state.permission === 'granted' && 'Notification' in window) {
+        const notification = new Notification(payload.title, {
+          body: payload.body,
+          icon: '/logo.png',
+          badge: '/logo.png',
+          tag: `test-${type}-${Date.now()}`,
+          requireInteraction: false
+        });
+        
+        notification.onclick = () => {
+          window.focus();
+          notification.close();
+        };
+        
+        log('success', 'Local notification displayed');
+      }
+      
       setState(prev => ({ ...prev, lastSuccess: `${type} notification sent` }));
-      toast({ title: "Test notification sent!", description: `Check your notifications for the ${type} test` });
+      toast({ 
+        title: "Test notification sent!", 
+        description: `You should see both a local notification and receive a push notification for ${type}` 
+      });
     } catch (error: any) {
       log('error', error.message);
       setState(prev => ({ ...prev, lastError: error.message }));
