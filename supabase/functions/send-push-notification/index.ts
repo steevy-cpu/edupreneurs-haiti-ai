@@ -16,8 +16,8 @@ interface PushSubscription {
 }
 
 // VAPID keys - these must match the public key in pushNotifications.ts
-const VAPID_PUBLIC_KEY = 'BEl62iUYgUivxIkv69yViEuiBIa-Ib9-SkvMeAtA3LFgDzkrxZJjSgSnfckjBJuBkr3qBroV5VGqq84s6cVRwCg';
-const VAPID_PRIVATE_KEY = 'bdSiNzUhUP6PHxtS1-7Zne7WMlmBXXSTlsCgSlMkN7c';
+const VAPID_PUBLIC_KEY = 'BOQ0Fn35WtOTVFKRkrQRxYzb9oRwi2IldpPeSU3VHbHLoiNwheYEpklA2YVBh3Ah3h2De8743ShfRYx61lVhNUM';
+const VAPID_PRIVATE_KEY = 'l8hOAmgFFSaCTcVsqy0D56k5pvTvvMks3M6bbMhGS00';
 
 // Base64url decode helper
 function base64UrlDecode(input: string): Uint8Array {

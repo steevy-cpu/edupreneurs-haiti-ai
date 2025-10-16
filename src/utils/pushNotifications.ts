@@ -56,7 +56,7 @@ export const subscribeToPushNotifications = async (
 ): Promise<boolean> => {
   try {
     // Public VAPID key - in production, this should be from your backend
-    const vapidPublicKey = 'BEl62iUYgUivxIkv69yViEuiBIa-Ib9-SkvMeAtA3LFgDzkrxZJjSgSnfckjBJuBkr3qBroV5VGqq84s6cVRwCg';
+    const vapidPublicKey = 'BOQ0Fn35WtOTVFKRkrQRxYzb9oRwi2IldpPeSU3VHbHLoiNwheYEpklA2YVBh3Ah3h2De8743ShfRYx61lVhNUM';
     
     const vapidKey = urlBase64ToUint8Array(vapidPublicKey);
     const subscription = await registration.pushManager.subscribe({
