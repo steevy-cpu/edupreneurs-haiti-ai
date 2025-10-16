@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { create } from "https://deno.land/x/djwt@v3.0.2/mod.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -44,30 +45,10 @@ function base64UrlEncode(input: Uint8Array | ArrayBuffer): string {
     .replace(/=+$/, '');
 }
 
-// Generate VAPID JWT for authorization
-async function generateVAPIDHeaders(endpoint: string): Promise<{ Authorization: string; 'Crypto-Key'?: string }> {
+// Generate VAPID JWT for authorization using djwt library
+async function generateVAPIDHeaders(endpoint: string): Promise<{ Authorization: string }> {
   const urlParts = new URL(endpoint);
   const audience = `${urlParts.protocol}//${urlParts.host}`;
-  
-  // JWT header
-  const jwtHeader = {
-    typ: 'JWT',
-    alg: 'ES256'
-  };
-  
-  // JWT payload - expires in 12 hours
-  const exp = Math.floor(Date.now() / 1000) + (12 * 60 * 60);
-  const jwtPayload = {
-    aud: audience,
-    exp: exp,
-    sub: 'mailto:admin@edupreneurs.com'
-  };
-  
-  // Encode header and payload
-  const encoder = new TextEncoder();
-  const headerB64 = base64UrlEncode(encoder.encode(JSON.stringify(jwtHeader)));
-  const payloadB64 = base64UrlEncode(encoder.encode(JSON.stringify(jwtPayload)));
-  const unsignedToken = `${headerB64}.${payloadB64}`;
   
   try {
     // Decode the private key (32 bytes for P-256)
@@ -88,7 +69,6 @@ async function generateVAPIDHeaders(endpoint: string): Promise<{ Authorization: 
       d: base64UrlEncode(privateKeyBytes),
       x: base64UrlEncode(x),
       y: base64UrlEncode(y),
-      ext: true
     };
     
     const privateKey = await crypto.subtle.importKey(
@@ -102,19 +82,20 @@ async function generateVAPIDHeaders(endpoint: string): Promise<{ Authorization: 
       ['sign']
     );
     
-    // Sign the token
-    const signature = await crypto.subtle.sign(
-      {
-        name: 'ECDSA',
-        hash: { name: 'SHA-256' }
-      },
-      privateKey,
-      encoder.encode(unsignedToken)
-    );
+    // JWT payload - expires in 12 hours
+    const exp = Math.floor(Date.now() / 1000) + (12 * 60 * 60);
+    const payload = {
+      aud: audience,
+      exp: exp,
+      sub: 'mailto:admin@edupreneurs.com'
+    };
     
-    // Encode signature
-    const signatureB64 = base64UrlEncode(signature);
-    const jwt = `${unsignedToken}.${signatureB64}`;
+    // Create JWT using djwt
+    const jwt = await create(
+      { alg: 'ES256', typ: 'JWT' },
+      payload,
+      privateKey
+    );
     
     return {
       'Authorization': `vapid t=${jwt}, k=${VAPID_PUBLIC_KEY}`
