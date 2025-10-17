@@ -59,13 +59,26 @@ async function createVapidAuthHeader(endpoint: string): Promise<string> {
   const payloadBase64 = uint8ArrayToBase64Url(encoder.encode(JSON.stringify(vapidPayload)));
   const unsignedToken = `${headerBase64}.${payloadBase64}`;
   
-  // Import private key for signing
-  const privateKeyBytes = base64UrlToUint8Array(VAPID_PRIVATE_KEY);
-  const privateKeyBuffer = privateKeyBytes.buffer as ArrayBuffer;
+  // Convert VAPID keys to JWK format for Web Crypto API
+  const publicKeyBytes = base64UrlToUint8Array(VAPID_PUBLIC_KEY);
+  // Public key format: 0x04 (1 byte) + x (32 bytes) + y (32 bytes)
+  const x = uint8ArrayToBase64Url(publicKeyBytes.slice(1, 33));
+  const y = uint8ArrayToBase64Url(publicKeyBytes.slice(33, 65));
+  const d = VAPID_PRIVATE_KEY;
   
+  const jwk = {
+    kty: 'EC',
+    crv: 'P-256',
+    x: x,
+    y: y,
+    d: d,
+    ext: true
+  };
+  
+  // Import private key as JWK
   const cryptoKey = await crypto.subtle.importKey(
-    'raw',
-    privateKeyBuffer,
+    'jwk',
+    jwk,
     { name: 'ECDSA', namedCurve: 'P-256' },
     false,
     ['sign']
