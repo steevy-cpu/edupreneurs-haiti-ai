@@ -500,14 +500,36 @@ const Feed = () => {
 
     const post = posts.find(p => p.id === postId);
     
+    // Create notification for post owner
     if (post && post.user_id !== currentUser.id) {
-      await supabase.from("notifications").insert({
+      const { error: notifError } = await supabase.from("notifications").insert({
         user_id: post.user_id,
         actor_id: currentUser.id,
         post_id: postId,
         type: "comment",
         content: commentContent,
       });
+
+      if (notifError) {
+        console.error("❌ Error creating notification:", notifError);
+      } else {
+        console.log("✅ Notification created successfully");
+        
+        // Send push notification via edge function
+        try {
+          await supabase.functions.invoke('send-push-notification', {
+            body: {
+              recipientUserId: post.user_id,
+              title: 'EDUPRENEURS',
+              body: `${currentUser.nickname || currentUser.full_name} a commenté votre publication`,
+              url: '/feed',
+            }
+          });
+          console.log("✅ Push notification sent");
+        } catch (pushError) {
+          console.error("❌ Error sending push notification:", pushError);
+        }
+      }
     }
 
     if (parentCommentId) {
