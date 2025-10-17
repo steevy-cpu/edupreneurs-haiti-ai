@@ -62,18 +62,28 @@ async function createVapidAuthToken(endpoint: string): Promise<string> {
   const payloadB64 = uint8ArrayToBase64Url(new TextEncoder().encode(JSON.stringify(payload)));
   const unsignedToken = `${headerB64}.${payloadB64}`;
   
-  // Convert private key from base64url to raw bytes  
-  const privateKeyBytes = base64ToUint8Array(base64UrlToBase64(VAPID_PRIVATE_KEY));
+  // Convert VAPID keys to JWK format for ES256 signing
+  // VAPID public key is 65 bytes: 0x04 + X (32 bytes) + Y (32 bytes)
+  const publicKeyBytes = base64ToUint8Array(base64UrlToBase64(VAPID_PUBLIC_KEY));
+  const x = uint8ArrayToBase64Url(publicKeyBytes.slice(1, 33));
+  const y = uint8ArrayToBase64Url(publicKeyBytes.slice(33, 65));
+  const d = VAPID_PRIVATE_KEY; // Already in base64url format
   
-  // Create a proper ArrayBuffer (not ArrayBufferLike)
-  const keyBuffer = new ArrayBuffer(privateKeyBytes.length);
-  const keyView = new Uint8Array(keyBuffer);
-  keyView.set(privateKeyBytes);
+  // Create JWK for the private key
+  const jwk = {
+    kty: 'EC',
+    crv: 'P-256',
+    x: x,
+    y: y,
+    d: d,
+    ext: true,
+    key_ops: ['sign']
+  };
   
-  // Import private key (using raw format for VAPID keys)
+  // Import private key as JWK
   const privateKey = await crypto.subtle.importKey(
-    'raw',
-    keyBuffer,
+    'jwk',
+    jwk,
     {
       name: 'ECDSA',
       namedCurve: 'P-256'
@@ -86,7 +96,7 @@ async function createVapidAuthToken(endpoint: string): Promise<string> {
   const signature = await crypto.subtle.sign(
     {
       name: 'ECDSA',
-      hash: 'SHA-256'
+      hash: { name: 'SHA-256' }
     },
     privateKey,
     new TextEncoder().encode(unsignedToken)

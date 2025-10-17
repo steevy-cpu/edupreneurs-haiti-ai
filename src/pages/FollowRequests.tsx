@@ -117,7 +117,7 @@ export default function FollowRequests() {
     }
   };
 
-  const handleAccept = async (requestId: string) => {
+  const handleAccept = async (requestId: string, followerId: string) => {
     try {
       const { error } = await supabase
         .from('follows')
@@ -125,6 +125,41 @@ export default function FollowRequests() {
         .eq('id', requestId);
 
       if (error) throw error;
+
+      // Create notification for the person who sent the request
+      const { error: notifError } = await supabase
+        .from('notifications')
+        .insert({
+          user_id: followerId,
+          actor_id: currentUser.id,
+          type: 'follow_accepted',
+          read: false,
+        });
+
+      if (notifError) {
+        console.error('❌ Error creating acceptance notification:', notifError);
+      }
+
+      // Send push notification to the person who sent the request
+      try {
+        const { data: acceptorProfile } = await supabase
+          .from('profiles')
+          .select('nickname, full_name')
+          .eq('user_id', currentUser.id)
+          .single();
+
+        await supabase.functions.invoke('send-push-notification', {
+          body: {
+            recipientUserId: followerId,
+            title: 'EDUPRENEURS',
+            body: `${acceptorProfile?.nickname || acceptorProfile?.full_name || 'Someone'} a accepté votre demande d'abonnement`,
+            url: '/notifications',
+          }
+        });
+        console.log('✅ Follow acceptance push notification sent');
+      } catch (pushError) {
+        console.error('❌ Error sending push notification:', pushError);
+      }
 
       toast.success('Follow request accepted!');
       fetchRequests();
@@ -238,7 +273,7 @@ export default function FollowRequests() {
                       <Button
                         size="icon"
                         variant="default"
-                        onClick={() => handleAccept(request.id)}
+                        onClick={() => handleAccept(request.id, request.follower_id)}
                       >
                         <Check className="w-4 h-4" />
                       </Button>

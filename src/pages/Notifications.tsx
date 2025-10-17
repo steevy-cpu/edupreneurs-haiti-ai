@@ -177,22 +177,6 @@ export default function Notifications() {
           const actorName = actorProfile?.nickname || actorProfile?.full_name || 'Someone';
           const notificationText = getNotificationTextForBrowser(payload.new, actorName);
           
-          // Send push notification via edge function so users get notified even when not on the site
-          try {
-            console.log('📤 Sending push notification for:', payload.new.type);
-            await supabase.functions.invoke('send-push-notification', {
-              body: {
-                recipientUserId: payload.new.user_id,
-                title: 'EDUPRENEURS',
-                body: notificationText,
-                conversationId: payload.new.post_id || undefined
-              }
-            });
-            console.log('✅ Push notification sent');
-          } catch (error) {
-            console.error('❌ Error sending push notification:', error);
-          }
-          
           // Show browser notification using service worker (for when user is on the site)
           if ('serviceWorker' in navigator && 'Notification' in window && Notification.permission === 'granted') {
             try {
@@ -335,7 +319,7 @@ export default function Notifications() {
       // Find the follow record
       const { data: followData, error: fetchError } = await supabase
         .from("follows")
-        .select("id")
+        .select("id, follower_id")
         .eq("follower_id", notification.actor_id)
         .eq("following_id", notification.user_id)
         .eq("status", "pending")
@@ -353,6 +337,41 @@ export default function Notifications() {
         .eq("id", followData.id);
 
       if (updateError) throw updateError;
+
+      // Create notification for the person who sent the request
+      const { error: notifError } = await supabase
+        .from("notifications")
+        .insert({
+          user_id: notification.actor_id,
+          actor_id: notification.user_id,
+          type: "follow_accepted",
+          read: false,
+        });
+
+      if (notifError) {
+        console.error("❌ Error creating acceptance notification:", notifError);
+      }
+
+      // Send push notification to the person who sent the request
+      try {
+        const { data: acceptorProfile } = await supabase
+          .from("profiles")
+          .select("nickname, full_name")
+          .eq("user_id", notification.user_id)
+          .single();
+
+        await supabase.functions.invoke('send-push-notification', {
+          body: {
+            recipientUserId: notification.actor_id,
+            title: 'EDUPRENEURS',
+            body: `${acceptorProfile?.nickname || acceptorProfile?.full_name || 'Someone'} a accepté votre demande d'abonnement`,
+            url: '/notifications',
+          }
+        });
+        console.log('✅ Follow acceptance push notification sent');
+      } catch (pushError) {
+        console.error('❌ Error sending push notification:', pushError);
+      }
 
       // Mark notification as read
       await markAsRead(notification.id);

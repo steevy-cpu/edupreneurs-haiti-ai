@@ -143,6 +143,27 @@ export default function Profile() {
         throw error;
       }
 
+      // Send push notification for follow request
+      try {
+        const { data: currentUserProfile } = await supabase
+          .from('profiles')
+          .select('nickname, full_name')
+          .eq('user_id', currentUser.id)
+          .single();
+
+        await supabase.functions.invoke('send-push-notification', {
+          body: {
+            recipientUserId: userId,
+            title: 'EDUPRENEURS',
+            body: `${currentUserProfile?.nickname || currentUserProfile?.full_name || 'Someone'} vous a envoyé une demande d'abonnement`,
+            url: '/notifications',
+          }
+        });
+        console.log('✅ Follow request push notification sent');
+      } catch (pushError) {
+        console.error('❌ Error sending push notification:', pushError);
+      }
+
       setFollowStatus({ following: true, status: 'pending', followId: null });
       toast.success('Follow request sent!');
       fetchFollowStatus();
