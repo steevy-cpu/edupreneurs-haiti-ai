@@ -44,107 +44,51 @@ async function createVapidAuthToken(endpoint: string): Promise<string> {
   const url = new URL(endpoint);
   const audience = `${url.protocol}//${url.host}`;
   
-  // JWT header
   const header = {
     typ: 'JWT',
     alg: 'ES256'
   };
   
-  // JWT payload
   const payload = {
     aud: audience,
-    exp: Math.floor(Date.now() / 1000) + (12 * 60 * 60), // 12 hours
+    exp: Math.floor(Date.now() / 1000) + (12 * 60 * 60),
     sub: 'mailto:admin@edupreneurs.com'
   };
   
-  // Encode header and payload
   const headerB64 = uint8ArrayToBase64Url(new TextEncoder().encode(JSON.stringify(header)));
   const payloadB64 = uint8ArrayToBase64Url(new TextEncoder().encode(JSON.stringify(payload)));
   const unsignedToken = `${headerB64}.${payloadB64}`;
   
-  // Convert VAPID keys to JWK format for ES256 signing
-  // VAPID public key is 65 bytes: 0x04 + X (32 bytes) + Y (32 bytes)
   const publicKeyBytes = base64ToUint8Array(base64UrlToBase64(VAPID_PUBLIC_KEY));
   const x = uint8ArrayToBase64Url(publicKeyBytes.slice(1, 33));
   const y = uint8ArrayToBase64Url(publicKeyBytes.slice(33, 65));
-  const d = VAPID_PRIVATE_KEY; // Already in base64url format
   
-  // Create JWK for the private key
   const jwk = {
     kty: 'EC',
     crv: 'P-256',
     x: x,
     y: y,
-    d: d,
+    d: VAPID_PRIVATE_KEY,
     ext: true,
     key_ops: ['sign']
   };
   
-  // Import private key as JWK
   const privateKey = await crypto.subtle.importKey(
     'jwk',
     jwk,
-    {
-      name: 'ECDSA',
-      namedCurve: 'P-256'
-    },
+    { name: 'ECDSA', namedCurve: 'P-256' },
     false,
     ['sign']
   );
   
-  // Sign the token
   const signature = await crypto.subtle.sign(
-    {
-      name: 'ECDSA',
-      hash: { name: 'SHA-256' }
-    },
+    { name: 'ECDSA', hash: { name: 'SHA-256' } },
     privateKey,
     new TextEncoder().encode(unsignedToken)
   );
   
-  // Create the complete JWT
   const signatureB64 = uint8ArrayToBase64Url(new Uint8Array(signature));
   return `${unsignedToken}.${signatureB64}`;
-}
-
-// Send push notification
-async function sendPushNotification(
-  subscription: PushSubscription,
-  payload: string
-): Promise<{ success: boolean; status?: number; error?: string }> {
-  try {
-    // Create VAPID auth token
-    const vapidToken = await createVapidAuthToken(subscription.endpoint);
-    
-    // Send push notification
-    const response = await fetch(subscription.endpoint, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `vapid t=${vapidToken}, k=${VAPID_PUBLIC_KEY}`,
-        'TTL': '86400',
-      },
-      body: payload,
-    });
-    
-    if (!response.ok) {
-      const errorText = await response.text().catch(() => 'Unknown error');
-      console.error(`Push failed with status ${response.status}:`, errorText);
-      return { 
-        success: false, 
-        status: response.status,
-        error: errorText
-      };
-    }
-    
-    return { success: true };
-  } catch (error) {
-    console.error('Exception sending push:', error);
-    return { 
-      success: false, 
-      error: error instanceof Error ? error.message : String(error) 
-    };
-  }
 }
 
 serve(async (req) => {
@@ -159,9 +103,8 @@ serve(async (req) => {
 
     const { recipientUserId, title, body, conversationId, url } = await req.json();
 
-    console.log('📤 Attempting to send push notification to:', recipientUserId);
+    console.log('📤 Sending push notification to:', recipientUserId);
 
-    // Fetch subscription
     const { data: subscriptionData, error: subError } = await supabase
       .from('push_subscriptions')
       .select('subscription')
@@ -179,7 +122,6 @@ serve(async (req) => {
     const subscription = subscriptionData.subscription as PushSubscription;
     const targetUrl = url || (conversationId ? `/community?conversation=${conversationId}` : '/notifications');
 
-    // Create payload
     const payload = JSON.stringify({
       title: title || 'EDUPRENEURS',
       body: body || 'New notification',
@@ -188,23 +130,28 @@ serve(async (req) => {
       data: { url: targetUrl, conversationId, timestamp: Date.now() }
     });
 
-    console.log('📦 Sending to endpoint:', subscription.endpoint.substring(0, 60) + '...');
-
-    // Send notification
-    const result = await sendPushNotification(subscription, payload);
-
-    if (!result.success) {
-      // Remove expired subscriptions
-      if (result.status === 404 || result.status === 410) {
-        console.log('🗑️ Removing expired subscription');
-        await supabase
-          .from('push_subscriptions')
-          .delete()
-          .eq('user_id', recipientUserId);
+    const vapidToken = await createVapidAuthToken(subscription.endpoint);
+    
+    const response = await fetch(subscription.endpoint, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json;charset=utf-8',
+        'Authorization': `vapid t=${vapidToken}, k=${VAPID_PUBLIC_KEY}`,
+        'TTL': '86400',
+      },
+      body: payload,
+    });
+    
+    if (!response.ok) {
+      const errorText = await response.text().catch(() => 'Unknown error');
+      console.error(`❌ Push failed with status ${response.status}:`, errorText);
+      
+      if (response.status === 404 || response.status === 410) {
+        await supabase.from('push_subscriptions').delete().eq('user_id', recipientUserId);
       }
       
       return new Response(
-        JSON.stringify({ success: false, message: result.error || 'Send failed' }),
+        JSON.stringify({ success: false, message: errorText }),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }

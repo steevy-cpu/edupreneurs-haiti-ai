@@ -1,0 +1,169 @@
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Button } from "@/components/ui/button";
+import { Heart, MessageCircle, Share2, Trash2, BadgeCheck } from "lucide-react";
+import { getAvatarUrl } from "@/lib/avatarMap";
+
+interface Profile {
+  id: string;
+  user_id: string;
+  full_name: string;
+  nickname: string;
+  avatar_url: string | null;
+  verified: boolean;
+}
+
+interface Post {
+  id: string;
+  user_id: string;
+  content: string;
+  image_url: string | null;
+  video_url: string | null;
+  created_at: string;
+  profile?: Profile;
+  likes?: number;
+  isLiked?: boolean;
+  commentCount?: number;
+  shareCount?: number;
+  isShared?: boolean;
+}
+
+interface PostCardProps {
+  post: Post;
+  currentUserId: string;
+  onLike: (postId: string, isLiked: boolean) => void;
+  onComment: (postId: string) => void;
+  onShare: (post: Post) => void;
+  onDelete: (postId: string) => void;
+}
+
+export function PostCard({
+  post,
+  currentUserId,
+  onLike,
+  onComment,
+  onShare,
+  onDelete,
+}: PostCardProps) {
+  const formatTimeAgo = (dateString: string) => {
+    const date = new Date(dateString);
+    const now = new Date();
+    const diffMs = now.getTime() - date.getTime();
+    const diffMins = Math.floor(diffMs / 60000);
+    const diffHours = Math.floor(diffMs / 3600000);
+    const diffDays = Math.floor(diffMs / 86400000);
+
+    if (diffMins < 1) return "à l'instant";
+    if (diffMins < 60) return `il y a ${diffMins}min`;
+    if (diffHours < 24) return `il y a ${diffHours}h`;
+    if (diffDays === 1) return "hier";
+    if (diffDays < 7) return `il y a ${diffDays}j`;
+    return date.toLocaleDateString("fr-FR", { day: "numeric", month: "short" });
+  };
+
+  return (
+    <div className="border-b border-border/50 bg-background">
+      {/* Post Header */}
+      <div className="flex items-center gap-3 px-3 xs:px-4 py-2.5 xs:py-3">
+        <Avatar className="h-9 w-9 xs:h-10 xs:w-10 shrink-0">
+          <AvatarImage src={getAvatarUrl(post.profile?.avatar_url)} />
+          <AvatarFallback className="bg-gradient-to-br from-primary/20 to-success/20 text-foreground text-xs">
+            {post.profile?.full_name?.[0] || "?"}
+          </AvatarFallback>
+        </Avatar>
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-1.5">
+            <p className="font-semibold text-xs xs:text-sm truncate">
+              {post.profile?.full_name || "Utilisateur"}
+            </p>
+            {post.profile?.verified && (
+              <BadgeCheck className="w-3.5 h-3.5 xs:w-4 xs:h-4 text-primary fill-primary/20 shrink-0" />
+            )}
+          </div>
+          <p className="text-[10px] xs:text-xs text-muted-foreground">
+            {formatTimeAgo(post.created_at)}
+          </p>
+        </div>
+        {post.user_id === currentUserId && (
+          <Button
+            size="sm"
+            variant="ghost"
+            onClick={() => onDelete(post.id)}
+            className="shrink-0 h-8 w-8 p-0"
+          >
+            <Trash2 size={14} className="text-destructive" />
+          </Button>
+        )}
+      </div>
+
+      {/* Post Content */}
+      <div className="px-3 xs:px-4 pb-2.5 xs:pb-3">
+        <p className="text-xs xs:text-sm whitespace-pre-wrap break-words leading-relaxed">
+          {post.content}
+        </p>
+        {post.image_url && (
+          <img 
+            src={post.image_url} 
+            alt="Post" 
+            loading="lazy"
+            className="mt-2 xs:mt-3 w-full rounded-lg object-contain bg-muted/20 max-h-[400px]"
+          />
+        )}
+        {post.video_url && (
+          <video 
+            src={post.video_url} 
+            controls 
+            preload="metadata"
+            className="mt-2 xs:mt-3 w-full rounded-lg bg-muted/20 max-h-[400px]"
+          />
+        )}
+      </div>
+
+      {/* Post Actions */}
+      <div className="flex items-center gap-4 xs:gap-6 px-3 xs:px-4 py-1.5 xs:py-2 border-t border-border/30">
+        <button
+          onClick={() => onLike(post.id, post.isLiked || false)}
+          className="flex items-center gap-1.5 xs:gap-2 group"
+        >
+          <Heart
+            size={18}
+            className={`transition-colors ${
+              post.isLiked
+                ? "fill-red-500 text-red-500"
+                : "text-foreground group-hover:text-red-500"
+            }`}
+          />
+          <span className={`text-xs xs:text-sm ${post.isLiked ? "text-red-500 font-medium" : "text-muted-foreground"}`}>
+            {post.likes || 0}
+          </span>
+        </button>
+
+        <button
+          onClick={() => onComment(post.id)}
+          className="flex items-center gap-1.5 xs:gap-2 group"
+        >
+          <MessageCircle size={18} className="text-foreground group-hover:text-primary transition-colors" />
+          <span className="text-xs xs:text-sm text-muted-foreground">
+            {post.commentCount || 0}
+          </span>
+        </button>
+
+        <button
+          onClick={() => onShare(post)}
+          className="flex items-center gap-1.5 xs:gap-2 group"
+        >
+          <Share2
+            size={18}
+            className={`transition-colors ${
+              post.isShared
+                ? "fill-primary text-primary"
+                : "text-foreground group-hover:text-primary"
+            }`}
+          />
+          <span className={`text-xs xs:text-sm ${post.isShared ? "text-primary font-medium" : "text-muted-foreground"}`}>
+            {post.shareCount || 0}
+          </span>
+        </button>
+      </div>
+    </div>
+  );
+}
