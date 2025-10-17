@@ -156,31 +156,31 @@ const Dashboard = () => {
         )}
         
         {/* Welcome Header */}
-        <div className="bg-gradient-to-br from-[hsl(var(--primary))] to-[hsl(var(--success))] text-white p-4 sm:p-6 lg:p-8 rounded-2xl sm:rounded-[20px] mb-4 sm:mb-6 lg:mb-8 relative overflow-hidden">
+        <div className="bg-gradient-to-br from-[hsl(var(--primary))] to-[hsl(var(--success))] text-white p-3 xs:p-4 sm:p-6 lg:p-8 rounded-xl xs:rounded-2xl sm:rounded-[20px] mb-3 xs:mb-4 sm:mb-6 lg:mb-8 relative overflow-hidden">
           <div className="absolute top-0 right-0 w-1/2 h-full opacity-10">
             <div className="w-full h-full bg-gradient-radial from-white/20 to-transparent animate-[float_20s_ease-in-out_infinite]" />
           </div>
           <div className="relative z-10">
-            <h2 className="text-lg sm:text-xl lg:text-2xl xl:text-3xl font-bold mb-1 sm:mb-2">
-              Bienvenue, <span>{userData.name}</span>!
+            <h2 className="text-base xs:text-lg sm:text-xl lg:text-2xl xl:text-3xl font-bold mb-1 xs:mb-1.5 sm:mb-2">
+              Bienvenue, <span className="break-words">{userData.name}</span>!
             </h2>
-            <p className="text-xs sm:text-sm lg:text-base opacity-75 leading-relaxed">
+            <p className="text-[11px] xs:text-xs sm:text-sm lg:text-base opacity-75 leading-relaxed">
               Continuez votre apprentissage personnalisé avec Eric, votre assistant IA
             </p>
           </div>
         </div>
 
         {/* KPI Cards */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3 lg:gap-5 mb-4 sm:mb-6 lg:mb-8" data-tour="stats-section">
-          <Card className="border-none rounded-xl sm:rounded-2xl lg:rounded-[20px] shadow-md hover:shadow-lg hover:-translate-y-1 sm:hover:-translate-y-2 transition-all duration-300 relative overflow-hidden group">
-            <CardContent className="p-3 sm:p-5 lg:p-7 text-center">
-              <div className="w-8 h-8 sm:w-10 sm:h-10 lg:w-14 lg:h-14 rounded-lg sm:rounded-xl lg:rounded-2xl bg-gradient-to-br from-[hsl(var(--accent))] to-[hsl(25_100%_50%)] flex items-center justify-center text-white text-base sm:text-xl lg:text-2xl mx-auto mb-1.5 sm:mb-2 lg:mb-4">
-                <Coins className="w-4 h-4 sm:w-5 sm:h-5 lg:w-6 lg:h-6" />
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-1.5 xs:gap-2 sm:gap-3 lg:gap-5 mb-3 xs:mb-4 sm:mb-6 lg:mb-8" data-tour="stats-section">
+          <Card className="border-none rounded-lg xs:rounded-xl sm:rounded-2xl lg:rounded-[20px] shadow-md hover:shadow-lg hover:-translate-y-0.5 sm:hover:-translate-y-1 lg:hover:-translate-y-2 transition-all duration-300 relative overflow-hidden group">
+            <CardContent className="p-2 xs:p-3 sm:p-5 lg:p-7 text-center">
+              <div className="w-7 h-7 xs:w-8 xs:h-8 sm:w-10 sm:h-10 lg:w-14 lg:h-14 rounded-md xs:rounded-lg sm:rounded-xl lg:rounded-2xl bg-gradient-to-br from-[hsl(var(--accent))] to-[hsl(25_100%_50%)] flex items-center justify-center text-white text-sm xs:text-base sm:text-xl lg:text-2xl mx-auto mb-1 xs:mb-1.5 sm:mb-2 lg:mb-4">
+                <Coins className="w-3.5 h-3.5 xs:w-4 xs:h-4 sm:w-5 sm:h-5 lg:w-6 lg:h-6" />
               </div>
-              <div className="text-xl sm:text-2xl lg:text-3xl font-extrabold bg-gradient-to-br from-[hsl(var(--primary))] to-[hsl(var(--success))] bg-clip-text text-transparent mb-0.5 sm:mb-1 lg:mb-2">
+              <div className="text-base xs:text-xl sm:text-2xl lg:text-3xl font-extrabold bg-gradient-to-br from-[hsl(var(--primary))] to-[hsl(var(--success))] bg-clip-text text-transparent mb-0.5 xs:mb-0.5 sm:mb-1 lg:mb-2 truncate">
                 {goldEarned}
               </div>
-              <div className="text-[10px] sm:text-xs lg:text-sm font-semibold text-muted-foreground">Golds gagnés</div>
+              <div className="text-[9px] xs:text-[10px] sm:text-xs lg:text-sm font-semibold text-muted-foreground leading-tight">Golds gagnés</div>
             </CardContent>
           </Card>
 

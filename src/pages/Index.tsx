@@ -71,30 +71,30 @@ const Index = () => {
       </header>
 
       {/* Hero Section */}
-      <section id="accueil" className="py-8 sm:py-12 md:py-16 lg:py-20 px-3 sm:px-4 bg-background">
-        <div className="container mx-auto grid md:grid-cols-2 gap-6 sm:gap-8 lg:gap-10 items-center">
-          <div className="space-y-3 sm:space-y-4 lg:space-y-6 z-10">
-            <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-black leading-tight">
+      <section id="accueil" className="py-6 xs:py-8 sm:py-12 md:py-16 lg:py-20 px-2 xs:px-3 sm:px-4 bg-background">
+        <div className="container mx-auto grid md:grid-cols-2 gap-4 xs:gap-6 sm:gap-8 lg:gap-10 items-center">
+          <div className="space-y-2 xs:space-y-3 sm:space-y-4 lg:space-y-6 z-10 px-2 xs:px-0">
+            <h1 className="text-xl xs:text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-black leading-tight">
               L'Éducation Haïtienne{" "}
               <span className="gradient-text relative">
                 révolutionnée
-                <span className="absolute -right-6 sm:-right-8 -top-2 text-xl sm:text-2xl animate-pulse">✨</span>
+                <span className="absolute -right-4 xs:-right-6 sm:-right-8 -top-1 xs:-top-2 text-base xs:text-xl sm:text-2xl animate-pulse">✨</span>
               </span>{" "}
               par l'Intelligence Artificielle
             </h1>
-            <p className="text-sm sm:text-base lg:text-lg text-muted-foreground leading-relaxed">
+            <p className="text-xs xs:text-sm sm:text-base lg:text-lg text-muted-foreground leading-relaxed">
               "L'éducation est l'arme la plus puissante pour transformer une nation" - Nelson Mandela. 
               En 2025, le système éducatif haïtien peine encore à répondre aux besoins du pays. 
               EDUPRENEURS change la donne avec un apprentissage entièrement personnalisé, basé sur le programme MENFP.
             </p>
-            <div className="flex flex-col sm:flex-row flex-wrap gap-2 sm:gap-3 lg:gap-4">
+            <div className="flex flex-col sm:flex-row flex-wrap gap-1.5 xs:gap-2 sm:gap-3 lg:gap-4">
               <Link to="/dashboard" className="w-full sm:w-auto">
-                <Button size="lg" className="w-full sm:w-auto bg-gradient-to-r from-primary to-primary/80 hover:opacity-90 shadow-lg text-xs sm:text-sm lg:text-base">
+                <Button size="lg" className="w-full sm:w-auto bg-gradient-to-r from-primary to-primary/80 hover:opacity-90 shadow-lg text-[11px] xs:text-xs sm:text-sm lg:text-base py-2 xs:py-2.5">
                   🚀 Commencer Maintenant
                 </Button>
               </Link>
               <Link to="/auth" className="w-full sm:w-auto">
-                <Button size="lg" variant="outline" className="w-full sm:w-auto border-primary text-primary hover:bg-primary hover:text-primary-foreground text-xs sm:text-sm lg:text-base">
+                <Button size="lg" variant="outline" className="w-full sm:w-auto border-primary text-primary hover:bg-primary hover:text-primary-foreground text-[11px] xs:text-xs sm:text-sm lg:text-base py-2 xs:py-2.5">
                   📱 Essai Gratuit 7 Jours
                 </Button>
               </Link>
