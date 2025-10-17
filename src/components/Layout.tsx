@@ -22,6 +22,8 @@ import edupreneursLogo from "@/assets/edupreneurs-new-logo.png";
 import { EricChatbot } from "@/components/EricChatbot";
 import OnboardingTour from "@/components/OnboardingTour";
 import { getAvatarUrl } from "@/lib/avatarMap";
+import { usePWAInstall } from "@/hooks/usePWAInstall";
+import { PWAInstallPrompt } from "@/components/PWAInstallPrompt";
 
 interface LayoutProps {
   children: ReactNode;
@@ -37,6 +39,9 @@ export const Layout = ({ children }: LayoutProps) => {
   const [userAvatar, setUserAvatar] = useState<string>(dashboardImage);
   const [userNickname, setUserNickname] = useState<string>("Étudiant");
   const presenceChannelRef = useState<{ current: any | null }>({ current: null })[0];
+  
+  // PWA Install prompt
+  const { showPrompt, isIOS, installApp, dismissPrompt } = usePWAInstall();
 
   useEffect(() => {
     checkAuth();
@@ -506,6 +511,15 @@ export const Layout = ({ children }: LayoutProps) => {
 
       {/* Eric Chatbot - Hidden on Community page */}
       {location.pathname !== "/community" && <EricChatbot />}
+      
+      {/* PWA Install Prompt */}
+      {showPrompt && (
+        <PWAInstallPrompt
+          isIOS={isIOS}
+          onInstall={installApp}
+          onDismiss={dismissPrompt}
+        />
+      )}
     </div>
   );
 };

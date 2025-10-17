@@ -1,0 +1,108 @@
+import { useState, useEffect } from 'react';
+
+interface BeforeInstallPromptEvent extends Event {
+  prompt: () => Promise<void>;
+  userChoice: Promise<{ outcome: 'accepted' | 'dismissed' }>;
+}
+
+interface PWAInstallState {
+  isInstallable: boolean;
+  isInstalled: boolean;
+  isIOS: boolean;
+  showPrompt: boolean;
+  installApp: () => Promise<void>;
+  dismissPrompt: () => void;
+}
+
+const DISMISS_KEY = 'pwa-install-dismissed';
+const DISMISS_DURATION = 7 * 24 * 60 * 60 * 1000; // 7 days in milliseconds
+const SHOW_DELAY = 30000; // 30 seconds
+
+export const usePWAInstall = (): PWAInstallState => {
+  const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);
+  const [isInstalled, setIsInstalled] = useState(false);
+  const [showPrompt, setShowPrompt] = useState(false);
+
+  // Check if running on iOS
+  const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !(window as any).MSStream;
+  
+  // Check if running in standalone mode (already installed)
+  const isInStandaloneMode = window.matchMedia('(display-mode: standalone)').matches || 
+                            (window.navigator as any).standalone === true;
+
+  // Check if mobile device
+  const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+
+  useEffect(() => {
+    // Don't show if already installed or not on mobile
+    if (isInStandaloneMode || !isMobile) {
+      setIsInstalled(true);
+      return;
+    }
+
+    // Check if user dismissed recently
+    const dismissedAt = localStorage.getItem(DISMISS_KEY);
+    if (dismissedAt) {
+      const dismissTime = parseInt(dismissedAt, 10);
+      if (Date.now() - dismissTime < DISMISS_DURATION) {
+        return;
+      } else {
+        localStorage.removeItem(DISMISS_KEY);
+      }
+    }
+
+    // Listen for beforeinstallprompt event (Android/Chrome)
+    const handleBeforeInstallPrompt = (e: Event) => {
+      e.preventDefault();
+      setDeferredPrompt(e as BeforeInstallPromptEvent);
+    };
+
+    window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+
+    // Show prompt after delay
+    const timer = setTimeout(() => {
+      if (!isInStandaloneMode) {
+        setShowPrompt(true);
+      }
+    }, SHOW_DELAY);
+
+    return () => {
+      window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+      clearTimeout(timer);
+    };
+  }, [isInStandaloneMode, isMobile]);
+
+  const installApp = async () => {
+    if (!deferredPrompt) {
+      return;
+    }
+
+    try {
+      await deferredPrompt.prompt();
+      const { outcome } = await deferredPrompt.userChoice;
+      
+      if (outcome === 'accepted') {
+        setIsInstalled(true);
+        setShowPrompt(false);
+      }
+      
+      setDeferredPrompt(null);
+    } catch (error) {
+      console.error('Error installing PWA:', error);
+    }
+  };
+
+  const dismissPrompt = () => {
+    localStorage.setItem(DISMISS_KEY, Date.now().toString());
+    setShowPrompt(false);
+  };
+
+  return {
+    isInstallable: !!deferredPrompt || isIOS,
+    isInstalled: isInStandaloneMode,
+    isIOS,
+    showPrompt: showPrompt && !isInstalled,
+    installApp,
+    dismissPrompt
+  };
+};
