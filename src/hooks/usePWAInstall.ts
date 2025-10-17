@@ -28,7 +28,8 @@ export const usePWAInstall = (): PWAInstallState => {
   
   // Check if running in standalone mode (already installed)
   const isInStandaloneMode = window.matchMedia('(display-mode: standalone)').matches || 
-                            (window.navigator as any).standalone === true;
+                            (window.navigator as any).standalone === true ||
+                            document.referrer.includes('android-app://');
 
   // Check if mobile device
   const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);

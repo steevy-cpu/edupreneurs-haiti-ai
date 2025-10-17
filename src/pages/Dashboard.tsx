@@ -15,6 +15,8 @@ import {
 } from "lucide-react";
 import ericThumbsUp from "@/assets/eric-main01.png";
 import { NotificationPermissionBanner } from "@/components/NotificationPermissionBanner";
+import { PWAInstallPrompt } from "@/components/PWAInstallPrompt";
+import { usePWAInstall } from "@/hooks/usePWAInstall";
 
 interface Note {
   id: string;
@@ -37,6 +39,9 @@ const Dashboard = () => {
   const [goldEarned, setGoldEarned] = useState<number>(0);
 
   const [currentUserId, setCurrentUserId] = useState<string>('');
+  
+  // PWA Install hook
+  const { showPrompt, isIOS, installApp, dismissPrompt } = usePWAInstall();
 
   useEffect(() => {
     fetchUserData();
@@ -140,6 +145,15 @@ const Dashboard = () => {
         
         {/* Notification Permission Banner */}
         {currentUserId && <NotificationPermissionBanner userId={currentUserId} />}
+        
+        {/* PWA Install Banner */}
+        {showPrompt && (
+          <PWAInstallPrompt
+            isIOS={isIOS}
+            onInstall={installApp}
+            onDismiss={dismissPrompt}
+          />
+        )}
         
         {/* Welcome Header */}
         <div className="bg-gradient-to-br from-[hsl(var(--primary))] to-[hsl(var(--success))] text-white p-4 sm:p-6 lg:p-8 rounded-2xl sm:rounded-[20px] mb-4 sm:mb-6 lg:mb-8 relative overflow-hidden">
