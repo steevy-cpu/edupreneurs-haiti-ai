@@ -296,17 +296,6 @@ export const Layout = ({ children }: LayoutProps) => {
 
   const handleNotificationsClick = async (e: React.MouseEvent) => {
     e.preventDefault();
-    
-    // Mark all notifications as read
-    const { data: { user } } = await supabase.auth.getUser();
-    if (user) {
-      await supabase
-        .from("notifications")
-        .update({ read: true })
-        .eq("user_id", user.id)
-        .eq("read", false);
-    }
-    
     navigate("/notifications");
     setSidebarOpen(false);
   };
