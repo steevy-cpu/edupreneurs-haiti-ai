@@ -175,12 +175,28 @@ export default function Notifications() {
             .single();
 
           const actorName = actorProfile?.nickname || actorProfile?.full_name || 'Someone';
+          const notificationText = getNotificationTextForBrowser(payload.new, actorName);
           
-          // Show browser notification using service worker
+          // Send push notification via edge function so users get notified even when not on the site
+          try {
+            console.log('📤 Sending push notification for:', payload.new.type);
+            await supabase.functions.invoke('send-push-notification', {
+              body: {
+                recipientUserId: payload.new.user_id,
+                title: 'EDUPRENEURS',
+                body: notificationText,
+                conversationId: payload.new.post_id || undefined
+              }
+            });
+            console.log('✅ Push notification sent');
+          } catch (error) {
+            console.error('❌ Error sending push notification:', error);
+          }
+          
+          // Show browser notification using service worker (for when user is on the site)
           if ('serviceWorker' in navigator && 'Notification' in window && Notification.permission === 'granted') {
             try {
               const registration = await navigator.serviceWorker.ready;
-              const notificationText = getNotificationTextForBrowser(payload.new, actorName);
               
               await registration.showNotification('EDUPRENEURS', {
                 body: notificationText,
