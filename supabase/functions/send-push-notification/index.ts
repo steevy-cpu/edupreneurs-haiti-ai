@@ -145,19 +145,34 @@ serve(async (req) => {
     // Determine the target URL
     const targetUrl = url || (conversationId ? `/community?conversation=${conversationId}` : '/community');
 
-    // Create the notification payload
-    const payload = JSON.stringify({
-      title: title || 'EDUPRENEURS',
-      body: body || 'Nouvelle notification',
-      icon: '/logo.png',
-      badge: '/logo.png',
-      tag: notificationId || `notif-${Date.now()}`,
-      data: {
-        url: targetUrl,
-        conversationId: conversationId,
-        timestamp: Date.now()
-      }
-    });
+    // Create different payloads for iOS vs other platforms
+    // iOS Web Push is very strict and requires a minimal format
+    let payload: string;
+    
+    if (isIOSEndpoint) {
+      // Minimal payload for iOS - just the essentials
+      payload = JSON.stringify({
+        title: title || 'EDUPRENEURS',
+        body: body || 'Nouvelle notification',
+        data: {
+          url: targetUrl
+        }
+      });
+    } else {
+      // Full payload for Android/Desktop
+      payload = JSON.stringify({
+        title: title || 'EDUPRENEURS',
+        body: body || 'Nouvelle notification',
+        icon: '/logo.png',
+        badge: '/logo.png',
+        tag: notificationId || `notif-${Date.now()}`,
+        data: {
+          url: targetUrl,
+          conversationId: conversationId,
+          timestamp: Date.now()
+        }
+      });
+    }
 
     console.log('📦 Notification payload prepared:', { title, body, targetUrl });
 

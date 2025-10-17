@@ -28,7 +28,6 @@ import {
 import EmojiPicker from "emoji-picker-react";
 import { getAvatarUrl } from "@/lib/avatarMap";
 import { optimizeMediaFile, formatFileSize } from "@/utils/mediaOptimization";
-import { sendPushNotification } from "@/utils/sendPushNotification";
 import { NotificationPermissionBanner } from "@/components/NotificationPermissionBanner";
 
 interface Profile {
@@ -456,20 +455,6 @@ const Feed = () => {
           post_id: postId,
           type: "like",
         });
-
-        // Send push notification
-        const { data: actorProfile } = await supabase
-          .from('profiles')
-          .select('nickname, full_name')
-          .eq('user_id', currentUser.id)
-          .single();
-
-        const actorName = actorProfile?.nickname || actorProfile?.full_name || 'Someone';
-        await sendPushNotification({
-          recipientUserId: post.user_id,
-          title: `${actorName} a aimé votre publication`,
-          body: '❤️ ' + (post.content.substring(0, 80) || 'votre publication'),
-        });
       }
     }
 
@@ -522,20 +507,6 @@ const Feed = () => {
         post_id: postId,
         type: "comment",
         content: commentContent,
-      });
-
-      // Send push notification
-      const { data: actorProfile } = await supabase
-        .from('profiles')
-        .select('nickname, full_name')
-        .eq('user_id', currentUser.id)
-        .single();
-
-      const actorName = actorProfile?.nickname || actorProfile?.full_name || 'Someone';
-      await sendPushNotification({
-        recipientUserId: post.user_id,
-        title: `${actorName} a commenté votre publication`,
-        body: '💬 ' + commentContent.substring(0, 80),
       });
     }
 
@@ -700,20 +671,6 @@ const Feed = () => {
           actor_id: currentUser.id,
           post_id: postId,
           type: "share",
-        });
-
-        // Send push notification
-        const { data: actorProfile } = await supabase
-          .from('profiles')
-          .select('nickname, full_name')
-          .eq('user_id', currentUser.id)
-          .single();
-
-        const actorName = actorProfile?.nickname || actorProfile?.full_name || 'Someone';
-        await sendPushNotification({
-          recipientUserId: post.user_id,
-          title: `${actorName} a partagé votre publication`,
-          body: '🔄 ' + (post.content.substring(0, 80) || 'votre publication'),
         });
       }
 
