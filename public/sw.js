@@ -1,5 +1,5 @@
 // Service Worker for Push Notifications
-const SW_VERSION = '1.0.1';
+const SW_VERSION = '1.0.2';
 const CACHE_NAME = `edupreneurs-v${SW_VERSION}`;
 
 self.addEventListener('install', (event) => {
@@ -24,45 +24,51 @@ self.addEventListener('push', (event) => {
   } catch (e) {
     console.error('❌ Failed to parse push data:', e);
     payload = {
-      type: 'message',
-      title: 'Nouveau message',
-      body: 'Vous avez reçu un nouveau message'
+      title: 'EDUPRENEURS',
+      body: 'Nouvelle notification'
     };
   }
-
-  // Extract notification data
-  const {
-    title = 'EDUPRENEURS',
-    body = 'Nouvelle notification',
-    icon = '/logo.png',
-    badge = '/logo.png',
-    tag,
-    data = {}
-  } = payload;
-
-  console.log('🔔 Creating notification:', { title, body, data });
 
   // Detect if we're on iOS
   const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
 
-  // Prepare notification options - simpler for iOS
+  // Extract notification data - handle both iOS (aps) and standard formats
+  let title, body, url, notificationData;
+  
+  if (payload.aps) {
+    // iOS format with aps structure
+    title = payload.aps.alert?.title || 'EDUPRENEURS';
+    body = payload.aps.alert?.body || 'Nouvelle notification';
+    url = payload.url || '/notifications';
+    notificationData = {
+      url: url,
+      conversationId: payload.conversationId,
+      timestamp: payload.timestamp || Date.now()
+    };
+  } else {
+    // Standard format
+    title = payload.title || 'EDUPRENEURS';
+    body = payload.body || 'Nouvelle notification';
+    notificationData = payload.data || { url: '/notifications' };
+    url = notificationData.url || '/notifications';
+  }
+
+  console.log('🔔 Creating notification:', { title, body, url, isIOS });
+
+  // Prepare notification options - minimal for iOS
   const notificationOptions = {
     body,
-    icon: isIOS ? undefined : icon,  // iOS doesn't support custom icons
-    badge: isIOS ? undefined : badge, // iOS doesn't support custom badges
-    tag: tag || `notif-${Date.now()}`,
-    data: {
-      url: data.url || '/notifications',
-      type: data.type || 'general',
-      timestamp: data.timestamp || Date.now()
-    },
-    requireInteraction: false, // Changed to false for better iOS compatibility
-    vibrate: isIOS ? undefined : [200, 100, 200], // iOS doesn't support vibrate in web push
+    tag: payload.tag || `notif-${Date.now()}`,
+    data: notificationData,
+    requireInteraction: false,
     silent: false
   };
 
-  // Only add actions for non-iOS platforms
+  // Only add features for non-iOS platforms
   if (!isIOS) {
+    notificationOptions.icon = payload.icon || '/logo.png';
+    notificationOptions.badge = payload.badge || '/logo.png';
+    notificationOptions.vibrate = [200, 100, 200];
     notificationOptions.actions = [
       { action: 'open', title: '📱 Ouvrir' },
       { action: 'dismiss', title: '✖️ Fermer' }
@@ -74,10 +80,10 @@ self.addEventListener('push', (event) => {
       .then(() => console.log('✅ Notification displayed successfully'))
       .catch(err => {
         console.error('❌ Notification failed:', err);
-        // Fallback: try with minimal options
+        // Fallback: try with absolute minimal options
         return self.registration.showNotification(title, {
           body,
-          data: { url: data.url || '/notifications' }
+          data: { url: url || '/notifications' }
         });
       })
   );

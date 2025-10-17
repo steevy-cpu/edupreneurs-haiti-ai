@@ -14,96 +14,18 @@ interface PushSubscription {
   };
 }
 
-// VAPID keys - these must match the public key in pushNotifications.ts
+// Use a proper web-push library via CDN
+const webPush = await import("https://cdn.skypack.dev/web-push@3.6.7");
+
+// VAPID keys
 const VAPID_PUBLIC_KEY = 'BOQ0Fn35WtOTVFKRkrQRxYzb9oRwi2IldpPeSU3VHbHLoiNwheYEpklA2YVBh3Ah3h2De8743ShfRYx61lVhNUM';
 const VAPID_PRIVATE_KEY = 'l8hOAmgFFSaCTcVsqy0D56k5pvTvvMks3M6bbMhGS00';
 
-// Base64url encode/decode helpers
-function base64UrlEncode(buffer: ArrayBuffer | Uint8Array): string {
-  const bytes = buffer instanceof Uint8Array ? buffer : new Uint8Array(buffer);
-  let binary = '';
-  for (let i = 0; i < bytes.length; i++) {
-    binary += String.fromCharCode(bytes[i]);
-  }
-  return btoa(binary)
-    .replace(/\+/g, '-')
-    .replace(/\//g, '_')
-    .replace(/=+$/, '');
-}
-
-function base64UrlDecode(input: string): Uint8Array {
-  input = input.replace(/-/g, '+').replace(/_/g, '/');
-  const padding = input.length % 4 === 0 ? 0 : 4 - (input.length % 4);
-  const base64 = input + '='.repeat(padding);
-  const binary = atob(base64);
-  const bytes = new Uint8Array(binary.length);
-  for (let i = 0; i < binary.length; i++) {
-    bytes[i] = binary.charCodeAt(i);
-  }
-  return bytes;
-}
-
-// Generate VAPID JWT for authorization
-async function generateVAPIDJWT(endpoint: string): Promise<string> {
-  const urlParts = new URL(endpoint);
-  const audience = `${urlParts.protocol}//${urlParts.host}`;
-  
-  // Decode the private and public keys
-  const privateKeyBytes = base64UrlDecode(VAPID_PRIVATE_KEY);
-  const publicKeyBytes = base64UrlDecode(VAPID_PUBLIC_KEY);
-  
-  // Extract x and y coordinates from public key (skip first 0x04 byte)
-  const x = publicKeyBytes.slice(1, 33);
-  const y = publicKeyBytes.slice(33, 65);
-  
-  // Create JWK for the private key
-  const jwk = {
-    kty: 'EC',
-    crv: 'P-256',
-    x: base64UrlEncode(x),
-    y: base64UrlEncode(y),
-    d: base64UrlEncode(privateKeyBytes),
-  };
-  
-  // Import the private key
-  const privateKey = await crypto.subtle.importKey(
-    'jwk',
-    jwk,
-    {
-      name: 'ECDSA',
-      namedCurve: 'P-256'
-    },
-    false,
-    ['sign']
-  );
-  
-  // Create JWT header and payload
-  const header = { alg: 'ES256', typ: 'JWT' };
-  const payload = {
-    aud: audience,
-    exp: Math.floor(Date.now() / 1000) + (12 * 60 * 60), // 12 hours
-    sub: 'mailto:admin@edupreneurs.com'
-  };
-  
-  // Encode header and payload
-  const encodedHeader = base64UrlEncode(new TextEncoder().encode(JSON.stringify(header)));
-  const encodedPayload = base64UrlEncode(new TextEncoder().encode(JSON.stringify(payload)));
-  const unsignedToken = `${encodedHeader}.${encodedPayload}`;
-  
-  // Sign the token
-  const signature = await crypto.subtle.sign(
-    {
-      name: 'ECDSA',
-      hash: { name: 'SHA-256' }
-    },
-    privateKey,
-    new TextEncoder().encode(unsignedToken)
-  );
-  
-  // Return complete JWT
-  const encodedSignature = base64UrlEncode(signature);
-  return `${unsignedToken}.${encodedSignature}`;
-}
+webPush.setVapidDetails(
+  'mailto:admin@edupreneurs.com',
+  VAPID_PUBLIC_KEY,
+  VAPID_PRIVATE_KEY
+);
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -119,7 +41,6 @@ serve(async (req) => {
 
     console.log('📤 Sending push notification to user:', recipientUserId);
 
-    // Get user's push subscription
     const { data: subscriptionData, error: subError } = await supabase
       .from('push_subscriptions')
       .select('subscription')
@@ -127,7 +48,7 @@ serve(async (req) => {
       .single();
 
     if (subError || !subscriptionData) {
-      console.log('❌ No push subscription found for user:', recipientUserId);
+      console.log('❌ No push subscription found');
       return new Response(
         JSON.stringify({ success: false, message: 'No subscription found' }),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
@@ -135,140 +56,64 @@ serve(async (req) => {
     }
 
     const subscription = subscriptionData.subscription as PushSubscription;
-    console.log('✅ Found subscription for user:', recipientUserId);
-    console.log('📍 Endpoint:', subscription.endpoint.substring(0, 50) + '...');
-
-    // Determine if this is an iOS endpoint
     const isIOSEndpoint = subscription.endpoint.includes('web.push.apple.com');
-    console.log(`📱 Target platform: ${isIOSEndpoint ? 'iOS' : 'Android/Web'}`);
-
-    // Determine the target URL
     const targetUrl = url || (conversationId ? `/community?conversation=${conversationId}` : '/community');
 
-    // Create different payloads for iOS vs other platforms
-    // iOS Web Push is very strict and requires a minimal format
-    let payload: string;
-    
-    if (isIOSEndpoint) {
-      // Minimal payload for iOS - just the essentials
-      payload = JSON.stringify({
-        title: title || 'EDUPRENEURS',
-        body: body || 'Nouvelle notification',
-        data: {
-          url: targetUrl
-        }
-      });
-    } else {
-      // Full payload for Android/Desktop
-      payload = JSON.stringify({
-        title: title || 'EDUPRENEURS',
-        body: body || 'Nouvelle notification',
-        icon: '/logo.png',
-        badge: '/logo.png',
-        tag: notificationId || `notif-${Date.now()}`,
-        data: {
-          url: targetUrl,
-          conversationId: conversationId,
-          timestamp: Date.now()
-        }
-      });
-    }
+    const payload = JSON.stringify(
+      isIOSEndpoint 
+        ? {
+            aps: {
+              alert: { title: title || 'EDUPRENEURS', body: body || 'Notification' },
+              sound: 'default'
+            },
+            url: targetUrl
+          }
+        : {
+            title: title || 'EDUPRENEURS',
+            body: body || 'Notification',
+            icon: '/logo.png',
+            data: { url: targetUrl }
+          }
+    );
 
-    console.log('📦 Notification payload prepared:', { title, body, targetUrl });
+    console.log('📦 Sending:', { title, body, isIOSEndpoint });
 
     try {
-      // Generate VAPID JWT
-      const jwt = await generateVAPIDJWT(subscription.endpoint);
-      console.log('🔐 Generated VAPID JWT');
-      
-      // Prepare headers
-      const headers: Record<string, string> = {
-        'Content-Type': 'application/json',
-        'TTL': '86400',
-        'Authorization': `vapid t=${jwt}, k=${VAPID_PUBLIC_KEY}`
-      };
-
-      // Add iOS-specific headers if needed
+      const options: any = { TTL: 86400 };
       if (isIOSEndpoint) {
-        headers['apns-push-type'] = 'alert';
-        headers['apns-priority'] = '10';
-        // Extract topic from endpoint
-        const topicMatch = subscription.endpoint.match(/\/([^\/]+)$/);
-        if (topicMatch) {
-          headers['apns-topic'] = topicMatch[1];
-        }
-        console.log('📱 Added iOS-specific headers');
+        const topic = subscription.endpoint.match(/\/([^\/]+)$/)?.[1];
+        options.headers = {
+          'apns-push-type': 'alert',
+          'apns-priority': '10',
+          ...(topic && { 'apns-topic': topic })
+        };
       }
-      
-      // Send push notification
-      const response = await fetch(subscription.endpoint, {
-        method: 'POST',
-        headers,
-        body: payload
-      });
 
-      if (response.ok) {
-        console.log('✅ Push notification sent successfully');
-        console.log('📬 Status:', response.status);
+      await webPush.sendNotification(subscription, payload, options);
+      console.log('✅ Sent successfully');
 
+      return new Response(
+        JSON.stringify({ success: true, message: 'Notification sent' }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    } catch (pushError: any) {
+      console.error('❌ Push error:', pushError.statusCode, pushError.body);
+
+      if (pushError.statusCode === 404 || pushError.statusCode === 410) {
+        await supabase.from('push_subscriptions').delete().eq('user_id', recipientUserId);
         return new Response(
-          JSON.stringify({ 
-            success: true,
-            message: 'Notification sent',
-            hasSubscription: true 
-          }),
+          JSON.stringify({ success: false, message: 'Subscription expired' }),
           { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         );
-      } else {
-        const errorText = await response.text();
-        console.error('❌ Push send failed with status:', response.status);
-        console.error('Error details:', errorText);
-
-        // If subscription is invalid, remove it from database
-        if (response.status === 404 || response.status === 410) {
-          console.log('🗑️ Removing expired subscription');
-          await supabase
-            .from('push_subscriptions')
-            .delete()
-            .eq('user_id', recipientUserId);
-          
-          return new Response(
-            JSON.stringify({ success: false, message: 'Subscription expired and removed' }),
-            { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-          );
-        }
-
-        return new Response(
-          JSON.stringify({ 
-            success: false, 
-            message: 'Failed to send push notification',
-            error: `Status ${response.status}: ${errorText}`
-          }),
-          { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 500 }
-        );
       }
-    } catch (pushError: any) {
-      console.error('❌ Error sending push:', pushError);
-      
-      return new Response(
-        JSON.stringify({ 
-          success: false, 
-          message: 'Failed to send push notification',
-          error: pushError instanceof Error ? pushError.message : 'Unknown error'
-        }),
-        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 500 }
-      );
+
+      throw pushError;
     }
-
-  } catch (error) {
-    console.error('❌ Error in edge function:', error);
-    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+  } catch (error: any) {
+    console.error('❌ Error:', error);
     return new Response(
-      JSON.stringify({ error: errorMessage }),
-      { 
-        status: 500,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-      }
+      JSON.stringify({ error: error.message }),
+      { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
   }
 });
