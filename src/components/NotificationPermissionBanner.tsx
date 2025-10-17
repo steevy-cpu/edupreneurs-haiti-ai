@@ -9,7 +9,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { requestNotificationPermission, registerServiceWorker, subscribeToPushNotifications } from "@/utils/pushNotifications";
+import { requestNotificationPermission, registerServiceWorker, subscribeToPushNotifications, isIOSDevice, isStandalonePWA } from "@/utils/pushNotifications";
 import { IOSPushNotificationGuide } from "./IOSPushNotificationGuide";
 
 interface NotificationPermissionBannerProps {
@@ -20,11 +20,16 @@ export const NotificationPermissionBanner = ({ userId }: NotificationPermissionB
   const [showDialog, setShowDialog] = useState(false);
   const [isRequesting, setIsRequesting] = useState(false);
   const [isIOS, setIsIOS] = useState(false);
+  const [isPWA, setIsPWA] = useState(false);
 
   useEffect(() => {
-    // Detect iOS
-    const iOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !(window as any).MSStream;
+    // Detect iOS and PWA mode
+    const iOS = isIOSDevice();
+    const standalone = isStandalonePWA();
     setIsIOS(iOS);
+    setIsPWA(standalone);
+    
+    console.log('Device detection:', { iOS, standalone });
     
     // Show dialog if permission is default (not yet decided)
     const checkPermission = () => {
@@ -32,6 +37,12 @@ export const NotificationPermissionBanner = ({ userId }: NotificationPermissionB
         const permission = Notification.permission;
         
         console.log('🔔 Notification permission status:', permission);
+        
+        // For iOS, only show if running as PWA
+        if (iOS && !standalone) {
+          console.log('🔔 iOS device not in PWA mode, skipping notification prompt');
+          return;
+        }
         
         // Always show if permission is default (not yet asked)
         if (permission === 'default') {
@@ -90,14 +101,23 @@ export const NotificationPermissionBanner = ({ userId }: NotificationPermissionB
             <Bell className="h-6 w-6 text-primary" />
           </div>
           <DialogTitle className="text-center text-xl">
-            Restez connecté, même hors ligne
+            {isIOS && !isPWA ? '📱 Installation requise' : 'Restez connecté, même hors ligne'}
           </DialogTitle>
           <DialogDescription className="text-center">
-            <p className="mb-3 font-medium">
-              Autorisez les notifications pour rester informé même quand vous n'êtes pas sur le site
-            </p>
-            
-            {isIOS && <IOSPushNotificationGuide />}
+            {isIOS && !isPWA ? (
+              <div className="space-y-3">
+                <p className="font-medium text-orange-500">
+                  Sur iPhone, installez d'abord l'application pour activer les notifications
+                </p>
+                <IOSPushNotificationGuide />
+              </div>
+            ) : (
+              <>
+                <p className="mb-3 font-medium">
+                  Autorisez les notifications pour rester informé même quand vous n'êtes pas sur le site
+                </p>
+                
+                {isIOS && isPWA && <IOSPushNotificationGuide />}
             
             <ul className="mt-3 space-y-2 text-left text-sm">
               <li className="flex items-center gap-2">
@@ -117,9 +137,11 @@ export const NotificationPermissionBanner = ({ userId }: NotificationPermissionB
                 Notifications en arrière-plan 24/7
               </li>
             </ul>
-            <p className="mt-3 text-xs text-muted-foreground">
-              Vous recevrez des notifications même lorsque vous ne visitez pas le site
-            </p>
+                <p className="mt-3 text-xs text-muted-foreground">
+                  Vous recevrez des notifications même lorsque vous ne visitez pas le site
+                </p>
+              </>
+            )}
           </DialogDescription>
         </DialogHeader>
         <DialogFooter className="flex-col sm:flex-col gap-2">

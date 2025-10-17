@@ -16,15 +16,40 @@ const urlBase64ToUint8Array = (base64String: string): Uint8Array => {
   return outputArray;
 };
 
+// Check if running on iOS
+export const isIOSDevice = (): boolean => {
+  const userAgent = window.navigator.userAgent.toLowerCase();
+  return /iphone|ipad|ipod/.test(userAgent);
+};
+
+// Check if running as installed PWA
+export const isStandalonePWA = (): boolean => {
+  return window.matchMedia('(display-mode: standalone)').matches ||
+         (window.navigator as any).standalone === true;
+};
+
 export const registerServiceWorker = async (): Promise<ServiceWorkerRegistration | null> => {
   if (!('serviceWorker' in navigator)) {
     console.log('Service Worker not supported');
     return null;
   }
 
+  // iOS requires PWA to be installed before notifications work
+  if (isIOSDevice() && !isStandalonePWA()) {
+    console.log('iOS device detected but not running as PWA - notifications require installation');
+    return null;
+  }
+
   try {
-    const registration = await navigator.serviceWorker.register('/sw.js');
+    const registration = await navigator.serviceWorker.register('/sw.js', {
+      scope: '/'
+    });
     console.log('Service Worker registered:', registration);
+    
+    // Wait for service worker to be ready
+    await navigator.serviceWorker.ready;
+    console.log('Service Worker is ready');
+    
     return registration;
   } catch (error) {
     console.error('Service Worker registration failed:', error);
@@ -38,12 +63,22 @@ export const requestNotificationPermission = async (): Promise<NotificationPermi
     return 'denied';
   }
 
+  // iOS specific check
+  if (isIOSDevice()) {
+    if (!isStandalonePWA()) {
+      console.log('iOS requires app to be installed to home screen for notifications');
+      return 'denied';
+    }
+    console.log('iOS PWA detected, requesting permission...');
+  }
+
   if (Notification.permission === 'granted') {
     return 'granted';
   }
 
   if (Notification.permission !== 'denied') {
     const permission = await Notification.requestPermission();
+    console.log('Permission result:', permission);
     return permission;
   }
 
