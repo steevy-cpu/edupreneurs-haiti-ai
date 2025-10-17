@@ -45,30 +45,53 @@ export const PWAInstallPrompt = ({ isIOS, onInstall, onDismiss }: PWAInstallProm
 
             <div className="flex gap-2">
               {isIOS ? (
-                // iOS Instructions - simplified
-                <div className="flex-1">
-                  <p className="text-xs text-muted-foreground mb-2">
-                    Appuyez sur <Share2 className="inline h-3 w-3 mx-1" /> puis "<Plus className="inline h-3 w-3 mx-1" />Sur l'écran d'accueil"
-                  </p>
-                </div>
+                // iOS Instructions - Safari doesn't support programmatic install
+                <>
+                  <div className="flex-1 bg-primary/5 rounded-lg p-3 border border-primary/10">
+                    <p className="text-sm font-medium mb-1.5">
+                      Pour ajouter :
+                    </p>
+                    <div className="flex items-center gap-2 text-sm">
+                      <div className="flex items-center gap-1.5 text-primary">
+                        <Share2 className="h-4 w-4" />
+                        <span className="font-semibold">Partager</span>
+                      </div>
+                      <span className="text-muted-foreground">→</span>
+                      <div className="flex items-center gap-1.5 text-primary">
+                        <Plus className="h-4 w-4" />
+                        <span className="font-semibold">Sur l'écran d'accueil</span>
+                      </div>
+                    </div>
+                  </div>
+                  <Button 
+                    onClick={onDismiss}
+                    variant="outline"
+                    size="sm"
+                    className="shrink-0"
+                  >
+                    OK
+                  </Button>
+                </>
               ) : (
                 // Android/Chrome - Direct install button
-                <Button 
-                  onClick={onInstall}
-                  className="flex-1"
-                  size="sm"
-                >
-                  <Download className="h-4 w-4 mr-2" />
-                  Oui, ajouter
-                </Button>
+                <>
+                  <Button 
+                    onClick={onInstall}
+                    className="flex-1"
+                    size="sm"
+                  >
+                    <Download className="h-4 w-4 mr-2" />
+                    Oui, ajouter
+                  </Button>
+                  <Button 
+                    onClick={onDismiss}
+                    variant="outline"
+                    size="sm"
+                  >
+                    Plus tard
+                  </Button>
+                </>
               )}
-              <Button 
-                onClick={onDismiss}
-                variant="outline"
-                size="sm"
-              >
-                Plus tard
-              </Button>
             </div>
           </div>
         </div>
