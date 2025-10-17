@@ -35,44 +35,41 @@ export const PWAInstallPrompt = ({ isIOS, onInstall, onDismiss }: PWAInstallProm
 
           {/* Content */}
           <div className="flex-1 min-w-0">
-            <h3 className="font-semibold text-lg mb-1">
-              Installer EDUPRENEURS
+            <h3 className="font-semibold text-lg mb-2">
+              Ajouter Edupreneurs sur votre écran d'accueil
             </h3>
             
-            {isIOS ? (
-              // iOS Instructions
-              <div className="space-y-2">
-                <p className="text-sm text-muted-foreground">
-                  Pour installer l'application :
-                </p>
-                <div className="flex items-center gap-2 text-sm">
-                  <div className="flex items-center gap-1 px-2 py-1 rounded bg-primary/10">
-                    <Share2 className="h-4 w-4 text-primary" />
-                    <span className="font-medium">Partager</span>
-                  </div>
-                  <span className="text-muted-foreground">puis</span>
-                  <div className="flex items-center gap-1 px-2 py-1 rounded bg-primary/10">
-                    <Plus className="h-4 w-4 text-primary" />
-                    <span className="font-medium">Sur l'écran d'accueil</span>
-                  </div>
+            <p className="text-sm text-muted-foreground mb-3">
+              Accédez rapidement à l'application
+            </p>
+
+            <div className="flex gap-2">
+              {isIOS ? (
+                // iOS Instructions - simplified
+                <div className="flex-1">
+                  <p className="text-xs text-muted-foreground mb-2">
+                    Appuyez sur <Share2 className="inline h-3 w-3 mx-1" /> puis "<Plus className="inline h-3 w-3 mx-1" />Sur l'écran d'accueil"
+                  </p>
                 </div>
-              </div>
-            ) : (
-              // Android/Chrome prompt
-              <div className="space-y-2">
-                <p className="text-sm text-muted-foreground mb-3">
-                  Accédez rapidement à vos cours et recevez des notifications
-                </p>
+              ) : (
+                // Android/Chrome - Direct install button
                 <Button 
                   onClick={onInstall}
-                  className="w-full sm:w-auto"
+                  className="flex-1"
                   size="sm"
                 >
                   <Download className="h-4 w-4 mr-2" />
-                  Installer maintenant
+                  Oui, ajouter
                 </Button>
-              </div>
-            )}
+              )}
+              <Button 
+                onClick={onDismiss}
+                variant="outline"
+                size="sm"
+              >
+                Plus tard
+              </Button>
+            </div>
           </div>
         </div>
 
