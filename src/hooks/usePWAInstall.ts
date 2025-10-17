@@ -16,7 +16,7 @@ interface PWAInstallState {
 
 const DISMISS_KEY = 'pwa-install-dismissed';
 const DISMISS_DURATION = 7 * 24 * 60 * 60 * 1000; // 7 days in milliseconds
-const SHOW_DELAY = 30000; // 30 seconds
+const SHOW_DELAY = 2000; // 2 seconds for immediate visibility
 
 export const usePWAInstall = (): PWAInstallState => {
   const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);
@@ -35,8 +35,11 @@ export const usePWAInstall = (): PWAInstallState => {
   const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
 
   useEffect(() => {
+    console.log('PWA Install Hook:', { isInStandaloneMode, isMobile, isIOS });
+    
     // Don't show if already installed or not on mobile
     if (isInStandaloneMode || !isMobile) {
+      console.log('Banner hidden - Already installed or not mobile');
       setIsInstalled(true);
       return;
     }
@@ -46,6 +49,7 @@ export const usePWAInstall = (): PWAInstallState => {
     if (dismissedAt) {
       const dismissTime = parseInt(dismissedAt, 10);
       if (Date.now() - dismissTime < DISMISS_DURATION) {
+        console.log('Banner hidden - Recently dismissed');
         return;
       } else {
         localStorage.removeItem(DISMISS_KEY);
@@ -55,6 +59,7 @@ export const usePWAInstall = (): PWAInstallState => {
     // Listen for beforeinstallprompt event (Android/Chrome)
     const handleBeforeInstallPrompt = (e: Event) => {
       e.preventDefault();
+      console.log('beforeinstallprompt event captured');
       setDeferredPrompt(e as BeforeInstallPromptEvent);
     };
 
@@ -63,6 +68,7 @@ export const usePWAInstall = (): PWAInstallState => {
     // Show prompt after delay
     const timer = setTimeout(() => {
       if (!isInStandaloneMode) {
+        console.log('Showing PWA install banner');
         setShowPrompt(true);
       }
     }, SHOW_DELAY);
@@ -71,7 +77,7 @@ export const usePWAInstall = (): PWAInstallState => {
       window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
       clearTimeout(timer);
     };
-  }, [isInStandaloneMode, isMobile]);
+  }, [isInStandaloneMode, isMobile, isIOS]);
 
   const installApp = async () => {
     if (!deferredPrompt) {
