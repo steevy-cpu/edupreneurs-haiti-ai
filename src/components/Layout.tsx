@@ -20,7 +20,6 @@ import {
 import dashboardImage from "@/assets/dashboard00.png";
 import edupreneursLogo from "@/assets/edupreneurs-new-logo.png";
 import { EricChatbot } from "@/components/EricChatbot";
-import OnboardingTour from "@/components/OnboardingTour";
 import { getAvatarUrl } from "@/lib/avatarMap";
 
 interface LayoutProps {
@@ -320,7 +319,6 @@ export const Layout = ({ children }: LayoutProps) => {
 
   return (
     <div className="min-h-screen bg-background">
-      <OnboardingTour />
       {/* Menu Toggle Button */}
       {!isCommunityPage && !isLessonPage && !isFeedPage && (
         <button
