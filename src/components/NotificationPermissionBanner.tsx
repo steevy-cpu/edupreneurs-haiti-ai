@@ -10,6 +10,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { requestNotificationPermission, registerServiceWorker, subscribeToPushNotifications } from "@/utils/pushNotifications";
+import { IOSPushNotificationGuide } from "./IOSPushNotificationGuide";
 
 interface NotificationPermissionBannerProps {
   userId: string;
@@ -18,8 +19,13 @@ interface NotificationPermissionBannerProps {
 export const NotificationPermissionBanner = ({ userId }: NotificationPermissionBannerProps) => {
   const [showDialog, setShowDialog] = useState(false);
   const [isRequesting, setIsRequesting] = useState(false);
+  const [isIOS, setIsIOS] = useState(false);
 
   useEffect(() => {
+    // Detect iOS
+    const iOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !(window as any).MSStream;
+    setIsIOS(iOS);
+    
     // Show dialog if permission is default (not yet decided)
     const checkPermission = () => {
       if ('Notification' in window) {
@@ -90,6 +96,9 @@ export const NotificationPermissionBanner = ({ userId }: NotificationPermissionB
             <p className="mb-3 font-medium">
               Autorisez les notifications pour rester informé même quand vous n'êtes pas sur le site
             </p>
+            
+            {isIOS && <IOSPushNotificationGuide />}
+            
             <ul className="mt-3 space-y-2 text-left text-sm">
               <li className="flex items-center gap-2">
                 <span className="text-primary">✓</span>

@@ -207,11 +207,20 @@ Je ne peux malheureusement pas répondre à des questions en dehors de l'éducat
 
     // Send push notification to the user
     try {
+      // Clean the AI response for notification (remove extra formatting)
+      const cleanResponse = aiResponse
+        .replace(/\*\*/g, '')
+        .replace(/\*/g, '')
+        .replace(/\n+/g, ' ')
+        .trim();
+      
+      const notificationBody = cleanResponse.substring(0, 100) + (cleanResponse.length > 100 ? '...' : '');
+      
       const { error: pushError } = await supabase.functions.invoke('send-push-notification', {
         body: {
           recipientUserId: userId,
-          title: 'Eric',
-          body: aiResponse.substring(0, 100) + (aiResponse.length > 100 ? '...' : ''),
+          title: '🤖 Eric (Assistant IA)',
+          body: notificationBody,
           conversationId: conversationId
         }
       });

@@ -1235,11 +1235,15 @@ const Community = () => {
       } else {
         // Regular user - send push notification
         try {
+          const messagePreview = messageContent 
+            ? messageContent.substring(0, 80) 
+            : (imageUrl ? '📷 Vous a envoyé une image' : '🎥 Vous a envoyé une vidéo');
+            
           await supabase.functions.invoke('send-push-notification', {
             body: {
               recipientUserId: conversation.otherUser.user_id,
-              title: `${senderName}`,
-              body: messageContent.substring(0, 100) || '📷 Image',
+              title: `💬 ${senderName}`,
+              body: messagePreview,
               conversationId: selectedConversation
             }
           });
@@ -1270,11 +1274,15 @@ const Community = () => {
           // Send push notification to each group member
           for (const member of groupMembers) {
             try {
+              const messagePreview = messageContent 
+                ? messageContent.substring(0, 80) 
+                : (imageUrl ? '📷 Image' : '🎥 Vidéo');
+                
               await supabase.functions.invoke('send-push-notification', {
                 body: {
                   recipientUserId: member.user_id,
-                  title: `${senderName} dans ${groupName}`,
-                  body: messageContent.substring(0, 100) || '📷 Image',
+                  title: `👥 ${senderName} dans ${groupName}`,
+                  body: messagePreview,
                   conversationId: selectedConversation
                 }
               });

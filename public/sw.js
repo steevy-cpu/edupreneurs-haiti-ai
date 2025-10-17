@@ -20,6 +20,7 @@ self.addEventListener('push', (event) => {
   
   try {
     payload = event.data ? event.data.json() : {};
+    console.log('📦 Parsed push payload:', payload);
   } catch (e) {
     console.error('❌ Failed to parse push data:', e);
     payload = {
@@ -36,10 +37,12 @@ self.addEventListener('push', (event) => {
     icon = '/logo.png',
     badge = '/logo.png',
     tag,
-    renotify = false,
+    renotify = true,
     data = {},
     actions = []
   } = payload;
+
+  console.log('🔔 Creating notification:', { title, body, type });
 
   const notificationOptions = {
     body,
@@ -49,21 +52,23 @@ self.addEventListener('push', (event) => {
     renotify,
     data: {
       type,
-      deeplink: data.deeplink || '/community',
+      deeplink: data.url || data.deeplink || '/community',
+      conversationId: data.conversationId,
       ...data
     },
     actions: actions.length > 0 ? actions : [
-      { action: 'open', title: 'Ouvrir' },
+      { action: 'open', title: 'Ouvrir', icon: '/logo.png' },
       { action: 'dismiss', title: 'Ignorer' }
     ],
-    requireInteraction: type === 'message', // Keep message notifications until clicked
+    requireInteraction: true, // All notifications require interaction for better visibility
     vibrate: [200, 100, 200],
-    timestamp: Date.now()
+    timestamp: Date.now(),
+    silent: false
   };
 
   event.waitUntil(
     self.registration.showNotification(title, notificationOptions)
-      .then(() => console.log('✅ Notification displayed'))
+      .then(() => console.log('✅ Notification displayed successfully'))
       .catch(err => console.error('❌ Notification failed:', err))
   );
 });
