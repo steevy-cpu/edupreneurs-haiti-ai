@@ -44,7 +44,15 @@ export default function Notifications() {
   useEffect(() => {
     checkAuth();
     fetchNotifications();
-    subscribeToNotifications();
+    
+    let cleanup: (() => void) | undefined;
+    subscribeToNotifications().then((cleanupFn) => {
+      cleanup = cleanupFn;
+    });
+
+    return () => {
+      if (cleanup) cleanup();
+    };
   }, []);
 
   const checkAuth = async () => {
@@ -142,7 +150,10 @@ export default function Notifications() {
     }
   };
 
-  const subscribeToNotifications = () => {
+  const subscribeToNotifications = async () => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+
     const channel = supabase
       .channel("notifications-changes")
       .on(
@@ -151,9 +162,10 @@ export default function Notifications() {
           event: "INSERT",
           schema: "public",
           table: "notifications",
+          filter: `user_id=eq.${user.id}`,
         },
         async (payload) => {
-          console.log('New notification received:', payload);
+          console.log('New notification received for current user:', payload);
           
           // Fetch the actor's profile for the notification
           const { data: actorProfile } = await supabase
