@@ -1,5 +1,5 @@
 // Service Worker for Push Notifications
-const SW_VERSION = '1.0.3';
+const SW_VERSION = '1.0.4';
 const CACHE_NAME = `edupreneurs-v${SW_VERSION}`;
 
 self.addEventListener('install', (event) => {
