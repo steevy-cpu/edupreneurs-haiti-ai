@@ -448,13 +448,35 @@ const Feed = () => {
         return;
       }
 
+      // Create notification for post owner
       if (post && post.user_id !== currentUser.id) {
-        await supabase.from("notifications").insert({
+        const { error: notifError } = await supabase.from("notifications").insert({
           user_id: post.user_id,
           actor_id: currentUser.id,
           post_id: postId,
           type: "like",
         });
+
+        if (notifError) {
+          console.error("❌ Error creating like notification:", notifError);
+        } else {
+          console.log("✅ Like notification created");
+          
+          // Send push notification
+          try {
+            await supabase.functions.invoke('send-push-notification', {
+              body: {
+                recipientUserId: post.user_id,
+                title: 'EDUPRENEURS',
+                body: `${currentUser.nickname || currentUser.full_name} a aimé votre publication`,
+                url: '/feed',
+              }
+            });
+            console.log("✅ Like push notification sent");
+          } catch (pushError) {
+            console.error("❌ Error sending like push notification:", pushError);
+          }
+        }
       }
     }
 
@@ -687,13 +709,35 @@ const Feed = () => {
         return;
       }
 
+      // Create notification for post owner
       if (post && post.user_id !== currentUser.id) {
-        await supabase.from("notifications").insert({
+        const { error: notifError } = await supabase.from("notifications").insert({
           user_id: post.user_id,
           actor_id: currentUser.id,
           post_id: postId,
           type: "share",
         });
+
+        if (notifError) {
+          console.error("❌ Error creating share notification:", notifError);
+        } else {
+          console.log("✅ Share notification created");
+          
+          // Send push notification
+          try {
+            await supabase.functions.invoke('send-push-notification', {
+              body: {
+                recipientUserId: post.user_id,
+                title: 'EDUPRENEURS',
+                body: `${currentUser.nickname || currentUser.full_name} a partagé votre publication`,
+                url: '/feed',
+              }
+            });
+            console.log("✅ Share push notification sent");
+          } catch (pushError) {
+            console.error("❌ Error sending share push notification:", pushError);
+          }
+        }
       }
 
       toast({
