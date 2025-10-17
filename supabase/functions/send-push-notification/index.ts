@@ -115,7 +115,7 @@ serve(async (req) => {
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     const supabase = createClient(supabaseUrl, supabaseKey);
 
-    const { recipientUserId, title, body, conversationId } = await req.json();
+    const { recipientUserId, title, body, conversationId, url, notificationId } = await req.json();
 
     console.log('📤 Sending push notification to user:', recipientUserId);
 
@@ -138,33 +138,57 @@ serve(async (req) => {
     console.log('✅ Found subscription for user:', recipientUserId);
     console.log('📍 Endpoint:', subscription.endpoint.substring(0, 50) + '...');
 
+    // Determine if this is an iOS endpoint
+    const isIOSEndpoint = subscription.endpoint.includes('web.push.apple.com');
+    console.log(`📱 Target platform: ${isIOSEndpoint ? 'iOS' : 'Android/Web'}`);
+
+    // Determine the target URL
+    const targetUrl = url || (conversationId ? `/community?conversation=${conversationId}` : '/community');
+
     // Create the notification payload
     const payload = JSON.stringify({
-      title: title || 'Nouveau message',
-      body: body || 'Vous avez reçu un nouveau message',
+      title: title || 'EDUPRENEURS',
+      body: body || 'Nouvelle notification',
       icon: '/logo.png',
       badge: '/logo.png',
+      tag: notificationId || `notif-${Date.now()}`,
       data: {
-        url: conversationId ? `/community?conversation=${conversationId}` : '/community',
-        conversationId: conversationId
+        url: targetUrl,
+        conversationId: conversationId,
+        timestamp: Date.now()
       }
     });
 
-    console.log('📦 Sending notification payload');
+    console.log('📦 Notification payload prepared:', { title, body, targetUrl });
 
     try {
       // Generate VAPID JWT
       const jwt = await generateVAPIDJWT(subscription.endpoint);
       console.log('🔐 Generated VAPID JWT');
       
+      // Prepare headers
+      const headers: Record<string, string> = {
+        'Content-Type': 'application/json',
+        'TTL': '86400',
+        'Authorization': `vapid t=${jwt}, k=${VAPID_PUBLIC_KEY}`
+      };
+
+      // Add iOS-specific headers if needed
+      if (isIOSEndpoint) {
+        headers['apns-push-type'] = 'alert';
+        headers['apns-priority'] = '10';
+        // Extract topic from endpoint
+        const topicMatch = subscription.endpoint.match(/\/([^\/]+)$/);
+        if (topicMatch) {
+          headers['apns-topic'] = topicMatch[1];
+        }
+        console.log('📱 Added iOS-specific headers');
+      }
+      
       // Send push notification
       const response = await fetch(subscription.endpoint, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'TTL': '86400',
-          'Authorization': `vapid t=${jwt}, k=${VAPID_PUBLIC_KEY}`
-        },
+        headers,
         body: payload
       });
 

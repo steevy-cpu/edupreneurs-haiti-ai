@@ -30,40 +30,36 @@ self.addEventListener('push', (event) => {
     };
   }
 
+  // Extract notification data
   const {
-    type = 'message',
-    title = 'Edupreneurs',
+    title = 'EDUPRENEURS',
     body = 'Nouvelle notification',
     icon = '/logo.png',
     badge = '/logo.png',
     tag,
-    renotify = true,
-    data = {},
-    actions = []
+    data = {}
   } = payload;
 
-  console.log('🔔 Creating notification:', { title, body, type });
+  console.log('🔔 Creating notification:', { title, body, data });
 
+  // Prepare notification options
   const notificationOptions = {
     body,
     icon,
     badge,
-    tag: tag || `${type}-${Date.now()}`,
-    renotify,
+    tag: tag || `notif-${Date.now()}`,
     data: {
-      type,
-      deeplink: data.url || data.deeplink || '/community',
-      conversationId: data.conversationId,
-      ...data
+      url: data.url || '/notifications',
+      type: data.type || 'general',
+      timestamp: data.timestamp || Date.now()
     },
-    actions: actions.length > 0 ? actions : [
-      { action: 'open', title: 'Ouvrir', icon: '/logo.png' },
-      { action: 'dismiss', title: 'Ignorer' }
-    ],
-    requireInteraction: true, // All notifications require interaction for better visibility
+    requireInteraction: true,
     vibrate: [200, 100, 200],
-    timestamp: Date.now(),
-    silent: false
+    silent: false,
+    actions: [
+      { action: 'open', title: '📱 Ouvrir' },
+      { action: 'dismiss', title: '✖️ Fermer' }
+    ]
   };
 
   event.waitUntil(
@@ -95,9 +91,10 @@ self.addEventListener('notificationclick', (event) => {
         console.log('✅ Mark as read:', notificationData.threadId);
       }
 
-      // Focus or open window
-      const urlToOpen = new URL(notificationData.deeplink || '/community', self.location.origin).href;
-      console.log('🔗 Opening:', urlToOpen);
+      // Determine URL to open
+      const targetUrl = notificationData.url || '/notifications';
+      const urlToOpen = new URL(targetUrl, self.location.origin).href;
+      console.log('🔗 Opening URL:', urlToOpen);
 
       const clientList = await clients.matchAll({ 
         type: 'window', 

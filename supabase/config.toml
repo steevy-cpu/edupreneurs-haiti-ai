@@ -1,5 +1,8 @@
 project_id = "xdyavylcmucjpueybdku"
 
+[functions.send-push-notification]
+verify_jwt = false
+
 [functions.math-ai-tutor]
 verify_jwt = false
 
