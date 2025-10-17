@@ -14,18 +14,75 @@ interface PushSubscription {
   };
 }
 
-// Use a proper web-push library via CDN
-const webPush = await import("https://cdn.skypack.dev/web-push@3.6.7");
-
 // VAPID keys
 const VAPID_PUBLIC_KEY = 'BOQ0Fn35WtOTVFKRkrQRxYzb9oRwi2IldpPeSU3VHbHLoiNwheYEpklA2YVBh3Ah3h2De8743ShfRYx61lVhNUM';
 const VAPID_PRIVATE_KEY = 'l8hOAmgFFSaCTcVsqy0D56k5pvTvvMks3M6bbMhGS00';
 
-webPush.setVapidDetails(
-  'mailto:admin@edupreneurs.com',
-  VAPID_PUBLIC_KEY,
-  VAPID_PRIVATE_KEY
-);
+// Helper to convert base64url to Uint8Array
+function base64UrlToUint8Array(base64String: string): Uint8Array {
+  const padding = '='.repeat((4 - base64String.length % 4) % 4);
+  const base64 = (base64String + padding)
+    .replace(/\-/g, '+')
+    .replace(/_/g, '/');
+  const rawData = atob(base64);
+  const outputArray = new Uint8Array(rawData.length);
+  for (let i = 0; i < rawData.length; ++i) {
+    outputArray[i] = rawData.charCodeAt(i);
+  }
+  return outputArray;
+}
+
+// Helper to convert Uint8Array to base64url
+function uint8ArrayToBase64Url(uint8Array: Uint8Array): string {
+  const base64 = btoa(String.fromCharCode(...Array.from(uint8Array)));
+  return base64.replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+}
+
+// Create VAPID Authorization header
+async function createVapidAuthHeader(endpoint: string): Promise<string> {
+  const url = new URL(endpoint);
+  const audience = `${url.protocol}//${url.host}`;
+  
+  const vapidHeaders = {
+    typ: 'JWT',
+    alg: 'ES256'
+  };
+  
+  const vapidPayload = {
+    aud: audience,
+    exp: Math.floor(Date.now() / 1000) + (12 * 60 * 60), // 12 hours
+    sub: 'mailto:admin@edupreneurs.com'
+  };
+  
+  const encoder = new TextEncoder();
+  const headerBase64 = uint8ArrayToBase64Url(encoder.encode(JSON.stringify(vapidHeaders)));
+  const payloadBase64 = uint8ArrayToBase64Url(encoder.encode(JSON.stringify(vapidPayload)));
+  const unsignedToken = `${headerBase64}.${payloadBase64}`;
+  
+  // Import private key for signing
+  const privateKeyBytes = base64UrlToUint8Array(VAPID_PRIVATE_KEY);
+  const privateKeyBuffer = privateKeyBytes.buffer as ArrayBuffer;
+  
+  const cryptoKey = await crypto.subtle.importKey(
+    'raw',
+    privateKeyBuffer,
+    { name: 'ECDSA', namedCurve: 'P-256' },
+    false,
+    ['sign']
+  );
+  
+  // Sign the token
+  const signature = await crypto.subtle.sign(
+    { name: 'ECDSA', hash: 'SHA-256' },
+    cryptoKey,
+    encoder.encode(unsignedToken)
+  );
+  
+  const signatureBase64 = uint8ArrayToBase64Url(new Uint8Array(signature));
+  const jwt = `${unsignedToken}.${signatureBase64}`;
+  
+  return `vapid t=${jwt}, k=${VAPID_PUBLIC_KEY}`;
+}
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -57,7 +114,7 @@ serve(async (req) => {
 
     const subscription = subscriptionData.subscription as PushSubscription;
     const isIOSEndpoint = subscription.endpoint.includes('web.push.apple.com');
-    const targetUrl = url || (conversationId ? `/community?conversation=${conversationId}` : '/community');
+    const targetUrl = url || (conversationId ? `/community?conversation=${conversationId}` : '/notifications');
 
     const payload = JSON.stringify(
       isIOSEndpoint 
@@ -66,47 +123,68 @@ serve(async (req) => {
               alert: { title: title || 'EDUPRENEURS', body: body || 'Notification' },
               sound: 'default'
             },
-            url: targetUrl
+            url: targetUrl,
+            conversationId,
+            timestamp: Date.now()
           }
         : {
             title: title || 'EDUPRENEURS',
             body: body || 'Notification',
             icon: '/logo.png',
-            data: { url: targetUrl }
+            badge: '/logo.png',
+            tag: `notif-${Date.now()}`,
+            data: { url: targetUrl, conversationId, timestamp: Date.now() }
           }
     );
 
-    console.log('📦 Sending:', { title, body, isIOSEndpoint });
+    console.log('📦 Sending:', { title, body, isIOSEndpoint, endpoint: subscription.endpoint });
 
     try {
-      const options: any = { TTL: 86400 };
+      // Create VAPID auth header
+      const vapidAuth = await createVapidAuthHeader(subscription.endpoint);
+
+      const headers: Record<string, string> = {
+        'Authorization': vapidAuth,
+        'Content-Type': 'application/json',
+        'TTL': '86400',
+      };
+
       if (isIOSEndpoint) {
         const topic = subscription.endpoint.match(/\/([^\/]+)$/)?.[1];
-        options.headers = {
-          'apns-push-type': 'alert',
-          'apns-priority': '10',
-          ...(topic && { 'apns-topic': topic })
-        };
+        headers['apns-push-type'] = 'alert';
+        headers['apns-priority'] = '10';
+        if (topic) headers['apns-topic'] = topic;
       }
 
-      await webPush.sendNotification(subscription, payload, options);
-      console.log('✅ Sent successfully');
+      const response = await fetch(subscription.endpoint, {
+        method: 'POST',
+        headers,
+        body: payload,
+      });
 
-      return new Response(
-        JSON.stringify({ success: true, message: 'Notification sent' }),
-        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
-    } catch (pushError: any) {
-      console.error('❌ Push error:', pushError.statusCode, pushError.body);
-
-      if (pushError.statusCode === 404 || pushError.statusCode === 410) {
-        await supabase.from('push_subscriptions').delete().eq('user_id', recipientUserId);
+      if (response.ok || response.status === 201) {
+        console.log('✅ Sent successfully');
         return new Response(
-          JSON.stringify({ success: false, message: 'Subscription expired' }),
+          JSON.stringify({ success: true, message: 'Notification sent' }),
           { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         );
       }
 
+      const responseText = await response.text();
+      console.error('❌ Push error:', response.status, responseText);
+
+      if (response.status === 404 || response.status === 410) {
+        console.log('🗑️ Subscription expired, deleting...');
+        await supabase.from('push_subscriptions').delete().eq('user_id', recipientUserId);
+        return new Response(
+          JSON.stringify({ success: false, message: 'Subscription expired and deleted' }),
+          { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+
+      throw new Error(`Push notification failed: ${response.status} - ${responseText}`);
+    } catch (pushError: any) {
+      console.error('❌ Push exception:', pushError.message);
       throw pushError;
     }
   } catch (error: any) {
