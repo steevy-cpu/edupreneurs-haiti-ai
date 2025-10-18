@@ -141,7 +141,18 @@ export const subscribeToPushNotifications = async (
 
     console.log('📱 Device info:', { deviceId, browser, os });
 
-    // Save subscription to Supabase with device info
+    // Delete any old subscriptions without device info first
+    const { error: deleteError } = await supabase
+      .from('push_subscriptions' as any)
+      .delete()
+      .eq('user_id', userId)
+      .or('device_id.is.null,browser.is.null,os.is.null');
+
+    if (deleteError) {
+      console.warn('Warning: Could not clean up old subscriptions:', deleteError);
+    }
+
+    // Save new subscription to Supabase with device info
     const { error } = await supabase
       .from('push_subscriptions' as any)
       .upsert({
@@ -160,7 +171,7 @@ export const subscribeToPushNotifications = async (
       return false;
     }
 
-    console.log('Push subscription saved successfully');
+    console.log('✅ Push subscription saved successfully with device info');
     return true;
   } catch (error) {
     console.error('Error subscribing to push notifications:', error);
