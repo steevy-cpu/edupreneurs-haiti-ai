@@ -2018,6 +2018,7 @@ const Community = () => {
                       className="text-destructive focus:text-destructive"
                       onClick={(e) => {
                         e.stopPropagation();
+                        console.log('🔴 [DROPDOWN] Delete clicked for conversation:', conv.id);
                         setDeleteConversationId(conv.id);
                       }}
                     >
@@ -2146,7 +2147,10 @@ const Community = () => {
                 <DropdownMenuContent align="end">
                   <DropdownMenuItem
                     className="text-destructive focus:text-destructive"
-                    onClick={() => setDeleteConversationId(selectedConversation)}
+                    onClick={() => {
+                      console.log('🔴 [HEADER] Delete clicked for conversation:', selectedConversation);
+                      setDeleteConversationId(selectedConversation);
+                    }}
                   >
                     <Trash2 className="h-4 w-4 mr-2" />
                     Supprimer la conversation
@@ -2757,7 +2761,10 @@ const Community = () => {
       />
       
       {/* Delete Conversation Confirmation Dialog */}
-      <AlertDialog open={!!deleteConversationId} onOpenChange={(open) => !open && setDeleteConversationId(null)}>
+      <AlertDialog open={!!deleteConversationId} onOpenChange={(open) => {
+        console.log('🔵 [DIALOG] Dialog state changed:', open, 'conversationId:', deleteConversationId);
+        if (!open) setDeleteConversationId(null);
+      }}>
         <AlertDialogContent>
           <AlertDialogHeader>
           <AlertDialogTitle>
@@ -2774,7 +2781,10 @@ const Community = () => {
           <AlertDialogFooter>
             <AlertDialogCancel>Annuler</AlertDialogCancel>
             <AlertDialogAction
-              onClick={() => deleteConversationId && handleDeleteConversation(deleteConversationId)}
+              onClick={() => {
+                console.log('🟢 [CONFIRM] Confirm button clicked for:', deleteConversationId);
+                if (deleteConversationId) handleDeleteConversation(deleteConversationId);
+              }}
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
             >
               Supprimer
