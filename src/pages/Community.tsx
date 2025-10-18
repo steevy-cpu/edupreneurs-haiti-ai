@@ -405,13 +405,19 @@ const Community = () => {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return;
 
-    // Fetch all conversations (both 1-on-1 and group)
+    // Fetch all conversations with visibility info
     const { data: participations } = await supabase
       .from("conversation_participants")
-      .select("conversation_id")
+      .select("conversation_id, visible_from_message_id")
       .eq("user_id", user.id);
 
     if (!participations) return;
+
+    // Create map of visibility thresholds
+    const visibilityMap = new Map<string, string | null>();
+    participations.forEach(p => {
+      visibilityMap.set(p.conversation_id, p.visible_from_message_id);
+    });
 
     const conversationIds = participations.map(p => p.conversation_id);
     
@@ -470,21 +476,41 @@ const Community = () => {
       .select("*")
       .in("user_id", otherUserIds);
 
-    const { data: lastMessages } = await supabase
+    // Fetch ALL messages to check visibility
+    const { data: allMessagesData } = await supabase
       .from("messages")
-      .select("conversation_id, content, created_at")
+      .select("conversation_id, content, created_at, sender_id, read, id")
       .in("conversation_id", conversationIds)
-      .order("created_at", { ascending: false });
+      .order("created_at", { ascending: true });
 
-    // Fetch unread counts for each conversation
-    const { data: allMessages, error: unreadError } = await supabase
-      .from("messages")
-      .select("conversation_id, sender_id, read, id")
-      .in("conversation_id", conversationIds)
-      .eq("read", false)
-      .neq("sender_id", user.id);
+    // Filter messages based on visibility for each conversation
+    const visibleMessages = new Map<string, any[]>();
     
-    console.log('📊 Unread messages query:', { allMessages, unreadError, conversationIds });
+    conversationIds.forEach(convId => {
+      const convMessages = allMessagesData?.filter(m => m.conversation_id === convId) || [];
+      const visibilityThreshold = visibilityMap.get(convId);
+      
+      if (!visibilityThreshold || convMessages.length === 0) {
+        // No threshold - all messages visible
+        visibleMessages.set(convId, convMessages);
+      } else {
+        // Find the threshold message index
+        const thresholdIndex = convMessages.findIndex(m => m.id === visibilityThreshold);
+        
+        if (thresholdIndex === -1) {
+          // Threshold not found - show all messages
+          visibleMessages.set(convId, convMessages);
+        } else {
+          // Only include messages after the threshold
+          const visibleMsgs = convMessages.slice(thresholdIndex + 1);
+          visibleMessages.set(convId, visibleMsgs);
+        }
+      }
+    });
+
+    console.log('📊 Visible messages per conversation:', Object.fromEntries(
+      Array.from(visibleMessages.entries()).map(([id, msgs]) => [id, msgs.length])
+    ));
 
     // Build conversations list - deduplicate both group and 1-on-1
     const groupedByUser = new Map<string, Conversation>();
@@ -494,8 +520,17 @@ const Community = () => {
       const convInfo = conversationData?.find(c => c.id === convId);
       if (!convInfo) return;
 
-      const lastMsg = lastMessages?.find(m => m.conversation_id === convId);
-      const unreadCount = allMessages?.filter(m => m.conversation_id === convId).length || 0;
+      // Get visible messages for this conversation
+      const convVisibleMessages = visibleMessages.get(convId) || [];
+      
+      // Skip this conversation if no visible messages (deleted conversation with no new messages)
+      if (convVisibleMessages.length === 0) {
+        console.log(`🚫 Skipping conversation ${convId} - no visible messages`);
+        return;
+      }
+
+      const lastMsg = convVisibleMessages[convVisibleMessages.length - 1];
+      const unreadCount = convVisibleMessages.filter(m => !m.read && m.sender_id !== user.id).length;
 
       if (convInfo.is_group && convInfo.group_id) {
         // Group conversation - deduplicate by group_id
@@ -1630,9 +1665,13 @@ const Community = () => {
         return;
       }
 
+      console.log('🗑️ Deleting conversation:', conversationId);
+
       // Find if this is a group or single conversation
       const conversation = conversations.find(c => c.id === conversationId);
       const isGroup = conversation?.is_group;
+
+      console.log('📋 Conversation details:', { isGroup, conversation });
 
       if (isGroup) {
         // For group conversations: delete only user's messages
@@ -1646,6 +1685,7 @@ const Community = () => {
           console.error("Delete messages error:", deleteError);
           throw deleteError;
         }
+        console.log('✅ Deleted user messages from group');
       } else {
         // For single conversations (WhatsApp-like behavior):
         // Set visible_from_message_id to hide all current messages
@@ -1661,6 +1701,8 @@ const Community = () => {
           .limit(1)
           .maybeSingle();
 
+        console.log('📨 Last message:', lastMessage);
+
         // Update visible_from_message_id to exclude all current messages
         const { error: updateError } = await supabase
           .from("conversation_participants")
@@ -1674,6 +1716,7 @@ const Community = () => {
           console.error("Update visibility error:", updateError);
           throw updateError;
         }
+        console.log('✅ Updated visibility threshold:', lastMessage?.id);
       }
 
       // Clear local messages state
@@ -1682,6 +1725,8 @@ const Community = () => {
       // Clear selection if this conversation was selected
       if (selectedConversation === conversationId) {
         setSelectedConversation(null);
+        // Update URL to reflect no conversation selected
+        navigate('/community');
       }
 
       toast({
@@ -1691,7 +1736,8 @@ const Community = () => {
           : "La conversation a été supprimée de votre liste",
       });
 
-      // Refresh conversations list
+      // Refresh conversations list to hide the deleted conversation
+      console.log('🔄 Refreshing conversations...');
       await fetchConversations();
     } catch (error) {
       console.error("Error deleting conversation:", error);
