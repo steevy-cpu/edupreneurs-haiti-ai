@@ -1589,6 +1589,10 @@ const Community = () => {
         return;
       }
 
+      // Find if this is a group or single conversation
+      const conversation = conversations.find(c => c.id === conversationId);
+      const isGroup = conversation?.is_group;
+
       // Only delete messages sent by the current user (due to RLS restrictions)
       const { error: deleteError } = await supabase
         .from("messages")
@@ -1601,6 +1605,21 @@ const Community = () => {
         throw deleteError;
       }
 
+      // For single conversations, also remove user from conversation participants
+      // This will make the conversation disappear from their list
+      if (!isGroup) {
+        const { error: leaveError } = await supabase
+          .from("conversation_participants")
+          .delete()
+          .eq("conversation_id", conversationId)
+          .eq("user_id", user.id);
+
+        if (leaveError) {
+          console.error("Leave conversation error:", leaveError);
+          // Don't throw here, as messages are already deleted
+        }
+      }
+
       // Clear local messages state
       setMessages([]);
 
@@ -1611,7 +1630,9 @@ const Community = () => {
 
       toast({
         title: "Succès",
-        description: "Vos messages ont été supprimés",
+        description: isGroup 
+          ? "Vos messages ont été supprimés" 
+          : "La conversation a été supprimée",
       });
 
       // Refresh conversations list to update last message
@@ -2616,9 +2637,15 @@ const Community = () => {
       <AlertDialog open={!!deleteConversationId} onOpenChange={(open) => !open && setDeleteConversationId(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
-          <AlertDialogTitle>Supprimer vos messages?</AlertDialogTitle>
+          <AlertDialogTitle>
+            {conversations.find(c => c.id === deleteConversationId)?.is_group 
+              ? "Supprimer vos messages?" 
+              : "Supprimer la conversation?"}
+          </AlertDialogTitle>
             <AlertDialogDescription>
-              Cette action est irréversible. Tous vos messages dans cette conversation seront définitivement supprimés. Vous resterez membre du groupe.
+              {conversations.find(c => c.id === deleteConversationId)?.is_group 
+                ? "Cette action est irréversible. Tous vos messages dans ce groupe seront définitivement supprimés. Vous resterez membre du groupe."
+                : "Cette action est irréversible. Tous vos messages seront supprimés et la conversation disparaîtra de votre liste."}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
