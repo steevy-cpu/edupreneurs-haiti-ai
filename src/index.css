@@ -892,6 +892,11 @@ All colors MUST be HSL.
     padding-bottom: max(0.5rem, env(safe-area-inset-bottom));
   }
   
+  .my-safe-or-4 {
+    margin-top: max(1rem, env(safe-area-inset-top));
+    margin-bottom: max(1rem, env(safe-area-inset-bottom));
+  }
+  
   /* Prevent zoom on input focus for mobile */
   @media screen and (max-width: 768px) {
     input[type="text"],
