@@ -873,3 +873,39 @@ All colors MUST be HSL.
     word-break: break-word;
   }
 }
+
+/* Mobile viewport and keyboard handling */
+@layer utilities {
+  /* Support for dynamic viewport height (accounts for mobile keyboard) */
+  @supports (height: 100dvh) {
+    .h-\[100dvh\] {
+      height: 100dvh;
+    }
+    
+    .h-\[calc\(100dvh-80px\)\] {
+      height: calc(100dvh - 80px);
+    }
+  }
+  
+  /* Safe area insets for mobile devices */
+  .safe-bottom {
+    padding-bottom: max(0.5rem, env(safe-area-inset-bottom));
+  }
+  
+  /* Prevent zoom on input focus for mobile */
+  @media screen and (max-width: 768px) {
+    input[type="text"],
+    input[type="email"],
+    input[type="password"],
+    textarea {
+      font-size: 16px;
+    }
+  }
+  
+  /* Ensure proper scrolling behavior on mobile */
+  @supports (-webkit-touch-callout: none) {
+    .mobile-scroll {
+      -webkit-overflow-scrolling: touch;
+    }
+  }
+}

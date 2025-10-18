@@ -91,9 +91,9 @@ export function ConversationList({
   });
 
   return (
-    <div className="w-full lg:w-80 xl:w-96 border-r border-border flex flex-col h-full bg-card/50">
+    <div className="w-full lg:w-80 xl:w-96 border-r border-border flex flex-col h-full bg-card/50 max-h-[100dvh]">
       {/* Header */}
-      <div className="p-3 sm:p-4 border-b border-border bg-card/80 backdrop-blur-sm">
+      <div className="p-3 sm:p-4 border-b border-border bg-card/80 backdrop-blur-sm shrink-0">
         <div className="flex items-center justify-between mb-3">
           <h2 className="text-lg sm:text-xl font-bold">Messages</h2>
           <Button

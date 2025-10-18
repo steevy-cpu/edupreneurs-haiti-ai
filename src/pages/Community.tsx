@@ -1704,7 +1704,7 @@ const Community = () => {
   };
 
   return (
-    <div className="fixed inset-0 bg-background flex overflow-hidden pb-16 md:pb-0">
+    <div className="h-[100dvh] bg-background flex overflow-hidden pb-16 md:pb-0">
       {/* Notification Permission Dialog */}
       {user && <NotificationPermissionBanner userId={user.id} />}
       
@@ -1742,7 +1742,7 @@ const Community = () => {
           </div>
         </div>
 
-        <ScrollArea className="h-[calc(100vh-80px)]">
+        <ScrollArea className="h-[calc(100dvh-80px)]">
           {conversations.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-20 px-4 text-center">
               <p className="text-muted-foreground">Aucune conversation</p>
@@ -1889,7 +1889,7 @@ const Community = () => {
       </div>
 
       {/* Messages View */}
-      <div className={`${selectedConversation ? "fixed inset-0 md:relative md:flex-1" : "hidden md:block md:flex-1"} flex flex-col overflow-hidden bg-background z-40 md:z-auto`}>
+      <div className={`${selectedConversation ? "fixed inset-0 md:relative md:flex-1" : "hidden md:block md:flex-1"} flex flex-col bg-background z-40 md:z-auto h-[100dvh] md:h-full`}>
         {selectedConversation ? (
           <>
             {/* Header */}
@@ -2036,7 +2036,7 @@ const Community = () => {
             })()}
 
             {/* Messages */}
-            <div className="flex-1 overflow-y-auto overflow-x-hidden p-2 sm:p-4">
+            <div className="flex-1 overflow-y-auto overflow-x-hidden p-2 sm:p-4 min-h-0">
               <div className="space-y-2 sm:space-y-4 pb-4 max-w-full">
                 {messages.map((message) => {
                   const isOwn = message.sender_id === user?.id;
@@ -2471,7 +2471,7 @@ const Community = () => {
             </div>
 
             {/* Message Input */}
-            <div className="border-t border-border/50 p-2 sm:p-4 bg-background shrink-0 z-10">
+            <div className="border-t border-border/50 p-2 sm:p-4 bg-background shrink-0 z-10 safe-bottom">
               {replyingTo && (
                 <div className="mb-2 px-3 py-2 bg-muted/50 rounded-lg border border-border/30 flex items-start justify-between max-w-full overflow-hidden">
                   <div className="flex-1 min-w-0">
