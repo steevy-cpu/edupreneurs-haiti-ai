@@ -196,34 +196,73 @@ export default function Profile() {
 
   const startConversation = async () => {
     try {
-      // Check if conversation already exists
-      const { data: existingConversations, error: fetchError } = await supabase
+      // First check if a conversation exists between these two users
+      // by looking at the other user's conversations
+      const { data: otherUserConversations, error: otherUserError } = await supabase
         .from('conversation_participants')
         .select('conversation_id')
-        .eq('user_id', currentUser.id);
+        .eq('user_id', userId);
 
-      if (fetchError) throw fetchError;
+      if (otherUserError) throw otherUserError;
 
-      // Check if any of these conversations include the target user
-      if (existingConversations && existingConversations.length > 0) {
-        for (const conv of existingConversations) {
-          const { data: participants, error: participantsError } = await supabase
-            .from('conversation_participants')
-            .select('user_id')
-            .eq('conversation_id', conv.conversation_id);
+      let sharedConversationId: string | null = null;
 
-          if (participantsError) throw participantsError;
+      // Check if any of the other user's conversations are non-group conversations
+      // that might be with the current user (even if current user left it)
+      if (otherUserConversations && otherUserConversations.length > 0) {
+        for (const conv of otherUserConversations) {
+          // Check if this is a non-group conversation
+          const { data: conversationInfo } = await supabase
+            .from('conversations')
+            .select('is_group')
+            .eq('id', conv.conversation_id)
+            .single();
 
-          const participantIds = participants.map(p => p.user_id);
-          if (participantIds.includes(userId)) {
-            // Conversation exists, navigate to it
-            navigate(`/community?conversation=${conv.conversation_id}`);
-            return;
+          if (conversationInfo && !conversationInfo.is_group) {
+            // Check all participants of this conversation
+            const { data: participants } = await supabase
+              .from('conversation_participants')
+              .select('user_id')
+              .eq('conversation_id', conv.conversation_id);
+
+            const participantIds = participants?.map(p => p.user_id) || [];
+            
+            // If it's just the other user (current user left), or includes both users
+            if (participantIds.includes(userId) && participantIds.length <= 2) {
+              sharedConversationId = conv.conversation_id;
+              break;
+            }
           }
         }
       }
 
-      // Create new conversation
+      if (sharedConversationId) {
+        // Conversation exists - check if current user is a participant
+        const { data: currentUserParticipation } = await supabase
+          .from('conversation_participants')
+          .select('id')
+          .eq('conversation_id', sharedConversationId)
+          .eq('user_id', currentUser.id)
+          .maybeSingle();
+
+        if (!currentUserParticipation) {
+          // Re-add current user to the conversation (WhatsApp-like behavior)
+          const { error: addError } = await supabase
+            .from('conversation_participants')
+            .insert({
+              conversation_id: sharedConversationId,
+              user_id: currentUser.id,
+            });
+
+          if (addError) throw addError;
+        }
+
+        // Navigate to the conversation
+        navigate(`/community?conversation=${sharedConversationId}`);
+        return;
+      }
+
+      // No existing conversation - create a new one
       const { data: conversationData, error: conversationError } = await supabase
         .rpc('create_conversation');
 
