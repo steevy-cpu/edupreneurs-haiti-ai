@@ -467,8 +467,9 @@ const Feed = () => {
             await supabase.functions.invoke('send-push-notification', {
               body: {
                 recipientUserId: post.user_id,
-                title: 'EDUPRENEURS',
-                body: `${currentUser.nickname || currentUser.full_name} a aimé votre publication`,
+                actorId: currentUser.id,
+                type: 'like',
+                entityId: postId,
                 url: '/feed',
               }
             });
@@ -542,8 +543,9 @@ const Feed = () => {
           await supabase.functions.invoke('send-push-notification', {
             body: {
               recipientUserId: post.user_id,
-              title: 'EDUPRENEURS',
-              body: `${currentUser.nickname || currentUser.full_name} a commenté votre publication`,
+              actorId: currentUser.id,
+              type: 'comment',
+              entityId: postId,
               url: '/feed',
             }
           });
@@ -728,8 +730,9 @@ const Feed = () => {
             await supabase.functions.invoke('send-push-notification', {
               body: {
                 recipientUserId: post.user_id,
-                title: 'EDUPRENEURS',
-                body: `${currentUser.nickname || currentUser.full_name} a partagé votre publication`,
+                actorId: currentUser.id,
+                type: 'share',
+                entityId: postId,
                 url: '/feed',
               }
             });

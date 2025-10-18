@@ -116,7 +116,7 @@ serve(async (req) => {
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     const supabase = createClient(supabaseUrl, supabaseKey);
 
-    const { recipientUserId, title, body, conversationId, url, notificationId, type, entityId } = await req.json();
+    const { recipientUserId, title, body, conversationId, url, notificationId, type, entityId, actorId } = await req.json();
 
     if (!recipientUserId) {
       return new Response(
@@ -125,7 +125,21 @@ serve(async (req) => {
       );
     }
 
-    console.log(`📤 Sending push notification to user: ${recipientUserId}, type: ${type}`);
+    console.log(`📤 Sending push notification to user: ${recipientUserId}, type: ${type}, actorId: ${actorId}`);
+
+    // Get actor profile for better notification messages
+    let actorName = 'Someone';
+    if (actorId) {
+      const { data: actorProfile } = await supabase
+        .from('profiles')
+        .select('nickname, full_name')
+        .eq('user_id', actorId)
+        .single();
+      
+      if (actorProfile) {
+        actorName = actorProfile.nickname || actorProfile.full_name;
+      }
+    }
 
     // Check user's notification preferences
     const category = getCategoryFromType(type);
@@ -168,9 +182,33 @@ serve(async (req) => {
     // Build enhanced notification payload with deduplication tag
     const tag = entityId ? `${category}:${entityId}` : `notif-${Date.now()}`;
     
+    // Build better notification body based on type
+    let notificationBody = body;
+    if (!body && type) {
+      switch (type) {
+        case 'like':
+          notificationBody = `${actorName} a aimé votre publication`;
+          break;
+        case 'comment':
+          notificationBody = `${actorName} a commenté votre publication`;
+          break;
+        case 'share':
+          notificationBody = `${actorName} a partagé votre publication`;
+          break;
+        case 'message':
+          notificationBody = `Nouveau message de ${actorName}`;
+          break;
+        case 'follow_request':
+          notificationBody = `${actorName} souhaite vous suivre`;
+          break;
+        default:
+          notificationBody = body || 'Nouvelle notification';
+      }
+    }
+    
     const notificationPayload = {
-      title,
-      body,
+      title: title || 'EDUPRENEURS',
+      body: notificationBody,
       icon: '/logo.png',
       badge: '/logo.png',
       tag,
@@ -179,11 +217,15 @@ serve(async (req) => {
       timestamp: Date.now(),
       data: {
         notificationId: notificationId || null,
-        deeplink: url || '/notifications',
+        url: url || '/notifications',
         entityId: entityId || null,
         category,
         conversationId: conversationId || null
-      }
+      },
+      actions: [
+        { action: 'open', title: '📱 Ouvrir' },
+        { action: 'mark_read', title: '✓ Lu' }
+      ]
     };
 
     const results = await Promise.all(subscriptions.map(async (subData) => {
