@@ -2184,7 +2184,7 @@ const Community = () => {
             })()}
 
             {/* Messages */}
-            <div className="flex-1 overflow-y-auto overflow-x-hidden p-2 sm:p-4 min-h-0">
+            <div className="flex-1 overflow-y-auto overflow-x-hidden p-2 sm:p-4 min-h-0 pb-[100px] md:pb-2">
               <div className="space-y-2 sm:space-y-4 pb-4 max-w-full">
                 {messages.map((message) => {
                   const isOwn = message.sender_id === user?.id;
@@ -2619,7 +2619,7 @@ const Community = () => {
             </div>
 
             {/* Message Input */}
-            <div className="border-t border-border/50 p-2 sm:p-4 bg-background shrink-0 safe-bottom">
+            <div className="fixed md:relative bottom-0 left-0 right-0 border-t border-border/50 p-2 sm:p-4 bg-background shrink-0 z-50 safe-bottom">
               {replyingTo && (
                 <div className="mb-2 px-3 py-2 bg-muted/50 rounded-lg border border-border/30 flex items-start justify-between max-w-full overflow-hidden">
                   <div className="flex-1 min-w-0">
