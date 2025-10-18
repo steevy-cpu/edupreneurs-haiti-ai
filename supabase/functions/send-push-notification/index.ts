@@ -63,12 +63,16 @@ async function createVapidAuthToken(endpoint: string): Promise<string> {
   const x = uint8ArrayToBase64Url(publicKeyBytes.slice(1, 33));
   const y = uint8ArrayToBase64Url(publicKeyBytes.slice(33, 65));
   
+  // Convert private key to base64url format
+  const privateKeyBytes = base64ToUint8Array(base64UrlToBase64(VAPID_PRIVATE_KEY));
+  const d = uint8ArrayToBase64Url(privateKeyBytes);
+  
   const jwk = {
     kty: 'EC',
     crv: 'P-256',
     x: x,
     y: y,
-    d: VAPID_PRIVATE_KEY,
+    d: d,
     ext: true,
     key_ops: ['sign']
   };
