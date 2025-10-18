@@ -91,8 +91,9 @@ function getBrowserInfo() {
   let browser = 'Unknown';
   let os = 'Unknown';
 
-  // Detect browser
-  if (ua.includes('Chrome') && !ua.includes('Edg')) browser = 'Chrome';
+  // Detect browser (check Samsung Internet first as it includes Chrome in UA)
+  if (ua.includes('SamsungBrowser')) browser = 'Samsung Internet';
+  else if (ua.includes('Chrome') && !ua.includes('Edg')) browser = 'Chrome';
   else if (ua.includes('Edg')) browser = 'Edge';
   else if (ua.includes('Safari') && !ua.includes('Chrome')) browser = 'Safari';
   else if (ua.includes('Firefox')) browser = 'Firefox';
