@@ -2034,11 +2034,11 @@ const Community = () => {
       </div>
 
       {/* Messages View */}
-      <div className={`${selectedConversation ? "fixed inset-0 md:relative md:flex-1" : "hidden md:block md:flex-1"} flex flex-col bg-background z-40 md:z-auto h-[100dvh] md:h-full`}>
+      <div className={`${selectedConversation ? "fixed inset-0 md:relative md:flex-1" : "hidden md:block md:flex-1"} flex flex-col bg-background z-40 md:z-auto h-screen md:h-full`}>
         {selectedConversation ? (
           <>
             {/* Header */}
-            <div className="sticky top-0 border-b border-border/50 bg-background/95 backdrop-blur-sm p-3 sm:p-4 flex items-center gap-2 sm:gap-3 shrink-0 z-50">
+            <div className="fixed md:relative top-0 left-0 right-0 md:static border-b border-border/50 bg-background p-3 sm:p-4 flex items-center gap-2 sm:gap-3 shrink-0 z-50">
               <Button
                 size="icon"
                 variant="ghost"
@@ -2184,7 +2184,7 @@ const Community = () => {
             })()}
 
             {/* Messages */}
-            <div className="flex-1 overflow-y-auto overflow-x-hidden p-2 sm:p-4 min-h-0">
+            <div className="flex-1 overflow-y-auto overflow-x-hidden p-2 sm:p-4 min-h-0 pt-[72px] md:pt-2 pb-[80px] md:pb-2">
               <div className="space-y-2 sm:space-y-4 pb-4 max-w-full">
                 {messages.map((message) => {
                   const isOwn = message.sender_id === user?.id;
@@ -2619,7 +2619,7 @@ const Community = () => {
             </div>
 
             {/* Message Input */}
-            <div className="border-t border-border/50 p-2 sm:p-4 bg-background shrink-0 z-10 safe-bottom">
+            <div className="fixed md:relative bottom-0 left-0 right-0 md:static border-t border-border/50 p-2 sm:p-4 bg-background shrink-0 z-10 safe-bottom">
               {replyingTo && (
                 <div className="mb-2 px-3 py-2 bg-muted/50 rounded-lg border border-border/30 flex items-start justify-between max-w-full overflow-hidden">
                   <div className="flex-1 min-w-0">
