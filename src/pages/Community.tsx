@@ -511,6 +511,8 @@ const Community = () => {
     console.log('📊 Visible messages per conversation:', Object.fromEntries(
       Array.from(visibleMessages.entries()).map(([id, msgs]) => [id, msgs.length])
     ));
+    
+    console.log('🔍 [FETCH] Starting to build conversation list...');
 
     // Build conversations list - deduplicate both group and 1-on-1
     const groupedByUser = new Map<string, Conversation>();
@@ -525,9 +527,11 @@ const Community = () => {
       
       // Skip this conversation if no visible messages (deleted conversation with no new messages)
       if (convVisibleMessages.length === 0) {
-        console.log(`🚫 Skipping conversation ${convId} - no visible messages`);
+        console.log(`🚫 [FETCH] Skipping conversation ${convId} - no visible messages (user deleted it)`);
         return;
       }
+
+      console.log(`✅ [FETCH] Including conversation ${convId} - ${convVisibleMessages.length} visible messages`);
 
       const lastMsg = convVisibleMessages[convVisibleMessages.length - 1];
       const unreadCount = convVisibleMessages.filter(m => !m.read && m.sender_id !== user.id).length;
@@ -1655,8 +1659,11 @@ const Community = () => {
   }, []);
 
   const handleDeleteConversation = async (conversationId: string) => {
+    console.log('🚀 [DELETE] Function called with conversationId:', conversationId);
+    
     try {
       if (!user?.id) {
+        console.error('❌ [DELETE] No user ID found');
         toast({
           title: "Erreur",
           description: "Utilisateur non authentifié",
@@ -1665,15 +1672,21 @@ const Community = () => {
         return;
       }
 
-      console.log('🗑️ Deleting conversation:', conversationId);
+      console.log('✅ [DELETE] User ID:', user.id);
+      console.log('📋 [DELETE] Current conversations:', conversations.length);
 
       // Find if this is a group or single conversation
       const conversation = conversations.find(c => c.id === conversationId);
       const isGroup = conversation?.is_group;
 
-      console.log('📋 Conversation details:', { isGroup, conversation });
+      console.log('🔍 [DELETE] Found conversation:', { 
+        found: !!conversation, 
+        isGroup, 
+        conversationName: isGroup ? conversation?.group?.name : conversation?.otherUser?.nickname 
+      });
 
       if (isGroup) {
+        console.log('🗂️ [DELETE] Deleting messages from group conversation');
         // For group conversations: delete only user's messages
         const { error: deleteError } = await supabase
           .from("messages")
@@ -1682,18 +1695,17 @@ const Community = () => {
           .eq("sender_id", user.id);
 
         if (deleteError) {
-          console.error("Delete messages error:", deleteError);
+          console.error("❌ [DELETE] Error deleting messages:", deleteError);
           throw deleteError;
         }
-        console.log('✅ Deleted user messages from group');
+        console.log('✅ [DELETE] Deleted user messages from group');
       } else {
+        console.log('💬 [DELETE] Hiding messages in single conversation');
         // For single conversations (WhatsApp-like behavior):
         // Set visible_from_message_id to hide all current messages
-        // This clears the chat history for this user only
-        // They can still receive new messages from the other person
         
         // Get the last message ID to set as the threshold
-        const { data: lastMessage } = await supabase
+        const { data: lastMessage, error: fetchError } = await supabase
           .from("messages")
           .select("id")
           .eq("conversation_id", conversationId)
@@ -1701,7 +1713,12 @@ const Community = () => {
           .limit(1)
           .maybeSingle();
 
-        console.log('📨 Last message:', lastMessage);
+        if (fetchError) {
+          console.error("❌ [DELETE] Error fetching last message:", fetchError);
+          throw fetchError;
+        }
+
+        console.log('📨 [DELETE] Last message ID:', lastMessage?.id);
 
         // Update visible_from_message_id to exclude all current messages
         const { error: updateError } = await supabase
@@ -1713,20 +1730,22 @@ const Community = () => {
           .eq("user_id", user.id);
 
         if (updateError) {
-          console.error("Update visibility error:", updateError);
+          console.error("❌ [DELETE] Error updating visibility:", updateError);
           throw updateError;
         }
-        console.log('✅ Updated visibility threshold:', lastMessage?.id);
+        console.log('✅ [DELETE] Updated visibility threshold to:', lastMessage?.id);
       }
 
       // Clear local messages state
       setMessages([]);
+      console.log('🧹 [DELETE] Cleared local messages');
 
       // Clear selection if this conversation was selected
       if (selectedConversation === conversationId) {
         setSelectedConversation(null);
         // Update URL to reflect no conversation selected
         navigate('/community');
+        console.log('🔄 [DELETE] Cleared selection and navigated to /community');
       }
 
       toast({
@@ -1737,10 +1756,11 @@ const Community = () => {
       });
 
       // Refresh conversations list to hide the deleted conversation
-      console.log('🔄 Refreshing conversations...');
+      console.log('🔄 [DELETE] Refreshing conversations list...');
       await fetchConversations();
+      console.log('✅ [DELETE] Conversations refreshed');
     } catch (error) {
-      console.error("Error deleting conversation:", error);
+      console.error("❌ [DELETE] Critical error:", error);
       toast({
         title: "Erreur",
         description: "Impossible de supprimer la conversation",
@@ -1748,6 +1768,7 @@ const Community = () => {
       });
     } finally {
       setDeleteConversationId(null);
+      console.log('🏁 [DELETE] Cleanup complete');
     }
   };
 
