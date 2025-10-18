@@ -9,6 +9,7 @@ import avatar8 from "@/assets/avatars/avatar-8.png";
 import ericAvatar from "@/assets/eric-welcome.png";
 import ericProfile from "@/assets/eric-new-profile.png";
 import ericEdupreneurs from "@/assets/eric-edupreneurs.png";
+import ericProfileMain from "@/assets/eric-profile-main.png";
 
 export const avatarMap: Record<string, string> = {
   "avatar-1": avatar1,
@@ -19,9 +20,10 @@ export const avatarMap: Record<string, string> = {
   "avatar-6": avatar6,
   "avatar-7": avatar7,
   "avatar-8": avatar8,
-  "eric": ericEdupreneurs,
+  "eric": ericProfileMain,
   "eric-welcome": ericAvatar,
   "eric-profile": ericProfile,
+  "eric-edupreneurs": ericEdupreneurs,
 };
 
 export const getAvatarUrl = (avatarId: string | null | undefined): string | undefined => {
