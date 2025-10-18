@@ -59,20 +59,20 @@ async function createVapidAuthToken(endpoint: string): Promise<string> {
   const payloadB64 = uint8ArrayToBase64Url(new TextEncoder().encode(JSON.stringify(payload)));
   const unsignedToken = `${headerB64}.${payloadB64}`;
   
-  const publicKeyBytes = base64ToUint8Array(base64UrlToBase64(VAPID_PUBLIC_KEY));
-  const x = uint8ArrayToBase64Url(publicKeyBytes.slice(1, 33));
-  const y = uint8ArrayToBase64Url(publicKeyBytes.slice(33, 65));
+  // Decode the public key to extract x and y coordinates
+  const publicKeyBuffer = Uint8Array.from(atob(base64UrlToBase64(VAPID_PUBLIC_KEY)), c => c.charCodeAt(0));
   
-  // Convert private key to base64url format
-  const privateKeyBytes = base64ToUint8Array(base64UrlToBase64(VAPID_PRIVATE_KEY));
-  const d = uint8ArrayToBase64Url(privateKeyBytes);
+  // First byte is 0x04 (uncompressed), then 32 bytes for x, 32 bytes for y
+  const x = uint8ArrayToBase64Url(publicKeyBuffer.slice(1, 33));
+  const y = uint8ArrayToBase64Url(publicKeyBuffer.slice(33, 65));
   
+  // The private key is already in base64url format, just use it directly
   const jwk = {
     kty: 'EC',
     crv: 'P-256',
     x: x,
     y: y,
-    d: d,
+    d: VAPID_PRIVATE_KEY,  // Already in base64url format
     ext: true,
     key_ops: ['sign']
   };
