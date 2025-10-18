@@ -1136,6 +1136,36 @@ const Community = () => {
     // Clear typing indicator when sending
     sendTypingStatus(false);
 
+    // Check if user is a participant in this conversation
+    // If not (e.g., they deleted the conversation earlier), re-add them
+    const { data: participation } = await supabase
+      .from("conversation_participants")
+      .select("id")
+      .eq("conversation_id", selectedConversation)
+      .eq("user_id", user.id)
+      .maybeSingle();
+
+    if (!participation) {
+      // User is not a participant - re-add them (WhatsApp-like behavior)
+      const { error: addError } = await supabase
+        .from("conversation_participants")
+        .insert({
+          conversation_id: selectedConversation,
+          user_id: user.id,
+        });
+
+      if (addError) {
+        console.error("Error re-adding user to conversation:", addError);
+        toast({
+          title: "Erreur",
+          description: "Impossible de rejoindre la conversation",
+          variant: "destructive",
+        });
+        setIsSending(false);
+        return;
+      }
+    }
+
     // Upload media if present
     if (selectedMediaFile) {
       const fileExt = selectedMediaFile.name.split('.').pop();
@@ -1593,21 +1623,23 @@ const Community = () => {
       const conversation = conversations.find(c => c.id === conversationId);
       const isGroup = conversation?.is_group;
 
-      // Only delete messages sent by the current user (due to RLS restrictions)
-      const { error: deleteError } = await supabase
-        .from("messages")
-        .delete()
-        .eq("conversation_id", conversationId)
-        .eq("sender_id", user.id);
+      if (isGroup) {
+        // For group conversations: delete only user's messages
+        const { error: deleteError } = await supabase
+          .from("messages")
+          .delete()
+          .eq("conversation_id", conversationId)
+          .eq("sender_id", user.id);
 
-      if (deleteError) {
-        console.error("Delete messages error:", deleteError);
-        throw deleteError;
-      }
-
-      // For single conversations, also remove user from conversation participants
-      // This will make the conversation disappear from their list
-      if (!isGroup) {
+        if (deleteError) {
+          console.error("Delete messages error:", deleteError);
+          throw deleteError;
+        }
+      } else {
+        // For single conversations (WhatsApp-like behavior):
+        // Only remove the user from conversation participants
+        // Messages remain intact for the other user
+        // User can still message this person again (will be re-added automatically)
         const { error: leaveError } = await supabase
           .from("conversation_participants")
           .delete()
@@ -1616,7 +1648,7 @@ const Community = () => {
 
         if (leaveError) {
           console.error("Leave conversation error:", leaveError);
-          // Don't throw here, as messages are already deleted
+          throw leaveError;
         }
       }
 
@@ -1632,16 +1664,16 @@ const Community = () => {
         title: "Succès",
         description: isGroup 
           ? "Vos messages ont été supprimés" 
-          : "La conversation a été supprimée",
+          : "La conversation a été supprimée de votre liste",
       });
 
-      // Refresh conversations list to update last message
+      // Refresh conversations list
       await fetchConversations();
     } catch (error) {
-      console.error("Error deleting messages:", error);
+      console.error("Error deleting conversation:", error);
       toast({
         title: "Erreur",
-        description: "Impossible de supprimer les messages",
+        description: "Impossible de supprimer la conversation",
         variant: "destructive",
       });
     } finally {
@@ -2645,7 +2677,7 @@ const Community = () => {
             <AlertDialogDescription>
               {conversations.find(c => c.id === deleteConversationId)?.is_group 
                 ? "Cette action est irréversible. Tous vos messages dans ce groupe seront définitivement supprimés. Vous resterez membre du groupe."
-                : "Cette action est irréversible. Tous vos messages seront supprimés et la conversation disparaîtra de votre liste."}
+                : "La conversation disparaîtra de votre liste, mais vous pourrez toujours envoyer des messages à cette personne."}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
