@@ -4,13 +4,14 @@ import { useNavigate } from "react-router-dom";
 import { Card } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import { Heart, MessageCircle, Share2, UserPlus, Check, X, FileText, MoreVertical, Trash2 } from "lucide-react";
+import { Heart, MessageCircle, Share2, UserPlus, Check, X, FileText, MoreVertical, Trash2, Settings } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { getAvatarUrl } from "@/lib/avatarMap";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { NotificationPermissionBanner } from "@/components/NotificationPermissionBanner";
+import { useNotificationSync } from "@/hooks/useNotificationSync";
 
 interface Profile {
   id: string;
@@ -40,6 +41,11 @@ export default function Notifications() {
   const [deleteNotificationId, setDeleteNotificationId] = useState<string | null>(null);
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const navigate = useNavigate();
+
+  // Use notification sync hook for cross-tab synchronization
+  useNotificationSync(() => {
+    fetchNotifications();
+  });
 
   useEffect(() => {
     checkAuth();
@@ -166,38 +172,8 @@ export default function Notifications() {
         },
         async (payload) => {
           console.log('New notification received for current user:', payload);
-          
-          // Fetch the actor's profile for the notification
-          const { data: actorProfile } = await supabase
-            .from('profiles')
-            .select('full_name, nickname, avatar_url')
-            .eq('user_id', payload.new.actor_id)
-            .single();
-
-          const actorName = actorProfile?.nickname || actorProfile?.full_name || 'Someone';
-          const notificationText = getNotificationTextForBrowser(payload.new, actorName);
-          
-          // Show browser notification using service worker (for when user is on the site)
-          if ('serviceWorker' in navigator && 'Notification' in window && Notification.permission === 'granted') {
-            try {
-              const registration = await navigator.serviceWorker.ready;
-              
-              await registration.showNotification('EDUPRENEURS', {
-                body: notificationText,
-                icon: '/logo.png',
-                badge: '/logo.png',
-                tag: payload.new.id,
-                requireInteraction: false,
-                data: {
-                  deeplink: payload.new.post_id ? `/feed?post=${payload.new.post_id}` : '/notifications'
-                }
-              });
-            } catch (error) {
-              console.error('Error showing notification:', error);
-            }
-          }
-          
-          // Refresh the notifications list
+          // Note: Don't send push notification here - it's already sent from the backend
+          // Just refresh the notifications list
           fetchNotifications();
         }
       )

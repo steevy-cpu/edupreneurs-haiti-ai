@@ -85,6 +85,41 @@ export const requestNotificationPermission = async (): Promise<NotificationPermi
   return Notification.permission;
 };
 
+// Helper to detect browser and OS
+function getBrowserInfo() {
+  const ua = navigator.userAgent;
+  let browser = 'Unknown';
+  let os = 'Unknown';
+
+  // Detect browser
+  if (ua.includes('Chrome') && !ua.includes('Edg')) browser = 'Chrome';
+  else if (ua.includes('Edg')) browser = 'Edge';
+  else if (ua.includes('Safari') && !ua.includes('Chrome')) browser = 'Safari';
+  else if (ua.includes('Firefox')) browser = 'Firefox';
+
+  // Detect OS
+  if (ua.includes('Windows')) os = 'Windows';
+  else if (ua.includes('Mac')) os = 'macOS';
+  else if (ua.includes('iPhone') || ua.includes('iPad')) os = 'iOS';
+  else if (ua.includes('Android')) os = 'Android';
+  else if (ua.includes('Linux')) os = 'Linux';
+
+  return { browser, os };
+}
+
+// Generate unique device ID (store in localStorage for consistency)
+function getDeviceId() {
+  const storageKey = 'edupreneurs_device_id';
+  let deviceId = localStorage.getItem(storageKey);
+  
+  if (!deviceId) {
+    deviceId = `device_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
+    localStorage.setItem(storageKey, deviceId);
+  }
+  
+  return deviceId;
+}
+
 export const subscribeToPushNotifications = async (
   registration: ServiceWorkerRegistration,
   userId: string
@@ -99,15 +134,24 @@ export const subscribeToPushNotifications = async (
       applicationServerKey: vapidKey.buffer as ArrayBuffer
     });
 
-    // Save subscription to Supabase
+    // Get device info
+    const { browser, os } = getBrowserInfo();
+    const deviceId = getDeviceId();
+
+    console.log('📱 Device info:', { deviceId, browser, os });
+
+    // Save subscription to Supabase with device info
     const { error } = await supabase
       .from('push_subscriptions' as any)
       .upsert({
         user_id: userId,
+        device_id: deviceId,
+        browser,
+        os,
         subscription: subscription.toJSON(),
-        updated_at: new Date().toISOString()
+        last_used_at: new Date().toISOString()
       }, {
-        onConflict: 'user_id'
+        onConflict: 'user_id,device_id'
       });
 
     if (error) {

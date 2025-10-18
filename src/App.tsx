@@ -31,6 +31,7 @@ const Community = lazy(() => import("./pages/Community"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 const PrivacyPolicy = lazy(() => import("./pages/PrivacyPolicy"));
 const DevPush = lazy(() => import("./pages/DevPush"));
+const NotificationSettings = lazy(() => import("./pages/NotificationSettings"));
 const EmailTest = lazy(() => import("./pages/EmailTest"));
 const TestEmail = lazy(() => import("./pages/TestEmail"));
 const EmailJSTest = lazy(() => import("./pages/EmailJSTest"));
@@ -79,7 +80,8 @@ const App = () => (
               <Route path="/email-test" element={<EmailTest />} />
               <Route path="/emailjs-test" element={<EmailJSTest />} />
               <Route path="/upload-email-assets" element={<UploadEmailAssets />} />
-              <Route path="/dev/push" element={<DevPush />} />
+          <Route path="/dev/push" element={<DevPush />} />
+          <Route path="/notification-settings" element={<NotificationSettings />} />
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />
             </Routes>

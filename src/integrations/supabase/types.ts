@@ -284,6 +284,33 @@ export type Database = {
         }
         Relationships: []
       }
+      notification_preferences: {
+        Row: {
+          category: string
+          created_at: string | null
+          enabled: boolean | null
+          id: string
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          category: string
+          created_at?: string | null
+          enabled?: boolean | null
+          id?: string
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          category?: string
+          created_at?: string | null
+          enabled?: boolean | null
+          id?: string
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       notifications: {
         Row: {
           actor_id: string
@@ -571,22 +598,34 @@ export type Database = {
       }
       push_subscriptions: {
         Row: {
+          browser: string | null
           created_at: string
+          device_id: string | null
           id: string
+          last_used_at: string | null
+          os: string | null
           subscription: Json
           updated_at: string
           user_id: string
         }
         Insert: {
+          browser?: string | null
           created_at?: string
+          device_id?: string | null
           id?: string
+          last_used_at?: string | null
+          os?: string | null
           subscription: Json
           updated_at?: string
           user_id: string
         }
         Update: {
+          browser?: string | null
           created_at?: string
+          device_id?: string | null
           id?: string
+          last_used_at?: string | null
+          os?: string | null
           subscription?: Json
           updated_at?: string
           user_id?: string
@@ -747,6 +786,10 @@ export type Database = {
       generate_referral_code: {
         Args: Record<PropertyKey, never>
         Returns: string
+      }
+      get_notification_preference: {
+        Args: { p_category: string; p_user_id: string }
+        Returns: boolean
       }
       is_conversation_participant: {
         Args: { conversation_uuid: string; user_uuid: string }

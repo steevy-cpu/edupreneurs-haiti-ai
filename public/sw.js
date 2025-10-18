@@ -1,6 +1,9 @@
 // Service Worker for Push Notifications
-const SW_VERSION = '1.0.4';
+const SW_VERSION = '1.1.0';
 const CACHE_NAME = `edupreneurs-v${SW_VERSION}`;
+
+// BroadcastChannel for cross-tab sync
+const notificationChannel = new BroadcastChannel('edupreneurs-notifications');
 
 self.addEventListener('install', (event) => {
   console.log(`📦 Service Worker ${SW_VERSION} installing...`);
@@ -61,7 +64,8 @@ self.addEventListener('push', (event) => {
     tag: payload.tag || `notif-${Date.now()}`,
     data: notificationData,
     requireInteraction: false,
-    silent: false
+    silent: false,
+    timestamp: payload.timestamp || Date.now()
   };
 
   // Only add features for non-iOS platforms
@@ -71,13 +75,21 @@ self.addEventListener('push', (event) => {
     notificationOptions.vibrate = [200, 100, 200];
     notificationOptions.actions = [
       { action: 'open', title: '📱 Ouvrir' },
-      { action: 'dismiss', title: '✖️ Fermer' }
+      { action: 'mark_read', title: '✓ Marquer lu' }
     ];
   }
 
   event.waitUntil(
     self.registration.showNotification(title, notificationOptions)
-      .then(() => console.log('✅ Notification displayed successfully'))
+      .then(() => {
+        console.log('✅ Notification displayed successfully');
+        // Broadcast to all tabs that a new notification arrived
+        notificationChannel.postMessage({
+          type: 'notification_received',
+          notificationId: notificationData.notificationId,
+          category: notificationData.category
+        });
+      })
       .catch(err => {
         console.error('❌ Notification failed:', err);
         // Fallback: try with absolute minimal options
@@ -101,21 +113,54 @@ self.addEventListener('notificationclick', (event) => {
   event.waitUntil(
     (async () => {
       try {
-        // Handle specific actions
-        if (action === 'dismiss') {
-          console.log('🚫 Notification dismissed');
+        // Handle mark as read action
+        if (action === 'mark_read' && notificationData.notificationId) {
+          console.log('✅ Marking notification as read:', notificationData.notificationId);
+          
+          // Call backend to mark as read
+          try {
+            const response = await fetch(`${self.location.origin}/api/notifications/${notificationData.notificationId}/read`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' }
+            });
+            
+            if (response.ok) {
+              // Broadcast to all tabs that notification was marked as read
+              notificationChannel.postMessage({
+                type: 'notification_read',
+                notificationId: notificationData.notificationId
+              });
+            }
+          } catch (error) {
+            console.error('❌ Failed to mark as read:', error);
+          }
+          
           return;
         }
 
-        if (action === 'mark_read' && notificationData.threadId) {
-          // Mark as read (would need backend endpoint)
-          console.log('✅ Mark as read:', notificationData.threadId);
-        }
-
         // Determine URL to open
-        const targetUrl = notificationData.url || '/notifications';
+        const targetUrl = notificationData.deeplink || notificationData.url || '/notifications';
         const urlToOpen = new URL(targetUrl, self.location.origin).href;
         console.log('🔗 Opening URL:', urlToOpen);
+
+        // Mark as read when opening notification
+        if (notificationData.notificationId) {
+          try {
+            const response = await fetch(`${self.location.origin}/api/notifications/${notificationData.notificationId}/read`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' }
+            });
+            
+            if (response.ok) {
+              notificationChannel.postMessage({
+                type: 'notification_read',
+                notificationId: notificationData.notificationId
+              });
+            }
+          } catch (error) {
+            console.error('❌ Failed to mark as read on open:', error);
+          }
+        }
 
         const clientList = await clients.matchAll({ 
           type: 'window', 
