@@ -2167,15 +2167,15 @@ const Community = () => {
               if (!isGroup) return null;
               
               return (
-                <div className="sticky top-0 z-10 mx-2 sm:mx-4 mt-2 mb-2 px-3 py-2 bg-gradient-to-r from-primary/10 to-success/10 border border-primary/20 rounded-lg backdrop-blur-sm">
-                  <div className="flex items-start gap-2">
-                    <img src={ericAiHelper} alt="Eric AI Assistant" className="w-10 h-10 sm:w-12 sm:h-12 rounded-full object-cover shrink-0" />
+                <div className="sticky top-[60px] md:top-0 z-[60] mx-2 sm:mx-4 mt-2 mb-2 px-3 py-2 bg-gradient-to-r from-primary/10 to-success/10 border border-primary/20 rounded-lg backdrop-blur-sm shadow-sm">
+                  <div className="flex items-start gap-2 sm:gap-3">
+                    <img src={ericAiHelper} alt="Eric AI Assistant" className="w-8 h-8 sm:w-10 sm:h-10 rounded-full object-cover shrink-0" />
                     <div className="flex-1 min-w-0">
-                      <p className="text-xs sm:text-sm text-foreground font-medium">
+                      <p className="text-xs sm:text-sm text-foreground font-semibold">
                         Eric, votre assistant IA est dans ce groupe !
                       </p>
-                      <p className="text-xs text-muted-foreground mt-0.5">
-                        Pour lui parler, commencez votre message par <span className="font-semibold text-primary">"Hey eric"</span>
+                      <p className="text-[10px] sm:text-xs text-muted-foreground mt-0.5">
+                        Pour lui parler, commencez votre message par <span className="font-bold text-primary">"Hey eric"</span>
                       </p>
                     </div>
                   </div>
