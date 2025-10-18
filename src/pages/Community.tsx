@@ -1136,11 +1136,10 @@ const Community = () => {
     // Clear typing indicator when sending
     sendTypingStatus(false);
 
-    // Check if user is a participant in this conversation
-    // If not (e.g., they deleted the conversation earlier), re-add them
+    // Check if user is a participant and their visibility settings
     const { data: participation } = await supabase
       .from("conversation_participants")
-      .select("id")
+      .select("id, visible_from_message_id")
       .eq("conversation_id", selectedConversation)
       .eq("user_id", user.id)
       .maybeSingle();
@@ -1152,6 +1151,7 @@ const Community = () => {
         .insert({
           conversation_id: selectedConversation,
           user_id: user.id,
+          visible_from_message_id: null,
         });
 
       if (addError) {
@@ -1163,6 +1163,17 @@ const Community = () => {
         });
         setIsSending(false);
         return;
+      }
+    } else if (participation.visible_from_message_id) {
+      // User deleted the conversation before - reset visibility to see all new messages
+      const { error: resetError } = await supabase
+        .from("conversation_participants")
+        .update({ visible_from_message_id: null })
+        .eq("conversation_id", selectedConversation)
+        .eq("user_id", user.id);
+
+      if (resetError) {
+        console.error("Error resetting visibility:", resetError);
       }
     }
 
@@ -1637,18 +1648,31 @@ const Community = () => {
         }
       } else {
         // For single conversations (WhatsApp-like behavior):
-        // Only remove the user from conversation participants
-        // Messages remain intact for the other user
-        // User can still message this person again (will be re-added automatically)
-        const { error: leaveError } = await supabase
+        // Set visible_from_message_id to hide all current messages
+        // This clears the chat history for this user only
+        // They can still receive new messages from the other person
+        
+        // Get the last message ID to set as the threshold
+        const { data: lastMessage } = await supabase
+          .from("messages")
+          .select("id")
+          .eq("conversation_id", conversationId)
+          .order("created_at", { ascending: false })
+          .limit(1)
+          .maybeSingle();
+
+        // Update visible_from_message_id to exclude all current messages
+        const { error: updateError } = await supabase
           .from("conversation_participants")
-          .delete()
+          .update({ 
+            visible_from_message_id: lastMessage?.id || null
+          })
           .eq("conversation_id", conversationId)
           .eq("user_id", user.id);
 
-        if (leaveError) {
-          console.error("Leave conversation error:", leaveError);
-          throw leaveError;
+        if (updateError) {
+          console.error("Update visibility error:", updateError);
+          throw updateError;
         }
       }
 

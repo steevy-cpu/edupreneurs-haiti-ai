@@ -240,7 +240,7 @@ export default function Profile() {
         // Conversation exists - check if current user is a participant
         const { data: currentUserParticipation } = await supabase
           .from('conversation_participants')
-          .select('id')
+          .select('id, visible_from_message_id')
           .eq('conversation_id', sharedConversationId)
           .eq('user_id', currentUser.id)
           .maybeSingle();
@@ -252,9 +252,19 @@ export default function Profile() {
             .insert({
               conversation_id: sharedConversationId,
               user_id: currentUser.id,
+              visible_from_message_id: null,
             });
 
           if (addError) throw addError;
+        } else if (currentUserParticipation.visible_from_message_id) {
+          // User deleted the conversation before - reset visibility
+          const { error: resetError } = await supabase
+            .from('conversation_participants')
+            .update({ visible_from_message_id: null })
+            .eq('conversation_id', sharedConversationId)
+            .eq('user_id', currentUser.id);
+
+          if (resetError) throw resetError;
         }
 
         // Navigate to the conversation
