@@ -6,6 +6,8 @@ import avatar5 from "@/assets/avatars/avatar-5.png";
 import avatar6 from "@/assets/avatars/avatar-6.png";
 import avatar7 from "@/assets/avatars/avatar-7.png";
 import avatar8 from "@/assets/avatars/avatar-8.png";
+import avatar9 from "@/assets/avatars/avatar-9.png";
+import avatar10 from "@/assets/avatars/avatar-10.png";
 import ericAvatar from "@/assets/eric-welcome.png";
 import ericProfile from "@/assets/eric-new-profile.png";
 import ericEdupreneurs from "@/assets/eric-edupreneurs.png";
@@ -19,6 +21,8 @@ export const avatarMap: Record<string, string> = {
   "avatar-6": avatar6,
   "avatar-7": avatar7,
   "avatar-8": avatar8,
+  "avatar-9": avatar9,
+  "avatar-10": avatar10,
   "eric": ericEdupreneurs,
   "eric-welcome": ericAvatar,
   "eric-profile": ericProfile,

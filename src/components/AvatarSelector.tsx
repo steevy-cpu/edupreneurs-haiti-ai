@@ -11,6 +11,8 @@ const avatarOptions = [
   { id: "avatar-6", url: avatarMap["avatar-6"], name: "Avatar 6" },
   { id: "avatar-7", url: avatarMap["avatar-7"], name: "Avatar 7" },
   { id: "avatar-8", url: avatarMap["avatar-8"], name: "Avatar 8" },
+  { id: "avatar-9", url: avatarMap["avatar-9"], name: "Avatar 9" },
+  { id: "avatar-10", url: avatarMap["avatar-10"], name: "Avatar 10" },
 ];
 
 interface AvatarSelectorProps {
