@@ -2375,6 +2375,1245 @@ export const mathLessons7AF: Record<string, StaticLessonContent> = {
   </div>
 
 </div>`
+  },
+
+  "cercle-disque": {
+    objectif: `À la fin de cette leçon, tu vas pouvoir:
+• Différencier le cercle du disque
+• Calculer le périmètre (circonférence) d'un cercle
+• Calculer l'aire d'un disque
+• Résoudre des problèmes pratiques impliquant cercles et disques`,
+
+    introduction: `<div class="space-y-4">
+  <p class="text-lg leading-relaxed">
+    <span class="font-semibold text-primary">Quelle est la différence entre une roue de vélo et un bracelet ?</span> 
+    La roue est un <span class="italic font-semibold text-accent">disque</span> (surface pleine), 
+    tandis que le bracelet est un <span class="italic font-semibold text-primary">cercle</span> (ligne courbe fermée) !
+  </p>
+  
+  <p class="text-lg leading-relaxed">
+    Les cercles et disques sont partout dans notre vie : roues de voiture, assiettes, pièces de monnaie, 
+    horloges... Apprendre à calculer leurs dimensions est essentiel !
+  </p>
+
+  <div class="bg-gradient-to-r from-primary/10 to-accent/10 p-4 rounded-lg border-l-4 border-primary">
+    <p class="font-medium">💡 <span class="text-primary">À retenir :</span> 
+    Le cercle est une ligne, le disque est une surface !</p>
+  </div>
+</div>`,
+
+    contenu: `<div class="space-y-8">
+  
+  <!-- Section 1: Définitions -->
+  <section class="bg-gradient-to-br from-blue-50 to-purple-50 dark:from-blue-950/30 dark:to-purple-950/30 p-6 rounded-xl border border-blue-200 dark:border-blue-800">
+    <h3 class="text-2xl font-bold mb-4 flex items-center gap-2 text-blue-700 dark:text-blue-300">
+      🎯 Cercle et Disque : Définitions
+    </h3>
+    
+    <div class="space-y-4">
+      <div class="bg-white/80 dark:bg-gray-900/50 p-4 rounded-lg">
+        <h4 class="font-bold text-lg mb-2 text-primary">📌 Le Cercle</h4>
+        <p class="leading-relaxed">
+          Un cercle est l'ensemble de tous les points situés à la <span class="font-semibold text-accent">même distance</span> 
+          d'un point fixe appelé <span class="font-semibold text-primary">centre</span>.
+        </p>
+        <p class="mt-2 text-sm text-muted-foreground italic">
+          • Centre : point O au milieu<br>
+          • Rayon (r) : distance du centre à un point du cercle<br>
+          • Diamètre (d) : segment passant par le centre = 2×rayon
+        </p>
+      </div>
+
+      <div class="bg-white/80 dark:bg-gray-900/50 p-4 rounded-lg">
+        <h4 class="font-bold text-lg mb-2 text-primary">📌 Le Disque</h4>
+        <p class="leading-relaxed">
+          Un disque est la <span class="font-semibold text-accent">surface fermée</span> délimitée par un cercle. 
+          Il contient tous les points à l'intérieur du cercle, y compris le cercle lui-même.
+        </p>
+      </div>
+
+      <div class="bg-white/80 dark:bg-gray-900/50 p-4 rounded-lg">
+        <h4 class="font-bold text-lg mb-2 text-primary">📌 Le nombre π (Pi)</h4>
+        <p class="leading-relaxed">
+          π est un nombre très spécial ≈ <span class="font-mono text-lg px-2 py-1 bg-accent/20 rounded">3,14159...</span>
+        </p>
+        <p class="mt-2 text-sm">
+          Pour les calculs pratiques, on utilise : <span class="font-mono font-bold">π ≈ 3,14</span> ou <span class="font-mono font-bold">π ≈ 22/7</span>
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Section 2: Périmètre du cercle -->
+  <section class="bg-gradient-to-br from-green-50 to-teal-50 dark:from-green-950/30 dark:to-teal-950/30 p-6 rounded-xl border border-green-200 dark:border-green-800">
+    <h3 class="text-2xl font-bold mb-4 flex items-center gap-2 text-green-700 dark:text-green-300">
+      📏 Périmètre du Cercle (Circonférence)
+    </h3>
+    
+    <div class="space-y-4">
+      <div class="bg-white/80 dark:bg-gray-900/50 p-4 rounded-lg">
+        <h4 class="font-bold text-lg mb-3 text-primary">🔍 Formules</h4>
+        <div class="space-y-3">
+          <div class="p-3 bg-gradient-to-r from-primary/10 to-accent/10 rounded border-l-4 border-primary">
+            <p class="font-bold mb-1">Avec le rayon :</p>
+            <p class="font-mono text-xl">P = 2 × π × r</p>
+          </div>
+          <div class="p-3 bg-gradient-to-r from-accent/10 to-primary/10 rounded border-l-4 border-accent">
+            <p class="font-bold mb-1">Avec le diamètre :</p>
+            <p class="font-mono text-xl">P = π × d</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="bg-white/80 dark:bg-gray-900/50 p-4 rounded-lg">
+        <h4 class="font-bold text-lg mb-3 text-primary">💡 Exemple</h4>
+        <p class="leading-relaxed mb-3">Calculer le périmètre d'un cercle de rayon 5 cm</p>
+        <div class="p-3 bg-green-50 dark:bg-green-950/30 rounded">
+          <p class="font-mono">P = 2 × π × r</p>
+          <p class="font-mono">P = 2 × 3,14 × 5</p>
+          <p class="font-mono">P = <span class="font-bold text-green-600">31,4 cm</span></p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Section 3: Aire du disque -->
+  <section class="bg-gradient-to-br from-orange-50 to-red-50 dark:from-orange-950/30 dark:to-red-950/30 p-6 rounded-xl border border-orange-200 dark:border-orange-800">
+    <h3 class="text-2xl font-bold mb-4 flex items-center gap-2 text-orange-700 dark:text-orange-300">
+      📐 Aire du Disque
+    </h3>
+    
+    <div class="space-y-4">
+      <div class="bg-white/80 dark:bg-gray-900/50 p-4 rounded-lg">
+        <h4 class="font-bold text-lg mb-3 text-primary">🔍 Formule</h4>
+        <div class="p-4 bg-gradient-to-r from-primary/10 to-accent/10 rounded border-l-4 border-primary">
+          <p class="font-mono text-2xl text-center">A = π × r²</p>
+          <p class="text-sm text-center mt-2 text-muted-foreground">
+            (Le rayon multiplié par lui-même, puis par π)
+          </p>
+        </div>
+      </div>
+
+      <div class="bg-white/80 dark:bg-gray-900/50 p-4 rounded-lg">
+        <h4 class="font-bold text-lg mb-3 text-primary">💡 Exemple</h4>
+        <p class="leading-relaxed mb-3">Calculer l'aire d'un disque de rayon 4 cm</p>
+        <div class="p-3 bg-orange-50 dark:bg-orange-950/30 rounded">
+          <p class="font-mono">A = π × r²</p>
+          <p class="font-mono">A = 3,14 × 4²</p>
+          <p class="font-mono">A = 3,14 × 16</p>
+          <p class="font-mono">A = <span class="font-bold text-orange-600">50,24 cm²</span></p>
+        </div>
+      </div>
+
+      <div class="p-4 bg-amber-50 dark:bg-amber-950/30 rounded-lg border border-amber-300 dark:border-amber-700">
+        <p class="font-semibold text-amber-800 dark:text-amber-200">⚠️ Attention :</p>
+        <p class="mt-1 text-amber-700 dark:text-amber-300">N'oublie pas de calculer r² (r×r) avant de multiplier par π !</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Section 4: Parties du cercle -->
+  <section class="bg-gradient-to-br from-purple-50 to-pink-50 dark:from-purple-950/30 dark:to-pink-950/30 p-6 rounded-xl border border-purple-200 dark:border-purple-800">
+    <h3 class="text-2xl font-bold mb-4 flex items-center gap-2 text-purple-700 dark:text-purple-300">
+      🎨 Parties du Cercle
+    </h3>
+    
+    <div class="space-y-4">
+      <div class="bg-white/80 dark:bg-gray-900/50 p-4 rounded-lg">
+        <h4 class="font-bold text-lg mb-2 text-primary">🔵 Arc de cercle</h4>
+        <p class="leading-relaxed">Une portion de la ligne du cercle entre deux points</p>
+      </div>
+
+      <div class="bg-white/80 dark:bg-gray-900/50 p-4 rounded-lg">
+        <h4 class="font-bold text-lg mb-2 text-primary">🔺 Corde</h4>
+        <p class="leading-relaxed">Segment reliant deux points du cercle (le diamètre est la plus grande corde)</p>
+      </div>
+
+      <div class="bg-white/80 dark:bg-gray-900/50 p-4 rounded-lg">
+        <h4 class="font-bold text-lg mb-2 text-primary">🍕 Secteur circulaire</h4>
+        <p class="leading-relaxed">Portion de disque délimitée par deux rayons (comme une part de pizza !)</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Section 5: Applications pratiques -->
+  <section class="bg-gradient-to-br from-cyan-50 to-blue-50 dark:from-cyan-950/30 dark:to-blue-950/30 p-6 rounded-xl border border-cyan-200 dark:border-cyan-800">
+    <h3 class="text-2xl font-bold mb-4 flex items-center gap-2 text-cyan-700 dark:text-cyan-300">
+      🌟 Applications Pratiques
+    </h3>
+    
+    <div class="space-y-4">
+      <div class="bg-white/80 dark:bg-gray-900/50 p-4 rounded-lg border-l-4 border-green-500">
+        <h4 class="font-bold text-lg mb-2 text-primary">🚲 Roue de vélo</h4>
+        <p class="mb-2">Une roue de vélo a un diamètre de 70 cm. Quelle distance parcourt-elle en un tour complet ?</p>
+        <div class="p-3 bg-cyan-50 dark:bg-cyan-950/30 rounded">
+          <p class="font-mono text-sm">P = π × d = 3,14 × 70 = <span class="font-bold">219,8 cm</span></p>
+          <p class="text-xs mt-1 text-muted-foreground">≈ 2,2 mètres par tour</p>
+        </div>
+      </div>
+
+      <div class="bg-white/80 dark:bg-gray-900/50 p-4 rounded-lg border-l-4 border-blue-500">
+        <h4 class="font-bold text-lg mb-2 text-primary">🍕 Pizza circulaire</h4>
+        <p class="mb-2">Une pizza a un rayon de 15 cm. Quelle est sa surface ?</p>
+        <div class="p-3 bg-blue-50 dark:bg-blue-950/30 rounded">
+          <p class="font-mono text-sm">A = π × r² = 3,14 × 15² = 3,14 × 225 = <span class="font-bold">706,5 cm²</span></p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Section 6: Astuces -->
+  <section class="bg-gradient-to-br from-yellow-50 to-orange-50 dark:from-yellow-950/30 dark:to-orange-950/30 p-6 rounded-xl border border-yellow-200 dark:border-yellow-800">
+    <h3 class="text-2xl font-bold mb-4 flex items-center gap-2 text-yellow-700 dark:text-yellow-300">
+      💡 Astuces et Conseils
+    </h3>
+    
+    <div class="space-y-3">
+      <div class="bg-white/80 dark:bg-gray-900/50 p-3 rounded-lg flex gap-3">
+        <span class="text-2xl">✅</span>
+        <p><span class="font-semibold">Retiens :</span> d = 2r (le diamètre est le double du rayon)</p>
+      </div>
+      
+      <div class="bg-white/80 dark:bg-gray-900/50 p-3 rounded-lg flex gap-3">
+        <span class="text-2xl">✅</span>
+        <p><span class="font-semibold">Pour le périmètre :</span> Utilise 2πr ou πd (c'est la même chose !)</p>
+      </div>
+      
+      <div class="bg-white/80 dark:bg-gray-900/50 p-3 rounded-lg flex gap-3">
+        <span class="text-2xl">✅</span>
+        <p><span class="font-semibold">Pour l'aire :</span> N'oublie jamais le carré sur le rayon (r²)</p>
+      </div>
+      
+      <div class="bg-white/80 dark:bg-gray-900/50 p-3 rounded-lg flex gap-3">
+        <span class="text-2xl">✅</span>
+        <p><span class="font-semibold">Vérifie tes unités :</span> cm pour périmètre, cm² pour aire</p>
+      </div>
+    </div>
+  </section>
+
+</div>`,
+
+    exemplesExercices: `<div class="space-y-6">
+  
+  <div class="bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-950/40 dark:to-blue-900/30 p-5 rounded-xl border-l-4 border-blue-500">
+    <h4 class="font-bold text-lg mb-3 flex items-center gap-2 text-blue-700 dark:text-blue-300">
+      ✏️ Exercice 1 — Calcul du périmètre (Facile)
+    </h4>
+    <p class="mb-3 leading-relaxed">Calculer le périmètre d'un cercle de rayon 7 cm</p>
+    <div class="mt-4 bg-white/70 dark:bg-gray-900/50 p-4 rounded-lg">
+      <p class="font-semibold text-blue-700 dark:text-blue-300 mb-2">📝 Solution :</p>
+      <div class="space-y-2 text-sm">
+        <p>P = 2 × π × r</p>
+        <p>P = 2 × 3,14 × 7</p>
+        <p>P = <span class="font-bold text-blue-600">43,96 cm</span></p>
+      </div>
+    </div>
+  </div>
+
+  <div class="bg-gradient-to-br from-green-50 to-green-100 dark:from-green-950/40 dark:to-green-900/30 p-5 rounded-xl border-l-4 border-green-500">
+    <h4 class="font-bold text-lg mb-3 flex items-center gap-2 text-green-700 dark:text-green-300">
+      ✏️ Exercice 2 — Calcul de l'aire (Facile)
+    </h4>
+    <p class="mb-3 leading-relaxed">Calculer l'aire d'un disque de rayon 6 cm</p>
+    <div class="mt-4 bg-white/70 dark:bg-gray-900/50 p-4 rounded-lg">
+      <p class="font-semibold text-green-700 dark:text-green-300 mb-2">📝 Solution :</p>
+      <div class="space-y-2 text-sm">
+        <p>A = π × r²</p>
+        <p>A = 3,14 × 6²</p>
+        <p>A = 3,14 × 36</p>
+        <p>A = <span class="font-bold text-green-600">113,04 cm²</span></p>
+      </div>
+    </div>
+  </div>
+
+  <div class="bg-gradient-to-br from-orange-50 to-orange-100 dark:from-orange-950/40 dark:to-orange-900/30 p-5 rounded-xl border-l-4 border-orange-500">
+    <h4 class="font-bold text-lg mb-3 flex items-center gap-2 text-orange-700 dark:text-orange-300">
+      ✏️ Exercice 3 — Avec le diamètre (Moyen)
+    </h4>
+    <p class="mb-3 leading-relaxed">Un cercle a un diamètre de 20 cm. Calculer son périmètre et l'aire du disque correspondant</p>
+    <div class="mt-4 bg-white/70 dark:bg-gray-900/50 p-4 rounded-lg">
+      <p class="font-semibold text-orange-700 dark:text-orange-300 mb-2">📝 Solution :</p>
+      <div class="space-y-3 text-sm">
+        <div>
+          <p class="font-semibold">Périmètre :</p>
+          <p>P = π × d = 3,14 × 20 = <span class="font-bold text-orange-600">62,8 cm</span></p>
+        </div>
+        <div>
+          <p class="font-semibold">Aire :</p>
+          <p>d = 20 cm donc r = 10 cm</p>
+          <p>A = π × r² = 3,14 × 10² = 3,14 × 100 = <span class="font-bold text-orange-600">314 cm²</span></p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="bg-gradient-to-br from-purple-50 to-purple-100 dark:from-purple-950/40 dark:to-purple-900/30 p-5 rounded-xl border-l-4 border-purple-500">
+    <h4 class="font-bold text-lg mb-3 flex items-center gap-2 text-purple-700 dark:text-purple-300">
+      ✏️ Exercice 4 — Problème de roue (Difficile)
+    </h4>
+    <p class="mb-3 leading-relaxed">Une roue de voiture a un rayon de 30 cm. Combien de tours complets fait-elle pour parcourir 94,2 mètres ?</p>
+    <div class="mt-4 bg-white/70 dark:bg-gray-900/50 p-4 rounded-lg">
+      <p class="font-semibold text-purple-700 dark:text-purple-300 mb-2">📝 Solution :</p>
+      <div class="space-y-2 text-sm">
+        <p><span class="font-semibold">Étape 1 :</span> Périmètre d'un tour</p>
+        <p>P = 2 × π × r = 2 × 3,14 × 30 = 188,4 cm = 1,884 m</p>
+        <p><span class="font-semibold">Étape 2 :</span> Nombre de tours</p>
+        <p>Nombre = 94,2 ÷ 1,884 = <span class="font-bold text-purple-600">50 tours</span></p>
+      </div>
+    </div>
+  </div>
+
+  <div class="bg-gradient-to-br from-pink-50 to-pink-100 dark:from-pink-950/40 dark:to-pink-900/30 p-5 rounded-xl border-l-4 border-pink-500">
+    <h4 class="font-bold text-lg mb-3 flex items-center gap-2 text-pink-700 dark:text-pink-300">
+      ✏️ Exercice 5 — Comparaison d'aires (Difficile)
+    </h4>
+    <p class="mb-3 leading-relaxed">Un jardin circulaire a un rayon de 5 m. On veut l'agrandir pour doubler sa surface. Quel sera le nouveau rayon ?</p>
+    <div class="mt-4 bg-white/70 dark:bg-gray-900/50 p-4 rounded-lg">
+      <p class="font-semibold text-pink-700 dark:text-pink-300 mb-2">📝 Solution :</p>
+      <div class="space-y-2 text-sm">
+        <p><span class="font-semibold">Aire initiale :</span> A₁ = π × 5² = 25π m²</p>
+        <p><span class="font-semibold">Aire finale :</span> A₂ = 2 × 25π = 50π m²</p>
+        <p><span class="font-semibold">Nouveau rayon :</span> A₂ = π × r² donc 50π = π × r²</p>
+        <p>r² = 50 donc r = √50 ≈ <span class="font-bold text-pink-600">7,07 m</span></p>
+        <p class="mt-2 p-2 bg-pink-50 dark:bg-pink-950/30 rounded border border-pink-300 dark:border-pink-700 italic">
+          💡 Pour doubler l'aire, il faut multiplier le rayon par √2 ≈ 1,41
+        </p>
+      </div>
+    </div>
+  </div>
+
+</div>`
+  },
+
+  "triangles": {
+    objectif: `À la fin de cette leçon, tu vas pouvoir:
+• Identifier et classifier les différents types de triangles
+• Connaître les propriétés fondamentales des triangles
+• Calculer le périmètre et l'aire des triangles
+• Utiliser le théorème de Pythagore`,
+
+    introduction: `<div class="space-y-4">
+  <p class="text-lg leading-relaxed">
+    <span class="font-semibold text-primary">Pourquoi les toits des maisons ont-ils souvent une forme triangulaire ?</span> 
+    Parce que le triangle est une figure <span class="italic font-semibold text-accent">très stable et solide</span> !
+  </p>
+  
+  <p class="text-lg leading-relaxed">
+    Le triangle est la plus simple des figures géométriques, mais aussi l'une des plus importantes. 
+    On le retrouve dans l'architecture, les ponts, les panneaux de signalisation, et même dans la nature !
+  </p>
+
+  <div class="bg-gradient-to-r from-primary/10 to-accent/10 p-4 rounded-lg border-l-4 border-primary">
+    <p class="font-medium">💡 <span class="text-primary">Fun Fact :</span> 
+    La somme des angles d'un triangle est toujours 180° !</p>
+  </div>
+</div>`,
+
+    contenu: `<div class="space-y-8">
+  
+  <!-- Section 1: Types de triangles -->
+  <section class="bg-gradient-to-br from-blue-50 to-purple-50 dark:from-blue-950/30 dark:to-purple-950/30 p-6 rounded-xl border border-blue-200 dark:border-blue-800">
+    <h3 class="text-2xl font-bold mb-4 flex items-center gap-2 text-blue-700 dark:text-blue-300">
+      🔺 Classification des Triangles
+    </h3>
+    
+    <div class="space-y-4">
+      <div class="bg-white/80 dark:bg-gray-900/50 p-4 rounded-lg">
+        <h4 class="font-bold text-lg mb-3 text-primary">📐 Selon les côtés</h4>
+        <div class="space-y-3">
+          <div class="p-3 bg-blue-50 dark:bg-blue-950/30 rounded">
+            <p class="font-semibold text-blue-700 dark:text-blue-300">Triangle équilatéral</p>
+            <p class="text-sm">3 côtés égaux • 3 angles égaux (60° chacun)</p>
+          </div>
+          <div class="p-3 bg-green-50 dark:bg-green-950/30 rounded">
+            <p class="font-semibold text-green-700 dark:text-green-300">Triangle isocèle</p>
+            <p class="text-sm">2 côtés égaux • 2 angles égaux</p>
+          </div>
+          <div class="p-3 bg-orange-50 dark:bg-orange-950/30 rounded">
+            <p class="font-semibold text-orange-700 dark:text-orange-300">Triangle scalène</p>
+            <p class="text-sm">3 côtés différents • 3 angles différents</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="bg-white/80 dark:bg-gray-900/50 p-4 rounded-lg">
+        <h4 class="font-bold text-lg mb-3 text-primary">📏 Selon les angles</h4>
+        <div class="space-y-3">
+          <div class="p-3 bg-red-50 dark:bg-red-950/30 rounded">
+            <p class="font-semibold text-red-700 dark:text-red-300">Triangle rectangle</p>
+            <p class="text-sm">1 angle droit (90°)</p>
+          </div>
+          <div class="p-3 bg-purple-50 dark:bg-purple-950/30 rounded">
+            <p class="font-semibold text-purple-700 dark:text-purple-300">Triangle obtusangle</p>
+            <p class="text-sm">1 angle obtus (&gt; 90°)</p>
+          </div>
+          <div class="p-3 bg-teal-50 dark:bg-teal-950/30 rounded">
+            <p class="font-semibold text-teal-700 dark:text-teal-300">Triangle acutangle</p>
+            <p class="text-sm">3 angles aigus (&lt; 90°)</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Section 2: Propriétés -->
+  <section class="bg-gradient-to-br from-green-50 to-teal-50 dark:from-green-950/30 dark:to-teal-950/30 p-6 rounded-xl border border-green-200 dark:border-green-800">
+    <h3 class="text-2xl font-bold mb-4 flex items-center gap-2 text-green-700 dark:text-green-300">
+      ✨ Propriétés Fondamentales
+    </h3>
+    
+    <div class="space-y-4">
+      <div class="bg-white/80 dark:bg-gray-900/50 p-4 rounded-lg border-l-4 border-green-500">
+        <h4 class="font-bold text-lg mb-2 text-primary">📌 Somme des angles</h4>
+        <p class="leading-relaxed mb-2">
+          Dans tout triangle, la somme des trois angles est toujours égale à 180°
+        </p>
+        <p class="font-mono text-lg p-2 bg-green-50 dark:bg-green-950/30 rounded">
+          A + B + C = 180°
+        </p>
+      </div>
+
+      <div class="bg-white/80 dark:bg-gray-900/50 p-4 rounded-lg border-l-4 border-blue-500">
+        <h4 class="font-bold text-lg mb-2 text-primary">📌 Inégalité triangulaire</h4>
+        <p class="leading-relaxed mb-2">
+          La longueur de chaque côté est toujours inférieure à la somme des deux autres
+        </p>
+        <p class="font-mono text-sm p-2 bg-blue-50 dark:bg-blue-950/30 rounded">
+          AB &lt; AC + BC  •  AC &lt; AB + BC  •  BC &lt; AB + AC
+        </p>
+      </div>
+
+      <div class="bg-white/80 dark:bg-gray-900/50 p-4 rounded-lg border-l-4 border-purple-500">
+        <h4 class="font-bold text-lg mb-2 text-primary">📌 Hauteur et médiane</h4>
+        <p class="leading-relaxed"><span class="font-semibold">Hauteur :</span> droite perpendiculaire à un côté passant par le sommet opposé</p>
+        <p class="leading-relaxed mt-2"><span class="font-semibold">Médiane :</span> segment reliant un sommet au milieu du côté opposé</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Section 3: Périmètre -->
+  <section class="bg-gradient-to-br from-orange-50 to-red-50 dark:from-orange-950/30 dark:to-red-950/30 p-6 rounded-xl border border-orange-200 dark:border-orange-800">
+    <h3 class="text-2xl font-bold mb-4 flex items-center gap-2 text-orange-700 dark:text-orange-300">
+      📏 Périmètre du Triangle
+    </h3>
+    
+    <div class="space-y-4">
+      <div class="bg-white/80 dark:bg-gray-900/50 p-4 rounded-lg">
+        <h4 class="font-bold text-lg mb-3 text-primary">🔍 Formule générale</h4>
+        <div class="p-4 bg-gradient-to-r from-primary/10 to-accent/10 rounded border-l-4 border-primary">
+          <p class="font-mono text-xl text-center mb-2">P = a + b + c</p>
+          <p class="text-sm text-center text-muted-foreground">
+            (Somme des trois côtés)
+          </p>
+        </div>
+      </div>
+
+      <div class="bg-white/80 dark:bg-gray-900/50 p-4 rounded-lg">
+        <h4 class="font-bold text-lg mb-3 text-primary">💡 Exemple</h4>
+        <p class="mb-2">Triangle avec côtés : 5 cm, 7 cm, 8 cm</p>
+        <div class="p-3 bg-orange-50 dark:bg-orange-950/30 rounded">
+          <p class="font-mono">P = 5 + 7 + 8 = <span class="font-bold text-orange-600">20 cm</span></p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Section 4: Aire -->
+  <section class="bg-gradient-to-br from-purple-50 to-pink-50 dark:from-purple-950/30 dark:to-pink-950/30 p-6 rounded-xl border border-purple-200 dark:border-purple-800">
+    <h3 class="text-2xl font-bold mb-4 flex items-center gap-2 text-purple-700 dark:text-purple-300">
+      📐 Aire du Triangle
+    </h3>
+    
+    <div class="space-y-4">
+      <div class="bg-white/80 dark:bg-gray-900/50 p-4 rounded-lg">
+        <h4 class="font-bold text-lg mb-3 text-primary">🔍 Formule principale</h4>
+        <div class="p-4 bg-gradient-to-r from-primary/10 to-accent/10 rounded border-l-4 border-primary">
+          <p class="font-mono text-2xl text-center mb-2">A = (base × hauteur) ÷ 2</p>
+          <p class="text-sm text-center text-muted-foreground">ou A = (b × h) / 2</p>
+        </div>
+      </div>
+
+      <div class="bg-white/80 dark:bg-gray-900/50 p-4 rounded-lg">
+        <h4 class="font-bold text-lg mb-3 text-primary">💡 Exemple</h4>
+        <p class="mb-2">Base = 8 cm, Hauteur = 5 cm</p>
+        <div class="p-3 bg-purple-50 dark:bg-purple-950/30 rounded">
+          <p class="font-mono">A = (8 × 5) ÷ 2</p>
+          <p class="font-mono">A = 40 ÷ 2</p>
+          <p class="font-mono">A = <span class="font-bold text-purple-600">20 cm²</span></p>
+        </div>
+      </div>
+
+      <div class="bg-white/80 dark:bg-gray-900/50 p-4 rounded-lg">
+        <h4 class="font-bold text-lg mb-3 text-primary">📐 Triangle rectangle</h4>
+        <p class="mb-2">Les deux côtés de l'angle droit sont base et hauteur :</p>
+        <div class="p-3 bg-pink-50 dark:bg-pink-950/30 rounded">
+          <p class="font-mono">A = (côté₁ × côté₂) ÷ 2</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Section 5: Pythagore -->
+  <section class="bg-gradient-to-br from-cyan-50 to-blue-50 dark:from-cyan-950/30 dark:to-blue-950/30 p-6 rounded-xl border border-cyan-200 dark:border-cyan-800">
+    <h3 class="text-2xl font-bold mb-4 flex items-center gap-2 text-cyan-700 dark:text-cyan-300">
+      🎓 Théorème de Pythagore
+    </h3>
+    
+    <div class="space-y-4">
+      <div class="bg-white/80 dark:bg-gray-900/50 p-4 rounded-lg">
+        <h4 class="font-bold text-lg mb-3 text-primary">🔍 Le théorème</h4>
+        <p class="mb-3 leading-relaxed">
+          Dans un triangle rectangle, le carré de l'hypoténuse est égal à la somme des carrés des deux autres côtés
+        </p>
+        <div class="p-4 bg-gradient-to-r from-primary/10 to-accent/10 rounded border-l-4 border-primary">
+          <p class="font-mono text-2xl text-center">a² = b² + c²</p>
+          <p class="text-sm text-center mt-2 text-muted-foreground">
+            (a = hypoténuse, b et c = autres côtés)
+          </p>
+        </div>
+      </div>
+
+      <div class="bg-white/80 dark:bg-gray-900/50 p-4 rounded-lg">
+        <h4 class="font-bold text-lg mb-3 text-primary">💡 Exemple</h4>
+        <p class="mb-2">Triangle rectangle avec côtés 3 cm et 4 cm. Trouver l'hypoténuse :</p>
+        <div class="p-3 bg-cyan-50 dark:bg-cyan-950/30 rounded">
+          <p class="font-mono text-sm">a² = 3² + 4²</p>
+          <p class="font-mono text-sm">a² = 9 + 16 = 25</p>
+          <p class="font-mono text-sm">a = √25 = <span class="font-bold text-cyan-600">5 cm</span></p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Section 6: Conseils -->
+  <section class="bg-gradient-to-br from-yellow-50 to-orange-50 dark:from-yellow-950/30 dark:to-orange-950/30 p-6 rounded-xl border border-yellow-200 dark:border-yellow-800">
+    <h3 class="text-2xl font-bold mb-4 flex items-center gap-2 text-yellow-700 dark:text-yellow-300">
+      💡 Astuces et Conseils
+    </h3>
+    
+    <div class="space-y-3">
+      <div class="bg-white/80 dark:bg-gray-900/50 p-3 rounded-lg flex gap-3">
+        <span class="text-2xl">✅</span>
+        <p><span class="font-semibold">Vérifie toujours</span> que la somme des angles = 180°</p>
+      </div>
+      
+      <div class="bg-white/80 dark:bg-gray-900/50 p-3 rounded-lg flex gap-3">
+        <span class="text-2xl">✅</span>
+        <p><span class="font-semibold">Pour l'aire :</span> identifie bien la base et la hauteur (perpendiculaire !)</p>
+      </div>
+      
+      <div class="bg-white/80 dark:bg-gray-900/50 p-3 rounded-lg flex gap-3">
+        <span class="text-2xl">✅</span>
+        <p><span class="font-semibold">Pythagore :</span> ne fonctionne QUE pour les triangles rectangles</p>
+      </div>
+      
+      <div class="bg-white/80 dark:bg-gray-900/50 p-3 rounded-lg flex gap-3">
+        <span class="text-2xl">✅</span>
+        <p><span class="font-semibold">Dessine toujours</span> une figure pour mieux visualiser</p>
+      </div>
+    </div>
+  </section>
+
+</div>`,
+
+    exemplesExercices: `<div class="space-y-6">
+  
+  <div class="bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-950/40 dark:to-blue-900/30 p-5 rounded-xl border-l-4 border-blue-500">
+    <h4 class="font-bold text-lg mb-3 flex items-center gap-2 text-blue-700 dark:text-blue-300">
+      ✏️ Exercice 1 — Somme des angles (Facile)
+    </h4>
+    <p class="mb-3 leading-relaxed">Dans un triangle, deux angles mesurent 45° et 65°. Quel est le troisième angle ?</p>
+    <div class="mt-4 bg-white/70 dark:bg-gray-900/50 p-4 rounded-lg">
+      <p class="font-semibold text-blue-700 dark:text-blue-300 mb-2">📝 Solution :</p>
+      <div class="space-y-2 text-sm">
+        <p>A + B + C = 180°</p>
+        <p>45° + 65° + C = 180°</p>
+        <p>110° + C = 180°</p>
+        <p>C = 180° - 110° = <span class="font-bold text-blue-600">70°</span></p>
+      </div>
+    </div>
+  </div>
+
+  <div class="bg-gradient-to-br from-green-50 to-green-100 dark:from-green-950/40 dark:to-green-900/30 p-5 rounded-xl border-l-4 border-green-500">
+    <h4 class="font-bold text-lg mb-3 flex items-center gap-2 text-green-700 dark:text-green-300">
+      ✏️ Exercice 2 — Périmètre (Facile)
+    </h4>
+    <p class="mb-3 leading-relaxed">Un triangle équilatéral a un côté de 8 cm. Quel est son périmètre ?</p>
+    <div class="mt-4 bg-white/70 dark:bg-gray-900/50 p-4 rounded-lg">
+      <p class="font-semibold text-green-700 dark:text-green-300 mb-2">📝 Solution :</p>
+      <div class="space-y-2 text-sm">
+        <p>Triangle équilatéral : 3 côtés égaux</p>
+        <p>P = 8 + 8 + 8 = 3 × 8</p>
+        <p>P = <span class="font-bold text-green-600">24 cm</span></p>
+      </div>
+    </div>
+  </div>
+
+  <div class="bg-gradient-to-br from-orange-50 to-orange-100 dark:from-orange-950/40 dark:to-orange-900/30 p-5 rounded-xl border-l-4 border-orange-500">
+    <h4 class="font-bold text-lg mb-3 flex items-center gap-2 text-orange-700 dark:text-orange-300">
+      ✏️ Exercice 3 — Aire (Moyen)
+    </h4>
+    <p class="mb-3 leading-relaxed">Un triangle a une base de 12 cm et une hauteur de 7 cm. Calculer son aire</p>
+    <div class="mt-4 bg-white/70 dark:bg-gray-900/50 p-4 rounded-lg">
+      <p class="font-semibold text-orange-700 dark:text-orange-300 mb-2">📝 Solution :</p>
+      <div class="space-y-2 text-sm">
+        <p>A = (base × hauteur) ÷ 2</p>
+        <p>A = (12 × 7) ÷ 2</p>
+        <p>A = 84 ÷ 2</p>
+        <p>A = <span class="font-bold text-orange-600">42 cm²</span></p>
+      </div>
+    </div>
+  </div>
+
+  <div class="bg-gradient-to-br from-purple-50 to-purple-100 dark:from-purple-950/40 dark:to-purple-900/30 p-5 rounded-xl border-l-4 border-purple-500">
+    <h4 class="font-bold text-lg mb-3 flex items-center gap-2 text-purple-700 dark:text-purple-300">
+      ✏️ Exercice 4 — Pythagore (Difficile)
+    </h4>
+    <p class="mb-3 leading-relaxed">Un triangle rectangle a des côtés de 5 cm et 12 cm. Trouver l'hypoténuse</p>
+    <div class="mt-4 bg-white/70 dark:bg-gray-900/50 p-4 rounded-lg">
+      <p class="font-semibold text-purple-700 dark:text-purple-300 mb-2">📝 Solution :</p>
+      <div class="space-y-2 text-sm">
+        <p>a² = b² + c²</p>
+        <p>a² = 5² + 12²</p>
+        <p>a² = 25 + 144 = 169</p>
+        <p>a = √169 = <span class="font-bold text-purple-600">13 cm</span></p>
+      </div>
+    </div>
+  </div>
+
+  <div class="bg-gradient-to-br from-pink-50 to-pink-100 dark:from-pink-950/40 dark:to-pink-900/30 p-5 rounded-xl border-l-4 border-pink-500">
+    <h4 class="font-bold text-lg mb-3 flex items-center gap-2 text-pink-700 dark:text-pink-300">
+      ✏️ Exercice 5 — Problème complexe (Difficile)
+    </h4>
+    <p class="mb-3 leading-relaxed">Un terrain triangulaire a des côtés de 30 m, 40 m et 50 m. Est-ce un triangle rectangle ? Calculer son aire</p>
+    <div class="mt-4 bg-white/70 dark:bg-gray-900/50 p-4 rounded-lg">
+      <p class="font-semibold text-pink-700 dark:text-pink-300 mb-3">📝 Solution :</p>
+      <div class="space-y-3 text-sm">
+        <div class="p-3 bg-blue-50 dark:bg-blue-950/30 rounded">
+          <p class="font-semibold text-blue-700 dark:text-blue-300 mb-1">Vérification Pythagore :</p>
+          <p>50² = 30² + 40² ?</p>
+          <p>2500 = 900 + 1600 = 2500 ✓</p>
+          <p class="font-bold text-blue-600 mt-1">Oui, c'est un triangle rectangle !</p>
+        </div>
+        <div class="p-3 bg-pink-50 dark:bg-pink-950/30 rounded border-2 border-pink-300 dark:border-pink-700">
+          <p class="font-semibold text-pink-700 dark:text-pink-300 mb-1">Aire :</p>
+          <p>A = (30 × 40) ÷ 2 = 1200 ÷ 2 = <span class="font-bold text-pink-600">600 m²</span></p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>`
+  },
+
+  "aires-perimetres": {
+    objectif: `À la fin de cette leçon, tu vas pouvoir:
+• Distinguer périmètre et aire
+• Calculer le périmètre de figures variées
+• Calculer l'aire de figures géométriques courantes
+• Résoudre des problèmes pratiques de mesure`,
+
+    introduction: `<div class="space-y-4">
+  <p class="text-lg leading-relaxed">
+    <span class="font-semibold text-primary">Quelle est la différence entre mesurer le tour d'un champ et sa surface ?</span> 
+    Le tour, c'est le <span class="italic font-semibold text-accent">périmètre</span>, 
+    la surface, c'est l'<span class="italic font-semibold text-primary">aire</span> !
+  </p>
+  
+  <p class="text-lg leading-relaxed">
+    Ces deux mesures sont essentielles dans la vie quotidienne : 
+    calculer combien de clôture il faut pour entourer un terrain (périmètre), 
+    ou combien de peinture pour couvrir un mur (aire).
+  </p>
+
+  <div class="bg-gradient-to-r from-primary/10 to-accent/10 p-4 rounded-lg border-l-4 border-primary">
+    <p class="font-medium">💡 <span class="text-primary">Astuce :</span> 
+    Périmètre = TOUR (en mètres), Aire = SURFACE (en mètres carrés)</p>
+  </div>
+</div>`,
+
+    contenu: `<div class="space-y-8">
+  
+  <!-- Section 1: Différences -->
+  <section class="bg-gradient-to-br from-blue-50 to-purple-50 dark:from-blue-950/30 dark:to-purple-950/30 p-6 rounded-xl border border-blue-200 dark:border-blue-800">
+    <h3 class="text-2xl font-bold mb-4 flex items-center gap-2 text-blue-700 dark:text-blue-300">
+      🎯 Périmètre vs Aire
+    </h3>
+    
+    <div class="space-y-4">
+      <div class="bg-white/80 dark:bg-gray-900/50 p-4 rounded-lg border-l-4 border-blue-500">
+        <h4 class="font-bold text-lg mb-2 text-primary">📏 Périmètre</h4>
+        <p class="leading-relaxed mb-2">
+          Le périmètre est la <span class="font-semibold text-accent">longueur du contour</span> d'une figure
+        </p>
+        <p class="text-sm">• Unités : m, cm, km...</p>
+        <p class="text-sm">• On additionne les longueurs des côtés</p>
+        <p class="text-sm italic mt-2">Exemple : Une clôture autour d'un jardin</p>
+      </div>
+
+      <div class="bg-white/80 dark:bg-gray-900/50 p-4 rounded-lg border-l-4 border-green-500">
+        <h4 class="font-bold text-lg mb-2 text-primary">📐 Aire</h4>
+        <p class="leading-relaxed mb-2">
+          L'aire est la <span class="font-semibold text-accent">mesure de la surface</span> à l'intérieur d'une figure
+        </p>
+        <p class="text-sm">• Unités : m², cm², km²...</p>
+        <p class="text-sm">• On multiplie généralement deux dimensions</p>
+        <p class="text-sm italic mt-2">Exemple : La quantité de peinture pour un mur</p>
+      </div>
+
+      <div class="p-4 bg-amber-50 dark:bg-amber-950/30 rounded-lg border border-amber-300 dark:border-amber-700">
+        <p class="font-semibold text-amber-800 dark:text-amber-200">⚠️ Important :</p>
+        <p class="mt-1 text-amber-700 dark:text-amber-300">
+          Deux figures peuvent avoir le même périmètre mais des aires différentes, et vice versa !
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Section 2: Périmètres -->
+  <section class="bg-gradient-to-br from-green-50 to-teal-50 dark:from-green-950/30 dark:to-teal-950/30 p-6 rounded-xl border border-green-200 dark:border-green-800">
+    <h3 class="text-2xl font-bold mb-4 flex items-center gap-2 text-green-700 dark:text-green-300">
+      📏 Formules des Périmètres
+    </h3>
+    
+    <div class="space-y-4">
+      <div class="bg-white/80 dark:bg-gray-900/50 p-4 rounded-lg">
+        <h4 class="font-bold text-lg mb-3 text-primary">▭ Rectangle</h4>
+        <div class="p-3 bg-gradient-to-r from-primary/10 to-accent/10 rounded">
+          <p class="font-mono text-lg">P = 2 × (Longueur + largeur)</p>
+          <p class="font-mono text-lg">P = 2 × (L + l)</p>
+        </div>
+      </div>
+
+      <div class="bg-white/80 dark:bg-gray-900/50 p-4 rounded-lg">
+        <h4 class="font-bold text-lg mb-3 text-primary">▢ Carré</h4>
+        <div class="p-3 bg-gradient-to-r from-accent/10 to-primary/10 rounded">
+          <p class="font-mono text-lg">P = 4 × côté</p>
+          <p class="font-mono text-lg">P = 4c</p>
+        </div>
+      </div>
+
+      <div class="bg-white/80 dark:bg-gray-900/50 p-4 rounded-lg">
+        <h4 class="font-bold text-lg mb-3 text-primary">△ Triangle</h4>
+        <div class="p-3 bg-gradient-to-r from-primary/10 to-accent/10 rounded">
+          <p class="font-mono text-lg">P = côté₁ + côté₂ + côté₃</p>
+          <p class="font-mono text-lg">P = a + b + c</p>
+        </div>
+      </div>
+
+      <div class="bg-white/80 dark:bg-gray-900/50 p-4 rounded-lg">
+        <h4 class="font-bold text-lg mb-3 text-primary">○ Cercle</h4>
+        <div class="p-3 bg-gradient-to-r from-accent/10 to-primary/10 rounded">
+          <p class="font-mono text-lg">P = 2 × π × rayon</p>
+          <p class="font-mono text-lg">P = 2πr ou P = πd</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Section 3: Aires -->
+  <section class="bg-gradient-to-br from-orange-50 to-red-50 dark:from-orange-950/30 dark:to-red-950/30 p-6 rounded-xl border border-orange-200 dark:border-orange-800">
+    <h3 class="text-2xl font-bold mb-4 flex items-center gap-2 text-orange-700 dark:text-orange-300">
+      📐 Formules des Aires
+    </h3>
+    
+    <div class="space-y-4">
+      <div class="bg-white/80 dark:bg-gray-900/50 p-4 rounded-lg">
+        <h4 class="font-bold text-lg mb-3 text-primary">▭ Rectangle</h4>
+        <div class="p-3 bg-gradient-to-r from-primary/10 to-accent/10 rounded">
+          <p class="font-mono text-xl">A = Longueur × largeur</p>
+          <p class="font-mono text-xl">A = L × l</p>
+        </div>
+      </div>
+
+      <div class="bg-white/80 dark:bg-gray-900/50 p-4 rounded-lg">
+        <h4 class="font-bold text-lg mb-3 text-primary">▢ Carré</h4>
+        <div class="p-3 bg-gradient-to-r from-accent/10 to-primary/10 rounded">
+          <p class="font-mono text-xl">A = côté × côté</p>
+          <p class="font-mono text-xl">A = c²</p>
+        </div>
+      </div>
+
+      <div class="bg-white/80 dark:bg-gray-900/50 p-4 rounded-lg">
+        <h4 class="font-bold text-lg mb-3 text-primary">△ Triangle</h4>
+        <div class="p-3 bg-gradient-to-r from-primary/10 to-accent/10 rounded">
+          <p class="font-mono text-xl">A = (base × hauteur) ÷ 2</p>
+          <p class="font-mono text-xl">A = (b × h) / 2</p>
+        </div>
+      </div>
+
+      <div class="bg-white/80 dark:bg-gray-900/50 p-4 rounded-lg">
+        <h4 class="font-bold text-lg mb-3 text-primary">○ Disque (Cercle plein)</h4>
+        <div class="p-3 bg-gradient-to-r from-accent/10 to-primary/10 rounded">
+          <p class="font-mono text-xl">A = π × rayon²</p>
+          <p class="font-mono text-xl">A = πr²</p>
+        </div>
+      </div>
+
+      <div class="bg-white/80 dark:bg-gray-900/50 p-4 rounded-lg">
+        <h4 class="font-bold text-lg mb-3 text-primary">▱ Parallélogramme</h4>
+        <div class="p-3 bg-gradient-to-r from-primary/10 to-accent/10 rounded">
+          <p class="font-mono text-xl">A = base × hauteur</p>
+          <p class="font-mono text-xl">A = b × h</p>
+        </div>
+      </div>
+
+      <div class="bg-white/80 dark:bg-gray-900/50 p-4 rounded-lg">
+        <h4 class="font-bold text-lg mb-3 text-primary">◇ Losange</h4>
+        <div class="p-3 bg-gradient-to-r from-accent/10 to-primary/10 rounded">
+          <p class="font-mono text-xl">A = (diagonale₁ × diagonale₂) ÷ 2</p>
+          <p class="font-mono text-xl">A = (D × d) / 2</p>
+        </div>
+      </div>
+
+      <div class="bg-white/80 dark:bg-gray-900/50 p-4 rounded-lg">
+        <h4 class="font-bold text-lg mb-3 text-primary">⬠ Trapèze</h4>
+        <div class="p-3 bg-gradient-to-r from-primary/10 to-accent/10 rounded">
+          <p class="font-mono text-xl">A = [(petite base + grande base) × hauteur] ÷ 2</p>
+          <p class="font-mono text-xl">A = [(b + B) × h] / 2</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Section 4: Unités -->
+  <section class="bg-gradient-to-br from-purple-50 to-pink-50 dark:from-purple-950/30 dark:to-pink-950/30 p-6 rounded-xl border border-purple-200 dark:border-purple-800">
+    <h3 class="text-2xl font-bold mb-4 flex items-center gap-2 text-purple-700 dark:text-purple-300">
+      🔢 Conversions d'Unités
+    </h3>
+    
+    <div class="space-y-4">
+      <div class="bg-white/80 dark:bg-gray-900/50 p-4 rounded-lg">
+        <h4 class="font-bold text-lg mb-3 text-primary">📏 Longueurs (pour périmètres)</h4>
+        <div class="p-3 bg-purple-50 dark:bg-purple-950/30 rounded font-mono text-sm">
+          <p>1 km = 1000 m</p>
+          <p>1 m = 100 cm = 1000 mm</p>
+          <p>1 cm = 10 mm</p>
+        </div>
+      </div>
+
+      <div class="bg-white/80 dark:bg-gray-900/50 p-4 rounded-lg">
+        <h4 class="font-bold text-lg mb-3 text-primary">📐 Aires (surfaces)</h4>
+        <div class="p-3 bg-pink-50 dark:bg-pink-950/30 rounded font-mono text-sm">
+          <p>1 km² = 1 000 000 m² (10⁶ m²)</p>
+          <p>1 m² = 10 000 cm²</p>
+          <p>1 cm² = 100 mm²</p>
+          <p class="mt-2 text-muted-foreground">1 hectare (ha) = 10 000 m²</p>
+        </div>
+      </div>
+
+      <div class="p-4 bg-amber-50 dark:bg-amber-950/30 rounded-lg border border-amber-300 dark:border-amber-700">
+        <p class="font-semibold text-amber-800 dark:text-amber-200">⚠️ Attention :</p>
+        <p class="mt-1 text-amber-700 dark:text-amber-300">
+          Pour les aires, on multiplie par le carré : 1 m = 100 cm, donc 1 m² = 100 × 100 = 10 000 cm²
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Section 5: Applications -->
+  <section class="bg-gradient-to-br from-cyan-50 to-blue-50 dark:from-cyan-950/30 dark:to-blue-950/30 p-6 rounded-xl border border-cyan-200 dark:border-cyan-800">
+    <h3 class="text-2xl font-bold mb-4 flex items-center gap-2 text-cyan-700 dark:text-cyan-300">
+      🌟 Applications Pratiques
+    </h3>
+    
+    <div class="space-y-4">
+      <div class="bg-white/80 dark:bg-gray-900/50 p-4 rounded-lg border-l-4 border-green-500">
+        <h4 class="font-bold text-lg mb-2 text-primary">🏡 Terrain rectangulaire</h4>
+        <p class="mb-2">Terrain 25m × 15m. Calculer clôture nécessaire et surface</p>
+        <div class="p-3 bg-cyan-50 dark:bg-cyan-950/30 rounded text-sm">
+          <p><span class="font-semibold">Périmètre :</span> 2×(25+15) = 2×40 = <span class="font-bold">80 m</span> de clôture</p>
+          <p><span class="font-semibold">Aire :</span> 25×15 = <span class="font-bold">375 m²</span> de surface</p>
+        </div>
+      </div>
+
+      <div class="bg-white/80 dark:bg-gray-900/50 p-4 rounded-lg border-l-4 border-blue-500">
+        <h4 class="font-bold text-lg mb-2 text-primary">🎨 Peinture murale</h4>
+        <p class="mb-2">Mur 4m × 3m. 1L de peinture couvre 10m². Combien de litres ?</p>
+        <div class="p-3 bg-blue-50 dark:bg-blue-950/30 rounded text-sm">
+          <p><span class="font-semibold">Aire :</span> 4×3 = 12 m²</p>
+          <p><span class="font-semibold">Peinture :</span> 12÷10 = <span class="font-bold">1,2 L</span> (arrondir à 2L)</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Section 6: Conseils -->
+  <section class="bg-gradient-to-br from-yellow-50 to-orange-50 dark:from-yellow-950/30 dark:to-orange-950/30 p-6 rounded-xl border border-yellow-200 dark:border-yellow-800">
+    <h3 class="text-2xl font-bold mb-4 flex items-center gap-2 text-yellow-700 dark:text-yellow-300">
+      💡 Astuces et Conseils
+    </h3>
+    
+    <div class="space-y-3">
+      <div class="bg-white/80 dark:bg-gray-900/50 p-3 rounded-lg flex gap-3">
+        <span class="text-2xl">✅</span>
+        <p><span class="font-semibold">Dessine toujours</span> la figure pour mieux visualiser</p>
+      </div>
+      
+      <div class="bg-white/80 dark:bg-gray-900/50 p-3 rounded-lg flex gap-3">
+        <span class="text-2xl">✅</span>
+        <p><span class="font-semibold">Vérifie tes unités :</span> m pour périmètre, m² pour aire</p>
+      </div>
+      
+      <div class="bg-white/80 dark:bg-gray-900/50 p-3 rounded-lg flex gap-3">
+        <span class="text-2xl">✅</span>
+        <p><span class="font-semibold">Pour les figures complexes :</span> décompose-les en figures simples</p>
+      </div>
+      
+      <div class="bg-white/80 dark:bg-gray-900/50 p-3 rounded-lg flex gap-3">
+        <span class="text-2xl">✅</span>
+        <p><span class="font-semibold">Retiens :</span> Périmètre = tour, Aire = surface intérieure</p>
+      </div>
+    </div>
+  </section>
+
+</div>`,
+
+    exemplesExercices: `<div class="space-y-6">
+  
+  <div class="bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-950/40 dark:to-blue-900/30 p-5 rounded-xl border-l-4 border-blue-500">
+    <h4 class="font-bold text-lg mb-3 flex items-center gap-2 text-blue-700 dark:text-blue-300">
+      ✏️ Exercice 1 — Rectangle (Facile)
+    </h4>
+    <p class="mb-3 leading-relaxed">Un rectangle mesure 8 cm de long et 5 cm de large. Calculer son périmètre et son aire</p>
+    <div class="mt-4 bg-white/70 dark:bg-gray-900/50 p-4 rounded-lg">
+      <p class="font-semibold text-blue-700 dark:text-blue-300 mb-2">📝 Solution :</p>
+      <div class="space-y-2 text-sm">
+        <p><span class="font-semibold">Périmètre :</span> P = 2×(L+l) = 2×(8+5) = 2×13 = <span class="font-bold text-blue-600">26 cm</span></p>
+        <p><span class="font-semibold">Aire :</span> A = L×l = 8×5 = <span class="font-bold text-blue-600">40 cm²</span></p>
+      </div>
+    </div>
+  </div>
+
+  <div class="bg-gradient-to-br from-green-50 to-green-100 dark:from-green-950/40 dark:to-green-900/30 p-5 rounded-xl border-l-4 border-green-500">
+    <h4 class="font-bold text-lg mb-3 flex items-center gap-2 text-green-700 dark:text-green-300">
+      ✏️ Exercice 2 — Carré (Facile)
+    </h4>
+    <p class="mb-3 leading-relaxed">Un carré a un côté de 12 m. Calculer son périmètre et son aire</p>
+    <div class="mt-4 bg-white/70 dark:bg-gray-900/50 p-4 rounded-lg">
+      <p class="font-semibold text-green-700 dark:text-green-300 mb-2">📝 Solution :</p>
+      <div class="space-y-2 text-sm">
+        <p><span class="font-semibold">Périmètre :</span> P = 4c = 4×12 = <span class="font-bold text-green-600">48 m</span></p>
+        <p><span class="font-semibold">Aire :</span> A = c² = 12² = <span class="font-bold text-green-600">144 m²</span></p>
+      </div>
+    </div>
+  </div>
+
+  <div class="bg-gradient-to-br from-orange-50 to-orange-100 dark:from-orange-950/40 dark:to-orange-900/30 p-5 rounded-xl border-l-4 border-orange-500">
+    <h4 class="font-bold text-lg mb-3 flex items-center gap-2 text-orange-700 dark:text-orange-300">
+      ✏️ Exercice 3 — Cercle (Moyen)
+    </h4>
+    <p class="mb-3 leading-relaxed">Un cercle a un rayon de 10 cm. Calculer son périmètre et l'aire du disque</p>
+    <div class="mt-4 bg-white/70 dark:bg-gray-900/50 p-4 rounded-lg">
+      <p class="font-semibold text-orange-700 dark:text-orange-300 mb-2">📝 Solution :</p>
+      <div class="space-y-2 text-sm">
+        <p><span class="font-semibold">Périmètre :</span> P = 2πr = 2×3,14×10 = <span class="font-bold text-orange-600">62,8 cm</span></p>
+        <p><span class="font-semibold">Aire :</span> A = πr² = 3,14×10² = 3,14×100 = <span class="font-bold text-orange-600">314 cm²</span></p>
+      </div>
+    </div>
+  </div>
+
+  <div class="bg-gradient-to-br from-purple-50 to-purple-100 dark:from-purple-950/40 dark:to-purple-900/30 p-5 rounded-xl border-l-4 border-purple-500">
+    <h4 class="font-bold text-lg mb-3 flex items-center gap-2 text-purple-700 dark:text-purple-300">
+      ✏️ Exercice 4 — Trapèze (Difficile)
+    </h4>
+    <p class="mb-3 leading-relaxed">Un trapèze a des bases de 6 cm et 10 cm, et une hauteur de 4 cm. Calculer son aire</p>
+    <div class="mt-4 bg-white/70 dark:bg-gray-900/50 p-4 rounded-lg">
+      <p class="font-semibold text-purple-700 dark:text-purple-300 mb-2">📝 Solution :</p>
+      <div class="space-y-2 text-sm">
+        <p>A = [(b+B)×h]/2</p>
+        <p>A = [(6+10)×4]/2</p>
+        <p>A = [16×4]/2</p>
+        <p>A = 64/2 = <span class="font-bold text-purple-600">32 cm²</span></p>
+      </div>
+    </div>
+  </div>
+
+  <div class="bg-gradient-to-br from-pink-50 to-pink-100 dark:from-pink-950/40 dark:to-pink-900/30 p-5 rounded-xl border-l-4 border-pink-500">
+    <h4 class="font-bold text-lg mb-3 flex items-center gap-2 text-pink-700 dark:text-pink-300">
+      ✏️ Exercice 5 — Problème Pratique (Difficile)
+    </h4>
+    <p class="mb-3 leading-relaxed">Un jardin rectangulaire de 20m × 15m est entouré d'une allée de 2m de large. Calculer l'aire de l'allée</p>
+    <div class="mt-4 bg-white/70 dark:bg-gray-900/50 p-4 rounded-lg">
+      <p class="font-semibold text-pink-700 dark:text-pink-300 mb-3">📝 Solution :</p>
+      <div class="space-y-3 text-sm">
+        <div class="p-3 bg-blue-50 dark:bg-blue-950/30 rounded">
+          <p class="font-semibold text-blue-700 dark:text-blue-300 mb-1">Aire totale (avec allée) :</p>
+          <p>Dimensions : (20+2+2) × (15+2+2) = 24×19</p>
+          <p>A_totale = <span class="font-bold">456 m²</span></p>
+        </div>
+        <div class="p-3 bg-green-50 dark:bg-green-950/30 rounded">
+          <p class="font-semibold text-green-700 dark:text-green-300 mb-1">Aire du jardin :</p>
+          <p>A_jardin = 20×15 = <span class="font-bold">300 m²</span></p>
+        </div>
+        <div class="p-3 bg-pink-50 dark:bg-pink-950/30 rounded border-2 border-pink-300 dark:border-pink-700">
+          <p class="font-bold text-pink-600 mb-1">✅ Aire de l'allée :</p>
+          <p>A_allée = A_totale - A_jardin</p>
+          <p>A_allée = 456 - 300 = <span class="font-bold text-pink-600">156 m²</span></p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>`
+  },
+
+  "proportionnalite": {
+    objectif: `À la fin de cette leçon, tu vas pouvoir:
+• Reconnaître des situations de proportionnalité
+• Calculer une quatrième proportionnelle
+• Utiliser les tableaux de proportionnalité
+• Résoudre des problèmes de pourcentages et d'échelles`,
+
+    introduction: `<div class="space-y-4">
+  <p class="text-lg leading-relaxed">
+    <span class="font-semibold text-primary">Si 2 cahiers coûtent 50 gourdes, combien coûtent 5 cahiers ?</span> 
+    C'est un problème de <span class="italic font-semibold text-accent">proportionnalité</span> !
+  </p>
+  
+  <p class="text-lg leading-relaxed">
+    La proportionnalité est partout : recettes de cuisine, conversion de monnaies, 
+    vitesse des véhicules, réduction d'images... C'est un outil mathématique essentiel !
+  </p>
+
+  <div class="bg-gradient-to-r from-primary/10 to-accent/10 p-4 rounded-lg border-l-4 border-primary">
+    <p class="font-medium">💡 <span class="text-primary">Clé :</span> 
+    Deux grandeurs sont proportionnelles si on multiplie/divise l'une, l'autre aussi !</p>
+  </div>
+</div>`,
+
+    contenu: `<div class="space-y-8">
+  
+  <section class="bg-gradient-to-br from-blue-50 to-purple-50 dark:from-blue-950/30 dark:to-purple-950/30 p-6 rounded-xl border border-blue-200 dark:border-blue-800">
+    <h3 class="text-2xl font-bold mb-4 flex items-center gap-2 text-blue-700 dark:text-blue-300">
+      🎯 Qu'est-ce que la Proportionnalité ?
+    </h3>
+    
+    <div class="space-y-4">
+      <div class="bg-white/80 dark:bg-gray-900/50 p-4 rounded-lg">
+        <h4 class="font-bold text-lg mb-2 text-primary">📌 Définition</h4>
+        <p class="leading-relaxed">
+          Deux grandeurs sont proportionnelles si on peut passer de l'une à l'autre en multipliant 
+          toujours par <span class="font-semibold text-accent">le même nombre</span> (coefficient de proportionnalité)
+        </p>
+      </div>
+
+      <div class="bg-white/80 dark:bg-gray-900/50 p-4 rounded-lg">
+        <h4 class="font-bold text-lg mb-3 text-primary">💡 Exemple</h4>
+        <p class="mb-2">Prix des cahiers :</p>
+        <div class="p-3 bg-blue-50 dark:bg-blue-950/30 rounded font-mono text-sm">
+          <p>1 cahier → 25 gourdes</p>
+          <p>2 cahiers → 50 gourdes (×2)</p>
+          <p>3 cahiers → 75 gourdes (×3)</p>
+          <p class="mt-2 text-primary font-bold">Coefficient : 25 gourdes/cahier</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="bg-gradient-to-br from-green-50 to-teal-50 dark:from-green-950/30 dark:to-teal-950/30 p-6 rounded-xl border border-green-200 dark:border-green-800">
+    <h3 class="text-2xl font-bold mb-4 flex items-center gap-2 text-green-700 dark:text-green-300">
+      📊 Tableaux de Proportionnalité
+    </h3>
+    
+    <div class="space-y-4">
+      <div class="bg-white/80 dark:bg-gray-900/50 p-4 rounded-lg">
+        <h4 class="font-bold text-lg mb-3 text-primary">🔍 Méthode du produit en croix</h4>
+        <p class="mb-3">Si a/b = c/d, alors : <span class="font-mono font-bold">a × d = b × c</span></p>
+        <div class="p-3 bg-gradient-to-r from-primary/10 to-accent/10 rounded">
+          <p class="font-mono text-center text-lg">a × d = b × c</p>
+        </div>
+      </div>
+
+      <div class="bg-white/80 dark:bg-gray-900/50 p-4 rounded-lg">
+        <h4 class="font-bold text-lg mb-3 text-primary">💡 Exemple</h4>
+        <p class="mb-2">3 kg de riz coûtent 120 gourdes. Combien coûtent 7 kg ?</p>
+        <div class="p-3 bg-green-50 dark:bg-green-950/30 rounded text-sm">
+          <p>3 kg → 120 gourdes</p>
+          <p>7 kg → ? gourdes</p>
+          <p class="mt-2 font-semibold">3 × ? = 7 × 120</p>
+          <p>? = (7 × 120) ÷ 3 = 840 ÷ 3 = <span class="font-bold text-green-600">280 gourdes</span></p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="bg-gradient-to-br from-orange-50 to-red-50 dark:from-orange-950/30 dark:to-red-950/30 p-6 rounded-xl border border-orange-200 dark:border-orange-800">
+    <h3 class="text-2xl font-bold mb-4 flex items-center gap-2 text-orange-700 dark:text-orange-300">
+      💰 Pourcentages
+    </h3>
+    
+    <div class="space-y-4">
+      <div class="bg-white/80 dark:bg-gray-900/50 p-4 rounded-lg">
+        <h4 class="font-bold text-lg mb-3 text-primary">🔍 Calcul de pourcentage</h4>
+        <div class="p-4 bg-gradient-to-r from-primary/10 to-accent/10 rounded">
+          <p class="font-mono text-xl text-center">x% de N = (x × N) ÷ 100</p>
+        </div>
+      </div>
+
+      <div class="bg-white/80 dark:bg-gray-900/50 p-4 rounded-lg">
+        <h4 class="font-bold text-lg mb-3 text-primary">💡 Exemple</h4>
+        <p class="mb-2">Calculer 15% de 200 gourdes</p>
+        <div class="p-3 bg-orange-50 dark:bg-orange-950/30 rounded">
+          <p class="font-mono">(15 × 200) ÷ 100 = 3000 ÷ 100 = <span class="font-bold text-orange-600">30 gourdes</span></p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="bg-gradient-to-br from-purple-50 to-pink-50 dark:from-purple-950/30 dark:to-pink-950/30 p-6 rounded-xl border border-purple-200 dark:border-purple-800">
+    <h3 class="text-2xl font-bold mb-4 flex items-center gap-2 text-purple-700 dark:text-purple-300">
+      📏 Échelles
+    </h3>
+    
+    <div class="space-y-4">
+      <div class="bg-white/80 dark:bg-gray-900/50 p-4 rounded-lg">
+        <h4 class="font-bold text-lg mb-2 text-primary">📌 Définition</h4>
+        <p class="leading-relaxed mb-2">
+          L'échelle est le rapport entre une distance sur le plan et la distance réelle
+        </p>
+        <div class="p-3 bg-gradient-to-r from-primary/10 to-accent/10 rounded">
+          <p class="font-mono text-center">Échelle = Distance sur plan / Distance réelle</p>
+        </div>
+      </div>
+
+      <div class="bg-white/80 dark:bg-gray-900/50 p-4 rounded-lg">
+        <h4 class="font-bold text-lg mb-3 text-primary">💡 Exemple</h4>
+        <p class="mb-2">Sur une carte à l'échelle 1/50000, 5 cm représentent quelle distance réelle ?</p>
+        <div class="p-3 bg-purple-50 dark:bg-purple-950/30 rounded text-sm">
+          <p>1 cm sur carte = 50 000 cm réels</p>
+          <p>5 cm sur carte = 5 × 50 000 = 250 000 cm</p>
+          <p>= <span class="font-bold text-purple-600">2500 m = 2,5 km</span></p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="bg-gradient-to-br from-cyan-50 to-blue-50 dark:from-cyan-950/30 dark:to-blue-950/30 p-6 rounded-xl border border-cyan-200 dark:border-cyan-800">
+    <h3 class="text-2xl font-bold mb-4 flex items-center gap-2 text-cyan-700 dark:text-cyan-300">
+      ⚡ Vitesse, Distance, Temps
+    </h3>
+    
+    <div class="space-y-4">
+      <div class="bg-white/80 dark:bg-gray-900/50 p-4 rounded-lg">
+        <h4 class="font-bold text-lg mb-3 text-primary">🔍 Formules</h4>
+        <div class="space-y-2">
+          <div class="p-3 bg-cyan-50 dark:bg-cyan-950/30 rounded font-mono">
+            <p>Vitesse = Distance ÷ Temps</p>
+          </div>
+          <div class="p-3 bg-blue-50 dark:bg-blue-950/30 rounded font-mono">
+            <p>Distance = Vitesse × Temps</p>
+          </div>
+          <div class="p-3 bg-teal-50 dark:bg-teal-950/30 rounded font-mono">
+            <p>Temps = Distance ÷ Vitesse</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="bg-gradient-to-br from-yellow-50 to-orange-50 dark:from-yellow-950/30 dark:to-orange-950/30 p-6 rounded-xl border border-yellow-200 dark:border-yellow-800">
+    <h3 class="text-2xl font-bold mb-4 flex items-center gap-2 text-yellow-700 dark:text-yellow-300">
+      💡 Astuces et Conseils
+    </h3>
+    
+    <div class="space-y-3">
+      <div class="bg-white/80 dark:bg-gray-900/50 p-3 rounded-lg flex gap-3">
+        <span class="text-2xl">✅</span>
+        <p><span class="font-semibold">Vérifie la proportionnalité :</span> le coefficient doit être constant</p>
+      </div>
+      
+      <div class="bg-white/80 dark:bg-gray-900/50 p-3 rounded-lg flex gap-3">
+        <span class="text-2xl">✅</span>
+        <p><span class="font-semibold">Produit en croix :</span> très utile pour trouver une valeur manquante</p>
+      </div>
+      
+      <div class="bg-white/80 dark:bg-gray-900/50 p-3 rounded-lg flex gap-3">
+        <span class="text-2xl">✅</span>
+        <p><span class="font-semibold">Pourcentage :</span> pense toujours "sur 100"</p>
+      </div>
+    </div>
+  </section>
+
+</div>`,
+
+    exemplesExercices: `<div class="space-y-6">
+  
+  <div class="bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-950/40 dark:to-blue-900/30 p-5 rounded-xl border-l-4 border-blue-500">
+    <h4 class="font-bold text-lg mb-3 flex items-center gap-2 text-blue-700 dark:text-blue-300">
+      ✏️ Exercice 1 — Proportionnalité simple (Facile)
+    </h4>
+    <p class="mb-3 leading-relaxed">5 livres coûtent 200 gourdes. Combien coûtent 8 livres ?</p>
+    <div class="mt-4 bg-white/70 dark:bg-gray-900/50 p-4 rounded-lg">
+      <p class="font-semibold text-blue-700 dark:text-blue-300 mb-2">📝 Solution :</p>
+      <div class="space-y-2 text-sm">
+        <p>5 × ? = 8 × 200</p>
+        <p>? = (8 × 200) ÷ 5 = 1600 ÷ 5</p>
+        <p>? = <span class="font-bold text-blue-600">320 gourdes</span></p>
+      </div>
+    </div>
+  </div>
+
+  <div class="bg-gradient-to-br from-green-50 to-green-100 dark:from-green-950/40 dark:to-green-900/30 p-5 rounded-xl border-l-4 border-green-500">
+    <h4 class="font-bold text-lg mb-3 flex items-center gap-2 text-green-700 dark:text-green-300">
+      ✏️ Exercice 2 — Pourcentage (Moyen)
+    </h4>
+    <p class="mb-3 leading-relaxed">Un article de 500 gourdes a une réduction de 20%. Quel est le nouveau prix ?</p>
+    <div class="mt-4 bg-white/70 dark:bg-gray-900/50 p-4 rounded-lg">
+      <p class="font-semibold text-green-700 dark:text-green-300 mb-2">📝 Solution :</p>
+      <div class="space-y-2 text-sm">
+        <p>Réduction = 20% de 500 = (20×500)÷100 = 100 gourdes</p>
+        <p>Nouveau prix = 500 - 100 = <span class="font-bold text-green-600">400 gourdes</span></p>
+      </div>
+    </div>
+  </div>
+
+  <div class="bg-gradient-to-br from-orange-50 to-orange-100 dark:from-orange-950/40 dark:to-orange-900/30 p-5 rounded-xl border-l-4 border-orange-500">
+    <h4 class="font-bold text-lg mb-3 flex items-center gap-2 text-orange-700 dark:text-orange-300">
+      ✏️ Exercice 3 — Échelle (Difficile)
+    </h4>
+    <p class="mb-3 leading-relaxed">Sur une carte à l'échelle 1/25000, deux villes sont distantes de 8 cm. Quelle est la distance réelle ?</p>
+    <div class="mt-4 bg-white/70 dark:bg-gray-900/50 p-4 rounded-lg">
+      <p class="font-semibold text-orange-700 dark:text-orange-300 mb-2">📝 Solution :</p>
+      <div class="space-y-2 text-sm">
+        <p>1 cm sur carte = 25 000 cm réels</p>
+        <p>8 cm sur carte = 8 × 25 000 = 200 000 cm</p>
+        <p>= 2000 m = <span class="font-bold text-orange-600">2 km</span></p>
+      </div>
+    </div>
+  </div>
+
+  <div class="bg-gradient-to-br from-purple-50 to-purple-100 dark:from-purple-950/40 dark:to-purple-900/30 p-5 rounded-xl border-l-4 border-purple-500">
+    <h4 class="font-bold text-lg mb-3 flex items-center gap-2 text-purple-700 dark:text-purple-300">
+      ✏️ Exercice 4 — Vitesse (Difficile)
+    </h4>
+    <p class="mb-3 leading-relaxed">Une voiture roule à 60 km/h. Quelle distance parcourt-elle en 2h30 ?</p>
+    <div class="mt-4 bg-white/70 dark:bg-gray-900/50 p-4 rounded-lg">
+      <p class="font-semibold text-purple-700 dark:text-purple-300 mb-2">📝 Solution :</p>
+      <div class="space-y-2 text-sm">
+        <p>2h30 = 2,5 heures</p>
+        <p>Distance = Vitesse × Temps</p>
+        <p>Distance = 60 × 2,5 = <span class="font-bold text-purple-600">150 km</span></p>
+      </div>
+    </div>
+  </div>
+
+  <div class="bg-gradient-to-br from-pink-50 to-pink-100 dark:from-pink-950/40 dark:to-pink-900/30 p-5 rounded-xl border-l-4 border-pink-500">
+    <h4 class="font-bold text-lg mb-3 flex items-center gap-2 text-pink-700 dark:text-pink-300">
+      ✏️ Exercice 5 — Recette (Difficile)
+    </h4>
+    <p class="mb-3 leading-relaxed">Une recette pour 4 personnes nécessite 300g de farine. Combien faut-il pour 7 personnes ?</p>
+    <div class="mt-4 bg-white/70 dark:bg-gray-900/50 p-4 rounded-lg">
+      <p class="font-semibold text-pink-700 dark:text-pink-300 mb-2">📝 Solution :</p>
+      <div class="space-y-2 text-sm">
+        <p>4 × ? = 7 × 300</p>
+        <p>? = (7 × 300) ÷ 4 = 2100 ÷ 4</p>
+        <p>? = <span class="font-bold text-pink-600">525 g de farine</span></p>
+      </div>
+    </div>
+  </div>
+
+</div>`
   }
 };
 
