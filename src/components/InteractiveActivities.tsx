@@ -108,8 +108,39 @@ export const InteractiveActivities = ({ content, isLoading, onRegenerate }: Inte
     );
   }
   
+  // Safety check: ensure we have questions after all checks
+  if (questions.length === 0) {
+    return (
+      <Card className="lesson-card border-none rounded-[20px] shadow-lg border-2 border-amber-500/30">
+        <CardHeader className="p-4 sm:p-6">
+          <CardTitle className="text-lg sm:text-xl">📝 Activités Interactives</CardTitle>
+        </CardHeader>
+        <CardContent className="p-4 sm:p-6 pt-6">
+          <p className="text-center text-muted-foreground">Aucune activité disponible pour le moment.</p>
+          {onRegenerate && (
+            <Button onClick={onRegenerate} variant="outline" className="w-full mt-4">
+              <ArrowRight className="w-4 h-4 mr-2" />
+              Générer les activités
+            </Button>
+          )}
+        </CardContent>
+      </Card>
+    );
+  }
+  
   const currentQuestion = questions[currentQuestionIndex];
   const progress = ((currentQuestionIndex + 1) / questions.length) * 100;
+
+  // Safety check for currentQuestion
+  if (!currentQuestion) {
+    return (
+      <Card className="lesson-card border-none rounded-[20px] shadow-lg border-2 border-red-500/30">
+        <CardContent className="p-4 sm:p-6">
+          <p className="text-center text-muted-foreground">Erreur: Question introuvable</p>
+        </CardContent>
+      </Card>
+    );
+  }
 
   const { toast } = useToast();
 

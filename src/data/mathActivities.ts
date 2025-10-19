@@ -1,5 +1,373 @@
 // Quiz questions for different math topics
 
+// ===== POLYGONES =====
+export const polygonesQuiz = [
+  {
+    question: "Qu'est-ce qu'un polygone ?",
+    options: ["Une figure fermée avec des côtés droits", "Un cercle", "Une ligne courbe", "Un point"],
+    correctAnswer: 0,
+    explanation: "Un polygone est une figure plane fermée formée par une ligne brisée (côtés droits)"
+  },
+  {
+    question: "Combien de côtés possède un pentagone ?",
+    options: ["5", "6", "7", "4"],
+    correctAnswer: 0,
+    explanation: "Un pentagone a 5 côtés et 5 angles"
+  },
+  {
+    question: "Quelle est la somme des angles d'un triangle ?",
+    options: ["180°", "360°", "90°", "270°"],
+    correctAnswer: 0,
+    explanation: "La somme des angles intérieurs d'un triangle est toujours 180°"
+  },
+  {
+    question: "Un hexagone régulier a combien de côtés égaux ?",
+    options: ["6", "5", "7", "8"],
+    correctAnswer: 0,
+    explanation: "Un hexagone a 6 côtés, et s'il est régulier, tous les côtés sont égaux"
+  },
+  {
+    question: "Quel polygone a 4 côtés ?",
+    options: ["Quadrilatère", "Triangle", "Pentagone", "Hexagone"],
+    correctAnswer: 0,
+    explanation: "Un quadrilatère est un polygone à 4 côtés (carré, rectangle, losange, etc.)"
+  },
+  {
+    question: "Quelle est la somme des angles d'un quadrilatère ?",
+    options: ["360°", "180°", "270°", "450°"],
+    correctAnswer: 0,
+    explanation: "La somme des angles intérieurs de tout quadrilatère est 360°"
+  },
+  {
+    question: "Un polygone régulier a :",
+    options: ["Tous ses côtés et angles égaux", "Seulement côtés égaux", "Seulement angles égaux", "Aucune propriété particulière"],
+    correctAnswer: 0,
+    explanation: "Un polygone régulier a tous ses côtés de même longueur ET tous ses angles égaux"
+  },
+  {
+    question: "Combien de diagonales peut-on tracer depuis un sommet d'un pentagone ?",
+    options: ["2", "3", "4", "5"],
+    correctAnswer: 0,
+    explanation: "Dans un pentagone, depuis un sommet on peut tracer 2 diagonales (on ne compte pas les côtés adjacents)"
+  },
+  {
+    question: "Un octogone a combien de côtés ?",
+    options: ["8", "6", "10", "7"],
+    correctAnswer: 0,
+    explanation: "Un octogone est un polygone à 8 côtés"
+  },
+  {
+    question: "Le périmètre d'un polygone est :",
+    options: ["La somme de tous ses côtés", "L'aire de la surface", "Le nombre d'angles", "La longueur d'un côté"],
+    correctAnswer: 0,
+    explanation: "Le périmètre est la longueur totale du contour, donc la somme de tous les côtés"
+  }
+];
+
+export const polygonesMatching = [
+  {
+    id: "1",
+    question: "3 côtés",
+    answer: "Triangle"
+  },
+  {
+    id: "2",
+    question: "4 côtés",
+    answer: "Quadrilatère"
+  },
+  {
+    id: "3",
+    question: "5 côtés",
+    answer: "Pentagone"
+  },
+  {
+    id: "4",
+    question: "6 côtés",
+    answer: "Hexagone"
+  },
+  {
+    id: "5",
+    question: "8 côtés",
+    answer: "Octogone"
+  }
+];
+
+// ===== NUMÉRATION BINAIRE =====
+export const numerationBinaireQuiz = [
+  {
+    question: "En binaire, combien de chiffres différents utilise-t-on ?",
+    options: ["2 (0 et 1)", "10 (0 à 9)", "8 (0 à 7)", "16 (0 à F)"],
+    correctAnswer: 0,
+    explanation: "Le système binaire utilise seulement deux chiffres: 0 et 1"
+  },
+  {
+    question: "Que vaut le nombre binaire 101 en décimal ?",
+    options: ["5", "3", "4", "6"],
+    correctAnswer: 0,
+    explanation: "101 en binaire = 1×4 + 0×2 + 1×1 = 4 + 0 + 1 = 5 en décimal"
+  },
+  {
+    question: "Comment écrit-on le nombre décimal 8 en binaire ?",
+    options: ["1000", "1001", "111", "100"],
+    correctAnswer: 0,
+    explanation: "8 en décimal = 1000 en binaire (1×8 + 0×4 + 0×2 + 0×1)"
+  },
+  {
+    question: "Calculer: 11 + 10 en binaire",
+    options: ["101", "110", "111", "100"],
+    correctAnswer: 0,
+    explanation: "11 (3) + 10 (2) = 101 (5 en décimal). En binaire: 1+0=1, 1+1=10 (on retient 1)"
+  },
+  {
+    question: "Que vaut 1111 en binaire en décimal ?",
+    options: ["15", "16", "14", "7"],
+    correctAnswer: 0,
+    explanation: "1111 = 1×8 + 1×4 + 1×2 + 1×1 = 8 + 4 + 2 + 1 = 15"
+  },
+  {
+    question: "Le nombre décimal 4 s'écrit en binaire :",
+    options: ["100", "101", "110", "011"],
+    correctAnswer: 0,
+    explanation: "4 = 1×4 + 0×2 + 0×1 = 100 en binaire"
+  },
+  {
+    question: "Calculer: 10 - 1 en binaire",
+    options: ["1", "10", "11", "0"],
+    correctAnswer: 0,
+    explanation: "10 (2) - 1 (1) = 1 (1 en décimal)"
+  },
+  {
+    question: "Quelle est la valeur de position du chiffre le plus à droite en binaire ?",
+    options: ["1", "2", "4", "0"],
+    correctAnswer: 0,
+    explanation: "Le chiffre le plus à droite représente les unités (2⁰ = 1)"
+  },
+  {
+    question: "Le nombre binaire 110 vaut en décimal :",
+    options: ["6", "5", "7", "3"],
+    correctAnswer: 0,
+    explanation: "110 = 1×4 + 1×2 + 0×1 = 4 + 2 + 0 = 6"
+  },
+  {
+    question: "Combien vaut 2⁴ ?",
+    options: ["16", "8", "4", "32"],
+    correctAnswer: 0,
+    explanation: "2⁴ = 2×2×2×2 = 16"
+  }
+];
+
+export const numerationBinaireMatching = [
+  {
+    id: "1",
+    question: "1 en binaire",
+    answer: "1"
+  },
+  {
+    id: "2",
+    question: "2 en binaire",
+    answer: "10"
+  },
+  {
+    id: "3",
+    question: "3 en binaire",
+    answer: "11"
+  },
+  {
+    id: "4",
+    question: "4 en binaire",
+    answer: "100"
+  },
+  {
+    id: "5",
+    question: "101 en décimal",
+    answer: "5"
+  }
+];
+
+// ===== UNITÉS DE MESURES =====
+export const unitesMesuresQuiz = [
+  {
+    question: "Combien de centimètres dans 1 mètre ?",
+    options: ["100 cm", "10 cm", "1000 cm", "50 cm"],
+    correctAnswer: 0,
+    explanation: "1 mètre = 100 centimètres"
+  },
+  {
+    question: "Convertir 2,5 km en mètres",
+    options: ["2500 m", "250 m", "25 m", "25000 m"],
+    correctAnswer: 0,
+    explanation: "1 km = 1000 m, donc 2,5 km = 2,5 × 1000 = 2500 m"
+  },
+  {
+    question: "1 litre équivaut à :",
+    options: ["1000 mL", "100 mL", "10 mL", "500 mL"],
+    correctAnswer: 0,
+    explanation: "1 litre = 1000 millilitres"
+  },
+  {
+    question: "Combien de grammes dans 1 kilogramme ?",
+    options: ["1000 g", "100 g", "10 g", "500 g"],
+    correctAnswer: 0,
+    explanation: "1 kilogramme = 1000 grammes"
+  },
+  {
+    question: "Convertir 5000 mètres en kilomètres",
+    options: ["5 km", "50 km", "0,5 km", "500 km"],
+    correctAnswer: 0,
+    explanation: "5000 m ÷ 1000 = 5 km"
+  },
+  {
+    question: "1 mètre carré (m²) contient combien de centimètres carrés ?",
+    options: ["10000 cm²", "100 cm²", "1000 cm²", "200 cm²"],
+    correctAnswer: 0,
+    explanation: "1 m = 100 cm, donc 1 m² = 100 × 100 = 10000 cm²"
+  },
+  {
+    question: "Quelle est l'unité de base pour mesurer la masse ?",
+    options: ["Kilogramme (kg)", "Gramme (g)", "Tonne (t)", "Livre (lb)"],
+    correctAnswer: 0,
+    explanation: "Le kilogramme est l'unité de base du système international pour la masse"
+  },
+  {
+    question: "Convertir 3,2 kg en grammes",
+    options: ["3200 g", "320 g", "32 g", "32000 g"],
+    correctAnswer: 0,
+    explanation: "3,2 kg × 1000 = 3200 g"
+  },
+  {
+    question: "1 décimètre équivaut à :",
+    options: ["10 cm", "100 cm", "1 cm", "1000 cm"],
+    correctAnswer: 0,
+    explanation: "1 décimètre = 10 centimètres"
+  },
+  {
+    question: "Combien de millimètres dans 5 centimètres ?",
+    options: ["50 mm", "5 mm", "500 mm", "0,5 mm"],
+    correctAnswer: 0,
+    explanation: "1 cm = 10 mm, donc 5 cm = 5 × 10 = 50 mm"
+  }
+];
+
+export const unitesMesuresMatching = [
+  {
+    id: "1",
+    question: "1 km en m",
+    answer: "1000 m"
+  },
+  {
+    id: "2",
+    question: "1 L en mL",
+    answer: "1000 mL"
+  },
+  {
+    id: "3",
+    question: "1 kg en g",
+    answer: "1000 g"
+  },
+  {
+    id: "4",
+    question: "1 m en cm",
+    answer: "100 cm"
+  },
+  {
+    id: "5",
+    question: "1 cm en mm",
+    answer: "10 mm"
+  }
+];
+
+// ===== DIVISIBILITÉ =====
+export const divisibiliteQuiz = [
+  {
+    question: "Un nombre est divisible par 2 s'il :",
+    options: ["Se termine par 0, 2, 4, 6 ou 8", "Se termine par 5", "Est impair", "Se termine par 1"],
+    correctAnswer: 0,
+    explanation: "Un nombre pair (terminant par 0, 2, 4, 6 ou 8) est divisible par 2"
+  },
+  {
+    question: "Le nombre 45 est-il divisible par 3 ?",
+    options: ["Oui", "Non", "Impossible à déterminer", "Parfois"],
+    correctAnswer: 0,
+    explanation: "45 est divisible par 3 car 4 + 5 = 9, et 9 est divisible par 3"
+  },
+  {
+    question: "Un nombre est divisible par 5 s'il se termine par :",
+    options: ["0 ou 5", "2 ou 5", "1 ou 5", "3 ou 5"],
+    correctAnswer: 0,
+    explanation: "Un nombre est divisible par 5 s'il se termine par 0 ou 5"
+  },
+  {
+    question: "Pour vérifier si un nombre est divisible par 3, on doit :",
+    options: ["Additionner ses chiffres", "Le diviser par 3", "Regarder le dernier chiffre", "Le multiplier par 3"],
+    correctAnswer: 0,
+    explanation: "Si la somme des chiffres est divisible par 3, alors le nombre l'est aussi"
+  },
+  {
+    question: "Le nombre 120 est divisible par :",
+    options: ["2, 3, 4, 5 et 10", "Seulement 2 et 5", "Seulement 3", "Aucun de ces nombres"],
+    correctAnswer: 0,
+    explanation: "120 est pair (÷2), 1+2+0=3 (÷3), 20 est divisible par 4 (÷4), termine par 0 (÷5 et ÷10)"
+  },
+  {
+    question: "Un nombre est divisible par 10 s'il :",
+    options: ["Se termine par 0", "Se termine par 5", "Est pair", "Somme des chiffres = 10"],
+    correctAnswer: 0,
+    explanation: "Un nombre est divisible par 10 s'il se termine par 0"
+  },
+  {
+    question: "Pour qu'un nombre soit divisible par 4, il faut que :",
+    options: ["Ses deux derniers chiffres forment un nombre divisible par 4", "Il soit pair", "Il se termine par 4", "La somme de ses chiffres soit divisible par 4"],
+    correctAnswer: 0,
+    explanation: "On regarde les deux derniers chiffres: s'ils forment un nombre divisible par 4, le nombre entier l'est aussi"
+  },
+  {
+    question: "Le nombre 72 est-il divisible par 9 ?",
+    options: ["Oui", "Non", "Impossible", "Parfois"],
+    correctAnswer: 0,
+    explanation: "72 est divisible par 9 car 7 + 2 = 9, et 9 est divisible par 9"
+  },
+  {
+    question: "Un nombre divisible par 2 ET par 3 est aussi divisible par :",
+    options: ["6", "5", "7", "8"],
+    correctAnswer: 0,
+    explanation: "Si un nombre est divisible par 2 et par 3, il est forcément divisible par 6 (2×3)"
+  },
+  {
+    question: "Le critère de divisibilité par 11 utilise :",
+    options: ["La différence entre sommes alternées", "Le dernier chiffre", "La somme totale", "Le produit des chiffres"],
+    correctAnswer: 0,
+    explanation: "Pour 11: on fait la différence entre la somme des chiffres de rang impair et pair"
+  }
+];
+
+export const divisibiliteMatching = [
+  {
+    id: "1",
+    question: "Divisible par 2",
+    answer: "Nombre pair"
+  },
+  {
+    id: "2",
+    question: "Divisible par 5",
+    answer: "Termine par 0 ou 5"
+  },
+  {
+    id: "3",
+    question: "Divisible par 10",
+    answer: "Termine par 0"
+  },
+  {
+    id: "4",
+    question: "Divisible par 3",
+    answer: "Somme des chiffres ÷ 3"
+  },
+  {
+    id: "5",
+    question: "Divisible par 9",
+    answer: "Somme des chiffres ÷ 9"
+  }
+];
+
 // ===== FRACTIONS =====
 export const fractionsQuiz = [
   {

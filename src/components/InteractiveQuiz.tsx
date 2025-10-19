@@ -129,9 +129,54 @@ export const InteractiveQuiz = ({ content, isLoading, onRegenerate }: Interactiv
       </Card>
     );
   }
+
+  // Check if we have valid questions
+  if (questions.length === 0) {
+    return (
+      <Card className="lesson-card border-none rounded-[20px] shadow-lg border-2 border-amber-500/30 bg-gradient-to-br from-amber-50/50 to-orange-50/50 dark:from-amber-950/30 dark:to-orange-950/30">
+        <CardHeader className="p-4 sm:p-6 bg-gradient-to-r from-amber-100/50 to-orange-100/50 dark:from-amber-900/30 dark:to-orange-900/30 rounded-t-[20px]">
+          <div className="flex items-center justify-between">
+            <CardTitle className="flex items-center gap-2 text-lg sm:text-xl">
+              ⚠️ Quiz non disponible
+            </CardTitle>
+            {onRegenerate && (
+              <Button onClick={onRegenerate} variant="ghost" size="sm">
+                <ArrowRight className="w-4 h-4 mr-2" />
+                Régénérer
+              </Button>
+            )}
+          </div>
+        </CardHeader>
+        <CardContent className="p-4 sm:p-6 pt-6">
+          <div className="flex flex-col items-center justify-center py-8 space-y-4 text-center">
+            <p className="text-muted-foreground">
+              Le quiz n'a pas pu être généré. Veuillez cliquer sur "Régénérer" pour réessayer.
+            </p>
+            {onRegenerate && (
+              <Button onClick={onRegenerate} size="lg" className="mt-4">
+                <ArrowRight className="w-4 h-4 mr-2" />
+                Régénérer le Quiz
+              </Button>
+            )}
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
   
   const currentQuestion = questions[currentQuestionIndex];
   const progress = ((currentQuestionIndex + 1) / questions.length) * 100;
+
+  // Safety check for currentQuestion
+  if (!currentQuestion) {
+    return (
+      <Card className="lesson-card border-none rounded-[20px] shadow-lg border-2 border-red-500/30">
+        <CardContent className="p-4 sm:p-6">
+          <p className="text-center text-muted-foreground">Erreur: Question introuvable</p>
+        </CardContent>
+      </Card>
+    );
+  }
 
   const handleAnswerSelect = async (index: number) => {
     if (showFeedback) return;
