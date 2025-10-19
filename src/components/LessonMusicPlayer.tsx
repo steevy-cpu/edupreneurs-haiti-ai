@@ -17,7 +17,7 @@ interface PlaylistTrack {
 }
 
 const YOUTUBE_API_KEY = "AIzaSyDu6sWsM5NEgb48nFFIz49guKR5amdsGWA";
-const CLASSICAL_PLAYLIST_ID = "PLRBp0Fe2GpgmsW46rJyudVFlY6IYjFBIK"; // Classical Music Study Playlist
+const CLASSICAL_VIDEO_ID = "4PUHBL1vMNY"; // Classical Music for Studying
 
 export const LessonMusicPlayer = () => {
   const [tracks, setTracks] = useState<PlaylistTrack[]>([]);
@@ -46,32 +46,45 @@ export const LessonMusicPlayer = () => {
   const fetchPlaylistTracks = async () => {
     setIsLoading(true);
     try {
+      // Search for classical music study playlists
       const response = await fetch(
-        `https://www.googleapis.com/youtube/v3/playlistItems?` +
+        `https://www.googleapis.com/youtube/v3/search?` +
         `part=snippet&` +
-        `maxResults=50&` +
-        `playlistId=${CLASSICAL_PLAYLIST_ID}&` +
+        `maxResults=20&` +
+        `q=classical+music+for+studying+relaxing+mozart+beethoven+bach&` +
+        `type=video&` +
+        `videoDuration=long&` +
+        `videoEmbeddable=true&` +
+        `videoCategoryId=10&` + // Music category
         `key=${YOUTUBE_API_KEY}`
       );
 
       if (!response.ok) {
-        throw new Error("Failed to fetch playlist");
+        throw new Error("Failed to fetch classical music");
       }
 
       const data = await response.json();
       
-      const trackList: PlaylistTrack[] = data.items.map((item: any) => ({
-        id: item.snippet.resourceId.videoId,
-        title: item.snippet.title,
-        thumbnail: item.snippet.thumbnails.default.url,
-      }));
+      // Add the reference video first
+      const trackList: PlaylistTrack[] = [
+        {
+          id: CLASSICAL_VIDEO_ID,
+          title: "Classical Music for Studying & Concentration",
+          thumbnail: `https://i.ytimg.com/vi/${CLASSICAL_VIDEO_ID}/default.jpg`,
+        },
+        ...data.items.map((item: any) => ({
+          id: item.id.videoId,
+          title: item.snippet.title,
+          thumbnail: item.snippet.thumbnails.default.url,
+        }))
+      ];
 
       setTracks(trackList);
     } catch (error) {
-      console.error("Error fetching playlist:", error);
+      console.error("Error fetching classical music:", error);
       toast({
         title: "Erreur",
-        description: "Impossible de charger la playlist musicale",
+        description: "Impossible de charger la musique classique",
         variant: "destructive",
       });
     } finally {
@@ -168,7 +181,7 @@ export const LessonMusicPlayer = () => {
             )}
           </Button>
         </PopoverTrigger>
-        <PopoverContent className="w-80 p-0" align="end">
+        <PopoverContent className="w-[400px] p-0 max-h-[600px]" align="end" side="bottom" sideOffset={5}>
           <Card className="border-0 shadow-lg">
             <CardHeader className="pb-3 bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-950/30 dark:to-pink-950/30">
               <CardTitle className="text-base flex items-center gap-2">
@@ -232,30 +245,30 @@ export const LessonMusicPlayer = () => {
                   )}
 
                   {/* Track List */}
-                  <ScrollArea className="h-[300px]">
-                    <div className="p-2">
+                  <ScrollArea className="h-[320px]">
+                    <div className="p-2 space-y-1">
                       {tracks.map((track, index) => (
                         <button
-                          key={track.id}
+                          key={`${track.id}-${index}`}
                           onClick={() => handleTrackSelect(index)}
-                          className={`w-full flex items-center gap-3 p-2 rounded-lg hover:bg-accent transition-colors text-left ${
+                          className={`w-full flex items-center gap-3 p-3 rounded-lg hover:bg-accent transition-colors text-left ${
                             index === currentTrackIndex
-                              ? "bg-primary/10"
+                              ? "bg-primary/10 border border-primary/20"
                               : ""
                           }`}
                         >
                           <img
                             src={track.thumbnail}
                             alt={track.title}
-                            className="w-10 h-10 rounded object-cover"
+                            className="w-12 h-12 rounded object-cover flex-shrink-0"
                           />
                           <div className="flex-1 min-w-0">
-                            <p className="text-sm font-medium truncate">
+                            <p className="text-sm font-medium line-clamp-2 leading-tight">
                               {track.title}
                             </p>
                           </div>
                           {index === currentTrackIndex && isPlaying && (
-                            <Music className="w-4 h-4 text-primary animate-pulse" />
+                            <Music className="w-4 h-4 text-primary animate-pulse flex-shrink-0" />
                           )}
                         </button>
                       ))}
