@@ -18,7 +18,7 @@ import {
   Flag,
   Award
 } from "lucide-react";
-import { EricChatbot } from "@/components/EricChatbot";
+
 import ericPointingImage from "@/assets/eric-right-pointing.png";
 import ericTeaching from "@/assets/eric-teaching.png";
 import { ThemeToggle } from "@/components/ThemeToggle";
@@ -130,8 +130,6 @@ export default function Matieres() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5">
-      {/* Eric Chatbot */}
-      <EricChatbot />
 
       {/* Navigation Bar */}
       <nav className="fixed top-0 left-0 right-0 z-40 bg-background/95 backdrop-blur-md border-b border-border">

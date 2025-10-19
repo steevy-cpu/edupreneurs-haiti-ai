@@ -5,7 +5,7 @@ import { toast } from "sonner";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { EricChatbot } from "@/components/EricChatbot";
+
 import {
   Copy,
   Check,
@@ -363,8 +363,6 @@ const Affiliations = () => {
         </Card>
       </div>
 
-      {/* Eric Chatbot */}
-      <EricChatbot />
     </div>
   );
 };

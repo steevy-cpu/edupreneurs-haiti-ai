@@ -25,7 +25,7 @@ import {
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { ThemeToggle } from "@/components/ThemeToggle";
-import { EricChatbot } from "@/components/EricChatbot";
+
 import { QuizGame } from "@/components/math-activities/QuizGame";
 import { DragDropGame } from "@/components/math-activities/DragDropGame";
 import { SpeedCalcGame } from "@/components/math-activities/SpeedCalcGame";
@@ -417,8 +417,6 @@ const MathLesson = () => {
 
   return (
     <div className="min-h-screen lesson-bg">
-      {/* Eric Chatbot */}
-      <EricChatbot />
       
       {/* Gradient Header */}
       <header className="lesson-topbar sticky top-0 z-50">

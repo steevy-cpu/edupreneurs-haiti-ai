@@ -157,11 +157,25 @@ export const EricChatbot = () => {
       return;
     }
     
+    // If first drag, initialize position from current element location
+    if (!hasMoved) {
+      const currentRef = isOpen ? chatRef.current : floatingRef.current;
+      if (currentRef) {
+        const rect = currentRef.getBoundingClientRect();
+        setPosition({ x: rect.left, y: rect.top });
+        setDragStart({
+          x: e.clientX - rect.left,
+          y: e.clientY - rect.top
+        });
+      }
+    } else {
+      setDragStart({
+        x: e.clientX - position.x,
+        y: e.clientY - position.y
+      });
+    }
+    
     setIsDragging(true);
-    setDragStart({
-      x: e.clientX - position.x,
-      y: e.clientY - position.y
-    });
   };
 
   // Handle mouse move for dragging
