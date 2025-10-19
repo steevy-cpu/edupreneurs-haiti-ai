@@ -25,6 +25,7 @@ export const EricChatbot = () => {
   const [hasMoved, setHasMoved] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
+  const [hasActuallyDragged, setHasActuallyDragged] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const floatingRef = useRef<HTMLDivElement>(null);
   const chatRef = useRef<HTMLDivElement>(null);
@@ -157,6 +158,9 @@ export const EricChatbot = () => {
       return;
     }
     
+    // Reset drag flag
+    setHasActuallyDragged(false);
+    
     // If first drag, initialize position from current element location
     if (!hasMoved) {
       const currentRef = isOpen ? chatRef.current : floatingRef.current;
@@ -183,7 +187,10 @@ export const EricChatbot = () => {
     if (!isDragging) return;
 
     const handleMouseMove = (e: MouseEvent) => {
+      // Mark that user has actually dragged (moved the mouse)
+      setHasActuallyDragged(true);
       setHasMoved(true);
+      
       const newX = e.clientX - dragStart.x;
       const newY = e.clientY - dragStart.y;
       
@@ -237,7 +244,8 @@ export const EricChatbot = () => {
           }}
           onMouseDown={handleMouseDown}
           onClick={(e) => {
-            if (!isDragging) {
+            // Only open if user didn't actually drag
+            if (!hasActuallyDragged) {
               setIsOpen(true);
             }
           }}
