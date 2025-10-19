@@ -86,6 +86,43 @@ export const EricChatbot = () => {
     scrollToBottom();
   }, [messages]);
 
+  // Constrain position within viewport bounds
+  const constrainToViewport = (pos: { x: number; y: number }) => {
+    const currentRef = isOpen ? chatRef.current : floatingRef.current;
+    if (!currentRef) return pos;
+
+    const rect = currentRef.getBoundingClientRect();
+    const width = rect.width || (isOpen ? 380 : 112);
+    const height = rect.height || (isOpen ? 500 : 112);
+
+    const maxX = window.innerWidth - width;
+    const maxY = window.innerHeight - height;
+
+    return {
+      x: Math.max(0, Math.min(pos.x, maxX)),
+      y: Math.max(0, Math.min(pos.y, maxY))
+    };
+  };
+
+  // Handle window resize to keep Eric in viewport
+  useEffect(() => {
+    if (!hasMoved) return;
+
+    const handleResize = () => {
+      setPosition(prev => constrainToViewport(prev));
+    };
+
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, [hasMoved, isOpen]);
+
+  // Constrain position when chatbox opens
+  useEffect(() => {
+    if (isOpen && hasMoved) {
+      setPosition(prev => constrainToViewport(prev));
+    }
+  }, [isOpen]);
+
   const speakMessage = (text: string, index: number) => {
     if (isSpeaking === index) {
       window.speechSynthesis.cancel();
