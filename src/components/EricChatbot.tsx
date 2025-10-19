@@ -224,51 +224,58 @@ export const EricChatbot = () => {
 
   return (
     <>
-      {!isOpen ? (
-        /* Floating Character */
-        <div 
-          ref={floatingRef}
-          className={hasMoved ? "" : "eric-floating-character"}
-          style={hasMoved ? {
+      {/* Floating Character - Always visible */}
+      <div 
+        ref={floatingRef}
+        className={hasMoved ? "" : "eric-floating-character"}
+        style={{
+          ...(hasMoved ? {
             position: 'fixed',
             left: `${position.x}px`,
             top: `${position.y}px`,
-            zIndex: 1000,
-            width: '7rem',
+            zIndex: isOpen ? 1002 : 1000,
+            width: isOpen ? '5rem' : '7rem',
             cursor: isDragging ? 'grabbing' : 'pointer',
             userSelect: 'none',
-            transition: isDragging ? 'none' : 'transform 0.3s'
+            transition: isDragging ? 'none' : 'all 0.3s',
+            opacity: isOpen ? 1 : 1
           } : {
             cursor: isDragging ? 'grabbing' : 'pointer',
-            userSelect: 'none'
-          }}
-          onMouseDown={handleMouseDown}
-          onClick={(e) => {
-            // Only open if user didn't actually drag
-            if (!hasActuallyDragged) {
-              setIsOpen(true);
-            }
-          }}
-        >
+            userSelect: 'none',
+            width: isOpen ? '5rem' : '7rem',
+            transition: 'all 0.3s'
+          })
+        }}
+        onMouseDown={handleMouseDown}
+        onClick={(e) => {
+          // Only open if user didn't actually drag
+          if (!hasActuallyDragged && !isOpen) {
+            setIsOpen(true);
+          }
+        }}
+      >
+        {!isOpen && (
           <div className="eric-floating-tooltip">
             Cliquez sur moi
           </div>
-          <img 
-            src={ericAvatar} 
-            alt="Eric - Assistant IA" 
-            title="Cliquez pour parler avec Eric"
-            className="w-full h-auto pointer-events-none drop-shadow-2xl"
-          />
-        </div>
-      ) : (
-        /* Chat Interface */
+        )}
+        <img 
+          src={ericAvatar} 
+          alt="Eric - Assistant IA" 
+          title={isOpen ? "Eric - Votre assistant" : "Cliquez pour parler avec Eric"}
+          className="w-full h-auto pointer-events-none drop-shadow-2xl"
+        />
+      </div>
+
+      {/* Chat Interface */}
+      {isOpen && (
         <div 
           ref={chatRef}
           className={hasMoved ? "" : "eric-chat-interface"}
           style={hasMoved ? {
             position: 'fixed',
             left: `${position.x}px`,
-            top: `${position.y}px`,
+            top: `${position.y + (floatingRef.current?.offsetHeight || 80) + 10}px`,
             zIndex: 1001,
             width: '380px',
             maxHeight: 'calc(100vh - 280px)',
