@@ -28,7 +28,7 @@ serve(async (req) => {
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-    // Get conversation history for context
+    // Get conversation history for context with sender information
     const { data: messages, error: messagesError } = await supabase
       .from('messages')
       .select('sender_id, content')
@@ -40,10 +40,27 @@ serve(async (req) => {
       throw messagesError;
     }
 
-    const conversationHistory = messages?.map(msg => ({
-      role: msg.sender_id === userId ? 'user' : 'assistant',
-      content: msg.content
-    })) || [];
+    // Fetch profiles for all unique senders to include names in history
+    const uniqueSenderIds = [...new Set(messages?.map(m => m.sender_id) || [])];
+    const { data: senderProfiles } = await supabase
+      .from('profiles')
+      .select('user_id, nickname, full_name')
+      .in('user_id', uniqueSenderIds);
+
+    const profileMap = new Map(
+      senderProfiles?.map(p => [p.user_id, p.nickname || p.full_name]) || []
+    );
+
+    const conversationHistory = messages?.map(msg => {
+      const isEric = msg.sender_id === ERIC_USER_ID;
+      const senderName = profileMap.get(msg.sender_id) || 'Utilisateur';
+      
+      return {
+        role: isEric ? 'assistant' : 'user',
+        // For user messages, prefix with sender name so Eric knows who said what in group chats
+        content: isEric ? msg.content : `[${senderName}]: ${msg.content}`
+      };
+    }) || [];
 
     console.log('Conversation history length:', conversationHistory.length);
 
@@ -84,6 +101,12 @@ serve(async (req) => {
     const systemPrompt = `Tu es Eric, un assistant IA éducatif haïtien expert du programme du MENFP.
 
 ${greetingInstruction}
+
+💬 IMPORTANT - CONVERSATIONS DE GROUPE:
+- Dans les groupes, les messages sont préfixés par le nom de l'expéditeur: [Nom]: message
+- Tu dois répondre SPÉCIFIQUEMENT à la personne qui t'a parlé (${nicknameText})
+- Ne confonds PAS les utilisateurs entre eux
+- Adresse-toi toujours à "${nicknameText}" quand tu réponds
 
 🗣️ LANGUE DE COMMUNICATION:
 - **Français standard** est ta langue par DÉFAUT
@@ -135,10 +158,10 @@ Je ne peux malheureusement pas répondre à des questions en dehors de l'éducat
       });
     }
     
-    // Add current message
+    // Add current message with sender name prefix for group chat context
     aiMessages.push({
       role: 'user',
-      parts: [{ text: userMessage }]
+      parts: [{ text: `[${nicknameText}]: ${userMessage}` }]
     });
 
     console.log('Calling Gemini API...');
