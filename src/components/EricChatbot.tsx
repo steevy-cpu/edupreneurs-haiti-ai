@@ -88,12 +88,28 @@ export const EricChatbot = () => {
 
   // Constrain position within viewport bounds
   const constrainToViewport = (pos: { x: number; y: number }) => {
+    if (!hasMoved) return pos;
+
     const currentRef = isOpen ? chatRef.current : floatingRef.current;
+    const ericRef = floatingRef.current;
+    
     if (!currentRef) return pos;
 
-    const rect = currentRef.getBoundingClientRect();
-    const width = rect.width || (isOpen ? 380 : 112);
-    const height = rect.height || (isOpen ? 500 : 112);
+    // Calculate dimensions
+    let width = currentRef.offsetWidth || (isOpen ? 380 : 112);
+    let height = currentRef.offsetHeight || (isOpen ? 500 : 112);
+    
+    // When chatbox is open, account for Eric's picture at the top
+    if (isOpen && ericRef) {
+      const ericHeight = ericRef.offsetHeight || 80;
+      const ericWidth = ericRef.offsetWidth || 80;
+      
+      // Add Eric's height offset (he's positioned above the chatbox)
+      height += ericHeight + 10; // 10px gap
+      
+      // Ensure Eric's width is also within bounds
+      width = Math.max(width, ericWidth);
+    }
 
     const maxX = window.innerWidth - width;
     const maxY = window.innerHeight - height;
