@@ -202,24 +202,24 @@ export const LessonMusicPlayer = () => {
                   {/* Current Track */}
                   {tracks.length > 0 && (
                     <div className="p-4 border-b bg-gradient-to-r from-purple-50/50 to-pink-50/50 dark:from-purple-900/20 dark:to-pink-900/20">
-                      <div className="flex items-center gap-3">
+                      <div className="flex items-start gap-3 mb-3">
                         <img
                           src={tracks[currentTrackIndex].thumbnail}
                           alt={tracks[currentTrackIndex].title}
-                          className="w-12 h-12 rounded object-cover flex-shrink-0"
+                          className="w-16 h-16 rounded object-cover flex-shrink-0"
                         />
-                        <div className="flex-1 min-w-0">
-                          <p className="text-sm font-medium line-clamp-2 leading-tight mb-0.5">
+                        <div className="flex-1 min-w-0 pr-2">
+                          <p className="text-xs font-medium leading-tight break-words">
                             {tracks[currentTrackIndex].title}
                           </p>
-                          <p className="text-xs text-muted-foreground">
+                          <p className="text-xs text-muted-foreground mt-1">
                             Piste {currentTrackIndex + 1} / {tracks.length}
                           </p>
                         </div>
                       </div>
                       
                       {/* Controls */}
-                      <div className="flex items-center justify-center gap-2 mt-3">
+                      <div className="flex items-center justify-center gap-2">
                         <Button
                           variant="outline"
                           size="icon"
@@ -260,10 +260,10 @@ export const LessonMusicPlayer = () => {
                           <img
                             src={track.thumbnail}
                             alt={track.title}
-                            className="w-12 h-12 rounded object-cover flex-shrink-0"
+                            className="w-10 h-10 rounded object-cover flex-shrink-0"
                           />
-                          <div className="flex-1 min-w-0">
-                            <p className="text-sm font-medium line-clamp-2 leading-tight">
+                          <div className="flex-1 min-w-0 pr-2">
+                            <p className="text-xs font-medium leading-tight break-words">
                               {track.title}
                             </p>
                           </div>
