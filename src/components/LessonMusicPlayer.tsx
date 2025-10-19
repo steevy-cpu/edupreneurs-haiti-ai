@@ -206,10 +206,10 @@ export const LessonMusicPlayer = () => {
                         <img
                           src={tracks[currentTrackIndex].thumbnail}
                           alt={tracks[currentTrackIndex].title}
-                          className="w-12 h-12 rounded object-cover"
+                          className="w-12 h-12 rounded object-cover flex-shrink-0"
                         />
                         <div className="flex-1 min-w-0">
-                          <p className="text-sm font-medium truncate">
+                          <p className="text-sm font-medium line-clamp-2 leading-tight mb-0.5">
                             {tracks[currentTrackIndex].title}
                           </p>
                           <p className="text-xs text-muted-foreground">
