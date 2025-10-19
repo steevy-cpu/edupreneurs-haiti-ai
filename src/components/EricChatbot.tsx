@@ -23,9 +23,10 @@ export const EricChatbot = () => {
   const [userAvatarUrl, setUserAvatarUrl] = useState<string>("");
   const [position, setPosition] = useState({ x: 0, y: 0 });
   const [isDragging, setIsDragging] = useState(false);
-  const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
+  const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  const chatboxRef = useRef<HTMLDivElement>(null);
+  const floatingRef = useRef<HTMLDivElement>(null);
+  const chatRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
 
   // Fetch user profile on mount
@@ -149,87 +150,99 @@ export const EricChatbot = () => {
 
   // Drag handlers
   const handleMouseDown = (e: React.MouseEvent) => {
-    if ((e.target as HTMLElement).closest('.eric-close-btn, .eric-chat-messages, .eric-input-area')) {
-      return; // Don't drag when interacting with buttons, messages, or input
+    // Don't drag when clicking on interactive elements
+    const target = e.target as HTMLElement;
+    if (target.closest('button, textarea, input, .eric-chat-messages')) {
+      return;
     }
     
+    e.preventDefault();
     setIsDragging(true);
-    const rect = chatboxRef.current?.getBoundingClientRect();
-    if (rect) {
-      setDragOffset({
-        x: e.clientX - rect.left,
-        y: e.clientY - rect.top
-      });
-    }
-  };
-
-  const handleMouseMove = (e: MouseEvent) => {
-    if (!isDragging) return;
-    
-    const newX = e.clientX - dragOffset.x;
-    const newY = e.clientY - dragOffset.y;
-    
-    // Keep within viewport bounds
-    const maxX = window.innerWidth - (chatboxRef.current?.offsetWidth || 0);
-    const maxY = window.innerHeight - (chatboxRef.current?.offsetHeight || 0);
-    
-    setPosition({
-      x: Math.max(0, Math.min(newX, maxX)),
-      y: Math.max(0, Math.min(newY, maxY))
+    setDragStart({
+      x: e.clientX - position.x,
+      y: e.clientY - position.y
     });
   };
 
-  const handleMouseUp = () => {
-    setIsDragging(false);
-  };
-
-  // Add/remove mouse event listeners for dragging
+  // Handle mouse move for dragging
   useEffect(() => {
-    if (isDragging) {
-      document.addEventListener('mousemove', handleMouseMove);
-      document.addEventListener('mouseup', handleMouseUp);
-      return () => {
-        document.removeEventListener('mousemove', handleMouseMove);
-        document.removeEventListener('mouseup', handleMouseUp);
-      };
-    }
-  }, [isDragging, dragOffset]);
+    if (!isDragging) return;
+
+    const handleMouseMove = (e: MouseEvent) => {
+      const newX = e.clientX - dragStart.x;
+      const newY = e.clientY - dragStart.y;
+      
+      // Get the current ref dimensions
+      const currentRef = isOpen ? chatRef.current : floatingRef.current;
+      const width = currentRef?.offsetWidth || 0;
+      const height = currentRef?.offsetHeight || 0;
+      
+      // Keep within viewport bounds
+      const maxX = window.innerWidth - width;
+      const maxY = window.innerHeight - height;
+      
+      setPosition({
+        x: Math.max(0, Math.min(newX, maxX)),
+        y: Math.max(0, Math.min(newY, maxY))
+      });
+    };
+
+    const handleMouseUp = () => {
+      setIsDragging(false);
+    };
+
+    document.addEventListener('mousemove', handleMouseMove);
+    document.addEventListener('mouseup', handleMouseUp);
+
+    return () => {
+      document.removeEventListener('mousemove', handleMouseMove);
+      document.removeEventListener('mouseup', handleMouseUp);
+    };
+  }, [isDragging, dragStart, position, isOpen]);
 
   return (
     <>
       {/* Floating Character */}
-      <div 
-        ref={chatboxRef}
-        className="eric-floating-character"
-        style={{
-          transform: `translate(${position.x}px, ${position.y}px)`,
-          cursor: isDragging ? 'grabbing' : 'grab',
-          userSelect: 'none'
-        }}
-        onMouseDown={handleMouseDown}
-      >
+      {!isOpen && (
         <div 
-          className="eric-floating-tooltip"
-          onClick={() => setIsOpen(true)}
+          ref={floatingRef}
+          className="eric-floating-character"
+          style={{
+            transform: `translate(${position.x}px, ${position.y}px)`,
+            cursor: isDragging ? 'grabbing' : 'pointer',
+            userSelect: isDragging ? 'none' : 'auto',
+            position: 'fixed'
+          }}
+          onMouseDown={handleMouseDown}
+          onClick={(e) => {
+            if (!isDragging) {
+              setIsOpen(true);
+            }
+          }}
         >
-          Cliquez sur moi
+          <div className="eric-floating-tooltip">
+            Cliquez sur moi
+          </div>
+          <img 
+            src={ericAvatar} 
+            alt="Eric - Assistant IA" 
+            title="Cliquez pour parler avec Eric"
+            className="w-full h-auto"
+            draggable={false}
+          />
         </div>
-        <img 
-          src={ericAvatar} 
-          alt="Eric - Assistant IA" 
-          title="Cliquez pour parler avec Eric"
-          className="w-full h-auto"
-          onClick={() => setIsOpen(true)}
-        />
-      </div>
+      )}
 
       {/* Chat Interface */}
       {isOpen && (
         <div 
+          ref={chatRef}
           className="eric-chat-interface"
           style={{
             transform: `translate(${position.x}px, ${position.y}px)`,
-            cursor: isDragging ? 'grabbing' : 'default'
+            cursor: isDragging ? 'grabbing' : 'default',
+            userSelect: isDragging ? 'none' : 'auto',
+            position: 'fixed'
           }}
           onMouseDown={handleMouseDown}
         >
