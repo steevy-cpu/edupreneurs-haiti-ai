@@ -150,7 +150,7 @@ export const EricChatbot = () => {
     }
   };
 
-  // Drag handlers
+  // Drag handlers for both mouse and touch
   const handleMouseDown = (e: React.MouseEvent) => {
     // Don't drag when clicking on interactive elements
     const target = e.target as HTMLElement;
@@ -182,7 +182,40 @@ export const EricChatbot = () => {
     setIsDragging(true);
   };
 
-  // Handle mouse move for dragging
+  const handleTouchStart = (e: React.TouchEvent) => {
+    // Don't drag when touching interactive elements
+    const target = e.target as HTMLElement;
+    if (target.closest('button, textarea, input, .eric-chat-messages')) {
+      return;
+    }
+    
+    // Reset drag flag
+    setHasActuallyDragged(false);
+    
+    const touch = e.touches[0];
+    
+    // If first drag, initialize position from current element location
+    if (!hasMoved) {
+      const currentRef = isOpen ? chatRef.current : floatingRef.current;
+      if (currentRef) {
+        const rect = currentRef.getBoundingClientRect();
+        setPosition({ x: rect.left, y: rect.top });
+        setDragStart({
+          x: touch.clientX - rect.left,
+          y: touch.clientY - rect.top
+        });
+      }
+    } else {
+      setDragStart({
+        x: touch.clientX - position.x,
+        y: touch.clientY - position.y
+      });
+    }
+    
+    setIsDragging(true);
+  };
+
+  // Handle mouse/touch move for dragging
   useEffect(() => {
     if (!isDragging) return;
 
@@ -209,16 +242,51 @@ export const EricChatbot = () => {
       });
     };
 
+    const handleTouchMove = (e: TouchEvent) => {
+      // Prevent scrolling while dragging
+      e.preventDefault();
+      
+      // Mark that user has actually dragged
+      setHasActuallyDragged(true);
+      setHasMoved(true);
+      
+      const touch = e.touches[0];
+      const newX = touch.clientX - dragStart.x;
+      const newY = touch.clientY - dragStart.y;
+      
+      // Get the current ref dimensions
+      const currentRef = isOpen ? chatRef.current : floatingRef.current;
+      const width = currentRef?.offsetWidth || 0;
+      const height = currentRef?.offsetHeight || 0;
+      
+      // Keep within viewport bounds
+      const maxX = window.innerWidth - width;
+      const maxY = window.innerHeight - height;
+      
+      setPosition({
+        x: Math.max(0, Math.min(newX, maxX)),
+        y: Math.max(0, Math.min(newY, maxY))
+      });
+    };
+
     const handleMouseUp = () => {
+      setIsDragging(false);
+    };
+
+    const handleTouchEnd = () => {
       setIsDragging(false);
     };
 
     document.addEventListener('mousemove', handleMouseMove);
     document.addEventListener('mouseup', handleMouseUp);
+    document.addEventListener('touchmove', handleTouchMove, { passive: false });
+    document.addEventListener('touchend', handleTouchEnd);
 
     return () => {
       document.removeEventListener('mousemove', handleMouseMove);
       document.removeEventListener('mouseup', handleMouseUp);
+      document.removeEventListener('touchmove', handleTouchMove);
+      document.removeEventListener('touchend', handleTouchEnd);
     };
   }, [isDragging, dragStart, isOpen]);
 
@@ -243,6 +311,7 @@ export const EricChatbot = () => {
             userSelect: 'none'
           }}
           onMouseDown={handleMouseDown}
+          onTouchStart={handleTouchStart}
           onClick={(e) => {
             // Only open if user didn't actually drag
             if (!hasActuallyDragged) {
@@ -286,6 +355,7 @@ export const EricChatbot = () => {
               zIndex: 1002
             }}
             onMouseDown={handleMouseDown}
+            onTouchStart={handleTouchStart}
           >
             <img 
               src={ericAvatar} 
@@ -317,6 +387,7 @@ export const EricChatbot = () => {
               userSelect: 'none'
             }}
             onMouseDown={handleMouseDown}
+            onTouchStart={handleTouchStart}
           >
             <Button
               variant="destructive"
