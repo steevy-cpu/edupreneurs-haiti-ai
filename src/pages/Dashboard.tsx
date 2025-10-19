@@ -170,6 +170,28 @@ const Dashboard = () => {
           </div>
         </div>
 
+        {/* TEST: Passion Discovery Section */}
+        <Card className="border-2 border-purple-500 bg-gradient-to-br from-purple-50/50 to-pink-50/50 dark:from-purple-950/20 dark:to-pink-950/20 rounded-xl mb-4">
+          <CardContent className="p-4 flex items-center gap-4">
+            <div className="flex-shrink-0 text-4xl">🎨</div>
+            <div className="flex-1">
+              <h3 className="font-bold text-lg mb-1">
+                NOUVEAU : Découvre ta passion & Développement personnel 
+                <span className="ml-2 text-xs bg-purple-500 text-white px-2 py-1 rounded-full">TEST</span>
+              </h3>
+              <p className="text-sm text-muted-foreground mb-3">
+                Explore la musique, les arts, les échecs, l'éducation civique et le développement personnel avec Eric en IA
+              </p>
+              <Button 
+                onClick={() => navigate("/passion-discovery")}
+                className="bg-gradient-to-r from-purple-500 to-pink-500 hover:opacity-90"
+              >
+                Découvrir maintenant →
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+
         {/* KPI Cards */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-1.5 xs:gap-2 sm:gap-3 lg:gap-5 mb-3 xs:mb-4 sm:mb-6 lg:mb-8" data-tour="stats-section">
           <Card className="border-none rounded-lg xs:rounded-xl sm:rounded-2xl lg:rounded-[20px] shadow-md hover:shadow-lg hover:-translate-y-0.5 sm:hover:-translate-y-1 lg:hover:-translate-y-2 transition-all duration-300 relative overflow-hidden group">

@@ -29,3 +29,6 @@ verify_jwt = false
 
 [functions.reset-password]
 verify_jwt = false
+
+[functions.passion-ai-tutor]
+verify_jwt = false
