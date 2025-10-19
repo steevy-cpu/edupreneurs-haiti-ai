@@ -156,7 +156,6 @@ export const EricChatbot = () => {
       return;
     }
     
-    e.preventDefault();
     setIsDragging(true);
     setDragStart({
       x: e.clientX - position.x,
@@ -202,15 +201,15 @@ export const EricChatbot = () => {
 
   return (
     <>
-      {/* Floating Character */}
-      {!isOpen && (
+      {!isOpen ? (
+        /* Floating Character */
         <div 
           ref={floatingRef}
           className="eric-floating-character"
           style={{
             transform: `translate(${position.x}px, ${position.y}px)`,
             cursor: isDragging ? 'grabbing' : 'pointer',
-            userSelect: isDragging ? 'none' : 'auto',
+            userSelect: 'none',
             position: 'fixed'
           }}
           onMouseDown={handleMouseDown}
@@ -227,21 +226,18 @@ export const EricChatbot = () => {
             src={ericAvatar} 
             alt="Eric - Assistant IA" 
             title="Cliquez pour parler avec Eric"
-            className="w-full h-auto"
-            draggable={false}
+            className="w-full h-auto pointer-events-none"
           />
         </div>
-      )}
-
-      {/* Chat Interface */}
-      {isOpen && (
+      ) : (
+        /* Chat Interface */
         <div 
           ref={chatRef}
           className="eric-chat-interface"
           style={{
             transform: `translate(${position.x}px, ${position.y}px)`,
             cursor: isDragging ? 'grabbing' : 'default',
-            userSelect: isDragging ? 'none' : 'auto',
+            userSelect: 'none',
             position: 'fixed'
           }}
           onMouseDown={handleMouseDown}
