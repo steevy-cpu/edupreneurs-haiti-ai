@@ -21,7 +21,11 @@ export const EricChatbot = () => {
   const [isSpeaking, setIsSpeaking] = useState<number | null>(null);
   const [userNickname, setUserNickname] = useState<string>("");
   const [userAvatarUrl, setUserAvatarUrl] = useState<string>("");
+  const [position, setPosition] = useState({ x: 0, y: 0 });
+  const [isDragging, setIsDragging] = useState(false);
+  const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const chatboxRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
 
   // Fetch user profile on mount
@@ -143,14 +147,71 @@ export const EricChatbot = () => {
     }
   };
 
+  // Drag handlers
+  const handleMouseDown = (e: React.MouseEvent) => {
+    if ((e.target as HTMLElement).closest('.eric-close-btn, .eric-chat-messages, .eric-input-area')) {
+      return; // Don't drag when interacting with buttons, messages, or input
+    }
+    
+    setIsDragging(true);
+    const rect = chatboxRef.current?.getBoundingClientRect();
+    if (rect) {
+      setDragOffset({
+        x: e.clientX - rect.left,
+        y: e.clientY - rect.top
+      });
+    }
+  };
+
+  const handleMouseMove = (e: MouseEvent) => {
+    if (!isDragging) return;
+    
+    const newX = e.clientX - dragOffset.x;
+    const newY = e.clientY - dragOffset.y;
+    
+    // Keep within viewport bounds
+    const maxX = window.innerWidth - (chatboxRef.current?.offsetWidth || 0);
+    const maxY = window.innerHeight - (chatboxRef.current?.offsetHeight || 0);
+    
+    setPosition({
+      x: Math.max(0, Math.min(newX, maxX)),
+      y: Math.max(0, Math.min(newY, maxY))
+    });
+  };
+
+  const handleMouseUp = () => {
+    setIsDragging(false);
+  };
+
+  // Add/remove mouse event listeners for dragging
+  useEffect(() => {
+    if (isDragging) {
+      document.addEventListener('mousemove', handleMouseMove);
+      document.addEventListener('mouseup', handleMouseUp);
+      return () => {
+        document.removeEventListener('mousemove', handleMouseMove);
+        document.removeEventListener('mouseup', handleMouseUp);
+      };
+    }
+  }, [isDragging, dragOffset]);
+
   return (
     <>
       {/* Floating Character */}
       <div 
+        ref={chatboxRef}
         className="eric-floating-character"
-        onClick={() => setIsOpen(true)}
+        style={{
+          transform: `translate(${position.x}px, ${position.y}px)`,
+          cursor: isDragging ? 'grabbing' : 'grab',
+          userSelect: 'none'
+        }}
+        onMouseDown={handleMouseDown}
       >
-        <div className="eric-floating-tooltip">
+        <div 
+          className="eric-floating-tooltip"
+          onClick={() => setIsOpen(true)}
+        >
           Cliquez sur moi
         </div>
         <img 
@@ -158,12 +219,20 @@ export const EricChatbot = () => {
           alt="Eric - Assistant IA" 
           title="Cliquez pour parler avec Eric"
           className="w-full h-auto"
+          onClick={() => setIsOpen(true)}
         />
       </div>
 
       {/* Chat Interface */}
       {isOpen && (
-        <div className="eric-chat-interface">
+        <div 
+          className="eric-chat-interface"
+          style={{
+            transform: `translate(${position.x}px, ${position.y}px)`,
+            cursor: isDragging ? 'grabbing' : 'default'
+          }}
+          onMouseDown={handleMouseDown}
+        >
           <Button
             variant="destructive"
             size="icon"
