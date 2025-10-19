@@ -691,6 +691,45 @@ export type Database = {
           },
         ]
       }
+      user_passion_preferences: {
+        Row: {
+          arts_score: number | null
+          chess_score: number | null
+          completed_at: string | null
+          created_at: string | null
+          id: string
+          literature_score: number | null
+          music_score: number | null
+          quiz_completed: boolean | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          arts_score?: number | null
+          chess_score?: number | null
+          completed_at?: string | null
+          created_at?: string | null
+          id?: string
+          literature_score?: number | null
+          music_score?: number | null
+          quiz_completed?: boolean | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          arts_score?: number | null
+          chess_score?: number | null
+          completed_at?: string | null
+          created_at?: string | null
+          id?: string
+          literature_score?: number | null
+          music_score?: number | null
+          quiz_completed?: boolean | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       public_profiles: {
