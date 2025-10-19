@@ -269,8 +269,8 @@ export const EricChatbot = () => {
             className={hasMoved ? "" : "eric-floating-character"}
             style={hasMoved ? {
               position: 'fixed',
-              left: `${position.x + 320}px`,
-              top: `${position.y - 40}px`,
+              left: `${position.x + 250}px`,
+              top: `${position.y - 50}px`,
               zIndex: 1002,
               width: '5rem',
               cursor: isDragging ? 'grabbing' : 'pointer',
@@ -278,8 +278,8 @@ export const EricChatbot = () => {
               transition: isDragging ? 'none' : 'all 0.3s'
             } : {
               position: 'absolute',
-              right: '-20px',
-              top: '-40px',
+              right: '40px',
+              top: '-50px',
               width: '5rem',
               cursor: isDragging ? 'grabbing' : 'pointer',
               userSelect: 'none',
