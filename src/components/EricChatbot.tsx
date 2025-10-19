@@ -224,83 +224,109 @@ export const EricChatbot = () => {
 
   return (
     <>
-      {/* Floating Character - Always visible */}
-      <div 
-        ref={floatingRef}
-        className={hasMoved ? "" : "eric-floating-character"}
-        style={{
-          ...(hasMoved ? {
-            position: 'fixed',
-            left: `${position.x}px`,
-            top: `${position.y}px`,
-            zIndex: isOpen ? 1002 : 1000,
-            width: isOpen ? '5rem' : '7rem',
-            cursor: isDragging ? 'grabbing' : 'pointer',
-            userSelect: 'none',
-            transition: isDragging ? 'none' : 'all 0.3s',
-            opacity: isOpen ? 1 : 1
-          } : {
-            cursor: isDragging ? 'grabbing' : 'pointer',
-            userSelect: 'none',
-            width: isOpen ? '5rem' : '7rem',
-            transition: 'all 0.3s'
-          })
-        }}
-        onMouseDown={handleMouseDown}
-        onClick={(e) => {
-          // Only open if user didn't actually drag
-          if (!hasActuallyDragged && !isOpen) {
-            setIsOpen(true);
-          }
-        }}
-      >
-        {!isOpen && (
-          <div className="eric-floating-tooltip">
-            Cliquez sur moi
-          </div>
-        )}
-        <img 
-          src={ericAvatar} 
-          alt="Eric - Assistant IA" 
-          title={isOpen ? "Eric - Votre assistant" : "Cliquez pour parler avec Eric"}
-          className="w-full h-auto pointer-events-none drop-shadow-2xl"
-        />
-      </div>
-
-      {/* Chat Interface */}
-      {isOpen && (
+      {!isOpen ? (
+        /* Floating Character when closed */
         <div 
-          ref={chatRef}
-          className={hasMoved ? "" : "eric-chat-interface"}
+          ref={floatingRef}
+          className={hasMoved ? "" : "eric-floating-character"}
           style={hasMoved ? {
             position: 'fixed',
             left: `${position.x}px`,
-            top: `${position.y + (floatingRef.current?.offsetHeight || 80) + 10}px`,
-            zIndex: 1001,
-            width: '380px',
-            maxHeight: 'calc(100vh - 280px)',
-            cursor: isDragging ? 'grabbing' : 'default',
+            top: `${position.y}px`,
+            zIndex: 1000,
+            width: '7rem',
+            cursor: isDragging ? 'grabbing' : 'pointer',
             userSelect: 'none',
-            display: 'flex',
-            flexDirection: 'column',
-            background: 'transparent',
-            borderRadius: '1.5rem',
-            padding: '1.25rem'
+            transition: isDragging ? 'none' : 'transform 0.3s'
           } : {
-            cursor: isDragging ? 'grabbing' : 'default',
+            cursor: isDragging ? 'grabbing' : 'pointer',
             userSelect: 'none'
           }}
           onMouseDown={handleMouseDown}
+          onClick={(e) => {
+            // Only open if user didn't actually drag
+            if (!hasActuallyDragged) {
+              setIsOpen(true);
+            }
+          }}
         >
-          <Button
-            variant="destructive"
-            size="icon"
-            className="eric-close-btn"
-            onClick={() => setIsOpen(false)}
-            title="Fermer le chat"
+          <div className="eric-floating-tooltip">
+            Cliquez sur moi
+          </div>
+          <img 
+            src={ericAvatar} 
+            alt="Eric - Assistant IA" 
+            title="Cliquez pour parler avec Eric"
+            className="w-full h-auto pointer-events-none drop-shadow-2xl"
+          />
+        </div>
+      ) : (
+        /* Chat Interface with Eric at top right */
+        <>
+          {/* Eric Picture at top right of chatbox */}
+          <div 
+            ref={floatingRef}
+            className={hasMoved ? "" : "eric-floating-character"}
+            style={hasMoved ? {
+              position: 'fixed',
+              left: `${position.x + 320}px`,
+              top: `${position.y - 40}px`,
+              zIndex: 1002,
+              width: '5rem',
+              cursor: isDragging ? 'grabbing' : 'pointer',
+              userSelect: 'none',
+              transition: isDragging ? 'none' : 'all 0.3s'
+            } : {
+              position: 'absolute',
+              right: '-20px',
+              top: '-40px',
+              width: '5rem',
+              cursor: isDragging ? 'grabbing' : 'pointer',
+              userSelect: 'none',
+              zIndex: 1002
+            }}
+            onMouseDown={handleMouseDown}
           >
-            <X className="w-4 h-4" />
-          </Button>
+            <img 
+              src={ericAvatar} 
+              alt="Eric - Assistant IA" 
+              title="Eric - Votre assistant"
+              className="w-full h-auto pointer-events-none drop-shadow-2xl"
+            />
+          </div>
+
+          <div 
+            ref={chatRef}
+            className={hasMoved ? "" : "eric-chat-interface"}
+            style={hasMoved ? {
+              position: 'fixed',
+              left: `${position.x}px`,
+              top: `${position.y}px`,
+              zIndex: 1001,
+              width: '380px',
+              maxHeight: 'calc(100vh - 280px)',
+              cursor: isDragging ? 'grabbing' : 'default',
+              userSelect: 'none',
+              display: 'flex',
+              flexDirection: 'column',
+              background: 'transparent',
+              borderRadius: '1.5rem',
+              padding: '1.25rem'
+            } : {
+              cursor: isDragging ? 'grabbing' : 'default',
+              userSelect: 'none'
+            }}
+            onMouseDown={handleMouseDown}
+          >
+            <Button
+              variant="destructive"
+              size="icon"
+              className="eric-close-btn"
+              onClick={() => setIsOpen(false)}
+              title="Fermer le chat"
+            >
+              <X className="w-4 h-4" />
+            </Button>
 
           {/* Messages */}
           <div className="eric-chat-messages">
@@ -371,6 +397,7 @@ export const EricChatbot = () => {
             </div>
           </div>
         </div>
+        </>
       )}
     </>
   );
