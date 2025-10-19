@@ -422,20 +422,22 @@ const MathLesson = () => {
       {/* Gradient Header */}
       <header className="lesson-topbar sticky top-0 z-50">
         <div className="container mx-auto px-4 py-3 flex items-center justify-between">
-          <Button
-            variant="ghost"
-            size="icon"
-            className="text-white hover:bg-white/20"
-            onClick={() => navigate('/math-course')}
-          >
-            <ArrowLeft className="w-5 h-5" />
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button
+              variant="ghost"
+              size="icon"
+              className="text-white hover:bg-white/20"
+              onClick={() => navigate('/math-course')}
+            >
+              <ArrowLeft className="w-5 h-5" />
+            </Button>
+            <LessonMusicPlayer />
+          </div>
           <div className="flex items-center gap-3">
             <div className="flex items-center gap-2 bg-white/20 backdrop-blur-sm px-4 py-2 rounded-full">
               <Coins className="w-5 h-5 text-yellow-300" />
               <span className="text-white font-bold">{userGold}</span>
             </div>
-            <LessonMusicPlayer />
             <ThemeToggle />
           </div>
         </div>
