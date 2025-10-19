@@ -183,10 +183,10 @@ const Dashboard = () => {
                 Explore la musique, les arts, les échecs, l'éducation civique et le développement personnel avec Eric en IA
               </p>
               <Button 
-                onClick={() => navigate("/passion-discovery")}
+                onClick={() => navigate("/passion-test")}
                 className="bg-gradient-to-r from-purple-500 to-pink-500 hover:opacity-90"
               >
-                Découvrir maintenant →
+                Tester la version interactive →
               </Button>
             </div>
           </CardContent>
