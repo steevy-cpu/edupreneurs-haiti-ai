@@ -41,6 +41,7 @@ import { mathLessons } from "@/data/mathLessons";
 import { YouTubeVideoSection } from "@/components/YouTubeVideoSection";
 import { InteractiveActivities } from "@/components/InteractiveActivities";
 import { InteractiveQuiz } from "@/components/InteractiveQuiz";
+import { LessonMusicPlayer } from "@/components/LessonMusicPlayer";
 
 interface LessonData {
   objectif: string;
@@ -434,6 +435,7 @@ const MathLesson = () => {
               <Coins className="w-5 h-5 text-yellow-300" />
               <span className="text-white font-bold">{userGold}</span>
             </div>
+            <LessonMusicPlayer />
             <ThemeToggle />
           </div>
         </div>
