@@ -22,6 +22,7 @@ export const EricChatbot = () => {
   const [userNickname, setUserNickname] = useState<string>("");
   const [userAvatarUrl, setUserAvatarUrl] = useState<string>("");
   const [position, setPosition] = useState({ x: 0, y: 0 });
+  const [hasMoved, setHasMoved] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -168,6 +169,7 @@ export const EricChatbot = () => {
     if (!isDragging) return;
 
     const handleMouseMove = (e: MouseEvent) => {
+      setHasMoved(true);
       const newX = e.clientX - dragStart.x;
       const newY = e.clientY - dragStart.y;
       
@@ -197,7 +199,7 @@ export const EricChatbot = () => {
       document.removeEventListener('mousemove', handleMouseMove);
       document.removeEventListener('mouseup', handleMouseUp);
     };
-  }, [isDragging, dragStart, position, isOpen]);
+  }, [isDragging, dragStart, isOpen]);
 
   return (
     <>
@@ -205,12 +207,19 @@ export const EricChatbot = () => {
         /* Floating Character */
         <div 
           ref={floatingRef}
-          className="eric-floating-character"
-          style={{
-            transform: `translate(${position.x}px, ${position.y}px)`,
+          className={hasMoved ? "" : "eric-floating-character"}
+          style={hasMoved ? {
+            position: 'fixed',
+            left: `${position.x}px`,
+            top: `${position.y}px`,
+            zIndex: 1000,
+            width: '7rem',
             cursor: isDragging ? 'grabbing' : 'pointer',
             userSelect: 'none',
-            position: 'fixed'
+            transition: isDragging ? 'none' : 'transform 0.3s'
+          } : {
+            cursor: isDragging ? 'grabbing' : 'pointer',
+            userSelect: 'none'
           }}
           onMouseDown={handleMouseDown}
           onClick={(e) => {
@@ -226,19 +235,31 @@ export const EricChatbot = () => {
             src={ericAvatar} 
             alt="Eric - Assistant IA" 
             title="Cliquez pour parler avec Eric"
-            className="w-full h-auto pointer-events-none"
+            className="w-full h-auto pointer-events-none drop-shadow-2xl"
           />
         </div>
       ) : (
         /* Chat Interface */
         <div 
           ref={chatRef}
-          className="eric-chat-interface"
-          style={{
-            transform: `translate(${position.x}px, ${position.y}px)`,
+          className={hasMoved ? "" : "eric-chat-interface"}
+          style={hasMoved ? {
+            position: 'fixed',
+            left: `${position.x}px`,
+            top: `${position.y}px`,
+            zIndex: 1001,
+            width: '380px',
+            maxHeight: 'calc(100vh - 280px)',
             cursor: isDragging ? 'grabbing' : 'default',
             userSelect: 'none',
-            position: 'fixed'
+            display: 'flex',
+            flexDirection: 'column',
+            background: 'transparent',
+            borderRadius: '1.5rem',
+            padding: '1.25rem'
+          } : {
+            cursor: isDragging ? 'grabbing' : 'default',
+            userSelect: 'none'
           }}
           onMouseDown={handleMouseDown}
         >
