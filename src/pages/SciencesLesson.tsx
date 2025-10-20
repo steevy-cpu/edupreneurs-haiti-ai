@@ -34,6 +34,7 @@ export default function SciencesLesson() {
   const [activeTab, setActiveTab] = useState("introduction");
   const [earnedPoints, setEarnedPoints] = useState(0);
   const [lessonCompleted, setLessonCompleted] = useState(false);
+  const [quizKey, setQuizKey] = useState(0);
 
   const lessonContent = topicId ? sciencesLessons7AF[topicId] : null;
   const topicInfo = sciencesTopics.find(topic => topic.id === topicId);
@@ -196,6 +197,7 @@ export default function SciencesLesson() {
 
                     <TabsContent value="quiz">
                       <QuizGame 
+                        key={`quiz-${quizKey}`}
                         topic={topicInfo.title}
                         questions={quizData.quiz} 
                         onComplete={(score, goldEarned) => {
@@ -206,11 +208,13 @@ export default function SciencesLesson() {
                             description: `Excellent travail ! Score: ${score}/${quizData.quiz.length}`,
                           });
                         }}
+                        onRegenerate={() => setQuizKey(prev => prev + 1)}
                       />
                     </TabsContent>
 
                     <TabsContent value="matching">
                       <MatchingGame 
+                        key={`matching-${quizKey}`}
                         pairs={quizData.matching}
                         onComplete={(goldEarned) => {
                           setEarnedPoints(goldEarned);

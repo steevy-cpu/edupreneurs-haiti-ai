@@ -17,9 +17,10 @@ interface QuizGameProps {
   topic: string;
   questions: QuizQuestion[];
   onComplete: (score: number, goldEarned: number) => void;
+  onRegenerate?: () => void;
 }
 
-export const QuizGame = ({ topic, questions, onComplete }: QuizGameProps) => {
+export const QuizGame = ({ topic, questions, onComplete, onRegenerate }: QuizGameProps) => {
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [selectedAnswer, setSelectedAnswer] = useState<number | null>(null);
   const [showResult, setShowResult] = useState(false);
@@ -77,11 +78,17 @@ export const QuizGame = ({ topic, questions, onComplete }: QuizGameProps) => {
       setSelectedAnswer(null);
       setShowResult(false);
     } else {
-      const finalScore = score + (selectedAnswer === questions[currentQuestion].correctAnswer ? 1 : 0);
-      const goldEarned = Math.round((finalScore / questions.length) * 100);
       setIsComplete(true);
-      onComplete(finalScore, goldEarned);
+      onComplete(score, score);
     }
+  };
+
+  const handleRestart = () => {
+    setCurrentQuestion(0);
+    setSelectedAnswer(null);
+    setShowResult(false);
+    setScore(0);
+    setIsComplete(false);
   };
 
   const progress = ((currentQuestion + 1) / questions.length) * 100;
@@ -102,8 +109,18 @@ export const QuizGame = ({ topic, questions, onComplete }: QuizGameProps) => {
         </div>
         <div className="p-6 bg-accent/10 rounded-xl">
           <p className="text-2xl font-bold gold-text">
-            +{Math.round(percentage)} gold gagnés! 🏆
+            +{score} gold gagnés! 🏆
           </p>
+        </div>
+        <div className="flex gap-3 justify-center">
+          <Button onClick={handleRestart} variant="outline" size="lg">
+            Recommencer
+          </Button>
+          {onRegenerate && (
+            <Button onClick={onRegenerate} size="lg">
+              Régénérer le quiz
+            </Button>
+          )}
         </div>
       </Card>
     );
