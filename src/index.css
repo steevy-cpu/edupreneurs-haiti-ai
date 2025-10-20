@@ -498,6 +498,67 @@ All colors MUST be HSL.
     border-radius: 2px;
   }
 
+  /* Prose content responsive overflow fixes */
+  .prose {
+    overflow-x: hidden;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    word-break: break-word;
+    hyphens: auto;
+  }
+
+  .prose * {
+    max-width: 100%;
+    overflow-wrap: break-word;
+    word-wrap: break-word;
+  }
+
+  .prose table {
+    display: block;
+    width: 100%;
+    overflow-x: auto;
+  }
+
+  .prose img,
+  .prose video,
+  .prose iframe,
+  .prose svg {
+    max-width: 100%;
+    height: auto;
+  }
+
+  .prose pre {
+    overflow-x: auto;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+  }
+
+  .prose code {
+    word-wrap: break-word;
+  }
+
+  /* Specific fixes for lesson content */
+  .prose p,
+  .prose li,
+  .prose td,
+  .prose th,
+  .prose div,
+  .prose span {
+    overflow-wrap: break-word;
+    word-wrap: break-word;
+    word-break: break-word;
+  }
+
+  @media (max-width: 640px) {
+    .prose table {
+      font-size: 0.875rem;
+    }
+    
+    .prose {
+      font-size: 0.9rem;
+    }
+  }
+
   .lesson-markdown h5 {
     @apply text-sm font-bold uppercase tracking-wide mt-4 mb-2;
     color: hsl(180 88% 27%);

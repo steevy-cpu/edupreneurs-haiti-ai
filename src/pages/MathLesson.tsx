@@ -417,7 +417,7 @@ const MathLesson = () => {
   const activityData = getActivityData();
 
   return (
-    <div className="min-h-screen lesson-bg">
+    <div className="min-h-screen lesson-bg overflow-x-hidden">
       
       {/* Gradient Header */}
       <header className="lesson-topbar sticky top-0 z-50">
@@ -443,13 +443,13 @@ const MathLesson = () => {
         </div>
       </header>
 
-      <div className="container mx-auto px-4 py-6 max-w-7xl">
+      <div className="container mx-auto px-4 py-6 max-w-7xl overflow-x-hidden">
         {/* Page Title */}
-        <div className="flex items-center justify-between mb-6">
-          <div>
-            <h1 className="text-2xl font-bold mb-1 flex items-center gap-2">
-              <span className="text-3xl">{currentTopic.icon}</span>
-              Mathématiques — {currentTopic.title}
+        <div className="flex items-center justify-between mb-6 overflow-x-hidden">
+          <div className="min-w-0 flex-1">
+            <h1 className="text-2xl font-bold mb-1 flex items-center gap-2 break-words">
+              <span className="text-3xl shrink-0">{currentTopic.icon}</span>
+              <span className="break-words">Mathématiques — {currentTopic.title}</span>
             </h1>
             <p className="text-sm text-muted-foreground">AF7 — Aligné MENFP</p>
           </div>
@@ -484,10 +484,10 @@ const MathLesson = () => {
                       🎯 Objectif de la leçon
                     </CardTitle>
                   </CardHeader>
-                  <CardContent className="p-4 sm:p-6 pt-0">
+                   <CardContent className="p-4 sm:p-6 pt-0">
                     {lessonData.objectif ? (
-                      <div className="prose prose-sm sm:prose-base max-w-none dark:prose-invert">
-                        <div className="whitespace-pre-wrap text-sm sm:text-base leading-relaxed bg-background/50 p-4 rounded-lg">
+                      <div className="prose prose-sm sm:prose-base max-w-none dark:prose-invert overflow-x-hidden">
+                        <div className="whitespace-pre-wrap text-sm sm:text-base leading-relaxed bg-background/50 p-4 rounded-lg break-words">
                           {lessonData.objectif}
                         </div>
                       </div>
@@ -507,7 +507,7 @@ const MathLesson = () => {
                   </CardHeader>
                   <CardContent className="p-4 sm:p-6 pt-0">
                     {lessonData.introduction ? (
-                      <div className="prose prose-sm sm:prose-base max-w-none dark:prose-invert">
+                      <div className="prose prose-sm sm:prose-base max-w-none dark:prose-invert overflow-x-hidden">
                         <div dangerouslySetInnerHTML={{ __html: lessonData.introduction }} />
                       </div>
                     ) : (
@@ -536,7 +536,7 @@ const MathLesson = () => {
                     </div>
                   </CardHeader>
                   <CardContent className="p-4 sm:p-6 pt-6">
-                    <div className="prose prose-sm sm:prose-base max-w-none dark:prose-invert">
+                    <div className="prose prose-sm sm:prose-base max-w-none dark:prose-invert overflow-x-hidden">
                       {lessonData.contenu ? (
                         <div dangerouslySetInnerHTML={{ __html: lessonData.contenu }} />
                       ) : (
@@ -565,7 +565,7 @@ const MathLesson = () => {
                       </CardTitle>
                     </CardHeader>
                     <CardContent className="p-4 sm:p-6 pt-6">
-                      <div className="prose prose-sm sm:prose-base max-w-none dark:prose-invert">
+                      <div className="prose prose-sm sm:prose-base max-w-none dark:prose-invert overflow-x-hidden">
                         <div dangerouslySetInnerHTML={{ __html: mathLessons[topicId!].exemplesExercices }} />
                       </div>
                     </CardContent>

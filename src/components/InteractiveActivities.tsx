@@ -94,7 +94,7 @@ export const InteractiveActivities = ({ content, isLoading, onRegenerate }: Inte
             Les activités n'ont pas pu être chargées dans le format interactif. 
             Voici le contenu original:
           </p>
-          <div className="prose prose-sm max-w-none dark:prose-invert">
+          <div className="prose prose-sm max-w-none dark:prose-invert overflow-x-hidden">
             <div dangerouslySetInnerHTML={{ __html: content }} />
           </div>
           {onRegenerate && (
@@ -314,7 +314,7 @@ export const InteractiveActivities = ({ content, isLoading, onRegenerate }: Inte
       <CardContent className="p-6 space-y-6">
         {/* Question */}
         <div className="p-6 bg-gradient-to-r from-primary/10 to-accent/10 rounded-lg border-2 border-primary/20">
-          <p className="text-lg font-medium leading-relaxed">
+          <p className="text-lg font-medium leading-relaxed break-words">
             {currentQuestion.question}
           </p>
         </div>
@@ -352,7 +352,7 @@ export const InteractiveActivities = ({ content, isLoading, onRegenerate }: Inte
                     {showIncorrect && <XCircle className="w-5 h-5" />}
                     {!showFeedback && String.fromCharCode(65 + index)}
                   </div>
-                  <span className="flex-1">{option}</span>
+                  <span className="flex-1 break-words">{option}</span>
                 </div>
               </button>
             );
@@ -395,7 +395,7 @@ export const InteractiveActivities = ({ content, isLoading, onRegenerate }: Inte
           <summary className="cursor-pointer text-sm text-muted-foreground hover:text-foreground transition-colors">
             Voir tous les exercices
           </summary>
-          <div className="mt-4 prose prose-sm max-w-none dark:prose-invert">
+          <div className="mt-4 prose prose-sm max-w-none dark:prose-invert overflow-x-hidden">
             <div dangerouslySetInnerHTML={{ __html: content }} />
           </div>
         </details>
