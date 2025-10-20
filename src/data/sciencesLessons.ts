@@ -3,6 +3,7 @@ export interface StaticLessonContent {
   introduction: string;
   contenu: string;
   exemplesExercices: string;
+  musicUrl?: string;
 }
 
 // 7th Grade Sciences Lessons (AF7) - Based on MENFP Program
@@ -235,16 +236,37 @@ export const sciencesLessons7AF: Record<string, StaticLessonContent> = {
 • Identifier les quatre (4) principales couches constituant la structure du globe terrestre
 • Reconnaître les manifestations d'origine externe et d'origine interne du globe terrestre
 • Reconnaître que les éruptions volcaniques et les tremblements de terre sont deux phénomènes d'origine interne`,
-    introduction: `<div class="space-y-4">
+    introduction: `<div class="space-y-6">
   <p class="text-lg leading-relaxed">
-    Notre planète Terre est fascinante ! Sous nos pieds se cache un monde complexe organisé en plusieurs couches. 
-    Comprendre la structure interne de la Terre nous aide à expliquer de nombreux phénomènes naturels comme les 
+    Notre planète Terre est fascinante ! Sous nos pieds se cache un monde complexe organisé en plusieurs couches.
+    Comprendre la structure interne de la Terre nous aide à expliquer de nombreux phénomènes naturels comme les
     tremblements de terre et les volcans.
   </p>
   <div class="bg-primary/5 border-l-4 border-primary p-4 rounded-r">
     <p class="font-semibold text-primary mb-2">🌍 Le saviez-vous ?</p>
-    <p>La Terre existe depuis environ 4,5 milliards d'années et sa structure interne est le résultat de processus 
+    <p>La Terre existe depuis environ 4,5 milliards d'années et sa structure interne est le résultat de processus
     géologiques complexes qui continuent encore aujourd'hui !</p>
+  </div>
+  
+  <div class="bg-gradient-to-r from-primary/10 to-secondary/10 p-6 rounded-xl">
+    <h3 class="text-xl font-bold mb-4 flex items-center gap-2">
+      <span class="text-2xl">🎯</span>
+      Objectifs de la leçon
+    </h3>
+    <ul class="space-y-2">
+      <li class="flex items-start gap-2">
+        <span class="text-primary shrink-0 mt-1">✓</span>
+        <span>Identifier les quatre (4) principales couches constituant la structure du globe terrestre</span>
+      </li>
+      <li class="flex items-start gap-2">
+        <span class="text-primary shrink-0 mt-1">✓</span>
+        <span>Reconnaître les manifestations d'origine externe et d'origine interne du globe terrestre</span>
+      </li>
+      <li class="flex items-start gap-2">
+        <span class="text-primary shrink-0 mt-1">✓</span>
+        <span>Reconnaître que les éruptions volcaniques et les tremblements de terre sont deux phénomènes d'origine interne</span>
+      </li>
+    </ul>
   </div>
 </div>`,
     contenu: `<div class="space-y-8">
@@ -538,16 +560,33 @@ export const sciencesLessons7AF: Record<string, StaticLessonContent> = {
     objectif: `À la fin de cette leçon, tu vas pouvoir:
 • Spécifier le mécanisme de la formation d'un volcan comme rejet du magma
 • Spécifier les conséquences favorables et défavorables des éruptions volcaniques`,
-    introduction: `<div class="space-y-4">
+    introduction: `<div class="space-y-6">
   <p class="text-lg leading-relaxed">
-    Les volcans sont parmi les phénomènes naturels les plus spectaculaires de notre planète. Ces montagnes de feu 
-    fascinent et terrifient à la fois. Comprendre leur fonctionnement est essentiel pour protéger les populations 
+    Les volcans sont parmi les phénomènes naturels les plus spectaculaires de notre planète. Ces montagnes de feu
+    fascinent et terrifient à la fois. Comprendre leur fonctionnement est essentiel pour protéger les populations
     qui vivent à proximité.
   </p>
   <div class="bg-primary/5 border-l-4 border-primary p-4 rounded-r">
     <p class="font-semibold text-primary mb-2">🌋 Le saviez-vous ?</p>
-    <p>Il existe environ 1 500 volcans actifs dans le monde, et environ 50 à 70 d'entre eux entrent en éruption 
+    <p>Il existe environ 1 500 volcans actifs dans le monde, et environ 50 à 70 d'entre eux entrent en éruption
     chaque année ! Haïti se trouve dans une zone sismique, bien qu'elle n'ait pas de volcans actifs actuellement.</p>
+  </div>
+  
+  <div class="bg-gradient-to-r from-primary/10 to-secondary/10 p-6 rounded-xl">
+    <h3 class="text-xl font-bold mb-4 flex items-center gap-2">
+      <span class="text-2xl">🎯</span>
+      Objectifs de la leçon
+    </h3>
+    <ul class="space-y-2">
+      <li class="flex items-start gap-2">
+        <span class="text-primary shrink-0 mt-1">✓</span>
+        <span>Spécifier le mécanisme de la formation d'un volcan comme rejet du magma</span>
+      </li>
+      <li class="flex items-start gap-2">
+        <span class="text-primary shrink-0 mt-1">✓</span>
+        <span>Spécifier les conséquences favorables et défavorables des éruptions volcaniques</span>
+      </li>
+    </ul>
   </div>
 </div>`,
     contenu: `<div class="space-y-8">

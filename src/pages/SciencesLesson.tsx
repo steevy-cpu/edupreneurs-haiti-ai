@@ -6,18 +6,23 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   ChevronLeft,
   BookOpen,
-  Target,
   Lightbulb,
   ClipboardCheck,
   Beaker,
-  Brain,
-  Star,
-  Award
+  Award,
+  Trophy
 } from "lucide-react";
 import { sciencesLessons7AF, sciencesTopics } from "@/data/sciencesLessons";
-import { InteractiveQuiz } from "@/components/InteractiveQuiz";
-import { InteractiveActivities } from "@/components/InteractiveActivities";
+import { 
+  structureTerreQuiz, 
+  volcansQuiz, 
+  structureTerreMatching, 
+  volcansMatching 
+} from "@/data/sciencesActivities";
+import { QuizGame } from "@/components/math-activities/QuizGame";
+import { MatchingGame } from "@/components/math-activities/MatchingGame";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import { LessonMusicPlayer } from "@/components/LessonMusicPlayer";
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -36,6 +41,19 @@ export default function SciencesLesson() {
   useEffect(() => {
     window.scrollTo(0, 0);
   }, [topicId]);
+
+  const getQuizData = () => {
+    switch (topicId) {
+      case "structure-terre":
+        return { quiz: structureTerreQuiz, matching: structureTerreMatching };
+      case "volcans":
+        return { quiz: volcansQuiz, matching: volcansMatching };
+      default:
+        return null;
+    }
+  };
+
+  const quizData = getQuizData();
 
   const handleQuizComplete = async (score: number, totalQuestions: number) => {
     const percentage = (score / totalQuestions) * 100;
@@ -66,17 +84,20 @@ export default function SciencesLesson() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5">
       {/* Navigation Bar */}
-      <nav className="fixed top-0 left-0 right-0 z-40 bg-background/95 backdrop-blur-md border-b border-border">
-        <div className="container mx-auto px-4 py-4">
+      <nav className="fixed top-0 left-0 right-0 z-40 bg-gradient-to-r from-amber-600 to-orange-600 shadow-lg">
+        <div className="container mx-auto px-4 py-3">
           <div className="flex items-center justify-between">
-            <Button
-              variant="ghost"
-              onClick={() => navigate("/sciences-course")}
-              className="gap-2"
-            >
-              <ChevronLeft className="w-4 h-4" />
-              <span className="font-semibold">Retour au cours</span>
-            </Button>
+            <div className="flex items-center gap-2">
+              <Button
+                variant="ghost"
+                onClick={() => navigate("/sciences-course")}
+                className="gap-2 text-white hover:bg-white/20"
+              >
+                <ChevronLeft className="w-4 h-4" />
+                <span className="font-semibold">Retour au cours</span>
+              </Button>
+              <LessonMusicPlayer />
+            </div>
             <ThemeToggle />
           </div>
         </div>
@@ -114,14 +135,10 @@ export default function SciencesLesson() {
         {/* Lesson Content Tabs */}
         <Card className="p-6 mb-8">
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-            <TabsList className="grid w-full grid-cols-4 mb-6">
+            <TabsList className="grid w-full grid-cols-3 mb-6">
               <TabsTrigger value="introduction" className="gap-2">
                 <Lightbulb className="w-4 h-4" />
                 Introduction
-              </TabsTrigger>
-              <TabsTrigger value="objectifs" className="gap-2">
-                <Target className="w-4 h-4" />
-                Objectifs
               </TabsTrigger>
               <TabsTrigger value="contenu" className="gap-2">
                 <BookOpen className="w-4 h-4" />
@@ -140,19 +157,6 @@ export default function SciencesLesson() {
               />
             </TabsContent>
 
-            <TabsContent value="objectifs" className="space-y-6">
-              <div className="bg-gradient-to-r from-primary/10 to-secondary/10 p-6 rounded-xl">
-                <h3 className="text-xl font-bold mb-4 flex items-center gap-2">
-                  <Target className="w-6 h-6 text-primary" />
-                  Objectifs de la leçon
-                </h3>
-                <div 
-                  className="prose prose-lg dark:prose-invert max-w-none"
-                  dangerouslySetInnerHTML={{ __html: lessonContent.objectif }}
-                />
-              </div>
-            </TabsContent>
-
             <TabsContent value="contenu" className="space-y-6">
               <div 
                 className="prose prose-lg dark:prose-invert max-w-none"
@@ -169,14 +173,52 @@ export default function SciencesLesson() {
           </Tabs>
         </Card>
 
-        {/* Activities & Quiz - Coming Soon */}
-        <Card className="p-8 mb-8 text-center bg-gradient-to-r from-primary/10 to-secondary/10">
-          <Brain className="w-16 h-16 mx-auto mb-4 text-primary" />
-          <h3 className="text-2xl font-bold mb-2">Activités et Quiz</h3>
-          <p className="text-muted-foreground">
-            Les activités interactives et quiz pour cette leçon seront disponibles prochainement.
-          </p>
-        </Card>
+        {/* Quiz Final Section */}
+        {quizData && (
+          <Card className="p-8 mb-8">
+            <div className="flex items-center gap-3 mb-6">
+              <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-amber-500 to-orange-600 flex items-center justify-center">
+                <Trophy className="w-6 h-6 text-white" />
+              </div>
+              <div>
+                <h2 className="text-2xl font-bold">Quiz Final</h2>
+                <p className="text-muted-foreground">Teste tes connaissances sur cette leçon</p>
+              </div>
+            </div>
+
+            <Tabs defaultValue="quiz" className="w-full">
+              <TabsList className="grid w-full grid-cols-2 mb-6">
+                <TabsTrigger value="quiz">Quiz</TabsTrigger>
+                <TabsTrigger value="matching">Associer les termes</TabsTrigger>
+              </TabsList>
+
+              <TabsContent value="quiz">
+                <QuizGame 
+                  topic={topicInfo.title}
+                  questions={quizData.quiz} 
+                  onComplete={(score, goldEarned) => {
+                    setEarnedPoints(goldEarned);
+                    setLessonCompleted(true);
+                    toast({
+                      title: "🎉 Quiz terminé !",
+                      description: `Excellent travail ! Score: ${score}/${quizData.quiz.length}`,
+                    });
+                  }}
+                />
+              </TabsContent>
+
+              <TabsContent value="matching">
+                <MatchingGame 
+                  pairs={quizData.matching}
+                  onComplete={(goldEarned) => {
+                    setEarnedPoints(goldEarned);
+                    setLessonCompleted(true);
+                  }}
+                />
+              </TabsContent>
+            </Tabs>
+          </Card>
+        )}
 
         {/* Navigation Buttons */}
         <div className="flex gap-4 mt-8">
