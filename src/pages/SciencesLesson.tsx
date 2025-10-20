@@ -135,7 +135,7 @@ export default function SciencesLesson() {
         {/* Lesson Content Tabs */}
         <Card className="p-6 mb-8">
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-            <TabsList className="grid w-full grid-cols-3 mb-6">
+            <TabsList className="grid w-full grid-cols-4 mb-6">
               <TabsTrigger value="introduction" className="gap-2">
                 <Lightbulb className="w-4 h-4" />
                 Introduction
@@ -147,6 +147,10 @@ export default function SciencesLesson() {
               <TabsTrigger value="exemples" className="gap-2">
                 <ClipboardCheck className="w-4 h-4" />
                 Exemples
+              </TabsTrigger>
+              <TabsTrigger value="quiz" className="gap-2">
+                <Trophy className="w-4 h-4" />
+                Quiz Final
               </TabsTrigger>
             </TabsList>
 
@@ -170,55 +174,60 @@ export default function SciencesLesson() {
                 dangerouslySetInnerHTML={{ __html: lessonContent.exemplesExercices }}
               />
             </TabsContent>
+
+            <TabsContent value="quiz" className="space-y-6">
+              {quizData ? (
+                <>
+                  <div className="flex items-center gap-3 mb-6">
+                    <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-amber-500 to-orange-600 flex items-center justify-center">
+                      <Trophy className="w-6 h-6 text-white" />
+                    </div>
+                    <div>
+                      <h2 className="text-2xl font-bold">Quiz Final</h2>
+                      <p className="text-muted-foreground">Teste tes connaissances sur cette leçon</p>
+                    </div>
+                  </div>
+
+                  <Tabs defaultValue="quiz" className="w-full">
+                    <TabsList className="grid w-full grid-cols-2 mb-6">
+                      <TabsTrigger value="quiz">Quiz</TabsTrigger>
+                      <TabsTrigger value="matching">Associer les termes</TabsTrigger>
+                    </TabsList>
+
+                    <TabsContent value="quiz">
+                      <QuizGame 
+                        topic={topicInfo.title}
+                        questions={quizData.quiz} 
+                        onComplete={(score, goldEarned) => {
+                          setEarnedPoints(goldEarned);
+                          setLessonCompleted(true);
+                          toast({
+                            title: "🎉 Quiz terminé !",
+                            description: `Excellent travail ! Score: ${score}/${quizData.quiz.length}`,
+                          });
+                        }}
+                      />
+                    </TabsContent>
+
+                    <TabsContent value="matching">
+                      <MatchingGame 
+                        pairs={quizData.matching}
+                        onComplete={(goldEarned) => {
+                          setEarnedPoints(goldEarned);
+                          setLessonCompleted(true);
+                        }}
+                      />
+                    </TabsContent>
+                  </Tabs>
+                </>
+              ) : (
+                <div className="text-center py-12">
+                  <p className="text-muted-foreground">Quiz à venir pour cette leçon</p>
+                </div>
+              )}
+            </TabsContent>
           </Tabs>
         </Card>
-
-        {/* Quiz Final Section */}
-        {quizData && (
-          <Card className="p-8 mb-8">
-            <div className="flex items-center gap-3 mb-6">
-              <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-amber-500 to-orange-600 flex items-center justify-center">
-                <Trophy className="w-6 h-6 text-white" />
-              </div>
-              <div>
-                <h2 className="text-2xl font-bold">Quiz Final</h2>
-                <p className="text-muted-foreground">Teste tes connaissances sur cette leçon</p>
-              </div>
-            </div>
-
-            <Tabs defaultValue="quiz" className="w-full">
-              <TabsList className="grid w-full grid-cols-2 mb-6">
-                <TabsTrigger value="quiz">Quiz</TabsTrigger>
-                <TabsTrigger value="matching">Associer les termes</TabsTrigger>
-              </TabsList>
-
-              <TabsContent value="quiz">
-                <QuizGame 
-                  topic={topicInfo.title}
-                  questions={quizData.quiz} 
-                  onComplete={(score, goldEarned) => {
-                    setEarnedPoints(goldEarned);
-                    setLessonCompleted(true);
-                    toast({
-                      title: "🎉 Quiz terminé !",
-                      description: `Excellent travail ! Score: ${score}/${quizData.quiz.length}`,
-                    });
-                  }}
-                />
-              </TabsContent>
-
-              <TabsContent value="matching">
-                <MatchingGame 
-                  pairs={quizData.matching}
-                  onComplete={(goldEarned) => {
-                    setEarnedPoints(goldEarned);
-                    setLessonCompleted(true);
-                  }}
-                />
-              </TabsContent>
-            </Tabs>
-          </Card>
-        )}
 
         {/* Navigation Buttons */}
         <div className="flex gap-4 mt-8">
