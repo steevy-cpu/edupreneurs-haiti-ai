@@ -3614,6 +3614,1949 @@ export const mathLessons7AF: Record<string, StaticLessonContent> = {
   </div>
 
 </div>`
+  },
+
+  "nombres-relatifs": {
+    objectif: `À la fin de cette leçon, tu vas pouvoir:
+• Comprendre la notion de nombres relatifs positifs et négatifs
+• Repérer et comparer des nombres relatifs sur une droite graduée
+• Effectuer des additions et soustractions de nombres relatifs
+• Résoudre des problèmes concrets avec les nombres relatifs`,
+
+    introduction: `<div class="space-y-4">
+  <p class="text-lg leading-relaxed">
+    <span class="font-semibold text-primary">Connais-tu la température en hiver au Canada ?</span> 
+    Elle peut descendre à -30°C ! 
+    <span class="italic">Comment représenter ces températures inférieures à zéro ?</span>
+  </p>
+  
+  <p class="text-lg leading-relaxed">
+    Les nombres relatifs nous permettent de représenter des <span class="font-semibold text-accent">quantités négatives</span> : 
+    des températures sous zéro, des dettes en argent, des altitudes sous le niveau de la mer, 
+    ou encore des mouvements vers la gauche ou vers le bas.
+  </p>
+
+  <div class="bg-gradient-to-r from-primary/10 to-accent/10 p-4 rounded-lg border-l-4 border-primary">
+    <p class="font-medium">💡 <span class="text-primary">Conseil :</span> Un nombre relatif est comme une direction - 
+    le signe + indique "dans un sens" et le signe - indique "dans le sens opposé" !</p>
+  </div>
+</div>`,
+
+    contenu: `<div class="space-y-8">
+  
+  <!-- Section 1: Définitions clés -->
+  <section class="bg-gradient-to-br from-blue-50 to-purple-50 dark:from-blue-950/30 dark:to-purple-950/30 p-6 rounded-xl border border-blue-200 dark:border-blue-800">
+    <h3 class="text-2xl font-bold mb-4 flex items-center gap-2 text-blue-700 dark:text-blue-300">
+      🎯 Définitions clés
+    </h3>
+    
+    <div class="space-y-4">
+      <div class="bg-white/80 dark:bg-gray-900/50 p-4 rounded-lg">
+        <h4 class="font-bold text-lg mb-2 text-primary">📌 Nombre relatif</h4>
+        <p class="leading-relaxed">
+          Un nombre relatif est un nombre précédé d'un signe + (positif) ou - (négatif).
+        </p>
+        <p class="mt-2 text-sm text-muted-foreground italic">
+          Exemples : +5, -3, +12, -0,5, 0
+        </p>
+      </div>
+
+      <div class="bg-white/80 dark:bg-gray-900/50 p-4 rounded-lg">
+        <h4 class="font-bold text-lg mb-2 text-primary">📌 Nombres opposés</h4>
+        <p class="leading-relaxed">
+          Deux nombres sont opposés s'ils ont la même distance à zéro mais des signes différents.
+        </p>
+        <p class="mt-2 font-mono text-lg">
+          +7 et -7 sont opposés  •  +3,5 et -3,5 sont opposés
+        </p>
+      </div>
+
+      <div class="bg-white/80 dark:bg-gray-900/50 p-4 rounded-lg">
+        <h4 class="font-bold text-lg mb-2 text-primary">📌 Distance à zéro (Valeur absolue)</h4>
+        <p class="leading-relaxed">
+          C'est la distance entre le nombre et zéro sur la droite graduée, toujours positive.
+        </p>
+        <div class="mt-3 p-3 bg-gradient-to-r from-primary/10 to-accent/10 rounded border-l-4 border-primary">
+          <p class="font-mono text-lg">
+            |-5| = 5  •  |+3| = 3  •  |-12,7| = 12,7
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Section 2: La droite graduée -->
+  <section class="bg-gradient-to-br from-green-50 to-teal-50 dark:from-green-950/30 dark:to-teal-950/30 p-6 rounded-xl border border-green-200 dark:border-green-800">
+    <h3 class="text-2xl font-bold mb-4 flex items-center gap-2 text-green-700 dark:text-green-300">
+      📏 La droite graduée
+    </h3>
+    
+    <div class="space-y-4">
+      <div class="bg-white/80 dark:bg-gray-900/50 p-4 rounded-lg">
+        <h4 class="font-bold text-lg mb-3 text-primary">🔍 Repérage sur la droite</h4>
+        <div class="my-4 p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
+          <div class="flex items-center justify-center gap-8 text-lg font-mono">
+            <span>-5</span>
+            <span>-4</span>
+            <span>-3</span>
+            <span>-2</span>
+            <span>-1</span>
+            <span class="font-bold text-primary text-2xl">0</span>
+            <span>+1</span>
+            <span>+2</span>
+            <span>+3</span>
+            <span>+4</span>
+            <span>+5</span>
+          </div>
+          <div class="h-1 bg-gradient-to-r from-red-500 via-gray-500 to-blue-500 mt-2 rounded"></div>
+        </div>
+        <p class="text-sm text-muted-foreground">Les nombres négatifs sont à gauche de zéro, les positifs à droite.</p>
+      </div>
+
+      <div class="bg-white/80 dark:bg-gray-900/50 p-4 rounded-lg">
+        <h4 class="font-bold text-lg mb-3 text-primary">📊 Comparaison</h4>
+        <ul class="space-y-2 list-disc list-inside">
+          <li>Tout nombre positif est <span class="font-semibold">plus grand</span> que tout nombre négatif</li>
+          <li>Entre deux nombres négatifs, le plus grand est celui qui est <span class="font-semibold">le plus proche de zéro</span></li>
+          <li>Sur la droite graduée, le plus grand est toujours <span class="font-semibold">à droite</span></li>
+        </ul>
+        <div class="mt-3 p-3 bg-blue-50 dark:bg-blue-950/30 rounded">
+          <p class="font-mono">-8 &lt; -3 &lt; 0 &lt; +2 &lt; +7</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Section 3: Addition de nombres relatifs -->
+  <section class="bg-gradient-to-br from-orange-50 to-amber-50 dark:from-orange-950/30 dark:to-amber-950/30 p-6 rounded-xl border border-orange-200 dark:border-orange-800">
+    <h3 class="text-2xl font-bold mb-4 flex items-center gap-2 text-orange-700 dark:text-orange-300">
+      ➕ Addition de nombres relatifs
+    </h3>
+    
+    <div class="space-y-4">
+      <div class="bg-white/80 dark:bg-gray-900/50 p-4 rounded-lg">
+        <h4 class="font-bold text-lg mb-2 text-primary">Règle 1 : Même signe</h4>
+        <p class="mb-2">On additionne les distances à zéro et on garde le signe commun.</p>
+        <div class="p-3 bg-green-50 dark:bg-green-950/30 rounded font-mono">
+          <p>(+5) + (+3) = +(5+3) = +8</p>
+          <p class="mt-1">(-7) + (-2) = -(7+2) = -9</p>
+        </div>
+      </div>
+
+      <div class="bg-white/80 dark:bg-gray-900/50 p-4 rounded-lg">
+        <h4 class="font-bold text-lg mb-2 text-primary">Règle 2 : Signes différents</h4>
+        <p class="mb-2">On soustrait les distances à zéro et on garde le signe du nombre le plus éloigné de zéro.</p>
+        <div class="p-3 bg-blue-50 dark:bg-blue-950/30 rounded font-mono">
+          <p>(+8) + (-3) = +(8-3) = +5</p>
+          <p class="mt-1">(-10) + (+4) = -(10-4) = -6</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Section 4: Soustraction -->
+  <section class="bg-gradient-to-br from-pink-50 to-rose-50 dark:from-pink-950/30 dark:to-rose-950/30 p-6 rounded-xl border border-pink-200 dark:border-pink-800">
+    <h3 class="text-2xl font-bold mb-4 flex items-center gap-2 text-pink-700 dark:text-pink-300">
+      ➖ Soustraction de nombres relatifs
+    </h3>
+    
+    <div class="space-y-4">
+      <div class="bg-white/80 dark:bg-gray-900/50 p-4 rounded-lg">
+        <h4 class="font-bold text-lg mb-2 text-primary">💡 Règle d'or</h4>
+        <p class="leading-relaxed mb-3">
+          <span class="font-semibold">Soustraire un nombre, c'est ajouter son opposé.</span>
+        </p>
+        <div class="space-y-2">
+          <div class="p-3 bg-purple-50 dark:bg-purple-950/30 rounded font-mono">
+            <p>(+7) - (+3) = (+7) + (-3) = +4</p>
+          </div>
+          <div class="p-3 bg-cyan-50 dark:bg-cyan-950/30 rounded font-mono">
+            <p>(+5) - (-2) = (+5) + (+2) = +7</p>
+          </div>
+          <div class="p-3 bg-amber-50 dark:bg-amber-950/30 rounded font-mono">
+            <p>(-4) - (+6) = (-4) + (-6) = -10</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Section 5: Applications pratiques -->
+  <section class="bg-gradient-to-br from-cyan-50 to-sky-50 dark:from-cyan-950/30 dark:to-sky-950/30 p-6 rounded-xl border border-cyan-200 dark:border-cyan-800">
+    <h3 class="text-2xl font-bold mb-4 flex items-center gap-2 text-cyan-700 dark:text-cyan-300">
+      🌍 Applications pratiques
+    </h3>
+    
+    <div class="grid md:grid-cols-2 gap-4">
+      <div class="bg-white/80 dark:bg-gray-900/50 p-4 rounded-lg">
+        <h4 class="font-bold text-primary mb-2">🌡️ Températures</h4>
+        <p class="text-sm">-5°C (5 degrés sous zéro)</p>
+        <p class="text-sm">+20°C (20 degrés au-dessus de zéro)</p>
+      </div>
+
+      <div class="bg-white/80 dark:bg-gray-900/50 p-4 rounded-lg">
+        <h4 class="font-bold text-primary mb-2">🏔️ Altitudes</h4>
+        <p class="text-sm">-400m (sous le niveau de la mer)</p>
+        <p class="text-sm">+2000m (au-dessus du niveau de la mer)</p>
+      </div>
+
+      <div class="bg-white/80 dark:bg-gray-900/50 p-4 rounded-lg">
+        <h4 class="font-bold text-primary mb-2">💰 Compte bancaire</h4>
+        <p class="text-sm">-500 HTG (dette de 500 gourdes)</p>
+        <p class="text-sm">+1000 HTG (avoir de 1000 gourdes)</p>
+      </div>
+
+      <div class="bg-white/80 dark:bg-gray-900/50 p-4 rounded-lg">
+        <h4 class="font-bold text-primary mb-2">📅 Chronologie</h4>
+        <p class="text-sm">-100 (100 ans avant J.-C.)</p>
+        <p class="text-sm">+2025 (année 2025 après J.-C.)</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Section 6: Astuces -->
+  <section class="bg-gradient-to-br from-yellow-50 to-orange-50 dark:from-yellow-950/30 dark:to-orange-950/30 p-6 rounded-xl border border-yellow-200 dark:border-yellow-800">
+    <h3 class="text-2xl font-bold mb-4 flex items-center gap-2 text-yellow-700 dark:text-yellow-300">
+      💡 Astuces et Conseils
+    </h3>
+    
+    <div class="space-y-3">
+      <div class="bg-white/80 dark:bg-gray-900/50 p-3 rounded-lg flex gap-3">
+        <span class="text-2xl">✅</span>
+        <p><span class="font-semibold">Utilise la droite graduée :</span> elle t'aide à visualiser</p>
+      </div>
+      
+      <div class="bg-white/80 dark:bg-gray-900/50 p-3 rounded-lg flex gap-3">
+        <span class="text-2xl">✅</span>
+        <p><span class="font-semibold">Soustraire = ajouter l'opposé :</span> transforme toujours en addition</p>
+      </div>
+      
+      <div class="bg-white/80 dark:bg-gray-900/50 p-3 rounded-lg flex gap-3">
+        <span class="text-2xl">✅</span>
+        <p><span class="font-semibold">Parenthèses :</span> utilise-les pour éviter les erreurs de signe</p>
+      </div>
+    </div>
+  </section>
+
+</div>`,
+
+    exemplesExercices: `<div class="space-y-6">
+  
+  <div class="bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-950/40 dark:to-blue-900/30 p-5 rounded-xl border-l-4 border-blue-500">
+    <h4 class="font-bold text-lg mb-3 flex items-center gap-2 text-blue-700 dark:text-blue-300">
+      ✏️ Exercice 1 — Comparaison (Facile)
+    </h4>
+    <p class="mb-3 leading-relaxed">Range dans l'ordre croissant : -5, +2, -1, 0, +4, -3</p>
+    <div class="mt-4 bg-white/70 dark:bg-gray-900/50 p-4 rounded-lg">
+      <p class="font-semibold text-blue-700 dark:text-blue-300 mb-2">📝 Solution :</p>
+      <div class="space-y-2 text-sm">
+        <p>Les négatifs d'abord (du plus petit au plus grand) puis les positifs</p>
+        <p class="font-bold text-blue-600">-5 &lt; -3 &lt; -1 &lt; 0 &lt; +2 &lt; +4</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="bg-gradient-to-br from-green-50 to-green-100 dark:from-green-950/40 dark:to-green-900/30 p-5 rounded-xl border-l-4 border-green-500">
+    <h4 class="font-bold text-lg mb-3 flex items-center gap-2 text-green-700 dark:text-green-300">
+      ✏️ Exercice 2 — Addition même signe (Facile)
+    </h4>
+    <p class="mb-3 leading-relaxed">Calcule : (-7) + (-3)</p>
+    <div class="mt-4 bg-white/70 dark:bg-gray-900/50 p-4 rounded-lg">
+      <p class="font-semibold text-green-700 dark:text-green-300 mb-2">📝 Solution :</p>
+      <div class="space-y-2 text-sm">
+        <p>Même signe : on additionne et on garde le signe -</p>
+        <p>(-7) + (-3) = -(7+3) = <span class="font-bold text-green-600">-10</span></p>
+      </div>
+    </div>
+  </div>
+
+  <div class="bg-gradient-to-br from-orange-50 to-orange-100 dark:from-orange-950/40 dark:to-orange-900/30 p-5 rounded-xl border-l-4 border-orange-500">
+    <h4 class="font-bold text-lg mb-3 flex items-center gap-2 text-orange-700 dark:text-orange-300">
+      ✏️ Exercice 3 — Addition signes différents (Moyen)
+    </h4>
+    <p class="mb-3 leading-relaxed">Calcule : (+8) + (-5)</p>
+    <div class="mt-4 bg-white/70 dark:bg-gray-900/50 p-4 rounded-lg">
+      <p class="font-semibold text-orange-700 dark:text-orange-300 mb-2">📝 Solution :</p>
+      <div class="space-y-2 text-sm">
+        <p>Signes différents : on soustrait et on garde le signe du plus grand</p>
+        <p>(+8) + (-5) = +(8-5) = <span class="font-bold text-orange-600">+3</span></p>
+      </div>
+    </div>
+  </div>
+
+  <div class="bg-gradient-to-br from-purple-50 to-purple-100 dark:from-purple-950/40 dark:to-purple-900/30 p-5 rounded-xl border-l-4 border-purple-500">
+    <h4 class="font-bold text-lg mb-3 flex items-center gap-2 text-purple-700 dark:text-purple-300">
+      ✏️ Exercice 4 — Soustraction (Difficile)
+    </h4>
+    <p class="mb-3 leading-relaxed">Calcule : (-6) - (-4)</p>
+    <div class="mt-4 bg-white/70 dark:bg-gray-900/50 p-4 rounded-lg">
+      <p class="font-semibold text-purple-700 dark:text-purple-300 mb-2">📝 Solution :</p>
+      <div class="space-y-2 text-sm">
+        <p>Soustraire = ajouter l'opposé</p>
+        <p>(-6) - (-4) = (-6) + (+4)</p>
+        <p>= -(6-4) = <span class="font-bold text-purple-600">-2</span></p>
+      </div>
+    </div>
+  </div>
+
+  <div class="bg-gradient-to-br from-pink-50 to-pink-100 dark:from-pink-950/40 dark:to-pink-900/30 p-5 rounded-xl border-l-4 border-pink-500">
+    <h4 class="font-bold text-lg mb-3 flex items-center gap-2 text-pink-700 dark:text-pink-300">
+      ✏️ Exercice 5 — Problème température (Difficile)
+    </h4>
+    <p class="mb-3 leading-relaxed">La température ce matin était -3°C. Elle a augmenté de 8°C. Quelle est la température maintenant ?</p>
+    <div class="mt-4 bg-white/70 dark:bg-gray-900/50 p-4 rounded-lg">
+      <p class="font-semibold text-pink-700 dark:text-pink-300 mb-2">📝 Solution :</p>
+      <div class="space-y-2 text-sm">
+        <p>(-3) + (+8) = +(8-3)</p>
+        <p>= <span class="font-bold text-pink-600">+5°C</span></p>
+      </div>
+    </div>
+  </div>
+
+</div>`
+  },
+
+  "volumes-solides": {
+    objectif: `À la fin de cette leçon, tu vas pouvoir:
+• Reconnaître et nommer les principaux solides géométriques
+• Calculer le volume de cubes, pavés droits, cylindres et prismes
+• Convertir des unités de volume
+• Résoudre des problèmes pratiques de volumes`,
+
+    introduction: `<div class="space-y-4">
+  <p class="text-lg leading-relaxed">
+    <span class="font-semibold text-primary">Combien d'eau peut contenir une bouteille ?</span> 
+    Quel est le volume d'une boîte de conserve ? 
+    <span class="italic">Comment mesurer l'espace occupé par un objet ?</span>
+  </p>
+  
+  <p class="text-lg leading-relaxed">
+    Le volume mesure <span class="font-semibold text-accent">l'espace qu'occupe un objet en 3 dimensions</span>. 
+    Que ce soit pour remplir un réservoir d'eau, construire une maison, ou emballer des colis, 
+    savoir calculer des volumes est essentiel dans la vie quotidienne.
+  </p>
+
+  <div class="bg-gradient-to-r from-primary/10 to-accent/10 p-4 rounded-lg border-l-4 border-primary">
+    <p class="font-medium">💡 <span class="text-primary">Conseil :</span> Le volume se mesure en unités cubes - 
+    imagine combien de petits cubes peuvent rentrer dans ton objet !</p>
+  </div>
+</div>`,
+
+    contenu: `<div class="space-y-8">
+  
+  <!-- Section 1: Définitions et unités -->
+  <section class="bg-gradient-to-br from-blue-50 to-purple-50 dark:from-blue-950/30 dark:to-purple-950/30 p-6 rounded-xl border border-blue-200 dark:border-blue-800">
+    <h3 class="text-2xl font-bold mb-4 flex items-center gap-2 text-blue-700 dark:text-blue-300">
+      🎯 Définitions et unités
+    </h3>
+    
+    <div class="space-y-4">
+      <div class="bg-white/80 dark:bg-gray-900/50 p-4 rounded-lg">
+        <h4 class="font-bold text-lg mb-2 text-primary">📌 Le volume</h4>
+        <p class="leading-relaxed">
+          Le volume d'un solide mesure l'espace qu'il occupe dans l'espace à trois dimensions.
+        </p>
+        <p class="mt-2 text-sm text-muted-foreground italic">
+          Unité principale : le mètre cube (m³)
+        </p>
+      </div>
+
+      <div class="bg-white/80 dark:bg-gray-900/50 p-4 rounded-lg">
+        <h4 class="font-bold text-lg mb-2 text-primary">📌 Unités de volume</h4>
+        <div class="overflow-x-auto">
+          <table class="w-full text-sm mt-2">
+            <thead class="bg-primary/10">
+              <tr>
+                <th class="p-2 text-left">Unité</th>
+                <th class="p-2 text-left">Symbole</th>
+                <th class="p-2 text-left">Équivalence</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y">
+              <tr><td class="p-2">Kilomètre cube</td><td class="p-2 font-mono">km³</td><td class="p-2">1 000 000 000 m³</td></tr>
+              <tr><td class="p-2">Mètre cube</td><td class="p-2 font-mono">m³</td><td class="p-2">1 m³</td></tr>
+              <tr><td class="p-2">Décimètre cube</td><td class="p-2 font-mono">dm³</td><td class="p-2">0,001 m³ = 1 litre</td></tr>
+              <tr><td class="p-2">Centimètre cube</td><td class="p-2 font-mono">cm³</td><td class="p-2">0,000001 m³ = 1 ml</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="bg-white/80 dark:bg-gray-900/50 p-4 rounded-lg">
+        <h4 class="font-bold text-lg mb-2 text-primary">💧 Capacité (liquides)</h4>
+        <p class="leading-relaxed mb-2">Pour les liquides, on utilise le litre (L).</p>
+        <div class="p-3 bg-blue-50 dark:bg-blue-950/30 rounded font-mono text-sm">
+          <p>1 L = 1 dm³</p>
+          <p>1 mL = 1 cm³</p>
+          <p>1 m³ = 1000 L</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Section 2: Le cube -->
+  <section class="bg-gradient-to-br from-green-50 to-teal-50 dark:from-green-950/30 dark:to-teal-950/30 p-6 rounded-xl border border-green-200 dark:border-green-800">
+    <h3 class="text-2xl font-bold mb-4 flex items-center gap-2 text-green-700 dark:text-green-300">
+      🧊 Le cube
+    </h3>
+    
+    <div class="space-y-4">
+      <div class="bg-white/80 dark:bg-gray-900/50 p-4 rounded-lg">
+        <h4 class="font-bold text-lg mb-3 text-primary">📐 Formule</h4>
+        <div class="grid md:grid-cols-2 gap-4">
+          <div>
+            <p class="mb-2">Un cube a 6 faces carrées identiques.</p>
+            <p class="mb-2">Si <span class="font-mono">c</span> = côté du cube :</p>
+            <div class="p-4 bg-green-100 dark:bg-green-950/40 rounded-lg text-center">
+              <p class="text-2xl font-bold text-green-700 dark:text-green-300 font-mono">V = c³</p>
+              <p class="text-sm mt-2">V = c × c × c</p>
+            </div>
+          </div>
+          <div class="flex items-center justify-center">
+            <div class="w-32 h-32 bg-gradient-to-br from-green-200 to-teal-200 dark:from-green-800 dark:to-teal-800 rounded-lg shadow-xl transform rotate-12 border-4 border-green-400"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="bg-white/80 dark:bg-gray-900/50 p-4 rounded-lg">
+        <h4 class="font-bold text-lg mb-2 text-primary">💡 Exemple</h4>
+        <p class="mb-2">Cube de côté 5 cm</p>
+        <div class="p-3 bg-blue-50 dark:bg-blue-950/30 rounded font-mono">
+          <p>V = 5³ = 5 × 5 × 5 = <span class="font-bold text-green-600">125 cm³</span></p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Section 3: Le pavé droit -->
+  <section class="bg-gradient-to-br from-orange-50 to-amber-50 dark:from-orange-950/30 dark:to-amber-950/30 p-6 rounded-xl border border-orange-200 dark:border-orange-800">
+    <h3 class="text-2xl font-bold mb-4 flex items-center gap-2 text-orange-700 dark:text-orange-300">
+      📦 Le pavé droit (parallélépipède rectangle)
+    </h3>
+    
+    <div class="space-y-4">
+      <div class="bg-white/80 dark:bg-gray-900/50 p-4 rounded-lg">
+        <h4 class="font-bold text-lg mb-3 text-primary">📐 Formule</h4>
+        <div class="grid md:grid-cols-2 gap-4">
+          <div>
+            <p class="mb-2">Un pavé droit a 6 faces rectangulaires.</p>
+            <p class="mb-2">Si L = longueur, l = largeur, h = hauteur :</p>
+            <div class="p-4 bg-orange-100 dark:bg-orange-950/40 rounded-lg text-center">
+              <p class="text-2xl font-bold text-orange-700 dark:text-orange-300 font-mono">V = L × l × h</p>
+            </div>
+          </div>
+          <div class="flex items-center justify-center">
+            <div class="w-40 h-24 bg-gradient-to-br from-orange-200 to-amber-200 dark:from-orange-800 dark:to-amber-800 rounded-lg shadow-xl transform rotate-6 border-4 border-orange-400"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="bg-white/80 dark:bg-gray-900/50 p-4 rounded-lg">
+        <h4 class="font-bold text-lg mb-2 text-primary">💡 Exemple</h4>
+        <p class="mb-2">Boîte : L = 8 cm, l = 5 cm, h = 3 cm</p>
+        <div class="p-3 bg-blue-50 dark:bg-blue-950/30 rounded font-mono">
+          <p>V = 8 × 5 × 3 = <span class="font-bold text-orange-600">120 cm³</span></p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Section 4: Le cylindre -->
+  <section class="bg-gradient-to-br from-pink-50 to-rose-50 dark:from-pink-950/30 dark:to-rose-950/30 p-6 rounded-xl border border-pink-200 dark:border-pink-800">
+    <h3 class="text-2xl font-bold mb-4 flex items-center gap-2 text-pink-700 dark:text-pink-300">
+      🥫 Le cylindre
+    </h3>
+    
+    <div class="space-y-4">
+      <div class="bg-white/80 dark:bg-gray-900/50 p-4 rounded-lg">
+        <h4 class="font-bold text-lg mb-3 text-primary">📐 Formule</h4>
+        <div class="grid md:grid-cols-2 gap-4">
+          <div>
+            <p class="mb-2">Un cylindre a deux bases circulaires identiques.</p>
+            <p class="mb-2">Si r = rayon de la base, h = hauteur :</p>
+            <div class="p-4 bg-pink-100 dark:bg-pink-950/40 rounded-lg text-center">
+              <p class="text-2xl font-bold text-pink-700 dark:text-pink-300 font-mono">V = π × r² × h</p>
+              <p class="text-sm mt-2">π ≈ 3,14</p>
+            </div>
+          </div>
+          <div class="flex items-center justify-center">
+            <div class="w-24 h-32 bg-gradient-to-b from-pink-200 to-rose-200 dark:from-pink-800 dark:to-rose-800 rounded-full shadow-xl border-4 border-pink-400"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="bg-white/80 dark:bg-gray-900/50 p-4 rounded-lg">
+        <h4 class="font-bold text-lg mb-2 text-primary">💡 Exemple</h4>
+        <p class="mb-2">Bouteille : r = 3 cm, h = 15 cm</p>
+        <div class="p-3 bg-blue-50 dark:bg-blue-950/30 rounded font-mono text-sm">
+          <p>V = 3,14 × 3² × 15</p>
+          <p>V = 3,14 × 9 × 15</p>
+          <p>V = <span class="font-bold text-pink-600">423,9 cm³ ≈ 424 mL</span></p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Section 5: Le prisme -->
+  <section class="bg-gradient-to-br from-cyan-50 to-sky-50 dark:from-cyan-950/30 dark:to-sky-950/30 p-6 rounded-xl border border-cyan-200 dark:border-cyan-800">
+    <h3 class="text-2xl font-bold mb-4 flex items-center gap-2 text-cyan-700 dark:text-cyan-300">
+      🏛️ Le prisme droit
+    </h3>
+    
+    <div class="space-y-4">
+      <div class="bg-white/80 dark:bg-gray-900/50 p-4 rounded-lg">
+        <h4 class="font-bold text-lg mb-3 text-primary">📐 Formule générale</h4>
+        <p class="mb-3">Un prisme a deux bases identiques (triangles, pentagones, etc.) et des faces latérales rectangulaires.</p>
+        <div class="p-4 bg-cyan-100 dark:bg-cyan-950/40 rounded-lg text-center">
+          <p class="text-2xl font-bold text-cyan-700 dark:text-cyan-300 font-mono">V = Aire de la base × hauteur</p>
+        </div>
+      </div>
+
+      <div class="bg-white/80 dark:bg-gray-900/50 p-4 rounded-lg">
+        <h4 class="font-bold text-lg mb-2 text-primary">💡 Prisme triangulaire</h4>
+        <p class="mb-2">Base triangulaire : b = 6 cm, hauteur du triangle = 4 cm, hauteur du prisme = 10 cm</p>
+        <div class="p-3 bg-blue-50 dark:bg-blue-950/30 rounded font-mono text-sm">
+          <p>Aire de la base = (6 × 4) ÷ 2 = 12 cm²</p>
+          <p>V = 12 × 10 = <span class="font-bold text-cyan-600">120 cm³</span></p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Section 6: Astuces -->
+  <section class="bg-gradient-to-br from-yellow-50 to-orange-50 dark:from-yellow-950/30 dark:to-orange-950/30 p-6 rounded-xl border border-yellow-200 dark:border-yellow-800">
+    <h3 class="text-2xl font-bold mb-4 flex items-center gap-2 text-yellow-700 dark:text-yellow-300">
+      💡 Astuces et Conseils
+    </h3>
+    
+    <div class="space-y-3">
+      <div class="bg-white/80 dark:bg-gray-900/50 p-3 rounded-lg flex gap-3">
+        <span class="text-2xl">✅</span>
+        <p><span class="font-semibold">Unités cohérentes :</span> toutes les dimensions dans la même unité</p>
+      </div>
+      
+      <div class="bg-white/80 dark:bg-gray-900/50 p-3 rounded-lg flex gap-3">
+        <span class="text-2xl">✅</span>
+        <p><span class="font-semibold">1 L = 1 dm³ :</span> conversion facile entre volume et capacité</p>
+      </div>
+      
+      <div class="bg-white/80 dark:bg-gray-900/50 p-3 rounded-lg flex gap-3">
+        <span class="text-2xl">✅</span>
+        <p><span class="font-semibold">Conversions :</span> ×1000 pour passer d'une unité à la suivante</p>
+      </div>
+    </div>
+  </section>
+
+</div>`,
+
+    exemplesExercices: `<div class="space-y-6">
+  
+  <div class="bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-950/40 dark:to-blue-900/30 p-5 rounded-xl border-l-4 border-blue-500">
+    <h4 class="font-bold text-lg mb-3 flex items-center gap-2 text-blue-700 dark:text-blue-300">
+      ✏️ Exercice 1 — Volume d'un cube (Facile)
+    </h4>
+    <p class="mb-3 leading-relaxed">Calcule le volume d'un cube de côté 4 cm.</p>
+    <div class="mt-4 bg-white/70 dark:bg-gray-900/50 p-4 rounded-lg">
+      <p class="font-semibold text-blue-700 dark:text-blue-300 mb-2">📝 Solution :</p>
+      <div class="space-y-2 text-sm">
+        <p>V = c³ = 4³</p>
+        <p>V = 4 × 4 × 4</p>
+        <p>V = <span class="font-bold text-blue-600">64 cm³</span></p>
+      </div>
+    </div>
+  </div>
+
+  <div class="bg-gradient-to-br from-green-50 to-green-100 dark:from-green-950/40 dark:to-green-900/30 p-5 rounded-xl border-l-4 border-green-500">
+    <h4 class="font-bold text-lg mb-3 flex items-center gap-2 text-green-700 dark:text-green-300">
+      ✏️ Exercice 2 — Volume d'un pavé (Facile)
+    </h4>
+    <p class="mb-3 leading-relaxed">Une boîte mesure 10 cm × 6 cm × 5 cm. Quel est son volume ?</p>
+    <div class="mt-4 bg-white/70 dark:bg-gray-900/50 p-4 rounded-lg">
+      <p class="font-semibold text-green-700 dark:text-green-300 mb-2">📝 Solution :</p>
+      <div class="space-y-2 text-sm">
+        <p>V = L × l × h</p>
+        <p>V = 10 × 6 × 5</p>
+        <p>V = <span class="font-bold text-green-600">300 cm³</span></p>
+      </div>
+    </div>
+  </div>
+
+  <div class="bg-gradient-to-br from-orange-50 to-orange-100 dark:from-orange-950/40 dark:to-orange-900/30 p-5 rounded-xl border-l-4 border-orange-500">
+    <h4 class="font-bold text-lg mb-3 flex items-center gap-2 text-orange-700 dark:text-orange-300">
+      ✏️ Exercice 3 — Volume d'un cylindre (Moyen)
+    </h4>
+    <p class="mb-3 leading-relaxed">Une bouteille cylindrique a un rayon de 4 cm et une hauteur de 20 cm. Quelle est sa capacité en mL ?</p>
+    <div class="mt-4 bg-white/70 dark:bg-gray-900/50 p-4 rounded-lg">
+      <p class="font-semibold text-orange-700 dark:text-orange-300 mb-2">📝 Solution :</p>
+      <div class="space-y-2 text-sm">
+        <p>V = π × r² × h</p>
+        <p>V = 3,14 × 4² × 20</p>
+        <p>V = 3,14 × 16 × 20 = 1004,8 cm³</p>
+        <p>1 cm³ = 1 mL donc V = <span class="font-bold text-orange-600">≈ 1005 mL ≈ 1 L</span></p>
+      </div>
+    </div>
+  </div>
+
+  <div class="bg-gradient-to-br from-purple-50 to-purple-100 dark:from-purple-950/40 dark:to-purple-900/30 p-5 rounded-xl border-l-4 border-purple-500">
+    <h4 class="font-bold text-lg mb-3 flex items-center gap-2 text-purple-700 dark:text-purple-300">
+      ✏️ Exercice 4 — Conversion (Difficile)
+    </h4>
+    <p class="mb-3 leading-relaxed">Un réservoir de 2,5 m³ est rempli d'eau. Combien de litres contient-il ?</p>
+    <div class="mt-4 bg-white/70 dark:bg-gray-900/50 p-4 rounded-lg">
+      <p class="font-semibold text-purple-700 dark:text-purple-300 mb-2">📝 Solution :</p>
+      <div class="space-y-2 text-sm">
+        <p>1 m³ = 1000 L</p>
+        <p>2,5 m³ = 2,5 × 1000</p>
+        <p>= <span class="font-bold text-purple-600">2500 L</span></p>
+      </div>
+    </div>
+  </div>
+
+  <div class="bg-gradient-to-br from-pink-50 to-pink-100 dark:from-pink-950/40 dark:to-pink-900/30 p-5 rounded-xl border-l-4 border-pink-500">
+    <h4 class="font-bold text-lg mb-3 flex items-center gap-2 text-pink-700 dark:text-pink-300">
+      ✏️ Exercice 5 — Problème pratique (Difficile)
+    </h4>
+    <p class="mb-3 leading-relaxed">Une piscine rectangulaire mesure 8 m × 4 m × 1,5 m. Combien de litres d'eau faut-il pour la remplir ?</p>
+    <div class="mt-4 bg-white/70 dark:bg-gray-900/50 p-4 rounded-lg">
+      <p class="font-semibold text-pink-700 dark:text-pink-300 mb-2">📝 Solution :</p>
+      <div class="space-y-2 text-sm">
+        <p>V = 8 × 4 × 1,5 = 48 m³</p>
+        <p>1 m³ = 1000 L</p>
+        <p>48 m³ = <span class="font-bold text-pink-600">48 000 L</span></p>
+      </div>
+    </div>
+  </div>
+
+</div>`
+  },
+
+  "parallelogrammes": {
+    objectif: `À la fin de cette leçon, tu vas pouvoir:
+• Reconnaître et identifier les différents types de parallélogrammes
+• Calculer le périmètre et l'aire d'un parallélogramme
+• Connaître les propriétés des parallélogrammes particuliers
+• Résoudre des problèmes géométriques avec les parallélogrammes`,
+
+    introduction: `<div class="space-y-4">
+  <p class="text-lg leading-relaxed">
+    <span class="font-semibold text-primary">As-tu remarqué la forme d'un terrain de football ?</span> 
+    Ou celle d'un cahier ouvert ? 
+    <span class="italic">Ces formes sont des parallélogrammes !</span>
+  </p>
+  
+  <p class="text-lg leading-relaxed">
+    Les parallélogrammes sont des <span class="font-semibold text-accent">quadrilatères particuliers</span> 
+    qui ont des propriétés intéressantes. On les retrouve partout : dans l'architecture, 
+    les objets du quotidien, et même dans la nature.
+  </p>
+
+  <div class="bg-gradient-to-r from-primary/10 to-accent/10 p-4 rounded-lg border-l-4 border-primary">
+    <p class="font-medium">💡 <span class="text-primary">Conseil :</span> "Parallèle" signifie que les côtés 
+    opposés sont parallèles - ils ne se rencontrent jamais, comme des rails de chemin de fer !</p>
+  </div>
+</div>`,
+
+    contenu: `<div class="space-y-8">
+  
+  <!-- Section 1: Définition -->
+  <section class="bg-gradient-to-br from-blue-50 to-purple-50 dark:from-blue-950/30 dark:to-purple-950/30 p-6 rounded-xl border border-blue-200 dark:border-blue-800">
+    <h3 class="text-2xl font-bold mb-4 flex items-center gap-2 text-blue-700 dark:text-blue-300">
+      🎯 Définition du parallélogramme
+    </h3>
+    
+    <div class="space-y-4">
+      <div class="bg-white/80 dark:bg-gray-900/50 p-4 rounded-lg">
+        <h4 class="font-bold text-lg mb-2 text-primary">📌 Qu'est-ce qu'un parallélogramme ?</h4>
+        <p class="leading-relaxed mb-3">
+          Un parallélogramme est un <span class="font-semibold">quadrilatère dont les côtés opposés sont parallèles</span>.
+        </p>
+        <div class="flex justify-center my-4">
+          <div class="relative w-48 h-32">
+            <div class="absolute w-full h-full bg-gradient-to-br from-blue-200 to-purple-200 dark:from-blue-800 dark:to-purple-800 transform skew-x-12 rounded border-2 border-blue-400"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="bg-white/80 dark:bg-gray-900/50 p-4 rounded-lg">
+        <h4 class="font-bold text-lg mb-2 text-primary">✨ Propriétés principales</h4>
+        <ul class="space-y-2 list-disc list-inside">
+          <li>Les <span class="font-semibold">côtés opposés sont parallèles et de même longueur</span></li>
+          <li>Les <span class="font-semibold">angles opposés sont égaux</span></li>
+          <li>Les <span class="font-semibold">diagonales se coupent en leur milieu</span></li>
+          <li>La somme des angles = 360°</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- Section 2: Types de parallélogrammes -->
+  <section class="bg-gradient-to-br from-green-50 to-teal-50 dark:from-green-950/30 dark:to-teal-950/30 p-6 rounded-xl border border-green-200 dark:border-green-800">
+    <h3 class="text-2xl font-bold mb-4 flex items-center gap-2 text-green-700 dark:text-green-300">
+      🏛️ Les parallélogrammes particuliers
+    </h3>
+    
+    <div class="space-y-4">
+      <div class="bg-white/80 dark:bg-gray-900/50 p-4 rounded-lg">
+        <h4 class="font-bold text-lg mb-3 text-primary flex items-center gap-2">
+          📐 Le rectangle
+        </h4>
+        <div class="grid md:grid-cols-2 gap-4">
+          <div>
+            <p class="mb-2"><span class="font-semibold">Définition :</span> Parallélogramme avec 4 angles droits</p>
+            <p class="text-sm text-muted-foreground">Propriété : Les diagonales sont égales</p>
+          </div>
+          <div class="flex justify-center">
+            <div class="w-32 h-20 bg-gradient-to-br from-green-200 to-teal-200 dark:from-green-800 dark:to-teal-800 rounded border-2 border-green-400"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="bg-white/80 dark:bg-gray-900/50 p-4 rounded-lg">
+        <h4 class="font-bold text-lg mb-3 text-primary flex items-center gap-2">
+          🔷 Le losange
+        </h4>
+        <div class="grid md:grid-cols-2 gap-4">
+          <div>
+            <p class="mb-2"><span class="font-semibold">Définition :</span> Parallélogramme avec 4 côtés égaux</p>
+            <p class="text-sm text-muted-foreground">Propriété : Les diagonales sont perpendiculaires</p>
+          </div>
+          <div class="flex justify-center">
+            <div class="w-20 h-20 bg-gradient-to-br from-teal-200 to-cyan-200 dark:from-teal-800 dark:to-cyan-800 transform rotate-45 rounded border-2 border-teal-400"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="bg-white/80 dark:bg-gray-900/50 p-4 rounded-lg">
+        <h4 class="font-bold text-lg mb-3 text-primary flex items-center gap-2">
+          ⬜ Le carré
+        </h4>
+        <div class="grid md:grid-cols-2 gap-4">
+          <div>
+            <p class="mb-2"><span class="font-semibold">Définition :</span> Rectangle ET losange à la fois</p>
+            <p class="text-sm text-muted-foreground">C'est le plus "parfait" des parallélogrammes !</p>
+          </div>
+          <div class="flex justify-center">
+            <div class="w-24 h-24 bg-gradient-to-br from-blue-200 to-purple-200 dark:from-blue-800 dark:to-purple-800 rounded border-2 border-blue-400"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Section 3: Périmètre -->
+  <section class="bg-gradient-to-br from-orange-50 to-amber-50 dark:from-orange-950/30 dark:to-amber-950/30 p-6 rounded-xl border border-orange-200 dark:border-orange-800">
+    <h3 class="text-2xl font-bold mb-4 flex items-center gap-2 text-orange-700 dark:text-orange-300">
+      📏 Périmètre
+    </h3>
+    
+    <div class="space-y-4">
+      <div class="bg-white/80 dark:bg-gray-900/50 p-4 rounded-lg">
+        <h4 class="font-bold text-lg mb-3 text-primary">Formule générale</h4>
+        <p class="mb-3">Le périmètre est la longueur du tour complet.</p>
+        <div class="p-4 bg-orange-100 dark:bg-orange-950/40 rounded-lg text-center">
+          <p class="text-2xl font-bold text-orange-700 dark:text-orange-300 font-mono">P = 2(a + b)</p>
+          <p class="text-sm mt-2">où a et b sont les longueurs des côtés adjacents</p>
+        </div>
+      </div>
+
+      <div class="bg-white/80 dark:bg-gray-900/50 p-4 rounded-lg">
+        <h4 class="font-bold text-lg mb-2 text-primary">Cas particuliers</h4>
+        <div class="grid md:grid-cols-2 gap-3">
+          <div class="p-3 bg-blue-50 dark:bg-blue-950/30 rounded">
+            <p class="font-semibold mb-1">Carré (côté c)</p>
+            <p class="font-mono">P = 4c</p>
+          </div>
+          <div class="p-3 bg-green-50 dark:bg-green-950/30 rounded">
+            <p class="font-semibold mb-1">Losange (côté c)</p>
+            <p class="font-mono">P = 4c</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="bg-white/80 dark:bg-gray-900/50 p-4 rounded-lg">
+        <h4 class="font-bold text-lg mb-2 text-primary">💡 Exemple</h4>
+        <p class="mb-2">Rectangle : L = 8 cm, l = 5 cm</p>
+        <div class="p-3 bg-blue-50 dark:bg-blue-950/30 rounded font-mono">
+          <p>P = 2(8 + 5) = 2 × 13 = <span class="font-bold text-orange-600">26 cm</span></p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Section 4: Aire -->
+  <section class="bg-gradient-to-br from-pink-50 to-rose-50 dark:from-pink-950/30 dark:to-rose-950/30 p-6 rounded-xl border border-pink-200 dark:border-pink-800">
+    <h3 class="text-2xl font-bold mb-4 flex items-center gap-2 text-pink-700 dark:text-pink-300">
+      📐 Aire (surface)
+    </h3>
+    
+    <div class="space-y-4">
+      <div class="bg-white/80 dark:bg-gray-900/50 p-4 rounded-lg">
+        <h4 class="font-bold text-lg mb-3 text-primary">Formule générale du parallélogramme</h4>
+        <p class="mb-3">L'aire se calcule avec la base et la hauteur perpendiculaire.</p>
+        <div class="p-4 bg-pink-100 dark:bg-pink-950/40 rounded-lg text-center">
+          <p class="text-2xl font-bold text-pink-700 dark:text-pink-300 font-mono">A = base × hauteur</p>
+          <p class="text-sm mt-2">A = b × h</p>
+        </div>
+        <p class="mt-3 text-sm text-muted-foreground italic">⚠️ La hauteur est perpendiculaire à la base, pas le côté incliné !</p>
+      </div>
+
+      <div class="bg-white/80 dark:bg-gray-900/50 p-4 rounded-lg">
+        <h4 class="font-bold text-lg mb-2 text-primary">Formules particulières</h4>
+        <div class="space-y-3">
+          <div class="p-3 bg-blue-50 dark:bg-blue-950/30 rounded">
+            <p class="font-semibold mb-1">Rectangle (L × l)</p>
+            <p class="font-mono">A = L × l</p>
+          </div>
+          <div class="p-3 bg-green-50 dark:bg-green-950/30 rounded">
+            <p class="font-semibold mb-1">Carré (côté c)</p>
+            <p class="font-mono">A = c²</p>
+          </div>
+          <div class="p-3 bg-purple-50 dark:bg-purple-950/30 rounded">
+            <p class="font-semibold mb-1">Losange (diagonales d₁ et d₂)</p>
+            <p class="font-mono">A = (d₁ × d₂) ÷ 2</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="bg-white/80 dark:bg-gray-900/50 p-4 rounded-lg">
+        <h4 class="font-bold text-lg mb-2 text-primary">💡 Exemple</h4>
+        <p class="mb-2">Parallélogramme : base = 10 cm, hauteur = 6 cm</p>
+        <div class="p-3 bg-blue-50 dark:bg-blue-950/30 rounded font-mono">
+          <p>A = 10 × 6 = <span class="font-bold text-pink-600">60 cm²</span></p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Section 5: Construction -->
+  <section class="bg-gradient-to-br from-cyan-50 to-sky-50 dark:from-cyan-950/30 dark:to-sky-950/30 p-6 rounded-xl border border-cyan-200 dark:border-cyan-800">
+    <h3 class="text-2xl font-bold mb-4 flex items-center gap-2 text-cyan-700 dark:text-cyan-300">
+      🔨 Comment construire un parallélogramme ?
+    </h3>
+    
+    <div class="space-y-4">
+      <div class="bg-white/80 dark:bg-gray-900/50 p-4 rounded-lg">
+        <h4 class="font-bold text-lg mb-3 text-primary">Méthode avec règle et équerre</h4>
+        <ol class="space-y-2 list-decimal list-inside">
+          <li>Trace un côté AB</li>
+          <li>À partir de A, trace un autre côté AD</li>
+          <li>À partir de B, trace une droite parallèle à AD</li>
+          <li>À partir de D, trace une droite parallèle à AB</li>
+          <li>Les deux droites se croisent en C</li>
+        </ol>
+      </div>
+
+      <div class="bg-white/80 dark:bg-gray-900/50 p-4 rounded-lg">
+        <h4 class="font-bold text-lg mb-2 text-primary">💡 Astuce</h4>
+        <p class="leading-relaxed">
+          Pour tracer des parallèles, utilise ton équerre ! Place-la contre une règle et fais-la glisser.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Section 6: Astuces -->
+  <section class="bg-gradient-to-br from-yellow-50 to-orange-50 dark:from-yellow-950/30 dark:to-orange-950/30 p-6 rounded-xl border border-yellow-200 dark:border-yellow-800">
+    <h3 class="text-2xl font-bold mb-4 flex items-center gap-2 text-yellow-700 dark:text-yellow-300">
+      💡 Astuces et Conseils
+    </h3>
+    
+    <div class="space-y-3">
+      <div class="bg-white/80 dark:bg-gray-900/50 p-3 rounded-lg flex gap-3">
+        <span class="text-2xl">✅</span>
+        <p><span class="font-semibold">Hauteur ≠ côté :</span> la hauteur est toujours perpendiculaire</p>
+      </div>
+      
+      <div class="bg-white/80 dark:bg-gray-900/50 p-3 rounded-lg flex gap-3">
+        <span class="text-2xl">✅</span>
+        <p><span class="font-semibold">Le carré :</span> c'est le seul qui est à la fois rectangle et losange</p>
+      </div>
+      
+      <div class="bg-white/80 dark:bg-gray-900/50 p-3 rounded-lg flex gap-3">
+        <span class="text-2xl">✅</span>
+        <p><span class="font-semibold">Aire du losange :</span> pense aux diagonales qui se coupent en croix</p>
+      </div>
+    </div>
+  </section>
+
+</div>`,
+
+    exemplesExercices: `<div class="space-y-6">
+  
+  <div class="bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-950/40 dark:to-blue-900/30 p-5 rounded-xl border-l-4 border-blue-500">
+    <h4 class="font-bold text-lg mb-3 flex items-center gap-2 text-blue-700 dark:text-blue-300">
+      ✏️ Exercice 1 — Périmètre d'un rectangle (Facile)
+    </h4>
+    <p class="mb-3 leading-relaxed">Un rectangle a pour dimensions 12 cm et 7 cm. Calcule son périmètre.</p>
+    <div class="mt-4 bg-white/70 dark:bg-gray-900/50 p-4 rounded-lg">
+      <p class="font-semibold text-blue-700 dark:text-blue-300 mb-2">📝 Solution :</p>
+      <div class="space-y-2 text-sm">
+        <p>P = 2(L + l)</p>
+        <p>P = 2(12 + 7) = 2 × 19</p>
+        <p>P = <span class="font-bold text-blue-600">38 cm</span></p>
+      </div>
+    </div>
+  </div>
+
+  <div class="bg-gradient-to-br from-green-50 to-green-100 dark:from-green-950/40 dark:to-green-900/30 p-5 rounded-xl border-l-4 border-green-500">
+    <h4 class="font-bold text-lg mb-3 flex items-center gap-2 text-green-700 dark:text-green-300">
+      ✏️ Exercice 2 — Aire d'un carré (Facile)
+    </h4>
+    <p class="mb-3 leading-relaxed">Un carré a un côté de 9 cm. Calcule son aire.</p>
+    <div class="mt-4 bg-white/70 dark:bg-gray-900/50 p-4 rounded-lg">
+      <p class="font-semibold text-green-700 dark:text-green-300 mb-2">📝 Solution :</p>
+      <div class="space-y-2 text-sm">
+        <p>A = c²</p>
+        <p>A = 9² = 9 × 9</p>
+        <p>A = <span class="font-bold text-green-600">81 cm²</span></p>
+      </div>
+    </div>
+  </div>
+
+  <div class="bg-gradient-to-br from-orange-50 to-orange-100 dark:from-orange-950/40 dark:to-orange-900/30 p-5 rounded-xl border-l-4 border-orange-500">
+    <h4 class="font-bold text-lg mb-3 flex items-center gap-2 text-orange-700 dark:text-orange-300">
+      ✏️ Exercice 3 — Aire d'un parallélogramme (Moyen)
+    </h4>
+    <p class="mb-3 leading-relaxed">Un parallélogramme a une base de 15 cm et une hauteur de 8 cm. Calcule son aire.</p>
+    <div class="mt-4 bg-white/70 dark:bg-gray-900/50 p-4 rounded-lg">
+      <p class="font-semibold text-orange-700 dark:text-orange-300 mb-2">📝 Solution :</p>
+      <div class="space-y-2 text-sm">
+        <p>A = base × hauteur</p>
+        <p>A = 15 × 8</p>
+        <p>A = <span class="font-bold text-orange-600">120 cm²</span></p>
+      </div>
+    </div>
+  </div>
+
+  <div class="bg-gradient-to-br from-purple-50 to-purple-100 dark:from-purple-950/40 dark:to-purple-900/30 p-5 rounded-xl border-l-4 border-purple-500">
+    <h4 class="font-bold text-lg mb-3 flex items-center gap-2 text-purple-700 dark:text-purple-300">
+      ✏️ Exercice 4 — Aire d'un losange (Difficile)
+    </h4>
+    <p class="mb-3 leading-relaxed">Un losange a des diagonales de 10 cm et 16 cm. Calcule son aire.</p>
+    <div class="mt-4 bg-white/70 dark:bg-gray-900/50 p-4 rounded-lg">
+      <p class="font-semibold text-purple-700 dark:text-purple-300 mb-2">📝 Solution :</p>
+      <div class="space-y-2 text-sm">
+        <p>A = (d₁ × d₂) ÷ 2</p>
+        <p>A = (10 × 16) ÷ 2</p>
+        <p>A = 160 ÷ 2</p>
+        <p>A = <span class="font-bold text-purple-600">80 cm²</span></p>
+      </div>
+    </div>
+  </div>
+
+  <div class="bg-gradient-to-br from-pink-50 to-pink-100 dark:from-pink-950/40 dark:to-pink-900/30 p-5 rounded-xl border-l-4 border-pink-500">
+    <h4 class="font-bold text-lg mb-3 flex items-center gap-2 text-pink-700 dark:text-pink-300">
+      ✏️ Exercice 5 — Problème terrain (Difficile)
+    </h4>
+    <p class="mb-3 leading-relaxed">Un terrain rectangulaire de 25 m sur 18 m coûte 450 gourdes le m². Quel est le prix total du terrain ?</p>
+    <div class="mt-4 bg-white/70 dark:bg-gray-900/50 p-4 rounded-lg">
+      <p class="font-semibold text-pink-700 dark:text-pink-300 mb-2">📝 Solution :</p>
+      <div class="space-y-2 text-sm">
+        <p>Aire = 25 × 18 = 450 m²</p>
+        <p>Prix total = 450 m² × 450 gourdes/m²</p>
+        <p>= <span class="font-bold text-pink-600">202 500 gourdes</span></p>
+      </div>
+    </div>
+  </div>
+
+</div>`
+  },
+
+  "reperage-quadrillage": {
+    objectif: `À la fin de cette leçon, tu vas pouvoir:
+• Repérer un point dans un quadrillage avec des coordonnées
+• Placer un point connaissant ses coordonnées
+• Lire et interpréter un plan ou une carte quadrillée
+• Résoudre des problèmes de repérage spatial`,
+
+    introduction: `<div class="space-y-4">
+  <p class="text-lg leading-relaxed">
+    <span class="font-semibold text-primary">Comment indiquer ta position sur une carte ?</span> 
+    Ou comment décrire l'emplacement d'un trésor caché ? 
+    <span class="italic">Le repérage sur quadrillage est la solution !</span>
+  </p>
+  
+  <p class="text-lg leading-relaxed">
+    Le repérage permet de <span class="font-semibold text-accent">localiser précisément un point dans l'espace</span> 
+    en utilisant des coordonnées. C'est le principe des GPS, des cartes géographiques, 
+    et même des jeux vidéo !
+  </p>
+
+  <div class="bg-gradient-to-r from-primary/10 to-accent/10 p-4 rounded-lg border-l-4 border-primary">
+    <p class="font-medium">💡 <span class="text-primary">Conseil :</span> Pense au jeu de bataille navale - 
+    on utilise toujours deux informations pour localiser une case : la colonne et la ligne !</p>
+  </div>
+</div>`,
+
+    contenu: `<div class="space-y-8">
+  
+  <!-- Section 1: Le quadrillage de base -->
+  <section class="bg-gradient-to-br from-blue-50 to-purple-50 dark:from-blue-950/30 dark:to-purple-950/30 p-6 rounded-xl border border-blue-200 dark:border-blue-800">
+    <h3 class="text-2xl font-bold mb-4 flex items-center gap-2 text-blue-700 dark:text-blue-300">
+      🎯 Le quadrillage et les coordonnées
+    </h3>
+    
+    <div class="space-y-4">
+      <div class="bg-white/80 dark:bg-gray-900/50 p-4 rounded-lg">
+        <h4 class="font-bold text-lg mb-3 text-primary">📌 Qu'est-ce qu'un repère ?</h4>
+        <p class="leading-relaxed mb-4">
+          Un repère est formé de deux axes perpendiculaires qui se coupent en un point appelé <span class="font-semibold">origine</span>.
+        </p>
+        
+        <div class="my-6 p-6 bg-gradient-to-br from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20 rounded-xl border-2 border-blue-300 dark:border-blue-700">
+          <div class="relative" style="height: 280px;">
+            <!-- Grid -->
+            <svg viewBox="0 0 400 280" class="w-full h-full">
+              <!-- Grid lines -->
+              <defs>
+                <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
+                  <path d="M 40 0 L 0 0 0 40" fill="none" stroke="currentColor" stroke-width="0.5" opacity="0.2"/>
+                </pattern>
+              </defs>
+              <rect width="400" height="280" fill="url(#grid)" />
+              
+              <!-- Axes -->
+              <line x1="40" y1="240" x2="360" y2="240" stroke="currentColor" stroke-width="2" class="text-primary"/>
+              <line x1="40" y1="240" x2="40" y2="20" stroke="currentColor" stroke-width="2" class="text-accent"/>
+              
+              <!-- Arrows -->
+              <polygon points="360,240 350,235 350,245" fill="currentColor" class="text-primary"/>
+              <polygon points="40,20 35,30 45,30" fill="currentColor" class="text-accent"/>
+              
+              <!-- Origin -->
+              <circle cx="40" cy="240" r="4" fill="currentColor" class="text-red-500"/>
+              <text x="25" y="255" font-size="14" font-weight="bold" fill="currentColor" class="text-red-500">O</text>
+              
+              <!-- Axis labels -->
+              <text x="370" y="245" font-size="14" font-weight="bold" fill="currentColor" class="text-primary">x</text>
+              <text x="45" y="15" font-size="14" font-weight="bold" fill="currentColor" class="text-accent">y</text>
+              
+              <!-- Grid numbers -->
+              <text x="75" y="255" font-size="12" fill="currentColor" opacity="0.6">1</text>
+              <text x="115" y="255" font-size="12" fill="currentColor" opacity="0.6">2</text>
+              <text x="155" y="255" font-size="12" fill="currentColor" opacity="0.6">3</text>
+              <text x="195" y="255" font-size="12" fill="currentColor" opacity="0.6">4</text>
+              <text x="235" y="255" font-size="12" fill="currentColor" opacity="0.6">5</text>
+              <text x="275" y="255" font-size="12" fill="currentColor" opacity="0.6">6</text>
+              <text x="315" y="255" font-size="12" fill="currentColor" opacity="0.6">7</text>
+              
+              <text x="25" y="205" font-size="12" fill="currentColor" opacity="0.6">1</text>
+              <text x="25" y="165" font-size="12" fill="currentColor" opacity="0.6">2</text>
+              <text x="25" y="125" font-size="12" fill="currentColor" opacity="0.6">3</text>
+              <text x="25" y="85" font-size="12" fill="currentColor" opacity="0.6">4</text>
+              <text x="25" y="45" font-size="12" fill="currentColor" opacity="0.6">5</text>
+              
+              <!-- Example points -->
+              <circle cx="120" cy="200" r="5" fill="currentColor" class="text-green-500"/>
+              <text x="130" y="200" font-size="14" font-weight="bold" fill="currentColor" class="text-green-600">A(2;1)</text>
+              
+              <circle cx="240" cy="120" r="5" fill="currentColor" class="text-blue-500"/>
+              <text x="250" y="120" font-size="14" font-weight="bold" fill="currentColor" class="text-blue-600">B(5;3)</text>
+              
+              <circle cx="160" cy="80" r="5" fill="currentColor" class="text-purple-500"/>
+              <text x="170" y="80" font-size="14" font-weight="bold" fill="currentColor" class="text-purple-600">C(3;4)</text>
+            </svg>
+          </div>
+        </div>
+        
+        <ul class="space-y-2 mt-4">
+          <li class="flex items-start gap-2">
+            <span class="text-primary font-bold">→</span>
+            <span><span class="font-semibold">Axe horizontal (x)</span> : axe des abscisses</span>
+          </li>
+          <li class="flex items-start gap-2">
+            <span class="text-accent font-bold">↑</span>
+            <span><span class="font-semibold">Axe vertical (y)</span> : axe des ordonnées</span>
+          </li>
+          <li class="flex items-start gap-2">
+            <span class="text-red-500 font-bold">O</span>
+            <span><span class="font-semibold">Origine</span> : point de coordonnées (0;0)</span>
+          </li>
+        </ul>
+      </div>
+
+      <div class="bg-white/80 dark:bg-gray-900/50 p-4 rounded-lg">
+        <h4 class="font-bold text-lg mb-2 text-primary">📌 Les coordonnées d'un point</h4>
+        <p class="leading-relaxed mb-3">
+          Les coordonnées d'un point sont notées <span class="font-mono text-lg">(x ; y)</span>
+        </p>
+        <div class="grid md:grid-cols-2 gap-3">
+          <div class="p-3 bg-blue-50 dark:bg-blue-950/30 rounded">
+            <p class="font-semibold text-primary mb-1">Abscisse (x)</p>
+            <p class="text-sm">Position horizontale (gauche-droite)</p>
+          </div>
+          <div class="p-3 bg-purple-50 dark:bg-purple-950/30 rounded">
+            <p class="font-semibold text-accent mb-1">Ordonnée (y)</p>
+            <p class="text-sm">Position verticale (bas-haut)</p>
+          </div>
+        </div>
+        <div class="mt-3 p-3 bg-gradient-to-r from-primary/10 to-accent/10 rounded border-l-4 border-primary">
+          <p class="font-semibold">📍 Ordre important : toujours (x ; y) !</p>
+          <p class="text-sm mt-1">D'abord l'horizontal, puis le vertical</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Section 2: Comment placer un point -->
+  <section class="bg-gradient-to-br from-green-50 to-teal-50 dark:from-green-950/30 dark:to-teal-950/30 p-6 rounded-xl border border-green-200 dark:border-green-800">
+    <h3 class="text-2xl font-bold mb-4 flex items-center gap-2 text-green-700 dark:text-green-300">
+      📍 Comment placer un point ?
+    </h3>
+    
+    <div class="space-y-4">
+      <div class="bg-white/80 dark:bg-gray-900/50 p-4 rounded-lg">
+        <h4 class="font-bold text-lg mb-3 text-primary">Méthode en 3 étapes</h4>
+        <ol class="space-y-3 list-decimal list-inside">
+          <li class="leading-relaxed">
+            <span class="font-semibold">Partir de l'origine O</span>
+          </li>
+          <li class="leading-relaxed">
+            <span class="font-semibold">Se déplacer horizontalement</span> de x unités (à droite si x positif)
+          </li>
+          <li class="leading-relaxed">
+            <span class="font-semibold">Se déplacer verticalement</span> de y unités (vers le haut si y positif)
+          </li>
+        </ol>
+      </div>
+
+      <div class="bg-white/80 dark:bg-gray-900/50 p-4 rounded-lg">
+        <h4 class="font-bold text-lg mb-2 text-primary">💡 Exemple : Placer le point D(4;3)</h4>
+        <div class="p-4 bg-green-50 dark:bg-green-950/30 rounded">
+          <p>1️⃣ Partir de O (origine)</p>
+          <p>2️⃣ Aller 4 carreaux à droite ➡️</p>
+          <p>3️⃣ Monter de 3 carreaux ⬆️</p>
+          <p class="mt-2 font-semibold text-green-600">✅ Placer le point D</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Section 3: Distance entre deux points -->
+  <section class="bg-gradient-to-br from-orange-50 to-amber-50 dark:from-orange-950/30 dark:to-amber-950/30 p-6 rounded-xl border border-orange-200 dark:border-orange-800">
+    <h3 class="text-2xl font-bold mb-4 flex items-center gap-2 text-orange-700 dark:text-orange-300">
+      📏 Distance entre deux points
+    </h3>
+    
+    <div class="space-y-4">
+      <div class="bg-white/80 dark:bg-gray-900/50 p-4 rounded-lg">
+        <h4 class="font-bold text-lg mb-3 text-primary">Sur une ligne horizontale ou verticale</h4>
+        <p class="mb-3">Si deux points sont sur la même ligne :</p>
+        <div class="space-y-2">
+          <div class="p-3 bg-blue-50 dark:bg-blue-950/30 rounded">
+            <p class="font-semibold mb-1">Même ordonnée (ligne horizontale)</p>
+            <p class="font-mono text-sm">Distance = |x₂ - x₁|</p>
+          </div>
+          <div class="p-3 bg-purple-50 dark:bg-purple-950/30 rounded">
+            <p class="font-semibold mb-1">Même abscisse (ligne verticale)</p>
+            <p class="font-mono text-sm">Distance = |y₂ - y₁|</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="bg-white/80 dark:bg-gray-900/50 p-4 rounded-lg">
+        <h4 class="font-bold text-lg mb-2 text-primary">💡 Exemple</h4>
+        <p class="mb-2">Points A(2;3) et B(6;3) - même ordonnée</p>
+        <div class="p-3 bg-blue-50 dark:bg-blue-950/30 rounded font-mono">
+          <p>Distance = |6 - 2| = <span class="font-bold text-orange-600">4 unités</span></p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Section 4: Applications pratiques -->
+  <section class="bg-gradient-to-br from-pink-50 to-rose-50 dark:from-pink-950/30 dark:to-rose-950/30 p-6 rounded-xl border border-pink-200 dark:border-pink-800">
+    <h3 class="text-2xl font-bold mb-4 flex items-center gap-2 text-pink-700 dark:text-pink-300">
+      🌍 Applications pratiques
+    </h3>
+    
+    <div class="grid md:grid-cols-2 gap-4">
+      <div class="bg-white/80 dark:bg-gray-900/50 p-4 rounded-lg">
+        <h4 class="font-bold text-primary mb-2">🗺️ Cartes et plans</h4>
+        <p class="text-sm">Localiser des villes, des bâtiments sur un plan</p>
+      </div>
+
+      <div class="bg-white/80 dark:bg-gray-900/50 p-4 rounded-lg">
+        <h4 class="font-bold text-primary mb-2">🎮 Jeux vidéo</h4>
+        <p class="text-sm">Position des personnages dans l'espace</p>
+      </div>
+
+      <div class="bg-white/80 dark:bg-gray-900/50 p-4 rounded-lg">
+        <h4 class="font-bold text-primary mb-2">🛰️ GPS</h4>
+        <p class="text-sm">Latitude et longitude pour se repérer</p>
+      </div>
+
+      <div class="bg-white/80 dark:bg-gray-900/50 p-4 rounded-lg">
+        <h4 class="font-bold text-primary mb-2">⚓ Bataille navale</h4>
+        <p class="text-sm">Coordonnées pour viser les bateaux</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Section 5: Symétries et repères -->
+  <section class="bg-gradient-to-br from-cyan-50 to-sky-50 dark:from-cyan-950/30 dark:to-sky-950/30 p-6 rounded-xl border border-cyan-200 dark:border-cyan-800">
+    <h3 class="text-2xl font-bold mb-4 flex items-center gap-2 text-cyan-700 dark:text-cyan-300">
+      🔄 Points symétriques
+    </h3>
+    
+    <div class="space-y-4">
+      <div class="bg-white/80 dark:bg-gray-900/50 p-4 rounded-lg">
+        <h4 class="font-bold text-lg mb-3 text-primary">Symétrie par rapport à un axe</h4>
+        <div class="space-y-2">
+          <div class="p-3 bg-blue-50 dark:bg-blue-950/30 rounded">
+            <p class="font-semibold mb-1">Par rapport à l'axe x (horizontal)</p>
+            <p class="font-mono text-sm">A(x;y) → A'(x;-y)</p>
+          </div>
+          <div class="p-3 bg-purple-50 dark:bg-purple-950/30 rounded">
+            <p class="font-semibold mb-1">Par rapport à l'axe y (vertical)</p>
+            <p class="font-mono text-sm">A(x;y) → A'(-x;y)</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Section 6: Astuces -->
+  <section class="bg-gradient-to-br from-yellow-50 to-orange-50 dark:from-yellow-950/30 dark:to-orange-950/30 p-6 rounded-xl border border-yellow-200 dark:border-yellow-800">
+    <h3 class="text-2xl font-bold mb-4 flex items-center gap-2 text-yellow-700 dark:text-yellow-300">
+      💡 Astuces et Conseils
+    </h3>
+    
+    <div class="space-y-3">
+      <div class="bg-white/80 dark:bg-gray-900/50 p-3 rounded-lg flex gap-3">
+        <span class="text-2xl">✅</span>
+        <p><span class="font-semibold">Ordre (x;y) :</span> toujours horizontal d'abord, vertical ensuite</p>
+      </div>
+      
+      <div class="bg-white/80 dark:bg-gray-900/50 p-3 rounded-lg flex gap-3">
+        <span class="text-2xl">✅</span>
+        <p><span class="font-semibold">Repère tes axes :</span> marque bien x et y sur ton quadrillage</p>
+      </div>
+      
+      <div class="bg-white/80 dark:bg-gray-900/50 p-3 rounded-lg flex gap-3">
+        <span class="text-2xl">✅</span>
+        <p><span class="font-semibold">Compte bien :</span> vérifie tes déplacements case par case</p>
+      </div>
+    </div>
+  </section>
+
+</div>`,
+
+    exemplesExercices: `<div class="space-y-6">
+  
+  <div class="bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-950/40 dark:to-blue-900/30 p-5 rounded-xl border-l-4 border-blue-500">
+    <h4 class="font-bold text-lg mb-3 flex items-center gap-2 text-blue-700 dark:text-blue-300">
+      ✏️ Exercice 1 — Lire des coordonnées (Facile)
+    </h4>
+    <p class="mb-3 leading-relaxed">Le point A est à 3 carreaux à droite et 2 carreaux en haut de l'origine. Quelles sont ses coordonnées ?</p>
+    <div class="mt-4 bg-white/70 dark:bg-gray-900/50 p-4 rounded-lg">
+      <p class="font-semibold text-blue-700 dark:text-blue-300 mb-2">📝 Solution :</p>
+      <div class="space-y-2 text-sm">
+        <p>x = 3 (horizontal)</p>
+        <p>y = 2 (vertical)</p>
+        <p>Coordonnées : <span class="font-bold text-blue-600">A(3;2)</span></p>
+      </div>
+    </div>
+  </div>
+
+  <div class="bg-gradient-to-br from-green-50 to-green-100 dark:from-green-950/40 dark:to-green-900/30 p-5 rounded-xl border-l-4 border-green-500">
+    <h4 class="font-bold text-lg mb-3 flex items-center gap-2 text-green-700 dark:text-green-300">
+      ✏️ Exercice 2 — Placer un point (Facile)
+    </h4>
+    <p class="mb-3 leading-relaxed">Place le point B(5;3) sur le quadrillage.</p>
+    <div class="mt-4 bg-white/70 dark:bg-gray-900/50 p-4 rounded-lg">
+      <p class="font-semibold text-green-700 dark:text-green-300 mb-2">📝 Solution :</p>
+      <div class="space-y-2 text-sm">
+        <p>1. Partir de l'origine O</p>
+        <p>2. Aller 5 carreaux à droite</p>
+        <p>3. Monter de 3 carreaux</p>
+        <p class="font-bold text-green-600">✅ Marquer le point B</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="bg-gradient-to-br from-orange-50 to-orange-100 dark:from-orange-950/40 dark:to-orange-900/30 p-5 rounded-xl border-l-4 border-orange-500">
+    <h4 class="font-bold text-lg mb-3 flex items-center gap-2 text-orange-700 dark:text-orange-300">
+      ✏️ Exercice 3 — Distance (Moyen)
+    </h4>
+    <p class="mb-3 leading-relaxed">Points C(2;4) et D(2;7). Quelle est la distance CD ?</p>
+    <div class="mt-4 bg-white/70 dark:bg-gray-900/50 p-4 rounded-lg">
+      <p class="font-semibold text-orange-700 dark:text-orange-300 mb-2">📝 Solution :</p>
+      <div class="space-y-2 text-sm">
+        <p>Même abscisse (x=2) donc ligne verticale</p>
+        <p>Distance = |7 - 4|</p>
+        <p>= <span class="font-bold text-orange-600">3 unités</span></p>
+      </div>
+    </div>
+  </div>
+
+  <div class="bg-gradient-to-br from-purple-50 to-purple-100 dark:from-purple-950/40 dark:to-purple-900/30 p-5 rounded-xl border-l-4 border-purple-500">
+    <h4 class="font-bold text-lg mb-3 flex items-center gap-2 text-purple-700 dark:text-purple-300">
+      ✏️ Exercice 4 — Rectangle (Difficile)
+    </h4>
+    <p class="mb-3 leading-relaxed">Trois sommets d'un rectangle sont A(1;2), B(5;2) et C(5;5). Trouve les coordonnées de D.</p>
+    <div class="mt-4 bg-white/70 dark:bg-gray-900/50 p-4 rounded-lg">
+      <p class="font-semibold text-purple-700 dark:text-purple-300 mb-2">📝 Solution :</p>
+      <div class="space-y-2 text-sm">
+        <p>D doit avoir x de A et y de C</p>
+        <p>x = 1 (comme A)</p>
+        <p>y = 5 (comme C)</p>
+        <p><span class="font-bold text-purple-600">D(1;5)</span></p>
+      </div>
+    </div>
+  </div>
+
+  <div class="bg-gradient-to-br from-pink-50 to-pink-100 dark:from-pink-950/40 dark:to-pink-900/30 p-5 rounded-xl border-l-4 border-pink-500">
+    <h4 class="font-bold text-lg mb-3 flex items-center gap-2 text-pink-700 dark:text-pink-300">
+      ✏️ Exercice 5 — Symétrie (Difficile)
+    </h4>
+    <p class="mb-3 leading-relaxed">Le point E(4;3) est symétrique au point F par rapport à l'axe y. Trouve les coordonnées de F.</p>
+    <div class="mt-4 bg-white/70 dark:bg-gray-900/50 p-4 rounded-lg">
+      <p class="font-semibold text-pink-700 dark:text-pink-300 mb-2">📝 Solution :</p>
+      <div class="space-y-2 text-sm">
+        <p>Symétrie par rapport à axe y : x change de signe</p>
+        <p>E(4;3) → F(-4;3)</p>
+        <p><span class="font-bold text-pink-600">F(-4;3)</span></p>
+      </div>
+    </div>
+  </div>
+
+</div>`
+  },
+
+  "transformations": {
+    objectif: `À la fin de cette leçon, tu vas pouvoir:
+• Reconnaître et identifier les transformations géométriques
+• Effectuer des symétries, translations et rotations
+• Comprendre les propriétés conservées par chaque transformation
+• Résoudre des problèmes de transformations`,
+
+    introduction: `<div class="space-y-4">
+  <p class="text-lg leading-relaxed">
+    <span class="font-semibold text-primary">Comment créer un motif répétitif sur un tissu ?</span> 
+    Ou produire l'effet miroir d'une image ? 
+    <span class="italic">Les transformations géométriques sont la réponse !</span>
+  </p>
+  
+  <p class="text-lg leading-relaxed">
+    Les transformations permettent de <span class="font-semibold text-accent">déplacer, retourner ou faire pivoter</span> 
+    des figures dans l'espace. Elles sont utilisées en architecture, en art, en design, 
+    et même dans les animations informatiques.
+  </p>
+
+  <div class="bg-gradient-to-r from-primary/10 to-accent/10 p-4 rounded-lg border-l-4 border-primary">
+    <p class="font-medium">💡 <span class="text-primary">Conseil :</span> Une transformation change la position 
+    d'une figure mais garde sa forme et sa taille !</p>
+  </div>
+</div>`,
+
+    contenu: `<div class="space-y-8">
+  
+  <!-- Section 1: La symétrie axiale -->
+  <section class="bg-gradient-to-br from-blue-50 to-purple-50 dark:from-blue-950/30 dark:to-purple-950/30 p-6 rounded-xl border border-blue-200 dark:border-blue-800">
+    <h3 class="text-2xl font-bold mb-4 flex items-center gap-2 text-blue-700 dark:text-blue-300">
+      🪞 La symétrie axiale
+    </h3>
+    
+    <div class="space-y-4">
+      <div class="bg-white/80 dark:bg-gray-900/50 p-4 rounded-lg">
+        <h4 class="font-bold text-lg mb-2 text-primary">📌 Définition</h4>
+        <p class="leading-relaxed mb-3">
+          La symétrie axiale est une <span class="font-semibold">transformation qui crée une image miroir</span> 
+          par rapport à une droite appelée <span class="font-semibold">axe de symétrie</span>.
+        </p>
+        <div class="flex justify-center my-4">
+          <div class="relative w-64 h-32 bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20 rounded-lg border-2 border-blue-300 flex items-center justify-center">
+            <div class="absolute left-8 w-16 h-16 bg-blue-400 rounded-lg"></div>
+            <div class="absolute w-0.5 h-full bg-red-500 left-1/2"></div>
+            <div class="absolute right-8 w-16 h-16 bg-blue-400 rounded-lg"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="bg-white/80 dark:bg-gray-900/50 p-4 rounded-lg">
+        <h4 class="font-bold text-lg mb-2 text-primary">✨ Propriétés</h4>
+        <ul class="space-y-2 list-disc list-inside">
+          <li>La figure et son image sont <span class="font-semibold">symétriques par rapport à l'axe</span></li>
+          <li>Chaque point et son image sont <span class="font-semibold">équidistants de l'axe</span></li>
+          <li>L'axe est la <span class="font-semibold">médiatrice</span> du segment joignant un point à son image</li>
+          <li>Les <span class="font-semibold">longueurs et angles sont conservés</span></li>
+        </ul>
+      </div>
+
+      <div class="bg-white/80 dark:bg-gray-900/50 p-4 rounded-lg">
+        <h4 class="font-bold text-lg mb-2 text-primary">🔨 Construction</h4>
+        <ol class="space-y-2 list-decimal list-inside">
+          <li>Trace des perpendiculaires à l'axe depuis chaque sommet</li>
+          <li>Prolonge de l'autre côté à la même distance</li>
+          <li>Relie les nouveaux points</li>
+        </ol>
+      </div>
+    </div>
+  </section>
+
+  <!-- Section 2: La translation -->
+  <section class="bg-gradient-to-br from-green-50 to-teal-50 dark:from-green-950/30 dark:to-teal-950/30 p-6 rounded-xl border border-green-200 dark:border-green-800">
+    <h3 class="text-2xl font-bold mb-4 flex items-center gap-2 text-green-700 dark:text-green-300">
+      ➡️ La translation
+    </h3>
+    
+    <div class="space-y-4">
+      <div class="bg-white/80 dark:bg-gray-900/50 p-4 rounded-lg">
+        <h4 class="font-bold text-lg mb-2 text-primary">📌 Définition</h4>
+        <p class="leading-relaxed mb-3">
+          La translation est un <span class="font-semibold">glissement</span> de la figure 
+          dans une direction et une distance données, sans rotation.
+        </p>
+        <div class="flex justify-center my-4 gap-8">
+          <div class="w-16 h-16 bg-green-400 rounded-lg"></div>
+          <div class="flex items-center">
+            <span class="text-2xl">→</span>
+          </div>
+          <div class="w-16 h-16 bg-green-400 rounded-lg opacity-70"></div>
+        </div>
+      </div>
+
+      <div class="bg-white/80 dark:bg-gray-900/50 p-4 rounded-lg">
+        <h4 class="font-bold text-lg mb-2 text-primary">✨ Propriétés</h4>
+        <ul class="space-y-2 list-disc list-inside">
+          <li>Tous les points se déplacent de <span class="font-semibold">la même distance dans la même direction</span></li>
+          <li>La figure et son image sont <span class="font-semibold">parallèles</span></li>
+          <li>Les longueurs, angles et parallélisme sont <span class="font-semibold">conservés</span></li>
+        </ul>
+      </div>
+
+      <div class="bg-white/80 dark:bg-gray-900/50 p-4 rounded-lg">
+        <h4 class="font-bold text-lg mb-2 text-primary">🔨 Construction</h4>
+        <p class="mb-2">On utilise un vecteur de translation :</p>
+        <ol class="space-y-2 list-decimal list-inside">
+          <li>Choisis la direction et la distance (le vecteur)</li>
+          <li>Déplace chaque sommet selon ce vecteur</li>
+          <li>Relie les nouveaux points</li>
+        </ol>
+      </div>
+    </div>
+  </section>
+
+  <!-- Section 3: La rotation -->
+  <section class="bg-gradient-to-br from-orange-50 to-amber-50 dark:from-orange-950/30 dark:to-amber-950/30 p-6 rounded-xl border border-orange-200 dark:border-orange-800">
+    <h3 class="text-2xl font-bold mb-4 flex items-center gap-2 text-orange-700 dark:text-orange-300">
+      🔄 La rotation
+    </h3>
+    
+    <div class="space-y-4">
+      <div class="bg-white/80 dark:bg-gray-900/50 p-4 rounded-lg">
+        <h4 class="font-bold text-lg mb-2 text-primary">📌 Définition</h4>
+        <p class="leading-relaxed mb-3">
+          La rotation est une <span class="font-semibold">transformation qui fait tourner</span> la figure 
+          autour d'un point fixe (le centre) d'un certain angle.
+        </p>
+        <div class="flex justify-center my-4">
+          <div class="relative w-48 h-48">
+            <div class="absolute top-1/2 left-1/2 w-2 h-2 bg-red-500 rounded-full -translate-x-1/2 -translate-y-1/2 z-10"></div>
+            <div class="absolute top-8 left-1/2 w-12 h-12 bg-orange-400 rounded -translate-x-1/2"></div>
+            <div class="absolute top-1/2 right-8 w-12 h-12 bg-orange-400 rounded opacity-70 -translate-y-1/2"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="bg-white/80 dark:bg-gray-900/50 p-4 rounded-lg">
+        <h4 class="font-bold text-lg mb-2 text-primary">✨ Propriétés</h4>
+        <ul class="space-y-2 list-disc list-inside">
+          <li>Tous les points tournent du <span class="font-semibold">même angle</span> autour du centre</li>
+          <li>Les <span class="font-semibold">distances au centre sont conservées</span></li>
+          <li>Les longueurs et angles sont <span class="font-semibold">conservés</span></li>
+          <li>Rotations courantes : 90°, 180°, 270°</li>
+        </ul>
+      </div>
+
+      <div class="bg-white/80 dark:bg-gray-900/50 p-4 rounded-lg">
+        <h4 class="font-bold text-lg mb-2 text-primary">🔨 Rotation de 90° (quart de tour)</h4>
+        <div class="grid md:grid-cols-2 gap-3">
+          <div class="p-3 bg-blue-50 dark:bg-blue-950/30 rounded">
+            <p class="font-semibold mb-1">Sens horaire ↻</p>
+            <p class="text-sm">Comme les aiguilles d'une montre</p>
+          </div>
+          <div class="p-3 bg-green-50 dark:bg-green-950/30 rounded">
+            <p class="font-semibold mb-1">Sens anti-horaire ↺</p>
+            <p class="text-sm">Inverse des aiguilles</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Section 4: L'agrandissement/réduction -->
+  <section class="bg-gradient-to-br from-pink-50 to-rose-50 dark:from-pink-950/30 dark:to-rose-950/30 p-6 rounded-xl border border-pink-200 dark:border-pink-800">
+    <h3 class="text-2xl font-bold mb-4 flex items-center gap-2 text-pink-700 dark:text-pink-300">
+      🔍 Agrandissement et réduction
+    </h3>
+    
+    <div class="space-y-4">
+      <div class="bg-white/80 dark:bg-gray-900/50 p-4 rounded-lg">
+        <h4 class="font-bold text-lg mb-2 text-primary">📌 Définition</h4>
+        <p class="leading-relaxed mb-3">
+          Transformation qui multiplie toutes les longueurs par un <span class="font-semibold">coefficient k</span>.
+        </p>
+        <div class="flex justify-center my-4 gap-8 items-center">
+          <div class="w-12 h-12 bg-pink-400 rounded"></div>
+          <span class="text-2xl">→</span>
+          <div class="w-24 h-24 bg-pink-400 rounded opacity-70"></div>
+        </div>
+      </div>
+
+      <div class="bg-white/80 dark:bg-gray-900/50 p-4 rounded-lg">
+        <h4 class="font-bold text-lg mb-2 text-primary">✨ Propriétés</h4>
+        <ul class="space-y-2 list-disc list-inside">
+          <li>Si k &gt; 1 : <span class="font-semibold">agrandissement</span></li>
+          <li>Si k &lt; 1 : <span class="font-semibold">réduction</span></li>
+          <li>Les <span class="font-semibold">angles sont conservés</span></li>
+          <li>Les <span class="font-semibold">longueurs sont multipliées par k</span></li>
+          <li>L'<span class="font-semibold">aire est multipliée par k²</span></li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- Section 5: Comparaison -->
+  <section class="bg-gradient-to-br from-cyan-50 to-sky-50 dark:from-cyan-950/30 dark:to-sky-950/30 p-6 rounded-xl border border-cyan-200 dark:border-cyan-800">
+    <h3 class="text-2xl font-bold mb-4 flex items-center gap-2 text-cyan-700 dark:text-cyan-300">
+      📊 Tableau récapitulatif
+    </h3>
+    
+    <div class="overflow-x-auto">
+      <table class="w-full text-sm bg-white/80 dark:bg-gray-900/50 rounded-lg">
+        <thead class="bg-cyan-100 dark:bg-cyan-950/40">
+          <tr>
+            <th class="p-3 text-left">Transformation</th>
+            <th class="p-3 text-left">Conserve longueurs</th>
+            <th class="p-3 text-left">Conserve angles</th>
+            <th class="p-3 text-left">Conserve aire</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y">
+          <tr><td class="p-3 font-semibold">Symétrie</td><td class="p-3">✅ Oui</td><td class="p-3">✅ Oui</td><td class="p-3">✅ Oui</td></tr>
+          <tr><td class="p-3 font-semibold">Translation</td><td class="p-3">✅ Oui</td><td class="p-3">✅ Oui</td><td class="p-3">✅ Oui</td></tr>
+          <tr><td class="p-3 font-semibold">Rotation</td><td class="p-3">✅ Oui</td><td class="p-3">✅ Oui</td><td class="p-3">✅ Oui</td></tr>
+          <tr><td class="p-3 font-semibold">Agrandissement</td><td class="p-3">❌ Non</td><td class="p-3">✅ Oui</td><td class="p-3">❌ Non</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- Section 6: Astuces -->
+  <section class="bg-gradient-to-br from-yellow-50 to-orange-50 dark:from-yellow-950/30 dark:to-orange-950/30 p-6 rounded-xl border border-yellow-200 dark:border-yellow-800">
+    <h3 class="text-2xl font-bold mb-4 flex items-center gap-2 text-yellow-700 dark:text-yellow-300">
+      💡 Astuces et Conseils
+    </h3>
+    
+    <div class="space-y-3">
+      <div class="bg-white/80 dark:bg-gray-900/50 p-3 rounded-lg flex gap-3">
+        <span class="text-2xl">✅</span>
+        <p><span class="font-semibold">Symétrie :</span> utilise du papier calque pour vérifier</p>
+      </div>
+      
+      <div class="bg-white/80 dark:bg-gray-900/50 p-3 rounded-lg flex gap-3">
+        <span class="text-2xl">✅</span>
+        <p><span class="font-semibold">Translation :</span> tous les points font le même déplacement</p>
+      </div>
+      
+      <div class="bg-white/80 dark:bg-gray-900/50 p-3 rounded-lg flex gap-3">
+        <span class="text-2xl">✅</span>
+        <p><span class="font-semibold">Rotation :</span> le centre ne bouge jamais</p>
+      </div>
+    </div>
+  </section>
+
+</div>`,
+
+    exemplesExercices: `<div class="space-y-6">
+  
+  <div class="bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-950/40 dark:to-blue-900/30 p-5 rounded-xl border-l-4 border-blue-500">
+    <h4 class="font-bold text-lg mb-3 flex items-center gap-2 text-blue-700 dark:text-blue-300">
+      ✏️ Exercice 1 — Symétrie simple (Facile)
+    </h4>
+    <p class="mb-3 leading-relaxed">Le point A(3;2) a pour symétrique A' par rapport à l'axe y. Trouve les coordonnées de A'.</p>
+    <div class="mt-4 bg-white/70 dark:bg-gray-900/50 p-4 rounded-lg">
+      <p class="font-semibold text-blue-700 dark:text-blue-300 mb-2">📝 Solution :</p>
+      <div class="space-y-2 text-sm">
+        <p>Symétrie/axe y : x change de signe, y reste</p>
+        <p>A(3;2) → <span class="font-bold text-blue-600">A'(-3;2)</span></p>
+      </div>
+    </div>
+  </div>
+
+  <div class="bg-gradient-to-br from-green-50 to-green-100 dark:from-green-950/40 dark:to-green-900/30 p-5 rounded-xl border-l-4 border-green-500">
+    <h4 class="font-bold text-lg mb-3 flex items-center gap-2 text-green-700 dark:text-green-300">
+      ✏️ Exercice 2 — Translation (Facile)
+    </h4>
+    <p class="mb-3 leading-relaxed">Translate le point B(2;3) de 4 unités à droite et 2 unités vers le haut.</p>
+    <div class="mt-4 bg-white/70 dark:bg-gray-900/50 p-4 rounded-lg">
+      <p class="font-semibold text-green-700 dark:text-green-300 mb-2">📝 Solution :</p>
+      <div class="space-y-2 text-sm">
+        <p>x : 2 + 4 = 6</p>
+        <p>y : 3 + 2 = 5</p>
+        <p><span class="font-bold text-green-600">B'(6;5)</span></p>
+      </div>
+    </div>
+  </div>
+
+  <div class="bg-gradient-to-br from-orange-50 to-orange-100 dark:from-orange-950/40 dark:to-orange-900/30 p-5 rounded-xl border-l-4 border-orange-500">
+    <h4 class="font-bold text-lg mb-3 flex items-center gap-2 text-orange-700 dark:text-orange-300">
+      ✏️ Exercice 3 — Rotation 90° (Moyen)
+    </h4>
+    <p class="mb-3 leading-relaxed">Un carré ABCD de côté 4 cm subit une rotation de 90° sens horaire autour de A. Où se trouve B' ?</p>
+    <div class="mt-4 bg-white/70 dark:bg-gray-900/50 p-4 rounded-lg">
+      <p class="font-semibold text-orange-700 dark:text-orange-300 mb-2">📝 Solution :</p>
+      <div class="space-y-2 text-sm">
+        <p>B était à droite de A (4 cm)</p>
+        <p>Après rotation 90° horaire : B' est en bas de A</p>
+        <p><span class="font-bold text-orange-600">Distance AB' = 4 cm (conservée)</span></p>
+      </div>
+    </div>
+  </div>
+
+  <div class="bg-gradient-to-br from-purple-50 to-purple-100 dark:from-purple-950/40 dark:to-purple-900/30 p-5 rounded-xl border-l-4 border-purple-500">
+    <h4 class="font-bold text-lg mb-3 flex items-center gap-2 text-purple-700 dark:text-purple-300">
+      ✏️ Exercice 4 — Agrandissement (Difficile)
+    </h4>
+    <p class="mb-3 leading-relaxed">Un triangle a une aire de 12 cm². On l'agrandit avec k=3. Quelle est la nouvelle aire ?</p>
+    <div class="mt-4 bg-white/70 dark:bg-gray-900/50 p-4 rounded-lg">
+      <p class="font-semibold text-purple-700 dark:text-purple-300 mb-2">📝 Solution :</p>
+      <div class="space-y-2 text-sm">
+        <p>L'aire est multipliée par k²</p>
+        <p>Nouvelle aire = 12 × 3²</p>
+        <p>= 12 × 9 = <span class="font-bold text-purple-600">108 cm²</span></p>
+      </div>
+    </div>
+  </div>
+
+  <div class="bg-gradient-to-br from-pink-50 to-pink-100 dark:from-pink-950/40 dark:to-pink-900/30 p-5 rounded-xl border-l-4 border-pink-500">
+    <h4 class="font-bold text-lg mb-3 flex items-center gap-2 text-pink-700 dark:text-pink-300">
+      ✏️ Exercice 5 — Composition (Difficile)
+    </h4>
+    <p class="mb-3 leading-relaxed">Le point M(4;1) subit une symétrie/axe x puis une translation de (-2;3). Coordonnées finales ?</p>
+    <div class="mt-4 bg-white/70 dark:bg-gray-900/50 p-4 rounded-lg">
+      <p class="font-semibold text-pink-700 dark:text-pink-300 mb-2">📝 Solution :</p>
+      <div class="space-y-2 text-sm">
+        <p>1. Symétrie/axe x : M(4;1) → M'(4;-1)</p>
+        <p>2. Translation (-2;3) : (4-2 ; -1+3)</p>
+        <p>= <span class="font-bold text-pink-600">M''(2;2)</span></p>
+      </div>
+    </div>
+  </div>
+
+</div>`
+  },
+
+  "statistiques": {
+    objectif: `À la fin de cette leçon, tu vas pouvoir:
+• Collecter et organiser des données statistiques
+• Calculer la moyenne, la médiane et le mode
+• Interpréter et créer des graphiques (diagrammes en bâtons, circulaires)
+• Résoudre des problèmes statistiques simples`,
+
+    introduction: `<div class="space-y-4">
+  <p class="text-lg leading-relaxed">
+    <span class="font-semibold text-primary">Combien d'élèves préfèrent le football au basketball ?</span> 
+    Quelle est la taille moyenne des élèves de ta classe ? 
+    <span class="italic">Les statistiques nous aident à répondre à ces questions !</span>
+  </p>
+  
+  <p class="text-lg leading-relaxed">
+    Les statistiques permettent de <span class="font-semibold text-accent">collecter, organiser et analyser des données</span> 
+    pour en tirer des informations utiles. Elles sont partout : dans les sondages, 
+    les études scientifiques, le sport, et même dans les réseaux sociaux.
+  </p>
+
+  <div class="bg-gradient-to-r from-primary/10 to-accent/10 p-4 rounded-lg border-l-4 border-primary">
+    <p class="font-medium">💡 <span class="text-primary">Conseil :</span> Les statistiques transforment 
+    des listes de nombres en informations compréhensibles et utiles !</p>
+  </div>
+</div>`,
+
+    contenu: `<div class="space-y-8">
+  
+  <!-- Section 1: Vocabulaire de base -->
+  <section class="bg-gradient-to-br from-blue-50 to-purple-50 dark:from-blue-950/30 dark:to-purple-950/30 p-6 rounded-xl border border-blue-200 dark:border-blue-800">
+    <h3 class="text-2xl font-bold mb-4 flex items-center gap-2 text-blue-700 dark:text-blue-300">
+      🎯 Vocabulaire statistique
+    </h3>
+    
+    <div class="space-y-4">
+      <div class="bg-white/80 dark:bg-gray-900/50 p-4 rounded-lg">
+        <h4 class="font-bold text-lg mb-2 text-primary">📌 Population et échantillon</h4>
+        <p class="leading-relaxed mb-2">
+          <span class="font-semibold">Population :</span> l'ensemble de tous les individus étudiés
+        </p>
+        <p class="leading-relaxed">
+          <span class="font-semibold">Échantillon :</span> une partie de la population
+        </p>
+        <p class="text-sm text-muted-foreground italic mt-2">
+          Ex : Tous les élèves d'Haïti (population) vs les élèves de ta classe (échantillon)
+        </p>
+      </div>
+
+      <div class="bg-white/80 dark:bg-gray-900/50 p-4 rounded-lg">
+        <h4 class="font-bold text-lg mb-2 text-primary">📌 Caractère et modalités</h4>
+        <p class="leading-relaxed mb-2">
+          <span class="font-semibold">Caractère :</span> ce qu'on étudie (âge, taille, sport préféré...)
+        </p>
+        <p class="leading-relaxed mb-2">
+          <span class="font-semibold">Modalités :</span> les différentes valeurs possibles
+        </p>
+        <div class="mt-3 p-3 bg-blue-50 dark:bg-blue-950/30 rounded">
+          <p class="font-semibold">Exemple :</p>
+          <p class="text-sm">Caractère : Sport préféré</p>
+          <p class="text-sm">Modalités : Football, Basketball, Volleyball, Tennis</p>
+        </div>
+      </div>
+
+      <div class="bg-white/80 dark:bg-gray-900/50 p-4 rounded-lg">
+        <h4 class="font-bold text-lg mb-2 text-primary">📌 Effectif et fréquence</h4>
+        <p class="leading-relaxed mb-2">
+          <span class="font-semibold">Effectif :</span> nombre de fois qu'une modalité apparaît
+        </p>
+        <p class="leading-relaxed">
+          <span class="font-semibold">Fréquence :</span> effectif ÷ effectif total (en %)
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Section 2: Tableau statistique -->
+  <section class="bg-gradient-to-br from-green-50 to-teal-50 dark:from-green-950/30 dark:to-teal-950/30 p-6 rounded-xl border border-green-200 dark:border-green-800">
+    <h3 class="text-2xl font-bold mb-4 flex items-center gap-2 text-green-700 dark:text-green-300">
+      📊 Tableau statistique
+    </h3>
+    
+    <div class="space-y-4">
+      <div class="bg-white/80 dark:bg-gray-900/50 p-4 rounded-lg">
+        <h4 class="font-bold text-lg mb-3 text-primary">Exemple : Sports préférés dans une classe</h4>
+        <div class="overflow-x-auto">
+          <table class="w-full text-sm mt-2 border-collapse">
+            <thead class="bg-green-100 dark:bg-green-950/40">
+              <tr>
+                <th class="p-2 border border-green-300 dark:border-green-700">Sport</th>
+                <th class="p-2 border border-green-300 dark:border-green-700">Effectif</th>
+                <th class="p-2 border border-green-300 dark:border-green-700">Fréquence (%)</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr><td class="p-2 border">Football</td><td class="p-2 border text-center">12</td><td class="p-2 border text-center">40%</td></tr>
+              <tr><td class="p-2 border">Basketball</td><td class="p-2 border text-center">8</td><td class="p-2 border text-center">27%</td></tr>
+              <tr><td class="p-2 border">Volleyball</td><td class="p-2 border text-center">7</td><td class="p-2 border text-center">23%</td></tr>
+              <tr><td class="p-2 border">Tennis</td><td class="p-2 border text-center">3</td><td class="p-2 border text-center">10%</td></tr>
+              <tr class="font-bold bg-green-50 dark:bg-green-950/20"><td class="p-2 border">Total</td><td class="p-2 border text-center">30</td><td class="p-2 border text-center">100%</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Section 3: Moyenne, médiane, mode -->
+  <section class="bg-gradient-to-br from-orange-50 to-amber-50 dark:from-orange-950/30 dark:to-amber-950/30 p-6 rounded-xl border border-orange-200 dark:border-orange-800">
+    <h3 class="text-2xl font-bold mb-4 flex items-center gap-2 text-orange-700 dark:text-orange-300">
+      🔢 Indicateurs statistiques
+    </h3>
+    
+    <div class="space-y-4">
+      <div class="bg-white/80 dark:bg-gray-900/50 p-4 rounded-lg">
+        <h4 class="font-bold text-lg mb-3 text-primary">📊 La moyenne</h4>
+        <p class="mb-2">Somme de toutes les valeurs ÷ nombre de valeurs</p>
+        <div class="p-4 bg-orange-100 dark:bg-orange-950/40 rounded-lg text-center">
+          <p class="text-xl font-bold text-orange-700 dark:text-orange-300 font-mono">Moyenne = Σ valeurs ÷ n</p>
+        </div>
+        <div class="mt-3 p-3 bg-blue-50 dark:bg-blue-950/30 rounded">
+          <p class="font-semibold mb-1">Exemple :</p>
+          <p class="text-sm">Notes : 12, 15, 10, 14, 9</p>
+          <p class="text-sm">Moyenne = (12+15+10+14+9) ÷ 5 = 60 ÷ 5 = <span class="font-bold">12</span></p>
+        </div>
+      </div>
+
+      <div class="bg-white/80 dark:bg-gray-900/50 p-4 rounded-lg">
+        <h4 class="font-bold text-lg mb-3 text-primary">📊 La médiane</h4>
+        <p class="mb-2">Valeur du milieu quand les données sont rangées dans l'ordre</p>
+        <div class="mt-3 p-3 bg-green-50 dark:bg-green-950/30 rounded">
+          <p class="font-semibold mb-1">Exemple :</p>
+          <p class="text-sm">Tailles : 150, 155, 160, 165, 170 cm</p>
+          <p class="text-sm">Médiane = <span class="font-bold">160 cm</span> (valeur du milieu)</p>
+        </div>
+        <p class="text-sm text-muted-foreground italic mt-2">
+          Si nombre pair de valeurs : moyenne des deux du milieu
+        </p>
+      </div>
+
+      <div class="bg-white/80 dark:bg-gray-900/50 p-4 rounded-lg">
+        <h4 class="font-bold text-lg mb-3 text-primary">📊 Le mode</h4>
+        <p class="mb-2">Valeur la plus fréquente (qui apparaît le plus souvent)</p>
+        <div class="mt-3 p-3 bg-purple-50 dark:bg-purple-950/30 rounded">
+          <p class="font-semibold mb-1">Exemple :</p>
+          <p class="text-sm">Notes : 12, 15, 12, 10, 12, 14</p>
+          <p class="text-sm">Mode = <span class="font-bold">12</span> (apparaît 3 fois)</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Section 4: Graphiques -->
+  <section class="bg-gradient-to-br from-pink-50 to-rose-50 dark:from-pink-950/30 dark:to-rose-950/30 p-6 rounded-xl border border-pink-200 dark:border-pink-800">
+    <h3 class="text-2xl font-bold mb-4 flex items-center gap-2 text-pink-700 dark:text-pink-300">
+      📈 Représentations graphiques
+    </h3>
+    
+    <div class="space-y-4">
+      <div class="bg-white/80 dark:bg-gray-900/50 p-4 rounded-lg">
+        <h4 class="font-bold text-lg mb-3 text-primary">📊 Diagramme en bâtons</h4>
+        <p class="mb-3">Chaque bâton représente un effectif</p>
+        <div class="h-32 bg-gradient-to-t from-pink-100 to-transparent dark:from-pink-900/20 rounded flex items-end justify-around gap-2 p-4">
+          <div class="w-12 bg-blue-400 rounded-t" style="height: 80%"></div>
+          <div class="w-12 bg-green-400 rounded-t" style="height: 60%"></div>
+          <div class="w-12 bg-orange-400 rounded-t" style="height: 50%"></div>
+          <div class="w-12 bg-purple-400 rounded-t" style="height: 30%"></div>
+        </div>
+        <p class="text-sm text-muted-foreground mt-2">Idéal pour comparer des catégories</p>
+      </div>
+
+      <div class="bg-white/80 dark:bg-gray-900/50 p-4 rounded-lg">
+        <h4 class="font-bold text-lg mb-3 text-primary">🥧 Diagramme circulaire (camembert)</h4>
+        <p class="mb-3">Chaque part représente une proportion du total</p>
+        <div class="flex justify-center my-4">
+          <div class="w-32 h-32 rounded-full" style="background: conic-gradient(#60a5fa 0% 40%, #34d399 40% 67%, #fb923c 67% 90%, #c084fc 90% 100%)"></div>
+        </div>
+        <p class="text-sm text-muted-foreground">Idéal pour montrer des pourcentages</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Section 5: Étendue -->
+  <section class="bg-gradient-to-br from-cyan-50 to-sky-50 dark:from-cyan-950/30 dark:to-sky-950/30 p-6 rounded-xl border border-cyan-200 dark:border-cyan-800">
+    <h3 class="text-2xl font-bold mb-4 flex items-center gap-2 text-cyan-700 dark:text-cyan-300">
+      📏 L'étendue
+    </h3>
+    
+    <div class="space-y-4">
+      <div class="bg-white/80 dark:bg-gray-900/50 p-4 rounded-lg">
+        <h4 class="font-bold text-lg mb-3 text-primary">📊 Définition</h4>
+        <p class="mb-3">Différence entre la plus grande et la plus petite valeur</p>
+        <div class="p-4 bg-cyan-100 dark:bg-cyan-950/40 rounded-lg text-center">
+          <p class="text-xl font-bold text-cyan-700 dark:text-cyan-300 font-mono">Étendue = Max - Min</p>
+        </div>
+        <div class="mt-3 p-3 bg-blue-50 dark:bg-blue-950/30 rounded">
+          <p class="font-semibold mb-1">Exemple :</p>
+          <p class="text-sm">Températures : 18°C, 22°C, 25°C, 20°C, 15°C</p>
+          <p class="text-sm">Étendue = 25 - 15 = <span class="font-bold">10°C</span></p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Section 6: Astuces -->
+  <section class="bg-gradient-to-br from-yellow-50 to-orange-50 dark:from-yellow-950/30 dark:to-orange-950/30 p-6 rounded-xl border border-yellow-200 dark:border-yellow-800">
+    <h3 class="text-2xl font-bold mb-4 flex items-center gap-2 text-yellow-700 dark:text-yellow-300">
+      💡 Astuces et Conseils
+    </h3>
+    
+    <div class="space-y-3">
+      <div class="bg-white/80 dark:bg-gray-900/50 p-3 rounded-lg flex gap-3">
+        <span class="text-2xl">✅</span>
+        <p><span class="font-semibold">Tableau d'abord :</span> organise toujours les données dans un tableau</p>
+      </div>
+      
+      <div class="bg-white/80 dark:bg-gray-900/50 p-3 rounded-lg flex gap-3">
+        <span class="text-2xl">✅</span>
+        <p><span class="font-semibold">Médiane :</span> n'oublie pas de ranger les valeurs dans l'ordre</p>
+      </div>
+      
+      <div class="bg-white/80 dark:bg-gray-900/50 p-3 rounded-lg flex gap-3">
+        <span class="text-2xl">✅</span>
+        <p><span class="font-semibold">Graphique :</span> choisis celui qui représente le mieux tes données</p>
+      </div>
+    </div>
+  </section>
+
+</div>`,
+
+    exemplesExercices: `<div class="space-y-6">
+  
+  <div class="bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-950/40 dark:to-blue-900/30 p-5 rounded-xl border-l-4 border-blue-500">
+    <h4 class="font-bold text-lg mb-3 flex items-center gap-2 text-blue-700 dark:text-blue-300">
+      ✏️ Exercice 1 — Moyenne (Facile)
+    </h4>
+    <p class="mb-3 leading-relaxed">Calcule la moyenne des notes : 14, 12, 16, 10, 13</p>
+    <div class="mt-4 bg-white/70 dark:bg-gray-900/50 p-4 rounded-lg">
+      <p class="font-semibold text-blue-700 dark:text-blue-300 mb-2">📝 Solution :</p>
+      <div class="space-y-2 text-sm">
+        <p>Somme = 14 + 12 + 16 + 10 + 13 = 65</p>
+        <p>Moyenne = 65 ÷ 5</p>
+        <p>= <span class="font-bold text-blue-600">13</span></p>
+      </div>
+    </div>
+  </div>
+
+  <div class="bg-gradient-to-br from-green-50 to-green-100 dark:from-green-950/40 dark:to-green-900/30 p-5 rounded-xl border-l-4 border-green-500">
+    <h4 class="font-bold text-lg mb-3 flex items-center gap-2 text-green-700 dark:text-green-300">
+      ✏️ Exercice 2 — Médiane (Facile)
+    </h4>
+    <p class="mb-3 leading-relaxed">Trouve la médiane de : 8, 12, 5, 15, 10</p>
+    <div class="mt-4 bg-white/70 dark:bg-gray-900/50 p-4 rounded-lg">
+      <p class="font-semibold text-green-700 dark:text-green-300 mb-2">📝 Solution :</p>
+      <div class="space-y-2 text-sm">
+        <p>1. Ranger : 5, 8, 10, 12, 15</p>
+        <p>2. Valeur du milieu</p>
+        <p>Médiane = <span class="font-bold text-green-600">10</span></p>
+      </div>
+    </div>
+  </div>
+
+  <div class="bg-gradient-to-br from-orange-50 to-orange-100 dark:from-orange-950/40 dark:to-orange-900/30 p-5 rounded-xl border-l-4 border-orange-500">
+    <h4 class="font-bold text-lg mb-3 flex items-center gap-2 text-orange-700 dark:text-orange-300">
+      ✏️ Exercice 3 — Mode (Moyen)
+    </h4>
+    <p class="mb-3 leading-relaxed">Trouve le mode de : 7, 9, 7, 8, 10, 7, 9</p>
+    <div class="mt-4 bg-white/70 dark:bg-gray-900/50 p-4 rounded-lg">
+      <p class="font-semibold text-orange-700 dark:text-orange-300 mb-2">📝 Solution :</p>
+      <div class="space-y-2 text-sm">
+        <p>7 apparaît 3 fois</p>
+        <p>9 apparaît 2 fois</p>
+        <p>8 et 10 apparaissent 1 fois</p>
+        <p>Mode = <span class="font-bold text-orange-600">7</span></p>
+      </div>
+    </div>
+  </div>
+
+  <div class="bg-gradient-to-br from-purple-50 to-purple-100 dark:from-purple-950/40 dark:to-purple-900/30 p-5 rounded-xl border-l-4 border-purple-500">
+    <h4 class="font-bold text-lg mb-3 flex items-center gap-2 text-purple-700 dark:text-purple-300">
+      ✏️ Exercice 4 — Étendue (Difficile)
+    </h4>
+    <p class="mb-3 leading-relaxed">Les températures de la semaine sont : 18°, 22°, 25°, 20°, 19°, 23°, 21°. Calcule l'étendue.</p>
+    <div class="mt-4 bg-white/70 dark:bg-gray-900/50 p-4 rounded-lg">
+      <p class="font-semibold text-purple-700 dark:text-purple-300 mb-2">📝 Solution :</p>
+      <div class="space-y-2 text-sm">
+        <p>Max = 25°C</p>
+        <p>Min = 18°C</p>
+        <p>Étendue = 25 - 18 = <span class="font-bold text-purple-600">7°C</span></p>
+      </div>
+    </div>
+  </div>
+
+  <div class="bg-gradient-to-br from-pink-50 to-pink-100 dark:from-pink-950/40 dark:to-pink-900/30 p-5 rounded-xl border-l-4 border-pink-500">
+    <h4 class="font-bold text-lg mb-3 flex items-center gap-2 text-pink-700 dark:text-pink-300">
+      ✏️ Exercice 5 — Fréquence (Difficile)
+    </h4>
+    <p class="mb-3 leading-relaxed">Dans une classe de 30 élèves, 12 aiment le football. Quelle est la fréquence en % ?</p>
+    <div class="mt-4 bg-white/70 dark:bg-gray-900/50 p-4 rounded-lg">
+      <p class="font-semibold text-pink-700 dark:text-pink-300 mb-2">📝 Solution :</p>
+      <div class="space-y-2 text-sm">
+        <p>Fréquence = (effectif ÷ total) × 100</p>
+        <p>= (12 ÷ 30) × 100</p>
+        <p>= 0,4 × 100 = <span class="font-bold text-pink-600">40%</span></p>
+      </div>
+    </div>
+  </div>
+
+</div>`
   }
 };
 
