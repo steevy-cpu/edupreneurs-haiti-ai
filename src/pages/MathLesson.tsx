@@ -74,6 +74,21 @@ const MathLesson = () => {
   const hasStaticContent = topicId ? topicId in mathLessons : false;
 
   const topicInfo: { [key: string]: { title: string; icon: string; goldReward: number } } = {
+    "ensembles": { 
+      title: "Ensembles", 
+      icon: "🔢",
+      goldReward: 80
+    },
+    "plans-droites": { 
+      title: "Plans et Droites", 
+      icon: "📐",
+      goldReward: 90
+    },
+    "nombres-naturels": { 
+      title: "Nombres Naturels", 
+      icon: "🔢",
+      goldReward: 80
+    },
     "numeration-binaire": { 
       title: "Numération Binaire", 
       icon: "💻",
