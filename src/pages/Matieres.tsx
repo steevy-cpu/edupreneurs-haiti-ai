@@ -263,7 +263,14 @@ export default function Matieres() {
               <Card
                 key={subject.id}
                 className="group hover:shadow-xl transition-all duration-300 hover:-translate-y-2 cursor-pointer overflow-hidden"
-                onClick={() => navigate(`/math-course`)} // You can customize this route per subject
+                onClick={() => {
+                  const courseRoute = subject.id === 'mathematiques' 
+                    ? '/math-course' 
+                    : subject.id === 'sciences' 
+                    ? '/sciences-course'
+                    : '/math-course'; // Default for now
+                  navigate(courseRoute);
+                }}
               >
                 <div className={`h-1 bg-gradient-to-r ${subject.color}`} />
                 
@@ -289,15 +296,20 @@ export default function Matieres() {
                     </Badge>
                   </div>
 
-                  <Button
-                    className="w-full"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      navigate(`/math-course`); // Customize per subject
-                    }}
-                  >
-                    Commencer
-                  </Button>
+                <Button
+                  className="w-full"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    const courseRoute = subject.id === 'mathematiques' 
+                      ? '/math-course' 
+                      : subject.id === 'sciences' 
+                      ? '/sciences-course'
+                      : '/math-course'; // Default for now
+                    navigate(courseRoute);
+                  }}
+                >
+                  Commencer
+                </Button>
                 </div>
               </Card>
             );
