@@ -15,9 +15,195 @@ export const sciencesLessons7AF: Record<string, StaticLessonContent> = {
 • Utiliser la balance pour effectuer des pesées entre 0 et 5 kg
 • Comprendre le principe de la balance basé sur la comparaison avec une masse étalonnée
 • Différencier les notions de masse et de volume`,
-    introduction: `[Contenu à ajouter]`,
-    contenu: `[Contenu à ajouter]`,
-    exemplesExercices: `[Contenu à ajouter]`
+    introduction: `<div class="space-y-6">
+  <p class="text-lg leading-relaxed">
+    La balance est un instrument fondamental en sciences pour mesurer la masse des objets.
+    Comprendre comment l'utiliser correctement est essentiel pour toutes les expériences scientifiques !
+  </p>
+  <div class="bg-primary/5 border-l-4 border-primary p-4 rounded-r">
+    <p class="font-semibold text-primary mb-2">⚖️ Le saviez-vous ?</p>
+    <p>La balance existe depuis l'Antiquité ! Les Égyptiens l'utilisaient déjà il y a plus de 5000 ans
+    pour peser l'or et les marchandises.</p>
+  </div>
+  
+  <div class="bg-gradient-to-r from-primary/10 to-secondary/10 p-6 rounded-xl">
+    <h3 class="text-xl font-bold mb-4 flex items-center gap-2">
+      <span class="text-2xl">🎯</span>
+      Objectifs de la leçon
+    </h3>
+    <ul class="space-y-2">
+      <li class="flex items-start gap-2">
+        <span class="text-primary shrink-0 mt-1">✓</span>
+        <span>Utiliser la balance pour effectuer des pesées entre 0 et 5 kg</span>
+      </li>
+      <li class="flex items-start gap-2">
+        <span class="text-primary shrink-0 mt-1">✓</span>
+        <span>Comprendre le principe de la balance basé sur la comparaison avec une masse étalonnée</span>
+      </li>
+      <li class="flex items-start gap-2">
+        <span class="text-primary shrink-0 mt-1">✓</span>
+        <span>Différencier les notions de masse et de volume</span>
+      </li>
+    </ul>
+  </div>
+</div>`,
+    contenu: `<div class="space-y-8">
+  <section>
+    <h2 class="text-2xl font-bold text-primary mb-4">⚖️ Qu'est-ce que la Masse ?</h2>
+    <div class="bg-gradient-to-r from-blue-50 to-cyan-50 dark:from-blue-950/30 dark:to-cyan-950/30 p-6 rounded-lg border-2 border-blue-200 dark:border-blue-800">
+      <p class="leading-relaxed mb-4">
+        La <strong>masse</strong> est la quantité de matière contenue dans un objet. Elle se mesure avec une balance
+        et s'exprime en kilogrammes (kg), grammes (g) ou milligrammes (mg).
+      </p>
+      <div class="bg-white/70 dark:bg-black/30 p-4 rounded-lg">
+        <h4 class="font-bold mb-3">📊 Unités de masse :</h4>
+        <ul class="space-y-2">
+          <li class="flex items-center gap-2">
+            <span class="text-blue-600 dark:text-blue-400 font-bold">•</span>
+            <span>1 kilogramme (kg) = 1000 grammes (g)</span>
+          </li>
+          <li class="flex items-center gap-2">
+            <span class="text-blue-600 dark:text-blue-400 font-bold">•</span>
+            <span>1 gramme (g) = 1000 milligrammes (mg)</span>
+          </li>
+          <li class="flex items-center gap-2">
+            <span class="text-blue-600 dark:text-blue-400 font-bold">•</span>
+            <span>1 tonne (t) = 1000 kilogrammes (kg)</span>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2 class="text-2xl font-bold text-primary mb-4">🔬 Types de Balances</h2>
+    <div class="grid md:grid-cols-2 gap-6">
+      <div class="bg-gradient-to-br from-purple-50 to-pink-50 dark:from-purple-950/30 dark:to-pink-950/30 p-6 rounded-lg border-2 border-purple-200 dark:border-purple-800">
+        <h3 class="text-xl font-bold text-purple-700 dark:text-purple-300 mb-3">Balance à Fléaux ⚖️</h3>
+        <p class="text-sm mb-3">Type classique utilisé en laboratoire</p>
+        <ul class="space-y-2 text-sm">
+          <li>✓ Deux plateaux suspendus</li>
+          <li>✓ Principe de l'équilibre</li>
+          <li>✓ Compare l'objet avec des masses étalonnées</li>
+          <li>✓ Très précise</li>
+        </ul>
+      </div>
+      <div class="bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-950/30 dark:to-emerald-950/30 p-6 rounded-lg border-2 border-green-200 dark:border-green-800">
+        <h3 class="text-xl font-bold text-green-700 dark:text-green-300 mb-3">Balance Électronique 📱</h3>
+        <p class="text-sm mb-3">Type moderne avec affichage numérique</p>
+        <ul class="space-y-2 text-sm">
+          <li>✓ Un seul plateau</li>
+          <li>✓ Affichage digital</li>
+          <li>✓ Lecture directe de la masse</li>
+          <li>✓ Rapide et facile à utiliser</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2 class="text-2xl font-bold text-primary mb-4">📖 Comment Utiliser une Balance à Fléaux ?</h2>
+    <div class="space-y-4">
+      <div class="bg-gradient-to-r from-orange-50 to-yellow-50 dark:from-orange-950/30 dark:to-yellow-950/30 p-5 rounded-lg border-l-4 border-orange-500">
+        <h4 class="font-bold text-orange-700 dark:text-orange-300 mb-2">Étape 1 : Préparation</h4>
+        <p class="text-sm">Vérifie que la balance est sur une surface plane et stable. Les deux plateaux doivent être à la même hauteur (équilibre).</p>
+      </div>
+      <div class="bg-gradient-to-r from-blue-50 to-cyan-50 dark:from-blue-950/30 dark:to-cyan-950/30 p-5 rounded-lg border-l-4 border-blue-500">
+        <h4 class="font-bold text-blue-700 dark:text-blue-300 mb-2">Étape 2 : Placement</h4>
+        <p class="text-sm">Place l'objet à peser sur le plateau de gauche avec précaution.</p>
+      </div>
+      <div class="bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-950/30 dark:to-emerald-950/30 p-5 rounded-lg border-l-4 border-green-500">
+        <h4 class="font-bold text-green-700 dark:text-green-300 mb-2">Étape 3 : Ajout des Masses</h4>
+        <p class="text-sm">Ajoute des masses étalonnées sur le plateau de droite jusqu'à ce que les deux plateaux soient au même niveau.</p>
+      </div>
+      <div class="bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-950/30 dark:to-pink-950/30 p-5 rounded-lg border-l-4 border-purple-500">
+        <h4 class="font-bold text-purple-700 dark:text-purple-300 mb-2">Étape 4 : Lecture</h4>
+        <p class="text-sm">Additionne les masses utilisées pour obtenir la masse de l'objet.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="bg-yellow-50 dark:bg-yellow-900/20 p-6 rounded-xl border-2 border-yellow-300 dark:border-yellow-700">
+    <h2 class="text-2xl font-bold text-yellow-800 dark:text-yellow-200 mb-4">⚠️ Masse vs Volume</h2>
+    <div class="grid md:grid-cols-2 gap-6">
+      <div class="bg-white/70 dark:bg-gray-800/70 p-4 rounded-lg">
+        <h4 class="font-bold text-yellow-700 dark:text-yellow-300 mb-2">Masse 📏</h4>
+        <ul class="space-y-1 text-sm">
+          <li>• Quantité de matière</li>
+          <li>• Se mesure avec une balance</li>
+          <li>• Unités : kg, g, mg</li>
+          <li>• Ne change pas selon le lieu</li>
+        </ul>
+      </div>
+      <div class="bg-white/70 dark:bg-gray-800/70 p-4 rounded-lg">
+        <h4 class="font-bold text-yellow-700 dark:text-yellow-300 mb-2">Volume 📦</h4>
+        <ul class="space-y-1 text-sm">
+          <li>• Espace occupé</li>
+          <li>• Se mesure avec éprouvette/règle</li>
+          <li>• Unités : L, mL, cm³, m³</li>
+          <li>• Dépend de la forme</li>
+        </ul>
+      </div>
+    </div>
+    <div class="mt-4 p-3 bg-yellow-100 dark:bg-yellow-900/40 rounded">
+      <p class="font-semibold text-sm">💡 Exemple :</p>
+      <p class="text-sm">1 kg de plumes et 1 kg de fer ont la même masse, mais les plumes occupent beaucoup plus de volume !</p>
+    </div>
+  </section>
+</div>`,
+    exemplesExercices: `<div class="space-y-6">
+  <div class="bg-primary/5 p-6 rounded-lg border-2 border-primary/20">
+    <h3 class="text-xl font-bold text-primary mb-4">📝 Exercice 1 : Conversion d'Unités</h3>
+    <p class="mb-4">Convertis les masses suivantes :</p>
+    <ol class="space-y-3 list-decimal list-inside">
+      <li>2,5 kg = __________ g</li>
+      <li>350 g = __________ mg</li>
+      <li>4500 g = __________ kg</li>
+      <li>0,75 kg = __________ g</li>
+      <li>1200 mg = __________ g</li>
+    </ol>
+  </div>
+
+  <div class="bg-accent/5 p-6 rounded-lg border-2 border-accent/20">
+    <h3 class="text-xl font-bold text-accent mb-4">📝 Exercice 2 : Lecture de Balance</h3>
+    <p class="mb-4">Une balance à fléaux est en équilibre. Sur le plateau de droite, on trouve :</p>
+    <ul class="list-disc list-inside mb-4 space-y-1">
+      <li>Une masse de 2 kg</li>
+      <li>Une masse de 500 g</li>
+      <li>Une masse de 200 g</li>
+      <li>Une masse de 50 g</li>
+    </ul>
+    <p class="font-semibold">Quelle est la masse de l'objet sur le plateau de gauche ?</p>
+    <div class="mt-3 p-3 bg-white/50 dark:bg-black/20 rounded">
+      <p class="text-sm">Réponse : __________</p>
+    </div>
+  </div>
+
+  <div class="bg-secondary/5 p-6 rounded-lg border-2 border-secondary/20">
+    <h3 class="text-xl font-bold text-secondary mb-4">📝 Exercice 3 : Masse ou Volume ?</h3>
+    <p class="mb-4">Indique si chaque affirmation concerne la masse (M) ou le volume (V) :</p>
+    <ol class="space-y-2 list-decimal list-inside">
+      <li>Se mesure avec une balance <span class="ml-4">_____</span></li>
+      <li>S'exprime en litres <span class="ml-4">_____</span></li>
+      <li>Quantité de matière <span class="ml-4">_____</span></li>
+      <li>Espace occupé par un objet <span class="ml-4">_____</span></li>
+      <li>S'exprime en kilogrammes <span class="ml-4">_____</span></li>
+      <li>Peut être mesuré avec une éprouvette graduée <span class="ml-4">_____</span></li>
+    </ol>
+  </div>
+
+  <div class="bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-950/20 dark:to-pink-950/20 p-6 rounded-lg border-2 border-purple-200 dark:border-purple-800">
+    <h3 class="text-xl font-bold text-purple-700 dark:text-purple-300 mb-4">📝 Exercice 4 : Problème Pratique</h3>
+    <p class="mb-4">Tu dois mesurer la masse d'un livre qui pèse environ 800 g. Tu disposes des masses étalonnées suivantes :</p>
+    <p class="mb-3 ml-4">500 g, 200 g, 100 g, 50 g, 20 g, 10 g, 5 g, 2 g, 1 g</p>
+    <p class="font-semibold mb-2">Questions :</p>
+    <ol class="space-y-2 list-decimal list-inside">
+      <li>Quelles masses vas-tu utiliser pour équilibrer la balance ?</li>
+      <li>Comment sauras-tu que la balance est en équilibre ?</li>
+    </ol>
+  </div>
+</div>`,
+    musicUrl: "/lovable-uploads/balance-lesson-music.mp3"
   },
 
   "dimensions-solides": {
@@ -26,9 +212,204 @@ export const sciencesLessons7AF: Record<string, StaticLessonContent> = {
 • Calculer la surface et le volume d'un solide
 • Mesurer un volume de forme non géométrique par la méthode de l'immersion
 • Vérifier l'identité des résultats de deux méthodes différentes de mesure d'un volume`,
-    introduction: `[Contenu à ajouter]`,
-    contenu: `[Contenu à ajouter]`,
-    exemplesExercices: `[Contenu à ajouter]`
+    introduction: `<div class="space-y-6">
+  <p class="text-lg leading-relaxed">
+    Mesurer et calculer les dimensions des solides est une compétence fondamentale en sciences et en mathématiques.
+    Ces techniques sont utilisées dans de nombreux domaines : construction, design, médecine, et bien plus !
+  </p>
+  <div class="bg-primary/5 border-l-4 border-primary p-4 rounded-r">
+    <p class="font-semibold text-primary mb-2">📐 Le saviez-vous ?</p>
+    <p>Les pyramides d'Égypte ont été construites avec une précision extraordinaire grâce à des techniques
+    de mesure très avancées pour l'époque !</p>
+  </div>
+  
+  <div class="bg-gradient-to-r from-primary/10 to-secondary/10 p-6 rounded-xl">
+    <h3 class="text-xl font-bold mb-4 flex items-center gap-2">
+      <span class="text-2xl">🎯</span>
+      Objectifs de la leçon
+    </h3>
+    <ul class="space-y-2">
+      <li class="flex items-start gap-2">
+        <span class="text-primary shrink-0 mt-1">✓</span>
+        <span>Mesurer les dimensions linéaires d'un solide de forme géométrique</span>
+      </li>
+      <li class="flex items-start gap-2">
+        <span class="text-primary shrink-0 mt-1">✓</span>
+        <span>Calculer la surface et le volume d'un solide</span>
+      </li>
+      <li class="flex items-start gap-2">
+        <span class="text-primary shrink-0 mt-1">✓</span>
+        <span>Mesurer un volume de forme non géométrique par la méthode de l'immersion</span>
+      </li>
+      <li class="flex items-start gap-2">
+        <span class="text-primary shrink-0 mt-1">✓</span>
+        <span>Vérifier l'identité des résultats de deux méthodes différentes</span>
+      </li>
+    </ul>
+  </div>
+</div>`,
+    contenu: `<div class="space-y-8">
+  <section>
+    <h2 class="text-2xl font-bold text-primary mb-4">📏 Les Dimensions Linéaires</h2>
+    <div class="bg-gradient-to-r from-blue-50 to-cyan-50 dark:from-blue-950/30 dark:to-cyan-950/30 p-6 rounded-lg border-2 border-blue-200 dark:border-blue-800">
+      <p class="leading-relaxed mb-4">
+        Les <strong>dimensions linéaires</strong> sont les mesures de longueur, largeur et hauteur d'un objet.
+        On les mesure avec une règle, un mètre ruban ou un pied à coulisse.
+      </p>
+      <div class="grid md:grid-cols-3 gap-4 mt-4">
+        <div class="bg-white/70 dark:bg-black/30 p-4 rounded-lg">
+          <h4 class="font-bold text-blue-600 dark:text-blue-400 mb-2">Longueur (L)</h4>
+          <p class="text-sm">La plus grande dimension horizontale</p>
+        </div>
+        <div class="bg-white/70 dark:bg-black/30 p-4 rounded-lg">
+          <h4 class="font-bold text-blue-600 dark:text-blue-400 mb-2">Largeur (l)</h4>
+          <p class="text-sm">La dimension horizontale perpendiculaire à la longueur</p>
+        </div>
+        <div class="bg-white/70 dark:bg-black/30 p-4 rounded-lg">
+          <h4 class="font-bold text-blue-600 dark:text-blue-400 mb-2">Hauteur (h)</h4>
+          <p class="text-sm">La dimension verticale</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2 class="text-2xl font-bold text-primary mb-4">📦 Calcul de Surface et Volume</h2>
+    
+    <div class="space-y-6">
+      <div class="bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-950/30 dark:to-pink-950/30 p-6 rounded-lg border-2 border-purple-200 dark:border-purple-800">
+        <h3 class="text-xl font-bold text-purple-700 dark:text-purple-300 mb-4">Parallélépipède Rectangle (Boîte) 📦</h3>
+        <div class="bg-white/70 dark:bg-black/30 p-4 rounded-lg space-y-3">
+          <div>
+            <p class="font-semibold mb-1">Surface totale :</p>
+            <p class="text-lg font-mono bg-purple-100 dark:bg-purple-900/50 p-2 rounded">S = 2(L×l + L×h + l×h)</p>
+          </div>
+          <div>
+            <p class="font-semibold mb-1">Volume :</p>
+            <p class="text-lg font-mono bg-purple-100 dark:bg-purple-900/50 p-2 rounded">V = L × l × h</p>
+          </div>
+          <p class="text-sm text-muted-foreground">Unités : Surface en cm² ou m², Volume en cm³ ou m³</p>
+        </div>
+      </div>
+
+      <div class="bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-950/30 dark:to-emerald-950/30 p-6 rounded-lg border-2 border-green-200 dark:border-green-800">
+        <h3 class="text-xl font-bold text-green-700 dark:text-green-300 mb-4">Cube 🎲</h3>
+        <div class="bg-white/70 dark:bg-black/30 p-4 rounded-lg space-y-3">
+          <div>
+            <p class="font-semibold mb-1">Surface totale :</p>
+            <p class="text-lg font-mono bg-green-100 dark:bg-green-900/50 p-2 rounded">S = 6 × côté²</p>
+          </div>
+          <div>
+            <p class="font-semibold mb-1">Volume :</p>
+            <p class="text-lg font-mono bg-green-100 dark:bg-green-900/50 p-2 rounded">V = côté³</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="bg-gradient-to-r from-orange-50 to-yellow-50 dark:from-orange-950/30 dark:to-yellow-950/30 p-6 rounded-lg border-2 border-orange-200 dark:border-orange-800">
+        <h3 class="text-xl font-bold text-orange-700 dark:text-orange-300 mb-4">Cylindre 🥫</h3>
+        <div class="bg-white/70 dark:bg-black/30 p-4 rounded-lg space-y-3">
+          <div>
+            <p class="font-semibold mb-1">Surface latérale :</p>
+            <p class="text-lg font-mono bg-orange-100 dark:bg-orange-900/50 p-2 rounded">S = 2πrh</p>
+          </div>
+          <div>
+            <p class="font-semibold mb-1">Volume :</p>
+            <p class="text-lg font-mono bg-orange-100 dark:bg-orange-900/50 p-2 rounded">V = πr²h</p>
+            <p class="text-sm mt-1">où r = rayon de la base, h = hauteur, π ≈ 3,14</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="bg-gradient-to-br from-cyan-50 to-blue-50 dark:from-cyan-950/20 dark:to-blue-950/20 p-6 rounded-xl border-2 border-cyan-200 dark:border-cyan-800">
+    <h2 class="text-2xl font-bold text-cyan-800 dark:text-cyan-200 mb-4">💧 Méthode de l'Immersion</h2>
+    <p class="mb-4">Pour mesurer le volume d'un objet de forme irrégulière (pierre, fruit, etc.), on utilise la <strong>méthode de l'immersion</strong> :</p>
+    
+    <div class="space-y-4">
+      <div class="bg-white/70 dark:bg-gray-800/70 p-4 rounded-lg border-l-4 border-cyan-500">
+        <h4 class="font-bold mb-2">Étape 1 : Mesure initiale</h4>
+        <p class="text-sm">Remplis une éprouvette graduée d'eau. Note le volume V₁</p>
+      </div>
+      <div class="bg-white/70 dark:bg-gray-800/70 p-4 rounded-lg border-l-4 border-blue-500">
+        <h4 class="font-bold mb-2">Étape 2 : Immersion</h4>
+        <p class="text-sm">Plonge doucement l'objet dans l'eau. L'eau monte.</p>
+      </div>
+      <div class="bg-white/70 dark:bg-gray-800/70 p-4 rounded-lg border-l-4 border-purple-500">
+        <h4 class="font-bold mb-2">Étape 3 : Mesure finale</h4>
+        <p class="text-sm">Note le nouveau volume V₂</p>
+      </div>
+      <div class="bg-gradient-to-r from-cyan-100 to-blue-100 dark:from-cyan-900/50 dark:to-blue-900/50 p-4 rounded-lg">
+        <h4 class="font-bold mb-2">Étape 4 : Calcul</h4>
+        <p class="text-lg font-mono">Volume de l'objet = V₂ - V₁</p>
+      </div>
+    </div>
+    
+    <div class="mt-4 p-3 bg-cyan-100 dark:bg-cyan-900/40 rounded">
+      <p class="font-semibold text-sm mb-1">💡 Principe :</p>
+      <p class="text-sm">L'objet déplace un volume d'eau égal à son propre volume. Cette découverte est attribuée à Archimède !</p>
+    </div>
+  </section>
+
+  <section>
+    <h2 class="text-2xl font-bold text-primary mb-4">✅ Vérification des Résultats</h2>
+    <div class="bg-yellow-50 dark:bg-yellow-900/20 p-6 rounded-lg border-2 border-yellow-300 dark:border-yellow-700">
+      <p class="mb-4">Pour vérifier tes mesures, tu peux :</p>
+      <ol class="space-y-3 list-decimal list-inside">
+        <li><strong>Comparer deux méthodes :</strong> Si tu mesures le volume d'un cube, calcule-le avec la formule ET mesure-le par immersion. Les résultats doivent être similaires.</li>
+        <li><strong>Répéter la mesure :</strong> Fais plusieurs mesures et calcule la moyenne.</li>
+        <li><strong>Vérifier la précision :</strong> Utilise des instruments bien calibrés.</li>
+        <li><strong>Respecter les unités :</strong> Assure-toi d'utiliser les mêmes unités partout.</li>
+      </ol>
+      <div class="mt-4 p-3 bg-yellow-100 dark:bg-yellow-900/40 rounded">
+        <p class="font-semibold text-sm">⚠️ Tolérance :</p>
+        <p class="text-sm">Une petite différence (< 5%) entre les deux méthodes est normale à cause des erreurs de mesure.</p>
+      </div>
+    </div>
+  </section>
+</div>`,
+    exemplesExercices: `<div class="space-y-6">
+  <div class="bg-primary/5 p-6 rounded-lg border-2 border-primary/20">
+    <h3 class="text-xl font-bold text-primary mb-4">📝 Exercice 1 : Calcul de Volume</h3>
+    <p class="mb-4">Une boîte a les dimensions suivantes : L = 15 cm, l = 10 cm, h = 8 cm</p>
+    <ol class="space-y-2 list-decimal list-inside">
+      <li>Calcule le volume de la boîte</li>
+      <li>Si cette boîte est plongée dans l'eau, de combien d'eau sera-t-elle déplacée ?</li>
+    </ol>
+  </div>
+
+  <div class="bg-accent/5 p-6 rounded-lg border-2 border-accent/20">
+    <h3 class="text-xl font-bold text-accent mb-4">📝 Exercice 2 : Méthode de l'Immersion</h3>
+    <p class="mb-4">On verse 200 mL d'eau dans une éprouvette graduée. On y plonge une pierre. Le niveau monte à 275 mL.</p>
+    <ol class="space-y-2 list-decimal list-inside">
+      <li>Quel est le volume de la pierre ?</li>
+      <li>Si on retire la pierre, quel sera le niveau d'eau ?</li>
+    </ol>
+  </div>
+
+  <div class="bg-secondary/5 p-6 rounded-lg border-2 border-secondary/20">
+    <h3 class="text-xl font-bold text-secondary mb-4">📝 Exercice 3 : Cube</h3>
+    <p class="mb-4">Un cube a un côté de 5 cm.</p>
+    <ol class="space-y-2 list-decimal list-inside">
+      <li>Calcule son volume avec la formule</li>
+      <li>Si on le plonge dans 300 mL d'eau, quel sera le nouveau niveau ?</li>
+      <li>Est-ce que les deux méthodes donnent le même résultat ?</li>
+    </ol>
+    <p class="text-sm text-muted-foreground mt-3">Rappel : 1 cm³ = 1 mL</p>
+  </div>
+
+  <div class="bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-950/20 dark:to-pink-950/20 p-6 rounded-lg border-2 border-purple-200 dark:border-purple-800">
+    <h3 class="text-xl font-bold text-purple-700 dark:text-purple-300 mb-4">📝 Exercice 4 : Application</h3>
+    <p class="mb-4">Tu veux mesurer le volume d'une petite figurine en plastique de forme irrégulière.</p>
+    <ol class="space-y-3 list-decimal list-inside">
+      <li>Quelle méthode vas-tu utiliser et pourquoi ?</li>
+      <li>Décris les étapes de ta mesure</li>
+      <li>Quelles précautions dois-tu prendre ?</li>
+    </ol>
+  </div>
+</div>`,
+    musicUrl: "/lovable-uploads/dimensions-lesson-music.mp3"
   },
 
   "masse-volumique": {
@@ -36,9 +417,252 @@ export const sciencesLessons7AF: Record<string, StaticLessonContent> = {
 • Définir et calculer la masse volumique d'un solide comme le rapport entre la masse et le volume
 • Déterminer expérimentalement la masse volumique d'un liquide
 • Différencier les liquides selon leur masse volumique`,
-    introduction: `[Contenu à ajouter]`,
-    contenu: `[Contenu à ajouter]`,
-    exemplesExercices: `[Contenu à ajouter]`
+    introduction: `<div class="space-y-6">
+  <p class="text-lg leading-relaxed">
+    Pourquoi un glaçon flotte-t-il sur l'eau ? Pourquoi le fer coule-t-il ? La réponse est la <strong>masse volumique</strong> !
+    C'est une propriété fondamentale qui caractérise chaque matériau.
+  </p>
+  <div class="bg-primary/5 border-l-4 border-primary p-4 rounded-r">
+    <p class="font-semibold text-primary mb-2">🔬 Le saviez-vous ?</p>
+    <p>L'or a une masse volumique très élevée (19,3 g/cm³). C'est pourquoi un petit cube d'or de 1 cm de côté
+    pèse presque 20 grammes !</p>
+  </div>
+  
+  <div class="bg-gradient-to-r from-primary/10 to-secondary/10 p-6 rounded-xl">
+    <h3 class="text-xl font-bold mb-4 flex items-center gap-2">
+      <span class="text-2xl">🎯</span>
+      Objectifs de la leçon
+    </h3>
+    <ul class="space-y-2">
+      <li class="flex items-start gap-2">
+        <span class="text-primary shrink-0 mt-1">✓</span>
+        <span>Définir et calculer la masse volumique d'un solide</span>
+      </li>
+      <li class="flex items-start gap-2">
+        <span class="text-primary shrink-0 mt-1">✓</span>
+        <span>Déterminer expérimentalement la masse volumique d'un liquide</span>
+      </li>
+      <li class="flex items-start gap-2">
+        <span class="text-primary shrink-0 mt-1">✓</span>
+        <span>Différencier les liquides selon leur masse volumique</span>
+      </li>
+    </ul>
+  </div>
+</div>`,
+    contenu: `<div class="space-y-8">
+  <section>
+    <h2 class="text-2xl font-bold text-primary mb-4">📖 Définition de la Masse Volumique</h2>
+    <div class="bg-gradient-to-r from-blue-50 to-cyan-50 dark:from-blue-950/30 dark:to-cyan-950/30 p-6 rounded-lg border-2 border-blue-200 dark:border-blue-800">
+      <p class="leading-relaxed mb-4">
+        La <strong>masse volumique</strong> (symbole : ρ "rho") est la masse contenue dans une unité de volume.
+        Elle indique à quel point un matériau est "compact" ou "dense".
+      </p>
+      <div class="bg-gradient-to-r from-cyan-100 to-blue-100 dark:from-cyan-900/50 dark:to-blue-900/50 p-4 rounded-lg mb-4">
+        <p class="font-bold text-lg mb-2">Formule :</p>
+        <p class="text-2xl font-mono text-center p-3 bg-white/70 dark:bg-black/30 rounded">ρ = m / V</p>
+        <p class="text-sm mt-2">où m = masse (g ou kg) et V = volume (cm³ ou m³)</p>
+      </div>
+      <div class="bg-white/70 dark:bg-black/30 p-4 rounded-lg">
+        <h4 class="font-bold mb-2">Unités courantes :</h4>
+        <ul class="space-y-1">
+          <li>• g/cm³ (grammes par centimètre cube)</li>
+          <li>• kg/m³ (kilogrammes par mètre cube)</li>
+          <li>• g/L (grammes par litre) pour les liquides</li>
+        </ul>
+        <p class="text-sm mt-2 text-muted-foreground">Conversion : 1 g/cm³ = 1000 kg/m³</p>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2 class="text-2xl font-bold text-primary mb-4">🧪 Calcul de la Masse Volumique d'un Solide</h2>
+    
+    <div class="space-y-4">
+      <div class="bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-950/30 dark:to-pink-950/30 p-5 rounded-lg border-l-4 border-purple-500">
+        <h4 class="font-bold text-purple-700 dark:text-purple-300 mb-2">Étape 1 : Mesurer la masse</h4>
+        <p class="text-sm">Utilise une balance pour mesurer la masse (m) du solide en grammes</p>
+      </div>
+      <div class="bg-gradient-to-r from-blue-50 to-cyan-50 dark:from-blue-950/30 dark:to-cyan-950/30 p-5 rounded-lg border-l-4 border-blue-500">
+        <h4 class="font-bold text-blue-700 dark:text-blue-300 mb-2">Étape 2 : Mesurer le volume</h4>
+        <p class="text-sm">Mesure le volume (V) soit par calcul (forme géométrique) soit par immersion en cm³</p>
+      </div>
+      <div class="bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-950/30 dark:to-emerald-950/30 p-5 rounded-lg border-l-4 border-green-500">
+        <h4 class="font-bold text-green-700 dark:text-green-300 mb-2">Étape 3 : Calculer</h4>
+        <p class="text-sm">Applique la formule : ρ = m / V</p>
+      </div>
+    </div>
+
+    <div class="mt-6 bg-yellow-50 dark:bg-yellow-900/20 p-6 rounded-lg border-2 border-yellow-300 dark:border-yellow-700">
+      <h4 class="font-bold text-yellow-800 dark:text-yellow-200 mb-3">💡 Exemple :</h4>
+      <p class="mb-2">Un cube de fer a :</p>
+      <ul class="list-disc list-inside space-y-1 mb-3">
+        <li>Masse = 78,7 g</li>
+        <li>Côté = 2 cm, donc Volume = 2³ = 8 cm³</li>
+      </ul>
+      <p class="font-mono bg-yellow-100 dark:bg-yellow-900/40 p-3 rounded">ρ = 78,7 g / 8 cm³ = 9,84 g/cm³</p>
+      <p class="text-sm mt-2">Le fer a donc une masse volumique d'environ 9,84 g/cm³</p>
+    </div>
+  </section>
+
+  <section>
+    <h2 class="text-2xl font-bold text-primary mb-4">💧 Masse Volumique des Liquides</h2>
+    <div class="bg-gradient-to-r from-cyan-50 to-blue-50 dark:from-cyan-950/30 dark:to-blue-950/30 p-6 rounded-lg border-2 border-cyan-200 dark:border-cyan-800">
+      <h4 class="font-bold mb-4">Méthode expérimentale :</h4>
+      <ol class="space-y-3 list-decimal list-inside mb-4">
+        <li>Pèse un bécher vide (m₁)</li>
+        <li>Verse un volume précis de liquide, par exemple 100 mL (V)</li>
+        <li>Pèse le bécher + liquide (m₂)</li>
+        <li>Calcule la masse du liquide : m = m₂ - m₁</li>
+        <li>Calcule la masse volumique : ρ = m / V</li>
+      </ol>
+      
+      <div class="bg-white/70 dark:bg-black/30 p-4 rounded-lg">
+        <h4 class="font-bold mb-3">Masse volumique de liquides courants :</h4>
+        <div class="overflow-x-auto">
+          <table class="w-full text-sm">
+            <thead class="bg-cyan-100 dark:bg-cyan-900/50">
+              <tr>
+                <th class="p-2 text-left">Liquide</th>
+                <th class="p-2 text-right">Masse volumique (g/cm³)</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr class="border-b border-gray-200 dark:border-gray-700">
+                <td class="p-2">Eau pure</td>
+                <td class="p-2 text-right font-mono">1,00</td>
+              </tr>
+              <tr class="border-b border-gray-200 dark:border-gray-700">
+                <td class="p-2">Eau salée</td>
+                <td class="p-2 text-right font-mono">1,03</td>
+              </tr>
+              <tr class="border-b border-gray-200 dark:border-gray-700">
+                <td class="p-2">Huile</td>
+                <td class="p-2 text-right font-mono">0,92</td>
+              </tr>
+              <tr class="border-b border-gray-200 dark:border-gray-700">
+                <td class="p-2">Lait</td>
+                <td class="p-2 text-right font-mono">1,03</td>
+              </tr>
+              <tr class="border-b border-gray-200 dark:border-gray-700">
+                <td class="p-2">Alcool (éthanol)</td>
+                <td class="p-2 text-right font-mono">0,79</td>
+              </tr>
+              <tr>
+                <td class="p-2">Mercure</td>
+                <td class="p-2 text-right font-mono">13,6</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="bg-gradient-to-br from-orange-50 to-red-50 dark:from-orange-950/20 dark:to-red-950/20 p-6 rounded-xl border-2 border-orange-200 dark:border-orange-800">
+    <h2 class="text-2xl font-bold text-orange-800 dark:text-orange-200 mb-4">⚓ Flottaison et Masse Volumique</h2>
+    <div class="space-y-4">
+      <div class="bg-white/70 dark:bg-gray-800/70 p-4 rounded-lg">
+        <h4 class="font-bold text-green-600 dark:text-green-400 mb-2">💡 Règle de flottaison :</h4>
+        <ul class="space-y-2">
+          <li>• Si ρ_objet < ρ_liquide → l'objet <strong>flotte</strong></li>
+          <li>• Si ρ_objet = ρ_liquide → l'objet reste en <strong>suspension</strong></li>
+          <li>• Si ρ_objet > ρ_liquide → l'objet <strong>coule</strong></li>
+        </ul>
+      </div>
+      
+      <div class="bg-white/70 dark:bg-gray-800/70 p-4 rounded-lg">
+        <h4 class="font-bold mb-2">Exemples :</h4>
+        <ul class="space-y-2 text-sm">
+          <li>✓ L'huile flotte sur l'eau car ρ_huile (0,92) < ρ_eau (1,00)</li>
+          <li>✓ Un glaçon flotte car ρ_glace (0,92) < ρ_eau (1,00)</li>
+          <li>✓ Le fer coule car ρ_fer (7,87) > ρ_eau (1,00)</li>
+          <li>✓ Le bois flotte généralement car ρ_bois (0,6-0,8) < ρ_eau (1,00)</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2 class="text-2xl font-bold text-primary mb-4">🎯 Applications Pratiques</h2>
+    <div class="grid md:grid-cols-3 gap-4">
+      <div class="bg-purple-50 dark:bg-purple-950/30 p-4 rounded-lg">
+        <div class="text-3xl mb-2">🚢</div>
+        <h4 class="font-bold mb-2">Navigation</h4>
+        <p class="text-sm">Les bateaux flottent grâce à leur forme qui diminue leur masse volumique moyenne</p>
+      </div>
+      <div class="bg-blue-50 dark:bg-blue-950/30 p-4 rounded-lg">
+        <div class="text-3xl mb-2">🏗️</div>
+        <h4 class="font-bold mb-2">Construction</h4>
+        <p class="text-sm">Choix des matériaux selon leur masse volumique et résistance</p>
+      </div>
+      <div class="bg-green-50 dark:bg-green-950/30 p-4 rounded-lg">
+        <div class="text-3xl mb-2">💎</div>
+        <h4 class="font-bold mb-2">Identification</h4>
+        <p class="text-sm">Distinguer les matériaux (or vrai/faux) par leur masse volumique</p>
+      </div>
+    </div>
+  </section>
+</div>`,
+    exemplesExercices: `<div class="space-y-6">
+  <div class="bg-primary/5 p-6 rounded-lg border-2 border-primary/20">
+    <h3 class="text-xl font-bold text-primary mb-4">📝 Exercice 1 : Calcul Direct</h3>
+    <p class="mb-4">Un morceau d'aluminium a une masse de 54 g et un volume de 20 cm³.</p>
+    <ol class="space-y-2 list-decimal list-inside">
+      <li>Calcule la masse volumique de l'aluminium</li>
+      <li>Exprime le résultat en g/cm³</li>
+      <li>L'aluminium flottera-t-il sur l'eau ? Justifie ta réponse</li>
+    </ol>
+  </div>
+
+  <div class="bg-accent/5 p-6 rounded-lg border-2 border-accent/20">
+    <h3 class="text-xl font-bold text-accent mb-4">📝 Exercice 2 : Mesure de Liquide</h3>
+    <p class="mb-4">Tu veux déterminer la masse volumique d'une huile. Voici tes mesures :</p>
+    <ul class="list-disc list-inside mb-4 space-y-1">
+      <li>Masse du bécher vide : 120 g</li>
+      <li>Masse du bécher + 100 mL d'huile : 212 g</li>
+    </ul>
+    <ol class="space-y-2 list-decimal list-inside">
+      <li>Calcule la masse de l'huile</li>
+      <li>Calcule la masse volumique de l'huile</li>
+      <li>Cette huile flottera-t-elle sur l'eau ?</li>
+    </ol>
+  </div>
+
+  <div class="bg-secondary/5 p-6 rounded-lg border-2 border-secondary/20">
+    <h3 class="text-xl font-bold text-secondary mb-4">📝 Exercice 3 : Comparaison</h3>
+    <p class="mb-4">On te donne les masses volumiques suivantes :</p>
+    <ul class="list-disc list-inside mb-4">
+      <li>Bois de pin : 0,55 g/cm³</li>
+      <li>Glace : 0,92 g/cm³</li>
+      <li>Eau : 1,00 g/cm³</li>
+      <li>Fer : 7,87 g/cm³</li>
+      <li>Mercure : 13,6 g/cm³</li>
+    </ul>
+    <ol class="space-y-2 list-decimal list-inside">
+      <li>Classe ces matériaux du moins dense au plus dense</li>
+      <li>Lesquels flotteront sur l'eau ?</li>
+      <li>Lesquels couleront dans le mercure ?</li>
+    </ol>
+  </div>
+
+  <div class="bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-950/20 dark:to-pink-950/20 p-6 rounded-lg border-2 border-purple-200 dark:border-purple-800">
+    <h3 class="text-xl font-bold text-purple-700 dark:text-purple-300 mb-4">📝 Exercice 4 : Problème Complexe</h3>
+    <p class="mb-4">Un cube de métal de 3 cm de côté a une masse de 243 g.</p>
+    <ol class="space-y-2 list-decimal list-inside">
+      <li>Calcule le volume du cube</li>
+      <li>Calcule la masse volumique du métal</li>
+      <li>En comparant avec les valeurs connues, de quel métal s'agit-il probablement ?
+        <ul class="ml-6 mt-2 text-sm">
+          <li>- Aluminium : 2,7 g/cm³</li>
+          <li>- Fer : 7,87 g/cm³</li>
+          <li>- Cuivre : 8,96 g/cm³</li>
+          <li>- Plomb : 11,3 g/cm³</li>
+        </ul>
+      </li>
+    </ol>
+  </div>
+</div>`,
+    musicUrl: "/lovable-uploads/masse-volumique-lesson-music.mp3"
   },
 
   "proprietes-gaz": {
