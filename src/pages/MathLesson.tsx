@@ -30,12 +30,30 @@ import { QuizGame } from "@/components/math-activities/QuizGame";
 import { DragDropGame } from "@/components/math-activities/DragDropGame";
 import { SpeedCalcGame } from "@/components/math-activities/SpeedCalcGame";
 import { MatchingGame } from "@/components/math-activities/MatchingGame";
-import { 
-  nombresEntiersQuiz, 
-  nombresEntiersMatching, 
-  nombresEntiersDragDrop,
+import {
+  nombresRelatifsQuiz,
+  nombresRelatifsMatching,
+  nombresRelatifsDragDrop,
+  fractionsQuiz,
+  fractionsMatching,
   equationsQuiz,
-  equationsMatching 
+  equationsMatching,
+  proportionnaliteQuiz,
+  proportionnaliteMatching,
+  statistiquesQuiz,
+  statistiquesMatching,
+  numerationBinaireQuiz,
+  numerationBinaireMatching,
+  polygonesQuiz,
+  polygonesMatching,
+  divisibiliteQuiz,
+  divisibiliteMatching,
+  ensemblesQuiz,
+  ensemblesMatching,
+  plansDroitesQuiz,
+  plansDroitesMatching,
+  nombresNaturelsQuiz,
+  nombresNaturelsMatching
 } from "@/data/mathActivities";
 import { mathLessons } from "@/data/mathLessons";
 import { YouTubeVideoSection } from "@/components/YouTubeVideoSection";
@@ -409,24 +427,83 @@ const MathLesson = () => {
   };
 
   const getActivityData = () => {
-    if (topicId === "nombres-entiers") {
-      return {
-        quiz: nombresEntiersQuiz,
-        matching: nombresEntiersMatching,
-        dragDrop: nombresEntiersDragDrop
-      };
-    } else if (topicId === "equations-second-degre") {
-      return {
-        quiz: equationsQuiz,
-        matching: equationsMatching,
-        dragDrop: [-5, -2, 0, 3, 8]
-      };
+    // Map topic IDs to their corresponding quiz data
+    switch(topicId) {
+      case "nombres-entiers":
+      case "entiers-relatifs":
+        return {
+          quiz: nombresRelatifsQuiz,
+          matching: nombresRelatifsMatching,
+          dragDrop: nombresRelatifsDragDrop
+        };
+      case "fractions":
+        return {
+          quiz: fractionsQuiz,
+          matching: fractionsMatching,
+          dragDrop: [0.25, 0.5, 0.75, 1, 1.5, 2]
+        };
+      case "equations-second-degre":
+        return {
+          quiz: equationsQuiz,
+          matching: equationsMatching,
+          dragDrop: [-5, -2, 0, 3, 8]
+        };
+      case "proportionnalite":
+        return {
+          quiz: proportionnaliteQuiz,
+          matching: proportionnaliteMatching,
+          dragDrop: [10, 25, 50, 75, 100]
+        };
+      case "statistiques":
+        return {
+          quiz: statistiquesQuiz,
+          matching: statistiquesMatching,
+          dragDrop: [5, 10, 12, 15, 20]
+        };
+      case "numeration-binaire":
+        return {
+          quiz: numerationBinaireQuiz,
+          matching: numerationBinaireMatching,
+          dragDrop: [1, 10, 11, 100, 101, 110]
+        };
+      case "polygones":
+        return {
+          quiz: polygonesQuiz,
+          matching: polygonesMatching,
+          dragDrop: [3, 4, 5, 6, 8]
+        };
+      case "divisibilite":
+        return {
+          quiz: divisibiliteQuiz,
+          matching: divisibiliteMatching,
+          dragDrop: [2, 3, 5, 9, 10]
+        };
+      case "ensembles":
+        return {
+          quiz: ensemblesQuiz,
+          matching: ensemblesMatching,
+          dragDrop: [1, 2, 3, 4, 5]
+        };
+      case "plans-droites":
+        return {
+          quiz: plansDroitesQuiz,
+          matching: plansDroitesMatching,
+          dragDrop: [90, 180, 45, 60, 30]
+        };
+      case "nombres-naturels":
+        return {
+          quiz: nombresNaturelsQuiz,
+          matching: nombresNaturelsMatching,
+          dragDrop: [8, 16, 25, 50, 100]
+        };
+      default:
+        // Default fallback
+        return {
+          quiz: nombresRelatifsQuiz,
+          matching: nombresRelatifsMatching,
+          dragDrop: nombresRelatifsDragDrop
+        };
     }
-    return {
-      quiz: nombresEntiersQuiz,
-      matching: nombresEntiersMatching,
-      dragDrop: nombresEntiersDragDrop
-    };
   };
 
   const activityData = getActivityData();

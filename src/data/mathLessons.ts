@@ -5866,16 +5866,16 @@ export const mathLessons7AF: Record<string, StaticLessonContent> = {
         
         <ul class="space-y-2 mt-4">
           <li class="flex items-start gap-2">
-            <span class="text-primary font-bold">→</span>
+            <span class="text-primary font-bold shrink-0">→</span>
             <span><span class="font-semibold">Axe horizontal (x)</span> : axe des abscisses</span>
           </li>
           <li class="flex items-start gap-2">
-            <span class="text-accent font-bold">↑</span>
+            <span class="text-accent font-bold shrink-0">↑</span>
             <span><span class="font-semibold">Axe vertical (y)</span> : axe des ordonnées</span>
           </li>
           <li class="flex items-start gap-2">
-            <span class="text-red-500 font-bold">O</span>
-            <span><span class="font-semibold">Origine</span> : point de coordonnées (0;0)</span>
+            <span class="text-red-500 font-bold shrink-0">o</span>
+            <span><span class="font-semibold">Origine</span> : point de coordonnées (0,0)</span>
           </li>
         </ul>
       </div>
