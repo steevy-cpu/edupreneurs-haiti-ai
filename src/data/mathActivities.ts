@@ -1,5 +1,326 @@
 // Quiz questions for different math topics
 
+// ===== ENSEMBLES (SETS) - New from MENFP =====
+export const ensemblesQuiz = [
+  {
+    question: "Que signifie le symbole ∈ ?",
+    options: ["Appartient à", "N'appartient pas à", "Est inclus dans", "Est égal à"],
+    correctAnswer: 0,
+    explanation: "Le symbole ∈ signifie 'appartient à'. Exemple : 3 ∈ {1, 2, 3} signifie '3 appartient à l'ensemble'"
+  },
+  {
+    question: "Si A = {1, 2, 3} et B = {2, 3, 4, 5}, que vaut A ∪ B ?",
+    options: ["{2, 3}", "{1, 2, 3, 4, 5}", "{1, 4, 5}", "{1, 2, 3, 2, 3, 4, 5}"],
+    correctAnswer: 1,
+    explanation: "A ∪ B (la réunion) est l'ensemble de tous les éléments qui sont dans A ou dans B : {1, 2, 3, 4, 5}"
+  },
+  {
+    question: "Si A = {1, 2, 3, 4} et B = {3, 4, 5, 6}, que vaut A ∩ B ?",
+    options: ["{3, 4}", "{1, 2, 5, 6}", "{1, 2, 3, 4, 5, 6}", "∅"],
+    correctAnswer: 0,
+    explanation: "A ∩ B (l'intersection) contient les éléments qui sont à la fois dans A et dans B : {3, 4}"
+  },
+  {
+    question: "Si E = {1, 2, 3, 4, 5} et A = {1, 3, 5}, que vaut Ā (complément de A) ?",
+    options: ["{2, 4}", "{1, 3, 5}", "{1, 2, 3, 4, 5}", "∅"],
+    correctAnswer: 0,
+    explanation: "Le complément Ā contient tous les éléments de E qui ne sont pas dans A : {2, 4}"
+  },
+  {
+    question: "Que signifie A ⊂ B ?",
+    options: ["A est inclus dans B", "A est égal à B", "A et B sont disjoints", "B est inclus dans A"],
+    correctAnswer: 0,
+    explanation: "A ⊂ B signifie que tous les éléments de A sont aussi dans B (A est un sous-ensemble de B)"
+  },
+  {
+    question: "L'ensemble vide se note :",
+    options: ["∅ ou { }", "{0}", "Ø", "{}"],
+    correctAnswer: 0,
+    explanation: "L'ensemble vide (sans aucun élément) se note ∅ ou { }"
+  },
+  {
+    question: "Si A = {2, 4} et B = {1, 2, 3, 4, 5}, alors :",
+    options: ["A ⊂ B", "B ⊂ A", "A = B", "A et B sont disjoints"],
+    correctAnswer: 0,
+    explanation: "Tous les éléments de A (2 et 4) sont dans B, donc A ⊂ B"
+  },
+  {
+    question: "Dans une classe, 20 élèves aiment le foot et 15 aiment le basket. 8 aiment les deux. Combien aiment au moins un sport ?",
+    options: ["27", "35", "28", "23"],
+    correctAnswer: 0,
+    explanation: "Utilise la formule : |F ∪ B| = |F| + |B| - |F ∩ B| = 20 + 15 - 8 = 27 élèves"
+  },
+  {
+    question: "Le lien logique 'ET' correspond à quelle opération ?",
+    options: ["Intersection (∩)", "Réunion (∪)", "Complément", "Inclusion"],
+    correctAnswer: 0,
+    explanation: "'x est dans A ET dans B' signifie x ∈ A ∩ B (intersection)"
+  },
+  {
+    question: "Si tous les éléments de A sont aussi dans B, on écrit :",
+    options: ["A ⊂ B", "A ∪ B", "A ∩ B", "Ā"],
+    correctAnswer: 0,
+    explanation: "Si tous les éléments de A sont dans B, alors A est inclus dans B, noté A ⊂ B"
+  }
+];
+
+export const ensemblesMatching = [
+  {
+    id: "1",
+    question: "A ∪ B",
+    answer: "Réunion"
+  },
+  {
+    id: "2",
+    question: "A ∩ B",
+    answer: "Intersection"
+  },
+  {
+    id: "3",
+    question: "∈",
+    answer: "Appartient à"
+  },
+  {
+    id: "4",
+    question: "⊂",
+    answer: "Inclus dans"
+  },
+  {
+    id: "5",
+    question: "Ā",
+    answer: "Complément"
+  },
+  {
+    id: "6",
+    question: "∅",
+    answer: "Ensemble vide"
+  },
+  {
+    id: "7",
+    question: "ET logique",
+    answer: "Intersection"
+  },
+  {
+    id: "8",
+    question: "OU logique",
+    answer: "Réunion"
+  }
+];
+
+// ===== PLANS ET DROITES (PLANES AND LINES) - New from MENFP =====
+export const plansDroitesQuiz = [
+  {
+    question: "Qu'est-ce qu'une droite ?",
+    options: ["Une ligne infinie dans les deux sens", "Une ligne qui s'arrête", "Un point", "Un cercle"],
+    correctAnswer: 0,
+    explanation: "Une droite est une ligne droite qui s'étend à l'infini dans les deux directions"
+  },
+  {
+    question: "Qu'est-ce qu'un segment ?",
+    options: ["Une portion de droite limitée par deux points", "Une droite infinie", "Un demi-plan", "Un point"],
+    correctAnswer: 0,
+    explanation: "Un segment [AB] est la portion de droite entre les points A et B, incluant ces points"
+  },
+  {
+    question: "Deux droites qui ne se coupent jamais sont :",
+    options: ["Parallèles", "Perpendiculaires", "Sécantes", "Confondues"],
+    correctAnswer: 0,
+    explanation: "Des droites parallèles ne se rencontrent jamais, même si on les prolonge à l'infini"
+  },
+  {
+    question: "Deux droites perpendiculaires forment un angle de :",
+    options: ["90°", "180°", "45°", "60°"],
+    correctAnswer: 0,
+    explanation: "Des droites perpendiculaires se coupent en formant un angle droit de 90°"
+  },
+  {
+    question: "La médiatrice d'un segment est :",
+    options: ["La droite perpendiculaire au segment en son milieu", "Le milieu du segment", "Une droite parallèle", "Un point"],
+    correctAnswer: 0,
+    explanation: "La médiatrice d'un segment [AB] est la droite perpendiculaire à [AB] passant par son milieu"
+  },
+  {
+    question: "Le milieu d'un segment [AB] :",
+    options: ["Partage le segment en deux parties égales", "Est à l'extrémité", "Est sur la médiatrice", "Est parallèle"],
+    correctAnswer: 0,
+    explanation: "Le milieu M d'un segment [AB] vérifie AM = MB (deux moitiés égales)"
+  },
+  {
+    question: "Trois points A, B, C sont alignés si :",
+    options: ["Ils sont sur une même droite", "Ils forment un triangle", "Ils sont perpendiculaires", "Ils sont parallèles"],
+    correctAnswer: 0,
+    explanation: "Des points alignés sont tous sur la même droite"
+  },
+  {
+    question: "Une demi-droite a :",
+    options: ["Une origine et s'étend à l'infini dans un sens", "Deux extrémités", "Pas d'origine", "Une longueur finie"],
+    correctAnswer: 0,
+    explanation: "Une demi-droite [AB) commence en A (origine) et passe par B pour s'étendre à l'infini"
+  },
+  {
+    question: "La distance entre deux points A et B est :",
+    options: ["La longueur du segment [AB]", "La droite (AB)", "Le milieu de [AB]", "Une perpendiculaire"],
+    correctAnswer: 0,
+    explanation: "La distance entre A et B est la longueur du segment [AB], notée AB"
+  },
+  {
+    question: "Deux droites sécantes :",
+    options: ["Se coupent en un point", "Ne se coupent jamais", "Sont confondues", "Sont parallèles"],
+    correctAnswer: 0,
+    explanation: "Des droites sécantes se croisent en un seul point"
+  }
+];
+
+export const plansDroitesMatching = [
+  {
+    id: "1",
+    question: "Droite infinie",
+    answer: "(AB)"
+  },
+  {
+    id: "2",
+    question: "Segment limité",
+    answer: "[AB]"
+  },
+  {
+    id: "3",
+    question: "Demi-droite",
+    answer: "[AB)"
+  },
+  {
+    id: "4",
+    question: "Ne se coupent jamais",
+    answer: "Parallèles"
+  },
+  {
+    id: "5",
+    question: "Angle de 90°",
+    answer: "Perpendiculaires"
+  },
+  {
+    id: "6",
+    question: "Milieu d'un segment",
+    answer: "Partage en 2 égales"
+  },
+  {
+    id: "7",
+    question: "Points sur même droite",
+    answer: "Alignés"
+  },
+  {
+    id: "8",
+    question: "Se croisent",
+    answer: "Sécantes"
+  }
+];
+
+// ===== NOMBRES NATURELS (NATURAL NUMBERS) - New from MENFP =====
+export const nombresNaturelsQuiz = [
+  {
+    question: "Calcule : 15 + 27 × 3",
+    options: ["96", "126", "45", "81"],
+    correctAnswer: 0,
+    explanation: "On fait d'abord la multiplication : 27 × 3 = 81, puis l'addition : 15 + 81 = 96"
+  },
+  {
+    question: "Quel est le résultat de 2³ ?",
+    options: ["8", "6", "9", "5"],
+    correctAnswer: 0,
+    explanation: "2³ = 2 × 2 × 2 = 8 (2 multiplié par lui-même 3 fois)"
+  },
+  {
+    question: "Calcule : (8 + 2) × 5",
+    options: ["50", "18", "40", "48"],
+    correctAnswer: 0,
+    explanation: "Les parenthèses en premier : 8 + 2 = 10, puis 10 × 5 = 50"
+  },
+  {
+    question: "Quelle est la règle de priorité correcte ?",
+    options: ["Parenthèses, Puissances, × et ÷, + et -", "+ et - d'abord", "De gauche à droite", "× et ÷ en dernier"],
+    correctAnswer: 0,
+    explanation: "PEMDAS : Parenthèses, Exposants (puissances), Multiplication/Division, Addition/Soustraction"
+  },
+  {
+    question: "Calcule : 100 ÷ 4 + 6",
+    options: ["31", "25", "10", "106"],
+    correctAnswer: 0,
+    explanation: "Division d'abord : 100 ÷ 4 = 25, puis addition : 25 + 6 = 31"
+  },
+  {
+    question: "Que vaut 5² × 2 ?",
+    options: ["50", "52", "100", "20"],
+    correctAnswer: 0,
+    explanation: "Puissance d'abord : 5² = 25, puis multiplication : 25 × 2 = 50"
+  },
+  {
+    question: "Simplifie : 12 + 8 - 5 + 3",
+    options: ["18", "28", "16", "15"],
+    correctAnswer: 0,
+    explanation: "De gauche à droite : 12 + 8 = 20, puis 20 - 5 = 15, puis 15 + 3 = 18"
+  },
+  {
+    question: "Calcule : 3 × (4 + 2) - 6",
+    options: ["12", "18", "6", "24"],
+    correctAnswer: 0,
+    explanation: "Parenthèses : 4 + 2 = 6, puis 3 × 6 = 18, enfin 18 - 6 = 12"
+  },
+  {
+    question: "Que vaut 10³ ?",
+    options: ["1000", "30", "100", "300"],
+    correctAnswer: 0,
+    explanation: "10³ = 10 × 10 × 10 = 1000"
+  },
+  {
+    question: "Calcule : 20 - 3 × 4",
+    options: ["8", "68", "80", "12"],
+    correctAnswer: 0,
+    explanation: "Multiplication d'abord : 3 × 4 = 12, puis soustraction : 20 - 12 = 8"
+  }
+];
+
+export const nombresNaturelsMatching = [
+  {
+    id: "1",
+    question: "2³",
+    answer: "8"
+  },
+  {
+    id: "2",
+    question: "5²",
+    answer: "25"
+  },
+  {
+    id: "3",
+    question: "10²",
+    answer: "100"
+  },
+  {
+    id: "4",
+    question: "3⁴",
+    answer: "81"
+  },
+  {
+    id: "5",
+    question: "4² + 3²",
+    answer: "25"
+  },
+  {
+    id: "6",
+    question: "(2+3) × 4",
+    answer: "20"
+  },
+  {
+    id: "7",
+    question: "20 ÷ 4 + 1",
+    answer: "6"
+  },
+  {
+    id: "8",
+    question: "2 × 3²",
+    answer: "18"
+  }
+];
+
 // ===== POLYGONES =====
 export const polygonesQuiz = [
   {

@@ -52,8 +52,41 @@ const MathCourse = () => {
     fetchUserGold();
   }, []);
 
-  // AF7 Mathematics Topics - MENFP Program
+  // AF7 Mathematics Topics - MENFP Program (Chronological Order)
   const topics: Topic[] = [
+    // December Week 1 - ENSEMBLES (NEW)
+    {
+      id: "ensembles",
+      title: "Ensembles",
+      description: "Vocabulaire, sous-ensembles, opérations (réunion, intersection, complément)",
+      progress: 0,
+      goldReward: 100,
+      isLocked: false,
+      isCompleted: false,
+      icon: "🔢"
+    },
+    // December Weeks 1-3 - PLANS ET DROITES (NEW)
+    {
+      id: "plans-droites",
+      title: "Plans et Droites",
+      description: "Caractéristiques, droites parallèles/perpendiculaires, médiatrice",
+      progress: 0,
+      goldReward: 110,
+      isLocked: false,
+      isCompleted: false,
+      icon: "📐"
+    },
+    // December Week 3 - NOMBRES NATURELS (NEW)
+    {
+      id: "nombres-naturels",
+      title: "Nombres Naturels",
+      description: "Opérations, priorités, chaines d'opérations, puissances entières",
+      progress: 0,
+      goldReward: 90,
+      isLocked: false,
+      isCompleted: false,
+      icon: "🔢"
+    },
     // Janvier - Semaine 2
     {
       id: "numeration-binaire",

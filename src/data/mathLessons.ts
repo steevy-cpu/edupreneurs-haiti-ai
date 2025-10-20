@@ -7,6 +7,1211 @@ export interface StaticLessonContent {
 
 // 7th Grade Math Lessons (AF7)
 export const mathLessons7AF: Record<string, StaticLessonContent> = {
+  // December Week 1 - ENSEMBLES (New - Missing from MENFP)
+  "ensembles": {
+    objectif: `À la fin de cette leçon, tu vas pouvoir:
+• Comprendre la notion d'ensemble et d'élément
+• Utiliser le vocabulaire des ensembles (appartient ∈, n'appartient pas ∉)
+• Identifier des sous-ensembles et utiliser l'inclusion (⊂)
+• Effectuer des opérations: réunion (∪), intersection (∩), complément (Ā)
+• Utiliser les liens logiques (et, ou, non, si...alors)`,
+
+    introduction: `<div class="space-y-4">
+  <p class="text-lg leading-relaxed">
+    <span class="font-semibold text-primary">Les ensembles sont partout autour de nous !</span> 
+    L'ensemble des élèves de ta classe, l'ensemble des fruits au marché de Croix-des-Bouquets, 
+    l'ensemble des nombres pairs... <span class="italic">Ce sont tous des ensembles !</span>
+  </p>
+  
+  <p class="text-lg leading-relaxed">
+    Un <span class="font-semibold text-accent">ensemble</span> est simplement une collection d'objets bien définis 
+    qu'on appelle des <span class="font-semibold text-accent">éléments</span>. 
+    Cette notion est fondamentale en mathématiques et te permettra de mieux organiser et manipuler l'information.
+  </p>
+
+  <div class="bg-gradient-to-r from-primary/10 to-accent/10 p-4 rounded-lg border-l-4 border-primary">
+    <p class="font-medium">💡 <span class="text-primary">Astuce :</span> Pense à un ensemble comme à un panier qui contient 
+    des objets précis. Tu peux facilement dire si quelque chose est dans le panier ou non !</p>
+  </div>
+</div>`,
+
+    contenu: `<div class="space-y-8">
+  
+  <!-- Section 1: Vocabulaire des ensembles -->
+  <section class="bg-gradient-to-br from-blue-50 to-purple-50 dark:from-blue-950/30 dark:to-purple-950/30 p-6 rounded-xl border border-blue-200 dark:border-blue-800">
+    <h3 class="text-2xl font-bold mb-4 flex items-center gap-2 text-blue-700 dark:text-blue-300">
+      📚 Vocabulaire des ensembles
+    </h3>
+    
+    <div class="space-y-4">
+      <div class="bg-white/80 dark:bg-gray-900/50 p-4 rounded-lg">
+        <h4 class="font-bold text-lg mb-2 text-primary">📌 Ensemble</h4>
+        <p class="leading-relaxed">
+          Une collection d'objets bien définis. On note généralement avec des lettres majuscules : 
+          <span class="font-mono text-lg px-2 py-1 bg-accent/20 rounded">A, B, C, E</span>
+        </p>
+        <p class="mt-2 text-sm italic">Exemple : A = {1, 2, 3, 4, 5}</p>
+      </div>
+
+      <div class="bg-white/80 dark:bg-gray-900/50 p-4 rounded-lg">
+        <h4 class="font-bold text-lg mb-2 text-primary">🔹 Élément</h4>
+        <p class="leading-relaxed">
+          Un objet qui fait partie d'un ensemble.
+        </p>
+      </div>
+
+      <div class="bg-white/80 dark:bg-gray-900/50 p-4 rounded-lg">
+        <h4 class="font-bold text-lg mb-2 text-primary">✅ Appartenance (∈)</h4>
+        <p class="leading-relaxed">
+          Le symbole <span class="font-mono text-xl px-2 py-1 bg-green-100 dark:bg-green-900 rounded">∈</span> signifie "appartient à"
+        </p>
+        <p class="mt-2"><span class="font-mono">3 ∈ {1, 2, 3, 4}</span> se lit "3 appartient à l'ensemble {1, 2, 3, 4}"</p>
+      </div>
+
+      <div class="bg-white/80 dark:bg-gray-900/50 p-4 rounded-lg">
+        <h4 class="font-bold text-lg mb-2 text-primary">❌ Non-appartenance (∉)</h4>
+        <p class="leading-relaxed">
+          Le symbole <span class="font-mono text-xl px-2 py-1 bg-red-100 dark:bg-red-900 rounded">∉</span> signifie "n'appartient pas à"
+        </p>
+        <p class="mt-2"><span class="font-mono">5 ∉ {1, 2, 3, 4}</span> se lit "5 n'appartient pas à l'ensemble"</p>
+      </div>
+
+      <div class="bg-white/80 dark:bg-gray-900/50 p-4 rounded-lg">
+        <h4 class="font-bold text-lg mb-2 text-primary">⭕ Ensemble vide (∅ ou { })</h4>
+        <p class="leading-relaxed">
+          Un ensemble qui ne contient aucun élément. Comme un panier vide !
+        </p>
+      </div>
+    </div>
+
+    <div class="mt-6 p-4 bg-yellow-50 dark:bg-yellow-900/20 rounded-lg border-l-4 border-yellow-500">
+      <h4 class="font-semibold mb-2">🏫 Exemple haïtien - Marché de Pétion-Ville</h4>
+      <p>F = {mangues, avocats, papayes, corossols} (ensemble des fruits)</p>
+      <p class="mt-1">mangue ∈ F (la mangue appartient à l'ensemble des fruits)</p>
+      <p>poulet ∉ F (le poulet n'appartient pas à l'ensemble des fruits)</p>
+    </div>
+  </section>
+
+  <!-- Section 2: Description des ensembles -->
+  <section class="bg-gradient-to-br from-green-50 to-blue-50 dark:from-green-950/30 dark:to-blue-950/30 p-6 rounded-xl border border-green-200 dark:border-green-800">
+    <h3 class="text-2xl font-bold mb-4 flex items-center gap-2 text-green-700 dark:text-green-300">
+      ✍️ Description des ensembles
+    </h3>
+    
+    <div class="space-y-4">
+      <div class="bg-white/80 dark:bg-gray-900/50 p-4 rounded-lg">
+        <h4 class="font-bold text-lg mb-2 text-primary">1️⃣ En extension (énumération)</h4>
+        <p class="leading-relaxed mb-2">On liste tous les éléments entre accolades :</p>
+        <div class="bg-accent/10 p-3 rounded font-mono">
+          A = {a, e, i, o, u, y}
+        </div>
+        <p class="mt-2 text-sm">C'est l'ensemble des voyelles</p>
+      </div>
+
+      <div class="bg-white/80 dark:bg-gray-900/50 p-4 rounded-lg">
+        <h4 class="font-bold text-lg mb-2 text-primary">2️⃣ En compréhension (propriété)</h4>
+        <p class="leading-relaxed mb-2">On donne une propriété caractéristique :</p>
+        <div class="bg-accent/10 p-3 rounded font-mono">
+          B = {x | x est un nombre pair entre 1 et 10}
+        </div>
+        <p class="mt-2 text-sm">Se lit : "B est l'ensemble des x tels que x est un nombre pair entre 1 et 10"</p>
+        <p class="mt-1 text-sm">Donc B = {2, 4, 6, 8, 10}</p>
+      </div>
+
+      <div class="bg-white/80 dark:bg-gray-900/50 p-4 rounded-lg">
+        <h4 class="font-bold text-lg mb-2 text-primary">3️⃣ Par diagramme (dessin)</h4>
+        <p class="leading-relaxed">On peut aussi représenter un ensemble visuellement avec un cercle ou ovale contenant les éléments</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Section 3: Sous-ensembles et inclusion -->
+  <section class="bg-gradient-to-br from-purple-50 to-pink-50 dark:from-purple-950/30 dark:to-pink-950/30 p-6 rounded-xl border border-purple-200 dark:border-purple-800">
+    <h3 class="text-2xl font-bold mb-4 flex items-center gap-2 text-purple-700 dark:text-purple-300">
+      🎯 Sous-ensembles et inclusion
+    </h3>
+    
+    <div class="space-y-4">
+      <div class="bg-white/80 dark:bg-gray-900/50 p-4 rounded-lg">
+        <h4 class="font-bold text-lg mb-2 text-primary">📌 Définition</h4>
+        <p class="leading-relaxed">
+          Un ensemble A est un <strong>sous-ensemble</strong> de B si <strong>tous</strong> les éléments de A 
+          appartiennent aussi à B.
+        </p>
+        <p class="mt-3 font-mono text-lg">Notation : <span class="px-3 py-1 bg-accent/20 rounded">A ⊂ B</span></p>
+        <p class="mt-2 text-sm">Se lit : "A est inclus dans B" ou "A est une partie de B"</p>
+      </div>
+
+      <div class="bg-white/80 dark:bg-gray-900/50 p-4 rounded-lg">
+        <h4 class="font-bold text-lg mb-2 text-primary">🍎 Exemple pratique</h4>
+        <p>A = {mangues, avocats, papayes}</p>
+        <p>B = {mangues, avocats, papayes, bananes, oranges, ananas}</p>
+        <p class="mt-2">Alors <strong class="text-accent">A ⊂ B</strong> car tous les fruits de A sont aussi dans B</p>
+      </div>
+
+      <div class="bg-white/80 dark:bg-gray-900/50 p-4 rounded-lg">
+        <h4 class="font-bold text-lg mb-2 text-primary">✨ Propriétés importantes</h4>
+        <ul class="space-y-2 list-disc list-inside">
+          <li>L'ensemble vide ∅ est sous-ensemble de tout ensemble</li>
+          <li>Tout ensemble est sous-ensemble de lui-même : A ⊂ A</li>
+          <li>Si A ⊂ B et B ⊂ A, alors A = B (ensembles égaux)</li>
+          <li>Si A ⊂ B et B ⊂ C, alors A ⊂ C (transitivité)</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- Section 4: Opérations sur les ensembles -->
+  <section class="bg-gradient-to-br from-orange-50 to-red-50 dark:from-orange-950/30 dark:to-red-950/30 p-6 rounded-xl border border-orange-200 dark:border-orange-800">
+    <h3 class="text-2xl font-bold mb-4 flex items-center gap-2 text-orange-700 dark:text-orange-300">
+      🔄 Opérations sur les ensembles
+    </h3>
+    
+    <div class="space-y-4">
+      <div class="bg-white/80 dark:bg-gray-900/50 p-4 rounded-lg">
+        <h4 class="font-bold text-lg mb-2 text-primary">1️⃣ Réunion (Union) : A ∪ B</h4>
+        <p class="leading-relaxed">
+          L'ensemble de tous les éléments qui appartiennent à A <strong>ou</strong> à B (ou aux deux)
+        </p>
+        <div class="mt-3 p-3 bg-accent/10 rounded">
+          <p class="font-mono">A = {1, 2, 3} et B = {3, 4, 5}</p>
+          <p class="font-mono mt-1 text-accent font-bold">A ∪ B = {1, 2, 3, 4, 5}</p>
+        </div>
+      </div>
+
+      <div class="bg-white/80 dark:bg-gray-900/50 p-4 rounded-lg">
+        <h4 class="font-bold text-lg mb-2 text-primary">2️⃣ Intersection : A ∩ B</h4>
+        <p class="leading-relaxed">
+          L'ensemble des éléments qui appartiennent à A <strong>et</strong> à B (en même temps)
+        </p>
+        <div class="mt-3 p-3 bg-accent/10 rounded">
+          <p class="font-mono">A = {1, 2, 3, 4} et B = {3, 4, 5, 6}</p>
+          <p class="font-mono mt-1 text-accent font-bold">A ∩ B = {3, 4}</p>
+        </div>
+      </div>
+
+      <div class="bg-white/80 dark:bg-gray-900/50 p-4 rounded-lg">
+        <h4 class="font-bold text-lg mb-2 text-primary">3️⃣ Complément : Ā (ou A̅)</h4>
+        <p class="leading-relaxed">
+          L'ensemble de tous les éléments qui <strong>n'appartiennent pas</strong> à A
+        </p>
+        <div class="mt-3 p-3 bg-accent/10 rounded">
+          <p class="font-mono">E = {1, 2, 3, 4, 5, 6} et A = {2, 4, 6}</p>
+          <p class="font-mono mt-1 text-accent font-bold">Ā = {1, 3, 5}</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="mt-6 p-4 bg-yellow-50 dark:bg-yellow-900/20 rounded-lg border-l-4 border-yellow-500">
+      <h4 class="font-semibold mb-2">🏫 Exemple avec des élèves</h4>
+      <p>F = {élèves qui aiment le foot} = {Jean, Marie, Paul, Sophie}</p>
+      <p>M = {élèves qui aiment la musique} = {Marie, Sophie, André, Luc}</p>
+      <p class="mt-2">F ∪ M = {Jean, Marie, Paul, Sophie, André, Luc} (aiment foot OU musique)</p>
+      <p>F ∩ M = {Marie, Sophie} (aiment foot ET musique)</p>
+    </div>
+  </section>
+
+  <!-- Section 5: Diagrammes de Venn -->
+  <section class="bg-gradient-to-br from-cyan-50 to-blue-50 dark:from-cyan-950/30 dark:to-blue-950/30 p-6 rounded-xl border border-cyan-200 dark:border-cyan-800">
+    <h3 class="text-2xl font-bold mb-4 flex items-center gap-2 text-cyan-700 dark:text-cyan-300">
+      📊 Diagrammes de Venn
+    </h3>
+    
+    <div class="space-y-4">
+      <div class="bg-white/80 dark:bg-gray-900/50 p-4 rounded-lg">
+        <h4 class="font-bold text-lg mb-2 text-primary">🎨 Représentation visuelle</h4>
+        <p class="leading-relaxed">
+          Les <strong>diagrammes de Venn</strong> permettent de visualiser les ensembles et leurs relations 
+          avec des cercles ou des ovales.
+        </p>
+      </div>
+
+      <div class="bg-white/80 dark:bg-gray-900/50 p-4 rounded-lg">
+        <h4 class="font-bold text-lg mb-2 text-primary">📝 Comment dessiner un diagramme de Venn</h4>
+        <ol class="space-y-2 list-decimal list-inside">
+          <li>Trace un rectangle qui représente l'ensemble universel E</li>
+          <li>Dessine des cercles pour chaque ensemble à l'intérieur</li>
+          <li>Les cercles se chevauchent s'il y a des éléments communs (intersection)</li>
+          <li>Place les éléments dans les bonnes régions</li>
+        </ol>
+      </div>
+
+      <div class="bg-white/80 dark:bg-gray-900/50 p-4 rounded-lg">
+        <h4 class="font-bold text-lg mb-2 text-primary">🎯 Exemple pratique</h4>
+        <p class="mb-2">Dans une classe de 30 élèves à Port-au-Prince :</p>
+        <ul class="space-y-1 list-disc list-inside ml-4">
+          <li>18 élèves étudient l'anglais (A)</li>
+          <li>15 élèves étudient l'espagnol (E)</li>
+          <li>8 élèves étudient les deux langues</li>
+        </ul>
+        <p class="mt-3 font-semibold">Dans le diagramme de Venn :</p>
+        <ul class="space-y-1 list-disc list-inside ml-4 mt-2">
+          <li>A ∩ E = 8 (zone de chevauchement)</li>
+          <li>Seulement anglais = 18 - 8 = 10</li>
+          <li>Seulement espagnol = 15 - 8 = 7</li>
+          <li>Ni anglais ni espagnol = 30 - (10 + 8 + 7) = 5</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- Section 6: Liens logiques -->
+  <section class="bg-gradient-to-br from-indigo-50 to-purple-50 dark:from-indigo-950/30 dark:to-purple-950/30 p-6 rounded-xl border border-indigo-200 dark:border-indigo-800">
+    <h3 class="text-2xl font-bold mb-4 flex items-center gap-2 text-indigo-700 dark:text-indigo-300">
+      🔗 Liens logiques
+    </h3>
+    
+    <div class="space-y-4">
+      <div class="bg-white/80 dark:bg-gray-900/50 p-4 rounded-lg">
+        <h4 class="font-bold text-lg mb-2 text-primary">🔸 "ET" → Intersection (∩)</h4>
+        <p class="leading-relaxed">
+          "x appartient à A <strong>et</strong> à B" signifie x ∈ A ∩ B
+        </p>
+        <p class="text-sm mt-1 italic">Les deux conditions doivent être vraies en même temps</p>
+      </div>
+
+      <div class="bg-white/80 dark:bg-gray-900/50 p-4 rounded-lg">
+        <h4 class="font-bold text-lg mb-2 text-primary">🔸 "OU" → Réunion (∪)</h4>
+        <p class="leading-relaxed">
+          "x appartient à A <strong>ou</strong> à B" signifie x ∈ A ∪ B
+        </p>
+        <p class="text-sm mt-1 italic">Au moins une des deux conditions doit être vraie</p>
+      </div>
+
+      <div class="bg-white/80 dark:bg-gray-900/50 p-4 rounded-lg">
+        <h4 class="font-bold text-lg mb-2 text-primary">🔸 "NON" → Complément (Ā)</h4>
+        <p class="leading-relaxed">
+          "x <strong>n'appartient pas</strong> à A" signifie x ∈ Ā
+        </p>
+        <p class="text-sm mt-1 italic">La négation de la condition</p>
+      </div>
+
+      <div class="bg-white/80 dark:bg-gray-900/50 p-4 rounded-lg">
+        <h4 class="font-bold text-lg mb-2 text-primary">🔸 "SI...ALORS" → Inclusion (⊂)</h4>
+        <p class="leading-relaxed">
+          "<strong>Si</strong> x ∈ A, <strong>alors</strong> x ∈ B" signifie A ⊂ B
+        </p>
+        <p class="text-sm mt-1 italic">Tout élément de A est aussi dans B</p>
+      </div>
+    </div>
+
+    <div class="mt-6 p-4 bg-yellow-50 dark:bg-yellow-900/20 rounded-lg border-l-4 border-yellow-500">
+      <h4 class="font-semibold mb-2">💡 Exemple combiné</h4>
+      <p>Énoncé : "Les élèves qui réussissent sont ceux qui travaillent <strong>et</strong> qui sont réguliers"</p>
+      <p class="mt-2">Si R = {élèves qui réussissent}, T = {élèves qui travaillent}, G = {élèves réguliers}</p>
+      <p class="mt-1 font-semibold text-accent">Alors : R = T ∩ G</p>
+    </div>
+  </section>
+
+</div>`,
+
+    exemplesExercices: `<div class="space-y-6">
+  
+  <div class="bg-gradient-to-r from-primary/5 to-accent/5 p-6 rounded-xl border-l-4 border-primary">
+    <h4 class="font-bold text-lg mb-3 flex items-center gap-2">
+      <span class="text-2xl">📝</span> Exercice 1 - Appartenance
+    </h4>
+    <p class="mb-3">Soit A = {2, 4, 6, 8, 10}. Vrai ou Faux :</p>
+    <p class="ml-4">a) 4 ∈ A</p>
+    <p class="ml-4">b) 5 ∈ A</p>
+    <p class="ml-4">c) 10 ∈ A</p>
+    
+    <details class="mt-4">
+      <summary class="cursor-pointer font-semibold text-primary hover:text-accent">
+        ✅ Voir la solution
+      </summary>
+      <div class="mt-3 p-4 bg-white/50 dark:bg-gray-800/50 rounded-lg">
+        <p><strong>a) Vrai</strong> - 4 est dans l'ensemble A</p>
+        <p><strong>b) Faux</strong> - 5 n'est pas dans l'ensemble A</p>
+        <p><strong>c) Vrai</strong> - 10 est dans l'ensemble A</p>
+      </div>
+    </details>
+  </div>
+
+  <div class="bg-gradient-to-r from-accent/5 to-secondary/5 p-6 rounded-xl border-l-4 border-accent">
+    <h4 class="font-bold text-lg mb-3 flex items-center gap-2">
+      <span class="text-2xl">📝</span> Exercice 2 - Réunion et Intersection
+    </h4>
+    <p class="mb-3">Soit A = {2, 4, 6, 8} et B = {1, 2, 3, 4}.</p>
+    <p>Déterminer :</p>
+    <p class="ml-4">a) A ∪ B</p>
+    <p class="ml-4">b) A ∩ B</p>
+    
+    <details class="mt-4">
+      <summary class="cursor-pointer font-semibold text-primary hover:text-accent">
+        ✅ Voir la solution
+      </summary>
+      <div class="mt-3 p-4 bg-white/50 dark:bg-gray-800/50 rounded-lg space-y-3">
+        <div>
+          <p class="font-semibold">a) A ∪ B (réunion)</p>
+          <p>Ensemble de tous les éléments dans A ou dans B :</p>
+          <p class="font-mono text-accent mt-1">A ∪ B = {1, 2, 3, 4, 6, 8}</p>
+        </div>
+        <div>
+          <p class="font-semibold">b) A ∩ B (intersection)</p>
+          <p>Ensemble des éléments dans A et dans B :</p>
+          <p class="font-mono text-accent mt-1">A ∩ B = {2, 4}</p>
+          <p class="text-sm mt-1">Les éléments 2 et 4 sont les seuls qui apparaissent dans les deux ensembles</p>
+        </div>
+      </div>
+    </details>
+  </div>
+
+  <div class="bg-gradient-to-r from-secondary/5 to-primary/5 p-6 rounded-xl border-l-4 border-secondary">
+    <h4 class="font-bold text-lg mb-3 flex items-center gap-2">
+      <span class="text-2xl">📝</span> Exercice 3 - Diagramme de Venn
+    </h4>
+    <p class="mb-3">
+      Dans une classe de 40 élèves, 25 étudient l'anglais, 18 étudient l'espagnol et 10 étudient les deux langues. 
+      Combien d'élèves n'étudient aucune de ces deux langues ?
+    </p>
+    
+    <details class="mt-4">
+      <summary class="cursor-pointer font-semibold text-primary hover:text-accent">
+        ✅ Voir la solution
+      </summary>
+      <div class="mt-3 p-4 bg-white/50 dark:bg-gray-800/50 rounded-lg space-y-2">
+        <p>Soit A = {élèves qui étudient anglais} et E = {élèves qui étudient espagnol}</p>
+        <p class="mt-2"><strong>Étape 1 :</strong> A ∩ E = 10 (les deux langues)</p>
+        <p><strong>Étape 2 :</strong> Seulement anglais = 25 - 10 = 15</p>
+        <p><strong>Étape 3 :</strong> Seulement espagnol = 18 - 10 = 8</p>
+        <p><strong>Étape 4 :</strong> Total avec au moins une langue = 15 + 10 + 8 = 33</p>
+        <p><strong>Étape 5 :</strong> Aucune langue = 40 - 33 = 7</p>
+        <p class="mt-3 font-semibold text-accent">Réponse : 7 élèves n'étudient aucune de ces deux langues</p>
+      </div>
+    </details>
+  </div>
+
+  <div class="bg-gradient-to-r from-primary/5 to-secondary/5 p-6 rounded-xl border-l-4 border-primary">
+    <h4 class="font-bold text-lg mb-3 flex items-center gap-2">
+      <span class="text-2xl">📝</span> Exercice 4 - Complément
+    </h4>
+    <p class="mb-3">
+      Soit E = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10} et A = {2, 4, 6, 8, 10}. 
+      Déterminer Ā (le complément de A).
+    </p>
+    
+    <details class="mt-4">
+      <summary class="cursor-pointer font-semibold text-primary hover:text-accent">
+        ✅ Voir la solution
+      </summary>
+      <div class="mt-3 p-4 bg-white/50 dark:bg-gray-800/50 rounded-lg space-y-2">
+        <p>Le complément de A (noté Ā) contient tous les éléments de E qui ne sont pas dans A</p>
+        <p class="mt-2">E = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10}</p>
+        <p>A = {2, 4, 6, 8, 10} (nombres pairs)</p>
+        <p class="mt-2">Les éléments de E qui ne sont pas dans A sont : 1, 3, 5, 7, 9</p>
+        <p class="mt-3 font-semibold text-accent font-mono">Ā = {1, 3, 5, 7, 9} (les nombres impairs)</p>
+      </div>
+    </details>
+  </div>
+
+  <div class="bg-gradient-to-r from-accent/5 to-primary/5 p-6 rounded-xl border-l-4 border-accent">
+    <h4 class="font-bold text-lg mb-3 flex items-center gap-2">
+      <span class="text-2xl">📝</span> Exercice 5 - Application au marché
+    </h4>
+    <p class="mb-3">
+      Au marché, 30 vendeurs vendent des mangues (M), 20 vendent des avocats (A) et 12 vendent les deux fruits. 
+      Combien de vendeurs au total vendent au moins un de ces deux fruits ?
+    </p>
+    
+    <details class="mt-4">
+      <summary class="cursor-pointer font-semibold text-primary hover:text-accent">
+        ✅ Voir la solution
+      </summary>
+      <div class="mt-3 p-4 bg-white/50 dark:bg-gray-800/50 rounded-lg space-y-2">
+        <p>On cherche |M ∪ A| (le nombre d'éléments dans la réunion)</p>
+        <p class="mt-2 font-semibold">Formule : |M ∪ A| = |M| + |A| - |M ∩ A|</p>
+        <p class="mt-3">|M| = 30 (vendeurs de mangues)</p>
+        <p>|A| = 20 (vendeurs d'avocats)</p>
+        <p>|M ∩ A| = 12 (vendeurs des deux)</p>
+        <p class="mt-3">|M ∪ A| = 30 + 20 - 12 = 38</p>
+        <p class="mt-3 font-semibold text-accent">Réponse : 38 vendeurs vendent au moins un de ces deux fruits</p>
+        <p class="text-sm mt-2 italic">Note : On soustrait |M ∩ A| car ces vendeurs ont été comptés deux fois</p>
+      </div>
+    </details>
+  </div>
+
+</div>`
+  },
+
+  // December Weeks 1-3 - PLANS ET DROITES (New - Missing from MENFP)
+  "plans-droites": {
+    objectif: `À la fin de cette leçon, tu vas pouvoir:
+• Identifier et définir les plans, points, droites, demi-droites et segments
+• Reconnaître des droites parallèles et perpendiculaires
+• Construire une droite parallèle ou perpendiculaire
+• Définir et construire le milieu et la médiatrice d'un segment
+• Mesurer la distance entre deux points`,
+
+    introduction: `<div class="space-y-4">
+  <p class="text-lg leading-relaxed">
+    <span class="font-semibold text-primary">La géométrie commence ici !</span> 
+    Les plans, les droites et les points sont les éléments de base de toute la géométrie. 
+    <span class="italic">C'est comme l'alphabet de la géométrie !</span>
+  </p>
+  
+  <p class="text-lg leading-relaxed">
+    Comprendre ces notions fondamentales te permettra de construire des figures géométriques, 
+    de mesurer des distances et de <span class="font-semibold text-accent">résoudre des problèmes de construction</span> 
+    dans la vie réelle - comme tracer des routes parallèles ou construire des murs perpendiculaires !
+  </p>
+
+  <div class="bg-gradient-to-r from-primary/10 to-accent/10 p-4 rounded-lg border-l-4 border-primary">
+    <p class="font-medium">💡 <span class="text-primary">Le saviez-vous ?</span> Les arpenteurs en Haïti 
+    utilisent ces principes pour mesurer et diviser les terres avec précision !</p>
+  </div>
+</div>`,
+
+    contenu: `<div class="space-y-8">
+  
+  <!-- Section 1: Plans, Points et Droites -->
+  <section class="bg-gradient-to-br from-blue-50 to-cyan-50 dark:from-blue-950/30 dark:to-cyan-950/30 p-6 rounded-xl border border-blue-200 dark:border-blue-800">
+    <h3 class="text-2xl font-bold mb-4 flex items-center gap-2 text-blue-700 dark:text-blue-300">
+      📍 Plans, Points et Droites
+    </h3>
+    
+    <div class="space-y-4">
+      <div class="bg-white/80 dark:bg-gray-900/50 p-4 rounded-lg">
+        <h4 class="font-bold text-lg mb-2 text-primary">1️⃣ Le Plan</h4>
+        <p class="leading-relaxed">
+          Un <strong>plan</strong> est une surface plane qui s'étend à l'infini dans toutes les directions. 
+          Imagine une feuille de papier qui continue sans fin !
+        </p>
+        <p class="mt-2 text-sm italic">Exemple : La surface d'un tableau noir, le dessus d'une table</p>
+      </div>
+
+      <div class="bg-white/80 dark:bg-gray-900/50 p-4 rounded-lg">
+        <h4 class="font-bold text-lg mb-2 text-primary">2️⃣ Le Point</h4>
+        <p class="leading-relaxed">
+          Un <strong>point</strong> est un emplacement précis dans l'espace, sans dimension. 
+          On le note avec une lettre majuscule : A, B, C...
+        </p>
+        <p class="mt-2 text-sm">Notation : • A (le point A)</p>
+      </div>
+
+      <div class="bg-white/80 dark:bg-gray-900/50 p-4 rounded-lg">
+        <h4 class="font-bold text-lg mb-2 text-primary">3️⃣ La Droite</h4>
+        <p class="leading-relaxed">
+          Une <strong>droite</strong> est une ligne droite qui s'étend à l'infini dans les deux directions. 
+          Elle passe par au moins deux points.
+        </p>
+        <p class="mt-2 text-sm">Notation : (AB) - la droite passant par A et B</p>
+        <p class="mt-1 text-sm">Propriété : Par deux points distincts, il passe une seule droite</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Section 2: Segments et Demi-droites -->
+  <section class="bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-950/30 dark:to-emerald-950/30 p-6 rounded-xl border border-green-200 dark:border-green-800">
+    <h3 class="text-2xl font-bold mb-4 flex items-center gap-2 text-green-700 dark:text-green-300">
+      ✂️ Segments et Demi-droites
+    </h3>
+    
+    <div class="space-y-4">
+      <div class="bg-white/80 dark:bg-gray-900/50 p-4 rounded-lg">
+        <h4 class="font-bold text-lg mb-2 text-primary">📏 Le Segment [AB]</h4>
+        <p class="leading-relaxed mb-2">
+          Un <strong>segment</strong> est une portion de droite limitée par deux points appelés extrémités.
+        </p>
+        <div class="bg-accent/10 p-3 rounded">
+          <p class="font-mono">Notation : [AB]</p>
+          <p class="text-sm mt-1">Se lit : "le segment AB" ou "segment d'extrémités A et B"</p>
+        </div>
+        <p class="mt-3 text-sm"><strong>Longueur :</strong> La distance entre A et B est notée AB (sans crochets)</p>
+      </div>
+
+      <div class="bg-white/80 dark:bg-gray-900/50 p-4 rounded-lg">
+        <h4 class="font-bold text-lg mb-2 text-primary">➡️ La Demi-droite [AB)</h4>
+        <p class="leading-relaxed mb-2">
+          Une <strong>demi-droite</strong> commence en un point (origine) et s'étend à l'infini dans une direction.
+        </p>
+        <div class="bg-accent/10 p-3 rounded">
+          <p class="font-mono">Notation : [AB)</p>
+          <p class="text-sm mt-1">A est l'origine, la demi-droite passe par B et continue à l'infini</p>
+        </div>
+      </div>
+
+      <div class="bg-white/80 dark:bg-gray-900/50 p-4 rounded-lg">
+        <h4 class="font-bold text-lg mb-2 text-primary">📐 Demi-plan</h4>
+        <p class="leading-relaxed">
+          Un <strong>demi-plan</strong> est une portion de plan limitée par une droite. 
+          La droite divise le plan en deux demi-plans.
+        </p>
+      </div>
+    </div>
+
+    <div class="mt-4 p-4 bg-yellow-50 dark:bg-yellow-900/20 rounded-lg border-l-4 border-yellow-500">
+      <h4 class="font-semibold mb-2">🏫 Exemple pratique</h4>
+      <p>La route nationale divise le terrain en deux demi-plans : un côté montagne, un côté mer</p>
+    </div>
+  </section>
+
+  <!-- Section 3: Position relative de deux droites -->
+  <section class="bg-gradient-to-br from-purple-50 to-pink-50 dark:from-purple-950/30 dark:to-pink-950/30 p-6 rounded-xl border border-purple-200 dark:border-purple-800">
+    <h3 class="text-2xl font-bold mb-4 flex items-center gap-2 text-purple-700 dark:text-purple-300">
+      ↔️ Position relative de deux droites
+    </h3>
+    
+    <div class="space-y-4">
+      <div class="bg-white/80 dark:bg-gray-900/50 p-4 rounded-lg">
+        <h4 class="font-bold text-lg mb-2 text-primary">1️⃣ Droites Parallèles (∥)</h4>
+        <p class="leading-relaxed">
+          Deux droites sont <strong>parallèles</strong> si elles ne se rencontrent jamais, 
+          même si on les prolonge à l'infini.
+        </p>
+        <p class="mt-2 font-mono">Notation : (d₁) ∥ (d₂)</p>
+        <p class="mt-2 text-sm italic">Exemple : Les rails de chemin de fer, les lignes d'un cahier</p>
+        <div class="mt-3 p-3 bg-blue-50 dark:bg-blue-900/20 rounded">
+          <p class="font-semibold text-sm">Construction :</p>
+          <p class="text-sm">Pour tracer une parallèle à une droite passant par un point, 
+          utilise une équerre et une règle</p>
+        </div>
+      </div>
+
+      <div class="bg-white/80 dark:bg-gray-900/50 p-4 rounded-lg">
+        <h4 class="font-bold text-lg mb-2 text-primary">2️⃣ Droites Perpendiculaires (⊥)</h4>
+        <p class="leading-relaxed">
+          Deux droites sont <strong>perpendiculaires</strong> si elles se coupent en formant un angle droit (90°).
+        </p>
+        <p class="mt-2 font-mono">Notation : (d₁) ⊥ (d₂)</p>
+        <p class="mt-2 text-sm italic">Exemple : Le coin d'une table, les murs d'une maison</p>
+        <div class="mt-3 p-3 bg-green-50 dark:bg-green-900/20 rounded">
+          <p class="font-semibold text-sm">Construction :</p>
+          <p class="text-sm">Utilise une équerre : place un côté sur la droite, 
+          l'autre côté donne la perpendiculaire</p>
+        </div>
+      </div>
+
+      <div class="bg-white/80 dark:bg-gray-900/50 p-4 rounded-lg">
+        <h4 class="font-bold text-lg mb-2 text-primary">3️⃣ Droites Sécantes</h4>
+        <p class="leading-relaxed">
+          Deux droites sont <strong>sécantes</strong> si elles se coupent en un point (mais pas à 90°).
+        </p>
+        <p class="mt-2 text-sm italic">Exemple : Deux routes qui se croisent</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Section 4: Points alignés et distance -->
+  <section class="bg-gradient-to-br from-orange-50 to-amber-50 dark:from-orange-950/30 dark:to-amber-950/30 p-6 rounded-xl border border-orange-200 dark:border-orange-800">
+    <h3 class="text-2xl font-bold mb-4 flex items-center gap-2 text-orange-700 dark:text-orange-300">
+      🎯 Points alignés et distance
+    </h3>
+    
+    <div class="space-y-4">
+      <div class="bg-white/80 dark:bg-gray-900/50 p-4 rounded-lg">
+        <h4 class="font-bold text-lg mb-2 text-primary">📍 Points alignés</h4>
+        <p class="leading-relaxed">
+          Des points sont <strong>alignés</strong> s'ils appartiennent à une même droite.
+        </p>
+        <p class="mt-2 text-sm">Pour vérifier : trace une règle, si tous les points touchent la règle, ils sont alignés</p>
+      </div>
+
+      <div class="bg-white/80 dark:bg-gray-900/50 p-4 rounded-lg">
+        <h4 class="font-bold text-lg mb-2 text-primary">📏 Distance entre deux points</h4>
+        <p class="leading-relaxed mb-2">
+          La <strong>distance</strong> entre deux points A et B est la longueur du segment [AB].
+        </p>
+        <div class="bg-accent/10 p-3 rounded">
+          <p>Notation : AB (ou BA, c'est la même distance)</p>
+          <p class="text-sm mt-1">Se mesure avec une règle graduée en cm, m, km...</p>
+        </div>
+        <p class="mt-3 text-sm font-semibold">Propriété importante : AB = BA (la distance est la même dans les deux sens)</p>
+      </div>
+    </div>
+
+    <div class="mt-4 p-4 bg-yellow-50 dark:bg-yellow-900/20 rounded-lg border-l-4 border-yellow-500">
+      <h4 class="font-semibold mb-2">🏫 Exemple haïtien</h4>
+      <p>Port-au-Prince, Carrefour et Gressier sont alignés sur la route nationale #2. 
+      La distance entre Port-au-Prince et Carrefour est environ 11 km.</p>
+    </div>
+  </section>
+
+  <!-- Section 5: Milieu d'un segment -->
+  <section class="bg-gradient-to-br from-indigo-50 to-violet-50 dark:from-indigo-950/30 dark:to-violet-950/30 p-6 rounded-xl border border-indigo-200 dark:border-indigo-800">
+    <h3 class="text-2xl font-bold mb-4 flex items-center gap-2 text-indigo-700 dark:text-indigo-300">
+      ⚡ Milieu d'un segment
+    </h3>
+    
+    <div class="space-y-4">
+      <div class="bg-white/80 dark:bg-gray-900/50 p-4 rounded-lg">
+        <h4 class="font-bold text-lg mb-2 text-primary">📌 Définition</h4>
+        <p class="leading-relaxed">
+          Le <strong>milieu</strong> d'un segment [AB] est le point M qui partage le segment en deux parties égales.
+        </p>
+        <div class="mt-3 bg-accent/10 p-3 rounded">
+          <p class="font-mono">AM = MB = AB/2</p>
+          <p class="text-sm mt-1">M est à égale distance de A et de B</p>
+        </div>
+      </div>
+
+      <div class="bg-white/80 dark:bg-gray-900/50 p-4 rounded-lg">
+        <h4 class="font-bold text-lg mb-2 text-primary">🔨 Construction du milieu</h4>
+        <ol class="space-y-2 list-decimal list-inside ml-4">
+          <li>Trace le segment [AB]</li>
+          <li>Avec le compas centré en A, trace un arc de cercle</li>
+          <li>Avec le même écartement, centré en B, trace un autre arc</li>
+          <li>Les deux arcs se coupent en deux points</li>
+          <li>Trace la droite passant par ces deux points : elle coupe [AB] en son milieu M</li>
+        </ol>
+      </div>
+    </div>
+  </section>
+
+  <!-- Section 6: Médiatrice d'un segment -->
+  <section class="bg-gradient-to-br from-rose-50 to-red-50 dark:from-rose-950/30 dark:to-red-950/30 p-6 rounded-xl border border-rose-200 dark:border-rose-800">
+    <h3 class="text-2xl font-bold mb-4 flex items-center gap-2 text-rose-700 dark:text-rose-300">
+      ⚖️ Médiatrice d'un segment
+    </h3>
+    
+    <div class="space-y-4">
+      <div class="bg-white/80 dark:bg-gray-900/50 p-4 rounded-lg">
+        <h4 class="font-bold text-lg mb-2 text-primary">📌 Définition</h4>
+        <p class="leading-relaxed">
+          La <strong>médiatrice</strong> d'un segment [AB] est la droite perpendiculaire au segment 
+          qui passe par son milieu.
+        </p>
+        <p class="mt-2 text-sm font-mono">Médiatrice ⊥ [AB] et passe par le milieu M</p>
+      </div>
+
+      <div class="bg-white/80 dark:bg-gray-900/50 p-4 rounded-lg">
+        <h4 class="font-bold text-lg mb-2 text-primary">✨ Propriété fondamentale</h4>
+        <p class="leading-relaxed">
+          Tout point de la médiatrice est à <strong>égale distance</strong> des extrémités du segment.
+        </p>
+        <div class="mt-3 bg-green-50 dark:bg-green-900/20 p-3 rounded">
+          <p>Si M est sur la médiatrice de [AB], alors :</p>
+          <p class="font-mono mt-1">MA = MB</p>
+        </div>
+      </div>
+
+      <div class="bg-white/80 dark:bg-gray-900/50 p-4 rounded-lg">
+        <h4 class="font-bold text-lg mb-2 text-primary">🔨 Construction de la médiatrice</h4>
+        <p class="mb-2">La construction est la même que pour trouver le milieu :</p>
+        <ol class="space-y-2 list-decimal list-inside ml-4 text-sm">
+          <li>Trace le segment [AB]</li>
+          <li>Centre le compas en A, trace un arc (grand rayon)</li>
+          <li>Même écartement en B, trace un autre arc</li>
+          <li>Les arcs se coupent en 2 points</li>
+          <li>La droite passant par ces 2 points est la médiatrice</li>
+        </ol>
+      </div>
+    </div>
+
+    <div class="mt-4 p-4 bg-yellow-50 dark:bg-yellow-900/20 rounded-lg border-l-4 border-yellow-500">
+      <h4 class="font-semibold mb-2">🏗️ Application pratique</h4>
+      <p>Pour installer un puits qui soit à égale distance de deux maisons A et B, 
+      on le place sur la médiatrice du segment [AB] !</p>
+    </div>
+  </section>
+
+</div>`,
+
+    exemplesExercices: `<div class="space-y-6">
+  
+  <div class="bg-gradient-to-r from-primary/5 to-accent/5 p-6 rounded-xl border-l-4 border-primary">
+    <h4 class="font-bold text-lg mb-3 flex items-center gap-2">
+      <span class="text-2xl">📝</span> Exercice 1 - Notation
+    </h4>
+    <p class="mb-3">Quelle est la différence entre :</p>
+    <p class="ml-4">a) (AB)</p>
+    <p class="ml-4">b) [AB]</p>
+    <p class="ml-4">c) [AB)</p>
+    
+    <details class="mt-4">
+      <summary class="cursor-pointer font-semibold text-primary hover:text-accent">
+        ✅ Voir la solution
+      </summary>
+      <div class="mt-3 p-4 bg-white/50 dark:bg-gray-800/50 rounded-lg space-y-2">
+        <p><strong>a) (AB)</strong> - La droite infinie passant par A et B</p>
+        <p><strong>b) [AB]</strong> - Le segment limité entre A et B (avec les extrémités)</p>
+        <p><strong>c) [AB)</strong> - La demi-droite qui commence en A, passe par B et continue à l'infini</p>
+      </div>
+    </details>
+  </div>
+
+  <div class="bg-gradient-to-r from-accent/5 to-secondary/5 p-6 rounded-xl border-l-4 border-accent">
+    <h4 class="font-bold text-lg mb-3 flex items-center gap-2">
+      <span class="text-2xl">📝</span> Exercice 2 - Points alignés
+    </h4>
+    <p class="mb-3">
+      On donne trois points A, B et C. AB = 5 cm, BC = 3 cm et AC = 8 cm. 
+      Les points A, B et C sont-ils alignés ?
+    </p>
+    
+    <details class="mt-4">
+      <summary class="cursor-pointer font-semibold text-primary hover:text-accent">
+        ✅ Voir la solution
+      </summary>
+      <div class="mt-3 p-4 bg-white/50 dark:bg-gray-800/50 rounded-lg space-y-2">
+        <p><strong>Oui, les points sont alignés !</strong></p>
+        <p class="mt-2">Vérification : AB + BC = 5 + 3 = 8 cm = AC</p>
+        <p>Quand la somme de deux distances égale la troisième, les points sont alignés dans cet ordre : A, B, C</p>
+        <p class="mt-2 text-sm italic">B est entre A et C sur la droite</p>
+      </div>
+    </details>
+  </div>
+
+  <div class="bg-gradient-to-r from-secondary/5 to-primary/5 p-6 rounded-xl border-l-4 border-secondary">
+    <h4 class="font-bold text-lg mb-3 flex items-center gap-2">
+      <span class="text-2xl">📝</span> Exercice 3 - Milieu d'un segment
+    </h4>
+    <p class="mb-3">
+      M est le milieu du segment [AB] avec AB = 12 cm. Calculer AM et MB.
+    </p>
+    
+    <details class="mt-4">
+      <summary class="cursor-pointer font-semibold text-primary hover:text-accent">
+        ✅ Voir la solution
+      </summary>
+      <div class="mt-3 p-4 bg-white/50 dark:bg-gray-800/50 rounded-lg space-y-2">
+        <p>Le milieu partage le segment en deux parties égales</p>
+        <p class="mt-2"><strong>AM = MB = AB/2</strong></p>
+        <p class="mt-2">AM = 12/2 = 6 cm</p>
+        <p>MB = 12/2 = 6 cm</p>
+        <p class="mt-3 font-semibold text-accent">Réponse : AM = MB = 6 cm</p>
+      </div>
+    </details>
+  </div>
+
+  <div class="bg-gradient-to-r from-primary/5 to-secondary/5 p-6 rounded-xl border-l-4 border-primary">
+    <h4 class="font-bold text-lg mb-3 flex items-center gap-2">
+      <span class="text-2xl">📝</span> Exercice 4 - Droites parallèles
+    </h4>
+    <p class="mb-3">
+      Deux routes parallèles (d₁) et (d₂) sont distantes de 50 mètres. 
+      Si on marche perpendiculairement de (d₁) vers (d₂), quelle distance parcourt-on ?
+    </p>
+    
+    <details class="mt-4">
+      <summary class="cursor-pointer font-semibold text-primary hover:text-accent">
+        ✅ Voir la solution
+      </summary>
+      <div class="mt-3 p-4 bg-white/50 dark:bg-gray-800/50 rounded-lg space-y-2">
+        <p>La distance entre deux droites parallèles est toujours la même</p>
+        <p class="mt-2">La distance perpendiculaire est la plus courte distance entre les deux droites</p>
+        <p class="mt-3 font-semibold text-accent">Réponse : On parcourt 50 mètres</p>
+      </div>
+    </details>
+  </div>
+
+  <div class="bg-gradient-to-r from-accent/5 to-primary/5 p-6 rounded-xl border-l-4 border-accent">
+    <h4 class="font-bold text-lg mb-3 flex items-center gap-2">
+      <span class="text-2xl">📝</span> Exercice 5 - Médiatrice
+    </h4>
+    <p class="mb-3">
+      Un point P est sur la médiatrice du segment [AB]. On sait que PA = 7 cm. 
+      Que vaut PB ?
+    </p>
+    
+    <details class="mt-4">
+      <summary class="cursor-pointer font-semibold text-primary hover:text-accent">
+        ✅ Voir la solution
+      </summary>
+      <div class="mt-3 p-4 bg-white/50 dark:bg-gray-800/50 rounded-lg space-y-2">
+        <p><strong>Propriété de la médiatrice :</strong></p>
+        <p>Tout point sur la médiatrice est à égale distance des extrémités du segment</p>
+        <p class="mt-3">Donc si P est sur la médiatrice de [AB] :</p>
+        <p class="font-mono">PA = PB</p>
+        <p class="mt-3 font-semibold text-accent">Réponse : PB = 7 cm</p>
+      </div>
+    </details>
+  </div>
+
+</div>`
+  },
+
+  // December Week 3 - NOMBRES NATURELS (New - Missing from MENFP)
+  "nombres-naturels": {
+    objectif: `À la fin de cette leçon, tu vas pouvoir:
+• Calculer mentalement et par écrit des sommes, produits, différences et quotients
+• Connaître et utiliser les règles de priorité opératoire (PEMDAS)
+• Déplacer correctement les termes d'une chaîne d'opérations
+• Définir et calculer les puissances entières positives
+• Calculer le produit de puissances d'un même nombre`,
+
+    introduction: `<div class="space-y-4">
+  <p class="text-lg leading-relaxed">
+    <span class="font-semibold text-primary">Les nombres naturels sont la base de toutes les mathématiques !</span> 
+    Ce sont les nombres que tu utilises pour compter : 0, 1, 2, 3, 4, 5...
+    <span class="italic">Ils sont partout dans notre vie quotidienne !</span>
+  </p>
+  
+  <p class="text-lg leading-relaxed">
+    Maîtriser les opérations sur les nombres naturels et comprendre l'ordre des opérations 
+    te permettra de <span class="font-semibold text-accent">résoudre n'importe quel calcul</span> avec confiance, 
+    que ce soit pour compter l'argent au marché ou calculer des quantités !
+  </p>
+
+  <div class="bg-gradient-to-r from-primary/10 to-accent/10 p-4 rounded-lg border-l-4 border-primary">
+    <p class="font-medium">💡 <span class="text-primary">Astuce :</span> PEMDAS est la clé ! 
+    Parenthèses, Exposants, Multiplication/Division, Addition/Soustraction - dans cet ordre !</p>
+  </div>
+</div>`,
+
+    contenu: `<div class="space-y-8">
+  
+  <!-- Section 1: Les quatre opérations -->
+  <section class="bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-950/30 dark:to-indigo-950/30 p-6 rounded-xl border border-blue-200 dark:border-blue-800">
+    <h3 class="text-2xl font-bold mb-4 flex items-center gap-2 text-blue-700 dark:text-blue-300">
+      ➕➖✖️➗ Les quatre opérations de base
+    </h3>
+    
+    <div class="space-y-4">
+      <div class="bg-white/80 dark:bg-gray-900/50 p-4 rounded-lg">
+        <h4 class="font-bold text-lg mb-2 text-primary">1️⃣ Addition (+)</h4>
+        <p class="leading-relaxed">Additionner c'est <strong>ajouter</strong>, combiner des quantités</p>
+        <p class="mt-2 font-mono">Exemple : 15 + 23 = 38</p>
+        <p class="text-sm mt-1 italic">Au marché : 15 gourdes + 23 gourdes = 38 gourdes</p>
+      </div>
+
+      <div class="bg-white/80 dark:bg-gray-900/50 p-4 rounded-lg">
+        <h4 class="font-bold text-lg mb-2 text-primary">2️⃣ Soustraction (-)</h4>
+        <p class="leading-relaxed">Soustraire c'est <strong>retirer</strong>, enlever une quantité</p>
+        <p class="mt-2 font-mono">Exemple : 50 - 18 = 32</p>
+        <p class="text-sm mt-1 italic">J'avais 50 gourdes, j'ai dépensé 18, il reste 32</p>
+      </div>
+
+      <div class="bg-white/80 dark:bg-gray-900/50 p-4 rounded-lg">
+        <h4 class="font-bold text-lg mb-2 text-primary">3️⃣ Multiplication (×)</h4>
+        <p class="leading-relaxed">Multiplier c'est faire une <strong>addition répétée</strong></p>
+        <p class="mt-2 font-mono">Exemple : 6 × 4 = 24</p>
+        <p class="text-sm mt-1">C'est comme 6 + 6 + 6 + 6 = 24</p>
+        <p class="text-sm mt-1 italic">6 paquets de 4 mangues = 24 mangues</p>
+      </div>
+
+      <div class="bg-white/80 dark:bg-gray-900/50 p-4 rounded-lg">
+        <h4 class="font-bold text-lg mb-2 text-primary">4️⃣ Division (÷ ou /)</h4>
+        <p class="leading-relaxed">Diviser c'est <strong>partager</strong> en parts égales</p>
+        <p class="mt-2 font-mono">Exemple : 24 ÷ 6 = 4</p>
+        <p class="text-sm mt-1 italic">24 mangues partagées entre 6 personnes = 4 mangues chacun</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Section 2: Ordre des opérations (PEMDAS) -->
+  <section class="bg-gradient-to-br from-green-50 to-teal-50 dark:from-green-950/30 dark:to-teal-950/30 p-6 rounded-xl border border-green-200 dark:border-green-800">
+    <h3 class="text-2xl font-bold mb-4 flex items-center gap-2 text-green-700 dark:text-green-300">
+      🎯 Ordre des opérations - PEMDAS
+    </h3>
+    
+    <div class="space-y-4">
+      <div class="bg-white/80 dark:bg-gray-900/50 p-4 rounded-lg">
+        <h4 class="font-bold text-lg mb-2 text-primary">📌 La règle d'or : PEMDAS</h4>
+        <p class="leading-relaxed mb-3">Pour calculer correctement, suis cet ordre :</p>
+        <ol class="space-y-2 list-decimal list-inside ml-4">
+          <li><strong class="text-primary">P</strong>arenthèses : ( )</li>
+          <li><strong class="text-primary">E</strong>xposants (Puissances) : ²,  ³</li>
+          <li><strong class="text-primary">M</strong>ultiplication et <strong class="text-primary">D</strong>ivision : × et ÷ (de gauche à droite)</li>
+          <li><strong class="text-primary">A</strong>ddition et <strong class="text-primary">S</strong>oustraction : + et - (de gauche à droite)</li>
+        </ol>
+      </div>
+
+      <div class="bg-white/80 dark:bg-gray-900/50 p-4 rounded-lg">
+        <h4 class="font-bold text-lg mb-2 text-primary">💡 Exemple détaillé</h4>
+        <p class="mb-2">Calcule : 15 + 3 × 4</p>
+        <div class="bg-accent/10 p-3 rounded space-y-1">
+          <p class="text-sm">❌ <strong>Faux :</strong> 15 + 3 = 18, puis 18 × 4 = 72</p>
+          <p class="text-sm text-green-600 font-semibold">✅ <strong>Correct :</strong> 3 × 4 = 12, puis 15 + 12 = 27</p>
+        </div>
+        <p class="mt-2 text-sm italic">On fait la multiplication avant l'addition !</p>
+      </div>
+
+      <div class="bg-white/80 dark:bg-gray-900/50 p-4 rounded-lg">
+        <h4 class="font-bold text-lg mb-2 text-primary">🔢 Avec parenthèses</h4>
+        <p class="mb-2">Calcule : (15 + 3) × 4</p>
+        <div class="bg-accent/10 p-3 rounded">
+          <p class="text-sm"><strong>Étape 1 :</strong> Parenthèses : 15 + 3 = 18</p>
+          <p class="text-sm"><strong>Étape 2 :</strong> Multiplication : 18 × 4 = 72</p>
+          <p class="mt-2 font-mono text-accent">Réponse : 72</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Section 3: Chaînes d'opérations -->
+  <section class="bg-gradient-to-br from-purple-50 to-violet-50 dark:from-purple-950/30 dark:to-violet-950/30 p-6 rounded-xl border border-purple-200 dark:border-purple-800">
+    <h3 class="text-2xl font-bold mb-4 flex items-center gap-2 text-purple-700 dark:text-purple-300">
+      🔗 Chaînes d'opérations
+    </h3>
+    
+    <div class="space-y-4">
+      <div class="bg-white/80 dark:bg-gray-900/50 p-4 rounded-lg">
+        <h4 class="font-bold text-lg mb-2 text-primary">📝 Simplifier les calculs</h4>
+        <p class="leading-relaxed">On peut déplacer les termes pour faciliter le calcul :</p>
+        <div class="mt-3 space-y-2">
+          <p class="font-mono">25 + 37 + 75</p>
+          <p class="text-sm">On peut regrouper : (25 + 75) + 37 = 100 + 37 = 137</p>
+        </div>
+      </div>
+
+      <div class="bg-white/80 dark:bg-gray-900/50 p-4 rounded-lg">
+        <h4 class="font-bold text-lg mb-2 text-primary">✨ Propriétés utiles</h4>
+        <ul class="space-y-2 list-disc list-inside ml-4">
+          <li><strong>Commutativité :</strong> a + b = b + a et a × b = b × a</li>
+          <li><strong>Associativité :</strong> (a + b) + c = a + (b + c)</li>
+          <li><strong>Distributivité :</strong> a × (b + c) = a × b + a × c</li>
+        </ul>
+      </div>
+
+      <div class="bg-white/80 dark:bg-gray-900/50 p-4 rounded-lg">
+        <h4 class="font-bold text-lg mb-2 text-primary">💡 Exemple pratique</h4>
+        <p class="mb-2">Calcule : 5 × 23 + 5 × 7</p>
+        <div class="bg-accent/10 p-3 rounded">
+          <p class="text-sm">On peut factoriser par 5 :</p>
+          <p class="text-sm mt-1">5 × (23 + 7) = 5 × 30 = 150</p>
+          <p class="text-sm mt-2 italic">C'est plus rapide que 115 + 35 !</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Section 4: Puissances entières positives -->
+  <section class="bg-gradient-to-br from-orange-50 to-yellow-50 dark:from-orange-950/30 dark:to-yellow-950/30 p-6 rounded-xl border border-orange-200 dark:border-orange-800">
+    <h3 class="text-2xl font-bold mb-4 flex items-center gap-2 text-orange-700 dark:text-orange-300">
+      ⚡ Puissances entières positives
+    </h3>
+    
+    <div class="space-y-4">
+      <div class="bg-white/80 dark:bg-gray-900/50 p-4 rounded-lg">
+        <h4 class="font-bold text-lg mb-2 text-primary">📌 Définition</h4>
+        <p class="leading-relaxed">Une <strong>puissance</strong> est une multiplication répétée :</p>
+        <div class="mt-3 bg-accent/10 p-3 rounded">
+          <p class="font-mono text-lg">aⁿ = a × a × a × ... × a (n fois)</p>
+          <p class="text-sm mt-2">a est la <strong>base</strong>, n est l'<strong>exposant</strong></p>
+        </div>
+      </div>
+
+      <div class="bg-white/80 dark:bg-gray-900/50 p-4 rounded-lg">
+        <h4 class="font-bold text-lg mb-2 text-primary">🔢 Exemples</h4>
+        <div class="space-y-2">
+          <p class="font-mono">2³ = 2 × 2 × 2 = 8</p>
+          <p class="font-mono">5² = 5 × 5 = 25</p>
+          <p class="font-mono">10⁴ = 10 × 10 × 10 × 10 = 10 000</p>
+          <p class="font-mono">3¹ = 3 (n'importe quel nombre à la puissance 1 est lui-même)</p>
+        </div>
+      </div>
+
+      <div class="bg-white/80 dark:bg-gray-900/50 p-4 rounded-lg">
+        <h4 class="font-bold text-lg mb-2 text-primary">✨ Cas particuliers</h4>
+        <ul class="space-y-2 list-disc list-inside ml-4">
+          <li>a⁰ = 1 (tout nombre à la puissance 0 égale 1)</li>
+          <li>a¹ = a (tout nombre à la puissance 1 est lui-même)</li>
+          <li>1ⁿ = 1 (1 élevé à n'importe quelle puissance égale 1)</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- Section 5: Produit de puissances -->
+  <section class="bg-gradient-to-br from-rose-50 to-pink-50 dark:from-rose-950/30 dark:to-pink-950/30 p-6 rounded-xl border border-rose-200 dark:border-rose-800">
+    <h3 class="text-2xl font-bold mb-4 flex items-center gap-2 text-rose-700 dark:text-rose-300">
+      🎯 Produit de puissances
+    </h3>
+    
+    <div class="space-y-4">
+      <div class="bg-white/80 dark:bg-gray-900/50 p-4 rounded-lg">
+        <h4 class="font-bold text-lg mb-2 text-primary">📌 Règle fondamentale</h4>
+        <p class="leading-relaxed">Pour multiplier des puissances de même base :</p>
+        <div class="mt-3 bg-accent/10 p-3 rounded">
+          <p class="font-mono text-lg">aᵐ × aⁿ = aᵐ⁺ⁿ</p>
+          <p class="text-sm mt-2">On <strong>additionne les exposants</strong> !</p>
+        </div>
+      </div>
+
+      <div class="bg-white/80 dark:bg-gray-900/50 p-4 rounded-lg">
+        <h4 class="font-bold text-lg mb-2 text-primary">💡 Exemples</h4>
+        <div class="space-y-3">
+          <div class="bg-green-50 dark:bg-green-900/20 p-3 rounded">
+            <p class="font-mono">2³ × 2² = 2³⁺² = 2⁵ = 32</p>
+            <p class="text-sm mt-1">Vérification : (2×2×2) × (2×2) = 8 × 4 = 32 ✓</p>
+          </div>
+          <div class="bg-blue-50 dark:bg-blue-900/20 p-3 rounded">
+            <p class="font-mono">5² × 5⁴ = 5²⁺⁴ = 5⁶ = 15 625</p>
+          </div>
+          <div class="bg-purple-50 dark:bg-purple-900/20 p-3 rounded">
+            <p class="font-mono">10³ × 10² = 10⁵ = 100 000</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="bg-white/80 dark:bg-gray-900/50 p-4 rounded-lg">
+        <h4 class="font-bold text-lg mb-2 text-primary">⚠️ Attention !</h4>
+        <p class="leading-relaxed">Cette règle marche seulement avec la <strong>même base</strong> :</p>
+        <div class="mt-3 space-y-2">
+          <p class="text-sm">✅ 3² × 3⁴ = 3⁶ (même base : 3)</p>
+          <p class="text-sm">❌ 2³ × 3² ≠ 6⁵ (bases différentes !)</p>
+          <p class="text-sm mt-2 italic">Avec bases différentes, il faut d'abord calculer : 2³ × 3² = 8 × 9 = 72</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Section 6: Applications pratiques -->
+  <section class="bg-gradient-to-br from-cyan-50 to-blue-50 dark:from-cyan-950/30 dark:to-blue-950/30 p-6 rounded-xl border border-cyan-200 dark:border-cyan-800">
+    <h3 class="text-2xl font-bold mb-4 flex items-center gap-2 text-cyan-700 dark:text-cyan-300">
+      🏫 Applications pratiques
+    </h3>
+    
+    <div class="space-y-4">
+      <div class="bg-white/80 dark:bg-gray-900/50 p-4 rounded-lg border-l-4 border-green-500">
+        <h4 class="font-bold text-lg mb-2 text-primary">🛒 Au marché</h4>
+        <p>5 sacs de riz à 250 gourdes chacun + 3 sacs de haricots à 150 gourdes</p>
+        <p class="mt-2 font-mono">5 × 250 + 3 × 150 = 1250 + 450 = 1700 gourdes</p>
+      </div>
+
+      <div class="bg-white/80 dark:bg-gray-900/50 p-4 rounded-lg border-l-4 border-blue-500">
+        <h4 class="font-bold text-lg mb-2 text-primary">📦 Empaquetage</h4>
+        <p>Une caisse contient 10 boîtes, chaque boîte contient 10 paquets, chaque paquet a 10 bonbons</p>
+        <p class="mt-2 font-mono">Total = 10³ = 10 × 10 × 10 = 1000 bonbons</p>
+      </div>
+
+      <div class="bg-white/80 dark:bg-gray-900/50 p-4 rounded-lg border-l-4 border-purple-500">
+        <h4 class="font-bold text-lg mb-2 text-primary">🏗️ Construction</h4>
+        <p>Un terrain carré de 2⁴ mètres de côté. Quelle est l'aire ?</p>
+        <p class="mt-2 font-mono">Aire = côté² = (2⁴)² = 2⁸ = 256 m²</p>
+      </div>
+    </div>
+  </section>
+
+</div>`,
+
+    exemplesExercices: `<div class="space-y-6">
+  
+  <div class="bg-gradient-to-r from-primary/5 to-accent/5 p-6 rounded-xl border-l-4 border-primary">
+    <h4 class="font-bold text-lg mb-3 flex items-center gap-2">
+      <span class="text-2xl">📝</span> Exercice 1 - Ordre des opérations
+    </h4>
+    <p class="mb-3">Calcule en respectant l'ordre des opérations :</p>
+    <p class="ml-4">a) 12 + 8 × 2</p>
+    <p class="ml-4">b) (12 + 8) × 2</p>
+    <p class="ml-4">c) 30 ÷ 6 + 4</p>
+    
+    <details class="mt-4">
+      <summary class="cursor-pointer font-semibold text-primary hover:text-accent">
+        ✅ Voir la solution
+      </summary>
+      <div class="mt-3 p-4 bg-white/50 dark:bg-gray-800/50 rounded-lg space-y-3">
+        <div>
+          <p><strong>a) 12 + 8 × 2</strong></p>
+          <p class="text-sm">Multiplication d'abord : 8 × 2 = 16</p>
+          <p class="text-sm">Puis addition : 12 + 16 = 28</p>
+          <p class="font-semibold text-accent">Réponse : 28</p>
+        </div>
+        <div>
+          <p><strong>b) (12 + 8) × 2</strong></p>
+          <p class="text-sm">Parenthèses d'abord : 12 + 8 = 20</p>
+          <p class="text-sm">Puis multiplication : 20 × 2 = 40</p>
+          <p class="font-semibold text-accent">Réponse : 40</p>
+        </div>
+        <div>
+          <p><strong>c) 30 ÷ 6 + 4</strong></p>
+          <p class="text-sm">Division d'abord : 30 ÷ 6 = 5</p>
+          <p class="text-sm">Puis addition : 5 + 4 = 9</p>
+          <p class="font-semibold text-accent">Réponse : 9</p>
+        </div>
+      </div>
+    </details>
+  </div>
+
+  <div class="bg-gradient-to-r from-accent/5 to-secondary/5 p-6 rounded-xl border-l-4 border-accent">
+    <h4 class="font-bold text-lg mb-3 flex items-center gap-2">
+      <span class="text-2xl">📝</span> Exercice 2 - Puissances
+    </h4>
+    <p class="mb-3">Calcule les puissances suivantes :</p>
+    <p class="ml-4">a) 2⁴</p>
+    <p class="ml-4">b) 5³</p>
+    <p class="ml-4">c) 10²</p>
+    
+    <details class="mt-4">
+      <summary class="cursor-pointer font-semibold text-primary hover:text-accent">
+        ✅ Voir la solution
+      </summary>
+      <div class="mt-3 p-4 bg-white/50 dark:bg-gray-800/50 rounded-lg space-y-2">
+        <p><strong>a) 2⁴ = 2 × 2 × 2 × 2 = 16</strong></p>
+        <p><strong>b) 5³ = 5 × 5 × 5 = 125</strong></p>
+        <p><strong>c) 10² = 10 × 10 = 100</strong></p>
+      </div>
+    </details>
+  </div>
+
+  <div class="bg-gradient-to-r from-secondary/5 to-primary/5 p-6 rounded-xl border-l-4 border-secondary">
+    <h4 class="font-bold text-lg mb-3 flex items-center gap-2">
+      <span class="text-2xl">📝</span> Exercice 3 - Produit de puissances
+    </h4>
+    <p class="mb-3">Simplifie en utilisant la règle aᵐ × aⁿ = aᵐ⁺ⁿ :</p>
+    <p class="ml-4">a) 3² × 3³</p>
+    <p class="ml-4">b) 2⁴ × 2¹</p>
+    <p class="ml-4">c) 10² × 10³</p>
+    
+    <details class="mt-4">
+      <summary class="cursor-pointer font-semibold text-primary hover:text-accent">
+        ✅ Voir la solution
+      </summary>
+      <div class="mt-3 p-4 bg-white/50 dark:bg-gray-800/50 rounded-lg space-y-3">
+        <div>
+          <p><strong>a) 3² × 3³ = 3²⁺³ = 3⁵ = 243</strong></p>
+          <p class="text-sm">On additionne les exposants : 2 + 3 = 5</p>
+        </div>
+        <div>
+          <p><strong>b) 2⁴ × 2¹ = 2⁴⁺¹ = 2⁵ = 32</strong></p>
+          <p class="text-sm">On additionne les exposants : 4 + 1 = 5</p>
+        </div>
+        <div>
+          <p><strong>c) 10² × 10³ = 10²⁺³ = 10⁵ = 100 000</strong></p>
+          <p class="text-sm">On additionne les exposants : 2 + 3 = 5</p>
+        </div>
+      </div>
+    </details>
+  </div>
+
+  <div class="bg-gradient-to-r from-primary/5 to-secondary/5 p-6 rounded-xl border-l-4 border-primary">
+    <h4 class="font-bold text-lg mb-3 flex items-center gap-2">
+      <span class="text-2xl">📝</span> Exercice 4 - Problème au marché
+    </h4>
+    <p class="mb-3">
+      Marie achète 3 paquets de cahiers à 75 gourdes chacun et 5 stylos à 15 gourdes chacun. 
+      Combien dépense-t-elle au total ?
+    </p>
+    
+    <details class="mt-4">
+      <summary class="cursor-pointer font-semibold text-primary hover:text-accent">
+        ✅ Voir la solution
+      </summary>
+      <div class="mt-3 p-4 bg-white/50 dark:bg-gray-800/50 rounded-lg space-y-2">
+        <p><strong>Calcul :</strong></p>
+        <p class="mt-2">Coût des cahiers : 3 × 75 = 225 gourdes</p>
+        <p>Coût des stylos : 5 × 15 = 75 gourdes</p>
+        <p class="mt-2">Total : 225 + 75 = 300 gourdes</p>
+        <p class="mt-3 font-semibold text-accent">Réponse : Marie dépense 300 gourdes</p>
+      </div>
+    </details>
+  </div>
+
+  <div class="bg-gradient-to-r from-accent/5 to-primary/5 p-6 rounded-xl border-l-4 border-accent">
+    <h4 class="font-bold text-lg mb-3 flex items-center gap-2">
+      <span class="text-2xl">📝</span> Exercice 5 - Chaîne complexe
+    </h4>
+    <p class="mb-3">Calcule : 5 × (3 + 2)² - 10</p>
+    
+    <details class="mt-4">
+      <summary class="cursor-pointer font-semibold text-primary hover:text-accent">
+        ✅ Voir la solution
+      </summary>
+      <div class="mt-3 p-4 bg-white/50 dark:bg-gray-800/50 rounded-lg space-y-2">
+        <p><strong>Suivons PEMDAS :</strong></p>
+        <p class="mt-2"><strong>P</strong> - Parenthèses : 3 + 2 = 5</p>
+        <p><strong>E</strong> - Exposant : 5² = 25</p>
+        <p><strong>M</strong> - Multiplication : 5 × 25 = 125</p>
+        <p><strong>S</strong> - Soustraction : 125 - 10 = 115</p>
+        <p class="mt-3 font-semibold text-accent">Réponse : 115</p>
+      </div>
+    </details>
+  </div>
+
+</div>`
+  },
+
   "decimaux": {
     objectif: `À la fin de cette leçon, tu vas pouvoir:
 • Lire et écrire des nombres décimaux sous différentes formes

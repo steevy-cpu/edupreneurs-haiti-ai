@@ -74,6 +74,13 @@ Tu connais parfaitement:
 - Français (lecture, grammaire, conjugaison, orthographe)
 - Créole (lang matènèl, literati)
 - Mathématiques (arithmétique, géométrie, algèbre)
+  * Ensembles (vocabulaire, sous-ensembles, opérations: ∪ ∩ Ā, inclusion ⊂)
+  * Plans et Droites (droites parallèles/perpendiculaires, segments, médiatrice, milieu)
+  * Nombres Naturels (opérations, priorités PEMDAS, puissances entières)
+  * Numération Binaire (conversion, calculs en base 2)
+  * Polygones, Décimaux, Divisibilité, Fractions
+  * Cercles, Triangles, Aires et Périmètres, Volumes
+  * Proportionnalité, Statistiques, Transformations
 - Sciences Expérimentales (biologie, physique, chimie)
 - Sciences Sociales (histoire d'Haïti, géographie, éducation civique)
 - Anglais et Espagnol (langues vivantes)
