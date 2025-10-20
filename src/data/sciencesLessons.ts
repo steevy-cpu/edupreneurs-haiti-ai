@@ -668,9 +668,298 @@ export const sciencesLessons7AF: Record<string, StaticLessonContent> = {
   "proprietes-gaz": {
     objectif: `À la fin de cette leçon, tu vas pouvoir:
 • Spécifier deux propriétés de l'état gazeux : élasticité et compressibilité`,
-    introduction: `[Contenu à ajouter]`,
-    contenu: `[Contenu à ajouter]`,
-    exemplesExercices: `[Contenu à ajouter]`
+    introduction: `<div class="space-y-6">
+  <p class="text-lg leading-relaxed">
+    Les gaz sont partout autour de nous ! L'air que nous respirons est un mélange de gaz.
+    Comprendre les propriétés des gaz nous aide à expliquer de nombreux phénomènes quotidiens.
+  </p>
+  <div class="bg-primary/5 border-l-4 border-primary p-4 rounded-r">
+    <p class="font-semibold text-primary mb-2">💨 Le saviez-vous ?</p>
+    <p>Un ballon de baudruche gonflé contient des milliards de milliards de molécules de gaz qui 
+    rebondissent constamment contre les parois !</p>
+  </div>
+  
+  <div class="bg-gradient-to-r from-primary/10 to-secondary/10 p-6 rounded-xl">
+    <h3 class="text-xl font-bold mb-4 flex items-center gap-2">
+      <span class="text-2xl">🎯</span>
+      Objectifs de la leçon
+    </h3>
+    <ul class="space-y-2">
+      <li class="flex items-start gap-2">
+        <span class="text-primary shrink-0 mt-1">✓</span>
+        <span>Spécifier deux propriétés de l'état gazeux : élasticité et compressibilité</span>
+      </li>
+    </ul>
+  </div>
+</div>`,
+    contenu: `<div class="space-y-8">
+  <section>
+    <h2 class="text-2xl font-bold text-primary mb-4">🌬️ Les États de la Matière</h2>
+    <div class="bg-gradient-to-r from-blue-50 to-cyan-50 dark:from-blue-950/30 dark:to-cyan-950/30 p-6 rounded-lg border-2 border-blue-200 dark:border-blue-800">
+      <p class="leading-relaxed mb-4">
+        La matière existe sous trois états principaux : <strong>solide</strong>, <strong>liquide</strong> et <strong>gazeux</strong>.
+        Chaque état a des propriétés différentes.
+      </p>
+      <div class="grid md:grid-cols-3 gap-4 mt-4">
+        <div class="bg-white/70 dark:bg-black/30 p-4 rounded-lg">
+          <h4 class="font-bold text-blue-600 dark:text-blue-400 mb-2">🧊 Solide</h4>
+          <ul class="text-sm space-y-1">
+            <li>• Forme fixe</li>
+            <li>• Volume fixe</li>
+            <li>• Incompressible</li>
+          </ul>
+        </div>
+        <div class="bg-white/70 dark:bg-black/30 p-4 rounded-lg">
+          <h4 class="font-bold text-blue-600 dark:text-blue-400 mb-2">💧 Liquide</h4>
+          <ul class="text-sm space-y-1">
+            <li>• Forme variable</li>
+            <li>• Volume fixe</li>
+            <li>• Peu compressible</li>
+          </ul>
+        </div>
+        <div class="bg-white/70 dark:bg-black/30 p-4 rounded-lg">
+          <h4 class="font-bold text-blue-600 dark:text-blue-400 mb-2">💨 Gaz</h4>
+          <ul class="text-sm space-y-1">
+            <li>• Forme variable</li>
+            <li>• Volume variable</li>
+            <li>• Compressible</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2 class="text-2xl font-bold text-primary mb-4">🎈 Propriété 1 : L'Élasticité</h2>
+    <div class="bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-950/30 dark:to-pink-950/30 p-6 rounded-lg border-2 border-purple-200 dark:border-purple-800">
+      <div class="mb-4">
+        <h3 class="text-xl font-bold text-purple-700 dark:text-purple-300 mb-3">Définition</h3>
+        <p class="leading-relaxed">
+          <strong>L'élasticité</strong> est la capacité d'un gaz à reprendre son volume initial après avoir été comprimé ou étiré.
+          Quand on relâche la pression, le gaz revient à son état d'origine.
+        </p>
+      </div>
+
+      <div class="bg-white/70 dark:bg-black/30 p-5 rounded-lg space-y-4">
+        <h4 class="font-bold text-purple-600 dark:text-purple-400">🎯 Expérience : Le Ballon</h4>
+        <div class="space-y-3">
+          <div class="flex items-start gap-3">
+            <span class="bg-purple-500 text-white rounded-full w-6 h-6 flex items-center justify-center flex-shrink-0 text-sm font-bold">1</span>
+            <p class="text-sm">Gonfle un ballon de baudruche et ferme-le</p>
+          </div>
+          <div class="flex items-start gap-3">
+            <span class="bg-purple-500 text-white rounded-full w-6 h-6 flex items-center justify-center flex-shrink-0 text-sm font-bold">2</span>
+            <p class="text-sm">Appuie doucement sur le ballon avec tes mains</p>
+          </div>
+          <div class="flex items-start gap-3">
+            <span class="bg-purple-500 text-white rounded-full w-6 h-6 flex items-center justify-center flex-shrink-0 text-sm font-bold">3</span>
+            <p class="text-sm">Le ballon se déforme sous la pression</p>
+          </div>
+          <div class="flex items-start gap-3">
+            <span class="bg-purple-500 text-white rounded-full w-6 h-6 flex items-center justify-center flex-shrink-0 text-sm font-bold">4</span>
+            <p class="text-sm">Relâche la pression : le ballon reprend sa forme initiale !</p>
+          </div>
+        </div>
+        <div class="mt-4 p-3 bg-purple-100 dark:bg-purple-900/40 rounded">
+          <p class="text-sm font-semibold">💡 Conclusion :</p>
+          <p class="text-sm">Le gaz à l'intérieur du ballon est élastique. Il peut être déformé mais revient toujours à son état initial.</p>
+        </div>
+      </div>
+
+      <div class="mt-6 bg-gradient-to-r from-purple-100 to-pink-100 dark:from-purple-900/50 dark:to-pink-900/50 p-4 rounded-lg">
+        <h4 class="font-bold mb-2">Exemples d'élasticité des gaz :</h4>
+        <ul class="space-y-2">
+          <li class="flex items-start gap-2">
+            <span class="text-purple-600 dark:text-purple-400">🎈</span>
+            <span>Ballon qui reprend sa forme</span>
+          </li>
+          <li class="flex items-start gap-2">
+            <span class="text-purple-600 dark:text-purple-400">🏀</span>
+            <span>Ballon de basket qui rebondit</span>
+          </li>
+          <li class="flex items-start gap-2">
+            <span class="text-purple-600 dark:text-purple-400">🚗</span>
+            <span>Pneus de voiture qui absorbent les chocs</span>
+          </li>
+          <li class="flex items-start gap-2">
+            <span class="text-purple-600 dark:text-purple-400">💺</span>
+            <span>Coussins pneumatiques</span>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2 class="text-2xl font-bold text-primary mb-4">🗜️ Propriété 2 : La Compressibilité</h2>
+    <div class="bg-gradient-to-r from-orange-50 to-yellow-50 dark:from-orange-950/30 dark:to-yellow-950/30 p-6 rounded-lg border-2 border-orange-200 dark:border-orange-800">
+      <div class="mb-4">
+        <h3 class="text-xl font-bold text-orange-700 dark:text-orange-300 mb-3">Définition</h3>
+        <p class="leading-relaxed">
+          <strong>La compressibilité</strong> est la capacité d'un gaz à diminuer de volume lorsqu'on lui applique une pression.
+          Les molécules de gaz peuvent se rapprocher les unes des autres.
+        </p>
+      </div>
+
+      <div class="bg-white/70 dark:bg-black/30 p-5 rounded-lg space-y-4">
+        <h4 class="font-bold text-orange-600 dark:text-orange-400">🎯 Expérience : La Seringue</h4>
+        <div class="space-y-3">
+          <div class="flex items-start gap-3">
+            <span class="bg-orange-500 text-white rounded-full w-6 h-6 flex items-center justify-center flex-shrink-0 text-sm font-bold">1</span>
+            <p class="text-sm">Prends une seringue sans aiguille, remplie d'air</p>
+          </div>
+          <div class="flex items-start gap-3">
+            <span class="bg-orange-500 text-white rounded-full w-6 h-6 flex items-center justify-center flex-shrink-0 text-sm font-bold">2</span>
+            <p class="text-sm">Bouche l'ouverture avec ton doigt</p>
+          </div>
+          <div class="flex items-start gap-3">
+            <span class="bg-orange-500 text-white rounded-full w-6 h-6 flex items-center justify-center flex-shrink-0 text-sm font-bold">3</span>
+            <p class="text-sm">Pousse le piston : l'air se comprime et occupe moins de volume</p>
+          </div>
+          <div class="flex items-start gap-3">
+            <span class="bg-orange-500 text-white rounded-full w-6 h-6 flex items-center justify-center flex-shrink-0 text-sm font-bold">4</span>
+            <p class="text-sm">Tu sens une résistance qui augmente : c'est la pression du gaz !</p>
+          </div>
+        </div>
+        <div class="mt-4 p-3 bg-orange-100 dark:bg-orange-900/40 rounded">
+          <p class="text-sm font-semibold">💡 Conclusion :</p>
+          <p class="text-sm">Le gaz peut être comprimé dans un volume plus petit. Cette propriété est unique aux gaz !</p>
+        </div>
+      </div>
+
+      <div class="mt-6 grid md:grid-cols-2 gap-4">
+        <div class="bg-gradient-to-r from-orange-100 to-yellow-100 dark:from-orange-900/50 dark:to-yellow-900/50 p-4 rounded-lg">
+          <h4 class="font-bold mb-2 text-orange-700 dark:text-orange-300">✅ Les gaz sont compressibles</h4>
+          <p class="text-sm">On peut réduire leur volume en appliquant une pression</p>
+        </div>
+        <div class="bg-gradient-to-r from-red-100 to-orange-100 dark:from-red-900/50 dark:to-orange-900/50 p-4 rounded-lg">
+          <h4 class="font-bold mb-2 text-red-700 dark:text-red-300">❌ Les solides et liquides ne sont pas compressibles</h4>
+          <p class="text-sm">Leur volume reste pratiquement constant</p>
+        </div>
+      </div>
+
+      <div class="mt-6 bg-gradient-to-r from-yellow-100 to-orange-100 dark:from-yellow-900/50 dark:to-orange-900/50 p-4 rounded-lg">
+        <h4 class="font-bold mb-2">Applications de la compressibilité :</h4>
+        <ul class="space-y-2">
+          <li class="flex items-start gap-2">
+            <span class="text-orange-600 dark:text-orange-400">🔧</span>
+            <span>Compresseurs d'air pour outils pneumatiques</span>
+          </li>
+          <li class="flex items-start gap-2">
+            <span class="text-orange-600 dark:text-orange-400">🚴</span>
+            <span>Pompes à vélo pour gonfler les pneus</span>
+          </li>
+          <li class="flex items-start gap-2">
+            <span class="text-orange-600 dark:text-orange-400">🏭</span>
+            <span>Bouteilles de gaz comprimé (cuisine, soudure)</span>
+          </li>
+          <li class="flex items-start gap-2">
+            <span class="text-orange-600 dark:text-orange-400">🧯</span>
+            <span>Extincteurs sous pression</span>
+          </li>
+          <li class="flex items-start gap-2">
+            <span class="text-orange-600 dark:text-orange-400">🎿</span>
+            <span>Amortisseurs pneumatiques</span>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section class="bg-gradient-to-br from-cyan-50 to-blue-50 dark:from-cyan-950/20 dark:to-blue-950/20 p-6 rounded-xl border-2 border-cyan-200 dark:border-cyan-800">
+    <h2 class="text-2xl font-bold text-cyan-800 dark:text-cyan-200 mb-4">🔬 Comparaison : Élasticité vs Compressibilité</h2>
+    <div class="overflow-x-auto">
+      <table class="w-full border-2 border-gray-300 dark:border-gray-600">
+        <thead class="bg-cyan-100 dark:bg-cyan-900/50">
+          <tr>
+            <th class="border border-gray-300 dark:border-gray-600 p-3 text-left">Propriété</th>
+            <th class="border border-gray-300 dark:border-gray-600 p-3 text-left">Élasticité</th>
+            <th class="border border-gray-300 dark:border-gray-600 p-3 text-left">Compressibilité</th>
+          </tr>
+        </thead>
+        <tbody class="bg-white/70 dark:bg-gray-800/70">
+          <tr>
+            <td class="border border-gray-300 dark:border-gray-600 p-3 font-semibold">Définition</td>
+            <td class="border border-gray-300 dark:border-gray-600 p-3">Capacité à reprendre son volume initial</td>
+            <td class="border border-gray-300 dark:border-gray-600 p-3">Capacité à réduire son volume sous pression</td>
+          </tr>
+          <tr>
+            <td class="border border-gray-300 dark:border-gray-600 p-3 font-semibold">Quand ?</td>
+            <td class="border border-gray-300 dark:border-gray-600 p-3">Après relâchement de la pression</td>
+            <td class="border border-gray-300 dark:border-gray-600 p-3">Pendant l'application de la pression</td>
+          </tr>
+          <tr>
+            <td class="border border-gray-300 dark:border-gray-600 p-3 font-semibold">Exemple</td>
+            <td class="border border-gray-300 dark:border-gray-600 p-3">Ballon qui reprend sa forme</td>
+            <td class="border border-gray-300 dark:border-gray-600 p-3">Air dans une seringue</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="mt-4 p-3 bg-cyan-100 dark:bg-cyan-900/40 rounded">
+      <p class="font-semibold text-sm">🔑 Point Important :</p>
+      <p class="text-sm">Ces deux propriétés sont liées ! La compressibilité permet de comprimer le gaz, 
+      et l'élasticité lui permet de revenir à son volume initial quand on relâche la pression.</p>
+    </div>
+  </section>
+</div>`,
+    exemplesExercices: `<div class="space-y-6">
+  <div class="bg-primary/5 p-6 rounded-lg border-2 border-primary/20">
+    <h3 class="text-xl font-bold text-primary mb-4">📝 Exercice 1 : Vrai ou Faux</h3>
+    <p class="mb-4">Indique si les affirmations suivantes sont vraies ou fausses :</p>
+    <ol class="space-y-2 list-decimal list-inside">
+      <li>Les gaz sont compressibles. <span class="ml-4 text-muted-foreground">(V / F)</span></li>
+      <li>Les liquides ont la même compressibilité que les gaz. <span class="ml-4 text-muted-foreground">(V / F)</span></li>
+      <li>L'élasticité permet au gaz de reprendre son volume initial. <span class="ml-4 text-muted-foreground">(V / F)</span></li>
+      <li>Un ballon gonflé démontre la compressibilité et l'élasticité des gaz. <span class="ml-4 text-muted-foreground">(V / F)</span></li>
+      <li>Les solides sont élastiques comme les gaz. <span class="ml-4 text-muted-foreground">(V / F)</span></li>
+    </ol>
+  </div>
+
+  <div class="bg-accent/5 p-6 rounded-lg border-2 border-accent/20">
+    <h3 class="text-xl font-bold text-accent mb-4">📝 Exercice 2 : Situations Pratiques</h3>
+    <p class="mb-4">Pour chaque situation, indique quelle propriété du gaz est illustrée (Élasticité E ou Compressibilité C) :</p>
+    <ol class="space-y-3 list-decimal list-inside">
+      <li>Tu gonfles un pneu de vélo avec une pompe. <span class="ml-4">_____</span></li>
+      <li>Un ballon de basket rebondit sur le sol. <span class="ml-4">_____</span></li>
+      <li>On remplit une bouteille de gaz de cuisine. <span class="ml-4">_____</span></li>
+      <li>Un coussin d'air reprend sa forme après avoir été assis dessus. <span class="ml-4">_____</span></li>
+      <li>Un compresseur stocke de l'air dans un réservoir. <span class="ml-4">_____</span></li>
+    </ol>
+  </div>
+
+  <div class="bg-secondary/5 p-6 rounded-lg border-2 border-secondary/20">
+    <h3 class="text-xl font-bold text-secondary mb-4">📝 Exercice 3 : Expérience</h3>
+    <p class="mb-4">Décris une expérience simple pour démontrer :</p>
+    <div class="space-y-4">
+      <div class="p-4 bg-white/50 dark:bg-black/20 rounded">
+        <p class="font-semibold mb-2">a) La compressibilité des gaz</p>
+        <p class="text-sm text-muted-foreground">Matériel nécessaire : _______________</p>
+        <p class="text-sm text-muted-foreground mt-2">Étapes : _______________</p>
+      </div>
+      <div class="p-4 bg-white/50 dark:bg-black/20 rounded">
+        <p class="font-semibold mb-2">b) L'élasticité des gaz</p>
+        <p class="text-sm text-muted-foreground">Matériel nécessaire : _______________</p>
+        <p class="text-sm text-muted-foreground mt-2">Étapes : _______________</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-950/20 dark:to-pink-950/20 p-6 rounded-lg border-2 border-purple-200 dark:border-purple-800">
+    <h3 class="text-xl font-bold text-purple-700 dark:text-purple-300 mb-4">📝 Exercice 4 : Réflexion</h3>
+    <p class="mb-4 font-semibold">Pourquoi les pneus de voiture sont-ils remplis d'air et non d'eau ou de sable ?</p>
+    <p class="text-sm text-muted-foreground mb-3">Dans ta réponse, explique :</p>
+    <ul class="list-disc list-inside space-y-1 text-sm text-muted-foreground ml-4">
+      <li>Le rôle de la compressibilité des gaz</li>
+      <li>Le rôle de l'élasticité des gaz</li>
+      <li>Pourquoi l'eau ou le sable ne conviendraient pas</li>
+    </ul>
+    <div class="mt-4 p-3 bg-white/50 dark:bg-black/20 rounded min-h-[100px]">
+      <p class="text-xs text-muted-foreground italic">Espace pour ta réponse...</p>
+    </div>
+  </div>
+</div>`,
+    musicUrl: "/lovable-uploads/proprietes-gaz-lesson-music.mp3"
   },
 
   // LA CHALEUR
@@ -679,9 +968,347 @@ export const sciencesLessons7AF: Record<string, StaticLessonContent> = {
 • Spécifier que la chaleur peut se propager par conduction
 • Spécifier que la chaleur peut se propager par convection
 • Spécifier que la chaleur peut se propager par rayonnement`,
-    introduction: `[Contenu à ajouter]`,
-    contenu: `[Contenu à ajouter]`,
-    exemplesExercices: `[Contenu à ajouter]`
+    introduction: `<div class="space-y-6">
+  <p class="text-lg leading-relaxed">
+    Quand tu te rapproches d'un feu, tu sens la chaleur. Quand tu touches une casserole chaude, tu te brûles.
+    La chaleur voyage ! Mais comment se déplace-t-elle d'un endroit à un autre ?
+  </p>
+  <div class="bg-primary/5 border-l-4 border-primary p-4 rounded-r">
+    <p class="font-semibold text-primary mb-2">🔥 Le saviez-vous ?</p>
+    <p>Le Soleil nous réchauffe à travers 150 millions de kilomètres d'espace vide ! La chaleur peut voyager
+    même sans matière.</p>
+  </div>
+  
+  <div class="bg-gradient-to-r from-primary/10 to-secondary/10 p-6 rounded-xl">
+    <h3 class="text-xl font-bold mb-4 flex items-center gap-2">
+      <span class="text-2xl">🎯</span>
+      Objectifs de la leçon
+    </h3>
+    <ul class="space-y-2">
+      <li class="flex items-start gap-2">
+        <span class="text-primary shrink-0 mt-1">✓</span>
+        <span>Spécifier que la chaleur peut se propager par conduction</span>
+      </li>
+      <li class="flex items-start gap-2">
+        <span class="text-primary shrink-0 mt-1">✓</span>
+        <span>Spécifier que la chaleur peut se propager par convection</span>
+      </li>
+      <li class="flex items-start gap-2">
+        <span class="text-primary shrink-0 mt-1">✓</span>
+        <span>Spécifier que la chaleur peut se propager par rayonnement</span>
+      </li>
+    </ul>
+  </div>
+</div>`,
+    contenu: `<div class="space-y-8">
+  <section>
+    <h2 class="text-2xl font-bold text-primary mb-4">🌡️ Qu'est-ce que la Chaleur ?</h2>
+    <div class="bg-gradient-to-r from-red-50 to-orange-50 dark:from-red-950/30 dark:to-orange-950/30 p-6 rounded-lg border-2 border-red-200 dark:border-red-800">
+      <p class="leading-relaxed mb-4">
+        La <strong>chaleur</strong> est une forme d'énergie qui se déplace toujours du corps le plus chaud vers
+        le corps le plus froid. Cette énergie peut se propager de trois manières différentes.
+      </p>
+      <div class="bg-white/70 dark:bg-black/30 p-4 rounded-lg">
+        <p class="font-semibold mb-2">🔑 Règle importante :</p>
+        <p>La chaleur se déplace TOUJOURS du chaud vers le froid, jamais l'inverse !</p>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2 class="text-2xl font-bold text-primary mb-4">🔥 Mode 1 : La Conduction</h2>
+    <div class="bg-gradient-to-r from-orange-50 to-red-50 dark:from-orange-950/30 dark:to-red-950/30 p-6 rounded-lg border-2 border-orange-200 dark:border-orange-800">
+      <div class="mb-4">
+        <h3 class="text-xl font-bold text-orange-700 dark:text-orange-300 mb-3">Définition</h3>
+        <p class="leading-relaxed">
+          La <strong>conduction</strong> est la propagation de la chaleur de proche en proche à travers un matériau,
+          sans déplacement de la matière. La chaleur passe par contact direct.
+        </p>
+      </div>
+
+      <div class="bg-white/70 dark:bg-black/30 p-5 rounded-lg space-y-4">
+        <h4 class="font-bold text-orange-600 dark:text-orange-400">🎯 Expérience : La Cuillère Métallique</h4>
+        <div class="space-y-3">
+          <p class="text-sm">Place une cuillère métallique dans une tasse d'eau chaude</p>
+          <p class="text-sm">Au bout de quelques secondes, le manche de la cuillère devient chaud</p>
+          <p class="text-sm font-semibold text-orange-700 dark:text-orange-300">
+            → La chaleur s'est propagée du bas vers le haut de la cuillère par conduction !
+          </p>
+        </div>
+        
+        <div class="mt-4 grid md:grid-cols-2 gap-4">
+          <div class="p-3 bg-green-50 dark:bg-green-900/30 rounded">
+            <h5 class="font-bold text-green-700 dark:text-green-300 mb-2">✓ Bons conducteurs</h5>
+            <ul class="text-sm space-y-1">
+              <li>• Métaux (cuivre, fer, aluminium)</li>
+              <li>• Utilisés pour casseroles</li>
+              <li>• Transmettent vite la chaleur</li>
+            </ul>
+          </div>
+          <div class="p-3 bg-blue-50 dark:bg-blue-900/30 rounded">
+            <h5 class="font-bold text-blue-700 dark:text-blue-300 mb-2">✗ Mauvais conducteurs (Isolants)</h5>
+            <ul class="text-sm space-y-1">
+              <li>• Bois, plastique, air</li>
+              <li>• Utilisés pour manches de casseroles</li>
+              <li>• Transmettent lentement la chaleur</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <div class="mt-6 bg-gradient-to-r from-orange-100 to-red-100 dark:from-orange-900/50 dark:to-red-900/50 p-4 rounded-lg">
+        <h4 class="font-bold mb-2">Exemples quotidiens de conduction :</h4>
+        <ul class="space-y-2">
+          <li class="flex items-start gap-2">
+            <span class="text-orange-600 dark:text-orange-400">🍳</span>
+            <span>Une casserole sur le feu chauffe par conduction</span>
+          </li>
+          <li class="flex items-start gap-2">
+            <span class="text-orange-600 dark:text-orange-400">🔧</span>
+            <span>Un fer à repasser transmet la chaleur aux vêtements</span>
+          </li>
+          <li class="flex items-start gap-2">
+            <span class="text-orange-600 dark:text-orange-400">❄️</span>
+            <span>Une barre de glace dans ta main se réchauffe</span>
+          </li>
+          <li class="flex items-start gap-2">
+            <span class="text-orange-600 dark:text-orange-400">🏠</span>
+            <span>Les radiateurs chauffent les murs par contact</span>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2 class="text-2xl font-bold text-primary mb-4">💨 Mode 2 : La Convection</h2>
+    <div class="bg-gradient-to-r from-blue-50 to-cyan-50 dark:from-blue-950/30 dark:to-cyan-950/30 p-6 rounded-lg border-2 border-blue-200 dark:border-blue-800">
+      <div class="mb-4">
+        <h3 class="text-xl font-bold text-blue-700 dark:text-blue-300 mb-3">Définition</h3>
+        <p class="leading-relaxed">
+          La <strong>convection</strong> est la propagation de la chaleur par déplacement de matière (liquide ou gaz).
+          Les parties chaudes montent, les parties froides descendent, créant des courants.
+        </p>
+      </div>
+
+      <div class="bg-white/70 dark:bg-black/30 p-5 rounded-lg space-y-4">
+        <h4 class="font-bold text-blue-600 dark:text-blue-400">🎯 Expérience : L'Eau qui Bout</h4>
+        <div class="space-y-3">
+          <p class="text-sm">Chauffe de l'eau dans une casserole transparente</p>
+          <p class="text-sm">Observe : l'eau chaude au fond monte vers le haut</p>
+          <p class="text-sm">L'eau froide en surface descend vers le fond</p>
+          <p class="text-sm font-semibold text-blue-700 dark:text-blue-300">
+            → Des courants de convection se forment ! C'est comme une boucle continue.
+          </p>
+        </div>
+        
+        <div class="mt-4 p-4 bg-gradient-to-r from-blue-100 to-cyan-100 dark:from-blue-900/50 dark:to-cyan-900/50 rounded-lg">
+          <h5 class="font-bold mb-2">💡 Pourquoi ça monte et ça descend ?</h5>
+          <ul class="text-sm space-y-2">
+            <li>✓ L'eau (ou l'air) chaude est moins dense → plus légère → monte</li>
+            <li>✓ L'eau (ou l'air) froide est plus dense → plus lourde → descend</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="mt-6 bg-gradient-to-r from-cyan-100 to-blue-100 dark:from-cyan-900/50 dark:to-blue-900/50 p-4 rounded-lg">
+        <h4 class="font-bold mb-2">Exemples quotidiens de convection :</h4>
+        <ul class="space-y-2">
+          <li class="flex items-start gap-2">
+            <span class="text-blue-600 dark:text-blue-400">🏠</span>
+            <span>L'air chaud dans une pièce monte au plafond</span>
+          </li>
+          <li class="flex items-start gap-2">
+            <span class="text-blue-600 dark:text-blue-400">🍲</span>
+            <span>L'eau bout dans une marmite avec des mouvements circulaires</span>
+          </li>
+          <li class="flex items-start gap-2">
+            <span class="text-blue-600 dark:text-blue-400">🌬️</span>
+            <span>Les vents : l'air chaud monte, l'air froid descend</span>
+          </li>
+          <li class="flex items-start gap-2">
+            <span class="text-blue-600 dark:text-blue-400">🌊</span>
+            <span>Les courants marins dans les océans</span>
+          </li>
+          <li class="flex items-start gap-2">
+            <span class="text-blue-600 dark:text-blue-400">🎈</span>
+            <span>Les montgolfières : l'air chaud les fait monter</span>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2 class="text-2xl font-bold text-primary mb-4">☀️ Mode 3 : Le Rayonnement</h2>
+    <div class="bg-gradient-to-r from-yellow-50 to-orange-50 dark:from-yellow-950/30 dark:to-orange-950/30 p-6 rounded-lg border-2 border-yellow-200 dark:border-yellow-800">
+      <div class="mb-4">
+        <h3 class="text-xl font-bold text-yellow-700 dark:text-yellow-300 mb-3">Définition</h3>
+        <p class="leading-relaxed">
+          Le <strong>rayonnement</strong> est la propagation de la chaleur par ondes (comme la lumière),
+          sans nécessiter de matière. La chaleur peut voyager dans le vide !
+        </p>
+      </div>
+
+      <div class="bg-white/70 dark:bg-black/30 p-5 rounded-lg space-y-4">
+        <h4 class="font-bold text-yellow-600 dark:text-yellow-400">🎯 Expérience : Le Soleil</h4>
+        <div class="space-y-3">
+          <p class="text-sm">Mets-toi au soleil et tu sens sa chaleur sur ta peau</p>
+          <p class="text-sm">Pourtant, entre le Soleil et toi, il y a le vide de l'espace !</p>
+          <p class="text-sm font-semibold text-yellow-700 dark:text-yellow-300">
+            → Le Soleil nous réchauffe par rayonnement, sans avoir besoin d'air entre nous !
+          </p>
+        </div>
+        
+        <div class="mt-4 p-4 bg-gradient-to-r from-yellow-100 to-orange-100 dark:from-yellow-900/50 dark:to-orange-900/50 rounded-lg">
+          <h5 class="font-bold mb-2">💡 Caractéristiques du rayonnement :</h5>
+          <ul class="text-sm space-y-2">
+            <li>✓ Voyage à la vitesse de la lumière</li>
+            <li>✓ Ne nécessite pas de matière (peut traverser le vide)</li>
+            <li>✓ Peut être réfléchi par des surfaces brillantes</li>
+            <li>✓ Absorbé par les surfaces sombres</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="mt-6 bg-gradient-to-r from-orange-100 to-yellow-100 dark:from-orange-900/50 dark:to-yellow-900/50 p-4 rounded-lg">
+        <h4 class="font-bold mb-2">Exemples quotidiens de rayonnement :</h4>
+        <ul class="space-y-2">
+          <li class="flex items-start gap-2">
+            <span class="text-yellow-600 dark:text-yellow-400">☀️</span>
+            <span>Le Soleil réchauffe la Terre</span>
+          </li>
+          <li class="flex items-start gap-2">
+            <span class="text-yellow-600 dark:text-yellow-400">🔥</span>
+            <span>Tu sens la chaleur d'un feu même sans le toucher</span>
+          </li>
+          <li class="flex items-start gap-2">
+            <span class="text-yellow-600 dark:text-yellow-400">💡</span>
+            <span>Une ampoule chauffe par rayonnement</span>
+          </li>
+          <li class="flex items-start gap-2">
+            <span class="text-yellow-600 dark:text-yellow-400">🍞</span>
+            <span>Un grille-pain chauffe le pain par rayonnement</span>
+          </li>
+          <li class="flex items-start gap-2">
+            <span class="text-yellow-600 dark:text-yellow-400">📡</span>
+            <span>Les micro-ondes chauffent les aliments</span>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section class="bg-gradient-to-br from-purple-50 to-pink-50 dark:from-purple-950/20 dark:to-pink-950/20 p-6 rounded-xl border-2 border-purple-200 dark:border-purple-800">
+    <h2 class="text-2xl font-bold text-purple-800 dark:text-purple-200 mb-4">📊 Comparaison des Trois Modes</h2>
+    <div class="overflow-x-auto">
+      <table class="w-full border-2 border-gray-300 dark:border-gray-600">
+        <thead class="bg-purple-100 dark:bg-purple-900/50">
+          <tr>
+            <th class="border border-gray-300 dark:border-gray-600 p-3 text-left">Mode</th>
+            <th class="border border-gray-300 dark:border-gray-600 p-3 text-left">Besoin de matière ?</th>
+            <th class="border border-gray-300 dark:border-gray-600 p-3 text-left">Déplacement de matière ?</th>
+            <th class="border border-gray-300 dark:border-gray-600 p-3 text-left">Exemple</th>
+          </tr>
+        </thead>
+        <tbody class="bg-white/70 dark:bg-gray-800/70">
+          <tr>
+            <td class="border border-gray-300 dark:border-gray-600 p-3 font-semibold">Conduction</td>
+            <td class="border border-gray-300 dark:border-gray-600 p-3">Oui</td>
+            <td class="border border-gray-300 dark:border-gray-600 p-3">Non</td>
+            <td class="border border-gray-300 dark:border-gray-600 p-3">Cuillère dans l'eau chaude</td>
+          </tr>
+          <tr>
+            <td class="border border-gray-300 dark:border-gray-600 p-3 font-semibold">Convection</td>
+            <td class="border border-gray-300 dark:border-gray-600 p-3">Oui (fluide)</td>
+            <td class="border border-gray-300 dark:border-gray-600 p-3">Oui</td>
+            <td class="border border-gray-300 dark:border-gray-600 p-3">Eau qui bout</td>
+          </tr>
+          <tr>
+            <td class="border border-gray-300 dark:border-gray-600 p-3 font-semibold">Rayonnement</td>
+            <td class="border border-gray-300 dark:border-gray-600 p-3">Non</td>
+            <td class="border border-gray-300 dark:border-gray-600 p-3">Non</td>
+            <td class="border border-gray-300 dark:border-gray-600 p-3">Chaleur du Soleil</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="mt-4 p-3 bg-purple-100 dark:bg-purple-900/40 rounded">
+      <p class="font-semibold text-sm">🔑 À retenir :</p>
+      <p class="text-sm">Ces trois modes peuvent coexister ! Par exemple, quand tu fais cuire quelque chose au four :
+      conduction (plaque → casserole), convection (air chaud dans le four) et rayonnement (chaleur des parois).</p>
+    </div>
+  </section>
+</div>`,
+    exemplesExercices: `<div class="space-y-6">
+  <div class="bg-primary/5 p-6 rounded-lg border-2 border-primary/20">
+    <h3 class="text-xl font-bold text-primary mb-4">📝 Exercice 1 : Identification</h3>
+    <p class="mb-4">Pour chaque situation, identifie le mode de propagation de la chaleur (Conduction / Convection / Rayonnement) :</p>
+    <ol class="space-y-2 list-decimal list-inside">
+      <li>Tu touches une casserole chaude et tu te brûles. <span class="ml-4">__________</span></li>
+      <li>Tu sens la chaleur du feu de camp sans le toucher. <span class="ml-4">__________</span></li>
+      <li>L'air chaud d'un radiateur monte vers le plafond. <span class="ml-4">__________</span></li>
+      <li>Une cuillère en métal devient chaude dans une soupe. <span class="ml-4">__________</span></li>
+      <li>Le Soleil réchauffe ton visage. <span class="ml-4">__________</span></li>
+      <li>L'eau bout dans une marmite avec des bulles qui montent. <span class="ml-4">__________</span></li>
+    </ol>
+  </div>
+
+  <div class="bg-accent/5 p-6 rounded-lg border-2 border-accent/20">
+    <h3 class="text-xl font-bold text-accent mb-4">📝 Exercice 2 : Vrai ou Faux</h3>
+    <p class="mb-4">Indique si les affirmations suivantes sont vraies ou fausses :</p>
+    <ol class="space-y-2 list-decimal list-inside">
+      <li>La conduction nécessite un contact direct. <span class="ml-4 text-muted-foreground">(V / F)</span></li>
+      <li>La convection se produit dans les solides. <span class="ml-4 text-muted-foreground">(V / F)</span></li>
+      <li>Le rayonnement peut voyager dans le vide. <span class="ml-4 text-muted-foreground">(V / F)</span></li>
+      <li>Les métaux sont de bons conducteurs de chaleur. <span class="ml-4 text-muted-foreground">(V / F)</span></li>
+      <li>La chaleur va toujours du froid vers le chaud. <span class="ml-4 text-muted-foreground">(V / F)</span></li>
+      <li>L'air chaud est plus lourd que l'air froid. <span class="ml-4 text-muted-foreground">(V / F)</span></li>
+    </ol>
+  </div>
+
+  <div class="bg-secondary/5 p-6 rounded-lg border-2 border-secondary/20">
+    <h3 class="text-xl font-bold text-secondary mb-4">📝 Exercice 3 : Matériaux</h3>
+    <p class="mb-4">Classe les matériaux suivants en bons conducteurs ou isolants :</p>
+    <div class="grid md:grid-cols-2 gap-6">
+      <div>
+        <h4 class="font-semibold mb-3">Bons conducteurs :</h4>
+        <ul class="space-y-2 ml-4">
+          <li>_______________</li>
+          <li>_______________</li>
+          <li>_______________</li>
+        </ul>
+      </div>
+      <div>
+        <h4 class="font-semibold mb-3">Isolants :</h4>
+        <ul class="space-y-2 ml-4">
+          <li>_______________</li>
+          <li>_______________</li>
+          <li>_______________</li>
+        </ul>
+      </div>
+    </div>
+    <div class="mt-4 p-3 bg-gray-100 dark:bg-gray-800 rounded">
+      <p class="text-sm font-semibold mb-2">Matériaux à classer :</p>
+      <p class="text-sm">Cuivre • Bois • Fer • Plastique • Aluminium • Laine • Air • Acier</p>
+    </div>
+  </div>
+
+  <div class="bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-950/20 dark:to-pink-950/20 p-6 rounded-lg border-2 border-purple-200 dark:border-purple-800">
+    <h3 class="text-xl font-bold text-purple-700 dark:text-purple-300 mb-4">📝 Exercice 4 : Application Pratique</h3>
+    <p class="mb-4 font-semibold">Explique pourquoi les manches des casseroles sont en bois ou en plastique et non en métal.</p>
+    <p class="text-sm text-muted-foreground mb-3">Dans ta réponse, mentionne :</p>
+    <ul class="list-disc list-inside space-y-1 text-sm text-muted-foreground ml-4">
+      <li>Le mode de propagation de la chaleur impliqué</li>
+      <li>La différence entre conducteurs et isolants</li>
+      <li>Les avantages pour l'utilisateur</li>
+    </ul>
+    <div class="mt-4 p-3 bg-white/50 dark:bg-black/20 rounded min-h-[100px]">
+      <p class="text-xs text-muted-foreground italic">Espace pour ta réponse...</p>
+    </div>
+  </div>
+</div>`,
+    musicUrl: "/lovable-uploads/propagation-chaleur-lesson-music.mp3"
   },
 
   "effets-chaleur": {
