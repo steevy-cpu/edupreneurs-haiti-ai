@@ -3042,9 +3042,588 @@ export const sciencesLessons7AF: Record<string, StaticLessonContent> = {
 • Distinguer les vertébrés des invertébrés
 • Classer en cinq (5) grands groupes les vertébrés, tenant compte de leur morphologie
 • Spécifier les caractéristiques des mammifères, oiseaux, reptiles, batraciens et poissons`,
-    introduction: `[Contenu à ajouter]`,
-    contenu: `[Contenu à ajouter]`,
-    exemplesExercices: `[Contenu à ajouter]`
+    introduction: `<div class="space-y-6">
+  <p class="text-lg leading-relaxed">
+    Le règne animal est d'une richesse extraordinaire ! Parmi toutes les espèces, certaines possèdent une colonne vertébrale
+    tandis que d'autres n'en ont pas. Aujourd'hui, nous allons explorer le monde fascinant des <strong>vertébrés</strong>
+    et découvrir comment les scientifiques les classent en cinq grands groupes.
+  </p>
+  <div class="bg-primary/5 border-l-4 border-primary p-4 rounded-r">
+    <p class="font-semibold text-primary mb-2">🦴 Le saviez-vous ?</p>
+    <p>Il existe environ 1,5 million d'espèces animales connues sur Terre, mais seulement 5% d'entre elles sont des vertébrés !
+    Les 95% restants sont des invertébrés comme les insectes, les mollusques et les crustacés.</p>
+  </div>
+  
+  <div class="bg-gradient-to-r from-primary/10 to-secondary/10 p-6 rounded-xl">
+    <h3 class="text-xl font-bold mb-4 flex items-center gap-2">
+      <span class="text-2xl">🎯</span>
+      Objectifs de la leçon
+    </h3>
+    <ul class="space-y-2">
+      <li class="flex items-start gap-2">
+        <span class="text-primary shrink-0 mt-1">✓</span>
+        <span>Distinguer les vertébrés des invertébrés</span>
+      </li>
+      <li class="flex items-start gap-2">
+        <span class="text-primary shrink-0 mt-1">✓</span>
+        <span>Classer en cinq (5) grands groupes les vertébrés, tenant compte de leur morphologie</span>
+      </li>
+      <li class="flex items-start gap-2">
+        <span class="text-primary shrink-0 mt-1">✓</span>
+        <span>Spécifier les caractéristiques des mammifères, oiseaux, reptiles, batraciens et poissons</span>
+      </li>
+    </ul>
+  </div>
+</div>`,
+    contenu: `<div class="space-y-8">
+  <section>
+    <h2 class="text-2xl font-bold text-primary mb-4">🦴 Vertébrés vs Invertébrés</h2>
+    <div class="grid md:grid-cols-2 gap-6">
+      <div class="bg-gradient-to-br from-blue-50 to-cyan-50 dark:from-blue-950/30 dark:to-cyan-950/30 p-6 rounded-lg border-2 border-blue-200 dark:border-blue-800">
+        <h3 class="text-xl font-bold text-blue-700 dark:text-blue-300 mb-3">🦴 VERTÉBRÉS</h3>
+        <p class="mb-4 font-semibold">Animaux possédant une colonne vertébrale</p>
+        <ul class="space-y-2 text-sm">
+          <li class="flex items-start gap-2">
+            <span class="text-blue-600 dark:text-blue-400">✓</span>
+            <span><strong>Squelette interne</strong> (endosquelette)</span>
+          </li>
+          <li class="flex items-start gap-2">
+            <span class="text-blue-600 dark:text-blue-400">✓</span>
+            <span><strong>Colonne vertébrale</strong> composée de vertèbres</span>
+          </li>
+          <li class="flex items-start gap-2">
+            <span class="text-blue-600 dark:text-blue-400">✓</span>
+            <span><strong>Crâne</strong> protégeant le cerveau</span>
+          </li>
+          <li class="flex items-start gap-2">
+            <span class="text-blue-600 dark:text-blue-400">✓</span>
+            <span><strong>Système nerveux</strong> complexe</span>
+          </li>
+        </ul>
+        <div class="mt-4 bg-white/70 dark:bg-black/30 p-3 rounded">
+          <p class="text-xs font-semibold">Exemples : chat, aigle, serpent, grenouille, poisson</p>
+        </div>
+      </div>
+      
+      <div class="bg-gradient-to-br from-purple-50 to-pink-50 dark:from-purple-950/30 dark:to-pink-950/30 p-6 rounded-lg border-2 border-purple-200 dark:border-purple-800">
+        <h3 class="text-xl font-bold text-purple-700 dark:text-purple-300 mb-3">🐛 INVERTÉBRÉS</h3>
+        <p class="mb-4 font-semibold">Animaux sans colonne vertébrale</p>
+        <ul class="space-y-2 text-sm">
+          <li class="flex items-start gap-2">
+            <span class="text-purple-600 dark:text-purple-400">✓</span>
+            <span><strong>Pas de squelette interne</strong></span>
+          </li>
+          <li class="flex items-start gap-2">
+            <span class="text-purple-600 dark:text-purple-400">✓</span>
+            <span>Certains ont un <strong>exosquelette</strong> (carapace externe)</span>
+          </li>
+          <li class="flex items-start gap-2">
+            <span class="text-purple-600 dark:text-purple-400">✓</span>
+            <span>D'autres ont un <strong>corps mou</strong></span>
+          </li>
+          <li class="flex items-start gap-2">
+            <span class="text-purple-600 dark:text-purple-400">✓</span>
+            <span>Représentent <strong>95% des espèces</strong></span>
+          </li>
+        </ul>
+        <div class="mt-4 bg-white/70 dark:bg-black/30 p-3 rounded">
+          <p class="text-xs font-semibold">Exemples : insectes, crustacés, méduses, vers, mollusques</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2 class="text-2xl font-bold text-primary mb-4">🔬 Les Cinq Groupes de Vertébrés</h2>
+    
+    <div class="space-y-6">
+      <!-- MAMMIFÈRES -->
+      <div class="bg-gradient-to-r from-orange-50 to-amber-50 dark:from-orange-950/30 dark:to-amber-950/30 p-6 rounded-xl border-2 border-orange-300 dark:border-orange-700">
+        <h3 class="text-2xl font-bold text-orange-700 dark:text-orange-300 mb-4 flex items-center gap-3">
+          <span class="text-3xl">🦁</span>
+          1. LES MAMMIFÈRES
+        </h3>
+        <div class="grid md:grid-cols-2 gap-4">
+          <div>
+            <h4 class="font-bold text-orange-600 dark:text-orange-400 mb-3">Caractéristiques principales :</h4>
+            <ul class="space-y-2 text-sm">
+              <li class="flex items-start gap-2">
+                <span class="text-orange-500 shrink-0">🔸</span>
+                <span><strong>Corps couvert de poils</strong> ou de fourrure</span>
+              </li>
+              <li class="flex items-start gap-2">
+                <span class="text-orange-500 shrink-0">🔸</span>
+                <span><strong>Allaitent leurs petits</strong> avec du lait produit par les mamelles</span>
+              </li>
+              <li class="flex items-start gap-2">
+                <span class="text-orange-500 shrink-0">🔸</span>
+                <span><strong>Sang chaud</strong> (température corporelle constante)</span>
+              </li>
+              <li class="flex items-start gap-2">
+                <span class="text-orange-500 shrink-0">🔸</span>
+                <span><strong>Respirent avec des poumons</strong></span>
+              </li>
+              <li class="flex items-start gap-2">
+                <span class="text-orange-500 shrink-0">🔸</span>
+                <span><strong>Vivipares</strong> (donnent naissance à des petits vivants)</span>
+              </li>
+            </ul>
+          </div>
+          <div class="bg-white/70 dark:bg-black/30 p-4 rounded-lg">
+            <h4 class="font-bold mb-2">🌍 Exemples :</h4>
+            <ul class="text-sm space-y-1">
+              <li>• Terrestres : lion, éléphant, chien, humain</li>
+              <li>• Aquatiques : baleine, dauphin, phoque</li>
+              <li>• Volants : chauve-souris</li>
+            </ul>
+            <p class="mt-3 text-xs italic">Il existe environ 5 500 espèces de mammifères</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- OISEAUX -->
+      <div class="bg-gradient-to-r from-sky-50 to-blue-50 dark:from-sky-950/30 dark:to-blue-950/30 p-6 rounded-xl border-2 border-sky-300 dark:border-sky-700">
+        <h3 class="text-2xl font-bold text-sky-700 dark:text-sky-300 mb-4 flex items-center gap-3">
+          <span class="text-3xl">🦅</span>
+          2. LES OISEAUX
+        </h3>
+        <div class="grid md:grid-cols-2 gap-4">
+          <div>
+            <h4 class="font-bold text-sky-600 dark:text-sky-400 mb-3">Caractéristiques principales :</h4>
+            <ul class="space-y-2 text-sm">
+              <li class="flex items-start gap-2">
+                <span class="text-sky-500 shrink-0">🔸</span>
+                <span><strong>Corps couvert de plumes</strong></span>
+              </li>
+              <li class="flex items-start gap-2">
+                <span class="text-sky-500 shrink-0">🔸</span>
+                <span><strong>Deux ailes</strong> (même s'ils ne volent pas tous)</span>
+              </li>
+              <li class="flex items-start gap-2">
+                <span class="text-sky-500 shrink-0">🔸</span>
+                <span><strong>Bec</strong> sans dents</span>
+              </li>
+              <li class="flex items-start gap-2">
+                <span class="text-sky-500 shrink-0">🔸</span>
+                <span><strong>Sang chaud</strong> (homéothermes)</span>
+              </li>
+              <li class="flex items-start gap-2">
+                <span class="text-sky-500 shrink-0">🔸</span>
+                <span><strong>Ovipares</strong> (pondent des œufs)</span>
+              </li>
+              <li class="flex items-start gap-2">
+                <span class="text-sky-500 shrink-0">🔸</span>
+                <span><strong>Respirent avec des poumons</strong></span>
+              </li>
+            </ul>
+          </div>
+          <div class="bg-white/70 dark:bg-black/30 p-4 rounded-lg">
+            <h4 class="font-bold mb-2">🌍 Exemples :</h4>
+            <ul class="text-sm space-y-1">
+              <li>• Volants : aigle, perroquet, colibri</li>
+              <li>• Non-volants : autruche, pingouin, kiwi</li>
+              <li>• Aquatiques : canard, mouette, pélican</li>
+            </ul>
+            <p class="mt-3 text-xs italic">Il existe environ 10 000 espèces d'oiseaux</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- REPTILES -->
+      <div class="bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-950/30 dark:to-emerald-950/30 p-6 rounded-xl border-2 border-green-300 dark:border-green-700">
+        <h3 class="text-2xl font-bold text-green-700 dark:text-green-300 mb-4 flex items-center gap-3">
+          <span class="text-3xl">🐍</span>
+          3. LES REPTILES
+        </h3>
+        <div class="grid md:grid-cols-2 gap-4">
+          <div>
+            <h4 class="font-bold text-green-600 dark:text-green-400 mb-3">Caractéristiques principales :</h4>
+            <ul class="space-y-2 text-sm">
+              <li class="flex items-start gap-2">
+                <span class="text-green-500 shrink-0">🔸</span>
+                <span><strong>Peau sèche couverte d'écailles</strong></span>
+              </li>
+              <li class="flex items-start gap-2">
+                <span class="text-green-500 shrink-0">🔸</span>
+                <span><strong>Sang froid</strong> (température variable)</span>
+              </li>
+              <li class="flex items-start gap-2">
+                <span class="text-green-500 shrink-0">🔸</span>
+                <span><strong>Respirent avec des poumons</strong></span>
+              </li>
+              <li class="flex items-start gap-2">
+                <span class="text-green-500 shrink-0">🔸</span>
+                <span><strong>La plupart sont ovipares</strong> (œufs à coquille)</span>
+              </li>
+              <li class="flex items-start gap-2">
+                <span class="text-green-500 shrink-0">🔸</span>
+                <span>Vivent principalement sur <strong>terre</strong></span>
+              </li>
+            </ul>
+          </div>
+          <div class="bg-white/70 dark:bg-black/30 p-4 rounded-lg">
+            <h4 class="font-bold mb-2">🌍 Exemples :</h4>
+            <ul class="text-sm space-y-1">
+              <li>• Serpents : boa, cobra, python</li>
+              <li>• Lézards : iguane, gecko, caméléon</li>
+              <li>• Tortues : tortue terrestre, tortue marine</li>
+              <li>• Crocodiliens : crocodile, alligator</li>
+            </ul>
+            <p class="mt-3 text-xs italic">Il existe environ 11 000 espèces de reptiles</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- BATRACIENS (AMPHIBIENS) -->
+      <div class="bg-gradient-to-r from-lime-50 to-green-50 dark:from-lime-950/30 dark:to-green-950/30 p-6 rounded-xl border-2 border-lime-300 dark:border-lime-700">
+        <h3 class="text-2xl font-bold text-lime-700 dark:text-lime-300 mb-4 flex items-center gap-3">
+          <span class="text-3xl">🐸</span>
+          4. LES BATRACIENS (Amphibiens)
+        </h3>
+        <div class="grid md:grid-cols-2 gap-4">
+          <div>
+            <h4 class="font-bold text-lime-600 dark:text-lime-400 mb-3">Caractéristiques principales :</h4>
+            <ul class="space-y-2 text-sm">
+              <li class="flex items-start gap-2">
+                <span class="text-lime-500 shrink-0">🔸</span>
+                <span><strong>Peau nue, humide et lisse</strong> (sans écailles)</span>
+              </li>
+              <li class="flex items-start gap-2">
+                <span class="text-lime-500 shrink-0">🔸</span>
+                <span><strong>Sang froid</strong></span>
+              </li>
+              <li class="flex items-start gap-2">
+                <span class="text-lime-500 shrink-0">🔸</span>
+                <span><strong>Double vie</strong> : larves aquatiques, adultes terrestres</span>
+              </li>
+              <li class="flex items-start gap-2">
+                <span class="text-lime-500 shrink-0">🔸</span>
+                <span><strong>Métamorphose</strong> (transformation complète)</span>
+              </li>
+              <li class="flex items-start gap-2">
+                <span class="text-lime-500 shrink-0">🔸</span>
+                <span>Respiration : <strong>branchies</strong> (jeunes) puis <strong>poumons</strong> (adultes)</span>
+              </li>
+            </ul>
+          </div>
+          <div class="bg-white/70 dark:bg-black/30 p-4 rounded-lg">
+            <h4 class="font-bold mb-2">🌍 Exemples :</h4>
+            <ul class="text-sm space-y-1">
+              <li>• Anoures : grenouille, crapaud, rainette</li>
+              <li>• Urodèles : salamandre, triton</li>
+              <li>• Gymnophiones : cécilies</li>
+            </ul>
+            <p class="mt-3 text-xs italic">Il existe environ 8 000 espèces d'amphibiens</p>
+            <div class="mt-3 p-2 bg-lime-100/50 dark:bg-lime-900/30 rounded text-xs">
+              <strong>📚 Note :</strong> "Amphibien" signifie "double vie"
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- POISSONS -->
+      <div class="bg-gradient-to-r from-cyan-50 to-teal-50 dark:from-cyan-950/30 dark:to-teal-950/30 p-6 rounded-xl border-2 border-cyan-300 dark:border-cyan-700">
+        <h3 class="text-2xl font-bold text-cyan-700 dark:text-cyan-300 mb-4 flex items-center gap-3">
+          <span class="text-3xl">🐟</span>
+          5. LES POISSONS
+        </h3>
+        <div class="grid md:grid-cols-2 gap-4">
+          <div>
+            <h4 class="font-bold text-cyan-600 dark:text-cyan-400 mb-3">Caractéristiques principales :</h4>
+            <ul class="space-y-2 text-sm">
+              <li class="flex items-start gap-2">
+                <span class="text-cyan-500 shrink-0">🔸</span>
+                <span><strong>Corps couvert d'écailles</strong></span>
+              </li>
+              <li class="flex items-start gap-2">
+                <span class="text-cyan-500 shrink-0">🔸</span>
+                <span><strong>Vivent exclusivement dans l'eau</strong></span>
+              </li>
+              <li class="flex items-start gap-2">
+                <span class="text-cyan-500 shrink-0">🔸</span>
+                <span><strong>Respirent avec des branchies</strong></span>
+              </li>
+              <li class="flex items-start gap-2">
+                <span class="text-cyan-500 shrink-0">🔸</span>
+                <span><strong>Nageoires</strong> pour se déplacer</span>
+              </li>
+              <li class="flex items-start gap-2">
+                <span class="text-cyan-500 shrink-0">🔸</span>
+                <span><strong>Sang froid</strong></span>
+              </li>
+              <li class="flex items-start gap-2">
+                <span class="text-cyan-500 shrink-0">🔸</span>
+                <span><strong>Ovipares</strong> (pondent des œufs)</span>
+              </li>
+            </ul>
+          </div>
+          <div class="bg-white/70 dark:bg-black/30 p-4 rounded-lg">
+            <h4 class="font-bold mb-2">🌍 Exemples :</h4>
+            <ul class="text-sm space-y-1">
+              <li>• Poissons osseux : sardine, thon, truite</li>
+              <li>• Poissons cartilagineux : requin, raie</li>
+              <li>• Eau douce : carpe, brochet, tilapia</li>
+              <li>• Eau salée : saumon, anchois, bar</li>
+            </ul>
+            <p class="mt-3 text-xs italic">Il existe plus de 35 000 espèces de poissons</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2 class="text-2xl font-bold text-primary mb-4">📊 Tableau Récapitulatif</h2>
+    <div class="overflow-x-auto">
+      <table class="w-full border-collapse bg-white dark:bg-gray-900 rounded-lg overflow-hidden shadow-lg">
+        <thead class="bg-primary text-primary-foreground">
+          <tr>
+            <th class="p-3 text-left border">Groupe</th>
+            <th class="p-3 text-left border">Peau</th>
+            <th class="p-3 text-left border">Température</th>
+            <th class="p-3 text-left border">Respiration</th>
+            <th class="p-3 text-left border">Reproduction</th>
+          </tr>
+        </thead>
+        <tbody class="text-sm">
+          <tr class="border-b hover:bg-orange-50 dark:hover:bg-orange-950/20">
+            <td class="p-3 border font-bold">🦁 Mammifères</td>
+            <td class="p-3 border">Poils/fourrure</td>
+            <td class="p-3 border">Sang chaud</td>
+            <td class="p-3 border">Poumons</td>
+            <td class="p-3 border">Vivipares</td>
+          </tr>
+          <tr class="border-b hover:bg-sky-50 dark:hover:bg-sky-950/20">
+            <td class="p-3 border font-bold">🦅 Oiseaux</td>
+            <td class="p-3 border">Plumes</td>
+            <td class="p-3 border">Sang chaud</td>
+            <td class="p-3 border">Poumons</td>
+            <td class="p-3 border">Ovipares</td>
+          </tr>
+          <tr class="border-b hover:bg-green-50 dark:hover:bg-green-950/20">
+            <td class="p-3 border font-bold">🐍 Reptiles</td>
+            <td class="p-3 border">Écailles sèches</td>
+            <td class="p-3 border">Sang froid</td>
+            <td class="p-3 border">Poumons</td>
+            <td class="p-3 border">Ovipares</td>
+          </tr>
+          <tr class="border-b hover:bg-lime-50 dark:hover:bg-lime-950/20">
+            <td class="p-3 border font-bold">🐸 Batraciens</td>
+            <td class="p-3 border">Nue et humide</td>
+            <td class="p-3 border">Sang froid</td>
+            <td class="p-3 border">Branchies puis poumons</td>
+            <td class="p-3 border">Ovipares (métamorphose)</td>
+          </tr>
+          <tr class="border-b hover:bg-cyan-50 dark:hover:bg-cyan-950/20">
+            <td class="p-3 border font-bold">🐟 Poissons</td>
+            <td class="p-3 border">Écailles humides</td>
+            <td class="p-3 border">Sang froid</td>
+            <td class="p-3 border">Branchies</td>
+            <td class="p-3 border">Ovipares</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section>
+    <div class="bg-gradient-to-r from-primary/10 to-secondary/10 p-6 rounded-xl">
+      <h3 class="text-xl font-bold mb-3 flex items-center gap-2">
+        <span class="text-2xl">💡</span>
+        Points Clés à Retenir
+      </h3>
+      <ul class="space-y-2">
+        <li class="flex items-start gap-2">
+          <span class="text-primary shrink-0">✓</span>
+          <span>Les <strong>vertébrés</strong> possèdent une colonne vertébrale et représentent seulement 5% des espèces animales</span>
+        </li>
+        <li class="flex items-start gap-2">
+          <span class="text-primary shrink-0">✓</span>
+          <span>Les 5 groupes de vertébrés sont : mammifères, oiseaux, reptiles, batraciens et poissons</span>
+        </li>
+        <li class="flex items-start gap-2">
+          <span class="text-primary shrink-0">✓</span>
+          <span>Les <strong>mammifères</strong> et les <strong>oiseaux</strong> sont à sang chaud</span>
+        </li>
+        <li class="flex items-start gap-2">
+          <span class="text-primary shrink-0">✓</span>
+          <span>Les <strong>reptiles</strong>, <strong>batraciens</strong> et <strong>poissons</strong> sont à sang froid</span>
+        </li>
+        <li class="flex items-start gap-2">
+          <span class="text-primary shrink-0">✓</span>
+          <span>Seuls les <strong>batraciens</strong> subissent une métamorphose complète</span>
+        </li>
+      </ul>
+    </div>
+  </section>
+</div>`,
+    exemplesExercices: `<div class="space-y-8">
+  <section>
+    <h2 class="text-2xl font-bold text-primary mb-4">📝 Exercice 1 : Identification</h2>
+    <div class="bg-gradient-to-r from-blue-50 to-cyan-50 dark:from-blue-950/30 dark:to-cyan-950/30 p-6 rounded-lg">
+      <p class="mb-4 font-semibold">Classe les animaux suivants dans le bon groupe de vertébrés :</p>
+      <div class="space-y-2 mb-4">
+        <p><strong>Liste d'animaux :</strong> baleine, serpent, grenouille, aigle, saumon, chauve-souris, crocodile, crapaud, pingouin, requin</p>
+      </div>
+      <div class="grid md:grid-cols-2 gap-4">
+        <div class="bg-white/70 dark:bg-black/30 p-4 rounded">
+          <h4 class="font-bold mb-2">Solution :</h4>
+          <ul class="space-y-1 text-sm">
+            <li>🦁 <strong>Mammifères :</strong> baleine, chauve-souris</li>
+            <li>🦅 <strong>Oiseaux :</strong> aigle, pingouin</li>
+            <li>🐍 <strong>Reptiles :</strong> serpent, crocodile</li>
+            <li>🐸 <strong>Batraciens :</strong> grenouille, crapaud</li>
+            <li>🐟 <strong>Poissons :</strong> saumon, requin</li>
+          </ul>
+        </div>
+        <div class="bg-amber-50 dark:bg-amber-950/30 p-4 rounded border-l-4 border-amber-400">
+          <h4 class="font-bold mb-2">💡 Astuces :</h4>
+          <ul class="space-y-1 text-sm">
+            <li>• La baleine vit dans l'eau mais allaite ses petits = mammifère</li>
+            <li>• Le pingouin ne vole pas mais a des plumes = oiseau</li>
+            <li>• Le requin n'a pas d'écailles mais vit dans l'eau = poisson</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2 class="text-2xl font-bold text-primary mb-4">📝 Exercice 2 : Vrai ou Faux</h2>
+    <div class="bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-950/30 dark:to-pink-950/30 p-6 rounded-lg">
+      <p class="mb-4 font-semibold">Indique si chaque affirmation est vraie ou fausse :</p>
+      <ol class="space-y-3 mb-4">
+        <li class="flex items-start gap-2">
+          <span class="font-bold shrink-0">1.</span>
+          <span>Tous les oiseaux peuvent voler.</span>
+        </li>
+        <li class="flex items-start gap-2">
+          <span class="font-bold shrink-0">2.</span>
+          <span>Les reptiles ont une peau humide.</span>
+        </li>
+        <li class="flex items-start gap-2">
+          <span class="font-bold shrink-0">3.</span>
+          <span>Les mammifères sont les seuls vertébrés à sang chaud.</span>
+        </li>
+        <li class="flex items-start gap-2">
+          <span class="font-bold shrink-0">4.</span>
+          <span>Les batraciens subissent une métamorphose.</span>
+        </li>
+        <li class="flex items-start gap-2">
+          <span class="font-bold shrink-0">5.</span>
+          <span>Tous les poissons ont des écailles.</span>
+        </li>
+      </ol>
+      <div class="bg-white/70 dark:bg-black/30 p-4 rounded">
+        <h4 class="font-bold mb-2">Réponses :</h4>
+        <ol class="space-y-2 text-sm">
+          <li><strong>1. Faux</strong> - Certains oiseaux comme l'autruche et le pingouin ne volent pas</li>
+          <li><strong>2. Faux</strong> - Les reptiles ont une peau sèche couverte d'écailles</li>
+          <li><strong>3. Faux</strong> - Les oiseaux sont aussi à sang chaud</li>
+          <li><strong>4. Vrai</strong> - Ils passent du stade larvaire aquatique au stade adulte terrestre</li>
+          <li><strong>5. Vrai</strong> - C'est une de leurs caractéristiques principales</li>
+        </ol>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2 class="text-2xl font-bold text-primary mb-4">📝 Exercice 3 : Comparaison</h2>
+    <div class="bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-950/30 dark:to-emerald-950/30 p-6 rounded-lg">
+      <p class="mb-4 font-semibold">Compare les caractéristiques suivantes :</p>
+      <div class="space-y-4">
+        <div class="bg-white/70 dark:bg-black/30 p-4 rounded">
+          <h4 class="font-bold mb-2">Question 1 :</h4>
+          <p class="mb-2">Quelles sont les différences entre un reptile et un batracien ?</p>
+          <div class="bg-green-100 dark:bg-green-900/30 p-3 rounded mt-2">
+            <p class="text-sm"><strong>Réponse :</strong></p>
+            <ul class="text-sm space-y-1 mt-2">
+              <li>• <strong>Peau :</strong> Reptile = sèche avec écailles / Batracien = nue et humide</li>
+              <li>• <strong>Habitat :</strong> Reptile = terrestre / Batracien = aquatique puis terrestre</li>
+              <li>• <strong>Métamorphose :</strong> Reptile = non / Batracien = oui</li>
+              <li>• <strong>Respiration :</strong> Reptile = toujours poumons / Batracien = branchies puis poumons</li>
+            </ul>
+          </div>
+        </div>
+        
+        <div class="bg-white/70 dark:bg-black/30 p-4 rounded">
+          <h4 class="font-bold mb-2">Question 2 :</h4>
+          <p class="mb-2">Pourquoi la baleine est-elle un mammifère et non un poisson ?</p>
+          <div class="bg-green-100 dark:bg-green-900/30 p-3 rounded mt-2">
+            <p class="text-sm"><strong>Réponse :</strong></p>
+            <ul class="text-sm space-y-1 mt-2">
+              <li>• La baleine <strong>respire avec des poumons</strong> (elle doit remonter à la surface)</li>
+              <li>• Elle <strong>allaite ses petits</strong> avec du lait</li>
+              <li>• Elle est <strong>vivipare</strong> (donne naissance à des petits vivants)</li>
+              <li>• Elle a du <strong>sang chaud</strong></li>
+              <li>• Elle n'a pas d'écailles mais une peau épaisse</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2 class="text-2xl font-bold text-primary mb-4">📝 Exercice 4 : Défi Observateur</h2>
+    <div class="bg-gradient-to-r from-amber-50 to-orange-50 dark:from-amber-950/30 dark:to-orange-950/30 p-6 rounded-lg">
+      <p class="mb-4 font-semibold">Activité pratique : Sortie d'observation</p>
+      <div class="space-y-3">
+        <p>Dans ton environnement (jardin, parc, rue), observe et note :</p>
+        <ol class="space-y-2">
+          <li class="flex items-start gap-2">
+            <span class="font-bold shrink-0">1.</span>
+            <span>5 animaux vertébrés différents</span>
+          </li>
+          <li class="flex items-start gap-2">
+            <span class="font-bold shrink-0">2.</span>
+            <span>Leur groupe d'appartenance</span>
+          </li>
+          <li class="flex items-start gap-2">
+            <span class="font-bold shrink-0">3.</span>
+            <span>2 caractéristiques observables qui t'ont aidé à les classer</span>
+          </li>
+        </ol>
+        <div class="bg-white/70 dark:bg-black/30 p-4 rounded mt-4">
+          <h4 class="font-bold mb-2">Exemple d'observation :</h4>
+          <div class="text-sm space-y-2">
+            <p><strong>Animal :</strong> Chien</p>
+            <p><strong>Groupe :</strong> Mammifère</p>
+            <p><strong>Caractéristiques observées :</strong></p>
+            <ul class="ml-4 space-y-1">
+              <li>1. Corps couvert de poils</li>
+              <li>2. Respire de l'air avec des poumons</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="bg-gradient-to-r from-primary/10 to-secondary/10 p-6 rounded-xl">
+      <h3 class="text-xl font-bold mb-3 flex items-center gap-2">
+        <span class="text-2xl">🎯</span>
+        Pour Aller Plus Loin
+      </h3>
+      <ul class="space-y-2 text-sm">
+        <li class="flex items-start gap-2">
+          <span class="text-primary shrink-0">•</span>
+          <span>Crée un tableau comparatif illustré des 5 groupes de vertébrés</span>
+        </li>
+        <li class="flex items-start gap-2">
+          <span class="text-primary shrink-0">•</span>
+          <span>Recherche des animaux endémiques d'Haïti dans chaque groupe</span>
+        </li>
+        <li class="flex items-start gap-2">
+          <span class="text-primary shrink-0">•</span>
+          <span>Étudie l'adaptation de chaque groupe à son environnement</span>
+        </li>
+      </ul>
+    </div>
+  </section>
+</div>`,
+    musicUrl: "/lovable-uploads/classification-vertebres-lesson-music.mp3"
   },
 
   "deplacements-vertebres": {
