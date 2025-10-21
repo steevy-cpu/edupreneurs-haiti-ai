@@ -275,19 +275,17 @@ export const HomeChatbot = () => {
       {!isOpen ? (
         <div 
           ref={floatingRef}
-          className={hasMoved ? "" : "eric-floating-character"}
-          style={hasMoved ? {
+          style={{
             position: 'fixed',
-            left: `${position.x}px`,
-            top: `${position.y}px`,
+            left: hasMoved ? `${position.x}px` : 'auto',
+            top: hasMoved ? `${position.y}px` : 'auto',
+            right: hasMoved ? 'auto' : '2rem',
+            bottom: hasMoved ? 'auto' : '2rem',
             zIndex: 1000,
-            width: '7rem',
+            width: '5rem',
             cursor: isDragging ? 'grabbing' : 'pointer',
             userSelect: 'none',
             transition: isDragging ? 'none' : 'transform 0.3s'
-          } : {
-            cursor: isDragging ? 'grabbing' : 'pointer',
-            userSelect: 'none'
           }}
           onMouseDown={handleMouseDown}
           onTouchStart={handleTouchStart}
@@ -311,24 +309,17 @@ export const HomeChatbot = () => {
         <>
           <div 
             ref={floatingRef}
-            className={hasMoved ? "" : "eric-floating-character"}
-            style={hasMoved ? {
+            style={{
               position: 'fixed',
-              left: `${position.x + 250}px`,
-              top: `${position.y - 50}px`,
+              left: hasMoved ? `${position.x + 220}px` : 'auto',
+              top: hasMoved ? `${position.y - 40}px` : 'auto',
+              right: hasMoved ? 'auto' : '2.5rem',
+              bottom: hasMoved ? 'auto' : 'calc(100vh - 22rem)',
               zIndex: 1002,
-              width: '5rem',
+              width: '4rem',
               cursor: isDragging ? 'grabbing' : 'pointer',
               userSelect: 'none',
               transition: isDragging ? 'none' : 'all 0.3s'
-            } : {
-              position: 'absolute',
-              right: '40px',
-              top: '-50px',
-              width: '5rem',
-              cursor: isDragging ? 'grabbing' : 'pointer',
-              userSelect: 'none',
-              zIndex: 1002
             }}
             onMouseDown={handleMouseDown}
             onTouchStart={handleTouchStart}
@@ -343,24 +334,23 @@ export const HomeChatbot = () => {
 
           <div 
             ref={chatRef}
-            className={hasMoved ? "" : "eric-chat-interface"}
-            style={hasMoved ? {
+            style={{
               position: 'fixed',
-              left: `${position.x}px`,
-              top: `${position.y}px`,
+              left: hasMoved ? `${position.x}px` : 'auto',
+              top: hasMoved ? `${position.y}px` : 'auto',
+              right: hasMoved ? 'auto' : '2rem',
+              bottom: hasMoved ? 'auto' : '2rem',
               zIndex: 1001,
-              width: '380px',
-              maxHeight: 'calc(100vh - 280px)',
+              width: '320px',
+              maxHeight: '420px',
               cursor: isDragging ? 'grabbing' : 'default',
               userSelect: 'none',
               display: 'flex',
               flexDirection: 'column',
-              background: 'transparent',
+              background: 'hsl(var(--card))',
               borderRadius: '1.5rem',
-              padding: '1.25rem'
-            } : {
-              cursor: isDragging ? 'grabbing' : 'default',
-              userSelect: 'none'
+              padding: '1rem',
+              boxShadow: '0 10px 40px rgba(0, 0, 0, 0.2)'
             }}
             onMouseDown={handleMouseDown}
             onTouchStart={handleTouchStart}
