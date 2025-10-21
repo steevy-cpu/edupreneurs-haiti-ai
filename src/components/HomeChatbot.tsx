@@ -21,6 +21,14 @@ export const HomeChatbot = () => {
   ]);
   const [input, setInput] = useState("");
   const [isTyping, setIsTyping] = useState(false);
+  const [showSuggestions, setShowSuggestions] = useState(true);
+
+  const faqSuggestions = [
+    "Qu'est-ce qu'EDUPRENEURS ?",
+    "Comment puis-je m'inscrire ?",
+    "Quels cours sont disponibles ?",
+    "Comment fonctionne la plateforme ?"
+  ];
   const [isSpeaking, setIsSpeaking] = useState<number | null>(null);
   const [position, setPosition] = useState({ x: 0, y: 0 });
   const [hasMoved, setHasMoved] = useState(false);
@@ -100,11 +108,12 @@ export const HomeChatbot = () => {
     window.speechSynthesis.speak(utterance);
   };
 
-  const sendMessage = async () => {
-    if (!input.trim()) return;
+  const sendMessage = async (messageText?: string) => {
+    const userMessage = messageText || input.trim();
+    if (!userMessage) return;
 
-    const userMessage = input.trim();
     setInput("");
+    setShowSuggestions(false);
     
     setMessages(prev => [...prev, { content: userMessage, sender: "user" }]);
     setIsTyping(true);
@@ -404,6 +413,22 @@ export const HomeChatbot = () => {
                 Eric écrit<span className="eric-dots">...</span>
               </div>
             )}
+            
+            {showSuggestions && messages.length === 1 && (
+              <div className="flex flex-col gap-2 mt-4 px-2">
+                {faqSuggestions.map((suggestion, index) => (
+                  <Button
+                    key={index}
+                    variant="outline"
+                    className="w-full text-left justify-start hover:bg-primary/10 transition-colors"
+                    onClick={() => sendMessage(suggestion)}
+                  >
+                    {suggestion}
+                  </Button>
+                ))}
+              </div>
+            )}
+            
             <div ref={messagesEndRef} />
           </div>
 
@@ -423,7 +448,7 @@ export const HomeChatbot = () => {
               style={{ minHeight: '40px', maxHeight: '120px' }}
             />
             <Button 
-              onClick={sendMessage}
+              onClick={() => sendMessage()}
               disabled={!input.trim() || isTyping}
               className="eric-send-btn flex-shrink-0"
               size="icon"
