@@ -3693,9 +3693,312 @@ export const sciencesLessons7AF: Record<string, StaticLessonContent> = {
 • Spécifier que les rythmes respiratoires sont variés
 • Spécifier le rôle de la peau dans la respiration des batraciens
 • Préciser le mode de respiration dans l'eau (branchies des poissons)`,
-    introduction: `[Contenu à ajouter]`,
-    contenu: `[Contenu à ajouter]`,
-    exemplesExercices: `[Contenu à ajouter]`
+    introduction: `<div class="space-y-6">
+  <p class="text-lg leading-relaxed">
+    La respiration est une fonction vitale ! Tous les vertébrés respirent pour obtenir l'oxygène nécessaire à leur survie,
+    mais ils utilisent différents organes selon leur milieu de vie : poumons, branchies ou même la peau !
+  </p>
+  <div class="bg-primary/5 border-l-4 border-primary p-4 rounded-r">
+    <p class="font-semibold text-primary mb-2">💨 Le saviez-vous ?</p>
+    <p>Un humain respire environ 20 000 fois par jour ! Les baleines peuvent retenir leur souffle pendant plus d'une heure.
+    Les grenouilles peuvent respirer par la peau sous l'eau !</p>
+  </div>
+  
+  <div class="bg-gradient-to-r from-primary/10 to-secondary/10 p-6 rounded-xl">
+    <h3 class="text-xl font-bold mb-4 flex items-center gap-2">
+      <span class="text-2xl">🎯</span>
+      Objectifs de la leçon
+    </h3>
+    <ul class="space-y-2">
+      <li class="flex items-start gap-2">
+        <span class="text-primary shrink-0 mt-1">✓</span>
+        <span>Comprendre pourquoi la respiration est indispensable</span>
+      </li>
+      <li class="flex items-start gap-2">
+        <span class="text-primary shrink-0 mt-1">✓</span>
+        <span>Décrire le rôle des poumons et des branchies</span>
+      </li>
+      <li class="flex items-start gap-2">
+        <span class="text-primary shrink-0 mt-1">✓</span>
+        <span>Connaître les différents modes de respiration</span>
+      </li>
+    </ul>
+  </div>
+</div>`,
+    contenu: `<div class="space-y-8">
+  <section>
+    <h2 class="text-2xl font-bold text-primary mb-4">💨 Pourquoi Respirer ?</h2>
+    <div class="bg-gradient-to-r from-blue-50 to-cyan-50 dark:from-blue-950/30 dark:to-cyan-950/30 p-6 rounded-lg border-2 border-blue-200 dark:border-blue-800">
+      <p class="leading-relaxed mb-4">
+        <strong>La respiration est indispensable à la vie</strong> de tous les vertébrés pour deux raisons essentielles :
+      </p>
+      <div class="grid md:grid-cols-2 gap-6 mt-4">
+        <div class="bg-white/70 dark:bg-black/30 p-5 rounded-lg">
+          <h4 class="font-bold text-blue-600 dark:text-blue-400 mb-3">➕ Apporter l'oxygène (O₂)</h4>
+          <p class="text-sm">L'oxygène de l'air ou de l'eau est capturé et transporté vers toutes les cellules du corps. 
+          Les cellules en ont besoin pour produire de l'énergie à partir de la nourriture.</p>
+        </div>
+        <div class="bg-white/70 dark:bg-black/30 p-5 rounded-lg">
+          <h4 class="font-bold text-blue-600 dark:text-blue-400 mb-3">➖ Éliminer le CO₂</h4>
+          <p class="text-sm">Le dioxyde de carbone (CO₂) est un déchet produit par les cellules. Il doit être éliminé 
+          car il est toxique en grande quantité. Il est rejeté dans l'air ou l'eau.</p>
+        </div>
+      </div>
+      <div class="mt-4 p-4 bg-blue-100 dark:bg-blue-900/40 rounded-lg">
+        <p class="font-semibold mb-2">⚡ L'équation de la respiration :</p>
+        <p class="text-sm font-mono">Oxygène (O₂) + Nourriture → Énergie + Dioxyde de carbone (CO₂) + Eau</p>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2 class="text-2xl font-bold text-primary mb-4">🫁 La Respiration Pulmonaire</h2>
+    <div class="bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-950/30 dark:to-pink-950/30 p-6 rounded-lg border-2 border-purple-200 dark:border-purple-800">
+      <p class="mb-4">La plupart des vertébrés terrestres respirent avec des <strong>poumons</strong>.</p>
+      
+      <div class="space-y-4">
+        <div class="bg-white/70 dark:bg-gray-800/70 p-5 rounded-lg">
+          <h4 class="font-bold mb-3">🫁 Comment fonctionnent les poumons ?</h4>
+          <ol class="space-y-2 text-sm list-decimal list-inside">
+            <li><strong>Inspiration</strong> : L'air entre par le nez ou la bouche → passe par la trachée → 
+            arrive aux poumons par les bronches</li>
+            <li><strong>Échange gazeux</strong> : Dans les poumons, l'oxygène passe dans le sang à travers de minuscules 
+            sacs appelés alvéoles. En même temps, le CO₂ passe du sang vers l'air</li>
+            <li><strong>Expiration</strong> : L'air chargé de CO₂ est expulsé des poumons vers l'extérieur</li>
+          </ol>
+        </div>
+
+        <div class="bg-white/70 dark:bg-gray-800/70 p-5 rounded-lg">
+          <h4 class="font-bold mb-3">🐾 Animaux à respiration pulmonaire :</h4>
+          <ul class="space-y-2 text-sm">
+            <li>• <strong>Mammifères</strong> : humains, chats, chiens, baleines, dauphins (même dans l'eau !)</li>
+            <li>• <strong>Oiseaux</strong> : aigles, pigeons, perroquets</li>
+            <li>• <strong>Reptiles</strong> : serpents, lézards, tortues, crocodiles</li>
+            <li>• <strong>Amphibiens adultes</strong> : grenouilles, crapauds (+ respiration cutanée)</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2 class="text-2xl font-bold text-primary mb-4">🐟 La Respiration Branchiale</h2>
+    <div class="bg-gradient-to-r from-cyan-50 to-blue-50 dark:from-cyan-950/30 dark:to-blue-950/30 p-6 rounded-lg border-2 border-cyan-200 dark:border-cyan-800">
+      <p class="mb-4">Les animaux aquatiques utilisent des <strong>branchies</strong> pour respirer l'oxygène dissous dans l'eau.</p>
+      
+      <div class="space-y-4">
+        <div class="bg-white/70 dark:bg-gray-800/70 p-5 rounded-lg">
+          <h4 class="font-bold mb-3">🌊 Comment fonctionnent les branchies ?</h4>
+          <ol class="space-y-2 text-sm list-decimal list-inside">
+            <li>Le poisson ouvre sa bouche et avale de l'eau</li>
+            <li>L'eau passe sur les branchies (filaments rouges très fins et riches en vaisseaux sanguins)</li>
+            <li>L'oxygène dissous dans l'eau passe dans le sang à travers les branchies</li>
+            <li>Le CO₂ passe du sang dans l'eau</li>
+            <li>L'eau ressort par les ouïes (ouvertures sur les côtés)</li>
+          </ol>
+        </div>
+
+        <div class="bg-white/70 dark:bg-gray-800/70 p-5 rounded-lg">
+          <h4 class="font-bold mb-3">🐠 Animaux à respiration branchiale :</h4>
+          <ul class="space-y-1 text-sm">
+            <li>• <strong>Poissons</strong> : tous les poissons (sardine, requin, truite...)</li>
+            <li>• <strong>Têtards</strong> : larves des amphibiens avant la métamorphose</li>
+            <li>• <strong>Certains crustacés</strong> : crabes, crevettes, homards</li>
+          </ul>
+        </div>
+
+        <div class="mt-4 p-4 bg-cyan-100 dark:bg-cyan-900/40 rounded-lg">
+          <p class="font-semibold mb-2">💡 Important :</p>
+          <p class="text-sm">Les branchies ne peuvent fonctionner que dans l'eau. C'est pourquoi un poisson meurt 
+          rapidement hors de l'eau : ses branchies collent et ne peuvent plus capter l'oxygène de l'air.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2 class="text-2xl font-bold text-primary mb-4">🐸 La Respiration Cutanée</h2>
+    <div class="bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-950/30 dark:to-emerald-950/30 p-6 rounded-lg border-2 border-green-200 dark:border-green-800">
+      <p class="mb-4">Les <strong>amphibiens</strong> (grenouilles, crapauds, salamandres) ont une capacité spéciale : 
+      ils peuvent respirer <strong>à travers leur peau</strong> !</p>
+      
+      <div class="space-y-4">
+        <div class="bg-white/70 dark:bg-gray-800/70 p-5 rounded-lg">
+          <h4 class="font-bold mb-3">Comment ça marche ?</h4>
+          <ul class="space-y-2 text-sm">
+            <li>• La peau des amphibiens est <strong>fine, humide et perméable</strong></li>
+            <li>• L'oxygène peut passer directement à travers la peau dans le sang</li>
+            <li>• Le CO₂ sort également par la peau</li>
+            <li>• Cette respiration est possible dans l'eau ou sur terre (si la peau reste humide)</li>
+          </ul>
+        </div>
+
+        <div class="bg-white/70 dark:bg-gray-800/70 p-5 rounded-lg">
+          <h4 class="font-bold mb-3">🔄 Double respiration des amphibiens adultes :</h4>
+          <p class="text-sm mb-2">Les grenouilles adultes utilisent <strong>deux systèmes en même temps</strong> :</p>
+          <ul class="space-y-1 text-sm">
+            <li>• <strong>Poumons</strong> : pour respirer l'air (principal mode hors de l'eau)</li>
+            <li>• <strong>Peau</strong> : complément, surtout utile dans l'eau ou en hibernation</li>
+          </ul>
+        </div>
+
+        <div class="mt-4 p-4 bg-green-100 dark:bg-green-900/40 rounded-lg">
+          <p class="font-semibold mb-2">💧 Pourquoi la peau doit rester humide ?</p>
+          <p class="text-sm">L'oxygène doit d'abord se dissoudre dans l'humidité de la peau avant de passer dans le sang. 
+          Si la peau sèche, l'amphibien ne peut plus respirer par la peau et risque de mourir.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2 class="text-2xl font-bold text-primary mb-4">⏱️ Les Rythmes Respiratoires</h2>
+    <div class="bg-gradient-to-r from-yellow-50 to-amber-50 dark:from-yellow-950/30 dark:to-amber-950/30 p-6 rounded-lg border-2 border-yellow-200 dark:border-yellow-800">
+      <p class="mb-4">Tous les vertébrés ne respirent pas au même rythme. La <strong>fréquence respiratoire</strong> varie selon :</p>
+      
+      <div class="grid md:grid-cols-2 gap-4 mb-4">
+        <div class="bg-white/70 dark:bg-gray-800/70 p-4 rounded-lg">
+          <h4 class="font-bold mb-2">📏 La taille de l'animal</h4>
+          <p class="text-sm">Plus l'animal est petit, plus il respire vite car son métabolisme est rapide.</p>
+        </div>
+        <div class="bg-white/70 dark:bg-gray-800/70 p-4 rounded-lg">
+          <h4 class="font-bold mb-2">🏃 L'activité physique</h4>
+          <p class="text-sm">Pendant l'effort, les muscles ont besoin de plus d'oxygène, donc on respire plus vite.</p>
+        </div>
+      </div>
+
+      <div class="bg-white/70 dark:bg-gray-800/70 p-5 rounded-lg">
+        <h4 class="font-bold mb-3">📊 Exemples de fréquences respiratoires (au repos) :</h4>
+        <ul class="space-y-2 text-sm">
+          <li>• <strong>Souris</strong> : 100 à 150 respirations par minute</li>
+          <li>• <strong>Chat</strong> : 20 à 30 respirations par minute</li>
+          <li>• <strong>Humain adulte</strong> : 12 à 20 respirations par minute</li>
+          <li>• <strong>Chien</strong> : 10 à 30 respirations par minute</li>
+          <li>• <strong>Éléphant</strong> : 4 à 5 respirations par minute</li>
+          <li>• <strong>Baleine</strong> : 1 à 2 respirations par minute (mais de grands volumes d'air !)</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section class="bg-gradient-to-br from-orange-50 to-red-50 dark:from-orange-950/20 dark:to-red-950/20 p-6 rounded-xl border-2 border-orange-200 dark:border-orange-800">
+    <h2 class="text-2xl font-bold text-orange-800 dark:text-orange-200 mb-4">📊 Tableau Comparatif</h2>
+    <div class="overflow-x-auto">
+      <table class="w-full text-sm border-collapse">
+        <thead class="bg-orange-200 dark:bg-orange-800">
+          <tr>
+            <th class="border border-orange-400 dark:border-orange-600 p-2">Groupe</th>
+            <th class="border border-orange-400 dark:border-orange-600 p-2">Organe respiratoire</th>
+            <th class="border border-orange-400 dark:border-orange-600 p-2">Milieu</th>
+            <th class="border border-orange-400 dark:border-orange-600 p-2">Exemples</th>
+          </tr>
+        </thead>
+        <tbody class="bg-white/70 dark:bg-gray-800/70">
+          <tr>
+            <td class="border border-orange-400 dark:border-orange-600 p-2 font-semibold">Poissons</td>
+            <td class="border border-orange-400 dark:border-orange-600 p-2">Branchies</td>
+            <td class="border border-orange-400 dark:border-orange-600 p-2">Eau uniquement</td>
+            <td class="border border-orange-400 dark:border-orange-600 p-2">Requin, truite</td>
+          </tr>
+          <tr>
+            <td class="border border-orange-400 dark:border-orange-600 p-2 font-semibold">Amphibiens (larves)</td>
+            <td class="border border-orange-400 dark:border-orange-600 p-2">Branchies</td>
+            <td class="border border-orange-400 dark:border-orange-600 p-2">Eau uniquement</td>
+            <td class="border border-orange-400 dark:border-orange-600 p-2">Têtards</td>
+          </tr>
+          <tr>
+            <td class="border border-orange-400 dark:border-orange-600 p-2 font-semibold">Amphibiens (adultes)</td>
+            <td class="border border-orange-400 dark:border-orange-600 p-2">Poumons + Peau</td>
+            <td class="border border-orange-400 dark:border-orange-600 p-2">Eau et terre</td>
+            <td class="border border-orange-400 dark:border-orange-600 p-2">Grenouille, crapaud</td>
+          </tr>
+          <tr>
+            <td class="border border-orange-400 dark:border-orange-600 p-2 font-semibold">Reptiles</td>
+            <td class="border border-orange-400 dark:border-orange-600 p-2">Poumons</td>
+            <td class="border border-orange-400 dark:border-orange-600 p-2">Terre (certains dans l'eau)</td>
+            <td class="border border-orange-400 dark:border-orange-600 p-2">Serpent, tortue</td>
+          </tr>
+          <tr>
+            <td class="border border-orange-400 dark:border-orange-600 p-2 font-semibold">Oiseaux</td>
+            <td class="border border-orange-400 dark:border-orange-600 p-2">Poumons</td>
+            <td class="border border-orange-400 dark:border-orange-600 p-2">Air</td>
+            <td class="border border-orange-400 dark:border-orange-600 p-2">Aigle, pigeon</td>
+          </tr>
+          <tr>
+            <td class="border border-orange-400 dark:border-orange-600 p-2 font-semibold">Mammifères</td>
+            <td class="border border-orange-400 dark:border-orange-600 p-2">Poumons</td>
+            <td class="border border-orange-400 dark:border-orange-600 p-2">Terre/Air/Eau</td>
+            <td class="border border-orange-400 dark:border-orange-600 p-2">Humain, baleine</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+</div>`,
+    exemplesExercices: `<div class="space-y-6">
+  <div class="bg-primary/5 p-6 rounded-lg border-2 border-primary/20">
+    <h3 class="text-xl font-bold text-primary mb-4">📝 Exercice 1 : Organes Respiratoires</h3>
+    <p class="mb-4">Associe chaque animal à son organe respiratoire principal :</p>
+    <div class="grid md:grid-cols-2 gap-4">
+      <div class="bg-white/50 dark:bg-black/20 p-4 rounded-lg">
+        <p class="font-semibold mb-2">Animaux :</p>
+        <ol class="space-y-1 text-sm list-decimal list-inside">
+          <li>Poisson</li>
+          <li>Grenouille adulte</li>
+          <li>Serpent</li>
+          <li>Têtard</li>
+          <li>Humain</li>
+        </ol>
+      </div>
+      <div class="bg-white/50 dark:bg-black/20 p-4 rounded-lg">
+        <p class="font-semibold mb-2">Organes :</p>
+        <ul class="space-y-1 text-sm">
+          <li>A) Poumons</li>
+          <li>B) Branchies</li>
+          <li>C) Poumons + Peau</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <div class="bg-accent/5 p-6 rounded-lg border-2 border-accent/20">
+    <h3 class="text-xl font-bold text-accent mb-4">📝 Exercice 2 : Vrai ou Faux</h3>
+    <p class="mb-4">Indique si chaque affirmation est vraie (V) ou fausse (F) :</p>
+    <ol class="space-y-2 list-decimal list-inside">
+      <li>Les poissons peuvent respirer l'air directement <span class="ml-4">_____</span></li>
+      <li>Les grenouilles adultes respirent par les poumons ET la peau <span class="ml-4">_____</span></li>
+      <li>Tous les vertébrés respirent au même rythme <span class="ml-4">_____</span></li>
+      <li>La respiration sert à apporter de l'oxygène et éliminer le CO₂ <span class="ml-4">_____</span></li>
+      <li>Les baleines respirent par des branchies <span class="ml-4">_____</span></li>
+      <li>Les reptiles peuvent respirer sous l'eau sans remonter <span class="ml-4">_____</span></li>
+    </ol>
+  </div>
+
+  <div class="bg-secondary/5 p-6 rounded-lg border-2 border-secondary/20">
+    <h3 class="text-xl font-bold text-secondary mb-4">📝 Exercice 3 : Complète le texte</h3>
+    <p class="mb-4">Complète avec : <em>poumons, branchies, oxygène, CO₂, peau, humide</em></p>
+    <div class="bg-white/50 dark:bg-black/20 p-4 rounded-lg space-y-2 text-sm">
+      <p>La respiration permet de capter l'__________ et d'éliminer le __________. Les poissons utilisent leurs __________ 
+      pour respirer dans l'eau. Les mammifères et les oiseaux respirent avec leurs __________. Les grenouilles adultes 
+      peuvent aussi respirer par la __________, mais celle-ci doit rester __________ pour que cela fonctionne.</p>
+    </div>
+  </div>
+
+  <div class="bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-950/20 dark:to-pink-950/20 p-6 rounded-lg border-2 border-purple-200 dark:border-purple-800">
+    <h3 class="text-xl font-bold text-purple-700 dark:text-purple-300 mb-4">📝 Exercice 4 : Questions de Réflexion</h3>
+    <ol class="space-y-3 list-decimal list-inside">
+      <li>Pourquoi un poisson meurt rapidement hors de l'eau ?
+        <div class="ml-6 mt-2 text-sm bg-white/50 dark:bg-black/20 p-2 rounded">__________________________________________________</div>
+      </li>
+      <li>Pourquoi respire-t-on plus vite quand on court ?
+        <div class="ml-6 mt-2 text-sm bg-white/50 dark:bg-black/20 p-2 rounded">__________________________________________________</div>
+      </li>
+      <li>Quel est l'avantage pour une grenouille de pouvoir respirer par la peau ?
+        <div class="ml-6 mt-2 text-sm bg-white/50 dark:bg-black/20 p-2 rounded">__________________________________________________</div>
+      </li>
+    </ol>
+  </div>
+</div>`
   },
 
   "reproduction-vertebres": {
