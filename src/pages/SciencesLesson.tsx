@@ -172,20 +172,20 @@ export default function SciencesLesson() {
         </div>
       </nav>
 
-      <div className="container mx-auto px-4 pt-24 pb-12">
+      <div className="container mx-auto px-4 pt-24 pb-12 max-w-7xl">
         {/* Lesson Header */}
         <Card className="p-8 mb-8 bg-gradient-to-r from-amber-500/10 to-orange-500/10">
           <div className="flex items-start gap-6">
             <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-amber-500 to-orange-600 flex items-center justify-center flex-shrink-0">
               <Beaker className="w-10 h-10 text-white" />
             </div>
-            <div className="flex-1">
-              <div className="flex items-center gap-2 mb-2">
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-2 mb-2 flex-wrap">
                 <Badge variant="secondary">{topicInfo.category}</Badge>
                 <Badge variant="outline">{topicInfo.difficulty}</Badge>
               </div>
-              <h1 className="text-4xl font-bold mb-3">{topicInfo.title}</h1>
-              <div className="flex gap-4 text-sm text-muted-foreground">
+              <h1 className="text-3xl md:text-4xl font-bold mb-3 break-words">{topicInfo.title}</h1>
+              <div className="flex gap-4 text-sm text-muted-foreground flex-wrap">
                 <span className="flex items-center gap-1">
                   <BookOpen className="w-4 h-4" />
                   {topicInfo.duration}
@@ -202,28 +202,28 @@ export default function SciencesLesson() {
         </Card>
 
         {/* Lesson Content Tabs */}
-        <Card className="p-6 mb-8">
+        <Card className="p-4 md:p-6 mb-8 overflow-hidden">
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-            <TabsList className="grid w-full grid-cols-5 mb-6">
-              <TabsTrigger value="introduction" className="gap-2">
-                <Lightbulb className="w-4 h-4" />
-                Introduction
+            <TabsList className="grid w-full grid-cols-5 mb-6 h-auto">
+              <TabsTrigger value="introduction" className="gap-2 text-xs md:text-sm px-2 py-2">
+                <Lightbulb className="w-4 h-4 shrink-0" />
+                <span className="hidden sm:inline">Introduction</span>
               </TabsTrigger>
-              <TabsTrigger value="contenu" className="gap-2">
-                <BookOpen className="w-4 h-4" />
-                Contenu
+              <TabsTrigger value="contenu" className="gap-2 text-xs md:text-sm px-2 py-2">
+                <BookOpen className="w-4 h-4 shrink-0" />
+                <span className="hidden sm:inline">Contenu</span>
               </TabsTrigger>
-              <TabsTrigger value="exemples" className="gap-2">
-                <ClipboardCheck className="w-4 h-4" />
-                Exemples
+              <TabsTrigger value="exemples" className="gap-2 text-xs md:text-sm px-2 py-2">
+                <ClipboardCheck className="w-4 h-4 shrink-0" />
+                <span className="hidden sm:inline">Exemples</span>
               </TabsTrigger>
-              <TabsTrigger value="notes" className="gap-2">
-                <NotebookPen className="w-4 h-4" />
-                Mes Notes
+              <TabsTrigger value="notes" className="gap-2 text-xs md:text-sm px-2 py-2">
+                <NotebookPen className="w-4 h-4 shrink-0" />
+                <span className="hidden sm:inline">Mes Notes</span>
               </TabsTrigger>
-              <TabsTrigger value="quiz" className="gap-2">
-                <Trophy className="w-4 h-4" />
-                Quiz Final
+              <TabsTrigger value="quiz" className="gap-2 text-xs md:text-sm px-2 py-2">
+                <Trophy className="w-4 h-4 shrink-0" />
+                <span className="hidden sm:inline">Quiz Final</span>
               </TabsTrigger>
             </TabsList>
 

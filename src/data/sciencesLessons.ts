@@ -2238,34 +2238,802 @@ export const sciencesLessons7AF: Record<string, StaticLessonContent> = {
     objectif: `À la fin de cette leçon, tu vas pouvoir:
 • Identifier la cause et constater les effets d'un court-circuit
 • Identifier un moyen de prévenir un court-circuit : l'interrupteur thermique (ou fusible)`,
-    introduction: `[Contenu à ajouter]`,
-    contenu: `[Contenu à ajouter]`,
-    exemplesExercices: `[Contenu à ajouter]`
+    introduction: `<div class="space-y-6">
+  <p class="text-lg leading-relaxed">
+    Les courts-circuits peuvent être dangereux ! Comprendre ce qu'ils sont et comment les prévenir est essentiel pour la sécurité électrique.
+  </p>
+  <div class="bg-primary/5 border-l-4 border-primary p-4 rounded-r">
+    <p class="font-semibold text-primary mb-2">⚠️ Le saviez-vous ?</p>
+    <p>Un court-circuit peut générer une chaleur intense pouvant atteindre plusieurs centaines de degrés en quelques secondes !</p>
+  </div>
+  <div class="bg-gradient-to-r from-primary/10 to-secondary/10 p-6 rounded-xl">
+    <h3 class="text-xl font-bold mb-4 flex items-center gap-2">
+      <span class="text-2xl">🎯</span>
+      Objectifs de la leçon
+    </h3>
+    <ul class="space-y-2">
+      <li class="flex items-start gap-2">
+        <span class="text-primary shrink-0 mt-1">✓</span>
+        <span>Identifier la cause d'un court-circuit</span>
+      </li>
+      <li class="flex items-start gap-2">
+        <span class="text-primary shrink-0 mt-1">✓</span>
+        <span>Comprendre les effets dangereux</span>
+      </li>
+      <li class="flex items-start gap-2">
+        <span class="text-primary shrink-0 mt-1">✓</span>
+        <span>Connaître les moyens de protection</span>
+      </li>
+    </ul>
+  </div>
+</div>`,
+    contenu: `<div class="space-y-8">
+  <section>
+    <h2 class="text-2xl font-bold text-primary mb-4">⚡ Qu'est-ce qu'un Court-Circuit ?</h2>
+    <div class="bg-gradient-to-r from-red-50 to-orange-50 dark:from-red-950/30 dark:to-orange-950/30 p-6 rounded-lg border-2 border-red-200 dark:border-red-800">
+      <p class="leading-relaxed mb-4">
+        Un <strong>court-circuit</strong> se produit quand l'électricité trouve un chemin plus court que prévu,
+        contournant les appareils du circuit. Le courant devient très fort et peut causer des accidents.
+      </p>
+      <div class="bg-white/70 dark:bg-black/30 p-5 rounded-lg">
+        <h4 class="font-bold text-red-700 dark:text-red-300 mb-3">🔍 Définition Simple</h4>
+        <p class="mb-3">Un court-circuit = contact direct entre les deux bornes de la pile (+ et -) sans passer par un récepteur (ampoule, moteur, etc.)</p>
+        <div class="p-3 bg-red-100 dark:bg-red-900/40 rounded">
+          <p class="text-sm font-semibold">⚠️ Résultat : Courant très intense → Danger !</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2 class="text-2xl font-bold text-primary mb-4">🔥 Causes d'un Court-Circuit</h2>
+    <div class="grid md:grid-cols-2 gap-6">
+      <div class="bg-gradient-to-r from-orange-50 to-yellow-50 dark:from-orange-950/30 dark:to-yellow-950/30 p-6 rounded-lg border-2 border-orange-200 dark:border-orange-800">
+        <h3 class="text-xl font-bold text-orange-700 dark:text-orange-300 mb-4">Fil Nu en Contact</h3>
+        <p class="text-sm mb-3">Deux fils électriques sans isolation qui se touchent</p>
+        <div class="bg-white/70 dark:bg-black/30 p-3 rounded">
+          <p class="text-xs">→ Les bornes + et - se touchent directement</p>
+        </div>
+      </div>
+      
+      <div class="bg-gradient-to-r from-red-50 to-pink-50 dark:from-red-950/30 dark:to-pink-950/30 p-6 rounded-lg border-2 border-red-200 dark:border-red-800">
+        <h3 class="text-xl font-bold text-red-700 dark:text-red-300 mb-4">Objet Métallique</h3>
+        <p class="text-sm mb-3">Un objet conducteur (clé, fourchette) touche les deux bornes</p>
+        <div class="bg-white/70 dark:bg-black/30 p-3 rounded">
+          <p class="text-xs">→ Crée un chemin direct pour l'électricité</p>
+        </div>
+      </div>
+
+      <div class="bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-950/30 dark:to-pink-950/30 p-6 rounded-lg border-2 border-purple-200 dark:border-purple-800">
+        <h3 class="text-xl font-bold text-purple-700 dark:text-purple-300 mb-4">Isolation Abîmée</h3>
+        <p class="text-sm mb-3">Le plastique protecteur des fils est usé ou cassé</p>
+        <div class="bg-white/70 dark:bg-black/30 p-3 rounded">
+          <p class="text-xs">→ Les fils nus peuvent se toucher</p>
+        </div>
+      </div>
+
+      <div class="bg-gradient-to-r from-yellow-50 to-orange-50 dark:from-yellow-950/30 dark:to-orange-950/30 p-6 rounded-lg border-2 border-yellow-200 dark:border-yellow-800">
+        <h3 class="text-xl font-bold text-yellow-700 dark:text-yellow-300 mb-4">Surtension</h3>
+        <p class="text-sm mb-3">Trop de tension peut endommager les isolants</p>
+        <div class="bg-white/70 dark:bg-black/30 p-3 rounded">
+          <p class="text-xs">→ L'isolation fond et expose les fils</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2 class="text-2xl font-bold text-primary mb-4">💥 Effets d'un Court-Circuit</h2>
+    <div class="bg-gradient-to-r from-red-50 to-orange-50 dark:from-red-950/30 dark:to-orange-950/30 p-6 rounded-lg border-2 border-red-200 dark:border-red-800">
+      <div class="grid md:grid-cols-3 gap-4">
+        <div class="bg-white/70 dark:bg-black/30 p-4 rounded-lg">
+          <div class="text-3xl mb-2">🔥</div>
+          <h4 class="font-bold mb-2">Chaleur Intense</h4>
+          <p class="text-sm">Les fils chauffent très rapidement et peuvent fondre ou brûler</p>
+        </div>
+        <div class="bg-white/70 dark:bg-black/30 p-4 rounded-lg">
+          <div class="text-3xl mb-2">⚡</div>
+          <h4 class="font-bold mb-2">Étincelles</h4>
+          <p class="text-sm">Des étincelles peuvent apparaître au point de contact</p>
+        </div>
+        <div class="bg-white/70 dark:bg-black/30 p-4 rounded-lg">
+          <div class="text-3xl mb-2">🔋</div>
+          <h4 class="font-bold mb-2">Pile Épuisée</h4>
+          <p class="text-sm">La pile se vide très vite et peut être endommagée</p>
+        </div>
+      </div>
+      
+      <div class="mt-6 p-4 bg-red-100 dark:bg-red-900/40 rounded-lg border-2 border-red-500">
+        <h4 class="font-bold text-red-800 dark:text-red-200 mb-2">⚠️ DANGERS :</h4>
+        <ul class="text-sm space-y-1">
+          <li>• Risque d'incendie</li>
+          <li>• Brûlures graves</li>
+          <li>• Dommages aux appareils électriques</li>
+          <li>• Électrocution possible</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2 class="text-2xl font-bold text-primary mb-4">🛡️ Protection : Le Fusible</h2>
+    <div class="bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-950/30 dark:to-emerald-950/30 p-6 rounded-lg border-2 border-green-200 dark:border-green-800">
+      <h3 class="text-xl font-bold text-green-700 dark:text-green-300 mb-4">Qu'est-ce qu'un fusible ?</h3>
+      <p class="mb-4">Un <strong>fusible</strong> (ou interrupteur thermique) est un dispositif de sécurité qui coupe automatiquement le courant en cas de court-circuit.</p>
+      
+      <div class="bg-white/70 dark:bg-black/30 p-5 rounded-lg space-y-4">
+        <h4 class="font-bold text-green-600 dark:text-green-400">🔬 Comment ça marche ?</h4>
+        <div class="space-y-3">
+          <div class="p-3 bg-green-100 dark:bg-green-900/50 rounded border-l-4 border-green-500">
+            <p class="font-semibold mb-1">1. Fil Fusible Fin</p>
+            <p class="text-sm">Le fusible contient un fil très fin qui conduit l'électricité</p>
+          </div>
+          <div class="p-3 bg-green-100 dark:bg-green-900/50 rounded border-l-4 border-green-500">
+            <p class="font-semibold mb-1">2. Détection de Surchauffe</p>
+            <p class="text-sm">Si le courant devient trop fort, le fil chauffe rapidement</p>
+          </div>
+          <div class="p-3 bg-green-100 dark:bg-green-900/50 rounded border-l-4 border-green-500">
+            <p class="font-semibold mb-1">3. Rupture Automatique</p>
+            <p class="text-sm">Le fil fond et casse → le circuit s'ouvre → danger écarté</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="mt-6 grid md:grid-cols-2 gap-4">
+        <div class="bg-green-100 dark:bg-green-900/40 p-4 rounded-lg">
+          <h4 class="font-bold text-green-700 dark:text-green-300 mb-2">✅ Types de fusibles</h4>
+          <ul class="text-sm space-y-1">
+            <li>• Fusible à fil (classique)</li>
+            <li>• Disjoncteur (réarmable)</li>
+            <li>• Fusible cartouche</li>
+            <li>• Coupe-circuit automatique</li>
+          </ul>
+        </div>
+        <div class="bg-green-100 dark:bg-green-900/40 p-4 rounded-lg">
+          <h4 class="font-bold text-green-700 dark:text-green-300 mb-2">🔑 Rôle du fusible</h4>
+          <ul class="text-sm space-y-1">
+            <li>• Protège les personnes</li>
+            <li>• Évite les incendies</li>
+            <li>• Protège les appareils</li>
+            <li>• Coupe instantanément</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="bg-gradient-to-br from-blue-50 to-cyan-50 dark:from-blue-950/20 dark:to-cyan-950/20 p-6 rounded-xl border-2 border-blue-200 dark:border-blue-800">
+    <h2 class="text-2xl font-bold text-blue-800 dark:text-blue-200 mb-4">⚠️ Règles de Sécurité</h2>
+    <div class="grid md:grid-cols-2 gap-4">
+      <div class="bg-white/70 dark:bg-gray-800/70 p-4 rounded-lg">
+        <h4 class="font-bold text-green-600 dark:text-green-400 mb-2">✅ À Faire</h4>
+        <ul class="text-sm space-y-1">
+          <li>• Vérifier l'état des fils</li>
+          <li>• Utiliser des fusibles adaptés</li>
+          <li>• Débrancher avant réparation</li>
+          <li>• Faire vérifier par un adulte</li>
+        </ul>
+      </div>
+      <div class="bg-white/70 dark:bg-gray-800/70 p-4 rounded-lg">
+        <h4 class="font-bold text-red-600 dark:text-red-400 mb-2">❌ À Éviter</h4>
+        <ul class="text-sm space-y-1">
+          <li>• Toucher des fils dénudés</li>
+          <li>• Court-circuiter volontairement</li>
+          <li>• Remplacer par un fil normal</li>
+          <li>• Ignorer un fusible grillé</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+</div>`,
+    exemplesExercices: `<div class="space-y-6">
+  <div class="bg-primary/5 p-6 rounded-lg border-2 border-primary/20">
+    <h3 class="text-xl font-bold text-primary mb-4">📝 Exercice 1 : Identifier les Causes</h3>
+    <p class="mb-4">Pour chaque situation, indique si elle peut causer un court-circuit (OUI / NON) :</p>
+    <ol class="space-y-2 list-decimal list-inside">
+      <li>Deux fils avec isolation intacte qui se croisent <span class="ml-4">_____</span></li>
+      <li>Une fourchette touchant les deux bornes d'une prise <span class="ml-4">_____</span></li>
+      <li>Un fil avec plastique abîmé <span class="ml-4">_____</span></li>
+      <li>Un fusible dans le circuit <span class="ml-4">_____</span></li>
+      <li>Deux fils nus qui se touchent <span class="ml-4">_____</span></li>
+    </ol>
+  </div>
+
+  <div class="bg-accent/5 p-6 rounded-lg border-2 border-accent/20">
+    <h3 class="text-xl font-bold text-accent mb-4">📝 Exercice 2 : Vrai ou Faux</h3>
+    <ol class="space-y-2 list-decimal list-inside">
+      <li>Un court-circuit fait chauffer les fils. <span class="ml-4 text-muted-foreground">(V / F)</span></li>
+      <li>Le fusible protège contre les courts-circuits. <span class="ml-4 text-muted-foreground">(V / F)</span></li>
+      <li>Un court-circuit ne présente aucun danger. <span class="ml-4 text-muted-foreground">(V / F)</span></li>
+      <li>On peut remplacer un fusible par un fil normal. <span class="ml-4 text-muted-foreground">(V / F)</span></li>
+      <li>Le fusible fond quand le courant est trop fort. <span class="ml-4 text-muted-foreground">(V / F)</span></li>
+    </ol>
+  </div>
+
+  <div class="bg-secondary/5 p-6 rounded-lg border-2 border-secondary/20">
+    <h3 class="text-xl font-bold text-secondary mb-4">📝 Exercice 3 : Le Fusible</h3>
+    <p class="mb-4">Complète les phrases suivantes :</p>
+    <ol class="space-y-3 list-decimal list-inside">
+      <li>Le fusible contient un fil très __________ qui fond facilement.</li>
+      <li>Quand le courant est trop fort, le fusible __________ et coupe le circuit.</li>
+      <li>Le fusible protège contre les __________.</li>
+      <li>Après utilisation, un fusible doit être __________ car il ne fonctionne plus.</li>
+    </ol>
+  </div>
+
+  <div class="bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-950/20 dark:to-pink-950/20 p-6 rounded-lg border-2 border-purple-200 dark:border-purple-800">
+    <h3 class="text-xl font-bold text-purple-700 dark:text-purple-300 mb-4">📝 Exercice 4 : Situation Pratique</h3>
+    <p class="mb-4">Dans ton circuit avec une pile et une ampoule, le fusible grille soudainement.</p>
+    <ol class="space-y-2 list-decimal list-inside">
+      <li>Quelle pourrait être la cause ?</li>
+      <li>Que dois-tu faire en premier ?</li>
+      <li>Pourquoi est-ce dangereux de remplacer le fusible par un fil normal ?</li>
+    </ol>
+  </div>
+</div>`,
+    musicUrl: "/lovable-uploads/courts-circuits-lesson-music.mp3"
   },
 
   "pile-electrique": {
     objectif: `À la fin de cette leçon, tu vas pouvoir:
 • Identifier les éléments constitutifs de la pile électrique`,
-    introduction: `[Contenu à ajouter]`,
-    contenu: `[Contenu à ajouter]`,
-    exemplesExercices: `[Contenu à ajouter]`
+    introduction: `<div class="space-y-6">
+  <p class="text-lg leading-relaxed">
+    La pile électrique est une source d'énergie portable qui nous permet de faire fonctionner nos appareils partout !
+    Découvrons comment elle est construite et comment elle fonctionne.
+  </p>
+  <div class="bg-primary/5 border-l-4 border-primary p-4 rounded-r">
+    <p class="font-semibold text-primary mb-2">🔋 Le saviez-vous ?</p>
+    <p>La première pile a été inventée par Alessandro Volta en 1800. C'est de son nom que vient le mot "volt" !</p>
+  </div>
+  <div class="bg-gradient-to-r from-primary/10 to-secondary/10 p-6 rounded-xl">
+    <h3 class="text-xl font-bold mb-4 flex items-center gap-2">
+      <span class="text-2xl">🎯</span>
+      Objectif de la leçon
+    </h3>
+    <ul class="space-y-2">
+      <li class="flex items-start gap-2">
+        <span class="text-primary shrink-0 mt-1">✓</span>
+        <span>Identifier les éléments constitutifs de la pile électrique</span>
+      </li>
+    </ul>
+  </div>
+</div>`,
+    contenu: `<div class="space-y-8">
+  <section>
+    <h2 class="text-2xl font-bold text-primary mb-4">🔋 Structure d'une Pile</h2>
+    <div class="bg-gradient-to-r from-blue-50 to-cyan-50 dark:from-blue-950/30 dark:to-cyan-950/30 p-6 rounded-lg border-2 border-blue-200 dark:border-blue-800">
+      <p class="leading-relaxed mb-4">
+        Une pile électrique transforme l'<strong>énergie chimique</strong> en <strong>énergie électrique</strong>.
+        Elle est composée de plusieurs éléments essentiels.
+      </p>
+      
+      <div class="grid md:grid-cols-2 gap-6">
+        <div class="bg-white/70 dark:bg-black/30 p-5 rounded-lg">
+          <h4 class="font-bold text-blue-600 dark:text-blue-400 mb-3">⊕ Borne Positive (+)</h4>
+          <ul class="text-sm space-y-2">
+            <li>• Appelée aussi "pôle +"</li>
+            <li>• Généralement marquée en rouge</li>
+            <li>• Point de départ du courant électrique (convention)</li>
+            <li>• Souvent une tige de carbone (graphite)</li>
+          </ul>
+        </div>
+        
+        <div class="bg-white/70 dark:bg-black/30 p-5 rounded-lg">
+          <h4 class="font-bold text-blue-600 dark:text-blue-400 mb-3">⊖ Borne Négative (-)</h4>
+          <ul class="text-sm space-y-2">
+            <li>• Appelée aussi "pôle -"</li>
+            <li>• Généralement marquée en noir ou bleu</li>
+            <li>• Point d'arrivée du courant (convention)</li>
+            <li>• Souvent en zinc</li>
+          </ul>
+        </div>
+
+        <div class="bg-white/70 dark:bg-black/30 p-5 rounded-lg">
+          <h4 class="font-bold text-blue-600 dark:text-blue-400 mb-3">💧 Électrolyte</h4>
+          <ul class="text-sm space-y-2">
+            <li>• Substance chimique (pâte ou liquide)</li>
+            <li>• Permet les réactions chimiques</li>
+            <li>• Produit l'électricité</li>
+            <li>• Ne doit jamais fuir !</li>
+          </ul>
+        </div>
+
+        <div class="bg-white/70 dark:bg-black/30 p-5 rounded-lg">
+          <h4 class="font-bold text-blue-600 dark:text-blue-400 mb-3">🛡️ Enveloppe</h4>
+          <ul class="text-sm space-y-2">
+            <li>• Protège l'intérieur</li>
+            <li>• Contient l'électrolyte</li>
+            <li>• En métal ou plastique</li>
+            <li>• Porte les informations (voltage)</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2 class="text-2xl font-bold text-primary mb-4">⚡ Types de Piles</h2>
+    <div class="space-y-6">
+      <div class="bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-950/30 dark:to-emerald-950/30 p-6 rounded-lg border-2 border-green-200 dark:border-green-800">
+        <h3 class="text-xl font-bold text-green-700 dark:text-green-300 mb-4">Pile Ronde (Cylindrique)</h3>
+        <div class="grid md:grid-cols-2 gap-4">
+          <div class="bg-white/70 dark:bg-black/30 p-4 rounded-lg">
+            <h4 class="font-bold mb-2">Caractéristiques :</h4>
+            <ul class="text-sm space-y-1">
+              <li>• Voltage : 1,5 V</li>
+              <li>• Forme : cylindre</li>
+              <li>• Tailles : AAA, AA, C, D</li>
+              <li>• Usage : lampes, jouets, radios</li>
+            </ul>
+          </div>
+          <div class="bg-white/70 dark:bg-black/30 p-4 rounded-lg">
+            <h4 class="font-bold mb-2">Identification :</h4>
+            <ul class="text-sm space-y-1">
+              <li>• Borne + : en haut (bouton)</li>
+              <li>• Borne - : en bas (plate)</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <div class="bg-gradient-to-r from-orange-50 to-yellow-50 dark:from-orange-950/30 dark:to-yellow-950/30 p-6 rounded-lg border-2 border-orange-200 dark:border-orange-800">
+        <h3 class="text-xl font-bold text-orange-700 dark:text-orange-300 mb-4">Pile Plate (Rectangulaire)</h3>
+        <div class="grid md:grid-cols-2 gap-4">
+          <div class="bg-white/70 dark:bg-black/30 p-4 rounded-lg">
+            <h4 class="font-bold mb-2">Caractéristiques :</h4>
+            <ul class="text-sm space-y-1">
+              <li>• Voltage : 4,5 V ou 9 V</li>
+              <li>• Forme : rectangle</li>
+              <li>• Plus puissante qu'une pile ronde</li>
+              <li>• Usage : radios, détecteurs de fumée</li>
+            </ul>
+          </div>
+          <div class="bg-white/70 dark:bg-black/30 p-4 rounded-lg">
+            <h4 class="font-bold mb-2">Identification :</h4>
+            <ul class="text-sm space-y-1">
+              <li>• Deux bornes sur le dessus</li>
+              <li>• Marquées + et -</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="bg-gradient-to-br from-purple-50 to-pink-50 dark:from-purple-950/20 dark:to-pink-950/20 p-6 rounded-xl border-2 border-purple-200 dark:border-purple-800">
+    <h2 class="text-2xl font-bold text-purple-800 dark:text-purple-200 mb-4">🔋 Durée de Vie des Piles</h2>
+    <div class="space-y-4">
+      <div class="bg-white/70 dark:bg-gray-800/70 p-4 rounded-lg">
+        <h4 class="font-bold mb-2">Facteurs qui épuisent la pile :</h4>
+        <ul class="space-y-2">
+          <li class="flex items-start gap-2">
+            <span class="text-purple-600 dark:text-purple-400">⏱️</span>
+            <span>Utilisation prolongée</span>
+          </li>
+          <li class="flex items-start gap-2">
+            <span class="text-purple-600 dark:text-purple-400">🔥</span>
+            <span>Températures extrêmes</span>
+          </li>
+          <li class="flex items-start gap-2">
+            <span class="text-purple-600 dark:text-purple-400">⚡</span>
+            <span>Court-circuit</span>
+          </li>
+          <li class="flex items-start gap-2">
+            <span class="text-purple-600 dark:text-purple-400">📅</span>
+            <span>Vieillissement naturel</span>
+          </li>
+        </ul>
+      </div>
+      
+      <div class="p-4 bg-green-100 dark:bg-green-900/40 rounded-lg">
+        <h4 class="font-bold text-green-700 dark:text-green-300 mb-2">♻️ Recyclage Important</h4>
+        <p class="text-sm">Les piles contiennent des produits chimiques polluants. Ne les jette jamais à la poubelle ! Apporte-les dans un point de collecte.</p>
+      </div>
+    </div>
+  </section>
+</div>`,
+    exemplesExercices: `<div class="space-y-6">
+  <div class="bg-primary/5 p-6 rounded-lg border-2 border-primary/20">
+    <h3 class="text-xl font-bold text-primary mb-4">📝 Exercice 1 : Structure de la Pile</h3>
+    <p class="mb-4">Nomme les 4 éléments constitutifs d'une pile :</p>
+    <ol class="space-y-2 list-decimal list-inside">
+      <li>_____________________________</li>
+      <li>_____________________________</li>
+      <li>_____________________________</li>
+      <li>_____________________________</li>
+    </ol>
+  </div>
+
+  <div class="bg-accent/5 p-6 rounded-lg border-2 border-accent/20">
+    <h3 class="text-xl font-bold text-accent mb-4">📝 Exercice 2 : Types de Piles</h3>
+    <p class="mb-4">Complète le tableau :</p>
+    <div class="overflow-x-auto">
+      <table class="w-full border-2 border-gray-300">
+        <thead class="bg-accent/20">
+          <tr>
+            <th class="border p-2">Type de pile</th>
+            <th class="border p-2">Voltage</th>
+            <th class="border p-2">Exemple d'utilisation</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="border p-2">Pile ronde AA</td>
+            <td class="border p-2">_______</td>
+            <td class="border p-2">_______</td>
+          </tr>
+          <tr>
+            <td class="border p-2">Pile plate</td>
+            <td class="border p-2">_______</td>
+            <td class="border p-2">_______</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="bg-secondary/5 p-6 rounded-lg border-2 border-secondary/20">
+    <h3 class="text-xl font-bold text-secondary mb-4">📝 Exercice 3 : Questions de Compréhension</h3>
+    <ol class="space-y-3 list-decimal list-inside">
+      <li>Quelle forme d'énergie la pile transforme-t-elle en électricité ?</li>
+      <li>Quelle est la différence entre la borne + et la borne - ?</li>
+      <li>Quel est le rôle de l'électrolyte dans une pile ?</li>
+      <li>Pourquoi doit-on recycler les piles usagées ?</li>
+    </ol>
+  </div>
+
+  <div class="bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-950/20 dark:to-pink-950/20 p-6 rounded-lg border-2 border-purple-200 dark:border-purple-800">
+    <h3 class="text-xl font-bold text-purple-700 dark:text-purple-300 mb-4">📝 Exercice 4 : Dessine une Pile</h3>
+    <p class="mb-4">Dessine une pile et indique sur ton schéma :</p>
+    <ul class="list-disc list-inside space-y-1">
+      <li>La borne positive (+)</li>
+      <li>La borne négative (-)</li>
+      <li>L'enveloppe protectrice</li>
+      <li>Le voltage</li>
+    </ul>
+  </div>
+</div>`,
+    musicUrl: "/lovable-uploads/pile-electrique-lesson-music.mp3"
   },
 
   "montage-serie": {
     objectif: `À la fin de cette leçon, tu vas pouvoir:
 • Réaliser un montage de piles en série et en faire les schémas`,
-    introduction: `[Contenu à ajouter]`,
-    contenu: `[Contenu à ajouter]`,
-    exemplesExercices: `[Contenu à ajouter]`
+    introduction: `<div class="space-y-6">
+  <p class="text-lg leading-relaxed">
+    Quand une seule pile ne suffit pas, on peut en assembler plusieurs ! Le montage en série augmente la tension pour obtenir plus de puissance.
+  </p>
+  <div class="bg-primary/5 border-l-4 border-primary p-4 rounded-r">
+    <p class="font-semibold text-primary mb-2">🔋 Le saviez-vous ?</p>
+    <p>Les télécommandes et lampes torches utilisent souvent 2 ou 4 piles en série pour obtenir la tension nécessaire !</p>
+  </div>
+  <div class="bg-gradient-to-r from-primary/10 to-secondary/10 p-6 rounded-xl">
+    <h3 class="text-xl font-bold mb-4 flex items-center gap-2">
+      <span class="text-2xl">🎯</span>
+      Objectif de la leçon
+    </h3>
+    <ul class="space-y-2">
+      <li class="flex items-start gap-2">
+        <span class="text-primary shrink-0 mt-1">✓</span>
+        <span>Réaliser un montage de piles en série et en faire les schémas</span>
+      </li>
+    </ul>
+  </div>
+</div>`,
+    contenu: `<div class="space-y-8">
+  <section>
+    <h2 class="text-2xl font-bold text-primary mb-4">🔗 Montage en Série : Principe</h2>
+    <div class="bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-950/30 dark:to-pink-950/30 p-6 rounded-lg border-2 border-purple-200 dark:border-purple-800">
+      <p class="leading-relaxed mb-4">
+        Dans un <strong>montage en série</strong>, les piles sont connectées bout à bout :
+        la borne + d'une pile est reliée à la borne - de la suivante.
+      </p>
+      
+      <div class="bg-white/70 dark:bg-black/30 p-5 rounded-lg space-y-4">
+        <h4 class="font-bold text-purple-600 dark:text-purple-400">📍 Comment Brancher ?</h4>
+        <div class="space-y-3">
+          <div class="p-3 bg-purple-100 dark:bg-purple-900/50 rounded">
+            <p class="font-semibold mb-1">Pile 1 :</p>
+            <p class="text-sm">Borne + libre → Borne - connectée à...</p>
+          </div>
+          <div class="p-3 bg-purple-100 dark:bg-purple-900/50 rounded">
+            <p class="font-semibold mb-1">Pile 2 :</p>
+            <p class="text-sm">Borne + (reliée à pile 1) → Borne - connectée à...</p>
+          </div>
+          <div class="p-3 bg-purple-100 dark:bg-purple-900/50 rounded">
+            <p class="font-semibold mb-1">Pile 3 :</p>
+            <p class="text-sm">Borne + (reliée à pile 2) → Borne - libre</p>
+          </div>
+        </div>
+        <div class="mt-4 p-3 bg-purple-100 dark:bg-purple-900/40 rounded">
+          <p class="font-semibold text-sm">💡 Schéma :</p>
+          <p class="text-sm font-mono">(-) [Pile 1] (+)➜(-)  [Pile 2] (+)➜(-) [Pile 3] (+)</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2 class="text-2xl font-bold text-primary mb-4">⚡ Tension Totale</h2>
+    <div class="bg-gradient-to-r from-blue-50 to-cyan-50 dark:from-blue-950/30 dark:to-cyan-950/30 p-6 rounded-lg border-2 border-blue-200 dark:border-blue-800">
+      <h3 class="text-xl font-bold text-blue-700 dark:text-blue-300 mb-4">Addition des Tensions</h3>
+      <p class="mb-4">En série, les tensions s'<strong>additionnent</strong> !</p>
+      
+      <div class="space-y-4">
+        <div class="bg-white/70 dark:bg-black/30 p-4 rounded-lg">
+          <p class="font-mono text-lg text-center bg-blue-100 dark:bg-blue-900/50 p-3 rounded">
+            V_totale = V₁ + V₂ + V₃ + ...
+          </p>
+        </div>
+        
+        <div class="grid md:grid-cols-3 gap-4">
+          <div class="bg-blue-100 dark:bg-blue-900/50 p-4 rounded-lg">
+            <p class="font-bold mb-2">Exemple 1 :</p>
+            <p class="text-sm">2 piles de 1,5 V</p>
+            <p class="text-sm font-mono">= 1,5 + 1,5</p>
+            <p class="text-sm font-bold">= 3 V</p>
+          </div>
+          
+          <div class="bg-blue-100 dark:bg-blue-900/50 p-4 rounded-lg">
+            <p class="font-bold mb-2">Exemple 2 :</p>
+            <p class="text-sm">3 piles de 1,5 V</p>
+            <p class="text-sm font-mono">= 1,5 + 1,5 + 1,5</p>
+            <p class="text-sm font-bold">= 4,5 V</p>
+          </div>
+          
+          <div class="bg-blue-100 dark:bg-blue-900/50 p-4 rounded-lg">
+            <p class="font-bold mb-2">Exemple 3 :</p>
+            <p class="text-sm">4 piles de 1,5 V</p>
+            <p class="text-sm font-mono">= 6 V</p>
+          </div>
+        </div>
+      </div>
+      
+      <div class="mt-4 p-4 bg-yellow-100 dark:bg-yellow-900/40 rounded-lg">
+        <p class="font-semibold mb-2">💡 Conséquence :</p>
+        <p class="text-sm">Plus il y a de piles en série → Plus la tension est grande → Plus l'ampoule brille fort !</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-950/20 dark:to-emerald-950/20 p-6 rounded-xl border-2 border-green-200 dark:border-green-800">
+    <h2 class="text-2xl font-bold text-green-800 dark:text-green-200 mb-4">✅ Avantages et Précautions</h2>
+    <div class="grid md:grid-cols-2 gap-4">
+      <div class="bg-white/70 dark:bg-gray-800/70 p-4 rounded-lg">
+        <h4 class="font-bold text-green-600 dark:text-green-400 mb-2">Avantages :</h4>
+        <ul class="text-sm space-y-1">
+          <li>✓ Augmente la tension</li>
+          <li>✓ Plus de puissance</li>
+          <li>✓ Ampoule plus brillante</li>
+          <li>✓ Moteurs plus rapides</li>
+        </ul>
+      </div>
+      <div class="bg-white/70 dark:bg-gray-800/70 p-4 rounded-lg">
+        <h4 class="font-bold text-orange-600 dark:text-orange-400 mb-2">Précautions :</h4>
+        <ul class="text-sm space-y-1">
+          <li>⚠️ Respecter les polarités</li>
+          <li>⚠️ Piles même type/voltage</li>
+          <li>⚠️ Ne pas dépasser tension recommandée</li>
+          <li>⚠️ Surveiller la chaleur</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+</div>`,
+    exemplesExercices: `<div class="space-y-6">
+  <div class="bg-primary/5 p-6 rounded-lg border-2 border-primary/20">
+    <h3 class="text-xl font-bold text-primary mb-4">📝 Exercice 1 : Calcul de Tension</h3>
+    <p class="mb-4">Calcule la tension totale pour chaque montage en série :</p>
+    <ol class="space-y-2 list-decimal list-inside">
+      <li>3 piles de 1,5 V = __________</li>
+      <li>2 piles de 4,5 V = __________</li>
+      <li>5 piles de 1,5 V = __________</li>
+      <li>1 pile de 9 V + 2 piles de 1,5 V = __________</li>
+    </ol>
+  </div>
+
+  <div class="bg-accent/5 p-6 rounded-lg border-2 border-accent/20">
+    <h3 class="text-xl font-bold text-accent mb-4">📝 Exercice 2 : Schéma</h3>
+    <p class="mb-4">Dessine le schéma d'un montage en série avec :</p>
+    <ul class="list-disc list-inside space-y-1">
+      <li>3 piles de 1,5 V</li>
+      <li>1 ampoule</li>
+    </ul>
+    <p class="text-sm text-muted-foreground mt-3">N'oublie pas d'indiquer les polarités (+) et (-) !</p>
+  </div>
+
+  <div class="bg-secondary/5 p-6 rounded-lg border-2 border-secondary/20">
+    <h3 class="text-xl font-bold text-secondary mb-4">📝 Exercice 3 : Vrai ou Faux</h3>
+    <ol class="space-y-2 list-decimal list-inside">
+      <li>En série, on connecte + avec +. <span class="ml-4 text-muted-foreground">(V / F)</span></li>
+      <li>Les tensions s'additionnent en série. <span class="ml-4 text-muted-foreground">(V / F)</span></li>
+      <li>Plus de piles = plus de puissance. <span class="ml-4 text-muted-foreground">(V / F)</span></li>
+      <li>On peut mélanger piles neuves et usées. <span class="ml-4 text-muted-foreground">(V / F)</span></li>
+    </ol>
+  </div>
+
+  <div class="bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-950/20 dark:to-pink-950/20 p-6 rounded-lg border-2 border-purple-200 dark:border-purple-800">
+    <h3 class="text-xl font-bold text-purple-700 dark:text-purple-300 mb-4">📝 Exercice 4 : Problème</h3>
+    <p class="mb-4">Tu as des piles de 1,5 V et tu as besoin de 6 V pour faire fonctionner un appareil.</p>
+    <ol class="space-y-2 list-decimal list-inside">
+      <li>Combien de piles dois-tu utiliser ?</li>
+      <li>Comment vas-tu les brancher ?</li>
+      <li>Dessine le schéma du montage.</li>
+    </ol>
+  </div>
+</div>`,
+    musicUrl: "/lovable-uploads/montage-serie-lesson-music.mp3"
   },
 
   "montage-parallele": {
     objectif: `À la fin de cette leçon, tu vas pouvoir:
 • Réaliser un montage de piles en parallèle
 • Comprendre la technique du montage en parallèle`,
-    introduction: `[Contenu à ajouter]`,
-    contenu: `[Contenu à ajouter]`,
-    exemplesExercices: `[Contenu à ajouter]`
+    introduction: `<div class="space-y-6">
+  <p class="text-lg leading-relaxed">
+    Le montage en parallèle est différent du montage en série ! Au lieu d'augmenter la tension, il prolonge la durée de vie du circuit.
+  </p>
+  <div class="bg-primary/5 border-l-4 border-primary p-4 rounded-r">
+    <p class="font-semibold text-primary mb-2">🔋 Le saviez-vous ?</p>
+    <p>Les grands systèmes électriques utilisent souvent des montages mixtes (série + parallèle) pour optimiser puissance et durée !</p>
+  </div>
+  <div class="bg-gradient-to-r from-primary/10 to-secondary/10 p-6 rounded-xl">
+    <h3 class="text-xl font-bold mb-4 flex items-center gap-2">
+      <span class="text-2xl">🎯</span>
+      Objectifs de la leçon
+    </h3>
+    <ul class="space-y-2">
+      <li class="flex items-start gap-2">
+        <span class="text-primary shrink-0 mt-1">✓</span>
+        <span>Réaliser un montage de piles en parallèle</span>
+      </li>
+      <li class="flex items-start gap-2">
+        <span class="text-primary shrink-0 mt-1">✓</span>
+        <span>Comprendre les différences avec le montage en série</span>
+      </li>
+    </ul>
+  </div>
+</div>`,
+    contenu: `<div class="space-y-8">
+  <section>
+    <h2 class="text-2xl font-bold text-primary mb-4">🔗 Montage en Parallèle : Principe</h2>
+    <div class="bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-950/30 dark:to-emerald-950/30 p-6 rounded-lg border-2 border-green-200 dark:border-green-800">
+      <p class="leading-relaxed mb-4">
+        Dans un <strong>montage en parallèle</strong>, toutes les bornes positives (+) sont connectées ensemble,
+        et toutes les bornes négatives (-) sont connectées ensemble.
+      </p>
+      
+      <div class="bg-white/70 dark:bg-black/30 p-5 rounded-lg space-y-4">
+        <h4 class="font-bold text-green-600 dark:text-green-400">📍 Comment Brancher ?</h4>
+        <div class="space-y-3">
+          <div class="p-3 bg-green-100 dark:bg-green-900/50 rounded">
+            <p class="font-semibold mb-1">Toutes les bornes + ensemble :</p>
+            <p class="text-sm">Pile 1 (+) ━━ Pile 2 (+) ━━ Pile 3 (+)</p>
+          </div>
+          <div class="p-3 bg-green-100 dark:bg-green-900/50 rounded">
+            <p class="font-semibold mb-1">Toutes les bornes - ensemble :</p>
+            <p class="text-sm">Pile 1 (-) ━━ Pile 2 (-) ━━ Pile 3 (-)</p>
+          </div>
+        </div>
+        <div class="mt-4 p-3 bg-green-100 dark:bg-green-900/40 rounded">
+          <p class="font-semibold text-sm">💡 Résultat :</p>
+          <p class="text-sm">Les piles travaillent ensemble comme une seule grande pile !</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2 class="text-2xl font-bold text-primary mb-4">📊 Série vs Parallèle</h2>
+    <div class="overflow-x-auto">
+      <table class="w-full border-2 border-gray-300 dark:border-gray-600">
+        <thead class="bg-primary/20">
+          <tr>
+            <th class="border p-3 text-left">Caractéristique</th>
+            <th class="border p-3 text-left">Montage en Série</th>
+            <th class="border p-3 text-left">Montage en Parallèle</th>
+          </tr>
+        </thead>
+        <tbody class="bg-white/70 dark:bg-gray-800/70">
+          <tr>
+            <td class="border p-3 font-semibold">Connexion</td>
+            <td class="border p-3">+ avec - (bout à bout)</td>
+            <td class="border p-3">+ avec +, - avec -</td>
+          </tr>
+          <tr>
+            <td class="border p-3 font-semibold">Tension totale</td>
+            <td class="border p-3">V₁ + V₂ + V₃...</td>
+            <td class="border p-3">Reste V (identique)</td>
+          </tr>
+          <tr>
+            <td class="border p-3 font-semibold">Effet sur ampoule</td>
+            <td class="border p-3">Brille plus fort</td>
+            <td class="border p-3">Brille normalement</td>
+          </tr>
+          <tr>
+            <td class="border p-3 font-semibold">Durée de vie</td>
+            <td class="border p-3">Normale</td>
+            <td class="border p-3">Plus longue</td>
+          </tr>
+          <tr>
+            <td class="border p-3 font-semibold">Usage</td>
+            <td class="border p-3">Besoin de plus de puissance</td>
+            <td class="border p-3">Besoin de plus d'autonomie</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="bg-gradient-to-br from-orange-50 to-yellow-50 dark:from-orange-950/20 dark:to-yellow-950/20 p-6 rounded-xl border-2 border-orange-200 dark:border-orange-800">
+    <h2 class="text-2xl font-bold text-orange-800 dark:text-orange-200 mb-4">🎯 Applications Pratiques</h2>
+    <div class="grid md:grid-cols-2 gap-4">
+      <div class="bg-white/70 dark:bg-gray-800/70 p-4 rounded-lg">
+        <h4 class="font-bold mb-2">📱 Montage Série :</h4>
+        <ul class="text-sm space-y-1">
+          <li>• Lampes torches puissantes</li>
+          <li>• Jouets électroniques</li>
+          <li>• Appareils photo</li>
+        </ul>
+      </div>
+      <div class="bg-white/70 dark:bg-gray-800/70 p-4 rounded-lg">
+        <h4 class="font-bold mb-2">🔋 Montage Parallèle :</h4>
+        <ul class="text-sm space-y-1">
+          <li>• Systèmes de secours</li>
+          <li>• Appareils longue durée</li>
+          <li>• Alimentation de sauvegarde</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+</div>`,
+    exemplesExercices: `<div class="space-y-6">
+  <div class="bg-primary/5 p-6 rounded-lg border-2 border-primary/20">
+    <h3 class="text-xl font-bold text-primary mb-4">📝 Exercice 1 : Tension</h3>
+    <p class="mb-4">Calcule la tension pour chaque montage :</p>
+    <ol class="space-y-3 list-decimal list-inside">
+      <li>3 piles de 1,5 V en parallèle : __________</li>
+      <li>3 piles de 1,5 V en série : __________</li>
+      <li>2 piles de 4,5 V en parallèle : __________</li>
+      <li>2 piles de 4,5 V en série : __________</li>
+    </ol>
+  </div>
+
+  <div class="bg-accent/5 p-6 rounded-lg border-2 border-accent/20">
+    <h3 class="text-xl font-bold text-accent mb-4">📝 Exercice 2 : Identification</h3>
+    <p class="mb-4">Pour chaque description, indique s'il s'agit d'un montage en série (S) ou en parallèle (P) :</p>
+    <ol class="space-y-2 list-decimal list-inside">
+      <li>Les tensions s'additionnent <span class="ml-4">_____</span></li>
+      <li>Toutes les bornes + sont reliées ensemble <span class="ml-4">_____</span></li>
+      <li>Les piles sont bout à bout <span class="ml-4">_____</span></li>
+      <li>La tension reste identique <span class="ml-4">_____</span></li>
+      <li>Augmente la durée de vie <span class="ml-4">_____</span></li>
+    </ol>
+  </div>
+
+  <div class="bg-secondary/5 p-6 rounded-lg border-2 border-secondary/20">
+    <h3 class="text-xl font-bold text-secondary mb-4">📝 Exercice 3 : Choix du Montage</h3>
+    <p class="mb-4">Pour chaque besoin, choisis le montage approprié (Série / Parallèle) :</p>
+    <ol class="space-y-2 list-decimal list-inside">
+      <li>Tu veux une lampe très brillante. <span class="ml-4">__________</span></li>
+      <li>Tu veux que ton appareil fonctionne plus longtemps. <span class="ml-4">__________</span></li>
+      <li>Tu as besoin de 9 V avec des piles de 1,5 V. <span class="ml-4">__________</span></li>
+      <li>Tu veux économiser tes piles. <span class="ml-4">__________</span></li>
+    </ol>
+  </div>
+
+  <div class="bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-950/20 dark:to-pink-950/20 p-6 rounded-lg border-2 border-purple-200 dark:border-purple-800">
+    <h3 class="text-xl font-bold text-purple-700 dark:text-purple-300 mb-4">📝 Exercice 4 : Application</h3>
+    <p class="mb-4">Tu as 4 piles de 1,5 V.</p>
+    <ol class="space-y-3 list-decimal list-inside">
+      <li>Quelle tension obtiendras-tu en les montant toutes en série ?</li>
+      <li>Quelle tension obtiendras-tu en les montant toutes en parallèle ?</li>
+      <li>Quel montage choisir pour une lampe très puissante ? Pourquoi ?</li>
+    </ol>
+  </div>
+</div>`,
+    musicUrl: "/lovable-uploads/montage-parallele-lesson-music.mp3"
   },
 
   // BIOLOGIE - Les vertébrés
