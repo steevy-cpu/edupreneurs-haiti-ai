@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Textarea } from "@/components/ui/textarea";
 import {
   ChevronLeft,
   BookOpen,
@@ -10,7 +11,9 @@ import {
   ClipboardCheck,
   Beaker,
   Award,
-  Trophy
+  Trophy,
+  NotebookPen,
+  Save
 } from "lucide-react";
 import { sciencesLessons7AF, sciencesTopics } from "@/data/sciencesLessons";
 import { 
@@ -35,13 +38,78 @@ export default function SciencesLesson() {
   const [earnedPoints, setEarnedPoints] = useState(0);
   const [lessonCompleted, setLessonCompleted] = useState(false);
   const [quizKey, setQuizKey] = useState(0);
+  const [personalNotes, setPersonalNotes] = useState("");
+  const [isSavingNotes, setIsSavingNotes] = useState(false);
 
   const lessonContent = topicId ? sciencesLessons7AF[topicId] : null;
   const topicInfo = sciencesTopics.find(topic => topic.id === topicId);
 
   useEffect(() => {
     window.scrollTo(0, 0);
+    loadPersonalNotes();
   }, [topicId]);
+
+  const loadPersonalNotes = async () => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      const { data, error } = await supabase
+        .from('lesson_notes')
+        .select('notes')
+        .eq('user_id', user.id)
+        .eq('lesson_id', `sciences-${topicId}`)
+        .single();
+
+      if (data && !error) {
+        setPersonalNotes(data.notes);
+      }
+    } catch (error) {
+      console.error('Error loading notes:', error);
+    }
+  };
+
+  const savePersonalNotes = async () => {
+    try {
+      setIsSavingNotes(true);
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        toast({
+          title: "Erreur",
+          description: "Tu dois être connecté pour sauvegarder tes notes",
+          variant: "destructive"
+        });
+        return;
+      }
+
+      const { error } = await supabase
+        .from('lesson_notes')
+        .upsert({
+          user_id: user.id,
+          lesson_id: `sciences-${topicId}`,
+          notes: personalNotes,
+          updated_at: new Date().toISOString()
+        }, {
+          onConflict: 'user_id,lesson_id'
+        });
+
+      if (error) throw error;
+
+      toast({
+        title: "✅ Notes sauvegardées !",
+        description: "Tes notes personnelles ont été enregistrées",
+      });
+    } catch (error) {
+      console.error('Error saving notes:', error);
+      toast({
+        title: "Erreur",
+        description: "Impossible de sauvegarder les notes",
+        variant: "destructive"
+      });
+    } finally {
+      setIsSavingNotes(false);
+    }
+  };
 
   const getQuizData = () => {
     switch (topicId) {
@@ -136,7 +204,7 @@ export default function SciencesLesson() {
         {/* Lesson Content Tabs */}
         <Card className="p-6 mb-8">
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-            <TabsList className="grid w-full grid-cols-4 mb-6">
+            <TabsList className="grid w-full grid-cols-5 mb-6">
               <TabsTrigger value="introduction" className="gap-2">
                 <Lightbulb className="w-4 h-4" />
                 Introduction
@@ -148,6 +216,10 @@ export default function SciencesLesson() {
               <TabsTrigger value="exemples" className="gap-2">
                 <ClipboardCheck className="w-4 h-4" />
                 Exemples
+              </TabsTrigger>
+              <TabsTrigger value="notes" className="gap-2">
+                <NotebookPen className="w-4 h-4" />
+                Mes Notes
               </TabsTrigger>
               <TabsTrigger value="quiz" className="gap-2">
                 <Trophy className="w-4 h-4" />
@@ -174,6 +246,51 @@ export default function SciencesLesson() {
                 className="prose prose-lg dark:prose-invert max-w-none"
                 dangerouslySetInnerHTML={{ __html: lessonContent.exemplesExercices }}
               />
+            </TabsContent>
+
+            <TabsContent value="notes" className="space-y-6">
+              <div className="flex items-center gap-3 mb-6">
+                <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center">
+                  <NotebookPen className="w-6 h-6 text-white" />
+                </div>
+                <div>
+                  <h2 className="text-2xl font-bold">Notes Personnelles</h2>
+                  <p className="text-muted-foreground">Prends des notes pour mieux retenir la leçon</p>
+                </div>
+              </div>
+              
+              <Card className="p-6">
+                <Textarea
+                  placeholder="Écris tes notes ici... Ce que tu as appris, les points importants à retenir, tes questions..."
+                  value={personalNotes}
+                  onChange={(e) => setPersonalNotes(e.target.value)}
+                  className="min-h-[400px] text-base resize-none"
+                />
+                <div className="flex justify-end mt-4">
+                  <Button
+                    onClick={savePersonalNotes}
+                    disabled={isSavingNotes}
+                    className="gap-2"
+                  >
+                    <Save className="w-4 h-4" />
+                    {isSavingNotes ? "Sauvegarde..." : "Sauvegarder mes notes"}
+                  </Button>
+                </div>
+              </Card>
+              
+              <Card className="p-4 bg-blue-50 dark:bg-blue-950/30 border-blue-200 dark:border-blue-800">
+                <h3 className="font-semibold mb-2 flex items-center gap-2">
+                  <Lightbulb className="w-4 h-4 text-blue-600" />
+                  Conseils pour prendre des notes efficaces
+                </h3>
+                <ul className="text-sm space-y-1 text-muted-foreground">
+                  <li>• Note les définitions importantes et les formules</li>
+                  <li>• Écris avec tes propres mots pour mieux comprendre</li>
+                  <li>• Dessine des schémas si ça t'aide à visualiser</li>
+                  <li>• Note les questions que tu as pour les réviser plus tard</li>
+                  <li>• Relis tes notes régulièrement pour mieux mémoriser</li>
+                </ul>
+              </Card>
             </TabsContent>
 
             <TabsContent value="quiz" className="space-y-6">
