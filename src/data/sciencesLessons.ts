@@ -3053,9 +3053,338 @@ export const sciencesLessons7AF: Record<string, StaticLessonContent> = {
 • Expliquer le rôle des os et des muscles pour l'exécution des mouvements
 • Spécifier les caractéristiques de la marche, de la course, du saut et de la reptation
 • Reconnaître les modes de déplacement dans l'eau et dans l'air`,
-    introduction: `[Contenu à ajouter]`,
-    contenu: `[Contenu à ajouter]`,
-    exemplesExercices: `[Contenu à ajouter]`
+    introduction: `<div class="space-y-6">
+  <p class="text-lg leading-relaxed">
+    Les vertébrés ont développé une incroyable variété de moyens pour se déplacer : marcher, courir, sauter, nager, voler... 
+    Chaque mode de déplacement est adapté à leur milieu de vie et à leurs besoins !
+  </p>
+  <div class="bg-primary/5 border-l-4 border-primary p-4 rounded-r">
+    <p class="font-semibold text-primary mb-2">🦅 Le saviez-vous ?</p>
+    <p>Le guépard est l'animal terrestre le plus rapide au monde : il peut atteindre 120 km/h en quelques secondes !
+    Le faucon pèlerin en piqué peut dépasser 380 km/h, ce qui en fait l'animal le plus rapide de la planète !</p>
+  </div>
+  
+  <div class="bg-gradient-to-r from-primary/10 to-secondary/10 p-6 rounded-xl">
+    <h3 class="text-xl font-bold mb-4 flex items-center gap-2">
+      <span class="text-2xl">🎯</span>
+      Objectifs de la leçon
+    </h3>
+    <ul class="space-y-2">
+      <li class="flex items-start gap-2">
+        <span class="text-primary shrink-0 mt-1">✓</span>
+        <span>Distinguer les diverses façons de se mouvoir sur le sol, dans l'eau et dans l'air</span>
+      </li>
+      <li class="flex items-start gap-2">
+        <span class="text-primary shrink-0 mt-1">✓</span>
+        <span>Expliquer le rôle des os et des muscles pour l'exécution des mouvements</span>
+      </li>
+      <li class="flex items-start gap-2">
+        <span class="text-primary shrink-0 mt-1">✓</span>
+        <span>Spécifier les caractéristiques de la marche, de la course, du saut et de la reptation</span>
+      </li>
+      <li class="flex items-start gap-2">
+        <span class="text-primary shrink-0 mt-1">✓</span>
+        <span>Reconnaître les modes de déplacement dans l'eau et dans l'air</span>
+      </li>
+    </ul>
+  </div>
+</div>`,
+    contenu: `<div class="space-y-8">
+  <section>
+    <h2 class="text-2xl font-bold text-primary mb-4">🦴 Le Squelette et les Muscles</h2>
+    <div class="bg-gradient-to-r from-blue-50 to-cyan-50 dark:from-blue-950/30 dark:to-cyan-950/30 p-6 rounded-lg border-2 border-blue-200 dark:border-blue-800">
+      <p class="leading-relaxed mb-4">
+        Pour se déplacer, les vertébrés utilisent un système composé de <strong>deux éléments essentiels</strong> :
+      </p>
+      <div class="grid md:grid-cols-2 gap-6 mt-4">
+        <div class="bg-white/70 dark:bg-black/30 p-5 rounded-lg">
+          <h4 class="font-bold text-blue-600 dark:text-blue-400 mb-3">🦴 Le Squelette (Os)</h4>
+          <ul class="space-y-2 text-sm">
+            <li>• Structure rigide du corps</li>
+            <li>• Soutient le corps</li>
+            <li>• Protège les organes internes</li>
+            <li>• Points d'attache pour les muscles</li>
+            <li>• Permet les mouvements grâce aux articulations</li>
+          </ul>
+        </div>
+        <div class="bg-white/70 dark:bg-black/30 p-5 rounded-lg">
+          <h4 class="font-bold text-blue-600 dark:text-blue-400 mb-3">💪 Les Muscles</h4>
+          <ul class="space-y-2 text-sm">
+            <li>• Tissus capables de se contracter</li>
+            <li>• Attachés aux os par des tendons</li>
+            <li>• Se contractent (raccourcissent) et se relâchent</li>
+            <li>• Tirent sur les os pour créer le mouvement</li>
+            <li>• Travaillent par paires (un muscle tire, l'autre relâche)</li>
+          </ul>
+        </div>
+      </div>
+      <div class="mt-4 p-4 bg-blue-100 dark:bg-blue-900/40 rounded-lg">
+        <p class="font-semibold mb-2">💡 Comment ça marche ?</p>
+        <p class="text-sm">Quand tu plies ton bras, le muscle biceps se contracte (devient plus court et plus gros) tandis que le muscle triceps 
+        se relâche. Pour tendre le bras, c'est l'inverse : le triceps se contracte et le biceps se relâche.</p>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2 class="text-2xl font-bold text-primary mb-4">🚶 Déplacements sur le Sol</h2>
+    
+    <div class="space-y-6">
+      <div class="bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-950/30 dark:to-emerald-950/30 p-6 rounded-lg border-2 border-green-200 dark:border-green-800">
+        <h3 class="text-xl font-bold text-green-700 dark:text-green-300 mb-3">🚶‍♂️ La Marche</h3>
+        <p class="mb-3">Mode de déplacement lent et stable où au moins un pied touche toujours le sol.</p>
+        <div class="bg-white/70 dark:bg-gray-800/70 p-4 rounded-lg">
+          <p class="font-semibold mb-2">Caractéristiques :</p>
+          <ul class="space-y-1 text-sm">
+            <li>• Mouvement alterné des membres</li>
+            <li>• Contact permanent avec le sol</li>
+            <li>• Économe en énergie</li>
+            <li>• Exemples : humain qui marche, éléphant, tortue</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="bg-gradient-to-r from-orange-50 to-yellow-50 dark:from-orange-950/30 dark:to-yellow-950/30 p-6 rounded-lg border-2 border-orange-200 dark:border-orange-800">
+        <h3 class="text-xl font-bold text-orange-700 dark:text-orange-300 mb-3">🏃 La Course</h3>
+        <p class="mb-3">Mode de déplacement rapide avec des phases où le corps ne touche pas le sol.</p>
+        <div class="bg-white/70 dark:bg-gray-800/70 p-4 rounded-lg">
+          <p class="font-semibold mb-2">Caractéristiques :</p>
+          <ul class="space-y-1 text-sm">
+            <li>• Mouvements rapides et puissants</li>
+            <li>• Phases de suspension (aucun contact avec le sol)</li>
+            <li>• Consomme beaucoup d'énergie</li>
+            <li>• Exemples : guépard, cheval au galop, humain qui court</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-950/30 dark:to-pink-950/30 p-6 rounded-lg border-2 border-purple-200 dark:border-purple-800">
+        <h3 class="text-xl font-bold text-purple-700 dark:text-purple-300 mb-3">🦘 Le Saut</h3>
+        <p class="mb-3">Déplacement par bonds, le corps quitte complètement le sol.</p>
+        <div class="bg-white/70 dark:bg-gray-800/70 p-4 rounded-lg">
+          <p class="font-semibold mb-2">Caractéristiques :</p>
+          <ul class="space-y-1 text-sm">
+            <li>• Propulsion puissante des pattes arrière</li>
+            <li>• Corps entièrement en l'air</li>
+            <li>• Permet de franchir des obstacles</li>
+            <li>• Exemples : kangourou, lapin, grenouille, sauterelle</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="bg-gradient-to-r from-gray-50 to-slate-50 dark:from-gray-950/30 dark:to-slate-950/30 p-6 rounded-lg border-2 border-gray-200 dark:border-gray-800">
+        <h3 class="text-xl font-bold text-gray-700 dark:text-gray-300 mb-3">🐍 La Reptation</h3>
+        <p class="mb-3">Déplacement en rampant, le ventre touche le sol.</p>
+        <div class="bg-white/70 dark:bg-gray-800/70 p-4 rounded-lg">
+          <p class="font-semibold mb-2">Caractéristiques :</p>
+          <ul class="space-y-1 text-sm">
+            <li>• Corps en contact avec le sol</li>
+            <li>• Ondulations latérales du corps</li>
+            <li>• Pas de membres ou membres très courts</li>
+            <li>• Exemples : serpent, ver de terre, certains lézards</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2 class="text-2xl font-bold text-primary mb-4">🌊 Déplacements dans l'Eau</h2>
+    <div class="bg-gradient-to-r from-cyan-50 to-blue-50 dark:from-cyan-950/30 dark:to-blue-950/30 p-6 rounded-lg border-2 border-cyan-200 dark:border-cyan-800">
+      <h3 class="text-xl font-bold text-cyan-700 dark:text-cyan-300 mb-4">🏊 La Nage</h3>
+      <p class="mb-4">Les vertébrés aquatiques utilisent différentes techniques pour se déplacer dans l'eau :</p>
+      
+      <div class="space-y-4">
+        <div class="bg-white/70 dark:bg-gray-800/70 p-4 rounded-lg">
+          <h4 class="font-bold mb-2">🐟 Poissons</h4>
+          <ul class="text-sm space-y-1">
+            <li>• Ondulations latérales du corps</li>
+            <li>• Nageoires pour la direction et l'équilibre</li>
+            <li>• Queue puissante pour la propulsion</li>
+          </ul>
+        </div>
+        
+        <div class="bg-white/70 dark:bg-gray-800/70 p-4 rounded-lg">
+          <h4 class="font-bold mb-2">🐸 Amphibiens (grenouilles)</h4>
+          <ul class="text-sm space-y-1">
+            <li>• Pattes arrière palmées</li>
+            <li>• Mouvements de brasse</li>
+            <li>• Corps hydrodynamique</li>
+          </ul>
+        </div>
+
+        <div class="bg-white/70 dark:bg-gray-800/70 p-4 rounded-lg">
+          <h4 class="font-bold mb-2">🐢 Reptiles aquatiques (tortues marines)</h4>
+          <ul class="text-sm space-y-1">
+            <li>• Pattes transformées en palettes natatoires</li>
+            <li>• Mouvements de rame</li>
+            <li>• Carapace hydrodynamique</li>
+          </ul>
+        </div>
+
+        <div class="bg-white/70 dark:bg-gray-800/70 p-4 rounded-lg">
+          <h4 class="font-bold mb-2">🐋 Mammifères marins (dauphins, baleines)</h4>
+          <ul class="text-sm space-y-1">
+            <li>• Nageoire caudale horizontale (battements verticaux)</li>
+            <li>• Corps très profilé</li>
+            <li>• Nageoires pectorales pour la direction</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2 class="text-2xl font-bold text-primary mb-4">🦅 Déplacements dans l'Air</h2>
+    <div class="bg-gradient-to-r from-sky-50 to-indigo-50 dark:from-sky-950/30 dark:to-indigo-950/30 p-6 rounded-lg border-2 border-sky-200 dark:border-sky-800">
+      <h3 class="text-xl font-bold text-sky-700 dark:text-sky-300 mb-4">✈️ Le Vol</h3>
+      <p class="mb-4">Seuls les oiseaux (et les chauves-souris parmi les mammifères) peuvent vraiment voler :</p>
+      
+      <div class="space-y-4">
+        <div class="bg-white/70 dark:bg-gray-800/70 p-5 rounded-lg">
+          <h4 class="font-bold mb-3">Adaptations pour le vol :</h4>
+          <ul class="space-y-2 text-sm">
+            <li>• <strong>Ailes</strong> : Membres transformés en surfaces portantes</li>
+            <li>• <strong>Plumes</strong> : Légères et résistantes, créent une surface aérodynamique</li>
+            <li>• <strong>Os creux</strong> : Squelette léger mais solide</li>
+            <li>• <strong>Muscles puissants</strong> : Muscles pectoraux très développés</li>
+            <li>• <strong>Corps profilé</strong> : Forme aérodynamique pour réduire la résistance de l'air</li>
+            <li>• <strong>Métabolisme rapide</strong> : Grande production d'énergie</li>
+          </ul>
+        </div>
+
+        <div class="grid md:grid-cols-2 gap-4">
+          <div class="bg-white/70 dark:bg-gray-800/70 p-4 rounded-lg">
+            <h4 class="font-bold mb-2">🦅 Vol battu</h4>
+            <p class="text-sm">L'oiseau bat des ailes de haut en bas pour se propulser et se maintenir en l'air.</p>
+            <p class="text-sm mt-2"><strong>Exemples :</strong> moineau, pigeon, colibri</p>
+          </div>
+          
+          <div class="bg-white/70 dark:bg-gray-800/70 p-4 rounded-lg">
+            <h4 class="font-bold mb-2">🦅 Vol plané</h4>
+            <p class="text-sm">L'oiseau étend ses ailes et utilise les courants d'air sans battre des ailes.</p>
+            <p class="text-sm mt-2"><strong>Exemples :</strong> aigle, albatros, vautour</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="bg-yellow-50 dark:bg-yellow-900/20 p-6 rounded-xl border-2 border-yellow-300 dark:border-yellow-700">
+    <h2 class="text-2xl font-bold text-yellow-800 dark:text-yellow-200 mb-4">📊 Tableau Comparatif des Déplacements</h2>
+    <div class="overflow-x-auto">
+      <table class="w-full text-sm border-collapse">
+        <thead class="bg-yellow-200 dark:bg-yellow-800">
+          <tr>
+            <th class="border border-yellow-400 dark:border-yellow-600 p-2">Mode</th>
+            <th class="border border-yellow-400 dark:border-yellow-600 p-2">Milieu</th>
+            <th class="border border-yellow-400 dark:border-yellow-600 p-2">Caractéristiques</th>
+            <th class="border border-yellow-400 dark:border-yellow-600 p-2">Exemples</th>
+          </tr>
+        </thead>
+        <tbody class="bg-white/70 dark:bg-gray-800/70">
+          <tr>
+            <td class="border border-yellow-400 dark:border-yellow-600 p-2 font-semibold">Marche</td>
+            <td class="border border-yellow-400 dark:border-yellow-600 p-2">Sol</td>
+            <td class="border border-yellow-400 dark:border-yellow-600 p-2">Lent, contact permanent</td>
+            <td class="border border-yellow-400 dark:border-yellow-600 p-2">Humain, éléphant</td>
+          </tr>
+          <tr>
+            <td class="border border-yellow-400 dark:border-yellow-600 p-2 font-semibold">Course</td>
+            <td class="border border-yellow-400 dark:border-yellow-600 p-2">Sol</td>
+            <td class="border border-yellow-400 dark:border-yellow-600 p-2">Rapide, phases aériennes</td>
+            <td class="border border-yellow-400 dark:border-yellow-600 p-2">Guépard, cheval</td>
+          </tr>
+          <tr>
+            <td class="border border-yellow-400 dark:border-yellow-600 p-2 font-semibold">Saut</td>
+            <td class="border border-yellow-400 dark:border-yellow-600 p-2">Sol</td>
+            <td class="border border-yellow-400 dark:border-yellow-600 p-2">Bonds, propulsion</td>
+            <td class="border border-yellow-400 dark:border-yellow-600 p-2">Kangourou, grenouille</td>
+          </tr>
+          <tr>
+            <td class="border border-yellow-400 dark:border-yellow-600 p-2 font-semibold">Reptation</td>
+            <td class="border border-yellow-400 dark:border-yellow-600 p-2">Sol</td>
+            <td class="border border-yellow-400 dark:border-yellow-600 p-2">Rampant, ondulations</td>
+            <td class="border border-yellow-400 dark:border-yellow-600 p-2">Serpent, ver</td>
+          </tr>
+          <tr>
+            <td class="border border-yellow-400 dark:border-yellow-600 p-2 font-semibold">Nage</td>
+            <td class="border border-yellow-400 dark:border-yellow-600 p-2">Eau</td>
+            <td class="border border-yellow-400 dark:border-yellow-600 p-2">Ondulations, nageoires</td>
+            <td class="border border-yellow-400 dark:border-yellow-600 p-2">Poisson, dauphin</td>
+          </tr>
+          <tr>
+            <td class="border border-yellow-400 dark:border-yellow-600 p-2 font-semibold">Vol</td>
+            <td class="border border-yellow-400 dark:border-yellow-600 p-2">Air</td>
+            <td class="border border-yellow-400 dark:border-yellow-600 p-2">Ailes, plumes</td>
+            <td class="border border-yellow-400 dark:border-yellow-600 p-2">Aigle, pigeon</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+</div>`,
+    exemplesExercices: `<div class="space-y-6">
+  <div class="bg-primary/5 p-6 rounded-lg border-2 border-primary/20">
+    <h3 class="text-xl font-bold text-primary mb-4">📝 Exercice 1 : Classification des Déplacements</h3>
+    <p class="mb-4">Indique le mode de déplacement principal de chaque animal :</p>
+    <ol class="space-y-2 list-decimal list-inside">
+      <li>Serpent : __________</li>
+      <li>Aigle : __________</li>
+      <li>Dauphin : __________</li>
+      <li>Kangourou : __________</li>
+      <li>Guépard : __________</li>
+      <li>Grenouille (dans l'eau) : __________</li>
+    </ol>
+  </div>
+
+  <div class="bg-accent/5 p-6 rounded-lg border-2 border-accent/20">
+    <h3 class="text-xl font-bold text-accent mb-4">📝 Exercice 2 : Vrai ou Faux</h3>
+    <p class="mb-4">Indique si chaque affirmation est vraie (V) ou fausse (F) :</p>
+    <ol class="space-y-2 list-decimal list-inside">
+      <li>Les muscles se contractent pour créer le mouvement <span class="ml-4">_____</span></li>
+      <li>Pendant la marche, il y a toujours au moins un pied au sol <span class="ml-4">_____</span></li>
+      <li>Les serpents ont des pattes pour ramper <span class="ml-4">_____</span></li>
+      <li>Tous les oiseaux peuvent voler <span class="ml-4">_____</span></li>
+      <li>Les poissons nagent grâce aux ondulations de leur corps <span class="ml-4">_____</span></li>
+      <li>Le squelette protège les organes internes <span class="ml-4">_____</span></li>
+    </ol>
+  </div>
+
+  <div class="bg-secondary/5 p-6 rounded-lg border-2 border-secondary/20">
+    <h3 class="text-xl font-bold text-secondary mb-4">📝 Exercice 3 : Rôle des Os et Muscles</h3>
+    <p class="mb-4">Complète le texte avec les mots suivants : <em>os, muscles, articulations, tendons, se contractent</em></p>
+    <div class="bg-white/50 dark:bg-black/20 p-4 rounded-lg space-y-2 text-sm">
+      <p>Pour bouger, nous utilisons nos __________ et nos __________. Les muscles sont attachés aux os par des __________. 
+      Quand les muscles __________, ils tirent sur les os. Les __________ permettent aux os de bouger les uns par rapport aux autres.</p>
+    </div>
+  </div>
+
+  <div class="bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-950/20 dark:to-pink-950/20 p-6 rounded-lg border-2 border-purple-200 dark:border-purple-800">
+    <h3 class="text-xl font-bold text-purple-700 dark:text-purple-300 mb-4">📝 Exercice 4 : Adaptations au Milieu</h3>
+    <p class="mb-4">Associe chaque adaptation à son milieu de vie :</p>
+    <div class="grid md:grid-cols-2 gap-4">
+      <div class="bg-white/70 dark:bg-gray-800/70 p-4 rounded-lg">
+        <p class="font-semibold mb-2">Adaptations :</p>
+        <ol class="space-y-1 text-sm list-decimal list-inside">
+          <li>Nageoires</li>
+          <li>Ailes et plumes</li>
+          <li>Pattes puissantes</li>
+          <li>Corps allongé sans pattes</li>
+        </ol>
+      </div>
+      <div class="bg-white/70 dark:bg-gray-800/70 p-4 rounded-lg">
+        <p class="font-semibold mb-2">Milieux :</p>
+        <ul class="space-y-1 text-sm">
+          <li>A) Course rapide sur le sol</li>
+          <li>B) Vol dans les airs</li>
+          <li>C) Nage dans l'eau</li>
+          <li>D) Reptation sur le sol</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>`
   },
 
   "nutrition-vertebres": {
@@ -3064,9 +3393,297 @@ export const sciencesLessons7AF: Record<string, StaticLessonContent> = {
 • Reconnaître que l'alimentation est indispensable à la vie
 • Distinguer les diverses façons de se nourrir des végétariens
 • Préciser le mode de consommation et de digestion d'un oiseau et d'un ruminant`,
-    introduction: `[Contenu à ajouter]`,
-    contenu: `[Contenu à ajouter]`,
-    exemplesExercices: `[Contenu à ajouter]`
+    introduction: `<div class="space-y-6">
+  <p class="text-lg leading-relaxed">
+    Tous les vertébrés ont besoin de se nourrir pour vivre, grandir et avoir de l'énergie. 
+    Mais selon ce qu'ils mangent, ils ont développé des techniques et des organes très différents !
+  </p>
+  <div class="bg-primary/5 border-l-4 border-primary p-4 rounded-r">
+    <p class="font-semibold text-primary mb-2">🦒 Le saviez-vous ?</p>
+    <p>Une girafe peut manger jusqu'à 30 kg de feuilles par jour ! Les vaches ont 4 estomacs pour mieux digérer l'herbe.
+    Le colibri mange plus que son propre poids chaque jour en nectar pour avoir l'énergie de battre des ailes 80 fois par seconde !</p>
+  </div>
+  
+  <div class="bg-gradient-to-r from-primary/10 to-secondary/10 p-6 rounded-xl">
+    <h3 class="text-xl font-bold mb-4 flex items-center gap-2">
+      <span class="text-2xl">🎯</span>
+      Objectifs de la leçon
+    </h3>
+    <ul class="space-y-2">
+      <li class="flex items-start gap-2">
+        <span class="text-primary shrink-0 mt-1">✓</span>
+        <span>Reconnaître la nécessité pour les vertébrés de se nourrir</span>
+      </li>
+      <li class="flex items-start gap-2">
+        <span class="text-primary shrink-0 mt-1">✓</span>
+        <span>Distinguer les diverses façons de se nourrir</span>
+      </li>
+      <li class="flex items-start gap-2">
+        <span class="text-primary shrink-0 mt-1">✓</span>
+        <span>Préciser le mode de consommation et de digestion</span>
+      </li>
+    </ul>
+  </div>
+</div>`,
+    contenu: `<div class="space-y-8">
+  <section>
+    <h2 class="text-2xl font-bold text-primary mb-4">🍽️ Pourquoi Manger ?</h2>
+    <div class="bg-gradient-to-r from-blue-50 to-cyan-50 dark:from-blue-950/30 dark:to-cyan-950/30 p-6 rounded-lg border-2 border-blue-200 dark:border-blue-800">
+      <p class="leading-relaxed mb-4">
+        <strong>L'alimentation est indispensable à la vie</strong> de tous les vertébrés pour trois raisons principales :
+      </p>
+      <div class="grid md:grid-cols-3 gap-4 mt-4">
+        <div class="bg-white/70 dark:bg-black/30 p-5 rounded-lg">
+          <h4 class="font-bold text-blue-600 dark:text-blue-400 mb-2">⚡ Énergie</h4>
+          <p class="text-sm">Fournir l'énergie nécessaire pour bouger, respirer, maintenir la température du corps</p>
+        </div>
+        <div class="bg-white/70 dark:bg-black/30 p-5 rounded-lg">
+          <h4 class="font-bold text-blue-600 dark:text-blue-400 mb-2">📈 Croissance</h4>
+          <p class="text-sm">Permettre la croissance et le développement du corps</p>
+        </div>
+        <div class="bg-white/70 dark:bg-black/30 p-5 rounded-lg">
+          <h4 class="font-bold text-blue-600 dark:text-blue-400 mb-2">🔧 Réparation</h4>
+          <p class="text-sm">Réparer et renouveler les cellules du corps</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2 class="text-2xl font-bold text-primary mb-4">🥗 Les Différents Régimes Alimentaires</h2>
+    
+    <div class="space-y-6">
+      <div class="bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-950/30 dark:to-emerald-950/30 p-6 rounded-lg border-2 border-green-200 dark:border-green-800">
+        <h3 class="text-xl font-bold text-green-700 dark:text-green-300 mb-3">🌱 Les Herbivores</h3>
+        <p class="mb-3">Animaux qui mangent <strong>uniquement des végétaux</strong> : herbe, feuilles, fruits, graines...</p>
+        <div class="bg-white/70 dark:bg-gray-800/70 p-4 rounded-lg space-y-3">
+          <div>
+            <p class="font-semibold mb-2">Adaptations :</p>
+            <ul class="space-y-1 text-sm">
+              <li>• Dents plates (molaires) pour broyer les végétaux</li>
+              <li>• Intestin très long pour digérer la cellulose</li>
+              <li>• Certains ont plusieurs estomacs (ruminants)</li>
+            </ul>
+          </div>
+          <div>
+            <p class="font-semibold mb-1">Exemples :</p>
+            <p class="text-sm">Vache, mouton, chèvre, cheval, éléphant, lapin, girafe, koala</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="bg-gradient-to-r from-red-50 to-orange-50 dark:from-red-950/30 dark:to-orange-950/30 p-6 rounded-lg border-2 border-red-200 dark:border-red-800">
+        <h3 class="text-xl font-bold text-red-700 dark:text-red-300 mb-3">🦁 Les Carnivores</h3>
+        <p class="mb-3">Animaux qui mangent <strong>uniquement de la viande</strong> (d'autres animaux).</p>
+        <div class="bg-white/70 dark:bg-gray-800/70 p-4 rounded-lg space-y-3">
+          <div>
+            <p class="font-semibold mb-2">Adaptations :</p>
+            <ul class="space-y-1 text-sm">
+              <li>• Dents pointues (canines) pour déchirer la viande</li>
+              <li>• Griffes ou serres pour attraper les proies</li>
+              <li>• Intestin plus court que les herbivores</li>
+              <li>• Souvent chasseurs rapides et puissants</li>
+            </ul>
+          </div>
+          <div>
+            <p class="font-semibold mb-1">Exemples :</p>
+            <p class="text-sm">Lion, tigre, loup, aigle, requin, serpent, crocodile</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-950/30 dark:to-pink-950/30 p-6 rounded-lg border-2 border-purple-200 dark:border-purple-800">
+        <h3 class="text-xl font-bold text-purple-700 dark:text-purple-300 mb-3">🐻 Les Omnivores</h3>
+        <p class="mb-3">Animaux qui mangent <strong>à la fois des végétaux ET de la viande</strong>.</p>
+        <div class="bg-white/70 dark:bg-gray-800/70 p-4 rounded-lg space-y-3">
+          <div>
+            <p class="font-semibold mb-2">Adaptations :</p>
+            <ul class="space-y-1 text-sm">
+              <li>• Dentition mixte : molaires ET canines</li>
+              <li>• Système digestif polyvalent</li>
+              <li>• Grande capacité d'adaptation alimentaire</li>
+            </ul>
+          </div>
+          <div>
+            <p class="font-semibold mb-1">Exemples :</p>
+            <p class="text-sm">Humain, ours, cochon, rat, poule, corbeau</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2 class="text-2xl font-bold text-primary mb-4">🦜 Cas Particulier : Les Oiseaux</h2>
+    <div class="bg-gradient-to-r from-yellow-50 to-amber-50 dark:from-yellow-950/30 dark:to-amber-950/30 p-6 rounded-lg border-2 border-yellow-200 dark:border-yellow-800">
+      <p class="mb-4">Les oiseaux n'ont <strong>pas de dents</strong> ! Ils ont développé des adaptations spéciales :</p>
+      
+      <div class="space-y-4">
+        <div class="bg-white/70 dark:bg-gray-800/70 p-4 rounded-lg">
+          <h4 class="font-bold mb-2">🦜 Le Bec</h4>
+          <p class="text-sm mb-2">Forme adaptée au type de nourriture :</p>
+          <ul class="space-y-1 text-sm">
+            <li>• <strong>Bec pointu et fin</strong> : pour attraper les insectes (moineau)</li>
+            <li>• <strong>Bec court et fort</strong> : pour casser les graines (perroquet)</li>
+            <li>• <strong>Bec crochu</strong> : pour déchirer la viande (aigle)</li>
+            <li>• <strong>Bec long et fin</strong> : pour aspirer le nectar (colibri)</li>
+          </ul>
+        </div>
+
+        <div class="bg-white/70 dark:bg-gray-800/70 p-4 rounded-lg">
+          <h4 class="font-bold mb-2">📦 Le Jabot et le Gésier</h4>
+          <ul class="space-y-2 text-sm">
+            <li>• <strong>Jabot</strong> : Poche pour stocker temporairement la nourriture</li>
+            <li>• <strong>Gésier</strong> : Estomac musculeux qui broie la nourriture (remplace les dents !)
+            <br/>Les oiseaux avalent souvent de petits cailloux qui aident à broyer dans le gésier</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2 class="text-2xl font-bold text-primary mb-4">🐄 Cas Particulier : Les Ruminants</h2>
+    <div class="bg-gradient-to-r from-green-50 to-teal-50 dark:from-green-950/30 dark:to-teal-950/30 p-6 rounded-lg border-2 border-green-200 dark:border-green-800">
+      <p class="mb-4">Les ruminants (vache, mouton, chèvre...) ont un système digestif très spécial avec <strong>4 estomacs</strong> !</p>
+      
+      <div class="space-y-4">
+        <div class="bg-white/70 dark:bg-gray-800/70 p-5 rounded-lg">
+          <h4 class="font-bold mb-3">Les 4 Estomacs :</h4>
+          <ol class="space-y-2 text-sm">
+            <li><strong>1. La Panse</strong> : Premier estomac, le plus grand. L'herbe y est stockée et ramollie</li>
+            <li><strong>2. Le Bonnet</strong> : Forme des petites boulettes qui remontent dans la bouche</li>
+            <li><strong>3. Le Feuillet</strong> : Absorbe l'eau et filtre la nourriture</li>
+            <li><strong>4. La Caillette</strong> : Vrai estomac qui digère avec des sucs gastriques</li>
+          </ol>
+        </div>
+
+        <div class="bg-white/70 dark:bg-gray-800/70 p-5 rounded-lg">
+          <h4 class="font-bold mb-3">🔄 Le Processus de Rumination :</h4>
+          <ol class="space-y-2 text-sm list-decimal list-inside">
+            <li>La vache avale rapidement l'herbe sans bien la mâcher</li>
+            <li>L'herbe va dans la panse où elle est ramollie</li>
+            <li>Des boulettes d'herbe remontent dans la bouche (régurgitation)</li>
+            <li>La vache mâche longuement ces boulettes (rumination)</li>
+            <li>Elle avale à nouveau, et la nourriture passe dans les autres estomacs</li>
+          </ol>
+        </div>
+
+        <div class="mt-4 p-4 bg-green-100 dark:bg-green-900/40 rounded-lg">
+          <p class="font-semibold mb-2">💡 Pourquoi 4 estomacs ?</p>
+          <p class="text-sm">L'herbe contient de la cellulose, très difficile à digérer. Les 4 estomacs et la rumination 
+          permettent de bien décomposer cette cellulose avec l'aide de bactéries spéciales dans la panse.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="bg-gradient-to-br from-cyan-50 to-blue-50 dark:from-cyan-950/20 dark:to-blue-950/20 p-6 rounded-xl border-2 border-cyan-200 dark:border-cyan-800">
+    <h2 class="text-2xl font-bold text-cyan-800 dark:text-cyan-200 mb-4">📊 Tableau Comparatif</h2>
+    <div class="overflow-x-auto">
+      <table class="w-full text-sm border-collapse">
+        <thead class="bg-cyan-200 dark:bg-cyan-800">
+          <tr>
+            <th class="border border-cyan-400 dark:border-cyan-600 p-2">Régime</th>
+            <th class="border border-cyan-400 dark:border-cyan-600 p-2">Alimentation</th>
+            <th class="border border-cyan-400 dark:border-cyan-600 p-2">Dentition</th>
+            <th class="border border-cyan-400 dark:border-cyan-600 p-2">Exemples</th>
+          </tr>
+        </thead>
+        <tbody class="bg-white/70 dark:bg-gray-800/70">
+          <tr>
+            <td class="border border-cyan-400 dark:border-cyan-600 p-2 font-semibold">Herbivore</td>
+            <td class="border border-cyan-400 dark:border-cyan-600 p-2">Végétaux uniquement</td>
+            <td class="border border-cyan-400 dark:border-cyan-600 p-2">Molaires plates</td>
+            <td class="border border-cyan-400 dark:border-cyan-600 p-2">Vache, lapin</td>
+          </tr>
+          <tr>
+            <td class="border border-cyan-400 dark:border-cyan-600 p-2 font-semibold">Carnivore</td>
+            <td class="border border-cyan-400 dark:border-cyan-600 p-2">Viande uniquement</td>
+            <td class="border border-cyan-400 dark:border-cyan-600 p-2">Canines pointues</td>
+            <td class="border border-cyan-400 dark:border-cyan-600 p-2">Lion, aigle</td>
+          </tr>
+          <tr>
+            <td class="border border-cyan-400 dark:border-cyan-600 p-2 font-semibold">Omnivore</td>
+            <td class="border border-cyan-400 dark:border-cyan-600 p-2">Végétaux + viande</td>
+            <td class="border border-cyan-400 dark:border-cyan-600 p-2">Mixte</td>
+            <td class="border border-cyan-400 dark:border-cyan-600 p-2">Humain, ours</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+</div>`,
+    exemplesExercices: `<div class="space-y-6">
+  <div class="bg-primary/5 p-6 rounded-lg border-2 border-primary/20">
+    <h3 class="text-xl font-bold text-primary mb-4">📝 Exercice 1 : Classification des Animaux</h3>
+    <p class="mb-4">Classe ces animaux selon leur régime alimentaire (Herbivore / Carnivore / Omnivore) :</p>
+    <ol class="space-y-2 list-decimal list-inside">
+      <li>Vache : __________</li>
+      <li>Lion : __________</li>
+      <li>Humain : __________</li>
+      <li>Lapin : __________</li>
+      <li>Aigle : __________</li>
+      <li>Ours : __________</li>
+      <li>Mouton : __________</li>
+      <li>Requin : __________</li>
+    </ol>
+  </div>
+
+  <div class="bg-accent/5 p-6 rounded-lg border-2 border-accent/20">
+    <h3 class="text-xl font-bold text-accent mb-4">📝 Exercice 2 : Les Ruminants</h3>
+    <p class="mb-4">Réponds aux questions sur les ruminants :</p>
+    <ol class="space-y-3 list-decimal list-inside">
+      <li>Combien d'estomacs possède une vache ? __________</li>
+      <li>Comment s'appelle l'action de remâcher la nourriture ? __________</li>
+      <li>Quel est le nom du premier estomac (le plus grand) ? __________</li>
+      <li>Pourquoi les ruminants ont-ils besoin de 4 estomacs ?
+        <div class="ml-6 mt-2 text-sm">__________________________________________________</div>
+      </li>
+    </ol>
+  </div>
+
+  <div class="bg-secondary/5 p-6 rounded-lg border-2 border-secondary/20">
+    <h3 class="text-xl font-bold text-secondary mb-4">📝 Exercice 3 : Les Oiseaux</h3>
+    <p class="mb-4">Associe chaque type de bec à son alimentation :</p>
+    <div class="grid md:grid-cols-2 gap-4">
+      <div class="bg-white/50 dark:bg-black/20 p-4 rounded-lg">
+        <p class="font-semibold mb-2">Types de bec :</p>
+        <ol class="space-y-1 text-sm list-decimal list-inside">
+          <li>Bec pointu et fin</li>
+          <li>Bec court et fort</li>
+          <li>Bec crochu</li>
+          <li>Bec long et fin</li>
+        </ol>
+      </div>
+      <div class="bg-white/50 dark:bg-black/20 p-4 rounded-lg">
+        <p class="font-semibold mb-2">Alimentations :</p>
+        <ul class="space-y-1 text-sm">
+          <li>A) Déchirer la viande</li>
+          <li>B) Aspirer le nectar</li>
+          <li>C) Casser les graines</li>
+          <li>D) Attraper les insectes</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <div class="bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-950/20 dark:to-pink-950/20 p-6 rounded-lg border-2 border-purple-200 dark:border-purple-800">
+    <h3 class="text-xl font-bold text-purple-700 dark:text-purple-300 mb-4">📝 Exercice 4 : Adaptations</h3>
+    <p class="mb-4">Explique pourquoi chaque adaptation est utile :</p>
+    <ol class="space-y-3 list-decimal list-inside">
+      <li>Les carnivores ont des canines pointues car :
+        <div class="ml-6 mt-2 text-sm bg-white/50 dark:bg-black/20 p-2 rounded">__________________________________________________</div>
+      </li>
+      <li>Les herbivores ont un intestin très long car :
+        <div class="ml-6 mt-2 text-sm bg-white/50 dark:bg-black/20 p-2 rounded">__________________________________________________</div>
+      </li>
+      <li>Les oiseaux ont un gésier car :
+        <div class="ml-6 mt-2 text-sm bg-white/50 dark:bg-black/20 p-2 rounded">__________________________________________________</div>
+      </li>
+    </ol>
+  </div>
+</div>`
   },
 
   "respiration-vertebres": {
