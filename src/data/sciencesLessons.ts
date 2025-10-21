@@ -1316,9 +1316,318 @@ export const sciencesLessons7AF: Record<string, StaticLessonContent> = {
 • Spécifier que la chaleur provoque la dilatation des solides
 • Constater que la chaleur provoque une dilatation des liquides et le changement d'état de certains corps
 • Spécifier que la chaleur provoque la décomposition de certaines substances`,
-    introduction: `[Contenu à ajouter]`,
-    contenu: `[Contenu à ajouter]`,
-    exemplesExercices: `[Contenu à ajouter]`
+    introduction: `<div class="space-y-6">
+  <p class="text-lg leading-relaxed">
+    La chaleur transforme la matière de façons surprenantes ! Elle peut faire grandir, fondre, bouillir ou même décomposer les substances.
+    Découvrons ensemble ces effets fascinants de la chaleur sur notre monde.
+  </p>
+  <div class="bg-primary/5 border-l-4 border-primary p-4 rounded-r">
+    <p class="font-semibold text-primary mb-2">🔥 Le saviez-vous ?</p>
+    <p>Les rails de chemin de fer ont des espaces entre eux pour permettre leur dilatation lors des journées chaudes. 
+    Sans ces espaces, les rails se tordraient !</p>
+  </div>
+  
+  <div class="bg-gradient-to-r from-primary/10 to-secondary/10 p-6 rounded-xl">
+    <h3 class="text-xl font-bold mb-4 flex items-center gap-2">
+      <span class="text-2xl">🎯</span>
+      Objectifs de la leçon
+    </h3>
+    <ul class="space-y-2">
+      <li class="flex items-start gap-2">
+        <span class="text-primary shrink-0 mt-1">✓</span>
+        <span>Spécifier que la chaleur provoque la dilatation des solides</span>
+      </li>
+      <li class="flex items-start gap-2">
+        <span class="text-primary shrink-0 mt-1">✓</span>
+        <span>Constater la dilatation des liquides et le changement d'état</span>
+      </li>
+      <li class="flex items-start gap-2">
+        <span class="text-primary shrink-0 mt-1">✓</span>
+        <span>Spécifier que la chaleur provoque la décomposition de certaines substances</span>
+      </li>
+    </ul>
+  </div>
+</div>`,
+    contenu: `<div class="space-y-8">
+  <section>
+    <h2 class="text-2xl font-bold text-primary mb-4">📏 Effet 1 : Dilatation des Solides</h2>
+    <div class="bg-gradient-to-r from-orange-50 to-red-50 dark:from-orange-950/30 dark:to-red-950/30 p-6 rounded-lg border-2 border-orange-200 dark:border-orange-800">
+      <div class="mb-4">
+        <h3 class="text-xl font-bold text-orange-700 dark:text-orange-300 mb-3">Qu'est-ce que la dilatation ?</h3>
+        <p class="leading-relaxed">
+          La <strong>dilatation</strong> est l'augmentation de volume d'un corps lorsqu'il est chauffé.
+          Les molécules bougent plus vite et s'écartent les unes des autres → le solide devient plus grand !
+        </p>
+      </div>
+
+      <div class="bg-white/70 dark:bg-black/30 p-5 rounded-lg space-y-4">
+        <h4 class="font-bold text-orange-600 dark:text-orange-400">🎯 Expérience : La Balle de Métal</h4>
+        <div class="space-y-3">
+          <div class="flex items-start gap-3">
+            <span class="bg-orange-500 text-white rounded-full w-6 h-6 flex items-center justify-center flex-shrink-0 text-sm font-bold">1</span>
+            <p class="text-sm">Une balle de métal passe juste à travers un anneau</p>
+          </div>
+          <div class="flex items-start gap-3">
+            <span class="bg-orange-500 text-white rounded-full w-6 h-6 flex items-center justify-center flex-shrink-0 text-sm font-bold">2</span>
+            <p class="text-sm">Chauffe la balle dans la flamme</p>
+          </div>
+          <div class="flex items-start gap-3">
+            <span class="bg-orange-500 text-white rounded-full w-6 h-6 flex items-center justify-center flex-shrink-0 text-sm font-bold">3</span>
+            <p class="text-sm">La balle chaude ne passe plus ! Elle a grossi (dilaté)</p>
+          </div>
+          <div class="flex items-start gap-3">
+            <span class="bg-orange-500 text-white rounded-full w-6 h-6 flex items-center justify-center flex-shrink-0 text-sm font-bold">4</span>
+            <p class="text-sm">Laisse refroidir : la balle repasse à travers (elle s'est contractée)</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="mt-6 bg-gradient-to-r from-red-100 to-orange-100 dark:from-red-900/50 dark:to-orange-900/50 p-4 rounded-lg">
+        <h4 class="font-bold mb-2">Exemples quotidiens :</h4>
+        <ul class="space-y-2">
+          <li class="flex items-start gap-2">
+            <span class="text-orange-600 dark:text-orange-400">🚂</span>
+            <span>Espaces entre les rails de train (dilatation en été)</span>
+          </li>
+          <li class="flex items-start gap-2">
+            <span class="text-orange-600 dark:text-orange-400">🌉</span>
+            <span>Joints de dilatation sur les ponts</span>
+          </li>
+          <li class="flex items-start gap-2">
+            <span class="text-orange-600 dark:text-orange-400">🔩</span>
+            <span>Couvercle de bocal bloqué → on le passe sous l'eau chaude</span>
+          </li>
+          <li class="flex items-start gap-2">
+            <span class="text-orange-600 dark:text-orange-400">🪟</span>
+            <span>Fissures dans les murs par changements de température</span>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2 class="text-2xl font-bold text-primary mb-4">💧 Effet 2 : Dilatation des Liquides</h2>
+    <div class="bg-gradient-to-r from-blue-50 to-cyan-50 dark:from-blue-950/30 dark:to-cyan-950/30 p-6 rounded-lg border-2 border-blue-200 dark:border-blue-800">
+      <p class="leading-relaxed mb-4">
+        Les liquides se dilatent aussi quand on les chauffe ! C'est même plus visible que pour les solides.
+      </p>
+
+      <div class="bg-white/70 dark:bg-black/30 p-5 rounded-lg space-y-4">
+        <h4 class="font-bold text-blue-600 dark:text-blue-400">🎯 Expérience : La Bouteille</h4>
+        <div class="space-y-3">
+          <p class="text-sm">Remplis une bouteille d'eau colorée jusqu'au bord</p>
+          <p class="text-sm">Mets la bouteille au soleil ou dans l'eau chaude</p>
+          <p class="text-sm font-semibold text-blue-700 dark:text-blue-300">
+            → L'eau déborde ! Elle a augmenté de volume en chauffant
+          </p>
+        </div>
+        
+        <div class="mt-4 p-3 bg-blue-100 dark:bg-blue-900/40 rounded">
+          <p class="text-sm font-semibold">💡 Principe :</p>
+          <p class="text-sm">Les thermomètres fonctionnent grâce à la dilatation des liquides (mercure ou alcool coloré) !</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2 class="text-2xl font-bold text-primary mb-4">🔄 Effet 3 : Changements d'État</h2>
+    <div class="bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-950/30 dark:to-pink-950/30 p-6 rounded-lg border-2 border-purple-200 dark:border-purple-800">
+      <p class="leading-relaxed mb-4">
+        La chaleur peut transformer complètement l'état de la matière !
+      </p>
+
+      <div class="grid md:grid-cols-3 gap-4">
+        <div class="bg-white/70 dark:bg-black/30 p-4 rounded-lg">
+          <h4 class="font-bold text-purple-600 dark:text-purple-400 mb-2">🧊 → 💧 Fusion</h4>
+          <p class="text-sm mb-2">Solide → Liquide</p>
+          <p class="text-xs">Glace qui fond, beurre qui fond, chocolat qui fond</p>
+        </div>
+        <div class="bg-white/70 dark:bg-black/30 p-4 rounded-lg">
+          <h4 class="font-bold text-purple-600 dark:text-purple-400 mb-2">💧 → 💨 Vaporisation</h4>
+          <p class="text-sm mb-2">Liquide → Gaz</p>
+          <p class="text-xs">Eau qui bout et devient vapeur, essence qui s'évapore</p>
+        </div>
+        <div class="bg-white/70 dark:bg-black/30 p-4 rounded-lg">
+          <h4 class="font-bold text-purple-600 dark:text-purple-400 mb-2">🧊 → 💨 Sublimation</h4>
+          <p class="text-sm mb-2">Solide → Gaz direct</p>
+          <p class="text-xs">Glace sèche (CO₂), naphtaline, iode</p>
+        </div>
+      </div>
+
+      <div class="mt-6 overflow-x-auto">
+        <table class="w-full border-2 border-purple-300 dark:border-purple-700">
+          <thead class="bg-purple-100 dark:bg-purple-900/50">
+            <tr>
+              <th class="border border-purple-300 dark:border-purple-700 p-3 text-left">Substance</th>
+              <th class="border border-purple-300 dark:border-purple-700 p-3 text-left">Point de fusion</th>
+              <th class="border border-purple-300 dark:border-purple-700 p-3 text-left">Point d'ébullition</th>
+            </tr>
+          </thead>
+          <tbody class="bg-white/70 dark:bg-gray-800/70">
+            <tr>
+              <td class="border border-purple-300 dark:border-purple-700 p-3">Eau</td>
+              <td class="border border-purple-300 dark:border-purple-700 p-3">0°C</td>
+              <td class="border border-purple-300 dark:border-purple-700 p-3">100°C</td>
+            </tr>
+            <tr>
+              <td class="border border-purple-300 dark:border-purple-700 p-3">Fer</td>
+              <td class="border border-purple-300 dark:border-purple-700 p-3">1538°C</td>
+              <td class="border border-purple-300 dark:border-purple-700 p-3">2862°C</td>
+            </tr>
+            <tr>
+              <td class="border border-purple-300 dark:border-purple-700 p-3">Alcool</td>
+              <td class="border border-purple-300 dark:border-purple-700 p-3">-114°C</td>
+              <td class="border border-purple-300 dark:border-purple-700 p-3">78°C</td>
+            </tr>
+            <tr>
+              <td class="border border-purple-300 dark:border-purple-700 p-3">Or</td>
+              <td class="border border-purple-300 dark:border-purple-700 p-3">1064°C</td>
+              <td class="border border-purple-300 dark:border-purple-700 p-3">2856°C</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2 class="text-2xl font-bold text-primary mb-4">💥 Effet 4 : Décomposition</h2>
+    <div class="bg-gradient-to-r from-red-50 to-orange-50 dark:from-red-950/30 dark:to-orange-950/30 p-6 rounded-lg border-2 border-red-200 dark:border-red-800">
+      <p class="leading-relaxed mb-4">
+        Certaines substances se <strong>décomposent</strong> (se cassent en morceaux plus petits) sous l'effet de la chaleur.
+      </p>
+
+      <div class="space-y-4">
+        <div class="bg-white/70 dark:bg-black/30 p-4 rounded-lg border-l-4 border-red-500">
+          <h4 class="font-bold mb-2">🧪 Exemple 1 : Le Sucre</h4>
+          <p class="text-sm">Chauffe du sucre → il fond → devient brun (caramel) → devient noir (carbone) + vapeur d'eau</p>
+          <p class="text-xs mt-2 font-mono bg-red-100 dark:bg-red-900/40 p-2 rounded">
+            C₁₂H₂₂O₁₁ (sucre) + chaleur → C (carbone) + H₂O (vapeur)
+          </p>
+        </div>
+
+        <div class="bg-white/70 dark:bg-black/30 p-4 rounded-lg border-l-4 border-orange-500">
+          <h4 class="font-bold mb-2">🪨 Exemple 2 : Le Calcaire</h4>
+          <p class="text-sm">Chauffe fortement du calcaire (CaCO₃) → il se décompose en chaux vive (CaO) + gaz carbonique (CO₂)</p>
+          <p class="text-xs mt-2 font-mono bg-orange-100 dark:bg-orange-900/40 p-2 rounded">
+            CaCO₃ + chaleur → CaO + CO₂
+          </p>
+        </div>
+
+        <div class="bg-white/70 dark:bg-black/30 p-4 rounded-lg border-l-4 border-yellow-500">
+          <h4 class="font-bold mb-2">🍞 Exemple 3 : Le Pain Grillé</h4>
+          <p class="text-sm">Le pain devient brun puis noir (carbonisation) si on le chauffe trop longtemps</p>
+        </div>
+      </div>
+
+      <div class="mt-6 p-4 bg-red-100 dark:bg-red-900/40 rounded-lg border-2 border-red-500">
+        <h4 class="font-bold text-red-700 dark:text-red-300 mb-2">⚠️ Attention - Danger !</h4>
+        <ul class="text-sm space-y-1">
+          <li>• Ne jamais chauffer des substances sans supervision</li>
+          <li>• La décomposition peut libérer des gaz dangereux</li>
+          <li>• Toujours travailler dans un endroit bien ventilé</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section class="bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-950/20 dark:to-emerald-950/20 p-6 rounded-xl border-2 border-green-200 dark:border-green-800">
+    <h2 class="text-2xl font-bold text-green-800 dark:text-green-200 mb-4">🎯 Résumé des Effets de la Chaleur</h2>
+    <div class="grid md:grid-cols-2 gap-4">
+      <div class="bg-white/70 dark:bg-gray-800/70 p-4 rounded-lg">
+        <h4 class="font-bold text-green-600 dark:text-green-400 mb-2">Effets Réversibles</h4>
+        <ul class="text-sm space-y-1">
+          <li>✓ Dilatation (refroidir → contraction)</li>
+          <li>✓ Fusion (refroidir → solidification)</li>
+          <li>✓ Vaporisation (refroidir → condensation)</li>
+        </ul>
+      </div>
+      <div class="bg-white/70 dark:bg-gray-800/70 p-4 rounded-lg">
+        <h4 class="font-bold text-green-600 dark:text-green-400 mb-2">Effets Irréversibles</h4>
+        <ul class="text-sm space-y-1">
+          <li>✓ Décomposition chimique</li>
+          <li>✓ Combustion</li>
+          <li>✓ Carbonisation</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+</div>`,
+    exemplesExercices: `<div class="space-y-6">
+  <div class="bg-primary/5 p-6 rounded-lg border-2 border-primary/20">
+    <h3 class="text-xl font-bold text-primary mb-4">📝 Exercice 1 : Identification</h3>
+    <p class="mb-4">Identifie l'effet de la chaleur dans chaque situation :</p>
+    <ol class="space-y-2 list-decimal list-inside">
+      <li>Un glaçon fond dans ta main. <span class="ml-4">__________</span></li>
+      <li>Les rails de train ont des espaces entre eux. <span class="ml-4">__________</span></li>
+      <li>L'eau bout et devient vapeur. <span class="ml-4">__________</span></li>
+      <li>Le sucre devient noir et brûle. <span class="ml-4">__________</span></li>
+      <li>Le mercure monte dans un thermomètre. <span class="ml-4">__________</span></li>
+      <li>Le beurre devient liquide dans la poêle. <span class="ml-4">__________</span></li>
+    </ol>
+  </div>
+
+  <div class="bg-accent/5 p-6 rounded-lg border-2 border-accent/20">
+    <h3 class="text-xl font-bold text-accent mb-4">📝 Exercice 2 : Changements d'État</h3>
+    <p class="mb-4">Complète le tableau :</p>
+    <div class="overflow-x-auto">
+      <table class="w-full border-2 border-gray-300">
+        <thead class="bg-accent/20">
+          <tr>
+            <th class="border p-2">Substance</th>
+            <th class="border p-2">État initial</th>
+            <th class="border p-2">Effet de la chaleur</th>
+            <th class="border p-2">État final</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="border p-2">Glace</td>
+            <td class="border p-2">_______</td>
+            <td class="border p-2">_______</td>
+            <td class="border p-2">_______</td>
+          </tr>
+          <tr>
+            <td class="border p-2">Eau</td>
+            <td class="border p-2">_______</td>
+            <td class="border p-2">_______</td>
+            <td class="border p-2">_______</td>
+          </tr>
+          <tr>
+            <td class="border p-2">Chocolat</td>
+            <td class="border p-2">_______</td>
+            <td class="border p-2">_______</td>
+            <td class="border p-2">_______</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="bg-secondary/5 p-6 rounded-lg border-2 border-secondary/20">
+    <h3 class="text-xl font-bold text-secondary mb-4">📝 Exercice 3 : Vrai ou Faux</h3>
+    <ol class="space-y-2 list-decimal list-inside">
+      <li>Tous les solides se dilatent quand on les chauffe. <span class="ml-4 text-muted-foreground">(V / F)</span></li>
+      <li>Les liquides se dilatent plus que les solides. <span class="ml-4 text-muted-foreground">(V / F)</span></li>
+      <li>La décomposition est toujours réversible. <span class="ml-4 text-muted-foreground">(V / F)</span></li>
+      <li>L'eau bout à 100°C au niveau de la mer. <span class="ml-4 text-muted-foreground">(V / F)</span></li>
+      <li>Les ponts ont des joints de dilatation. <span class="ml-4 text-muted-foreground">(V / F)</span></li>
+    </ol>
+  </div>
+
+  <div class="bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-950/20 dark:to-pink-950/20 p-6 rounded-lg border-2 border-purple-200 dark:border-purple-800">
+    <h3 class="text-xl font-bold text-purple-700 dark:text-purple-300 mb-4">📝 Exercice 4 : Application</h3>
+    <p class="mb-4">Explique pourquoi :</p>
+    <ol class="space-y-3 list-decimal list-inside">
+      <li>On peut ouvrir un couvercle de bocal bloqué en le passant sous l'eau chaude</li>
+      <li>Les lignes électriques pendent plus en été qu'en hiver</li>
+      <li>On ne remplit jamais complètement un réservoir d'essence</li>
+    </ol>
+  </div>
+</div>`,
+    musicUrl: "/lovable-uploads/effets-chaleur-lesson-music.mp3"
   },
 
   "thermometre": {
@@ -1326,9 +1635,309 @@ export const sciencesLessons7AF: Record<string, StaticLessonContent> = {
 • Identifier le principe du thermomètre (dilatation des liquides)
 • Spécifier les températures repérées des échelles thermométriques : degré Celsius et degré Fahrenheit
 • Utiliser un thermomètre pour mesurer des températures`,
-    introduction: `[Contenu à ajouter]`,
-    contenu: `[Contenu à ajouter]`,
-    exemplesExercices: `[Contenu à ajouter]`
+    introduction: `<div class="space-y-6">
+  <p class="text-lg leading-relaxed">
+    Le thermomètre est un instrument essentiel pour mesurer la température. De la météo à la médecine,
+    il nous aide à comprendre le monde chaud et froid qui nous entoure !
+  </p>
+  <div class="bg-primary/5 border-l-4 border-primary p-4 rounded-r">
+    <p class="font-semibold text-primary mb-2">🌡️ Le saviez-vous ?</p>
+    <p>Le premier thermomètre a été inventé par Galilée en 1592 ! Aujourd'hui, on utilise même des
+    thermomètres infrarouge qui mesurent sans contact.</p>
+  </div>
+  
+  <div class="bg-gradient-to-r from-primary/10 to-secondary/10 p-6 rounded-xl">
+    <h3 class="text-xl font-bold mb-4 flex items-center gap-2">
+      <span class="text-2xl">🎯</span>
+      Objectifs de la leçon
+    </h3>
+    <ul class="space-y-2">
+      <li class="flex items-start gap-2">
+        <span class="text-primary shrink-0 mt-1">✓</span>
+        <span>Identifier le principe du thermomètre (dilatation des liquides)</span>
+      </li>
+      <li class="flex items-start gap-2">
+        <span class="text-primary shrink-0 mt-1">✓</span>
+        <span>Spécifier les températures repérées des échelles Celsius et Fahrenheit</span>
+      </li>
+      <li class="flex items-start gap-2">
+        <span class="text-primary shrink-0 mt-1">✓</span>
+        <span>Utiliser un thermomètre pour mesurer des températures</span>
+      </li>
+    </ul>
+  </div>
+</div>`,
+    contenu: `<div class="space-y-8">
+  <section>
+    <h2 class="text-2xl font-bold text-primary mb-4">🌡️ Qu'est-ce qu'un Thermomètre ?</h2>
+    <div class="bg-gradient-to-r from-blue-50 to-cyan-50 dark:from-blue-950/30 dark:to-cyan-950/30 p-6 rounded-lg border-2 border-blue-200 dark:border-blue-800">
+      <p class="leading-relaxed mb-4">
+        Un <strong>thermomètre</strong> est un instrument qui mesure la <strong>température</strong>.
+        Il indique si un corps est chaud ou froid en utilisant un chiffre précis.
+      </p>
+      
+      <div class="bg-white/70 dark:bg-black/30 p-5 rounded-lg">
+        <h4 class="font-bold text-blue-600 dark:text-blue-400 mb-3">🔬 Principe de Fonctionnement</h4>
+        <p class="mb-3">Le thermomètre utilise la <strong>dilatation des liquides</strong> :</p>
+        <ul class="space-y-2">
+          <li class="flex items-start gap-2">
+            <span class="text-blue-600 dark:text-blue-400">1.</span>
+            <span>Quand il fait <strong>chaud</strong> → le liquide se dilate → monte dans le tube</span>
+          </li>
+          <li class="flex items-start gap-2">
+            <span class="text-blue-600 dark:text-blue-400">2.</span>
+            <span>Quand il fait <strong>froid</strong> → le liquide se contracte → descend dans le tube</span>
+          </li>
+          <li class="flex items-start gap-2">
+            <span class="text-blue-600 dark:text-blue-400">3.</span>
+            <span>On lit la température sur l'échelle graduée</span>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2 class="text-2xl font-bold text-primary mb-4">🔬 Structure d'un Thermomètre</h2>
+    <div class="bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-950/30 dark:to-pink-950/30 p-6 rounded-lg border-2 border-purple-200 dark:border-purple-800">
+      <div class="grid md:grid-cols-2 gap-6">
+        <div class="space-y-4">
+          <div class="bg-white/70 dark:bg-black/30 p-4 rounded-lg">
+            <h4 class="font-bold text-purple-600 dark:text-purple-400 mb-2">📍 Le Réservoir</h4>
+            <p class="text-sm">Petite boule en bas contenant le liquide (mercure ou alcool coloré)</p>
+          </div>
+          <div class="bg-white/70 dark:bg-black/30 p-4 rounded-lg">
+            <h4 class="font-bold text-purple-600 dark:text-purple-400 mb-2">📏 Le Tube Capillaire</h4>
+            <p class="text-sm">Tube très fin où le liquide monte ou descend</p>
+          </div>
+          <div class="bg-white/70 dark:bg-black/30 p-4 rounded-lg">
+            <h4 class="font-bold text-purple-600 dark:text-purple-400 mb-2">📊 L'Échelle Graduée</h4>
+            <p class="text-sm">Marques avec des chiffres pour lire la température</p>
+          </div>
+        </div>
+        <div class="bg-white/70 dark:bg-black/30 p-4 rounded-lg">
+          <h4 class="font-bold text-purple-600 dark:text-purple-400 mb-3">🎨 Types de Liquides</h4>
+          <div class="space-y-3">
+            <div class="p-3 bg-purple-100 dark:bg-purple-900/50 rounded">
+              <p class="font-semibold text-sm">Mercure (argent) 💧</p>
+              <ul class="text-xs mt-1 space-y-1">
+                <li>• Très précis</li>
+                <li>• Mesure de -39°C à 357°C</li>
+                <li>⚠️ Toxique ! Dangereux si cassé</li>
+              </ul>
+            </div>
+            <div class="p-3 bg-pink-100 dark:bg-pink-900/50 rounded">
+              <p class="font-semibold text-sm">Alcool coloré (rouge) 🔴</p>
+              <ul class="text-xs mt-1 space-y-1">
+                <li>• Plus sûr que le mercure</li>
+                <li>• Mesure de -115°C à 78°C</li>
+                <li>✓ Non toxique</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2 class="text-2xl font-bold text-primary mb-4">📐 Les Échelles de Température</h2>
+    <div class="space-y-6">
+      <div class="bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-950/30 dark:to-emerald-950/30 p-6 rounded-lg border-2 border-green-200 dark:border-green-800">
+        <h3 class="text-xl font-bold text-green-700 dark:text-green-300 mb-4">Échelle Celsius (°C)</h3>
+        <div class="space-y-3">
+          <p class="text-sm">L'échelle la plus utilisée dans le monde, inventée par Anders Celsius en 1742.</p>
+          <div class="bg-white/70 dark:bg-black/30 p-4 rounded-lg">
+            <h4 class="font-bold mb-3">Points de référence :</h4>
+            <div class="space-y-2">
+              <div class="flex justify-between items-center p-2 bg-blue-100 dark:bg-blue-900/50 rounded">
+                <span>🧊 Glace fondante</span>
+                <span class="font-bold">0°C</span>
+              </div>
+              <div class="flex justify-between items-center p-2 bg-orange-100 dark:bg-orange-900/50 rounded">
+                <span>💨 Eau bouillante</span>
+                <span class="font-bold">100°C</span>
+              </div>
+            </div>
+            <p class="text-xs mt-3 text-muted-foreground">→ L'échelle est divisée en 100 degrés entre ces deux points</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="bg-gradient-to-r from-orange-50 to-red-50 dark:from-orange-950/30 dark:to-red-950/30 p-6 rounded-lg border-2 border-orange-200 dark:border-orange-800">
+        <h3 class="text-xl font-bold text-orange-700 dark:text-orange-300 mb-4">Échelle Fahrenheit (°F)</h3>
+        <div class="space-y-3">
+          <p class="text-sm">Utilisée principalement aux États-Unis, inventée par Daniel Fahrenheit en 1724.</p>
+          <div class="bg-white/70 dark:bg-black/30 p-4 rounded-lg">
+            <h4 class="font-bold mb-3">Points de référence :</h4>
+            <div class="space-y-2">
+              <div class="flex justify-between items-center p-2 bg-blue-100 dark:bg-blue-900/50 rounded">
+                <span>🧊 Glace fondante</span>
+                <span class="font-bold">32°F</span>
+              </div>
+              <div class="flex justify-between items-center p-2 bg-orange-100 dark:bg-orange-900/50 rounded">
+                <span>💨 Eau bouillante</span>
+                <span class="font-bold">212°F</span>
+              </div>
+            </div>
+            <p class="text-xs mt-3 text-muted-foreground">→ L'échelle est divisée en 180 degrés entre ces deux points</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="bg-gradient-to-br from-purple-50 to-pink-50 dark:from-purple-950/20 dark:to-pink-950/20 p-6 rounded-xl border-2 border-purple-200 dark:border-purple-800">
+        <h3 class="text-xl font-bold text-purple-700 dark:text-purple-300 mb-4">🔄 Conversion entre Celsius et Fahrenheit</h3>
+        <div class="grid md:grid-cols-2 gap-4">
+          <div class="bg-white/70 dark:bg-gray-800/70 p-4 rounded-lg">
+            <p class="font-semibold mb-2">De °C vers °F :</p>
+            <p class="text-lg font-mono bg-purple-100 dark:bg-purple-900/50 p-3 rounded">
+              °F = (°C × 9/5) + 32
+            </p>
+            <p class="text-xs mt-2 text-muted-foreground">Exemple : 25°C = (25 × 9/5) + 32 = 77°F</p>
+          </div>
+          <div class="bg-white/70 dark:bg-gray-800/70 p-4 rounded-lg">
+            <p class="font-semibold mb-2">De °F vers °C :</p>
+            <p class="text-lg font-mono bg-purple-100 dark:bg-purple-900/50 p-3 rounded">
+              °C = (°F - 32) × 5/9
+            </p>
+            <p class="text-xs mt-2 text-muted-foreground">Exemple : 77°F = (77 - 32) × 5/9 = 25°C</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2 class="text-2xl font-bold text-primary mb-4">📖 Comment Utiliser un Thermomètre ?</h2>
+    <div class="bg-gradient-to-r from-blue-50 to-cyan-50 dark:from-blue-950/30 dark:to-cyan-950/30 p-6 rounded-lg border-2 border-blue-200 dark:border-blue-800">
+      <div class="space-y-4">
+        <div class="bg-white/70 dark:bg-black/30 p-4 rounded-lg border-l-4 border-blue-500">
+          <h4 class="font-bold text-blue-700 dark:text-blue-300 mb-2">Étape 1 : Vérification</h4>
+          <p class="text-sm">Assure-toi que le thermomètre est propre et en bon état</p>
+        </div>
+        <div class="bg-white/70 dark:bg-black/30 p-4 rounded-lg border-l-4 border-cyan-500">
+          <h4 class="font-bold text-cyan-700 dark:text-cyan-300 mb-2">Étape 2 : Immersion</h4>
+          <p class="text-sm">Place le réservoir dans le liquide ou en contact avec l'objet à mesurer</p>
+        </div>
+        <div class="bg-white/70 dark:bg-black/30 p-4 rounded-lg border-l-4 border-green-500">
+          <h4 class="font-bold text-green-700 dark:text-green-300 mb-2">Étape 3 : Attente</h4>
+          <p class="text-sm">Attends que le liquide arrête de monter/descendre (environ 1-2 minutes)</p>
+        </div>
+        <div class="bg-white/70 dark:bg-black/30 p-4 rounded-lg border-l-4 border-orange-500">
+          <h4 class="font-bold text-orange-700 dark:text-orange-300 mb-2">Étape 4 : Lecture</h4>
+          <p class="text-sm">Lis la température au niveau du haut du liquide, les yeux à la même hauteur</p>
+        </div>
+      </div>
+
+      <div class="mt-6 p-4 bg-yellow-100 dark:bg-yellow-900/40 rounded-lg border-2 border-yellow-500">
+        <h4 class="font-bold text-yellow-800 dark:text-yellow-200 mb-2">⚠️ Précautions d'Utilisation</h4>
+        <ul class="text-sm space-y-1">
+          <li>• Ne pas secouer violemment le thermomètre</li>
+          <li>• Ne pas l'exposer à des températures extrêmes</li>
+          <li>• Si le thermomètre au mercure se casse, appelle un adulte immédiatement</li>
+          <li>• Toujours tenir le thermomètre par le haut, jamais par le réservoir</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section class="bg-gradient-to-br from-pink-50 to-purple-50 dark:from-pink-950/20 dark:to-purple-950/20 p-6 rounded-xl border-2 border-pink-200 dark:border-pink-800">
+    <h2 class="text-2xl font-bold text-pink-800 dark:text-pink-200 mb-4">🌡️ Températures de Référence</h2>
+    <div class="overflow-x-auto">
+      <table class="w-full border-2 border-gray-300 dark:border-gray-600">
+        <thead class="bg-pink-100 dark:bg-pink-900/50">
+          <tr>
+            <th class="border p-3 text-left">Situation</th>
+            <th class="border p-3 text-center">°C</th>
+            <th class="border p-3 text-center">°F</th>
+          </tr>
+        </thead>
+        <tbody class="bg-white/70 dark:bg-gray-800/70">
+          <tr>
+            <td class="border p-2">Température du corps humain</td>
+            <td class="border p-2 text-center font-mono">37°C</td>
+            <td class="border p-2 text-center font-mono">98,6°F</td>
+          </tr>
+          <tr>
+            <td class="border p-2">Chambre confortable</td>
+            <td class="border p-2 text-center font-mono">20-22°C</td>
+            <td class="border p-2 text-center font-mono">68-72°F</td>
+          </tr>
+          <tr>
+            <td class="border p-2">Journée chaude</td>
+            <td class="border p-2 text-center font-mono">30-35°C</td>
+            <td class="border p-2 text-center font-mono">86-95°F</td>
+          </tr>
+          <tr>
+            <td class="border p-2">Eau de la mer (tropiques)</td>
+            <td class="border p-2 text-center font-mono">25-28°C</td>
+            <td class="border p-2 text-center font-mono">77-82°F</td>
+          </tr>
+          <tr>
+            <td class="border p-2">Congélateur</td>
+            <td class="border p-2 text-center font-mono">-18°C</td>
+            <td class="border p-2 text-center font-mono">0°F</td>
+          </tr>
+          <tr>
+            <td class="border p-2">Four de cuisson</td>
+            <td class="border p-2 text-center font-mono">180-200°C</td>
+            <td class="border p-2 text-center font-mono">356-392°F</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+</div>`,
+    exemplesExercices: `<div class="space-y-6">
+  <div class="bg-primary/5 p-6 rounded-lg border-2 border-primary/20">
+    <h3 class="text-xl font-bold text-primary mb-4">📝 Exercice 1 : Lecture de Température</h3>
+    <p class="mb-4">Lis les températures suivantes et exprime-les dans les deux échelles :</p>
+    <ol class="space-y-3 list-decimal list-inside">
+      <li>Un thermomètre indique 20°C. Combien cela fait-il en °F ? <span class="ml-4">________</span></li>
+      <li>Il fait 86°F dehors. Combien cela fait-il en °C ? <span class="ml-4">________</span></li>
+      <li>L'eau est à 50°C. Combien cela fait-il en °F ? <span class="ml-4">________</span></li>
+      <li>Le four est à 392°F. Combien cela fait-il en °C ? <span class="ml-4">________</span></li>
+    </ol>
+  </div>
+
+  <div class="bg-accent/5 p-6 rounded-lg border-2 border-accent/20">
+    <h3 class="text-xl font-bold text-accent mb-4">📝 Exercice 2 : Principe du Thermomètre</h3>
+    <p class="mb-4">Réponds aux questions suivantes :</p>
+    <ol class="space-y-2 list-decimal list-inside">
+      <li>Quelle propriété des liquides permet au thermomètre de fonctionner ?</li>
+      <li>Que se passe-t-il quand la température augmente ?</li>
+      <li>Quels sont les deux liquides utilisés dans les thermomètres ?</li>
+      <li>Pourquoi préfère-t-on l'alcool coloré au mercure aujourd'hui ?</li>
+    </ol>
+  </div>
+
+  <div class="bg-secondary/5 p-6 rounded-lg border-2 border-secondary/20">
+    <h3 class="text-xl font-bold text-secondary mb-4">📝 Exercice 3 : Situations Pratiques</h3>
+    <p class="mb-4">Classe les températures suivantes de la plus froide à la plus chaude :</p>
+    <ul class="list-disc list-inside mb-4 space-y-1">
+      <li>A) Eau bouillante : 100°C</li>
+      <li>B) Glace : 0°C</li>
+      <li>C) Corps humain : 37°C</li>
+      <li>D) Chambre : 22°C</li>
+      <li>E) Congélateur : -18°C</li>
+      <li>F) Journée chaude : 35°C</li>
+    </ul>
+    <p class="font-semibold">Ordre : _____ → _____ → _____ → _____ → _____ → _____</p>
+  </div>
+
+  <div class="bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-950/20 dark:to-pink-950/20 p-6 rounded-lg border-2 border-purple-200 dark:border-purple-800">
+    <h3 class="text-xl font-bold text-purple-700 dark:text-purple-300 mb-4">📝 Exercice 4 : Utilisation Pratique</h3>
+    <p class="mb-4 font-semibold">Tu dois mesurer la température de l'eau dans un bécher.</p>
+    <p class="mb-3">Décris les étapes à suivre (au moins 4 étapes) :</p>
+    <ol class="space-y-2 list-decimal list-inside">
+      <li>_________________________________</li>
+      <li>_________________________________</li>
+      <li>_________________________________</li>
+      <li>_________________________________</li>
+    </ol>
+  </div>
+</div>`,
+    musicUrl: "/lovable-uploads/thermometre-lesson-music.mp3"
   },
 
   // ÉLECTRICITÉ
@@ -1337,9 +1946,292 @@ export const sciencesLessons7AF: Record<string, StaticLessonContent> = {
 • Réaliser un circuit électrique simple à partir d'une pile et d'une ampoule
 • Identifier les matériaux conduisant l'électricité (les conducteurs) ou non (les isolants)
 • Spécifier la condition indispensable à la réalisation d'un circuit`,
-    introduction: `[Contenu à ajouter]`,
-    contenu: `[Contenu à ajouter]`,
-    exemplesExercices: `[Contenu à ajouter]`
+    introduction: `<div class="space-y-6">
+  <p class="text-lg leading-relaxed">
+    L'électricité est partout dans notre vie quotidienne ! Des ampoules aux ordinateurs, tout fonctionne grâce aux circuits électriques.
+    Apprenons à créer et comprendre les circuits électriques de base.
+  </p>
+  <div class="bg-primary/5 border-l-4 border-primary p-4 rounded-r">
+    <p class="font-semibold text-primary mb-2">⚡ Le saviez-vous ?</p>
+    <p>L'électricité voyage à environ 300 000 km/s dans un fil ! C'est presque la vitesse de la lumière.</p>
+  </div>
+  
+  <div class="bg-gradient-to-r from-primary/10 to-secondary/10 p-6 rounded-xl">
+    <h3 class="text-xl font-bold mb-4 flex items-center gap-2">
+      <span class="text-2xl">🎯</span>
+      Objectifs de la leçon
+    </h3>
+    <ul class="space-y-2">
+      <li class="flex items-start gap-2">
+        <span class="text-primary shrink-0 mt-1">✓</span>
+        <span>Réaliser un circuit électrique simple</span>
+      </li>
+      <li class="flex items-start gap-2">
+        <span class="text-primary shrink-0 mt-1">✓</span>
+        <span>Identifier conducteurs et isolants</span>
+      </li>
+      <li class="flex items-start gap-2">
+        <span class="text-primary shrink-0 mt-1">✓</span>
+        <span>Spécifier les conditions nécessaires à un circuit</span>
+      </li>
+    </ul>
+  </div>
+</div>`,
+    contenu: `<div class="space-y-8">
+  <section>
+    <h2 class="text-2xl font-bold text-primary mb-4">⚡ Qu'est-ce qu'un Circuit Électrique ?</h2>
+    <div class="bg-gradient-to-r from-yellow-50 to-orange-50 dark:from-yellow-950/30 dark:to-orange-950/30 p-6 rounded-lg border-2 border-yellow-200 dark:border-yellow-800">
+      <p class="leading-relaxed mb-4">
+        Un <strong>circuit électrique</strong> est un chemin fermé qui permet à l'électricité de circuler
+        depuis une source d'énergie (pile) vers un appareil (ampoule) et de revenir à la source.
+      </p>
+      
+      <div class="bg-white/70 dark:bg-black/30 p-5 rounded-lg">
+        <h4 class="font-bold text-yellow-700 dark:text-yellow-300 mb-3">🔋 Composants de Base</h4>
+        <div class="grid md:grid-cols-3 gap-4">
+          <div class="p-3 bg-yellow-100 dark:bg-yellow-900/50 rounded">
+            <p class="font-semibold mb-1">🔋 La Pile</p>
+            <p class="text-sm">Source d'énergie électrique</p>
+          </div>
+          <div class="p-3 bg-yellow-100 dark:bg-yellow-900/50 rounded">
+            <p class="font-semibold mb-1">💡 L'Ampoule</p>
+            <p class="text-sm">Récepteur qui transforme l'électricité en lumière</p>
+          </div>
+          <div class="p-3 bg-yellow-100 dark:bg-yellow-900/50 rounded">
+            <p class="font-semibold mb-1">➖ Les Fils</p>
+            <p class="text-sm">Conducteurs qui transportent l'électricité</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2 class="text-2xl font-bold text-primary mb-4">🔌 Réaliser un Circuit Simple</h2>
+    <div class="bg-gradient-to-r from-blue-50 to-cyan-50 dark:from-blue-950/30 dark:to-cyan-950/30 p-6 rounded-lg border-2 border-blue-200 dark:border-blue-800">
+      <h3 class="text-xl font-bold text-blue-700 dark:text-blue-300 mb-4">Matériel Nécessaire</h3>
+      <ul class="space-y-2 mb-6">
+        <li class="flex items-center gap-2">
+          <span class="text-blue-600 dark:text-blue-400">•</span>
+          <span>1 pile plate de 4,5 V (ou pile ronde de 1,5 V)</span>
+        </li>
+        <li class="flex items-center gap-2">
+          <span class="text-blue-600 dark:text-blue-400">•</span>
+          <span>1 ampoule avec douille</span>
+        </li>
+        <li class="flex items-center gap-2">
+          <span class="text-blue-600 dark:text-blue-400">•</span>
+          <span>2 fils électriques avec pinces crocodiles</span>
+        </li>
+      </ul>
+
+      <div class="space-y-4">
+        <h4 class="font-bold">Étapes de Montage :</h4>
+        <div class="bg-white/70 dark:bg-black/30 p-4 rounded-lg border-l-4 border-blue-500">
+          <p class="font-semibold mb-2">Étape 1 : Borne Positive</p>
+          <p class="text-sm">Connecte un fil à la borne positive (+) de la pile</p>
+        </div>
+        <div class="bg-white/70 dark:bg-black/30 p-4 rounded-lg border-l-4 border-cyan-500">
+          <p class="font-semibold mb-2">Étape 2 : Première Connexion</p>
+          <p class="text-sm">Relie l'autre extrémité du fil à une borne de l'ampoule</p>
+        </div>
+        <div class="bg-white/70 dark:bg-black/30 p-4 rounded-lg border-l-4 border-green-500">
+          <p class="font-semibold mb-2">Étape 3 : Deuxième Fil</p>
+          <p class="text-sm">Connecte le deuxième fil à l'autre borne de l'ampoule</p>
+        </div>
+        <div class="bg-white/70 dark:bg-black/30 p-4 rounded-lg border-l-4 border-orange-500">
+          <p class="font-semibold mb-2">Étape 4 : Fermeture du Circuit</p>
+          <p class="text-sm">Relie ce fil à la borne négative (-) de la pile</p>
+        </div>
+        <div class="mt-4 p-4 bg-green-100 dark:bg-green-900/40 rounded-lg border-2 border-green-500">
+          <p class="font-semibold">✨ Résultat :</p>
+          <p class="text-sm">L'ampoule s'allume ! L'électricité circule dans un circuit fermé.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2 class="text-2xl font-bold text-primary mb-4">🔑 Condition Indispensable</h2>
+    <div class="bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-950/30 dark:to-pink-950/30 p-6 rounded-lg border-2 border-purple-200 dark:border-purple-800">
+      <div class="p-5 bg-white/70 dark:bg-black/30 rounded-lg">
+        <h3 class="text-xl font-bold text-purple-700 dark:text-purple-300 mb-4">Le Circuit Doit Être FERMÉ</h3>
+        <p class="mb-4">Pour que l'électricité circule et que l'ampoule s'allume, il faut un <strong>chemin continu</strong> sans interruption.</p>
+        
+        <div class="grid md:grid-cols-2 gap-4 mt-4">
+          <div class="p-4 bg-green-100 dark:bg-green-900/50 rounded-lg border-2 border-green-500">
+            <h4 class="font-bold text-green-700 dark:text-green-300 mb-2">✅ Circuit Fermé</h4>
+            <ul class="text-sm space-y-1">
+              <li>• Chemin complet</li>
+              <li>• Aucune coupure</li>
+              <li>• L'ampoule s'allume ✨</li>
+              <li>• L'électricité circule</li>
+            </ul>
+          </div>
+          <div class="p-4 bg-red-100 dark:bg-red-900/50 rounded-lg border-2 border-red-500">
+            <h4 class="font-bold text-red-700 dark:text-red-300 mb-2">❌ Circuit Ouvert</h4>
+            <ul class="text-sm space-y-1">
+              <li>• Chemin interrompu</li>
+              <li>• Fil déconnecté</li>
+              <li>• L'ampoule ne s'allume pas</li>
+              <li>• L'électricité ne circule pas</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2 class="text-2xl font-bold text-primary mb-4">🔬 Conducteurs et Isolants</h2>
+    <div class="bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-950/30 dark:to-emerald-950/30 p-6 rounded-lg border-2 border-green-200 dark:border-green-800">
+      <div class="space-y-6">
+        <div class="bg-white/70 dark:bg-black/30 p-5 rounded-lg">
+          <h3 class="text-xl font-bold text-green-700 dark:text-green-300 mb-3">⚡ Les Conducteurs</h3>
+          <p class="mb-3">Matériaux qui <strong>laissent passer</strong> l'électricité facilement.</p>
+          <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+            <div class="p-2 bg-green-100 dark:bg-green-900/50 rounded text-center">
+              <p class="font-semibold">🔩 Cuivre</p>
+            </div>
+            <div class="p-2 bg-green-100 dark:bg-green-900/50 rounded text-center">
+              <p class="font-semibold">⚙️ Fer</p>
+            </div>
+            <div class="p-2 bg-green-100 dark:bg-green-900/50 rounded text-center">
+              <p class="font-semibold">✨ Aluminium</p>
+            </div>
+            <div class="p-2 bg-green-100 dark:bg-green-900/50 rounded text-center">
+              <p class="font-semibold">🥇 Or</p>
+            </div>
+            <div class="p-2 bg-green-100 dark:bg-green-900/50 rounded text-center">
+              <p class="font-semibold">🥈 Argent</p>
+            </div>
+            <div class="p-2 bg-green-100 dark:bg-green-900/50 rounded text-center">
+              <p class="font-semibold">💧 Eau salée</p>
+            </div>
+            <div class="p-2 bg-green-100 dark:bg-green-900/50 rounded text-center">
+              <p class="font-semibold">✏️ Graphite</p>
+            </div>
+            <div class="p-2 bg-green-100 dark:bg-green-900/50 rounded text-center">
+              <p class="font-semibold">👨 Corps humain</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="bg-white/70 dark:bg-black/30 p-5 rounded-lg">
+          <h3 class="text-xl font-bold text-red-700 dark:text-red-300 mb-3">🚫 Les Isolants</h3>
+          <p class="mb-3">Matériaux qui <strong>ne laissent pas passer</strong> l'électricité.</p>
+          <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+            <div class="p-2 bg-red-100 dark:bg-red-900/50 rounded text-center">
+              <p class="font-semibold">🪵 Bois</p>
+            </div>
+            <div class="p-2 bg-red-100 dark:bg-red-900/50 rounded text-center">
+              <p class="font-semibold">🧱 Plastique</p>
+            </div>
+            <div class="p-2 bg-red-100 dark:bg-red-900/50 rounded text-center">
+              <p class="font-semibold">🪨 Verre</p>
+            </div>
+            <div class="p-2 bg-red-100 dark:bg-red-900/50 rounded text-center">
+              <p class="font-semibold">🧶 Caoutchouc</p>
+            </div>
+            <div class="p-2 bg-red-100 dark:bg-red-900/50 rounded text-center">
+              <p class="font-semibold">📄 Papier</p>
+            </div>
+            <div class="p-2 bg-red-100 dark:bg-red-900/50 rounded text-center">
+              <p class="font-semibold">🧵 Tissu</p>
+            </div>
+            <div class="p-2 bg-red-100 dark:bg-red-900/50 rounded text-center">
+              <p class="font-semibold">🖍️ Porcelaine</p>
+            </div>
+            <div class="p-2 bg-red-100 dark:bg-red-900/50 rounded text-center">
+              <p class="font-semibold">💨 Air</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="p-4 bg-blue-100 dark:bg-blue-900/40 rounded-lg">
+          <h4 class="font-bold mb-2">🔬 Expérience : Tester les Matériaux</h4>
+          <p class="text-sm mb-2">Monte un circuit avec un espace vide entre deux fils. Place différents objets dans cet espace :</p>
+          <ul class="text-sm space-y-1">
+            <li>• Si l'ampoule s'allume → le matériau est <strong>conducteur</strong></li>
+            <li>• Si l'ampoule reste éteinte → le matériau est <strong>isolant</strong></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="bg-gradient-to-br from-orange-50 to-yellow-50 dark:from-orange-950/20 dark:to-yellow-950/20 p-6 rounded-xl border-2 border-orange-200 dark:border-orange-800">
+    <h2 class="text-2xl font-bold text-orange-800 dark:text-orange-200 mb-4">⚠️ Sécurité Électrique</h2>
+    <div class="grid md:grid-cols-2 gap-4">
+      <div class="bg-white/70 dark:bg-gray-800/70 p-4 rounded-lg">
+        <h4 class="font-bold text-green-600 dark:text-green-400 mb-2">✅ À Faire</h4>
+        <ul class="text-sm space-y-1">
+          <li>• Utiliser des piles (basse tension)</li>
+          <li>• Manipuler avec précaution</li>
+          <li>• Débrancher avant de modifier</li>
+          <li>• Demander l'aide d'un adulte</li>
+        </ul>
+      </div>
+      <div class="bg-white/70 dark:bg-gray-800/70 p-4 rounded-lg">
+        <h4 class="font-bold text-red-600 dark:text-red-400 mb-2">❌ À Ne Pas Faire</h4>
+        <ul class="text-sm space-y-1">
+          <li>• JAMAIS toucher aux prises murales</li>
+          <li>• Ne pas court-circuiter la pile</li>
+          <li>• Éviter l'eau près des circuits</li>
+          <li>• Ne pas laisser chauffer les fils</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+</div>`,
+    exemplesExercices: `<div class="space-y-6">
+  <div class="bg-primary/5 p-6 rounded-lg border-2 border-primary/20">
+    <h3 class="text-xl font-bold text-primary mb-4">📝 Exercice 1 : Conducteur ou Isolant ?</h3>
+    <p class="mb-4">Classe les matériaux suivants en conducteurs (C) ou isolants (I) :</p>
+    <ol class="space-y-2 list-decimal list-inside">
+      <li>Fil de cuivre <span class="ml-4">_____</span></li>
+      <li>Règle en plastique <span class="ml-4">_____</span></li>
+      <li>Clou en fer <span class="ml-4">_____</span></li>
+      <li>Morceau de bois <span class="ml-4">_____</span></li>
+      <li>Feuille d'aluminium <span class="ml-4">_____</span></li>
+      <li>Gomme en caoutchouc <span class="ml-4">_____</span></li>
+      <li>Mine de crayon (graphite) <span class="ml-4">_____</span></li>
+      <li>Papier <span class="ml-4">_____</span></li>
+    </ol>
+  </div>
+
+  <div class="bg-accent/5 p-6 rounded-lg border-2 border-accent/20">
+    <h3 class="text-xl font-bold text-accent mb-4">📝 Exercice 2 : Circuit Ouvert ou Fermé ?</h3>
+    <p class="mb-4">Pour chaque situation, indique si le circuit est ouvert (O) ou fermé (F) et si l'ampoule s'allume :</p>
+    <ol class="space-y-3 list-decimal list-inside">
+      <li>Tous les fils sont bien connectés. <span class="ml-4">Circuit : _____ Ampoule : _____</span></li>
+      <li>Un fil est déconnecté de la pile. <span class="ml-4">Circuit : _____ Ampoule : _____</span></li>
+      <li>Un morceau de plastique coupe le circuit. <span class="ml-4">Circuit : _____ Ampoule : _____</span></li>
+      <li>Un interrupteur fermé complète le circuit. <span class="ml-4">Circuit : _____ Ampoule : _____</span></li>
+    </ol>
+  </div>
+
+  <div class="bg-secondary/5 p-6 rounded-lg border-2 border-secondary/20">
+    <h3 class="text-xl font-bold text-secondary mb-4">📝 Exercice 3 : Dessine un Circuit</h3>
+    <p class="mb-4">Dessine un circuit électrique simple comprenant :</p>
+    <ul class="list-disc list-inside mb-4 space-y-1">
+      <li>Une pile</li>
+      <li>Une ampoule</li>
+      <li>Deux fils conducteurs</li>
+    </ul>
+    <p class="text-sm text-muted-foreground">Indique les bornes + et - de la pile et le sens de circulation de l'électricité.</p>
+  </div>
+
+  <div class="bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-950/20 dark:to-pink-950/20 p-6 rounded-lg border-2 border-purple-200 dark:border-purple-800">
+    <h3 class="text-xl font-bold text-purple-700 dark:text-purple-300 mb-4">📝 Exercice 4 : Questions de Réflexion</h3>
+    <ol class="space-y-3 list-decimal list-inside">
+      <li>Pourquoi les fils électriques sont-ils recouverts de plastique ?</li>
+      <li>Qu'arrive-t-il si on enlève l'ampoule du circuit ?</li>
+      <li>Peut-on allumer l'ampoule avec une seule pile et un seul fil ? Explique.</li>
+    </ol>
+  </div>
+</div>`,
+    musicUrl: "/lovable-uploads/circuit-electrique-lesson-music.mp3"
   },
 
   "courts-circuits": {
