@@ -31,8 +31,24 @@ import {
   montageSerieMatching,
   montageParalleleQuiz,
   montageParalleleMatching,
+  poissonsQuiz,
+  poissonsMatching,
+  amphibiensQuiz,
+  amphibiensMatching,
+  reptilesQuiz,
+  reptilesMatching,
+  oiseauxQuiz,
+  oiseauxMatching,
+  mammifieresQuiz,
+  mammifieresMatching,
+  partiesPlantesQuiz,
+  partiesPlantesMatching,
+  besoinsPlantesQuiz,
+  besoinsPlantesMatching,
   chainesAlimentairesQuiz,
-  chainesAlimentairesMatching
+  chainesAlimentairesMatching,
+  ecosystemesQuiz,
+  ecosystemesMatching
 } from "@/data/sciencesActivities";
 import { QuizGame } from "@/components/math-activities/QuizGame";
 import { MatchingGame } from "@/components/math-activities/MatchingGame";
@@ -139,8 +155,24 @@ export default function SciencesLesson() {
         return { quiz: montageSerieQuiz, matching: montageSerieMatching };
       case "montage-parallele":
         return { quiz: montageParalleleQuiz, matching: montageParalleleMatching };
+      case "poissons":
+        return { quiz: poissonsQuiz, matching: poissonsMatching };
+      case "amphibiens":
+        return { quiz: amphibiensQuiz, matching: amphibiensMatching };
+      case "reptiles":
+        return { quiz: reptilesQuiz, matching: reptilesMatching };
+      case "oiseaux":
+        return { quiz: oiseauxQuiz, matching: oiseauxMatching };
+      case "mammiferes":
+        return { quiz: mammifieresQuiz, matching: mammifieresMatching };
+      case "parties-plantes":
+        return { quiz: partiesPlantesQuiz, matching: partiesPlantesMatching };
+      case "besoins-plantes":
+        return { quiz: besoinsPlantesQuiz, matching: besoinsPlantesMatching };
       case "chaines-alimentaires":
         return { quiz: chainesAlimentairesQuiz, matching: chainesAlimentairesMatching };
+      case "ecosystemes":
+        return { quiz: ecosystemesQuiz, matching: ecosystemesMatching };
       default:
         return null;
     }
