@@ -119,7 +119,7 @@ export const HomeChatbot = () => {
     setIsTyping(true);
 
     try {
-      const { data, error } = await supabase.functions.invoke('eric-chat', {
+      const { data, error } = await supabase.functions.invoke('home-eric-chat', {
         body: {
           message: userMessage,
           chatHistory: messages.map(m => ({

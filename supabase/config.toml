@@ -9,6 +9,9 @@ verify_jwt = false
 [functions.eric-chat]
 verify_jwt = false
 
+[functions.home-eric-chat]
+verify_jwt = false
+
 [functions.send-confirmation-email]
 verify_jwt = false
 
