@@ -419,8 +419,8 @@ export const HomeChatbot = () => {
                 {faqSuggestions.map((suggestion, index) => (
                   <Button
                     key={index}
-                    variant="outline"
-                    className="w-full text-left justify-start hover:bg-primary/10 transition-colors"
+                    variant="ghost"
+                    className="w-full text-left justify-start bg-card/80 hover:bg-card transition-colors border border-border/50"
                     onClick={() => sendMessage(suggestion)}
                   >
                     {suggestion}
