@@ -4,7 +4,8 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Music, Play, Pause, SkipForward, Loader2, Volume2, X } from "lucide-react";
 import { useMusicPlayer } from "@/contexts/MusicPlayerContext";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { supabase } from "@/integrations/supabase/client";
 
 export const GlobalMusicPlayer = () => {
   const {
@@ -18,10 +19,24 @@ export const GlobalMusicPlayer = () => {
   } = useMusicPlayer();
 
   const [open, setOpen] = useState(false);
-  const [minimized, setMinimized] = useState(true); // Start minimized
+  const [minimized, setMinimized] = useState(true);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
 
-  // Always show the floating button when there are tracks
-  if (tracks.length === 0) return null;
+  useEffect(() => {
+    // Check authentication status
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setIsAuthenticated(!!session);
+    });
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      setIsAuthenticated(!!session);
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
+
+  // Only show the music player when user is authenticated and there are tracks
+  if (!isAuthenticated || tracks.length === 0) return null;
 
   return (
     <>
