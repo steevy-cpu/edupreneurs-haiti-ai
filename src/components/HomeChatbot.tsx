@@ -407,19 +407,26 @@ export const HomeChatbot = () => {
             <div ref={messagesEndRef} />
           </div>
 
-          <div className="eric-chat-input-container">
+          <div className="eric-chat-input-container flex items-end gap-2">
             <Textarea
               value={input}
-              onChange={(e) => setInput(e.target.value)}
+              onChange={(e) => {
+                setInput(e.target.value);
+                // Auto-resize
+                e.target.style.height = 'auto';
+                e.target.style.height = Math.min(e.target.scrollHeight, 120) + 'px';
+              }}
               onKeyDown={handleKeyPress}
               placeholder="Posez une question..."
-              className="eric-chat-input resize-none"
-              rows={3}
+              className="eric-chat-input resize-none flex-1"
+              rows={1}
+              style={{ minHeight: '40px', maxHeight: '120px' }}
             />
             <Button 
               onClick={sendMessage}
               disabled={!input.trim() || isTyping}
-              className="eric-send-btn"
+              className="eric-send-btn flex-shrink-0"
+              size="icon"
               title="Envoyer le message"
             >
               <Send className="w-4 h-4" />
