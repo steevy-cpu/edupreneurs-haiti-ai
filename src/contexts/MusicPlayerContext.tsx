@@ -96,31 +96,44 @@ export const MusicPlayerProvider = ({ children }: { children: ReactNode }) => {
   const initPlayer = () => {
     if (playerRef.current || tracks.length === 0) return;
 
-    if (window.YT && window.YT.Player) {
-      playerRef.current = new window.YT.Player("global-music-player", {
-        height: "0",
-        width: "0",
-        videoId: tracks[currentTrackIndex].id,
-        playerVars: {
-          autoplay: 1,
-          controls: 0,
-        },
-        events: {
-          onReady: (event: any) => {
-            setPlayerReady(true);
-            event.target.playVideo();
-            setIsPlaying(true);
-          },
-          onStateChange: (event: any) => {
-            if (event.data === window.YT.PlayerState.ENDED) {
-              nextTrack();
-            }
-          },
-        },
-      });
-    } else {
-      setTimeout(initPlayer, 100);
-    }
+    const initialize = () => {
+      if (window.YT && window.YT.Player) {
+        try {
+          playerRef.current = new window.YT.Player("global-music-player", {
+            height: "0",
+            width: "0",
+            videoId: tracks[currentTrackIndex].id,
+            playerVars: {
+              autoplay: 1,
+              controls: 0,
+            },
+            events: {
+              onReady: (event: any) => {
+                setPlayerReady(true);
+                event.target.playVideo();
+                setIsPlaying(true);
+              },
+              onStateChange: (event: any) => {
+                if (event.data === window.YT.PlayerState.ENDED) {
+                  nextTrack();
+                }
+                if (event.data === window.YT.PlayerState.PLAYING) {
+                  setIsPlaying(true);
+                } else if (event.data === window.YT.PlayerState.PAUSED) {
+                  setIsPlaying(false);
+                }
+              },
+            },
+          });
+        } catch (error) {
+          console.error("Failed to initialize YouTube player:", error);
+        }
+      } else {
+        setTimeout(initialize, 100);
+      }
+    };
+
+    initialize();
   };
 
   const playTrack = (index: number) => {
@@ -130,7 +143,37 @@ export const MusicPlayerProvider = ({ children }: { children: ReactNode }) => {
       playerRef.current.playVideo();
       setIsPlaying(true);
     } else {
-      initPlayer();
+      // Initialize player if not ready
+      setTimeout(() => {
+        if (window.YT && window.YT.Player) {
+          playerRef.current = new window.YT.Player("global-music-player", {
+            height: "0",
+            width: "0",
+            videoId: tracks[index].id,
+            playerVars: {
+              autoplay: 1,
+              controls: 0,
+            },
+            events: {
+              onReady: (event: any) => {
+                setPlayerReady(true);
+                event.target.playVideo();
+                setIsPlaying(true);
+              },
+              onStateChange: (event: any) => {
+                if (event.data === window.YT.PlayerState.ENDED) {
+                  nextTrack();
+                }
+                if (event.data === window.YT.PlayerState.PLAYING) {
+                  setIsPlaying(true);
+                } else if (event.data === window.YT.PlayerState.PAUSED) {
+                  setIsPlaying(false);
+                }
+              },
+            },
+          });
+        }
+      }, 500);
     }
   };
 

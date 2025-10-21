@@ -18,9 +18,10 @@ export const GlobalMusicPlayer = () => {
   } = useMusicPlayer();
 
   const [open, setOpen] = useState(false);
-  const [minimized, setMinimized] = useState(false);
+  const [minimized, setMinimized] = useState(true); // Start minimized
 
-  if (!isPlaying && !open) return null;
+  // Always show the floating button when there are tracks
+  if (tracks.length === 0) return null;
 
   return (
     <>

@@ -22,6 +22,7 @@ import {
 import ericPointingImage from "@/assets/eric-right-pointing.png";
 import ericTeaching from "@/assets/eric-teaching.png";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import { MusicSelector } from "@/components/MusicSelector";
 
 type GradeLevel = "AF7" | "AF8" | "AF9" | "NS1" | "NS2" | "NS3" | "NS4";
 
@@ -186,6 +187,11 @@ export default function Matieres() {
       </div>
 
       <div className="container mx-auto px-4 py-8">
+        {/* Music Selector */}
+        <div className="mb-8">
+          <MusicSelector />
+        </div>
+
         {/* Grade Level Selector */}
         <Card className="p-6 mb-8">
           <h3 className="text-xl font-semibold text-center mb-6">
