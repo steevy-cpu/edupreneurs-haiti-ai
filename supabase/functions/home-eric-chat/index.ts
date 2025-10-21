@@ -35,20 +35,20 @@ serve(async (req) => {
       const edupreneursResponse = `EDUPRENEURS est une plateforme révolutionnaire créée pour transformer l'éducation haïtienne grâce à l'intelligence artificielle ! 🚀
 
 Cette plateforme innovante a été fondée par deux jeunes visionnaires haïtiens :
-• **Djoodoodson Florent** (Fondateur)
-• **Steeve Andolf Celestin** (Co-fondateur)
+• Djoodoodson Florent (Fondateur) 👨‍💼
+• Steeve Andolf Celestin (Co-fondateur) 👨‍💼
 
-📚 **Notre Mission :**
-Rendre l'éducation de qualité accessible à tous les étudiants haïtiens en utilisant l'IA pour créer des expériences d'apprentissage personnalisées et engageantes.
+📚 Notre Mission :
+Rendre l'éducation de qualité accessible à tous les étudiants haïtiens en utilisant l'IA pour créer des expériences d'apprentissage personnalisées et engageantes. ✨
 
-✨ **Ce que nous offrons :**
-- Cours interactifs adaptés au programme du MENFP
-- Assistant IA personnel pour chaque étudiant
-- Exercices et quiz interactifs
-- Suivi de progression en temps réel
-- Communauté d'apprentissage collaborative
+🎓 Ce que nous offrons :
+- Cours interactifs adaptés au programme du MENFP 📖
+- Assistant IA personnel pour chaque étudiant 🤖
+- Exercices et quiz interactifs 🎯
+- Suivi de progression en temps réel 📊
+- Communauté d'apprentissage collaborative 🤝
 
-Voulez-vous en savoir plus sur nos fonctionnalités ou comment vous inscrire ? 😊`;
+Voulez-vous en savoir plus sur nos fonctionnalités ou comment vous inscrire ? 😊💡`;
 
       return new Response(
         JSON.stringify({ response: edupreneursResponse }),
@@ -66,24 +66,26 @@ Voulez-vous en savoir plus sur nos fonctionnalités ou comment vous inscrire ? �
 
     const systemPrompt = `Tu es Eric, l'assistant IA de la plateforme EDUPRENEURS, une plateforme éducative haïtienne révolutionnaire.
 
-🎯 **À propos d'EDUPRENEURS :**
+🎯 À propos d'EDUPRENEURS :
 - Plateforme créée pour révolutionner l'éducation haïtienne avec l'IA
 - Fondée par Djoodoodson Florent (Fondateur) et Steeve Andolf Celestin (Co-fondateur)
 - Deux jeunes visionnaires haïtiens passionnés par l'éducation
 
-📚 **Ton rôle :**
+📚 Ton rôle :
 - Accueillir les visiteurs et leur présenter EDUPRENEURS
 - Répondre aux questions sur la plateforme et ses fonctionnalités
 - Expliquer comment s'inscrire et utiliser la plateforme
 - Encourager l'apprentissage et l'inscription
 
-💬 **Ton style :**
-- Chaleureux et encourageant
+💬 Ton style :
+- Chaleureux et encourageant 😊
 - Français standard et clair
-- Utilise des émojis pour rendre vivant
+- Utilise BEAUCOUP d'emojis pertinents dans tes réponses (au moins 5-8 emojis par réponse) 🎓✨📚🚀💡
+- N'utilise JAMAIS d'asterisques (*) pour le formatage, utilise uniquement des emojis
 - Concis et informatif (maximum 3-4 paragraphes)
+- Structure tes réponses avec des sauts de ligne pour la lisibilité
 
-✨ **Fonctionnalités de la plateforme :**
+✨ Fonctionnalités de la plateforme :
 - Cours interactifs adaptés au programme du MENFP
 - Assistant IA personnel pour chaque étudiant
 - Exercices et quiz interactifs
@@ -121,7 +123,10 @@ Si on te pose des questions hors sujet, rappelle gentiment que tu es là pour pa
     }
 
     const data = await response.json();
-    const aiResponse = data.choices?.[0]?.message?.content || 'Désolé, je n\'ai pas pu générer une réponse.';
+    let aiResponse = data.choices?.[0]?.message?.content || 'Désolé, je n\'ai pas pu générer une réponse.';
+    
+    // Remove all asterisks from the response
+    aiResponse = aiResponse.replace(/\*\*/g, '').replace(/\*/g, '');
 
     console.log('Generated response length:', aiResponse.length);
 
