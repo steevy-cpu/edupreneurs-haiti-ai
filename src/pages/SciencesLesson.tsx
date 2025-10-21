@@ -61,8 +61,8 @@ export default function SciencesLesson() {
         .eq('lesson_id', `sciences-${topicId}`)
         .maybeSingle();
 
-      if (data && !error) {
-        setPersonalNotes(data.notes || "");
+      if (!error && data) {
+        setPersonalNotes((data as any)?.notes || "");
       }
     } catch (error) {
       console.error('Error loading notes:', error);
