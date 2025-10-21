@@ -55,14 +55,14 @@ export default function SciencesLesson() {
       if (!user) return;
 
       const { data, error } = await supabase
-        .from('lesson_notes')
+        .from('lesson_notes' as any)
         .select('notes')
         .eq('user_id', user.id)
         .eq('lesson_id', `sciences-${topicId}`)
-        .single();
+        .maybeSingle();
 
       if (data && !error) {
-        setPersonalNotes(data.notes);
+        setPersonalNotes(data.notes || "");
       }
     } catch (error) {
       console.error('Error loading notes:', error);
@@ -83,7 +83,7 @@ export default function SciencesLesson() {
       }
 
       const { error } = await supabase
-        .from('lesson_notes')
+        .from('lesson_notes' as any)
         .upsert({
           user_id: user.id,
           lesson_id: `sciences-${topicId}`,
