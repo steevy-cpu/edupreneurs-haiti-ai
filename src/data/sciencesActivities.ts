@@ -1204,3 +1204,99 @@ export const ecosystemesMatching = [
   { id: "5", question: "Pollution", answer: "Dégradation de l'environnement" },
   { id: "6", question: "Conservation", answer: "Protection des écosystèmes et espèces" }
 ];
+
+// ===== PHYSIQUE: DIMENSIONS DES SOLIDES =====
+export const dimensionsSolidesQuiz = [
+  { question: "Combien de dimensions possède un solide ?", options: ["1 dimension", "2 dimensions", "3 dimensions", "4 dimensions"], correctAnswer: 2, explanation: "Un solide possède 3 dimensions : la longueur, la largeur et la hauteur." },
+  { question: "Quel outil utilise-t-on pour mesurer les dimensions ?", options: ["Une balance", "Un thermomètre", "Une règle ou un mètre", "Un chronomètre"], correctAnswer: 2, explanation: "On utilise une règle, un mètre ruban ou un double-mètre pour mesurer les dimensions." },
+  { question: "Quelle est l'unité standard pour les dimensions ?", options: ["Le kilogramme", "Le mètre", "Le litre", "Le degré"], correctAnswer: 1, explanation: "L'unité de mesure standard est le mètre (m) ou ses sous-multiples." },
+  { question: "Qu'est-ce que le volume d'un solide ?", options: ["Sa masse", "L'espace qu'il occupe en 3D", "Sa couleur", "Sa température"], correctAnswer: 1, explanation: "Le volume est l'espace occupé par un objet en trois dimensions." }
+];
+
+export const dimensionsSolidesMatching = [
+  { id: "1", question: "Longueur", answer: "Première dimension" },
+  { id: "2", question: "Largeur", answer: "Deuxième dimension" },
+  { id: "3", question: "Hauteur", answer: "Troisième dimension" },
+  { id: "4", question: "Volume", answer: "Espace en 3D" },
+  { id: "5", question: "Mètre", answer: "Unité de mesure" },
+  { id: "6", question: "Mètre cube", answer: "Unité de volume" }
+];
+
+// ===== PHYSIQUE: MASSE VOLUMIQUE =====
+export const masseVolumiqueQuiz = [
+  { question: "Qu'est-ce que la masse volumique ?", options: ["Le poids", "La masse par unité de volume", "Le volume", "La température"], correctAnswer: 1, explanation: "La masse volumique est la masse d'un matériau par unité de volume." },
+  { question: "Quelle est l'unité de la masse volumique ?", options: ["Le kg", "Le mètre", "Le kg/m³", "Le litre"], correctAnswer: 2, explanation: "La masse volumique s'exprime en kg/m³." },
+  { question: "La masse volumique de l'eau ?", options: ["100 kg/m³", "1000 kg/m³", "10 kg/m³", "10000 kg/m³"], correctAnswer: 1, explanation: "La masse volumique de l'eau est d'environ 1000 kg/m³." }
+];
+
+export const masseVolumiqueMatching = [
+  { id: "1", question: "Masse volumique", answer: "Masse par unité de volume" },
+  { id: "2", question: "kg/m³", answer: "Unité de masse volumique" },
+  { id: "3", question: "1000 kg/m³", answer: "Masse volumique de l'eau" }
+];
+
+// ===== REMAINING QUIZZES =====
+export const proprietesGazQuiz = [
+  { question: "Propriété principale d'un gaz ?", options: ["Forme fixe", "Occupe tout l'espace", "Ne peut être comprimé", "Toujours visible"], correctAnswer: 1, explanation: "Un gaz occupe tout l'espace disponible." }
+];
+export const proprietesGazMatching = [{ id: "1", question: "Dilatation", answer: "Augmentation du volume" }];
+
+export const propagationChaleurQuiz = [
+  { question: "Modes de propagation de la chaleur ?", options: ["Chaud, tiède, froid", "Conduction, convection, rayonnement", "Solide, liquide, gaz", "Rapide, moyen, lent"], correctAnswer: 1, explanation: "La chaleur se propage par conduction, convection et rayonnement." }
+];
+export const propagationChaleurMatching = [{ id: "1", question: "Conduction", answer: "Par contact direct" }];
+
+export const effetsChaleurQuiz = [
+  { question: "Passage de solide à liquide ?", options: ["Solidification", "Fusion", "Vaporisation", "Congélation"], correctAnswer: 1, explanation: "La fusion est le passage de solide à liquide." }
+];
+export const effetsChaleurMatching = [{ id: "1", question: "Fusion", answer: "Solide à liquide" }];
+
+export const thermometreQuiz = [
+  { question: "À quoi sert un thermomètre ?", options: ["Mesurer la masse", "Mesurer la température", "Mesurer le volume", "Mesurer la longueur"], correctAnswer: 1, explanation: "Un thermomètre mesure la température." }
+];
+export const thermometreMatching = [{ id: "1", question: "Thermomètre", answer: "Mesure la température" }];
+
+export const circuitElectriqueSimpleQuiz = [
+  { question: "Qu'est-ce qu'un circuit électrique ?", options: ["Chemin fermé du courant", "Une route", "Un fil", "Une pile"], correctAnswer: 0, explanation: "Un circuit électrique est un chemin fermé où circule le courant." }
+];
+export const circuitElectriqueSimpleMatching = [{ id: "1", question: "Circuit fermé", answer: "Courant circule" }];
+
+export const classificationVertebresQuiz = [
+  { question: "Qu'est-ce qu'un vertébré ?", options: ["Sans squelette", "Avec colonne vertébrale", "Qui vole", "Qui nage"], correctAnswer: 1, explanation: "Un vertébré possède une colonne vertébrale." }
+];
+export const classificationVertebresMatching = [{ id: "1", question: "Vertébré", answer: "Animal avec colonne vertébrale" }];
+
+export const deplacementsVertebresQuiz = [
+  { question: "Comment se déplacent les poissons ?", options: ["En marchant", "En nageant", "En volant", "En sautant"], correctAnswer: 1, explanation: "Les poissons nagent avec leurs nageoires." }
+];
+export const deplacementsVertebresMatching = [{ id: "1", question: "Nager", answer: "Mode de déplacement des poissons" }];
+
+export const nutritionVertebresQuiz = [
+  { question: "Les herbivores mangent ?", options: ["Animaux", "Plantes", "Rien", "Pierres"], correctAnswer: 1, explanation: "Les herbivores se nourrissent de plantes." }
+];
+export const nutritionVertebresMatching = [{ id: "1", question: "Herbivore", answer: "Mange des plantes" }];
+
+export const respirationVertebresQuiz = [
+  { question: "Avec quoi respirent les poissons ?", options: ["Poumons", "Branchies", "Peau", "Ne respirent pas"], correctAnswer: 1, explanation: "Les poissons respirent avec des branchies." }
+];
+export const respirationVertebresMatching = [{ id: "1", question: "Branchies", answer: "Organes respiratoires aquatiques" }];
+
+export const reproductionVertebresQuiz = [
+  { question: "Animal qui pond des œufs ?", options: ["Vivipare", "Ovipare", "Mammifère", "Carnivore"], correctAnswer: 1, explanation: "Un animal ovipare pond des œufs." }
+];
+export const reproductionVertebresMatching = [{ id: "1", question: "Ovipare", answer: "Pond des œufs" }];
+
+export const organesPlantesQuiz = [
+  { question: "Organe qui fixe la plante ?", options: ["Tige", "Feuilles", "Racines", "Fleur"], correctAnswer: 2, explanation: "Les racines fixent la plante dans le sol." }
+];
+export const organesPlantesMatching = [{ id: "1", question: "Racines", answer: "Fixent et absorbent" }];
+
+export const fleursFruitsQuiz = [
+  { question: "À quoi sert une fleur ?", options: ["Décorer", "Reproduire", "Absorber l'eau", "Ombre"], correctAnswer: 1, explanation: "La fleur permet la reproduction de la plante." }
+];
+export const fleursFruitsMatching = [{ id: "1", question: "Pollinisation", answer: "Transport du pollen" }];
+
+export const ecologieRelationsQuiz = [
+  { question: "Qu'est-ce que la prédation ?", options: ["Entraide", "Un animal en mange un autre", "Vivre ensemble", "Pousser ensemble"], correctAnswer: 1, explanation: "La prédation: un animal en mange un autre." }
+];
+export const ecologieRelationsMatching = [{ id: "1", question: "Prédation", answer: "Un animal en mange un autre" }];
