@@ -347,10 +347,9 @@ export const HomeChatbot = () => {
               userSelect: 'none',
               display: 'flex',
               flexDirection: 'column',
-              background: 'hsl(var(--card))',
+              background: 'transparent',
               borderRadius: '1.5rem',
-              padding: '1rem',
-              boxShadow: '0 10px 40px rgba(0, 0, 0, 0.2)'
+              padding: '1rem'
             }}
             onMouseDown={handleMouseDown}
             onTouchStart={handleTouchStart}
