@@ -11,6 +11,7 @@ import heroImage from "@/assets/hero-education.jpg";
 import edupreneursLogo from "@/assets/edupreneurs-new-logo.png";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { Menu, X } from "lucide-react";
+import { HomeChatbot } from "@/components/HomeChatbot";
 
 const Index = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -476,6 +477,9 @@ const Index = () => {
           </p>
         </div>
       </footer>
+
+      {/* Home Page Chatbot */}
+      <HomeChatbot />
     </div>
   );
 };
