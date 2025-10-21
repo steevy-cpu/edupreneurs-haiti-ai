@@ -6,6 +6,8 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import { Layout } from "@/components/Layout";
 import { CookieConsent } from "@/components/CookieConsent";
+import { MusicPlayerProvider } from "@/contexts/MusicPlayerContext";
+import { GlobalMusicPlayer } from "@/components/GlobalMusicPlayer";
 import { lazy, Suspense } from "react";
 
 // Eager load critical pages
@@ -58,10 +60,12 @@ const App = () => (
       <TooltipProvider>
         <Toaster />
         <Sonner />
-        <BrowserRouter>
-          <CookieConsent />
-          <Suspense fallback={<PageLoader />}>
-            <Routes>
+        <MusicPlayerProvider>
+          <BrowserRouter>
+            <CookieConsent />
+            <GlobalMusicPlayer />
+            <Suspense fallback={<PageLoader />}>
+              <Routes>
               <Route path="/" element={<Index />} />
               <Route path="/auth" element={<Auth />} />
               <Route path="/reset-password" element={<ResetPassword />} />
@@ -94,9 +98,10 @@ const App = () => (
           <Route path="/passion-test" element={<PassionDiscoveryTest />} />
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />
-            </Routes>
-          </Suspense>
-        </BrowserRouter>
+              </Routes>
+            </Suspense>
+          </BrowserRouter>
+        </MusicPlayerProvider>
       </TooltipProvider>
     </ThemeProvider>
   </QueryClientProvider>

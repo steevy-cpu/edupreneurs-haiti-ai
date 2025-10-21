@@ -21,6 +21,7 @@ import {
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { sciencesTopics } from "@/data/sciencesLessons";
 import ericTeaching from "@/assets/eric-teaching.png";
+import { MusicSelector } from "@/components/MusicSelector";
 
 type Category = "Propriété physique de la matière" | "La chaleur" | "Électricité" | "Les vertébrés" | "Les plantes à fleurs" | "Interaction dans le milieu" | "Activités internes du globe";
 
@@ -125,6 +126,11 @@ export default function SciencesCourse() {
       </div>
 
       <div className="container mx-auto px-4 py-8">
+        {/* Music Selector */}
+        <div className="mb-8">
+          <MusicSelector />
+        </div>
+
         {/* Progress Card */}
         <Card className="p-6 mb-8 bg-gradient-to-r from-primary/10 to-secondary/10">
           <div className="flex items-center justify-between mb-4">

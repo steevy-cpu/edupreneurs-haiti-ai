@@ -17,6 +17,7 @@ import {
 import studentLearning from "@/assets/student-learning.png";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { supabase } from "@/integrations/supabase/client";
+import { MusicSelector } from "@/components/MusicSelector";
 
 interface Topic {
   id: string;
@@ -311,6 +312,11 @@ const MathCourse = () => {
               className="w-40 h-40 sm:w-48 sm:h-48 object-contain animate-[float_4s_ease-in-out_infinite]"
             />
           </div>
+        </div>
+
+        {/* Music Selector */}
+        <div className="mb-6 sm:mb-8">
+          <MusicSelector />
         </div>
 
         {/* Topics Grid */}

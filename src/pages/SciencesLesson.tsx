@@ -83,7 +83,6 @@ import {
 import { QuizGame } from "@/components/math-activities/QuizGame";
 import { MatchingGame } from "@/components/math-activities/MatchingGame";
 import { ThemeToggle } from "@/components/ThemeToggle";
-import { LessonMusicPlayer } from "@/components/LessonMusicPlayer";
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -281,7 +280,6 @@ export default function SciencesLesson() {
                 <ChevronLeft className="w-4 h-4" />
                 <span className="font-semibold">Retour au cours</span>
               </Button>
-              <LessonMusicPlayer />
             </div>
             <ThemeToggle />
           </div>
