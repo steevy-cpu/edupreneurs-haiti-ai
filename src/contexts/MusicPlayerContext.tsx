@@ -48,49 +48,66 @@ export const MusicPlayerProvider = ({ children }: { children: ReactNode }) => {
 
   const fetchPlaylistTracks = async () => {
     setIsLoading(true);
-    try {
-      const response = await fetch(
-        `https://www.googleapis.com/youtube/v3/search?` +
-        `part=snippet&` +
-        `maxResults=20&` +
-        `q=classical+music+for+studying+relaxing+mozart+beethoven+bach&` +
-        `type=video&` +
-        `videoDuration=long&` +
-        `videoEmbeddable=true&` +
-        `videoCategoryId=10&` +
-        `key=${YOUTUBE_API_KEY}`
-      );
-
-      if (!response.ok) throw new Error("Failed to fetch");
-
-      const data = await response.json();
+    // Use curated classical music library (YouTube API has quota limits)
+    const curatedTracks: PlaylistTrack[] = [
+      // Mozart Collection
+      { id: "jgpJVI3tDbY", title: "Mozart - Classical Music for Brain Power & Studying", thumbnail: "https://i.ytimg.com/vi/jgpJVI3tDbY/default.jpg" },
+      { id: "TlvFOdT5btc", title: "Mozart - The Best of Classical Music", thumbnail: "https://i.ytimg.com/vi/TlvFOdT5btc/default.jpg" },
+      { id: "sw6r-clEV1w", title: "Mozart for Studying and Concentration", thumbnail: "https://i.ytimg.com/vi/sw6r-clEV1w/default.jpg" },
       
-      const trackList: PlaylistTrack[] = [
-        {
-          id: "4PUHBL1vMNY",
-          title: "Classical Music for Studying & Concentration",
-          thumbnail: "https://i.ytimg.com/vi/4PUHBL1vMNY/default.jpg",
-        },
-        ...data.items.map((item: any) => ({
-          id: item.id.videoId,
-          title: item.snippet.title,
-          thumbnail: item.snippet.thumbnails.default.url,
-        }))
-      ];
-
-      setTracks(trackList);
-    } catch (error) {
-      const fallbackTracks: PlaylistTrack[] = [
-        { id: "4PUHBL1vMNY", title: "Classical Music for Studying & Concentration", thumbnail: "https://i.ytimg.com/vi/4PUHBL1vMNY/default.jpg" },
-        { id: "jgpJVI3tDbY", title: "Mozart - Classical Music for Brain Power", thumbnail: "https://i.ytimg.com/vi/jgpJVI3tDbY/default.jpg" },
-        { id: "ip0q0HEh_SU", title: "Beethoven - Classical Music for Studying", thumbnail: "https://i.ytimg.com/vi/ip0q0HEh_SU/default.jpg" },
-        { id: "Rb0UmrCXxVA", title: "Bach - Classical Music for Studying", thumbnail: "https://i.ytimg.com/vi/Rb0UmrCXxVA/default.jpg" },
-        { id: "PJL_mVgT0Ao", title: "Chopin - Classical Piano Music", thumbnail: "https://i.ytimg.com/vi/PJL_mVgT0Ao/default.jpg" },
-      ];
-      setTracks(fallbackTracks);
-    } finally {
-      setIsLoading(false);
-    }
+      // Beethoven Collection
+      { id: "ip0q0HEh_SU", title: "Beethoven - Classical Music for Studying", thumbnail: "https://i.ytimg.com/vi/ip0q0HEh_SU/default.jpg" },
+      { id: "t3217H8JppI", title: "Beethoven - The Best Symphonies", thumbnail: "https://i.ytimg.com/vi/t3217H8JppI/default.jpg" },
+      { id: "EOvWPBJsEYo", title: "Beethoven Piano Sonatas for Study", thumbnail: "https://i.ytimg.com/vi/EOvWPBJsEYo/default.jpg" },
+      
+      // Bach Collection
+      { id: "Rb0UmrCXxVA", title: "Bach - Classical Music for Studying and Concentration", thumbnail: "https://i.ytimg.com/vi/Rb0UmrCXxVA/default.jpg" },
+      { id: "6JQm5aSjX6g", title: "Bach - The Best Works for Studying", thumbnail: "https://i.ytimg.com/vi/6JQm5aSjX6g/default.jpg" },
+      { id: "pVEEbZn52TY", title: "Bach Cello Suites - Relaxing Study Music", thumbnail: "https://i.ytimg.com/vi/pVEEbZn52TY/default.jpg" },
+      
+      // Chopin Collection
+      { id: "PJL_mVgT0Ao", title: "Chopin - Classical Piano Music for Studying", thumbnail: "https://i.ytimg.com/vi/PJL_mVgT0Ao/default.jpg" },
+      { id: "NONg06Ee5Wg", title: "Chopin Nocturnes - Peaceful Study Music", thumbnail: "https://i.ytimg.com/vi/NONg06Ee5Wg/default.jpg" },
+      { id: "oy88CcGpYYk", title: "Chopin - The Best Relaxing Piano", thumbnail: "https://i.ytimg.com/vi/oy88CcGpYYk/default.jpg" },
+      
+      // Vivaldi Collection
+      { id: "zzE-kVadtNw", title: "Vivaldi - Four Seasons for Studying", thumbnail: "https://i.ytimg.com/vi/zzE-kVadtNw/default.jpg" },
+      { id: "l-dYNttdgl0", title: "Vivaldi - The Best Classical Baroque", thumbnail: "https://i.ytimg.com/vi/l-dYNttdgl0/default.jpg" },
+      
+      // Debussy Collection  
+      { id: "A6s49OKp6aE", title: "Debussy - Classical Music for Relaxation", thumbnail: "https://i.ytimg.com/vi/A6s49OKp6aE/default.jpg" },
+      { id: "CvFH_6DNRCY", title: "Debussy - Clair de Lune & Best Works", thumbnail: "https://i.ytimg.com/vi/CvFH_6DNRCY/default.jpg" },
+      
+      // Tchaikovsky Collection
+      { id: "eTlnotBOpUg", title: "Tchaikovsky - The Best Classical Music", thumbnail: "https://i.ytimg.com/vi/eTlnotBOpUg/default.jpg" },
+      { id: "7-OytHySsqQ", title: "Tchaikovsky - Swan Lake & Nutcracker", thumbnail: "https://i.ytimg.com/vi/7-OytHySsqQ/default.jpg" },
+      
+      // Mixed Classical Compilations
+      { id: "4PUHBL1vMNY", title: "Classical Music for Studying & Concentration - 4 Hours", thumbnail: "https://i.ytimg.com/vi/4PUHBL1vMNY/default.jpg" },
+      { id: "PZkSTgap8d8", title: "Relaxing Classical Piano Music - Study & Focus", thumbnail: "https://i.ytimg.com/vi/PZkSTgap8d8/default.jpg" },
+      { id: "qjUyKlGhDGM", title: "Classical Music Mix - The Best Composers", thumbnail: "https://i.ytimg.com/vi/qjUyKlGhDGM/default.jpg" },
+      { id: "0wCj6BaFn4M", title: "Peaceful Classical Music for Brain Power", thumbnail: "https://i.ytimg.com/vi/0wCj6BaFn4M/default.jpg" },
+      { id: "3OC674bks7A", title: "Study Music - Relaxing Classical Piano", thumbnail: "https://i.ytimg.com/vi/3OC674bks7A/default.jpg" },
+      { id: "iT9NeVMHXiw", title: "Mozart, Chopin, Bach - Classical Study Mix", thumbnail: "https://i.ytimg.com/vi/iT9NeVMHXiw/default.jpg" },
+      
+      // Liszt Collection
+      { id: "bZp_PKFpjwU", title: "Liszt - The Best Classical Piano Works", thumbnail: "https://i.ytimg.com/vi/bZp_PKFpjwU/default.jpg" },
+      
+      // Brahms Collection
+      { id: "luNc4RyZvmk", title: "Brahms - Relaxing Classical Music", thumbnail: "https://i.ytimg.com/vi/luNc4RyZvmk/default.jpg" },
+      
+      // Schubert Collection
+      { id: "l65b2dJQT2k", title: "Schubert - Classical Music for Studying", thumbnail: "https://i.ytimg.com/vi/l65b2dJQT2k/default.jpg" },
+      
+      // Handel Collection
+      { id: "usfiAsWR4qU", title: "Handel - Water Music & Best Works", thumbnail: "https://i.ytimg.com/vi/usfiAsWR4qU/default.jpg" },
+      
+      // Mendelssohn Collection
+      { id: "YLt8HowfN_o", title: "Mendelssohn - Classical Music Collection", thumbnail: "https://i.ytimg.com/vi/YLt8HowfN_o/default.jpg" },
+    ];
+    
+    setTracks(curatedTracks);
+    setIsLoading(false);
   };
 
   const initPlayer = () => {
