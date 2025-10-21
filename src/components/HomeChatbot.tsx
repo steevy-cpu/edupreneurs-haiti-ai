@@ -420,7 +420,7 @@ export const HomeChatbot = () => {
                   <Button
                     key={index}
                     variant="secondary"
-                    className="w-full text-left justify-start bg-white/90 hover:bg-white text-foreground shadow-sm transition-all"
+                    className="w-full text-left justify-start shadow-sm transition-all"
                     onClick={() => sendMessage(suggestion)}
                   >
                     {suggestion}
