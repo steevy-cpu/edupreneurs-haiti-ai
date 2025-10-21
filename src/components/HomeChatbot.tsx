@@ -151,6 +151,11 @@ export const HomeChatbot = () => {
       return;
     }
     
+    // Don't start dragging on the closed Eric - just let the click work
+    if (!isOpen && !hasMoved) {
+      return;
+    }
+    
     setHasActuallyDragged(false);
     
     if (!hasMoved) {
@@ -176,6 +181,11 @@ export const HomeChatbot = () => {
   const handleTouchStart = (e: React.TouchEvent) => {
     const target = e.target as HTMLElement;
     if (target.closest('button, textarea, input, .eric-chat-messages')) {
+      return;
+    }
+    
+    // Don't start dragging on the closed Eric - just let the tap work
+    if (!isOpen && !hasMoved) {
       return;
     }
     
@@ -289,11 +299,7 @@ export const HomeChatbot = () => {
           }}
           onMouseDown={handleMouseDown}
           onTouchStart={handleTouchStart}
-          onClick={(e) => {
-            if (!hasActuallyDragged) {
-              setIsOpen(true);
-            }
-          }}
+          onClick={() => setIsOpen(true)}
         >
           <div className="eric-floating-tooltip">
             Cliquez sur moi
