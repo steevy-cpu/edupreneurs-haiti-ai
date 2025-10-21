@@ -14,7 +14,7 @@ import {
   Star,
   GraduationCap
 } from "lucide-react";
-import studentLearning from "@/assets/student-learning.png";
+import ericTeaching from "@/assets/eric-teaching.png";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { supabase } from "@/integrations/supabase/client";
 import { MusicSelector } from "@/components/MusicSelector";
@@ -307,8 +307,8 @@ const MathCourse = () => {
           </div>
           <div className="flex-shrink-0">
             <img 
-              src={studentLearning} 
-              alt="Étudiant apprenant les mathématiques" 
+              src={ericTeaching} 
+              alt="Eric - Professeur de Mathématiques" 
               className="w-40 h-40 sm:w-48 sm:h-48 object-contain animate-[float_4s_ease-in-out_infinite]"
             />
           </div>

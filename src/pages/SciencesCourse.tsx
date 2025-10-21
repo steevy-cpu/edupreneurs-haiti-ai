@@ -118,7 +118,7 @@ export default function SciencesCourse() {
               <img 
                 src={ericTeaching} 
                 alt="Eric - Professeur de Sciences" 
-                className="w-64 h-64 object-contain drop-shadow-2xl"
+                className="w-48 h-48 sm:w-56 sm:h-56 md:w-64 md:h-64 object-contain drop-shadow-2xl"
               />
             </div>
           </div>
