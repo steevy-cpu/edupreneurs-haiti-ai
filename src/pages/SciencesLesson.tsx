@@ -48,7 +48,37 @@ import {
   chainesAlimentairesQuiz,
   chainesAlimentairesMatching,
   ecosystemesQuiz,
-  ecosystemesMatching
+  ecosystemesMatching,
+  dimensionsSolidesQuiz,
+  dimensionsSolidesMatching,
+  masseVolumiqueQuiz,
+  masseVolumiqueMatching,
+  proprietesGazQuiz,
+  proprietesGazMatching,
+  propagationChaleurQuiz,
+  propagationChaleurMatching,
+  effetsChaleurQuiz,
+  effetsChaleurMatching,
+  thermometreQuiz,
+  thermometreMatching,
+  circuitElectriqueSimpleQuiz,
+  circuitElectriqueSimpleMatching,
+  classificationVertebresQuiz,
+  classificationVertebresMatching,
+  deplacementsVertebresQuiz,
+  deplacementsVertebresMatching,
+  nutritionVertebresQuiz,
+  nutritionVertebresMatching,
+  respirationVertebresQuiz,
+  respirationVertebresMatching,
+  reproductionVertebresQuiz,
+  reproductionVertebresMatching,
+  organesPlantesQuiz,
+  organesPlantesMatching,
+  fleursFruitsQuiz,
+  fleursFruitsMatching,
+  ecologieRelationsQuiz,
+  ecologieRelationsMatching
 } from "@/data/sciencesActivities";
 import { QuizGame } from "@/components/math-activities/QuizGame";
 import { MatchingGame } from "@/components/math-activities/MatchingGame";
@@ -173,6 +203,36 @@ export default function SciencesLesson() {
         return { quiz: chainesAlimentairesQuiz, matching: chainesAlimentairesMatching };
       case "ecosystemes":
         return { quiz: ecosystemesQuiz, matching: ecosystemesMatching };
+      case "dimensions-solides":
+        return { quiz: dimensionsSolidesQuiz, matching: dimensionsSolidesMatching };
+      case "masse-volumique":
+        return { quiz: masseVolumiqueQuiz, matching: masseVolumiqueMatching };
+      case "proprietes-gaz":
+        return { quiz: proprietesGazQuiz, matching: proprietesGazMatching };
+      case "propagation-chaleur":
+        return { quiz: propagationChaleurQuiz, matching: propagationChaleurMatching };
+      case "effets-chaleur":
+        return { quiz: effetsChaleurQuiz, matching: effetsChaleurMatching };
+      case "thermometre":
+        return { quiz: thermometreQuiz, matching: thermometreMatching };
+      case "circuit-electrique-simple":
+        return { quiz: circuitElectriqueSimpleQuiz, matching: circuitElectriqueSimpleMatching };
+      case "classification-vertebres":
+        return { quiz: classificationVertebresQuiz, matching: classificationVertebresMatching };
+      case "deplacements-vertebres":
+        return { quiz: deplacementsVertebresQuiz, matching: deplacementsVertebresMatching };
+      case "nutrition-vertebres":
+        return { quiz: nutritionVertebresQuiz, matching: nutritionVertebresMatching };
+      case "respiration-vertebres":
+        return { quiz: respirationVertebresQuiz, matching: respirationVertebresMatching };
+      case "reproduction-vertebres":
+        return { quiz: reproductionVertebresQuiz, matching: reproductionVertebresMatching };
+      case "organes-plantes":
+        return { quiz: organesPlantesQuiz, matching: organesPlantesMatching };
+      case "fleurs-fruits":
+        return { quiz: fleursFruitsQuiz, matching: fleursFruitsMatching };
+      case "ecologie-relations":
+        return { quiz: ecologieRelationsQuiz, matching: ecologieRelationsMatching };
       default:
         return null;
     }
