@@ -21,6 +21,7 @@ import {
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { sciencesTopics } from "@/data/sciencesLessons";
 import ericTeaching from "@/assets/eric-teaching.png";
+import ericStudentDesk from "@/assets/eric-student-desk.png";
 import { MusicSelector } from "@/components/MusicSelector";
 
 type Category = "Propriété physique de la matière" | "La chaleur" | "Électricité" | "Les vertébrés" | "Les plantes à fleurs" | "Interaction dans le milieu" | "Activités internes du globe";
@@ -116,7 +117,7 @@ export default function SciencesCourse() {
             </div>
             <div className="flex-shrink-0">
               <img 
-                src={ericTeaching} 
+                src={ericStudentDesk} 
                 alt="Eric - Professeur de Sciences" 
                 className="w-40 h-40 sm:w-48 sm:h-48 md:w-56 md:h-56 lg:w-64 lg:h-64 object-contain drop-shadow-2xl"
               />
