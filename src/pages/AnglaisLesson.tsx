@@ -40,16 +40,15 @@ export default function AnglaisLesson() {
       try {
         const { data, error } = await supabase
           .from('lessons')
-          .select('id, slug, titre, objectif, introduction, contenu, exemples_exercices, references, mois')
+          .select('id, slug, title, objectif, introduction, contenu, exemples_exercices, references, mois')
           .eq('slug', topicId)
           .single();
 
         if (error) throw error;
 
-        // Map DB columns to interface
         setLesson({
           id: data.id,
-          title: data.titre,
+          title: data.title,
           objective: data.objectif,
           introduction: data.introduction,
           content: data.contenu,

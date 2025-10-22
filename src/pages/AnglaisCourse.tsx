@@ -49,17 +49,16 @@ export default function AnglaisCourse() {
           // Fetch lessons for this subject
           const { data: lessonsData, error: lessonsError } = await supabase
             .from('lessons')
-            .select('id, slug, titre, objectif, mois')
+            .select('id, slug, title, objectif, mois')
             .eq('subject_id', subject.id)
             .order('order_index', { ascending: true });
 
           if (lessonsError) throw lessonsError;
 
-          // Map DB columns to interface
           const mapped = (lessonsData || []).map(l => ({
             id: l.id,
             slug: l.slug,
-            title: l.titre,
+            title: l.title,
             objective: l.objectif,
             month: l.mois
           }));
