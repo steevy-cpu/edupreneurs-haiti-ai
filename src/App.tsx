@@ -8,6 +8,7 @@ import { Layout } from "@/components/Layout";
 import { CookieConsent } from "@/components/CookieConsent";
 import { MusicPlayerProvider } from "@/contexts/MusicPlayerContext";
 import { GlobalMusicPlayer } from "@/components/GlobalMusicPlayer";
+import { ScrollToTop } from "@/components/ScrollToTop";
 import { lazy, Suspense } from "react";
 
 // Eager load critical pages
@@ -62,6 +63,7 @@ const App = () => (
         <Sonner />
         <MusicPlayerProvider>
           <BrowserRouter>
+            <ScrollToTop />
             <CookieConsent />
             <GlobalMusicPlayer />
             <Suspense fallback={<PageLoader />}>
