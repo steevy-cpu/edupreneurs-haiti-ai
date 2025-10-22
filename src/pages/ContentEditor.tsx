@@ -165,6 +165,25 @@ const ContentEditor = () => {
             </TabsContent>
           )}
         </Tabs>
+
+        {/* Data Migration Link for Admins */}
+        {userRole === 'admin' && (
+          <Card className="mt-6 border-2 border-dashed border-primary/30">
+            <CardContent className="p-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h4 className="font-semibold">Migration des données</h4>
+                  <p className="text-sm text-muted-foreground">
+                    Migrez le contenu existant vers la base de données
+                  </p>
+                </div>
+                <Button variant="outline" onClick={() => navigate("/data-migration")}>
+                  Migrer →
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        )}
       </div>
     </div>
   );

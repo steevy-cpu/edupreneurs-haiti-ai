@@ -1,0 +1,163 @@
+import { supabase } from "@/integrations/supabase/client";
+import { mathLessons7AF } from "@/data/mathLessons";
+import { sciencesLessons7AF } from "@/data/sciencesLessons";
+
+interface MigrationResult {
+  success: boolean;
+  subjectsCreated: number;
+  lessonsCreated: number;
+  errors: string[];
+}
+
+export const migrateContentToDatabase = async (): Promise<MigrationResult> => {
+  const result: MigrationResult = {
+    success: false,
+    subjectsCreated: 0,
+    lessonsCreated: 0,
+    errors: [],
+  };
+
+  try {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) {
+      result.errors.push("User not authenticated");
+      return result;
+    }
+
+    // Create Math subject
+    const { data: mathSubject, error: mathSubjectError } = await supabase
+      .from('subjects')
+      .upsert({
+        name: "Mathématiques",
+        slug: "mathematiques",
+        description: "Cours de mathématiques niveau 7ème AF selon le programme MENFP",
+        icon_name: "🔢",
+        color: "blue",
+        grade_level: "7AF",
+        created_by: user.id,
+      }, { onConflict: 'slug' })
+      .select()
+      .single();
+
+    if (mathSubjectError) {
+      result.errors.push(`Math subject error: ${mathSubjectError.message}`);
+      return result;
+    }
+
+    result.subjectsCreated++;
+
+    // Create Sciences subject
+    const { data: sciencesSubject, error: sciencesSubjectError } = await supabase
+      .from('subjects')
+      .upsert({
+        name: "Sciences",
+        slug: "sciences",
+        description: "Cours de sciences niveau 7ème AF selon le programme MENFP",
+        icon_name: "🔬",
+        color: "green",
+        grade_level: "7AF",
+        created_by: user.id,
+      }, { onConflict: 'slug' })
+      .select()
+      .single();
+
+    if (sciencesSubjectError) {
+      result.errors.push(`Sciences subject error: ${sciencesSubjectError.message}`);
+      return result;
+    }
+
+    result.subjectsCreated++;
+
+    // Migrate Math lessons
+    let mathOrder = 0;
+    for (const [slug, content] of Object.entries(mathLessons7AF)) {
+      const { error: lessonError } = await supabase
+        .from('lessons')
+        .upsert({
+          subject_id: mathSubject.id,
+          title: formatLessonTitle(slug),
+          slug,
+          objectif: content.objectif,
+          introduction: content.introduction,
+          contenu: content.contenu,
+          exemples_exercices: content.exemplesExercices,
+          order_index: mathOrder++,
+          grade_level: "7AF",
+          is_published: true,
+          created_by: user.id,
+        }, { onConflict: 'subject_id,slug' });
+
+      if (lessonError) {
+        result.errors.push(`Math lesson ${slug}: ${lessonError.message}`);
+      } else {
+        result.lessonsCreated++;
+      }
+    }
+
+    // Migrate Sciences lessons
+    let sciencesOrder = 0;
+    for (const [slug, content] of Object.entries(sciencesLessons7AF)) {
+      const { error: lessonError } = await supabase
+        .from('lessons')
+        .upsert({
+          subject_id: sciencesSubject.id,
+          title: formatLessonTitle(slug),
+          slug,
+          objectif: content.objectif,
+          introduction: content.introduction,
+          contenu: content.contenu,
+          exemples_exercices: content.exemplesExercices,
+          order_index: sciencesOrder++,
+          grade_level: "7AF",
+          is_published: true,
+          created_by: user.id,
+        }, { onConflict: 'subject_id,slug' });
+
+      if (lessonError) {
+        result.errors.push(`Sciences lesson ${slug}: ${lessonError.message}`);
+      } else {
+        result.lessonsCreated++;
+      }
+    }
+
+    // Update lesson counts
+    await supabase
+      .from('subjects')
+      .update({ lesson_count: Object.keys(mathLessons7AF).length })
+      .eq('id', mathSubject.id);
+
+    await supabase
+      .from('subjects')
+      .update({ lesson_count: Object.keys(sciencesLessons7AF).length })
+      .eq('id', sciencesSubject.id);
+
+    result.success = result.errors.length === 0;
+    return result;
+
+  } catch (error) {
+    result.errors.push(`Migration error: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    return result;
+  }
+};
+
+// Helper function to format lesson titles from slugs
+const formatLessonTitle = (slug: string): string => {
+  return slug
+    .split('-')
+    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(' ');
+};
+
+// Check if migration has been run
+export const checkMigrationStatus = async (): Promise<boolean> => {
+  try {
+    const { count, error } = await supabase
+      .from('lessons')
+      .select('*', { count: 'exact', head: true });
+
+    if (error) return false;
+    return (count || 0) > 0;
+  } catch {
+    return false;
+  }
+};
