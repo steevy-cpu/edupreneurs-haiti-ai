@@ -265,17 +265,19 @@ export default function Matieres() {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mb-8">
           {subjects.map((subject, index) => {
             const IconComponent = subject.icon;
+            const hasContent = subject.id === 'mathematiques' || subject.id === 'sciences';
+            
             return (
               <Card
                 key={subject.id}
                 className="group hover:shadow-xl transition-all duration-300 hover:-translate-y-2 cursor-pointer overflow-hidden"
                 onClick={() => {
-                  const courseRoute = subject.id === 'mathematiques' 
-                    ? '/math-course' 
-                    : subject.id === 'sciences' 
-                    ? '/sciences-course'
-                    : '/math-course'; // Default for now
-                  navigate(courseRoute);
+                  if (hasContent) {
+                    const courseRoute = subject.id === 'mathematiques' 
+                      ? '/math-course' 
+                      : '/sciences-course';
+                    navigate(courseRoute);
+                  }
                 }}
               >
                 <div className={`h-1 bg-gradient-to-r ${subject.color}`} />
@@ -302,20 +304,28 @@ export default function Matieres() {
                     </Badge>
                   </div>
 
-                <Button
-                  className="w-full"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    const courseRoute = subject.id === 'mathematiques' 
-                      ? '/math-course' 
-                      : subject.id === 'sciences' 
-                      ? '/sciences-course'
-                      : '/math-course'; // Default for now
-                    navigate(courseRoute);
-                  }}
-                >
-                  Commencer
-                </Button>
+                {hasContent ? (
+                  <Button
+                    className="w-full"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      const courseRoute = subject.id === 'mathematiques' 
+                        ? '/math-course' 
+                        : '/sciences-course';
+                      navigate(courseRoute);
+                    }}
+                  >
+                    Commencer
+                  </Button>
+                ) : (
+                  <Button
+                    className="w-full"
+                    variant="secondary"
+                    disabled
+                  >
+                    Bientôt disponible
+                  </Button>
+                )}
                 </div>
               </Card>
             );
