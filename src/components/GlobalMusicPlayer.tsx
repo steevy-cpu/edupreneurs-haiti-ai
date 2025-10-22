@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Music, Play, Pause, SkipForward, Loader2, Volume2, X } from "lucide-react";
 import { useMusicPlayer } from "@/contexts/MusicPlayerContext";
@@ -272,15 +272,24 @@ export const GlobalMusicPlayer = () => {
                         >
                           <SkipForward className="w-4 h-4" />
                         </Button>
-                        <Popover open={open} onOpenChange={setOpen}>
-                          <PopoverTrigger asChild>
+                        <Dialog open={open} onOpenChange={setOpen}>
+                          <DialogTrigger asChild>
                             <Button variant="outline" size="sm">
                               Playlist
                             </Button>
-                          </PopoverTrigger>
-                          <PopoverContent className="w-80 p-0" align="end" side="top">
-                            <ScrollArea className="h-80">
-                              <div className="p-2 space-y-1">
+                          </DialogTrigger>
+                          <DialogContent className="max-w-2xl max-h-[80vh] fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
+                            <DialogHeader>
+                              <DialogTitle className="flex items-center gap-2">
+                                <Music className="w-5 h-5" />
+                                Playlist de musique classique
+                              </DialogTitle>
+                              <DialogDescription>
+                                Sélectionne une piste pour commencer à écouter
+                              </DialogDescription>
+                            </DialogHeader>
+                            <ScrollArea className="h-[500px] pr-4">
+                              <div className="space-y-2">
                                 {tracks.map((track, index) => (
                                   <button
                                     key={`${track.id}-${index}`}
@@ -288,33 +297,38 @@ export const GlobalMusicPlayer = () => {
                                       playTrack(index);
                                       setOpen(false);
                                     }}
-                                    className={`w-full flex items-center gap-3 p-3 rounded-lg hover:bg-accent transition-colors text-left ${
-                                      index === currentTrackIndex
-                                        ? "bg-primary/10 border border-primary/20"
-                                        : ""
+                                    className={`w-full flex items-center gap-4 p-4 rounded-lg hover:bg-accent transition-colors text-left ${
+                                      index === currentTrackIndex && isPlaying
+                                        ? "bg-primary/10 border-2 border-primary"
+                                        : "border-2 border-transparent"
                                     }`}
                                   >
                                     <img
                                       src={track.thumbnail}
                                       alt={track.title}
-                                      className="w-10 h-10 rounded object-cover flex-shrink-0"
+                                      className="w-20 h-20 rounded-lg object-cover flex-shrink-0"
                                       loading="lazy"
                                       decoding="async"
                                     />
                                     <div className="flex-1 min-w-0">
-                                      <p className="text-xs font-medium leading-tight line-clamp-2">
+                                      <p className="font-medium text-sm leading-tight mb-1">
                                         {track.title}
                                       </p>
+                                      <p className="text-xs text-muted-foreground">
+                                        Piste {index + 1} sur {tracks.length}
+                                      </p>
                                     </div>
-                                    {index === currentTrackIndex && isPlaying && (
-                                      <Music className="w-4 h-4 text-primary animate-pulse flex-shrink-0" />
+                                    {index === currentTrackIndex && isPlaying ? (
+                                      <Music className="w-6 h-6 text-primary animate-pulse flex-shrink-0" />
+                                    ) : (
+                                      <Play className="w-6 h-6 text-muted-foreground flex-shrink-0" />
                                     )}
                                   </button>
                                 ))}
                               </div>
                             </ScrollArea>
-                          </PopoverContent>
-                        </Popover>
+                          </DialogContent>
+                        </Dialog>
                       </div>
                     </div>
                   )}
