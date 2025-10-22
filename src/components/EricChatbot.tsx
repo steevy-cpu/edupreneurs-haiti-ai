@@ -98,14 +98,15 @@ export const EricChatbot = () => {
     // Calculate dimensions
     let width = currentRef.offsetWidth || (isOpen ? 380 : 112);
     let height = currentRef.offsetHeight || (isOpen ? 500 : 112);
+    let minY = 0;
     
-    // When chatbox is open, account for Eric's picture at the top
+    // When chatbox is open, ensure Eric (positioned above) isn't cut off at the top
     if (isOpen && ericRef) {
       const ericHeight = ericRef.offsetHeight || 80;
       const ericWidth = ericRef.offsetWidth || 80;
       
-      // Add Eric's height offset (he's positioned above the chatbox)
-      height += ericHeight + 10; // 10px gap
+      // Eric is positioned 50px above the chatbox, ensure enough space at top
+      minY = ericHeight + 10; // Add padding to prevent top cutoff
       
       // Ensure Eric's width is also within bounds
       width = Math.max(width, ericWidth);
@@ -116,7 +117,7 @@ export const EricChatbot = () => {
 
     return {
       x: Math.max(0, Math.min(pos.x, maxX)),
-      y: Math.max(0, Math.min(pos.y, maxY))
+      y: Math.max(minY, Math.min(pos.y, maxY))
     };
   };
 
