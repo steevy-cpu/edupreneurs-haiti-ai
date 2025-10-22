@@ -4,7 +4,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { X, Send } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import ericStudentDesk from "@/assets/eric-student-desk.png";
+import ericCelebrating from "@/assets/eric-celebrating.png";
 
 interface Message {
   content: string;
@@ -297,7 +297,7 @@ export const HomeChatbot = () => {
             Cliquez sur moi
           </div>
           <img 
-            src={ericStudentDesk} 
+            src={ericCelebrating} 
             alt="Eric - Assistant IA" 
             title="Cliquez pour parler avec Eric"
             className="w-full h-auto pointer-events-none drop-shadow-2xl"
@@ -323,7 +323,7 @@ export const HomeChatbot = () => {
             onTouchStart={handleTouchStart}
           >
             <img 
-              src={ericStudentDesk} 
+              src={ericCelebrating} 
               alt="Eric - Assistant IA" 
               title="Eric - Votre assistant"
               className="w-full h-auto pointer-events-none drop-shadow-2xl"
@@ -369,7 +369,7 @@ export const HomeChatbot = () => {
                 className={`eric-message ${message.sender === "user" ? "eric-message-user" : "eric-message-eric"}`}
               >
                 <img 
-                  src={message.sender === "eric" ? ericStudentDesk : "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23059669'><path d='M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z'/></svg>"}
+                  src={message.sender === "eric" ? ericCelebrating : "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23059669'><path d='M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z'/></svg>"}
                   alt={message.sender}
                   className="eric-message-avatar"
                 />
