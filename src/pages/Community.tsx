@@ -2034,11 +2034,11 @@ const Community = () => {
       </div>
 
       {/* Messages View */}
-      <div className={`${selectedConversation ? "fixed inset-0 md:relative md:flex-1" : "hidden md:block md:flex-1"} flex flex-col bg-background z-40 md:z-auto h-[100dvh] md:h-auto relative`}>
+      <div className={`${selectedConversation ? "fixed inset-0 md:relative md:flex-1" : "hidden md:block md:flex-1"} bg-background z-40 md:z-auto md:flex md:flex-col`}>
         {selectedConversation ? (
           <>
             {/* Header */}
-            <div className="absolute md:relative top-0 left-0 right-0 border-b border-border/50 bg-background backdrop-blur-sm p-4 flex items-center gap-3 shrink-0 z-50 h-[60px]">
+            <div className="fixed md:relative top-0 left-0 right-0 md:top-auto md:left-auto md:right-auto border-b border-border/50 bg-background backdrop-blur-sm p-4 flex items-center gap-3 shrink-0 z-50 h-[60px]">
               <Button
                 size="icon"
                 variant="ghost"
@@ -2166,7 +2166,7 @@ const Community = () => {
               if (!isGroup) return null;
               
               return (
-                <div className="absolute top-[60px] md:relative md:top-0 z-[60] mx-2 sm:mx-4 mt-2 mb-2 px-3 py-2 bg-gradient-to-r from-primary/10 to-success/10 border border-primary/20 rounded-lg backdrop-blur-sm shadow-sm left-0 right-0">
+                <div className="fixed md:relative top-[60px] md:top-0 z-[60] left-0 right-0 mx-2 sm:mx-4 mt-2 mb-2 px-3 py-2 bg-gradient-to-r from-primary/10 to-success/10 border border-primary/20 rounded-lg backdrop-blur-sm shadow-sm">
                   <div className="flex items-start gap-2 sm:gap-3">
                     <img src={ericAiHelper} alt="Eric AI Assistant" className="w-8 h-8 sm:w-10 sm:h-10 rounded-full object-cover shrink-0" />
                     <div className="flex-1 min-w-0">
@@ -2183,11 +2183,7 @@ const Community = () => {
             })()}
 
             {/* Messages */}
-            <div className={`flex-1 overflow-y-auto overflow-x-hidden p-4 min-h-0 ${(() => {
-              const currentConv = conversations.find(c => c.id === selectedConversation);
-              const isGroup = currentConv?.is_group;
-              return isGroup ? "pt-[140px]" : "pt-[76px]";
-            })()} md:pt-4 pb-[96px] md:pb-4`}>
+            <div className="fixed md:relative top-[60px] bottom-[80px] left-0 right-0 md:top-auto md:bottom-auto md:left-auto md:right-auto md:flex-1 overflow-y-auto overflow-x-hidden p-4">
               <div className="space-y-4 pb-4 max-w-full">
                 {messages.map((message) => {
                   const isOwn = message.sender_id === user?.id;
@@ -2622,7 +2618,7 @@ const Community = () => {
             </div>
 
             {/* Message Input */}
-            <div className="absolute md:relative bottom-0 left-0 right-0 border-t border-border/50 p-4 bg-background backdrop-blur-sm shrink-0 z-50">
+            <div className="fixed md:relative bottom-0 left-0 right-0 md:bottom-auto md:left-auto md:right-auto border-t border-border/50 p-4 bg-background backdrop-blur-sm shrink-0 z-50">
               {replyingTo && (
                 <div className="mb-2 px-3 py-2 bg-muted/50 rounded-lg border border-border/30 flex items-start justify-between max-w-full overflow-hidden">
                   <div className="flex-1 min-w-0">
