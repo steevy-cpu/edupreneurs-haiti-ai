@@ -132,6 +132,16 @@ export const EricChatbot = () => {
     return () => window.removeEventListener('resize', handleResize);
   }, [hasMoved, isOpen]);
 
+  // Constrain position when chatbox opens to prevent cutoff
+  useEffect(() => {
+    if (isOpen && hasMoved) {
+      // Small delay to ensure refs have updated dimensions
+      setTimeout(() => {
+        setPosition(prev => constrainToViewport(prev));
+      }, 0);
+    }
+  }, [isOpen]);
+
   const speakMessage = (text: string, index: number) => {
     if (isSpeaking === index) {
       window.speechSynthesis.cancel();
