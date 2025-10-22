@@ -2038,14 +2038,14 @@ const Community = () => {
         {selectedConversation ? (
           <>
             {/* Header */}
-            <div className="fixed md:relative top-0 left-0 right-0 border-b border-border/50 bg-background/95 backdrop-blur-sm p-3 sm:p-4 flex items-center gap-2 sm:gap-3 shrink-0 z-50">
+            <div className="fixed md:relative top-0 left-0 right-0 border-b border-border/50 bg-background/95 backdrop-blur-sm p-4 flex items-center gap-3 shrink-0 z-50 h-[60px]">
               <Button
                 size="icon"
                 variant="ghost"
-                className="shrink-0"
+                className="shrink-0 md:hidden"
                 onClick={() => setSelectedConversation(null)}
               >
-                <ArrowLeft size={18} className="sm:w-5 sm:h-5" />
+                <ArrowLeft size={20} />
               </Button>
               {(() => {
                 const currentConv = conversations.find(c => c.id === selectedConversation);
@@ -2054,7 +2054,7 @@ const Community = () => {
                 return (
                   <>
                     <Avatar 
-                      className={`h-9 w-9 sm:h-10 sm:w-10 shrink-0 cursor-pointer hover:opacity-80 transition-opacity`}
+                      className={`h-10 w-10 shrink-0 cursor-pointer hover:opacity-80 transition-opacity`}
                       onClick={() => {
                         if (isGroup && currentConv?.group) {
                           setSelectedGroupId(currentConv.group.id);
@@ -2067,14 +2067,14 @@ const Community = () => {
                       {isGroup ? (
                         <>
                           <AvatarImage src={currentConv.group?.avatar_url || undefined} />
-                          <AvatarFallback className="bg-gradient-to-br from-primary/20 to-success/20 text-sm sm:text-base">
+                          <AvatarFallback className="bg-gradient-to-br from-primary/20 to-success/20">
                             <Users className="h-5 w-5" />
                           </AvatarFallback>
                         </>
                       ) : (
                         <>
                           <AvatarImage src={getAvatarUrl(currentConv?.otherUser?.avatar_url)} />
-                          <AvatarFallback className="bg-gradient-to-br from-primary/20 to-success/20 text-sm sm:text-base">
+                          <AvatarFallback className="bg-gradient-to-br from-primary/20 to-success/20">
                             {(currentConv?.otherUser?.nickname || currentConv?.otherUser?.full_name)?.[0] || "?"}
                           </AvatarFallback>
                         </>
@@ -2083,7 +2083,7 @@ const Community = () => {
                     <div className="min-w-0 flex-1">
                       <div className="flex items-center gap-1.5 min-w-0">
                         <p 
-                          className="font-semibold text-sm sm:text-base truncate cursor-pointer hover:opacity-80 transition-opacity hover:underline flex-shrink"
+                          className="font-semibold text-base truncate cursor-pointer hover:opacity-80 transition-opacity hover:underline"
                           onClick={() => {
                             if (isGroup && currentConv?.group) {
                               setSelectedGroupId(currentConv.group.id);
@@ -2113,8 +2113,7 @@ const Community = () => {
                         
                         if (onlineUsers.has(otherUserId)) {
                           return (
-                            <p className="text-xs text-green-500 font-medium flex items-center gap-1">
-                              <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
+                            <p className="text-xs text-green-500 font-medium">
                               En ligne
                             </p>
                           );
@@ -2184,8 +2183,8 @@ const Community = () => {
             })()}
 
             {/* Messages */}
-            <div className="flex-1 overflow-y-auto overflow-x-hidden p-2 sm:p-4 min-h-0 pt-[68px] md:pt-2 pb-[100px] md:pb-2">
-              <div className="space-y-2 sm:space-y-4 pb-4 max-w-full">
+            <div className="flex-1 overflow-y-auto overflow-x-hidden p-4 min-h-0 pt-[60px] md:pt-2 pb-[80px] md:pb-2">
+              <div className="space-y-4 pb-4 max-w-full">
                 {messages.map((message) => {
                   const isOwn = message.sender_id === user?.id;
                   const isSystemMessage = message.content.includes('a rejoint le groupe') || message.content.includes('a quitté le groupe');
