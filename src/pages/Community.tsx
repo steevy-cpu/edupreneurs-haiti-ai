@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -235,6 +235,31 @@ const Community = () => {
       }
     };
   }, [selectedConversation, user]);
+
+  // Track keyboard height for mobile (Visual Viewport API)
+  useEffect(() => {
+    if (typeof window === 'undefined' || !window.visualViewport) return;
+    
+    const updateKeyboardHeight = () => {
+      if (window.visualViewport) {
+        const vh = window.innerHeight;
+        const vvh = window.visualViewport.height;
+        const keyboardHeight = Math.max(0, vh - vvh);
+        document.documentElement.style.setProperty('--kb', `${keyboardHeight}px`);
+      }
+    };
+    
+    window.visualViewport.addEventListener('resize', updateKeyboardHeight);
+    window.visualViewport.addEventListener('scroll', updateKeyboardHeight);
+    updateKeyboardHeight();
+    
+    return () => {
+      if (window.visualViewport) {
+        window.visualViewport.removeEventListener('resize', updateKeyboardHeight);
+        window.visualViewport.removeEventListener('scroll', updateKeyboardHeight);
+      }
+    };
+  }, []);
 
   const markMessagesAsRead = async (conversationId: string) => {
     if (!user) return;
@@ -2033,54 +2058,31 @@ const Community = () => {
         </ScrollArea>
       </div>
 
-      {/* Floating Header Banner - Always on top */}
-      {selectedConversation && (
-        <div className="fixed top-0 left-0 right-0 border-b border-border/50 bg-background/95 backdrop-blur-md p-4 flex items-center gap-3 z-[9999] h-[60px] shadow-sm md:relative md:bg-background md:backdrop-blur-none">
-          <Button
-            size="icon"
-            variant="ghost"
-            className="shrink-0 md:hidden"
-            onClick={() => setSelectedConversation(null)}
-          >
-            <ArrowLeft size={20} />
-          </Button>
-          {(() => {
-            const currentConv = conversations.find(c => c.id === selectedConversation);
-            const isGroup = currentConv?.is_group;
-            
-            return (
-              <>
-                <Avatar 
-                  className={`h-10 w-10 shrink-0 cursor-pointer hover:opacity-80 transition-opacity`}
-                  onClick={() => {
-                    if (isGroup && currentConv?.group) {
-                      setSelectedGroupId(currentConv.group.id);
-                      setShowGroupInfo(true);
-                    } else if (!isGroup && currentConv?.otherUser) {
-                      navigate(`/profile/${currentConv.otherUser.user_id}`);
-                    }
-                  }}
-                >
-                  {isGroup ? (
-                    <>
-                      <AvatarImage src={currentConv.group?.avatar_url || undefined} />
-                      <AvatarFallback className="bg-gradient-to-br from-primary/20 to-success/20">
-                        <Users className="h-5 w-5" />
-                      </AvatarFallback>
-                    </>
-                  ) : (
-                    <>
-                      <AvatarImage src={getAvatarUrl(currentConv?.otherUser?.avatar_url)} />
-                      <AvatarFallback className="bg-gradient-to-br from-primary/20 to-success/20">
-                        {(currentConv?.otherUser?.nickname || currentConv?.otherUser?.full_name)?.[0] || "?"}
-                      </AvatarFallback>
-                    </>
-                  )}
-                </Avatar>
-                <div className="min-w-0 flex-1">
-                  <div className="flex items-center gap-1.5 min-w-0">
-                    <p 
-                      className="font-semibold text-base truncate cursor-pointer hover:opacity-80 transition-opacity hover:underline"
+      {/* Messages View - WhatsApp-style keyboard-adaptive layout */}
+      <div className={`${selectedConversation ? "fixed inset-0 md:relative md:inset-auto" : "hidden md:block"} md:flex-1 bg-background z-[9998]`}>
+        {selectedConversation ? (
+          <div className="h-full grid" style={{
+            gridTemplateRows: 'var(--chat-header-h) 1fr auto',
+            height: '100dvh'
+          }}>
+            {/* Fixed Header (First row of grid) */}
+            <div className="sticky top-0 z-10 border-b border-border/50 bg-background/95 backdrop-blur-md p-4 flex items-center gap-3 shrink-0">
+              <Button
+                size="icon"
+                variant="ghost"
+                className="shrink-0"
+                onClick={() => setSelectedConversation(null)}
+              >
+                <ArrowLeft size={20} />
+              </Button>
+              {(() => {
+                const currentConv = conversations.find(c => c.id === selectedConversation);
+                const isGroup = currentConv?.is_group;
+                
+                return (
+                  <>
+                    <Avatar 
+                      className={`h-10 w-10 shrink-0 cursor-pointer hover:opacity-80 transition-opacity`}
                       onClick={() => {
                         if (isGroup && currentConv?.group) {
                           setSelectedGroupId(currentConv.group.id);
@@ -2090,104 +2092,131 @@ const Community = () => {
                         }
                       }}
                     >
-                      {isGroup 
-                        ? currentConv.group?.name 
-                        : (currentConv?.otherUser?.nickname || currentConv?.otherUser?.full_name || "Utilisateur")
-                      }
-                    </p>
-                    {isGroup && (
-                      <span className="text-xs text-muted-foreground shrink-0 whitespace-nowrap">
-                        ({currentConv.group?.member_count})
-                      </span>
-                    )}
-                    {!isGroup && currentConv?.otherUser?.verified && (
-                      <BadgeCheck className="w-4 h-4 text-primary fill-primary/20 shrink-0" />
-                    )}
-                  </div>
-                  {!isGroup && (() => {
-                    const otherUserId = currentConv?.otherUser?.user_id;
-                    if (!otherUserId) return null;
-                    
-                    if (onlineUsers.has(otherUserId)) {
-                      return (
-                        <p className="text-xs text-green-500 font-medium">
-                          En ligne
+                      {isGroup ? (
+                        <>
+                          <AvatarImage src={currentConv.group?.avatar_url || undefined} />
+                          <AvatarFallback className="bg-gradient-to-br from-primary/20 to-success/20">
+                            <Users className="h-5 w-5" />
+                          </AvatarFallback>
+                        </>
+                      ) : (
+                        <>
+                          <AvatarImage src={getAvatarUrl(currentConv?.otherUser?.avatar_url)} />
+                          <AvatarFallback className="bg-gradient-to-br from-primary/20 to-success/20">
+                            {(currentConv?.otherUser?.nickname || currentConv?.otherUser?.full_name)?.[0] || "?"}
+                          </AvatarFallback>
+                        </>
+                      )}
+                    </Avatar>
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-center gap-1.5 min-w-0">
+                        <p 
+                          className="font-semibold text-base truncate cursor-pointer hover:opacity-80 transition-opacity hover:underline"
+                          onClick={() => {
+                            if (isGroup && currentConv?.group) {
+                              setSelectedGroupId(currentConv.group.id);
+                              setShowGroupInfo(true);
+                            } else if (!isGroup && currentConv?.otherUser) {
+                              navigate(`/profile/${currentConv.otherUser.user_id}`);
+                            }
+                          }}
+                        >
+                          {isGroup 
+                            ? currentConv.group?.name 
+                            : (currentConv?.otherUser?.nickname || currentConv?.otherUser?.full_name || "Utilisateur")
+                          }
                         </p>
-                      );
-                    } else if (lastSeenTimes[otherUserId]) {
-                      return (
-                        <p className="text-xs text-muted-foreground">
-                          {formatLastSeen(lastSeenTimes[otherUserId])}
+                        {isGroup && (
+                          <span className="text-xs text-muted-foreground shrink-0 whitespace-nowrap">
+                            ({currentConv.group?.member_count})
+                          </span>
+                        )}
+                        {!isGroup && currentConv?.otherUser?.verified && (
+                          <BadgeCheck className="w-4 h-4 text-primary fill-primary/20 shrink-0" />
+                        )}
+                      </div>
+                      {!isGroup && (() => {
+                        const otherUserId = currentConv?.otherUser?.user_id;
+                        if (!otherUserId) return null;
+                        
+                        if (onlineUsers.has(otherUserId)) {
+                          return (
+                            <p className="text-xs text-green-500 font-medium">
+                              En ligne
+                            </p>
+                          );
+                        } else if (lastSeenTimes[otherUserId]) {
+                          return (
+                            <p className="text-xs text-muted-foreground">
+                              {formatLastSeen(lastSeenTimes[otherUserId])}
+                            </p>
+                          );
+                        }
+                        return null;
+                      })()}
+                      {isGroup && currentConv.group?.description && (
+                        <p className="text-xs text-muted-foreground truncate">
+                          {currentConv.group.description}
                         </p>
-                      );
-                    }
-                    return null;
-                  })()}
-                  {isGroup && currentConv.group?.description && (
-                    <p className="text-xs text-muted-foreground truncate">
-                      {currentConv.group.description}
-                    </p>
-                  )}
-                </div>
-              </>
-            );
-          })()}
-          
-          {/* Three-dot menu in header */}
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="icon" className="h-9 w-9 shrink-0">
-                <MoreVertical className="h-5 w-5" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuItem
-                className="text-destructive focus:text-destructive"
-                onClick={() => {
-                  console.log('🔴 [HEADER] Delete clicked for conversation:', selectedConversation);
-                  setDeleteConversationId(selectedConversation);
-                }}
-              >
-                <Trash2 className="h-4 w-4 mr-2" />
-                Supprimer la conversation
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-        </div>
-      )}
+                      )}
+                    </div>
+                  </>
+                );
+              })()}
+              
+              {/* Three-dot menu in header */}
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" size="icon" className="h-9 w-9 shrink-0">
+                    <MoreVertical className="h-5 w-5" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuItem
+                    className="text-destructive focus:text-destructive"
+                    onClick={() => {
+                      console.log('🔴 [HEADER] Delete clicked for conversation:', selectedConversation);
+                      setDeleteConversationId(selectedConversation);
+                    }}
+                  >
+                    <Trash2 className="h-4 w-4 mr-2" />
+                    Supprimer la conversation
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
 
-      {/* Messages View with padding for floating header */}
-      <div className={`${selectedConversation ? "block" : "hidden md:block"} md:flex-1 bg-background md:flex md:flex-col`}>
-        <div className={`${selectedConversation ? "pt-[60px] min-h-screen" : ""} md:pt-0 md:min-h-0 flex flex-col h-full`}>
-        {selectedConversation ? (
-          <>
-            {/* Eric Help Banner for Group Chats */}
-            {(() => {
-              const currentConv = conversations.find(c => c.id === selectedConversation);
-              const isGroup = currentConv?.is_group;
-              
-              if (!isGroup) return null;
-              
-              return (
-                <div className="mx-2 sm:mx-4 mt-2 mb-2 px-3 py-2 bg-gradient-to-r from-primary/10 to-success/10 border border-primary/20 rounded-lg backdrop-blur-sm shadow-sm">
-                  <div className="flex items-start gap-2 sm:gap-3">
-                    <img src={ericAiHelper} alt="Eric AI Assistant" className="w-8 h-8 sm:w-10 sm:h-10 rounded-full object-cover shrink-0" loading="lazy" decoding="async" />
-                    <div className="flex-1 min-w-0">
-                      <p className="text-xs sm:text-sm text-foreground font-semibold">
-                        Eric, votre assistant IA est dans ce groupe !
-                      </p>
-                      <p className="text-[10px] sm:text-xs text-muted-foreground mt-0.5">
-                        Pour lui parler, commencez votre message par <span className="font-bold text-primary">"Hey eric"</span>
-                      </p>
+            {/* Scrollable Messages Area (includes Eric banner + messages) */}
+            <div className="overflow-y-auto overflow-x-hidden" style={{
+              paddingBottom: 'calc(var(--kb) + var(--safe-bottom))'
+            }}>
+              {/* Eric Help Banner for Group Chats */}
+              {(() => {
+                const currentConv = conversations.find(c => c.id === selectedConversation);
+                const isGroup = currentConv?.is_group;
+                
+                if (!isGroup) return null;
+                
+                return (
+                  <div className="mx-2 sm:mx-4 mt-2 mb-2 px-3 py-2 bg-gradient-to-r from-primary/10 to-success/10 border border-primary/20 rounded-lg backdrop-blur-sm shadow-sm">
+                    <div className="flex items-start gap-2 sm:gap-3">
+                      <img src={ericAiHelper} alt="Eric AI Assistant" className="w-8 h-8 sm:w-10 sm:h-10 rounded-full object-cover shrink-0" loading="lazy" decoding="async" />
+                      <div className="flex-1 min-w-0">
+                        <p className="text-xs sm:text-sm text-foreground font-semibold">
+                          Eric, votre assistant IA est dans ce groupe !
+                        </p>
+                        <p className="text-[10px] sm:text-xs text-muted-foreground mt-0.5">
+                          Pour lui parler, commencez votre message par <span className="font-bold text-primary">"Hey eric"</span>
+                        </p>
+                      </div>
                     </div>
                   </div>
-                </div>
-              );
-            })()}
+                );
+              })()}
 
-            {/* Messages */}
-            <div className="flex-1 overflow-y-auto overflow-x-hidden p-4">
-              <div className="space-y-4 pb-4 max-w-full">
+              {/* Messages */}
+              <div className="p-4">
+                <div className="space-y-4 pb-4 max-w-full">
                 {messages.map((message) => {
                   const isOwn = message.sender_id === user?.id;
                   const isSystemMessage = message.content.includes('a rejoint le groupe') || message.content.includes('a quitté le groupe');
@@ -2624,8 +2653,14 @@ const Community = () => {
               </div>
             </div>
 
-            {/* Message Input */}
-            <div className="p-4 pt-2 border-t border-border/50 bg-background shrink-0">
+            {/* Composer - Sticks to bottom and rides keyboard */}
+            <div className="border-t border-border/50 bg-background/95 backdrop-blur-md shrink-0" style={{
+              position: 'sticky',
+              bottom: 0,
+              transform: `translateY(calc(-1 * var(--kb)))`,
+              paddingBottom: 'calc(0.5rem + var(--safe-bottom))'
+            }}>
+              <div className="p-4 pt-2">
               {replyingTo && (
                 <div className="mb-2 px-3 py-2 bg-muted/50 rounded-lg border border-border/30 flex items-start justify-between max-w-full overflow-hidden">
                   <div className="flex-1 min-w-0">
@@ -2742,13 +2777,12 @@ const Community = () => {
                 </Button>
               </div>
             </div>
-          </>
+          </div>
         ) : (
           <div className="hidden md:flex items-center justify-center h-full">
             <p className="text-muted-foreground">Sélectionnez une conversation</p>
           </div>
         )}
-        </div>
       </div>
       
       {/* Create Group Dialog */}
