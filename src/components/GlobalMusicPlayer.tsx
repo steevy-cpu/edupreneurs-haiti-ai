@@ -6,8 +6,10 @@ import { Music, Play, Pause, SkipForward, Loader2, Volume2, X } from "lucide-rea
 import { useMusicPlayer } from "@/contexts/MusicPlayerContext";
 import { useState, useEffect, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { useLocation } from "react-router-dom";
 
 export const GlobalMusicPlayer = () => {
+  const location = useLocation();
   const {
     tracks,
     currentTrackIndex,
@@ -170,8 +172,8 @@ export const GlobalMusicPlayer = () => {
     }
   };
 
-  // Only show the music player when user is authenticated and there are tracks
-  if (!isAuthenticated || tracks.length === 0) return null;
+  // Only show the music player when user is authenticated, there are tracks, and not on home page
+  if (!isAuthenticated || tracks.length === 0 || location.pathname === '/') return null;
 
   return (
     <>
