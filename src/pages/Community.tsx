@@ -2033,28 +2033,54 @@ const Community = () => {
         </ScrollArea>
       </div>
 
-      {/* Messages View */}
-      <div className={`${selectedConversation ? "fixed inset-0 md:relative md:flex-1" : "hidden md:block md:flex-1"} bg-background z-40 md:z-auto md:flex md:flex-col`}>
-        {selectedConversation ? (
-          <>
-            {/* Header */}
-            <div className="fixed md:relative top-0 left-0 right-0 md:top-auto md:left-auto md:right-auto border-b border-border/50 bg-background p-4 flex items-center gap-3 shrink-0 z-[9999] h-[60px] w-full">
-              <Button
-                size="icon"
-                variant="ghost"
-                className="shrink-0 md:hidden"
-                onClick={() => setSelectedConversation(null)}
-              >
-                <ArrowLeft size={20} />
-              </Button>
-              {(() => {
-                const currentConv = conversations.find(c => c.id === selectedConversation);
-                const isGroup = currentConv?.is_group;
-                
-                return (
-                  <>
-                    <Avatar 
-                      className={`h-10 w-10 shrink-0 cursor-pointer hover:opacity-80 transition-opacity`}
+      {/* Fixed Header - Separate from conversation content */}
+      {selectedConversation && (
+        <div className="fixed top-0 left-0 right-0 md:relative md:top-auto md:left-auto md:right-auto border-b border-border/50 bg-background p-4 flex items-center gap-3 shrink-0 z-[9999] h-[60px] w-full">
+          <Button
+            size="icon"
+            variant="ghost"
+            className="shrink-0 md:hidden"
+            onClick={() => setSelectedConversation(null)}
+          >
+            <ArrowLeft size={20} />
+          </Button>
+          {(() => {
+            const currentConv = conversations.find(c => c.id === selectedConversation);
+            const isGroup = currentConv?.is_group;
+            
+            return (
+              <>
+                <Avatar 
+                  className={`h-10 w-10 shrink-0 cursor-pointer hover:opacity-80 transition-opacity`}
+                  onClick={() => {
+                    if (isGroup && currentConv?.group) {
+                      setSelectedGroupId(currentConv.group.id);
+                      setShowGroupInfo(true);
+                    } else if (!isGroup && currentConv?.otherUser) {
+                      navigate(`/profile/${currentConv.otherUser.user_id}`);
+                    }
+                  }}
+                >
+                  {isGroup ? (
+                    <>
+                      <AvatarImage src={currentConv.group?.avatar_url || undefined} />
+                      <AvatarFallback className="bg-gradient-to-br from-primary/20 to-success/20">
+                        <Users className="h-5 w-5" />
+                      </AvatarFallback>
+                    </>
+                  ) : (
+                    <>
+                      <AvatarImage src={getAvatarUrl(currentConv?.otherUser?.avatar_url)} />
+                      <AvatarFallback className="bg-gradient-to-br from-primary/20 to-success/20">
+                        {(currentConv?.otherUser?.nickname || currentConv?.otherUser?.full_name)?.[0] || "?"}
+                      </AvatarFallback>
+                    </>
+                  )}
+                </Avatar>
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-center gap-1.5 min-w-0">
+                    <p 
+                      className="font-semibold text-base truncate cursor-pointer hover:opacity-80 transition-opacity hover:underline"
                       onClick={() => {
                         if (isGroup && currentConv?.group) {
                           setSelectedGroupId(currentConv.group.id);
@@ -2064,100 +2090,76 @@ const Community = () => {
                         }
                       }}
                     >
-                      {isGroup ? (
-                        <>
-                          <AvatarImage src={currentConv.group?.avatar_url || undefined} />
-                          <AvatarFallback className="bg-gradient-to-br from-primary/20 to-success/20">
-                            <Users className="h-5 w-5" />
-                          </AvatarFallback>
-                        </>
-                      ) : (
-                        <>
-                          <AvatarImage src={getAvatarUrl(currentConv?.otherUser?.avatar_url)} />
-                          <AvatarFallback className="bg-gradient-to-br from-primary/20 to-success/20">
-                            {(currentConv?.otherUser?.nickname || currentConv?.otherUser?.full_name)?.[0] || "?"}
-                          </AvatarFallback>
-                        </>
-                      )}
-                    </Avatar>
-                    <div className="min-w-0 flex-1">
-                      <div className="flex items-center gap-1.5 min-w-0">
-                        <p 
-                          className="font-semibold text-base truncate cursor-pointer hover:opacity-80 transition-opacity hover:underline"
-                          onClick={() => {
-                            if (isGroup && currentConv?.group) {
-                              setSelectedGroupId(currentConv.group.id);
-                              setShowGroupInfo(true);
-                            } else if (!isGroup && currentConv?.otherUser) {
-                              navigate(`/profile/${currentConv.otherUser.user_id}`);
-                            }
-                          }}
-                        >
-                          {isGroup 
-                            ? currentConv.group?.name 
-                            : (currentConv?.otherUser?.nickname || currentConv?.otherUser?.full_name || "Utilisateur")
-                          }
+                      {isGroup 
+                        ? currentConv.group?.name 
+                        : (currentConv?.otherUser?.nickname || currentConv?.otherUser?.full_name || "Utilisateur")
+                      }
+                    </p>
+                    {isGroup && (
+                      <span className="text-xs text-muted-foreground shrink-0 whitespace-nowrap">
+                        ({currentConv.group?.member_count})
+                      </span>
+                    )}
+                    {!isGroup && currentConv?.otherUser?.verified && (
+                      <BadgeCheck className="w-4 h-4 text-primary fill-primary/20 shrink-0" />
+                    )}
+                  </div>
+                  {!isGroup && (() => {
+                    const otherUserId = currentConv?.otherUser?.user_id;
+                    if (!otherUserId) return null;
+                    
+                    if (onlineUsers.has(otherUserId)) {
+                      return (
+                        <p className="text-xs text-green-500 font-medium">
+                          En ligne
                         </p>
-                        {isGroup && (
-                          <span className="text-xs text-muted-foreground shrink-0 whitespace-nowrap">
-                            ({currentConv.group?.member_count})
-                          </span>
-                        )}
-                        {!isGroup && currentConv?.otherUser?.verified && (
-                          <BadgeCheck className="w-4 h-4 text-primary fill-primary/20 shrink-0" />
-                        )}
-                      </div>
-                      {!isGroup && (() => {
-                        const otherUserId = currentConv?.otherUser?.user_id;
-                        if (!otherUserId) return null;
-                        
-                        if (onlineUsers.has(otherUserId)) {
-                          return (
-                            <p className="text-xs text-green-500 font-medium">
-                              En ligne
-                            </p>
-                          );
-                        } else if (lastSeenTimes[otherUserId]) {
-                          return (
-                            <p className="text-xs text-muted-foreground">
-                              {formatLastSeen(lastSeenTimes[otherUserId])}
-                            </p>
-                          );
-                        }
-                        return null;
-                      })()}
-                      {isGroup && currentConv.group?.description && (
-                        <p className="text-xs text-muted-foreground truncate">
-                          {currentConv.group.description}
+                      );
+                    } else if (lastSeenTimes[otherUserId]) {
+                      return (
+                        <p className="text-xs text-muted-foreground">
+                          {formatLastSeen(lastSeenTimes[otherUserId])}
                         </p>
-                      )}
-                    </div>
-                  </>
-                );
-              })()}
-              
-              {/* Three-dot menu in header */}
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" size="icon" className="h-9 w-9 shrink-0">
-                    <MoreVertical className="h-5 w-5" />
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end">
-                  <DropdownMenuItem
-                    className="text-destructive focus:text-destructive"
-                    onClick={() => {
-                      console.log('🔴 [HEADER] Delete clicked for conversation:', selectedConversation);
-                      setDeleteConversationId(selectedConversation);
-                    }}
-                  >
-                    <Trash2 className="h-4 w-4 mr-2" />
-                    Supprimer la conversation
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-            </div>
+                      );
+                    }
+                    return null;
+                  })()}
+                  {isGroup && currentConv.group?.description && (
+                    <p className="text-xs text-muted-foreground truncate">
+                      {currentConv.group.description}
+                    </p>
+                  )}
+                </div>
+              </>
+            );
+          })()}
+          
+          {/* Three-dot menu in header */}
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" size="icon" className="h-9 w-9 shrink-0">
+                <MoreVertical className="h-5 w-5" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem
+                className="text-destructive focus:text-destructive"
+                onClick={() => {
+                  console.log('🔴 [HEADER] Delete clicked for conversation:', selectedConversation);
+                  setDeleteConversationId(selectedConversation);
+                }}
+              >
+                <Trash2 className="h-4 w-4 mr-2" />
+                Supprimer la conversation
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
+      )}
 
+      {/* Messages View */}
+      <div className={`${selectedConversation ? "fixed top-[60px] left-0 right-0 bottom-0 md:relative md:top-auto md:left-auto md:right-auto md:bottom-auto md:flex-1" : "hidden md:block md:flex-1"} bg-background z-30 md:z-auto md:flex md:flex-col`}>
+        {selectedConversation ? (
+          <>
             {/* Eric Help Banner for Group Chats */}
             {(() => {
               const currentConv = conversations.find(c => c.id === selectedConversation);
@@ -2166,7 +2168,7 @@ const Community = () => {
               if (!isGroup) return null;
               
               return (
-                <div className="fixed md:relative top-[60px] md:top-0 z-[60] left-0 right-0 mx-2 sm:mx-4 mt-2 mb-2 px-3 py-2 bg-gradient-to-r from-primary/10 to-success/10 border border-primary/20 rounded-lg backdrop-blur-sm shadow-sm">
+                <div className="mx-2 sm:mx-4 mt-2 mb-2 px-3 py-2 bg-gradient-to-r from-primary/10 to-success/10 border border-primary/20 rounded-lg backdrop-blur-sm shadow-sm">
                   <div className="flex items-start gap-2 sm:gap-3">
                     <img src={ericAiHelper} alt="Eric AI Assistant" className="w-8 h-8 sm:w-10 sm:h-10 rounded-full object-cover shrink-0" />
                     <div className="flex-1 min-w-0">
@@ -2183,7 +2185,7 @@ const Community = () => {
             })()}
 
             {/* Messages */}
-            <div className="fixed md:relative top-[60px] bottom-[80px] left-0 right-0 md:top-auto md:bottom-auto md:left-auto md:right-auto md:flex-1 overflow-y-auto overflow-x-hidden p-4">
+            <div className="flex-1 overflow-y-auto overflow-x-hidden p-4">
               <div className="space-y-4 pb-4 max-w-full">
                 {messages.map((message) => {
                   const isOwn = message.sender_id === user?.id;
@@ -2618,7 +2620,7 @@ const Community = () => {
             </div>
 
             {/* Message Input */}
-            <div className="fixed md:relative bottom-0 left-0 right-0 md:bottom-auto md:left-auto md:right-auto border-t border-border/50 p-4 bg-background backdrop-blur-sm shrink-0 z-50">
+            <div className="p-4 pt-2 border-t border-border/50 bg-background shrink-0">
               {replyingTo && (
                 <div className="mb-2 px-3 py-2 bg-muted/50 rounded-lg border border-border/30 flex items-start justify-between max-w-full overflow-hidden">
                   <div className="flex-1 min-w-0">
