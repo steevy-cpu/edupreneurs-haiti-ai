@@ -1,6 +1,7 @@
 import { supabase } from "@/integrations/supabase/client";
 import { mathLessons7AF } from "@/data/mathLessons";
 import { sciencesLessons7AF } from "@/data/sciencesLessons";
+import { espagnolLessons7AF } from "@/data/espagnolLessons";
 
 interface MigrationResult {
   success: boolean;
@@ -68,6 +69,28 @@ export const migrateContentToDatabase = async (): Promise<MigrationResult> => {
 
     result.subjectsCreated++;
 
+    // Create Espagnol subject
+    const { data: espagnolSubject, error: espagnolSubjectError } = await supabase
+      .from('subjects')
+      .upsert({
+        name: "Espagnol",
+        slug: "espagnol",
+        description: "Cours d'espagnol niveau 7ème AF selon le programme MENFP",
+        icon_name: "🇪🇸",
+        color: "orange",
+        grade_level: "7AF",
+        created_by: user.id,
+      }, { onConflict: 'slug' })
+      .select()
+      .single();
+
+    if (espagnolSubjectError) {
+      result.errors.push(`Espagnol subject error: ${espagnolSubjectError.message}`);
+      return result;
+    }
+
+    result.subjectsCreated++;
+
     // Migrate Math lessons
     let mathOrder = 0;
     for (const [slug, content] of Object.entries(mathLessons7AF)) {
@@ -120,6 +143,34 @@ export const migrateContentToDatabase = async (): Promise<MigrationResult> => {
       }
     }
 
+    // Migrate Espagnol lessons
+    let espagnolOrder = 0;
+    for (const [slug, content] of Object.entries(espagnolLessons7AF)) {
+      const { error: lessonError } = await supabase
+        .from('lessons')
+        .upsert({
+          subject_id: espagnolSubject.id,
+          title: formatLessonTitle(slug),
+          slug,
+          objectif: content.objectif,
+          introduction: content.introduction,
+          contenu: content.contenu,
+          exemples_exercices: content.exemplesExercices,
+          mois: content.mois,
+          references: content.references,
+          order_index: espagnolOrder++,
+          grade_level: "7AF",
+          is_published: true,
+          created_by: user.id,
+        }, { onConflict: 'subject_id,slug' });
+
+      if (lessonError) {
+        result.errors.push(`Espagnol lesson ${slug}: ${lessonError.message}`);
+      } else {
+        result.lessonsCreated++;
+      }
+    }
+
     // Update lesson counts
     await supabase
       .from('subjects')
@@ -130,6 +181,11 @@ export const migrateContentToDatabase = async (): Promise<MigrationResult> => {
       .from('subjects')
       .update({ lesson_count: Object.keys(sciencesLessons7AF).length })
       .eq('id', sciencesSubject.id);
+
+    await supabase
+      .from('subjects')
+      .update({ lesson_count: Object.keys(espagnolLessons7AF).length })
+      .eq('id', espagnolSubject.id);
 
     result.success = result.errors.length === 0;
     return result;
