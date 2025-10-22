@@ -164,7 +164,7 @@ export const LessonBrowser = ({ onSelectLesson, selectedLesson }: LessonBrowserP
                 {subjects.map((subject) => (
                   <div 
                     key={subject.id}
-                    className="flex items-center gap-2 group"
+                    className="flex items-center gap-2"
                   >
                     <Button
                       variant={selectedSubject === subject.id ? "default" : "ghost"}
@@ -181,13 +181,13 @@ export const LessonBrowser = ({ onSelectLesson, selectedLesson }: LessonBrowserP
                       <Button
                         size="icon"
                         variant="ghost"
-                        className="h-9 w-9 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0"
+                        className="h-9 w-9 flex-shrink-0 hover:bg-destructive/10 hover:text-destructive"
                         onClick={(e) => {
                           e.stopPropagation();
                           setDeleteSubjectId(subject.id);
                         }}
                       >
-                        <Trash2 className="h-4 w-4 text-destructive" />
+                        <Trash2 className="h-4 w-4" />
                       </Button>
                     )}
                   </div>
