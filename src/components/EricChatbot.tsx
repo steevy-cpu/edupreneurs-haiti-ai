@@ -102,13 +102,13 @@ export const EricChatbot = () => {
     let height = currentRef.offsetHeight || (isOpen ? 500 : 112);
     let minY = 0;
     
-    // When chatbox is open, ensure Eric (positioned above) isn't cut off at the top
+    // When chatbox is open, ensure Eric (positioned 50px above) isn't cut off at the top
     if (isOpen && ericRef) {
-      const ericHeight = ericRef.offsetHeight || 80;
       const ericWidth = ericRef.offsetWidth || 80;
       
-      // Eric is positioned 50px above the chatbox, ensure enough space at top
-      minY = ericHeight + 10; // Add padding to prevent top cutoff
+      // Eric is positioned 50px above the chatbox (top: position.y - 50)
+      // So minimum Y position for chatbox should be 50px to keep Eric visible
+      minY = 60; // 50px offset + 10px padding
       
       // Ensure Eric's width is also within bounds
       width = Math.max(width, ericWidth);
