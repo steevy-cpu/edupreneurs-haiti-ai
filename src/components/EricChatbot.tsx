@@ -409,10 +409,12 @@ export const EricChatbot = () => {
               top: `${position.y + 15}px`,
               zIndex: 1002,
               width: '4.5rem',
-              pointerEvents: 'none'
+              cursor: isDragging ? 'grabbing' : 'grab'
             } : {
               display: 'none'
             }}
+            onMouseDown={handleMouseDown}
+            onTouchStart={handleTouchStart}
           >
             <img 
               src={ericAvatar} 
@@ -437,7 +439,7 @@ export const EricChatbot = () => {
               userSelect: 'none',
               display: 'flex',
               flexDirection: 'column',
-              background: 'hsl(var(--card))',
+              background: 'transparent',
               borderRadius: '1.5rem',
               padding: '1.25rem',
               boxShadow: '0 10px 40px rgba(0,0,0,0.2)'
