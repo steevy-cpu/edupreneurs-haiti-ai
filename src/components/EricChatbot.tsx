@@ -21,7 +21,7 @@ export const EricChatbot = () => {
   const [isSpeaking, setIsSpeaking] = useState<number | null>(null);
   const [userNickname, setUserNickname] = useState<string>("");
   const [userAvatarUrl, setUserAvatarUrl] = useState<string>("");
-  const [position, setPosition] = useState({ x: 0, y: 0 });
+  const [position, setPosition] = useState<{ x: number; y: number } | null>(null);
   const [hasMoved, setHasMoved] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
@@ -88,20 +88,25 @@ export const EricChatbot = () => {
     scrollToBottom();
   }, [messages]);
 
+  // Initialize centered position when chatbox opens
+  useEffect(() => {
+    if (isOpen && !position) {
+      const chatWidth = 380;
+      const chatHeight = 500;
+      setPosition({
+        x: (window.innerWidth - chatWidth) / 2,
+        y: (window.innerHeight - chatHeight) / 2
+      });
+    }
+  }, [isOpen, position]);
+
   // Constrain position within viewport bounds
   const constrainToViewport = (pos: { x: number; y: number }) => {
-    if (!hasMoved) return pos;
+    const chatWidth = 380;
+    const chatHeight = 500;
 
-    const currentRef = isOpen ? chatRef.current : floatingRef.current;
-    
-    if (!currentRef) return pos;
-
-    // Calculate dimensions
-    const width = currentRef.offsetWidth || (isOpen ? 380 : 112);
-    const height = currentRef.offsetHeight || (isOpen ? 500 : 112);
-
-    const maxX = window.innerWidth - width;
-    const maxY = window.innerHeight - height;
+    const maxX = window.innerWidth - chatWidth;
+    const maxY = window.innerHeight - chatHeight;
 
     return {
       x: Math.max(0, Math.min(pos.x, maxX)),
@@ -109,24 +114,23 @@ export const EricChatbot = () => {
     };
   };
 
-  // Handle window resize to keep Eric in viewport
+  // Handle window resize to keep chatbox in viewport
   useEffect(() => {
-    if (!hasMoved) return;
+    if (!position) return;
 
     const handleResize = () => {
-      setPosition(prev => constrainToViewport(prev));
+      setPosition(prev => prev ? constrainToViewport(prev) : null);
     };
 
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
-  }, [hasMoved, isOpen]);
+  }, [position]);
 
   // Constrain position when chatbox opens to prevent cutoff
   useEffect(() => {
-    if (isOpen && hasMoved) {
-      // Small delay to ensure refs have updated dimensions
+    if (isOpen && position) {
       setTimeout(() => {
-        setPosition(prev => constrainToViewport(prev));
+        setPosition(prev => prev ? constrainToViewport(prev) : null);
       }, 0);
     }
   }, [isOpen]);
@@ -261,14 +265,10 @@ export const EricChatbot = () => {
         
         // Initialize drag offset from current element position
         const currentRef = isOpen ? chatRef.current : floatingRef.current;
-        if (currentRef) {
-          const rect = currentRef.getBoundingClientRect();
-          if (!hasMoved) {
-            setPosition({ x: rect.left, y: rect.top });
-          }
+        if (currentRef && position) {
           setDragStart({
-            x: e.clientX - (hasMoved ? position.x : rect.left),
-            y: e.clientY - (hasMoved ? position.y : rect.top)
+            x: e.clientX - position.x,
+            y: e.clientY - position.y
           });
         }
         return;
@@ -279,8 +279,8 @@ export const EricChatbot = () => {
       
       // Get the current ref dimensions
       const currentRef = isOpen ? chatRef.current : floatingRef.current;
-      const width = currentRef?.offsetWidth || 0;
-      const height = currentRef?.offsetHeight || 0;
+      const width = currentRef?.offsetWidth || 380;
+      const height = currentRef?.offsetHeight || 500;
       
       // Keep within viewport bounds
       const maxX = window.innerWidth - width;
@@ -316,14 +316,10 @@ export const EricChatbot = () => {
         
         // Initialize drag offset from current element position
         const currentRef = isOpen ? chatRef.current : floatingRef.current;
-        if (currentRef) {
-          const rect = currentRef.getBoundingClientRect();
-          if (!hasMoved) {
-            setPosition({ x: rect.left, y: rect.top });
-          }
+        if (currentRef && position) {
           setDragStart({
-            x: touch.clientX - (hasMoved ? position.x : rect.left),
-            y: touch.clientY - (hasMoved ? position.y : rect.top)
+            x: touch.clientX - position.x,
+            y: touch.clientY - position.y
           });
         }
         return;
@@ -334,8 +330,8 @@ export const EricChatbot = () => {
       
       // Get the current ref dimensions
       const currentRef = isOpen ? chatRef.current : floatingRef.current;
-      const width = currentRef?.offsetWidth || 0;
-      const height = currentRef?.offsetHeight || 0;
+      const width = currentRef?.offsetWidth || 380;
+      const height = currentRef?.offsetHeight || 500;
       
       // Keep within viewport bounds
       const maxX = window.innerWidth - width;
@@ -376,24 +372,14 @@ export const EricChatbot = () => {
         /* Floating Character when closed */
         <div 
           ref={floatingRef}
-          className={hasMoved ? "" : "eric-floating-character"}
-          style={hasMoved ? {
-            position: 'fixed',
-            left: `${position.x}px`,
-            top: `${position.y}px`,
-            zIndex: 1000,
-            width: '7rem',
-            cursor: isDragging ? 'grabbing' : 'pointer',
-            userSelect: 'none',
-            transition: isDragging ? 'none' : 'transform 0.3s'
-          } : {
+          className="eric-floating-character"
+          style={{
             cursor: isDragging ? 'grabbing' : 'pointer',
             userSelect: 'none'
           }}
           onMouseDown={handleMouseDown}
           onTouchStart={handleTouchStart}
           onClick={(e) => {
-            // Only open if user didn't actually drag
             if (!hasActuallyDragged) {
               setIsOpen(true);
             }
@@ -417,27 +403,16 @@ export const EricChatbot = () => {
           {/* Eric Picture at top right of chatbox */}
           <div 
             ref={floatingRef}
-            className={hasMoved ? "" : "eric-floating-character"}
-            style={hasMoved ? {
+            style={position ? {
               position: 'fixed',
-              left: `${position.x + 280}px`,
-              top: `${position.y + 10}px`,
+              left: `${position.x + 300}px`,
+              top: `${position.y + 15}px`,
               zIndex: 1002,
               width: '4.5rem',
-              cursor: isDragging ? 'grabbing' : 'pointer',
-              userSelect: 'none',
-              transition: isDragging ? 'none' : 'all 0.3s'
+              pointerEvents: 'none'
             } : {
-              position: 'absolute',
-              right: '40px',
-              top: '-50px',
-              width: '5rem',
-              cursor: isDragging ? 'grabbing' : 'pointer',
-              userSelect: 'none',
-              zIndex: 1002
+              display: 'none'
             }}
-            onMouseDown={handleMouseDown}
-            onTouchStart={handleTouchStart}
           >
             <img 
               src={ericAvatar} 
@@ -451,24 +426,23 @@ export const EricChatbot = () => {
 
           <div 
             ref={chatRef}
-            className={hasMoved ? "" : "eric-chat-interface"}
-            style={hasMoved ? {
+            style={position ? {
               position: 'fixed',
               left: `${position.x}px`,
               top: `${position.y}px`,
               zIndex: 1001,
               width: '380px',
-              maxHeight: 'calc(100vh - 280px)',
+              maxHeight: 'calc(100vh - 40px)',
               cursor: isDragging ? 'grabbing' : 'default',
               userSelect: 'none',
               display: 'flex',
               flexDirection: 'column',
-              background: 'transparent',
+              background: 'hsl(var(--card))',
               borderRadius: '1.5rem',
-              padding: '1.25rem'
+              padding: '1.25rem',
+              boxShadow: '0 10px 40px rgba(0,0,0,0.2)'
             } : {
-              cursor: isDragging ? 'grabbing' : 'default',
-              userSelect: 'none'
+              display: 'none'
             }}
             onMouseDown={handleMouseDown}
             onTouchStart={handleTouchStart}
