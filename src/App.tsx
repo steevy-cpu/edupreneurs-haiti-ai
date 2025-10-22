@@ -24,6 +24,8 @@ const SciencesCourse = lazy(() => import("./pages/SciencesCourse"));
 const SciencesLesson = lazy(() => import("./pages/SciencesLesson"));
 const AnglaisCourse = lazy(() => import("./pages/AnglaisCourse"));
 const AnglaisLesson = lazy(() => import("./pages/AnglaisLesson"));
+const EspagnolCourse = lazy(() => import("./pages/EspagnolCourse"));
+const EspagnolLesson = lazy(() => import("./pages/EspagnolLesson"));
 const Matieres = lazy(() => import("./pages/Matieres"));
 const Resources = lazy(() => import("./pages/Resources"));
 const Affiliations = lazy(() => import("./pages/Affiliations"));
@@ -91,6 +93,8 @@ const App = () => (
               <Route path="/sciences-lesson/:topicId" element={<Layout><SciencesLesson /></Layout>} />
               <Route path="/anglais-course" element={<AnglaisCourse />} />
               <Route path="/anglais-lesson/:topicId" element={<Layout><AnglaisLesson /></Layout>} />
+              <Route path="/espagnol-course" element={<EspagnolCourse />} />
+              <Route path="/espagnol-lesson/:topicId" element={<Layout><EspagnolLesson /></Layout>} />
               <Route path="/affiliations" element={<Layout><Affiliations /></Layout>} />
               <Route path="/leaderboard" element={<Layout><Leaderboard /></Layout>} />
               <Route path="/settings" element={<Layout><Settings /></Layout>} />

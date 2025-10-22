@@ -78,9 +78,18 @@ const subjects: Subject[] = [
     title: "Anglais",
     description: "Vocabulaire, grammaire et conversation en anglais",
     icon: Languages,
-    lessons: 22,
-    exercises: 85,
+    lessons: 23,
+    exercises: 90,
     color: "from-cyan-500 to-cyan-600"
+  },
+  {
+    id: "espagnol",
+    title: "Espagnol",
+    description: "Cours d'espagnol selon le programme MENFP",
+    icon: Globe,
+    lessons: 23,
+    exercises: 85,
+    color: "from-rose-500 to-rose-600"
   },
   {
     id: "creole",
@@ -265,7 +274,7 @@ export default function Matieres() {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mb-8">
           {subjects.map((subject, index) => {
             const IconComponent = subject.icon;
-            const hasContent = subject.id === 'mathematiques' || subject.id === 'sciences' || subject.id === 'anglais';
+            const hasContent = subject.id === 'mathematiques' || subject.id === 'sciences' || subject.id === 'anglais' || subject.id === 'espagnol';
             
             return (
               <Card
@@ -277,6 +286,8 @@ export default function Matieres() {
                       ? '/math-course' 
                       : subject.id === 'anglais'
                       ? '/anglais-course'
+                      : subject.id === 'espagnol'
+                      ? '/espagnol-course'
                       : '/sciences-course';
                     navigate(courseRoute);
                   }
@@ -315,6 +326,8 @@ export default function Matieres() {
                         ? '/math-course' 
                         : subject.id === 'anglais'
                         ? '/anglais-course'
+                        : subject.id === 'espagnol'
+                        ? '/espagnol-course'
                         : '/sciences-course';
                       navigate(courseRoute);
                     }}
