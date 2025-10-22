@@ -4,9 +4,10 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
-import { History, User, Clock } from "lucide-react";
+import { History, User, Clock, Wifi } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { fr } from "date-fns/locale";
+import { useRealtimeSubscription } from "@/hooks/useRealtimeSubscription";
 
 interface ChangeLogProps {
   selectedLesson: any;
@@ -15,6 +16,25 @@ interface ChangeLogProps {
 export const ChangeLog = ({ selectedLesson }: ChangeLogProps) => {
   const [changes, setChanges] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [isRealtime, setIsRealtime] = useState(false);
+
+  // Subscribe to realtime changes
+  useRealtimeSubscription({
+    table: 'content_change_log',
+    event: 'INSERT',
+    filter: selectedLesson ? `lesson_id=eq.${selectedLesson.id}` : undefined,
+    enabled: !!selectedLesson,
+    callback: (payload) => {
+      console.log('📋 New change received:', payload);
+      setIsRealtime(true);
+      
+      // Add the new change to the list
+      setChanges((prev) => [payload.new, ...prev]);
+      
+      // Reset realtime indicator after animation
+      setTimeout(() => setIsRealtime(false), 2000);
+    },
+  });
 
   useEffect(() => {
     if (selectedLesson) {
@@ -96,6 +116,12 @@ export const ChangeLog = ({ selectedLesson }: ChangeLogProps) => {
         <CardTitle className="flex items-center gap-2">
           <History className="h-5 w-5" />
           Historique des modifications
+          {isRealtime && (
+            <Badge variant="secondary" className="ml-auto animate-pulse">
+              <Wifi className="mr-1 h-3 w-3" />
+              Mise à jour en temps réel
+            </Badge>
+          )}
         </CardTitle>
         <p className="text-sm text-muted-foreground">
           Toutes les modifications apportées à cette leçon

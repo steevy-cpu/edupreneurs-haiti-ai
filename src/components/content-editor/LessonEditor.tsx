@@ -7,8 +7,12 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Badge } from "@/components/ui/badge";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import { toast } from "sonner";
-import { Save, Eye, FileText } from "lucide-react";
+import { Save, Eye, FileText, Users, AlertTriangle } from "lucide-react";
+import { useContentEditorRealtime } from "@/hooks/useContentEditorRealtime";
 
 interface LessonEditorProps {
   selectedLesson: any;
@@ -28,6 +32,20 @@ export const LessonEditor = ({ selectedLesson, onLessonUpdate }: LessonEditorPro
   });
   const [isSaving, setIsSaving] = useState(false);
   const [activeTab, setActiveTab] = useState("edit");
+  const [currentUserId, setCurrentUserId] = useState<string>();
+
+  // Get realtime collaboration features
+  const { activeEditors, hasConflict } = useContentEditorRealtime(
+    currentUserId,
+    selectedLesson?.id
+  );
+
+  // Get current user
+  useEffect(() => {
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      if (user) setCurrentUserId(user.id);
+    });
+  }, []);
 
   useEffect(() => {
     if (selectedLesson) {
@@ -113,24 +131,60 @@ export const LessonEditor = ({ selectedLesson, onLessonUpdate }: LessonEditorPro
   return (
     <Card>
       <CardHeader>
-        <div className="flex items-center justify-between">
-          <CardTitle className="flex items-center gap-2">
-            <FileText className="h-5 w-5" />
-            Éditeur de Leçon
-          </CardTitle>
-          <div className="flex items-center gap-2">
-            <Switch
-              checked={lessonData.is_published}
-              onCheckedChange={(checked) =>
-                setLessonData({ ...lessonData, is_published: checked })
-              }
-            />
-            <span className="text-sm">Publié</span>
-            <Button onClick={handleSave} disabled={isSaving}>
-              <Save className="mr-2 h-4 w-4" />
-              {isSaving ? "Enregistrement..." : "Enregistrer"}
-            </Button>
+        <div className="flex flex-col gap-4">
+          <div className="flex items-center justify-between">
+            <CardTitle className="flex items-center gap-2">
+              <FileText className="h-5 w-5" />
+              Éditeur de Leçon
+            </CardTitle>
+            <div className="flex items-center gap-2">
+              <Switch
+                checked={lessonData.is_published}
+                onCheckedChange={(checked) =>
+                  setLessonData({ ...lessonData, is_published: checked })
+                }
+              />
+              <span className="text-sm">Publié</span>
+              <Button onClick={handleSave} disabled={isSaving}>
+                <Save className="mr-2 h-4 w-4" />
+                {isSaving ? "Enregistrement..." : "Enregistrer"}
+              </Button>
+            </div>
           </div>
+
+          {/* Active Editors Display */}
+          {activeEditors.length > 0 && (
+            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+              <Users className="h-4 w-4" />
+              <span>Éditeurs actifs:</span>
+              <div className="flex -space-x-2">
+                {activeEditors.slice(0, 3).map((editor) => (
+                  <Avatar key={editor.user_id} className="h-6 w-6 border-2 border-background">
+                    <AvatarImage src={editor.avatar_url} />
+                    <AvatarFallback className="text-xs">
+                      {editor.nickname?.charAt(0).toUpperCase()}
+                    </AvatarFallback>
+                  </Avatar>
+                ))}
+              </div>
+              {activeEditors.length > 3 && (
+                <Badge variant="secondary" className="text-xs">
+                  +{activeEditors.length - 3}
+                </Badge>
+              )}
+            </div>
+          )}
+
+          {/* Conflict Warning */}
+          {hasConflict && (
+            <Alert variant="destructive">
+              <AlertTriangle className="h-4 w-4" />
+              <AlertDescription>
+                Un autre éditeur modifie actuellement cette leçon. Vos modifications pourraient
+                entrer en conflit.
+              </AlertDescription>
+            </Alert>
+          )}
         </div>
       </CardHeader>
       <CardContent>
