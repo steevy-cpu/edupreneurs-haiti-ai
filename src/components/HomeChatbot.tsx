@@ -97,7 +97,6 @@ export const HomeChatbot = () => {
     if (!userMessage) return;
 
     setInput("");
-    setShowSuggestions(false);
     
     setMessages(prev => [...prev, { content: userMessage, sender: "user" }]);
     setIsTyping(true);
@@ -385,7 +384,7 @@ export const HomeChatbot = () => {
               </div>
             )}
             
-            {showSuggestions && messages.length === 1 && (
+            {showSuggestions && messages[messages.length - 1]?.sender === "eric" && (
               <div className="flex flex-col gap-2 mt-4 px-2">
                 {faqSuggestions.map((suggestion, index) => (
                   <Button
