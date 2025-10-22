@@ -39,6 +39,7 @@ const Dashboard = () => {
   const [goldEarned, setGoldEarned] = useState<number>(0);
 
   const [currentUserId, setCurrentUserId] = useState<string>('');
+  const [isContentEditor, setIsContentEditor] = useState(false);
   
   // PWA Install hook
   const { showPrompt, isIOS, installApp, dismissPrompt } = usePWAInstall();
@@ -47,6 +48,7 @@ const Dashboard = () => {
     fetchUserData();
     fetchRecentNotes();
     fetchGoldEarned();
+    checkContentEditorAccess();
     
     // Get current user ID for notification dialog
     supabase.auth.getUser().then(({ data: { user } }) => {
@@ -55,6 +57,19 @@ const Dashboard = () => {
       }
     });
   }, []);
+
+  const checkContentEditorAccess = async () => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+
+    const { data: editorRole } = await supabase
+      .from('content_editor_roles')
+      .select('role')
+      .eq('user_id', user.id)
+      .single();
+
+    setIsContentEditor(editorRole && ['admin', 'editor'].includes(editorRole.role));
+  };
 
   const fetchGoldEarned = async () => {
     const { data: { user } } = await supabase.auth.getUser();
@@ -169,6 +184,30 @@ const Dashboard = () => {
             </p>
           </div>
         </div>
+
+        {/* Content Editor Access (Only for editors/admins) */}
+        {isContentEditor && (
+          <Card className="border-2 border-primary bg-gradient-to-br from-primary/5 to-purple-500/5 rounded-xl mb-4">
+            <CardContent className="p-4 flex items-center gap-4">
+              <div className="flex-shrink-0 text-4xl">✏️</div>
+              <div className="flex-1">
+                <h3 className="font-bold text-lg mb-1">
+                  Éditeur de Contenu
+                  <span className="ml-2 text-xs bg-primary text-primary-foreground px-2 py-1 rounded-full">ÉDITEUR</span>
+                </h3>
+                <p className="text-sm text-muted-foreground mb-3">
+                  Créez et gérez le contenu des cours avec l'assistance de l'IA
+                </p>
+                <Button 
+                  onClick={() => navigate("/content-editor")}
+                  className="bg-gradient-to-r from-primary to-purple-500 hover:opacity-90"
+                >
+                  Accéder à l'éditeur →
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        )}
 
         {/* TEST: Passion Discovery Section */}
         <Card className="border-2 border-purple-500 bg-gradient-to-br from-purple-50/50 to-pink-50/50 dark:from-purple-950/20 dark:to-pink-950/20 rounded-xl mb-4">

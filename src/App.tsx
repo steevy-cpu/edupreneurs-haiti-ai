@@ -45,6 +45,7 @@ const UploadEmailAssets = lazy(() => import("./pages/UploadEmailAssets"));
 const CustomizeAI = lazy(() => import("./pages/CustomizeAI"));
 const PassionDiscovery = lazy(() => import("./pages/PassionDiscovery"));
 const PassionDiscoveryTest = lazy(() => import("./pages/PassionDiscoveryTest"));
+const ContentEditor = lazy(() => import("./pages/ContentEditor"));
 
 // Loading component for suspense fallback
 const PageLoader = () => (
@@ -98,6 +99,7 @@ const App = () => (
               <Route path="/notification-settings" element={<NotificationSettings />} />
           <Route path="/passion-discovery" element={<PassionDiscovery />} />
           <Route path="/passion-test" element={<PassionDiscoveryTest />} />
+          <Route path="/content-editor" element={<Layout><ContentEditor /></Layout>} />
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />
               </Routes>
