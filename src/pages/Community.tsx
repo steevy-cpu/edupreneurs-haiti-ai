@@ -2033,9 +2033,9 @@ const Community = () => {
         </ScrollArea>
       </div>
 
-      {/* Fixed Header - Separate from conversation content */}
+      {/* Floating Header Banner - Always on top */}
       {selectedConversation && (
-        <div className="fixed top-0 left-0 right-0 md:relative md:top-auto md:left-auto md:right-auto border-b border-border/50 bg-background p-4 flex items-center gap-3 shrink-0 z-[9999] h-[60px] w-full">
+        <div className="fixed top-0 left-0 right-0 border-b border-border/50 bg-background/95 backdrop-blur-md p-4 flex items-center gap-3 z-[9999] h-[60px] shadow-sm md:relative md:bg-background md:backdrop-blur-none">
           <Button
             size="icon"
             variant="ghost"
@@ -2156,8 +2156,9 @@ const Community = () => {
         </div>
       )}
 
-      {/* Messages View */}
-      <div className={`${selectedConversation ? "fixed top-[60px] left-0 right-0 bottom-0 md:relative md:top-auto md:left-auto md:right-auto md:bottom-auto md:flex-1" : "hidden md:block md:flex-1"} bg-background z-30 md:z-auto md:flex md:flex-col`}>
+      {/* Messages View with padding for floating header */}
+      <div className={`${selectedConversation ? "block" : "hidden md:block"} md:flex-1 bg-background md:flex md:flex-col`}>
+        <div className={`${selectedConversation ? "pt-[60px] min-h-screen" : ""} md:pt-0 md:min-h-0 flex flex-col h-full`}>
         {selectedConversation ? (
           <>
             {/* Eric Help Banner for Group Chats */}
@@ -2743,6 +2744,7 @@ const Community = () => {
             <p className="text-muted-foreground">Sélectionnez une conversation</p>
           </div>
         )}
+        </div>
       </div>
       
       {/* Create Group Dialog */}
