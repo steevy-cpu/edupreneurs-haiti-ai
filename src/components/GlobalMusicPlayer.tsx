@@ -61,18 +61,47 @@ export const GlobalMusicPlayer = () => {
       setPosition({ x: newX, y: newY });
     };
 
+    const handleTouchMove = (e: TouchEvent) => {
+      if (!isDragging) return;
+      
+      setHasMoved(true);
+      
+      const touch = e.touches[0];
+      // Calculate new position
+      let newX = touch.clientX - dragOffset.x;
+      let newY = touch.clientY - dragOffset.y;
+      
+      // Get player dimensions
+      const playerWidth = playerRef.current?.offsetWidth || 0;
+      const playerHeight = playerRef.current?.offsetHeight || 0;
+      
+      // Constrain to screen boundaries
+      newX = Math.max(0, Math.min(newX, window.innerWidth - playerWidth));
+      newY = Math.max(0, Math.min(newY, window.innerHeight - playerHeight));
+      
+      setPosition({ x: newX, y: newY });
+    };
+
     const handleMouseUp = () => {
+      setIsDragging(false);
+    };
+
+    const handleTouchEnd = () => {
       setIsDragging(false);
     };
 
     if (isDragging) {
       document.addEventListener("mousemove", handleMouseMove);
       document.addEventListener("mouseup", handleMouseUp);
+      document.addEventListener("touchmove", handleTouchMove);
+      document.addEventListener("touchend", handleTouchEnd);
     }
 
     return () => {
       document.removeEventListener("mousemove", handleMouseMove);
       document.removeEventListener("mouseup", handleMouseUp);
+      document.removeEventListener("touchmove", handleTouchMove);
+      document.removeEventListener("touchend", handleTouchEnd);
     };
   }, [isDragging, dragOffset]);
 
@@ -83,6 +112,19 @@ export const GlobalMusicPlayer = () => {
     setDragOffset({
       x: e.clientX - rect.left,
       y: e.clientY - rect.top,
+    });
+    setHasMoved(false);
+    setIsDragging(true);
+  };
+
+  const handleTouchStart = (e: React.TouchEvent) => {
+    if (!playerRef.current) return;
+    
+    const touch = e.touches[0];
+    const rect = playerRef.current.getBoundingClientRect();
+    setDragOffset({
+      x: touch.clientX - rect.left,
+      y: touch.clientY - rect.top,
     });
     setHasMoved(false);
     setIsDragging(true);
@@ -147,6 +189,7 @@ export const GlobalMusicPlayer = () => {
           bottom: position.y === 0 ? '24px' : 'auto',
         }}
         onMouseDown={handleMouseDown}
+        onTouchStart={handleTouchStart}
       >
         {minimized ? (
           <Button
