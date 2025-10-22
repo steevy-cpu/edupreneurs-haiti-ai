@@ -2034,11 +2034,11 @@ const Community = () => {
       </div>
 
       {/* Messages View */}
-      <div className={`${selectedConversation ? "fixed inset-0 md:relative md:flex-1" : "hidden md:block md:flex-1"} flex flex-col bg-background z-40 md:z-auto`}>
+      <div className={`${selectedConversation ? "fixed inset-0 md:relative md:flex-1" : "hidden md:block md:flex-1"} flex flex-col bg-background z-40 md:z-auto h-[100dvh] md:h-auto`}>
         {selectedConversation ? (
           <>
             {/* Header */}
-            <div className="fixed md:relative top-0 left-0 right-0 border-b border-border/50 bg-background/95 backdrop-blur-sm p-4 flex items-center gap-3 shrink-0 z-50 h-[60px]">
+            <div className="sticky md:relative top-0 left-0 right-0 border-b border-border/50 bg-background backdrop-blur-sm p-4 flex items-center gap-3 shrink-0 z-50 h-[60px]">
               <Button
                 size="icon"
                 variant="ghost"
@@ -2183,7 +2183,7 @@ const Community = () => {
             })()}
 
             {/* Messages */}
-            <div className="flex-1 overflow-y-auto overflow-x-hidden p-4 min-h-0 pt-[60px] md:pt-2 pb-[80px] md:pb-2">
+            <div className="flex-1 overflow-y-auto overflow-x-hidden p-4 min-h-0">
               <div className="space-y-4 pb-4 max-w-full">
                 {messages.map((message) => {
                   const isOwn = message.sender_id === user?.id;
@@ -2618,7 +2618,7 @@ const Community = () => {
             </div>
 
             {/* Message Input */}
-            <div className="fixed md:relative bottom-0 left-0 right-0 border-t border-border/50 p-2 sm:p-4 bg-background/95 backdrop-blur-sm shrink-0 z-50 safe-bottom">
+            <div className="sticky md:relative bottom-0 left-0 right-0 border-t border-border/50 p-4 bg-background backdrop-blur-sm shrink-0 z-50">
               {replyingTo && (
                 <div className="mb-2 px-3 py-2 bg-muted/50 rounded-lg border border-border/30 flex items-start justify-between max-w-full overflow-hidden">
                   <div className="flex-1 min-w-0">
@@ -2660,16 +2660,16 @@ const Community = () => {
                 </div>
               )}
 
-              <div className="flex gap-1.5 sm:gap-2 items-end">
+              <div className="flex gap-2 items-end">
                 <Popover open={showEmojiPicker} onOpenChange={setShowEmojiPicker}>
                   <PopoverTrigger asChild>
                     <Button
                       type="button"
                       variant="ghost"
                       size="icon"
-                      className="shrink-0 h-8 w-8 sm:h-10 sm:w-10"
+                      className="shrink-0 h-10 w-10"
                     >
-                      <Smile size={18} className="sm:w-5 sm:h-5" />
+                      <Smile size={20} />
                     </Button>
                   </PopoverTrigger>
                   <PopoverContent className="w-full p-0 border-0" align="start">
@@ -2696,11 +2696,11 @@ const Community = () => {
                   type="button"
                   variant="ghost"
                   size="icon"
-                  className="shrink-0 h-8 w-8 sm:h-10 sm:w-10"
+                  className="shrink-0 h-10 w-10"
                   onClick={() => document.getElementById('media-upload')?.click()}
                   title="Joindre une image ou vidéo"
                 >
-                  <ImageIcon size={18} className="sm:w-5 sm:h-5" />
+                  <ImageIcon size={20} />
                 </Button>
 
                 <Textarea
@@ -2713,7 +2713,7 @@ const Community = () => {
                       sendMessage();
                     }
                   }}
-                  className="text-sm sm:text-base resize-none min-h-[40px] max-h-[120px] overflow-y-auto"
+                  className="text-base resize-none min-h-[40px] max-h-[120px] overflow-y-auto"
                   rows={1}
                   style={{
                     height: 'auto',
@@ -2729,9 +2729,9 @@ const Community = () => {
                   size="icon"
                   onClick={sendMessage}
                   disabled={(!newMessage.trim() && !selectedMediaFile) || isSending}
-                  className="shrink-0 h-8 w-8 sm:h-10 sm:w-10"
+                  className="shrink-0 h-10 w-10"
                 >
-                  <Send size={18} className="sm:w-5 sm:h-5" />
+                  <Send size={20} />
                 </Button>
               </div>
             </div>
