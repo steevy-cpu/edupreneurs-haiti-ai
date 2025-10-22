@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { X, Send, Volume2 } from "lucide-react";
+import { X, Send } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import ericStudentDesk from "@/assets/eric-student-desk.png";
@@ -91,22 +91,6 @@ export const HomeChatbot = () => {
       setPosition(prev => constrainToViewport(prev));
     }
   }, [isOpen]);
-
-  const speakMessage = (text: string, index: number) => {
-    if (isSpeaking === index) {
-      window.speechSynthesis.cancel();
-      setIsSpeaking(null);
-      return;
-    }
-
-    const utterance = new SpeechSynthesisUtterance(text);
-    utterance.lang = "fr-FR";
-    utterance.rate = 0.9;
-    utterance.onend = () => setIsSpeaking(null);
-    
-    setIsSpeaking(index);
-    window.speechSynthesis.speak(utterance);
-  };
 
   const sendMessage = async (messageText?: string) => {
     const userMessage = messageText || input.trim();
@@ -393,19 +377,6 @@ export const HomeChatbot = () => {
                 <div className="eric-message-content">
                   {message.content}
                 </div>
-                {message.sender === "eric" && (
-                  <div className="eric-message-controls">
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className={`eric-message-speaker-btn ${isSpeaking === index ? "speaking" : ""}`}
-                      onClick={() => speakMessage(message.content, index)}
-                      title="Écouter ce message"
-                    >
-                      <Volume2 className="w-4 h-4" />
-                    </Button>
-                  </div>
-                )}
               </div>
             ))}
             {isTyping && (
