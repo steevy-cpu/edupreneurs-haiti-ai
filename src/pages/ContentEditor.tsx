@@ -80,73 +80,83 @@ const ContentEditor = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background to-muted/20 p-4 md:p-6">
-      <div className="max-w-7xl mx-auto">
+    <div className="min-h-screen bg-gradient-to-br from-background to-muted/20">
+      <div className="w-full max-w-[1920px] mx-auto p-3 sm:p-4 md:p-6 lg:p-8">
         {/* Header */}
-        <div className="mb-6">
+        <div className="mb-4 md:mb-6">
           <Button
             variant="ghost"
             onClick={() => navigate("/dashboard")}
-            className="mb-4"
+            className="mb-3 md:mb-4"
+            size="sm"
           >
-            <ArrowLeft className="mr-2 h-4 w-4" />
-            Retour au tableau de bord
+            <ArrowLeft className="mr-2 h-3 w-3 md:h-4 md:w-4" />
+            <span className="text-sm md:text-base">Retour</span>
           </Button>
           
           <Card className="bg-gradient-to-r from-primary/10 to-purple-500/10 border-none">
-            <CardHeader>
-              <div className="flex items-center justify-between">
-                <div>
-                  <CardTitle className="text-2xl md:text-3xl flex items-center gap-3">
-                    <Sparkles className="text-primary" />
-                    Éditeur de Contenu IA
+            <CardHeader className="p-4 md:p-6">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                <div className="flex-1">
+                  <CardTitle className="text-xl sm:text-2xl md:text-3xl flex items-center gap-2 md:gap-3">
+                    <Sparkles className="text-primary h-5 w-5 md:h-6 md:w-6" />
+                    <span className="break-words">Éditeur de Contenu IA</span>
                   </CardTitle>
-                  <p className="text-muted-foreground mt-2">
-                    Créez et gérez le contenu des cours avec l'assistance de l'IA • Rôle: {userRole}
+                  <p className="text-xs sm:text-sm text-muted-foreground mt-2">
+                    Créez et gérez le contenu des cours • Rôle: {userRole}
                   </p>
                 </div>
-                <FileText className="h-16 w-16 text-primary/20" />
+                <FileText className="hidden sm:block h-12 w-12 md:h-16 md:w-16 text-primary/20 flex-shrink-0" />
               </div>
             </CardHeader>
           </Card>
         </div>
 
         {/* Main Content */}
-        <Tabs defaultValue="editor" className="space-y-4">
-          <TabsList className={`grid w-full ${userRole === 'admin' ? 'grid-cols-7' : 'grid-cols-5'}`}>
-            <TabsTrigger value="browser" className="gap-2">
-              <BookOpen className="h-4 w-4" />
-              Parcourir
-            </TabsTrigger>
-            <TabsTrigger value="editor" className="gap-2">
-              <FileText className="h-4 w-4" />
-              Éditeur
-            </TabsTrigger>
-            <TabsTrigger value="workflow" className="gap-2">
-              <GitBranch className="h-4 w-4" />
-              Workflow
-            </TabsTrigger>
-            <TabsTrigger value="versions" className="gap-2">
-              <History className="h-4 w-4" />
-              Versions
-            </TabsTrigger>
-            <TabsTrigger value="history" className="gap-2">
-              <History className="h-4 w-4" />
-              Historique
-            </TabsTrigger>
-            {userRole === 'admin' && (
-              <>
-                <TabsTrigger value="bulk" className="gap-2">
-                  <Package className="h-4 w-4" />
-                  Masse
-                </TabsTrigger>
-                <TabsTrigger value="roles" className="gap-2">
-                  <Shield className="h-4 w-4" />
-                  Rôles
-                </TabsTrigger>
-              </>
-            )}
-          </TabsList>
+        <Tabs defaultValue="editor" className="space-y-3 md:space-y-4">
+          <div className="overflow-x-auto -mx-3 px-3 md:mx-0 md:px-0">
+            <TabsList className={`grid w-full min-w-[600px] md:min-w-0 ${userRole === 'admin' ? 'grid-cols-7' : 'grid-cols-5'}`}>
+              <TabsTrigger value="browser" className="gap-1 md:gap-2 text-xs md:text-sm px-2 md:px-3">
+                <BookOpen className="h-3 w-3 md:h-4 md:w-4" />
+                <span className="hidden sm:inline">Parcourir</span>
+                <span className="sm:hidden">Nav</span>
+              </TabsTrigger>
+              <TabsTrigger value="editor" className="gap-1 md:gap-2 text-xs md:text-sm px-2 md:px-3">
+                <FileText className="h-3 w-3 md:h-4 md:w-4" />
+                <span className="hidden sm:inline">Éditeur</span>
+                <span className="sm:hidden">Édit</span>
+              </TabsTrigger>
+              <TabsTrigger value="workflow" className="gap-1 md:gap-2 text-xs md:text-sm px-2 md:px-3">
+                <GitBranch className="h-3 w-3 md:h-4 md:w-4" />
+                <span className="hidden sm:inline">Workflow</span>
+                <span className="sm:hidden">Flow</span>
+              </TabsTrigger>
+              <TabsTrigger value="versions" className="gap-1 md:gap-2 text-xs md:text-sm px-2 md:px-3">
+                <History className="h-3 w-3 md:h-4 md:w-4" />
+                <span className="hidden sm:inline">Versions</span>
+                <span className="sm:hidden">Ver</span>
+              </TabsTrigger>
+              <TabsTrigger value="history" className="gap-1 md:gap-2 text-xs md:text-sm px-2 md:px-3">
+                <History className="h-3 w-3 md:h-4 md:w-4" />
+                <span className="hidden sm:inline">Historique</span>
+                <span className="sm:hidden">Hist</span>
+              </TabsTrigger>
+              {userRole === 'admin' && (
+                <>
+                  <TabsTrigger value="bulk" className="gap-1 md:gap-2 text-xs md:text-sm px-2 md:px-3">
+                    <Package className="h-3 w-3 md:h-4 md:w-4" />
+                    <span className="hidden sm:inline">Masse</span>
+                    <span className="sm:hidden">Bulk</span>
+                  </TabsTrigger>
+                  <TabsTrigger value="roles" className="gap-1 md:gap-2 text-xs md:text-sm px-2 md:px-3">
+                    <Shield className="h-3 w-3 md:h-4 md:w-4" />
+                    <span className="hidden sm:inline">Rôles</span>
+                    <span className="sm:hidden">Rol</span>
+                  </TabsTrigger>
+                </>
+              )}
+            </TabsList>
+          </div>
 
           <TabsContent value="browser" className="space-y-4">
             <LessonBrowser
@@ -155,18 +165,17 @@ const ContentEditor = () => {
             />
           </TabsContent>
 
-          <TabsContent value="editor" className="space-y-4">
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-              <div className="lg:col-span-2">
+          <TabsContent value="editor" className="space-y-3 md:space-y-4">
+            <div className="grid grid-cols-1 xl:grid-cols-3 gap-3 md:gap-4">
+              <div className="xl:col-span-2 min-w-0">
                 <LessonEditor
                   selectedLesson={selectedLesson}
                   onLessonUpdate={() => {
-                    // Refresh lesson data
                     toast.success("Leçon mise à jour avec succès");
                   }}
                 />
               </div>
-              <div className="lg:col-span-1">
+              <div className="xl:col-span-1 min-w-0">
                 <AIAssistant selectedLesson={selectedLesson} />
               </div>
             </div>
@@ -208,16 +217,21 @@ const ContentEditor = () => {
 
         {/* Data Migration Link for Admins */}
         {userRole === 'admin' && (
-          <Card className="mt-6 border-2 border-dashed border-primary/30">
-            <CardContent className="p-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <h4 className="font-semibold">Migration des données</h4>
-                  <p className="text-sm text-muted-foreground">
+          <Card className="mt-4 md:mt-6 border-2 border-dashed border-primary/30">
+            <CardContent className="p-3 md:p-4">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+                <div className="flex-1">
+                  <h4 className="font-semibold text-sm md:text-base">Migration des données</h4>
+                  <p className="text-xs md:text-sm text-muted-foreground">
                     Migrez le contenu existant vers la base de données
                   </p>
                 </div>
-                <Button variant="outline" onClick={() => navigate("/data-migration")}>
+                <Button 
+                  variant="outline" 
+                  size="sm"
+                  onClick={() => navigate("/data-migration")}
+                  className="w-full sm:w-auto"
+                >
                   Migrer →
                 </Button>
               </div>

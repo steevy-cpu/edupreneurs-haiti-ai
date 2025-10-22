@@ -130,36 +130,43 @@ export const LessonEditor = ({ selectedLesson, onLessonUpdate }: LessonEditorPro
 
   return (
     <Card>
-      <CardHeader>
-        <div className="flex flex-col gap-4">
-          <div className="flex items-center justify-between">
-            <CardTitle className="flex items-center gap-2">
-              <FileText className="h-5 w-5" />
-              Éditeur de Leçon
+      <CardHeader className="p-4 md:p-6">
+        <div className="flex flex-col gap-3 md:gap-4">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+            <CardTitle className="flex items-center gap-2 text-base md:text-lg">
+              <FileText className="h-4 w-4 md:h-5 md:w-5 flex-shrink-0" />
+              <span className="break-words">Éditeur de Leçon</span>
             </CardTitle>
-            <div className="flex items-center gap-2">
-              <Switch
-                checked={lessonData.is_published}
-                onCheckedChange={(checked) =>
-                  setLessonData({ ...lessonData, is_published: checked })
-                }
-              />
-              <span className="text-sm">Publié</span>
-              <Button onClick={handleSave} disabled={isSaving}>
-                <Save className="mr-2 h-4 w-4" />
-                {isSaving ? "Enregistrement..." : "Enregistrer"}
+            <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
+              <div className="flex items-center gap-2">
+                <Switch
+                  checked={lessonData.is_published}
+                  onCheckedChange={(checked) =>
+                    setLessonData({ ...lessonData, is_published: checked })
+                  }
+                />
+                <span className="text-xs md:text-sm whitespace-nowrap">Publié</span>
+              </div>
+              <Button 
+                onClick={handleSave} 
+                disabled={isSaving}
+                size="sm"
+                className="w-full sm:w-auto"
+              >
+                <Save className="mr-2 h-3 w-3 md:h-4 md:w-4" />
+                <span className="text-xs md:text-sm">{isSaving ? "Enregistrement..." : "Enregistrer"}</span>
               </Button>
             </div>
           </div>
 
           {/* Active Editors Display */}
           {activeEditors.length > 0 && (
-            <div className="flex items-center gap-2 text-sm text-muted-foreground">
-              <Users className="h-4 w-4" />
+            <div className="flex flex-wrap items-center gap-2 text-xs md:text-sm text-muted-foreground">
+              <Users className="h-3 w-3 md:h-4 md:w-4 flex-shrink-0" />
               <span>Éditeurs actifs:</span>
               <div className="flex -space-x-2">
                 {activeEditors.slice(0, 3).map((editor) => (
-                  <Avatar key={editor.user_id} className="h-6 w-6 border-2 border-background">
+                  <Avatar key={editor.user_id} className="h-5 w-5 md:h-6 md:w-6 border-2 border-background">
                     <AvatarImage src={editor.avatar_url} />
                     <AvatarFallback className="text-xs">
                       {editor.nickname?.charAt(0).toUpperCase()}
@@ -187,33 +194,34 @@ export const LessonEditor = ({ selectedLesson, onLessonUpdate }: LessonEditorPro
           )}
         </div>
       </CardHeader>
-      <CardContent>
+      <CardContent className="p-3 md:p-6">
         <Tabs value={activeTab} onValueChange={setActiveTab}>
           <TabsList className="grid w-full grid-cols-2">
-            <TabsTrigger value="edit">
-              <FileText className="mr-2 h-4 w-4" />
-              Éditer
+            <TabsTrigger value="edit" className="text-xs md:text-sm">
+              <FileText className="mr-1 md:mr-2 h-3 w-3 md:h-4 md:w-4" />
+              <span>Éditer</span>
             </TabsTrigger>
-            <TabsTrigger value="preview">
-              <Eye className="mr-2 h-4 w-4" />
-              Aperçu
+            <TabsTrigger value="preview" className="text-xs md:text-sm">
+              <Eye className="mr-1 md:mr-2 h-3 w-3 md:h-4 md:w-4" />
+              <span>Aperçu</span>
             </TabsTrigger>
           </TabsList>
 
-          <TabsContent value="edit" className="space-y-4 mt-4">
+          <TabsContent value="edit" className="space-y-3 md:space-y-4 mt-3 md:mt-4">
             <div className="space-y-2">
-              <Label htmlFor="title">Titre de la leçon</Label>
+              <Label htmlFor="title" className="text-xs md:text-sm">Titre de la leçon</Label>
               <Input
                 id="title"
                 value={lessonData.title}
                 onChange={(e) =>
                   setLessonData({ ...lessonData, title: e.target.value })
                 }
+                className="text-sm"
               />
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="objectif">Objectif d'apprentissage</Label>
+              <Label htmlFor="objectif" className="text-xs md:text-sm">Objectif d'apprentissage</Label>
               <Textarea
                 id="objectif"
                 value={lessonData.objectif}
@@ -221,11 +229,12 @@ export const LessonEditor = ({ selectedLesson, onLessonUpdate }: LessonEditorPro
                   setLessonData({ ...lessonData, objectif: e.target.value })
                 }
                 rows={3}
+                className="text-sm"
               />
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="introduction">Introduction</Label>
+              <Label htmlFor="introduction" className="text-xs md:text-sm">Introduction</Label>
               <Textarea
                 id="introduction"
                 value={lessonData.introduction}
@@ -233,11 +242,12 @@ export const LessonEditor = ({ selectedLesson, onLessonUpdate }: LessonEditorPro
                   setLessonData({ ...lessonData, introduction: e.target.value })
                 }
                 rows={4}
+                className="text-sm"
               />
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="contenu">Contenu principal (HTML)</Label>
+              <Label htmlFor="contenu" className="text-xs md:text-sm">Contenu principal (HTML)</Label>
               <Textarea
                 id="contenu"
                 value={lessonData.contenu}
@@ -245,12 +255,12 @@ export const LessonEditor = ({ selectedLesson, onLessonUpdate }: LessonEditorPro
                   setLessonData({ ...lessonData, contenu: e.target.value })
                 }
                 rows={10}
-                className="font-mono text-sm"
+                className="font-mono text-xs md:text-sm"
               />
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="exemples">Exemples et Exercices (HTML)</Label>
+              <Label htmlFor="exemples" className="text-xs md:text-sm">Exemples et Exercices (HTML)</Label>
               <Textarea
                 id="exemples"
                 value={lessonData.exemples_exercices}
@@ -258,14 +268,14 @@ export const LessonEditor = ({ selectedLesson, onLessonUpdate }: LessonEditorPro
                   setLessonData({ ...lessonData, exemples_exercices: e.target.value })
                 }
                 rows={8}
-                className="font-mono text-sm"
+                className="font-mono text-xs md:text-sm"
               />
             </div>
           </TabsContent>
 
-          <TabsContent value="preview" className="mt-4">
-            <div className="prose dark:prose-invert max-w-none">
-              <h1>{lessonData.title}</h1>
+          <TabsContent value="preview" className="mt-3 md:mt-4">
+            <div className="prose prose-sm md:prose dark:prose-invert max-w-none">
+              <h1 className="text-xl md:text-3xl">{lessonData.title}</h1>
               {lessonData.objectif && (
                 <div className="bg-primary/10 p-4 rounded-lg mb-4">
                   <h3 className="mt-0">🎯 Objectif</h3>
