@@ -93,33 +93,19 @@ export const EricChatbot = () => {
     if (!hasMoved) return pos;
 
     const currentRef = isOpen ? chatRef.current : floatingRef.current;
-    const ericRef = floatingRef.current;
     
     if (!currentRef) return pos;
 
     // Calculate dimensions
-    let width = currentRef.offsetWidth || (isOpen ? 380 : 112);
-    let height = currentRef.offsetHeight || (isOpen ? 500 : 112);
-    let minY = 0;
-    
-    // When chatbox is open, ensure Eric (positioned 50px above) isn't cut off at the top
-    if (isOpen && ericRef) {
-      const ericWidth = ericRef.offsetWidth || 80;
-      
-      // Eric is positioned 50px above the chatbox (top: position.y - 50)
-      // So minimum Y position for chatbox should be 50px to keep Eric visible
-      minY = 60; // 50px offset + 10px padding
-      
-      // Ensure Eric's width is also within bounds
-      width = Math.max(width, ericWidth);
-    }
+    const width = currentRef.offsetWidth || (isOpen ? 380 : 112);
+    const height = currentRef.offsetHeight || (isOpen ? 500 : 112);
 
     const maxX = window.innerWidth - width;
     const maxY = window.innerHeight - height;
 
     return {
       x: Math.max(0, Math.min(pos.x, maxX)),
-      y: Math.max(minY, Math.min(pos.y, maxY))
+      y: Math.max(0, Math.min(pos.y, maxY))
     };
   };
 
@@ -434,10 +420,10 @@ export const EricChatbot = () => {
             className={hasMoved ? "" : "eric-floating-character"}
             style={hasMoved ? {
               position: 'fixed',
-              left: `${position.x + 250}px`,
-              top: `${position.y - 50}px`,
+              left: `${position.x + 280}px`,
+              top: `${position.y + 10}px`,
               zIndex: 1002,
-              width: '5rem',
+              width: '4.5rem',
               cursor: isDragging ? 'grabbing' : 'pointer',
               userSelect: 'none',
               transition: isDragging ? 'none' : 'all 0.3s'
