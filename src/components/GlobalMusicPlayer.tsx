@@ -4,7 +4,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Music, Play, Pause, SkipForward, Loader2, Volume2, X } from "lucide-react";
 import { useMusicPlayer } from "@/contexts/MusicPlayerContext";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 
 export const GlobalMusicPlayer = () => {
@@ -21,6 +21,10 @@ export const GlobalMusicPlayer = () => {
   const [open, setOpen] = useState(false);
   const [minimized, setMinimized] = useState(true);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [position, setPosition] = useState({ x: 0, y: 0 });
+  const [isDragging, setIsDragging] = useState(false);
+  const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
+  const playerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     // Check authentication status
@@ -35,6 +39,42 @@ export const GlobalMusicPlayer = () => {
     return () => subscription.unsubscribe();
   }, []);
 
+  useEffect(() => {
+    const handleMouseMove = (e: MouseEvent) => {
+      if (!isDragging) return;
+      
+      setPosition({
+        x: e.clientX - dragOffset.x,
+        y: e.clientY - dragOffset.y,
+      });
+    };
+
+    const handleMouseUp = () => {
+      setIsDragging(false);
+    };
+
+    if (isDragging) {
+      document.addEventListener("mousemove", handleMouseMove);
+      document.addEventListener("mouseup", handleMouseUp);
+    }
+
+    return () => {
+      document.removeEventListener("mousemove", handleMouseMove);
+      document.removeEventListener("mouseup", handleMouseUp);
+    };
+  }, [isDragging, dragOffset]);
+
+  const handleMouseDown = (e: React.MouseEvent) => {
+    if (!playerRef.current) return;
+    
+    const rect = playerRef.current.getBoundingClientRect();
+    setDragOffset({
+      x: e.clientX - rect.left,
+      y: e.clientY - rect.top,
+    });
+    setIsDragging(true);
+  };
+
   // Only show the music player when user is authenticated and there are tracks
   if (!isAuthenticated || tracks.length === 0) return null;
 
@@ -44,7 +84,17 @@ export const GlobalMusicPlayer = () => {
       <div id="global-music-player" style={{ display: "none" }} />
 
       {/* Floating Music Player */}
-      <div className="fixed bottom-6 right-6 z-50">
+      <div 
+        ref={playerRef}
+        className="fixed z-50 cursor-move"
+        style={{
+          left: position.x === 0 ? 'auto' : `${position.x}px`,
+          top: position.y === 0 ? 'auto' : `${position.y}px`,
+          right: position.x === 0 ? '24px' : 'auto',
+          bottom: position.y === 0 ? '24px' : 'auto',
+        }}
+        onMouseDown={handleMouseDown}
+      >
         {minimized ? (
           <Button
             onClick={() => setMinimized(false)}
