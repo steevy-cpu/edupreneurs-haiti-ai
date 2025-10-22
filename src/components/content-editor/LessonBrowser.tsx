@@ -7,6 +7,8 @@ import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { toast } from "sonner";
 import { Search, Plus, Book, FileText } from "lucide-react";
+import { CreateSubjectDialog } from "./CreateSubjectDialog";
+import { CreateLessonDialog } from "./CreateLessonDialog";
 
 interface LessonBrowserProps {
   onSelectLesson: (lesson: any) => void;
@@ -19,6 +21,8 @@ export const LessonBrowser = ({ onSelectLesson, selectedLesson }: LessonBrowserP
   const [selectedSubject, setSelectedSubject] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [isLoading, setIsLoading] = useState(true);
+  const [showCreateSubject, setShowCreateSubject] = useState(false);
+  const [showCreateLesson, setShowCreateLesson] = useState(false);
 
   useEffect(() => {
     fetchSubjects();
@@ -77,7 +81,7 @@ export const LessonBrowser = ({ onSelectLesson, selectedLesson }: LessonBrowserP
               <Book className="h-5 w-5" />
               Matières
             </span>
-            <Button size="sm" variant="ghost">
+            <Button size="sm" variant="ghost" onClick={() => setShowCreateSubject(true)}>
               <Plus className="h-4 w-4" />
             </Button>
           </CardTitle>
@@ -120,7 +124,12 @@ export const LessonBrowser = ({ onSelectLesson, selectedLesson }: LessonBrowserP
               <FileText className="h-5 w-5" />
               Leçons
             </span>
-            <Button size="sm" variant="ghost" disabled={!selectedSubject}>
+            <Button 
+              size="sm" 
+              variant="ghost" 
+              disabled={!selectedSubject}
+              onClick={() => setShowCreateLesson(true)}
+            >
               <Plus className="h-4 w-4" />
             </Button>
           </CardTitle>
@@ -181,6 +190,26 @@ export const LessonBrowser = ({ onSelectLesson, selectedLesson }: LessonBrowserP
           </ScrollArea>
         </CardContent>
       </Card>
+
+      {/* Create Subject Dialog */}
+      <CreateSubjectDialog
+        open={showCreateSubject}
+        onOpenChange={setShowCreateSubject}
+        onSubjectCreated={fetchSubjects}
+      />
+
+      {/* Create Lesson Dialog */}
+      {selectedSubject && (
+        <CreateLessonDialog
+          open={showCreateLesson}
+          onOpenChange={setShowCreateLesson}
+          subjectId={selectedSubject}
+          onLessonCreated={(lesson) => {
+            fetchLessons(selectedSubject);
+            onSelectLesson(lesson);
+          }}
+        />
+      )}
     </div>
   );
 };
