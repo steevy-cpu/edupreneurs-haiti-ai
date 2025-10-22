@@ -207,14 +207,16 @@ export const EricChatbot = () => {
       return;
     }
     
+    if (!position) return;
+    
     // Reset drag flags
     setHasActuallyDragged(false);
     setDragThresholdMet(false);
     
-    // Store the initial click position
+    // Calculate offset from chatbox position (both Eric and chatbox move together)
     setDragStart({
-      x: e.clientX,
-      y: e.clientY
+      x: e.clientX - position.x,
+      y: e.clientY - position.y
     });
     
     setIsDragging(true);
@@ -227,16 +229,18 @@ export const EricChatbot = () => {
       return;
     }
     
+    if (!position) return;
+    
     // Reset drag flags
     setHasActuallyDragged(false);
     setDragThresholdMet(false);
     
     const touch = e.touches[0];
     
-    // Store the initial touch position
+    // Calculate offset from chatbox position (both Eric and chatbox move together)
     setDragStart({
-      x: touch.clientX,
-      y: touch.clientY
+      x: touch.clientX - position.x,
+      y: touch.clientY - position.y
     });
     
     setIsDragging(true);
@@ -247,31 +251,10 @@ export const EricChatbot = () => {
     if (!isDragging) return;
 
     const handleMouseMove = (e: MouseEvent) => {
-      // Calculate distance from initial click position
-      const deltaX = Math.abs(e.clientX - dragStart.x);
-      const deltaY = Math.abs(e.clientY - dragStart.y);
-      const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
-      
-      // Only start dragging if threshold is met
-      if (distance < DRAG_THRESHOLD && !dragThresholdMet) {
-        return;
-      }
-      
-      // Threshold met, initialize position if first drag
       if (!dragThresholdMet) {
         setDragThresholdMet(true);
         setHasActuallyDragged(true);
         setHasMoved(true);
-        
-        // Initialize drag offset from current element position
-        const currentRef = isOpen ? chatRef.current : floatingRef.current;
-        if (currentRef && position) {
-          setDragStart({
-            x: e.clientX - position.x,
-            y: e.clientY - position.y
-          });
-        }
-        return;
       }
       
       const newX = e.clientX - dragStart.x;
@@ -293,38 +276,16 @@ export const EricChatbot = () => {
     };
 
     const handleTouchMove = (e: TouchEvent) => {
-      const touch = e.touches[0];
-      
-      // Calculate distance from initial touch position
-      const deltaX = Math.abs(touch.clientX - dragStart.x);
-      const deltaY = Math.abs(touch.clientY - dragStart.y);
-      const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
-      
-      // Only start dragging if threshold is met
-      if (distance < DRAG_THRESHOLD && !dragThresholdMet) {
-        return;
-      }
-      
       // Prevent scrolling while dragging
       e.preventDefault();
       
-      // Threshold met, initialize position if first drag
       if (!dragThresholdMet) {
         setDragThresholdMet(true);
         setHasActuallyDragged(true);
         setHasMoved(true);
-        
-        // Initialize drag offset from current element position
-        const currentRef = isOpen ? chatRef.current : floatingRef.current;
-        if (currentRef && position) {
-          setDragStart({
-            x: touch.clientX - position.x,
-            y: touch.clientY - position.y
-          });
-        }
-        return;
       }
       
+      const touch = e.touches[0];
       const newX = touch.clientX - dragStart.x;
       const newY = touch.clientY - dragStart.y;
       
