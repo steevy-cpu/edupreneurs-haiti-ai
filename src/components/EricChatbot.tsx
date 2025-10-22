@@ -26,6 +26,8 @@ export const EricChatbot = () => {
   const [isDragging, setIsDragging] = useState(false);
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
   const [hasActuallyDragged, setHasActuallyDragged] = useState(false);
+  const [dragThresholdMet, setDragThresholdMet] = useState(false);
+  const DRAG_THRESHOLD = 5; // pixels
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const floatingRef = useRef<HTMLDivElement>(null);
   const chatRef = useRef<HTMLDivElement>(null);
@@ -215,26 +217,15 @@ export const EricChatbot = () => {
       return;
     }
     
-    // Reset drag flag
+    // Reset drag flags
     setHasActuallyDragged(false);
+    setDragThresholdMet(false);
     
-    // If first drag, initialize position from current element location
-    if (!hasMoved) {
-      const currentRef = isOpen ? chatRef.current : floatingRef.current;
-      if (currentRef) {
-        const rect = currentRef.getBoundingClientRect();
-        setPosition({ x: rect.left, y: rect.top });
-        setDragStart({
-          x: e.clientX - rect.left,
-          y: e.clientY - rect.top
-        });
-      }
-    } else {
-      setDragStart({
-        x: e.clientX - position.x,
-        y: e.clientY - position.y
-      });
-    }
+    // Store the initial click position
+    setDragStart({
+      x: e.clientX,
+      y: e.clientY
+    });
     
     setIsDragging(true);
   };
@@ -246,28 +237,17 @@ export const EricChatbot = () => {
       return;
     }
     
-    // Reset drag flag
+    // Reset drag flags
     setHasActuallyDragged(false);
+    setDragThresholdMet(false);
     
     const touch = e.touches[0];
     
-    // If first drag, initialize position from current element location
-    if (!hasMoved) {
-      const currentRef = isOpen ? chatRef.current : floatingRef.current;
-      if (currentRef) {
-        const rect = currentRef.getBoundingClientRect();
-        setPosition({ x: rect.left, y: rect.top });
-        setDragStart({
-          x: touch.clientX - rect.left,
-          y: touch.clientY - rect.top
-        });
-      }
-    } else {
-      setDragStart({
-        x: touch.clientX - position.x,
-        y: touch.clientY - position.y
-      });
-    }
+    // Store the initial touch position
+    setDragStart({
+      x: touch.clientX,
+      y: touch.clientY
+    });
     
     setIsDragging(true);
   };
@@ -277,9 +257,36 @@ export const EricChatbot = () => {
     if (!isDragging) return;
 
     const handleMouseMove = (e: MouseEvent) => {
-      // Mark that user has actually dragged (moved the mouse)
-      setHasActuallyDragged(true);
-      setHasMoved(true);
+      // Calculate distance from initial click position
+      const deltaX = Math.abs(e.clientX - dragStart.x);
+      const deltaY = Math.abs(e.clientY - dragStart.y);
+      const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
+      
+      // Only start dragging if threshold is met
+      if (distance < DRAG_THRESHOLD && !dragThresholdMet) {
+        return;
+      }
+      
+      // Threshold met, initialize position if first drag
+      if (!dragThresholdMet) {
+        setDragThresholdMet(true);
+        setHasActuallyDragged(true);
+        setHasMoved(true);
+        
+        // Initialize drag offset from current element position
+        const currentRef = isOpen ? chatRef.current : floatingRef.current;
+        if (currentRef) {
+          const rect = currentRef.getBoundingClientRect();
+          if (!hasMoved) {
+            setPosition({ x: rect.left, y: rect.top });
+          }
+          setDragStart({
+            x: e.clientX - (hasMoved ? position.x : rect.left),
+            y: e.clientY - (hasMoved ? position.y : rect.top)
+          });
+        }
+        return;
+      }
       
       const newX = e.clientX - dragStart.x;
       const newY = e.clientY - dragStart.y;
@@ -300,14 +307,42 @@ export const EricChatbot = () => {
     };
 
     const handleTouchMove = (e: TouchEvent) => {
+      const touch = e.touches[0];
+      
+      // Calculate distance from initial touch position
+      const deltaX = Math.abs(touch.clientX - dragStart.x);
+      const deltaY = Math.abs(touch.clientY - dragStart.y);
+      const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
+      
+      // Only start dragging if threshold is met
+      if (distance < DRAG_THRESHOLD && !dragThresholdMet) {
+        return;
+      }
+      
       // Prevent scrolling while dragging
       e.preventDefault();
       
-      // Mark that user has actually dragged
-      setHasActuallyDragged(true);
-      setHasMoved(true);
+      // Threshold met, initialize position if first drag
+      if (!dragThresholdMet) {
+        setDragThresholdMet(true);
+        setHasActuallyDragged(true);
+        setHasMoved(true);
+        
+        // Initialize drag offset from current element position
+        const currentRef = isOpen ? chatRef.current : floatingRef.current;
+        if (currentRef) {
+          const rect = currentRef.getBoundingClientRect();
+          if (!hasMoved) {
+            setPosition({ x: rect.left, y: rect.top });
+          }
+          setDragStart({
+            x: touch.clientX - (hasMoved ? position.x : rect.left),
+            y: touch.clientY - (hasMoved ? position.y : rect.top)
+          });
+        }
+        return;
+      }
       
-      const touch = e.touches[0];
       const newX = touch.clientX - dragStart.x;
       const newY = touch.clientY - dragStart.y;
       
@@ -328,10 +363,12 @@ export const EricChatbot = () => {
 
     const handleMouseUp = () => {
       setIsDragging(false);
+      setDragThresholdMet(false);
     };
 
     const handleTouchEnd = () => {
       setIsDragging(false);
+      setDragThresholdMet(false);
     };
 
     document.addEventListener('mousemove', handleMouseMove);
