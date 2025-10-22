@@ -100,12 +100,12 @@ export const LessonBrowser = ({ onSelectLesson, selectedLesson }: LessonBrowserP
                   <Button
                     key={subject.id}
                     variant={selectedSubject === subject.id ? "default" : "ghost"}
-                    className="w-full justify-start"
+                    className="w-full justify-start overflow-hidden"
                     onClick={() => setSelectedSubject(subject.id)}
                   >
-                    <span className="mr-2">{subject.icon_name || "📚"}</span>
-                    {subject.name}
-                    <Badge variant="secondary" className="ml-auto">
+                    <span className="mr-2 flex-shrink-0">{subject.icon_name || "📚"}</span>
+                    <span className="truncate flex-1 text-left">{subject.name}</span>
+                    <Badge variant="secondary" className="ml-2 flex-shrink-0">
                       {subject.lesson_count || 0}
                     </Badge>
                   </Button>
