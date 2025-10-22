@@ -265,7 +265,7 @@ export default function Matieres() {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mb-8">
           {subjects.map((subject, index) => {
             const IconComponent = subject.icon;
-            const hasContent = subject.id === 'mathematiques' || subject.id === 'sciences';
+            const hasContent = subject.id === 'mathematiques' || subject.id === 'sciences' || subject.id === 'anglais';
             
             return (
               <Card
@@ -275,6 +275,8 @@ export default function Matieres() {
                   if (hasContent) {
                     const courseRoute = subject.id === 'mathematiques' 
                       ? '/math-course' 
+                      : subject.id === 'anglais'
+                      ? '/anglais-course'
                       : '/sciences-course';
                     navigate(courseRoute);
                   }
@@ -311,6 +313,8 @@ export default function Matieres() {
                       e.stopPropagation();
                       const courseRoute = subject.id === 'mathematiques' 
                         ? '/math-course' 
+                        : subject.id === 'anglais'
+                        ? '/anglais-course'
                         : '/sciences-course';
                       navigate(courseRoute);
                     }}
