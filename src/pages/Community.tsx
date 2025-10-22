@@ -2652,6 +2652,7 @@ const Community = () => {
                 <div ref={messagesEndRef} />
               </div>
             </div>
+            </div>
 
             {/* Composer - Sticks to bottom and rides keyboard */}
             <div className="border-t border-border/50 bg-background/95 backdrop-blur-md shrink-0" style={{
@@ -2777,6 +2778,7 @@ const Community = () => {
                 </Button>
               </div>
             </div>
+          </div>
           </div>
         ) : (
           <div className="hidden md:flex items-center justify-center h-full">

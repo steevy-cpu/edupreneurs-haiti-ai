@@ -52,6 +52,11 @@ All colors MUST be HSL.
     --shadow-lg: 0 10px 30px rgba(0, 0, 0, 0.15);
     
     --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+
+    /* Keyboard tracking for mobile chat */
+    --kb: 0px;
+    --safe-bottom: env(safe-area-inset-bottom, 0px);
+    --chat-header-h: 60px;
   }
 
   .dark {
