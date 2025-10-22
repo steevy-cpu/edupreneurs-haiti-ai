@@ -2038,7 +2038,7 @@ const Community = () => {
         {selectedConversation ? (
           <>
             {/* Header */}
-            <div className="fixed md:relative top-0 left-0 right-0 md:top-auto md:left-auto md:right-auto border-b border-border/50 bg-background backdrop-blur-sm p-4 flex items-center gap-3 shrink-0 z-50 h-[60px]">
+            <div className="fixed md:relative top-0 left-0 right-0 md:top-auto md:left-auto md:right-auto border-b border-border/50 bg-background p-4 flex items-center gap-3 shrink-0 z-[9999] h-[60px] w-full">
               <Button
                 size="icon"
                 variant="ghost"
