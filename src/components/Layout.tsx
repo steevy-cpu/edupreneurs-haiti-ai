@@ -1,5 +1,5 @@
 import { useState, useEffect, ReactNode } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useNavigate, useLocation, Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import {
@@ -352,8 +352,8 @@ export const Layout = ({ children }: LayoutProps) => {
 
         {/* Navigation */}
         <nav className="py-3 sm:py-4 lg:py-5" data-tour="nav-section">
-          <a 
-            href="/dashboard" 
+          <Link 
+            to="/dashboard" 
             className={`flex items-center gap-2 sm:gap-2.5 lg:gap-3 px-3 sm:px-4 lg:px-5 py-2.5 sm:py-3 lg:py-3.5 mx-2 sm:mx-2.5 lg:mx-3 rounded-lg sm:rounded-xl text-sm sm:text-base font-medium transition-all duration-300 ${
               isActive("/dashboard") 
                 ? "bg-gradient-to-br from-[hsl(var(--primary))] to-[hsl(var(--success))] text-white" 
@@ -362,9 +362,9 @@ export const Layout = ({ children }: LayoutProps) => {
           >
             <Home size={16} className="sm:w-[17px] sm:h-[17px] lg:w-[18px] lg:h-[18px]" />
             Dashboard
-          </a>
-          <a 
-            href="/matieres" 
+          </Link>
+          <Link 
+            to="/matieres" 
             className={`flex items-center gap-2 sm:gap-2.5 lg:gap-3 px-3 sm:px-4 lg:px-5 py-2.5 sm:py-3 lg:py-3.5 mx-2 sm:mx-2.5 lg:mx-3 my-0.5 sm:my-1 rounded-lg sm:rounded-xl text-sm sm:text-base font-medium transition-all duration-300 ${
               isActive("/matieres") 
                 ? "bg-gradient-to-br from-[hsl(var(--primary))] to-[hsl(var(--success))] text-white" 
@@ -373,9 +373,9 @@ export const Layout = ({ children }: LayoutProps) => {
           >
             <BookOpen size={16} className="sm:w-[17px] sm:h-[17px] lg:w-[18px] lg:h-[18px]" />
             Matières
-          </a>
-          <a 
-            href="/resources" 
+          </Link>
+          <Link 
+            to="/resources" 
             className={`flex items-center gap-2 sm:gap-2.5 lg:gap-3 px-3 sm:px-4 lg:px-5 py-2.5 sm:py-3 lg:py-3.5 mx-2 sm:mx-2.5 lg:mx-3 my-0.5 sm:my-1 rounded-lg sm:rounded-xl text-sm sm:text-base font-medium transition-all duration-300 ${
               isActive("/resources") 
                 ? "bg-gradient-to-br from-[hsl(var(--primary))] to-[hsl(var(--success))] text-white" 
@@ -384,9 +384,9 @@ export const Layout = ({ children }: LayoutProps) => {
           >
             <FolderOpen size={16} className="sm:w-[17px] sm:h-[17px] lg:w-[18px] lg:h-[18px]" />
             Ressources
-          </a>
-          <a 
-            href="/feed" 
+          </Link>
+          <Link 
+            to="/feed" 
             className={`flex items-center gap-2 sm:gap-2.5 lg:gap-3 px-3 sm:px-4 lg:px-5 py-2.5 sm:py-3 lg:py-3.5 mx-2 sm:mx-2.5 lg:mx-3 my-0.5 sm:my-1 rounded-lg sm:rounded-xl text-sm sm:text-base font-medium transition-all duration-300 ${
               isActive("/feed") 
                 ? "bg-gradient-to-br from-[hsl(var(--primary))] to-[hsl(var(--success))] text-white" 
@@ -395,9 +395,9 @@ export const Layout = ({ children }: LayoutProps) => {
           >
             <Users size={16} className="sm:w-[17px] sm:h-[17px] lg:w-[18px] lg:h-[18px]" />
             Fil d'actualité
-          </a>
-          <a 
-            href="/community" 
+          </Link>
+          <Link 
+            to="/community" 
             onClick={handleMessagesClick}
             className={`flex items-center gap-2 sm:gap-2.5 lg:gap-3 px-3 sm:px-4 lg:px-5 py-2.5 sm:py-3 lg:py-3.5 mx-2 sm:mx-2.5 lg:mx-3 my-0.5 sm:my-1 rounded-lg sm:rounded-xl text-sm sm:text-base font-medium transition-all duration-300 ${
               isActive("/community") 
@@ -412,9 +412,9 @@ export const Layout = ({ children }: LayoutProps) => {
                 {totalUnreadMessages}
               </span>
             )}
-          </a>
-          <a 
-            href="/user-search" 
+          </Link>
+          <Link 
+            to="/user-search" 
             className={`flex items-center gap-2 sm:gap-2.5 lg:gap-3 px-3 sm:px-4 lg:px-5 py-2.5 sm:py-3 lg:py-3.5 mx-2 sm:mx-2.5 lg:mx-3 my-0.5 sm:my-1 rounded-lg sm:rounded-xl text-sm sm:text-base font-medium transition-all duration-300 ${
               isActive("/user-search") 
                 ? "bg-gradient-to-br from-[hsl(var(--primary))] to-[hsl(var(--success))] text-white" 
@@ -423,9 +423,9 @@ export const Layout = ({ children }: LayoutProps) => {
           >
             <Search size={16} className="sm:w-[17px] sm:h-[17px] lg:w-[18px] lg:h-[18px]" />
             Rechercher
-          </a>
-          <a 
-            href="/notifications" 
+          </Link>
+          <Link 
+            to="/notifications" 
             onClick={handleNotificationsClick}
             className={`flex items-center gap-2 sm:gap-2.5 lg:gap-3 px-3 sm:px-4 lg:px-5 py-2.5 sm:py-3 lg:py-3.5 mx-2 sm:mx-2.5 lg:mx-3 my-0.5 sm:my-1 rounded-lg sm:rounded-xl text-sm sm:text-base font-medium transition-all duration-300 ${
               isActive("/notifications") 
@@ -440,9 +440,9 @@ export const Layout = ({ children }: LayoutProps) => {
                 {unreadNotifications}
               </span>
             )}
-          </a>
-          <a 
-            href="/affiliations" 
+          </Link>
+          <Link 
+            to="/affiliations" 
             className={`flex items-center gap-2 sm:gap-2.5 lg:gap-3 px-3 sm:px-4 lg:px-5 py-2.5 sm:py-3 lg:py-3.5 mx-2 sm:mx-2.5 lg:mx-3 my-0.5 sm:my-1 rounded-lg sm:rounded-xl text-sm sm:text-base font-medium transition-all duration-300 ${
               isActive("/affiliations") 
                 ? "bg-gradient-to-br from-[hsl(var(--primary))] to-[hsl(var(--success))] text-white" 
@@ -451,9 +451,9 @@ export const Layout = ({ children }: LayoutProps) => {
           >
             <LinkIcon size={16} className="sm:w-[17px] sm:h-[17px] lg:w-[18px] lg:h-[18px]" />
             Affiliations
-          </a>
-          <a 
-            href="/leaderboard" 
+          </Link>
+          <Link 
+            to="/leaderboard" 
             className={`flex items-center gap-2 sm:gap-2.5 lg:gap-3 px-3 sm:px-4 lg:px-5 py-2.5 sm:py-3 lg:py-3.5 mx-2 sm:mx-2.5 lg:mx-3 my-0.5 sm:my-1 rounded-lg sm:rounded-xl text-sm sm:text-base font-medium transition-all duration-300 ${
               isActive("/leaderboard") 
                 ? "bg-gradient-to-br from-[hsl(var(--primary))] to-[hsl(var(--success))] text-white" 
@@ -462,9 +462,9 @@ export const Layout = ({ children }: LayoutProps) => {
           >
             <Trophy size={16} className="sm:w-[17px] sm:h-[17px] lg:w-[18px] lg:h-[18px]" />
             Classement
-          </a>
-          <a 
-            href="/settings" 
+          </Link>
+          <Link 
+            to="/settings" 
             className={`flex items-center gap-2 sm:gap-2.5 lg:gap-3 px-3 sm:px-4 lg:px-5 py-2.5 sm:py-3 lg:py-3.5 mx-2 sm:mx-2.5 lg:mx-3 my-0.5 sm:my-1 rounded-lg sm:rounded-xl text-sm sm:text-base font-medium transition-all duration-300 ${
               isActive("/settings") 
                 ? "bg-gradient-to-br from-[hsl(var(--primary))] to-[hsl(var(--success))] text-white" 
@@ -473,7 +473,7 @@ export const Layout = ({ children }: LayoutProps) => {
           >
             <Settings size={16} className="sm:w-[17px] sm:h-[17px] lg:w-[18px] lg:h-[18px]" />
             Paramètres
-          </a>
+          </Link>
           <hr className="border-border my-2 sm:my-3 lg:my-4 mx-2 sm:mx-2.5 lg:mx-3" />
           <button
             onClick={handleLogout}
