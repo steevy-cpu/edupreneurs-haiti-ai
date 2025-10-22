@@ -14,6 +14,78 @@ export type Database = {
   }
   public: {
     Tables: {
+      content_change_log: {
+        Row: {
+          change_type: string
+          changed_by: string
+          id: string
+          lesson_id: string | null
+          new_content: Json | null
+          previous_content: Json | null
+          subject_id: string | null
+          timestamp: string
+        }
+        Insert: {
+          change_type: string
+          changed_by: string
+          id?: string
+          lesson_id?: string | null
+          new_content?: Json | null
+          previous_content?: Json | null
+          subject_id?: string | null
+          timestamp?: string
+        }
+        Update: {
+          change_type?: string
+          changed_by?: string
+          id?: string
+          lesson_id?: string | null
+          new_content?: Json | null
+          previous_content?: Json | null
+          subject_id?: string | null
+          timestamp?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "content_change_log_lesson_id_fkey"
+            columns: ["lesson_id"]
+            isOneToOne: false
+            referencedRelation: "lessons"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "content_change_log_subject_id_fkey"
+            columns: ["subject_id"]
+            isOneToOne: false
+            referencedRelation: "subjects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      content_editor_roles: {
+        Row: {
+          granted_at: string
+          granted_by: string | null
+          id: string
+          role: Database["public"]["Enums"]["content_editor_role"]
+          user_id: string
+        }
+        Insert: {
+          granted_at?: string
+          granted_by?: string | null
+          id?: string
+          role?: Database["public"]["Enums"]["content_editor_role"]
+          user_id: string
+        }
+        Update: {
+          granted_at?: string
+          granted_by?: string | null
+          id?: string
+          role?: Database["public"]["Enums"]["content_editor_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
       conversation_participants: {
         Row: {
           conversation_id: string
@@ -190,6 +262,65 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      lessons: {
+        Row: {
+          contenu: string | null
+          created_at: string
+          created_by: string | null
+          exemples_exercices: string | null
+          grade_level: string
+          id: string
+          introduction: string | null
+          is_published: boolean | null
+          objectif: string | null
+          order_index: number
+          slug: string
+          subject_id: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          contenu?: string | null
+          created_at?: string
+          created_by?: string | null
+          exemples_exercices?: string | null
+          grade_level: string
+          id?: string
+          introduction?: string | null
+          is_published?: boolean | null
+          objectif?: string | null
+          order_index?: number
+          slug: string
+          subject_id: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          contenu?: string | null
+          created_at?: string
+          created_by?: string | null
+          exemples_exercices?: string | null
+          grade_level?: string
+          id?: string
+          introduction?: string | null
+          is_published?: boolean | null
+          objectif?: string | null
+          order_index?: number
+          slug?: string
+          subject_id?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "lessons_subject_id_fkey"
+            columns: ["subject_id"]
+            isOneToOne: false
+            referencedRelation: "subjects"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       message_reactions: {
         Row: {
@@ -718,6 +849,51 @@ export type Database = {
           },
         ]
       }
+      subjects: {
+        Row: {
+          color: string | null
+          created_at: string
+          created_by: string | null
+          description: string | null
+          exercise_count: number | null
+          grade_level: string
+          icon_name: string | null
+          id: string
+          lesson_count: number | null
+          name: string
+          slug: string
+          updated_at: string
+        }
+        Insert: {
+          color?: string | null
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          exercise_count?: number | null
+          grade_level: string
+          icon_name?: string | null
+          id?: string
+          lesson_count?: number | null
+          name: string
+          slug: string
+          updated_at?: string
+        }
+        Update: {
+          color?: string | null
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          exercise_count?: number | null
+          grade_level?: string
+          icon_name?: string | null
+          id?: string
+          lesson_count?: number | null
+          name?: string
+          slug?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       user_passion_preferences: {
         Row: {
           arts_score: number | null
@@ -833,10 +1009,7 @@ export type Database = {
           valid: boolean
         }[]
       }
-      create_conversation: {
-        Args: Record<PropertyKey, never>
-        Returns: string
-      }
+      create_conversation: { Args: never; Returns: string }
       create_group_chat: {
         Args: { p_avatar_url?: string; p_description?: string; p_name: string }
         Returns: string
@@ -849,12 +1022,16 @@ export type Database = {
           user_id: string
         }[]
       }
-      generate_referral_code: {
-        Args: Record<PropertyKey, never>
-        Returns: string
-      }
+      generate_referral_code: { Args: never; Returns: string }
       get_notification_preference: {
         Args: { p_category: string; p_user_id: string }
+        Returns: boolean
+      }
+      is_content_editor: {
+        Args: {
+          _min_role?: Database["public"]["Enums"]["content_editor_role"]
+          _user_id: string
+        }
         Returns: boolean
       }
       is_conversation_participant: {
@@ -886,10 +1063,7 @@ export type Database = {
         }
         Returns: undefined
       }
-      resend_verification_code: {
-        Args: { p_user_id: string }
-        Returns: Json
-      }
+      resend_verification_code: { Args: { p_user_id: string }; Returns: Json }
       verify_email_code: {
         Args: { p_code: string; p_user_id: string }
         Returns: Json
@@ -904,6 +1078,7 @@ export type Database = {
       }
     }
     Enums: {
+      content_editor_role: "admin" | "editor" | "viewer"
       follow_status: "pending" | "accepted" | "rejected"
     }
     CompositeTypes: {
@@ -1032,6 +1207,7 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
+      content_editor_role: ["admin", "editor", "viewer"],
       follow_status: ["pending", "accepted", "rejected"],
     },
   },
