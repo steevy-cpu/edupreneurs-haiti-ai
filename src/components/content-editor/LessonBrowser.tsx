@@ -5,10 +5,21 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { toast } from "sonner";
-import { Search, Plus, Book, FileText } from "lucide-react";
+import { Search, Plus, Book, FileText, Trash2 } from "lucide-react";
 import { CreateSubjectDialog } from "./CreateSubjectDialog";
 import { CreateLessonDialog } from "./CreateLessonDialog";
+import { useContentEditorPermissions } from "@/hooks/useContentEditorPermissions";
 
 interface LessonBrowserProps {
   onSelectLesson: (lesson: any) => void;
@@ -16,6 +27,7 @@ interface LessonBrowserProps {
 }
 
 export const LessonBrowser = ({ onSelectLesson, selectedLesson }: LessonBrowserProps) => {
+  const { canDelete } = useContentEditorPermissions();
   const [subjects, setSubjects] = useState<any[]>([]);
   const [lessons, setLessons] = useState<any[]>([]);
   const [selectedSubject, setSelectedSubject] = useState<string | null>(null);
@@ -23,6 +35,8 @@ export const LessonBrowser = ({ onSelectLesson, selectedLesson }: LessonBrowserP
   const [isLoading, setIsLoading] = useState(true);
   const [showCreateSubject, setShowCreateSubject] = useState(false);
   const [showCreateLesson, setShowCreateLesson] = useState(false);
+  const [deleteSubjectId, setDeleteSubjectId] = useState<string | null>(null);
+  const [deleteLessonId, setDeleteLessonId] = useState<string | null>(null);
 
   useEffect(() => {
     fetchSubjects();
@@ -71,6 +85,57 @@ export const LessonBrowser = ({ onSelectLesson, selectedLesson }: LessonBrowserP
     lesson.title.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
+  const handleDeleteSubject = async () => {
+    if (!deleteSubjectId) return;
+
+    try {
+      const { error } = await supabase
+        .from('subjects')
+        .delete()
+        .eq('id', deleteSubjectId);
+
+      if (error) throw error;
+
+      toast.success("Matière supprimée avec succès");
+      fetchSubjects();
+      if (selectedSubject === deleteSubjectId) {
+        setSelectedSubject(null);
+        setLessons([]);
+      }
+    } catch (error) {
+      console.error('Error deleting subject:', error);
+      toast.error("Erreur lors de la suppression de la matière");
+    } finally {
+      setDeleteSubjectId(null);
+    }
+  };
+
+  const handleDeleteLesson = async () => {
+    if (!deleteLessonId) return;
+
+    try {
+      const { error } = await supabase
+        .from('lessons')
+        .delete()
+        .eq('id', deleteLessonId);
+
+      if (error) throw error;
+
+      toast.success("Leçon supprimée avec succès");
+      if (selectedSubject) {
+        fetchLessons(selectedSubject);
+      }
+      if (selectedLesson?.id === deleteLessonId) {
+        onSelectLesson(null);
+      }
+    } catch (error) {
+      console.error('Error deleting lesson:', error);
+      toast.error("Erreur lors de la suppression de la leçon");
+    } finally {
+      setDeleteLessonId(null);
+    }
+  };
+
   return (
     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
       {/* Subjects */}
@@ -97,18 +162,35 @@ export const LessonBrowser = ({ onSelectLesson, selectedLesson }: LessonBrowserP
             ) : (
               <div className="space-y-2">
                 {subjects.map((subject) => (
-                  <Button
+                  <div 
                     key={subject.id}
-                    variant={selectedSubject === subject.id ? "default" : "ghost"}
-                    className="w-full justify-start overflow-hidden"
-                    onClick={() => setSelectedSubject(subject.id)}
+                    className="flex items-center gap-2 group"
                   >
-                    <span className="mr-2 flex-shrink-0">{subject.icon_name || "📚"}</span>
-                    <span className="truncate flex-1 text-left">{subject.name}</span>
-                    <Badge variant="secondary" className="ml-2 flex-shrink-0">
-                      {subject.lesson_count || 0}
-                    </Badge>
-                  </Button>
+                    <Button
+                      variant={selectedSubject === subject.id ? "default" : "ghost"}
+                      className="flex-1 justify-start overflow-hidden"
+                      onClick={() => setSelectedSubject(subject.id)}
+                    >
+                      <span className="mr-2 flex-shrink-0">{subject.icon_name || "📚"}</span>
+                      <span className="truncate flex-1 text-left">{subject.name}</span>
+                      <Badge variant="secondary" className="ml-2 flex-shrink-0">
+                        {subject.lesson_count || 0}
+                      </Badge>
+                    </Button>
+                    {canDelete && (
+                      <Button
+                        size="icon"
+                        variant="ghost"
+                        className="h-9 w-9 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setDeleteSubjectId(subject.id);
+                        }}
+                      >
+                        <Trash2 className="h-4 w-4 text-destructive" />
+                      </Button>
+                    )}
+                  </div>
                 ))}
               </div>
             )}
@@ -163,24 +245,39 @@ export const LessonBrowser = ({ onSelectLesson, selectedLesson }: LessonBrowserP
                         ? "border-primary bg-primary/5"
                         : ""
                     }`}
-                    onClick={() => onSelectLesson(lesson)}
                   >
                     <CardContent className="p-4">
-                      <div className="flex items-start justify-between">
-                        <div className="flex-1">
-                          <h4 className="font-semibold">{lesson.title}</h4>
+                      <div className="flex items-start justify-between gap-2">
+                        <div 
+                          className="flex-1 min-w-0"
+                          onClick={() => onSelectLesson(lesson)}
+                        >
+                          <h4 className="font-semibold truncate">{lesson.title}</h4>
                           {lesson.objectif && (
                             <p className="text-sm text-muted-foreground mt-1 line-clamp-2">
                               {lesson.objectif}
                             </p>
                           )}
-                          <div className="flex gap-2 mt-2">
+                          <div className="flex gap-2 mt-2 flex-wrap">
                             <Badge variant={lesson.is_published ? "default" : "secondary"}>
                               {lesson.is_published ? "Publié" : "Brouillon"}
                             </Badge>
                             <Badge variant="outline">{lesson.grade_level}</Badge>
                           </div>
                         </div>
+                        {canDelete && (
+                          <Button
+                            size="icon"
+                            variant="ghost"
+                            className="h-8 w-8 flex-shrink-0"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setDeleteLessonId(lesson.id);
+                            }}
+                          >
+                            <Trash2 className="h-4 w-4 text-destructive" />
+                          </Button>
+                        )}
                       </div>
                     </CardContent>
                   </Card>
@@ -210,6 +307,42 @@ export const LessonBrowser = ({ onSelectLesson, selectedLesson }: LessonBrowserP
           }}
         />
       )}
+
+      {/* Delete Subject Confirmation */}
+      <AlertDialog open={!!deleteSubjectId} onOpenChange={(open) => !open && setDeleteSubjectId(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Supprimer la matière?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Cette action est irréversible. Toutes les leçons associées seront également supprimées.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Annuler</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDeleteSubject} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+              Supprimer
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Delete Lesson Confirmation */}
+      <AlertDialog open={!!deleteLessonId} onOpenChange={(open) => !open && setDeleteLessonId(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Supprimer la leçon?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Cette action est irréversible. Le contenu de la leçon sera définitivement supprimé.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Annuler</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDeleteLesson} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+              Supprimer
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };
