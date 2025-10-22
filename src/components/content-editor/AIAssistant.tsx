@@ -123,21 +123,27 @@ export const AIAssistant = ({ selectedLesson }: AIAssistantProps) => {
         prompt = `Génère un contenu complet de leçon sur le sujet "${selectedLesson?.title || 'ce sujet'}" avec:
 - Une introduction engageante
 - Le contenu principal bien structuré en HTML
-- Des exemples concrets
-- 5 exercices de difficulté progressive avec solutions`;
+- Des exemples concrets tirés du contexte haïtien
+- 5 exercices de difficulté progressive avec solutions détaillées`;
         break;
       case "enhance":
         prompt = `Améliore le contenu existant de cette leçon en ajoutant:
-- Plus de détails et d'explications
-- Des analogies et métaphores
-- Des exemples supplémentaires
-- Des exercices pratiques`;
+- Plus de détails et d'explications claires
+- Des analogies et métaphores adaptées au contexte haïtien
+- Des exemples supplémentaires concrets
+- Des exercices pratiques variés`;
         break;
       case "exercises":
-        prompt = "Crée 5 nouveaux exercices variés avec solutions détaillées pour cette leçon";
+        prompt = "Crée 5 nouveaux exercices variés avec solutions détaillées pour cette leçon, du plus facile au plus difficile";
         break;
       case "translate":
-        prompt = "Traduis les parties principales de cette leçon en créole haïtien";
+        prompt = "Traduis les parties principales de cette leçon en créole haïtien, en gardant les termes techniques en français avec explications";
+        break;
+      case "simplify":
+        prompt = "Simplifie le contenu de cette leçon pour le rendre plus accessible, utilise des phrases courtes et plus d'exemples";
+        break;
+      case "quiz":
+        prompt = "Crée un quiz de 10 questions à choix multiples (4 options chacune) sur cette leçon, avec difficulté progressive";
         break;
     }
     streamChat(prompt, action);
@@ -195,7 +201,23 @@ export const AIAssistant = ({ selectedLesson }: AIAssistantProps) => {
             disabled={isLoading || !selectedLesson}
           >
             <Languages className="mr-2 h-4 w-4" />
-            Traduire
+            Créole
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => handleQuickAction('simplify')}
+            disabled={isLoading || !selectedLesson}
+          >
+            💡 Simplifier
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => handleQuickAction('quiz')}
+            disabled={isLoading || !selectedLesson}
+          >
+            🎯 Quiz
           </Button>
         </div>
 

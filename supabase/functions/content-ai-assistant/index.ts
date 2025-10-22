@@ -2,6 +2,72 @@ import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.58.0';
 
+// HTML sanitization - only allow safe tags and attributes
+const sanitizeHTML = (html: string): string => {
+  // Remove script tags and dangerous attributes
+  return html
+    .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
+    .replace(/on\w+="[^"]*"/gi, '')
+    .replace(/javascript:/gi, '');
+};
+
+// Content validation
+const validateContent = (content: string): { valid: boolean; error?: string } => {
+  if (!content || content.trim().length === 0) {
+    return { valid: false, error: 'Le contenu ne peut pas être vide' };
+  }
+  if (content.length > 50000) {
+    return { valid: false, error: 'Le contenu est trop long (max 50000 caractères)' };
+  }
+  return { valid: true };
+};
+
+// Generate content templates
+const getContentTemplate = (type: string): string => {
+  const templates = {
+    lesson: `
+      <div class="lesson-content">
+        <section class="introduction">
+          <h2>Introduction</h2>
+          <p>[Introduction engageante]</p>
+        </section>
+        
+        <section class="main-content">
+          <h2>Contenu Principal</h2>
+          <p>[Contenu détaillé]</p>
+        </section>
+        
+        <section class="examples">
+          <h2>Exemples</h2>
+          <div class="example">
+            <h3>Exemple 1</h3>
+            <p>[Exemple concret]</p>
+          </div>
+        </section>
+        
+        <section class="exercises">
+          <h2>Exercices</h2>
+          <div class="exercise">
+            <h3>Exercice 1</h3>
+            <p>[Question]</p>
+            <details>
+              <summary>Solution</summary>
+              <p>[Solution détaillée]</p>
+            </details>
+          </div>
+        </section>
+      </div>
+    `,
+    exercises: `
+      <div class="exercises-set">
+        <h2>Exercices Pratiques</h2>
+        [Exercices 1-5 avec difficulté progressive]
+      </div>
+    `,
+  };
+  return templates[type as keyof typeof templates] || '';
+};
+
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
@@ -24,7 +90,15 @@ serve(async (req) => {
     // Create Supabase client for server-side operations
     const supabase = createClient(SUPABASE_URL!, SUPABASE_SERVICE_ROLE_KEY!);
 
-    const { messages, operation, lessonData } = await req.json();
+    const { messages, operation, lessonData, options } = await req.json();
+    
+    // Validate request
+    if (!messages || !Array.isArray(messages) || messages.length === 0) {
+      return new Response(
+        JSON.stringify({ error: 'Messages requis' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
 
     // Verify user has content editor role
     const authHeader = req.headers.get('Authorization');
@@ -62,6 +136,9 @@ serve(async (req) => {
 
     console.log('Content editor request from:', user.id, 'Operation:', operation);
 
+    // Get content template if requested
+    const template = options?.useTemplate ? getContentTemplate(operation) : '';
+
     // Build system prompt based on operation
     let systemPrompt = `Tu es un assistant IA spécialisé dans la création de contenu éducatif pour le programme MENFP (Ministère de l'Éducation Nationale et de la Formation Professionnelle) en Haïti.
 
@@ -96,16 +173,90 @@ FORMAT HTML REQUIS:
 EXEMPLES D'EXERCICES:
 - Inclus toujours 3-5 exercices de difficulté progressive
 - Fournis des indices pour les exercices difficiles
-- Structure: Question claire → Indice (optionnel) → Solution détaillée`;
+- Structure: Question claire → Indice (optionnel) → Solution détaillée
 
+SÉCURITÉ ET QUALITÉ:
+- Ne génère jamais de contenu offensant ou inapproprié
+- Vérifie la précision mathématique et scientifique
+- Utilise un langage respectueux et inclusif
+- Adapte le vocabulaire au niveau scolaire`;
+
+    // Add operation-specific instructions
     if (operation === 'generate') {
-      systemPrompt += `\n\nOPÉRATION: Générer un nouveau contenu de leçon complet basé sur le sujet fourni.`;
+      systemPrompt += `\n\nOPÉRATION: Générer un nouveau contenu de leçon complet basé sur le sujet fourni.
+      
+ÉTAPES À SUIVRE:
+1. Comprendre le sujet et le niveau scolaire
+2. Définir les objectifs d'apprentissage clairs
+3. Créer une introduction captivante
+4. Développer le contenu principal avec des sous-sections
+5. Ajouter des exemples concrets et pertinents
+6. Créer 5 exercices de difficulté progressive
+7. Formatter le tout en HTML bien structuré`;
+
     } else if (operation === 'enhance') {
-      systemPrompt += `\n\nOPÉRATION: Améliorer le contenu existant en ajoutant plus de détails, exemples, et clarté.`;
+      systemPrompt += `\n\nOPÉRATION: Améliorer le contenu existant en ajoutant plus de détails, exemples, et clarté.
+
+AMÉLIORATIONS À APPORTER:
+- Enrichir les explications existantes
+- Ajouter des analogies et métaphores
+- Inclure plus d'exemples concrets
+- Améliorer la structure et la lisibilité
+- Renforcer la progression pédagogique`;
+
     } else if (operation === 'exercises') {
-      systemPrompt += `\n\nOPÉRATION: Créer uniquement des exercices pratiques avec solutions.`;
+      systemPrompt += `\n\nOPÉRATION: Créer uniquement des exercices pratiques avec solutions.
+
+TYPES D'EXERCICES À CRÉER:
+1. Exercices de compréhension (QCM)
+2. Exercices d'application directe
+3. Problèmes contextualisés
+4. Exercices de synthèse
+5. Défi bonus (plus difficile)
+
+Pour chaque exercice:
+- Question claire et précise
+- Indice si nécessaire
+- Solution complète et détaillée`;
+
     } else if (operation === 'translate') {
-      systemPrompt += `\n\nOPÉRATION: Traduire ou adapter le contenu en créole haïtien.`;
+      systemPrompt += `\n\nOPÉRATION: Traduire ou adapter le contenu en créole haïtien.
+
+RÈGLES DE TRADUCTION:
+- Garde les termes techniques en français avec explication en créole
+- Adapte les exemples au contexte haïtien
+- Maintiens la structure HTML
+- Assure la clarté et la fluidité`;
+
+    } else if (operation === 'simplify') {
+      systemPrompt += `\n\nOPÉRATION: Simplifier le contenu pour le rendre plus accessible.
+
+SIMPLIFICATION:
+- Utilise des phrases plus courtes
+- Explique les termes techniques
+- Ajoute plus d'exemples visuels
+- Décompose les concepts complexes`;
+
+    } else if (operation === 'quiz') {
+      systemPrompt += `\n\nOPÉRATION: Créer un quiz interactif de 10 questions.
+
+FORMAT DU QUIZ:
+- 10 questions à choix multiples (4 options chacune)
+- Difficulté progressive
+- Une seule bonne réponse par question
+- Explications pour chaque réponse
+- Score et feedback final`;
+    }
+
+    if (template) {
+      systemPrompt += `\n\nTEMPLATE DE BASE:\n${template}\n\nUtilise cette structure comme guide.`;
+    }
+
+    if (lessonData) {
+      systemPrompt += `\n\nCONTEXTE DE LA LEÇON:
+Titre: ${lessonData.title || 'Non spécifié'}
+Niveau: ${lessonData.grade_level || 'Non spécifié'}
+Objectif: ${lessonData.objectif || 'Non spécifié'}`;
     }
 
     // Call Lovable AI Gateway
