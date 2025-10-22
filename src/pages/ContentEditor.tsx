@@ -5,11 +5,12 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
-import { FileText, BookOpen, Sparkles, History, ArrowLeft } from "lucide-react";
+import { FileText, BookOpen, Sparkles, History, ArrowLeft, Shield } from "lucide-react";
 import { LessonBrowser } from "@/components/content-editor/LessonBrowser";
 import { LessonEditor } from "@/components/content-editor/LessonEditor";
 import { AIAssistant } from "@/components/content-editor/AIAssistant";
 import { ChangeLog } from "@/components/content-editor/ChangeLog";
+import { RoleManagement } from "@/components/content-editor/RoleManagement";
 
 const ContentEditor = () => {
   const navigate = useNavigate();
@@ -109,7 +110,7 @@ const ContentEditor = () => {
 
         {/* Main Content */}
         <Tabs defaultValue="editor" className="space-y-4">
-          <TabsList className="grid w-full grid-cols-3">
+          <TabsList className={`grid w-full ${userRole === 'admin' ? 'grid-cols-4' : 'grid-cols-3'}`}>
             <TabsTrigger value="browser" className="gap-2">
               <BookOpen className="h-4 w-4" />
               Parcourir
@@ -122,6 +123,12 @@ const ContentEditor = () => {
               <History className="h-4 w-4" />
               Historique
             </TabsTrigger>
+            {userRole === 'admin' && (
+              <TabsTrigger value="roles" className="gap-2">
+                <Shield className="h-4 w-4" />
+                Rôles
+              </TabsTrigger>
+            )}
           </TabsList>
 
           <TabsContent value="browser" className="space-y-4">
@@ -151,6 +158,12 @@ const ContentEditor = () => {
           <TabsContent value="history" className="space-y-4">
             <ChangeLog selectedLesson={selectedLesson} />
           </TabsContent>
+
+          {userRole === 'admin' && (
+            <TabsContent value="roles" className="space-y-4">
+              <RoleManagement />
+            </TabsContent>
+          )}
         </Tabs>
       </div>
     </div>
