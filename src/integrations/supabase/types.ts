@@ -329,8 +329,10 @@ export type Database = {
           id: string
           introduction: string | null
           is_published: boolean | null
+          mois: string | null
           objectif: string | null
           order_index: number
+          references: string[] | null
           review_notes: string | null
           reviewed_by: string | null
           scheduled_publish_at: string | null
@@ -349,8 +351,10 @@ export type Database = {
           id?: string
           introduction?: string | null
           is_published?: boolean | null
+          mois?: string | null
           objectif?: string | null
           order_index?: number
+          references?: string[] | null
           review_notes?: string | null
           reviewed_by?: string | null
           scheduled_publish_at?: string | null
@@ -371,8 +375,10 @@ export type Database = {
           id?: string
           introduction?: string | null
           is_published?: boolean | null
+          mois?: string | null
           objectif?: string | null
           order_index?: number
+          references?: string[] | null
           review_notes?: string | null
           reviewed_by?: string | null
           scheduled_publish_at?: string | null
