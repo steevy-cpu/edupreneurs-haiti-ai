@@ -24,6 +24,7 @@ export const GlobalMusicPlayer = () => {
   const [position, setPosition] = useState({ x: 0, y: 0 });
   const [isDragging, setIsDragging] = useState(false);
   const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
+  const [hasMoved, setHasMoved] = useState(false);
   const playerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -43,10 +44,21 @@ export const GlobalMusicPlayer = () => {
     const handleMouseMove = (e: MouseEvent) => {
       if (!isDragging) return;
       
-      setPosition({
-        x: e.clientX - dragOffset.x,
-        y: e.clientY - dragOffset.y,
-      });
+      setHasMoved(true);
+      
+      // Calculate new position
+      let newX = e.clientX - dragOffset.x;
+      let newY = e.clientY - dragOffset.y;
+      
+      // Get player dimensions
+      const playerWidth = playerRef.current?.offsetWidth || 0;
+      const playerHeight = playerRef.current?.offsetHeight || 0;
+      
+      // Constrain to screen boundaries
+      newX = Math.max(0, Math.min(newX, window.innerWidth - playerWidth));
+      newY = Math.max(0, Math.min(newY, window.innerHeight - playerHeight));
+      
+      setPosition({ x: newX, y: newY });
     };
 
     const handleMouseUp = () => {
@@ -72,7 +84,15 @@ export const GlobalMusicPlayer = () => {
       x: e.clientX - rect.left,
       y: e.clientY - rect.top,
     });
+    setHasMoved(false);
     setIsDragging(true);
+  };
+
+  const handlePlayerClick = () => {
+    // Only open if the user didn't drag
+    if (!hasMoved) {
+      setMinimized(false);
+    }
   };
 
   // Only show the music player when user is authenticated and there are tracks
@@ -97,7 +117,7 @@ export const GlobalMusicPlayer = () => {
       >
         {minimized ? (
           <Button
-            onClick={() => setMinimized(false)}
+            onClick={handlePlayerClick}
             className="w-14 h-14 rounded-full shadow-2xl"
             size="icon"
           >
