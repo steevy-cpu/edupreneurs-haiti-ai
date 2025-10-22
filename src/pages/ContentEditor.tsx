@@ -5,12 +5,15 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
-import { FileText, BookOpen, Sparkles, History, ArrowLeft, Shield } from "lucide-react";
+import { FileText, BookOpen, Sparkles, History, ArrowLeft, Shield, GitBranch, Package } from "lucide-react";
 import { LessonBrowser } from "@/components/content-editor/LessonBrowser";
 import { LessonEditor } from "@/components/content-editor/LessonEditor";
 import { AIAssistant } from "@/components/content-editor/AIAssistant";
 import { ChangeLog } from "@/components/content-editor/ChangeLog";
 import { RoleManagement } from "@/components/content-editor/RoleManagement";
+import { VersionHistory } from "@/components/content-editor/VersionHistory";
+import { WorkflowManagement } from "@/components/content-editor/WorkflowManagement";
+import { BulkOperations } from "@/components/content-editor/BulkOperations";
 
 const ContentEditor = () => {
   const navigate = useNavigate();
@@ -110,7 +113,7 @@ const ContentEditor = () => {
 
         {/* Main Content */}
         <Tabs defaultValue="editor" className="space-y-4">
-          <TabsList className={`grid w-full ${userRole === 'admin' ? 'grid-cols-4' : 'grid-cols-3'}`}>
+          <TabsList className={`grid w-full ${userRole === 'admin' ? 'grid-cols-7' : 'grid-cols-5'}`}>
             <TabsTrigger value="browser" className="gap-2">
               <BookOpen className="h-4 w-4" />
               Parcourir
@@ -119,15 +122,29 @@ const ContentEditor = () => {
               <FileText className="h-4 w-4" />
               Éditeur
             </TabsTrigger>
+            <TabsTrigger value="workflow" className="gap-2">
+              <GitBranch className="h-4 w-4" />
+              Workflow
+            </TabsTrigger>
+            <TabsTrigger value="versions" className="gap-2">
+              <History className="h-4 w-4" />
+              Versions
+            </TabsTrigger>
             <TabsTrigger value="history" className="gap-2">
               <History className="h-4 w-4" />
               Historique
             </TabsTrigger>
             {userRole === 'admin' && (
-              <TabsTrigger value="roles" className="gap-2">
-                <Shield className="h-4 w-4" />
-                Rôles
-              </TabsTrigger>
+              <>
+                <TabsTrigger value="bulk" className="gap-2">
+                  <Package className="h-4 w-4" />
+                  Masse
+                </TabsTrigger>
+                <TabsTrigger value="roles" className="gap-2">
+                  <Shield className="h-4 w-4" />
+                  Rôles
+                </TabsTrigger>
+              </>
             )}
           </TabsList>
 
@@ -155,14 +172,37 @@ const ContentEditor = () => {
             </div>
           </TabsContent>
 
+          <TabsContent value="workflow" className="space-y-4">
+            <WorkflowManagement
+              selectedLesson={selectedLesson}
+              onUpdate={() => {
+                toast.success("Workflow mis à jour");
+              }}
+            />
+          </TabsContent>
+
+          <TabsContent value="versions" className="space-y-4">
+            <VersionHistory
+              selectedLesson={selectedLesson}
+              onRestore={() => {
+                toast.success("Version restaurée");
+              }}
+            />
+          </TabsContent>
+
           <TabsContent value="history" className="space-y-4">
             <ChangeLog selectedLesson={selectedLesson} />
           </TabsContent>
 
           {userRole === 'admin' && (
-            <TabsContent value="roles" className="space-y-4">
-              <RoleManagement />
-            </TabsContent>
+            <>
+              <TabsContent value="bulk" className="space-y-4">
+                <BulkOperations />
+              </TabsContent>
+              <TabsContent value="roles" className="space-y-4">
+                <RoleManagement />
+              </TabsContent>
+            </>
           )}
         </Tabs>
 

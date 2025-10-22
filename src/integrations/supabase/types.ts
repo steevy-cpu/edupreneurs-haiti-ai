@@ -263,6 +263,62 @@ export type Database = {
         }
         Relationships: []
       }
+      lesson_versions: {
+        Row: {
+          contenu: string | null
+          created_at: string
+          created_by: string
+          exemples_exercices: string | null
+          grade_level: string
+          id: string
+          introduction: string | null
+          is_current: boolean | null
+          lesson_id: string
+          objectif: string | null
+          slug: string
+          title: string
+          version_number: number
+        }
+        Insert: {
+          contenu?: string | null
+          created_at?: string
+          created_by: string
+          exemples_exercices?: string | null
+          grade_level: string
+          id?: string
+          introduction?: string | null
+          is_current?: boolean | null
+          lesson_id: string
+          objectif?: string | null
+          slug: string
+          title: string
+          version_number: number
+        }
+        Update: {
+          contenu?: string | null
+          created_at?: string
+          created_by?: string
+          exemples_exercices?: string | null
+          grade_level?: string
+          id?: string
+          introduction?: string | null
+          is_current?: boolean | null
+          lesson_id?: string
+          objectif?: string | null
+          slug?: string
+          title?: string
+          version_number?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "lesson_versions_lesson_id_fkey"
+            columns: ["lesson_id"]
+            isOneToOne: false
+            referencedRelation: "lessons"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       lessons: {
         Row: {
           contenu: string | null
@@ -275,10 +331,14 @@ export type Database = {
           is_published: boolean | null
           objectif: string | null
           order_index: number
+          review_notes: string | null
+          reviewed_by: string | null
+          scheduled_publish_at: string | null
           slug: string
           subject_id: string
           title: string
           updated_at: string
+          workflow_status: Database["public"]["Enums"]["workflow_status"] | null
         }
         Insert: {
           contenu?: string | null
@@ -291,10 +351,16 @@ export type Database = {
           is_published?: boolean | null
           objectif?: string | null
           order_index?: number
+          review_notes?: string | null
+          reviewed_by?: string | null
+          scheduled_publish_at?: string | null
           slug: string
           subject_id: string
           title: string
           updated_at?: string
+          workflow_status?:
+            | Database["public"]["Enums"]["workflow_status"]
+            | null
         }
         Update: {
           contenu?: string | null
@@ -307,10 +373,16 @@ export type Database = {
           is_published?: boolean | null
           objectif?: string | null
           order_index?: number
+          review_notes?: string | null
+          reviewed_by?: string | null
+          scheduled_publish_at?: string | null
           slug?: string
           subject_id?: string
           title?: string
           updated_at?: string
+          workflow_status?:
+            | Database["public"]["Enums"]["workflow_status"]
+            | null
         }
         Relationships: [
           {
@@ -1080,6 +1152,12 @@ export type Database = {
     Enums: {
       content_editor_role: "admin" | "editor" | "viewer"
       follow_status: "pending" | "accepted" | "rejected"
+      workflow_status:
+        | "draft"
+        | "in_review"
+        | "approved"
+        | "published"
+        | "rejected"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -1209,6 +1287,13 @@ export const Constants = {
     Enums: {
       content_editor_role: ["admin", "editor", "viewer"],
       follow_status: ["pending", "accepted", "rejected"],
+      workflow_status: [
+        "draft",
+        "in_review",
+        "approved",
+        "published",
+        "rejected",
+      ],
     },
   },
 } as const
