@@ -132,13 +132,6 @@ export const EricChatbot = () => {
     return () => window.removeEventListener('resize', handleResize);
   }, [hasMoved, isOpen]);
 
-  // Constrain position when chatbox opens
-  useEffect(() => {
-    if (isOpen && hasMoved) {
-      setPosition(prev => constrainToViewport(prev));
-    }
-  }, [isOpen]);
-
   const speakMessage = (text: string, index: number) => {
     if (isSpeaking === index) {
       window.speechSynthesis.cancel();
