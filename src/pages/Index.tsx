@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import ericMain00 from "@/assets/eric-main00.png";
+import ericCelebrating from "@/assets/eric-celebrating.png";
 import ericMain01 from "@/assets/eric-main01.png";
 import ericWelcome from "@/assets/eric-welcome.png";
 import ericThinking from "@/assets/eric-main01.png";
@@ -118,7 +118,7 @@ const Index = () => {
           </div>
           <div className="flex justify-center items-center relative order-first md:order-last mt-4 sm:mt-0">
             <img 
-              src={ericMain00} 
+              src={ericCelebrating} 
               alt="Eric - Assistant IA EDUPRENEURS" 
               className="w-full max-w-[200px] sm:max-w-[280px] md:max-w-md animate-[float_4s_ease-in-out_infinite] drop-shadow-2xl"
             />
