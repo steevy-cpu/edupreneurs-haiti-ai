@@ -92,6 +92,39 @@ export const GlobalMusicPlayer = () => {
     // Only open if the user didn't drag
     if (!hasMoved) {
       setMinimized(false);
+      
+      // Adjust position to ensure expanded player stays on screen
+      setTimeout(() => {
+        if (!playerRef.current) return;
+        
+        const rect = playerRef.current.getBoundingClientRect();
+        let newX = position.x;
+        let newY = position.y;
+        
+        // If using default position (0, 0), calculate from current rect
+        if (position.x === 0 && position.y === 0) {
+          newX = rect.left;
+          newY = rect.top;
+        }
+        
+        // Check right boundary
+        if (rect.right > window.innerWidth) {
+          newX = window.innerWidth - rect.width;
+        }
+        
+        // Check bottom boundary
+        if (rect.bottom > window.innerHeight) {
+          newY = window.innerHeight - rect.height;
+        }
+        
+        // Check left boundary
+        if (newX < 0) newX = 0;
+        
+        // Check top boundary
+        if (newY < 0) newY = 0;
+        
+        setPosition({ x: newX, y: newY });
+      }, 0);
     }
   };
 
