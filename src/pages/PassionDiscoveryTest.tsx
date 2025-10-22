@@ -357,7 +357,7 @@ const PassionDiscoveryTest = () => {
         <Card className="max-w-2xl w-full shadow-2xl">
           <CardHeader className="text-center pb-8">
             <div className="flex justify-center mb-6">
-              <img src={ericWelcome} alt="Eric" className="w-40 h-40 animate-scale-in" />
+              <img src={ericWelcome} alt="Eric" className="w-40 h-40 animate-scale-in" loading="lazy" decoding="async" />
             </div>
             <CardTitle className="text-4xl mb-4 bg-gradient-to-r from-purple-600 via-pink-600 to-orange-500 bg-clip-text text-transparent">
               Bienvenue dans Découvre ta Passion!
@@ -423,7 +423,7 @@ const PassionDiscoveryTest = () => {
             </div>
             <Progress value={progress} className="h-2 mb-6" />
             <div className="flex justify-center mb-6">
-              <img src={question.ericImage} alt="Eric" className="w-32 h-32 animate-fade-in" />
+              <img src={question.ericImage} alt="Eric" className="w-32 h-32 animate-fade-in" loading="lazy" decoding="async" />
             </div>
             <CardTitle className="text-2xl text-center">{question.question}</CardTitle>
           </CardHeader>
@@ -455,7 +455,7 @@ const PassionDiscoveryTest = () => {
         <Card className="max-w-3xl w-full shadow-2xl">
           <CardHeader className="text-center">
             <div className="flex justify-center mb-6">
-              <img src={ericThumbUp} alt="Eric" className="w-40 h-40 animate-scale-in" />
+              <img src={ericThumbUp} alt="Eric" className="w-40 h-40 animate-scale-in" loading="lazy" decoding="async" />
             </div>
             <CardTitle className="text-4xl mb-4">
               Résultats Découverts! 🎉
@@ -522,7 +522,7 @@ const PassionDiscoveryTest = () => {
             <>
               <div className="text-center mb-12 animate-fade-in">
                 <div className="inline-block mb-4">
-                  <img src={ericTeaching} alt="Eric" className="w-32 h-32 mx-auto animate-scale-in" />
+                  <img src={ericTeaching} alt="Eric" className="w-32 h-32 mx-auto animate-scale-in" loading="lazy" decoding="async" />
                 </div>
                 <h1 className="text-4xl md:text-6xl font-bold mb-4 bg-gradient-to-r from-purple-600 via-pink-600 to-orange-500 bg-clip-text text-transparent">
                   Découvre ta Passion
@@ -746,7 +746,7 @@ const PassionDiscoveryTest = () => {
             <Card className="sticky top-6 h-[calc(100vh-8rem)] flex flex-col">
               <CardHeader className="border-b">
                 <div className="flex items-center gap-3">
-                  <img src={ericTeaching} alt="Eric" className="w-12 h-12 rounded-full" />
+                  <img src={ericTeaching} alt="Eric" className="w-12 h-12 rounded-full" loading="lazy" decoding="async" />
                   <div>
                     <CardTitle className="text-lg">Discute avec Eric</CardTitle>
                     <CardDescription className="text-sm">Ton tuteur IA personnel</CardDescription>

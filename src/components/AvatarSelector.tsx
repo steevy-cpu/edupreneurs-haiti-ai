@@ -45,6 +45,8 @@ export const AvatarSelector = ({ selectedAvatar, onSelect }: AvatarSelectorProps
             src={avatar.url}
             alt={avatar.name}
             className="w-full h-full object-cover aspect-square"
+            loading="lazy"
+            decoding="async"
           />
         </Card>
       ))}

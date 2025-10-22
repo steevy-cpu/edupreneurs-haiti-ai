@@ -351,6 +351,8 @@ export default function Matieres() {
                 src={ericPointingImage} 
                 alt="Eric - Assistant IA" 
                 className="w-48 h-48 object-contain"
+                loading="lazy"
+                decoding="async"
               />
             </div>
             <div className="flex-1 text-center md:text-left">

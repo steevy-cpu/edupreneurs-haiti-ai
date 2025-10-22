@@ -671,7 +671,7 @@ export default function Auth() {
       {/* Header */}
       <header className="auth-header sticky top-0 z-10 flex items-center justify-between px-2 sm:px-4 md:px-8 py-2 sm:py-4 bg-card border-b border-border">
         <Link to="/" className="auth-brand flex items-center gap-1.5 sm:gap-2.5">
-          <img src={edupreneursLogo} alt="EDUPRENEURS" className="h-8 sm:h-10 w-auto object-contain" />
+          <img src={edupreneursLogo} alt="EDUPRENEURS" className="h-8 sm:h-10 w-auto object-contain" loading="eager" decoding="async" />
         </Link>
         <nav className="flex items-center gap-1.5 sm:gap-3">
           <Link to="/" className="auth-btn-outline text-xs sm:text-sm px-2 sm:px-3 py-1.5 sm:py-2">
@@ -696,6 +696,8 @@ export default function Auth() {
               src={authImage} 
               alt="Authentification EDUPRENEURS" 
               className="auth-image w-full max-w-[280px] h-auto animate-gentle-float" 
+              loading="lazy"
+              decoding="async"
             />
           </div>
           
@@ -725,6 +727,8 @@ export default function Auth() {
                 src={authImage} 
                 alt="Authentification EDUPRENEURS" 
                 className="auth-image max-w-[250px] h-auto animate-gentle-float" 
+                loading="lazy"
+                decoding="async"
               />
             </div>
 

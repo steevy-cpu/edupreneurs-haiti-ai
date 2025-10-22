@@ -120,6 +120,8 @@ export default function SciencesCourse() {
                 src={ericStudentDesk} 
                 alt="Eric - Professeur de Sciences" 
                 className="w-40 h-40 sm:w-48 sm:h-48 md:w-56 md:h-56 lg:w-64 lg:h-64 object-contain drop-shadow-2xl"
+                loading="lazy"
+                decoding="async"
               />
             </div>
           </div>
@@ -251,6 +253,8 @@ export default function SciencesCourse() {
                 src={ericTeaching} 
                 alt="Eric - Assistant IA" 
                 className="w-32 h-32 sm:w-40 sm:h-40 md:w-48 md:h-48 object-contain"
+                loading="lazy"
+                decoding="async"
               />
             </div>
             <div className="flex-1 text-center md:text-left">

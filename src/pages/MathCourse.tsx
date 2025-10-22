@@ -310,6 +310,8 @@ const MathCourse = () => {
               src={ericTeaching} 
               alt="Eric - Professeur de Mathématiques" 
               className="w-40 h-40 sm:w-48 sm:h-48 object-contain animate-[float_4s_ease-in-out_infinite]"
+              loading="lazy"
+              decoding="async"
             />
           </div>
         </div>

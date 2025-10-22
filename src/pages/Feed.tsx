@@ -931,7 +931,7 @@ const Feed = () => {
                 
                 {imagePreview && (
                   <div className="relative">
-                    <img src={imagePreview} alt="Preview" className="w-full max-h-96 object-contain rounded-lg bg-muted/20" />
+                    <img src={imagePreview} alt="Preview" className="w-full max-h-96 object-contain rounded-lg bg-muted/20" loading="lazy" decoding="async" />
                     <Button
                       size="icon"
                       variant="destructive"

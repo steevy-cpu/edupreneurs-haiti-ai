@@ -105,6 +105,7 @@ export function PostCard({
             src={post.image_url} 
             alt="Post" 
             loading="lazy"
+            decoding="async"
             className="mt-2 xs:mt-3 w-full rounded-lg object-contain bg-muted/20 max-h-[400px]"
           />
         )}

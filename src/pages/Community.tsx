@@ -2171,7 +2171,7 @@ const Community = () => {
               return (
                 <div className="mx-2 sm:mx-4 mt-2 mb-2 px-3 py-2 bg-gradient-to-r from-primary/10 to-success/10 border border-primary/20 rounded-lg backdrop-blur-sm shadow-sm">
                   <div className="flex items-start gap-2 sm:gap-3">
-                    <img src={ericAiHelper} alt="Eric AI Assistant" className="w-8 h-8 sm:w-10 sm:h-10 rounded-full object-cover shrink-0" />
+                    <img src={ericAiHelper} alt="Eric AI Assistant" className="w-8 h-8 sm:w-10 sm:h-10 rounded-full object-cover shrink-0" loading="lazy" decoding="async" />
                     <div className="flex-1 min-w-0">
                       <p className="text-xs sm:text-sm text-foreground font-semibold">
                         Eric, votre assistant IA est dans ce groupe !
@@ -2307,6 +2307,8 @@ const Community = () => {
                                     src={message.shared_post.image_url}
                                     alt="Post"
                                     className="rounded-lg w-full max-h-48 object-contain bg-muted/20 cursor-pointer hover:opacity-90 transition-opacity"
+                                    loading="lazy"
+                                    decoding="async"
                                     onClick={(e) => {
                                       e.stopPropagation();
                                       setFullSizeImage(message.shared_post.image_url);
@@ -2385,6 +2387,8 @@ const Community = () => {
                                     src={message.image_url}
                                     alt="Image"
                                     className="mt-2 rounded-lg w-full max-h-64 object-contain bg-muted/20 cursor-pointer hover:opacity-90 transition-opacity"
+                                    loading="lazy"
+                                    decoding="async"
                                     onClick={(e) => {
                                       e.stopPropagation();
                                       setFullSizeImage(message.image_url);
@@ -2648,7 +2652,7 @@ const Community = () => {
               {mediaPreview && (
                 <div className="mb-2 relative">
                   {mediaType === 'image' ? (
-                    <img src={mediaPreview} alt="Preview" className="max-h-48 rounded-lg object-contain bg-muted/20" />
+                    <img src={mediaPreview} alt="Preview" className="max-h-48 rounded-lg object-contain bg-muted/20" loading="lazy" decoding="async" />
                   ) : (
                     <video src={mediaPreview} controls className="max-h-48 rounded-lg bg-muted/20" />
                   )}
@@ -2828,6 +2832,8 @@ const Community = () => {
               src={fullSizeImage}
               alt="Image en taille réelle"
               className="w-full h-full object-contain rounded-lg"
+              loading="lazy"
+              decoding="async"
             />
           )}
         </DialogContent>

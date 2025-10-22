@@ -192,6 +192,8 @@ export const GlobalMusicPlayer = () => {
                           src={tracks[currentTrackIndex].thumbnail}
                           alt={tracks[currentTrackIndex].title}
                           className="w-16 h-16 rounded object-cover flex-shrink-0"
+                          loading="lazy"
+                          decoding="async"
                         />
                         <div className="flex-1 min-w-0">
                           <p className="text-xs font-medium leading-tight line-clamp-2">
@@ -251,6 +253,8 @@ export const GlobalMusicPlayer = () => {
                                       src={track.thumbnail}
                                       alt={track.title}
                                       className="w-10 h-10 rounded object-cover flex-shrink-0"
+                                      loading="lazy"
+                                      decoding="async"
                                     />
                                     <div className="flex-1 min-w-0">
                                       <p className="text-xs font-medium leading-tight line-clamp-2">

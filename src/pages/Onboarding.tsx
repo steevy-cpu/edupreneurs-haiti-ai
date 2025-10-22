@@ -70,6 +70,8 @@ const Onboarding = () => {
               src={ericWaving} 
               alt="Eric vous souhaite la bienvenue" 
               className="w-32 h-32 sm:w-40 sm:h-40 object-contain animate-[float_4s_ease-in-out_infinite] drop-shadow-2xl"
+              loading="lazy"
+              decoding="async"
             />
           </div>
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-accent/10 border border-accent/20 mb-6">

@@ -191,6 +191,8 @@ const Affiliations = () => {
                 src={ericExcited} 
                 alt="Eric - Excited" 
                 className="w-28 h-28 sm:w-36 sm:h-36 object-contain animate-[float_4s_ease-in-out_infinite]"
+                loading="lazy"
+                decoding="async"
               />
             </div>
           </div>

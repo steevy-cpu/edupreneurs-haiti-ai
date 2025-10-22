@@ -188,6 +188,8 @@ export default function ResetPassword() {
               src={edupreneursLogo} 
               alt="Edupreneurs" 
               className="h-16 w-16 rounded-xl object-cover"
+              loading="eager"
+              decoding="async"
             />
           </div>
 

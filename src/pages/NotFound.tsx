@@ -22,6 +22,8 @@ const NotFound = () => {
           src={ericSad} 
           alt="Eric looking sad - 404 error" 
           className="w-64 h-64 mx-auto mb-8 object-contain"
+          loading="lazy"
+          decoding="async"
         />
         <h1 className="mb-4 text-6xl font-bold text-primary">404</h1>
         <h2 className="mb-4 text-3xl font-semibold text-foreground">Oups! Page introuvable</h2>

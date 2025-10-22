@@ -77,6 +77,8 @@ export const MusicSelector = () => {
                         src={track.thumbnail}
                         alt={track.title}
                         className="w-20 h-20 rounded-lg object-cover flex-shrink-0"
+                        loading="lazy"
+                        decoding="async"
                       />
                       <div className="flex-1 min-w-0">
                         <p className="font-medium text-sm leading-tight mb-1">

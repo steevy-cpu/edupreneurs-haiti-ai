@@ -27,7 +27,7 @@ const Index = () => {
       <header className="sticky top-0 z-50 bg-card/80 backdrop-blur-md border-b border-border shadow-sm">
         <div className="container mx-auto px-2 sm:px-4 py-2 sm:py-4 flex justify-between items-center">
           <Link to="/" className="flex items-center gap-1.5 sm:gap-3">
-            <img src={edupreneursLogo} alt="EDUPRENEURS Logo" className="h-8 sm:h-12 w-auto object-contain" />
+            <img src={edupreneursLogo} alt="EDUPRENEURS Logo" className="h-8 sm:h-12 w-auto object-contain" loading="eager" decoding="async" />
           </Link>
           
           <nav className="hidden md:flex items-center gap-6">
@@ -121,6 +121,8 @@ const Index = () => {
               src={ericCelebrating} 
               alt="Eric - Assistant IA EDUPRENEURS" 
               className="w-full max-w-[200px] sm:max-w-[280px] md:max-w-md animate-[float_4s_ease-in-out_infinite] drop-shadow-2xl"
+              loading="lazy"
+              decoding="async"
             />
           </div>
         </div>
@@ -136,7 +138,7 @@ const Index = () => {
             En 2025, le système éducatif peine à répondre au besoin éducatif. Nous croyons fermement qu'avec les bonnes méthodes 
             et la technologie, le programme du MENFP peut enfin impacter positivement notre jeunesse.
           </p>
-          <img src={heroImage} alt="EDUPRENEURS Logo" className="h-32 sm:h-40 lg:h-44 rounded-xl sm:rounded-2xl shadow-xl mx-auto" />
+          <img src={heroImage} alt="EDUPRENEURS Logo" className="h-32 sm:h-40 lg:h-44 rounded-xl sm:rounded-2xl shadow-xl mx-auto" loading="lazy" decoding="async" />
         </div>
       </section>
 
@@ -157,6 +159,8 @@ const Index = () => {
                 src={ericPointingRight} 
                 alt="Eric vous guide" 
                 className="w-32 h-32 sm:w-40 sm:h-40 object-contain animate-[float_4s_ease-in-out_infinite] drop-shadow-2xl"
+                loading="lazy"
+                decoding="async"
               />
             </div>
           </div>
@@ -310,7 +314,7 @@ const Index = () => {
                 </Button>
               </Link>
               <div className="pt-4">
-                <img src={ericMain01} alt="Eric - Assistant IA" className="w-64 mx-auto drop-shadow-2xl" />
+                <img src={ericMain01} alt="Eric - Assistant IA" className="w-64 mx-auto drop-shadow-2xl" loading="lazy" decoding="async" />
               </div>
             </CardContent>
           </Card>
@@ -330,6 +334,8 @@ const Index = () => {
                 src={ericThinking} 
                 alt="Eric réfléchit à vos questions" 
                 className="w-32 h-32 sm:w-40 sm:h-40 object-contain animate-[float_4s_ease-in-out_infinite]"
+                loading="lazy"
+                decoding="async"
               />
             </div>
           </div>

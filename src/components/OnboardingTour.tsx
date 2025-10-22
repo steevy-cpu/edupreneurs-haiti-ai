@@ -235,6 +235,8 @@ export default function OnboardingTour() {
             className="drop-shadow-2xl transition-transform duration-500"
             style={{ width: `${ericSize}px`, height: `${ericSize}px` }}
             key={currentStep}
+            loading="lazy"
+            decoding="async"
           />
           {/* Glow effect around Eric */}
           <div className="absolute inset-0 -z-10 rounded-full bg-primary/30 blur-xl animate-pulse" />

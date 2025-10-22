@@ -339,13 +339,15 @@ export const Layout = ({ children }: LayoutProps) => {
             src={edupreneursLogo} 
             alt="EDUPRENEURS" 
             className="h-12 sm:h-14 w-auto object-contain logo-no-filter"
+            loading="eager"
+            decoding="async"
           />
         </div>
 
         {/* User Profile Section */}
         <div className="p-3 sm:p-4 lg:p-6 text-center border-b border-border bg-gradient-to-br from-muted/30 to-muted/10">
           <div className="w-12 h-12 sm:w-14 sm:h-14 lg:w-16 lg:h-16 mx-auto mb-2 sm:mb-3 lg:mb-4 rounded-full overflow-hidden bg-gradient-to-br from-[hsl(var(--primary))] to-[hsl(var(--success))] shadow-md animate-[gentle-bob_8s_ease-in-out_infinite]">
-            <img src={userAvatar} alt="User Avatar" className="w-full h-full object-cover" />
+            <img src={userAvatar} alt="User Avatar" className="w-full h-full object-cover" loading="lazy" decoding="async" />
           </div>
           <div className="font-bold text-sm sm:text-base lg:text-lg text-foreground">{userNickname}</div>
         </div>

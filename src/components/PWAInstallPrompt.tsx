@@ -30,6 +30,8 @@ export const PWAInstallPrompt = ({ isIOS, onInstall, onDismiss }: PWAInstallProm
               src={ericPointingUp} 
               alt="Eric" 
               className="h-16 w-16 object-contain"
+              loading="lazy"
+              decoding="async"
             />
           </div>
 
