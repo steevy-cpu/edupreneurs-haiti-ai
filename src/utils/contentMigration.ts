@@ -4,6 +4,7 @@ import { sciencesLessons7AF } from "@/data/sciencesLessons";
 import { espagnolLessons7AF } from "@/data/espagnolLessons";
 import { francaisLessons7AF } from "@/data/francaisLessons";
 import { sciencesSocialesLessons7AF } from "@/data/sciencesSocialesLessons";
+import { creoleLessons7AF } from "@/data/creoleLessons";
 
 interface MigrationResult {
   success: boolean;
@@ -298,6 +299,60 @@ export const migrateContentToDatabase = async (): Promise<MigrationResult> => {
       .from('subjects')
       .update({ lesson_count: sciencesSocialesLessons7AF.length })
       .eq('id', sciencesSocialesSubject.id);
+
+    // Create Creole subject
+    const { data: creoleSubject, error: creoleSubjectError } = await supabase
+      .from('subjects')
+      .upsert({
+        name: "Kreyòl Ayisyen",
+        slug: "creole",
+        description: "Lang, literati ak kilti ayisyèn",
+        icon_name: "👥",
+        color: "pink",
+        grade_level: "7AF",
+        created_by: user.id,
+      }, { onConflict: 'slug' })
+      .select()
+      .single();
+
+    if (creoleSubjectError) {
+      result.errors.push(`Creole subject error: ${creoleSubjectError.message}`);
+      return result;
+    }
+
+    result.subjectsCreated++;
+
+    // Migrate Creole lessons
+    for (let i = 0; i < creoleLessons7AF.length; i++) {
+      const lesson = creoleLessons7AF[i];
+      const { error: lessonError } = await supabase
+        .from('lessons')
+        .upsert({
+          subject_id: creoleSubject.id,
+          title: lesson.title,
+          slug: lesson.id.toString(),
+          objectif: lesson.description,
+          introduction: lesson.description,
+          contenu: lesson.content,
+          exemples_exercices: "",
+          order_index: i,
+          grade_level: "7AF",
+          is_published: true,
+          created_by: user.id,
+        }, { onConflict: 'subject_id,slug' });
+
+      if (lessonError) {
+        result.errors.push(`Creole lesson ${lesson.id}: ${lessonError.message}`);
+      } else {
+        result.lessonsCreated++;
+      }
+    }
+
+    // Update lesson count for Creole
+    await supabase
+      .from('subjects')
+      .update({ lesson_count: creoleLessons7AF.length })
+      .eq('id', creoleSubject.id);
 
     result.success = result.errors.length === 0;
     return result;

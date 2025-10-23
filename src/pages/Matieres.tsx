@@ -96,8 +96,8 @@ const subjects: Subject[] = [
     title: "Kreyòl Ayisyen",
     description: "Lang, literati ak kilti ayisyèn",
     icon: Users,
-    lessons: 16,
-    exercises: 55,
+    lessons: 30,
+    exercises: 90,
     color: "from-pink-500 to-pink-600"
   },
   {
@@ -274,7 +274,7 @@ export default function Matieres() {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mb-8">
           {subjects.map((subject, index) => {
             const IconComponent = subject.icon;
-            const hasContent = subject.id === 'mathematiques' || subject.id === 'sciences' || subject.id === 'anglais' || subject.id === 'espagnol' || subject.id === 'francais' || subject.id === 'sciences-sociales';
+            const hasContent = subject.id === 'mathematiques' || subject.id === 'sciences' || subject.id === 'anglais' || subject.id === 'espagnol' || subject.id === 'francais' || subject.id === 'sciences-sociales' || subject.id === 'creole';
             
             return (
               <Card
@@ -292,6 +292,8 @@ export default function Matieres() {
                       ? '/francais-course'
                       : subject.id === 'sciences-sociales'
                       ? '/sciences-sociales-course'
+                      : subject.id === 'creole'
+                      ? '/creole-course'
                       : '/sciences-course';
                     navigate(courseRoute);
                   }
@@ -336,6 +338,8 @@ export default function Matieres() {
                         ? '/francais-course'
                         : subject.id === 'sciences-sociales'
                         ? '/sciences-sociales-course'
+                        : subject.id === 'creole'
+                        ? '/creole-course'
                         : '/sciences-course';
                       navigate(courseRoute);
                     }}
