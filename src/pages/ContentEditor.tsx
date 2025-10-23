@@ -67,15 +67,214 @@ const ContentEditor = () => {
     }
   };
 
-  const handleApplyContent = async (content: string, operation: string) => {
-    if (!selectedLesson) return;
-
+  // Helper function: Create new lesson
+  const createNewLesson = async (data: any) => {
     try {
-      // Parse and apply the content based on operation type
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error("User not authenticated");
+
+      const { data: newLesson, error } = await supabase
+        .from('lessons')
+        .insert({
+          title: data.title,
+          slug: data.slug || data.title.toLowerCase().replace(/\s+/g, '-'),
+          subject_id: data.subject_id,
+          grade_level: data.grade_level,
+          objectif: data.objectif || '',
+          introduction: data.introduction || '',
+          contenu: data.contenu || '',
+          exemples_exercices: data.exemples_exercices || '',
+          created_by: user.id,
+          workflow_status: 'draft',
+          is_published: false
+        })
+        .select()
+        .single();
+
+      if (error) throw error;
+      
+      setSelectedLesson(newLesson);
+      toast.success(`Leçon "${data.title}" créée avec succès!`);
+      return newLesson;
+    } catch (error) {
+      console.error('Error creating lesson:', error);
+      toast.error("Erreur lors de la création de la leçon");
+      throw error;
+    }
+  };
+
+  // Helper function: Update lesson metadata
+  const updateLessonMetadata = async (lessonId: string, updates: any) => {
+    try {
+      const allowedFields = ['title', 'slug', 'grade_level', 'objectif', 'introduction', 'mois', 'references'];
+      const filteredUpdates = Object.keys(updates)
+        .filter(key => allowedFields.includes(key))
+        .reduce((obj, key) => ({ ...obj, [key]: updates[key] }), {});
+
+      const { data, error } = await supabase
+        .from('lessons')
+        .update({
+          ...filteredUpdates,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', lessonId)
+        .select()
+        .single();
+
+      if (error) throw error;
+
+      setSelectedLesson(data);
+      toast.success("Métadonnées mises à jour avec succès!");
+      return data;
+    } catch (error) {
+      console.error('Error updating metadata:', error);
+      toast.error("Erreur lors de la mise à jour des métadonnées");
+      throw error;
+    }
+  };
+
+  // Helper function: Change workflow status
+  const changeWorkflowStatus = async (lessonId: string, newStatus: string) => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error("User not authenticated");
+
+      const updates: any = {
+        workflow_status: newStatus,
+        updated_at: new Date().toISOString()
+      };
+
+      // If submitting for review, set reviewed_by
+      if (newStatus === 'review') {
+        updates.reviewed_by = user.id;
+      }
+
+      // If publishing, set is_published and scheduled date
+      if (newStatus === 'published') {
+        updates.is_published = true;
+      }
+
+      const { data, error } = await supabase
+        .from('lessons')
+        .update(updates)
+        .eq('id', lessonId)
+        .select()
+        .single();
+
+      if (error) throw error;
+
+      setSelectedLesson(data);
+      toast.success(`Statut changé en "${newStatus}" avec succès!`);
+      return data;
+    } catch (error) {
+      console.error('Error changing workflow status:', error);
+      toast.error("Erreur lors du changement de statut");
+      throw error;
+    }
+  };
+
+  // Helper function: Bulk update lessons
+  const bulkUpdateLessons = async (lessonIds: string[], updates: any) => {
+    try {
+      const { data, error } = await supabase
+        .from('lessons')
+        .update({
+          ...updates,
+          updated_at: new Date().toISOString()
+        })
+        .in('id', lessonIds)
+        .select();
+
+      if (error) throw error;
+
+      toast.success(`${lessonIds.length} leçon(s) mise(s) à jour avec succès!`);
+      return data;
+    } catch (error) {
+      console.error('Error bulk updating lessons:', error);
+      toast.error("Erreur lors de la mise à jour en masse");
+      throw error;
+    }
+  };
+
+  // Helper function: Delete lesson
+  const deleteLesson = async (lessonId: string) => {
+    try {
+      const { error } = await supabase
+        .from('lessons')
+        .delete()
+        .eq('id', lessonId);
+
+      if (error) throw error;
+
+      if (selectedLesson?.id === lessonId) {
+        setSelectedLesson(null);
+      }
+      
+      toast.success("Leçon supprimée avec succès!");
+    } catch (error) {
+      console.error('Error deleting lesson:', error);
+      toast.error("Erreur lors de la suppression de la leçon");
+      throw error;
+    }
+  };
+
+  const handleApplyContent = async (content: string, operation: string, data?: any) => {
+    try {
+      // Handle structural operations
+      if (operation === 'create_lesson') {
+        if (!data) {
+          toast.error("Données manquantes pour créer la leçon");
+          return;
+        }
+        await createNewLesson(data);
+        return;
+      }
+
+      if (operation === 'update_metadata') {
+        if (!selectedLesson || !data) {
+          toast.error("Leçon ou données manquantes");
+          return;
+        }
+        await updateLessonMetadata(selectedLesson.id, data);
+        return;
+      }
+
+      if (operation === 'workflow_change') {
+        if (!selectedLesson || !data?.targetStatus) {
+          toast.error("Leçon ou statut manquant");
+          return;
+        }
+        await changeWorkflowStatus(selectedLesson.id, data.targetStatus);
+        return;
+      }
+
+      if (operation === 'delete') {
+        if (!selectedLesson) {
+          toast.error("Aucune leçon sélectionnée");
+          return;
+        }
+        await deleteLesson(selectedLesson.id);
+        return;
+      }
+
+      if (operation === 'bulk_update') {
+        if (!data?.lessonIds || !data?.updates) {
+          toast.error("Données manquantes pour la mise à jour en masse");
+          return;
+        }
+        await bulkUpdateLessons(data.lessonIds, data.updates);
+        return;
+      }
+
+      // Handle content operations (existing logic)
+      if (!selectedLesson) {
+        toast.error("Aucune leçon sélectionnée");
+        return;
+      }
+
       let updatedLesson = { ...selectedLesson };
 
       if (operation === 'generate' || operation === 'enhance') {
-        // Extract HTML content from the AI response
         const htmlMatch = content.match(/<div[^>]*>[\s\S]*<\/div>|<p>[\s\S]*<\/p>/);
         if (htmlMatch) {
           updatedLesson.contenu = htmlMatch[0];
@@ -83,10 +282,8 @@ const ContentEditor = () => {
           updatedLesson.contenu = content;
         }
       } else if (operation === 'exercises') {
-        // Append exercises to exemples_exercices
         updatedLesson.exemples_exercices = (selectedLesson.exemples_exercices || '') + '\n\n' + content;
       } else if (operation === 'translate') {
-        // Add translation to content
         updatedLesson.contenu = (selectedLesson.contenu || '') + '\n\n<h3>Traduction créole</h3>\n' + content;
       } else if (operation === 'simplify') {
         updatedLesson.contenu = content;
@@ -96,7 +293,6 @@ const ContentEditor = () => {
         updatedLesson.contenu = content;
       }
 
-      // Update lesson in database with correct column names
       const { error } = await supabase
         .from('lessons')
         .update({ 
@@ -112,7 +308,7 @@ const ContentEditor = () => {
       toast.success("Modifications appliquées avec succès!");
     } catch (error) {
       console.error('Error applying content:', error);
-      toast.error("Erreur lors de l'application du contenu");
+      toast.error("Erreur lors de l'application des modifications");
     }
   };
 

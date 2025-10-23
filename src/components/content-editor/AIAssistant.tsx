@@ -11,7 +11,7 @@ import { Separator } from "@/components/ui/separator";
 
 interface AIAssistantProps {
   selectedLesson: any;
-  onApplyContent: (content: string, operation: string) => void;
+  onApplyContent: (content: string, operation: string, data?: any) => void;
 }
 
 type Message = {
@@ -76,6 +76,7 @@ export const AIAssistant = ({ selectedLesson, onApplyContent }: AIAssistantProps
             messages: newMessages,
             operation,
             lessonData: selectedLesson,
+            command: userMessage,
           }),
         }
       );
@@ -96,6 +97,34 @@ export const AIAssistant = ({ selectedLesson, onApplyContent }: AIAssistantProps
         throw new Error('Erreur lors de la communication avec l\'IA');
       }
 
+      // Check if response is JSON (structured operation)
+      const contentType = response.headers.get('content-type');
+      
+      if (contentType?.includes('application/json')) {
+        const structuredResponse = await response.json();
+        
+        if (structuredResponse.operation) {
+          // Handle structured operations
+          const confirmMsg: Message = {
+            role: 'assistant',
+            content: structuredResponse.message || 'Opération détectée',
+            operation: structuredResponse.operation,
+            isStructured: true,
+            timestamp: Date.now()
+          };
+          
+          setMessages([...newMessages, confirmMsg]);
+          
+          // If auto-confirm or user confirms, execute the operation
+          if (structuredResponse.requiresConfirmation) {
+            // Show confirmation in chat
+            return;
+          }
+        }
+        return;
+      }
+
+      // Handle streaming response
       const reader = response.body?.getReader();
       const decoder = new TextDecoder();
       let assistantMessage = '';
@@ -109,7 +138,6 @@ export const AIAssistant = ({ selectedLesson, onApplyContent }: AIAssistantProps
           
           buffer += decoder.decode(value, { stream: true });
           
-          // Process complete lines
           let newlineIndex: number;
           while ((newlineIndex = buffer.indexOf('\n')) !== -1) {
             let line = buffer.slice(0, newlineIndex);
@@ -133,7 +161,6 @@ export const AIAssistant = ({ selectedLesson, onApplyContent }: AIAssistantProps
                 ]);
               }
             } catch (e) {
-              // Incomplete JSON, wait for more data
               buffer = line + '\n' + buffer;
               break;
             }
@@ -386,7 +413,7 @@ export const AIAssistant = ({ selectedLesson, onApplyContent }: AIAssistantProps
                         )}
                         <p className="text-sm whitespace-pre-wrap">{msg.content}</p>
                       </div>
-                      {msg.role === 'assistant' && msg.operation && (
+                      {msg.role === 'assistant' && msg.operation && !msg.isStructured && (
                         <Button
                           size="sm"
                           variant="outline"
@@ -398,6 +425,31 @@ export const AIAssistant = ({ selectedLesson, onApplyContent }: AIAssistantProps
                         >
                           ✨ Appliquer les modifications
                         </Button>
+                      )}
+                      {msg.role === 'assistant' && msg.isStructured && (
+                        <div className="flex gap-2 mt-2">
+                          <Button
+                            size="sm"
+                            variant="default"
+                            onClick={() => {
+                              // Parse the structured response and execute
+                              toast.info("Fonctionnalité à implémenter dans Phase 3");
+                            }}
+                            className="self-start"
+                          >
+                            ✓ Confirmer
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => {
+                              toast.info("Opération annulée");
+                            }}
+                            className="self-start"
+                          >
+                            ✗ Annuler
+                          </Button>
+                        </div>
                       )}
                     </div>
                   </div>
