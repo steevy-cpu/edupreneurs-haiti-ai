@@ -95,33 +95,23 @@ export const YouTubeVideoSection = ({ lessonTitle, objectives, gradeLevel = "AF7
 
       const data = await response.json();
 
-      // Filter videos to ensure French/Creole content
+      // Filter videos to ensure French/Creole content with relaxed rules
       const videoList: YouTubeVideo[] = data.items
         .filter((item: any) => {
           const title = item.snippet.title.toLowerCase();
           const description = item.snippet.description.toLowerCase();
-          const channelTitle = item.snippet.channelTitle.toLowerCase();
           
-          // Keywords that indicate French content
-          const frenchIndicators = ['français', 'french', 'cm1', 'cm2', '6ème', '5ème', '4ème', '3ème', 
-                                     'primaire', 'collège', 'lycée', 'mathématiques', 'maths'];
+          // Keywords that strongly indicate English content (to exclude)
+          const englishIndicators = ['english', 'in english', 'english lesson', 
+                                      'learn in english', 'tutorial in english', 'english version'];
           
-          // Keywords that indicate English content (to exclude)
-          const englishIndicators = ['english', 'mathematics in english', 'english lesson', 
-                                      'learn in english', 'tutorial in english'];
-          
-          // Check if video has English indicators
+          // Check if video has strong English indicators
           const hasEnglishIndicators = englishIndicators.some(indicator => 
             title.includes(indicator) || description.includes(indicator)
           );
           
-          // Check if video has French indicators
-          const hasFrenchIndicators = frenchIndicators.some(indicator => 
-            title.includes(indicator) || description.includes(indicator) || channelTitle.includes(indicator)
-          );
-          
-          // Include only if has French indicators and no English indicators
-          return hasFrenchIndicators && !hasEnglishIndicators;
+          // Include if not clearly English (more permissive for French content)
+          return !hasEnglishIndicators;
         })
         .map((item: any) => ({
           id: item.id.videoId,

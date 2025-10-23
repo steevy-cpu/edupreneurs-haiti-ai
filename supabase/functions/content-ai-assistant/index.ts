@@ -487,10 +487,52 @@ Chaque leçon DOIT avoir:
 3. **subject_id** - UUID référence table subjects
 4. **objectif** - Objectifs d'apprentissage (mesurables, clairs)
 5. **introduction** - Accroche + importance + vocabulaire
-6. **contenu** - Contenu principal avec concepts et exemples travaillés
+6. **contenu** - Contenu principal DÉTAILLÉ avec concepts et exemples travaillés (HTML structuré avec sections, listes, exemples concrets)
 7. **exemples_exercices** - Pratique guidée + indépendante (minimum 6 problèmes)
 8. **workflow_status** - draft|in_review|approved|published
 9. **is_published** - boolean
+
+🎨 **MODÈLE DE CONTENU IDÉAL (Utiliser comme référence):**
+Le contenu doit être LONG et DÉTAILLÉ, structuré avec du HTML propre. Voici un exemple de structure à suivre:
+
+\`\`\`html
+<div class="content-section">
+  <h3>1. Qu'est-ce qu'une balance?</h3>
+  <p>Une balance est un instrument qui permet de <strong>mesurer la masse</strong> d'un objet...</p>
+  <ul>
+    <li><strong>Balance à plateaux (Roberval)</strong>: Deux plateaux équilibrés...</li>
+    <li><strong>Balance électronique</strong>: Affichage numérique précis...</li>
+  </ul>
+</div>
+
+<div class="content-section">
+  <h3>2. Les différentes parties d'une balance</h3>
+  <ul>
+    <li><strong>Plateau de mesure</strong>: Où on place l'objet à peser</li>
+    <li><strong>Écran/Cadran</strong>: Affiche la mesure</li>
+    <li><strong>Bouton de tare/remise à zéro</strong>: Pour annuler le poids du récipient</li>
+  </ul>
+</div>
+
+<div class="example-box">
+  <h4>💡 Exemple pratique:</h4>
+  <p><strong>Situation:</strong> Madame Rose au marché...</p>
+  <p><strong>Étapes:</strong></p>
+  <ol>
+    <li>Placer le bol vide → affiche 50g</li>
+    <li>Appuyer sur "TARE" → affiche 0g</li>
+    <li>Ajouter le riz → affiche 500g de riz pur</li>
+  </ol>
+</div>
+\`\`\`
+
+**RÈGLES DE CONTENU:**
+- Minimum 5-7 sections bien détaillées
+- Chaque section avec titre, paragraphes explicatifs, listes
+- Au moins 2-3 exemples pratiques concrets avec contexte haïtien
+- Utiliser des balises HTML: <h3>, <h4>, <p>, <ul>, <ol>, <li>, <strong>, <em>
+- Classes CSS disponibles: content-section, example-box, exercise, important-note
+- Le contenu doit faire au moins 800-1200 mots pour être complet
 
 ✅ **RUBRIQUE DE VALIDATION (auto après changements):**
 - ✅ Schéma: Tous champs requis présents
