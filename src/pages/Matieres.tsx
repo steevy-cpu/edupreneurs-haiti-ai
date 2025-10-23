@@ -86,19 +86,10 @@ const subjects: Subject[] = [
     id: "espagnol",
     title: "Espagnol",
     description: "Cours d'espagnol selon le programme MENFP",
-    icon: Globe,
+    icon: Flag,
     lessons: 23,
     exercises: 85,
     color: "from-rose-500 to-rose-600"
-  },
-  {
-    id: "francais",
-    title: "Français",
-    description: "Communication française selon le programme MENFP",
-    icon: BookOpen,
-    lessons: 34,
-    exercises: 120,
-    color: "from-purple-500 to-purple-600"
   },
   {
     id: "creole",
