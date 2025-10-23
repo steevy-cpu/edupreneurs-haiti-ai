@@ -547,7 +547,7 @@ Chaque leçon DOIT avoir:
       ...messages
     ];
     
-    let maxIterations = 5; // Prevent infinite loops, increased from 3
+    let maxIterations = 10; // Allow enough iterations for complex operations
     let iteration = 0;
     
     while (iteration < maxIterations) {
@@ -618,9 +618,9 @@ Chaque leçon DOIT avoir:
             const result = await executeTool(toolName, toolArgs);
             console.log(`  ✓ Result:`, result.ok ? '✅' : '❌', result.message || result.error);
             
-            // If tool failed, stop iterations early to avoid wasting calls
-            if (!result.ok && ['update_lesson_content', 'create_lesson', 'publish_lesson'].includes(toolName)) {
-              console.log('⚠️ Critical tool failed, ending iteration loop');
+            // Enhance result message for better AI understanding
+            if (result.ok && ['update_lesson_content', 'create_lesson', 'publish_lesson'].includes(toolName)) {
+              result.message = `SUCCESS: ${result.message || 'Operation completed'}. You can now provide a summary to the user.`;
             }
             
             return {
