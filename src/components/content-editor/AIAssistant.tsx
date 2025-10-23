@@ -185,6 +185,17 @@ export const AIAssistant = ({ selectedLesson, onApplyContent }: AIAssistantProps
         conversationHistory: messages.slice(-5).map(m => ({ role: m.role, content: m.content.substring(0, 200) }))
       };
 
+      console.log('📦 Enhanced context:', JSON.stringify({
+        selectedLesson: enhancedContext.selectedLesson ? {
+          id: enhancedContext.selectedLesson.id,
+          title: enhancedContext.selectedLesson.title,
+          subject_id: enhancedContext.selectedLesson.subject_id,
+          subjectName: enhancedContext.selectedLesson.subjectName,
+          grade_level: enhancedContext.selectedLesson.grade_level
+        } : null,
+        availableSubjects: enhancedContext.availableSubjects.length
+      }, null, 2));
+
       console.log('📡 Calling edge function...');
       const response = await fetch(
         `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/content-ai-assistant`,
