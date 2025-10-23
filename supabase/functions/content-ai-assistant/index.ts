@@ -511,48 +511,123 @@ Chaque leçon DOIT avoir:
       });
     }
 
-    // Call AI with tools
-    const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${LOVABLE_API_KEY}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        model: 'google/gemini-2.5-flash',
-        messages: [
-          { role: 'system', content: systemPrompt },
-          ...messages
-        ],
-        tools: TOOLS,
-        tool_choice: "auto",
-        stream: true,
-      }),
-    });
+    // Call AI with tools - handle tool calling iteratively
+    let conversationMessages = [
+      { role: 'system', content: systemPrompt },
+      ...messages
+    ];
+    
+    let maxIterations = 3; // Prevent infinite loops
+    let iteration = 0;
+    
+    while (iteration < maxIterations) {
+      iteration++;
+      console.log(`🔄 AI iteration ${iteration}/${maxIterations}`);
+      
+      const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${LOVABLE_API_KEY}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          model: 'google/gemini-2.5-flash',
+          messages: conversationMessages,
+          tools: TOOLS,
+          tool_choice: "auto",
+          stream: false, // Non-streaming for tool execution
+        }),
+      });
 
-    if (!response.ok) {
-      if (response.status === 429) {
-        return new Response(
-          JSON.stringify({ error: 'Rate limit exceeded' }),
-          { status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-        );
+      if (!response.ok) {
+        if (response.status === 429) {
+          return new Response(
+            JSON.stringify({ error: 'Rate limit exceeded' }),
+            { status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          );
+        }
+        if (response.status === 402) {
+          return new Response(
+            JSON.stringify({ error: 'Payment required' }),
+            { status: 402, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          );
+        }
+        throw new Error(`AI service error: ${response.status}`);
       }
-      if (response.status === 402) {
-        return new Response(
-          JSON.stringify({ error: 'Payment required' }),
-          { status: 402, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+
+      const aiResponse = await response.json();
+      const choice = aiResponse.choices[0];
+      const message = choice.message;
+      
+      // Add assistant message to conversation
+      conversationMessages.push(message);
+      
+      // Check if AI wants to use tools
+      if (message.tool_calls && message.tool_calls.length > 0) {
+        console.log(`🔧 Executing ${message.tool_calls.length} tool(s)`);
+        
+        // Execute all tool calls
+        const toolResults = await Promise.all(
+          message.tool_calls.map(async (toolCall: any) => {
+            const toolName = toolCall.function.name;
+            const toolArgs = JSON.parse(toolCall.function.arguments);
+            
+            console.log(`  → ${toolName}:`, toolArgs);
+            const result = await executeTool(toolName, toolArgs);
+            console.log(`  ✓ Result:`, result.ok ? '✅' : '❌', result.message || result.error);
+            
+            return {
+              tool_call_id: toolCall.id,
+              role: 'tool',
+              name: toolName,
+              content: JSON.stringify(result)
+            };
+          })
         );
+        
+        // Add tool results to conversation
+        conversationMessages.push(...toolResults);
+        
+        // Continue loop to get AI's response after tool execution
+        continue;
       }
-      throw new Error(`AI service error: ${response.status}`);
+      
+      // No tool calls - AI has final response, stream it back
+      console.log('✅ Final response ready, streaming to client');
+      
+      const encoder = new TextEncoder();
+      const stream = new ReadableStream({
+        start(controller) {
+          // Send the complete message as streaming chunks
+          const content = message.content || '';
+          const chunks = content.split(' ');
+          
+          for (const chunk of chunks) {
+            const data = `data: ${JSON.stringify({
+              choices: [{
+                delta: { content: chunk + ' ' },
+                finish_reason: null
+              }]
+            })}\n\n`;
+            controller.enqueue(encoder.encode(data));
+          }
+          
+          // Send finish
+          controller.enqueue(encoder.encode('data: [DONE]\n\n'));
+          controller.close();
+        }
+      });
+      
+      return new Response(stream, {
+        headers: {
+          ...corsHeaders,
+          'Content-Type': 'text/event-stream',
+        },
+      });
     }
-
-    // Stream the response back
-    return new Response(response.body, {
-      headers: {
-        ...corsHeaders,
-        'Content-Type': 'text/event-stream',
-      },
-    });
+    
+    // Max iterations reached
+    throw new Error('Max tool execution iterations reached');
 
   } catch (error) {
     console.error('Content AI error:', error);
