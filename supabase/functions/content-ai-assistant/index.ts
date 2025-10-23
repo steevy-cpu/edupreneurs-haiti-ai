@@ -492,7 +492,8 @@ Chaque leçon DOIT avoir:
       systemPrompt += `\n\n**Leçon actuellement sélectionnée:**
 - ID: ${lesson.id}
 - Titre: "${lesson.title}"
-- Niveau: ${lesson.grade_level} | Sujet: ${lesson.subject_id}
+- Matière: ${lesson.subjectName || 'Non spécifiée'} (ID: ${lesson.subject_id})
+- Niveau: ${lesson.grade_level}
 - Statut: ${lesson.workflow_status} | Publié: ${lesson.is_published ? '✅' : '❌'}`;
 
       if (lesson.hasContent) {

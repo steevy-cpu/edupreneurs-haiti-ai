@@ -145,6 +145,15 @@ export const AIAssistant = ({ selectedLesson, onApplyContent }: AIAssistantProps
         .select('id, name, slug, grade_level, description')
         .order('name');
 
+      // Get current subject name
+      const { data: currentSubject } = selectedLesson?.subject_id
+        ? await supabase
+            .from('subjects')
+            .select('id, name, grade_level')
+            .eq('id', selectedLesson.subject_id)
+            .single()
+        : { data: null };
+
       const { data: relatedLessons } = selectedLesson?.subject_id
         ? await supabase
             .from('lessons')
@@ -158,6 +167,7 @@ export const AIAssistant = ({ selectedLesson, onApplyContent }: AIAssistantProps
       const enhancedContext = {
         selectedLesson: selectedLesson ? {
           ...selectedLesson,
+          subjectName: currentSubject?.name,
           hasContent: !!(selectedLesson.contenu || selectedLesson.exemples_exercices),
           hasObjectives: !!selectedLesson.objectif,
           hasIntroduction: !!selectedLesson.introduction,
