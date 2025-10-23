@@ -78,29 +78,30 @@ const ContentEditor = () => {
         // Extract HTML content from the AI response
         const htmlMatch = content.match(/<div[^>]*>[\s\S]*<\/div>|<p>[\s\S]*<\/p>/);
         if (htmlMatch) {
-          updatedLesson.content = htmlMatch[0];
+          updatedLesson.contenu = htmlMatch[0];
         } else {
-          updatedLesson.content = content;
+          updatedLesson.contenu = content;
         }
       } else if (operation === 'exercises') {
-        // Append exercises to content
-        updatedLesson.content = selectedLesson.content + '\n\n' + content;
+        // Append exercises to exemples_exercices
+        updatedLesson.exemples_exercices = (selectedLesson.exemples_exercices || '') + '\n\n' + content;
       } else if (operation === 'translate') {
-        // Add translation
-        updatedLesson.content = selectedLesson.content + '\n\n<h3>Traduction créole</h3>\n' + content;
+        // Add translation to content
+        updatedLesson.contenu = (selectedLesson.contenu || '') + '\n\n<h3>Traduction créole</h3>\n' + content;
       } else if (operation === 'simplify') {
-        updatedLesson.content = content;
+        updatedLesson.contenu = content;
       } else if (operation === 'quiz') {
-        updatedLesson.content = selectedLesson.content + '\n\n<h3>Quiz</h3>\n' + content;
+        updatedLesson.exemples_exercices = (selectedLesson.exemples_exercices || '') + '\n\n<h3>Quiz</h3>\n' + content;
       } else {
-        updatedLesson.content = content;
+        updatedLesson.contenu = content;
       }
 
-      // Update lesson in database
+      // Update lesson in database with correct column names
       const { error } = await supabase
         .from('lessons')
         .update({ 
-          content: updatedLesson.content,
+          contenu: updatedLesson.contenu,
+          exemples_exercices: updatedLesson.exemples_exercices,
           updated_at: new Date().toISOString()
         })
         .eq('id', selectedLesson.id);
