@@ -6,6 +6,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { Sparkles, Send, Wand2, Languages, PenTool } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
 
 interface AIAssistantProps {
   selectedLesson: any;
@@ -30,13 +31,21 @@ export const AIAssistant = ({ selectedLesson }: AIAssistantProps) => {
     setMessages(newMessages);
 
     try {
+      // Get user session token
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        toast.error("Session expirée. Veuillez vous reconnecter.");
+        setIsLoading(false);
+        return;
+      }
+
       const response = await fetch(
         `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/content-ai-assistant`,
         {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+            'Authorization': `Bearer ${session.access_token}`,
           },
           body: JSON.stringify({
             messages: newMessages,
