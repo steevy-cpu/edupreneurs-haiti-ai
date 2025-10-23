@@ -595,26 +595,46 @@ Chaque leçon DOIT avoir:
       // No tool calls - AI has final response, stream it back
       console.log('✅ Final response ready, streaming to client');
       
+      // Create streaming response manually
       const encoder = new TextEncoder();
+      const content = message.content || 'Aucune réponse générée';
+      
       const stream = new ReadableStream({
         start(controller) {
-          // Send the complete message as streaming chunks
-          const content = message.content || '';
-          const chunks = content.split(' ');
-          
-          for (const chunk of chunks) {
-            const data = `data: ${JSON.stringify({
+          try {
+            // Split content into words for progressive streaming
+            const words = content.split(' ');
+            
+            for (let i = 0; i < words.length; i++) {
+              const chunk = words[i] + (i < words.length - 1 ? ' ' : '');
+              const sseData = `data: ${JSON.stringify({
+                id: `gen-${Date.now()}`,
+                choices: [{
+                  index: 0,
+                  delta: { content: chunk },
+                  finish_reason: null
+                }]
+              })}\n\n`;
+              
+              controller.enqueue(encoder.encode(sseData));
+            }
+            
+            // Send completion
+            const doneData = `data: ${JSON.stringify({
+              id: `gen-${Date.now()}`,
               choices: [{
-                delta: { content: chunk + ' ' },
-                finish_reason: null
+                index: 0,
+                delta: {},
+                finish_reason: 'stop'
               }]
             })}\n\n`;
-            controller.enqueue(encoder.encode(data));
+            controller.enqueue(encoder.encode(doneData));
+            controller.enqueue(encoder.encode('data: [DONE]\n\n'));
+            controller.close();
+          } catch (error) {
+            console.error('Stream error:', error);
+            controller.error(error);
           }
-          
-          // Send finish
-          controller.enqueue(encoder.encode('data: [DONE]\n\n'));
-          controller.close();
         }
       });
       
@@ -622,6 +642,8 @@ Chaque leçon DOIT avoir:
         headers: {
           ...corsHeaders,
           'Content-Type': 'text/event-stream',
+          'Cache-Control': 'no-cache',
+          'Connection': 'keep-alive',
         },
       });
     }
