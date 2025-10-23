@@ -49,105 +49,464 @@ export const sciencesLessons7AF: Record<string, StaticLessonContent> = {
 </div>`,
     contenu: `<div class="space-y-8">
   <section>
-    <h2 class="text-2xl font-bold text-primary mb-4">⚖️ Qu'est-ce que la Masse ?</h2>
+    <h2 class="text-2xl font-bold text-primary mb-4">⚖️ Introduction : Qu'est-ce que la Masse ?</h2>
     <div class="bg-gradient-to-r from-blue-50 to-cyan-50 dark:from-blue-950/30 dark:to-cyan-950/30 p-6 rounded-lg border-2 border-blue-200 dark:border-blue-800">
       <p class="leading-relaxed mb-4">
-        La <strong>masse</strong> est la quantité de matière contenue dans un objet. Elle se mesure avec une balance
-        et s'exprime en kilogrammes (kg), grammes (g) ou milligrammes (mg).
+        La <strong>masse</strong> est une propriété fondamentale de la matière qui représente la quantité de matière contenue dans un objet. C'est une grandeur physique qui caractérise la quantité de substance qu'un corps contient. Contrairement au poids qui varie selon la gravité, la masse reste constante peu importe où se trouve l'objet - que ce soit sur Terre, sur la Lune, ou même dans l'espace !
       </p>
-      <div class="bg-white/70 dark:bg-black/30 p-4 rounded-lg">
-        <h4 class="font-bold mb-3">📊 Unités de masse :</h4>
-        <ul class="space-y-2">
-          <li class="flex items-center gap-2">
-            <span class="text-blue-600 dark:text-blue-400 font-bold">•</span>
-            <span>1 kilogramme (kg) = 1000 grammes (g)</span>
-          </li>
-          <li class="flex items-center gap-2">
-            <span class="text-blue-600 dark:text-blue-400 font-bold">•</span>
-            <span>1 gramme (g) = 1000 milligrammes (mg)</span>
-          </li>
-          <li class="flex items-center gap-2">
-            <span class="text-blue-600 dark:text-blue-400 font-bold">•</span>
-            <span>1 tonne (t) = 1000 kilogrammes (kg)</span>
-          </li>
-        </ul>
+      
+      <div class="bg-white/70 dark:bg-black/30 p-5 rounded-lg mb-4">
+        <h4 class="font-bold mb-3 text-lg">📊 Les Unités de Mesure de la Masse</h4>
+        <p class="mb-3 text-sm">Le système international utilise plusieurs unités pour mesurer la masse, adaptées à différentes échelles :</p>
+        <div class="grid md:grid-cols-2 gap-4">
+          <div>
+            <h5 class="font-semibold mb-2">Unités principales :</h5>
+            <ul class="space-y-2">
+              <li class="flex items-center gap-2">
+                <span class="text-blue-600 dark:text-blue-400 font-bold">•</span>
+                <span><strong>Kilogramme (kg)</strong> - Unité de base du SI</span>
+              </li>
+              <li class="flex items-center gap-2">
+                <span class="text-blue-600 dark:text-blue-400 font-bold">•</span>
+                <span><strong>Gramme (g)</strong> - Pour les objets légers</span>
+              </li>
+              <li class="flex items-center gap-2">
+                <span class="text-blue-600 dark:text-blue-400 font-bold">•</span>
+                <span><strong>Milligramme (mg)</strong> - Pour les très petites masses</span>
+              </li>
+              <li class="flex items-center gap-2">
+                <span class="text-blue-600 dark:text-blue-400 font-bold">•</span>
+                <span><strong>Tonne (t)</strong> - Pour les grandes masses</span>
+              </li>
+            </ul>
+          </div>
+          <div>
+            <h5 class="font-semibold mb-2">Conversions essentielles :</h5>
+            <ul class="space-y-2 text-sm">
+              <li>• 1 tonne (t) = 1 000 kg</li>
+              <li>• 1 kilogramme (kg) = 1 000 g</li>
+              <li>• 1 gramme (g) = 1 000 mg</li>
+              <li>• 1 milligramme (mg) = 0,001 g</li>
+              <li>• 1 quintal (q) = 100 kg</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <div class="bg-amber-50 dark:bg-amber-950/30 p-5 rounded-lg border-l-4 border-amber-500">
+        <h4 class="font-bold mb-3 flex items-center gap-2">
+          <span>💡</span> Distinction Fondamentale : Masse vs Poids
+        </h4>
+        <p class="text-sm mb-3">
+          Beaucoup de personnes confondent masse et poids, mais ce sont deux concepts physiques complètement différents. Comprendre cette différence est crucial en sciences !
+        </p>
+        <div class="grid md:grid-cols-2 gap-4 text-sm">
+          <div class="bg-blue-50 dark:bg-blue-950/30 p-4 rounded">
+            <h5 class="font-bold mb-2">🔵 La Masse</h5>
+            <ul class="space-y-1">
+              <li>✓ Quantité de matière dans un objet</li>
+              <li>✓ Ne change JAMAIS, peu importe le lieu</li>
+              <li>✓ Se mesure en kilogrammes (kg)</li>
+              <li>✓ Propriété intrinsèque de l'objet</li>
+              <li>✓ Mesurée avec une balance</li>
+            </ul>
+          </div>
+          <div class="bg-orange-50 dark:bg-orange-950/30 p-4 rounded">
+            <h5 class="font-bold mb-2">🔶 Le Poids</h5>
+            <ul class="space-y-1">
+              <li>✓ Force gravitationnelle sur l'objet</li>
+              <li>✓ VARIE selon la gravité du lieu</li>
+              <li>✓ Se mesure en Newtons (N)</li>
+              <li>✓ Dépend de l'environnement</li>
+              <li>✓ Mesuré avec un dynamomètre</li>
+            </ul>
+          </div>
+        </div>
+        <div class="mt-4 p-3 bg-green-50 dark:bg-green-950/30 rounded">
+          <p class="text-sm">
+            <strong>📝 Exemple concret :</strong> Un astronaute de 70 kg a toujours une masse de 70 kg, que ce soit sur Terre, sur la Lune ou dans l'espace. Par contre, son poids sur Terre est d'environ 700 N, mais seulement 117 N sur la Lune (car la gravité lunaire est 6 fois plus faible) et 0 N dans l'espace (apesanteur) !
+          </p>
+        </div>
       </div>
     </div>
   </section>
 
   <section>
-    <h2 class="text-2xl font-bold text-primary mb-4">🔬 Types de Balances</h2>
-    <div class="grid md:grid-cols-2 gap-6">
+    <h2 class="text-2xl font-bold text-primary mb-4">🔬 Les Différents Types de Balances</h2>
+    <p class="mb-6 text-muted-foreground leading-relaxed">
+      Il existe plusieurs types de balances, chacune conçue pour des usages spécifiques et offrant différents niveaux de précision. Le choix d'une balance dépend de la précision requise, de la masse à mesurer, et du contexte d'utilisation. Comprendre ces différences est essentiel pour utiliser l'instrument approprié.
+    </p>
+    
+    <div class="grid md:grid-cols-2 gap-6 mb-6">
       <div class="bg-gradient-to-br from-purple-50 to-pink-50 dark:from-purple-950/30 dark:to-pink-950/30 p-6 rounded-lg border-2 border-purple-200 dark:border-purple-800">
-        <h3 class="text-xl font-bold text-purple-700 dark:text-purple-300 mb-3">Balance à Fléaux ⚖️</h3>
-        <p class="text-sm mb-3">Type classique utilisé en laboratoire</p>
-        <ul class="space-y-2 text-sm">
-          <li>✓ Deux plateaux suspendus</li>
-          <li>✓ Principe de l'équilibre</li>
-          <li>✓ Compare l'objet avec des masses étalonnées</li>
-          <li>✓ Très précise</li>
-        </ul>
+        <h3 class="text-xl font-bold text-purple-700 dark:text-purple-300 mb-3">⚖️ Balance à Fléaux (Balance de Roberval)</h3>
+        <p class="text-sm mb-4 italic">Type classique utilisé principalement dans les laboratoires scientifiques et éducatifs</p>
+        
+        <div class="mb-4">
+          <h4 class="font-semibold mb-2">🔧 Caractéristiques techniques :</h4>
+          <ul class="space-y-2 text-sm">
+            <li>✓ Deux plateaux suspendus à un fléau horizontal mobile</li>
+            <li>✓ Fonctionne selon le principe de l'équilibre des moments</li>
+            <li>✓ Compare l'objet inconnu avec des masses étalonnées certifiées</li>
+            <li>✓ Précision : généralement ±0,1 g à ±1 g selon le modèle</li>
+            <li>✓ Capacité typique : 0 à 2000 g (2 kg)</li>
+            <li>✓ Ne nécessite aucune source d'énergie électrique</li>
+            <li>✓ Très fiable et durable si bien entretenue</li>
+          </ul>
+        </div>
+
+        <div class="bg-purple-100 dark:bg-purple-900/30 p-4 rounded mb-3">
+          <h4 class="font-semibold mb-2">📍 Avantages :</h4>
+          <ul class="text-xs space-y-1">
+            <li>• Très précise pour les mesures scientifiques</li>
+            <li>• Pas besoin d'électricité</li>
+            <li>• Enseigne le principe d'équilibre</li>
+            <li>• Peu d'entretien requis</li>
+            <li>• Longue durée de vie</li>
+          </ul>
+        </div>
+
+        <div class="bg-purple-100 dark:bg-purple-900/30 p-4 rounded">
+          <h4 class="font-semibold mb-2">📍 Inconvénients :</h4>
+          <ul class="text-xs space-y-1">
+            <li>• Mesure plus lente qu'une balance électronique</li>
+            <li>• Nécessite des masses étalonnées</li>
+            <li>• Sensible aux vibrations et courants d'air</li>
+            <li>• Requiert une surface parfaitement plane</li>
+          </ul>
+        </div>
+
+        <div class="mt-4 p-3 bg-white/70 dark:bg-black/30 rounded text-xs">
+          <strong>💼 Usage typique :</strong> Laboratoires de chimie, physique, pharmacie (préparations magistrales), enseignement scientifique, pesées de précision en joaillerie
+        </div>
       </div>
+      
       <div class="bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-950/30 dark:to-emerald-950/30 p-6 rounded-lg border-2 border-green-200 dark:border-green-800">
-        <h3 class="text-xl font-bold text-green-700 dark:text-green-300 mb-3">Balance Électronique 📱</h3>
-        <p class="text-sm mb-3">Type moderne avec affichage numérique</p>
-        <ul class="space-y-2 text-sm">
-          <li>✓ Un seul plateau</li>
-          <li>✓ Affichage digital</li>
-          <li>✓ Lecture directe de la masse</li>
-          <li>✓ Rapide et facile à utiliser</li>
-        </ul>
+        <h3 class="text-xl font-bold text-green-700 dark:text-green-300 mb-3">📱 Balance Électronique Numérique</h3>
+        <p class="text-sm mb-4 italic">Type moderne avec affichage numérique pour des mesures rapides</p>
+        
+        <div class="mb-4">
+          <h4 class="font-semibold mb-2">🔧 Caractéristiques techniques :</h4>
+          <ul class="space-y-2 text-sm">
+            <li>✓ Un seul plateau de pesée avec capteur électronique</li>
+            <li>✓ Affichage digital LCD ou LED haute visibilité</li>
+            <li>✓ Lecture directe et instantanée (< 3 secondes)</li>
+            <li>✓ Précision : ±0,01 g à ±5 g selon les modèles</li>
+            <li>✓ Fonction TARE pour peser des contenants</li>
+            <li>✓ Souvent avec conversion d'unités automatique</li>
+            <li>✓ Mémoire des dernières pesées sur certains modèles</li>
+          </ul>
+        </div>
+
+        <div class="bg-green-100 dark:bg-green-900/30 p-4 rounded mb-3">
+          <h4 class="font-semibold mb-2">📍 Avantages :</h4>
+          <ul class="text-xs space-y-1">
+            <li>• Mesure très rapide (secondes)</li>
+            <li>• Facile à utiliser, même pour débutants</li>
+            <li>• Lecture claire et sans ambiguïté</li>
+            <li>• Fonction tare très pratique</li>
+            <li>• Conversion automatique entre unités</li>
+            <li>• Compacte et portable</li>
+          </ul>
+        </div>
+
+        <div class="bg-green-100 dark:bg-green-900/30 p-4 rounded">
+          <h4 class="font-semibold mb-2">📍 Inconvénients :</h4>
+          <ul class="text-xs space-y-1">
+            <li>• Nécessite des piles ou électricité</li>
+            <li>• Peut dériver avec le temps (nécessite calibration)</li>
+            <li>• Sensible aux interférences électromagnétiques</li>
+            <li>• Moins pédagogique pour comprendre la pesée</li>
+          </ul>
+        </div>
+
+        <div class="mt-4 p-3 bg-white/70 dark:bg-black/30 rounded text-xs">
+          <strong>💼 Usage typique :</strong> Cuisine professionnelle et domestique, commerce (épicerie, boulangerie), industries agroalimentaires, pesées rapides quotidiennes, sport (nutrition)
+        </div>
+      </div>
+    </div>
+
+    <div class="bg-gradient-to-r from-indigo-50 to-blue-50 dark:from-indigo-950/30 dark:to-blue-950/30 p-6 rounded-lg border-2 border-indigo-200 dark:border-indigo-800 mb-6">
+      <h3 class="text-xl font-bold text-indigo-700 dark:text-indigo-300 mb-3">🎣 Balance Romaine (Peson)</h3>
+      <p class="text-sm mb-4">Balance traditionnelle avec un bras gradué et un contrepoids mobile, basée sur le principe du levier</p>
+      
+      <div class="grid md:grid-cols-2 gap-6 text-sm">
+        <div>
+          <h4 class="font-semibold mb-3">Caractéristiques principales :</h4>
+          <ul class="space-y-2">
+            <li>✓ Un seul bras gradué avec échelle de mesure</li>
+            <li>✓ Contrepoids (curseur) déplaçable le long du bras</li>
+            <li>✓ Basée sur le principe du levier et des moments</li>
+            <li>✓ Robuste et durable, conçue pour un usage intensif</li>
+            <li>✓ Capacité variable : de 5 kg à 200 kg selon les modèles</li>
+            <li>✓ Précision modérée : ±10 g à ±100 g</li>
+          </ul>
+        </div>
+        <div>
+          <h4 class="font-semibold mb-3">Applications pratiques :</h4>
+          <ul class="space-y-2">
+            <li>• <strong>Marchés traditionnels</strong> : fruits, légumes, viandes</li>
+            <li>• <strong>Agriculture</strong> : récoltes, produits agricoles</li>
+            <li>• <strong>Pêche</strong> : pesée des prises</li>
+            <li>• <strong>Artisanat</strong> : matières premières</li>
+            <li>• <strong>Usage domestique</strong> : charges diverses</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="mt-4 p-4 bg-indigo-100 dark:bg-indigo-900/30 rounded">
+        <p class="text-sm">
+          <strong>💡 Le saviez-vous ?</strong> La balance romaine tire son nom de son invention par les Romains antiques. Elle a été utilisée pendant des siècles et reste populaire dans certaines régions pour sa simplicité et sa robustesse !
+        </p>
       </div>
     </div>
   </section>
 
   <section>
-    <h2 class="text-2xl font-bold text-primary mb-4">📖 Comment Utiliser une Balance à Fléaux ?</h2>
-    <div class="space-y-4">
-      <div class="bg-gradient-to-r from-orange-50 to-yellow-50 dark:from-orange-950/30 dark:to-yellow-950/30 p-5 rounded-lg border-l-4 border-orange-500">
-        <h4 class="font-bold text-orange-700 dark:text-orange-300 mb-2">Étape 1 : Préparation</h4>
-        <p class="text-sm">Vérifie que la balance est sur une surface plane et stable. Les deux plateaux doivent être à la même hauteur (équilibre).</p>
+    <h2 class="text-2xl font-bold text-primary mb-4">📖 Guide Complet : Utilisation d'une Balance à Fléaux</h2>
+    <p class="mb-6 text-muted-foreground leading-relaxed">
+      L'utilisation correcte d'une balance à fléaux nécessite de la précision, de la patience et une méthode rigoureuse. Ce guide détaillé vous accompagnera à travers chaque étape pour garantir des mesures précises et reproductibles. La maîtrise de cette technique est fondamentale en sciences expérimentales.
+    </p>
+    
+    <div class="space-y-6">
+      <div class="bg-gradient-to-r from-orange-50 to-yellow-50 dark:from-orange-950/30 dark:to-yellow-950/30 p-6 rounded-lg border-l-4 border-orange-500">
+        <h4 class="font-bold text-orange-700 dark:text-orange-300 mb-3 text-lg">⚙️ Étape 1 : Préparation et Vérification Initiale</h4>
+        <p class="text-sm mb-4 italic">La préparation est l'étape la plus cruciale pour obtenir des mesures précises et fiables. Ne jamais la négliger !</p>
+        
+        <div class="space-y-4">
+          <div>
+            <h5 class="font-semibold mb-2">🔍 1.1 Vérification de l'environnement :</h5>
+            <ul class="text-sm space-y-2 ml-4">
+              <li>• <strong>Surface</strong> : La balance doit être posée sur une table parfaitement plane, horizontale, stable et rigide</li>
+              <li>• <strong>Vibrations</strong> : Éloigner de toute source de vibrations (machines, passages fréquents, ventilateurs)</li>
+              <li>• <strong>Courants d'air</strong> : Fermer les fenêtres et portes, éteindre la climatisation pendant la pesée</li>
+              <li>• <strong>Lumière</strong> : Assurer un bon éclairage pour lire correctement les résultats</li>
+              <li>• <strong>Température</strong> : La pièce doit être à température stable (éviter les variations)</li>
+            </ul>
+          </div>
+
+          <div>
+            <h5 class="font-semibold mb-2">🔍 1.2 Inspection visuelle de la balance :</h5>
+            <ul class="text-sm space-y-2 ml-4">
+              <li>• Vérifier que les deux plateaux sont vides, propres et secs</li>
+              <li>• S'assurer qu'il n'y a pas de poussière ou de résidus sur les plateaux</li>
+              <li>• Inspecter le fléau : il doit pouvoir osciller librement sans frottement</li>
+              <li>• Vérifier que les couteaux (points d'appui) sont propres et intacts</li>
+              <li>• S'assurer que l'aiguille indicatrice (si présente) est bien visible</li>
+            </ul>
+          </div>
+
+          <div>
+            <h5 class="font-semibold mb-2">🔍 1.3 Vérification de l'équilibre à vide (ZÉRO) :</h5>
+            <ul class="text-sm space-y-2 ml-4">
+              <li>• Les deux plateaux doivent être à la même hauteur exactement</li>
+              <li>• Le fléau doit être parfaitement horizontal</li>
+              <li>• L'aiguille doit pointer vers le zéro de l'échelle</li>
+              <li>• Si ce n'est pas le cas, ajuster avec la vis d'équilibrage centrale</li>
+              <li>• Tourner délicatement la vis jusqu'à obtenir l'équilibre parfait</li>
+              <li>• Attendre que le fléau cesse complètement d'osciller (cela peut prendre 10-20 secondes)</li>
+            </ul>
+          </div>
+
+          <div class="bg-orange-100 dark:bg-orange-900/30 p-4 rounded">
+            <p class="text-sm">
+              <strong>⚠️ ATTENTION :</strong> Ne JAMAIS commencer une pesée si la balance n'est pas parfaitement équilibrée à vide. Un déséquilibre initial entraînera des erreurs systématiques dans toutes vos mesures !
+            </p>
+          </div>
+        </div>
       </div>
-      <div class="bg-gradient-to-r from-blue-50 to-cyan-50 dark:from-blue-950/30 dark:to-cyan-950/30 p-5 rounded-lg border-l-4 border-blue-500">
-        <h4 class="font-bold text-blue-700 dark:text-blue-300 mb-2">Étape 2 : Placement</h4>
-        <p class="text-sm">Place l'objet à peser sur le plateau de gauche avec précaution.</p>
+
+      <div class="bg-gradient-to-r from-blue-50 to-cyan-50 dark:from-blue-950/30 dark:to-cyan-950/30 p-6 rounded-lg border-l-4 border-blue-500">
+        <h4 class="font-bold text-blue-700 dark:text-blue-300 mb-3 text-lg">📦 Étape 2 : Placement Correct de l'Objet</h4>
+        <p class="text-sm mb-4 italic">Le placement de l'objet influence directement la précision de la mesure</p>
+        
+        <div class="space-y-4">
+          <div>
+            <h5 class="font-semibold mb-2">📍 2.1 Manipulation de l'objet :</h5>
+            <ul class="text-sm space-y-2 ml-4">
+              <li>• <strong>Propreté</strong> : L'objet doit être propre et sec (l'humidité ajoute de la masse)</li>
+              <li>• <strong>Température</strong> : Attendre que l'objet soit à température ambiante</li>
+              <li>• <strong>Éviter le contact direct</strong> : Pour les objets propres, utiliser une spatule ou une pince</li>
+              <li>• <strong>Objets chauds</strong> : JAMAIS peser un objet chaud (cela crée des courants d'air)</li>
+            </ul>
+          </div>
+
+          <div>
+            <h5 class="font-semibold mb-2">📍 2.2 Positionnement sur le plateau :</h5>
+            <ul class="text-sm space-y-2 ml-4">
+              <li>• <strong>Centre du plateau</strong> : Placer l'objet exactement au centre du plateau de GAUCHE</li>
+              <li>• <strong>Geste délicat</strong> : Poser délicatement pour éviter les chocs qui endommagent le mécanisme</li>
+              <li>• <strong>Stabilité</strong> : S'assurer que l'objet est stable et ne risque pas de tomber</li>
+              <li>• <strong>Observation</strong> : Le plateau gauche va descendre, le plateau droit va monter</li>
+            </ul>
+          </div>
+
+          <div>
+            <h5 class="font-semibold mb-2">📍 2.3 Cas particuliers :</h5>
+            <ul class="text-sm space-y-2 ml-4">
+              <li>• <strong>Poudres / granulés</strong> : Utiliser un papier de pesée ou une coupelle propre et sèche (noter sa masse !)</li>
+              <li>• <strong>Liquides</strong> : Toujours utiliser un récipient fermé pour éviter l'évaporation</li>
+              <li>• <strong>Objets irréguliers</strong> : Positionner pour maximiser la stabilité</li>
+              <li>• <strong>Objets longs</strong> : Centrer le point d'équilibre sur le plateau</li>
+            </ul>
+          </div>
+
+          <div>
+            <h5 class="font-semibold mb-2">📍 2.4 Attendre la stabilisation :</h5>
+            <ul class="text-sm space-y-2 ml-4">
+              <li>• Après avoir placé l'objet, le fléau va osciller</li>
+              <li>• Attendre patiemment que les oscillations diminuent</li>
+              <li>• Ne PAS toucher la balance pendant ce temps</li>
+              <li>• La stabilisation complète peut prendre 20-40 secondes</li>
+            </ul>
+          </div>
+        </div>
       </div>
-      <div class="bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-950/30 dark:to-emerald-950/30 p-5 rounded-lg border-l-4 border-green-500">
-        <h4 class="font-bold text-green-700 dark:text-green-300 mb-2">Étape 3 : Ajout des Masses</h4>
-        <p class="text-sm">Ajoute des masses étalonnées sur le plateau de droite jusqu'à ce que les deux plateaux soient au même niveau.</p>
+
+      <div class="bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-950/30 dark:to-emerald-950/30 p-6 rounded-lg border-l-4 border-green-500">
+        <h4 class="font-bold text-green-700 dark:text-green-300 mb-3 text-lg">⚖️ Étape 3 : Ajout des Masses Étalonnées</h4>
+        <p class="text-sm mb-4 italic">Cette étape demande patience, méthode et précision. C'est le cœur de la technique de pesée !</p>
+        
+        <div class="space-y-4">
+          <div>
+            <h5 class="font-semibold mb-2">🎯 Principe de la méthode :</h5>
+            <p class="text-sm mb-2">On procède par approximations successives, des masses les plus grandes vers les plus petites :</p>
+            <ul class="text-sm space-y-2 ml-4">
+              <li>• <strong>Phase 1</strong> : Encadrement grossier avec les grandes masses (500g, 200g, 100g)</li>
+              <li>• <strong>Phase 2</strong> : Affinement avec les masses moyennes (50g, 20g, 10g)</li>
+              <li>• <strong>Phase 3</strong> : Précision finale avec les petites masses (5g, 2g, 1g)</li>
+            </ul>
+          </div>
+
+          <div>
+            <h5 class="font-semibold mb-2">🎯 Exemple concret de pesée (pas à pas) :</h5>
+            <div class="bg-green-100 dark:bg-green-900/30 p-4 rounded space-y-2 text-sm">
+              <p><strong>Objectif</strong> : Peser un échantillon de sel</p>
+              <ol class="space-y-2 ml-4">
+                <li><strong>1.</strong> Placer le sel (dans une coupelle) sur le plateau gauche → il descend</li>
+                <li><strong>2.</strong> Essayer 500g sur plateau droit → plateau droit descend (trop lourd)</li>
+                <li><strong>3.</strong> Retirer 500g, essayer 200g → plateau gauche encore en bas (trop léger)</li>
+                <li><strong>4.</strong> Garder 200g, ajouter 100g → plateau gauche encore en bas</li>
+                <li><strong>5.</strong> Garder 200g + 100g, ajouter 50g → plateau droit descend (trop lourd maintenant)</li>
+                <li><strong>6.</strong> Retirer 50g, garder 200g + 100g, ajouter 20g → presque équilibré</li>
+                <li><strong>7.</strong> Garder 200g + 100g + 20g, ajouter 5g → proche de l'équilibre</li>
+                <li><strong>8.</strong> Garder tout, ajouter 2g → équilibre parfait !</li>
+                <li><strong>Résultat</strong> : 200 + 100 + 20 + 5 + 2 = <strong>327 grammes</strong></li>
+              </ol>
+            </div>
+          </div>
+
+          <div class="bg-green-100 dark:bg-green-900/30 p-4 rounded">
+            <p class="text-sm">
+              <strong>💡 ASTUCE D'EXPERT :</strong> Pour vérifier la précision de votre mesure, vous pouvez : 1) Retirer la dernière petite masse ajoutée - le plateau gauche doit descendre. 2) Remettre cette masse - l'équilibre doit revenir. Si ce n'est pas le cas, votre équilibre n'était pas parfait !
+            </p>
+          </div>
+
+          <div>
+            <h5 class="font-semibold mb-2">🎯 Manipulation des masses étalonnées (IMPORTANT) :</h5>
+            <ul class="text-sm space-y-2 ml-4">
+              <li>• <strong>TOUJOURS</strong> utiliser une pince pour manipuler les masses</li>
+              <li>• <strong>JAMAIS</strong> toucher les masses avec les doigts (la transpiration les corrode)</li>
+              <li>• Prendre les masses par les bords ou par l'anneau de préhension</li>
+              <li>• Les poser délicatement sans les faire tomber</li>
+              <li>• Ne pas mélanger les masses de différentes boîtes (risque d'erreur)</li>
+              <li>• Remettre chaque masse à sa place après usage</li>
+            </ul>
+          </div>
+        </div>
       </div>
-      <div class="bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-950/30 dark:to-pink-950/30 p-5 rounded-lg border-l-4 border-purple-500">
-        <h4 class="font-bold text-purple-700 dark:text-purple-300 mb-2">Étape 4 : Lecture</h4>
-        <p class="text-sm">Additionne les masses utilisées pour obtenir la masse de l'objet.</p>
+
+      <div class="bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-950/30 dark:to-pink-950/30 p-6 rounded-lg border-l-4 border-purple-500">
+        <h4 class="font-bold text-purple-700 dark:text-purple-300 mb-3 text-lg">📝 Étape 4 : Lecture et Enregistrement du Résultat</h4>
+        <p class="text-sm mb-4 italic">La dernière étape consiste à déterminer et documenter la masse exacte avec précision</p>
+        
+        <div class="space-y-4">
+          <div>
+            <h5 class="font-semibold mb-2">📊 Addition des masses utilisées :</h5>
+            <ul class="text-sm space-y-2 ml-4">
+              <li>• <strong>Méthode organisée</strong> : Noter toutes les masses du plateau droit sur une feuille</li>
+              <li>• Commencer par les plus grandes et descendre vers les plus petites</li>
+              <li>• Exemple de notation : 200g + 100g + 20g + 5g + 2g</li>
+              <li>• Faire la somme soigneusement : 200 + 100 + 20 + 5 + 2 = 327g</li>
+              <li>• <strong>Vérification obligatoire</strong> : Refaire le calcul une seconde fois pour éviter les erreurs</li>
+            </ul>
+          </div>
+
+          <div>
+            <h5 class="font-semibold mb-2">📊 Expression du résultat :</h5>
+            <ul class="text-sm space-y-2 ml-4">
+              <li>• <strong>Toujours indiquer l'unité</strong> : 327 g (pas juste "327" !)</li>
+              <li>• Choisir l'unité appropriée au contexte :</li>
+              <li class="ml-4">→ Masses légères (< 1000g) : exprimer en grammes (g)</li>
+              <li class="ml-4">→ Masses lourdes (> 1000g) : convertir en kilogrammes (kg)</li>
+              <li>• Exemple : 1500g = 1,5 kg ou 1 kg 500 g</li>
+              <li>• <strong>Précision</strong> : Indiquer uniquement les chiffres significatifs selon la balance</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <div class="bg-red-50 dark:bg-red-950/30 p-6 rounded-lg border-2 border-red-200 dark:border-red-800">
+        <h4 class="font-bold text-red-700 dark:text-red-300 mb-4 text-lg">⚠️ Précautions et Règles de Sécurité ESSENTIELLES</h4>
+        
+        <div class="grid md:grid-cols-2 gap-6">
+          <div>
+            <h5 class="font-semibold mb-3">🚫 À NE JAMAIS FAIRE :</h5>
+            <ul class="text-sm space-y-2">
+              <li>❌ Dépasser la capacité maximale de la balance (risque de casse !)</li>
+              <li>❌ Toucher les masses étalonnées avec les doigts</li>
+              <li>❌ Poser violemment les masses (choc = dommage au mécanisme)</li>
+              <li>❌ Peser un objet chaud ou froid</li>
+              <li>❌ Laisser des produits chimiques sur les plateaux</li>
+              <li>❌ Déplacer la balance pendant la pesée</li>
+            </ul>
+          </div>
+
+          <div>
+            <h5 class="font-semibold mb-3">✅ TOUJOURS Faire :</h5>
+            <ul class="text-sm space-y-2">
+              <li>✓ Vérifier le zéro avant chaque pesée</li>
+              <li>✓ Utiliser une pince pour les masses</li>
+              <li>✓ Manipuler délicatement tous les éléments</li>
+              <li>✓ Attendre la stabilisation complète</li>
+              <li>✓ Nettoyer les plateaux après usage</li>
+              <li>✓ Ranger les masses dans leur boîte</li>
+            </ul>
+          </div>
+        </div>
       </div>
     </div>
   </section>
 
-  <section class="bg-yellow-50 dark:bg-yellow-900/20 p-6 rounded-xl border-2 border-yellow-300 dark:border-yellow-700">
-    <h2 class="text-2xl font-bold text-yellow-800 dark:text-yellow-200 mb-4">⚠️ Masse vs Volume</h2>
-    <div class="grid md:grid-cols-2 gap-6">
-      <div class="bg-white/70 dark:bg-gray-800/70 p-4 rounded-lg">
-        <h4 class="font-bold text-yellow-700 dark:text-yellow-300 mb-2">Masse 📏</h4>
-        <ul class="space-y-1 text-sm">
-          <li>• Quantité de matière</li>
-          <li>• Se mesure avec une balance</li>
-          <li>• Unités : kg, g, mg</li>
-          <li>• Ne change pas selon le lieu</li>
-        </ul>
-      </div>
-      <div class="bg-white/70 dark:bg-gray-800/70 p-4 rounded-lg">
-        <h4 class="font-bold text-yellow-700 dark:text-yellow-300 mb-2">Volume 📦</h4>
-        <ul class="space-y-1 text-sm">
-          <li>• Espace occupé</li>
-          <li>• Se mesure avec éprouvette/règle</li>
-          <li>• Unités : L, mL, cm³, m³</li>
-          <li>• Dépend de la forme</li>
-        </ul>
-      </div>
-    </div>
-    <div class="mt-4 p-3 bg-yellow-100 dark:bg-yellow-900/40 rounded">
-      <p class="font-semibold text-sm">💡 Exemple :</p>
-      <p class="text-sm">1 kg de plumes et 1 kg de fer ont la même masse, mais les plumes occupent beaucoup plus de volume !</p>
+  <section>
+    <h2 class="text-2xl font-bold text-primary mb-4">✅ Points Clés à Retenir</h2>
+    <div class="bg-gradient-to-r from-amber-50 to-yellow-50 dark:from-amber-950/30 dark:to-yellow-950/30 p-6 rounded-lg border-2 border-amber-200 dark:border-amber-800">
+      <ul class="space-y-3">
+        <li class="flex items-start gap-3">
+          <span class="text-amber-600 font-bold text-xl">✓</span>
+          <span>La masse est la quantité de matière, elle est constante partout</span>
+        </li>
+        <li class="flex items-start gap-3">
+          <span class="text-amber-600 font-bold text-xl">✓</span>
+          <span>Les unités principales sont : kg, g, mg, t</span>
+        </li>
+        <li class="flex items-start gap-3">
+          <span class="text-amber-600 font-bold text-xl">✓</span>
+          <span>Une balance à fléaux compare l'objet avec des masses étalonnées</span>
+        </li>
+        <li class="flex items-start gap-3">
+          <span class="text-amber-600 font-bold text-xl">✓</span>
+          <span>L'équilibre est atteint quand les deux plateaux sont au même niveau</span>
+        </li>
+        <li class="flex items-start gap-3">
+          <span class="text-amber-600 font-bold text-xl">✓</span>
+          <span>La précision nécessite une surface stable et des manipulations délicates</span>
+        </li>
+        <li class="flex items-start gap-3">
+          <span class="text-amber-600 font-bold text-xl">✓</span>
+          <span>Toujours noter les résultats avec l'unité appropriée</span>
+        </li>
+      </ul>
     </div>
   </section>
 </div>`,
