@@ -69,7 +69,7 @@ const subjects: Subject[] = [
     title: "Histoire & Géographie",
     description: "Histoire d'Haïti, géographie mondiale et études sociales",
     icon: Globe,
-    lessons: 18,
+    lessons: 30,
     exercises: 65,
     color: "from-red-500 to-red-600"
   },
@@ -283,7 +283,7 @@ export default function Matieres() {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mb-8">
           {subjects.map((subject, index) => {
             const IconComponent = subject.icon;
-            const hasContent = subject.id === 'mathematiques' || subject.id === 'sciences' || subject.id === 'anglais' || subject.id === 'espagnol' || subject.id === 'francais';
+            const hasContent = subject.id === 'mathematiques' || subject.id === 'sciences' || subject.id === 'anglais' || subject.id === 'espagnol' || subject.id === 'francais' || subject.id === 'histoire';
             
             return (
               <Card
@@ -299,6 +299,8 @@ export default function Matieres() {
                       ? '/espagnol-course'
                       : subject.id === 'francais'
                       ? '/francais-course'
+                      : subject.id === 'histoire'
+                      ? '/sciences-sociales-course'
                       : '/sciences-course';
                     navigate(courseRoute);
                   }
@@ -341,6 +343,8 @@ export default function Matieres() {
                         ? '/espagnol-course'
                         : subject.id === 'francais'
                         ? '/francais-course'
+                        : subject.id === 'histoire'
+                        ? '/sciences-sociales-course'
                         : '/sciences-course';
                       navigate(courseRoute);
                     }}

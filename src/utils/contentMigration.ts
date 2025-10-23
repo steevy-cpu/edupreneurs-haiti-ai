@@ -3,6 +3,7 @@ import { mathLessons7AF } from "@/data/mathLessons";
 import { sciencesLessons7AF } from "@/data/sciencesLessons";
 import { espagnolLessons7AF } from "@/data/espagnolLessons";
 import { francaisLessons7AF } from "@/data/francaisLessons";
+import { sciencesSocialesLessons7AF } from "@/data/sciencesSocialesLessons";
 
 interface MigrationResult {
   success: boolean;
@@ -242,6 +243,61 @@ export const migrateContentToDatabase = async (): Promise<MigrationResult> => {
       .from('subjects')
       .update({ lesson_count: francaisLessons7AF.length })
       .eq('id', francaisSubject.id);
+
+    // Create Sciences Sociales subject
+    const { data: sciencesSocialesSubject, error: sciencesSocialesSubjectError } = await supabase
+      .from('subjects')
+      .upsert({
+        name: "Sciences Sociales",
+        slug: "sciences-sociales",
+        description: "Histoire et géographie niveau 7ème AF selon le programme MENFP",
+        icon_name: "🌍",
+        color: "orange",
+        grade_level: "7AF",
+        created_by: user.id,
+      }, { onConflict: 'slug' })
+      .select()
+      .single();
+
+    if (sciencesSocialesSubjectError) {
+      result.errors.push(`Sciences Sociales subject error: ${sciencesSocialesSubjectError.message}`);
+      return result;
+    }
+
+    result.subjectsCreated++;
+
+    // Migrate Sciences Sociales lessons
+    for (let i = 0; i < sciencesSocialesLessons7AF.length; i++) {
+      const lesson = sciencesSocialesLessons7AF[i];
+      const { error: lessonError } = await supabase
+        .from('lessons')
+        .upsert({
+          subject_id: sciencesSocialesSubject.id,
+          title: lesson.title,
+          slug: lesson.id,
+          objectif: lesson.objectif,
+          introduction: lesson.introduction,
+          contenu: lesson.contenu,
+          exemples_exercices: lesson.exemplesExercices,
+          mois: lesson.mois,
+          order_index: i,
+          grade_level: "7AF",
+          is_published: true,
+          created_by: user.id,
+        }, { onConflict: 'subject_id,slug' });
+
+      if (lessonError) {
+        result.errors.push(`Sciences Sociales lesson ${lesson.id}: ${lessonError.message}`);
+      } else {
+        result.lessonsCreated++;
+      }
+    }
+
+    // Update lesson count for Sciences Sociales
+    await supabase
+      .from('subjects')
+      .update({ lesson_count: sciencesSocialesLessons7AF.length })
+      .eq('id', sciencesSocialesSubject.id);
 
     result.success = result.errors.length === 0;
     return result;
