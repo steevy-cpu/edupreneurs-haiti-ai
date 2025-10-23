@@ -351,7 +351,7 @@ export const AIAssistant = ({ selectedLesson, onApplyContent }: AIAssistantProps
 
   return (
     <>
-      <Card className={`flex flex-col transition-all duration-300 animate-fade-in ${isExpanded ? 'fixed inset-4 z-50 h-auto' : 'h-[600px]'}`}>
+      <Card className={`flex flex-col transition-all duration-300 animate-fade-in ${isExpanded ? 'fixed inset-4 z-50 h-auto' : 'h-full max-h-[calc(100vh-16rem)]'}`}>
         <CardHeader className="pb-3">
           <div className="flex items-center justify-between">
             <div>
@@ -398,7 +398,7 @@ export const AIAssistant = ({ selectedLesson, onApplyContent }: AIAssistantProps
             </div>
           )}
         </CardHeader>
-      <CardContent className="flex-1 flex gap-3 p-4 overflow-hidden">
+      <CardContent className="flex-1 flex flex-col gap-3 p-4 overflow-hidden">
         {/* Command History Sidebar */}
         {showHistory && (
           <div className="w-48 border-r pr-3 flex flex-col gap-2">
@@ -428,9 +428,39 @@ export const AIAssistant = ({ selectedLesson, onApplyContent }: AIAssistantProps
           </div>
         )}
 
-        <div className="flex-1 flex flex-col gap-3 min-w-0">
-          {/* Quick Actions - Enhanced */}
-          <div className="grid grid-cols-3 gap-2">
+        <div className="flex-1 flex gap-3 overflow-hidden min-h-0">
+          {/* Command History Sidebar */}
+          {showHistory && (
+            <div className="w-48 border-r pr-3 flex flex-col gap-2 overflow-hidden">
+              <h4 className="text-sm font-semibold flex items-center gap-2 flex-shrink-0">
+                <History className="h-4 w-4" />
+                Historique
+              </h4>
+              <ScrollArea className="flex-1">
+                <div className="space-y-1">
+                  {commandHistory.length === 0 ? (
+                    <p className="text-xs text-muted-foreground">Aucun historique</p>
+                  ) : (
+                    commandHistory.map((cmd, idx) => (
+                      <Button
+                        key={idx}
+                        variant="ghost"
+                        size="sm"
+                        className="w-full justify-start text-xs h-auto py-2 px-2"
+                        onClick={() => handleHistoryClick(cmd)}
+                      >
+                        <span className="truncate">{cmd}</span>
+                      </Button>
+                    ))
+                  )}
+                </div>
+              </ScrollArea>
+            </div>
+          )}
+
+          <div className="flex-1 flex flex-col gap-3 min-w-0 overflow-hidden">
+            {/* Quick Actions - Enhanced */}
+            <div className="grid grid-cols-3 gap-2 flex-shrink-0">
           <Button
             variant="outline"
             size="sm"
@@ -513,9 +543,10 @@ export const AIAssistant = ({ selectedLesson, onApplyContent }: AIAssistantProps
           
           <Separator />
 
-          {/* Context Info - Enhanced */}
-          {selectedLesson && (
-            <div className="space-y-2">
+            {/* Context Info - Enhanced */}
+            <ScrollArea className="flex-1 pr-2">
+            {selectedLesson && (
+              <div className="space-y-2">
               <div className="bg-gradient-to-r from-primary/10 to-primary/5 rounded-lg p-3 text-xs border border-primary/20 animate-fade-in">
                 <div className="flex items-center gap-2">
                   <CheckCircle className="h-4 w-4 text-primary" />
@@ -662,9 +693,10 @@ export const AIAssistant = ({ selectedLesson, onApplyContent }: AIAssistantProps
               </CardContent>
             </Card>
           )}
+          </ScrollArea>
 
           {/* Chat Messages */}
-          <ScrollArea className="flex-1 border rounded-lg p-3">
+          <ScrollArea className="flex-1 border rounded-lg p-3 min-h-0">
             {messages.length === 0 ? (
               <div className="text-center text-muted-foreground p-6 animate-fade-in">
                 <Sparkles className="h-16 w-16 mx-auto mb-4 opacity-20 animate-pulse" />
@@ -775,7 +807,7 @@ export const AIAssistant = ({ selectedLesson, onApplyContent }: AIAssistantProps
           </ScrollArea>
 
           {/* Input */}
-          <div className="flex gap-2">
+          <div className="flex gap-2 flex-shrink-0">
             <Textarea
               value={input}
               onChange={(e) => setInput(e.target.value)}
@@ -802,6 +834,7 @@ export const AIAssistant = ({ selectedLesson, onApplyContent }: AIAssistantProps
                 <Send className="h-4 w-4" />
               )}
             </Button>
+          </div>
           </div>
         </div>
       </CardContent>
