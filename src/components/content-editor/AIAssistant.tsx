@@ -120,12 +120,14 @@ export const AIAssistant = ({ selectedLesson, onApplyContent }: AIAssistantProps
   };
 
   const streamChat = async (userMessage: string, operation: string) => {
+    console.log('🚀 streamChat called:', { userMessage, operation });
     setIsLoading(true);
     setLoadingOperation(operation);
     const newMessages: Message[] = [
       ...messages,
       { role: 'user', content: userMessage, timestamp: Date.now() }
     ];
+    console.log('📝 Setting user message:', newMessages);
     setMessages(newMessages);
     
     let currentOperation = operation;
@@ -183,6 +185,7 @@ export const AIAssistant = ({ selectedLesson, onApplyContent }: AIAssistantProps
         conversationHistory: messages.slice(-5).map(m => ({ role: m.role, content: m.content.substring(0, 200) }))
       };
 
+      console.log('📡 Calling edge function...');
       const response = await fetch(
         `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/content-ai-assistant`,
         {
@@ -200,6 +203,8 @@ export const AIAssistant = ({ selectedLesson, onApplyContent }: AIAssistantProps
           }),
         }
       );
+
+      console.log('📥 Response received:', { ok: response.ok, status: response.status, contentType: response.headers.get('content-type') });
 
       if (!response.ok) {
         if (response.status === 429) {
@@ -253,11 +258,13 @@ export const AIAssistant = ({ selectedLesson, onApplyContent }: AIAssistantProps
       }
 
       // Handle streaming response
+      console.log('🔄 Starting stream processing...');
       const reader = response.body?.getReader();
       const decoder = new TextDecoder();
       let assistantMessage = '';
 
       if (reader) {
+        console.log('✅ Reader obtained, starting read loop...');
         let buffer = '';
         
         while (true) {
@@ -283,12 +290,14 @@ export const AIAssistant = ({ selectedLesson, onApplyContent }: AIAssistantProps
               const content = parsed.choices?.[0]?.delta?.content;
               if (content) {
                 assistantMessage += content;
+                console.log('💬 Received chunk:', content.substring(0, 50), 'Total length:', assistantMessage.length);
                 setMessages([
                   ...newMessages,
                   { role: 'assistant', content: assistantMessage, operation: currentOperation }
                 ]);
               }
             } catch (e) {
+              console.warn('⚠️ Parse error:', e);
               buffer = line + '\n' + buffer;
               break;
             }
@@ -296,9 +305,10 @@ export const AIAssistant = ({ selectedLesson, onApplyContent }: AIAssistantProps
         }
       }
 
+      console.log('✅ Stream complete, final message length:', assistantMessage.length);
       setInput("");
     } catch (error) {
-      console.error('AI Assistant error:', error);
+      console.error('❌ AI Assistant error:', error);
       toast.error("Erreur lors de la communication avec l'assistant IA");
       
       // Show error in chat
