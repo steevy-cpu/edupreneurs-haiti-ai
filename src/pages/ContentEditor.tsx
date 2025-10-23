@@ -8,7 +8,7 @@ import { toast } from "sonner";
 import { FileText, BookOpen, Sparkles, History, ArrowLeft, Shield, GitBranch, Package } from "lucide-react";
 import { LessonBrowser } from "@/components/content-editor/LessonBrowser";
 import { LessonEditor } from "@/components/content-editor/LessonEditor";
-import { AIAssistant } from "@/components/content-editor/AIAssistant";
+import AIAssistant from "@/components/content-editor/AIAssistant";
 import { ChangeLog } from "@/components/content-editor/ChangeLog";
 import { RoleManagement } from "@/components/content-editor/RoleManagement";
 import { VersionHistory } from "@/components/content-editor/VersionHistory";
