@@ -405,41 +405,93 @@ Après la création, valide la leçon avec validate_lesson.`;
                     key={idx}
                     className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'} animate-fade-in`}
                   >
-                    <div
+                     <div
                       className={`max-w-[85%] rounded-lg p-3 shadow-sm ${
                         msg.role === 'user'
                           ? 'bg-primary text-primary-foreground'
-                          : 'bg-muted'
+                          : 'bg-muted border'
                       }`}
                     >
-                      <div className="flex flex-col gap-2">
-                        <div className="flex items-start gap-2">
-                          {msg.role === 'assistant' && (
-                            <Badge variant="secondary" className="mt-0.5 flex items-center gap-1">
+                      {msg.role === 'assistant' ? (
+                        <div className="flex flex-col gap-3">
+                          {/* Header with badge */}
+                          <div className="flex items-center justify-between">
+                            <Badge variant="secondary" className="flex items-center gap-1">
                               <Sparkles className="h-3 w-3" />
-                              IA
+                              Assistant IA
                             </Badge>
-                          )}
-                          <div className="flex-1">
-                            <p className="text-sm whitespace-pre-wrap">{msg.content}</p>
                             {msg.timestamp && (
-                              <p className="text-xs text-muted-foreground mt-1">
+                              <span className="text-xs text-muted-foreground">
                                 {new Date(msg.timestamp).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}
-                              </p>
+                              </span>
                             )}
                           </div>
+
+                          {/* Detect section type and display accordingly */}
+                          {msg.operation && msg.operation !== 'custom' ? (
+                            <div className="space-y-2">
+                              {/* Section identifier */}
+                              <div className="flex items-center gap-2">
+                                {msg.operation === 'introduction' && <Lightbulb className="h-4 w-4 text-primary" />}
+                                {msg.operation === 'contenu' && <BookOpen className="h-4 w-4 text-primary" />}
+                                {msg.operation === 'exemples' && <span className="text-primary">📝</span>}
+                                {msg.operation === 'quiz' && <span className="text-primary">🎯</span>}
+                                <span className="font-semibold text-sm capitalize">{msg.operation}</span>
+                                {msg.content.includes('✅') && (
+                                  <Badge variant="default" className="gap-1 bg-green-500">
+                                    <CheckCircle className="h-3 w-3" />
+                                    Terminé
+                                  </Badge>
+                                )}
+                              </div>
+
+                              {/* Content display */}
+                              <div className="bg-background/50 rounded p-3 space-y-2">
+                                {msg.content.split('\n').map((line, i) => {
+                                  // Format lists
+                                  if (line.trim().startsWith('*') || line.trim().startsWith('-')) {
+                                    return (
+                                      <div key={i} className="flex items-start gap-2 text-sm">
+                                        <span className="text-primary mt-0.5">•</span>
+                                        <span className="flex-1">{line.trim().substring(1).trim()}</span>
+                                      </div>
+                                    );
+                                  }
+                                  // Format bold text
+                                  if (line.includes('**')) {
+                                    const parts = line.split('**');
+                                    return (
+                                      <p key={i} className="text-sm">
+                                        {parts.map((part, j) => 
+                                          j % 2 === 1 ? <strong key={j}>{part}</strong> : part
+                                        )}
+                                      </p>
+                                    );
+                                  }
+                                  // Regular line
+                                  if (line.trim()) {
+                                    return <p key={i} className="text-sm">{line}</p>;
+                                  }
+                                  return null;
+                                })}
+                              </div>
+                            </div>
+                          ) : (
+                            // Custom message display
+                            <p className="text-sm whitespace-pre-wrap">{msg.content}</p>
+                          )}
                         </div>
-                        {msg.role === 'assistant' && (
-                          <div className="flex items-center gap-2 mt-2 text-xs text-muted-foreground">
-                            {msg.content.includes('✅') && (
-                              <Badge variant="secondary" className="gap-1">
-                                <CheckCircle className="h-3 w-3" />
-                                Modifications appliquées
-                              </Badge>
-                            )}
-                          </div>
-                        )}
-                      </div>
+                      ) : (
+                        // User message
+                        <div className="flex flex-col gap-1">
+                          <p className="text-sm whitespace-pre-wrap">{msg.content}</p>
+                          {msg.timestamp && (
+                            <p className="text-xs opacity-80">
+                              {new Date(msg.timestamp).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}
+                            </p>
+                          )}
+                        </div>
+                      )}
                     </div>
                   </div>
                 ))}
