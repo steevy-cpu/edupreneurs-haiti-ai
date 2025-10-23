@@ -13,18 +13,49 @@ interface YouTubeVideoSectionProps {
   lessonTitle: string;
   objectives: string;
   gradeLevel?: string; // e.g., "AF7", "AF8", "AF9"
+  customYoutubeUrl?: string; // Custom YouTube URL for the lesson
 }
 
 const YOUTUBE_API_KEY = "AIzaSyDu6sWsM5NEgb48nFFIz49guKR5amdsGWA";
 
-export const YouTubeVideoSection = ({ lessonTitle, objectives, gradeLevel = "AF7" }: YouTubeVideoSectionProps) => {
+export const YouTubeVideoSection = ({ lessonTitle, objectives, gradeLevel = "AF7", customYoutubeUrl }: YouTubeVideoSectionProps) => {
   const [videos, setVideos] = useState<YouTubeVideo[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [customVideoId, setCustomVideoId] = useState<string | null>(null);
 
   useEffect(() => {
+    // Extract custom video ID if URL is provided
+    if (customYoutubeUrl) {
+      const videoId = extractYouTubeVideoId(customYoutubeUrl);
+      setCustomVideoId(videoId);
+    }
     searchVideos();
-  }, [lessonTitle, objectives]);
+  }, [lessonTitle, objectives, customYoutubeUrl]);
+
+  const extractYouTubeVideoId = (url: string): string | null => {
+    if (!url) return null;
+    
+    // Handle various YouTube URL formats
+    const patterns = [
+      /(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([^&\s]+)/,
+      /youtube\.com\/shorts\/([^&\s]+)/,
+    ];
+    
+    for (const pattern of patterns) {
+      const match = url.match(pattern);
+      if (match && match[1]) {
+        return match[1];
+      }
+    }
+    
+    // If it's already just the video ID (11 characters)
+    if (/^[a-zA-Z0-9_-]{11}$/.test(url)) {
+      return url;
+    }
+    
+    return null;
+  };
 
   const extractKeywords = (text: string): string[] => {
     // Common French/Creole stop words to exclude
@@ -181,6 +212,27 @@ export const YouTubeVideoSection = ({ lessonTitle, objectives, gradeLevel = "AF7
       </CardHeader>
       <CardContent className="p-4 sm:p-6 pt-6">
         <div className="space-y-6">
+          {/* Custom Video (if provided) */}
+          {customVideoId && (
+            <div className="rounded-xl overflow-hidden shadow-lg bg-background/50 backdrop-blur-sm border-2 border-primary">
+              <div className="relative aspect-video overflow-hidden bg-muted">
+                <iframe
+                  src={`https://www.youtube.com/embed/${customVideoId}`}
+                  title="Vidéo personnalisée pour cette leçon"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                  allowFullScreen
+                  className="w-full h-full"
+                />
+              </div>
+              <div className="p-4 bg-gradient-to-r from-primary/10 to-primary/5">
+                <p className="text-sm font-semibold text-primary">
+                  ⭐ Vidéo sélectionnée spécialement pour cette leçon
+                </p>
+              </div>
+            </div>
+          )}
+
+          {/* Search Results Videos */}
           {videos.map((video) => (
             <div
               key={video.id}

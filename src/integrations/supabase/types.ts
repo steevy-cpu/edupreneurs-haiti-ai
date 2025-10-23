@@ -341,6 +341,7 @@ export type Database = {
           title: string
           updated_at: string
           workflow_status: Database["public"]["Enums"]["workflow_status"] | null
+          youtube_url: string | null
         }
         Insert: {
           contenu?: string | null
@@ -365,6 +366,7 @@ export type Database = {
           workflow_status?:
             | Database["public"]["Enums"]["workflow_status"]
             | null
+          youtube_url?: string | null
         }
         Update: {
           contenu?: string | null
@@ -389,6 +391,7 @@ export type Database = {
           workflow_status?:
             | Database["public"]["Enums"]["workflow_status"]
             | null
+          youtube_url?: string | null
         }
         Relationships: [
           {
