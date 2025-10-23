@@ -10,14 +10,16 @@ import { supabase } from "@/integrations/supabase/client";
 
 interface AIAssistantProps {
   selectedLesson: any;
+  onApplyContent: (content: string, operation: string) => void;
 }
 
 type Message = {
   role: 'user' | 'assistant';
   content: string;
+  operation?: string;
 };
 
-export const AIAssistant = ({ selectedLesson }: AIAssistantProps) => {
+export const AIAssistant = ({ selectedLesson, onApplyContent }: AIAssistantProps) => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -29,6 +31,8 @@ export const AIAssistant = ({ selectedLesson }: AIAssistantProps) => {
       { role: 'user', content: userMessage }
     ];
     setMessages(newMessages);
+    
+    let currentOperation = operation;
 
     try {
       // Get user session token
@@ -104,7 +108,7 @@ export const AIAssistant = ({ selectedLesson }: AIAssistantProps) => {
                 assistantMessage += content;
                 setMessages([
                   ...newMessages,
-                  { role: 'assistant', content: assistantMessage }
+                  { role: 'assistant', content: assistantMessage, operation: currentOperation }
                 ]);
               }
             } catch (e) {
@@ -251,11 +255,26 @@ export const AIAssistant = ({ selectedLesson }: AIAssistantProps) => {
                         : 'bg-muted'
                     }`}
                   >
-                    <div className="flex items-start gap-2">
-                      {msg.role === 'assistant' && (
-                        <Badge variant="secondary" className="mt-0.5">IA</Badge>
+                    <div className="flex flex-col gap-2">
+                      <div className="flex items-start gap-2">
+                        {msg.role === 'assistant' && (
+                          <Badge variant="secondary" className="mt-0.5">IA</Badge>
+                        )}
+                        <p className="text-sm whitespace-pre-wrap">{msg.content}</p>
+                      </div>
+                      {msg.role === 'assistant' && msg.operation && (
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => {
+                            onApplyContent(msg.content, msg.operation!);
+                            toast.success("Contenu appliqué avec succès!");
+                          }}
+                          className="mt-2 self-start"
+                        >
+                          ✨ Appliquer les modifications
+                        </Button>
                       )}
-                      <p className="text-sm whitespace-pre-wrap">{msg.content}</p>
                     </div>
                   </div>
                 </div>

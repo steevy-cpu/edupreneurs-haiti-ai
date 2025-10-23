@@ -67,6 +67,54 @@ const ContentEditor = () => {
     }
   };
 
+  const handleApplyContent = async (content: string, operation: string) => {
+    if (!selectedLesson) return;
+
+    try {
+      // Parse and apply the content based on operation type
+      let updatedLesson = { ...selectedLesson };
+
+      if (operation === 'generate' || operation === 'enhance') {
+        // Extract HTML content from the AI response
+        const htmlMatch = content.match(/<div[^>]*>[\s\S]*<\/div>|<p>[\s\S]*<\/p>/);
+        if (htmlMatch) {
+          updatedLesson.content = htmlMatch[0];
+        } else {
+          updatedLesson.content = content;
+        }
+      } else if (operation === 'exercises') {
+        // Append exercises to content
+        updatedLesson.content = selectedLesson.content + '\n\n' + content;
+      } else if (operation === 'translate') {
+        // Add translation
+        updatedLesson.content = selectedLesson.content + '\n\n<h3>Traduction créole</h3>\n' + content;
+      } else if (operation === 'simplify') {
+        updatedLesson.content = content;
+      } else if (operation === 'quiz') {
+        updatedLesson.content = selectedLesson.content + '\n\n<h3>Quiz</h3>\n' + content;
+      } else {
+        updatedLesson.content = content;
+      }
+
+      // Update lesson in database
+      const { error } = await supabase
+        .from('lessons')
+        .update({ 
+          content: updatedLesson.content,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', selectedLesson.id);
+
+      if (error) throw error;
+
+      setSelectedLesson(updatedLesson);
+      toast.success("Modifications appliquées avec succès!");
+    } catch (error) {
+      console.error('Error applying content:', error);
+      toast.error("Erreur lors de l'application du contenu");
+    }
+  };
+
   if (isLoading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -176,7 +224,10 @@ const ContentEditor = () => {
                 />
               </div>
               <div className="xl:col-span-1 min-w-0">
-                <AIAssistant selectedLesson={selectedLesson} />
+                <AIAssistant 
+                  selectedLesson={selectedLesson}
+                  onApplyContent={handleApplyContent}
+                />
               </div>
             </div>
           </TabsContent>
