@@ -5,7 +5,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
-import { Sparkles, Send, Wand2, Languages, PenTool, Plus, Settings, GitBranch, Maximize2, Minimize2, History, CheckCircle, Loader2, AlertTriangle, Eye, Trash2 } from "lucide-react";
+import { Sparkles, Send, Wand2, Languages, PenTool, Plus, Settings, GitBranch, Maximize2, Minimize2, History, CheckCircle, Loader2, AlertTriangle, Eye, Trash2, MessageSquare } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Separator } from "@/components/ui/separator";
 import {
@@ -518,23 +518,23 @@ export const AIAssistant = ({ selectedLesson, onApplyContent }: AIAssistantProps
           >
             📝 Exercices
           </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => handleQuickAction('translate')}
-            disabled={isLoading || !selectedLesson}
-          >
-            <Languages className="mr-2 h-4 w-4" />
-            Créole
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => handleQuickAction('simplify')}
-            disabled={isLoading || !selectedLesson}
-          >
-            💡 Simplifier
-          </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => handleQuickAction('translate')}
+              disabled={isLoading || !selectedLesson}
+            >
+              <Languages className="mr-2 h-4 w-4" />
+              Créole
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => handleQuickAction('simplify')}
+              disabled={isLoading || !selectedLesson}
+            >
+              💡 Simplifier
+            </Button>
             <Button
               variant="outline"
               size="sm"
@@ -574,8 +574,8 @@ export const AIAssistant = ({ selectedLesson, onApplyContent }: AIAssistantProps
           
           <Separator />
 
-            {/* Context Info - Enhanced */}
-            <ScrollArea className="flex-1 pr-2">
+            {/* Context Info - Enhanced - FIXED HEIGHT */}
+            <ScrollArea className="h-48 pr-2 flex-shrink-0">
             {selectedLesson && (
               <div className="space-y-2">
               <div className="bg-gradient-to-r from-primary/10 to-primary/5 rounded-lg p-3 text-xs border border-primary/20 animate-fade-in">
@@ -726,8 +726,15 @@ export const AIAssistant = ({ selectedLesson, onApplyContent }: AIAssistantProps
           )}
           </ScrollArea>
 
-          {/* Chat Messages */}
-          <ScrollArea className="flex-1 border rounded-lg p-3 min-h-0">
+          <Separator />
+
+          {/* Chat Messages - Takes remaining space */}
+          <div className="flex-1 flex flex-col min-h-0 overflow-hidden">
+            <h4 className="text-sm font-semibold mb-2 flex items-center gap-2 flex-shrink-0">
+              <MessageSquare className="h-4 w-4" />
+              Conversation
+            </h4>
+            <ScrollArea className="flex-1 border rounded-lg p-3">
             {messages.length === 0 ? (
               <div className="text-center text-muted-foreground p-6 animate-fade-in">
                 <Sparkles className="h-16 w-16 mx-auto mb-4 opacity-20 animate-pulse" />
@@ -865,6 +872,7 @@ export const AIAssistant = ({ selectedLesson, onApplyContent }: AIAssistantProps
                 <Send className="h-4 w-4" />
               )}
             </Button>
+          </div>
           </div>
           </div>
         </div>
