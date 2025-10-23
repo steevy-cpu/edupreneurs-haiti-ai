@@ -325,10 +325,10 @@ const ContentEditor = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background to-muted/20">
-      <div className="w-full max-w-[1920px] mx-auto p-3 sm:p-4 md:p-6 lg:p-8">
+    <div className="h-screen overflow-hidden bg-gradient-to-br from-background to-muted/20 flex flex-col">
+      <div className="w-full max-w-[1920px] mx-auto p-3 sm:p-4 md:p-6 lg:p-8 flex-1 flex flex-col overflow-hidden">
         {/* Header */}
-        <div className="mb-4 md:mb-6">
+        <div className="mb-4 md:mb-6 flex-shrink-0">
           <Button
             variant="ghost"
             onClick={() => navigate("/dashboard")}
@@ -358,7 +358,7 @@ const ContentEditor = () => {
         </div>
 
         {/* Main Content */}
-        <Tabs defaultValue="editor" className="space-y-3 md:space-y-4">
+        <Tabs defaultValue="editor" className="space-y-3 md:space-y-4 flex-1 flex flex-col overflow-hidden">
           <div className="overflow-x-auto -mx-3 px-3 md:mx-0 md:px-0">
             <TabsList className={`grid w-full min-w-[600px] md:min-w-0 ${userRole === 'admin' ? 'grid-cols-7' : 'grid-cols-5'}`}>
               <TabsTrigger value="browser" className="gap-1 md:gap-2 text-xs md:text-sm px-2 md:px-3">
@@ -403,14 +403,14 @@ const ContentEditor = () => {
             </TabsList>
           </div>
 
-          <TabsContent value="browser" className="space-y-4">
+          <TabsContent value="browser" className="space-y-4 flex-1 overflow-auto">
             <LessonBrowser
               onSelectLesson={setSelectedLesson}
               selectedLesson={selectedLesson}
             />
           </TabsContent>
 
-          <TabsContent value="editor" className="space-y-3 md:space-y-4">
+          <TabsContent value="editor" className="space-y-3 md:space-y-4 flex-1 overflow-auto">
             <div className="grid grid-cols-1 xl:grid-cols-3 gap-3 md:gap-4">
               <div className="xl:col-span-2 min-w-0">
                 <LessonEditor
@@ -429,7 +429,7 @@ const ContentEditor = () => {
             </div>
           </TabsContent>
 
-          <TabsContent value="workflow" className="space-y-4">
+          <TabsContent value="workflow" className="space-y-4 flex-1 overflow-auto">
             <WorkflowManagement
               selectedLesson={selectedLesson}
               onUpdate={() => {
@@ -438,7 +438,7 @@ const ContentEditor = () => {
             />
           </TabsContent>
 
-          <TabsContent value="versions" className="space-y-4">
+          <TabsContent value="versions" className="space-y-4 flex-1 overflow-auto">
             <VersionHistory
               selectedLesson={selectedLesson}
               onRestore={() => {
@@ -447,16 +447,16 @@ const ContentEditor = () => {
             />
           </TabsContent>
 
-          <TabsContent value="history" className="space-y-4">
+          <TabsContent value="history" className="space-y-4 flex-1 overflow-auto">
             <ChangeLog selectedLesson={selectedLesson} />
           </TabsContent>
 
           {userRole === 'admin' && (
             <>
-              <TabsContent value="bulk" className="space-y-4">
+              <TabsContent value="bulk" className="space-y-4 flex-1 overflow-auto">
                 <BulkOperations />
               </TabsContent>
-              <TabsContent value="roles" className="space-y-4">
+              <TabsContent value="roles" className="space-y-4 flex-1 overflow-auto">
                 <RoleManagement />
               </TabsContent>
             </>

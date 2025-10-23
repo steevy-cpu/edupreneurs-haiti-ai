@@ -137,10 +137,10 @@ export const LessonBrowser = ({ onSelectLesson, selectedLesson }: LessonBrowserP
   };
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 h-full max-h-[calc(100vh-16rem)]">
       {/* Subjects */}
-      <Card>
-        <CardHeader>
+      <Card className="flex flex-col h-full">
+        <CardHeader className="flex-shrink-0">
           <CardTitle className="flex items-center justify-between">
             <span className="flex items-center gap-2">
               <Book className="h-5 w-5" />
@@ -151,8 +151,8 @@ export const LessonBrowser = ({ onSelectLesson, selectedLesson }: LessonBrowserP
             </Button>
           </CardTitle>
         </CardHeader>
-        <CardContent>
-          <ScrollArea className="h-[500px]">
+        <CardContent className="flex-1 overflow-hidden">
+          <ScrollArea className="h-full">
             {isLoading ? (
               <div className="text-center text-muted-foreground">Chargement...</div>
             ) : subjects.length === 0 ? (
@@ -199,8 +199,8 @@ export const LessonBrowser = ({ onSelectLesson, selectedLesson }: LessonBrowserP
       </Card>
 
       {/* Lessons */}
-      <Card className="md:col-span-2">
-        <CardHeader>
+      <Card className="md:col-span-2 flex flex-col h-full">
+        <CardHeader className="flex-shrink-0">
           <CardTitle className="flex items-center justify-between">
             <span className="flex items-center gap-2">
               <FileText className="h-5 w-5" />
@@ -225,8 +225,8 @@ export const LessonBrowser = ({ onSelectLesson, selectedLesson }: LessonBrowserP
             />
           </div>
         </CardHeader>
-        <CardContent>
-          <ScrollArea className="h-[500px]">
+        <CardContent className="flex-1 overflow-hidden">
+          <ScrollArea className="h-full">
             {!selectedSubject ? (
               <div className="text-center text-muted-foreground p-8">
                 Sélectionnez une matière pour voir les leçons

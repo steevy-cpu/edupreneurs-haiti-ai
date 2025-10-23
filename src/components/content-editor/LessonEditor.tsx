@@ -129,8 +129,8 @@ export const LessonEditor = ({ selectedLesson, onLessonUpdate }: LessonEditorPro
   }
 
   return (
-    <Card>
-      <CardHeader className="p-4 md:p-6">
+    <Card className="flex flex-col h-full max-h-[calc(100vh-16rem)]">
+      <CardHeader className="p-4 md:p-6 flex-shrink-0">
         <div className="flex flex-col gap-3 md:gap-4">
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
             <CardTitle className="flex items-center gap-2 text-base md:text-lg">
@@ -194,9 +194,9 @@ export const LessonEditor = ({ selectedLesson, onLessonUpdate }: LessonEditorPro
           )}
         </div>
       </CardHeader>
-      <CardContent className="p-3 md:p-6">
-        <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="grid w-full grid-cols-2">
+      <CardContent className="p-3 md:p-6 flex-1 overflow-hidden flex flex-col">
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col overflow-hidden">
+          <TabsList className="grid w-full grid-cols-2 flex-shrink-0">
             <TabsTrigger value="edit" className="text-xs md:text-sm">
               <FileText className="mr-1 md:mr-2 h-3 w-3 md:h-4 md:w-4" />
               <span>Éditer</span>
@@ -207,7 +207,7 @@ export const LessonEditor = ({ selectedLesson, onLessonUpdate }: LessonEditorPro
             </TabsTrigger>
           </TabsList>
 
-          <TabsContent value="edit" className="space-y-3 md:space-y-4 mt-3 md:mt-4">
+          <TabsContent value="edit" className="space-y-3 md:space-y-4 mt-3 md:mt-4 flex-1 overflow-auto">
             <div className="space-y-2">
               <Label htmlFor="title" className="text-xs md:text-sm">Titre de la leçon</Label>
               <Input
@@ -273,7 +273,7 @@ export const LessonEditor = ({ selectedLesson, onLessonUpdate }: LessonEditorPro
             </div>
           </TabsContent>
 
-          <TabsContent value="preview" className="mt-3 md:mt-4">
+          <TabsContent value="preview" className="mt-3 md:mt-4 flex-1 overflow-auto">
             <div className="prose prose-sm md:prose dark:prose-invert max-w-none">
               <h1 className="text-xl md:text-3xl">{lessonData.title}</h1>
               {lessonData.objectif && (
