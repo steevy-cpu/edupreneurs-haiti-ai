@@ -272,52 +272,42 @@ const ContentEditor = () => {
         return;
       }
 
-      let updatedLesson = { ...selectedLesson };
-
-      // Parse plain text content into structured format
-      const parseContent = (text: string) => {
-        // Convert markdown-style formatting to HTML
-        let html = text
-          .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>') // Bold
-          .replace(/\*(.*?)\*/g, '<em>$1</em>') // Italic
-          .replace(/^- (.+)$/gm, '<li>$1</li>') // List items
-          .replace(/^(\d+)\. (.+)$/gm, '<li>$2</li>') // Numbered items
-          .replace(/\n\n/g, '</p><p>') // Paragraphs
-          .replace(/^(?!<li>|<\/p>|<p>)(.+)$/gm, '<p>$1</p>'); // Wrap remaining lines
-        
-        // Wrap consecutive list items in ul
-        html = html.replace(/(<li>.*?<\/li>\n?)+/gs, '<ul>$&</ul>');
-        
-        return html;
-      };
-
-      if (operation === 'introduction') {
-        updatedLesson.introduction = parseContent(content);
-      } else if (operation === 'contenu') {
-        updatedLesson.contenu = parseContent(content);
-      } else if (operation === 'exemples') {
-        updatedLesson.exemples_exercices = parseContent(content);
-      } else if (operation === 'quiz') {
-        updatedLesson.exemples_exercices = (selectedLesson.exemples_exercices || '') + '\n\n' + parseContent(content);
-      } else if (operation === 'youtube') {
-        // Extract YouTube URL from content
+      // Handle YouTube URL operation (not handled by AI tools)
+      if (operation === 'youtube') {
         const urlMatch = content.match(/(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([^&\s]+)/);
         if (urlMatch && urlMatch[0]) {
-          updatedLesson.youtube_url = urlMatch[0];
+          const { error } = await supabase
+            .from('lessons')
+            .update({ 
+              youtube_url: urlMatch[0],
+              updated_at: new Date().toISOString()
+            })
+            .eq('id', selectedLesson.id);
+          
+          if (error) throw error;
+          
+          setSelectedLesson({ ...selectedLesson, youtube_url: urlMatch[0] });
           toast.success("URL YouTube ajoutée avec succès!");
         } else {
           toast.error("URL YouTube invalide");
-          return;
         }
-      } else {
-        updatedLesson.contenu = content;
+        return;
       }
 
-      // Update state immediately for real-time preview
-      setSelectedLesson(updatedLesson);
-      
-      // Debounce database updates to avoid too many writes during streaming
-      // Only save to database when operation is complete (not during streaming)
+      // For AI-generated content operations, refresh lesson data from database
+      // The AI agent tools have already updated the database
+      if (['introduction', 'contenu', 'exemples', 'quiz'].includes(operation)) {
+        const { data: refreshedLesson } = await supabase
+          .from('lessons')
+          .select('*')
+          .eq('id', selectedLesson.id)
+          .single();
+        
+        if (refreshedLesson) {
+          setSelectedLesson(refreshedLesson);
+          toast.success("Contenu mis à jour avec succès!");
+        }
+      }
     } catch (error) {
       console.error('Error applying content:', error);
       toast.error("Erreur lors de l'application des modifications");

@@ -171,11 +171,6 @@ export default function AIAssistant({ selectedLesson, onApplyContent }: AIAssist
                   ...newMessages,
                   { role: 'assistant', content: assistantMessage, operation: currentOperation }
                 ]);
-                
-                // Auto-apply content to editor in real-time
-                if (currentOperation && selectedLesson) {
-                  onApplyContent(assistantMessage, currentOperation);
-                }
               }
             } catch (e) {
               console.warn('⚠️ Parse error:', e);
@@ -201,38 +196,39 @@ export default function AIAssistant({ selectedLesson, onApplyContent }: AIAssist
     let prompt = "";
     switch (action) {
       case "introduction":
-        prompt = `Génère une introduction engageante et complète pour la leçon "${selectedLesson?.title || 'ce sujet'}" en TEXTE BRUT (pas de HTML):
-- Un paragraphe d'accroche qui capte l'attention (situation du quotidien haïtien, question intrigante)
-- Explication de pourquoi c'est important d'apprendre ce sujet
-- Présentation du vocabulaire clé qui sera utilisé
-- Environ 200-300 mots
-- Utilise des listes à puces simples avec - ou *
-- JAMAIS de balises HTML`;
+        prompt = `Utilise l'outil update_lesson_content pour créer une introduction engageante pour cette leçon. L'introduction doit:
+- Avoir un paragraphe d'accroche qui capte l'attention (situation du quotidien haïtien, question intrigante)
+- Expliquer pourquoi c'est important d'apprendre ce sujet
+- Présenter le vocabulaire clé qui sera utilisé
+- Environ 200-300 mots en HTML structuré avec <p>, <strong>, <em>
+Après la création, valide la leçon avec validate_lesson.`;
         break;
       case "contenu":
-        prompt = `Génère le contenu principal DÉTAILLÉ pour la leçon "${selectedLesson?.title || 'ce sujet'}" en TEXTE BRUT:
-- Minimum 5-7 sections bien détaillées
-- Chaque section avec titre clair et paragraphes explicatifs
-- Au moins 2-3 exemples pratiques concrets avec contexte haïtien
-- Utilise des listes à puces avec - ou *
-- Le contenu doit faire 800-1200 mots minimum
-- JAMAIS de balises HTML, juste du texte structuré`;
+        prompt = `Utilise l'outil update_lesson_content pour créer le contenu principal DÉTAILLÉ de cette leçon. Le contenu doit:
+- Avoir minimum 5-7 sections bien détaillées avec <h3> pour les titres
+- Chaque section avec paragraphes explicatifs, listes <ul> ou <ol>
+- Au moins 2-3 exemples pratiques concrets avec contexte haïtien dans des <div class="example-box">
+- Utiliser les balises: <h3>, <h4>, <p>, <ul>, <ol>, <li>, <strong>, <em>
+- Classes CSS: content-section, example-box, exercise, important-note
+- Faire 800-1200 mots minimum
+Après la création, valide la leçon avec validate_lesson.`;
         break;
       case "exemples":
-        prompt = `Génère des exemples et exercices DÉTAILLÉS pour "${selectedLesson?.title || 'ce sujet'}" en TEXTE BRUT:
+        prompt = `Utilise l'outil update_lesson_content pour créer des exemples et exercices DÉTAILLÉS. Ils doivent inclure:
 - 3 exemples résolus étape par étape avec contexte haïtien
 - 5 exercices de difficulté progressive avec solutions complètes
-- Utilise une numérotation simple (1. 2. 3.)
+- Format HTML avec <div class="exercise">, numérotation, explications détaillées
 - Environ 600-800 mots au total
-- JAMAIS de balises HTML`;
+Après la création, valide la leçon avec validate_lesson.`;
         break;
       case "quiz":
-        prompt = `Crée un quiz complet de 10 questions à choix multiples pour "${selectedLesson?.title || 'ce sujet'}" en TEXTE BRUT:
-- 10 questions avec 4 options chacune (A, B, C, D)
+        prompt = `Utilise l'outil update_lesson_content pour créer un quiz complet. Le quiz doit avoir:
+- 10 questions à choix multiples
+- 4 options chacune en HTML structuré
 - Difficulté progressive (facile → moyen → difficile)
-- Format simple et clair
-- Indique la bonne réponse pour chaque question
-- JAMAIS de balises HTML`;
+- Format structuré pour intégration dans le système de quiz
+- Indiquer la bonne réponse pour chaque question
+Après la création, valide la leçon avec validate_lesson.`;
         break;
     }
     streamChat(prompt, action);
@@ -286,12 +282,12 @@ export default function AIAssistant({ selectedLesson, onApplyContent }: AIAssist
           <div className="mt-2 flex items-center gap-2 text-xs text-muted-foreground animate-fade-in">
             <Loader2 className="h-3 w-3 animate-spin" />
             <span>
-              {loadingOperation === 'introduction' && 'Génération de l\'introduction...'}
-              {loadingOperation === 'contenu' && 'Génération du contenu...'}
-              {loadingOperation === 'exemples' && 'Création des exemples et exercices...'}
-              {loadingOperation === 'quiz' && 'Création du quiz...'}
-              {loadingOperation === 'custom' && 'Traitement de votre demande...'}
-              {!loadingOperation && 'En cours...'}
+              {loadingOperation === 'introduction' && 'L\'IA crée l\'introduction via les outils...'}
+              {loadingOperation === 'contenu' && 'L\'IA génère le contenu via les outils...'}
+              {loadingOperation === 'exemples' && 'L\'IA crée les exemples et exercices via les outils...'}
+              {loadingOperation === 'quiz' && 'L\'IA génère le quiz via les outils...'}
+              {loadingOperation === 'custom' && 'L\'IA traite votre demande...'}
+              {!loadingOperation && 'L\'IA réfléchit et exécute les outils...'}
             </span>
           </div>
         )}
@@ -433,43 +429,15 @@ export default function AIAssistant({ selectedLesson, onApplyContent }: AIAssist
                             )}
                           </div>
                         </div>
-                        {msg.role === 'assistant' && msg.operation && (
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={async () => {
-                              if (!selectedLesson) return;
-                              
-                              // Save the final content to database
-                              const updateData: any = { updated_at: new Date().toISOString() };
-                              
-                              if (msg.operation === 'introduction') {
-                                updateData.introduction = selectedLesson.introduction;
-                              } else if (msg.operation === 'contenu') {
-                                updateData.contenu = selectedLesson.contenu;
-                              } else if (msg.operation === 'exemples') {
-                                updateData.exemples_exercices = selectedLesson.exemples_exercices;
-                              } else if (msg.operation === 'quiz') {
-                                updateData.exemples_exercices = selectedLesson.exemples_exercices;
-                              }
-                              
-                              const { error } = await supabase
-                                .from('lessons')
-                                .update(updateData)
-                                .eq('id', selectedLesson.id);
-                              
-                              if (error) {
-                                toast.error("Erreur lors de la sauvegarde");
-                                console.error(error);
-                              } else {
-                                toast.success("Contenu sauvegardé avec succès!");
-                              }
-                            }}
-                            className="mt-2 self-start hover-scale gap-2"
-                          >
-                            <CheckCircle className="h-3 w-3" />
-                            Sauvegarder dans la base de données
-                          </Button>
+                        {msg.role === 'assistant' && (
+                          <div className="flex items-center gap-2 mt-2 text-xs text-muted-foreground">
+                            {msg.content.includes('✅') && (
+                              <Badge variant="secondary" className="gap-1">
+                                <CheckCircle className="h-3 w-3" />
+                                Modifications appliquées
+                              </Badge>
+                            )}
+                          </div>
                         )}
                       </div>
                     </div>
