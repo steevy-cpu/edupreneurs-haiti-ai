@@ -90,7 +90,7 @@ serve(async (req) => {
     // Create Supabase client for server-side operations
     const supabase = createClient(SUPABASE_URL!, SUPABASE_SERVICE_ROLE_KEY!);
 
-    const { messages, operation, lessonData, options, command } = await req.json();
+    const { messages, operation, lessonData, options, command, context } = await req.json();
     
     // Validate request
     if (!messages || !Array.isArray(messages) || messages.length === 0) {
@@ -199,6 +199,54 @@ Tu peux comprendre et exécuter des commandes en langage naturel pour:
 - Modifier les métadonnées des leçons
 - Changer le statut de workflow (brouillon, révision, publié)
 - Générer et améliorer du contenu pédagogique
+
+CONTEXTE INTELLIGENT:
+${context?.selectedLesson ? `
+📚 Leçon actuellement sélectionnée:
+- Titre: ${lessonData?.title}
+- Niveau: ${lessonData?.grade_level}
+- Statut: ${lessonData?.workflow_status || 'draft'}
+- Complétude: ${context.selectedLesson.hasContent ? '✓ Contenu présent' : '⚠ Contenu manquant'}
+${context.selectedLesson.missingFields?.length > 0 ? `- Sections manquantes: ${context.selectedLesson.missingFields.join(', ')}` : ''}
+
+💡 SUGGESTIONS CONTEXTUELLES:
+${context.selectedLesson.missingFields?.includes('objectif') ? '- Ajoute des objectifs d\'apprentissage clairs\n' : ''}
+${context.selectedLesson.missingFields?.includes('introduction') ? '- Crée une introduction engageante\n' : ''}
+${context.selectedLesson.missingFields?.includes('contenu') ? '- Développe le contenu principal\n' : ''}
+${context.selectedLesson.missingFields?.includes('exemples_exercices') ? '- Ajoute des exercices pratiques\n' : ''}
+` : 'Aucune leçon sélectionnée actuellement.'}
+
+${context?.relatedLessons?.length > 0 ? `
+🔗 Leçons connexes dans le même sujet:
+${context.relatedLessons.map((l: any) => `- "${l.title}" (${l.grade_level})`).join('\n')}
+
+Tu peux suggérer des liens avec ces leçons ou t'en inspirer pour créer du contenu cohérent.
+` : ''}
+
+${context?.availableSubjects?.length > 0 ? `
+📖 Matières disponibles dans le système:
+${context.availableSubjects.slice(0, 10).map((s: any) => `- ${s.name} (${s.grade_level})`).join('\n')}
+` : ''}
+
+${context?.conversationHistory?.length > 0 ? `
+💭 Historique de conversation récente:
+${context.conversationHistory.map((m: any) => `${m.role === 'user' ? '👤' : '🤖'} ${m.content.substring(0, 100)}...`).join('\n')}
+
+Utilise cet historique pour maintenir le contexte et donner des réponses cohérentes.
+` : ''}
+
+INTELLIGENCE CONTEXTUELLE:
+1. Analyse automatique du contenu existant pour suggérer des améliorations
+2. Détection des sections manquantes et proposition de les compléter
+3. Suggestions de leçons connexes pour créer une progression cohérente
+4. Recommandations de niveau scolaire approprié basées sur la complexité
+5. Auto-complétion des métadonnées (mois, références, etc.)
+
+DIRECTIVES SPÉCIFIQUES:
+- Si l'utilisateur demande de "compléter" ou "améliorer", concentre-toi sur les sections manquantes
+- Si une leçon est similaire à une leçon connexe, mentionne-le et propose de créer des liens
+- Suggère toujours le niveau de difficulté approprié basé sur le grade_level
+- Propose d'ajouter des références aux leçons précédentes quand c'est pertinent
 
 CONTEXTE IMPORTANT:
 - Niveau: Secondaire (collège et lycée)
@@ -324,14 +372,15 @@ Objectif: ${lessonData.objectif || 'Non spécifié'}`;
         'Authorization': `Bearer ${LOVABLE_API_KEY}`,
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({
-        model: 'openai/gpt-5',
-        messages: [
-          { role: 'system', content: systemPrompt },
-          ...messages
-        ],
-        stream: true,
-      }),
+        body: JSON.stringify({
+          model: 'google/gemini-2.5-flash',
+          messages: [
+            { role: 'system', content: systemPrompt },
+            ...messages
+          ],
+          stream: true,
+          temperature: 0.7,
+        }),
     });
 
     if (!response.ok) {

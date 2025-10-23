@@ -51,6 +51,7 @@ export const AIAssistant = ({ selectedLesson, onApplyContent }: AIAssistantProps
   const [operationPreview, setOperationPreview] = useState<OperationPreview | null>(null);
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
   const [pendingOperation, setPendingOperation] = useState<any>(null);
+  const [relatedLessons, setRelatedLessons] = useState<any[]>([]);
 
   // Load command history from localStorage
   useEffect(() => {
@@ -59,6 +60,30 @@ export const AIAssistant = ({ selectedLesson, onApplyContent }: AIAssistantProps
       setCommandHistory(JSON.parse(saved));
     }
   }, []);
+
+  // Fetch related lessons when lesson changes
+  useEffect(() => {
+    if (selectedLesson?.subject_id) {
+      fetchRelatedLessons();
+    } else {
+      setRelatedLessons([]);
+    }
+  }, [selectedLesson?.id]);
+
+  const fetchRelatedLessons = async () => {
+    if (!selectedLesson?.subject_id) return;
+
+    const { data } = await supabase
+      .from('lessons')
+      .select('id, title, grade_level, workflow_status')
+      .eq('subject_id', selectedLesson.subject_id)
+      .neq('id', selectedLesson.id)
+      .limit(3);
+
+    if (data) {
+      setRelatedLessons(data);
+    }
+  };
 
   // Save command to history
   const addToHistory = (command: string) => {
@@ -114,6 +139,40 @@ export const AIAssistant = ({ selectedLesson, onApplyContent }: AIAssistantProps
         return;
       }
 
+      // Fetch additional context: subjects and related lessons
+      const { data: subjects } = await supabase
+        .from('subjects')
+        .select('id, name, slug, grade_level, description')
+        .order('name');
+
+      const { data: relatedLessons } = selectedLesson?.subject_id
+        ? await supabase
+            .from('lessons')
+            .select('id, title, slug, grade_level, workflow_status')
+            .eq('subject_id', selectedLesson.subject_id)
+            .neq('id', selectedLesson.id)
+            .limit(5)
+        : { data: null };
+
+      // Build enhanced context
+      const enhancedContext = {
+        selectedLesson: selectedLesson ? {
+          ...selectedLesson,
+          hasContent: !!(selectedLesson.contenu || selectedLesson.exemples_exercices),
+          hasObjectives: !!selectedLesson.objectif,
+          hasIntroduction: !!selectedLesson.introduction,
+          missingFields: [
+            !selectedLesson.objectif && 'objectif',
+            !selectedLesson.introduction && 'introduction',
+            !selectedLesson.contenu && 'contenu',
+            !selectedLesson.exemples_exercices && 'exemples_exercices'
+          ].filter(Boolean)
+        } : null,
+        availableSubjects: subjects || [],
+        relatedLessons: relatedLessons || [],
+        conversationHistory: messages.slice(-5).map(m => ({ role: m.role, content: m.content.substring(0, 200) }))
+      };
+
       const response = await fetch(
         `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/content-ai-assistant`,
         {
@@ -127,6 +186,7 @@ export const AIAssistant = ({ selectedLesson, onApplyContent }: AIAssistantProps
             operation,
             lessonData: selectedLesson,
             command: userMessage,
+            context: enhancedContext,
           }),
         }
       );
@@ -453,21 +513,121 @@ export const AIAssistant = ({ selectedLesson, onApplyContent }: AIAssistantProps
           
           <Separator />
 
-          {/* Context Info */}
+          {/* Context Info - Enhanced */}
           {selectedLesson && (
-            <div className="bg-gradient-to-r from-primary/10 to-primary/5 rounded-lg p-3 text-xs border border-primary/20 animate-fade-in">
-              <div className="flex items-center gap-2">
-                <CheckCircle className="h-4 w-4 text-primary" />
-                <div className="flex-1">
-                  <div className="font-semibold text-sm">{selectedLesson.title}</div>
-                  <div className="text-muted-foreground text-xs mt-0.5">
-                    {selectedLesson.grade_level} • {selectedLesson.workflow_status || 'draft'}
+            <div className="space-y-2">
+              <div className="bg-gradient-to-r from-primary/10 to-primary/5 rounded-lg p-3 text-xs border border-primary/20 animate-fade-in">
+                <div className="flex items-center gap-2">
+                  <CheckCircle className="h-4 w-4 text-primary" />
+                  <div className="flex-1">
+                    <div className="font-semibold text-sm">{selectedLesson.title}</div>
+                    <div className="text-muted-foreground text-xs mt-0.5">
+                      {selectedLesson.grade_level} • {selectedLesson.workflow_status || 'draft'}
+                    </div>
                   </div>
+                  <Badge variant="secondary" className="ml-auto">
+                    {selectedLesson.is_published ? '📤 Publié' : '📝 Brouillon'}
+                  </Badge>
                 </div>
-                <Badge variant="secondary" className="ml-auto">
-                  {selectedLesson.is_published ? '📤 Publié' : '📝 Brouillon'}
-                </Badge>
               </div>
+
+              {/* Smart Suggestions */}
+              {(!selectedLesson.contenu || !selectedLesson.exemples_exercices || !selectedLesson.objectif) && (
+                <Card className="border-amber-500/50 bg-amber-500/5 animate-fade-in">
+                  <CardHeader className="p-2">
+                    <CardTitle className="text-xs flex items-center gap-2">
+                      <Sparkles className="h-3 w-3 text-amber-500" />
+                      Suggestions intelligentes
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="p-2 pt-0">
+                    <div className="space-y-1 text-xs">
+                      {!selectedLesson.objectif && (
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="w-full justify-start h-auto py-1.5 px-2 text-xs hover-scale"
+                          onClick={() => setInput(`Ajoute des objectifs d'apprentissage clairs pour "${selectedLesson.title}"`)}
+                        >
+                          <span className="text-amber-500 mr-2">•</span>
+                          Ajouter des objectifs d'apprentissage
+                        </Button>
+                      )}
+                      {!selectedLesson.introduction && (
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="w-full justify-start h-auto py-1.5 px-2 text-xs hover-scale"
+                          onClick={() => setInput(`Crée une introduction engageante pour "${selectedLesson.title}"`)}
+                        >
+                          <span className="text-amber-500 mr-2">•</span>
+                          Créer une introduction engageante
+                        </Button>
+                      )}
+                      {!selectedLesson.contenu && (
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="w-full justify-start h-auto py-1.5 px-2 text-xs hover-scale"
+                          onClick={() => setInput(`Génère le contenu principal pour "${selectedLesson.title}"`)}
+                        >
+                          <span className="text-amber-500 mr-2">•</span>
+                          Générer le contenu principal
+                        </Button>
+                      )}
+                      {!selectedLesson.exemples_exercices && (
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="w-full justify-start h-auto py-1.5 px-2 text-xs hover-scale"
+                          onClick={() => setInput(`Crée des exercices pratiques pour "${selectedLesson.title}"`)}
+                        >
+                          <span className="text-amber-500 mr-2">•</span>
+                          Ajouter des exercices pratiques
+                        </Button>
+                      )}
+                      {selectedLesson.workflow_status === 'draft' && selectedLesson.contenu && selectedLesson.exemples_exercices && (
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="w-full justify-start h-auto py-1.5 px-2 text-xs hover-scale"
+                          onClick={() => setInput(`Soumettre "${selectedLesson.title}" pour révision`)}
+                        >
+                          <span className="text-green-500 mr-2">✓</span>
+                          Prêt pour révision - Soumettre
+                        </Button>
+                      )}
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
+
+              {/* Related Lessons */}
+              {relatedLessons.length > 0 && (
+                <Card className="border-blue-500/50 bg-blue-500/5 animate-fade-in">
+                  <CardHeader className="p-2">
+                    <CardTitle className="text-xs flex items-center gap-2">
+                      🔗 Leçons connexes
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="p-2 pt-0">
+                    <div className="space-y-1 text-xs">
+                      {relatedLessons.map((lesson) => (
+                        <Button
+                          key={lesson.id}
+                          variant="ghost"
+                          size="sm"
+                          className="w-full justify-start h-auto py-1.5 px-2 text-xs hover-scale"
+                          onClick={() => setInput(`Compare cette leçon avec "${lesson.title}" et suggère des liens`)}
+                        >
+                          <span className="text-blue-500 mr-2">→</span>
+                          <span className="truncate">{lesson.title} ({lesson.grade_level})</span>
+                        </Button>
+                      ))}
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
             </div>
           )}
 
