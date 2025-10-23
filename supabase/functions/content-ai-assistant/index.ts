@@ -177,7 +177,7 @@ serve(async (req) => {
 
     const token = authHeader.replace('Bearer ', '');
     
-    // Create supabase client with service role for auth verification
+    // Create admin client for role checking
     const supabaseAdmin = createClient(SUPABASE_URL!, SUPABASE_SERVICE_ROLE_KEY!);
     const { data: { user }, error: authError } = await supabaseAdmin.auth.getUser(token);
     
@@ -188,8 +188,12 @@ serve(async (req) => {
       );
     }
     
-    // Create user-authenticated client for database operations (preserves auth.uid())
-    const supabase = createClient(SUPABASE_URL!, SUPABASE_SERVICE_ROLE_KEY!, {
+    // Get ANON key for user-authenticated client
+    const SUPABASE_ANON_KEY = Deno.env.get('SUPABASE_ANON_KEY');
+    
+    // Create user-authenticated client (uses user's JWT token with anon key)
+    // This ensures auth.uid() works in triggers and RLS policies
+    const supabase = createClient(SUPABASE_URL!, SUPABASE_ANON_KEY!, {
       global: {
         headers: {
           Authorization: authHeader,
@@ -550,20 +554,21 @@ Chaque leçon DOIT avoir:
       iteration++;
       console.log(`🔄 AI iteration ${iteration}/${maxIterations}`);
       
-      const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${LOVABLE_API_KEY}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          model: 'google/gemini-2.5-flash',
-          messages: conversationMessages,
-          tools: TOOLS,
-          tool_choice: "auto",
-          stream: false, // Non-streaming for tool execution
-        }),
-      });
+    // Also switch to Gemini Pro for better educational content generation
+    const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${LOVABLE_API_KEY}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        model: 'google/gemini-2.5-pro', // Using Pro for better educational content
+        messages: conversationMessages,
+        tools: TOOLS,
+        tool_choice: "auto",
+        stream: false, // Non-streaming for tool execution
+      }),
+    });
 
       if (!response.ok) {
         if (response.status === 429) {
