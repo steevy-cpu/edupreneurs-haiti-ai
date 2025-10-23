@@ -274,21 +274,31 @@ const ContentEditor = () => {
 
       let updatedLesson = { ...selectedLesson };
 
-      if (operation === 'generate' || operation === 'enhance') {
-        const htmlMatch = content.match(/<div[^>]*>[\s\S]*<\/div>|<p>[\s\S]*<\/p>/);
-        if (htmlMatch) {
-          updatedLesson.contenu = htmlMatch[0];
-        } else {
-          updatedLesson.contenu = content;
-        }
-      } else if (operation === 'exercises') {
-        updatedLesson.exemples_exercices = (selectedLesson.exemples_exercices || '') + '\n\n' + content;
-      } else if (operation === 'translate') {
-        updatedLesson.contenu = (selectedLesson.contenu || '') + '\n\n<h3>Traduction créole</h3>\n' + content;
-      } else if (operation === 'simplify') {
-        updatedLesson.contenu = content;
+      // Parse plain text content into structured format
+      const parseContent = (text: string) => {
+        // Convert markdown-style formatting to HTML
+        let html = text
+          .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>') // Bold
+          .replace(/\*(.*?)\*/g, '<em>$1</em>') // Italic
+          .replace(/^- (.+)$/gm, '<li>$1</li>') // List items
+          .replace(/^(\d+)\. (.+)$/gm, '<li>$2</li>') // Numbered items
+          .replace(/\n\n/g, '</p><p>') // Paragraphs
+          .replace(/^(?!<li>|<\/p>|<p>)(.+)$/gm, '<p>$1</p>'); // Wrap remaining lines
+        
+        // Wrap consecutive list items in ul
+        html = html.replace(/(<li>.*?<\/li>\n?)+/gs, '<ul>$&</ul>');
+        
+        return html;
+      };
+
+      if (operation === 'introduction') {
+        updatedLesson.introduction = parseContent(content);
+      } else if (operation === 'contenu') {
+        updatedLesson.contenu = parseContent(content);
+      } else if (operation === 'exemples') {
+        updatedLesson.exemples_exercices = parseContent(content);
       } else if (operation === 'quiz') {
-        updatedLesson.exemples_exercices = (selectedLesson.exemples_exercices || '') + '\n\n<h3>Quiz</h3>\n' + content;
+        updatedLesson.exemples_exercices = (selectedLesson.exemples_exercices || '') + '\n\n' + parseContent(content);
       } else if (operation === 'youtube') {
         // Extract YouTube URL from content
         const urlMatch = content.match(/(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([^&\s]+)/);
@@ -303,26 +313,11 @@ const ContentEditor = () => {
         updatedLesson.contenu = content;
       }
 
-      const updateData: any = { 
-        contenu: updatedLesson.contenu,
-        exemples_exercices: updatedLesson.exemples_exercices,
-        updated_at: new Date().toISOString()
-      };
-
-      // Add youtube_url to update if it was modified
-      if (operation === 'youtube' && updatedLesson.youtube_url) {
-        updateData.youtube_url = updatedLesson.youtube_url;
-      }
-
-      const { error } = await supabase
-        .from('lessons')
-        .update(updateData)
-        .eq('id', selectedLesson.id);
-
-      if (error) throw error;
-
+      // Update state immediately for real-time preview
       setSelectedLesson(updatedLesson);
-      toast.success("Modifications appliquées avec succès!");
+      
+      // Debounce database updates to avoid too many writes during streaming
+      // Only save to database when operation is complete (not during streaming)
     } catch (error) {
       console.error('Error applying content:', error);
       toast.error("Erreur lors de l'application des modifications");

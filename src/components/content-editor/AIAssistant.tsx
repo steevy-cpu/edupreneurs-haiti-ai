@@ -171,6 +171,11 @@ export default function AIAssistant({ selectedLesson, onApplyContent }: AIAssist
                   ...newMessages,
                   { role: 'assistant', content: assistantMessage, operation: currentOperation }
                 ]);
+                
+                // Auto-apply content to editor in real-time
+                if (currentOperation && selectedLesson) {
+                  onApplyContent(assistantMessage, currentOperation);
+                }
               }
             } catch (e) {
               console.warn('⚠️ Parse error:', e);
@@ -196,35 +201,38 @@ export default function AIAssistant({ selectedLesson, onApplyContent }: AIAssist
     let prompt = "";
     switch (action) {
       case "introduction":
-        prompt = `Génère une introduction engageante et complète pour la leçon "${selectedLesson?.title || 'ce sujet'}" en suivant cette structure:
+        prompt = `Génère une introduction engageante et complète pour la leçon "${selectedLesson?.title || 'ce sujet'}" en TEXTE BRUT (pas de HTML):
 - Un paragraphe d'accroche qui capte l'attention (situation du quotidien haïtien, question intrigante)
 - Explication de pourquoi c'est important d'apprendre ce sujet
 - Présentation du vocabulaire clé qui sera utilisé
 - Environ 200-300 mots
-- Format HTML simple avec <p>, <strong>, <em>`;
+- Utilise des listes à puces simples avec - ou *
+- JAMAIS de balises HTML`;
         break;
       case "contenu":
-        prompt = `Génère le contenu principal DÉTAILLÉ pour la leçon "${selectedLesson?.title || 'ce sujet'}" en suivant le modèle de structure HTML idéal:
-- Minimum 5-7 sections bien détaillées avec <h3> pour les titres
-- Chaque section avec paragraphes explicatifs, listes <ul> ou <ol>
-- Au moins 2-3 exemples pratiques concrets avec contexte haïtien dans des <div class="example-box">
-- Utiliser les balises: <h3>, <h4>, <p>, <ul>, <ol>, <li>, <strong>, <em>
-- Classes CSS: content-section, example-box, exercise, important-note
-- Le contenu doit faire 800-1200 mots minimum pour être complet et détaillé`;
+        prompt = `Génère le contenu principal DÉTAILLÉ pour la leçon "${selectedLesson?.title || 'ce sujet'}" en TEXTE BRUT:
+- Minimum 5-7 sections bien détaillées
+- Chaque section avec titre clair et paragraphes explicatifs
+- Au moins 2-3 exemples pratiques concrets avec contexte haïtien
+- Utilise des listes à puces avec - ou *
+- Le contenu doit faire 800-1200 mots minimum
+- JAMAIS de balises HTML, juste du texte structuré`;
         break;
       case "exemples":
-        prompt = `Génère des exemples et exercices DÉTAILLÉS pour "${selectedLesson?.title || 'ce sujet'}":
+        prompt = `Génère des exemples et exercices DÉTAILLÉS pour "${selectedLesson?.title || 'ce sujet'}" en TEXTE BRUT:
 - 3 exemples résolus étape par étape avec contexte haïtien
 - 5 exercices de difficulté progressive avec solutions complètes
-- Format HTML avec <div class="exercise">, numérotation, explications détaillées
-- Environ 600-800 mots au total`;
+- Utilise une numérotation simple (1. 2. 3.)
+- Environ 600-800 mots au total
+- JAMAIS de balises HTML`;
         break;
       case "quiz":
-        prompt = `Crée un quiz complet de 10 questions à choix multiples pour "${selectedLesson?.title || 'ce sujet'}":
-- 10 questions avec 4 options chacune
+        prompt = `Crée un quiz complet de 10 questions à choix multiples pour "${selectedLesson?.title || 'ce sujet'}" en TEXTE BRUT:
+- 10 questions avec 4 options chacune (A, B, C, D)
 - Difficulté progressive (facile → moyen → difficile)
-- Format structuré pour intégration dans le système de quiz
-- Indique la bonne réponse pour chaque question`;
+- Format simple et clair
+- Indique la bonne réponse pour chaque question
+- JAMAIS de balises HTML`;
         break;
     }
     streamChat(prompt, action);
@@ -429,14 +437,38 @@ export default function AIAssistant({ selectedLesson, onApplyContent }: AIAssist
                           <Button
                             size="sm"
                             variant="outline"
-                            onClick={() => {
-                              onApplyContent(msg.content, msg.operation!);
-                              toast.success("Contenu appliqué avec succès!");
+                            onClick={async () => {
+                              if (!selectedLesson) return;
+                              
+                              // Save the final content to database
+                              const updateData: any = { updated_at: new Date().toISOString() };
+                              
+                              if (msg.operation === 'introduction') {
+                                updateData.introduction = selectedLesson.introduction;
+                              } else if (msg.operation === 'contenu') {
+                                updateData.contenu = selectedLesson.contenu;
+                              } else if (msg.operation === 'exemples') {
+                                updateData.exemples_exercices = selectedLesson.exemples_exercices;
+                              } else if (msg.operation === 'quiz') {
+                                updateData.exemples_exercices = selectedLesson.exemples_exercices;
+                              }
+                              
+                              const { error } = await supabase
+                                .from('lessons')
+                                .update(updateData)
+                                .eq('id', selectedLesson.id);
+                              
+                              if (error) {
+                                toast.error("Erreur lors de la sauvegarde");
+                                console.error(error);
+                              } else {
+                                toast.success("Contenu sauvegardé avec succès!");
+                              }
                             }}
                             className="mt-2 self-start hover-scale gap-2"
                           >
                             <CheckCircle className="h-3 w-3" />
-                            Appliquer les modifications
+                            Sauvegarder dans la base de données
                           </Button>
                         )}
                       </div>
