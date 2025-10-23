@@ -1,13 +1,23 @@
 import { useState, useEffect } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
-import { Sparkles, Send, Wand2, Languages, PenTool, Plus, Settings, GitBranch, Maximize2, Minimize2, History, CheckCircle } from "lucide-react";
+import { Sparkles, Send, Wand2, Languages, PenTool, Plus, Settings, GitBranch, Maximize2, Minimize2, History, CheckCircle, Loader2, AlertTriangle, Eye, Trash2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Separator } from "@/components/ui/separator";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 interface AIAssistantProps {
   selectedLesson: any;
@@ -20,15 +30,27 @@ type Message = {
   operation?: string;
   timestamp?: number;
   isStructured?: boolean;
+  operationData?: any;
+};
+
+type OperationPreview = {
+  operation: string;
+  message: string;
+  params: any;
+  requiresConfirmation: boolean;
 };
 
 export const AIAssistant = ({ selectedLesson, onApplyContent }: AIAssistantProps) => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [loadingOperation, setLoadingOperation] = useState<string>("");
   const [isExpanded, setIsExpanded] = useState(false);
   const [showHistory, setShowHistory] = useState(true);
   const [commandHistory, setCommandHistory] = useState<string[]>([]);
+  const [operationPreview, setOperationPreview] = useState<OperationPreview | null>(null);
+  const [showConfirmDialog, setShowConfirmDialog] = useState(false);
+  const [pendingOperation, setPendingOperation] = useState<any>(null);
 
   // Load command history from localStorage
   useEffect(() => {
@@ -45,11 +67,39 @@ export const AIAssistant = ({ selectedLesson, onApplyContent }: AIAssistantProps
     localStorage.setItem('ai-command-history', JSON.stringify(updated));
   };
 
+  // Execute operation with confirmation
+  const executeOperation = (msg: Message) => {
+    if (!msg.operationData) return;
+
+    const { operation, params } = msg.operationData;
+    const isDestructive = operation === 'delete';
+
+    if (isDestructive) {
+      setPendingOperation({ operation, params, content: msg.content });
+      setShowConfirmDialog(true);
+    } else {
+      onApplyContent(msg.content, operation, params);
+    }
+  };
+
+  const confirmOperation = () => {
+    if (pendingOperation) {
+      onApplyContent(
+        pendingOperation.content,
+        pendingOperation.operation,
+        pendingOperation.params
+      );
+      setPendingOperation(null);
+    }
+    setShowConfirmDialog(false);
+  };
+
   const streamChat = async (userMessage: string, operation: string) => {
     setIsLoading(true);
+    setLoadingOperation(operation);
     const newMessages: Message[] = [
       ...messages,
-      { role: 'user', content: userMessage }
+      { role: 'user', content: userMessage, timestamp: Date.now() }
     ];
     setMessages(newMessages);
     
@@ -104,23 +154,31 @@ export const AIAssistant = ({ selectedLesson, onApplyContent }: AIAssistantProps
         const structuredResponse = await response.json();
         
         if (structuredResponse.operation) {
+          // Show operation preview
+          setOperationPreview({
+            operation: structuredResponse.operation,
+            message: structuredResponse.message,
+            params: structuredResponse.params || {},
+            requiresConfirmation: structuredResponse.requiresConfirmation
+          });
+          
           // Handle structured operations
           const confirmMsg: Message = {
             role: 'assistant',
             content: structuredResponse.message || 'Opération détectée',
             operation: structuredResponse.operation,
             isStructured: true,
-            timestamp: Date.now()
+            timestamp: Date.now(),
+            operationData: {
+              operation: structuredResponse.operation,
+              params: structuredResponse.params
+            }
           };
           
           setMessages([...newMessages, confirmMsg]);
-          
-          // If auto-confirm or user confirms, execute the operation
-          if (structuredResponse.requiresConfirmation) {
-            // Show confirmation in chat
-            return;
-          }
         }
+        setIsLoading(false);
+        setLoadingOperation("");
         return;
       }
 
@@ -172,8 +230,19 @@ export const AIAssistant = ({ selectedLesson, onApplyContent }: AIAssistantProps
     } catch (error) {
       console.error('AI Assistant error:', error);
       toast.error("Erreur lors de la communication avec l'assistant IA");
+      
+      // Show error in chat
+      setMessages([
+        ...newMessages,
+        {
+          role: 'assistant',
+          content: `❌ Erreur: ${error instanceof Error ? error.message : 'Une erreur est survenue'}`,
+          timestamp: Date.now()
+        }
+      ]);
     } finally {
       setIsLoading(false);
+      setLoadingOperation("");
     }
   };
 
@@ -221,36 +290,54 @@ export const AIAssistant = ({ selectedLesson, onApplyContent }: AIAssistantProps
   };
 
   return (
-    <Card className={`flex flex-col transition-all ${isExpanded ? 'fixed inset-4 z-50 h-auto' : 'h-[600px]'}`}>
-      <CardHeader className="pb-3">
-        <div className="flex items-center justify-between">
-          <div>
-            <CardTitle className="flex items-center gap-2">
-              <Sparkles className="h-5 w-5 text-primary" />
-              Assistant IA - Commandes Naturelles
-            </CardTitle>
-            <p className="text-sm text-muted-foreground">
-              Propulsé par Lovable AI • Créez, modifiez et gérez le contenu en langage naturel
-            </p>
+    <>
+      <Card className={`flex flex-col transition-all duration-300 animate-fade-in ${isExpanded ? 'fixed inset-4 z-50 h-auto' : 'h-[600px]'}`}>
+        <CardHeader className="pb-3">
+          <div className="flex items-center justify-between">
+            <div>
+              <CardTitle className="flex items-center gap-2">
+                <Sparkles className="h-5 w-5 text-primary animate-pulse" />
+                Assistant IA - Commandes Naturelles
+              </CardTitle>
+              <CardDescription className="text-xs">
+                Propulsé par Lovable AI • Créez, modifiez et gérez le contenu en langage naturel
+              </CardDescription>
+            </div>
+            <div className="flex gap-2">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setShowHistory(!showHistory)}
+                className="hover-scale"
+              >
+                <History className="h-4 w-4" />
+              </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setIsExpanded(!isExpanded)}
+                className="hover-scale"
+              >
+                {isExpanded ? <Minimize2 className="h-4 w-4" /> : <Maximize2 className="h-4 w-4" />}
+              </Button>
+            </div>
           </div>
-          <div className="flex gap-2">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => setShowHistory(!showHistory)}
-            >
-              <History className="h-4 w-4" />
-            </Button>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => setIsExpanded(!isExpanded)}
-            >
-              {isExpanded ? <Minimize2 className="h-4 w-4" /> : <Maximize2 className="h-4 w-4" />}
-            </Button>
-          </div>
-        </div>
-      </CardHeader>
+          
+          {/* Loading indicator */}
+          {isLoading && (
+            <div className="mt-2 flex items-center gap-2 text-xs text-muted-foreground animate-fade-in">
+              <Loader2 className="h-3 w-3 animate-spin" />
+              <span>
+                {loadingOperation === 'generate' && 'Génération du contenu...'}
+                {loadingOperation === 'enhance' && 'Amélioration du contenu...'}
+                {loadingOperation === 'exercises' && 'Création des exercices...'}
+                {loadingOperation === 'translate' && 'Traduction en cours...'}
+                {loadingOperation === 'custom' && 'Traitement de votre demande...'}
+                {!loadingOperation && 'En cours...'}
+              </span>
+            </div>
+          )}
+        </CardHeader>
       <CardContent className="flex-1 flex gap-3 p-4 overflow-hidden">
         {/* Command History Sidebar */}
         {showHistory && (
@@ -368,39 +455,89 @@ export const AIAssistant = ({ selectedLesson, onApplyContent }: AIAssistantProps
 
           {/* Context Info */}
           {selectedLesson && (
-            <div className="bg-muted/50 rounded-lg p-2 text-xs">
+            <div className="bg-gradient-to-r from-primary/10 to-primary/5 rounded-lg p-3 text-xs border border-primary/20 animate-fade-in">
               <div className="flex items-center gap-2">
-                <CheckCircle className="h-3 w-3 text-primary" />
-                <span className="font-medium">Leçon sélectionnée:</span>
-                <span>{selectedLesson.title}</span>
-                <Badge variant="outline" className="ml-auto">{selectedLesson.grade_level}</Badge>
+                <CheckCircle className="h-4 w-4 text-primary" />
+                <div className="flex-1">
+                  <div className="font-semibold text-sm">{selectedLesson.title}</div>
+                  <div className="text-muted-foreground text-xs mt-0.5">
+                    {selectedLesson.grade_level} • {selectedLesson.workflow_status || 'draft'}
+                  </div>
+                </div>
+                <Badge variant="secondary" className="ml-auto">
+                  {selectedLesson.is_published ? '📤 Publié' : '📝 Brouillon'}
+                </Badge>
               </div>
             </div>
+          )}
+
+          {/* Operation Preview Card */}
+          {operationPreview && (
+            <Card className="border-2 border-primary/50 bg-primary/5 animate-scale-in">
+              <CardHeader className="p-3">
+                <CardTitle className="text-sm flex items-center gap-2">
+                  <Eye className="h-4 w-4" />
+                  Aperçu de l'opération
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="p-3 pt-0">
+                <div className="space-y-2">
+                  <div className="flex items-start gap-2">
+                    <Badge variant="outline">{operationPreview.operation}</Badge>
+                    <p className="text-xs text-muted-foreground flex-1">
+                      {operationPreview.message}
+                    </p>
+                  </div>
+                  {operationPreview.params && Object.keys(operationPreview.params).length > 0 && (
+                    <div className="text-xs bg-muted/50 rounded p-2 space-y-1">
+                      {Object.entries(operationPreview.params).map(([key, value]) => (
+                        <div key={key} className="flex justify-between">
+                          <span className="font-medium">{key}:</span>
+                          <span className="text-muted-foreground">{String(value)}</span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
           )}
 
           {/* Chat Messages */}
           <ScrollArea className="flex-1 border rounded-lg p-3">
             {messages.length === 0 ? (
-              <div className="text-center text-muted-foreground p-4">
-                <Sparkles className="h-12 w-12 mx-auto mb-2 opacity-20" />
-                <p className="font-medium mb-2">Assistant IA avec Commandes Naturelles</p>
-                <p className="text-xs">Exemples de commandes:</p>
-                <div className="text-xs mt-2 space-y-1 text-left max-w-md mx-auto">
-                  <p>• "Crée une nouvelle leçon sur les équations du 2nd degré"</p>
-                  <p>• "Modifie le titre de cette leçon"</p>
-                  <p>• "Soumettre cette leçon pour révision"</p>
-                  <p>• "Génère 10 exercices de difficulté progressive"</p>
+              <div className="text-center text-muted-foreground p-6 animate-fade-in">
+                <Sparkles className="h-16 w-16 mx-auto mb-4 opacity-20 animate-pulse" />
+                <p className="font-semibold mb-3 text-base">Assistant IA avec Commandes Naturelles</p>
+                <p className="text-xs mb-3">Exemples de commandes:</p>
+                <div className="text-xs space-y-2 text-left max-w-md mx-auto bg-muted/50 rounded-lg p-4">
+                  <div className="flex items-start gap-2 hover-scale cursor-pointer" onClick={() => setInput("Crée une nouvelle leçon sur les équations du 2nd degré")}>
+                    <span className="text-primary">•</span>
+                    <span>"Crée une nouvelle leçon sur les équations du 2nd degré"</span>
+                  </div>
+                  <div className="flex items-start gap-2 hover-scale cursor-pointer" onClick={() => setInput("Modifie le titre de cette leçon")}>
+                    <span className="text-primary">•</span>
+                    <span>"Modifie le titre de cette leçon"</span>
+                  </div>
+                  <div className="flex items-start gap-2 hover-scale cursor-pointer" onClick={() => setInput("Soumettre cette leçon pour révision")}>
+                    <span className="text-primary">•</span>
+                    <span>"Soumettre cette leçon pour révision"</span>
+                  </div>
+                  <div className="flex items-start gap-2 hover-scale cursor-pointer" onClick={() => setInput("Génère 10 exercices de difficulté progressive")}>
+                    <span className="text-primary">•</span>
+                    <span>"Génère 10 exercices de difficulté progressive"</span>
+                  </div>
                 </div>
               </div>
           ) : (
-            <div className="space-y-4">
+              <div className="space-y-4">
               {messages.map((msg, idx) => (
                 <div
                   key={idx}
-                  className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
+                  className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'} animate-fade-in`}
                 >
                   <div
-                    className={`max-w-[85%] rounded-lg p-3 ${
+                    className={`max-w-[85%] rounded-lg p-3 shadow-sm transition-all hover:shadow-md ${
                       msg.role === 'user'
                         ? 'bg-primary text-primary-foreground'
                         : 'bg-muted'
@@ -409,9 +546,19 @@ export const AIAssistant = ({ selectedLesson, onApplyContent }: AIAssistantProps
                     <div className="flex flex-col gap-2">
                       <div className="flex items-start gap-2">
                         {msg.role === 'assistant' && (
-                          <Badge variant="secondary" className="mt-0.5">IA</Badge>
+                          <Badge variant="secondary" className="mt-0.5 flex items-center gap-1">
+                            <Sparkles className="h-3 w-3" />
+                            IA
+                          </Badge>
                         )}
-                        <p className="text-sm whitespace-pre-wrap">{msg.content}</p>
+                        <div className="flex-1">
+                          <p className="text-sm whitespace-pre-wrap">{msg.content}</p>
+                          {msg.timestamp && (
+                            <p className="text-xs text-muted-foreground mt-1">
+                              {new Date(msg.timestamp).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}
+                            </p>
+                          )}
+                        </div>
                       </div>
                       {msg.role === 'assistant' && msg.operation && !msg.isStructured && (
                         <Button
@@ -421,31 +568,31 @@ export const AIAssistant = ({ selectedLesson, onApplyContent }: AIAssistantProps
                             onApplyContent(msg.content, msg.operation!);
                             toast.success("Contenu appliqué avec succès!");
                           }}
-                          className="mt-2 self-start"
+                          className="mt-2 self-start hover-scale gap-2"
                         >
-                          ✨ Appliquer les modifications
+                          <CheckCircle className="h-3 w-3" />
+                          Appliquer les modifications
                         </Button>
                       )}
-                      {msg.role === 'assistant' && msg.isStructured && (
+                      {msg.role === 'assistant' && msg.isStructured && msg.operationData && (
                         <div className="flex gap-2 mt-2">
                           <Button
                             size="sm"
                             variant="default"
-                            onClick={() => {
-                              // Parse the structured response and execute
-                              toast.info("Fonctionnalité à implémenter dans Phase 3");
-                            }}
-                            className="self-start"
+                            onClick={() => executeOperation(msg)}
+                            className="self-start hover-scale gap-1"
                           >
-                            ✓ Confirmer
+                            <CheckCircle className="h-3 w-3" />
+                            Confirmer
                           </Button>
                           <Button
                             size="sm"
                             variant="outline"
                             onClick={() => {
+                              setOperationPreview(null);
                               toast.info("Opération annulée");
                             }}
-                            className="self-start"
+                            className="self-start hover-scale"
                           >
                             ✗ Annuler
                           </Button>
@@ -454,8 +601,16 @@ export const AIAssistant = ({ selectedLesson, onApplyContent }: AIAssistantProps
                     </div>
                   </div>
                 </div>
-                ))}
-              </div>
+              ))}
+              {isLoading && (
+                <div className="flex justify-start animate-fade-in">
+                  <div className="bg-muted rounded-lg p-3 flex items-center gap-2">
+                    <Loader2 className="h-4 w-4 animate-spin text-primary" />
+                    <span className="text-sm text-muted-foreground">L'IA réfléchit...</span>
+                  </div>
+                </div>
+              )}
+            </div>
             )}
           </ScrollArea>
 
@@ -473,17 +628,54 @@ export const AIAssistant = ({ selectedLesson, onApplyContent }: AIAssistantProps
                   handleSend();
                 }
               }}
+              className="transition-all focus:ring-2 focus:ring-primary"
             />
             <Button
               onClick={handleSend}
               disabled={isLoading || !input.trim()}
               size="icon"
+              className="hover-scale"
             >
-              <Send className="h-4 w-4" />
+              {isLoading ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <Send className="h-4 w-4" />
+              )}
             </Button>
           </div>
         </div>
       </CardContent>
     </Card>
+
+    {/* Confirmation Dialog for Destructive Operations */}
+    <AlertDialog open={showConfirmDialog} onOpenChange={setShowConfirmDialog}>
+      <AlertDialogContent className="animate-scale-in">
+        <AlertDialogHeader>
+          <AlertDialogTitle className="flex items-center gap-2">
+            <AlertTriangle className="h-5 w-5 text-destructive" />
+            Confirmer l'opération
+          </AlertDialogTitle>
+          <AlertDialogDescription>
+            {pendingOperation?.operation === 'delete' && (
+              <>
+                <p className="mb-2">Cette action est irréversible.</p>
+                <p className="font-medium">Êtes-vous sûr de vouloir supprimer cette leçon ?</p>
+              </>
+            )}
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel>Annuler</AlertDialogCancel>
+          <AlertDialogAction
+            onClick={confirmOperation}
+            className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+          >
+            <Trash2 className="h-4 w-4 mr-2" />
+            Confirmer la suppression
+          </AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
+    </>
   );
 };
