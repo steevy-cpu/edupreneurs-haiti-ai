@@ -269,10 +269,10 @@ serve(async (req) => {
           case "update_lesson_content": {
             const { lessonId, section, content } = args;
             
-            // First check if lesson exists
+            // First check if lesson exists and get current data
             const { data: existingLesson, error: checkError } = await supabase
               .from('lessons')
-              .select('id')
+              .select('*')
               .eq('id', lessonId)
               .maybeSingle();
             
@@ -281,10 +281,34 @@ serve(async (req) => {
               return { ok: false, error: `Leçon non trouvée: ${lessonId}` };
             }
             
+            // Special handling for introduction: combine with objectif
+            let updateData: any = { updated_at: new Date().toISOString() };
+            
+            if (section === 'introduction') {
+              // Combine objectif and introduction into introduction field
+              const objectifContent = existingLesson.objectif || '';
+              let combinedIntro = content;
+              
+              // If objectif exists, prepend it to the introduction
+              if (objectifContent) {
+                combinedIntro = `<div class="objectif-section bg-primary/10 p-4 rounded-lg mb-4">
+<h3 class="text-lg font-semibold mb-2">🎯 Objectifs d'apprentissage</h3>
+${objectifContent}
+</div>
+
+${content}`;
+              }
+              
+              updateData.introduction = combinedIntro;
+            } else {
+              // For other sections, just update normally
+              updateData[section] = content;
+            }
+            
             // Update the lesson
             const { data, error } = await supabase
               .from('lessons')
-              .update({ [section]: content, updated_at: new Date().toISOString() })
+              .update(updateData)
               .eq('id', lessonId)
               .select()
               .single();
@@ -455,6 +479,8 @@ serve(async (req) => {
 ⚡ **RÈGLES D'OPÉRATION CRITIQUES:**
 - **TOUJOURS utiliser les outils disponibles** pour modifier le contenu
 - Pour créer/mettre à jour l'introduction: utiliser update_lesson_content avec section="introduction"
+  * L'introduction doit TOUJOURS inclure les objectifs d'apprentissage au début
+  * Format: Objectifs (avec emoji 🎯) + Introduction engageante + Vocabulaire clé
 - Pour créer/mettre à jour le contenu: utiliser update_lesson_content avec section="contenu"
 - Pour créer/mettre à jour les exercices: utiliser update_lesson_content avec section="exemples_exercices"
 - **GÉNÉRER DU HTML STRUCTURÉ** dans le paramètre content des outils
@@ -468,7 +494,7 @@ serve(async (req) => {
 
 🛠️ **WORKFLOW TYPIQUE:**
 1. L'éditeur demande "Génère l'introduction pour cette leçon"
-2. Tu utilises update_lesson_content(lessonId=..., section="introduction", content="<p>HTML structuré...</p>")
+2. Tu utilises update_lesson_content(lessonId=..., section="introduction", content="<p>HTML avec objectifs + intro...</p>")
 3. Tu appelles validate_lesson(lessonId=...)
 4. Tu confirmes: "✅ Introduction créée et validée (score: X/100)"
 - NE JAMAIS sortir du contenu sans l'appliquer via outils

@@ -294,17 +294,8 @@ export const LessonEditor = ({ selectedLesson, onLessonUpdate }: LessonEditorPro
           <TabsContent value="preview" className="mt-3 md:mt-4 flex-1 overflow-auto">
             <div className="prose prose-sm md:prose dark:prose-invert max-w-none">
               <h1 className="text-xl md:text-3xl">{lessonData.title}</h1>
-              {lessonData.objectif && (
-                <div className="bg-primary/10 p-4 rounded-lg mb-4">
-                  <h3 className="mt-0">🎯 Objectif</h3>
-                  <p>{lessonData.objectif}</p>
-                </div>
-              )}
               {lessonData.introduction && (
-                <div className="mb-4">
-                  <h3>Introduction</h3>
-                  <p>{lessonData.introduction}</p>
-                </div>
+                <div className="mb-4" dangerouslySetInnerHTML={{ __html: lessonData.introduction }} />
               )}
               {lessonData.contenu && (
                 <div

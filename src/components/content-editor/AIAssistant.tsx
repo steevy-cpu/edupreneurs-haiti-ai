@@ -182,6 +182,13 @@ export default function AIAssistant({ selectedLesson, onApplyContent }: AIAssist
       }
 
       console.log('✅ Stream complete, final message length:', assistantMessage.length);
+      
+      // Automatically refresh lesson data after AI completes tool execution
+      if (selectedLesson && ['introduction', 'contenu', 'exemples', 'quiz'].includes(currentOperation)) {
+        console.log('🔄 Refreshing lesson data after AI tool execution...');
+        onApplyContent('', currentOperation);
+      }
+      
       setInput("");
     } catch (error) {
       console.error('❌ AI Assistant error:', error);
@@ -196,11 +203,12 @@ export default function AIAssistant({ selectedLesson, onApplyContent }: AIAssist
     let prompt = "";
     switch (action) {
       case "introduction":
-        prompt = `Utilise l'outil update_lesson_content pour créer une introduction engageante pour cette leçon. L'introduction doit:
-- Avoir un paragraphe d'accroche qui capte l'attention (situation du quotidien haïtien, question intrigante)
-- Expliquer pourquoi c'est important d'apprendre ce sujet
-- Présenter le vocabulaire clé qui sera utilisé
-- Environ 200-300 mots en HTML structuré avec <p>, <strong>, <em>
+        prompt = `Utilise l'outil update_lesson_content pour créer une introduction complète. L'introduction doit inclure:
+- **Objectifs d'apprentissage** (section avec emoji 🎯 et liste des compétences à acquérir)
+- Paragraphe d'accroche engageant (situation du quotidien haïtien, question intrigante)
+- Explication de l'importance d'apprendre ce sujet
+- Présentation du vocabulaire clé qui sera utilisé
+- Environ 200-300 mots au total en HTML structuré avec <p>, <strong>, <em>, <ul>, <li>
 Après la création, valide la leçon avec validate_lesson.`;
         break;
       case "contenu":
