@@ -90,7 +90,7 @@ serve(async (req) => {
     // Create Supabase client for server-side operations
     const supabase = createClient(SUPABASE_URL!, SUPABASE_SERVICE_ROLE_KEY!);
 
-    const { messages, operation, lessonData, options } = await req.json();
+    const { messages, operation, lessonData, options, command } = await req.json();
     
     // Validate request
     if (!messages || !Array.isArray(messages) || messages.length === 0) {
@@ -98,6 +98,31 @@ serve(async (req) => {
         JSON.stringify({ error: 'Messages requis' }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
+    }
+
+    // Parse natural language commands if provided
+    let detectedOperation = operation;
+    let operationParams: any = {};
+    
+    if (command) {
+      const commandLower = command.toLowerCase();
+      
+      // Detect operation type from natural language
+      if (commandLower.includes('créer') || commandLower.includes('nouvelle leçon') || commandLower.includes('nouveau')) {
+        detectedOperation = 'create_lesson';
+      } else if (commandLower.includes('modifier') || commandLower.includes('changer') || commandLower.includes('mettre à jour')) {
+        detectedOperation = 'update_metadata';
+      } else if (commandLower.includes('supprimer') || commandLower.includes('effacer')) {
+        detectedOperation = 'delete';
+      } else if (commandLower.includes('publier') || commandLower.includes('publication')) {
+        detectedOperation = 'publish';
+      } else if (commandLower.includes('réviser') || commandLower.includes('révision') || commandLower.includes('soumettre')) {
+        detectedOperation = 'workflow_change';
+        operationParams.targetStatus = 'review';
+      } else if (commandLower.includes('brouillon') || commandLower.includes('draft')) {
+        detectedOperation = 'workflow_change';
+        operationParams.targetStatus = 'draft';
+      }
     }
 
     // Verify user has content editor role
@@ -139,8 +164,41 @@ serve(async (req) => {
     // Get content template if requested
     const template = options?.useTemplate ? getContentTemplate(operation) : '';
 
+    // Handle structural operations directly
+    if (detectedOperation === 'create_lesson' || detectedOperation === 'update_metadata' || 
+        detectedOperation === 'delete' || detectedOperation === 'workflow_change') {
+      
+      // Return structured JSON response for these operations
+      const structuredResponse = {
+        operation: detectedOperation,
+        requiresConfirmation: true,
+        params: operationParams,
+        message: ''
+      };
+
+      if (detectedOperation === 'create_lesson') {
+        structuredResponse.message = 'Je vais créer une nouvelle leçon. Quel est le titre, le sujet et le niveau scolaire ?';
+      } else if (detectedOperation === 'update_metadata') {
+        structuredResponse.message = 'Je peux mettre à jour les informations de cette leçon. Que souhaitez-vous modifier ?';
+      } else if (detectedOperation === 'workflow_change') {
+        structuredResponse.message = `Je vais changer le statut de cette leçon en "${operationParams.targetStatus}". Confirmez-vous cette action ?`;
+      }
+
+      return new Response(
+        JSON.stringify(structuredResponse),
+        { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
     // Build system prompt based on operation
     let systemPrompt = `Tu es un assistant IA spécialisé dans la création de contenu éducatif pour le programme MENFP (Ministère de l'Éducation Nationale et de la Formation Professionnelle) en Haïti.
+
+CAPACITÉS AVANCÉES:
+Tu peux comprendre et exécuter des commandes en langage naturel pour:
+- Créer de nouvelles leçons
+- Modifier les métadonnées des leçons
+- Changer le statut de workflow (brouillon, révision, publié)
+- Générer et améliorer du contenu pédagogique
 
 CONTEXTE IMPORTANT:
 - Niveau: Secondaire (collège et lycée)

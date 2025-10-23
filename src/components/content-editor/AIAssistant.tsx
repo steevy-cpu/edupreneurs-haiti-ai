@@ -1,12 +1,13 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
-import { Sparkles, Send, Wand2, Languages, PenTool } from "lucide-react";
+import { Sparkles, Send, Wand2, Languages, PenTool, Plus, Settings, GitBranch, Maximize2, Minimize2, History, CheckCircle } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { Separator } from "@/components/ui/separator";
 
 interface AIAssistantProps {
   selectedLesson: any;
@@ -17,12 +18,32 @@ type Message = {
   role: 'user' | 'assistant';
   content: string;
   operation?: string;
+  timestamp?: number;
+  isStructured?: boolean;
 };
 
 export const AIAssistant = ({ selectedLesson, onApplyContent }: AIAssistantProps) => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [isExpanded, setIsExpanded] = useState(false);
+  const [showHistory, setShowHistory] = useState(true);
+  const [commandHistory, setCommandHistory] = useState<string[]>([]);
+
+  // Load command history from localStorage
+  useEffect(() => {
+    const saved = localStorage.getItem('ai-command-history');
+    if (saved) {
+      setCommandHistory(JSON.parse(saved));
+    }
+  }, []);
+
+  // Save command to history
+  const addToHistory = (command: string) => {
+    const updated = [command, ...commandHistory.filter(c => c !== command)].slice(0, 10);
+    setCommandHistory(updated);
+    localStorage.setItem('ai-command-history', JSON.stringify(updated));
+  };
 
   const streamChat = async (userMessage: string, operation: string) => {
     setIsLoading(true);
@@ -164,23 +185,78 @@ export const AIAssistant = ({ selectedLesson, onApplyContent }: AIAssistantProps
 
   const handleSend = () => {
     if (!input.trim()) return;
+    addToHistory(input);
     streamChat(input, 'custom');
   };
 
+  const handleHistoryClick = (command: string) => {
+    setInput(command);
+  };
+
   return (
-    <Card className="h-[600px] flex flex-col">
+    <Card className={`flex flex-col transition-all ${isExpanded ? 'fixed inset-4 z-50 h-auto' : 'h-[600px]'}`}>
       <CardHeader className="pb-3">
-        <CardTitle className="flex items-center gap-2">
-          <Sparkles className="h-5 w-5 text-primary" />
-          Assistant IA
-        </CardTitle>
-        <p className="text-sm text-muted-foreground">
-          Propulsé par Lovable AI • Optimisé pour le curriculum MENFP
-        </p>
+        <div className="flex items-center justify-between">
+          <div>
+            <CardTitle className="flex items-center gap-2">
+              <Sparkles className="h-5 w-5 text-primary" />
+              Assistant IA - Commandes Naturelles
+            </CardTitle>
+            <p className="text-sm text-muted-foreground">
+              Propulsé par Lovable AI • Créez, modifiez et gérez le contenu en langage naturel
+            </p>
+          </div>
+          <div className="flex gap-2">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setShowHistory(!showHistory)}
+            >
+              <History className="h-4 w-4" />
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setIsExpanded(!isExpanded)}
+            >
+              {isExpanded ? <Minimize2 className="h-4 w-4" /> : <Maximize2 className="h-4 w-4" />}
+            </Button>
+          </div>
+        </div>
       </CardHeader>
-      <CardContent className="flex-1 flex flex-col gap-3 p-4">
-        {/* Quick Actions */}
-        <div className="grid grid-cols-2 gap-2">
+      <CardContent className="flex-1 flex gap-3 p-4 overflow-hidden">
+        {/* Command History Sidebar */}
+        {showHistory && (
+          <div className="w-48 border-r pr-3 flex flex-col gap-2">
+            <h4 className="text-sm font-semibold flex items-center gap-2">
+              <History className="h-4 w-4" />
+              Historique
+            </h4>
+            <ScrollArea className="flex-1">
+              <div className="space-y-1">
+                {commandHistory.length === 0 ? (
+                  <p className="text-xs text-muted-foreground">Aucun historique</p>
+                ) : (
+                  commandHistory.map((cmd, idx) => (
+                    <Button
+                      key={idx}
+                      variant="ghost"
+                      size="sm"
+                      className="w-full justify-start text-xs h-auto py-2 px-2"
+                      onClick={() => handleHistoryClick(cmd)}
+                    >
+                      <span className="truncate">{cmd}</span>
+                    </Button>
+                  ))
+                )}
+              </div>
+            </ScrollArea>
+          </div>
+        )}
+
+        <div className="flex-1 flex flex-col gap-3 min-w-0">
+          {/* Quick Actions - Enhanced */}
+          <div className="grid grid-cols-3 gap-2">
           <Button
             variant="outline"
             size="sm"
@@ -224,23 +300,71 @@ export const AIAssistant = ({ selectedLesson, onApplyContent }: AIAssistantProps
           >
             💡 Simplifier
           </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => handleQuickAction('quiz')}
-            disabled={isLoading || !selectedLesson}
-          >
-            🎯 Quiz
-          </Button>
-        </div>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => handleQuickAction('quiz')}
+              disabled={isLoading || !selectedLesson}
+            >
+              🎯 Quiz
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setInput("Crée une nouvelle leçon sur ")}
+              disabled={isLoading}
+            >
+              <Plus className="mr-2 h-4 w-4" />
+              Nouvelle
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setInput("Modifie les métadonnées de cette leçon: ")}
+              disabled={isLoading || !selectedLesson}
+            >
+              <Settings className="mr-2 h-4 w-4" />
+              Métadonnées
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setInput("Change le statut de cette leçon en révision")}
+              disabled={isLoading || !selectedLesson}
+            >
+              <GitBranch className="mr-2 h-4 w-4" />
+              Workflow
+            </Button>
+          </div>
+          
+          <Separator />
 
-        {/* Chat Messages */}
-        <ScrollArea className="flex-1 border rounded-lg p-3">
-          {messages.length === 0 ? (
-            <div className="text-center text-muted-foreground p-4">
-              <Sparkles className="h-12 w-12 mx-auto mb-2 opacity-20" />
-              <p>Utilisez les actions rapides ou posez une question</p>
+          {/* Context Info */}
+          {selectedLesson && (
+            <div className="bg-muted/50 rounded-lg p-2 text-xs">
+              <div className="flex items-center gap-2">
+                <CheckCircle className="h-3 w-3 text-primary" />
+                <span className="font-medium">Leçon sélectionnée:</span>
+                <span>{selectedLesson.title}</span>
+                <Badge variant="outline" className="ml-auto">{selectedLesson.grade_level}</Badge>
+              </div>
             </div>
+          )}
+
+          {/* Chat Messages */}
+          <ScrollArea className="flex-1 border rounded-lg p-3">
+            {messages.length === 0 ? (
+              <div className="text-center text-muted-foreground p-4">
+                <Sparkles className="h-12 w-12 mx-auto mb-2 opacity-20" />
+                <p className="font-medium mb-2">Assistant IA avec Commandes Naturelles</p>
+                <p className="text-xs">Exemples de commandes:</p>
+                <div className="text-xs mt-2 space-y-1 text-left max-w-md mx-auto">
+                  <p>• "Crée une nouvelle leçon sur les équations du 2nd degré"</p>
+                  <p>• "Modifie le titre de cette leçon"</p>
+                  <p>• "Soumettre cette leçon pour révision"</p>
+                  <p>• "Génère 10 exercices de difficulté progressive"</p>
+                </div>
+              </div>
           ) : (
             <div className="space-y-4">
               {messages.map((msg, idx) => (
@@ -278,33 +402,34 @@ export const AIAssistant = ({ selectedLesson, onApplyContent }: AIAssistantProps
                     </div>
                   </div>
                 </div>
-              ))}
-            </div>
-          )}
-        </ScrollArea>
+                ))}
+              </div>
+            )}
+          </ScrollArea>
 
-        {/* Input */}
-        <div className="flex gap-2">
-          <Textarea
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            placeholder="Posez une question à l'assistant IA..."
-            rows={2}
-            disabled={isLoading || !selectedLesson}
-            onKeyDown={(e) => {
-              if (e.key === 'Enter' && !e.shiftKey) {
-                e.preventDefault();
-                handleSend();
-              }
-            }}
-          />
-          <Button
-            onClick={handleSend}
-            disabled={isLoading || !input.trim() || !selectedLesson}
-            size="icon"
-          >
-            <Send className="h-4 w-4" />
-          </Button>
+          {/* Input */}
+          <div className="flex gap-2">
+            <Textarea
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              placeholder="Commande en langage naturel ou question... Ex: 'Crée une leçon sur les fractions pour la 6ème'"
+              rows={2}
+              disabled={isLoading}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                  e.preventDefault();
+                  handleSend();
+                }
+              }}
+            />
+            <Button
+              onClick={handleSend}
+              disabled={isLoading || !input.trim()}
+              size="icon"
+            >
+              <Send className="h-4 w-4" />
+            </Button>
+          </div>
         </div>
       </CardContent>
     </Card>
