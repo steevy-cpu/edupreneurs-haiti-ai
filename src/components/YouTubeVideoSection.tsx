@@ -50,9 +50,6 @@ export const YouTubeVideoSection = ({ lessonTitle, objectives, gradeLevel = "AF7
   };
 
   const buildOptimalSearchQuery = (): string => {
-    // Extract key concepts from objectives
-    const keywords = extractKeywords(objectives);
-    
     // Convert grade level to more searchable format
     const gradeMapping: Record<string, string> = {
       "AF7": "7ème année",
@@ -66,13 +63,21 @@ export const YouTubeVideoSection = ({ lessonTitle, objectives, gradeLevel = "AF7
     
     const gradeTerm = gradeMapping[gradeLevel] || "collège";
     
-    // Build educational-focused query with French language indicators
-    // Format: [topic] + French educational keywords + [grade] + [key concepts]
-    const educationalTerms = ["cours français", "leçon en français", "explication française", "tutoriel français"];
-    const randomEducationalTerm = educationalTerms[Math.floor(Math.random() * educationalTerms.length)];
+    // Build science-focused query that prioritizes the exact lesson topic
+    // For science lessons, focus on the specific topic rather than generic math terms
+    const topicWords = lessonTitle.toLowerCase().split(' ');
     
-    // Add "français" and "francophone" to ensure French content
-    const searchQuery = `${lessonTitle} ${randomEducationalTerm} mathématiques ${gradeTerm} français ${keywords.slice(0, 2).join(" ")}`;
+    // Create a highly specific search query
+    let searchQuery = '';
+    
+    // If the lesson is about balance/scales, make it super specific
+    if (lessonTitle.toLowerCase().includes('balance')) {
+      searchQuery = `comment utiliser une balance cours sciences physiques français ${gradeTerm} expérience laboratoire`;
+    } 
+    // For other science topics, use the lesson title directly
+    else {
+      searchQuery = `${lessonTitle} cours sciences français ${gradeTerm} expérience`;
+    }
     
     return searchQuery;
   };
