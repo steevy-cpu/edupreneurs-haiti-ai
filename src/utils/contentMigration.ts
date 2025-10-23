@@ -2,6 +2,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { mathLessons7AF } from "@/data/mathLessons";
 import { sciencesLessons7AF } from "@/data/sciencesLessons";
 import { espagnolLessons7AF } from "@/data/espagnolLessons";
+import { francaisLessons7AF } from "@/data/francaisLessons";
 
 interface MigrationResult {
   success: boolean;
@@ -86,6 +87,28 @@ export const migrateContentToDatabase = async (): Promise<MigrationResult> => {
 
     if (espagnolSubjectError) {
       result.errors.push(`Espagnol subject error: ${espagnolSubjectError.message}`);
+      return result;
+    }
+
+    result.subjectsCreated++;
+
+    // Create Français subject
+    const { data: francaisSubject, error: francaisSubjectError } = await supabase
+      .from('subjects')
+      .upsert({
+        name: "Français",
+        slug: "francais",
+        description: "Communication française niveau 7ème AF selon le programme MENFP",
+        icon_name: "📝",
+        color: "purple",
+        grade_level: "7AF",
+        created_by: user.id,
+      }, { onConflict: 'slug' })
+      .select()
+      .single();
+
+    if (francaisSubjectError) {
+      result.errors.push(`Français subject error: ${francaisSubjectError.message}`);
       return result;
     }
 
@@ -186,6 +209,39 @@ export const migrateContentToDatabase = async (): Promise<MigrationResult> => {
       .from('subjects')
       .update({ lesson_count: Object.keys(espagnolLessons7AF).length })
       .eq('id', espagnolSubject.id);
+
+    // Migrate Français lessons (array format)
+    for (let i = 0; i < francaisLessons7AF.length; i++) {
+      const lesson = francaisLessons7AF[i];
+      const { error: lessonError } = await supabase
+        .from('lessons')
+        .upsert({
+          subject_id: francaisSubject.id,
+          title: lesson.title,
+          slug: lesson.id,
+          objectif: lesson.objectif,
+          introduction: lesson.introduction,
+          contenu: lesson.contenu,
+          exemples_exercices: lesson.exemplesExercices,
+          mois: lesson.mois,
+          order_index: i,
+          grade_level: "7AF",
+          is_published: true,
+          created_by: user.id,
+        }, { onConflict: 'subject_id,slug' });
+
+      if (lessonError) {
+        result.errors.push(`Français lesson ${lesson.id}: ${lessonError.message}`);
+      } else {
+        result.lessonsCreated++;
+      }
+    }
+
+    // Update lesson count for Français
+    await supabase
+      .from('subjects')
+      .update({ lesson_count: francaisLessons7AF.length })
+      .eq('id', francaisSubject.id);
 
     result.success = result.errors.length === 0;
     return result;

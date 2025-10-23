@@ -92,6 +92,15 @@ const subjects: Subject[] = [
     color: "from-rose-500 to-rose-600"
   },
   {
+    id: "francais",
+    title: "Français",
+    description: "Communication française selon le programme MENFP",
+    icon: BookOpen,
+    lessons: 34,
+    exercises: 120,
+    color: "from-purple-500 to-purple-600"
+  },
+  {
     id: "creole",
     title: "Kreyòl Ayisyen",
     description: "Lang, literati ak kilti ayisyèn",
@@ -274,7 +283,7 @@ export default function Matieres() {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mb-8">
           {subjects.map((subject, index) => {
             const IconComponent = subject.icon;
-            const hasContent = subject.id === 'mathematiques' || subject.id === 'sciences' || subject.id === 'anglais' || subject.id === 'espagnol';
+            const hasContent = subject.id === 'mathematiques' || subject.id === 'sciences' || subject.id === 'anglais' || subject.id === 'espagnol' || subject.id === 'francais';
             
             return (
               <Card
@@ -288,6 +297,8 @@ export default function Matieres() {
                       ? '/anglais-course'
                       : subject.id === 'espagnol'
                       ? '/espagnol-course'
+                      : subject.id === 'francais'
+                      ? '/francais-course'
                       : '/sciences-course';
                     navigate(courseRoute);
                   }
@@ -328,6 +339,8 @@ export default function Matieres() {
                         ? '/anglais-course'
                         : subject.id === 'espagnol'
                         ? '/espagnol-course'
+                        : subject.id === 'francais'
+                        ? '/francais-course'
                         : '/sciences-course';
                       navigate(courseRoute);
                     }}
