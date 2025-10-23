@@ -253,6 +253,20 @@ serve(async (req) => {
           
           case "update_lesson_content": {
             const { lessonId, section, content } = args;
+            
+            // First check if lesson exists
+            const { data: existingLesson, error: checkError } = await supabase
+              .from('lessons')
+              .select('id')
+              .eq('id', lessonId)
+              .maybeSingle();
+            
+            if (checkError) throw checkError;
+            if (!existingLesson) {
+              return { ok: false, error: `Leçon non trouvée: ${lessonId}` };
+            }
+            
+            // Update the lesson
             const { data, error } = await supabase
               .from('lessons')
               .update({ [section]: content, updated_at: new Date().toISOString() })
@@ -517,7 +531,7 @@ Chaque leçon DOIT avoir:
       ...messages
     ];
     
-    let maxIterations = 3; // Prevent infinite loops
+    let maxIterations = 5; // Prevent infinite loops, increased from 3
     let iteration = 0;
     
     while (iteration < maxIterations) {
@@ -570,11 +584,27 @@ Chaque leçon DOIT avoir:
         const toolResults = await Promise.all(
           message.tool_calls.map(async (toolCall: any) => {
             const toolName = toolCall.function.name;
-            const toolArgs = JSON.parse(toolCall.function.arguments);
+            let toolArgs;
+            try {
+              toolArgs = JSON.parse(toolCall.function.arguments);
+            } catch (e) {
+              console.error(`Failed to parse tool arguments for ${toolName}:`, toolCall.function.arguments);
+              return {
+                tool_call_id: toolCall.id,
+                role: 'tool',
+                name: toolName,
+                content: JSON.stringify({ ok: false, error: 'Invalid tool arguments JSON' })
+              };
+            }
             
             console.log(`  → ${toolName}:`, toolArgs);
             const result = await executeTool(toolName, toolArgs);
             console.log(`  ✓ Result:`, result.ok ? '✅' : '❌', result.message || result.error);
+            
+            // If tool failed, stop iterations early to avoid wasting calls
+            if (!result.ok && ['update_lesson_content', 'create_lesson', 'publish_lesson'].includes(toolName)) {
+              console.log('⚠️ Critical tool failed, ending iteration loop');
+            }
             
             return {
               tool_call_id: toolCall.id,
