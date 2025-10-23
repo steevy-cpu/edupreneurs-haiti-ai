@@ -50,36 +50,18 @@ export const YouTubeVideoSection = ({ lessonTitle, objectives, gradeLevel = "AF7
   };
 
   const buildOptimalSearchQuery = (): string => {
-    // Convert grade level to more searchable format
-    const gradeMapping: Record<string, string> = {
-      "AF7": "7ème année",
-      "AF8": "8ème année", 
-      "AF9": "9ème année",
-      "NS1": "1ère secondaire",
-      "NS2": "2ème secondaire",
-      "NS3": "3ème secondaire",
-      "NS4": "4ème secondaire"
-    };
+    // Simplified search queries that are more likely to find results
+    // For science lessons, use broader but relevant terms
     
-    const gradeTerm = gradeMapping[gradeLevel] || "collège";
-    
-    // Build science-focused query that prioritizes the exact lesson topic
-    // For science lessons, focus on the specific topic rather than generic math terms
-    const topicWords = lessonTitle.toLowerCase().split(' ');
-    
-    // Create a highly specific search query
-    let searchQuery = '';
-    
-    // If the lesson is about balance/scales, make it super specific
+    // If the lesson is about balance/scales, use simple terms
     if (lessonTitle.toLowerCase().includes('balance')) {
-      searchQuery = `comment utiliser une balance cours sciences physiques français ${gradeTerm} expérience laboratoire`;
+      return `utiliser balance cours sciences français`;
     } 
-    // For other science topics, use the lesson title directly
+    // For other science topics, use the main topic words
     else {
-      searchQuery = `${lessonTitle} cours sciences français ${gradeTerm} expérience`;
+      const mainWords = lessonTitle.toLowerCase().split(' ').slice(0, 3).join(' ');
+      return `${mainWords} cours sciences français`;
     }
-    
-    return searchQuery;
   };
 
   const searchVideos = async () => {
