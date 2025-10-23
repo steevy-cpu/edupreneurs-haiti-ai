@@ -5,7 +5,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
-import { Sparkles, Send, Maximize2, Minimize2, History, CheckCircle, Loader2, MessageSquare, Lightbulb, BookOpen } from "lucide-react";
+import { Sparkles, Send, Maximize2, Minimize2, History, CheckCircle, Loader2, MessageSquare, Lightbulb, BookOpen, Youtube } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Separator } from "@/components/ui/separator";
 
@@ -329,6 +329,43 @@ export default function AIAssistant({ selectedLesson, onApplyContent }: AIAssist
             className="gap-2"
           >
             🎯 Quiz
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={async () => {
+              const url = prompt("Collez l'URL de la vidéo YouTube ici:");
+              if (url && selectedLesson) {
+                // Extract and validate URL
+                const urlMatch = url.match(/(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([^&\s]+)/);
+                if (urlMatch) {
+                  try {
+                    const { error } = await supabase
+                      .from('lessons')
+                      .update({ 
+                        youtube_url: url,
+                        updated_at: new Date().toISOString()
+                      })
+                      .eq('id', selectedLesson.id);
+                    
+                    if (error) throw error;
+                    
+                    toast.success("Vidéo YouTube ajoutée avec succès!");
+                    onApplyContent(url, 'youtube');
+                  } catch (error) {
+                    console.error('Error adding YouTube URL:', error);
+                    toast.error("Erreur lors de l'ajout de la vidéo");
+                  }
+                } else {
+                  toast.error("URL YouTube invalide. Utilisez un lien comme: https://www.youtube.com/watch?v=...");
+                }
+              }
+            }}
+            disabled={isLoading || !selectedLesson}
+            className="gap-2 col-span-2"
+          >
+            <Youtube className="h-4 w-4" />
+            Ajouter Vidéo YouTube
           </Button>
         </div>
 

@@ -289,17 +289,34 @@ const ContentEditor = () => {
         updatedLesson.contenu = content;
       } else if (operation === 'quiz') {
         updatedLesson.exemples_exercices = (selectedLesson.exemples_exercices || '') + '\n\n<h3>Quiz</h3>\n' + content;
+      } else if (operation === 'youtube') {
+        // Extract YouTube URL from content
+        const urlMatch = content.match(/(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([^&\s]+)/);
+        if (urlMatch && urlMatch[0]) {
+          updatedLesson.youtube_url = urlMatch[0];
+          toast.success("URL YouTube ajoutée avec succès!");
+        } else {
+          toast.error("URL YouTube invalide");
+          return;
+        }
       } else {
         updatedLesson.contenu = content;
       }
 
+      const updateData: any = { 
+        contenu: updatedLesson.contenu,
+        exemples_exercices: updatedLesson.exemples_exercices,
+        updated_at: new Date().toISOString()
+      };
+
+      // Add youtube_url to update if it was modified
+      if (operation === 'youtube' && updatedLesson.youtube_url) {
+        updateData.youtube_url = updatedLesson.youtube_url;
+      }
+
       const { error } = await supabase
         .from('lessons')
-        .update({ 
-          contenu: updatedLesson.contenu,
-          exemples_exercices: updatedLesson.exemples_exercices,
-          updated_at: new Date().toISOString()
-        })
+        .update(updateData)
         .eq('id', selectedLesson.id);
 
       if (error) throw error;
