@@ -5,7 +5,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
-import { Sparkles, Send, Wand2, Languages, PenTool, Plus, Settings, GitBranch, Maximize2, Minimize2, History, CheckCircle, Loader2, MessageSquare } from "lucide-react";
+import { Sparkles, Send, Wand2, Languages, PenTool, Plus, Settings, GitBranch, Maximize2, Minimize2, History, CheckCircle, Loader2, MessageSquare, Lightbulb, BookOpen } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Separator } from "@/components/ui/separator";
 
@@ -195,31 +195,36 @@ export default function AIAssistant({ selectedLesson, onApplyContent }: AIAssist
   const handleQuickAction = (action: string) => {
     let prompt = "";
     switch (action) {
-      case "generate":
-        prompt = `Génère un contenu complet de leçon sur le sujet "${selectedLesson?.title || 'ce sujet'}" avec:
-- Une introduction engageante
-- Le contenu principal bien structuré en HTML
-- Des exemples concrets tirés du contexte haïtien
-- 5 exercices de difficulté progressive avec solutions détaillées`;
+      case "introduction":
+        prompt = `Génère une introduction engageante et complète pour la leçon "${selectedLesson?.title || 'ce sujet'}" en suivant cette structure:
+- Un paragraphe d'accroche qui capte l'attention (situation du quotidien haïtien, question intrigante)
+- Explication de pourquoi c'est important d'apprendre ce sujet
+- Présentation du vocabulaire clé qui sera utilisé
+- Environ 200-300 mots
+- Format HTML simple avec <p>, <strong>, <em>`;
         break;
-      case "enhance":
-        prompt = `Améliore le contenu existant de cette leçon en ajoutant:
-- Plus de détails et d'explications claires
-- Des analogies et métaphores adaptées au contexte haïtien
-- Des exemples supplémentaires concrets
-- Des exercices pratiques variés`;
+      case "contenu":
+        prompt = `Génère le contenu principal DÉTAILLÉ pour la leçon "${selectedLesson?.title || 'ce sujet'}" en suivant le modèle de structure HTML idéal:
+- Minimum 5-7 sections bien détaillées avec <h3> pour les titres
+- Chaque section avec paragraphes explicatifs, listes <ul> ou <ol>
+- Au moins 2-3 exemples pratiques concrets avec contexte haïtien dans des <div class="example-box">
+- Utiliser les balises: <h3>, <h4>, <p>, <ul>, <ol>, <li>, <strong>, <em>
+- Classes CSS: content-section, example-box, exercise, important-note
+- Le contenu doit faire 800-1200 mots minimum pour être complet et détaillé`;
         break;
-      case "exercises":
-        prompt = "Crée 5 nouveaux exercices variés avec solutions détaillées pour cette leçon, du plus facile au plus difficile";
-        break;
-      case "translate":
-        prompt = "Traduis les parties principales de cette leçon en créole haïtien, en gardant les termes techniques en français avec explications";
-        break;
-      case "simplify":
-        prompt = "Simplifie le contenu de cette leçon pour le rendre plus accessible, utilise des phrases courtes et plus d'exemples";
+      case "exemples":
+        prompt = `Génère des exemples et exercices DÉTAILLÉS pour "${selectedLesson?.title || 'ce sujet'}":
+- 3 exemples résolus étape par étape avec contexte haïtien
+- 5 exercices de difficulté progressive avec solutions complètes
+- Format HTML avec <div class="exercise">, numérotation, explications détaillées
+- Environ 600-800 mots au total`;
         break;
       case "quiz":
-        prompt = "Crée un quiz de 10 questions à choix multiples (4 options chacune) sur cette leçon, avec difficulté progressive";
+        prompt = `Crée un quiz complet de 10 questions à choix multiples pour "${selectedLesson?.title || 'ce sujet'}":
+- 10 questions avec 4 options chacune
+- Difficulté progressive (facile → moyen → difficile)
+- Format structuré pour intégration dans le système de quiz
+- Indique la bonne réponse pour chaque question`;
         break;
     }
     streamChat(prompt, action);
@@ -273,10 +278,10 @@ export default function AIAssistant({ selectedLesson, onApplyContent }: AIAssist
           <div className="mt-2 flex items-center gap-2 text-xs text-muted-foreground animate-fade-in">
             <Loader2 className="h-3 w-3 animate-spin" />
             <span>
-              {loadingOperation === 'generate' && 'Génération du contenu...'}
-              {loadingOperation === 'enhance' && 'Amélioration du contenu...'}
-              {loadingOperation === 'exercises' && 'Création des exercices...'}
-              {loadingOperation === 'translate' && 'Traduction en cours...'}
+              {loadingOperation === 'introduction' && 'Génération de l\'introduction...'}
+              {loadingOperation === 'contenu' && 'Génération du contenu...'}
+              {loadingOperation === 'exemples' && 'Création des exemples et exercices...'}
+              {loadingOperation === 'quiz' && 'Création du quiz...'}
               {loadingOperation === 'custom' && 'Traitement de votre demande...'}
               {!loadingOperation && 'En cours...'}
             </span>
@@ -285,56 +290,43 @@ export default function AIAssistant({ selectedLesson, onApplyContent }: AIAssist
       </CardHeader>
       
       <CardContent className="flex-1 flex flex-col gap-3 p-4 overflow-hidden min-h-0">
-        {/* Quick Actions */}
-        <div className="grid grid-cols-3 gap-2 flex-shrink-0">
+        {/* Quick Actions - Section Generators */}
+        <div className="grid grid-cols-2 gap-2 flex-shrink-0">
           <Button
             variant="outline"
             size="sm"
-            onClick={() => handleQuickAction('generate')}
+            onClick={() => handleQuickAction('introduction')}
             disabled={isLoading || !selectedLesson}
+            className="gap-2"
           >
-            <Wand2 className="mr-2 h-4 w-4" />
-            Générer
+            <Lightbulb className="h-4 w-4" />
+            Introduction
           </Button>
           <Button
             variant="outline"
             size="sm"
-            onClick={() => handleQuickAction('enhance')}
+            onClick={() => handleQuickAction('contenu')}
             disabled={isLoading || !selectedLesson}
+            className="gap-2"
           >
-            <PenTool className="mr-2 h-4 w-4" />
-            Améliorer
+            <BookOpen className="h-4 w-4" />
+            Contenu
           </Button>
           <Button
             variant="outline"
             size="sm"
-            onClick={() => handleQuickAction('exercises')}
+            onClick={() => handleQuickAction('exemples')}
             disabled={isLoading || !selectedLesson}
+            className="gap-2"
           >
-            📝 Exercices
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => handleQuickAction('translate')}
-            disabled={isLoading || !selectedLesson}
-          >
-            <Languages className="mr-2 h-4 w-4" />
-            Créole
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => handleQuickAction('simplify')}
-            disabled={isLoading || !selectedLesson}
-          >
-            💡 Simplifier
+            📝 Exemples
           </Button>
           <Button
             variant="outline"
             size="sm"
             onClick={() => handleQuickAction('quiz')}
             disabled={isLoading || !selectedLesson}
+            className="gap-2"
           >
             🎯 Quiz
           </Button>

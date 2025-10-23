@@ -29,6 +29,7 @@ export const LessonEditor = ({ selectedLesson, onLessonUpdate }: LessonEditorPro
     exemples_exercices: "",
     grade_level: "",
     is_published: false,
+    youtube_url: "",
   });
   const [isSaving, setIsSaving] = useState(false);
   const [activeTab, setActiveTab] = useState("edit");
@@ -58,6 +59,7 @@ export const LessonEditor = ({ selectedLesson, onLessonUpdate }: LessonEditorPro
         exemples_exercices: selectedLesson.exemples_exercices || "",
         grade_level: selectedLesson.grade_level || "",
         is_published: selectedLesson.is_published || false,
+        youtube_url: selectedLesson.youtube_url || "",
       });
     }
   }, [selectedLesson]);
@@ -270,6 +272,22 @@ export const LessonEditor = ({ selectedLesson, onLessonUpdate }: LessonEditorPro
                 rows={8}
                 className="font-mono text-xs md:text-sm"
               />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="youtube_url" className="text-xs md:text-sm">Vidéo YouTube personnalisée (optionnel)</Label>
+              <Input
+                id="youtube_url"
+                value={lessonData.youtube_url || ""}
+                onChange={(e) =>
+                  setLessonData({ ...lessonData, youtube_url: e.target.value })
+                }
+                placeholder="https://www.youtube.com/watch?v=... ou https://youtu.be/..."
+                className="text-sm"
+              />
+              <p className="text-xs text-muted-foreground">
+                Copiez l'URL complète ou le lien de partage YouTube pour ajouter une vidéo spécifique à cette leçon
+              </p>
             </div>
           </TabsContent>
 
