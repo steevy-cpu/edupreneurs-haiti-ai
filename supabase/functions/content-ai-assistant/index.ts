@@ -624,16 +624,20 @@ Chaque leçon DOIT avoir:
       
       // No tool calls - AI has final response, stream it back
       console.log('✅ Final response ready, streaming to client');
+      console.log('📝 Response content length:', message.content?.length || 0);
       
       // Create streaming response manually
       const encoder = new TextEncoder();
       const content = message.content || 'Aucune réponse générée';
+      
+      console.log('🔄 Starting stream with content:', content.substring(0, 100) + '...');
       
       const stream = new ReadableStream({
         start(controller) {
           try {
             // Split content into words for progressive streaming
             const words = content.split(' ');
+            console.log(`📦 Streaming ${words.length} word chunks`);
             
             for (let i = 0; i < words.length; i++) {
               const chunk = words[i] + (i < words.length - 1 ? ' ' : '');
@@ -660,9 +664,11 @@ Chaque leçon DOIT avoir:
             })}\n\n`;
             controller.enqueue(encoder.encode(doneData));
             controller.enqueue(encoder.encode('data: [DONE]\n\n'));
+            
+            console.log('✅ Stream completed successfully');
             controller.close();
           } catch (error) {
-            console.error('Stream error:', error);
+            console.error('❌ Stream error:', error);
             controller.error(error);
           }
         }
