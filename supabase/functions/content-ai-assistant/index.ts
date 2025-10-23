@@ -212,7 +212,15 @@ serve(async (req) => {
     console.log('Agentic content editor request from:', user.id);
 
     // Tool execution function
-    async function executeTool(toolName: string, args: any) {
+    type ToolResult = {
+      ok: boolean;
+      data?: any;
+      message?: string;
+      warnings?: string[];
+      error?: string;
+    };
+
+    async function executeTool(toolName: string, args: any): Promise<ToolResult> {
       console.log(`🔧 Executing: ${toolName}`, args);
       
       try {
@@ -220,6 +228,10 @@ serve(async (req) => {
           case "create_lesson": {
             const { grade, subjectId, title, slug } = args;
             const generatedSlug = slug || title.toLowerCase().replace(/[^a-z0-9]+/g, '-');
+            
+            if (!user?.id) {
+              return { ok: false, error: 'User not authenticated' };
+            }
             
             const { data, error } = await supabase
               .from('lessons')
@@ -306,9 +318,9 @@ serve(async (req) => {
           
           case "publish_lesson": {
             const { lessonId } = args;
-            const validation = await executeTool("validate_lesson", { lessonId });
+            const validation: ToolResult = await executeTool("validate_lesson", { lessonId });
             
-            if (!validation.data.isValid) {
+            if (!validation.data?.isValid) {
               return { ok: false, error: "❌ Publication impossible: violations trouvées", data: validation.data };
             }
             
