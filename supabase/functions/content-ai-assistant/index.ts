@@ -2,71 +2,150 @@ import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.58.0';
 
-// HTML sanitization - only allow safe tags and attributes
-const sanitizeHTML = (html: string): string => {
-  // Remove script tags and dangerous attributes
-  return html
-    .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
-    .replace(/on\w+="[^"]*"/gi, '')
-    .replace(/javascript:/gi, '');
-};
-
-// Content validation
-const validateContent = (content: string): { valid: boolean; error?: string } => {
-  if (!content || content.trim().length === 0) {
-    return { valid: false, error: 'Le contenu ne peut pas être vide' };
+// Tool definitions for agentic system
+const TOOLS = [
+  {
+    type: "function",
+    function: {
+      name: "create_lesson",
+      description: "Create a new lesson with grade, subject, title, and optional slug",
+      parameters: {
+        type: "object",
+        properties: {
+          grade: { type: "string", enum: ["7AF","8AF","9AF","NS1","NS2","NS3","NS4"], description: "Grade level" },
+          subjectId: { type: "string", description: "Subject UUID from subjects table" },
+          title: { type: "string", description: "Lesson title" },
+          slug: { type: "string", description: "URL-friendly slug (optional, auto-generated if not provided)" }
+        },
+        required: ["grade", "subjectId", "title"],
+        additionalProperties: false
+      }
+    }
+  },
+  {
+    type: "function",
+    function: {
+      name: "update_lesson_content",
+      description: "Update specific content sections: objectif, introduction, contenu, exemples_exercices",
+      parameters: {
+        type: "object",
+        properties: {
+          lessonId: { type: "string", description: "Lesson UUID" },
+          section: { type: "string", enum: ["objectif", "introduction", "contenu", "exemples_exercices"], description: "Section to update" },
+          content: { type: "string", description: "HTML content for the section" }
+        },
+        required: ["lessonId", "section", "content"],
+        additionalProperties: false
+      }
+    }
+  },
+  {
+    type: "function",
+    function: {
+      name: "update_lesson_meta",
+      description: "Update lesson metadata (title, slug, grade_level, workflow_status, etc)",
+      parameters: {
+        type: "object",
+        properties: {
+          lessonId: { type: "string", description: "Lesson UUID" },
+          updates: { 
+            type: "object",
+            description: "Fields to update",
+            properties: {
+              title: { type: "string" },
+              slug: { type: "string" },
+              grade_level: { type: "string" },
+              workflow_status: { type: "string", enum: ["draft", "in_review", "approved", "published"] }
+            }
+          }
+        },
+        required: ["lessonId", "updates"],
+        additionalProperties: false
+      }
+    }
+  },
+  {
+    type: "function",
+    function: {
+      name: "validate_lesson",
+      description: "Validate lesson completeness, schema compliance, and pedagogy quality",
+      parameters: {
+        type: "object",
+        properties: {
+          lessonId: { type: "string", description: "Lesson UUID to validate" }
+        },
+        required: ["lessonId"],
+        additionalProperties: false
+      }
+    }
+  },
+  {
+    type: "function",
+    function: {
+      name: "publish_lesson",
+      description: "Publish an approved lesson (requires validation)",
+      parameters: {
+        type: "object",
+        properties: {
+          lessonId: { type: "string", description: "Lesson UUID to publish" }
+        },
+        required: ["lessonId"],
+        additionalProperties: false
+      }
+    }
+  },
+  {
+    type: "function",
+    function: {
+      name: "retrieve_guidelines",
+      description: "Retrieve lesson templates, style guides, and curriculum info",
+      parameters: {
+        type: "object",
+        properties: {
+          queries: { 
+            type: "array", 
+            items: { type: "string" },
+            description: "List of topics to retrieve guidelines for" 
+          }
+        },
+        required: ["queries"],
+        additionalProperties: false
+      }
+    }
+  },
+  {
+    type: "function",
+    function: {
+      name: "search_curriculum",
+      description: "Search available subjects and curriculum by grade and subject name",
+      parameters: {
+        type: "object",
+        properties: {
+          grade: { type: "string", description: "Grade level to search" },
+          subject: { type: "string", description: "Subject name to search (partial match)" }
+        },
+        required: ["grade"],
+        additionalProperties: false
+      }
+    }
+  },
+  {
+    type: "function",
+    function: {
+      name: "list_lessons",
+      description: "List existing lessons with optional filters",
+      parameters: {
+        type: "object",
+        properties: {
+          grade: { type: "string", description: "Filter by grade level" },
+          subjectId: { type: "string", description: "Filter by subject UUID" },
+          limit: { type: "number", description: "Max results (default 20)" }
+        },
+        additionalProperties: false
+      }
+    }
   }
-  if (content.length > 50000) {
-    return { valid: false, error: 'Le contenu est trop long (max 50000 caractères)' };
-  }
-  return { valid: true };
-};
-
-// Generate content templates
-const getContentTemplate = (type: string): string => {
-  const templates = {
-    lesson: `
-      <div class="lesson-content">
-        <section class="introduction">
-          <h2>Introduction</h2>
-          <p>[Introduction engageante]</p>
-        </section>
-        
-        <section class="main-content">
-          <h2>Contenu Principal</h2>
-          <p>[Contenu détaillé]</p>
-        </section>
-        
-        <section class="examples">
-          <h2>Exemples</h2>
-          <div class="example">
-            <h3>Exemple 1</h3>
-            <p>[Exemple concret]</p>
-          </div>
-        </section>
-        
-        <section class="exercises">
-          <h2>Exercices</h2>
-          <div class="exercise">
-            <h3>Exercice 1</h3>
-            <p>[Question]</p>
-            <details>
-              <summary>Solution</summary>
-              <p>[Solution détaillée]</p>
-            </details>
-          </div>
-        </section>
-      </div>
-    `,
-    exercises: `
-      <div class="exercises-set">
-        <h2>Exercices Pratiques</h2>
-        [Exercices 1-5 avec difficulté progressive]
-      </div>
-    `,
-  };
-  return templates[type as keyof typeof templates] || '';
-};
+];
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -87,49 +166,21 @@ serve(async (req) => {
       throw new Error('LOVABLE_API_KEY not configured');
     }
 
-    // Create Supabase client for server-side operations
     const supabase = createClient(SUPABASE_URL!, SUPABASE_SERVICE_ROLE_KEY!);
-
-    const { messages, operation, lessonData, options, command, context } = await req.json();
+    const { messages, context } = await req.json();
     
-    // Validate request
     if (!messages || !Array.isArray(messages) || messages.length === 0) {
       return new Response(
-        JSON.stringify({ error: 'Messages requis' }),
+        JSON.stringify({ error: 'Messages required' }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
-    // Parse natural language commands if provided
-    let detectedOperation = operation;
-    let operationParams: any = {};
-    
-    if (command) {
-      const commandLower = command.toLowerCase();
-      
-      // Detect operation type from natural language
-      if (commandLower.includes('créer') || commandLower.includes('nouvelle leçon') || commandLower.includes('nouveau')) {
-        detectedOperation = 'create_lesson';
-      } else if (commandLower.includes('modifier') || commandLower.includes('changer') || commandLower.includes('mettre à jour')) {
-        detectedOperation = 'update_metadata';
-      } else if (commandLower.includes('supprimer') || commandLower.includes('effacer')) {
-        detectedOperation = 'delete';
-      } else if (commandLower.includes('publier') || commandLower.includes('publication')) {
-        detectedOperation = 'publish';
-      } else if (commandLower.includes('réviser') || commandLower.includes('révision') || commandLower.includes('soumettre')) {
-        detectedOperation = 'workflow_change';
-        operationParams.targetStatus = 'review';
-      } else if (commandLower.includes('brouillon') || commandLower.includes('draft')) {
-        detectedOperation = 'workflow_change';
-        operationParams.targetStatus = 'draft';
-      }
-    }
-
-    // Verify user has content editor role
+    // Verify user authentication
     const authHeader = req.headers.get('Authorization');
     if (!authHeader) {
       return new Response(
-        JSON.stringify({ error: 'Missing authorization header' }),
+        JSON.stringify({ error: 'Missing authorization' }),
         { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
@@ -144,7 +195,7 @@ serve(async (req) => {
       );
     }
 
-    // Check if user has editor role
+    // Check editor role
     const { data: editorRole } = await supabase
       .from('content_editor_roles')
       .select('role')
@@ -152,257 +203,335 @@ serve(async (req) => {
       .single();
 
     if (!editorRole || !['admin', 'editor'].includes(editorRole.role)) {
-      console.log('Access denied for user:', user.id);
       return new Response(
-        JSON.stringify({ error: 'Access denied - editor role required' }),
+        JSON.stringify({ error: 'Editor role required' }),
         { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
-    console.log('Content editor request from:', user.id, 'Operation:', operation);
+    console.log('Agentic content editor request from:', user.id);
 
-    // Get content template if requested
-    const template = options?.useTemplate ? getContentTemplate(operation) : '';
-
-    // Handle structural operations directly
-    if (detectedOperation === 'create_lesson' || detectedOperation === 'update_metadata' || 
-        detectedOperation === 'delete' || detectedOperation === 'workflow_change') {
+    // Tool execution function
+    async function executeTool(toolName: string, args: any) {
+      console.log(`🔧 Executing: ${toolName}`, args);
       
-      // Return structured JSON response for these operations
-      const structuredResponse = {
-        operation: detectedOperation,
-        requiresConfirmation: true,
-        params: operationParams,
-        message: ''
-      };
-
-      if (detectedOperation === 'create_lesson') {
-        structuredResponse.message = 'Je vais créer une nouvelle leçon. Quel est le titre, le sujet et le niveau scolaire ?';
-      } else if (detectedOperation === 'update_metadata') {
-        structuredResponse.message = 'Je peux mettre à jour les informations de cette leçon. Que souhaitez-vous modifier ?';
-      } else if (detectedOperation === 'workflow_change') {
-        structuredResponse.message = `Je vais changer le statut de cette leçon en "${operationParams.targetStatus}". Confirmez-vous cette action ?`;
+      try {
+        switch (toolName) {
+          case "create_lesson": {
+            const { grade, subjectId, title, slug } = args;
+            const generatedSlug = slug || title.toLowerCase().replace(/[^a-z0-9]+/g, '-');
+            
+            const { data, error } = await supabase
+              .from('lessons')
+              .insert({
+                title,
+                slug: generatedSlug,
+                grade_level: grade,
+                subject_id: subjectId,
+                workflow_status: 'draft',
+                is_published: false,
+                created_by: user.id
+              })
+              .select()
+              .single();
+            
+            if (error) throw error;
+            return { ok: true, data, message: `✅ Leçon créée: "${title}"`, warnings: ['Pensez à ajouter les objectifs, introduction, contenu, et exercices'] };
+          }
+          
+          case "update_lesson_content": {
+            const { lessonId, section, content } = args;
+            const { data, error } = await supabase
+              .from('lessons')
+              .update({ [section]: content, updated_at: new Date().toISOString() })
+              .eq('id', lessonId)
+              .select()
+              .single();
+            
+            if (error) throw error;
+            return { ok: true, data, message: `✅ Section "${section}" mise à jour` };
+          }
+          
+          case "update_lesson_meta": {
+            const { lessonId, updates } = args;
+            const { data, error } = await supabase
+              .from('lessons')
+              .update({ ...updates, updated_at: new Date().toISOString() })
+              .eq('id', lessonId)
+              .select()
+              .single();
+            
+            if (error) throw error;
+            return { ok: true, data, message: `✅ Métadonnées mises à jour` };
+          }
+          
+          case "validate_lesson": {
+            const { lessonId } = args;
+            const { data: lesson } = await supabase
+              .from('lessons')
+              .select('*')
+              .eq('id', lessonId)
+              .single();
+            
+            if (!lesson) throw new Error('Leçon introuvable');
+            
+            const violations = [];
+            const warnings = [];
+            
+            if (!lesson.title) violations.push("❌ Titre manquant");
+            if (!lesson.objectif) violations.push("❌ Objectifs d'apprentissage manquants");
+            if (!lesson.introduction) violations.push("❌ Introduction manquante");
+            if (!lesson.contenu) violations.push("❌ Contenu principal manquant");
+            if (!lesson.exemples_exercices) violations.push("❌ Exercices manquants");
+            
+            // Check for Haitian context
+            const combinedText = `${lesson.objectif} ${lesson.introduction} ${lesson.contenu} ${lesson.exemples_exercices}`.toLowerCase();
+            const haitianTerms = ['haïti', 'gourde', 'créole', 'port-au-prince', 'marchande', 'tap-tap'];
+            const hasHaitianContext = haitianTerms.some(term => combinedText.includes(term));
+            if (!hasHaitianContext) warnings.push("⚠️ Considérez d'ajouter des exemples haïtiens");
+            
+            // Check exercise count
+            const exerciseCount = (lesson.exemples_exercices?.match(/<div class="exercise">/g) || []).length;
+            if (exerciseCount < 6) warnings.push(`⚠️ Seulement ${exerciseCount} exercices (minimum recommandé: 6)`);
+            
+            const isValid = violations.length === 0;
+            const score = Math.max(0, 100 - (violations.length * 20) - (warnings.length * 5));
+            
+            return { 
+              ok: true, 
+              data: { isValid, violations, warnings, score },
+              message: isValid ? `✅ Leçon valide (score: ${score}/100)` : `⚠️ ${violations.length} violations, ${warnings.length} avertissements`
+            };
+          }
+          
+          case "publish_lesson": {
+            const { lessonId } = args;
+            const validation = await executeTool("validate_lesson", { lessonId });
+            
+            if (!validation.data.isValid) {
+              return { ok: false, error: "❌ Publication impossible: violations trouvées", data: validation.data };
+            }
+            
+            const { data, error } = await supabase
+              .from('lessons')
+              .update({ 
+                is_published: true,
+                workflow_status: 'published'
+              })
+              .eq('id', lessonId)
+              .select()
+              .single();
+            
+            if (error) throw error;
+            return { ok: true, data, message: "✅ Leçon publiée avec succès!" };
+          }
+          
+          case "retrieve_guidelines": {
+            const guidelines = {
+              lessonStructure: `
+**Structure de leçon requise:**
+1. **Objectifs** (objectif) - Objectifs d'apprentissage mesurables
+2. **Introduction** - Accroche + importance + vocabulaire clé
+3. **Contenu** - Concepts expliqués avec exemples travaillés
+4. **Exercices** (exemples_exercices) - Minimum 6 problèmes progressifs`,
+              
+              haitianContext: `
+**Contexte haïtien obligatoire:**
+- Prix en gourdes (HTG)
+- Distances en kilomètres
+- Scénarios locaux: tap-taps, marchandes, marchés
+- Villes: Port-au-Prince, Cap-Haïtien, Les Cayes
+- Culture: nourriture haïtienne, musique, traditions`,
+              
+              pedagogy: `
+**Rubrique pédagogique:**
+- Accroche engageante pour capter l'attention
+- Progression du simple au complexe
+- Exemples concrets avant les exercices
+- Au moins 6 exercices de difficulté croissante
+- Langage adapté au niveau scolaire`,
+              
+              bilingualStandard: `
+**Norme bilingue:**
+- Français comme langue principale
+- Termes créoles pour concepts culturels
+- Vocabulaire adapté: 7AF-9AF (fondamental), NS1-NS4 (secondaire)`
+            };
+            
+            return { ok: true, data: guidelines, message: "📚 Directives récupérées" };
+          }
+          
+          case "search_curriculum": {
+            const { grade, subject } = args;
+            let query = supabase
+              .from('subjects')
+              .select('id, name, grade_level, description')
+              .eq('grade_level', grade);
+            
+            if (subject) query = query.ilike('name', `%${subject}%`);
+            
+            const { data, error } = await query.limit(10);
+            if (error) throw error;
+            
+            return { ok: true, data, message: `📖 Trouvé ${data?.length || 0} sujets pour ${grade}` };
+          }
+          
+          case "list_lessons": {
+            const { grade, subjectId, limit = 20 } = args;
+            let query = supabase
+              .from('lessons')
+              .select('id, title, grade_level, subject_id, workflow_status, is_published')
+              .order('created_at', { ascending: false });
+            
+            if (grade) query = query.eq('grade_level', grade);
+            if (subjectId) query = query.eq('subject_id', subjectId);
+            
+            const { data, error } = await query.limit(limit);
+            if (error) throw error;
+            
+            return { ok: true, data, message: `📋 Trouvé ${data?.length || 0} leçons` };
+          }
+          
+          default:
+            return { ok: false, error: `Outil inconnu: ${toolName}` };
+        }
+      } catch (error: any) {
+        console.error(`Tool error (${toolName}):`, error);
+        return { ok: false, error: error.message };
       }
-
-      return new Response(
-        JSON.stringify(structuredResponse),
-        { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
     }
 
-    // Build system prompt based on operation
-    let systemPrompt = `Tu es un assistant IA spécialisé dans la création de contenu éducatif pour le programme MENFP (Ministère de l'Éducation Nationale et de la Formation Professionnelle) en Haïti.
+    // Build agentic system prompt
+    let systemPrompt = `Tu es l'Ingénieur de Contenu Agentique pour Edupreneurs, une plateforme éducative haïtienne (7AF → NS4).
 
-CAPACITÉS AVANCÉES:
-Tu peux comprendre et exécuter des commandes en langage naturel pour:
-- Créer de nouvelles leçons
-- Modifier les métadonnées des leçons
-- Changer le statut de workflow (brouillon, révision, publié)
-- Générer et améliorer du contenu pédagogique
+🎯 **MISSION:**
+1. Suivre strictement le schéma de leçon de la plateforme
+2. Produire du contenu culturellement pertinent avec contexte haïtien
+3. Agir via outils - JAMAIS écrire sans utiliser les outils
+4. Être corrigible: accepter les corrections immédiatement
+5. Processus: Planifier → Exécuter → Valider → Confirmer
 
-CONTEXTE INTELLIGENT:
-${context?.selectedLesson ? `
-📚 Leçon actuellement sélectionnée:
-- Titre: ${lessonData?.title}
-- Niveau: ${lessonData?.grade_level}
-- Statut: ${lessonData?.workflow_status || 'draft'}
-- Complétude: ${context.selectedLesson.hasContent ? '✓ Contenu présent' : '⚠ Contenu manquant'}
-${context.selectedLesson.missingFields?.length > 0 ? `- Sections manquantes: ${context.selectedLesson.missingFields.join(', ')}` : ''}
+⚡ **RÈGLES D'OPÉRATION:**
+- TOUJOURS commencer par retrieve_guidelines et search_curriculum
+- Créer un plan bref (2-3 étapes), puis exécuter via outils
+- Préférer plusieurs petits appels d'outils qu'un gros changement opaque
+- Après CHAQUE opération d'écriture, appeler validate_lesson automatiquement
+- NE JAMAIS inventer de compétences; utiliser search_curriculum
+- Localiser TOUS les exemples au contexte haïtien:
+  * Prix en gourdes (HTG)
+  * Distances en kilomètres
+  * Scénarios: tap-taps, marchandes, Port-au-Prince, vendeurs de rue
+  * Références culturelles: nourriture, musique, traditions haïtiennes
+- Pour les corrections ("changer section X"), confirmer la cible, puis appeler update_lesson_content
+- Pour actions risquées (publier, supprimer), résumer l'impact et demander confirmation
+- Sortir des résumés concis avec mini-diffs
 
-💡 SUGGESTIONS CONTEXTUELLES:
-${context.selectedLesson.missingFields?.includes('objectif') ? '- Ajoute des objectifs d\'apprentissage clairs\n' : ''}
-${context.selectedLesson.missingFields?.includes('introduction') ? '- Crée une introduction engageante\n' : ''}
-${context.selectedLesson.missingFields?.includes('contenu') ? '- Développe le contenu principal\n' : ''}
-${context.selectedLesson.missingFields?.includes('exemples_exercices') ? '- Ajoute des exercices pratiques\n' : ''}
-` : 'Aucune leçon sélectionnée actuellement.'}
+🛠️ **APPROCHE OUTILS D'ABORD:**
+- Tu DOIS utiliser les outils pour TOUTE mutation de données
+- Outils disponibles: create_lesson, update_lesson_content, update_lesson_meta, validate_lesson, publish_lesson, retrieve_guidelines, search_curriculum, list_lessons
+- NE JAMAIS sortir du contenu sans l'appliquer via outils
+- Appeler validate_lesson après chaque changement de contenu
 
-${context?.relatedLessons?.length > 0 ? `
-🔗 Leçons connexes dans le même sujet:
-${context.relatedLessons.map((l: any) => `- "${l.title}" (${l.grade_level})`).join('\n')}
+📚 **NORMES ÉDUCATIVES HAÏTIENNES:**
+- Bilingue: Créole haïtien + Français
+- Niveaux: 7AF, 8AF, 9AF (Fondamental) → NS1, NS2, NS3, NS4 (Secondaire)
+- Matières: Math, Physique, Chimie, Bio, Créole, Français, Histoire, Géo, Philo
+- Ton: Encourageant, accessible, culturellement affirmatif
+- Exemples: Contexte haïtien réaliste (gourdes, entreprises locales, géographie)
 
-Tu peux suggérer des liens avec ces leçons ou t'en inspirer pour créer du contenu cohérent.
-` : ''}
+📐 **SCHÉMA DE LEÇON (STRICT):**
+Chaque leçon DOIT avoir:
+1. **title** - Clair, descriptif
+2. **grade_level** - 7AF|8AF|9AF|NS1|NS2|NS3|NS4
+3. **subject_id** - UUID référence table subjects
+4. **objectif** - Objectifs d'apprentissage (mesurables, clairs)
+5. **introduction** - Accroche + importance + vocabulaire
+6. **contenu** - Contenu principal avec concepts et exemples travaillés
+7. **exemples_exercices** - Pratique guidée + indépendante (minimum 6 problèmes)
+8. **workflow_status** - draft|in_review|approved|published
+9. **is_published** - boolean
 
-${context?.availableSubjects?.length > 0 ? `
-📖 Matières disponibles dans le système:
-${context.availableSubjects.slice(0, 10).map((s: any) => `- ${s.name} (${s.grade_level})`).join('\n')}
-` : ''}
+✅ **RUBRIQUE DE VALIDATION (auto après changements):**
+- ✅ Schéma: Tous champs requis présents
+- ✅ Curriculum: Objectifs mappés au niveau/sujet
+- ✅ Pédagogie: Accroche, exemples, pratique (≥6), contexte culturel
+- ✅ Langue: Niveau de lecture approprié, cohérence bilingue
+- ✅ Contexte haïtien: Au moins 1 exemple local pertinent
+- ⚠️ Bloquer publication si violations
 
-${context?.conversationHistory?.length > 0 ? `
-💭 Historique de conversation récente:
-${context.conversationHistory.map((m: any) => `${m.role === 'user' ? '👤' : '🤖'} ${m.content.substring(0, 100)}...`).join('\n')}
+**📝 CONTEXTE ACTUEL:**`;
 
-Utilise cet historique pour maintenir le contexte et donner des réponses cohérentes.
-` : ''}
+    if (context?.selectedLesson) {
+      const lesson = context.selectedLesson;
+      systemPrompt += `\n\n**Leçon actuellement sélectionnée:**
+- ID: ${lesson.id}
+- Titre: "${lesson.title}"
+- Niveau: ${lesson.grade_level} | Sujet: ${lesson.subject_id}
+- Statut: ${lesson.workflow_status} | Publié: ${lesson.is_published ? '✅' : '❌'}`;
 
-INTELLIGENCE CONTEXTUELLE:
-1. Analyse automatique du contenu existant pour suggérer des améliorations
-2. Détection des sections manquantes et proposition de les compléter
-3. Suggestions de leçons connexes pour créer une progression cohérente
-4. Recommandations de niveau scolaire approprié basées sur la complexité
-5. Auto-complétion des métadonnées (mois, références, etc.)
-
-DIRECTIVES SPÉCIFIQUES:
-- Si l'utilisateur demande de "compléter" ou "améliorer", concentre-toi sur les sections manquantes
-- Si une leçon est similaire à une leçon connexe, mentionne-le et propose de créer des liens
-- Suggère toujours le niveau de difficulté approprié basé sur le grade_level
-- Propose d'ajouter des références aux leçons précédentes quand c'est pertinent
-
-CONTEXTE IMPORTANT:
-- Niveau: Secondaire (collège et lycée)
-- Langue principale: Français avec termes créoles quand approprié
-- Curriculum: MENFP Haïti
-- Format de sortie: HTML bien formaté et structuré
-
-TON RÔLE:
-Tu aides à créer et améliorer le contenu pédagogique pour les matières suivantes:
-- Mathématiques (algèbre, géométrie, calcul)
-- Sciences (physique, chimie, biologie)
-- Français (grammaire, conjugaison, littérature)
-- Histoire (Histoire d'Haïti et mondiale)
-
-DIRECTIVES DE CONTENU:
-1. Rédige en français clair et accessible pour les élèves haïtiens
-2. Utilise des exemples concrets tirés du contexte haïtien quand possible
-3. Structure le contenu avec des sections claires: Introduction, Contenu principal, Exemples, Exercices
-4. Inclus des analogies et des métaphores pour faciliter la compréhension
-5. Adapte le niveau de complexité au niveau scolaire (6ème, 5ème, 4ème, 3ème, etc.)
-
-FORMAT HTML REQUIS:
-- Utilise des balises HTML sémantiques: <h2>, <h3>, <p>, <ul>, <ol>, <strong>, <em>
-- Pour les formules mathématiques: utilise du texte formaté ou LaTeX si nécessaire
-- Crée des sections bien organisées avec des titres clairs
-- Ajoute des listes à puces pour les points importants
-- Utilise <div class="example"> pour les exemples
-- Utilise <div class="exercise"> pour les exercices
-
-EXEMPLES D'EXERCICES:
-- Inclus toujours 3-5 exercices de difficulté progressive
-- Fournis des indices pour les exercices difficiles
-- Structure: Question claire → Indice (optionnel) → Solution détaillée
-
-SÉCURITÉ ET QUALITÉ:
-- Ne génère jamais de contenu offensant ou inapproprié
-- Vérifie la précision mathématique et scientifique
-- Utilise un langage respectueux et inclusif
-- Adapte le vocabulaire au niveau scolaire`;
-
-    // Add operation-specific instructions
-    if (operation === 'generate') {
-      systemPrompt += `\n\nOPÉRATION: Générer un nouveau contenu de leçon complet basé sur le sujet fourni.
-      
-ÉTAPES À SUIVRE:
-1. Comprendre le sujet et le niveau scolaire
-2. Définir les objectifs d'apprentissage clairs
-3. Créer une introduction captivante
-4. Développer le contenu principal avec des sous-sections
-5. Ajouter des exemples concrets et pertinents
-6. Créer 5 exercices de difficulté progressive
-7. Formatter le tout en HTML bien structuré`;
-
-    } else if (operation === 'enhance') {
-      systemPrompt += `\n\nOPÉRATION: Améliorer le contenu existant en ajoutant plus de détails, exemples, et clarté.
-
-AMÉLIORATIONS À APPORTER:
-- Enrichir les explications existantes
-- Ajouter des analogies et métaphores
-- Inclure plus d'exemples concrets
-- Améliorer la structure et la lisibilité
-- Renforcer la progression pédagogique`;
-
-    } else if (operation === 'exercises') {
-      systemPrompt += `\n\nOPÉRATION: Créer uniquement des exercices pratiques avec solutions.
-
-TYPES D'EXERCICES À CRÉER:
-1. Exercices de compréhension (QCM)
-2. Exercices d'application directe
-3. Problèmes contextualisés
-4. Exercices de synthèse
-5. Défi bonus (plus difficile)
-
-Pour chaque exercice:
-- Question claire et précise
-- Indice si nécessaire
-- Solution complète et détaillée`;
-
-    } else if (operation === 'translate') {
-      systemPrompt += `\n\nOPÉRATION: Traduire ou adapter le contenu en créole haïtien.
-
-RÈGLES DE TRADUCTION:
-- Garde les termes techniques en français avec explication en créole
-- Adapte les exemples au contexte haïtien
-- Maintiens la structure HTML
-- Assure la clarté et la fluidité`;
-
-    } else if (operation === 'simplify') {
-      systemPrompt += `\n\nOPÉRATION: Simplifier le contenu pour le rendre plus accessible.
-
-SIMPLIFICATION:
-- Utilise des phrases plus courtes
-- Explique les termes techniques
-- Ajoute plus d'exemples visuels
-- Décompose les concepts complexes`;
-
-    } else if (operation === 'quiz') {
-      systemPrompt += `\n\nOPÉRATION: Créer un quiz interactif de 10 questions.
-
-FORMAT DU QUIZ:
-- 10 questions à choix multiples (4 options chacune)
-- Difficulté progressive
-- Une seule bonne réponse par question
-- Explications pour chaque réponse
-- Score et feedback final`;
+      if (lesson.hasContent) {
+        systemPrompt += `\n- ✅ Contenu dans: ${lesson.existingSections?.join(', ') || 'sections'}`;
+      }
+      if (lesson.missingFields?.length > 0) {
+        systemPrompt += `\n- ⚠️ MANQUANT: ${lesson.missingFields.join(', ')} ← Adresser d'abord!`;
+      }
     }
 
-    if (template) {
-      systemPrompt += `\n\nTEMPLATE DE BASE:\n${template}\n\nUtilise cette structure comme guide.`;
+    if (context?.relatedLessons?.length > 0) {
+      systemPrompt += `\n\n**📚 Leçons connexes (même sujet):**`;
+      context.relatedLessons.slice(0, 3).forEach((rel: any) => {
+        systemPrompt += `\n- "${rel.title}" (${rel.grade_level})`;
+      });
     }
 
-    if (lessonData) {
-      systemPrompt += `\n\nCONTEXTE DE LA LEÇON:
-Titre: ${lessonData.title || 'Non spécifié'}
-Niveau: ${lessonData.grade_level || 'Non spécifié'}
-Objectif: ${lessonData.objectif || 'Non spécifié'}`;
+    if (context?.availableSubjects?.length > 0) {
+      systemPrompt += `\n\n**📖 Sujets disponibles:**`;
+      context.availableSubjects.slice(0, 5).forEach((subj: any) => {
+        systemPrompt += `\n- ${subj.name} (${subj.grade_level})`;
+      });
     }
 
-    // Call Lovable AI Gateway
+    if (context?.conversationHistory?.length > 0) {
+      systemPrompt += `\n\n**💬 Historique récent:**`;
+      context.conversationHistory.slice(-2).forEach((msg: any) => {
+        const preview = msg.content.length > 80 ? msg.content.substring(0, 80) + '...' : msg.content;
+        systemPrompt += `\n- ${msg.role === 'user' ? 'Éditeur' : 'Agent'}: "${preview}"`;
+      });
+    }
+
+    // Call AI with tools
     const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${LOVABLE_API_KEY}`,
         'Content-Type': 'application/json',
       },
-        body: JSON.stringify({
-          model: 'google/gemini-2.5-flash',
-          messages: [
-            { role: 'system', content: systemPrompt },
-            ...messages
-          ],
-          stream: true,
-          temperature: 0.7,
-        }),
+      body: JSON.stringify({
+        model: 'google/gemini-2.5-flash',
+        messages: [
+          { role: 'system', content: systemPrompt },
+          ...messages
+        ],
+        tools: TOOLS,
+        tool_choice: "auto",
+        stream: true,
+      }),
     });
 
     if (!response.ok) {
       if (response.status === 429) {
         return new Response(
-          JSON.stringify({ error: 'Limite de requêtes atteinte. Veuillez réessayer dans quelques instants.' }),
+          JSON.stringify({ error: 'Rate limit exceeded' }),
           { status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         );
       }
       if (response.status === 402) {
         return new Response(
-          JSON.stringify({ error: 'Crédits insuffisants. Veuillez ajouter des crédits à votre espace Lovable.' }),
+          JSON.stringify({ error: 'Payment required' }),
           { status: 402, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         );
       }
-      
-      const errorText = await response.text();
-      console.error('AI Gateway error:', response.status, errorText);
-      return new Response(
-        JSON.stringify({ error: 'Erreur du service IA' }),
-        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
+      throw new Error(`AI service error: ${response.status}`);
     }
 
     // Stream the response back
@@ -414,15 +543,10 @@ Objectif: ${lessonData.objectif || 'Non spécifié'}`;
     });
 
   } catch (error) {
-    console.error('Content AI Assistant error:', error);
+    console.error('Content AI error:', error);
     return new Response(
-      JSON.stringify({ 
-        error: error instanceof Error ? error.message : 'Une erreur inconnue est survenue' 
-      }),
-      { 
-        status: 500, 
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
-      }
+      JSON.stringify({ error: error instanceof Error ? error.message : 'Unknown error' }),
+      { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
   }
 });
