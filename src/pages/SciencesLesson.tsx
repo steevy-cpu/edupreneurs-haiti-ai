@@ -83,6 +83,7 @@ import {
 import { QuizGame } from "@/components/math-activities/QuizGame";
 import { MatchingGame } from "@/components/math-activities/MatchingGame";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import { YouTubeVideoSection } from "@/components/YouTubeVideoSection";
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -353,6 +354,15 @@ export default function SciencesLesson() {
                 className="prose prose-lg dark:prose-invert max-w-none"
                 dangerouslySetInnerHTML={{ __html: lessonContent.contenu }}
               />
+              
+              {/* YouTube Video Section */}
+              <div className="mt-8">
+                <YouTubeVideoSection 
+                  lessonTitle={topicInfo.title}
+                  objectives={lessonContent.objectif || ""}
+                  gradeLevel="AF7"
+                />
+              </div>
             </TabsContent>
 
             <TabsContent value="exemples" className="space-y-6">
