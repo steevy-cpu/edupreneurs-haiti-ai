@@ -812,7 +812,7 @@ export const AIAssistant = ({ selectedLesson, onApplyContent }: AIAssistantProps
               value={input}
               onChange={(e) => setInput(e.target.value)}
               placeholder="Commande en langage naturel ou question... Ex: 'Crée une leçon sur les fractions pour la 6ème'"
-              rows={2}
+              rows={4}
               disabled={isLoading}
               onKeyDown={(e) => {
                 if (e.key === 'Enter' && !e.shiftKey) {
@@ -820,7 +820,7 @@ export const AIAssistant = ({ selectedLesson, onApplyContent }: AIAssistantProps
                   handleSend();
                 }
               }}
-              className="transition-all focus:ring-2 focus:ring-primary"
+              className="transition-all focus:ring-2 focus:ring-primary resize-none"
             />
             <Button
               onClick={handleSend}
