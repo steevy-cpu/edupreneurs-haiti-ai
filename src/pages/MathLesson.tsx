@@ -97,17 +97,17 @@ const MathLesson = () => {
     "ensembles": { 
       title: "Ensembles", 
       icon: "🔢",
-      goldReward: 80
+      goldReward: 100
     },
     "plans-droites": { 
       title: "Plans et Droites", 
       icon: "📐",
-      goldReward: 90
+      goldReward: 110
     },
     "nombres-naturels": { 
       title: "Nombres Naturels", 
       icon: "🔢",
-      goldReward: 80
+      goldReward: 90
     },
     "numeration-binaire": { 
       title: "Numération Binaire", 
