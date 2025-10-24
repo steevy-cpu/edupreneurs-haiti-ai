@@ -129,7 +129,10 @@ const ContentEditor = () => {
           {/* Content - Right Column */}
           <div className="lg:col-span-8 space-y-6">
             {/* Lesson Preview - Student View */}
-            <LessonPreview lesson={selectedLesson} />
+            <LessonPreview 
+              key={selectedLesson?.id || 'no-lesson'} 
+              lesson={selectedLesson} 
+            />
 
             {/* YouTube Manager and Comments */}
             <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
