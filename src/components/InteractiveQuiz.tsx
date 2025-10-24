@@ -347,8 +347,34 @@ export const InteractiveQuiz = ({ content, isLoading, onRegenerate, lessonGoldRe
         </CardHeader>
         <CardContent className="p-4 sm:p-6 pt-6">
           <div className="flex flex-col items-center justify-center py-12 space-y-4">
-            <Loader2 className="h-12 w-12 animate-spin text-primary" />
-            <p className="text-muted-foreground text-center">Génération du quiz d'évaluation...</p>
+            <div className="relative w-16 h-16">
+              <svg className="w-full h-full transform -rotate-90">
+                <circle
+                  cx="32"
+                  cy="32"
+                  r="28"
+                  stroke="currentColor"
+                  strokeWidth="4"
+                  fill="none"
+                  className="text-muted"
+                />
+                <circle
+                  cx="32"
+                  cy="32"
+                  r="28"
+                  stroke="currentColor"
+                  strokeWidth="4"
+                  fill="none"
+                  strokeDasharray={175.93}
+                  strokeDashoffset={175.93}
+                  className="text-primary animate-spin"
+                  style={{
+                    animation: 'spin 1.5s linear infinite',
+                  }}
+                />
+              </svg>
+            </div>
+            <p className="text-muted-foreground text-center font-medium">Génération du quiz d'évaluation...</p>
           </div>
         </CardContent>
       </Card>
@@ -566,15 +592,6 @@ export const InteractiveQuiz = ({ content, isLoading, onRegenerate, lessonGoldRe
           </Button>
         )}
 
-        {/* Original Content (collapsed) */}
-        <details className="mt-6">
-          <summary className="cursor-pointer text-sm text-muted-foreground hover:text-foreground transition-colors">
-            Voir le contenu complet
-          </summary>
-          <div className="mt-4 prose prose-sm max-w-none dark:prose-invert overflow-x-hidden">
-            <div dangerouslySetInnerHTML={{ __html: content }} />
-          </div>
-        </details>
       </CardContent>
     </Card>
   );

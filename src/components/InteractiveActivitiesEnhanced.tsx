@@ -368,22 +368,55 @@ export const InteractiveActivitiesEnhanced = ({
 
   if (isLoading) {
     return (
-      <Card className="lesson-card border-none rounded-[20px] shadow-lg">
-        <CardHeader className="p-6">
+      <Card className="lesson-card border-none rounded-[20px] shadow-lg border-2 border-accent/30 bg-gradient-to-br from-accent/5 to-primary/5">
+        <CardHeader className="p-4 sm:p-6 bg-gradient-to-r from-accent/20 to-primary/20 rounded-t-[20px]">
           <div className="flex items-center justify-between">
-            <CardTitle>🎯 Activités Interactives</CardTitle>
+            <CardTitle className="flex items-center gap-2 text-lg sm:text-xl">
+              ✏️ Activités Interactives
+            </CardTitle>
             {onRegenerate && (
-              <Button onClick={onRegenerate} variant="outline" size="sm">
-                <RefreshCw className="w-4 h-4 mr-2" />
-                Régénérer
+              <Button 
+                onClick={onRegenerate} 
+                variant="outline" 
+                size="sm"
+                className="gap-2 bg-gradient-to-r from-accent/10 to-primary/10 hover:from-accent/20 hover:to-primary/20 border-accent/30"
+              >
+                <RefreshCw className="w-3.5 h-3.5" />
+                <span className="text-xs font-semibold">Régénérer</span>
               </Button>
             )}
           </div>
         </CardHeader>
-        <CardContent className="p-6">
+        <CardContent className="p-4 sm:p-6 pt-6">
           <div className="flex flex-col items-center justify-center py-12 space-y-4">
-            <Loader2 className="h-12 w-12 animate-spin text-primary" />
-            <p className="text-muted-foreground">Génération d'activités variées...</p>
+            <div className="relative w-16 h-16">
+              <svg className="w-full h-full transform -rotate-90">
+                <circle
+                  cx="32"
+                  cy="32"
+                  r="28"
+                  stroke="currentColor"
+                  strokeWidth="4"
+                  fill="none"
+                  className="text-muted"
+                />
+                <circle
+                  cx="32"
+                  cy="32"
+                  r="28"
+                  stroke="currentColor"
+                  strokeWidth="4"
+                  fill="none"
+                  strokeDasharray={175.93}
+                  strokeDashoffset={175.93}
+                  className="text-primary animate-spin"
+                  style={{
+                    animation: 'spin 1.5s linear infinite',
+                  }}
+                />
+              </svg>
+            </div>
+            <p className="text-muted-foreground text-center font-medium">Génération des activités interactives...</p>
           </div>
         </CardContent>
       </Card>

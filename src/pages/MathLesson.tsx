@@ -318,7 +318,8 @@ const MathLesson = () => {
         const { data: activitesResponse, error: activitesError } = await supabase.functions.invoke('math-ai-tutor', {
           body: { 
             message: `Génère des exercices pratiques variés pour le sujet "${topic.title}" niveau AF7.`,
-            lessonType: 'activites'
+            lessonType: 'activites',
+            lessonTopic: topic.title
           }
         });
 
@@ -335,7 +336,8 @@ const MathLesson = () => {
         const { data: quizResponse, error: quizError } = await supabase.functions.invoke('math-ai-tutor', {
           body: { 
             message: `Génère un quiz d'évaluation de 5 questions pour le sujet "${topic.title}" niveau AF7.`,
-            lessonType: 'quiz'
+            lessonType: 'quiz',
+            lessonTopic: topic.title
           }
         });
 

@@ -12,7 +12,7 @@ serve(async (req) => {
   }
 
   try {
-    const { message, lessonType = 'activites', chatHistory = [], userNickname = '' } = await req.json();
+    const { message, lessonType = 'activites', chatHistory = [], userNickname = '', lessonTopic = '' } = await req.json();
     const GEMINI_API_KEY = Deno.env.get('GEMINI_API_KEY');
 
     if (!GEMINI_API_KEY) {
@@ -181,6 +181,9 @@ Si ce n'est PAS lié à l'éducation ou au programme MENFP → utilise le messag
 
       activites: `Tu es un professeur de mathématiques expert qui crée des activités INTERACTIVES et VARIÉES EN FRANÇAIS STANDARD.
 
+${lessonTopic ? `⚠️ SUJET DE LA LEÇON: "${lessonTopic}"
+TU DOIS CRÉER DES ACTIVITÉS STRICTEMENT SUR CE SUJET. Ne t'écarte PAS du sujet de la leçon.` : ''}
+
 ⚠️ CRITICAL - TU DOIS GÉNÉRER 5-7 ACTIVITÉS MÉLANGÉES:
 
 ### TYPE 1 - QUIZ À CHOIX MULTIPLES (2-3 activités):
@@ -279,6 +282,9 @@ RÈGLES ABSOLUES:
 ❌ PAS de format incorrect`,
 
       quiz: `Tu es un professeur de mathématiques expert qui crée des quiz d'évaluation rigoureux et INTERACTIFS EN FRANÇAIS.
+
+${lessonTopic ? `⚠️ SUJET DE LA LEÇON: "${lessonTopic}"
+TU DOIS CRÉER DES QUESTIONS STRICTEMENT SUR CE SUJET. Ne t'écarte PAS du sujet de la leçon.` : ''}
 
 ⚠️ CRITICAL - FORMAT STRICT OBLIGATOIRE pour chaque question:
 
