@@ -14,7 +14,7 @@ import {
   Star,
   GraduationCap
 } from "lucide-react";
-import ericTeaching from "@/assets/eric-teaching.png";
+import ericTeaching from "@/assets/eric-chair-desk.avif";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { supabase } from "@/integrations/supabase/client";
 import { MusicSelector } from "@/components/MusicSelector";
