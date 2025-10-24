@@ -32,6 +32,44 @@
     <meta name="twitter:title" content="EDUPRENEURS - Explorer, Apprendre, Réussir" />
     <meta name="twitter:description" content="La première plateforme éducative haïtienne avec IA personnalisée" />
     <meta name="twitter:image" content="https://preview--edupreneurs-haiti-ai.lovable.app/og-image.jpeg" />
+    
+    <!-- Mermaid for diagrams -->
+    <script type="module">
+      import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs';
+      mermaid.initialize({ 
+        startOnLoad: true, 
+        theme: 'default',
+        themeVariables: {
+          primaryColor: '#e3f2fd',
+          primaryTextColor: '#1976d2',
+          primaryBorderColor: '#1976d2',
+          lineColor: '#1976d2',
+          secondaryColor: '#f3e5f5',
+          tertiaryColor: '#e8f5e9',
+          background: '#ffffff',
+          mainBkg: '#ffffff',
+          secondBkg: '#f5f5f5',
+          labelBackground: '#ffffff',
+          fontFamily: 'ui-sans-serif, system-ui, sans-serif',
+          fontSize: '14px'
+        },
+        flowchart: {
+          htmlLabels: true,
+          curve: 'basis',
+          padding: 15
+        }
+      });
+      
+      // Re-render mermaid diagrams when content changes
+      const observer = new MutationObserver(() => {
+        mermaid.init(undefined, document.querySelectorAll('.mermaid:not([data-processed])'));
+      });
+      
+      observer.observe(document.body, {
+        childList: true,
+        subtree: true
+      });
+    </script>
   </head>
 
   <body>

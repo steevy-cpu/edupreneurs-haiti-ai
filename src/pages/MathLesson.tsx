@@ -59,6 +59,7 @@ import { mathLessons } from "@/data/mathLessons";
 import { YouTubeVideoSection } from "@/components/YouTubeVideoSection";
 import { InteractiveActivitiesEnhanced } from "@/components/InteractiveActivitiesEnhanced";
 import { InteractiveQuiz } from "@/components/InteractiveQuiz";
+import { LessonSchemas } from "@/components/LessonSchemas";
 
 interface LessonData {
   objectif: string;
@@ -662,6 +663,14 @@ const MathLesson = () => {
                     </div>
                   </CardContent>
                 </Card>
+
+                {/* Visual Schemas */}
+                {topicId && (
+                  <LessonSchemas 
+                    topicId={topicId}
+                    topicTitle={currentTopic.title}
+                  />
+                )}
 
                 {/* YouTube Videos Section */}
                 {lessonData.objectif && (
