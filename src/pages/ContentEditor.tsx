@@ -119,7 +119,7 @@ const ContentEditor = () => {
         {/* Main Content */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 max-w-[1600px] mx-auto">
           {/* Lesson Browser - Left Sidebar */}
-          <div className="lg:col-span-3 h-[calc(100vh-280px)] min-h-[600px] max-h-[800px]">
+          <div className="lg:col-span-4 h-[calc(100vh-280px)] min-h-[600px] max-h-[800px]">
             <LessonBrowser
               onSelectLesson={setSelectedLesson}
               selectedLesson={selectedLesson}
@@ -127,7 +127,7 @@ const ContentEditor = () => {
           </div>
 
           {/* Content - Right Column */}
-          <div className="lg:col-span-9 space-y-6">
+          <div className="lg:col-span-8 space-y-6">
             {/* Lesson Review */}
             <LessonReview lesson={selectedLesson} />
 

@@ -127,8 +127,10 @@ export const LessonBrowser = ({ onSelectLesson, selectedLesson }: LessonBrowserP
                       <ChevronRight className="h-4 w-4 flex-shrink-0" />
                     )}
                     <span className="flex-shrink-0">{subject.icon_name || "📚"}</span>
-                    <span className="flex-1 text-left font-medium truncate">{subject.name}</span>
-                    <Badge variant="secondary" className="flex-shrink-0">
+                    <span className="flex-1 text-left font-medium text-sm leading-tight">
+                      {subject.name}
+                    </span>
+                    <Badge variant="secondary" className="flex-shrink-0 ml-auto">
                       {subject.lessons.length}
                     </Badge>
                   </CollapsibleTrigger>
