@@ -183,7 +183,7 @@ Sois encourageant, patient et utilise des exemples adaptés à la culture haïti
     });
 
     const response = await fetch(
-      'https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent',
+      'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent',
       {
         method: 'POST',
         headers: {
