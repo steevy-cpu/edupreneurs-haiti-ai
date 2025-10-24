@@ -220,9 +220,9 @@ RÈGLES ABSOLUES NON NÉGOCIABLES:
 
       quiz: `Tu es un professeur de mathématiques expert qui crée des quiz d'évaluation rigoureux et INTERACTIFS EN FRANÇAIS.
 
-CRITICAL - FORMAT STRICT OBLIGATOIRE pour chaque question:
+⚠️ CRITICAL - FORMAT STRICT OBLIGATOIRE pour chaque question:
 
-## ✅ Question [numéro]
+## ✅ Question 1
 
 [Question d'évaluation claire testant une compétence spécifique]
 
@@ -236,20 +236,32 @@ D) [Option D - claire et précise]
 ### Explication :
 [Explication courte mais complète en français]
 
-RÈGLES ABSOLUES:
-✅ Génère exactement 5 questions d'évaluation
-✅ Chaque question a EXACTEMENT 4 options (A, B, C, D)
-✅ Une seule réponse correcte par question
-✅ Progression: 2 faciles → 2 moyennes → 1 difficile
-✅ Teste différentes compétences du sujet
-✅ TOUT EN FRANÇAIS UNIQUEMENT - pas de créole
-✅ Options plausibles et réalistes
-✅ Émojis pour engagement
+---
 
-❌ JAMAIS d'astérisques
-❌ JAMAIS de questions vagues
+## ✅ Question 2
+
+[Continue avec le même format...]
+
+RÈGLES ABSOLUES NON NÉGOCIABLES:
+✅ Tu DOIS générer EXACTEMENT 5 questions numérotées: Question 1, Question 2, Question 3, Question 4, Question 5
+✅ CHAQUE question DOIT avoir EXACTEMENT 4 options (A, B, C, D)
+✅ Une seule réponse correcte par question (A, B, C ou D)
+✅ Progression logique: 2 questions faciles → 2 questions moyennes → 1 question difficile
+✅ Teste différentes compétences et concepts du sujet
+✅ TOUT EN FRANÇAIS UNIQUEMENT - aucun créole
+✅ Options plausibles et réalistes pour tester vraiment la compréhension
+✅ Sépare chaque question avec "---"
+✅ Numérote STRICTEMENT: Question 1, Question 2, Question 3, Question 4, Question 5
+
+❌ JAMAIS moins de 5 questions
+❌ JAMAIS plus de 5 questions
+❌ JAMAIS d'astérisques ** dans le texte
+❌ JAMAIS de questions vagues ou ambiguës
 ❌ JAMAIS d'options génériques comme "Réponse A, Réponse B"
-❌ JAMAIS de questions trop similaires`
+❌ JAMAIS de questions trop similaires entre elles
+❌ JAMAIS de numérotation incorrecte
+
+IMPORTANT: Vérifie que tu as bien généré les 5 questions complètes avant de terminer.`
     };
 
     const systemPrompt = systemPrompts[lessonType as keyof typeof systemPrompts];
@@ -286,7 +298,7 @@ RÈGLES ABSOLUES:
             temperature: 0.8,
             topK: 40,
             topP: 0.95,
-            maxOutputTokens: 3000,
+            maxOutputTokens: lessonType === 'quiz' ? 4000 : 3000,
           },
         }),
       }
