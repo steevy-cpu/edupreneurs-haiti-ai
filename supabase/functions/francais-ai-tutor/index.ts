@@ -13,9 +13,9 @@ serve(async (req) => {
   try {
     const { message, lessonType, chatHistory, userNickname, lessonTopic } = await req.json();
 
-    const GEMINI_API_KEY = Deno.env.get('GEMINI_API_KEY');
-    if (!GEMINI_API_KEY) {
-      throw new Error('GEMINI_API_KEY is not configured');
+    const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
+    if (!LOVABLE_API_KEY) {
+      throw new Error('LOVABLE_API_KEY is not configured');
     }
 
     // Time-based greeting
@@ -154,15 +154,11 @@ Tu aides les élèves avec:
 Sois encourageant, patient et utilise des exemples adaptés à la culture haïtienne.`;
     }
 
-    // Prepare messages for Gemini
+    // Prepare messages for Lovable AI (OpenAI-compatible format)
     const messages = [
       {
-        role: "user",
-        parts: [{ text: systemPrompt }]
-      },
-      {
-        role: "model",
-        parts: [{ text: "D'accord, je suis prêt à aider l'élève avec son apprentissage du français selon le programme MENFP AF7." }]
+        role: "system",
+        content: systemPrompt
       }
     ];
 
@@ -170,8 +166,8 @@ Sois encourageant, patient et utilise des exemples adaptés à la culture haïti
     if (chatHistory && Array.isArray(chatHistory)) {
       chatHistory.forEach((msg: { role: string; content: string }) => {
         messages.push({
-          role: msg.role === 'user' ? 'user' : 'model',
-          parts: [{ text: msg.content }]
+          role: msg.role === 'user' ? 'user' : 'assistant',
+          content: msg.content
         });
       });
     }
@@ -179,35 +175,61 @@ Sois encourageant, patient et utilise des exemples adaptés à la culture haïti
     // Add current message
     messages.push({
       role: "user",
-      parts: [{ text: message }]
+      content: message
     });
 
     const response = await fetch(
-      'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent',
+      'https://ai.gateway.lovable.dev/v1/chat/completions',
       {
         method: 'POST',
         headers: {
+          'Authorization': `Bearer ${LOVABLE_API_KEY}`,
           'Content-Type': 'application/json',
-          'x-goog-api-key': GEMINI_API_KEY,
         },
         body: JSON.stringify({
-          contents: messages,
-          generationConfig: {
-            temperature: 0.7,
-            maxOutputTokens: 2048,
-          },
+          model: 'google/gemini-2.5-flash',
+          messages: messages,
+          temperature: 0.7,
+          max_tokens: 2048,
         }),
       }
     );
 
     if (!response.ok) {
       const errorText = await response.text();
-      console.error('Gemini API error:', errorText);
-      throw new Error(`Gemini API error: ${response.status}`);
+      console.error('Lovable AI error:', errorText);
+      
+      if (response.status === 429) {
+        return new Response(
+          JSON.stringify({ 
+            error: "Rate limit exceeded. Please try again in a moment.",
+            response: "Désolé, trop de demandes en cours. Réessaie dans un instant."
+          }),
+          {
+            status: 429,
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          }
+        );
+      }
+      
+      if (response.status === 402) {
+        return new Response(
+          JSON.stringify({ 
+            error: "Payment required. Please add credits to your Lovable AI workspace.",
+            response: "Désolé, crédits insuffisants. Contacte ton enseignant."
+          }),
+          {
+            status: 402,
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          }
+        );
+      }
+      
+      throw new Error(`Lovable AI error: ${response.status}`);
     }
 
     const data = await response.json();
-    let aiResponse = data.candidates[0]?.content?.parts[0]?.text || 
+    let aiResponse = data.choices?.[0]?.message?.content || 
                      "Désolé, je n'ai pas pu générer de réponse.";
 
     // Clean up response
