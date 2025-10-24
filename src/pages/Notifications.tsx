@@ -28,7 +28,7 @@ interface Notification {
   user_id: string;
   actor_id: string;
   post_id: string | null;
-  type: "like" | "comment" | "share" | "follow_request" | "new_post" | "group_invitation" | "group_deleted";
+  type: "like" | "comment" | "share" | "follow_request" | "new_post" | "group_invitation" | "group_deleted" | "lesson_comment";
   content: string | null;
   read: boolean;
   created_at: string;
@@ -133,7 +133,7 @@ export default function Notifications() {
 
           return {
             ...notification,
-            type: notification.type as "like" | "comment" | "share" | "follow_request" | "new_post" | "group_invitation" | "group_deleted",
+            type: notification.type as "like" | "comment" | "share" | "follow_request" | "new_post" | "group_invitation" | "group_deleted" | "lesson_comment",
             followRequestPending,
             actorProfile: actorProfile || {
               id: "",
@@ -198,6 +198,8 @@ export default function Notifications() {
       case 'post_comment':
       case 'comment':
         return `${actorName} a commenté votre publication`;
+      case 'lesson_comment':
+        return `${actorName} a commenté la leçon "${notification.content}"`;
       case 'group_deleted':
         return notification.content || 'Un groupe a été supprimé';
       default:
@@ -239,6 +241,8 @@ export default function Notifications() {
         return <Heart size={16} className="text-red-500" />;
       case "comment":
         return <MessageCircle size={16} className="text-blue-500" />;
+      case "lesson_comment":
+        return <MessageCircle size={16} className="text-purple-500" />;
       case "share":
         return <Share2 size={16} className="text-green-500" />;
       case "follow_request":
@@ -261,6 +265,8 @@ export default function Notifications() {
         return `${actor} a aimé votre publication`;
       case "comment":
         return `${actor} a commenté: "${notification.content}"`;
+      case "lesson_comment":
+        return `${actor} a commenté la leçon "${notification.content}"`;
       case "share":
         return `${actor} a partagé votre publication`;
       case "follow_request":
@@ -392,7 +398,9 @@ export default function Notifications() {
   const handleNotificationClick = (notification: Notification) => {
     if (notification.type !== "follow_request") {
       markAsRead(notification.id);
-      if (notification.post_id) {
+      if (notification.type === "lesson_comment") {
+        navigate("/content-editor");
+      } else if (notification.post_id) {
         navigate("/feed");
       }
     }
