@@ -40,44 +40,35 @@ export const LessonReview = ({ lesson }: LessonReviewProps) => {
       </CardHeader>
       <CardContent className="p-6">
         <div className="prose prose-sm lg:prose-base max-w-none dark:prose-invert">
-          {/* Objectif d'apprentissage */}
+          {/* Show all content sections */}
           {lesson.objectif && (
-            <div className="mb-8">
-              <h2 className="text-xl font-semibold mb-3 text-primary">📚 Objectif d'apprentissage</h2>
-              <div className="bg-muted/30 p-4 rounded-lg">
-                <p>{lesson.objectif}</p>
-              </div>
+            <div className="mb-6 p-4 bg-primary/5 rounded-lg border border-primary/20">
+              <h3 className="text-lg font-semibold text-primary mb-2">🎯 Objectif</h3>
+              <p>{lesson.objectif}</p>
             </div>
           )}
 
-          {/* Introduction */}
           {lesson.introduction && (
-            <div className="mb-8">
-              <h2 className="text-xl font-semibold mb-3 text-primary">🎯 Introduction</h2>
+            <div className="mb-6">
               <div dangerouslySetInnerHTML={{ __html: lesson.introduction }} />
             </div>
           )}
           
-          {/* Contenu principal */}
           {lesson.contenu && (
-            <div className="mb-8">
-              <h2 className="text-xl font-semibold mb-3 text-primary">📖 Contenu</h2>
+            <div className="mb-6">
               <div dangerouslySetInnerHTML={{ __html: lesson.contenu }} />
             </div>
           )}
           
-          {/* Exemples et Exercices */}
           {lesson.exemples_exercices && (
-            <div className="mb-8">
-              <h2 className="text-xl font-semibold mb-3 text-primary">✏️ Exemples et Exercices</h2>
+            <div className="mb-6">
               <div dangerouslySetInnerHTML={{ __html: lesson.exemples_exercices }} />
             </div>
           )}
 
-          {/* References */}
           {lesson.references && lesson.references.length > 0 && (
-            <div className="mb-8">
-              <h2 className="text-xl font-semibold mb-3 text-primary">📚 Références</h2>
+            <div className="mb-6 p-4 bg-muted/30 rounded-lg">
+              <h3 className="text-lg font-semibold mb-3">📚 Références</h3>
               <ul className="list-disc list-inside space-y-1">
                 {lesson.references.map((ref: string, index: number) => (
                   <li key={index}>{ref}</li>
@@ -86,30 +77,24 @@ export const LessonReview = ({ lesson }: LessonReviewProps) => {
             </div>
           )}
 
-          {/* YouTube Video */}
           {lesson.youtube_url && (
-            <div className="mb-8">
-              <h2 className="text-xl font-semibold mb-3 text-primary">🎥 Vidéo YouTube</h2>
-              <div className="aspect-video w-full bg-muted/30 rounded-lg flex items-center justify-center">
-                <a 
-                  href={lesson.youtube_url} 
-                  target="_blank" 
-                  rel="noopener noreferrer"
-                  className="text-primary hover:underline"
-                >
-                  Voir la vidéo →
-                </a>
-              </div>
+            <div className="mb-6 p-4 bg-red-50 dark:bg-red-900/10 rounded-lg border border-red-200 dark:border-red-800">
+              <h3 className="text-lg font-semibold mb-3">🎥 Vidéo YouTube</h3>
+              <a 
+                href={lesson.youtube_url} 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="text-primary hover:underline font-medium"
+              >
+                {lesson.youtube_url}
+              </a>
             </div>
           )}
 
-          {/* Review Notes (if any) */}
           {lesson.review_notes && (
-            <div className="mb-8">
-              <h2 className="text-xl font-semibold mb-3 text-primary">📝 Notes de révision</h2>
-              <div className="bg-yellow-50 dark:bg-yellow-900/20 p-4 rounded-lg border border-yellow-200 dark:border-yellow-800">
-                <p>{lesson.review_notes}</p>
-              </div>
+            <div className="mb-6 p-4 bg-yellow-50 dark:bg-yellow-900/20 rounded-lg border border-yellow-200 dark:border-yellow-800">
+              <h3 className="text-lg font-semibold text-yellow-800 dark:text-yellow-200 mb-2">📝 Notes de révision</h3>
+              <p className="text-yellow-900 dark:text-yellow-100">{lesson.review_notes}</p>
             </div>
           )}
         </div>
