@@ -1,14 +1,40 @@
+import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ArrowLeft, BookOpen, Target, FileText, PenTool } from "lucide-react";
 import { francaisLessons7AF } from "@/data/francaisLessons";
+import { YouTubeVideoSection } from "@/components/YouTubeVideoSection";
+import { supabase } from "@/integrations/supabase/client";
 
 const FrancaisLesson = () => {
   const { topicId } = useParams();
   const navigate = useNavigate();
+  const [youtubeUrl, setYoutubeUrl] = useState<string | null>(null);
 
   const lesson = francaisLessons7AF.find(l => l.id === topicId);
+
+  useEffect(() => {
+    const fetchYoutubeUrl = async () => {
+      if (!topicId) return;
+      
+      try {
+        const { data, error } = await supabase
+          .from('lessons')
+          .select('youtube_url')
+          .eq('slug', topicId)
+          .maybeSingle();
+
+        if (data && !error) {
+          setYoutubeUrl(data.youtube_url);
+        }
+      } catch (error) {
+        console.error('Error fetching YouTube URL:', error);
+      }
+    };
+
+    fetchYoutubeUrl();
+  }, [topicId]);
 
   if (!lesson) {
     return (
@@ -115,6 +141,16 @@ const FrancaisLesson = () => {
               </div>
             </CardContent>
           </Card>
+
+          {/* YouTube Video Section */}
+          {youtubeUrl && (
+            <YouTubeVideoSection
+              lessonTitle={lesson.title}
+              objectives={lesson.objectif}
+              gradeLevel="AF7"
+              customYoutubeUrl={youtubeUrl}
+            />
+          )}
         </div>
 
         <div className="flex justify-between mt-8">

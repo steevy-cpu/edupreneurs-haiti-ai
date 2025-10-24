@@ -98,6 +98,7 @@ export default function SciencesLesson() {
   const [quizKey, setQuizKey] = useState(0);
   const [personalNotes, setPersonalNotes] = useState("");
   const [isSavingNotes, setIsSavingNotes] = useState(false);
+  const [youtubeUrl, setYoutubeUrl] = useState<string | null>(null);
 
   const lessonContent = topicId ? sciencesLessons7AF[topicId] : null;
   const topicInfo = sciencesTopics.find(topic => topic.id === topicId);
@@ -105,7 +106,26 @@ export default function SciencesLesson() {
   useEffect(() => {
     window.scrollTo(0, 0);
     loadPersonalNotes();
+    fetchYoutubeUrl();
   }, [topicId]);
+
+  const fetchYoutubeUrl = async () => {
+    if (!topicId) return;
+    
+    try {
+      const { data, error } = await supabase
+        .from('lessons')
+        .select('youtube_url')
+        .eq('slug', topicId)
+        .maybeSingle();
+
+      if (data && !error) {
+        setYoutubeUrl(data.youtube_url);
+      }
+    } catch (error) {
+      console.error('Error fetching YouTube URL:', error);
+    }
+  };
 
   const loadPersonalNotes = async () => {
     try {
@@ -361,6 +381,7 @@ export default function SciencesLesson() {
                   lessonTitle={topicInfo.title}
                   objectives={lessonContent.objectif || ""}
                   gradeLevel="AF7"
+                  customYoutubeUrl={youtubeUrl || undefined}
                 />
               </div>
             </TabsContent>

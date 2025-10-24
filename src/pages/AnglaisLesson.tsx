@@ -14,6 +14,7 @@ import {
   Link as LinkIcon
 } from "lucide-react";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import { YouTubeVideoSection } from "@/components/YouTubeVideoSection";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
@@ -26,6 +27,7 @@ interface LessonData {
   exercises: any;
   references: string[];
   month: string;
+  youtubeUrl?: string;
 }
 
 export default function AnglaisLesson() {
@@ -40,7 +42,7 @@ export default function AnglaisLesson() {
       try {
         const { data, error } = await supabase
           .from('lessons')
-          .select('id, slug, title, objectif, introduction, contenu, exemples_exercices, references, mois')
+          .select('id, slug, title, objectif, introduction, contenu, exemples_exercices, references, mois, youtube_url')
           .eq('slug', topicId)
           .single();
 
@@ -54,7 +56,8 @@ export default function AnglaisLesson() {
           content: data.contenu,
           exercises: data.exemples_exercices,
           references: data.references,
-          month: data.mois
+          month: data.mois,
+          youtubeUrl: data.youtube_url
         });
       } catch (error) {
         console.error('Error fetching lesson:', error);
@@ -220,6 +223,18 @@ export default function AnglaisLesson() {
             </Card>
           </TabsContent>
         </Tabs>
+
+        {/* YouTube Video Section */}
+        {lesson.youtubeUrl && (
+          <div className="mb-6">
+            <YouTubeVideoSection
+              lessonTitle={lesson.title}
+              objectives={lesson.objective}
+              gradeLevel="AF7"
+              customYoutubeUrl={lesson.youtubeUrl}
+            />
+          </div>
+        )}
 
         {/* Navigation Buttons */}
         <div className="flex justify-between gap-4">

@@ -74,6 +74,7 @@ const MathLesson = () => {
   const { toast } = useToast();
   const [isLoadingActivites, setIsLoadingActivites] = useState(false);
   const [isLoadingQuiz, setIsLoadingQuiz] = useState(false);
+  const [youtubeUrl, setYoutubeUrl] = useState<string | null>(null);
   const [lessonData, setLessonData] = useState<LessonData>({
     objectif: "",
     introduction: "",
@@ -194,7 +195,26 @@ const MathLesson = () => {
   useEffect(() => {
     loadNotesFromDatabase();
     loadUserGold();
+    fetchYoutubeUrl();
   }, [topicId]);
+
+  const fetchYoutubeUrl = async () => {
+    if (!topicId) return;
+    
+    try {
+      const { data, error } = await supabase
+        .from('lessons')
+        .select('youtube_url')
+        .eq('slug', topicId)
+        .maybeSingle();
+
+      if (data && !error) {
+        setYoutubeUrl(data.youtube_url);
+      }
+    } catch (error) {
+      console.error('Error fetching YouTube URL:', error);
+    }
+  };
 
   const loadUserGold = async () => {
     try {
@@ -642,6 +662,7 @@ const MathLesson = () => {
                     lessonTitle={currentTopic.title}
                     objectives={lessonData.objectif}
                     gradeLevel="AF7"
+                    customYoutubeUrl={youtubeUrl || undefined}
                   />
                 )}
 
