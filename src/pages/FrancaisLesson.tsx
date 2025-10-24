@@ -129,30 +129,50 @@ const FrancaisLesson = () => {
   const loadLesson = async (forceRegenerate = false) => {
     if (!topicId || !lesson) return;
 
+    const contenuCacheKey = `lesson_contenu_francais_${topicId}`;
     const activitiesCacheKey = `lesson_activites_francais_${topicId}`;
     const quizCacheKey = `lesson_quiz_francais_${topicId}`;
 
     try {
-      // Set static content
-      setLessonData({
-        objectif: lesson.objectif,
-        introduction: lesson.introduction,
-        contenu: lesson.contenu,
-        activites: "",
-        quiz: ""
-      });
-
-      // Check cache for activities
+      // Check cache for enhanced content
+      let enhancedContenu = "";
       let activitiesContent = "";
       let quizContent = "";
       
       if (!forceRegenerate) {
+        const cachedContenu = localStorage.getItem(contenuCacheKey);
         const cachedActivities = localStorage.getItem(activitiesCacheKey);
         const cachedQuiz = localStorage.getItem(quizCacheKey);
         
+        if (cachedContenu) enhancedContenu = cachedContenu;
         if (cachedActivities) activitiesContent = cachedActivities;
         if (cachedQuiz) quizContent = cachedQuiz;
       }
+
+      // Generate enhanced visual content if not cached
+      if (!enhancedContenu || forceRegenerate) {
+        const { data: contenuResponse, error: contenuError } = await supabase.functions.invoke('francais-ai-tutor', {
+          body: { 
+            message: `Génère un contenu de leçon visuel et structuré pour "${lesson.title}" niveau AF7. Inclus des schémas, diagrammes et exemples visuels détaillés.`,
+            lessonType: 'contenu',
+            lessonTopic: lesson.title
+          }
+        });
+
+        if (!contenuError && contenuResponse) {
+          enhancedContenu = contenuResponse?.response || contenuResponse || "";
+          localStorage.setItem(contenuCacheKey, enhancedContenu);
+        }
+      }
+
+      // Set content (use enhanced or fallback to static)
+      setLessonData({
+        objectif: lesson.objectif,
+        introduction: lesson.introduction,
+        contenu: enhancedContenu || lesson.contenu,
+        activites: "",
+        quiz: ""
+      });
 
       // Load activities if not cached or regenerating
       if (!activitiesContent || forceRegenerate) {
@@ -247,8 +267,7 @@ const FrancaisLesson = () => {
     setNotesSaved(false);
   };
 
-  const handleGoldUpdate = (goldAmount: number) => {
-    setEarnedGold(prev => prev + goldAmount);
+  const handleGoldUpdate = () => {
     loadUserGold();
   };
 
@@ -342,9 +361,13 @@ const FrancaisLesson = () => {
                         <Volume2 className="w-4 h-4" />Écouter</Button>)}
                   </CardContent>
                 </Card>
-                {lesson.contenu !== "Contenu à venir..." && (
-                  <Card><CardHeader><CardTitle>📚 Contenu</CardTitle></CardHeader>
-                    <CardContent><div className="whitespace-pre-wrap">{lesson.contenu}</div></CardContent>
+                {lessonData.contenu !== "Contenu à venir..." && (
+                  <Card><CardHeader><CardTitle>📚 Contenu de la leçon</CardTitle></CardHeader>
+                    <CardContent>
+                      <div className="prose prose-purple max-w-none dark:prose-invert">
+                        <div className="whitespace-pre-wrap" dangerouslySetInnerHTML={{ __html: lessonData.contenu.replace(/\n/g, '<br/>') }} />
+                      </div>
+                    </CardContent>
                   </Card>)}
                 {lessonData.objectif && (
                   <YouTubeVideoSection lessonTitle={lesson.title} objectives={lessonData.objectif} gradeLevel="AF7" customYoutubeUrl={youtubeUrl || undefined} subject="francais" />)}
@@ -355,7 +378,7 @@ const FrancaisLesson = () => {
               </TabsContent>
 
               <TabsContent value="quiz">
-                <InteractiveQuiz content={lessonData.quiz} isLoading={isLoadingQuiz} onRegenerate={handleRegenerateActivities} onGoldUpdate={handleGoldUpdate} lessonSlug={topicId || ""} subject="francais" />
+                <InteractiveQuiz content={lessonData.quiz} isLoading={isLoadingQuiz} onRegenerate={handleRegenerateActivities} onGoldUpdate={handleGoldUpdate} lessonGoldReward={goldReward} />
               </TabsContent>
             </Tabs>
 
