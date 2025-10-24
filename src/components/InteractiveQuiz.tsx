@@ -20,9 +20,10 @@ interface InteractiveQuizProps {
   isLoading: boolean;
   onRegenerate?: () => void;
   lessonGoldReward?: number;
+  onGoldUpdate?: () => void;
 }
 
-export const InteractiveQuiz = ({ content, isLoading, onRegenerate, lessonGoldReward = 100 }: InteractiveQuizProps) => {
+export const InteractiveQuiz = ({ content, isLoading, onRegenerate, lessonGoldReward = 100, onGoldUpdate }: InteractiveQuizProps) => {
   const { topicId } = useParams();
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [selectedAnswer, setSelectedAnswer] = useState<number | null>(null);
@@ -78,6 +79,9 @@ export const InteractiveQuiz = ({ content, isLoading, onRegenerate, lessonGoldRe
           .from('profiles')
           .update({ gold_earned: (profile.gold_earned || 0) + 1 })
           .eq('user_id', user.id);
+        
+        // Notify parent to update gold display
+        onGoldUpdate?.();
       }
     } catch (error) {
       console.error('Error awarding gold:', error);
@@ -280,6 +284,9 @@ export const InteractiveQuiz = ({ content, isLoading, onRegenerate, lessonGoldRe
           .from('profiles')
           .update({ gold_earned: (profile.gold_earned || 0) + lessonGoldReward })
           .eq('user_id', user.id);
+
+        // Notify parent to update gold display
+        onGoldUpdate?.();
 
         toast({
           title: "🎉 Leçon complétée!",

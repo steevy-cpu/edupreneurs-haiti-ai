@@ -18,9 +18,10 @@ interface InteractiveActivitiesProps {
   content: string;
   isLoading: boolean;
   onRegenerate?: () => void;
+  onGoldUpdate?: () => void;
 }
 
-export const InteractiveActivities = ({ content, isLoading, onRegenerate }: InteractiveActivitiesProps) => {
+export const InteractiveActivities = ({ content, isLoading, onRegenerate, onGoldUpdate }: InteractiveActivitiesProps) => {
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [selectedAnswer, setSelectedAnswer] = useState<number | null>(null);
   const [showFeedback, setShowFeedback] = useState(false);
@@ -193,6 +194,9 @@ export const InteractiveActivities = ({ content, isLoading, onRegenerate }: Inte
           .from('profiles')
           .update({ gold_earned: (profile.gold_earned || 0) + 1 })
           .eq('user_id', user.id);
+        
+        // Notify parent to update gold display
+        onGoldUpdate?.();
       }
     } catch (error) {
       console.error('Error awarding gold:', error);

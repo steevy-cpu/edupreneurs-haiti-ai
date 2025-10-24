@@ -87,6 +87,7 @@ const MathLesson = () => {
   const [activeActivity, setActiveActivity] = useState<string | null>(null);
   const [earnedGold, setEarnedGold] = useState(0);
   const [userGold, setUserGold] = useState(0);
+  const [sessionStartGold, setSessionStartGold] = useState(0);
   
   // Check if we have static content for this topic
   const hasStaticContent = topicId ? topicId in mathLessons : false;
@@ -228,12 +229,20 @@ const MathLesson = () => {
         .single();
 
       if (data && !error) {
-        setUserGold(data.gold_earned || 0);
+        const currentGold = data.gold_earned || 0;
+        setUserGold(currentGold);
+        setSessionStartGold(currentGold);
       }
     } catch (error) {
       console.error('Error loading user gold:', error);
     }
   };
+
+  // Track gold changes in real-time
+  useEffect(() => {
+    const goldEarnedThisSession = userGold - sessionStartGold;
+    setEarnedGold(Math.max(0, goldEarnedThisSession));
+  }, [userGold, sessionStartGold]);
 
   const loadNotesFromDatabase = async () => {
     if (!topicId) return;
@@ -681,6 +690,7 @@ const MathLesson = () => {
                 <InteractiveActivities 
                   content={lessonData.activites} 
                   isLoading={isLoadingActivites}
+                  onGoldUpdate={() => loadUserGold()}
                   onRegenerate={() => {
                     // Clear cache for activities and regenerate
                     if (topicId) {
@@ -698,6 +708,7 @@ const MathLesson = () => {
                   content={lessonData.quiz} 
                   isLoading={isLoadingQuiz}
                   lessonGoldReward={currentTopic.goldReward}
+                  onGoldUpdate={() => loadUserGold()}
                   onRegenerate={() => {
                     // Clear cache for quiz and regenerate
                     if (topicId) {
