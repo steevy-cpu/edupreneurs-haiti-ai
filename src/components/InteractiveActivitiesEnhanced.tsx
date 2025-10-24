@@ -1,0 +1,688 @@
+import { useState, useEffect } from "react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Progress } from "@/components/ui/progress";
+import { CheckCircle, XCircle, ArrowRight, Loader2, RefreshCw, Shuffle } from "lucide-react";
+import { useSoundEffects } from "@/hooks/useSoundEffects";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
+
+type ActivityType = 'QUIZ' | 'MATCHING' | 'TRUEFALSE' | 'FILLIN';
+
+interface BaseActivity {
+  type: ActivityType;
+  title: string;
+  difficulty: string;
+}
+
+interface QuizActivity extends BaseActivity {
+  type: 'QUIZ';
+  question: string;
+  options: string[];
+  correctAnswer: number;
+  explanation: string;
+}
+
+interface MatchingActivity extends BaseActivity {
+  type: 'MATCHING';
+  instruction: string;
+  columnA: { id: number; text: string }[];
+  columnB: { id: string; text: string }[];
+  correctMatches: Record<number, string>;
+  explanation: string;
+}
+
+interface TrueFalseActivity extends BaseActivity {
+  type: 'TRUEFALSE';
+  statement: string;
+  correctAnswer: number;
+  explanation: string;
+}
+
+interface FillInActivity extends BaseActivity {
+  type: 'FILLIN';
+  sentence: string;
+  options: string[];
+  correctAnswer: number;
+  explanation: string;
+}
+
+type Activity = QuizActivity | MatchingActivity | TrueFalseActivity | FillInActivity;
+
+interface InteractiveActivitiesEnhancedProps {
+  content: string;
+  isLoading: boolean;
+  onRegenerate?: () => void;
+  onGoldUpdate?: () => void;
+}
+
+export const InteractiveActivitiesEnhanced = ({ 
+  content, 
+  isLoading, 
+  onRegenerate,
+  onGoldUpdate 
+}: InteractiveActivitiesEnhancedProps) => {
+  const [currentActivityIndex, setCurrentActivityIndex] = useState(0);
+  const [selectedAnswer, setSelectedAnswer] = useState<number | null>(null);
+  const [selectedMatches, setSelectedMatches] = useState<Record<number, string>>({});
+  const [showFeedback, setShowFeedback] = useState(false);
+  const [score, setScore] = useState(0);
+  const [completed, setCompleted] = useState(false);
+  const [isLessonCompleted, setIsLessonCompleted] = useState(false);
+  const { playSound } = useSoundEffects();
+  const { toast } = useToast();
+
+  // Check if lesson is already completed
+  useEffect(() => {
+    const checkCompletion = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      const pathParts = window.location.pathname.split('/');
+      const lessonSlug = pathParts[pathParts.length - 1];
+      const subject = 'mathematiques';
+
+      if (!lessonSlug) return;
+
+      const { data } = await supabase
+        .from('lesson_completions')
+        .select('*')
+        .eq('user_id', user.id)
+        .eq('lesson_slug', lessonSlug)
+        .eq('subject', subject)
+        .maybeSingle();
+
+      if (data) {
+        setIsLessonCompleted(true);
+      }
+    };
+
+    checkCompletion();
+  }, []);
+
+  const awardGold = async () => {
+    if (isLessonCompleted) return;
+
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('gold_earned')
+        .eq('user_id', user.id)
+        .single();
+
+      if (profile) {
+        await supabase
+          .from('profiles')
+          .update({ gold_earned: (profile.gold_earned || 0) + 1 })
+          .eq('user_id', user.id);
+        
+        onGoldUpdate?.();
+      }
+    } catch (error) {
+      console.error('Error awarding gold:', error);
+    }
+  };
+
+  const parseActivities = (content: string): Activity[] => {
+    const activities: Activity[] = [];
+    const sections = content.split(/---+/);
+
+    sections.forEach((section) => {
+      if (!section.trim()) return;
+
+      // Extract type
+      const typeMatch = section.match(/TYPE:\s*(QUIZ|MATCHING|TRUEFALSE|FILLIN)/i);
+      if (!typeMatch) return;
+      
+      const type = typeMatch[1].toUpperCase() as ActivityType;
+      
+      // Extract title and difficulty
+      const titleMatch = section.match(/#{2,3}\s*[^\n]*Exercice\s*\d+\s*—\s*([^(]+)\(([^)]+)\)/i);
+      if (!titleMatch) return;
+      
+      const title = titleMatch[1].trim();
+      const difficulty = titleMatch[2].trim();
+
+      try {
+        if (type === 'QUIZ' || type === 'FILLIN') {
+          const questionMatch = section.match(/TYPE:\s*(?:QUIZ|FILLIN)[^\n]*\n\s*(.+?)(?=\n\s*[A-D]\))/is);
+          if (!questionMatch) return;
+          
+          const question = questionMatch[1].trim().replace(/\*\*/g, '');
+          
+          const optionMatches = section.matchAll(/([A-D])\)\s*(.+?)(?=\n\s*[A-D]\)|\n\s*#{2,3}|\n\n|$)/gis);
+          const options: string[] = [];
+          Array.from(optionMatches).forEach(match => {
+            const optionText = match[2].trim().replace(/\*\*/g, '');
+            if (optionText) options.push(optionText);
+          });
+          
+          if (options.length !== 4) return;
+          
+          const correctMatch = section.match(/Réponse\s+correcte\s*:\s*([A-D])/i);
+          if (!correctMatch) return;
+          
+          const correctIndex = correctMatch[1].toUpperCase().charCodeAt(0) - 'A'.charCodeAt(0);
+          
+          const explanationMatch = section.match(/Explication\s*:\s*\n?\s*(.+?)(?=#{2,3}|$)/is);
+          const explanation = explanationMatch ? explanationMatch[1].trim().replace(/\*\*/g, '') : "";
+          
+          if (type === 'QUIZ') {
+            activities.push({
+              type: 'QUIZ',
+              title,
+              difficulty,
+              question,
+              options,
+              correctAnswer: correctIndex,
+              explanation
+            });
+          } else {
+            activities.push({
+              type: 'FILLIN',
+              title,
+              difficulty,
+              sentence: question,
+              options,
+              correctAnswer: correctIndex,
+              explanation
+            });
+          }
+        } else if (type === 'MATCHING') {
+          const instructionMatch = section.match(/TYPE:\s*MATCHING[^\n]*\n\s*(.+?)(?=COLONNE A:)/is);
+          const instruction = instructionMatch ? instructionMatch[1].trim() : "Associe les éléments";
+          
+          const columnAMatch = section.match(/COLONNE A:\s*\n([\s\S]+?)(?=COLONNE B:)/i);
+          const columnBMatch = section.match(/COLONNE B:\s*\n([\s\S]+?)(?=#{2,3}\s*Réponse|$)/i);
+          
+          if (!columnAMatch || !columnBMatch) return;
+          
+          const columnA: { id: number; text: string }[] = [];
+          const columnAItems = columnAMatch[1].matchAll(/(\d+)\.\s*(.+?)(?=\n\d+\.|\n*$)/gs);
+          Array.from(columnAItems).forEach(match => {
+            columnA.push({ id: parseInt(match[1]), text: match[2].trim() });
+          });
+          
+          const columnB: { id: string; text: string }[] = [];
+          const columnBItems = columnBMatch[1].matchAll(/([A-D])\)\s*(.+?)(?=\n[A-D]\)|\n*$)/gs);
+          Array.from(columnBItems).forEach(match => {
+            columnB.push({ id: match[1], text: match[2].trim() });
+          });
+          
+          const correctMatch = section.match(/Réponse\s+correcte\s*:\s*(.+?)(?=\n#{2,3}|$)/is);
+          if (!correctMatch) return;
+          
+          const correctMatches: Record<number, string> = {};
+          const matches = correctMatch[1].matchAll(/(\d+)-([A-D])/g);
+          Array.from(matches).forEach(match => {
+            correctMatches[parseInt(match[1])] = match[2];
+          });
+          
+          const explanationMatch = section.match(/Explication\s*:\s*\n?\s*(.+?)(?=#{2,3}|$)/is);
+          const explanation = explanationMatch ? explanationMatch[1].trim() : "";
+          
+          activities.push({
+            type: 'MATCHING',
+            title,
+            difficulty,
+            instruction,
+            columnA,
+            columnB,
+            correctMatches,
+            explanation
+          });
+        } else if (type === 'TRUEFALSE') {
+          const statementMatch = section.match(/TYPE:\s*TRUEFALSE[^\n]*\n\s*(.+?)(?=\n\s*A\))/is);
+          if (!statementMatch) return;
+          
+          const statement = statementMatch[1].trim().replace(/\*\*/g, '');
+          
+          const correctMatch = section.match(/Réponse\s+correcte\s*:\s*([A-B])/i);
+          if (!correctMatch) return;
+          
+          const correctIndex = correctMatch[1].toUpperCase().charCodeAt(0) - 'A'.charCodeAt(0);
+          
+          const explanationMatch = section.match(/Explication\s*:\s*\n?\s*(.+?)(?=#{2,3}|$)/is);
+          const explanation = explanationMatch ? explanationMatch[1].trim() : "";
+          
+          activities.push({
+            type: 'TRUEFALSE',
+            title,
+            difficulty,
+            statement,
+            correctAnswer: correctIndex,
+            explanation
+          });
+        }
+      } catch (error) {
+        console.error('Error parsing activity:', error);
+      }
+    });
+
+    return activities;
+  };
+
+  const activities = parseActivities(content);
+
+  if (!isLoading && activities.length === 0 && content) {
+    return (
+      <Card className="lesson-card border-none rounded-[20px] shadow-lg">
+        <CardHeader className="p-6">
+          <CardTitle className="flex items-center gap-2">⚠️ Format non reconnu</CardTitle>
+        </CardHeader>
+        <CardContent className="p-6">
+          <p className="text-muted-foreground mb-4">Les activités n'ont pas pu être chargées.</p>
+          {onRegenerate && (
+            <Button onClick={onRegenerate} variant="outline" className="w-full">
+              <RefreshCw className="w-4 h-4 mr-2" />
+              Régénérer
+            </Button>
+          )}
+        </CardContent>
+      </Card>
+    );
+  }
+
+  if (activities.length === 0) {
+    return (
+      <Card className="lesson-card border-none rounded-[20px] shadow-lg">
+        <CardHeader className="p-6">
+          <CardTitle>📝 Activités Interactives</CardTitle>
+        </CardHeader>
+        <CardContent className="p-6">
+          <p className="text-center text-muted-foreground">Aucune activité disponible.</p>
+          {onRegenerate && (
+            <Button onClick={onRegenerate} variant="outline" className="w-full mt-4">
+              <RefreshCw className="w-4 h-4 mr-2" />
+              Générer
+            </Button>
+          )}
+        </CardContent>
+      </Card>
+    );
+  }
+
+  const currentActivity = activities[currentActivityIndex];
+  const progress = ((currentActivityIndex + 1) / activities.length) * 100;
+
+  const handleAnswerSubmit = async () => {
+    let isCorrect = false;
+
+    if (currentActivity.type === 'MATCHING') {
+      const matchingActivity = currentActivity as MatchingActivity;
+      isCorrect = Object.keys(matchingActivity.correctMatches).every(
+        key => selectedMatches[parseInt(key)] === matchingActivity.correctMatches[parseInt(key)]
+      );
+    } else if (currentActivity.type === 'QUIZ' || currentActivity.type === 'FILLIN' || currentActivity.type === 'TRUEFALSE') {
+      isCorrect = selectedAnswer === currentActivity.correctAnswer;
+    }
+
+    setShowFeedback(true);
+    playSound(isCorrect ? "correct" : "incorrect");
+
+    if (isCorrect) {
+      setScore(prev => prev + 1);
+      
+      if (!isLessonCompleted) {
+        await awardGold();
+        toast({
+          title: "🎉 +1 Gold!",
+          description: "Bonne réponse!",
+          duration: 2000,
+        });
+      } else {
+        toast({
+          title: "✅ Bonne réponse!",
+          description: "Leçon déjà complétée - pas de points supplémentaires",
+          duration: 2000,
+        });
+      }
+    }
+  };
+
+  const handleNext = () => {
+    playSound("next");
+    setShowFeedback(false);
+    setSelectedAnswer(null);
+    setSelectedMatches({});
+    
+    if (currentActivityIndex < activities.length - 1) {
+      setCurrentActivityIndex(prev => prev + 1);
+    } else {
+      setCompleted(true);
+    }
+  };
+
+  const handleRestart = () => {
+    playSound("next");
+    setCurrentActivityIndex(0);
+    setSelectedAnswer(null);
+    setSelectedMatches({});
+    setShowFeedback(false);
+    setScore(0);
+    setCompleted(false);
+  };
+
+  if (isLoading) {
+    return (
+      <Card className="lesson-card border-none rounded-[20px] shadow-lg">
+        <CardHeader className="p-6">
+          <div className="flex items-center justify-between">
+            <CardTitle>🎯 Activités Interactives</CardTitle>
+            {onRegenerate && (
+              <Button onClick={onRegenerate} variant="outline" size="sm">
+                <RefreshCw className="w-4 h-4 mr-2" />
+                Régénérer
+              </Button>
+            )}
+          </div>
+        </CardHeader>
+        <CardContent className="p-6">
+          <div className="flex flex-col items-center justify-center py-12 space-y-4">
+            <Loader2 className="h-12 w-12 animate-spin text-primary" />
+            <p className="text-muted-foreground">Génération d'activités variées...</p>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  if (completed) {
+    const percentage = Math.round((score / activities.length) * 100);
+    const emoji = percentage >= 80 ? "🎉" : percentage >= 60 ? "👏" : "💪";
+    
+    return (
+      <Card className="lesson-card border-none rounded-[20px] shadow-lg border-2 border-success/30">
+        <CardHeader className="p-6 bg-gradient-to-r from-success/20 to-primary/20 rounded-t-[20px]">
+          <CardTitle className="flex items-center gap-2">
+            {emoji} Activités Complétées!
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="p-6 text-center space-y-6">
+          <div>
+            <div className="text-6xl font-bold text-primary mb-2">{percentage}%</div>
+            <p className="text-xl font-semibold">
+              {score} / {activities.length} bonnes réponses
+            </p>
+          </div>
+          
+          <div className="p-6 bg-gradient-to-r from-success/10 to-primary/10 rounded-lg border-2 border-success/30">
+            {percentage >= 80 ? (
+              <p className="text-lg font-bold text-success">Excellent! Tu maîtrises le sujet!</p>
+            ) : percentage >= 60 ? (
+              <p className="text-lg font-bold text-primary">Bien! Continue à pratiquer.</p>
+            ) : (
+              <p className="text-lg font-bold text-orange-600">Continue d'essayer! Révise la leçon.</p>
+            )}
+          </div>
+
+          <div className="flex flex-col sm:flex-row gap-3 justify-center">
+            <Button onClick={handleRestart} size="lg" variant="outline">
+              <ArrowRight className="w-4 h-4 mr-2" />
+              Recommencer
+            </Button>
+            {onRegenerate && (
+              <Button onClick={onRegenerate} size="lg" variant="outline">
+                <RefreshCw className="w-4 h-4 mr-2" />
+                Nouvelles activités
+              </Button>
+            )}
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  const renderActivity = () => {
+    switch (currentActivity.type) {
+      case 'QUIZ':
+      case 'FILLIN':
+        const quizActivity = currentActivity as QuizActivity | FillInActivity;
+        return (
+          <>
+            <div className="p-6 bg-gradient-to-r from-primary/10 to-accent/10 rounded-lg border-2 border-primary/20">
+              <p className="text-lg font-medium leading-relaxed">
+                {currentActivity.type === 'QUIZ' 
+                  ? (quizActivity as QuizActivity).question 
+                  : (quizActivity as FillInActivity).sentence}
+              </p>
+            </div>
+
+            <div className="grid gap-3">
+              {quizActivity.options.map((option, index) => {
+                const isSelected = selectedAnswer === index;
+                const isCorrect = index === quizActivity.correctAnswer;
+                const showCorrect = showFeedback && isCorrect;
+                const showIncorrect = showFeedback && isSelected && !isCorrect;
+
+                return (
+                  <button
+                    key={index}
+                    onClick={() => !showFeedback && setSelectedAnswer(index)}
+                    disabled={showFeedback}
+                    className={`
+                      p-4 rounded-xl border-2 text-left transition-all duration-300
+                      ${!showFeedback ? 'hover:border-primary hover:bg-primary/5 hover:scale-[1.02]' : ''}
+                      ${isSelected && !showFeedback ? 'border-primary bg-primary/10' : 'border-muted'}
+                      ${showCorrect ? 'border-success bg-success/10' : ''}
+                      ${showIncorrect ? 'border-destructive bg-destructive/10' : ''}
+                      ${showFeedback ? 'cursor-not-allowed' : 'cursor-pointer'}
+                    `}
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className={`
+                        w-8 h-8 rounded-full flex items-center justify-center font-bold
+                        ${showCorrect ? 'bg-success text-white' : ''}
+                        ${showIncorrect ? 'bg-destructive text-white' : ''}
+                        ${!showFeedback ? 'bg-muted' : ''}
+                      `}>
+                        {showCorrect && <CheckCircle className="w-5 h-5" />}
+                        {showIncorrect && <XCircle className="w-5 h-5" />}
+                        {!showFeedback && String.fromCharCode(65 + index)}
+                      </div>
+                      <span className="flex-1">{option}</span>
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+          </>
+        );
+
+      case 'MATCHING':
+        const matchingActivity = currentActivity as MatchingActivity;
+        return (
+          <>
+            <div className="p-6 bg-gradient-to-r from-primary/10 to-accent/10 rounded-lg border-2 border-primary/20 mb-4">
+              <p className="text-lg font-medium">{matchingActivity.instruction}</p>
+            </div>
+
+            <div className="grid md:grid-cols-2 gap-6">
+              <div className="space-y-3">
+                <h3 className="font-semibold text-sm uppercase text-muted-foreground">Colonne A</h3>
+                {matchingActivity.columnA.map((item) => (
+                  <div key={item.id} className="p-4 bg-accent/20 rounded-lg border-2 border-accent/40">
+                    <span className="font-bold text-primary">{item.id}.</span> {item.text}
+                  </div>
+                ))}
+              </div>
+
+              <div className="space-y-3">
+                <h3 className="font-semibold text-sm uppercase text-muted-foreground">Colonne B</h3>
+                {matchingActivity.columnB.map((item) => (
+                  <button
+                    key={item.id}
+                    onClick={() => {
+                      if (!showFeedback) {
+                        const nextUnmatched = matchingActivity.columnA.find(
+                          a => !selectedMatches[a.id]
+                        );
+                        if (nextUnmatched) {
+                          setSelectedMatches(prev => ({
+                            ...prev,
+                            [nextUnmatched.id]: item.id
+                          }));
+                        }
+                      }
+                    }}
+                    disabled={showFeedback}
+                    className={`
+                      w-full p-4 rounded-lg border-2 text-left transition-all
+                      ${!showFeedback ? 'hover:border-primary hover:bg-primary/5' : ''}
+                      ${Object.values(selectedMatches).includes(item.id) ? 'border-primary bg-primary/10' : 'border-muted bg-background'}
+                      ${showFeedback ? 'cursor-not-allowed' : 'cursor-pointer'}
+                    `}
+                  >
+                    <span className="font-bold text-primary">{item.id})</span> {item.text}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {Object.keys(selectedMatches).length > 0 && !showFeedback && (
+              <div className="mt-4 p-4 bg-info/10 rounded-lg border border-info/30">
+                <p className="text-sm font-semibold mb-2">Associations actuelles:</p>
+                <div className="space-y-1">
+                  {Object.entries(selectedMatches).map(([numId, letterId]) => (
+                    <p key={numId} className="text-sm">
+                      {numId} → {letterId}
+                    </p>
+                  ))}
+                </div>
+              </div>
+            )}
+          </>
+        );
+
+      case 'TRUEFALSE':
+        const tfActivity = currentActivity as TrueFalseActivity;
+        return (
+          <>
+            <div className="p-6 bg-gradient-to-r from-primary/10 to-accent/10 rounded-lg border-2 border-primary/20">
+              <p className="text-lg font-medium leading-relaxed">{tfActivity.statement}</p>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              {['VRAI', 'FAUX'].map((label, index) => {
+                const isSelected = selectedAnswer === index;
+                const isCorrect = index === tfActivity.correctAnswer;
+                const showCorrect = showFeedback && isCorrect;
+                const showIncorrect = showFeedback && isSelected && !isCorrect;
+
+                return (
+                  <button
+                    key={index}
+                    onClick={() => !showFeedback && setSelectedAnswer(index)}
+                    disabled={showFeedback}
+                    className={`
+                      p-6 rounded-xl border-2 font-bold text-xl transition-all duration-300
+                      ${!showFeedback ? 'hover:border-primary hover:bg-primary/5 hover:scale-105' : ''}
+                      ${isSelected && !showFeedback ? 'border-primary bg-primary/10' : 'border-muted'}
+                      ${showCorrect ? 'border-success bg-success/10' : ''}
+                      ${showIncorrect ? 'border-destructive bg-destructive/10' : ''}
+                      ${showFeedback ? 'cursor-not-allowed' : 'cursor-pointer'}
+                    `}
+                  >
+                    {showCorrect && <CheckCircle className="w-6 h-6 mx-auto mb-2" />}
+                    {showIncorrect && <XCircle className="w-6 h-6 mx-auto mb-2" />}
+                    {label}
+                  </button>
+                );
+              })}
+            </div>
+          </>
+        );
+
+      default:
+        return null;
+    }
+  };
+
+  const canSubmit = () => {
+    if (currentActivity.type === 'MATCHING') {
+      return Object.keys(selectedMatches).length === (currentActivity as MatchingActivity).columnA.length;
+    }
+    return selectedAnswer !== null;
+  };
+
+  return (
+    <Card className="lesson-card border-none rounded-[20px] shadow-lg border-2 border-accent/30">
+      <CardHeader className="p-6 bg-gradient-to-r from-accent/20 to-primary/20 rounded-t-[20px]">
+        <div className="space-y-3">
+          <div className="flex items-center justify-between">
+            <CardTitle className="flex items-center gap-2">
+              <Shuffle className="w-5 h-5" />
+              Activité {currentActivityIndex + 1}/{activities.length} — {currentActivity.title}
+              <span className="text-sm font-normal text-muted-foreground">
+                ({currentActivity.difficulty})
+              </span>
+            </CardTitle>
+            {onRegenerate && (
+              <Button onClick={onRegenerate} variant="outline" size="sm">
+                <RefreshCw className="w-4 h-4 mr-2" />
+                Régénérer
+              </Button>
+            )}
+          </div>
+          <Progress value={progress} className="h-2" />
+        </div>
+      </CardHeader>
+      <CardContent className="p-6 space-y-6">
+        {renderActivity()}
+
+        {showFeedback && (
+          <div className={`
+            p-6 rounded-lg border-2 animate-fade-in
+            ${selectedAnswer === (currentActivity as any).correctAnswer || 
+              (currentActivity.type === 'MATCHING' && 
+               Object.keys((currentActivity as MatchingActivity).correctMatches).every(
+                 key => selectedMatches[parseInt(key)] === (currentActivity as MatchingActivity).correctMatches[parseInt(key)]
+               ))
+              ? 'bg-success/10 border-success' 
+              : 'bg-orange-50 dark:bg-orange-950/20 border-orange-300 dark:border-orange-700'
+            }
+          `}>
+            <p className="font-semibold mb-2">
+              {(selectedAnswer === (currentActivity as any).correctAnswer || 
+                (currentActivity.type === 'MATCHING' && 
+                 Object.keys((currentActivity as MatchingActivity).correctMatches).every(
+                   key => selectedMatches[parseInt(key)] === (currentActivity as MatchingActivity).correctMatches[parseInt(key)]
+                 )))
+                ? '✅ Correct!' 
+                : '📚 Explications:'}
+            </p>
+            <p className="text-sm leading-relaxed">{currentActivity.explanation}</p>
+          </div>
+        )}
+
+        {!showFeedback && (
+          <Button 
+            onClick={handleAnswerSubmit}
+            size="lg"
+            className="w-full"
+            disabled={!canSubmit()}
+          >
+            Vérifier
+          </Button>
+        )}
+
+        {showFeedback && (
+          <Button 
+            onClick={handleNext}
+            size="lg"
+            className="w-full"
+          >
+            {currentActivityIndex < activities.length - 1 ? (
+              <>Activité suivante <ArrowRight className="w-4 h-4 ml-2" /></>
+            ) : (
+              <>Voir les résultats <CheckCircle className="w-4 h-4 ml-2" /></>
+            )}
+          </Button>
+        )}
+      </CardContent>
+    </Card>
+  );
+};

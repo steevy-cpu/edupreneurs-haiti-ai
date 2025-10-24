@@ -57,7 +57,7 @@ import {
 } from "@/data/mathActivities";
 import { mathLessons } from "@/data/mathLessons";
 import { YouTubeVideoSection } from "@/components/YouTubeVideoSection";
-import { InteractiveActivities } from "@/components/InteractiveActivities";
+import { InteractiveActivitiesEnhanced } from "@/components/InteractiveActivitiesEnhanced";
 import { InteractiveQuiz } from "@/components/InteractiveQuiz";
 
 interface LessonData {
@@ -691,14 +691,14 @@ const MathLesson = () => {
 
               {/* ACTIVITIES TAB */}
               <TabsContent value="activities" className="space-y-4">
-                <InteractiveActivities 
+                <InteractiveActivitiesEnhanced 
                   content={lessonData.activites} 
                   isLoading={isLoadingActivites}
                   onGoldUpdate={() => loadUserGold()}
                   onRegenerate={() => {
                     // Clear cache for activities and regenerate
                     if (topicId) {
-                      const activitiesCacheKey = `lesson:${topicId}:activites`;
+                      const activitiesCacheKey = `lesson_activites_${topicId}`;
                       localStorage.removeItem(activitiesCacheKey);
                       loadLesson(true);
                     }
