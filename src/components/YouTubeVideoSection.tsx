@@ -14,11 +14,12 @@ interface YouTubeVideoSectionProps {
   objectives: string;
   gradeLevel?: string; // e.g., "AF7", "AF8", "AF9"
   customYoutubeUrl?: string; // Custom YouTube URL for the lesson
+  subject?: string; // "mathematiques", "sciences", etc.
 }
 
 const YOUTUBE_API_KEY = "AIzaSyDu6sWsM5NEgb48nFFIz49guKR5amdsGWA";
 
-export const YouTubeVideoSection = ({ lessonTitle, objectives, gradeLevel = "AF7", customYoutubeUrl }: YouTubeVideoSectionProps) => {
+export const YouTubeVideoSection = ({ lessonTitle, objectives, gradeLevel = "AF7", customYoutubeUrl, subject = "mathematiques" }: YouTubeVideoSectionProps) => {
   const [videos, setVideos] = useState<YouTubeVideo[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -81,18 +82,25 @@ export const YouTubeVideoSection = ({ lessonTitle, objectives, gradeLevel = "AF7
   };
 
   const buildOptimalSearchQuery = (): string => {
-    // Simplified search queries that are more likely to find results
-    // For science lessons, use broader but relevant terms
+    // Build topic-specific search queries based on subject and lesson title
+    const cleanTitle = lessonTitle.toLowerCase().trim();
     
-    // If the lesson is about balance/scales, use simple terms
-    if (lessonTitle.toLowerCase().includes('balance')) {
-      return `utiliser balance cours sciences français`;
-    } 
-    // For other science topics, use the main topic words
-    else {
-      const mainWords = lessonTitle.toLowerCase().split(' ').slice(0, 3).join(' ');
-      return `${mainWords} cours sciences français`;
-    }
+    // Determine subject term for search
+    const subjectTerm = subject === "mathematiques" ? "mathématiques" : 
+                        subject === "sciences" ? "sciences" : 
+                        subject === "francais" ? "français" : 
+                        subject;
+    
+    // Extract key words from title (remove articles)
+    const stopWords = ["les", "le", "la", "l'", "de", "du", "des", "et", "un", "une"];
+    const keywords = cleanTitle
+      .split(' ')
+      .filter(word => !stopWords.includes(word) && word.length > 2)
+      .slice(0, 4)
+      .join(' ');
+    
+    // Build query: topic keywords + cours + subject + français + grade level
+    return `${keywords} cours ${subjectTerm} français ${gradeLevel}`;
   };
 
   const searchVideos = async () => {

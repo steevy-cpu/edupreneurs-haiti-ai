@@ -679,6 +679,7 @@ const MathLesson = () => {
                     objectives={lessonData.objectif}
                     gradeLevel="AF7"
                     customYoutubeUrl={youtubeUrl || undefined}
+                    subject="mathematiques"
                   />
                 )}
 
