@@ -195,7 +195,7 @@ const MathLesson = () => {
   // Load notes and user gold from database on mount
   useEffect(() => {
     loadNotesFromDatabase();
-    loadUserGold();
+    loadUserGold(true); // Initial load - set baseline
     fetchYoutubeUrl();
   }, [topicId]);
 
@@ -217,7 +217,7 @@ const MathLesson = () => {
     }
   };
 
-  const loadUserGold = async () => {
+  const loadUserGold = async (isInitialLoad = false) => {
     try {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
@@ -231,7 +231,11 @@ const MathLesson = () => {
       if (data && !error) {
         const currentGold = data.gold_earned || 0;
         setUserGold(currentGold);
-        setSessionStartGold(currentGold);
+        
+        // Only set session start on initial load
+        if (isInitialLoad) {
+          setSessionStartGold(currentGold);
+        }
       }
     } catch (error) {
       console.error('Error loading user gold:', error);
