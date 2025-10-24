@@ -98,7 +98,53 @@ All colors MUST be HSL.
 
 @layer components {
   .gradient-text {
-    @apply bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent;
+    @apply bg-gradient-to-r from-primary via-secondary to-accent bg-clip-text text-transparent;
+  }
+
+  /* Lesson Content Styles */
+  .lesson-content {
+    @apply w-full;
+  }
+
+  .lesson-content section {
+    @apply transition-all duration-300 hover:shadow-lg;
+  }
+
+  .lesson-content h3 {
+    @apply text-xl sm:text-2xl font-bold mb-3 sm:mb-4;
+  }
+
+  .lesson-content h4 {
+    @apply text-lg sm:text-xl font-semibold mb-2;
+  }
+
+  .lesson-content p {
+    @apply text-sm sm:text-base leading-relaxed;
+  }
+
+  .lesson-content ul, .lesson-content ol {
+    @apply text-sm sm:text-base;
+  }
+
+  .lesson-content .font-mono {
+    @apply text-xs sm:text-sm md:text-base;
+  }
+
+  .lesson-content details summary {
+    @apply text-sm sm:text-base;
+  }
+
+  .lesson-content > div {
+    @apply w-full overflow-x-hidden;
+  }
+
+  /* Responsive card adjustments */
+  .lesson-card {
+    @apply transition-all duration-300;
+  }
+
+  .lesson-card:hover {
+    @apply shadow-xl scale-[1.01];
   }
 
   .gold-text {

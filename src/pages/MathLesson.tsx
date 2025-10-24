@@ -553,51 +553,54 @@ const MathLesson = () => {
         </div>
       </header>
 
-      <div className="container mx-auto px-4 py-6 max-w-7xl overflow-x-hidden">
+      <div className="container mx-auto px-3 sm:px-4 py-4 sm:py-6 max-w-7xl">
         {/* Page Title */}
-        <div className="flex items-center justify-between mb-6 overflow-x-hidden">
+        <div className="flex items-center justify-between mb-4 sm:mb-6">
           <div className="min-w-0 flex-1">
-            <h1 className="text-2xl font-bold mb-1 flex items-center gap-2 break-words">
-              <span className="text-3xl shrink-0">{currentTopic.icon}</span>
-              <span className="break-words">Mathématiques — {currentTopic.title}</span>
+            <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold mb-1 flex items-center gap-2">
+              <span className="text-2xl sm:text-3xl lg:text-4xl shrink-0">{currentTopic.icon}</span>
+              <span className="truncate">Mathématiques — {currentTopic.title}</span>
             </h1>
-            <p className="text-sm text-muted-foreground">AF7 — Aligné MENFP</p>
+            <p className="text-xs sm:text-sm text-muted-foreground">AF7 — Aligné MENFP</p>
           </div>
         </div>
 
-        <div className="grid lg:grid-cols-[1fr_350px] gap-6">
+        <div className="grid lg:grid-cols-[1fr_320px] xl:grid-cols-[1fr_350px] gap-4 sm:gap-6">
           {/* Main Content */}
-          <div className="space-y-4">
+          <div className="space-y-3 sm:space-y-4 min-w-0">
             <Tabs defaultValue="lesson" className="w-full">
-              <TabsList className="grid w-full grid-cols-3 mb-6">
-                <TabsTrigger value="lesson" className="gap-2">
-                  <Brain className="w-4 h-4" />
-                  Leçon
+              <TabsList className="grid w-full grid-cols-3 mb-4 sm:mb-6 h-auto">
+                <TabsTrigger value="lesson" className="gap-1 sm:gap-2 text-xs sm:text-sm py-2 sm:py-2.5">
+                  <Brain className="w-3 h-3 sm:w-4 sm:h-4" />
+                  <span className="hidden xs:inline">Leçon</span>
+                  <span className="xs:hidden">📚</span>
                 </TabsTrigger>
-                <TabsTrigger value="activities" className="gap-2">
-                  <Gamepad2 className="w-4 h-4" />
-                  Activités
+                <TabsTrigger value="activities" className="gap-1 sm:gap-2 text-xs sm:text-sm py-2 sm:py-2.5">
+                  <Gamepad2 className="w-3 h-3 sm:w-4 sm:h-4" />
+                  <span className="hidden xs:inline">Activités</span>
+                  <span className="xs:hidden">🎮</span>
                 </TabsTrigger>
-                <TabsTrigger value="quiz" className="gap-2">
-                  <Trophy className="w-4 h-4" />
-                  Quiz Final
+                <TabsTrigger value="quiz" className="gap-1 sm:gap-2 text-xs sm:text-sm py-2 sm:py-2.5">
+                  <Trophy className="w-3 h-3 sm:w-4 sm:h-4" />
+                  <span className="hidden xs:inline">Quiz</span>
+                  <span className="xs:hidden">🏆</span>
                 </TabsTrigger>
               </TabsList>
 
               {/* LESSON TAB */}
-              <TabsContent value="lesson" className="space-y-4">
+              <TabsContent value="lesson" className="space-y-3 sm:space-y-4 animate-fade-in">
                 {/* Objectif */}
-                <Card className="lesson-card border-none rounded-[20px] shadow-md bg-gradient-to-br from-primary/5 to-success/5">
-                  <CardHeader className="p-4 sm:p-6">
-                    <CardTitle className="flex items-center gap-2 text-lg sm:text-xl">
-                      <Target className="text-primary shrink-0" size={20} />
-                      🎯 Objectif de la leçon
+                <Card className="lesson-card border-none rounded-2xl sm:rounded-[20px] shadow-lg bg-gradient-to-br from-primary/5 via-success/5 to-primary/5 overflow-hidden">
+                  <CardHeader className="p-3 sm:p-4 md:p-6 bg-gradient-to-r from-primary/10 to-success/10">
+                    <CardTitle className="flex items-center gap-2 text-base sm:text-lg md:text-xl">
+                      <Target className="text-primary shrink-0" size={18} />
+                      <span className="text-lg sm:text-xl">🎯</span> Objectif de la leçon
                     </CardTitle>
                   </CardHeader>
-                   <CardContent className="p-4 sm:p-6 pt-0">
+                   <CardContent className="p-3 sm:p-4 md:p-6 pt-0 mt-3 sm:mt-4">
                     {lessonData.objectif ? (
-                      <div className="prose prose-sm sm:prose-base max-w-none dark:prose-invert overflow-x-hidden">
-                        <div className="whitespace-pre-wrap text-sm sm:text-base leading-relaxed bg-background/50 p-4 rounded-lg break-words">
+                      <div className="prose prose-sm sm:prose-base max-w-none dark:prose-invert">
+                        <div className="whitespace-pre-wrap text-sm sm:text-base leading-relaxed bg-background/50 p-3 sm:p-4 rounded-lg">
                           {lessonData.objectif}
                         </div>
                       </div>
@@ -608,16 +611,16 @@ const MathLesson = () => {
                 </Card>
 
                 {/* Introduction */}
-                <Card className="lesson-card border-none rounded-[20px] shadow-md bg-gradient-to-br from-accent/5 to-primary/5">
-                  <CardHeader className="p-4 sm:p-6">
-                    <CardTitle className="flex items-center gap-2 text-lg sm:text-xl">
-                      <Lightbulb className="text-primary shrink-0" size={20} />
-                      💡 Introduction
+                <Card className="lesson-card border-none rounded-2xl sm:rounded-[20px] shadow-lg bg-gradient-to-br from-accent/5 via-primary/5 to-accent/5 overflow-hidden">
+                  <CardHeader className="p-3 sm:p-4 md:p-6 bg-gradient-to-r from-accent/10 to-primary/10">
+                    <CardTitle className="flex items-center gap-2 text-base sm:text-lg md:text-xl">
+                      <Lightbulb className="text-primary shrink-0" size={18} />
+                      <span className="text-lg sm:text-xl">💡</span> Introduction
                     </CardTitle>
                   </CardHeader>
-                  <CardContent className="p-4 sm:p-6 pt-0">
+                  <CardContent className="p-3 sm:p-4 md:p-6 pt-0 mt-3 sm:mt-4">
                     {lessonData.introduction ? (
-                      <div className="prose prose-sm sm:prose-base max-w-none dark:prose-invert overflow-x-hidden">
+                      <div className="prose prose-sm sm:prose-base max-w-none dark:prose-invert lesson-content">
                         <div dangerouslySetInnerHTML={{ __html: lessonData.introduction }} />
                       </div>
                     ) : (
@@ -627,30 +630,35 @@ const MathLesson = () => {
                 </Card>
 
                 {/* Contenu de la leçon */}
-                <Card className="lesson-card border-none rounded-[20px] shadow-md">
-                  <CardHeader className="p-4 sm:p-6 bg-gradient-to-r from-primary/10 to-success/10 rounded-t-[20px]">
-                    <div className="flex items-center justify-between">
-                      <CardTitle className="flex items-center gap-2 text-lg sm:text-xl">
-                        <BookOpen className="text-primary shrink-0" size={20} />
-                        📚 Contenu de la leçon
+                <Card className="lesson-card border-none rounded-2xl sm:rounded-[20px] shadow-xl overflow-hidden">
+                  <CardHeader className="p-3 sm:p-4 md:p-6 bg-gradient-to-r from-primary/15 via-secondary/10 to-success/15 rounded-t-2xl sm:rounded-t-[20px]">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                      <CardTitle className="flex items-center gap-2 text-base sm:text-lg md:text-xl">
+                        <BookOpen className="text-primary shrink-0" size={18} />
+                        <span className="text-lg sm:text-xl">📚</span> Contenu de la leçon
                       </CardTitle>
                       <Button
                         variant="outline"
                         size="sm"
                         onClick={() => loadLesson(true)}
                         disabled={isLoadingActivites || isLoadingQuiz}
+                        className="w-full sm:w-auto text-xs"
                       >
-                        <RefreshCw className={`w-4 h-4 mr-2 ${(isLoadingActivites || isLoadingQuiz) ? 'animate-spin' : ''}`} />
-                        Régénérer activités
+                        <RefreshCw className={`w-3 h-3 sm:w-4 sm:h-4 mr-2 ${(isLoadingActivites || isLoadingQuiz) ? 'animate-spin' : ''}`} />
+                        <span className="hidden sm:inline">Régénérer activités</span>
+                        <span className="sm:hidden">Régénérer</span>
                       </Button>
                     </div>
                   </CardHeader>
-                  <CardContent className="p-4 sm:p-6 pt-6">
-                    <div className="prose prose-sm sm:prose-base max-w-none dark:prose-invert overflow-x-hidden">
+                  <CardContent className="p-3 sm:p-4 md:p-6 pt-4 sm:pt-6 bg-gradient-to-br from-background via-primary/[0.02] to-background">
+                    <div className="prose prose-sm sm:prose-base lg:prose-lg max-w-none dark:prose-invert lesson-content">
                       {lessonData.contenu ? (
-                        <div dangerouslySetInnerHTML={{ __html: lessonData.contenu }} />
+                        <div dangerouslySetInnerHTML={{ __html: lessonData.contenu }} className="animate-fade-in" />
                       ) : (
-                        <p className="text-muted-foreground">Chargement du contenu...</p>
+                        <div className="flex items-center justify-center py-8">
+                          <Loader2 className="w-6 h-6 animate-spin text-primary mr-2" />
+                          <p className="text-muted-foreground">Chargement du contenu...</p>
+                        </div>
                       )}
                     </div>
                   </CardContent>
@@ -668,15 +676,15 @@ const MathLesson = () => {
 
                 {/* Exemples d'exercices (Static) */}
                 {hasStaticContent && mathLessons[topicId!]?.exemplesExercices && (
-                  <Card className="lesson-card border-none rounded-[20px] shadow-md border-2 border-primary/20">
-                    <CardHeader className="p-4 sm:p-6 bg-gradient-to-r from-success/10 to-primary/10 rounded-t-[20px]">
-                      <CardTitle className="flex items-center gap-2 text-lg sm:text-xl">
-                        <Dumbbell className="text-primary shrink-0" size={20} />
-                        ✏️ Exemples d'exercices résolus
+                  <Card className="lesson-card border-none rounded-2xl sm:rounded-[20px] shadow-lg border-2 border-primary/20 overflow-hidden">
+                    <CardHeader className="p-3 sm:p-4 md:p-6 bg-gradient-to-r from-success/15 via-primary/10 to-success/15 rounded-t-2xl sm:rounded-t-[20px]">
+                      <CardTitle className="flex items-center gap-2 text-base sm:text-lg md:text-xl">
+                        <Dumbbell className="text-primary shrink-0" size={18} />
+                        <span className="text-lg sm:text-xl">✏️</span> Exemples d'exercices résolus
                       </CardTitle>
                     </CardHeader>
-                    <CardContent className="p-4 sm:p-6 pt-6">
-                      <div className="prose prose-sm sm:prose-base max-w-none dark:prose-invert overflow-x-hidden">
+                    <CardContent className="p-3 sm:p-4 md:p-6 pt-4 sm:pt-6">
+                      <div className="prose prose-sm sm:prose-base lg:prose-lg max-w-none dark:prose-invert lesson-content">
                         <div dangerouslySetInnerHTML={{ __html: mathLessons[topicId!].exemplesExercices }} />
                       </div>
                     </CardContent>
@@ -719,23 +727,23 @@ const MathLesson = () => {
           </div>
 
           {/* Sidebar */}
-          <div className="space-y-4">
+          <div className="space-y-3 sm:space-y-4">
             {/* Gold Progress */}
-            <Card className="lesson-card p-6 bg-gradient-to-br from-[hsl(var(--accent))]/10 to-[hsl(var(--primary))]/10">
+            <Card className="lesson-card p-4 sm:p-6 bg-gradient-to-br from-[hsl(var(--accent))]/10 via-[hsl(var(--primary))]/5 to-[hsl(var(--accent))]/10 shadow-lg">
               <div className="flex items-center justify-between mb-2">
-                <span className="text-sm font-medium">Gold gagné</span>
-                <Trophy className="w-5 h-5 text-[hsl(var(--accent))]" />
+                <span className="text-xs sm:text-sm font-medium">Gold gagné</span>
+                <Trophy className="w-4 h-4 sm:w-5 sm:h-5 text-[hsl(var(--accent))]" />
               </div>
-              <div className="text-3xl font-extrabold bg-gradient-to-r from-[hsl(var(--accent))] to-[hsl(25_100%_50%)] bg-clip-text text-transparent">
+              <div className="text-2xl sm:text-3xl font-extrabold bg-gradient-to-r from-[hsl(var(--accent))] to-[hsl(25_100%_50%)] bg-clip-text text-transparent animate-scale-in">
                 {earnedGold}
               </div>
               <p className="text-xs text-muted-foreground mt-1">Cette leçon: jusqu'à {currentTopic.goldReward} gold</p>
             </Card>
 
             {/* Notes */}
-            <Card className="lesson-card p-6">
+            <Card className="lesson-card p-4 sm:p-6 shadow-lg">
               <div className="flex items-center justify-between mb-3">
-                <h5 className="lesson-markdown-title">Mes Notes</h5>
+                <h5 className="text-sm sm:text-base font-semibold">📝 Mes Notes</h5>
                 {!notesSaved && (
                   <Badge variant="outline" className="text-xs">
                     Non sauvegardé
@@ -746,7 +754,7 @@ const MathLesson = () => {
                 placeholder="Prends des notes ici..."
                 value={notes}
                 onChange={(e) => handleNotesChange(e.target.value)}
-                className="min-h-[200px] mb-3 bg-background"
+                className="min-h-[150px] sm:min-h-[200px] mb-3 bg-background text-sm"
               />
               <div className="flex gap-2">
                 <Button
@@ -755,15 +763,15 @@ const MathLesson = () => {
                   size="sm"
                   disabled={notesSaved}
                 >
-                  <Save className="w-4 h-4 mr-2" />
-                  Sauvegarder
+                  <Save className="w-3 h-3 sm:w-4 sm:h-4 mr-2" />
+                  <span className="text-xs sm:text-sm">Sauvegarder</span>
                 </Button>
                 <Button
                   onClick={clearNotes}
                   variant="outline"
                   size="sm"
                 >
-                  <Trash2 className="w-4 h-4" />
+                  <Trash2 className="w-3 h-3 sm:w-4 sm:h-4" />
                 </Button>
               </div>
             </Card>
