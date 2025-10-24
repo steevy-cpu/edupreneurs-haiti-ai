@@ -476,15 +476,15 @@ export const InteractiveActivitiesEnhanced = ({
         const quizActivity = currentActivity as QuizActivity | FillInActivity;
         return (
           <>
-            <div className="p-6 bg-gradient-to-r from-primary/10 to-accent/10 rounded-lg border-2 border-primary/20">
-              <p className="text-lg font-medium leading-relaxed">
+            <div className="p-4 sm:p-6 bg-gradient-to-r from-primary/10 to-accent/10 rounded-lg border-2 border-primary/20">
+              <p className="text-base sm:text-lg font-medium leading-relaxed break-words">
                 {currentActivity.type === 'QUIZ' 
                   ? (quizActivity as QuizActivity).question 
                   : (quizActivity as FillInActivity).sentence}
               </p>
             </div>
 
-            <div className="grid gap-3">
+            <div className="grid gap-2 sm:gap-3">
               {quizActivity.options.map((option, index) => {
                 const isSelected = selectedAnswer === index;
                 const isCorrect = index === quizActivity.correctAnswer;
@@ -497,26 +497,26 @@ export const InteractiveActivitiesEnhanced = ({
                     onClick={() => !showFeedback && setSelectedAnswer(index)}
                     disabled={showFeedback}
                     className={`
-                      p-4 rounded-xl border-2 text-left transition-all duration-300
-                      ${!showFeedback ? 'hover:border-primary hover:bg-primary/5 hover:scale-[1.02]' : ''}
+                      p-3 sm:p-4 rounded-xl border-2 text-left transition-all duration-300 min-h-[60px] sm:min-h-[70px]
+                      ${!showFeedback ? 'hover:border-primary hover:bg-primary/5 active:scale-[0.98] sm:hover:scale-[1.02]' : ''}
                       ${isSelected && !showFeedback ? 'border-primary bg-primary/10' : 'border-muted'}
                       ${showCorrect ? 'border-success bg-success/10' : ''}
                       ${showIncorrect ? 'border-destructive bg-destructive/10' : ''}
                       ${showFeedback ? 'cursor-not-allowed' : 'cursor-pointer'}
                     `}
                   >
-                    <div className="flex items-center gap-3">
+                    <div className="flex items-center gap-2 sm:gap-3">
                       <div className={`
-                        w-8 h-8 rounded-full flex items-center justify-center font-bold
+                        w-7 h-7 sm:w-8 sm:h-8 rounded-full flex items-center justify-center font-bold text-sm flex-shrink-0
                         ${showCorrect ? 'bg-success text-white' : ''}
                         ${showIncorrect ? 'bg-destructive text-white' : ''}
                         ${!showFeedback ? 'bg-muted' : ''}
                       `}>
-                        {showCorrect && <CheckCircle className="w-5 h-5" />}
-                        {showIncorrect && <XCircle className="w-5 h-5" />}
+                        {showCorrect && <CheckCircle className="w-4 h-4 sm:w-5 sm:h-5" />}
+                        {showIncorrect && <XCircle className="w-4 h-4 sm:w-5 sm:h-5" />}
                         {!showFeedback && String.fromCharCode(65 + index)}
                       </div>
-                      <span className="flex-1">{option}</span>
+                      <span className="flex-1 text-sm sm:text-base break-words">{option}</span>
                     </div>
                   </button>
                 );
@@ -529,22 +529,23 @@ export const InteractiveActivitiesEnhanced = ({
         const matchingActivity = currentActivity as MatchingActivity;
         return (
           <>
-            <div className="p-6 bg-gradient-to-r from-primary/10 to-accent/10 rounded-lg border-2 border-primary/20 mb-4">
-              <p className="text-lg font-medium">{matchingActivity.instruction}</p>
+            <div className="p-4 sm:p-6 bg-gradient-to-r from-primary/10 to-accent/10 rounded-lg border-2 border-primary/20 mb-4">
+              <p className="text-base sm:text-lg font-medium break-words">{matchingActivity.instruction}</p>
             </div>
 
-            <div className="grid md:grid-cols-2 gap-6">
-              <div className="space-y-3">
-                <h3 className="font-semibold text-sm uppercase text-muted-foreground">Colonne A</h3>
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
+              <div className="space-y-2 sm:space-y-3">
+                <h3 className="font-semibold text-xs sm:text-sm uppercase text-muted-foreground sticky top-0 bg-background/95 backdrop-blur py-2 z-10">Colonne A</h3>
                 {matchingActivity.columnA.map((item) => (
-                  <div key={item.id} className="p-4 bg-accent/20 rounded-lg border-2 border-accent/40">
-                    <span className="font-bold text-primary">{item.id}.</span> {item.text}
+                  <div key={item.id} className="p-3 sm:p-4 bg-accent/20 rounded-lg border-2 border-accent/40 min-h-[60px] flex items-center">
+                    <span className="font-bold text-primary mr-2">{item.id}.</span> 
+                    <span className="text-sm sm:text-base break-words flex-1">{item.text}</span>
                   </div>
                 ))}
               </div>
 
-              <div className="space-y-3">
-                <h3 className="font-semibold text-sm uppercase text-muted-foreground">Colonne B</h3>
+              <div className="space-y-2 sm:space-y-3">
+                <h3 className="font-semibold text-xs sm:text-sm uppercase text-muted-foreground sticky top-0 bg-background/95 backdrop-blur py-2 z-10">Colonne B</h3>
                 {matchingActivity.columnB.map((item) => (
                   <button
                     key={item.id}
@@ -563,24 +564,25 @@ export const InteractiveActivitiesEnhanced = ({
                     }}
                     disabled={showFeedback}
                     className={`
-                      w-full p-4 rounded-lg border-2 text-left transition-all
-                      ${!showFeedback ? 'hover:border-primary hover:bg-primary/5' : ''}
+                      w-full p-3 sm:p-4 rounded-lg border-2 text-left transition-all min-h-[60px] flex items-center
+                      ${!showFeedback ? 'hover:border-primary hover:bg-primary/5 active:scale-[0.98]' : ''}
                       ${Object.values(selectedMatches).includes(item.id) ? 'border-primary bg-primary/10' : 'border-muted bg-background'}
                       ${showFeedback ? 'cursor-not-allowed' : 'cursor-pointer'}
                     `}
                   >
-                    <span className="font-bold text-primary">{item.id})</span> {item.text}
+                    <span className="font-bold text-primary mr-2">{item.id})</span> 
+                    <span className="text-sm sm:text-base break-words flex-1">{item.text}</span>
                   </button>
                 ))}
               </div>
             </div>
 
             {Object.keys(selectedMatches).length > 0 && !showFeedback && (
-              <div className="mt-4 p-4 bg-info/10 rounded-lg border border-info/30">
-                <p className="text-sm font-semibold mb-2">Associations actuelles:</p>
-                <div className="space-y-1">
+              <div className="mt-4 p-3 sm:p-4 bg-info/10 rounded-lg border border-info/30">
+                <p className="text-xs sm:text-sm font-semibold mb-2">Associations actuelles:</p>
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
                   {Object.entries(selectedMatches).map(([numId, letterId]) => (
-                    <p key={numId} className="text-sm">
+                    <p key={numId} className="text-xs sm:text-sm bg-background/50 p-2 rounded">
                       {numId} → {letterId}
                     </p>
                   ))}
@@ -594,11 +596,11 @@ export const InteractiveActivitiesEnhanced = ({
         const tfActivity = currentActivity as TrueFalseActivity;
         return (
           <>
-            <div className="p-6 bg-gradient-to-r from-primary/10 to-accent/10 rounded-lg border-2 border-primary/20">
-              <p className="text-lg font-medium leading-relaxed">{tfActivity.statement}</p>
+            <div className="p-4 sm:p-6 bg-gradient-to-r from-primary/10 to-accent/10 rounded-lg border-2 border-primary/20">
+              <p className="text-base sm:text-lg font-medium leading-relaxed break-words">{tfActivity.statement}</p>
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-2 gap-3 sm:gap-4">
               {['VRAI', 'FAUX'].map((label, index) => {
                 const isSelected = selectedAnswer === index;
                 const isCorrect = index === tfActivity.correctAnswer;
@@ -611,16 +613,16 @@ export const InteractiveActivitiesEnhanced = ({
                     onClick={() => !showFeedback && setSelectedAnswer(index)}
                     disabled={showFeedback}
                     className={`
-                      p-6 rounded-xl border-2 font-bold text-xl transition-all duration-300
-                      ${!showFeedback ? 'hover:border-primary hover:bg-primary/5 hover:scale-105' : ''}
+                      p-4 sm:p-6 rounded-xl border-2 font-bold text-lg sm:text-xl transition-all duration-300 min-h-[100px] sm:min-h-[120px] flex flex-col items-center justify-center
+                      ${!showFeedback ? 'hover:border-primary hover:bg-primary/5 active:scale-[0.98] sm:hover:scale-105' : ''}
                       ${isSelected && !showFeedback ? 'border-primary bg-primary/10' : 'border-muted'}
                       ${showCorrect ? 'border-success bg-success/10' : ''}
                       ${showIncorrect ? 'border-destructive bg-destructive/10' : ''}
                       ${showFeedback ? 'cursor-not-allowed' : 'cursor-pointer'}
                     `}
                   >
-                    {showCorrect && <CheckCircle className="w-6 h-6 mx-auto mb-2" />}
-                    {showIncorrect && <XCircle className="w-6 h-6 mx-auto mb-2" />}
+                    {showCorrect && <CheckCircle className="w-5 h-5 sm:w-6 sm:h-6 mb-2" />}
+                    {showIncorrect && <XCircle className="w-5 h-5 sm:w-6 sm:h-6 mb-2" />}
                     {label}
                   </button>
                 );
@@ -642,33 +644,37 @@ export const InteractiveActivitiesEnhanced = ({
   };
 
   return (
-    <Card className="lesson-card border-none rounded-[20px] shadow-lg border-2 border-accent/30">
-      <CardHeader className="p-6 bg-gradient-to-r from-accent/20 to-primary/20 rounded-t-[20px]">
+    <Card className="lesson-card border-none rounded-[20px] shadow-lg border-2 border-accent/30 max-w-4xl mx-auto">
+      <CardHeader className="p-4 sm:p-6 bg-gradient-to-r from-accent/20 to-primary/20 rounded-t-[20px]">
         <div className="space-y-3">
-          <div className="flex items-center justify-between">
-            <CardTitle className="flex items-center gap-2">
-              <Shuffle className="w-5 h-5" />
-              Activité {currentActivityIndex + 1}/{activities.length} — {currentActivity.title}
-              <span className="text-sm font-normal text-muted-foreground">
-                ({currentActivity.difficulty})
-              </span>
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+            <CardTitle className="flex items-start sm:items-center gap-2 text-sm sm:text-base">
+              <Shuffle className="w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0 mt-1 sm:mt-0" />
+              <div className="flex flex-col sm:flex-row sm:items-center sm:gap-2">
+                <span>Activité {currentActivityIndex + 1}/{activities.length}</span>
+                <span className="hidden sm:inline">—</span>
+                <span className="break-words">{currentActivity.title}</span>
+                <span className="text-xs sm:text-sm font-normal text-muted-foreground">
+                  ({currentActivity.difficulty})
+                </span>
+              </div>
             </CardTitle>
             {onRegenerate && (
-              <Button onClick={onRegenerate} variant="outline" size="sm">
-                <RefreshCw className="w-4 h-4 mr-2" />
-                Régénérer
+              <Button onClick={onRegenerate} variant="outline" size="sm" className="flex-shrink-0">
+                <RefreshCw className="w-3 h-3 sm:w-4 sm:h-4 mr-2" />
+                <span className="text-xs sm:text-sm">Régénérer</span>
               </Button>
             )}
           </div>
           <Progress value={progress} className="h-2" />
         </div>
       </CardHeader>
-      <CardContent className="p-6 space-y-6">
+      <CardContent className="p-4 sm:p-6 space-y-4 sm:space-y-6 overflow-x-hidden">
         {renderActivity()}
 
         {showFeedback && (
           <div className={`
-            p-6 rounded-lg border-2 animate-fade-in
+            p-4 sm:p-6 rounded-lg border-2 animate-fade-in
             ${selectedAnswer === (currentActivity as any).correctAnswer || 
               (currentActivity.type === 'MATCHING' && 
                Object.keys((currentActivity as MatchingActivity).correctMatches).every(
@@ -678,7 +684,7 @@ export const InteractiveActivitiesEnhanced = ({
               : 'bg-orange-50 dark:bg-orange-950/20 border-orange-300 dark:border-orange-700'
             }
           `}>
-            <p className="font-semibold mb-2">
+            <p className="font-semibold mb-2 text-sm sm:text-base">
               {(selectedAnswer === (currentActivity as any).correctAnswer || 
                 (currentActivity.type === 'MATCHING' && 
                  Object.keys((currentActivity as MatchingActivity).correctMatches).every(
@@ -687,7 +693,7 @@ export const InteractiveActivitiesEnhanced = ({
                 ? '✅ Correct!' 
                 : '📚 Explications:'}
             </p>
-            <p className="text-sm leading-relaxed">{currentActivity.explanation}</p>
+            <p className="text-xs sm:text-sm leading-relaxed break-words">{currentActivity.explanation}</p>
           </div>
         )}
 
@@ -695,7 +701,7 @@ export const InteractiveActivitiesEnhanced = ({
           <Button 
             onClick={handleAnswerSubmit}
             size="lg"
-            className="w-full"
+            className="w-full min-h-[48px] text-sm sm:text-base"
             disabled={!canSubmit()}
           >
             Vérifier
@@ -706,12 +712,12 @@ export const InteractiveActivitiesEnhanced = ({
           <Button 
             onClick={handleNext}
             size="lg"
-            className="w-full"
+            className="w-full min-h-[48px] text-sm sm:text-base"
           >
             {currentActivityIndex < activities.length - 1 ? (
-              <>Activité suivante <ArrowRight className="w-4 h-4 ml-2" /></>
+              <>Activité suivante <ArrowRight className="w-3 h-3 sm:w-4 sm:h-4 ml-2" /></>
             ) : (
-              <>Voir les résultats <CheckCircle className="w-4 h-4 ml-2" /></>
+              <>Voir les résultats <CheckCircle className="w-3 h-3 sm:w-4 sm:h-4 ml-2" /></>
             )}
           </Button>
         )}
