@@ -27,10 +27,12 @@ export const YouTubeManager = ({ lesson, onUpdate }: YouTubeManagerProps) => {
   const [isSaving, setIsSaving] = useState(false);
   const [searchVideos, setSearchVideos] = useState<YouTubeVideo[]>([]);
   const [isLoadingVideos, setIsLoadingVideos] = useState(false);
+  const [hiddenVideoIds, setHiddenVideoIds] = useState<Set<string>>(new Set());
 
   // Update local state when lesson changes
   useEffect(() => {
     setYoutubeUrl(lesson?.youtube_url || "");
+    setHiddenVideoIds(new Set()); // Reset hidden videos when lesson changes
     if (lesson?.title && lesson?.objectif) {
       searchYouTubeVideos();
     }
@@ -110,6 +112,13 @@ export const YouTubeManager = ({ lesson, onUpdate }: YouTubeManagerProps) => {
   };
 
   const videoId = extractVideoId(youtubeUrl);
+
+  const hideVideo = (videoId: string) => {
+    setHiddenVideoIds(prev => new Set([...prev, videoId]));
+    toast.success("Vidéo masquée de l'aperçu");
+  };
+
+  const visibleVideos = searchVideos.filter(video => !hiddenVideoIds.has(video.id));
 
   if (!lesson) {
     return (
@@ -255,14 +264,14 @@ export const YouTubeManager = ({ lesson, onUpdate }: YouTubeManagerProps) => {
                 <div className="flex items-center justify-center py-8">
                   <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
                 </div>
-              ) : searchVideos.length > 0 ? (
+              ) : visibleVideos.length > 0 ? (
                 <div className="space-y-3">
-                  {searchVideos.map((video) => (
+                  {visibleVideos.map((video) => (
                     <div
                       key={video.id}
                       className="rounded-lg overflow-hidden border bg-card"
                     >
-                      <div className="aspect-video bg-muted">
+                      <div className="aspect-video bg-muted relative group">
                         <iframe
                           src={`https://www.youtube.com/embed/${video.id}`}
                           title={video.title}
@@ -270,6 +279,15 @@ export const YouTubeManager = ({ lesson, onUpdate }: YouTubeManagerProps) => {
                           allowFullScreen
                           className="w-full h-full"
                         />
+                        <Button
+                          size="sm"
+                          variant="destructive"
+                          onClick={() => hideVideo(video.id)}
+                          className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity h-8 w-8 p-0"
+                          title="Masquer cette vidéo"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
                       </div>
                       <div className="p-3 bg-muted/30">
                         <h4 className="font-medium text-xs line-clamp-2 mb-1">
@@ -281,6 +299,20 @@ export const YouTubeManager = ({ lesson, onUpdate }: YouTubeManagerProps) => {
                       </div>
                     </div>
                   ))}
+                </div>
+              ) : searchVideos.length > 0 && visibleVideos.length === 0 ? (
+                <div className="text-center py-4 space-y-2">
+                  <p className="text-xs text-muted-foreground">
+                    Toutes les vidéos ont été masquées
+                  </p>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => setHiddenVideoIds(new Set())}
+                    className="text-xs"
+                  >
+                    Afficher toutes les vidéos
+                  </Button>
                 </div>
               ) : (
                 <p className="text-xs text-muted-foreground text-center py-4">
