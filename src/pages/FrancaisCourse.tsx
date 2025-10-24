@@ -16,7 +16,7 @@ import {
 import { useNavigate } from "react-router-dom";
 import { francaisLessons7AF } from "@/data/francaisLessons";
 import { supabase } from "@/integrations/supabase/client";
-import ericTeaching from "@/assets/eric-teaching.png";
+import ericTeaching from "@/assets/eric-chair-desk.avif";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { MusicSelector } from "@/components/MusicSelector";
 
