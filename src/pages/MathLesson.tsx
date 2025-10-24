@@ -697,6 +697,7 @@ const MathLesson = () => {
                 <InteractiveQuiz 
                   content={lessonData.quiz} 
                   isLoading={isLoadingQuiz}
+                  lessonGoldReward={currentTopic.goldReward}
                   onRegenerate={() => {
                     // Clear cache for quiz and regenerate
                     if (topicId) {

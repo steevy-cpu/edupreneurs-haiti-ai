@@ -1,8 +1,9 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useParams } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
-import { CheckCircle, XCircle, ArrowRight, Trophy, Loader2 } from "lucide-react";
+import { CheckCircle, XCircle, ArrowRight, Trophy, Loader2, RefreshCw } from "lucide-react";
 import { useSoundEffects } from "@/hooks/useSoundEffects";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -18,14 +19,17 @@ interface InteractiveQuizProps {
   content: string;
   isLoading: boolean;
   onRegenerate?: () => void;
+  lessonGoldReward?: number;
 }
 
-export const InteractiveQuiz = ({ content, isLoading, onRegenerate }: InteractiveQuizProps) => {
+export const InteractiveQuiz = ({ content, isLoading, onRegenerate, lessonGoldReward = 100 }: InteractiveQuizProps) => {
+  const { topicId } = useParams();
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [selectedAnswer, setSelectedAnswer] = useState<number | null>(null);
   const [showFeedback, setShowFeedback] = useState(false);
   const [score, setScore] = useState(0);
   const [completed, setCompleted] = useState(false);
+  const [isMarkingComplete, setIsMarkingComplete] = useState(false);
   const { playSound } = useSoundEffects();
   const { toast } = useToast();
 
@@ -198,7 +202,60 @@ export const InteractiveQuiz = ({ content, isLoading, onRegenerate }: Interactiv
     }
   };
 
-  const handleNext = () => {
+  const markLessonComplete = async (finalScore: number, totalQuestions: number) => {
+    if (!topicId) return;
+    
+    const percentage = Math.round((finalScore / totalQuestions) * 100);
+    
+    // Only mark as complete if 80% or higher
+    if (percentage < 80) return;
+    
+    setIsMarkingComplete(true);
+    
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      // Mark lesson as complete
+      await supabase
+        .from('lesson_completions')
+        .upsert({
+          user_id: user.id,
+          lesson_slug: topicId,
+          subject: 'mathematiques',
+          score: percentage,
+          completed_at: new Date().toISOString()
+        }, {
+          onConflict: 'user_id,lesson_slug'
+        });
+
+      // Award completion gold
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('gold_earned')
+        .eq('user_id', user.id)
+        .single();
+
+      if (profile) {
+        await supabase
+          .from('profiles')
+          .update({ gold_earned: (profile.gold_earned || 0) + lessonGoldReward })
+          .eq('user_id', user.id);
+
+        toast({
+          title: "🎉 Leçon complétée!",
+          description: `Tu as gagné ${lessonGoldReward} gold!`,
+          duration: 3000,
+        });
+      }
+    } catch (error) {
+      console.error('Error marking lesson complete:', error);
+    } finally {
+      setIsMarkingComplete(false);
+    }
+  };
+
+  const handleNext = async () => {
     playSound("next");
     setShowFeedback(false);
     setSelectedAnswer(null);
@@ -207,6 +264,8 @@ export const InteractiveQuiz = ({ content, isLoading, onRegenerate }: Interactiv
       setCurrentQuestionIndex(prev => prev + 1);
     } else {
       setCompleted(true);
+      // Mark lesson complete when quiz is finished
+      await markLessonComplete(score, questions.length);
     }
   };
 
@@ -228,9 +287,14 @@ export const InteractiveQuiz = ({ content, isLoading, onRegenerate }: Interactiv
               🏆 Quiz d'Évaluation Final
             </CardTitle>
             {onRegenerate && (
-              <Button onClick={onRegenerate} variant="ghost" size="sm">
-                <ArrowRight className="w-4 h-4 mr-2" />
-                Régénérer
+              <Button 
+                onClick={onRegenerate} 
+                variant="outline" 
+                size="sm"
+                className="gap-2 bg-gradient-to-r from-accent/10 to-primary/10 hover:from-accent/20 hover:to-primary/20 border-accent/30"
+              >
+                <RefreshCw className="w-3.5 h-3.5" />
+                <span className="text-xs font-semibold">Régénérer</span>
               </Button>
             )}
           </div>
@@ -247,7 +311,7 @@ export const InteractiveQuiz = ({ content, isLoading, onRegenerate }: Interactiv
 
   if (completed) {
     const percentage = Math.round((score / questions.length) * 100);
-    const passGrade = percentage >= 70;
+    const passGrade = percentage >= 80;
     
     return (
       <Card className={`
@@ -293,8 +357,11 @@ export const InteractiveQuiz = ({ content, isLoading, onRegenerate }: Interactiv
                   🌟 Félicitations! Tu as réussi l'examen!
                 </p>
                 <p className="mt-3 text-sm">
-                  Tu peux aller à la prochaine leçon!
+                  Leçon marquée comme complétée! +{lessonGoldReward} gold
                 </p>
+                {isMarkingComplete && (
+                  <Loader2 className="w-5 h-5 animate-spin mx-auto mt-2" />
+                )}
               </>
             ) : (
               <>
@@ -302,7 +369,7 @@ export const InteractiveQuiz = ({ content, isLoading, onRegenerate }: Interactiv
                   💪 Ne te décourage pas! Révise et réessaie!
                 </p>
                 <p className="mt-3 text-sm">
-                  Tu as besoin d'au moins 70% pour passer.
+                  Tu as besoin d'au moins 80% pour passer et compléter la leçon.
                 </p>
               </>
             )}
@@ -313,8 +380,9 @@ export const InteractiveQuiz = ({ content, isLoading, onRegenerate }: Interactiv
               onClick={handleRestart} 
               variant="outline"
               size="lg"
+              className="gap-2"
             >
-              <ArrowRight className="w-4 h-4 mr-2" />
+              <ArrowRight className="w-4 h-4" />
               Recommencer
             </Button>
             {onRegenerate && (
@@ -322,18 +390,20 @@ export const InteractiveQuiz = ({ content, isLoading, onRegenerate }: Interactiv
                 onClick={onRegenerate} 
                 variant="outline"
                 size="lg"
+                className="gap-2 bg-gradient-to-r from-accent/10 to-primary/10 hover:from-accent/20 hover:to-primary/20 border-accent/30"
               >
-                <ArrowRight className="w-4 h-4 mr-2" />
-                Nouveau quiz
+                <RefreshCw className="w-4 h-4" />
+                Régénérer le quiz
               </Button>
             )}
             {passGrade && (
               <Button 
                 size="lg"
                 onClick={() => window.location.href = '/math-course'}
+                className="gap-2 bg-gradient-to-r from-success to-primary hover:from-success/90 hover:to-primary/90"
               >
-                <Trophy className="w-4 h-4 mr-2" />
-                Prochaine leçon
+                <Trophy className="w-4 h-4" />
+                Retour aux leçons
               </Button>
             )}
           </div>
@@ -352,9 +422,14 @@ export const InteractiveQuiz = ({ content, isLoading, onRegenerate }: Interactiv
               <Trophy className="text-primary w-6 h-6" />
             </CardTitle>
             {onRegenerate && (
-              <Button onClick={onRegenerate} variant="ghost" size="sm">
-                <ArrowRight className="w-4 h-4 mr-2" />
-                Régénérer
+              <Button 
+                onClick={onRegenerate} 
+                variant="outline" 
+                size="sm"
+                className="gap-2 bg-gradient-to-r from-accent/10 to-primary/10 hover:from-accent/20 hover:to-primary/20 border-accent/30"
+              >
+                <RefreshCw className="w-3.5 h-3.5" />
+                <span className="text-xs font-semibold">Régénérer</span>
               </Button>
             )}
           </div>

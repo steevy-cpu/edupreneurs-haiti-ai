@@ -33,11 +33,13 @@ interface Topic {
 const MathCourse = () => {
   const navigate = useNavigate();
   const [userGold, setUserGold] = useState(0);
+  const [completedLessons, setCompletedLessons] = useState<Set<string>>(new Set());
 
   useEffect(() => {
-    const fetchUserGold = async () => {
+    const fetchUserData = async () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (user) {
+        // Fetch user gold
         const { data: profile } = await supabase
           .from('profiles')
           .select('gold_earned')
@@ -47,10 +49,21 @@ const MathCourse = () => {
         if (profile) {
           setUserGold(profile.gold_earned || 0);
         }
+
+        // Fetch completed lessons
+        const { data: completions } = await supabase
+          .from('lesson_completions')
+          .select('lesson_slug')
+          .eq('user_id', user.id)
+          .eq('subject', 'mathematiques');
+
+        if (completions) {
+          setCompletedLessons(new Set(completions.map(c => c.lesson_slug)));
+        }
       }
     };
 
-    fetchUserGold();
+    fetchUserData();
   }, []);
 
   // AF7 Mathematics Topics - MENFP Program (Chronological Order)
@@ -323,14 +336,17 @@ const MathCourse = () => {
 
         {/* Topics Grid */}
         <div className="grid sm:grid-cols-2 gap-4 sm:gap-6">
-          {topics.map((topic) => (
+          {topics.map((topic) => {
+            const isCompleted = completedLessons.has(topic.id);
+            
+            return (
             <Card 
               key={topic.id}
               className={`p-4 sm:p-6 transition-all ${
                 topic.isLocked 
                   ? 'opacity-60 cursor-not-allowed' 
                   : 'hover:shadow-lg cursor-pointer hover:-translate-y-1'
-              }`}
+              } ${isCompleted ? 'border-2 border-success/40 bg-success/5' : ''}`}
               onClick={() => !topic.isLocked && navigate(`/math-lesson/${topic.id}`)}
             >
               <div className="flex items-start gap-3 sm:gap-4">
@@ -339,7 +355,7 @@ const MathCourse = () => {
                   <div className="flex items-center gap-2 mb-2 flex-wrap">
                     <h3 className="text-lg sm:text-xl font-bold">{topic.title}</h3>
                     {topic.isLocked && <Lock className="w-3 h-3 sm:w-4 sm:h-4 text-muted-foreground shrink-0" />}
-                    {topic.isCompleted && <CheckCircle className="w-4 h-4 sm:w-5 sm:h-5 text-success shrink-0" />}
+                    {isCompleted && <CheckCircle className="w-4 h-4 sm:w-5 sm:h-5 text-success shrink-0" />}
                   </div>
                   <p className="text-xs sm:text-sm text-muted-foreground mb-3 sm:mb-4">
                     {topic.description}
@@ -376,18 +392,20 @@ const MathCourse = () => {
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
                       <Trophy className="w-4 h-4 text-accent" />
-                      <span className="text-sm font-bold gold-text">+{topic.goldReward} gold</span>
+                      <span className="text-sm font-bold gold-text">
+                        {isCompleted ? '✓ Complété' : `+${topic.goldReward} gold`}
+                      </span>
                     </div>
                     {!topic.isLocked && (
                       <Button size="sm">
-                        {topic.progress > 0 ? 'Continuer' : 'Commencer'}
+                        {isCompleted ? 'Revoir' : topic.progress > 0 ? 'Continuer' : 'Commencer'}
                       </Button>
                     )}
                   </div>
                 </div>
               </div>
             </Card>
-          ))}
+          )})}
         </div>
 
         {/* Progress Summary */}
@@ -399,9 +417,9 @@ const MathCourse = () => {
             </div>
             <div className="text-center">
               <div className="text-4xl font-bold gradient-text mb-1">
-                {Math.round(topics.reduce((acc, t) => acc + t.progress, 0) / topics.length)}%
+                {Math.round((completedLessons.size / topics.length) * 100)}%
               </div>
-              <p className="text-sm text-muted-foreground">Complété</p>
+              <p className="text-sm text-muted-foreground">{completedLessons.size}/{topics.length} complétées</p>
             </div>
           </div>
         </Card>

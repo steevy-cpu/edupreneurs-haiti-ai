@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
-import { CheckCircle, XCircle, ArrowRight, Loader2 } from "lucide-react";
+import { CheckCircle, XCircle, ArrowRight, Loader2, RefreshCw } from "lucide-react";
 import { useSoundEffects } from "@/hooks/useSoundEffects";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -217,9 +217,14 @@ export const InteractiveActivities = ({ content, isLoading, onRegenerate }: Inte
               🎯 Activités Pratiques Interactives
             </CardTitle>
             {onRegenerate && (
-              <Button onClick={onRegenerate} variant="ghost" size="sm">
-                <ArrowRight className="w-4 h-4 mr-2" />
-                Régénérer
+              <Button 
+                onClick={onRegenerate} 
+                variant="outline" 
+                size="sm"
+                className="gap-2 bg-gradient-to-r from-accent/10 to-primary/10 hover:from-accent/20 hover:to-primary/20 border-accent/30"
+              >
+                <RefreshCw className="w-3.5 h-3.5" />
+                <span className="text-xs font-semibold">Régénérer</span>
               </Button>
             )}
           </div>
@@ -274,16 +279,19 @@ export const InteractiveActivities = ({ content, isLoading, onRegenerate }: Inte
               onClick={handleRestart} 
               size="lg"
               variant="outline"
+              className="gap-2"
             >
-              <ArrowRight className="w-4 h-4 mr-2" />
+              <ArrowRight className="w-4 h-4" />
               Recommencer
             </Button>
             {onRegenerate && (
               <Button 
                 onClick={onRegenerate} 
                 size="lg"
+                className="gap-2 bg-gradient-to-r from-accent/10 to-primary/10 hover:from-accent/20 hover:to-primary/20 border-accent/30"
+                variant="outline"
               >
-                <ArrowRight className="w-4 h-4 mr-2" />
+                <RefreshCw className="w-4 h-4" />
                 Nouvelles activités
               </Button>
             )}
@@ -302,9 +310,14 @@ export const InteractiveActivities = ({ content, isLoading, onRegenerate }: Inte
               🎯 Activité {currentQuestionIndex + 1} sur {questions.length}
             </CardTitle>
             {onRegenerate && (
-              <Button onClick={onRegenerate} variant="ghost" size="sm">
-                <ArrowRight className="w-4 h-4 mr-2" />
-                Régénérer
+              <Button 
+                onClick={onRegenerate} 
+                variant="outline" 
+                size="sm"
+                className="gap-2 bg-gradient-to-r from-accent/10 to-primary/10 hover:from-accent/20 hover:to-primary/20 border-accent/30"
+              >
+                <RefreshCw className="w-3.5 h-3.5" />
+                <span className="text-xs font-semibold">Régénérer</span>
               </Button>
             )}
           </div>
