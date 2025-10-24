@@ -141,14 +141,14 @@ export const LessonComments = ({ lesson }: LessonCommentsProps) => {
   }
 
   return (
-    <Card className="flex flex-col h-full">
+    <Card className="h-[400px] max-h-[400px] flex flex-col">
       <CardHeader className="flex-shrink-0">
         <CardTitle className="flex items-center gap-2">
           <MessageSquare className="h-5 w-5" />
           Commentaires ({comments.length})
         </CardTitle>
       </CardHeader>
-      <CardContent className="flex-1 flex flex-col gap-4 overflow-hidden">
+      <CardContent className="flex-1 flex flex-col gap-4 overflow-hidden p-4">
         <div className="flex-1 overflow-auto space-y-4">
           {comments.length === 0 ? (
             <p className="text-center text-muted-foreground py-8">

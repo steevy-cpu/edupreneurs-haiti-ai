@@ -75,14 +75,14 @@ export const YouTubeManager = ({ lesson, onUpdate }: YouTubeManagerProps) => {
   };
 
   return (
-    <Card>
-      <CardHeader>
+    <Card className="h-[400px] max-h-[400px] flex flex-col">
+      <CardHeader className="flex-shrink-0">
         <CardTitle className="flex items-center gap-2">
           <Youtube className="h-5 w-5 text-red-500" />
           Vidéo YouTube
         </CardTitle>
       </CardHeader>
-      <CardContent className="space-y-4">
+      <CardContent className="flex-1 overflow-auto space-y-4">
         <div className="space-y-2">
           <Label htmlFor="youtube-url">URL de la vidéo</Label>
           <Input

@@ -19,7 +19,7 @@ export const LessonReview = ({ lesson }: LessonReviewProps) => {
   }
 
   return (
-    <Card className="h-full overflow-hidden flex flex-col">
+    <Card className="h-[600px] max-h-[600px] overflow-hidden flex flex-col">
       <CardHeader className="flex-shrink-0 border-b bg-muted/20">
         <div className="flex items-start justify-between gap-4">
           <div className="flex-1">

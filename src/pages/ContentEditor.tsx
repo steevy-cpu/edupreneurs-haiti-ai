@@ -90,10 +90,10 @@ const ContentEditor = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background to-muted/20 p-4 md:p-6">
-      <div className="max-w-[1600px] mx-auto space-y-6">
+    <div className="min-h-screen bg-gradient-to-br from-background to-muted/20 p-4 md:p-6 lg:p-8">
+      <div className="max-w-[1920px] mx-auto space-y-6">
         {/* Header */}
-        <div>
+        <div className="max-w-[1600px] mx-auto">
           <Button
             variant="ghost"
             onClick={() => navigate("/dashboard")}
@@ -104,12 +104,12 @@ const ContentEditor = () => {
           </Button>
           
           <Card className="bg-gradient-to-r from-primary/10 to-purple-500/10 border-none">
-            <CardHeader>
-              <CardTitle className="text-2xl md:text-3xl flex items-center gap-3">
-                <BookOpen className="text-primary" />
+            <CardHeader className="p-6 md:p-8">
+              <CardTitle className="text-2xl md:text-3xl lg:text-4xl flex items-center gap-3">
+                <BookOpen className="text-primary h-8 w-8" />
                 Révision des Leçons
               </CardTitle>
-              <p className="text-sm text-muted-foreground">
+              <p className="text-sm md:text-base text-muted-foreground mt-2">
                 Révisez le contenu, ajoutez des vidéos YouTube et laissez des commentaires
               </p>
             </CardHeader>
@@ -117,9 +117,9 @@ const ContentEditor = () => {
         </div>
 
         {/* Main Content */}
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 max-w-[1600px] mx-auto">
           {/* Lesson Browser - Left Sidebar */}
-          <div className="lg:col-span-1 h-[calc(100vh-300px)] min-h-[600px]">
+          <div className="lg:col-span-3 h-[calc(100vh-280px)] min-h-[600px] max-h-[800px]">
             <LessonBrowser
               onSelectLesson={setSelectedLesson}
               selectedLesson={selectedLesson}
@@ -127,7 +127,7 @@ const ContentEditor = () => {
           </div>
 
           {/* Content - Right Column */}
-          <div className="lg:col-span-3 space-y-6">
+          <div className="lg:col-span-9 space-y-6">
             {/* Lesson Review */}
             <LessonReview lesson={selectedLesson} />
 
