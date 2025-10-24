@@ -26,7 +26,38 @@ export const InteractiveActivities = ({ content, isLoading, onRegenerate }: Inte
   const [showFeedback, setShowFeedback] = useState(false);
   const [score, setScore] = useState(0);
   const [completed, setCompleted] = useState(false);
+  const [isLessonCompleted, setIsLessonCompleted] = useState(false);
   const { playSound } = useSoundEffects();
+  const { toast } = useToast();
+
+  // Check if lesson is already completed
+  useEffect(() => {
+    const checkCompletion = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      // Try to determine lesson info from URL
+      const pathParts = window.location.pathname.split('/');
+      const lessonSlug = pathParts[pathParts.length - 1];
+      const subject = 'mathematiques';
+
+      if (!lessonSlug) return;
+
+      const { data } = await supabase
+        .from('lesson_completions')
+        .select('*')
+        .eq('user_id', user.id)
+        .eq('lesson_slug', lessonSlug)
+        .eq('subject', subject)
+        .maybeSingle();
+
+      if (data) {
+        setIsLessonCompleted(true);
+      }
+    };
+
+    checkCompletion();
+  }, []);
 
   // Parse AI-generated content into structured questions
   const parseQuestions = (content: string): Question[] => {
@@ -142,9 +173,10 @@ export const InteractiveActivities = ({ content, isLoading, onRegenerate }: Inte
     );
   }
 
-  const { toast } = useToast();
-
   const awardGold = async () => {
+    // Don't award gold if lesson is already completed
+    if (isLessonCompleted) return;
+
     try {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
@@ -178,12 +210,21 @@ export const InteractiveActivities = ({ content, isLoading, onRegenerate }: Inte
     
     if (isCorrect) {
       setScore(prev => prev + 1);
-      await awardGold();
-      toast({
-        title: "🎉 +1 Gold!",
-        description: "Bonne réponse!",
-        duration: 2000,
-      });
+      
+      if (!isLessonCompleted) {
+        await awardGold();
+        toast({
+          title: "🎉 +1 Gold!",
+          description: "Bonne réponse!",
+          duration: 2000,
+        });
+      } else {
+        toast({
+          title: "✅ Bonne réponse!",
+          description: "Leçon déjà complétée - pas de points supplémentaires",
+          duration: 2000,
+        });
+      }
     }
   };
 

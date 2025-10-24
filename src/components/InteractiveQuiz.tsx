@@ -30,10 +30,38 @@ export const InteractiveQuiz = ({ content, isLoading, onRegenerate, lessonGoldRe
   const [score, setScore] = useState(0);
   const [completed, setCompleted] = useState(false);
   const [isMarkingComplete, setIsMarkingComplete] = useState(false);
+  const [isLessonCompleted, setIsLessonCompleted] = useState(false);
   const { playSound } = useSoundEffects();
   const { toast } = useToast();
 
+  // Check if lesson is already completed
+  useEffect(() => {
+    const checkCompletion = async () => {
+      if (!topicId) return;
+      
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      const { data } = await supabase
+        .from('lesson_completions')
+        .select('*')
+        .eq('user_id', user.id)
+        .eq('lesson_slug', topicId)
+        .eq('subject', 'mathematiques')
+        .maybeSingle();
+
+      if (data) {
+        setIsLessonCompleted(true);
+      }
+    };
+
+    checkCompletion();
+  }, [topicId]);
+
   const awardGold = async () => {
+    // Don't award gold if lesson is already completed
+    if (isLessonCompleted) return;
+
     try {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
@@ -193,17 +221,26 @@ export const InteractiveQuiz = ({ content, isLoading, onRegenerate, lessonGoldRe
     
     if (isCorrect) {
       setScore(prev => prev + 1);
-      await awardGold();
-      toast({
-        title: "🎉 +1 Gold!",
-        description: "Bonne réponse!",
-        duration: 2000,
-      });
+      
+      if (!isLessonCompleted) {
+        await awardGold();
+        toast({
+          title: "🎉 +1 Gold!",
+          description: "Bonne réponse!",
+          duration: 2000,
+        });
+      } else {
+        toast({
+          title: "✅ Bonne réponse!",
+          description: "Leçon déjà complétée - pas de points supplémentaires",
+          duration: 2000,
+        });
+      }
     }
   };
 
   const markLessonComplete = async (finalScore: number, totalQuestions: number) => {
-    if (!topicId) return;
+    if (!topicId || isLessonCompleted) return;
     
     const percentage = Math.round((finalScore / totalQuestions) * 100);
     
@@ -229,7 +266,9 @@ export const InteractiveQuiz = ({ content, isLoading, onRegenerate, lessonGoldRe
           onConflict: 'user_id,lesson_slug'
         });
 
-      // Award completion gold
+      setIsLessonCompleted(true);
+
+      // Award completion gold only if not already completed
       const { data: profile } = await supabase
         .from('profiles')
         .select('gold_earned')
@@ -342,6 +381,11 @@ export const InteractiveQuiz = ({ content, isLoading, onRegenerate, lessonGoldRe
             <p className="text-xl font-semibold">
               {score} / {questions.length} bonnes réponses
             </p>
+            {isLessonCompleted && (
+              <p className="text-sm text-amber-600 dark:text-amber-400 mt-2">
+                ✅ Cette leçon est déjà complétée
+              </p>
+            )}
           </div>
           
           <div className={`
