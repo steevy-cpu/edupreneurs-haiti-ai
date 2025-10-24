@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -15,6 +15,29 @@ interface YouTubeManagerProps {
 export const YouTubeManager = ({ lesson, onUpdate }: YouTubeManagerProps) => {
   const [youtubeUrl, setYoutubeUrl] = useState(lesson?.youtube_url || "");
   const [isSaving, setIsSaving] = useState(false);
+
+  // Update local state when lesson changes
+  useEffect(() => {
+    setYoutubeUrl(lesson?.youtube_url || "");
+  }, [lesson?.id, lesson?.youtube_url]);
+
+  const extractVideoId = (url: string) => {
+    if (!url) return null;
+    const patterns = [
+      /(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([^&\s]+)/,
+      /youtube\.com\/shorts\/([^&\s]+)/,
+    ];
+    
+    for (const pattern of patterns) {
+      const match = url.match(pattern);
+      if (match && match[1]) return match[1];
+    }
+    
+    if (/^[a-zA-Z0-9_-]{11}$/.test(url)) return url;
+    return null;
+  };
+
+  const videoId = extractVideoId(youtubeUrl);
 
   if (!lesson) {
     return (
@@ -96,6 +119,24 @@ export const YouTubeManager = ({ lesson, onUpdate }: YouTubeManagerProps) => {
             Collez l'URL complète ou le lien de partage YouTube
           </p>
         </div>
+
+        {/* Video Preview */}
+        {videoId && (
+          <div className="rounded-lg overflow-hidden border border-primary/20">
+            <div className="aspect-video bg-muted">
+              <iframe
+                src={`https://www.youtube.com/embed/${videoId}`}
+                title="Aperçu de la vidéo"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                allowFullScreen
+                className="w-full h-full"
+              />
+            </div>
+            <div className="p-2 bg-primary/5 text-xs text-center text-muted-foreground">
+              Aperçu de la vidéo
+            </div>
+          </div>
+        )}
 
         <div className="flex gap-2">
           <Button 
