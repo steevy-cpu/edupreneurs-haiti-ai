@@ -124,14 +124,29 @@ export const LessonPreview = ({ lesson }: LessonPreviewProps) => {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <a 
-              href={lesson.youtube_url} 
-              target="_blank" 
-              rel="noopener noreferrer"
-              className="text-primary hover:underline font-medium"
-            >
-              {lesson.youtube_url}
-            </a>
+            <div className="space-y-4">
+              {lesson.youtube_url.includes('youtube.com') || lesson.youtube_url.includes('youtu.be') ? (
+                <div className="aspect-video w-full">
+                  <iframe
+                    className="w-full h-full rounded-lg"
+                    src={lesson.youtube_url.replace('watch?v=', 'embed/').replace('youtu.be/', 'youtube.com/embed/')}
+                    title="YouTube video"
+                    frameBorder="0"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                    allowFullScreen
+                  />
+                </div>
+              ) : (
+                <a 
+                  href={lesson.youtube_url} 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="text-primary hover:underline font-medium block"
+                >
+                  {lesson.youtube_url}
+                </a>
+              )}
+            </div>
           </CardContent>
         </Card>
       )}
