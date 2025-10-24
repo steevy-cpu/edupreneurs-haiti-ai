@@ -19,7 +19,7 @@ export const LessonReview = ({ lesson }: LessonReviewProps) => {
   }
 
   return (
-    <Card className="h-[600px] max-h-[600px] overflow-hidden flex flex-col">
+    <Card className="overflow-hidden flex flex-col">
       <CardHeader className="flex-shrink-0 border-b bg-muted/20">
         <div className="flex items-start justify-between gap-4">
           <div className="flex-1">
@@ -38,8 +38,8 @@ export const LessonReview = ({ lesson }: LessonReviewProps) => {
           </div>
         </div>
       </CardHeader>
-      <CardContent className="flex-1 overflow-auto p-6">
-        <div className="prose prose-sm max-w-none dark:prose-invert">
+      <CardContent className="p-6">
+        <div className="prose prose-sm lg:prose-base max-w-none dark:prose-invert">
           {lesson.introduction && (
             <div className="mb-6">
               <div dangerouslySetInnerHTML={{ __html: lesson.introduction }} />
