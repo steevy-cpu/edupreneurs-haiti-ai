@@ -91,7 +91,7 @@ const ContentEditor = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background to-muted/20 p-4 md:p-6">
-      <div className="max-w-7xl mx-auto space-y-6">
+      <div className="max-w-[1600px] mx-auto space-y-6">
         {/* Header */}
         <div>
           <Button
@@ -117,9 +117,9 @@ const ContentEditor = () => {
         </div>
 
         {/* Main Content */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Lesson Browser - Left Column */}
-          <div className="lg:col-span-1">
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+          {/* Lesson Browser - Left Sidebar */}
+          <div className="lg:col-span-1 h-[calc(100vh-300px)] min-h-[600px]">
             <LessonBrowser
               onSelectLesson={setSelectedLesson}
               selectedLesson={selectedLesson}
@@ -127,12 +127,12 @@ const ContentEditor = () => {
           </div>
 
           {/* Content - Right Column */}
-          <div className="lg:col-span-2 space-y-6">
+          <div className="lg:col-span-3 space-y-6">
             {/* Lesson Review */}
             <LessonReview lesson={selectedLesson} />
 
             {/* YouTube Manager and Comments */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
               <YouTubeManager 
                 lesson={selectedLesson}
                 onUpdate={refreshLesson}
