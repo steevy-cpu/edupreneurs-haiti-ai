@@ -40,40 +40,72 @@ ${greetingInstruction}
 SUJET DE LA LEÇON: "${lessonTopic}"
 
 INSTRUCTIONS CRITIQUES - FORMAT EXACT À SUIVRE:
-Tu dois générer EXACTEMENT 4 activités variées sur ce sujet. Utilise ce format EXACT:
+Tu dois générer EXACTEMENT 4 activités variées sur ce sujet. Utilise ce format EXACT avec les séparateurs --- :
 
-===ACTIVITÉ 1: QUIZ===
-Question: [Question sur ${lessonTopic}]
-A) [Option]
-B) [Option]
-C) [Option]
-D) [Option]
-Réponse: [Lettre de la bonne réponse]
+---
+## Exercice 1 — Compréhension (Facile)
+TYPE: QUIZ
+Quelle est la définition de [concept]?
+A) Option incorrecte
+B) Option correcte
+C) Option incorrecte
+D) Option incorrecte
 
-===ACTIVITÉ 2: MATCHING===
-Associe les éléments:
-1. [Élément] -> [Réponse]
-2. [Élément] -> [Réponse]
-3. [Élément] -> [Réponse]
-4. [Élément] -> [Réponse]
+Réponse correcte: B
+Explication:
+L'option B est correcte car [raison].
+---
 
-===ACTIVITÉ 3: TRUEFALSE===
-Vrai ou Faux:
-1. [Affirmation] (Vrai/Faux)
-2. [Affirmation] (Vrai/Faux)
-3. [Affirmation] (Vrai/Faux)
-4. [Affirmation] (Vrai/Faux)
+## Exercice 2 — Association (Moyen)
+TYPE: MATCHING
+Associe chaque élément de la colonne A avec son correspondant dans la colonne B.
 
-===ACTIVITÉ 4: FILLIN===
-Complète les phrases:
-1. [Phrase avec _____ à compléter] (Réponse: [mot])
-2. [Phrase avec _____ à compléter] (Réponse: [mot])
-3. [Phrase avec _____ à compléter] (Réponse: [mot])
+COLONNE A:
+1. [Élément 1]
+2. [Élément 2]
+3. [Élément 3]
+4. [Élément 4]
+
+COLONNE B:
+A) [Correspondant A]
+B) [Correspondant B]
+C) [Correspondant C]
+D) [Correspondant D]
+
+Réponse correcte: 1-B, 2-D, 3-A, 4-C
+Explication:
+[Explication des associations correctes]
+---
+
+## Exercice 3 — Vrai ou Faux (Facile)
+TYPE: TRUEFALSE
+[Affirmation à évaluer]
+A) Vrai
+B) Faux
+
+Réponse correcte: A
+Explication:
+C'est vrai car [raison].
+---
+
+## Exercice 4 — Complète (Moyen)
+TYPE: FILLIN
+La phrase suivante: [phrase avec un blanc] _____.
+A) mot incorrect
+B) mot incorrect
+C) mot correct
+D) mot incorrect
+
+Réponse correcte: C
+Explication:
+Le mot correct est [mot] car [raison].
+---
 
 IMPORTANT:
-- Utilise EXACTEMENT ces en-têtes avec ===
-- Chaque activité doit être sur "${lessonTopic}"
-- Adapte le contenu au niveau AF7
+- Utilise EXACTEMENT ce format avec les séparateurs ---
+- Chaque exercice doit avoir le format "## Exercice X — [Titre] ([Difficulté])"
+- Les difficultés: Facile, Moyen, Difficile
+- Adapte le contenu au niveau AF7 et au sujet "${lessonTopic}"
 - Reste précis et éducatif`;
 
     } else if (lessonType === 'quiz') {
@@ -86,17 +118,23 @@ SUJET DU QUIZ: "${lessonTopic}"
 Génère un quiz d'évaluation de 5 questions sur ce sujet.
 
 FORMAT EXACT À SUIVRE:
-Question 1: [Question sur ${lessonTopic}]
+
+## ✅ Question 1
+[Question sur ${lessonTopic}]
 A) [Option]
 B) [Option]
 C) [Option]
 D) [Option]
-Réponse correcte: [Lettre]
-Explication: [Courte explication]
 
-[Répète pour 5 questions]
+### Réponse correcte: [A/B/C/D]
+### Explication:
+[Courte explication]
+
+[Répète pour 5 questions avec "## ✅ Question 2", etc.]
 
 IMPORTANT:
+- Utilise exactement "## ✅ Question X" pour chaque question
+- Utilise "### Réponse correcte:" et "### Explication:"
 - Questions progressives en difficulté
 - Couvre différents aspects de "${lessonTopic}"
 - Niveau AF7 (7ème année fondamentale)
