@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { ArrowLeft, BookOpen } from "lucide-react";
 import { LessonBrowser } from "@/components/content-editor/LessonBrowser";
-import { LessonReview } from "@/components/content-editor/LessonReview";
+import { LessonPreview } from "@/components/content-editor/LessonPreview";
 import { YouTubeManager } from "@/components/content-editor/YouTubeManager";
 import { LessonComments } from "@/components/content-editor/LessonComments";
 
@@ -128,8 +128,8 @@ const ContentEditor = () => {
 
           {/* Content - Right Column */}
           <div className="lg:col-span-8 space-y-6">
-            {/* Lesson Review */}
-            <LessonReview lesson={selectedLesson} />
+            {/* Lesson Preview - Student View */}
+            <LessonPreview lesson={selectedLesson} />
 
             {/* YouTube Manager and Comments */}
             <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
