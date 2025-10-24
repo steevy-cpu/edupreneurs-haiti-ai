@@ -570,20 +570,17 @@ const MathLesson = () => {
           <div className="space-y-3 sm:space-y-4 min-w-0">
             <Tabs defaultValue="lesson" className="w-full">
               <TabsList className="grid w-full grid-cols-3 mb-4 sm:mb-6 h-auto">
-                <TabsTrigger value="lesson" className="gap-1 sm:gap-2 text-xs sm:text-sm py-2 sm:py-2.5">
-                  <Brain className="w-3 h-3 sm:w-4 sm:h-4" />
-                  <span className="hidden xs:inline">Leçon</span>
-                  <span className="xs:hidden">📚</span>
+                <TabsTrigger value="lesson" className="gap-1.5 sm:gap-2 py-2.5 sm:py-3">
+                  <Brain className="w-4 h-4 sm:w-5 sm:h-5 shrink-0" />
+                  <span className="text-[10px] xs:text-xs sm:text-sm md:text-base font-medium">Leçon</span>
                 </TabsTrigger>
-                <TabsTrigger value="activities" className="gap-1 sm:gap-2 text-xs sm:text-sm py-2 sm:py-2.5">
-                  <Gamepad2 className="w-3 h-3 sm:w-4 sm:h-4" />
-                  <span className="hidden xs:inline">Activités</span>
-                  <span className="xs:hidden">🎮</span>
+                <TabsTrigger value="activities" className="gap-1.5 sm:gap-2 py-2.5 sm:py-3">
+                  <Gamepad2 className="w-4 h-4 sm:w-5 sm:h-5 shrink-0" />
+                  <span className="text-[10px] xs:text-xs sm:text-sm md:text-base font-medium">Activités</span>
                 </TabsTrigger>
-                <TabsTrigger value="quiz" className="gap-1 sm:gap-2 text-xs sm:text-sm py-2 sm:py-2.5">
-                  <Trophy className="w-3 h-3 sm:w-4 sm:h-4" />
-                  <span className="hidden xs:inline">Quiz</span>
-                  <span className="xs:hidden">🏆</span>
+                <TabsTrigger value="quiz" className="gap-1.5 sm:gap-2 py-2.5 sm:py-3">
+                  <Trophy className="w-4 h-4 sm:w-5 sm:h-5 shrink-0" />
+                  <span className="text-[10px] xs:text-xs sm:text-sm md:text-base font-medium">Quiz Final</span>
                 </TabsTrigger>
               </TabsList>
 
@@ -632,23 +629,10 @@ const MathLesson = () => {
                 {/* Contenu de la leçon */}
                 <Card className="lesson-card border-none rounded-2xl sm:rounded-[20px] shadow-xl overflow-hidden">
                   <CardHeader className="p-3 sm:p-4 md:p-6 bg-gradient-to-r from-primary/15 via-secondary/10 to-success/15 rounded-t-2xl sm:rounded-t-[20px]">
-                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                      <CardTitle className="flex items-center gap-2 text-base sm:text-lg md:text-xl">
-                        <BookOpen className="text-primary shrink-0" size={18} />
-                        <span className="text-lg sm:text-xl">📚</span> Contenu de la leçon
-                      </CardTitle>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => loadLesson(true)}
-                        disabled={isLoadingActivites || isLoadingQuiz}
-                        className="w-full sm:w-auto text-xs"
-                      >
-                        <RefreshCw className={`w-3 h-3 sm:w-4 sm:h-4 mr-2 ${(isLoadingActivites || isLoadingQuiz) ? 'animate-spin' : ''}`} />
-                        <span className="hidden sm:inline">Régénérer activités</span>
-                        <span className="sm:hidden">Régénérer</span>
-                      </Button>
-                    </div>
+                    <CardTitle className="flex items-center gap-2 text-base sm:text-lg md:text-xl">
+                      <BookOpen className="text-primary shrink-0" size={18} />
+                      <span className="text-lg sm:text-xl">📚</span> Contenu de la leçon
+                    </CardTitle>
                   </CardHeader>
                   <CardContent className="p-3 sm:p-4 md:p-6 pt-4 sm:pt-6 bg-gradient-to-br from-background via-primary/[0.02] to-background">
                     <div className="prose prose-sm sm:prose-base lg:prose-lg max-w-none dark:prose-invert lesson-content">
