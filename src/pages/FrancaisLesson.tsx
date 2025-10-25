@@ -129,47 +129,26 @@ const FrancaisLesson = () => {
   const loadLesson = async (forceRegenerate = false) => {
     if (!topicId || !lesson) return;
 
-    const contenuCacheKey = `lesson_contenu_francais_${topicId}`;
     const activitiesCacheKey = `lesson_activites_francais_${topicId}`;
     const quizCacheKey = `lesson_quiz_francais_${topicId}`;
 
     try {
-      // Check cache for enhanced content
-      let enhancedContenu = "";
       let activitiesContent = "";
       let quizContent = "";
       
       if (!forceRegenerate) {
-        const cachedContenu = localStorage.getItem(contenuCacheKey);
         const cachedActivities = localStorage.getItem(activitiesCacheKey);
         const cachedQuiz = localStorage.getItem(quizCacheKey);
         
-        if (cachedContenu) enhancedContenu = cachedContenu;
         if (cachedActivities) activitiesContent = cachedActivities;
         if (cachedQuiz) quizContent = cachedQuiz;
       }
 
-      // Generate enhanced visual content if not cached
-      if (!enhancedContenu || forceRegenerate) {
-        const { data: contenuResponse, error: contenuError } = await supabase.functions.invoke('francais-ai-tutor', {
-          body: { 
-            message: `Génère un contenu de leçon visuel et structuré pour "${lesson.title}" niveau AF7. Inclus des schémas, diagrammes et exemples visuels détaillés.`,
-            lessonType: 'contenu',
-            lessonTopic: lesson.title
-          }
-        });
-
-        if (!contenuError && contenuResponse) {
-          enhancedContenu = contenuResponse?.response || contenuResponse || "";
-          localStorage.setItem(contenuCacheKey, enhancedContenu);
-        }
-      }
-
-      // Set content (use enhanced or fallback to static)
+      // Set static content from data file
       setLessonData({
         objectif: lesson.objectif,
         introduction: lesson.introduction,
-        contenu: enhancedContenu || lesson.contenu,
+        contenu: lesson.contenu,
         activites: "",
         quiz: ""
       });
@@ -275,19 +254,6 @@ const FrancaisLesson = () => {
     loadLesson(true);
   };
 
-  const handleRegenerateContent = () => {
-    // Clear only the content cache
-    const contenuCacheKey = `lesson_contenu_francais_${topicId}`;
-    localStorage.removeItem(contenuCacheKey);
-    
-    toast({
-      title: "Régénération en cours",
-      description: "Le contenu de la leçon est en train d'être régénéré...",
-    });
-    
-    loadLesson(true);
-  };
-
   const handleTextToSpeech = async (text: string) => {
     // Simplified version - just show a message for now
     toast({
@@ -374,20 +340,9 @@ const FrancaisLesson = () => {
               <TabsContent value="lecon" className="space-y-6">
                 <Card>
                   <CardHeader>
-                    <div className="flex items-center justify-between">
-                      <CardTitle className="flex items-center gap-2">
-                        <Target className="text-purple-600" />🎯 Objectif
-                      </CardTitle>
-                      <Button 
-                        onClick={handleRegenerateContent} 
-                        variant="outline" 
-                        size="sm"
-                        className="gap-2"
-                      >
-                        <BookOpen className="w-4 h-4" />
-                        Régénérer la leçon
-                      </Button>
-                    </div>
+                    <CardTitle className="flex items-center gap-2">
+                      <Target className="text-purple-600" />🎯 Objectif
+                    </CardTitle>
                   </CardHeader>
                   <CardContent>
                     <p>{lesson.objectif}</p>
