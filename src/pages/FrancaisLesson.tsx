@@ -362,31 +362,65 @@ const FrancaisLesson = () => {
                   </CardContent>
                 </Card>
                 {lessonData.contenu !== "Contenu à venir..." && (
-                  <Card className="border-t-4 border-t-purple-500 shadow-lg">
-                    <CardHeader className="bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-950/30 dark:to-pink-950/30">
-                      <CardTitle className="text-2xl flex items-center gap-3">
-                        <BookOpen className="w-7 h-7 text-purple-600" />
-                        📚 Contenu de la leçon
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent className="pt-8 pb-8 px-6 sm:px-8">
-                      <div className="prose prose-lg prose-purple max-w-none dark:prose-invert prose-headings:font-bold prose-headings:text-purple-700 dark:prose-headings:text-purple-400 prose-p:leading-relaxed prose-p:text-base prose-li:text-base prose-strong:text-purple-600 dark:prose-strong:text-purple-400">
-                        <div 
-                          className="space-y-6 lesson-content" 
-                          style={{
-                            lineHeight: '1.8',
-                            fontSize: '1.05rem'
-                          }}
-                          dangerouslySetInnerHTML={{ 
-                            __html: lessonData.contenu
-                              .replace(/\n\n/g, '</p><p class="mb-4 mt-4">')
-                              .replace(/\n/g, '<br/>')
-                              .replace(/📖|📚|📊|💡|🎯|✨|📝|💬|🎭|✏️|🔍|✅|❌|💭|📌|🔎|⚠️|🔑/g, '<span class="text-2xl mr-2 inline-block">$&</span>')
-                          }} 
-                        />
-                      </div>
-                    </CardContent>
-                  </Card>
+                  <div className="space-y-6">
+                    {/* Parse and display content in beautiful sections */}
+                    {lessonData.contenu.split(/(?=📖|📚|📊|💡|🎯|✨|📝|🔑)/).map((section, index) => {
+                      const isIntro = section.includes('📖') || section.includes('INTRODUCTION');
+                      const isDefinitions = section.includes('📚') || section.includes('CONTEXTE') || section.includes('DÉFINITIONS');
+                      const isConcepts = section.includes('📊') || section.includes('CONCEPTS');
+                      const isExamples = section.includes('💡') || section.includes('EXEMPLES PRATIQUES');
+                      const isRules = section.includes('🎯') || section.includes('RÈGLES');
+                      const isTips = section.includes('✨') || section.includes('ASTUCES');
+                      const isNotes = section.includes('📝') || section.includes('EXERCICE MENTAL');
+                      const isKeyPoints = section.includes('🔑') || section.includes('POINTS CLÉS');
+
+                      let colorClasses = "border-purple-500 bg-purple-50 dark:bg-purple-950/20";
+                      let iconBg = "bg-purple-500";
+                      
+                      if (isDefinitions) {
+                        colorClasses = "border-blue-500 bg-blue-50 dark:bg-blue-950/20";
+                        iconBg = "bg-blue-500";
+                      } else if (isConcepts) {
+                        colorClasses = "border-indigo-500 bg-indigo-50 dark:bg-indigo-950/20";
+                        iconBg = "bg-indigo-500";
+                      } else if (isExamples) {
+                        colorClasses = "border-amber-500 bg-amber-50 dark:bg-amber-950/20";
+                        iconBg = "bg-amber-500";
+                      } else if (isRules) {
+                        colorClasses = "border-emerald-500 bg-emerald-50 dark:bg-emerald-950/20";
+                        iconBg = "bg-emerald-500";
+                      } else if (isTips) {
+                        colorClasses = "border-pink-500 bg-pink-50 dark:bg-pink-950/20";
+                        iconBg = "bg-pink-500";
+                      } else if (isKeyPoints) {
+                        colorClasses = "border-orange-500 bg-orange-50 dark:bg-orange-950/20";
+                        iconBg = "bg-orange-500";
+                      }
+
+                      if (!section.trim()) return null;
+
+                      return (
+                        <Card key={index} className={`border-l-8 ${colorClasses} shadow-lg hover:shadow-xl transition-all duration-300`}>
+                          <CardContent className="pt-6 pb-6 px-6">
+                            <div className="prose prose-lg max-w-none dark:prose-invert">
+                              <div 
+                                className="space-y-4 leading-relaxed"
+                                style={{ fontSize: '1.05rem', lineHeight: '1.9' }}
+                                dangerouslySetInnerHTML={{ 
+                                  __html: section
+                                    .replace(/\*\*(.*?)\*\*/g, '<strong class="font-bold text-foreground">$1</strong>')
+                                    .replace(/\n\n/g, '</p><p class="mb-4 mt-4">')
+                                    .replace(/\n/g, '<br/>')
+                                    .replace(/(📖|📚|📊|💡|🎯|✨|📝|💬|🎭|✏️|🔍|✅|❌|💭|📌|🔎|⚠️|🔑)/g, '<span class="text-3xl mr-3 inline-block align-middle">$1</span>')
+                                    .replace(/```([\s\S]*?)```/g, `<div class="my-4 p-6 rounded-xl ${iconBg} bg-opacity-10 border-2 border-current"><pre class="whitespace-pre-wrap font-mono text-sm">$1</pre></div>`)
+                                }} 
+                              />
+                            </div>
+                          </CardContent>
+                        </Card>
+                      );
+                    })}
+                  </div>
                 )}
                 {lessonData.objectif && (
                   <YouTubeVideoSection lessonTitle={lesson.title} objectives={lessonData.objectif} gradeLevel="AF7" customYoutubeUrl={youtubeUrl || undefined} subject="francais" />)}
