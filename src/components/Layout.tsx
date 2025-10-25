@@ -16,6 +16,7 @@ import {
   Search,
   Bell,
   Trophy,
+  ArrowLeft,
 } from "lucide-react";
 import dashboardImage from "@/assets/dashboard00.png";
 import edupreneursLogo from "@/assets/edupreneurs-new-logo.png";
@@ -308,14 +309,15 @@ export const Layout = ({ children }: LayoutProps) => {
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Menu Toggle Button */}
+      {/* Back Button */}
       {!isCommunityPage && !isLessonPage && !isFeedPage && (
         <button
           data-tour="menu-button"
-          onClick={() => setSidebarOpen(!sidebarOpen)}
-          className={`fixed top-3 left-3 z-[1001] bg-gradient-to-br from-[hsl(var(--primary))] to-[hsl(var(--success))] text-white p-2 sm:p-2.5 rounded-lg sm:rounded-xl shadow-md hover:shadow-lg transition-all duration-300 hover:scale-105 ${sidebarOpen ? "lg:left-[240px] xl:left-[260px] 2xl:left-[280px]" : ""}`}
+          onClick={() => navigate(-1)}
+          className="fixed top-3 left-3 z-[1001] bg-gradient-to-br from-[hsl(var(--primary))] to-[hsl(var(--success))] text-white p-2 sm:p-2.5 rounded-lg sm:rounded-xl shadow-md hover:shadow-lg transition-all duration-300 hover:scale-105"
+          aria-label="Retour"
         >
-          {sidebarOpen ? <X size={20} className="sm:w-5 sm:h-5" /> : <Menu size={20} className="sm:w-5 sm:h-5" />}
+          <ArrowLeft size={20} className="sm:w-5 sm:h-5" />
         </button>
       )}
 
