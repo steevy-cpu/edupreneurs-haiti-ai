@@ -115,7 +115,7 @@ export const InteractiveQuiz = ({ content, isLoading, onRegenerate, lessonGoldRe
       const questionText = questionMatch[1].trim().replace(/\*\*/g, '').replace(/#{1,3}/g, '');
       
       // Extract options - handle multiple formats: A) A: A.
-      const optionMatches = section.matchAll(/([A-D])[\):\.]\s*(.+?)(?=\n\s*[A-D][\):\.])|\n\s*#{2,3}|\n\n|$)/gis);
+      const optionMatches = section.matchAll(/([A-D])[\):\.]\s*(.+?)(?=\n\s*[A-D][\):\.]|\n\s*#{2,3}|\n\n|$)/gis);
       const options: string[] = [];
       Array.from(optionMatches).forEach(match => {
         const optionText = match[2]?.trim().replace(/\*\*/g, '');
