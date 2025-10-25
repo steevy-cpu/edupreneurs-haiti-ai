@@ -315,15 +315,15 @@ export const Layout = ({ children }: LayoutProps) => {
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Back Button */}
+      {/* Menu Button */}
       {!isCommunityPage && !isLessonPage && !isFeedPage && (
         <button
           data-tour="menu-button"
-          onClick={() => navigate(-1)}
+          onClick={() => setSidebarOpen(!sidebarOpen)}
           className="fixed top-3 left-3 z-[1001] bg-gradient-to-br from-[hsl(var(--primary))] to-[hsl(var(--success))] text-white p-2 sm:p-2.5 rounded-lg sm:rounded-xl shadow-md hover:shadow-lg transition-all duration-300 hover:scale-105"
-          aria-label="Retour"
+          aria-label="Menu"
         >
-          <ArrowLeft size={20} className="sm:w-5 sm:h-5" />
+          {sidebarOpen ? <X size={20} className="sm:w-5 sm:h-5" /> : <Menu size={20} className="sm:w-5 sm:h-5" />}
         </button>
       )}
 
