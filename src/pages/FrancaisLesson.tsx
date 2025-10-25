@@ -362,13 +362,32 @@ const FrancaisLesson = () => {
                   </CardContent>
                 </Card>
                 {lessonData.contenu !== "Contenu à venir..." && (
-                  <Card><CardHeader><CardTitle>📚 Contenu de la leçon</CardTitle></CardHeader>
-                    <CardContent>
-                      <div className="prose prose-purple max-w-none dark:prose-invert">
-                        <div className="whitespace-pre-wrap" dangerouslySetInnerHTML={{ __html: lessonData.contenu.replace(/\n/g, '<br/>') }} />
+                  <Card className="border-t-4 border-t-purple-500 shadow-lg">
+                    <CardHeader className="bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-950/30 dark:to-pink-950/30">
+                      <CardTitle className="text-2xl flex items-center gap-3">
+                        <BookOpen className="w-7 h-7 text-purple-600" />
+                        📚 Contenu de la leçon
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="pt-8 pb-8 px-6 sm:px-8">
+                      <div className="prose prose-lg prose-purple max-w-none dark:prose-invert prose-headings:font-bold prose-headings:text-purple-700 dark:prose-headings:text-purple-400 prose-p:leading-relaxed prose-p:text-base prose-li:text-base prose-strong:text-purple-600 dark:prose-strong:text-purple-400">
+                        <div 
+                          className="space-y-6 lesson-content" 
+                          style={{
+                            lineHeight: '1.8',
+                            fontSize: '1.05rem'
+                          }}
+                          dangerouslySetInnerHTML={{ 
+                            __html: lessonData.contenu
+                              .replace(/\n\n/g, '</p><p class="mb-4 mt-4">')
+                              .replace(/\n/g, '<br/>')
+                              .replace(/📖|📚|📊|💡|🎯|✨|📝|💬|🎭|✏️|🔍|✅|❌|💭|📌|🔎|⚠️|🔑/g, '<span class="text-2xl mr-2 inline-block">$&</span>')
+                          }} 
+                        />
                       </div>
                     </CardContent>
-                  </Card>)}
+                  </Card>
+                )}
                 {lessonData.objectif && (
                   <YouTubeVideoSection lessonTitle={lesson.title} objectives={lessonData.objectif} gradeLevel="AF7" customYoutubeUrl={youtubeUrl || undefined} subject="francais" />)}
               </TabsContent>
