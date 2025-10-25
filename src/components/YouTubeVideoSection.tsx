@@ -30,6 +30,9 @@ export const YouTubeVideoSection = ({ lessonTitle, objectives, gradeLevel = "AF7
     if (customYoutubeUrl) {
       const videoId = extractYouTubeVideoId(customYoutubeUrl);
       setCustomVideoId(videoId);
+      setIsLoading(false);
+      // Skip API search when we have a custom video URL
+      return;
     }
     searchVideos();
   }, [lessonTitle, objectives, customYoutubeUrl]);
@@ -203,7 +206,7 @@ export const YouTubeVideoSection = ({ lessonTitle, objectives, gradeLevel = "AF7
     );
   }
 
-  if (videos.length === 0) {
+  if (videos.length === 0 && !customVideoId) {
     return null;
   }
 
