@@ -127,24 +127,45 @@ export const InteractiveActivitiesEnhanced = ({
   };
 
   const parseActivities = (content: string): Activity[] => {
+    console.log('🔍 Parsing activities content:', content.substring(0, 200));
     const activities: Activity[] = [];
     const sections = content.split(/---+/);
+    
+    console.log('📊 Found activity sections:', sections.length);
 
-    sections.forEach((section) => {
+    sections.forEach((section, idx) => {
       if (!section.trim()) return;
+      
+      console.log(`🔍 Processing activity section ${idx}:`, section.substring(0, 100));
 
-      // Extract type
-      const typeMatch = section.match(/TYPE:\s*(QUIZ|MATCHING|TRUEFALSE|FILLIN)/i);
-      if (!typeMatch) return;
+      // Extract type - more flexible
+      let typeMatch = section.match(/TYPE:\s*(QUIZ|MATCHING|TRUEFALSE|FILLIN)/i);
+      if (!typeMatch) {
+        // Try alternate format
+        typeMatch = section.match(/(QUIZ|MATCHING|TRUEFALSE|FILLIN)/i);
+      }
+      if (!typeMatch) {
+        console.warn(`⚠️ No type found in section ${idx}`);
+        return;
+      }
       
       const type = typeMatch[1].toUpperCase() as ActivityType;
+      console.log(`📌 Activity type: ${type}`);
       
-      // Extract title and difficulty
-      const titleMatch = section.match(/#{2,3}\s*[^\n]*Exercice\s*\d+\s*—\s*([^(]+)\(([^)]+)\)/i);
-      if (!titleMatch) return;
+      // Extract title and difficulty - more flexible
+      let titleMatch = section.match(/#{2,3}\s*[^\n]*Exercice\s*\d+\s*—\s*([^(]+)\(([^)]+)\)/i);
+      if (!titleMatch) {
+        titleMatch = section.match(/Exercice\s*\d+\s*[-—:]\s*([^\n(]+)/i);
+      }
+      if (!titleMatch) {
+        console.warn(`⚠️ No title found in section ${idx}`);
+        return;
+      }
       
       const title = titleMatch[1].trim();
-      const difficulty = titleMatch[2].trim();
+      const difficulty = titleMatch[2]?.trim() || 'Moyen';
+      
+      console.log(`📝 Activity: ${title} (${difficulty})`);
 
       try {
         if (type === 'QUIZ' || type === 'FILLIN') {

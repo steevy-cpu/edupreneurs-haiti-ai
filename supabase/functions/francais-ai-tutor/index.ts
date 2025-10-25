@@ -307,11 +307,20 @@ Sois encourageant, patient et utilise des exemples adaptés à la culture haïti
     let aiResponse = data.choices?.[0]?.message?.content || 
                      "Désolé, je n'ai pas pu générer de réponse.";
 
-    // Clean up response
-    aiResponse = aiResponse
-      .replace(/\*\*/g, '')
-      .replace(/#{1,6}\s/g, '')
-      .trim();
+    console.log('✅ AI Response received:', aiResponse.substring(0, 200));
+    console.log('📊 Response length:', aiResponse.length);
+    console.log('📝 Lesson type:', lessonType);
+
+    // Don't clean up markdown for structured formats
+    // Only clean if it's a general chat response
+    if (!lessonType || lessonType === 'chat') {
+      aiResponse = aiResponse
+        .replace(/\*\*/g, '')
+        .trim();
+    } else {
+      // Keep the formatting for activities and quiz
+      aiResponse = aiResponse.trim();
+    }
 
     return new Response(
       JSON.stringify({ response: aiResponse }),

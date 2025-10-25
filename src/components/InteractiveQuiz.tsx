@@ -89,31 +89,61 @@ export const InteractiveQuiz = ({ content, isLoading, onRegenerate, lessonGoldRe
   };
 
   const parseQuestions = (content: string): QuizQuestion[] => {
+    console.log('🔍 Parsing quiz content:', content.substring(0, 200));
     const questions: QuizQuestion[] = [];
     
-    // Split by question headers - more flexible regex
-    const sections = content.split(/#{2,3}\s*✅?\s*Question\s+\d+/i);
+    // Try multiple splitting patterns
+    let sections = content.split(/#{2,3}\s*✅?\s*Question\s+\d+/i);
     
-    sections.slice(1).forEach((section) => {
+    // If that doesn't work, try simpler patterns
+    if (sections.length <= 1) {
+      sections = content.split(/Question\s+\d+/i);
+    }
+    
+    console.log('📊 Found sections:', sections.length);
+    
+    sections.slice(1).forEach((section, idx) => {
+      console.log(`🔍 Processing section ${idx + 1}:`, section.substring(0, 100));
+      
       // Extract question text - everything before first option, more flexible
-      const questionMatch = section.match(/^\s*(.+?)(?=\n\s*[A-D][\):])/is);
-      if (!questionMatch) return;
+      const questionMatch = section.match(/^\s*(.+?)(?=\n\s*[A-D][\):\.])/is);
+      if (!questionMatch) {
+        console.warn(`⚠️ No question found in section ${idx + 1}`);
+        return;
+      }
       
-      const questionText = questionMatch[1].trim().replace(/\*\*/g, '');
+      const questionText = questionMatch[1].trim().replace(/\*\*/g, '').replace(/#{1,3}/g, '');
       
-      // Extract options - handle both A) and A: formats
-      const optionMatches = section.matchAll(/([A-D])[\):]\s*(.+?)(?=\n\s*[A-D][\):]|\n\s*#{2,3}|\n\n|$)/gis);
+      // Extract options - handle multiple formats: A) A: A.
+      const optionMatches = section.matchAll(/([A-D])[\):\.]\s*(.+?)(?=\n\s*[A-D][\):\.])|\n\s*#{2,3}|\n\n|$)/gis);
       const options: string[] = [];
       Array.from(optionMatches).forEach(match => {
-        const optionText = match[2].trim().replace(/\*\*/g, '');
-        if (optionText) {
+        const optionText = match[2]?.trim().replace(/\*\*/g, '');
+        if (optionText && optionText.length > 0 && optionText.length < 300) {
           options.push(optionText);
         }
       });
       
-      // Extract correct answer - more flexible
-      const correctMatch = section.match(/#{2,3}\s*Réponse\s+correcte\s*:?\s*([A-D])/i);
-      if (!correctMatch || options.length !== 4) return;
+      console.log(`📝 Found ${options.length} options for question ${idx + 1}`);
+      
+      // Extract correct answer - multiple patterns
+      let correctMatch = section.match(/#{2,3}\s*Réponse\s+correcte\s*:?\s*([A-D])/i);
+      if (!correctMatch) {
+        correctMatch = section.match(/Réponse\s*:?\s*([A-D])/i);
+      }
+      if (!correctMatch) {
+        correctMatch = section.match(/Correct[e]?\s*:?\s*([A-D])/i);
+      }
+      
+      if (!correctMatch) {
+        console.warn(`⚠️ No correct answer found in section ${idx + 1}`);
+        return;
+      }
+      
+      if (options.length < 2) {
+        console.warn(`⚠️ Not enough options (${options.length}) in section ${idx + 1}`);
+        return;
+      }
       
       const correctLetter = correctMatch[1].toUpperCase();
       const correctIndex = correctLetter.charCodeAt(0) - 'A'.charCodeAt(0);
