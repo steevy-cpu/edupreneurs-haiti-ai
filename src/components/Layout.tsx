@@ -304,7 +304,13 @@ export const Layout = ({ children }: LayoutProps) => {
   const isActive = (path: string) => location.pathname === path;
 
   const isCommunityPage = location.pathname === "/community";
-  const isLessonPage = location.pathname.startsWith("/math-lesson");
+  const isLessonPage = location.pathname.startsWith("/math-lesson") || 
+                       location.pathname.startsWith("/francais-lesson") ||
+                       location.pathname.startsWith("/espagnol-lesson") ||
+                       location.pathname.startsWith("/creole-lesson") ||
+                       location.pathname.startsWith("/sciences-lesson") ||
+                       location.pathname.startsWith("/sciences-sociales-lesson") ||
+                       location.pathname.startsWith("/anglais-lesson");
   const isFeedPage = location.pathname === "/feed";
 
   return (
