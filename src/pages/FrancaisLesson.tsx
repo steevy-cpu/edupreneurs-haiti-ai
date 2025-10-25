@@ -275,6 +275,19 @@ const FrancaisLesson = () => {
     loadLesson(true);
   };
 
+  const handleRegenerateContent = () => {
+    // Clear only the content cache
+    const contenuCacheKey = `lesson_contenu_francais_${topicId}`;
+    localStorage.removeItem(contenuCacheKey);
+    
+    toast({
+      title: "Régénération en cours",
+      description: "Le contenu de la leçon est en train d'être régénéré...",
+    });
+    
+    loadLesson(true);
+  };
+
   const handleTextToSpeech = async (text: string) => {
     // Simplified version - just show a message for now
     toast({
@@ -359,7 +372,23 @@ const FrancaisLesson = () => {
               </TabsList>
 
               <TabsContent value="lecon" className="space-y-6">
-                <Card><CardHeader><CardTitle className="flex items-center gap-2"><Target className="text-purple-600" />🎯 Objectif</CardTitle></CardHeader>
+                <Card>
+                  <CardHeader>
+                    <div className="flex items-center justify-between">
+                      <CardTitle className="flex items-center gap-2">
+                        <Target className="text-purple-600" />🎯 Objectif
+                      </CardTitle>
+                      <Button 
+                        onClick={handleRegenerateContent} 
+                        variant="outline" 
+                        size="sm"
+                        className="gap-2"
+                      >
+                        <BookOpen className="w-4 h-4" />
+                        Régénérer la leçon
+                      </Button>
+                    </div>
+                  </CardHeader>
                   <CardContent>
                     <p>{lesson.objectif}</p>
                     {lesson.id === "comprehension-production-orale-1" && (
