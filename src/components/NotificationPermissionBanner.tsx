@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Bell } from "lucide-react";
+import { Bell, AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -9,7 +9,15 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { requestNotificationPermission, registerServiceWorker, subscribeToPushNotifications, isIOSDevice, isStandalonePWA } from "@/utils/pushNotifications";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { 
+  requestNotificationPermission, 
+  registerServiceWorker, 
+  subscribeToPushNotifications, 
+  isIOSDevice, 
+  isStandalonePWA,
+  detectBrowser 
+} from "@/utils/pushNotifications";
 import { IOSPushNotificationGuide } from "./IOSPushNotificationGuide";
 
 interface NotificationPermissionBannerProps {
@@ -21,35 +29,63 @@ export const NotificationPermissionBanner = ({ userId }: NotificationPermissionB
   const [isRequesting, setIsRequesting] = useState(false);
   const [isIOS, setIsIOS] = useState(false);
   const [isPWA, setIsPWA] = useState(false);
+  const [browser, setBrowser] = useState<string>('');
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    // Detect iOS and PWA mode
+    // Detect iOS, PWA mode, and browser
     const iOS = isIOSDevice();
     const standalone = isStandalonePWA();
+    const detectedBrowser = detectBrowser();
+    
     setIsIOS(iOS);
     setIsPWA(standalone);
+    setBrowser(detectedBrowser);
     
-    console.log('Device detection:', { iOS, standalone });
+    console.log('═══════════════════════════════════════════');
+    console.log('📱 DEVICE DETECTION');
+    console.log('═══════════════════════════════════════════');
+    console.log('🌐 Browser:', detectedBrowser);
+    console.log('📱 iOS:', iOS);
+    console.log('📲 PWA Mode:', standalone);
+    console.log('═══════════════════════════════════════════\n');
+    
+    // Check if browser supports notifications
+    if (!('Notification' in window)) {
+      console.warn('⚠️ Notifications not supported in this browser');
+      setError(`Les notifications ne sont pas supportées par ${detectedBrowser}`);
+      return;
+    }
+
+    // Safari desktop doesn't support push
+    if (detectedBrowser === 'Safari' && !iOS) {
+      console.warn('⚠️ Safari desktop does not support web push');
+      setError('Safari desktop ne supporte pas les notifications push. Utilisez Chrome, Edge ou Firefox.');
+      return;
+    }
     
     // Show dialog if permission is default (not yet decided)
     const checkPermission = () => {
-      if ('Notification' in window) {
-        const permission = Notification.permission;
-        
-        console.log('🔔 Notification permission status:', permission);
-        
-        // For iOS, only show if running as PWA
-        if (iOS && !standalone) {
-          console.log('🔔 iOS device not in PWA mode, skipping notification prompt');
-          return;
-        }
-        
-        // Always show if permission is default (not yet asked)
-        if (permission === 'default') {
-          console.log('🔔 Showing notification dialog...');
-          // Show dialog after a short delay for better UX
-          setTimeout(() => setShowDialog(true), 1000);
-        }
+      const permission = Notification.permission;
+      
+      console.log('🔔 Current notification permission:', permission);
+      
+      // For iOS, only show if running as PWA
+      if (iOS && !standalone) {
+        console.log('ℹ️ iOS non-PWA detected, will show installation guide');
+        setTimeout(() => setShowDialog(true), 1000);
+        return;
+      }
+      
+      // Always show if permission is default (not yet asked)
+      if (permission === 'default') {
+        console.log('📋 Permission not yet requested, showing dialog...');
+        setTimeout(() => setShowDialog(true), 1000);
+      } else if (permission === 'denied') {
+        console.log('❌ Permission previously denied');
+        setError(`Notifications bloquées. Changez les paramètres de ${detectedBrowser} pour ce site.`);
+      } else if (permission === 'granted') {
+        console.log('✅ Permission already granted');
       }
     };
 
@@ -58,38 +94,50 @@ export const NotificationPermissionBanner = ({ userId }: NotificationPermissionB
 
   const handleAllow = async () => {
     setIsRequesting(true);
+    setError(null);
     
     try {
-      console.log('Requesting notification permission...');
+      console.log('═══════════════════════════════════════════');
+      console.log('🔔 USER INITIATED NOTIFICATION SETUP');
+      console.log('═══════════════════════════════════════════\n');
       
       // Request permission
       const permission = await requestNotificationPermission();
-      console.log('Permission result:', permission);
       
       if (permission === 'granted') {
-        console.log('Permission granted! Setting up push notifications...');
+        console.log('✅ Permission granted, proceeding with setup...\n');
         
         // Register service worker
         const registration = await registerServiceWorker();
         if (registration) {
           // Subscribe to push notifications
-          await subscribeToPushNotifications(registration, userId);
-          console.log('Push notifications fully set up!');
+          const success = await subscribeToPushNotifications(registration, userId);
+          
+          if (success) {
+            console.log('🎉 All done! Notifications are enabled.\n');
+            setShowDialog(false);
+          } else {
+            setError('Échec de l\'abonnement. Vérifiez votre connexion et réessayez.');
+          }
+        } else {
+          setError(`Service worker non disponible. ${browser === 'Safari' ? 'iOS nécessite l\'installation PWA.' : 'Réessayez plus tard.'}`);
         }
-        
-        setShowDialog(false);
       } else if (permission === 'denied') {
-        console.log('Permission denied by user');
-        setShowDialog(false);
+        console.log('❌ User denied permission\n');
+        setError(`Vous avez refusé les notifications. Changez cela dans les paramètres de ${browser}.`);
+      } else {
+        console.log('⚠️ Permission prompt dismissed\n');
       }
-    } catch (error) {
-      console.error('Error enabling notifications:', error);
+    } catch (error: any) {
+      console.error('❌ Unexpected error:', error);
+      setError(`Erreur: ${error.message || 'Impossible d\'activer les notifications'}`);
     } finally {
       setIsRequesting(false);
     }
   };
 
   const handleDeny = () => {
+    console.log('ℹ️ User dismissed notification dialog');
     setShowDialog(false);
   };
 
@@ -104,6 +152,13 @@ export const NotificationPermissionBanner = ({ userId }: NotificationPermissionB
             {isIOS && !isPWA ? '📱 Installation requise' : 'Restez connecté, même hors ligne'}
           </DialogTitle>
           <DialogDescription className="text-center space-y-3">
+            {error && (
+              <Alert variant="destructive" className="text-left">
+                <AlertCircle className="h-4 w-4" />
+                <AlertDescription className="text-xs">{error}</AlertDescription>
+              </Alert>
+            )}
+            
             {isIOS && !isPWA ? (
               <div className="space-y-3 text-sm">
                 <p className="font-medium text-orange-500">
@@ -117,6 +172,10 @@ export const NotificationPermissionBanner = ({ userId }: NotificationPermissionB
               <div className="space-y-3">
                 <p className="font-medium text-sm sm:text-base px-2">
                   Autorisez les notifications pour rester informé même quand vous n'êtes pas sur le site
+                </p>
+                
+                <p className="text-xs text-muted-foreground px-2">
+                  Compatible: Chrome, Edge, Samsung Internet{isIOS ? ', Safari iOS 16.4+' : ''}
                 </p>
                 
                 {isIOS && isPWA && (
@@ -153,7 +212,7 @@ export const NotificationPermissionBanner = ({ userId }: NotificationPermissionB
         <DialogFooter className="flex-col gap-2 mt-2 sm:mt-4">
           <Button
             onClick={handleAllow}
-            disabled={isRequesting}
+            disabled={isRequesting || !!error}
             className="w-full bg-primary hover:bg-primary/90"
             size="default"
           >

@@ -1,12 +1,33 @@
-// Service Worker for Push Notifications
-const SW_VERSION = '1.1.0';
+// Service Worker for Push Notifications - Multi-browser support
+const SW_VERSION = '1.2.0';
 const CACHE_NAME = `edupreneurs-v${SW_VERSION}`;
 
 // BroadcastChannel for cross-tab sync
 const notificationChannel = new BroadcastChannel('edupreneurs-notifications');
 
+// Detect browser and OS
+function detectEnvironment() {
+  const ua = self.navigator.userAgent;
+  const isIOS = /iPad|iPhone|iPod/.test(ua);
+  const isSafari = ua.includes('Safari') && !ua.includes('Chrome');
+  const isChrome = ua.includes('Chrome') && !ua.includes('Edg');
+  const isEdge = ua.includes('Edg');
+  const isSamsung = ua.includes('SamsungBrowser');
+  
+  return {
+    isIOS,
+    isSafari,
+    isChrome,
+    isEdge,
+    isSamsung,
+    browser: isSamsung ? 'Samsung' : isEdge ? 'Edge' : isChrome ? 'Chrome' : isSafari ? 'Safari' : 'Unknown'
+  };
+}
+
 self.addEventListener('install', (event) => {
+  const env = detectEnvironment();
   console.log(`📦 Service Worker ${SW_VERSION} installing...`);
+  console.log(`🌐 Browser: ${env.browser}, iOS: ${env.isIOS}`);
   self.skipWaiting();
 });
 
@@ -15,15 +36,20 @@ self.addEventListener('activate', (event) => {
   event.waitUntil(clients.claim());
 });
 
-// Handle push events
+// Handle push events - Multi-browser compatible
 self.addEventListener('push', (event) => {
-  console.log('📬 Push received:', event);
+  console.log('═══════════════════════════════════════════');
+  console.log('📬 PUSH NOTIFICATION RECEIVED');
+  console.log('═══════════════════════════════════════════');
+  
+  const env = detectEnvironment();
+  console.log(`🌐 Environment: ${env.browser}, iOS: ${env.isIOS}`);
   
   let payload = {};
   
   try {
     payload = event.data ? event.data.json() : {};
-    console.log('📦 Parsed push payload:', payload);
+    console.log('📦 Parsed payload:', JSON.stringify(payload, null, 2));
   } catch (e) {
     console.error('❌ Failed to parse push data:', e);
     payload = {
@@ -32,44 +58,52 @@ self.addEventListener('push', (event) => {
     };
   }
 
-  // Detect if we're on iOS
-  const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
-
-  // Extract notification data - handle both iOS (aps) and standard formats
+  // Extract notification data - handle iOS APNS and standard formats
   let title, body, url, notificationData;
   
   if (payload.aps) {
-    // iOS format with aps structure
-    title = payload.aps.alert?.title || 'EDUPRENEURS';
+    // iOS APNS format
+    console.log('📱 iOS APNS format detected');
+    title = payload.aps.alert?.title || payload.aps.alert || 'EDUPRENEURS';
     body = payload.aps.alert?.body || 'Nouvelle notification';
-    url = payload.url || '/notifications';
+    url = payload.url || payload['url-args']?.[0] || '/notifications';
     notificationData = {
       url: url,
       conversationId: payload.conversationId,
+      notificationId: payload.notificationId,
+      category: payload.category,
       timestamp: payload.timestamp || Date.now()
     };
   } else {
-    // Standard format
+    // Standard format (Chrome, Edge, Samsung, Firefox)
+    console.log('🌐 Standard push format detected');
     title = payload.title || 'EDUPRENEURS';
     body = payload.body || 'Nouvelle notification';
     notificationData = payload.data || { url: '/notifications' };
-    url = notificationData.url || '/notifications';
+    url = notificationData.url || payload.url || '/notifications';
   }
 
-  console.log('🔔 Creating notification:', { title, body, url, isIOS });
+  console.log('🔔 Notification details:', { title, body, url });
 
-  // Prepare notification options - minimal for iOS
+  // Prepare notification options
   const notificationOptions = {
     body,
     tag: payload.tag || `notif-${Date.now()}`,
     data: notificationData,
     requireInteraction: false,
     silent: false,
-    timestamp: payload.timestamp || Date.now()
+    timestamp: notificationData.timestamp || Date.now(),
+    renotify: true // Allow replacing old notifications with same tag
   };
 
-  // Only add features for non-iOS platforms
-  if (!isIOS) {
+  // Add browser-specific features
+  if (env.isIOS) {
+    // iOS Safari - minimal options only
+    console.log('📱 iOS: Using minimal notification options');
+    // iOS doesn't support icon, badge, vibrate, or actions
+  } else if (env.isSamsung || env.isChrome || env.isEdge) {
+    // Chrome, Edge, Samsung Internet - full features
+    console.log('🌐 Chrome-based: Using full notification features');
     notificationOptions.icon = payload.icon || '/logo.png';
     notificationOptions.badge = payload.badge || '/logo.png';
     notificationOptions.vibrate = [200, 100, 200];
@@ -77,25 +111,44 @@ self.addEventListener('push', (event) => {
       { action: 'open', title: '📱 Ouvrir' },
       { action: 'mark_read', title: '✓ Marquer lu' }
     ];
+  } else {
+    // Firefox and others - basic features
+    console.log('🦊 Other browser: Using basic notification features');
+    notificationOptions.icon = payload.icon || '/logo.png';
+    notificationOptions.badge = payload.badge || '/logo.png';
   }
 
   event.waitUntil(
     self.registration.showNotification(title, notificationOptions)
       .then(() => {
         console.log('✅ Notification displayed successfully');
-        // Broadcast to all tabs that a new notification arrived
-        notificationChannel.postMessage({
-          type: 'notification_received',
-          notificationId: notificationData.notificationId,
-          category: notificationData.category
-        });
+        console.log('═══════════════════════════════════════════\n');
+        
+        // Broadcast to all tabs
+        try {
+          notificationChannel.postMessage({
+            type: 'notification_received',
+            notificationId: notificationData.notificationId,
+            category: notificationData.category
+          });
+          console.log('📡 Broadcast sent to all tabs');
+        } catch (broadcastError) {
+          console.warn('⚠️ Could not broadcast:', broadcastError);
+        }
       })
       .catch(err => {
-        console.error('❌ Notification failed:', err);
-        // Fallback: try with absolute minimal options
+        console.error('❌ Notification display failed:', err);
+        console.error('❌ Error details:', err.message);
+        
+        // Ultimate fallback - absolute minimal notification
+        console.log('🔄 Attempting minimal fallback notification...');
         return self.registration.showNotification(title, {
           body,
           data: { url: url || '/notifications' }
+        }).then(() => {
+          console.log('✅ Fallback notification displayed');
+        }).catch(fallbackErr => {
+          console.error('❌ Even fallback failed:', fallbackErr);
         });
       })
   );
@@ -206,4 +259,8 @@ self.addEventListener('notificationclose', (event) => {
   console.log('🔕 Notification closed:', event.notification.tag);
 });
 
+// Log environment on load
+const initialEnv = detectEnvironment();
 console.log(`🚀 Service Worker ${SW_VERSION} loaded`);
+console.log(`🌐 Environment: ${initialEnv.browser} on ${initialEnv.isIOS ? 'iOS' : 'Desktop/Android'}`);
+console.log('═══════════════════════════════════════════');
