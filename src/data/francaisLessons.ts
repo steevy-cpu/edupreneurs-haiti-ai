@@ -5152,37 +5152,787 @@ Un texte informatif a pour but de transmettre des connaissances sur un sujet de 
     id: "phrases-complexes",
     title: "Phrases complexes et coordination",
     mois: "Juin - Semaine 1",
-    objectif: "Différencier phrase simple et phrase complexe, identifier les coordonnées",
-    introduction: "Contenu à venir...",
-    contenu: "Contenu à venir...",
-    exemplesExercices: "Exercices à venir..."
+    objectif: "Différencier la phrase simple de la phrase complexe, identifier les propositions coordonnées et comprendre le rôle des conjonctions de coordination pour construire des phrases variées et cohérentes.",
+    introduction: `Les phrases, c'est comme des trains ! 🚂 Une phrase simple, c'est un wagon seul. Une phrase complexe, c'est plusieurs wagons reliés ensemble. Apprendre à construire des phrases complexes, c'est enrichir son expression et rendre ses textes plus intéressants ! 📚✨`,
+    contenu: `
+      <section class="lesson-section">
+        <h3>🎯 1. La phrase simple</h3>
+        <p>Une phrase simple contient <strong>un seul verbe conjugué</strong>, donc une seule proposition.</p>
+        <p><strong>Définition :</strong> Phrase = Proposition = un groupe de mots organisé autour d'un verbe conjugué.</p>
+        <p><strong>Structure de base :</strong> Sujet + Verbe (+ Compléments)</p>
+        <p><strong>Exemples de phrases simples :</strong></p>
+        <ul>
+          <li>"<strong>Les enfants jouent</strong> dans le jardin." (1 verbe = jouent)</li>
+          <li>"<strong>Marie lit</strong> un livre intéressant." (1 verbe = lit)</li>
+          <li>"<strong>Le chien dort</strong>." (1 verbe = dort)</li>
+          <li>"<strong>Nous allons</strong> à l'école tous les jours." (1 verbe = allons)</li>
+        </ul>
+        <p><strong>Attention :</strong> Un infinitif ou un participe ne compte pas comme un verbe conjugué !</p>
+        <ul>
+          <li>"Il aime <em>chanter</em>." → 1 seul verbe conjugué (aime) = phrase simple</li>
+          <li>"<em>Fatigué</em>, il dort." → 1 seul verbe conjugué (dort) = phrase simple</li>
+        </ul>
+      </section>
+
+      <section class="lesson-section">
+        <h3>🔗 2. La phrase complexe</h3>
+        <p>Une phrase complexe contient <strong>plusieurs verbes conjugués</strong>, donc plusieurs propositions reliées entre elles.</p>
+        <p><strong>Définition :</strong> Phrase complexe = 2 propositions ou plus</p>
+        <p><strong>Exemples de phrases complexes :</strong></p>
+        <ul>
+          <li>"Marie <strong>chante</strong> et Pierre <strong>danse</strong>." (2 verbes conjugués = 2 propositions)</li>
+          <li>"Je <strong>pense</strong> que tu <strong>as</strong> raison." (2 verbes conjugués = 2 propositions)</li>
+          <li>"Quand il <strong>pleut</strong>, nous <strong>restons</strong> à la maison." (2 verbes = 2 propositions)</li>
+        </ul>
+        <p><strong>Comment compter les propositions :</strong></p>
+        <ul>
+          <li>Compter les verbes conjugués</li>
+          <li>Chaque verbe conjugué = 1 proposition</li>
+          <li>2 verbes ou + = phrase complexe</li>
+        </ul>
+      </section>
+
+      <section class="lesson-section">
+        <h3>🔀 3. Les trois façons de relier les propositions</h3>
+        <p>Dans une phrase complexe, les propositions peuvent être reliées de trois façons :</p>
+        <p><strong>1. Par juxtaposition (avec une virgule, un point-virgule ou deux-points) :</strong></p>
+        <ul>
+          <li>"Il fait beau<strong>,</strong> nous sortons." (virgule)</li>
+          <li>"Le chat dort<strong>;</strong> le chien joue." (point-virgule)</li>
+          <li>"Attention<strong>:</strong> la porte est fermée." (deux-points)</li>
+        </ul>
+        <p><strong>2. Par coordination (avec une conjonction de coordination) :</strong></p>
+        <ul>
+          <li>"Marie chante <strong>et</strong> Pierre danse." (et)</li>
+          <li>"Il pleut <strong>mais</strong> je sors." (mais)</li>
+          <li>"Tu viens <strong>ou</strong> tu restes ?" (ou)</li>
+        </ul>
+        <p><strong>3. Par subordination (avec une conjonction de subordination) :</strong></p>
+        <ul>
+          <li>"Je pense <strong>que</strong> tu as raison." (que)</li>
+          <li>"<strong>Quand</strong> il pleut, nous restons dedans." (quand)</li>
+          <li>"Il travaille <strong>parce qu'</strong>il veut réussir." (parce que)</li>
+        </ul>
+      </section>
+
+      <section class="lesson-section">
+        <h3>➕ 4. La coordination : les propositions coordonnées</h3>
+        <p>Deux propositions sont <strong>coordonnées</strong> quand elles sont reliées par une <strong>conjonction de coordination</strong>.</p>
+        <p><strong>Les 7 conjonctions de coordination (à mémoriser) :</strong></p>
+        <ul class="highlight-box">
+          <li><strong>Mais - Ou - Et - Donc - Or - Ni - Car</strong></li>
+          <li><strong>Moyen mnémotechnique :</strong> "Mais où est donc Ornicar ?" 🦏</li>
+        </ul>
+        <p><strong>Rôle de chaque conjonction :</strong></p>
+        <ul>
+          <li><strong>Mais :</strong> opposition → "Il est petit <strong>mais</strong> fort."</li>
+          <li><strong>Ou :</strong> choix, alternative → "Tu viens <strong>ou</strong> tu restes ?"</li>
+          <li><strong>Et :</strong> addition → "Marie chante <strong>et</strong> Pierre danse."</li>
+          <li><strong>Donc :</strong> conséquence → "Il pleut, <strong>donc</strong> je prends un parapluie."</li>
+          <li><strong>Or :</strong> opposition, transition → "Je voulais sortir, <strong>or</strong> il pleut."</li>
+          <li><strong>Ni :</strong> négation (avec "ne") → "Il <strong>ne</strong> mange <strong>ni</strong> ne boit."</li>
+          <li><strong>Car :</strong> cause, explication → "Je reste, <strong>car</strong> il pleut."</li>
+        </ul>
+      </section>
+
+      <section class="lesson-section">
+        <h3>🔍 5. Identifier les propositions coordonnées</h3>
+        <p><strong>Méthode pour identifier :</strong></p>
+        <ol>
+          <li>Compter les verbes conjugués</li>
+          <li>Chercher les conjonctions de coordination (mais, ou, et, donc, or, ni, car)</li>
+          <li>Séparer les propositions de part et d'autre de la conjonction</li>
+        </ol>
+        <p><strong>Exemple d'analyse :</strong></p>
+        <p>"Marie chante et Pierre danse dans le jardin."</p>
+        <ul>
+          <li><strong>Proposition 1 :</strong> "Marie chante" (verbe = chante)</li>
+          <li><strong>Conjonction :</strong> "et" (coordination)</li>
+          <li><strong>Proposition 2 :</strong> "Pierre danse dans le jardin" (verbe = danse)</li>
+          <li><strong>Type :</strong> Phrase complexe par coordination</li>
+        </ul>
+        <p><strong>Autre exemple :</strong></p>
+        <p>"Il fait froid, donc nous restons à l'intérieur."</p>
+        <ul>
+          <li><strong>Proposition 1 :</strong> "Il fait froid" (verbe = fait)</li>
+          <li><strong>Conjonction :</strong> "donc" (exprime la conséquence)</li>
+          <li><strong>Proposition 2 :</strong> "nous restons à l'intérieur" (verbe = restons)</li>
+        </ul>
+      </section>
+
+      <section class="lesson-section">
+        <h3>✨ 6. Construire des phrases complexes par coordination</h3>
+        <p><strong>Pourquoi utiliser la coordination ?</strong></p>
+        <ul>
+          <li>Varier la structure des phrases</li>
+          <li>Exprimer des relations logiques (cause, conséquence, opposition...)</li>
+          <li>Rendre le texte plus fluide et plus riche</li>
+        </ul>
+        <p><strong>Exemples de transformation :</strong></p>
+        <ul>
+          <li><strong>2 phrases simples :</strong> "Il pleut. Je prends mon parapluie."</li>
+          <li><strong>→ Phrase complexe :</strong> "Il pleut <strong>donc</strong> je prends mon parapluie." (conséquence)</li>
+        </ul>
+        <ul>
+          <li><strong>2 phrases simples :</strong> "Marie aime lire. Pierre préfère jouer."</li>
+          <li><strong>→ Phrase complexe :</strong> "Marie aime lire <strong>mais</strong> Pierre préfère jouer." (opposition)</li>
+        </ul>
+        <p><strong>Attention à la ponctuation :</strong></p>
+        <ul>
+          <li>Généralement, pas de virgule avant "et", "ou"</li>
+          <li>Virgule souvent avant "mais", "donc", "car", "or"</li>
+          <li>"Il chante et danse." (pas de virgule)</li>
+          <li>"Il chante, mais il danse mal." (virgule)</li>
+        </ul>
+      </section>
+    `,
+    exemplesExercices: `
+      <h4>🎯 Exercice 1 : Phrase simple ou complexe ?</h4>
+      <p>Indique si c'est une phrase simple (S) ou complexe (C) :</p>
+      <ol>
+        <li>Les enfants jouent dans le jardin. ___</li>
+        <li>Marie chante et Pierre danse. ___</li>
+        <li>Je pense que tu as raison. ___</li>
+        <li>Le chat dort sur le canapé. ___</li>
+        <li>Il pleut donc nous restons dedans. ___</li>
+      </ol>
+
+      <h4>➕ Exercice 2 : Identifier les conjonctions</h4>
+      <p>Souligne les conjonctions de coordination dans ces phrases :</p>
+      <ol>
+        <li>Il fait beau mais il fait froid.</li>
+        <li>Tu viens ou tu restes ?</li>
+        <li>Je travaille car j'ai un examen demain.</li>
+        <li>Elle chante et elle danse.</li>
+      </ol>
+
+      <h4>🔍 Exercice 3 : Séparer les propositions</h4>
+      <p>Dans cette phrase, sépare les deux propositions coordonnées :</p>
+      <p>"Marie lit un livre et Pierre regarde la télévision."</p>
+      <ul>
+        <li>Proposition 1 : _______________</li>
+        <li>Conjonction : ___</li>
+        <li>Proposition 2 : _______________</li>
+      </ul>
+
+      <h4>✨ Exercice 4 : Créer des phrases complexes</h4>
+      <p>Relie ces deux phrases simples avec une conjonction appropriée :</p>
+      <ol>
+        <li>Il pleut. Je prends mon parapluie. (donc)</li>
+        <li>Marie aime la musique. Elle joue du piano. (et)</li>
+        <li>Tu peux rester. Tu peux partir. (ou)</li>
+      </ol>
+    `
   },
   {
     id: "propositions-subordonnees",
     title: "Les propositions subordonnées",
     mois: "Juin - Semaine 1",
-    objectif: "Repérer les propositions subordonnées dans les phrases complexes",
-    introduction: "Contenu à venir...",
-    contenu: "Contenu à venir...",
-    exemplesExercices: "Exercices à venir..."
+    objectif: "Identifier et repérer les propositions subordonnées dans les phrases complexes, comprendre leur fonction et leur lien avec la proposition principale pour analyser correctement la structure des phrases.",
+    introduction: `Les propositions subordonnées, c'est comme des wagons qui dépendent de la locomotive ! 🚂 Elles ne peuvent pas exister seules et complètent la proposition principale. Comprendre les subordonnées, c'est maîtriser la construction des phrases complexes ! 🎯📚`,
+    contenu: `
+      <section class="lesson-section">
+        <h3>🎯 1. Qu'est-ce qu'une proposition subordonnée ?</h3>
+        <p>Une proposition subordonnée est une proposition qui <strong>dépend</strong> d'une autre proposition, appelée <strong>proposition principale</strong>.</p>
+        <p><strong>Caractéristiques :</strong></p>
+        <ul>
+          <li>Elle contient un verbe conjugué</li>
+          <li>Elle ne peut pas exister seule (elle dépend de la principale)</li>
+          <li>Elle est introduite par un <strong>mot subordonnant</strong> (que, qui, quand, parce que, si...)</li>
+          <li>Elle complète ou précise le sens de la proposition principale</li>
+        </ul>
+        <p><strong>Structure générale :</strong></p>
+        <p><strong>Proposition principale</strong> + <strong>mot subordonnant</strong> + <strong>Proposition subordonnée</strong></p>
+        <p><strong>Exemple :</strong></p>
+        <p>"<strong>Je pense</strong> [proposition principale] <strong>que</strong> [mot subordonnant] <strong>tu as raison</strong> [proposition subordonnée]."</p>
+      </section>
+
+      <section class="lesson-section">
+        <h3>🔗 2. Différence entre coordination et subordination</h3>
+        <p><strong>Coordination :</strong></p>
+        <ul>
+          <li>Les deux propositions sont <strong>sur le même plan</strong> (égales)</li>
+          <li>Chaque proposition peut exister seule</li>
+          <li>Reliées par : mais, ou, et, donc, or, ni, car</li>
+          <li>Exemple : "Marie chante <strong>et</strong> Pierre danse." (Les deux peuvent exister seules)</li>
+        </ul>
+        <p><strong>Subordination :</strong></p>
+        <ul>
+          <li>Une proposition <strong>dépend</strong> de l'autre (hiérarchie)</li>
+          <li>La subordonnée ne peut pas exister seule</li>
+          <li>Reliées par : que, qui, quand, parce que, si, lorsque, comme...</li>
+          <li>Exemple : "Je pense <strong>que</strong> tu as raison." ("que tu as raison" ne peut pas exister seul ❌)</li>
+        </ul>
+        <p><strong>Test simple :</strong></p>
+        <ul>
+          <li>Si on peut séparer les propositions en deux phrases → <strong>Coordination</strong> ✓</li>
+          <li>Si une partie n'a pas de sens seule → <strong>Subordination</strong> ✓</li>
+        </ul>
+      </section>
+
+      <section class="lesson-section">
+        <h3>📚 3. Les principaux mots subordonnants</h3>
+        <p><strong>Conjonctions de subordination :</strong></p>
+        <ul>
+          <li><strong>que</strong> (le plus courant) → "Je sais <strong>que</strong> tu viendras."</li>
+          <li><strong>quand, lorsque</strong> (temps) → "<strong>Quand</strong> il pleut, je reste dedans."</li>
+          <li><strong>parce que, puisque</strong> (cause) → "Je reste <strong>parce qu'</strong>il pleut."</li>
+          <li><strong>si</strong> (condition) → "<strong>Si</strong> tu viens, je serai content."</li>
+          <li><strong>comme</strong> (comparaison/cause) → "<strong>Comme</strong> il pleuvait, je suis resté."</li>
+          <li><strong>pour que, afin que</strong> (but) → "Je travaille <strong>pour que</strong> tu réussisses."</li>
+          <li><strong>bien que, quoique</strong> (opposition) → "<strong>Bien qu'</strong>il pleuve, je sors."</li>
+        </ul>
+        <p><strong>Pronoms relatifs :</strong></p>
+        <ul>
+          <li><strong>qui, que, dont, où</strong> → "Le livre <strong>que</strong> je lis est intéressant."</li>
+        </ul>
+      </section>
+
+      <section class="lesson-section">
+        <h3>🔍 4. Les types de propositions subordonnées</h3>
+        <p>Il existe trois grands types de propositions subordonnées :</p>
+        <p><strong>1. Subordonnées relatives (introduites par qui, que, dont, où) :</strong></p>
+        <ul>
+          <li>Complètent un nom</li>
+          <li>"Le livre <strong>qui</strong> est sur la table est à moi."</li>
+          <li>"La maison <strong>où</strong> j'habite est grande."</li>
+        </ul>
+        <p><strong>2. Subordonnées complétives (introduites par "que") :</strong></p>
+        <ul>
+          <li>Complètent un verbe (COD du verbe principal)</li>
+          <li>"Je pense <strong>que</strong> tu as raison."</li>
+          <li>"Il dit <strong>qu'</strong>il viendra demain."</li>
+        </ul>
+        <p><strong>3. Subordonnées circonstancielles (introduites par quand, parce que, si...) :</strong></p>
+        <ul>
+          <li>Indiquent les circonstances (temps, cause, condition...)</li>
+          <li>"<strong>Quand</strong> il pleut, je reste dedans." (temps)</li>
+          <li>"Je travaille <strong>parce que</strong> j'ai un examen." (cause)</li>
+          <li>"<strong>Si</strong> tu viens, je serai content." (condition)</li>
+        </ul>
+      </section>
+
+      <section class="lesson-section">
+        <h3>✨ 5. Identifier les propositions subordonnées</h3>
+        <p><strong>Méthode en 4 étapes :</strong></p>
+        <ol>
+          <li><strong>Compter les verbes conjugués</strong> → nombre de propositions</li>
+          <li><strong>Chercher les mots subordonnants</strong> (que, qui, quand, si, parce que...)</li>
+          <li><strong>Identifier la proposition principale</strong> (celle qui peut exister seule)</li>
+          <li><strong>Identifier la proposition subordonnée</strong> (celle qui dépend de la principale)</li>
+        </ol>
+        <p><strong>Exemple d'analyse complète :</strong></p>
+        <p>"Je sais que tu viendras demain."</p>
+        <ul>
+          <li><strong>Verbes conjugués :</strong> sais, viendras (2 verbes = 2 propositions)</li>
+          <li><strong>Mot subordonnant :</strong> "que"</li>
+          <li><strong>Proposition principale :</strong> "Je sais" (peut exister seule ✓)</li>
+          <li><strong>Proposition subordonnée :</strong> "que tu viendras demain" (ne peut pas exister seule ❌)</li>
+          <li><strong>Type :</strong> Subordonnée complétive (COD de "sais")</li>
+        </ul>
+        <p><strong>Autre exemple :</strong></p>
+        <p>"Quand il pleut, nous restons à la maison."</p>
+        <ul>
+          <li><strong>Verbes :</strong> pleut, restons (2 propositions)</li>
+          <li><strong>Mot subordonnant :</strong> "Quand"</li>
+          <li><strong>Proposition subordonnée :</strong> "Quand il pleut" (circonstancielle de temps)</li>
+          <li><strong>Proposition principale :</strong> "nous restons à la maison"</li>
+        </ul>
+      </section>
+
+      <section class="lesson-section">
+        <h3>🎯 6. Cas particuliers et pièges</h3>
+        <p><strong>1. Proposition principale peut être interrompue :</strong></p>
+        <ul>
+          <li>"Le livre <strong>que je lis</strong> est intéressant."</li>
+          <li>Principale = "Le livre... est intéressant" (interrompue par la subordonnée)</li>
+        </ul>
+        <p><strong>2. Plusieurs subordonnées dans une phrase :</strong></p>
+        <ul>
+          <li>"Je pense <strong>que tu viendras</strong> <strong>si tu peux</strong>."</li>
+          <li>2 subordonnées : une complétive (que...) et une circonstancielle (si...)</li>
+        </ul>
+        <p><strong>3. Ne pas confondre "que" conjonction et "que" pronom :</strong></p>
+        <ul>
+          <li>"Je pense <strong>que</strong> tu as raison." (conjonction de subordination)</li>
+          <li>"Le livre <strong>que</strong> je lis..." (pronom relatif)</li>
+        </ul>
+        <p><strong>Astuce :</strong> Pour repérer la principale, cherchez la proposition qui a un sens complet sans les autres ! 🎯</p>
+      </section>
+    `,
+    exemplesExercices: `
+      <h4>🎯 Exercice 1 : Identifier le mot subordonnant</h4>
+      <p>Souligne le mot subordonnant dans ces phrases :</p>
+      <ol>
+        <li>Je pense que tu as raison.</li>
+        <li>Quand il pleut, je reste dedans.</li>
+        <li>Le livre qui est sur la table est à moi.</li>
+        <li>Si tu viens, je serai content.</li>
+      </ol>
+
+      <h4>🔍 Exercice 2 : Séparer principale et subordonnée</h4>
+      <p>Dans ces phrases, identifie la proposition principale (P) et la subordonnée (S) :</p>
+      <ol>
+        <li>"Je sais que tu viendras."<br>
+        Principale : ___________<br>
+        Subordonnée : ___________</li>
+        <li>"Parce qu'il pleut, nous restons dedans."<br>
+        Principale : ___________<br>
+        Subordonnée : ___________</li>
+      </ol>
+
+      <h4>📚 Exercice 3 : Coordination ou subordination ?</h4>
+      <p>Indique si c'est de la coordination (CO) ou de la subordination (SU) :</p>
+      <ol>
+        <li>Marie chante et Pierre danse. ___</li>
+        <li>Je pense que tu as raison. ___</li>
+        <li>Il travaille donc il réussit. ___</li>
+        <li>Quand il fait beau, nous sortons. ___</li>
+      </ol>
+
+      <h4>✨ Exercice 4 : Analyse complète</h4>
+      <p>Analyse cette phrase : "Le garçon qui parle est mon frère."</p>
+      <ul>
+        <li>Nombre de verbes conjugués : ___</li>
+        <li>Mot subordonnant : ___</li>
+        <li>Proposition principale : ___________</li>
+        <li>Proposition subordonnée : ___________</li>
+      </ul>
+    `
   },
   // Juin - Semaine 2
   {
     id: "completives-relatives",
     title: "Complétives et relatives",
     mois: "Juin - Semaine 2",
-    objectif: "Différencier les complétives et les subordonnées relatives",
-    introduction: "Contenu à venir...",
-    contenu: "Contenu à venir...",
-    exemplesExercices: "Exercices à venir..."
+    objectif: "Différencier les propositions subordonnées complétives des propositions subordonnées relatives, comprendre leur fonction grammaticale et savoir les utiliser correctement dans des phrases complexes.",
+    introduction: `Les complétives et les relatives sont deux types de propositions subordonnées importantes ! 🔍📚 Les complétives complètent un verbe (comme un COD), tandis que les relatives complètent un nom (comme un adjectif). Apprendre à les distinguer est essentiel pour bien analyser et construire des phrases complexes ! ✨`,
+    contenu: `
+      <section class="lesson-section">
+        <h3>📝 1. Les propositions subordonnées complétives</h3>
+        <p>Une proposition subordonnée complétive complète le verbe de la proposition principale. Elle joue le rôle de <strong>COD (Complément d'Objet Direct)</strong> du verbe.</p>
+        <p><strong>Introduction :</strong> Principalement par la conjonction <strong>"que"</strong> (qu' devant une voyelle)</p>
+        <p><strong>Structure :</strong> Verbe principal + <strong>que</strong> + proposition complétive</p>
+        <p><strong>Exemples :</strong></p>
+        <ul>
+          <li>"Je <strong>pense</strong> <strong>que</strong> tu as raison." (que tu as raison = COD de "pense")</li>
+          <li>"Il <strong>dit</strong> <strong>qu'</strong>il viendra demain." (qu'il viendra = COD de "dit")</li>
+          <li>"Nous <strong>savons</strong> <strong>que</strong> c'est vrai." (que c'est vrai = COD de "savons")</li>
+          <li>"Elle <strong>espère</strong> <strong>que</strong> tu réussiras." (que tu réussiras = COD de "espère")</li>
+        </ul>
+        <p><strong>Test pour identifier :</strong></p>
+        <ul>
+          <li>Poser la question "Quoi ?" après le verbe principal</li>
+          <li>"Je pense <strong>quoi ?</strong>" → "que tu as raison" ✓</li>
+          <li>On peut souvent remplacer par "cela" ou "quelque chose"</li>
+          <li>"Je pense <strong>cela</strong>." ✓</li>
+        </ul>
+      </section>
+
+      <section class="lesson-section">
+        <h3>👥 2. Les propositions subordonnées relatives</h3>
+        <p>Une proposition subordonnée relative complète un <strong>nom</strong> (appelé <strong>antécédent</strong>). Elle joue le rôle d'un <strong>adjectif</strong> qui qualifie ou précise ce nom.</p>
+        <p><strong>Introduction :</strong> Par un <strong>pronom relatif</strong> : qui, que, dont, où</p>
+        <p><strong>Structure :</strong> Nom (antécédent) + <strong>pronom relatif</strong> + proposition relative</p>
+        <p><strong>Exemples :</strong></p>
+        <ul>
+          <li>"Le <strong>livre</strong> <strong>qui</strong> est sur la table est à moi." (qui est sur la table complète "livre")</li>
+          <li>"La <strong>fille</strong> <strong>que</strong> je vois est ma sœur." (que je vois complète "fille")</li>
+          <li>"La <strong>maison</strong> <strong>où</strong> j'habite est grande." (où j'habite complète "maison")</li>
+          <li>"Le <strong>garçon</strong> <strong>dont</strong> je parle est mon ami." (dont je parle complète "garçon")</li>
+        </ul>
+        <p><strong>Test pour identifier :</strong></p>
+        <ul>
+          <li>Chercher le nom que la relative complète (l'antécédent)</li>
+          <li>On peut souvent remplacer par un adjectif</li>
+          <li>"Le livre <strong>qui est sur la table</strong>" → "Le livre <strong>rouge</strong>" (même fonction)</li>
+        </ul>
+      </section>
+
+      <section class="lesson-section">
+        <h3>🔄 3. Différences entre complétives et relatives</h3>
+        <table class="lesson-table">
+          <tr>
+            <th>Critère</th>
+            <th>Complétive</th>
+            <th>Relative</th>
+          </tr>
+          <tr>
+            <td><strong>Complète</strong></td>
+            <td>Un <strong>verbe</strong></td>
+            <td>Un <strong>nom</strong></td>
+          </tr>
+          <tr>
+            <td><strong>Introduite par</strong></td>
+            <td><strong>que</strong> (conjonction)</td>
+            <td><strong>qui, que, dont, où</strong> (pronoms relatifs)</td>
+          </tr>
+          <tr>
+            <td><strong>Fonction</strong></td>
+            <td><strong>COD</strong> du verbe</td>
+            <td>Complète le nom (comme un <strong>adjectif</strong>)</td>
+          </tr>
+          <tr>
+            <td><strong>Question</strong></td>
+            <td>Verbe + <strong>quoi ?</strong></td>
+            <td><strong>Quel</strong> + nom ?</td>
+          </tr>
+          <tr>
+            <td><strong>Exemple</strong></td>
+            <td>Je pense <strong>que</strong> tu as raison</td>
+            <td>Le livre <strong>qui</strong> est là</td>
+          </tr>
+        </table>
+        <p><strong>Astuce pour ne pas confondre :</strong></p>
+        <ul>
+          <li><strong>Complétive :</strong> Cherchez le verbe que la proposition complète</li>
+          <li><strong>Relative :</strong> Cherchez le nom que la proposition complète (juste avant le pronom relatif)</li>
+        </ul>
+      </section>
+
+      <section class="lesson-section">
+        <h3>🔍 4. Les pronoms relatifs en détail</h3>
+        <p><strong>QUI :</strong></p>
+        <ul>
+          <li>Fonction : <strong>sujet</strong> du verbe de la relative</li>
+          <li>"Le garçon <strong>qui</strong> parle est mon frère." (qui = sujet de "parle")</li>
+          <li>Remplace : une personne ou une chose (sujet)</li>
+        </ul>
+        <p><strong>QUE :</strong></p>
+        <ul>
+          <li>Fonction : <strong>COD</strong> du verbe de la relative</li>
+          <li>"Le livre <strong>que</strong> je lis est intéressant." (que = COD de "lis")</li>
+          <li>Remplace : une personne ou une chose (complément)</li>
+          <li>Devient "qu'" devant une voyelle</li>
+        </ul>
+        <p><strong>DONT :</strong></p>
+        <ul>
+          <li>Fonction : complément introduit par <strong>"de"</strong></li>
+          <li>"Le garçon <strong>dont</strong> je parle..." (je parle <strong>de</strong> lui)</li>
+          <li>"Le livre <strong>dont</strong> j'ai besoin..." (j'ai besoin <strong>de</strong> ce livre)</li>
+        </ul>
+        <p><strong>OÙ :</strong></p>
+        <ul>
+          <li>Fonction : complément de <strong>lieu</strong> ou de <strong>temps</strong></li>
+          <li>"La maison <strong>où</strong> j'habite..." (lieu)</li>
+          <li>"Le jour <strong>où</strong> je suis né..." (temps)</li>
+        </ul>
+      </section>
+
+      <section class="lesson-section">
+        <h3>✨ 5. Méthode d'analyse</h3>
+        <p><strong>Pour identifier une complétive :</strong></p>
+        <ol>
+          <li>Repérer "que" après un verbe</li>
+          <li>Poser la question : Verbe + quoi ?</li>
+          <li>Vérifier que la réponse est la proposition en "que"</li>
+        </ol>
+        <p><strong>Exemple :</strong> "Je sais que tu viendras."</p>
+        <ul>
+          <li>"Je sais <strong>quoi ?</strong>" → "que tu viendras" ✓</li>
+          <li>→ Complétive (COD de "sais")</li>
+        </ul>
+        <p><strong>Pour identifier une relative :</strong></p>
+        <ol>
+          <li>Repérer qui, que, dont, où</li>
+          <li>Chercher le nom juste avant (l'antécédent)</li>
+          <li>Vérifier que la proposition complète ce nom</li>
+        </ol>
+        <p><strong>Exemple :</strong> "Le livre qui est sur la table est à moi."</p>
+        <ul>
+          <li>Pronom relatif : "qui"</li>
+          <li>Antécédent (nom) : "le livre"</li>
+          <li>"qui est sur la table" complète "livre" ✓</li>
+          <li>→ Relative</li>
+        </ul>
+      </section>
+
+      <section class="lesson-section">
+        <h3>⚠️ 6. Pièges à éviter</h3>
+        <p><strong>1. "Que" peut être complétif OU relatif :</strong></p>
+        <ul>
+          <li><strong>Complétif :</strong> "Je pense <strong>que</strong> tu as raison." (après un verbe)</li>
+          <li><strong>Relatif :</strong> "Le livre <strong>que</strong> je lis..." (après un nom)</li>
+          <li><strong>Astuce :</strong> Regarder ce qui est <em>avant</em> le "que" : verbe → complétif / nom → relatif</li>
+        </ul>
+        <p><strong>2. Ne pas confondre avec les interrogatives indirectes :</strong></p>
+        <ul>
+          <li>"Je me demande <strong>si</strong> tu viendras." (interrogative indirecte, pas complétive)</li>
+        </ul>
+        <p><strong>3. La relative peut couper la principale :</strong></p>
+        <ul>
+          <li>"Le livre <strong>que je lis</strong> est intéressant."</li>
+          <li>Principale = "Le livre... est intéressant" (coupée par la relative)</li>
+        </ul>
+      </section>
+    `,
+    exemplesExercices: `
+      <h4>📝 Exercice 1 : Complétive ou relative ?</h4>
+      <p>Indique si c'est une complétive (C) ou une relative (R) :</p>
+      <ol>
+        <li>Je pense que tu as raison. ___</li>
+        <li>Le livre qui est là est à moi. ___</li>
+        <li>Il dit qu'il viendra. ___</li>
+        <li>La fille que je vois est ma sœur. ___</li>
+      </ol>
+
+      <h4>🔍 Exercice 2 : Identifier l'antécédent</h4>
+      <p>Dans ces phrases avec relatives, souligne l'antécédent (le nom complété) :</p>
+      <ol>
+        <li>Le garçon qui parle est mon ami.</li>
+        <li>La maison où j'habite est grande.</li>
+        <li>Le livre que tu lis est intéressant.</li>
+      </ol>
+
+      <h4>✨ Exercice 3 : Identifier la fonction</h4>
+      <p>Pour chaque relative, indique la fonction du pronom relatif :</p>
+      <ol>
+        <li>"Le garçon qui chante..." (qui = sujet / COD / autre ?)</li>
+        <li>"Le livre que je lis..." (que = sujet / COD / autre ?)</li>
+        <li>"Le garçon dont je parle..." (dont = complément de / autre ?)</li>
+      </ol>
+
+      <h4>🎯 Exercice 4 : Construction</h4>
+      <p>Complète avec le pronom relatif qui convient (qui, que, dont, où) :</p>
+      <ol>
+        <li>Le garçon ___ parle est mon frère.</li>
+        <li>Le livre ___ je lis est intéressant.</li>
+        <li>La ville ___ j'habite est belle.</li>
+        <li>Le film ___ je t'ai parlé est au cinéma.</li>
+      </ol>
+    `
   },
   {
     id: "discours-direct-indirect",
     title: "Discours direct et indirect",
     mois: "Juin - Semaine 2",
-    objectif: "Identifier et différencier le discours direct du discours indirect",
-    introduction: "Contenu à venir...",
-    contenu: "Contenu à venir...",
-    exemplesExercices: "Exercices à venir..."
+    objectif: "Identifier et différencier le discours direct du discours indirect, maîtriser les transformations nécessaires pour passer de l'un à l'autre et rapporter correctement les paroles dans un récit.",
+    introduction: `Quand on rapporte les paroles de quelqu'un, on peut le faire de deux façons ! 💬📝 En discours direct, on cite exactement ce qui a été dit (avec des guillemets). En discours indirect, on rapporte le sens sans citer mot pour mot. Maîtriser ces deux formes est essentiel pour bien raconter et bien écrire ! ✨`,
+    contenu: `
+      <section class="lesson-section">
+        <h3>💬 1. Le discours direct</h3>
+        <p>Le discours direct rapporte <strong>exactement</strong> les paroles telles qu'elles ont été prononcées.</p>
+        <p><strong>Caractéristiques :</strong></p>
+        <ul>
+          <li>Utilisation des <strong>guillemets</strong> « » ou " "</li>
+          <li>Présence d'un <strong>tiret</strong> (—) pour un dialogue</li>
+          <li>Verbe introducteur : dire, demander, répondre, s'écrier...</li>
+          <li>Les paroles sont citées <strong>exactement</strong></li>
+        </ul>
+        <p><strong>Exemples :</strong></p>
+        <ul>
+          <li>Marie dit : <strong>« Je viens demain. »</strong></li>
+          <li>Pierre demande : <strong>« Tu viens avec moi ? »</strong></li>
+          <li><strong>— Où vas-tu ?</strong> demanda-t-il.</li>
+          <li>Elle s'écria : <strong>« Quelle belle journée ! »</strong></li>
+        </ul>
+        <p><strong>Ponctuation du discours direct :</strong></p>
+        <ul>
+          <li><strong>Deux-points (:)</strong> avant les guillemets</li>
+          <li><strong>Guillemets</strong> autour des paroles</li>
+          <li><strong>Majuscule</strong> au début des paroles</li>
+          <li>Point d'exclamation, d'interrogation ou virgule <strong>avant</strong> le guillemet fermant</li>
+        </ul>
+      </section>
+
+      <section class="lesson-section">
+        <h3>📝 2. Le discours indirect</h3>
+        <p>Le discours indirect rapporte le <strong>sens</strong> des paroles sans les citer exactement. On les intègre dans une phrase avec une proposition subordonnée.</p>
+        <p><strong>Caractéristiques :</strong></p>
+        <ul>
+          <li><strong>Pas de guillemets</strong></li>
+          <li>Introduction par <strong>"que"</strong>, <strong>"si"</strong>, ou un mot interrogatif</li>
+          <li>Transformations grammaticales nécessaires</li>
+          <li>Intégré dans le récit</li>
+        </ul>
+        <p><strong>Exemples :</strong></p>
+        <ul>
+          <li>Marie dit <strong>qu'</strong>elle vient demain.</li>
+          <li>Pierre demande <strong>si</strong> je viens avec lui.</li>
+          <li>Il demanda <strong>où</strong> j'allais.</li>
+          <li>Elle s'écria <strong>que</strong> c'était une belle journée.</li>
+        </ul>
+        <p><strong>Structure :</strong></p>
+        <p>Verbe introducteur + <strong>que/si/mot interrogatif</strong> + proposition subordonnée</p>
+      </section>
+
+      <section class="lesson-section">
+        <h3>🔄 3. Tableau comparatif</h3>
+        <table class="lesson-table">
+          <tr>
+            <th>Critère</th>
+            <th>Discours direct</th>
+            <th>Discours indirect</th>
+          </tr>
+          <tr>
+            <td><strong>Guillemets</strong></td>
+            <td>OUI « »</td>
+            <td>NON</td>
+          </tr>
+          <tr>
+            <td><strong>Ponctuation</strong></td>
+            <td>Deux-points :
+
+</td>
+            <td>Pas de deux-points</td>
+          </tr>
+          <tr>
+            <td><strong>Introducteur</strong></td>
+            <td>Verbe + :</td>
+            <td>Verbe + que/si</td>
+          </tr>
+          <tr>
+            <td><strong>Fidélité</strong></td>
+            <td>Exactement les paroles</td>
+            <td>Sens des paroles</td>
+          </tr>
+          <tr>
+            <td><strong>Exemple</strong></td>
+            <td>Il dit : « Je viens. »</td>
+            <td>Il dit qu'il vient.</td>
+          </tr>
+        </table>
+      </section>
+
+      <section class="lesson-section">
+        <h3>⚙️ 4. Transformations : du direct à l'indirect</h3>
+        <p>Pour passer du discours direct au discours indirect, plusieurs transformations sont nécessaires :</p>
+        <p><strong>1. Les pronoms personnels :</strong></p>
+        <ul>
+          <li><strong>je</strong> → <strong>il/elle</strong> (3e personne)</li>
+          <li><strong>tu</strong> → <strong>il/elle/je</strong> (selon le contexte)</li>
+          <li><strong>nous</strong> → <strong>ils/elles</strong></li>
+        </ul>
+        <p><strong>Exemple :</strong></p>
+        <ul>
+          <li>Direct : Marie dit : « <strong>Je</strong> viens. »</li>
+          <li>Indirect : Marie dit qu'<strong>elle</strong> vient.</li>
+        </ul>
+        <p><strong>2. Les temps verbaux (si le verbe introducteur est au passé) :</strong></p>
+        <ul>
+          <li><strong>Présent</strong> → <strong>Imparfait</strong></li>
+          <li><strong>Passé composé</strong> → <strong>Plus-que-parfait</strong></li>
+          <li><strong>Futur</strong> → <strong>Conditionnel présent</strong></li>
+        </ul>
+        <p><strong>Exemples :</strong></p>
+        <ul>
+          <li>Direct : Il a dit : « Je <strong>viens</strong>. » → Indirect : Il a dit qu'il <strong>venait</strong>.</li>
+          <li>Direct : Elle a dit : « J'<strong>ai fini</strong>. » → Indirect : Elle a dit qu'elle <strong>avait fini</strong>.</li>
+          <li>Direct : Il a dit : « Je <strong>viendrai</strong>. » → Indirect : Il a dit qu'il <strong>viendrait</strong>.</li>
+        </ul>
+        <p><strong>3. Les indicateurs de temps et de lieu :</strong></p>
+        <ul>
+          <li><strong>aujourd'hui</strong> → <strong>ce jour-là</strong></li>
+          <li><strong>hier</strong> → <strong>la veille</strong></li>
+          <li><strong>demain</strong> → <strong>le lendemain</strong></li>
+          <li><strong>ici</strong> → <strong>là</strong></li>
+          <li><strong>maintenant</strong> → <strong>alors, à ce moment-là</strong></li>
+        </ul>
+        <p><strong>4. Les types de phrases :</strong></p>
+        <ul>
+          <li><strong>Affirmation :</strong> que</li>
+          <li><strong>Question oui/non :</strong> si</li>
+          <li><strong>Question avec mot interrogatif :</strong> où, quand, pourquoi, comment...</li>
+          <li><strong>Ordre :</strong> de + infinitif</li>
+        </ul>
+      </section>
+
+      <section class="lesson-section">
+        <h3>🎯 5. Transformations selon le type de phrase</h3>
+        <p><strong>Phrase affirmative :</strong></p>
+        <ul>
+          <li>Direct : Il dit : « Je suis content. »</li>
+          <li>Indirect : Il dit <strong>qu'</strong>il est content.</li>
+        </ul>
+        <p><strong>Phrase interrogative (oui/non) :</strong></p>
+        <ul>
+          <li>Direct : Il demande : « Tu viens ? »</li>
+          <li>Indirect : Il demande <strong>si</strong> je viens.</li>
+        </ul>
+        <p><strong>Phrase interrogative (avec mot interrogatif) :</strong></p>
+        <ul>
+          <li>Direct : Il demande : « Où vas-tu ? »</li>
+          <li>Indirect : Il demande <strong>où</strong> je vais.</li>
+          <li>Direct : « Quand viendras-tu ? »</li>
+          <li>Indirect : Il demande <strong>quand</strong> je viendrai.</li>
+        </ul>
+        <p><strong>Phrase impérative (ordre) :</strong></p>
+        <ul>
+          <li>Direct : Elle dit : « Viens ! »</li>
+          <li>Indirect : Elle dit <strong>de</strong> venir. (de + infinitif)</li>
+          <li>Direct : « Ne pars pas ! »</li>
+          <li>Indirect : Il dit <strong>de ne pas</strong> partir.</li>
+        </ul>
+        <p><strong>Phrase exclamative :</strong></p>
+        <ul>
+          <li>Direct : Il s'écrie : « Quelle belle journée ! »</li>
+          <li>Indirect : Il s'écrie <strong>que</strong> c'est une belle journée.</li>
+        </ul>
+      </section>
+
+      <section class="lesson-section">
+        <h3>✨ 6. Exemples complets de transformation</h3>
+        <p><strong>Exemple 1 (au présent) :</strong></p>
+        <ul>
+          <li><strong>Direct :</strong> Marie dit : « Je vais à l'école. »</li>
+          <li><strong>Indirect :</strong> Marie dit qu'elle va à l'école.</li>
+          <li><strong>Transformations :</strong> je → elle, temps identique (verbe introducteur au présent)</li>
+        </ul>
+        <p><strong>Exemple 2 (au passé) :</strong></p>
+        <ul>
+          <li><strong>Direct :</strong> Pierre a dit : « Je viendrai demain. »</li>
+          <li><strong>Indirect :</strong> Pierre a dit qu'il viendrait le lendemain.</li>
+          <li><strong>Transformations :</strong> je → il, futur → conditionnel, demain → le lendemain</li>
+        </ul>
+        <p><strong>Exemple 3 (question) :</strong></p>
+        <ul>
+          <li><strong>Direct :</strong> Elle demande : « Où habites-tu ? »</li>
+          <li><strong>Indirect :</strong> Elle demande où j'habite.</li>
+          <li><strong>Transformations :</strong> tu → je, maintien du mot interrogatif "où"</li>
+        </ul>
+        <p><strong>Exemple 4 (ordre) :</strong></p>
+        <ul>
+          <li><strong>Direct :</strong> Le professeur dit : « Travaillez bien ! »</li>
+          <li><strong>Indirect :</strong> Le professeur dit de bien travailler.</li>
+          <li><strong>Transformations :</strong> impératif → de + infinitif</li>
+        </ul>
+      </section>
+    `,
+    exemplesExercices: `
+      <h4>💬 Exercice 1 : Direct ou indirect ?</h4>
+      <p>Indique si c'est du discours direct (D) ou indirect (I) :</p>
+      <ol>
+        <li>Marie dit : « Je viens demain. » ___</li>
+        <li>Pierre dit qu'il est content. ___</li>
+        <li>Elle demande : « Tu viens ? » ___</li>
+        <li>Il demande si je viens. ___</li>
+      </ol>
+
+      <h4>🔄 Exercice 2 : Transformer en discours indirect</h4>
+      <p>Transforme ces phrases en discours indirect :</p>
+      <ol>
+        <li>Marie dit : « Je suis contente. »<br>
+        → Marie dit ___________</li>
+        <li>Il demande : « Tu viens ? »<br>
+        → Il demande ___________</li>
+        <li>Elle dit : « Viens ici ! »<br>
+        → Elle dit ___________</li>
+      </ol>
+
+      <h4>📝 Exercice 3 : Transformer en discours direct</h4>
+      <p>Transforme ces phrases en discours direct :</p>
+      <ol>
+        <li>Pierre dit qu'il viendra demain.<br>
+        → Pierre dit : ___________</li>
+        <li>Elle demande où je vais.<br>
+        → Elle demande : ___________</li>
+      </ol>
+
+      <h4>✨ Exercice 4 : Transformation complète</h4>
+      <p>Transforme en discours indirect avec verbe au passé :</p>
+      <p>Marie a dit : « Je viendrai demain avec mon frère. »</p>
+      <p>→ Marie a dit ___________</p>
+    `
   }
 ];
+
