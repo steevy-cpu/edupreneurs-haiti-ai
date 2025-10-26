@@ -3729,20 +3729,290 @@ Un texte informatif a pour but de transmettre des connaissances sur un sujet de 
     id: "recits-narratifs",
     title: "Production de récits narratifs",
     mois: "Avril - Semaine 1",
-    objectif: "Produire des textes à caractère narratif - contes et récits",
-    introduction: "Contenu à venir...",
-    contenu: "Contenu à venir...",
-    exemplesExercices: "Exercices à venir..."
+    objectif: "Produire des textes à caractère narratif - contes et récits en respectant la structure narrative, en créant une intrigue captivante et en développant des personnages pour transmettre un message ou divertir.",
+    introduction: `Raconter une histoire, c'est comme emmener vos lecteurs dans un voyage ! 📖✨ Les récits narratifs nous font vivre des aventures, découvrir des personnages attachants et nous transmettent des leçons de vie. Apprendre à écrire un bon récit, c'est développer votre imagination et votre talent de conteur. 🌟`,
+    contenu: `
+      <section class="lesson-section">
+        <h3>📚 1. Qu'est-ce qu'un récit narratif ?</h3>
+        <p>Un récit narratif est un texte qui raconte une histoire réelle ou imaginaire avec des personnages, des événements et un déroulement dans le temps.</p>
+        <p><strong>Types de récits narratifs :</strong></p>
+        <ul>
+          <li><strong>Le conte :</strong> Histoire imaginaire avec une morale (ex: "La Cigale et la Fourmi")</li>
+          <li><strong>La légende :</strong> Récit merveilleux basé sur des faits historiques</li>
+          <li><strong>Le récit d'aventure :</strong> Histoire pleine d'action et de rebondissements</li>
+          <li><strong>Le récit de vie :</strong> Histoire vraie tirée de l'expérience personnelle</li>
+        </ul>
+        <p><strong>Caractéristiques :</strong> Personnages, actions, lieu, temps, narrateur, intrigue, morale ou message.</p>
+      </section>
+
+      <section class="lesson-section">
+        <h3>🎯 2. La structure du récit narratif - Le schéma narratif</h3>
+        <p>Un bon récit suit généralement une structure en 5 étapes, appelée schéma narratif :</p>
+        <ol>
+          <li><strong>Situation initiale :</strong> Présentation des personnages, du lieu, du temps (Qui ? Où ? Quand ?)</li>
+          <li><strong>Élément déclencheur :</strong> Un événement qui vient perturber la situation (Un problème survient)</li>
+          <li><strong>Péripéties :</strong> Les actions et aventures pour résoudre le problème (Les obstacles)</li>
+          <li><strong>Élément de résolution :</strong> Ce qui permet de résoudre le problème (La solution)</li>
+          <li><strong>Situation finale :</strong> Le retour à l'équilibre, la fin de l'histoire (Comment ça finit)</li>
+        </ol>
+        <p><strong>Exemple - "Le Petit Chaperon Rouge" :</strong></p>
+        <ul>
+          <li><strong>Situation initiale :</strong> Une petite fille vit avec sa mère et doit aller voir sa grand-mère.</li>
+          <li><strong>Élément déclencheur :</strong> Elle rencontre le loup dans la forêt.</li>
+          <li><strong>Péripéties :</strong> Le loup arrive avant elle chez la grand-mère et se déguise.</li>
+          <li><strong>Élément de résolution :</strong> Un chasseur intervient et sauve le Chaperon Rouge.</li>
+          <li><strong>Situation finale :</strong> Tout le monde est sauvé. Morale: ne pas parler aux étrangers.</li>
+        </ul>
+      </section>
+
+      <section class="lesson-section">
+        <h3>👥 3. Les personnages du récit</h3>
+        <p>Les personnages donnent vie à votre histoire. Il faut les décrire et les développer.</p>
+        <p><strong>Types de personnages :</strong></p>
+        <ul>
+          <li><strong>Le héros/l'héroïne :</strong> Le personnage principal (le protagoniste)</li>
+          <li><strong>L'opposant :</strong> Celui qui crée des obstacles (l'antagoniste)</li>
+          <li><strong>L'adjuvant :</strong> Celui qui aide le héros (l'ami, le mentor)</li>
+          <li><strong>Les personnages secondaires :</strong> Autres personnages de l'histoire</li>
+        </ul>
+        <p><strong>Comment créer un bon personnage :</strong></p>
+        <ul>
+          <li><strong>Caractéristiques physiques :</strong> Taille, âge, apparence, vêtements</li>
+          <li><strong>Traits de caractère :</strong> Courageux, timide, généreux, méchant...</li>
+          <li><strong>Motivations :</strong> Qu'est-ce qu'il veut ? Pourquoi ?</li>
+          <li><strong>Évolution :</strong> Comment le personnage change-t-il durant l'histoire ?</li>
+        </ul>
+        <p><strong>Exemple :</strong> "Marie est une jeune fille de 12 ans, aux longs cheveux noirs. Timide mais courageuse, elle rêve de devenir médecin pour aider sa communauté." 🌟</p>
+      </section>
+
+      <section class="lesson-section">
+        <h3>⏰ 4. Le cadre spatio-temporel</h3>
+        <p>Le lieu et le temps créent l'atmosphère de votre récit.</p>
+        <p><strong>Le lieu (où ?) :</strong></p>
+        <ul>
+          <li>Soyez précis : "dans une petite maison de Port-au-Prince" plutôt que "chez lui"</li>
+          <li>Décrivez pour immerger le lecteur : couleurs, sons, odeurs</li>
+          <li>Le lieu peut évoluer : la maison → la forêt → le château</li>
+        </ul>
+        <p><strong>Le temps (quand ?) :</strong></p>
+        <ul>
+          <li><strong>Époque :</strong> Il y a longtemps, aujourd'hui, en 2024...</li>
+          <li><strong>Moment :</strong> Le matin, le soir, en hiver, pendant les vacances...</li>
+          <li><strong>Durée :</strong> Quelques heures, plusieurs jours, des années...</li>
+        </ul>
+        <p><strong>Indicateurs de temps :</strong> Un jour, soudain, ensuite, plus tard, finalement, le lendemain, après quelques heures...</p>
+      </section>
+
+      <section class="lesson-section">
+        <h3>✍️ 5. Les temps du récit</h3>
+        <p>Dans un récit au passé, on utilise principalement deux temps :</p>
+        <p><strong>1. L'imparfait :</strong> Pour les descriptions, les habitudes, le décor</p>
+        <ul>
+          <li>"Il <strong>faisait</strong> beau."</li>
+          <li>"La maison <strong>était</strong> grande et <strong>se trouvait</strong> près de la mer."</li>
+          <li>"Tous les jours, elle <strong>se promenait</strong> dans le jardin."</li>
+        </ul>
+        <p><strong>2. Le passé simple (ou passé composé) :</strong> Pour les actions principales, les événements</p>
+        <ul>
+          <li>"Il <strong>arriva</strong> au village." (passé simple)</li>
+          <li>"Il <strong>est arrivé</strong> au village." (passé composé - plus courant à l'oral)</li>
+          <li>"Soudain, le loup <strong>apparut</strong>."</li>
+        </ul>
+        <p><strong>Alternance :</strong> "Il <strong>faisait</strong> nuit (imparfait = décor). Soudain, un bruit <strong>retentit</strong> (passé simple = action)."</p>
+      </section>
+
+      <section class="lesson-section">
+        <h3>🎨 6. Rendre votre récit captivant</h3>
+        <p><strong>Techniques pour captiver le lecteur :</strong></p>
+        <ul>
+          <li><strong>Créer du suspense :</strong> "Qu'allait-il se passer ? Elle n'osait pas ouvrir la porte..."</li>
+          <li><strong>Utiliser des dialogues :</strong> Faire parler les personnages rend l'histoire vivante</li>
+          <li><strong>Varier les phrases :</strong> Alterner phrases courtes (action) et longues (description)</li>
+          <li><strong>Employer des adjectifs :</strong> "Une <strong>sombre</strong> forêt, un <strong>terrible</strong> monstre"</li>
+          <li><strong>Utiliser des figures de style :</strong> Comparaisons, métaphores ("Il était rapide comme l'éclair")</li>
+          <li><strong>Montrer plutôt que dire :</strong> "Ses mains tremblaient" au lieu de "Il avait peur"</li>
+        </ul>
+        <p><strong>Structure du dialogue :</strong></p>
+        <ul>
+          <li>"— Je dois partir, dit-il tristement."</li>
+          <li>"— Ne pars pas ! supplia-t-elle."</li>
+        </ul>
+        <p><strong>Conseil :</strong> Lisez beaucoup de contes et récits pour vous inspirer ! 📚✨</p>
+      </section>
+    `,
+    exemplesExercices: `
+      <h4>📝 Exercice 1 : Identifier le schéma narratif</h4>
+      <p>Lis ce court récit et identifie les 5 étapes du schéma narratif :</p>
+      <p>"Pierre vivait heureux dans son village. Un jour, un dragon attaqua le village. Pierre décida de combattre le dragon. Après plusieurs tentatives, il réussit à le vaincre grâce à son intelligence. Le village retrouva la paix et Pierre devint un héros."</p>
+      <ol>
+        <li>Situation initiale : ______________</li>
+        <li>Élément déclencheur : ______________</li>
+        <li>Péripéties : ______________</li>
+        <li>Résolution : ______________</li>
+        <li>Situation finale : ______________</li>
+      </ol>
+
+      <h4>👥 Exercice 2 : Créer un personnage</h4>
+      <p>Crée un personnage pour un récit. Décris :</p>
+      <ul>
+        <li>Son nom et son âge</li>
+        <li>Son apparence physique (3 détails)</li>
+        <li>2 traits de caractère</li>
+        <li>Son rêve ou objectif</li>
+      </ul>
+
+      <h4>✍️ Exercice 3 : Rédiger une situation initiale</h4>
+      <p>Écris la situation initiale d'un récit (5-6 phrases) en répondant à : Qui ? Où ? Quand ? Comment vivait le personnage ?</p>
+
+      <h4>🎨 Exercice 4 : Écrire un récit complet</h4>
+      <p>Écris un récit narratif complet (200-300 mots) en suivant le schéma narratif. Choisis un de ces débuts :</p>
+      <ul>
+        <li>"Il était une fois, dans un village haïtien, un garçon qui rêvait de..."</li>
+        <li>"Ce matin-là, en allant à l'école, Marie découvrit quelque chose d'étrange..."</li>
+        <li>"Jean n'oublierait jamais ce jour où il rencontra..."</li>
+      </ul>
+    `
   },
   // Avril - Semaine 2
   {
     id: "synonymes",
     title: "Les synonymes",
     mois: "Avril - Semaine 2",
-    objectif: "Remplacer un mot par un synonyme dans un texte",
-    introduction: "Contenu à venir...",
-    contenu: "Contenu à venir...",
-    exemplesExercices: "Exercices à venir..."
+    objectif: "Identifier et utiliser correctement les synonymes pour enrichir son vocabulaire, varier son expression écrite et orale, et éviter les répétitions dans un texte.",
+    introduction: `Les synonymes sont des mots différents qui ont presque le même sens ! 🔄✨ Utiliser des synonymes rend vos textes plus riches et plus intéressants à lire. Au lieu de répéter toujours "beau", vous pouvez dire "magnifique", "splendide" ou "superbe" ! 🌟`,
+    contenu: `
+      <section class="lesson-section">
+        <h3>📚 1. Qu'est-ce qu'un synonyme ?</h3>
+        <p>Un synonyme est un mot qui a un sens proche ou identique à un autre mot. Les synonymes appartiennent à la même classe grammaticale.</p>
+        <p><strong>Exemples :</strong></p>
+        <ul>
+          <li><strong>Maison</strong> (nom) = habitation, demeure, résidence, logement</li>
+          <li><strong>Grand</strong> (adjectif) = immense, énorme, vaste, colossal</li>
+          <li><strong>Marcher</strong> (verbe) = se promener, avancer, déambuler</li>
+          <li><strong>Vite</strong> (adverbe) = rapidement, prestement</li>
+        </ul>
+        <p><strong>Important :</strong> Deux synonymes ont le même sens général mais peuvent avoir des nuances différentes ! 🎯</p>
+      </section>
+
+      <section class="lesson-section">
+        <h3>🎯 2. Pourquoi utiliser des synonymes ?</h3>
+        <p><strong>Les synonymes sont utiles pour :</strong></p>
+        <ul>
+          <li><strong>Éviter les répétitions :</strong> Rendre le texte plus agréable à lire</li>
+          <li><strong>Enrichir son vocabulaire :</strong> Avoir plus de mots à sa disposition</li>
+          <li><strong>Préciser sa pensée :</strong> Choisir le mot le plus exact</li>
+          <li><strong>Adapter son registre de langue :</strong> Passer du familier au soutenu</li>
+        </ul>
+        <p><strong>Exemple sans synonymes (répétitif) :</strong></p>
+        <p>"Mon ami a un beau chien. C'est un <strong>beau</strong> animal. Il habite dans une <strong>belle</strong> maison." 😴</p>
+        <p><strong>Avec des synonymes (varié) :</strong></p>
+        <p>"Mon ami a un <strong>beau</strong> chien. C'est un <strong>magnifique</strong> animal. Il habite dans une <strong>splendide</strong> maison." ✨</p>
+      </section>
+
+      <section class="lesson-section">
+        <h3>🔍 3. Les nuances entre synonymes</h3>
+        <p>Attention ! Même si deux mots sont synonymes, ils ne sont pas toujours interchangeables. Ils peuvent avoir des nuances d'intensité ou d'emploi.</p>
+        <p><strong>Nuances d'intensité :</strong></p>
+        <ul>
+          <li><strong>Content</strong> < Heureux < Joyeux < Ravi < Enchanté</li>
+          <li><strong>Fatigué</strong> < Épuisé < Exténué</li>
+          <li><strong>Petit</strong> < Minuscule < Microscopique</li>
+          <li><strong>Grand</strong> < Immense < Gigantesque < Colossal</li>
+        </ul>
+        <p><strong>Nuances de registre de langue :</strong></p>
+        <ul>
+          <li><strong>Familier :</strong> flic, bagnole, bouquin</li>
+          <li><strong>Courant :</strong> policier, voiture, livre</li>
+          <li><strong>Soutenu :</strong> agent de police, automobile, ouvrage</li>
+        </ul>
+        <p><strong>Exemple :</strong> On ne dit pas "un ravi enfant" mais "un heureux enfant". On dit "un enfant ravi" (enchanté). 🎯</p>
+      </section>
+
+      <section class="lesson-section">
+        <h3>📖 4. Comment trouver des synonymes ?</h3>
+        <p><strong>Méthodes pour trouver des synonymes :</strong></p>
+        <ul>
+          <li><strong>Le dictionnaire des synonymes :</strong> Outil spécialisé</li>
+          <li><strong>Le dictionnaire classique :</strong> Dans la définition, on trouve souvent des synonymes</li>
+          <li><strong>Le contexte :</strong> Réfléchir à des mots qui pourraient convenir dans la phrase</li>
+          <li><strong>Vos lectures :</strong> Noter les mots nouveaux rencontrés</li>
+        </ul>
+        <p><strong>Exemple d'utilisation du dictionnaire :</strong></p>
+        <p><strong>Beau</strong> : adj. Qui fait éprouver une émotion esthétique. Syn : joli, magnifique, splendide, superbe.</p>
+      </section>
+
+      <section class="lesson-section">
+        <h3>✍️ 5. Utiliser les synonymes dans un texte</h3>
+        <p><strong>Règles d'utilisation :</strong></p>
+        <ul>
+          <li><strong>Respecter la classe grammaticale :</strong> Un nom par un nom, un verbe par un verbe</li>
+          <li><strong>Vérifier le contexte :</strong> Le synonyme doit avoir du sens dans la phrase</li>
+          <li><strong>Attention aux faux-synonymes :</strong> Certains mots proches ne sont pas toujours interchangeables</li>
+          <li><strong>Varier mais rester naturel :</strong> Ne pas chercher des synonymes trop compliqués</li>
+        </ul>
+        <p><strong>Exemple de réécriture :</strong></p>
+        <p><strong>Texte original :</strong><br>
+        "Paul est un bon élève. Il a de bons résultats. Ses professeurs disent qu'il est bon en mathématiques."</p>
+        <p><strong>Avec synonymes :</strong><br>
+        "Paul est un <strong>excellent</strong> élève. Il a de <strong>brillants</strong> résultats. Ses professeurs disent qu'il est <strong>talentueux</strong> en mathématiques." ✨</p>
+      </section>
+
+      <section class="lesson-section">
+        <h3>🎨 6. Synonymes courants à connaître (AF7)</h3>
+        <p><strong>Verbes d'action :</strong></p>
+        <ul>
+          <li><strong>Dire :</strong> parler, affirmer, déclarer, raconter, expliquer</li>
+          <li><strong>Faire :</strong> réaliser, accomplir, effectuer, exécuter</li>
+          <li><strong>Voir :</strong> regarder, observer, apercevoir, contempler</li>
+          <li><strong>Aller :</strong> se rendre, se diriger, partir</li>
+        </ul>
+        <p><strong>Adjectifs descriptifs :</strong></p>
+        <ul>
+          <li><strong>Joli :</strong> beau, agréable, charmant, ravissant</li>
+          <li><strong>Triste :</strong> malheureux, chagriné, affligé, mélancolique</li>
+          <li><strong>Intelligent :</strong> brillant, doué, astucieux, malin</li>
+          <li><strong>Difficile :</strong> compliqué, ardu, dur, pénible</li>
+        </ul>
+        <p><strong>Noms usuels :</strong></p>
+        <ul>
+          <li><strong>Travail :</strong> tâche, labeur, ouvrage, occupation</li>
+          <li><strong>Peur :</strong> crainte, frayeur, effroi, angoisse</li>
+          <li><strong>Joie :</strong> bonheur, allégresse, gaieté, satisfaction</li>
+        </ul>
+      </section>
+    `,
+    exemplesExercices: `
+      <h4>📝 Exercice 1 : Identifier les synonymes</h4>
+      <p>Dans chaque liste, entoure les deux mots synonymes :</p>
+      <ol>
+        <li>grand - petit - immense - rouge</li>
+        <li>parler - courir - dire - manger</li>
+        <li>joli - laid - beau - triste</li>
+        <li>maison - école - habitation - jardin</li>
+      </ol>
+
+      <h4>🔍 Exercice 2 : Trouver des synonymes</h4>
+      <p>Trouve 3 synonymes pour chaque mot :</p>
+      <ol>
+        <li>Heureux : __________, __________, __________</li>
+        <li>Petit : __________, __________, __________</li>
+        <li>Marcher : __________, __________, __________</li>
+        <li>Difficile : __________, __________, __________</li>
+      </ol>
+
+      <h4>✍️ Exercice 3 : Remplacer par un synonyme</h4>
+      <p>Remplace le mot souligné par un synonyme approprié :</p>
+      <ol>
+        <li>Marie est une <u>bonne</u> élève. → ___________</li>
+        <li>Il fait <u>beau</u> aujourd'hui. → ___________</li>
+        <li>Ce problème est <u>difficile</u>. → ___________</li>
+        <li>Je vais <u>aller</u> à l'école. → ___________</li>
+      </ol>
+
+      <h4>🎨 Exercice 4 : Réécrire un texte</h4>
+      <p>Réécris ce texte en remplaçant les mots répétés par des synonymes :</p>
+      <p>"Pierre a un beau chien. Son chien est très beau. Tout le monde dit que c'est un beau animal. Pierre est content d'avoir un si beau chien."</p>
+    `
   },
   {
     id: "homophones",
