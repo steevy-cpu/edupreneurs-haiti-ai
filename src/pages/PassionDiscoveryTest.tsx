@@ -8,6 +8,8 @@ import { Music, Palette, Brain, BookOpen, Play, CheckCircle2, Lock, Loader2, Arr
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { usePassionProgress } from "@/hooks/usePassionProgress";
+import { ModuleActivity } from "@/components/passion/ModuleActivity";
 import ericTeaching from "@/assets/eric-teaching.png";
 import ericThinking from "@/assets/eric-thinking-pose.png";
 import ericWelcome from "@/assets/eric-welcome.png";
@@ -23,6 +25,15 @@ interface QuizQuestion {
   ericImage: string;
 }
 
+interface Activity {
+  id: string;
+  type: "video" | "quiz" | "reading" | "game";
+  title: string;
+  description: string;
+  duration: string;
+  completed: boolean;
+}
+
 interface Module {
   id: string;
   title: string;
@@ -30,6 +41,7 @@ interface Module {
   duration: string;
   completed: boolean;
   locked: boolean;
+  activities: Activity[];
 }
 
 interface Category {
@@ -74,6 +86,9 @@ const PassionDiscoveryTest = () => {
   const [videos, setVideos] = useState<YouTubeVideo[]>([]);
   const [loadingVideos, setLoadingVideos] = useState(false);
   const [userId, setUserId] = useState<string | null>(null);
+  const [showActivities, setShowActivities] = useState(false);
+  
+  const { getModuleProgress, getCategoryProgress, updateProgress, isLoading: progressLoading } = usePassionProgress(userId);
 
   useEffect(() => {
     const getUser = async () => {
@@ -159,6 +174,44 @@ const PassionDiscoveryTest = () => {
     }
   ];
 
+  // Helper function to generate default activities for modules
+  const generateDefaultActivities = (moduleId: string, moduleTitle: string): Activity[] => {
+    return [
+      {
+        id: `${moduleId}-video`,
+        type: "video",
+        title: `Introduction à ${moduleTitle}`,
+        description: "Vidéo explicative pour découvrir les concepts de base",
+        duration: "5 min",
+        completed: false
+      },
+      {
+        id: `${moduleId}-reading`,
+        type: "reading",
+        title: `Contenu pédagogique`,
+        description: "Texte détaillé avec explications et exemples",
+        duration: "10 min",
+        completed: false
+      },
+      {
+        id: `${moduleId}-quiz`,
+        type: "quiz",
+        title: `Quiz d'évaluation`,
+        description: "Teste tes connaissances sur ce module",
+        duration: "5 min",
+        completed: false
+      },
+      {
+        id: `${moduleId}-game`,
+        type: "game",
+        title: `Activité pratique`,
+        description: "Mets en pratique ce que tu as appris",
+        duration: "10 min",
+        completed: false
+      }
+    ];
+  };
+
   const categories: Category[] = [
     {
       id: "music",
@@ -168,10 +221,10 @@ const PassionDiscoveryTest = () => {
       fullDescription: "Les jeunes pourront s'initier aux bases du rythme, à la découverte des instruments, à la création musicale numérique et à la culture sonore.",
       color: "from-purple-500 to-pink-500",
       modules: [
-        { id: "rhythm", title: "Bases du Rythme", description: "Apprends à compter les temps et sentir le rythme", duration: "15 min", completed: false, locked: false },
-        { id: "instruments", title: "Découverte des Instruments", description: "Explore les instruments traditionnels et modernes", duration: "20 min", completed: false, locked: false },
-        { id: "production", title: "Production Sonore", description: "Crée ta propre musique avec des outils numériques", duration: "25 min", completed: false, locked: false },
-        { id: "culture", title: "Culture Musicale", description: "Découvre la richesse de la musique haïtienne et mondiale", duration: "20 min", completed: false, locked: false }
+        { id: "rhythm", title: "Bases du Rythme", description: "Apprends à compter les temps et sentir le rythme", duration: "15 min", completed: false, locked: false, activities: generateDefaultActivities("rhythm", "Bases du Rythme") },
+        { id: "instruments", title: "Découverte des Instruments", description: "Explore les instruments traditionnels et modernes", duration: "20 min", completed: false, locked: false, activities: generateDefaultActivities("instruments", "Découverte des Instruments") },
+        { id: "production", title: "Production Sonore", description: "Crée ta propre musique avec des outils numériques", duration: "25 min", completed: false, locked: false, activities: generateDefaultActivities("production", "Production Sonore") },
+        { id: "culture", title: "Culture Musicale", description: "Découvre la richesse de la musique haïtienne et mondiale", duration: "20 min", completed: false, locked: false, activities: generateDefaultActivities("culture", "Culture Musicale") }
       ]
     },
     {
@@ -182,10 +235,10 @@ const PassionDiscoveryTest = () => {
       fullDescription: "Des contenus autour du dessin, du design graphique, et de la création numérique pour libérer ton imagination.",
       color: "from-blue-500 to-cyan-500",
       modules: [
-        { id: "drawing", title: "Dessin de Base", description: "Maîtrise les techniques fondamentales du dessin", duration: "20 min", completed: false, locked: false },
-        { id: "design", title: "Design Graphique", description: "Crée des visuels impactants", duration: "25 min", completed: false, locked: false },
-        { id: "digital", title: "Création Numérique", description: "Utilise les outils digitaux pour créer", duration: "30 min", completed: false, locked: false },
-        { id: "illustration", title: "Art Digital", description: "Deviens un artiste numérique", duration: "25 min", completed: false, locked: false }
+        { id: "drawing", title: "Dessin de Base", description: "Maîtrise les techniques fondamentales du dessin", duration: "20 min", completed: false, locked: false, activities: generateDefaultActivities("drawing", "Dessin de Base") },
+        { id: "design", title: "Design Graphique", description: "Crée des visuels impactants", duration: "25 min", completed: false, locked: false, activities: generateDefaultActivities("design", "Design Graphique") },
+        { id: "digital", title: "Création Numérique", description: "Utilise les outils digitaux pour créer", duration: "30 min", completed: false, locked: false, activities: generateDefaultActivities("digital", "Création Numérique") },
+        { id: "illustration", title: "Art Digital", description: "Deviens un artiste numérique", duration: "25 min", completed: false, locked: false, activities: generateDefaultActivities("illustration", "Art Digital") }
       ]
     },
     {
@@ -196,10 +249,10 @@ const PassionDiscoveryTest = () => {
       fullDescription: "Des activités pour stimuler la logique, la patience, la concentration et la prise de décision réfléchie.",
       color: "from-orange-500 to-red-500",
       modules: [
-        { id: "basics", title: "Bases des Échecs", description: "Apprends les règles et mouvements", duration: "15 min", completed: false, locked: false },
-        { id: "strategy", title: "Stratégies", description: "Développe ton jeu tactique", duration: "20 min", completed: false, locked: false },
-        { id: "problems", title: "Résolution de Problèmes", description: "Entraîne ton esprit logique", duration: "20 min", completed: false, locked: false },
-        { id: "mindgames", title: "Jeux d'Esprit", description: "Stimule ta concentration", duration: "15 min", completed: false, locked: false }
+        { id: "basics", title: "Bases des Échecs", description: "Apprends les règles et mouvements", duration: "15 min", completed: false, locked: false, activities: generateDefaultActivities("basics", "Bases des Échecs") },
+        { id: "strategy", title: "Stratégies", description: "Développe ton jeu tactique", duration: "20 min", completed: false, locked: false, activities: generateDefaultActivities("strategy", "Stratégies") },
+        { id: "problems", title: "Résolution de Problèmes", description: "Entraîne ton esprit logique", duration: "20 min", completed: false, locked: false, activities: generateDefaultActivities("problems", "Résolution de Problèmes") },
+        { id: "mindgames", title: "Jeux d'Esprit", description: "Stimule ta concentration", duration: "15 min", completed: false, locked: false, activities: generateDefaultActivities("mindgames", "Jeux d'Esprit") }
       ]
     },
     {
@@ -210,10 +263,10 @@ const PassionDiscoveryTest = () => {
       fullDescription: "Un espace de rencontre avec les mots pour écrire, lire, réciter et ressentir à travers la littérature et la poésie.",
       color: "from-green-500 to-teal-500",
       modules: [
-        { id: "writing", title: "Écriture Créative", description: "Libère ton imagination par l'écriture", duration: "20 min", completed: false, locked: false },
-        { id: "poetry", title: "Poésie", description: "Exprime tes émotions en vers", duration: "20 min", completed: false, locked: false },
-        { id: "reading", title: "Lecture Analytique", description: "Comprends et analyse les textes", duration: "25 min", completed: false, locked: false },
-        { id: "expression", title: "Expression Artistique", description: "Valorise la culture haïtienne par les mots", duration: "20 min", completed: false, locked: false }
+        { id: "writing", title: "Écriture Créative", description: "Libère ton imagination par l'écriture", duration: "20 min", completed: false, locked: false, activities: generateDefaultActivities("writing", "Écriture Créative") },
+        { id: "poetry", title: "Poésie", description: "Exprime tes émotions en vers", duration: "20 min", completed: false, locked: false, activities: generateDefaultActivities("poetry", "Poésie") },
+        { id: "reading", title: "Lecture Analytique", description: "Comprends et analyse les textes", duration: "25 min", completed: false, locked: false, activities: generateDefaultActivities("reading", "Lecture Analytique") },
+        { id: "expression", title: "Expression Artistique", description: "Valorise la culture haïtienne par les mots", duration: "20 min", completed: false, locked: false, activities: generateDefaultActivities("expression", "Expression Artistique") }
       ]
     }
   ];
@@ -227,10 +280,10 @@ const PassionDiscoveryTest = () => {
       fullDescription: "Découvre les droits humains fondamentaux : éducation, santé, liberté d'expression, dignité et leur application dans la vie quotidienne en Haïti.",
       color: "from-indigo-500 to-purple-500",
       modules: [
-        { id: "education", title: "Droit à l'Éducation", description: "Comprends ton droit fondamental à l'éducation", duration: "15 min", completed: false, locked: false },
-        { id: "health", title: "Droit à la Santé", description: "Découvre les droits liés à la santé et au bien-être", duration: "15 min", completed: false, locked: false },
-        { id: "expression", title: "Liberté d'Expression", description: "Apprends à t'exprimer dans le respect", duration: "15 min", completed: false, locked: false },
-        { id: "duties", title: "Devoirs du Citoyen", description: "Comprends tes responsabilités envers la société", duration: "15 min", completed: false, locked: false }
+        { id: "education", title: "Droit à l'Éducation", description: "Comprends ton droit fondamental à l'éducation", duration: "15 min", completed: false, locked: false, activities: generateDefaultActivities("education", "Droit à l'Éducation") },
+        { id: "health", title: "Droit à la Santé", description: "Découvre les droits liés à la santé et au bien-être", duration: "15 min", completed: false, locked: false, activities: generateDefaultActivities("health", "Droit à la Santé") },
+        { id: "expression", title: "Liberté d'Expression", description: "Apprends à t'exprimer dans le respect", duration: "15 min", completed: false, locked: false, activities: generateDefaultActivities("expression-civic", "Liberté d'Expression") },
+        { id: "duties", title: "Devoirs du Citoyen", description: "Comprends tes responsabilités envers la société", duration: "15 min", completed: false, locked: false, activities: generateDefaultActivities("duties", "Devoirs du Citoyen") }
       ]
     },
     {
@@ -241,10 +294,10 @@ const PassionDiscoveryTest = () => {
       fullDescription: "Explore les principes de la démocratie, la participation civique et ton rôle dans la société haïtienne.",
       color: "from-blue-500 to-indigo-500",
       modules: [
-        { id: "democracy", title: "Principes de la Démocratie", description: "Comprends comment fonctionne la démocratie", duration: "20 min", completed: false, locked: false },
-        { id: "participation", title: "Participation Civique", description: "Apprends à participer à la vie citoyenne", duration: "20 min", completed: false, locked: false },
-        { id: "laws", title: "Respect des Lois", description: "Comprends l'importance des lois et du vivre-ensemble", duration: "15 min", completed: false, locked: false },
-        { id: "civic-role", title: "Rôle du Citoyen", description: "Découvre ton rôle dans la société", duration: "15 min", completed: false, locked: false }
+        { id: "democracy", title: "Principes de la Démocratie", description: "Comprends comment fonctionne la démocratie", duration: "20 min", completed: false, locked: false, activities: generateDefaultActivities("democracy", "Principes de la Démocratie") },
+        { id: "participation", title: "Participation Civique", description: "Apprends à participer à la vie citoyenne", duration: "20 min", completed: false, locked: false, activities: generateDefaultActivities("participation", "Participation Civique") },
+        { id: "laws", title: "Respect des Lois", description: "Comprends l'importance des lois et du vivre-ensemble", duration: "15 min", completed: false, locked: false, activities: generateDefaultActivities("laws", "Respect des Lois") },
+        { id: "civic-role", title: "Rôle du Citoyen", description: "Découvre ton rôle dans la société", duration: "15 min", completed: false, locked: false, activities: generateDefaultActivities("civic-role", "Rôle du Citoyen") }
       ]
     },
     {
@@ -255,10 +308,10 @@ const PassionDiscoveryTest = () => {
       fullDescription: "Développe les valeurs de tolérance, respect de la diversité, solidarité et résolution pacifique des conflits.",
       color: "from-pink-500 to-rose-500",
       modules: [
-        { id: "tolerance", title: "Tolérance & Diversité", description: "Respecte et célèbre les différences", duration: "15 min", completed: false, locked: false },
-        { id: "solidarity", title: "Solidarité & Entraide", description: "Apprends l'importance de l'entraide", duration: "15 min", completed: false, locked: false },
-        { id: "justice", title: "Justice Sociale", description: "Comprends les principes d'égalité et de justice", duration: "20 min", completed: false, locked: false },
-        { id: "conflict", title: "Résolution de Conflits", description: "Apprends à résoudre les conflits pacifiquement", duration: "20 min", completed: false, locked: false }
+        { id: "tolerance", title: "Tolérance & Diversité", description: "Respecte et célèbre les différences", duration: "15 min", completed: false, locked: false, activities: generateDefaultActivities("tolerance", "Tolérance & Diversité") },
+        { id: "solidarity", title: "Solidarité & Entraide", description: "Apprends l'importance de l'entraide", duration: "15 min", completed: false, locked: false, activities: generateDefaultActivities("solidarity", "Solidarité & Entraide") },
+        { id: "justice", title: "Justice Sociale", description: "Comprends les principes d'égalité et de justice", duration: "20 min", completed: false, locked: false, activities: generateDefaultActivities("justice", "Justice Sociale") },
+        { id: "conflict", title: "Résolution de Conflits", description: "Apprends à résoudre les conflits pacifiquement", duration: "20 min", completed: false, locked: false, activities: generateDefaultActivities("conflict", "Résolution de Conflits") }
       ]
     }
   ];
@@ -272,10 +325,10 @@ const PassionDiscoveryTest = () => {
       fullDescription: "Maîtrise la gestion du temps, développe ta confiance en soi, ton intelligence émotionnelle et ta communication.",
       color: "from-yellow-500 to-orange-500",
       modules: [
-        { id: "time", title: "Gestion du Temps", description: "Organise ton temps efficacement", duration: "20 min", completed: false, locked: false },
-        { id: "stress", title: "Gestion du Stress", description: "Apprends à gérer le stress et la pression", duration: "20 min", completed: false, locked: false },
-        { id: "confidence", title: "Confiance en Soi", description: "Développe l'estime de soi et la pensée positive", duration: "25 min", completed: false, locked: false },
-        { id: "emotional", title: "Intelligence Émotionnelle", description: "Comprends et gère tes émotions", duration: "25 min", completed: false, locked: false }
+        { id: "time", title: "Gestion du Temps", description: "Organise ton temps efficacement", duration: "20 min", completed: false, locked: false, activities: generateDefaultActivities("time", "Gestion du Temps") },
+        { id: "stress", title: "Gestion du Stress", description: "Apprends à gérer le stress et la pression", duration: "20 min", completed: false, locked: false, activities: generateDefaultActivities("stress", "Gestion du Stress") },
+        { id: "confidence", title: "Confiance en Soi", description: "Développe l'estime de soi et la pensée positive", duration: "25 min", completed: false, locked: false, activities: generateDefaultActivities("confidence", "Confiance en Soi") },
+        { id: "emotional", title: "Intelligence Émotionnelle", description: "Comprends et gère tes émotions", duration: "25 min", completed: false, locked: false, activities: generateDefaultActivities("emotional", "Intelligence Émotionnelle") }
       ]
     },
     {
@@ -286,10 +339,10 @@ const PassionDiscoveryTest = () => {
       fullDescription: "Développe ton leadership transformationnel, apprends le travail en équipe et crée des solutions pour ta communauté.",
       color: "from-green-500 to-emerald-500",
       modules: [
-        { id: "lead-basics", title: "Bases du Leadership", description: "Découvre les principes du leadership éthique", duration: "20 min", completed: false, locked: false },
-        { id: "teamwork", title: "Travail en Équipe", description: "Apprends à collaborer efficacement", duration: "20 min", completed: false, locked: false },
-        { id: "community", title: "Impact Communautaire", description: "Crée des solutions pour ta communauté", duration: "25 min", completed: false, locked: false },
-        { id: "service", title: "Valeurs du Service", description: "Développe l'esprit de service et d'écoute", duration: "20 min", completed: false, locked: false }
+        { id: "lead-basics", title: "Bases du Leadership", description: "Découvre les principes du leadership éthique", duration: "20 min", completed: false, locked: false, activities: generateDefaultActivities("lead-basics", "Bases du Leadership") },
+        { id: "teamwork", title: "Travail en Équipe", description: "Apprends à collaborer efficacement", duration: "20 min", completed: false, locked: false, activities: generateDefaultActivities("teamwork", "Travail en Équipe") },
+        { id: "community", title: "Impact Communautaire", description: "Crée des solutions pour ta communauté", duration: "25 min", completed: false, locked: false, activities: generateDefaultActivities("community", "Impact Communautaire") },
+        { id: "service", title: "Valeurs du Service", description: "Développe l'esprit de service et d'écoute", duration: "20 min", completed: false, locked: false, activities: generateDefaultActivities("service", "Valeurs du Service") }
       ]
     }
   ];
@@ -624,8 +677,7 @@ const PassionDiscoveryTest = () => {
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                     {categories.map((category, index) => {
                       const Icon = category.icon;
-                      const completedModules = category.modules.filter(m => m.completed).length;
-                      const progress = (completedModules / category.modules.length) * 100;
+                      const categoryProgress = getCategoryProgress(category.id, category.modules.length);
 
                       return (
                         <Card 
@@ -656,22 +708,25 @@ const PassionDiscoveryTest = () => {
                             <div>
                               <div className="flex justify-between text-sm mb-2">
                                 <span className="font-medium">Progression</span>
-                                <span className="text-muted-foreground">{completedModules}/{category.modules.length} modules</span>
+                                <span className="text-muted-foreground">{categoryProgress.completed}/{categoryProgress.total} modules</span>
                               </div>
-                              <Progress value={progress} className="h-3" />
+                              <Progress value={categoryProgress.percentage} className="h-3" />
                             </div>
 
                             <div className="flex flex-wrap gap-2">
-                              {category.modules.map((module) => (
-                                <Badge 
-                                  key={module.id} 
-                                  variant={module.completed ? "default" : "outline"}
-                                  className="text-xs"
-                                >
-                                  {module.completed && <CheckCircle2 className="w-3 h-3 mr-1" />}
-                                  {module.title}
-                                </Badge>
-                              ))}
+                              {category.modules.map((module) => {
+                                const moduleProgress = getModuleProgress(category.id, module.id);
+                                return (
+                                  <Badge 
+                                    key={module.id} 
+                                    variant={moduleProgress.completed ? "default" : "outline"}
+                                    className="text-xs"
+                                  >
+                                    {moduleProgress.completed && <CheckCircle2 className="w-3 h-3 mr-1" />}
+                                    {module.title}
+                                  </Badge>
+                                );
+                              })}
                             </div>
 
                             <Button 
@@ -692,8 +747,7 @@ const PassionDiscoveryTest = () => {
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                     {civicCategories.map((category, index) => {
                       const Icon = category.icon;
-                      const completedModules = category.modules.filter(m => m.completed).length;
-                      const progress = (completedModules / category.modules.length) * 100;
+                      const categoryProgress = getCategoryProgress(category.id, category.modules.length);
 
                       return (
                         <Card 
@@ -720,9 +774,9 @@ const PassionDiscoveryTest = () => {
                             <div>
                               <div className="flex justify-between text-sm mb-2">
                                 <span className="font-medium">Progression</span>
-                                <span className="text-muted-foreground">{completedModules}/{category.modules.length}</span>
+                                <span className="text-muted-foreground">{categoryProgress.completed}/{categoryProgress.total}</span>
                               </div>
-                              <Progress value={progress} className="h-2" />
+                              <Progress value={categoryProgress.percentage} className="h-2" />
                             </div>
 
                             <Button 
@@ -742,8 +796,7 @@ const PassionDiscoveryTest = () => {
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                     {developmentCategories.map((category, index) => {
                       const Icon = category.icon;
-                      const completedModules = category.modules.filter(m => m.completed).length;
-                      const progress = (completedModules / category.modules.length) * 100;
+                      const categoryProgress = getCategoryProgress(category.id, category.modules.length);
 
                       return (
                         <Card 
@@ -774,22 +827,25 @@ const PassionDiscoveryTest = () => {
                             <div>
                               <div className="flex justify-between text-sm mb-2">
                                 <span className="font-medium">Progression</span>
-                                <span className="text-muted-foreground">{completedModules}/{category.modules.length} modules</span>
+                                <span className="text-muted-foreground">{categoryProgress.completed}/{categoryProgress.total} modules</span>
                               </div>
-                              <Progress value={progress} className="h-3" />
+                              <Progress value={categoryProgress.percentage} className="h-3" />
                             </div>
 
                             <div className="flex flex-wrap gap-2">
-                              {category.modules.map((module) => (
-                                <Badge 
-                                  key={module.id} 
-                                  variant={module.completed ? "default" : "outline"}
-                                  className="text-xs"
-                                >
-                                  {module.completed && <CheckCircle2 className="w-3 h-3 mr-1" />}
-                                  {module.title}
-                                </Badge>
-                              ))}
+                              {category.modules.map((module) => {
+                                const moduleProgress = getModuleProgress(category.id, module.id);
+                                return (
+                                  <Badge 
+                                    key={module.id} 
+                                    variant={moduleProgress.completed ? "default" : "outline"}
+                                    className="text-xs"
+                                  >
+                                    {moduleProgress.completed && <CheckCircle2 className="w-3 h-3 mr-1" />}
+                                    {module.title}
+                                  </Badge>
+                                );
+                              })}
                             </div>
 
                             <Button 
@@ -884,7 +940,7 @@ const PassionDiscoveryTest = () => {
     <div className="min-h-screen bg-gradient-to-br from-background via-purple-50/30 to-pink-50/30 dark:from-background dark:via-purple-950/10 dark:to-pink-950/10">
       <div className="container mx-auto px-4 py-6">
         <div className="flex items-center justify-between mb-6">
-          <Button variant="ghost" onClick={() => setSelectedModule(null)} className="group">
+          <Button variant="ghost" onClick={() => { setSelectedModule(null); setShowActivities(false); }} className="group">
             <ArrowLeft className="mr-2 h-4 w-4 group-hover:-translate-x-1 transition-transform" />
             Retour aux modules
           </Button>
@@ -897,7 +953,7 @@ const PassionDiscoveryTest = () => {
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           <div className="lg:col-span-2 space-y-6">
-            {currentCategory && currentModule && (
+            {currentCategory && currentModule && !showActivities && (
               <Card className="bg-gradient-to-r from-purple-500/10 to-pink-500/10 border-2">
                 <CardHeader>
                   <CardTitle className="text-2xl flex items-center gap-3">
@@ -910,7 +966,40 @@ const PassionDiscoveryTest = () => {
                     {currentModule.description}
                   </CardDescription>
                 </CardHeader>
+                <CardContent>
+                  <Button 
+                    onClick={() => setShowActivities(true)}
+                    className="w-full bg-gradient-to-r from-purple-500 to-pink-500 hover:opacity-90"
+                  >
+                    <Play className="mr-2" />
+                    Commencer les activités
+                  </Button>
+                </CardContent>
               </Card>
+            )}
+
+            {showActivities && currentCategory && currentModule && (
+              <ModuleActivity
+                categoryId={currentCategory.id}
+                moduleId={currentModule.id}
+                moduleTitle={currentModule.title}
+                activities={currentModule.activities}
+                onActivityComplete={(activityId) => {
+                  // Update activity completed state
+                  if (currentCategory && currentModule) {
+                    const totalActivities = currentModule.activities.length;
+                    const completedActivities = currentModule.activities.filter(a => a.completed).length + 1;
+                    const progressPercentage = (completedActivities / totalActivities) * 100;
+                    updateProgress(currentCategory.id, currentModule.id, progressPercentage, progressPercentage === 100);
+                  }
+                }}
+                onModuleComplete={() => {
+                  if (currentCategory && currentModule) {
+                    updateProgress(currentCategory.id, currentModule.id, 100, true);
+                    toast.success("🎉 Module terminé! Excellent travail!");
+                  }
+                }}
+              />
             )}
 
             {videos.length > 0 && (
