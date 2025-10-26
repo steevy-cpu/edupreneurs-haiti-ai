@@ -3141,62 +3141,588 @@ Pour chaque situation, écrivez une phrase appropriée :
 - Peux-tu structurer un dialogue simple ?
 - Es-tu à l'aise pour communiquer en français ?`
   },
+  {
+    id: "textes-informatifs",
+    title: "Production de textes informatifs",
+    mois: "Février - Semaine 1",
+    objectif: "Maîtriser la production de textes à visée informative pour transmettre des connaissances, expliquer des concepts ou décrire des phénomènes de manière claire, objective et structurée.",
+    introduction: `Informer, c'est transmettre des connaissances de manière claire et objective. Les textes informatifs sont partout : dans vos manuels scolaires, les journaux, les encyclopédies, sur internet.
+
+**Pourquoi apprendre à écrire des textes informatifs ?**
+- Pour partager vos connaissances
+- Pour réussir vos exposés et rapports
+- Pour expliquer clairement des sujets
+- Pour développer votre esprit de synthèse
+
+**Dans cette leçon, vous apprendrez à :**
+- Structurer un texte informatif
+- Présenter des informations de manière objective
+- Utiliser le vocabulaire technique approprié
+- Organiser vos idées logiquement`,
+    contenu: `📖 **INTRODUCTION AU TEXTE INFORMATIF**
+
+**Qu'est-ce qu'un texte informatif ?**
+Un texte informatif a pour but de transmettre des connaissances sur un sujet de manière objective et claire. Il explique, décrit, définit, mais ne raconte pas d'histoire et n'exprime pas d'opinions personnelles.
+
+**Caractéristiques** : Objectif, ton neutre, vocabulaire précis, présent de vérité générale, structure claire (introduction, développement, conclusion).
+
+📚 **Les types de textes informatifs** : Descriptif (décrire), Explicatif (expliquer), Documentaire (présenter des faits).
+
+📊 **Structure** : Introduction (10% - présenter), Développement (80% - 2-3 paragraphes thématiques), Conclusion (10% - résumer).
+
+💡 **Vocabulaire** : Verbes informatifs (définir, expliquer, décrire), connecteurs logiques (d'abord, ensuite, en effet), expressions impersonnelles (il est important de...).
+
+🎯 **Méthode** : 1) Rechercher, 2) Organiser, 3) Rédiger introduction, 4) Développer, 5) Conclure.
+
+🔑 **Points clés** : Objectivité, présent de vérité générale, structure claire, vocabulaire précis, connecteurs logiques, sources fiables.`,
+    exemplesExercices: `**Exercice 1** : Transformer "Je pense que les mangroves sont importantes" en style informatif objectif.
+
+**Exercice 2** : Faire un plan sur "L'éducation en Haïti" avec introduction, 3 aspects, conclusion.
+
+**Exercice 3** : Rédiger une introduction de 3-4 phrases sur "Les fruits tropicaux d'Haïti".
+
+**Exercice 4** : Texte informatif complet (150-200 mots) sur un sujet au choix parmi : transports en Haïti, musique traditionnelle, système scolaire.`
+  },
+  {
+    id: "derivation-lexicale",
+    title: "Dérivation lexicale - Préfixes et suffixes",
+    mois: "Février - Semaine 1",
+    objectif: "Comprendre et maîtriser le mécanisme de formation des mots par dérivation en utilisant les préfixes et suffixes pour enrichir son vocabulaire et deviner le sens de mots inconnus.",
+    introduction: `Former des mots nouveaux, c'est comme jouer avec des Lego ! On prend une base (le radical) et on ajoute des pièces devant (préfixes) ou derrière (suffixes) pour créer de nouveaux mots.
+
+**Dans cette leçon, vous apprendrez à :**
+- Identifier le radical, le préfixe et le suffixe
+- Comprendre le sens des préfixes et suffixes courants
+- Former de nouveaux mots par dérivation
+- Analyser la construction des mots`,
+    contenu: `📖 **LA DÉRIVATION LEXICALE**
+
+**Structure** : Préfixe + RADICAL + Suffixe
+- **in** + juste = injuste (préfixe)
+- chant + **eur** = chanteur (suffixe)
+- **re** + faire = refaire (préfixe)
+
+📚 **Définitions** : Radical (partie de base), Préfixe (avant le radical), Suffixe (après le radical), Famille de mots (même radical).
+
+📊 **Préfixes courants** :
+- Négation : in-, dé-, mal- (injuste, défaire, malheureux)
+- Répétition : re- (refaire, recommencer)
+- Quantité : sur-, sous-, hyper- (surcharge, sous-développé)
+- Position : pré-, post-, entre- (prévoir, postérieur)
+
+**Suffixes pour noms** :
+- Action : -age, -ment, -tion (lavage, changement, construction)
+- Personnes : -eur/-euse, -ien/-ienne, -iste (chanteur, musicien, pianiste)
+- Qualité : -esse, -té/-ité (sagesse, beauté, rapidité)
+
+**Suffixes pour adjectifs** : -able/-ible, -eux/-euse, -if/-ive (mangeable, dangereux, actif)
+
+**Suffixes pour verbes** : -er, -ir, -iser (blanchir, simplifier, moderniser)
+
+💡 **Familles de mots** :
+- TERRE : enterrer, déterrer, terrain, terrestre, souterrain
+- CHANTER : rechanter, chanteur, chanson, enchanter
+
+🎯 **Méthode d'analyse** : 1) Identifier le radical, 2) Chercher préfixe, 3) Chercher suffixe, 4) Comprendre chaque élément, 5) Sens global.
+
+🔑 **Points clés** : Préfixe AVANT, suffixe APRÈS, préfixe modifie le sens, suffixe change souvent la nature, familles de mots, décomposer pour deviner.`,
+    exemplesExercices: `**Exercice 1** : Décomposer relire, malheureux, refroidissement, insupportable.
+
+**Exercice 2** : Former des mots avec préfixes (dé-faire, re-faire, mal-heureux, in-juste).
+
+**Exercice 3** : Transformer verbes en noms (chanter→chanteur, laver→lavage, enseigner→enseignant).
+
+**Exercice 4** : Famille de "porter" (5 mots minimum).
+
+**Exercice 5** : Deviner le sens de prévisible, surprotéger, irréalisable, rechargement en les décomposant.`
+  },
+  // Février - Semaine 2
+  {
+    id: "orthographe-sons-consonnes",
+    title: "Orthographe - Sons et consonnes muettes",
+    mois: "Février - Semaine 2",
+    objectif: "Maîtriser l'orthographe des sons complexes et identifier les consonnes muettes pour écrire correctement les mots du vocabulaire français courant.",
+    introduction: `En français, ce qu'on entend n'est pas toujours ce qu'on écrit ! Les consonnes muettes et les différentes façons d'écrire un même son rendent l'orthographe difficile, mais avec de bonnes stratégies, vous pouvez progresser.
+
+**Dans cette leçon, vous apprendrez à :**
+- Identifier et orthographier les consonnes muettes
+- Maîtriser les différentes graphies des sons
+- Utiliser des stratégies pour retenir l'orthographe
+- Éviter les erreurs courantes`,
+    contenu: `📖 **SONS ET CONSONNES MUETTES**
+
+**Consonnes muettes** : Lettres écrites mais non prononcées, souvent en fin de mot (grand, petit, temps, fils, poids).
+
+**Stratégie** : Chercher un mot de la même famille où la consonne se prononce (grand → grandeur, petit → petite).
+
+📚 **Consonnes finales fréquemment muettes** : -d, -t, -s, -x, -z, -p, -g
+- Exemples : grand, petit, très, deux, nez, beaucoup, sang
+
+**Consonnes finales souvent prononcées** (CaReFuL) : -c, -r, -f, -l
+- Exemples : sac, mer, neuf, ciel
+
+📊 **Sons difficiles à orthographier** :
+
+**Son [o]** : o, au, eau
+- o : vélo, dos
+- au : chaud, auto, jaune
+- eau : beau, oiseau, château
+
+**Son [ɛ̃]** : in, im, ain, ein, yn
+- in : jardin, matin
+- im : impossible, simple
+- ain : pain, main
+- ein : plein, frein
+
+**Son [s]** : s, ss, c, ç, t(ion)
+- s : soleil (début ou après consonne)
+- ss : passer, classe (entre voyelles)
+- c : ciel, cerise (devant e, i, y)
+- ç : français, garçon (devant a, o, u)
+- t : nation, station (dans -tion)
+
+**Son [k]** : c, qu, k, ch
+- c : car, capable (devant a, o, u)
+- qu : qui, que, quand
+- k : kilo, karaté
+- ch : chorale, orchestre (mots d'origine grecque)
+
+💡 **Stratégies de mémorisation** :
+1. Mots de la même famille (plomb → plombier)
+2. Moyens mnémotechniques (phrases aide-mémoire)
+3. Épellation par syllabes
+4. Copie répétée (5-10 fois)
+
+🎯 **Mots fréquents avec consonnes muettes** :
+- Noms : temps, corps, respect, aspect, sang
+- Adjectifs : grand, petit, gros, long, blanc
+- Verbes : je pars, tu prends, il dit
+
+🔑 **Points clés** : Consonnes muettes fréquentes en fin, CaReFuL souvent prononcés, un son = plusieurs graphies, familles de mots aident, pratiquer régulièrement.`,
+    exemplesExercices: `**Exercice 1** : Compléter avec consonnes muettes (gran___, trè___ chau___, peti___ garçon, tem___, mar___).
+
+**Exercice 2** : Choisir la bonne graphie [o] : un (b__/bau/beau) jour, il fait (ch__/chau/chaud), un (v__/vau/veau).
+
+**Exercice 3** : Son [s] - Compléter : pa__er (ss), __oleil (s), fran__ais (ç), na__ion (t).
+
+**Exercice 4** : Trouver le mot de la même famille pour identifier la consonne muette (gran___ → grandeur).
+
+**Exercice 5** : Dictée de 10 mots avec consonnes muettes et sons difficiles.`
+  },
+  {
+    id: "determinants-pronoms",
+    title: "Les déterminants et pronoms",
+    mois: "Février - Semaine 2",
+    objectif: "Identifier et utiliser correctement les différents types de déterminants et de pronoms pour enrichir son expression et éviter les répétitions dans ses productions écrites et orales.",
+    introduction: `Les déterminants et les pronoms sont des petits mots essentiels en français. Les déterminants accompagnent les noms, les pronoms les remplacent. Bien les utiliser rend vos phrases plus fluides et évite les répétitions.
+
+**Dans cette leçon, vous apprendrez à :**
+- Distinguer déterminants et pronoms
+- Identifier les différents types
+- Les utiliser correctement
+- Éviter les répétitions grâce aux pronoms`,
+    contenu: `📖 **DÉTERMINANTS ET PRONOMS**
+
+**Déterminant** : Petit mot placé AVANT le nom qu'il détermine.
+- Structure : Déterminant + Nom (le chat, mon livre, cette maison)
+
+**Pronom** : Mot qui REMPLACE un nom ou un groupe nominal.
+- Tu vois Marie ? Oui, je **la** vois. ("la" remplace "Marie")
+
+📚 **LES DÉTERMINANTS**
+
+**Articles définis** : le, la, l', les
+- Désigne quelque chose de précis : **le** chien (un chien précis)
+
+**Articles indéfinis** : un, une, des
+- Désigne quelque chose de non précis : **un** chien (n'importe lequel)
+
+**Articles partitifs** : du, de la, de l'
+- Quantité non précise : **du** pain, **de la** viande
+
+**Déterminants possessifs** : mon, ma, mes, ton, ta, tes, son, sa, ses, notre, votre, leur, nos, vos, leurs
+- Indique la possession : **mon** livre, **ta** maison
+
+**Déterminants démonstratifs** : ce, cet, cette, ces
+- Désigne/montre : **ce** livre, **cette** maison
+
+**Déterminants interrogatifs** : quel, quelle, quels, quelles
+- Dans une question : **Quel** livre veux-tu ?
+
+**Déterminants numéraux** : un, deux, trois...
+- Quantité précise : **trois** livres
+
+📊 **LES PRONOMS**
+
+**Pronoms personnels sujets** : je, tu, il/elle/on, nous, vous, ils/elles
+- **Je** mange, **tu** chantes, **il** dort
+
+**Pronoms personnels COD (complément d'objet direct)** : me, te, le/la, nous, vous, les
+- Tu vois Marie ? → Je **la** vois.
+- Tu as tes clés ? → Je **les** ai.
+
+**Pronoms personnels COI (complément d'objet indirect)** : me, te, lui, nous, vous, leur
+- Tu parles à Marie ? → Je **lui** parle.
+- Tu écris à tes parents ? → Je **leur** écris.
+
+**Pronoms possessifs** : le mien, le tien, le sien, le nôtre, le vôtre, le leur (+ formes féminines et plurielles)
+- C'est ton livre ? Oui, c'est **le mien**.
+
+**Pronoms démonstratifs** : celui, celle, ceux, celles, ce, ceci, cela, ça
+- Quel livre ? **Celui**-ci ou **celui**-là ?
+
+**Pronoms interrogatifs** : qui, que, quoi, lequel, laquelle...
+- **Qui** vient ? **Que** veux-tu ?
+
+**Pronoms relatifs** : qui, que, dont, où
+- Le livre **que** j'ai lu. La maison **où** j'habite.
+
+💡 **Différence déterminant/pronom** :
+
+**Déterminant** = DEVANT UN NOM
+- **Mon** livre est sur la table.
+
+**Pronom** = REMPLACE UN NOM
+- Ce livre est à moi, c'est **le mien**.
+
+🎯 **Accord des pronoms** :
+- Le pronom s'accorde avec le nom qu'il remplace
+- Tu vois Marie (fém. sing.) ? → Je **la** vois.
+- Tu vois les enfants (masc. plur.) ? → Je **les** vois.
+
+🔑 **Points clés** : Déterminant accompagne le nom, pronom remplace le nom, plusieurs types de chaque, accord avec le nom remplacé, évitent les répétitions.`,
+    exemplesExercices: `**Exercice 1** : Identifier déterminant ou pronom : "Le chat dort. Il est noir. Mon ami le voit."
+
+**Exercice 2** : Compléter avec le bon déterminant (le/un/ce/mon) : ___ livre, ___ maison, ___ ami.
+
+**Exercice 3** : Remplacer par un pronom COD : "Tu vois Marie ?" → "Je ___ vois." / "Tu as tes clés ?" → "Je ___ ai."
+
+**Exercice 4** : Choisir entre lui/leur : "Je parle à Marie" → "Je ___ parle." / "J'écris à mes parents" → "Je ___ écris."
+
+**Exercice 5** : Réécrire en évitant les répétitions avec des pronoms : "Marie aime les livres. Marie lit les livres tous les jours."
+
+**Auto-évaluation** : Distingues-tu déterminants et pronoms ? Connais-tu les différents types ? Utilises-tu les pronoms pour éviter répétitions ?`
+  },
   // Mars - Semaines 1 et 2
   {
     id: "lecture-personnelle",
     title: "Lecture personnelle et plaisir de lire",
     mois: "Mars - Semaines 1-2",
-    objectif: "Développer son goût pour la lecture",
-    introduction: "Contenu à venir...",
-    contenu: "Contenu à venir...",
-    exemplesExercices: "Exercices à venir..."
+    objectif: "Développer son goût et son plaisir de la lecture en découvrant différents genres littéraires et en lisant régulièrement pour son enrichissement personnel.",
+    introduction: `Lire pour le plaisir, c'est voyager sans bouger, rencontrer des personnages fascinants, vivre mille vies ! La lecture personnelle transforme votre imagination et enrichit votre vocabulaire naturellement.
+
+**Dans cette leçon, vous découvrirez comment :**
+- Choisir des livres qui vous plaisent
+- Développer une routine de lecture
+- Apprécier différents genres littéraires
+- Tirer profit de vos lectures`,
+    contenu: `📖 **LE PLAISIR DE LIRE** : Bienfaits (enrichit vocabulaire, développe imagination, améliore concentration, réduit stress). Lire régulièrement développe l'empathie et la culture générale.
+
+📚 **Genres littéraires** : Romans (aventure, policier, fantastique), Contes et fables, Poésie, BD et mangas, Documentaires, Théâtre.
+
+📊 **Trouver ses goûts** : Essayer différents genres, demander recommandations, lire résumés, commencer par livres courts, rejoindre club de lecture.
+
+💡 **Créer une routine** : Lire 15-30 min/jour, moment fixe, endroit confortable, carnet de lecture, objectif réaliste (1 livre/mois).
+
+🎯 **Profiter de ses lectures** : Noter passages préférés, résumer chapitres, discuter avec d'autres, relier à sa vie.
+
+🔑 **Points clés** : Lire pour le plaisir (pas obligation), choisir livres qui plaisent, régularité importante, partager lectures, pas de pression.`,
+    exemplesExercices: `**Exercice 1** : Liste de 5 livres que vous aimeriez lire. **Exercice 2** : Carnet de lecture (titre, auteur, résumé, appréciation). **Exercice 3** : Recommander un livre à un ami (pourquoi ?). **Exercice 4** : Résumer un livre lu en 5 phrases.`
   },
   {
     id: "textes-fiction-ludiques",
     title: "Textes de fiction et textes ludiques",
     mois: "Mars - Semaines 1-2",
-    objectif: "Écrire pour son plaisir - textes humoristiques et poétiques",
-    introduction: "Contenu à venir...",
-    contenu: "Contenu à venir...",
-    exemplesExercices: "Exercices à venir..."
+    objectif: "Produire des textes créatifs à visée ludique et artistique (textes humoristiques, poétiques, devinettes) pour développer son imagination et son plaisir d'écrire.",
+    introduction: `Écrire pour s'amuser, faire rire, émouvoir ou surprendre ! Les textes ludiques libèrent votre créativité sans les contraintes des textes scolaires. C'est le moment d'inventer, de jouer avec les mots !
+
+**Dans cette leçon, vous apprendrez à :**
+- Écrire des textes humoristiques
+- Composer des poèmes simples
+- Créer des devinettes et jeux de mots
+- Laisser libre cours à votre imagination`,
+    contenu: `📖 **TEXTES LUDIQUES** : But (divertir, amuser, émouvoir, surprendre). Liberté créative, jeu avec les mots, imagination sans limites.
+
+📚 **Types de textes ludiques** :
+**Poésie** : Rimes, rythme, vers, images poétiques. Haïku (3 vers), acrostiche (première lettre forme un mot).
+**Textes humoristiques** : Blagues, histoires drôles, situations cocasses, jeux de mots.
+**Devinettes** : Descriptions énigmatiques, indices progressifs.
+**Calligrammes** : Texte dont la forme dessine le sujet.
+
+📊 **Techniques d'écriture ludique** :
+- **Jeux de mots** : Homophones, double sens
+- **Exagération** : Grossir les traits pour faire rire
+- **Répétitions** : Créer un rythme, un effet comique
+- **Rimes** : Sons similaires en fin de vers
+- **Comparaisons originales** : Images surprenantes
+
+💡 **Créer un poème simple** :
+1. Choisir un thème (nature, émotion, objet)
+2. Lister mots liés au thème
+3. Chercher des rimes
+4. Assembler en vers (attention au rythme)
+5. Relire à voix haute
+
+**Créer une devinette** :
+1. Choisir un objet/animal
+2. Lister ses caractéristiques
+3. Transformer en indices énigmatiques
+4. Du plus difficile au plus facile
+
+🎯 **Exemples** :
+**Haïku sur la mer** :
+*Vagues qui dansent*
+*Le soleil brille sur l'eau*
+*La plage m'attend*
+
+**Devinette** : "Je suis jaune et sucré, je pousse dans les arbres, les singes m'adorent. Qui suis-je ?" (La banane)
+
+🔑 **Points clés** : Écrire pour le plaisir, oser créativité, pas de règles strictes, jouer avec mots, relire à voix haute, partager créations.`,
+    exemplesExercices: `**Exercice 1** : Écrire un haïku (3 vers) sur un sujet de votre choix. **Exercice 2** : Créer 3 devinettes sur des objets du quotidien. **Exercice 3** : Inventer une courte histoire humoristique (5-6 lignes). **Exercice 4** : Acrostiche avec votre prénom. **Exercice 5** : Calligramme simple (soleil, arbre, maison).`
   },
   {
     id: "adjectif-qualificatif-degres",
     title: "Degrés de l'adjectif qualificatif",
     mois: "Mars - Semaines 1-2",
-    objectif: "Comparer les objets en utilisant comparatif et superlatif",
-    introduction: "Contenu à venir...",
-    contenu: "Contenu à venir...",
-    exemplesExercices: "Exercices à venir..."
+    objectif: "Maîtriser l'utilisation du comparatif et du superlatif pour comparer des personnes, des objets ou des qualités, et enrichir ses descriptions en variant les degrés d'intensité.",
+    introduction: `Comparer, c'est montrer les différences : plus grand, moins rapide, aussi intelligent, le plus beau... Les degrés de l'adjectif permettent d'exprimer ces nuances avec précision.
+
+**Dans cette leçon, vous apprendrez à :**
+- Former le comparatif (supériorité, égalité, infériorité)
+- Former le superlatif (relatif et absolu)
+- Éviter les erreurs courantes
+- Enrichir vos descriptions`,
+    contenu: `📖 **LES DEGRÉS DE L'ADJECTIF**
+
+**Trois degrés** : Positif (grand), Comparatif (plus grand que), Superlatif (le plus grand).
+
+📚 **LE COMPARATIF** (comparer 2 éléments)
+
+**Supériorité** : plus + adjectif + que
+- Marie est **plus grande que** Pierre.
+
+**Égalité** : aussi + adjectif + que
+- Marie est **aussi intelligente que** Pierre.
+
+**Infériorité** : moins + adjectif + que
+- Marie est **moins rapide que** Pierre.
+
+**Attention** : "Bon" et "mauvais" sont irréguliers :
+- bon → **meilleur que** (pas "plus bon")
+- mauvais → **pire que** ou "plus mauvais que"
+
+📊 **LE SUPERLATIF** (degré extrême)
+
+**Superlatif relatif** (par rapport à un groupe)
+- **Supériorité** : le/la/les plus + adjectif (+ de)
+  *C'est **le plus grand** élève **de** la classe.*
+  
+- **Infériorité** : le/la/les moins + adjectif (+ de)
+  *C'est **la moins chère** maison **du** quartier.*
+
+**Superlatif absolu** (très haut degré, sans comparaison)
+- très, extrêmement, fort, bien + adjectif
+- *Cette maison est **très belle**.*
+- *Il est **extrêmement intelligent**.*
+
+**Irréguliers** :
+- bon → le meilleur / très bon
+- mauvais → le pire / très mauvais
+- petit → le moindre / très petit
+
+💡 **Exemples pratiques** :
+
+**Comparatifs** :
+- Le lion est **plus fort que** le chat.
+- La tortue est **moins rapide que** le lièvre.
+- Paul est **aussi grand que** Jean.
+- Ce livre est **meilleur que** l'autre.
+
+**Superlatifs** :
+- C'est **le plus beau** jour de ma vie.
+- Elle est **la moins timide** de la classe.
+- C'est **le meilleur** élève de l'école.
+- Cette montagne est **très haute**.
+
+🎯 **Erreurs à éviter** :
+❌ "plus meilleur" → ✅ meilleur
+❌ "plus pire" → ✅ pire
+❌ "le plus bon" → ✅ le meilleur
+❌ "aussi plus grand" → ✅ aussi grand / plus grand
+
+**Accord** : L'adjectif s'accorde avec le nom qu'il qualifie
+- La **plus grande** maison
+- Les élèves **les plus intelligents**
+
+🔑 **Points clés** : 3 comparatifs (plus/aussi/moins...que), 2 superlatifs (le plus/très), bon→meilleur/le meilleur, accord de l'adjectif, éviter "plus meilleur".`,
+    exemplesExercices: `**Exercice 1** : Former le comparatif de supériorité : La voiture est ___ (rapide) la bicyclette. **Exercice 2** : Superlatif : Marie est ___ (intelligent) élève de la classe. **Exercice 3** : Corriger : "Ce livre est plus meilleur que l'autre." **Exercice 4** : Comparer 3 objets de votre choix. **Exercice 5** : Phrases avec "aussi...que", "moins...que", "le plus".`
   },
   // Mars - Semaine 3
   {
     id: "polysemie-sens-propre-figure",
     title: "Polysémie - Sens propre et sens figuré",
     mois: "Mars - Semaine 3",
-    objectif: "Expliquer les différents sens d'un mot selon le contexte",
-    introduction: "Contenu à venir...",
-    contenu: "Contenu à venir...",
-    exemplesExercices: "Exercices à venir..."
+    objectif: "Comprendre et distinguer les différents sens d'un mot (polysémie), identifier le sens propre et le sens figuré pour enrichir sa compréhension et son expression.",
+    introduction: `Un même mot peut avoir plusieurs sens ! "Tête" = partie du corps OU personne qui dirige. Le sens propre est le sens premier, concret. Le sens figuré est imagé, symbolique.
+
+**Dans cette leçon, vous apprendrez à :**
+- Identifier la polysémie des mots
+- Distinguer sens propre et sens figuré
+- Choisir le bon sens selon le contexte
+- Enrichir votre expression avec le sens figuré`,
+    contenu: `📖 **POLYSÉMIE, SENS PROPRE ET FIGURÉ**
+
+**Polysémie** : Un mot a plusieurs sens selon le contexte.
+**Sens propre** : Sens premier, concret, littéral.
+**Sens figuré** : Sens imagé, métaphorique, symbolique.
+
+📚 **Exemples** :
+**Lumière** :
+- Propre : La lumière du soleil (clarté physique)
+- Figuré : C'est une lumière en mathématiques (personne brillante)
+
+**Cœur** :
+- Propre : Mon cœur bat vite (organe)
+- Figuré : Il a bon cœur (gentillesse)
+
+**Tomber** :
+- Propre : L'enfant est tombé (chute physique)
+- Figuré : Je suis tombé amoureux (émotion)
+
+📊 **Comment reconnaître** :
+- **Sens propre** : Concret, peut être vu/touché, sens de base dans dictionnaire
+- **Sens figuré** : Abstrait, image mentale, sens dérivé
+
+💡 **Contexte détermine le sens** : Même mot, sens différent selon la phrase.
+
+🎯 **Expressions figurées** : Avoir la main verte (doué jardinage), Poser un lapin (ne pas venir à rendez-vous), Casser les pieds (ennuyer).
+
+🔑 **Points clés** : Polysémie = plusieurs sens, propre = concret, figuré = imagé, contexte détermine, enrichit expression.`,
+    exemplesExercices: `**Exercice 1** : Sens propre ou figuré ? "Elle a un cœur d'or" / "Son cœur bat fort". **Exercice 2** : Trouver 2 sens du mot "main". **Exercice 3** : Expliquer expressions : "Il pleut des cordes", "Avoir un chat dans la gorge". **Exercice 4** : Phrases avec "tête" (propre et figuré).`
   },
   {
     id: "accords-pluriel",
     title: "Accords et orthographe au pluriel",
     mois: "Mars - Semaine 3",
-    objectif: "Effectuer convenablement les accords simples",
-    introduction: "Contenu à venir...",
-    contenu: "Contenu à venir...",
-    exemplesExercices: "Exercices à venir..."
+    objectif: "Maîtriser les règles d'accord au pluriel des noms et des adjectifs pour écrire correctement et éviter les erreurs courantes d'orthographe grammaticale.",
+    introduction: `Le pluriel en français peut sembler compliqué, mais en connaissant les règles principales et quelques exceptions, vous éviterez la plupart des erreurs.
+
+**Dans cette leçon, vous apprendrez à :**
+- Former le pluriel des noms réguliers et irréguliers
+- Accorder les adjectifs au pluriel
+- Connaître les exceptions importantes
+- Faire les accords dans le groupe nominal`,
+    contenu: `📖 **ACCORDS AU PLURIEL**
+
+**Règle générale** : Ajouter **-s** au singulier
+- chat → chat**s**, table → table**s**
+
+📚 **PLURIEL DES NOMS**
+
+**Noms en -s, -x, -z** : INVARIABLES
+- un cours → des cours, une voix → des voix, un nez → des nez
+
+**Noms en -au, -eau, -eu** : + **x**
+- bateau → bateau**x**, jeu → jeu**x**, cadeau → cadeau**x**
+- **Exceptions** : pneu → pneu**s**, bleu → bleu**s**
+
+**Noms en -ou** : + **s** (général)
+- trou → trou**s**, clou → clou**s**
+- **7 exceptions** + **x** : bijou, caillou, chou, genou, hibou, joujou, pou
+
+**Noms en -al** : → **-aux**
+- cheval → chev**aux**, animal → anim**aux**
+- **Exceptions** : bal, carnaval, festival → bal**s**
+
+**Noms en -ail** : + **s** (général)
+- détail → détail**s**
+- **Exceptions** → **-aux** : travail→travaux, vitrail→vitraux
+
+📊 **PLURIEL DES ADJECTIFS**
+
+**Règle générale** : + **s**
+- grand → grand**s**, belle → belle**s**
+
+**Adjectifs en -s, -x** : INVARIABLES
+- gris → gris, heureux → heureux
+
+**Adjectifs en -eau** : + **x**
+- beau → beau**x**, nouveau → nouveau**x**
+
+**Adjectifs en -al** : → **-aux**
+- national → nation**aux**, spécial → spéci**aux**
+
+💡 **Accord dans le GN** : Déterminant + Nom + Adjectif s'accordent tous
+- **Le** petit chat noir (singulier)
+- **Les** petits chats noirs (pluriel)
+
+🎯 **Cas particuliers** :
+- **Noms composés** : des choux-fleurs, des gratte-ciel
+- **Adjectifs de couleur** : des robes bleues MAIS des robes orange (invariable si nom de fruit/fleur)
+
+🔑 **Points clés** : Règle générale +s, -s/-x/-z invariables, -au/-eau/-eu→x, 7 -ou→x (bijou...), -al→-aux, accord complet du GN.`,
+    exemplesExercices: `**Exercice 1** : Mettre au pluriel : un cheval, un bijou, un nez, un bateau, un travail. **Exercice 2** : Accorder : Les (grand) maison (blanc). **Exercice 3** : Corriger : "les chevals bleus". **Exercice 4** : Écrire 5 phrases au pluriel. **Auto-évaluation** : Connais-tu la règle générale ? Les exceptions en -ou ? -al→-aux ?`
   },
-  // Mars - Semaine 4
   {
     id: "adjectifs-groupe-nominal",
     title: "Les adjectifs dans le groupe nominal",
     mois: "Mars - Semaine 4",
-    objectif: "Réaliser les variations de l'adjectif et identifier la relative",
-    introduction: "Contenu à venir...",
-    contenu: "Contenu à venir...",
-    exemplesExercices: "Exercices à venir..."
+    objectif: "Maîtriser les variations de l'adjectif qualificatif (genre et nombre), sa place dans le groupe nominal et l'identification des propositions relatives qui complètent le nom.",
+    introduction: `L'adjectif enrichit le nom en le décrivant. Savoir où le placer et comment l'accorder est essentiel pour écrire correctement en français.
+
+**Dans cette leçon, vous apprendrez à :**
+- Accorder l'adjectif en genre et nombre
+- Placer correctement l'adjectif (avant/après le nom)
+- Identifier les propositions relatives
+- Enrichir le groupe nominal`,
+    contenu: `📖 **L'ADJECTIF DANS LE GN**
+
+**Rôle** : Qualifie, décrit le nom. S'accorde en genre (masc./fém.) et nombre (sing./plur.).
+
+📚 **ACCORD DE L'ADJECTIF**
+
+**Règle** : Adjectif s'accorde avec le nom qu'il qualifie
+
+**Masculin → Féminin** : Général + **e**
+- grand → grande, petit → petite
+**Exceptions** :
+- -er → -ère (léger→légère)
+- -eux → -euse (heureux→heureuse)
+- -if → -ive (actif→active)
+- Doublent la consonne : bon→bonne, gros→grosse
+
+**Singulier → Pluriel** : + **s** (général)
+- grands, grandes, beaux, belles
+
+📊 **PLACE DE L'ADJECTIF**
+
+**AVANT le nom** (minorité - courts et fréquents) :
+- petit, grand, beau, joli, bon, mauvais, jeune, vieux, nouveau, gros
+- Une **petite** maison, un **beau** jardin
+
+**APRÈS le nom** (majorité) :
+- Une maison **spacieuse**, un jardin **fleuri**
+- Couleurs, formes, nationalités toujours APRÈS
+
+💡 **PROPOSITION RELATIVE**
+
+**Définition** : Complément du nom introduit par un pronom relatif (qui, que, dont, où)
+
+**Structure** : Nom + [qui/que/dont/où + verbe...]
+- Le livre **qui est sur la table** (qui = sujet)
+- Le livre **que j'ai lu** (que = COD)
+- La maison **où j'habite** (où = lieu)
+
+**Fonction** : Enrichit le nom comme un adjectif
+
+🎯 **Exemples d'enrichissement** :
+
+**GN simple** : Le chat
+**+ Adjectif** : Le **petit** chat **noir**
+**+ Relative** : Le petit chat noir **qui dort sur le canapé**
+
+🔑 **Points clés** : Adjectif s'accorde (genre et nombre), courts AVANT (beau, petit), longs APRÈS (spacieux, fleuri), relative enrichit le nom, qui/que/dont/où.`,
+    exemplesExercices: `**Exercice 1** : Accorder : Une (beau) maison (blanc). Des garçons (intelligent). **Exercice 2** : Placer l'adjectif : maison/grande, fleur/rouge, voiture/nouvelle. **Exercice 3** : Compléter avec qui/que : Le livre ___ j'ai lu. La fille ___ parle. **Exercice 4** : Enrichir "Le chien" avec 2 adjectifs + une relative.`
   },
   // Avril - Semaine 1
   {
