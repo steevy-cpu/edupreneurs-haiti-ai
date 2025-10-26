@@ -27,7 +27,7 @@ export const YouTubeManager = ({ lesson, onUpdate }: YouTubeManagerProps) => {
   const [isSaving, setIsSaving] = useState(false);
   const [searchVideos, setSearchVideos] = useState<YouTubeVideo[]>([]);
   const [isLoadingVideos, setIsLoadingVideos] = useState(false);
-  const [hiddenVideoIds, setHiddenVideoIds] = useState<Set<string>>(new Set());
+  const [bannedVideoIds, setBannedVideoIds] = useState<Set<string>>(new Set());
   const [currentUserNickname, setCurrentUserNickname] = useState<string>("");
   const [canDelete, setCanDelete] = useState(false);
 
@@ -53,10 +53,29 @@ export const YouTubeManager = ({ lesson, onUpdate }: YouTubeManagerProps) => {
     checkUserPermissions();
   }, []);
 
+  // Load banned videos
+  useEffect(() => {
+    const loadBannedVideos = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('banned_youtube_videos')
+          .select('video_id');
+        
+        if (error) throw error;
+        
+        if (data) {
+          setBannedVideoIds(new Set(data.map(v => v.video_id)));
+        }
+      } catch (error) {
+        console.error('Error loading banned videos:', error);
+      }
+    };
+    loadBannedVideos();
+  }, []);
+
   // Update local state when lesson changes
   useEffect(() => {
     setYoutubeUrl(lesson?.youtube_url || "");
-    setHiddenVideoIds(new Set()); // Reset hidden videos when lesson changes
     if (lesson?.title && lesson?.objectif) {
       searchYouTubeVideos();
     }
@@ -94,7 +113,7 @@ export const YouTubeManager = ({ lesson, onUpdate }: YouTubeManagerProps) => {
       const response = await fetch(
         `https://www.googleapis.com/youtube/v3/search?` +
         `part=snippet&` +
-        `maxResults=3&` +
+        `maxResults=5&` +
         `q=${encodeURIComponent(searchQuery)}&` +
         `type=video&` +
         `videoEmbeddable=true&` +
@@ -116,7 +135,8 @@ export const YouTubeManager = ({ lesson, onUpdate }: YouTubeManagerProps) => {
           const title = item.snippet.title.toLowerCase();
           const description = item.snippet.description.toLowerCase();
           const englishIndicators = ['english', 'in english', 'english lesson'];
-          return !englishIndicators.some(indicator => 
+          const isBanned = bannedVideoIds.has(item.id.videoId);
+          return !isBanned && !englishIndicators.some(indicator => 
             title.includes(indicator) || description.includes(indicator)
           );
         })
@@ -125,7 +145,8 @@ export const YouTubeManager = ({ lesson, onUpdate }: YouTubeManagerProps) => {
           title: item.snippet.title,
           description: item.snippet.description,
           thumbnail: item.snippet.thumbnails.medium.url,
-        }));
+        }))
+        .slice(0, 3);
 
       setSearchVideos(videoList);
     } catch (error) {
@@ -137,12 +158,41 @@ export const YouTubeManager = ({ lesson, onUpdate }: YouTubeManagerProps) => {
 
   const videoId = extractVideoId(youtubeUrl);
 
-  const hideVideo = (videoId: string) => {
-    setHiddenVideoIds(prev => new Set([...prev, videoId]));
-    toast.success("Vidéo masquée de l'aperçu");
-  };
+  const banVideo = async (videoId: string) => {
+    if (!canDelete) {
+      toast.error("Vous n'avez pas la permission de bannir cette vidéo");
+      return;
+    }
 
-  const visibleVideos = searchVideos.filter(video => !hiddenVideoIds.has(video.id));
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error("Non authentifié");
+
+      const { error } = await supabase
+        .from('banned_youtube_videos')
+        .insert({
+          video_id: videoId,
+          banned_by: user.id,
+          reason: 'Vidéo inappropriée ou non pertinente'
+        });
+
+      if (error) {
+        // Si la vidéo est déjà bannie, on ignore l'erreur
+        if (error.code !== '23505') throw error;
+      }
+
+      // Ajouter à la liste locale immédiatement
+      setBannedVideoIds(prev => new Set([...prev, videoId]));
+      
+      // Filtrer la vidéo des résultats de recherche
+      setSearchVideos(prev => prev.filter(v => v.id !== videoId));
+      
+      toast.success("Vidéo bannie avec succès");
+    } catch (error) {
+      console.error('Error banning video:', error);
+      toast.error("Erreur lors du bannissement de la vidéo");
+    }
+  };
 
   if (!lesson) {
     return (
@@ -196,9 +246,12 @@ export const YouTubeManager = ({ lesson, onUpdate }: YouTubeManagerProps) => {
 
       if (error) throw error;
 
+      // Mettre à jour l'état local immédiatement
       setYoutubeUrl("");
-      toast.success("Vidéo YouTube supprimée");
-      onUpdate();
+      toast.success("Vidéo personnalisée supprimée");
+      
+      // Rafraîchir la leçon
+      await onUpdate();
     } catch (error) {
       console.error('Error removing YouTube URL:', error);
       toast.error("Erreur lors de la suppression");
@@ -299,9 +352,9 @@ export const YouTubeManager = ({ lesson, onUpdate }: YouTubeManagerProps) => {
                 <div className="flex items-center justify-center py-8">
                   <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
                 </div>
-              ) : visibleVideos.length > 0 ? (
+              ) : searchVideos.length > 0 ? (
                 <div className="space-y-3">
-                  {visibleVideos.map((video) => (
+                  {searchVideos.map((video) => (
                     <div
                       key={video.id}
                       className="rounded-lg overflow-hidden border bg-card"
@@ -318,9 +371,9 @@ export const YouTubeManager = ({ lesson, onUpdate }: YouTubeManagerProps) => {
                           <Button
                             size="sm"
                             variant="destructive"
-                            onClick={() => hideVideo(video.id)}
+                            onClick={() => banVideo(video.id)}
                             className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity h-8 w-8 p-0"
-                            title="Masquer cette vidéo suggérée"
+                            title="Bannir cette vidéo définitivement"
                           >
                             <Trash2 className="h-4 w-4" />
                           </Button>
@@ -336,20 +389,6 @@ export const YouTubeManager = ({ lesson, onUpdate }: YouTubeManagerProps) => {
                       </div>
                     </div>
                   ))}
-                </div>
-              ) : searchVideos.length > 0 && visibleVideos.length === 0 ? (
-                <div className="text-center py-4 space-y-2">
-                  <p className="text-xs text-muted-foreground">
-                    Toutes les vidéos ont été masquées
-                  </p>
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={() => setHiddenVideoIds(new Set())}
-                    className="text-xs"
-                  >
-                    Afficher toutes les vidéos
-                  </Button>
                 </div>
               ) : (
                 <p className="text-xs text-muted-foreground text-center py-4">

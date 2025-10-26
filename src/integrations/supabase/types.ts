@@ -14,6 +14,30 @@ export type Database = {
   }
   public: {
     Tables: {
+      banned_youtube_videos: {
+        Row: {
+          banned_at: string | null
+          banned_by: string
+          id: string
+          reason: string | null
+          video_id: string
+        }
+        Insert: {
+          banned_at?: string | null
+          banned_by: string
+          id?: string
+          reason?: string | null
+          video_id: string
+        }
+        Update: {
+          banned_at?: string | null
+          banned_by?: string
+          id?: string
+          reason?: string | null
+          video_id?: string
+        }
+        Relationships: []
+      }
       content_change_log: {
         Row: {
           change_type: string
