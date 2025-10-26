@@ -35,9 +35,16 @@ const ContentEditor = () => {
         .from('content_editor_roles')
         .select('role')
         .eq('user_id', user.id)
-        .single();
+        .maybeSingle();
 
-      if (error || !editorRole) {
+      if (error) {
+        console.error('Error checking editor role:', error);
+        toast.error("Erreur lors de la vérification des permissions");
+        navigate("/dashboard");
+        return;
+      }
+
+      if (!editorRole) {
         toast.error("Accès refusé - Vous n'avez pas les permissions nécessaires");
         navigate("/dashboard");
         return;

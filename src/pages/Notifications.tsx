@@ -73,38 +73,44 @@ export default function Notifications() {
   };
 
   const fetchNotifications = async () => {
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-    if (!user) {
-      console.log("No user found");
-      return;
-    }
-
-    console.log("Fetching notifications for user:", user.id);
-
-    const { data: notificationsData, error } = await supabase
-      .from("notifications")
-      .select("*")
-      .eq("user_id", user.id)
-      .order("created_at", { ascending: false });
-
-    console.log("Notifications query result:", { notificationsData, error });
-
-    if (error) {
-      console.error("Error fetching notifications:", error);
-      return;
-    }
-
-    if (!notificationsData || notificationsData.length === 0) {
-      console.log("No notifications data found");
-      setNotifications([]);
-      return;
-    }
-
-    console.log(`Found ${notificationsData.length} notifications`);
-
     try {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      
+      if (!user) {
+        console.log("❌ No user found - redirecting to auth");
+        navigate("/auth");
+        return;
+      }
+
+      console.log("✅ Fetching notifications for user:", user.id);
+
+      const { data: notificationsData, error } = await supabase
+        .from("notifications")
+        .select("*")
+        .eq("user_id", user.id)
+        .order("created_at", { ascending: false });
+
+      if (error) {
+        console.error("❌ Error fetching notifications:", error);
+        toast({
+          title: "Erreur",
+          description: "Impossible de charger les notifications",
+          variant: "destructive"
+        });
+        setNotifications([]);
+        return;
+      }
+
+      console.log(`✅ Found ${notificationsData?.length || 0} notifications`);
+
+      if (!notificationsData || notificationsData.length === 0) {
+        console.log("ℹ️ No notifications data found");
+        setNotifications([]);
+        return;
+      }
+
       const notificationsWithProfiles = await Promise.all(
         notificationsData.map(async (notification) => {
           const { data: actorProfile, error: profileError } = await supabase
@@ -114,7 +120,7 @@ export default function Notifications() {
             .maybeSingle();
 
           if (profileError) {
-            console.error("Error fetching actor profile:", profileError);
+            console.error("⚠️ Error fetching actor profile for", notification.actor_id, ":", profileError);
           }
 
           // Check if follow request is still pending
@@ -138,8 +144,8 @@ export default function Notifications() {
             actorProfile: actorProfile || {
               id: "",
               user_id: notification.actor_id,
-              nickname: "Unknown User",
-              full_name: "Unknown User",
+              nickname: "Utilisateur inconnu",
+              full_name: "Utilisateur inconnu",
               avatar_url: null,
               affiliation_points: 0,
               academic_grade: "",
@@ -148,10 +154,15 @@ export default function Notifications() {
         })
       );
 
-      console.log("Notifications with profiles:", notificationsWithProfiles);
+      console.log("✅ Processed notifications with profiles:", notificationsWithProfiles.length);
       setNotifications(notificationsWithProfiles);
     } catch (err) {
-      console.error("Error processing notifications:", err);
+      console.error("❌ Unexpected error in fetchNotifications:", err);
+      toast({
+        title: "Erreur inattendue",
+        description: "Une erreur s'est produite lors du chargement",
+        variant: "destructive"
+      });
       setNotifications([]);
     }
   };
