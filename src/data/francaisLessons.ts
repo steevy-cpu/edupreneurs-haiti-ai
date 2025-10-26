@@ -1595,94 +1595,1551 @@ Corrigez les erreurs dans ce texte :
     id: "vocabulaire-dictionnaire",
     title: "Vocabulaire - Utilisation du dictionnaire",
     mois: "Janvier - Semaine 4",
-    objectif: "Utiliser correctement un dictionnaire et comprendre la polysémie",
-    introduction: "Contenu à venir...",
-    contenu: "Contenu à venir...",
-    exemplesExercices: "Exercices à venir..."
+    objectif: "Maîtriser l'utilisation efficace du dictionnaire pour enrichir son vocabulaire, comprendre la polysémie des mots et développer son autonomie dans l'apprentissage du français.",
+    introduction: `Le dictionnaire est l'un des outils les plus précieux pour apprendre une langue. C'est comme avoir un professeur dans sa poche ! Savoir l'utiliser correctement vous aidera à progresser rapidement en français.
+
+**Pourquoi apprendre à utiliser le dictionnaire ?**
+- Pour comprendre les mots inconnus
+- Pour vérifier l'orthographe des mots
+- Pour enrichir votre vocabulaire
+- Pour découvrir les différents sens d'un même mot
+
+**Dans cette leçon, vous apprendrez à :**
+- Chercher rapidement un mot dans le dictionnaire
+- Comprendre les abréviations et symboles utilisés
+- Identifier les différents sens d'un mot (polysémie)
+- Choisir le sens approprié selon le contexte`,
+    contenu: `📖 **INTRODUCTION AU DICTIONNAIRE**
+
+**Qu'est-ce qu'un dictionnaire ?**
+Un dictionnaire est un livre (ou application) qui répertorie les mots d'une langue dans l'ordre alphabétique et donne leurs définitions, leur orthographe, leur prononciation et des exemples d'utilisation.
+
+**Les différents types de dictionnaires**
+- **Dictionnaire de langue** : Définit les mots (ex: Le Petit Larousse, Le Robert)
+- **Dictionnaire bilingue** : Traduit d'une langue à une autre (ex: Français-Créole)
+- **Dictionnaire des synonymes** : Donne des mots de sens similaire
+- **Dictionnaire encyclopédique** : Donne aussi des informations sur les personnes, lieux, événements
+
+📚 **CONTEXTE ET DÉFINITIONS**
+
+**Ordre alphabétique** : Classement selon les lettres de l'alphabet (A, B, C...)
+
+**Entrée** : Mot principal que l'on cherche dans le dictionnaire
+
+**Définition** : Explication du sens d'un mot
+
+**Polysémie** : Fait qu'un mot ait plusieurs sens différents
+
+**Contexte** : Situation ou phrase dans laquelle un mot est utilisé
+
+**Nature grammaticale** : Catégorie du mot (nom, verbe, adjectif, etc.)
+
+**Synonyme** : Mot de sens similaire
+
+**Antonyme** : Mot de sens contraire
+
+**Exemple d'usage** : Phrase illustrant l'utilisation d'un mot
+
+📊 **LES CONCEPTS CLÉS**
+
+**1. L'ordre alphabétique**
+
+Pour trouver rapidement un mot, il faut maîtriser l'ordre alphabétique complet :
+
+**Niveau 1 - La première lettre** :
+- Banane vient avant Citron (B avant C)
+- Maison vient avant Soleil (M avant S)
+
+**Niveau 2 - La deuxième lettre (si la première est identique)** :
+- Balle vient avant Banane (a avant a, puis l avant n)
+- Cahier vient avant Classe (a avant l)
+
+**Niveau 3 - La troisième lettre et suivantes** :
+- Camarade vient avant Canard (m avant n)
+- Travail vient avant Travailler (le mot plus court vient avant)
+
+**2. Structure d'un article de dictionnaire**
+
+Prenons l'exemple du mot **"livre"** :
+
+**livre** [livʀ] n.m. et n.f.
+1. n.m. Ensemble de pages reliées contenant un texte imprimé.
+   *Ex: J'ai acheté un livre de français.*
+2. n.f. Ancienne unité monétaire britannique.
+   *Ex: Le prix est de 10 livres sterling.*
+
+**Décomposition** :
+- **livre** : le mot en gras (l'entrée)
+- **[livʀ]** : prononciation en phonétique
+- **n.m.** : nature grammaticale (nom masculin)
+- **1., 2.** : différents sens du mot (polysémie)
+- **Ex:** : exemple d'utilisation
+
+**3. Les abréviations courantes**
+
+**Natures grammaticales** :
+- **n.m.** : nom masculin
+- **n.f.** : nom féminin
+- **v.** : verbe
+- **adj.** : adjectif
+- **adv.** : adverbe
+- **prép.** : préposition
+- **conj.** : conjonction
+
+**Autres abréviations** :
+- **syn.** : synonyme
+- **ant.** : antonyme
+- **pl.** : pluriel
+- **fam.** : familier
+- **fig.** : sens figuré
+- **litt.** : littéraire
+- **vx** : vieux, ancien
+
+**4. La polysémie (plusieurs sens d'un même mot)**
+
+Beaucoup de mots français ont plusieurs sens. Le dictionnaire les numérote.
+
+**Exemple avec le mot "tête"** :
+1. Partie du corps contenant le cerveau
+   *Ex: J'ai mal à la tête.*
+2. Personne dirigeant un groupe (sens figuré)
+   *Ex: Il est à la tête de l'entreprise.*
+3. Intelligence, mémoire
+   *Ex: Elle a une bonne tête pour les maths.*
+
+**Comment choisir le bon sens ?**
+Lisez toutes les définitions et choisissez celle qui correspond au contexte de votre phrase.
+
+💡 **EXEMPLES PRATIQUES**
+
+**Exercice 1 : Chercher un mot**
+
+Vous voulez chercher le mot **"extraordinaire"** :
+
+**Étapes** :
+1. Ouvrez le dictionnaire à la lettre **E**
+2. Cherchez les mots commençant par **Ex-**
+3. Puis ceux commençant par **Ext-**
+4. Enfin **Extr-** puis **Extra-**
+5. Trouvez **extraordinaire**
+
+**Résultat** :
+**extraordinaire** [ɛkstʀaɔʀdinɛʀ] adj.
+Qui sort de l'ordinaire, qui est remarquable.
+*Ex: C'est une personne extraordinaire.*
+*Syn: exceptionnel, remarquable*
+*Ant: ordinaire, banal*
+
+**Exercice 2 : Comprendre la polysémie**
+
+Cherchons le mot **"classe"** :
+
+**classe** [klas] n.f.
+1. Salle où les élèves reçoivent l'enseignement.
+   *Ex: La classe est bien décorée.*
+2. Groupe d'élèves d'un même niveau.
+   *Ex: Il y a 30 élèves dans ma classe.*
+3. Élégance, distinction (familier).
+   *Ex: Elle a beaucoup de classe.*
+
+**Dans quelle phrase utiliser quel sens ?**
+- "Je vais en classe" → sens 1 (le lieu)
+- "Ma classe fait une sortie" → sens 2 (le groupe)
+- "Cette robe a de la classe" → sens 3 (l'élégance)
+
+🎯 **RÈGLES ET MÉTHODES**
+
+**Méthode pour chercher efficacement un mot**
+
+**Étape 1 : Identifier la première lettre**
+Ouvrez le dictionnaire à la section correspondante.
+
+**Étape 2 : Affiner avec les lettres suivantes**
+Feuilletez en regardant les mots en haut de page (mots-repères).
+
+**Étape 3 : Trouver le mot exact**
+Parcourez la page jusqu'à trouver le mot.
+
+**Étape 4 : Lire l'article complet**
+Ne vous arrêtez pas à la première définition, lisez tout l'article.
+
+**Étape 5 : Choisir le sens approprié**
+Sélectionnez la définition qui correspond à votre contexte.
+
+**Conseils pratiques**
+
+**1. Utilisez les mots-repères**
+En haut de chaque page, il y a deux mots : le premier et le dernier mot de la page. Utilisez-les pour naviguer rapidement.
+
+**2. Attention aux formes dérivées**
+Certains mots sont regroupés sous la même entrée :
+- **grand** → **grandeur**, **grandir**, **agrandir**
+
+**3. Regardez les exemples**
+Les exemples vous aident à comprendre comment utiliser le mot dans une phrase.
+
+**4. Notez les mots nouveaux**
+Créez un carnet de vocabulaire personnel pour noter les mots nouveaux avec leur définition.
+
+**5. Utilisez le dictionnaire régulièrement**
+Plus vous l'utilisez, plus vous devenez rapide et efficace.
+
+🔑 **POINTS CLÉS À RETENIR**
+
+1. **Le dictionnaire est un outil d'autonomie** : Il vous permet d'apprendre par vous-même
+2. **L'ordre alphabétique est essentiel** : Maîtrisez-le pour chercher rapidement
+3. **Lisez l'article complet** : Ne vous arrêtez pas à la première définition
+4. **Comprenez les abréviations** : n.m., v., adj., syn., etc.
+5. **La polysémie est fréquente** : Un même mot peut avoir plusieurs sens
+6. **Le contexte détermine le sens** : Choisissez la définition adaptée à votre phrase
+7. **Utilisez les exemples** : Ils vous montrent comment employer le mot correctement`,
+    exemplesExercices: `**EXERCICES D'UTILISATION DU DICTIONNAIRE**
+
+**Exercice 1 : Ordre alphabétique**
+Classez ces mots dans l'ordre alphabétique :
+Soleil, Banane, Arbre, Maison, Cahier, Sac, Ballon, Cartable
+
+**Exercice 2 : Comprendre un article**
+Voici un article de dictionnaire. Répondez aux questions :
+
+**marcher** [maʀʃe] v.
+1. Se déplacer en mettant un pied devant l'autre.
+   *Ex: Je marche tous les jours.*
+2. Fonctionner correctement.
+   *Ex: Ma montre ne marche plus.*
+
+Questions :
+a) Quelle est la nature grammaticale de ce mot ?
+b) Combien de sens a ce mot ?
+c) Dans la phrase "L'ordinateur marche bien", quel sens utilise-t-on ?
+
+**Exercice 3 : Polysémie**
+Le mot **"pied"** a plusieurs sens. Trouvez-les dans le dictionnaire et complétez :
+
+1. Partie du corps : *"J'ai mal au _____."*
+2. Base d'un objet : *"Le _____ de la table est cassé."*
+3. Unité de mesure : *"La hauteur est de 6 _____."*
+
+**Exercice 4 : Chercher et définir**
+Cherchez ces mots dans le dictionnaire et écrivez leur définition :
+1. Patrimoine : _______________________________
+2. Philanthrope : _______________________________
+3. Véhément : _______________________________
+
+**Exercice 5 : Synonymes et antonymes**
+Utilisez le dictionnaire pour trouver :
+- 2 synonymes de "content" : _______, _______
+- 2 antonymes de "chaud" : _______, _______
+
+**Auto-évaluation** :
+- Sais-tu classer des mots par ordre alphabétique rapidement ?
+- Comprends-tu les abréviations du dictionnaire ?
+- Sais-tu identifier les différents sens d'un mot ?
+- Choisis-tu la bonne définition selon le contexte ?
+- Utilises-tu régulièrement le dictionnaire ?`
   },
   {
     id: "orthographe-usage",
     title: "Orthographe d'usage",
     mois: "Janvier - Semaine 4",
-    objectif: "Orthographier correctement des mots du vocabulaire usuel",
-    introduction: "Contenu à venir...",
-    contenu: "Contenu à venir...",
-    exemplesExercices: "Exercices à venir..."
+    objectif: "Mémoriser l'orthographe correcte des mots du vocabulaire usuel, comprendre les règles de base de l'orthographe française et développer des stratégies pour éviter les erreurs courantes.",
+    introduction: `L'orthographe, c'est comme l'adresse d'un mot : si vous vous trompez, on ne le reconnaît pas ! En français, l'orthographe peut sembler compliquée, mais avec de bonnes stratégies, vous pouvez progresser.
+
+**Pourquoi l'orthographe est-elle importante ?**
+- Pour être compris à l'écrit
+- Pour réussir vos examens
+- Pour faire bonne impression dans vos écrits
+- Pour communiquer de manière professionnelle
+
+**Dans cette leçon, vous apprendrez à :**
+- Mémoriser l'orthographe des mots courants
+- Identifier les difficultés orthographiques fréquentes
+- Utiliser des stratégies pour retenir l'orthographe
+- Éviter les erreurs les plus courantes`,
+    contenu: `📖 **INTRODUCTION À L'ORTHOGRAPHE D'USAGE**
+
+**Qu'est-ce que l'orthographe d'usage ?**
+L'orthographe d'usage, c'est la manière correcte d'écrire les mots tels qu'ils sont dans le dictionnaire, sans considérer les règles d'accord. C'est l'orthographe "de base" du mot.
+
+**Différence entre orthographe d'usage et orthographe grammaticale**
+- **Orthographe d'usage** : Comment écrire le mot lui-même
+  *Exemple : "toujours" (pas "toujoure")*
+- **Orthographe grammaticale** : Les accords (pluriel, féminin, etc.)
+  *Exemple : "les filles contentes" (accords)*
+
+**Pourquoi le français a-t-il une orthographe difficile ?**
+- L'histoire de la langue (mots d'origine latine, grecque, etc.)
+- Des lettres muettes (h muet, consonnes finales)
+- Plusieurs façons d'écrire un même son ([o] = eau, au, o)
+
+📚 **CONTEXTE ET DÉFINITIONS**
+
+**Lettre muette** : Lettre qu'on écrit mais qu'on ne prononce pas
+*Exemple : le "t" dans "petit"*
+
+**Double consonne** : Deux mêmes consonnes qui se suivent
+*Exemple : "pomme", "belle", "grammaire"*
+
+**Accent** : Signe placé sur une voyelle (é, è, ê, à, ù)
+
+**Cédille** : Petit signe sous le c (ç) pour le prononcer [s]
+*Exemple : "français", "garçon"*
+
+**Tréma** : Deux points sur une voyelle (ë, ï) pour la prononcer séparément
+*Exemple : "Haïti", "Noël"*
+
+**Apostrophe** : Signe (') qui remplace une voyelle élidée
+*Exemple : "l'école" (la école)*
+
+📊 **LES CONCEPTS CLÉS**
+
+**1. Les lettres muettes (difficultés fréquentes)**
+
+**H muet en début de mot**
+Le h ne se prononce jamais en français :
+- habit, homme, heure, hôpital, honnête
+- **Attention** : On fait l'élision → l'homme (pas le homme)
+
+**Consonnes muettes en fin de mot**
+Beaucoup de consonnes finales ne se prononcent pas :
+- gran**d**, peti**t**, trè**s**, alor**s**, temp**s**
+- mai**s**, jadi**s**, pui**s**, par**c**, san**g**
+
+**Comment savoir quelle lettre muette ?**
+Cherchez un mot de la même famille où la lettre se prononce :
+- gran**d** → gran**deur** (le d se prononce)
+- peti**t** → peti**te** (le t se prononce)
+- fran**c** → fran**che** (le c se prononce)
+
+**2. Les doubles consonnes**
+
+**Consonnes qui doublent souvent :**
+- **ll** : belle, ville, famille, oisillon
+- **tt** : lettre, jette, cette, botte
+- **pp** : appeler, apprendre, nappe
+- **mm** : pomme, femme, grammaire, comment
+- **nn** : année, donner, personne, bonne
+- **ss** : passer, grosse, dessert, adresse
+- **rr** : terrible, arrêter, terre, guerre
+
+**Attention aux exceptions !**
+- "avec", "alors", "bicyclette" : une seule consonne
+- Certains préfixes créent des doubles : **il**lisible, **im**mobile
+
+**3. Les accents**
+
+**L'accent aigu (é)** : se prononce [e] fermé
+- été, école, éléphant, vérité, téléphone
+
+**L'accent grave (è)** : se prononce [ɛ] ouvert
+- père, mère, après, très, problème, près
+
+**L'accent circonflexe (ê, â, ô, î, û)** :
+- Souvent à la place d'un ancien "s" : forêt (forest), hôpital (hospital)
+- tête, pâte, côté, île, flûte
+
+**Règle générale** :
+- **é** en fin de syllabe : é-co-le, vé-ri-té
+- **è** devant syllabe muette : mè-re, frè-re
+
+**4. Les sons difficiles à orthographier**
+
+**Le son [o] peut s'écrire : o, au, eau**
+- **o** : mot, dos, vélo
+- **au** : chaud, auto, jaune, Paul
+- **eau** : beau, oiseau, cadeau, château
+
+**Le son [ɛ̃] (in) peut s'écrire : in, im, ain, ein, yn**
+- **in** : jardin, matin, lapin
+- **im** : impossible, simple
+- **ain** : pain, main, bain
+- **ein** : plein, frein
+- **yn** : syntaxe
+
+**Le son [s] peut s'écrire : s, ss, c, ç, t(ion)**
+- **s** : sac, soleil (sauf entre deux voyelles : "rose" [z])
+- **ss** : passer, classe (entre deux voyelles pour avoir [s])
+- **c** : ciel, cerise (devant e, i, y)
+- **ç** : français, garçon, leçon (devant a, o, u)
+- **t** : nation, attention, station (dans -tion)
+
+💡 **EXEMPLES PRATIQUES**
+
+**Liste de mots fréquemment mal orthographiés**
+
+**Erreurs courantes :**
+- ❌ "apartement" → ✅ "appartement" (deux p, deux t)
+- ❌ "adresse" → ✅ "adresse" (deux s, deux d)
+- ❌ "dévelopement" → ✅ "développement" (deux p, deux e)
+- ❌ "aujourd'hui" → ✅ "aujourd'hui" (apostrophe, pas d'espace)
+- ❌ "language" → ✅ "langage" (pas de u)
+- ❌ "peut-être" → ✅ "peut-être" (trait d'union, accent circonflexe)
+- ❌ "biensûr" → ✅ "bien sûr" (deux mots, accent circonflexe)
+- ❌ "parmis" → ✅ "parmi" (pas de s final)
+
+**Mots invariables à connaître par cœur :**
+- alors, aussi, aujourd'hui, avant, avec, beaucoup
+- bien, bientôt, car, cependant, chez, comme
+- dans, depuis, derrière, devant, donc, encore
+- enfin, ensemble, entre, envers, hélas, jamais
+- longtemps, maintenant, mais, moins, parmi, partout
+- pendant, peut-être, plusieurs, pourtant, presque, puis
+- quand, sans, seulement, soudain, souvent, sur
+- tandis que, toujours, toutefois, très, trop, vers
+
+🎯 **RÈGLES ET MÉTHODES**
+
+**Stratégies pour mémoriser l'orthographe**
+
+**1. La méthode visuelle**
+- Regardez bien le mot
+- Fermez les yeux et visualisez-le
+- Réécrivez-le de mémoire
+- Vérifiez
+
+**2. La méthode des familles de mots**
+Trouvez des mots de la même famille :
+- chant → **chanter, chanson, chanteur**
+- plomb → **plombier** (on entend le b)
+
+**3. Les moyens mnémotechniques**
+Créez des phrases pour retenir l'orthographe :
+- **Hier** : **H**omme **I**ntelligent **E**st **R**iche
+- **Adresse** : **A**vec **D**eux **R**estaure **Ses** **S**oeurs **E**nfin
+
+**4. L'épellation**
+Épelez le mot à voix haute en le décomposant par syllabes :
+- dé-ve-lop-pe-ment
+
+**5. La copie répétée**
+Écrivez le mot plusieurs fois (5-10 fois) en vous concentrant.
+
+**6. La dictée audio**
+Écoutez le mot et écrivez-le, puis vérifiez.
+
+**Routine d'apprentissage recommandée :**
+1. **Lundi** : Apprenez 10 mots nouveaux
+2. **Mardi** : Révisez et écrivez-les
+3. **Mercredi** : Faites une petite dictée
+4. **Jeudi** : Utilisez-les dans des phrases
+5. **Vendredi** : Test final
+
+🔑 **POINTS CLÉS À RETENIR**
+
+1. **Les lettres muettes sont fréquentes** : H muet, consonnes finales muettes
+2. **Les doubles consonnes sont courantes** : ll, tt, pp, mm, nn, ss
+3. **Les accents ont leur importance** : é, è, ê, à, ù changent le sens ou la prononciation
+4. **Un même son = plusieurs graphies** : [o] = o, au, eau
+5. **Les mots invariables se mémorisent** : Apprenez-les par cœur
+6. **Les familles de mots aident** : Cherchez des mots apparentés
+7. **La pratique régulière est essentielle** : 10 mots par semaine valent mieux que 50 d'un coup`,
+    exemplesExercices: `**EXERCICES D'ORTHOGRAPHE D'USAGE**
+
+**Exercice 1 : Lettres muettes**
+Complétez avec la bonne lettre muette finale :
+1. Je suis gran___
+2. Il fait trè___ chau___
+3. C'est un peti___ garçon
+4. Le tem___ passe vite
+5. Je mar___ lentement
+
+**Exercice 2 : Doubles consonnes**
+Complétez avec une ou deux consones :
+1. une be__e fille (l ou ll ?)
+2. une po__e rouge (m ou mm ?)
+3. j'a__elle mon ami (p ou pp ?)
+4. une gro__e voiture (s ou ss ?)
+5. la te__e est ronde (r ou rr ?)
+
+**Exercice 3 : Accents**
+Ajoutez les accents nécessaires :
+1. L'ecole commence a huit heures.
+2. Mon pere et ma mere sont la.
+3. J'ai tres faim apres le sport.
+4. C'est une verite importante.
+5. Il habite pres de la foret.
+
+**Exercice 4 : Orthographe de mots courants**
+Corrigez ces mots mal orthographiés :
+1. aujourdhui → _______________
+2. apartement → _______________
+3. dévelopement → _______________
+4. biensûr → _______________
+5. language → _______________
+
+**Exercice 5 : Dictée de mots invariables**
+Écrivez correctement ces 10 mots sous la dictée :
+toujours, beaucoup, peut-être, maintenant, souvent, très, parmi, encore, ensemble, depuis
+
+**Auto-évaluation** :
+- Connais-tu les principales lettres muettes ?
+- Sais-tu quand doubler les consonnes ?
+- Maîtrises-tu l'utilisation des accents ?
+- Mémorises-tu l'orthographe des mots courants ?
+- Utilises-tu des stratégies de mémorisation ?`
   },
   {
     id: "grammaire-types-phrases",
     title: "Grammaire - Types et formes de phrases",
     mois: "Janvier - Semaine 4",
-    objectif: "Distinguer les différents types d'énoncés que représentent les phrases",
-    introduction: "Contenu à venir...",
-    contenu: "Contenu à venir...",
-    exemplesExercices: "Exercices à venir..."
+    objectif: "Identifier et produire les différents types de phrases (déclarative, interrogative, exclamative, impérative) et les différentes formes de phrases (affirmative, négative), en comprenant leur fonction dans la communication.",
+    introduction: `Quand vous parlez ou écrivez, vous utilisez différents types de phrases selon ce que vous voulez exprimer : affirmer quelque chose, poser une question, donner un ordre, exprimer une émotion. Chaque type a sa structure propre.
+
+**Pourquoi connaître les types de phrases ?**
+- Pour varier votre expression écrite et orale
+- Pour adapter votre discours à votre intention
+- Pour mieux comprendre ce que vous lisez
+- Pour respecter la ponctuation correcte
+
+**Dans cette leçon, vous apprendrez à :**
+- Identifier les 4 types de phrases
+- Transformer une phrase d'un type à un autre
+- Utiliser la ponctuation appropriée
+- Distinguer forme affirmative et forme négative`,
+    contenu: `📖 **INTRODUCTION AUX TYPES ET FORMES DE PHRASES**
+
+**Qu'est-ce qu'une phrase ?**
+Une phrase est un ensemble de mots organisés qui a un sens complet. Elle commence par une majuscule et se termine par un signe de ponctuation (. ! ?).
+
+**Types vs Formes de phrases**
+- **Les TYPES** : Ce que fait la phrase (déclarer, interroger, ordonner, exclamer)
+- **Les FORMES** : Comment elle le fait (affirmative ou négative)
+
+Une phrase a toujours UN type et UNE forme.
+
+📚 **CONTEXTE ET DÉFINITIONS**
+
+**Phrase déclarative** : Donne une information, affirme quelque chose
+
+**Phrase interrogative** : Pose une question
+
+**Phrase exclamative** : Exprime une émotion forte
+
+**Phrase impérative** : Donne un ordre, un conseil, une interdiction
+
+**Forme affirmative** : Dit "oui", affirme
+
+**Forme négative** : Dit "non", nie
+
+**Ponctuation** : Signes qui marquent les pauses et le sens (. , ! ?)
+
+📊 **LES CONCEPTS CLÉS**
+
+**1. Les 4 types de phrases**
+
+**TYPE 1 : La phrase DÉCLARATIVE**
+**Fonction** : Donner une information, énoncer un fait
+**Ponctuation** : . (point)
+**Structure** : Sujet + Verbe + Complément
+
+**Exemples** :
+- Marie va à l'école.
+- Le soleil brille aujourd'hui.
+- J'aime lire des livres.
+- Haïti est un pays des Caraïbes.
+
+**TYPE 2 : La phrase INTERROGATIVE**
+**Fonction** : Poser une question
+**Ponctuation** : ? (point d'interrogation)
+**3 structures possibles** :
+
+**a) Intonation montante (oral familier)** :
+- Tu viens ?
+- Il fait beau ?
+
+**b) Est-ce que... (oral courant)** :
+- Est-ce que tu viens ?
+- Est-ce qu'il fait beau ?
+
+**c) Inversion sujet-verbe (écrit, oral formel)** :
+- Viens-tu ?
+- Fait-il beau ?
+
+**TYPE 3 : La phrase EXCLAMATIVE**
+**Fonction** : Exprimer une émotion (joie, surprise, colère, admiration)
+**Ponctuation** : ! (point d'exclamation)
+**Mots exclamatifs** : Quel, Quelle, Quels, Quelles, Comme, Que
+
+**Exemples** :
+- Quelle belle journée !
+- Comme tu as grandi !
+- Que c'est beau !
+- Quel magnifique paysage !
+
+**TYPE 4 : La phrase IMPÉRATIVE**
+**Fonction** : Donner un ordre, un conseil, une interdiction
+**Ponctuation** : . ou ! (selon l'intensité)
+**Structure** : Verbe à l'impératif (sans sujet exprimé)
+
+**Exemples** :
+- Ferme la porte. (ordre)
+- Écoute bien la leçon. (conseil)
+- Ne parle pas en classe ! (interdiction)
+- Mange tes légumes. (conseil)
+
+**2. Les 2 formes de phrases**
+
+**FORME AFFIRMATIVE** : Affirme, dit "oui"
+- Il **fait** beau.
+- Marie **aime** le chocolat.
+- Nous **allons** au cinéma.
+
+**FORME NÉGATIVE** : Nie, dit "non"
+Structure : **ne ... pas** (et variantes)
+
+**Négation simple : ne ... pas**
+- Il **ne fait pas** beau.
+- Marie **n'aime pas** le chocolat.
+- Nous **n'allons pas** au cinéma.
+
+**Autres négations** :
+- **ne ... plus** : Il ne pleut plus. (ça s'est arrêté)
+- **ne ... jamais** : Je ne mens jamais. (pas une seule fois)
+- **ne ... rien** : Je ne vois rien. (aucune chose)
+- **ne ... personne** : Je ne connais personne ici. (aucune personne)
+- **ne ... guère** : Il ne parle guère. (très peu)
+- **ne ... aucun(e)** : Je n'ai aucune idée. (pas une seule)
+
+**3. Combiner types et formes**
+
+Chaque type de phrase peut être à la forme affirmative ou négative :
+
+**Phrase déclarative** :
+- Forme affirmative : Il pleut.
+- Forme négative : Il ne pleut pas.
+
+**Phrase interrogative** :
+- Forme affirmative : Est-ce que tu viens ?
+- Forme négative : Est-ce que tu ne viens pas ?
+
+**Phrase impérative** :
+- Forme affirmative : Parle fort !
+- Forme négative : Ne parle pas fort !
+
+**Phrase exclamative** :
+- Forme affirmative : Comme c'est beau !
+- Forme négative : Comme ce n'est pas beau !
+
+💡 **EXEMPLES PRATIQUES**
+
+**Transformations**
+
+**Phrase de départ (déclarative affirmative)** :
+*"Marie aime le français."*
+
+**→ Interrogative** :
+- Est-ce que Marie aime le français ?
+- Marie aime-t-elle le français ?
+- Marie aime le français ?
+
+**→ Négative** :
+- Marie n'aime pas le français.
+
+**→ Exclamative** :
+- Comme Marie aime le français !
+- Qu'est-ce que Marie aime le français !
+
+**→ Impérative** :
+(Changement de sujet nécessaire)
+- Marie, aime le français !
+
+**Reconnaître le type dans un texte**
+
+*"Quelle belle journée ! Le soleil brille et les oiseaux chantent. Viens avec moi au parc. Tu n'as pas envie de sortir ?"*
+
+Analyse :
+1. "Quelle belle journée !" → **Exclamative** (!)
+2. "Le soleil brille et les oiseaux chantent." → **Déclarative** (.)
+3. "Viens avec moi au parc." → **Impérative** (.)
+4. "Tu n'as pas envie de sortir ?" → **Interrogative négative** (?)
+
+🎯 **RÈGLES ET MÉTHODES**
+
+**Comment identifier le type d'une phrase ?**
+
+**Méthode en 3 questions** :
+
+**Question 1** : Y a-t-il un point d'interrogation (?) ?
+→ OUI : C'est une **phrase interrogative**
+
+**Question 2** : Y a-t-il un point d'exclamation (!) ?
+→ OUI : C'est une **phrase exclamative**
+
+**Question 3** : Le verbe est-il à l'impératif (ordre, pas de sujet) ?
+→ OUI : C'est une **phrase impérative**
+
+**Si NON à toutes** : C'est une **phrase déclarative**
+
+**Comment transformer une phrase ?**
+
+**De déclarative à interrogative** :
+Ajoutez "Est-ce que" au début OU inversez sujet-verbe OU montez l'intonation
+- Tu viens. → Est-ce que tu viens ? / Viens-tu ? / Tu viens ?
+
+**De déclarative à exclamative** :
+Ajoutez "Comme" ou "Quel(le)(s)" et changez le point en !
+- C'est beau. → Comme c'est beau ! / Que c'est beau !
+
+**De déclarative à impérative** :
+Supprimez le sujet et mettez le verbe à l'impératif
+- Tu ranges ta chambre. → Range ta chambre !
+
+**D'affirmative à négative** :
+Ajoutez "ne ... pas" autour du verbe
+- Il vient. → Il ne vient pas.
+
+🔑 **POINTS CLÉS À RETENIR**
+
+1. **4 types de phrases** : Déclarative (.), Interrogative (?), Exclamative (!), Impérative (. ou !)
+2. **2 formes de phrases** : Affirmative (dit oui) et Négative (dit non)
+3. **Chaque phrase a un type ET une forme** : On peut combiner les deux
+4. **La ponctuation est essentielle** : Elle indique le type de phrase
+5. **La négation se construit avec "ne ... pas"** : Et ses variantes (plus, jamais, rien, personne)
+6. **L'impératif n'a pas de sujet exprimé** : Le verbe suffit
+7. **On peut transformer une phrase** : D'un type à l'autre en respectant les règles`,
+    exemplesExercices: `**EXERCICES SUR LES TYPES ET FORMES DE PHRASES**
+
+**Exercice 1 : Identifier le type**
+Identifiez le type de chaque phrase :
+1. Comme il fait chaud aujourd'hui !
+2. Ferme la fenêtre, s'il te plaît.
+3. Est-ce que tu as fini tes devoirs ?
+4. Les élèves écoutent attentivement.
+5. Quelle belle histoire !
+
+**Exercice 2 : Identifier la forme**
+Dites si la phrase est affirmative ou négative :
+1. Je ne veux pas de légumes.
+2. Marie aime beaucoup danser.
+3. Il ne pleut jamais en été.
+4. Nous allons au cinéma ce soir.
+5. Tu n'as rien compris.
+
+**Exercice 3 : Transformation affirmative → négative**
+Transformez ces phrases à la forme négative :
+1. Il fait beau. → _______________________
+2. Marie mange du pain. → _______________________
+3. Nous allons à l'école. → _______________________
+4. Tu comprends la leçon. → _______________________
+5. Ils parlent créole. → _______________________
+
+**Exercice 4 : Transformation déclarative → interrogative**
+Transformez ces phrases déclaratives en interrogatives (3 façons) :
+1. Tu viens demain.
+   - Intonation : _______________________
+   - Est-ce que : _______________________
+   - Inversion : _______________________
+
+**Exercice 5 : Ponctuation**
+Ajoutez la bonne ponctuation (. ? ! ) :
+1. Quelle magnifique vue___
+2. Il pleut depuis ce matin___
+3. Viens ici immédiatement___
+4. Est-ce que tu as compris___
+5. Comme je suis content___
+
+**Auto-évaluation** :
+- Peux-tu identifier les 4 types de phrases ?
+- Sais-tu former la négation avec "ne...pas" ?
+- Reconnais-tu la différence entre type et forme ?
+- Peux-tu transformer une phrase d'un type à l'autre ?
+- Utilises-tu la bonne ponctuation ?`
   },
   // Janvier - Semaine 2
   {
     id: "ponctuation-phrase",
     title: "Ponctuation et transformation de phrases",
     mois: "Janvier - Semaine 2",
-    objectif: "Identifier les signes de ponctuation et transformer les types de phrases",
-    introduction: "Contenu à venir...",
-    contenu: "Contenu à venir...",
-    exemplesExercices: "Exercices à venir..."
+    objectif: "Maîtriser l'utilisation des signes de ponctuation pour structurer ses phrases correctement, et savoir transformer les phrases d'un type à un autre en respectant les règles syntaxiques et la ponctuation appropriée.",
+    introduction: `La ponctuation, ce sont les panneaux de signalisation du texte ! Sans elle, un texte devient incompréhensible, comme une route sans panneaux. Bien ponctuer, c'est guider votre lecteur.
+
+**Pourquoi la ponctuation est-elle importante ?**
+- Pour donner du sens à vos phrases
+- Pour éviter les malentendus
+- Pour rendre votre texte agréable à lire
+- Pour respecter les normes de l'écrit
+
+**Dans cette leçon, vous apprendrez à :**
+- Utiliser correctement chaque signe de ponctuation
+- Placer la ponctuation au bon endroit
+- Transformer les types de phrases
+- Respecter les règles de ponctuation dans vos écrits`,
+    contenu: `📖 **INTRODUCTION À LA PONCTUATION**
+
+**Qu'est-ce que la ponctuation ?**
+La ponctuation est l'ensemble des signes graphiques qui organisent et rythment le texte écrit. Elle indique les pauses, les intonations, et aide à la compréhension.
+
+**Sans ponctuation, tout devient confus !**
+
+Exemple sans ponctuation :
+*"marie dit jean est gentil"*
+
+Avec ponctuation différente, le sens change :
+- Marie dit : "Jean est gentil." (Marie parle)
+- "Marie", dit Jean, "est gentille." (Jean parle)
+
+📚 **CONTEXTE ET DÉFINITIONS**
+
+**Point (.)** : Marque la fin d'une phrase déclarative
+
+**Point d'interrogation (?)** : Marque une question
+
+**Point d'exclamation (!)** : Marque une émotion forte
+
+**Virgule (,)** : Marque une petite pause, sépare des éléments
+
+**Point-virgule (;)** : Pause plus longue que la virgule, relie des idées
+
+**Deux-points (:)** : Annonce une énumération, une explication, une citation
+
+**Points de suspension (...)** : Phrase inachevée, hésitation
+
+**Guillemets (" ")** : Encadrent une citation, un dialogue
+
+**Tiret (–)** : Dialogue, incise
+
+**Parenthèses ( )** : Information supplémentaire
+
+📊 **LES CONCEPTS CLÉS**
+
+**1. Les signes de fin de phrase**
+
+**Le point (.)** 
+**Usage** : Fin d'une phrase déclarative ou impérative
+- Je vais à l'école.
+- Ferme la porte.
+
+**Le point d'interrogation (?)**
+**Usage** : Fin d'une phrase interrogative
+- Où vas-tu ?
+- Est-ce que tu viens ?
+
+**Attention** : Pas d'espace avant, un espace après (en français standard)
+En français : "Comment allez-vous ?" (espace avant le ?)
+En anglais : "How are you?" (pas d'espace)
+
+**Le point d'exclamation (!)**
+**Usage** : Fin d'une phrase exclamative ou impérative emphatique
+- Quelle belle journée !
+- Arrête immédiatement !
+
+**2. Les signes de pause dans la phrase**
+
+**La virgule (,)**
+**Usages multiples** :
+
+**a) Séparer des éléments dans une énumération**
+- J'ai acheté des mangues, des bananes, des oranges et des papayes.
+(Pas de virgule avant "et" final)
+
+**b) Isoler un complément en début de phrase**
+- Hier, je suis allé au marché.
+- Dans cette maison, il y a trois chambres.
+
+**c) Encadrer un complément circonstanciel**
+- Marie, après l'école, va chez sa grand-mère.
+
+**d) Séparer des propositions**
+- Il pleut, donc je reste à la maison.
+
+**e) Encadrer une apostrophe**
+- Marie, viens ici !
+- Mes amis, écoutez-moi.
+
+**ERREURS À ÉVITER** :
+❌ Pas de virgule entre sujet et verbe :
+- FAUX : *"Marie, va à l'école."*
+- VRAI : "Marie va à l'école."
+
+❌ Pas de virgule avant "et", "ou", "ni" dans une énumération simple :
+- FAUX : *"J'aime le riz, et les haricots."*
+- VRAI : "J'aime le riz et les haricots."
+
+**Le point-virgule (;)**
+**Usage** : Sépare deux propositions indépendantes liées par le sens
+- Le soleil brille ; les enfants jouent dehors.
+- J'ai terminé mes devoirs ; maintenant je peux jouer.
+
+**3. Les signes d'annonce et de citation**
+
+**Les deux-points (:)**
+**Usages** :
+
+**a) Annoncer une énumération**
+- J'ai trois frères : Jean, Paul et Pierre.
+
+**b) Introduire une explication**
+- Il est absent : il est malade.
+
+**c) Introduire une citation ou un dialogue**
+- Il a dit : "Je reviendrai demain."
+
+**Les guillemets (" ")**
+**Usages** :
+
+**a) Encadrer une citation**
+- Victor Hugo a écrit : "La musique, c'est du bruit qui pense."
+
+**b) Marquer un dialogue** (avec tirets)
+- "Bonjour !", dit Marie.
+- Elle répondit : "Bonjour à toi aussi !"
+
+**c) Mettre en relief un mot**
+- Le mot "sympathique" vient du grec.
+
+**4. Autres signes importants**
+
+**Les points de suspension (...)**
+**Usages** :
+
+**a) Phrase inachevée**
+- Je voulais dire que...
+
+**b) Hésitation**
+- Euh... je ne sais pas.
+
+**c) Remplacement d'un mot (censure)**
+- Il a dit un gros mot : M...!
+
+**Les parenthèses ( )**
+**Usage** : Information supplémentaire, précision
+- Victor Hugo (1802-1885) est un grand écrivain français.
+- J'irai te voir demain (si j'ai le temps).
+
+**Le tiret (–)**
+**Usages** :
+
+**a) Dialogue**
+- – Bonjour ! Comment vas-tu ?
+- – Très bien, merci !
+
+**b) Encadrer une incise**
+- Marie – ma meilleure amie – arrive demain.
+
+💡 **EXEMPLES DE TRANSFORMATIONS**
+
+**Transformation 1 : Déclarative → Interrogative**
+
+**Déclarative** : Tu vas à l'école.
+**Interrogatives** :
+- Tu vas à l'école ? (intonation, oral)
+- Est-ce que tu vas à l'école ? (est-ce que)
+- Vas-tu à l'école ? (inversion)
+
+**Transformation 2 : Affirmative → Négative**
+
+**Affirmative** : Il pleut.
+**Négative** : Il ne pleut pas.
+
+**Affirmative** : J'ai fini.
+**Négative** : Je n'ai pas fini. (élision du "e" de "ne")
+
+**Transformation 3 : Déclarative → Exclamative**
+
+**Déclarative** : C'est beau.
+**Exclamatives** :
+- Comme c'est beau !
+- Que c'est beau !
+- Quel beau paysage !
+
+🎯 **RÈGLES ET MÉTHODES**
+
+**Règles de base de la ponctuation**
+
+**1. Majuscule après un point**
+Après un point, on met toujours une majuscule.
+- Il pleut. Marie reste à la maison.
+
+**2. Pas de majuscule après une virgule**
+- J'aime le riz, les haricots et le poulet.
+
+**3. Espace avant les signes doubles (en français)**
+? ! ; : demandent un espace avant ET après
+- Viens-tu ? (espace avant le ?)
+- Quelle surprise ! (espace avant le !)
+
+**4. Pas d'espace avant les signes simples**
+, . … ne demandent PAS d'espace avant, seulement après
+- Bonjour, comment vas-tu ? (virgule collée à "Bonjour")
+
+**Méthode pour bien ponctuer**
+
+**Étape 1** : Écrivez votre phrase
+**Étape 2** : Relisez à voix haute
+**Étape 3** : Là où vous faites une petite pause → virgule
+**Étape 4** : Là où vous vous arrêtez → point
+**Étape 5** : Là où votre voix monte → point d'interrogation ou d'exclamation
+
+🔑 **POINTS CLÉS À RETENIR**
+
+1. **Trois points de fin** : . (déclarative), ? (interrogative), ! (exclamative)
+2. **La virgule sépare** : Éléments d'une liste, compléments, propositions
+3. **Le point-virgule relie** : Deux propositions indépendantes liées par le sens
+4. **Les deux-points annoncent** : Énumération, explication, citation
+5. **Les guillemets encadrent** : Citations, dialogues, mots mis en relief
+6. **Espaces importants** : Espace avant ? ! ; : mais pas avant , .
+7. **Relire à voix haute aide** : Pour savoir où placer la ponctuation`,
+    exemplesExercices: `**EXERCICES DE PONCTUATION**
+
+**Exercice 1 : Ajouter la ponctuation**
+Ajoutez la ponctuation manquante :
+1. Marie va à l'école tous les jours
+2. Veux-tu du thé ou du café
+3. Quelle belle journée
+4. Il a dit je reviendrai demain
+5. J'ai acheté des mangues des bananes et des oranges
+
+**Exercice 2 : Placer les virgules**
+Placez les virgules aux bons endroits :
+1. J'aime le français les mathématiques et les sciences.
+2. Hier je suis allé au marché.
+3. Marie ma meilleure amie arrive demain.
+4. Il pleut donc je reste à la maison.
+5. Pierre viens ici immédiatement !
+
+**Exercice 3 : Transformer**
+Transformez ces phrases déclaratives en interrogatives :
+1. Tu viens demain. → __________________________
+2. Il fait beau. → __________________________
+3. Elle a fini ses devoirs. → __________________________
+
+**Exercice 4 : Ponctuer un dialogue**
+Ponctuez ce dialogue correctement :
+Marie dit Bonjour comment vas-tu
+Pierre répond Très bien merci Et toi
+Ça va Je vais au marché Tu viens avec moi
+Oui avec plaisir
+
+**Exercice 5 : Corriger les erreurs**
+Ces phrases contiennent des erreurs de ponctuation. Corrigez-les :
+1. Comment allez vous? (espace manquant)
+2. Marie , va à l'école. (virgule inutile)
+3. J'aime le riz,et les haricots. (virgule avant "et")
+4. Il a dit :"je viens" (espace et majuscule)
+5. Quelle belle journée. (mauvais signe de fin)
+
+**Auto-évaluation** :
+- Connais-tu les principaux signes de ponctuation ?
+- Sais-tu placer les virgules correctement ?
+- Respectes-tu les espaces avant/après la ponctuation ?
+- Peux-tu transformer les types de phrases ?
+- Relies-tu tes textes pour vérifier la ponctuation ?`
   },
   {
     id: "groupe-nominal",
     title: "Le groupe nominal",
     mois: "Janvier - Semaine 2",
-    objectif: "Découper une phrase simple en ses constituants et identifier le groupe sujet",
-    introduction: "Contenu à venir...",
-    contenu: "Contenu à venir...",
-    exemplesExercices: "Exercices à venir..."
+    objectif: "Comprendre la structure du groupe nominal, identifier ses constituants (déterminant, nom, adjectif, complément du nom), et reconnaître le groupe nominal sujet dans une phrase pour mieux analyser et construire des phrases correctes.",
+    introduction: `Le groupe nominal, c'est comme un petit groupe d'amis dont le nom est le chef ! Comprendre comment il fonctionne vous aidera à mieux construire vos phrases et à faire les bons accords.
+
+**Pourquoi étudier le groupe nominal ?**
+- Pour identifier le sujet de la phrase
+- Pour faire correctement les accords (pluriel, genre)
+- Pour enrichir vos descriptions
+- Pour mieux comprendre la structure des phrases
+
+**Dans cette leçon, vous apprendrez à :**
+- Identifier les constituants du groupe nominal
+- Reconnaître le nom-noyau
+- Repérer le groupe nominal sujet (GNS)
+- Enrichir et expander un groupe nominal`,
+    contenu: `📖 **INTRODUCTION AU GROUPE NOMINAL**
+
+**Qu'est-ce qu'un groupe nominal (GN) ?**
+Un groupe nominal est un ensemble de mots organisés autour d'un nom principal (le nom-noyau). C'est l'une des structures de base de la phrase française.
+
+**Structure minimale** : Déterminant + Nom
+- **le** chat
+- **une** maison
+- **des** fleurs
+
+**Structure enrichie** : Déterminant + (Adjectif) + Nom + (Complément)
+- **le petit** chat **noir**
+- **une grande** maison **en bois**
+- **des jolies** fleurs **du jardin**
+
+📚 **CONTEXTE ET DÉFINITIONS**
+
+**Nom-noyau** : Le mot principal du groupe nominal, celui autour duquel s'organisent les autres mots
+
+**Déterminant** : Petit mot placé avant le nom (le, la, un, une, mon, ce, etc.)
+
+**Adjectif qualificatif** : Mot qui qualifie, décrit le nom
+
+**Complément du nom** : Groupe de mots qui complète le nom (souvent introduit par "de")
+
+**Groupe nominal sujet (GNS)** : Groupe nominal qui fait l'action du verbe
+
+**Expansion du nom** : Élément qui enrichit, complète le nom (adjectif ou complément)
+
+📊 **LES CONCEPTS CLÉS**
+
+**1. Les constituants du groupe nominal**
+
+**A. Le déterminant (obligatoire en général)**
+
+**Articles définis** : le, la, l', les
+- **le** chien, **la** maison, **l'**arbre, **les** enfants
+
+**Articles indéfinis** : un, une, des
+- **un** livre, **une** fleur, **des** oiseaux
+
+**Articles partitifs** : du, de la, de l'
+- **du** pain, **de la** viande, **de l'**eau
+
+**Déterminants possessifs** : mon, ma, mes, ton, ta, tes, son, sa, ses, notre, votre, leur, nos, vos, leurs
+- **mon** père, **ma** mère, **mes** amis
+
+**Déterminants démonstratifs** : ce, cet, cette, ces
+- **ce** livre, **cet** homme, **cette** fille, **ces** enfants
+
+**B. Le nom-noyau (OBLIGATOIRE)**
+
+C'est le mot principal, le "chef" du groupe nominal. Tout s'accorde avec lui.
+
+- Le **chat** noir
+- Une grande **maison**
+- Mes **amis** haïtiens
+
+**C. Les adjectifs qualificatifs (facultatifs)**
+
+Ils décrivent le nom. Ils peuvent être placés avant ou après le nom.
+
+**Adjectifs AVANT le nom** (en général courts et fréquents) :
+- petit, grand, beau, joli, bon, mauvais, jeune, vieux, nouveau
+- Un **beau** paysage
+- Une **petite** fille
+
+**Adjectifs APRÈS le nom** (la plupart) :
+- Le chat **noir**
+- Une maison **spacieuse**
+- Des élèves **studieux**
+
+**D. Le complément du nom (facultatif)**
+
+C'est un groupe de mots introduit par une préposition (souvent "de") qui complète le nom.
+
+**Structure** : Nom + Préposition + Autre nom/groupe
+- Un livre **de français**
+- La maison **de Marie**
+- Le toit **en zinc**
+- Un verre **d'eau**
+
+**2. Le groupe nominal sujet (GNS)**
+
+Le groupe nominal sujet, c'est le GN qui fait l'action du verbe.
+
+**Comment le trouver ?**
+Posez la question : "Qui est-ce qui + verbe ?" ou "Qu'est-ce qui + verbe ?"
+
+**Exemples** :
+- **Le chat** dort.
+  → Qui est-ce qui dort ? → Le chat (GNS)
+
+- **Marie et Pierre** jouent au football.
+  → Qui est-ce qui joue ? → Marie et Pierre (GNS)
+
+- **Le livre de français** est sur la table.
+  → Qu'est-ce qui est sur la table ? → Le livre de français (GNS)
+
+**Le verbe s'accorde avec le GNS** :
+- Le chat dort. (singulier)
+- Les chats dorment. (pluriel)
+
+**3. Enrichir un groupe nominal**
+
+On peut enrichir un GN de plusieurs manières :
+
+**GN minimal** : **Le chat**
+
+**+ Adjectif** : **Le petit chat**
+
+**+ Adjectif après** : **Le petit chat noir**
+
+**+ Complément du nom** : **Le petit chat noir de Marie**
+
+**+ Proposition relative** (plus avancé) : **Le petit chat noir de Marie qui dort sur le canapé**
+
+Chaque ajout apporte une information supplémentaire et rend le GN plus précis.
+
+💡 **EXEMPLES PRATIQUES**
+
+**Analyse de groupes nominaux**
+
+**Exemple 1** : **Le petit garçon haïtien**
+- Déterminant : **Le**
+- Adjectif : **petit** (avant le nom)
+- Nom-noyau : **garçon**
+- Adjectif : **haïtien** (après le nom)
+
+**Exemple 2** : **Une belle maison en bois**
+- Déterminant : **Une**
+- Adjectif : **belle** (avant le nom)
+- Nom-noyau : **maison**
+- Complément du nom : **en bois**
+
+**Exemple 3** : **Les grands arbres de la forêt tropicale**
+- Déterminant : **Les**
+- Adjectif : **grands**
+- Nom-noyau : **arbres**
+- Complément du nom : **de la forêt tropicale**
+
+**Identifier le GNS dans des phrases**
+
+1. **Le soleil** brille dans le ciel.
+   → GNS : **Le soleil**
+
+2. **Marie et ses amis** vont à la plage.
+   → GNS : **Marie et ses amis**
+
+3. **Le livre de mathématiques** est difficile.
+   → GNS : **Le livre de mathématiques**
+
+4. **Tous les élèves de la classe** ont réussi l'examen.
+   → GNS : **Tous les élèves de la classe**
+
+🎯 **RÈGLES ET MÉTHODES**
+
+**Méthode pour identifier le GN**
+
+**Étape 1** : Cherchez le nom principal (le noyau)
+**Étape 2** : Cherchez le déterminant devant le nom
+**Étape 3** : Cherchez les adjectifs qui décrivent le nom
+**Étape 4** : Cherchez les compléments du nom (groupes introduits par "de", "en", "à")
+
+**Méthode pour identifier le GNS**
+
+**Étape 1** : Trouvez le verbe conjugué
+**Étape 2** : Posez la question "Qui est-ce qui + verbe ?" ou "Qu'est-ce qui + verbe ?"
+**Étape 3** : La réponse est le GNS
+
+**Règles d'accord**
+
+**Règle 1** : L'adjectif s'accorde avec le nom en genre (masculin/féminin) et en nombre (singulier/pluriel)
+- Un chat **noir** → Une chatte **noire** → Des chats **noirs**
+
+**Règle 2** : Le verbe s'accorde avec le GNS
+- Le chat dort. → Les chats dorment.
+
+🔑 **POINTS CLÉS À RETENIR**
+
+1. **Le GN s'organise autour d'un nom-noyau** : Tout s'accorde avec lui
+2. **Structure minimale** : Déterminant + Nom
+3. **On peut enrichir le GN** : Avec des adjectifs et des compléments
+4. **Le GNS fait l'action du verbe** : Trouvez-le en posant "Qui/Qu'est-ce qui + verbe ?"
+5. **Le verbe s'accorde avec le GNS** : Attention au nombre (singulier/pluriel)
+6. **Les adjectifs s'accordent avec le nom** : En genre et en nombre
+7. **Le complément du nom est souvent introduit par "de"** : "Le livre **de** Marie"`,
+    exemplesExercices: `**EXERCICES SUR LE GROUPE NOMINAL**
+
+**Exercice 1 : Identifier les constituants**
+Analysez ces groupes nominaux :
+1. Le grand arbre
+   - Déterminant : _______
+   - Adjectif : _______
+   - Nom-noyau : _______
+
+2. Une jolie fleur rouge
+   - Déterminant : _______
+   - Adjectif (avant) : _______
+   - Nom-noyau : _______
+   - Adjectif (après) : _______
+
+**Exercice 2 : Identifier le GNS**
+Soulignez le groupe nominal sujet :
+1. Le petit chat dort sur le canapé.
+2. Marie et ses amis jouent au football.
+3. Les élèves de 7e année étudient le français.
+4. Mon père travaille à Port-au-Prince.
+5. Le livre que j'ai acheté est intéressant.
+
+**Exercice 3 : Enrichir le GN**
+Enrichissez ces GN en ajoutant des adjectifs ou des compléments :
+1. Le chien → _______________________________
+2. Une maison → _______________________________
+3. Des fleurs → _______________________________
+4. L'école → _______________________________
+
+**Exercice 4 : Accords**
+Accordez les adjectifs avec le nom :
+1. Un chat (noir) → Un chat _______
+2. Une maison (grand) → Une maison _______
+3. Des fleurs (beau) → Des fleurs _______
+4. Les garçons (intelligent) → Les garçons _______
+
+**Exercice 5 : Trouver le verbe qui s'accorde**
+Conjuguez le verbe avec le GNS :
+1. Le chat (dormir) → Le chat _______
+2. Les enfants (jouer) → Les enfants _______
+3. Marie et Pierre (aller) → Marie et Pierre _______
+
+**Auto-évaluation** :
+- Peux-tu identifier le nom-noyau d'un GN ?
+- Reconnais-tu le déterminant, les adjectifs, le complément ?
+- Sais-tu trouver le GNS dans une phrase ?
+- Fais-tu correctement les accords dans le GN ?
+- Peux-tu enrichir un GN avec des expansions ?`
   },
   // Février - Semaine 1
   {
     id: "communication-orale-situation",
     title: "Communication orale en situation",
     mois: "Février - Semaine 1",
-    objectif: "Réutiliser les acquis en vocabulaire et grammaire",
-    introduction: "Contenu à venir...",
-    contenu: "Contenu à venir...",
-    exemplesExercices: "Exercices à venir..."
-  },
-  {
-    id: "textes-informatifs",
-    title: "Production de textes informatifs",
-    mois: "Février - Semaine 1",
-    objectif: "Produire des textes pour informer sur un sujet donné",
-    introduction: "Contenu à venir...",
-    contenu: "Contenu à venir...",
-    exemplesExercices: "Exercices à venir..."
-  },
-  {
-    id: "derivation-lexicale",
-    title: "Dérivation lexicale - Préfixes et suffixes",
-    mois: "Février - Semaine 1",
-    objectif: "Former des mots nouveaux avec préfixes et suffixes",
-    introduction: "Contenu à venir...",
-    contenu: "Contenu à venir...",
-    exemplesExercices: "Exercices à venir..."
-  },
-  // Février - Semaine 2
-  {
-    id: "orthographe-sons-consonnes",
-    title: "Orthographe - Sons et consonnes muettes",
-    mois: "Février - Semaine 2",
-    objectif: "Orthographier correctement les sons entendus et consonnes muettes",
-    introduction: "Contenu à venir...",
-    contenu: "Contenu à venir...",
-    exemplesExercices: "Exercices à venir..."
-  },
-  {
-    id: "determinants-pronoms",
-    title: "Les déterminants et pronoms",
-    mois: "Février - Semaine 2",
-    objectif: "Identifier les déterminants et distinguer les types de pronoms",
-    introduction: "Contenu à venir...",
-    contenu: "Contenu à venir...",
-    exemplesExercices: "Exercices à venir..."
+    objectif: "Mobiliser et réutiliser efficacement les acquis en vocabulaire et grammaire dans des situations de communication orale réelles et variées, en adaptant son discours au contexte et à l'interlocuteur.",
+    introduction: `Parler français en situation réelle, c'est comme jouer un match après l'entraînement ! Vous avez appris des mots, des règles de grammaire... maintenant, il faut les utiliser pour communiquer vraiment.
+
+**Pourquoi pratiquer la communication en situation ?**
+- Pour être à l'aise dans la vie quotidienne
+- Pour utiliser concrètement ce que vous avez appris
+- Pour gagner en confiance à l'oral
+- Pour développer des réflexes de communication
+
+**Dans cette leçon, vous apprendrez à :**
+- Adapter votre langage selon la situation
+- Utiliser le vocabulaire approprié au contexte
+- Structurer votre discours en situation réelle
+- Réagir de manière appropriée dans différentes situations`,
+    contenu: `📖 **INTRODUCTION À LA COMMUNICATION EN SITUATION**
+
+**Qu'est-ce que la communication en situation ?**
+C'est la capacité à utiliser la langue dans des contextes concrets et variés de la vie quotidienne : à l'école, au marché, chez le médecin, avec des amis, etc.
+
+**Différence entre savoir et savoir-faire**
+- **Savoir** : Connaître les mots, les règles de grammaire
+- **Savoir-faire** : Utiliser ces connaissances dans des situations réelles
+
+La communication en situation, c'est passer du **savoir** au **savoir-faire**.
+
+📚 **CONTEXTE ET DÉFINITIONS**
+
+**Situation de communication** : Contexte dans lequel se déroule un échange (lieu, moment, participants, objectif)
+
+**Registre de langue** : Niveau de langue adapté à la situation (familier, courant, soutenu)
+
+**Interlocuteur** : Personne à qui l'on parle
+
+**Acte de langage** : Action réalisée par la parole (demander, refuser, s'excuser, remercier)
+
+**Contexte** : Ensemble des circonstances dans lesquelles se déroule la communication
+
+**Adaptation linguistique** : Ajuster son langage selon la situation
+
+📊 **LES CONCEPTS CLÉS**
+
+**1. Les trois registres de langue**
+
+**Registre FAMILIER** (avec les amis, la famille proche)
+- Vocabulaire : cool, sympa, bosser, bouquin
+- Phrases courtes et simples
+- On peut supprimer le "ne" de la négation
+- Exemple : *"T'as fini tes devoirs ? Ouais, j'ai bossé toute l'après-midi."*
+
+**Registre COURANT** (à l'école, dans la vie quotidienne)
+- Vocabulaire : gentil, travailler, livre
+- Phrases complètes et correctes
+- Respect des règles grammaticales
+- Exemple : *"As-tu fini tes devoirs ? Oui, j'ai travaillé toute l'après-midi."*
+
+**Registre SOUTENU** (situations formelles, écrits officiels)
+- Vocabulaire : aimable, œuvrer, ouvrage
+- Phrases complexes et élaborées
+- Respect strict des règles
+- Exemple : *"Avez-vous achevé vos travaux scolaires ? En effet, j'ai œuvré tout l'après-midi."*
+
+**2. Situations de communication courantes**
+
+**À l'école**
+- Demander une explication au professeur
+- Présenter un exposé
+- Travailler en groupe
+- Demander la permission
+
+**Au marché / Dans un magasin**
+- Demander un prix
+- Négocier
+- Acheter quelque chose
+- Se plaindre d'un produit
+
+**Dans la rue / Les transports**
+- Demander son chemin
+- Demander l'heure
+- Prendre un tap-tap
+- Saluer des connaissances
+
+**Chez le médecin / À l'hôpital**
+- Expliquer ses symptômes
+- Comprendre des recommandations
+- Prendre rendez-vous
+
+**En famille / Entre amis**
+- Raconter sa journée
+- Donner son avis
+- Inviter quelqu'un
+- S'excuser, remercier
+
+**3. Les actes de langage essentiels**
+
+**Saluer**
+- Familier : Salut ! Ça va ?
+- Courant : Bonjour ! Comment allez-vous ?
+- Soutenu : Bonjour Monsieur / Madame. Comment vous portez-vous ?
+
+**Demander poliment**
+- Familier : Tu peux me passer le sel ?
+- Courant : Est-ce que tu peux me passer le sel, s'il te plaît ?
+- Soutenu : Pourriez-vous me passer le sel, s'il vous plaît ?
+
+**Refuser poliment**
+- Familier : Non, désolé, je peux pas.
+- Courant : Non, je suis désolé, je ne peux pas.
+- Soutenu : Je regrette, mais je ne suis pas en mesure de...
+
+**Remercier**
+- Familier : Merci beaucoup !
+- Courant : Je te/vous remercie beaucoup.
+- Soutenu : Je vous suis très reconnaissant(e).
+
+**S'excuser**
+- Familier : Pardon ! Excuse-moi !
+- Courant : Je suis désolé(e). Excusez-moi.
+- Soutenu : Je vous prie de m'excuser. / Veuillez m'excuser.
+
+**Exprimer son accord / désaccord**
+- Accord : Oui, exactement. / Je suis d'accord. / Tout à fait !
+- Désaccord : Non, je ne pense pas. / Je ne suis pas d'accord. / Au contraire...
+
+💡 **EXEMPLES PRATIQUES**
+
+**Situation 1 : Au marché**
+
+**Dialogue** :
+- **Client** : Bonjour Madame. Combien coûtent les mangues ?
+- **Vendeuse** : Bonjour ! Elles sont à 50 gourdes le tas.
+- **Client** : C'est un peu cher. Vous pouvez faire 40 ?
+- **Vendeuse** : D'accord, pour vous, 45 gourdes.
+- **Client** : Marché conclu ! J'en prends deux tas.
+- **Vendeuse** : Voilà, 90 gourdes s'il vous plaît.
+- **Client** : Tenez. Merci beaucoup !
+
+**Vocabulaire utilisé** : coûter, tas, cher, marché conclu, voilà, tenez
+
+**Situation 2 : En classe**
+
+**Dialogue** :
+- **Élève** : Monsieur, excusez-moi, je n'ai pas bien compris l'exercice 5.
+- **Professeur** : Pas de problème. Quelle partie n'est pas claire ?
+- **Élève** : La question b, je ne sais pas par où commencer.
+- **Professeur** : D'accord. Regarde d'abord le texte, puis cherche les mots-clés.
+- **Élève** : Ah oui, je vois maintenant ! Merci Monsieur.
+- **Professeur** : De rien. N'hésite pas si tu as d'autres questions.
+
+**Vocabulaire utilisé** : excusez-moi, comprendre, pas de problème, clair, commencer, n'hésite pas
+
+**Situation 3 : Invitation entre amis**
+
+**Dialogue** :
+- **Marie** : Salut Pierre ! Ça te dit de venir chez moi samedi ?
+- **Pierre** : Samedi ? Euh... c'est à quelle heure ?
+- **Marie** : Vers 14 heures. On va regarder un film et manger des beignets.
+- **Pierre** : Super ! J'adore ça ! Je peux venir avec Jean ?
+- **Marie** : Bien sûr, pas de souci ! Plus on est nombreux, plus c'est fun !
+- **Pierre** : Génial ! À samedi alors !
+
+**Vocabulaire utilisé** : Ça te dit, vers, regarder un film, pas de souci, plus on est nombreux, génial
+
+🎯 **RÈGLES ET MÉTHODES**
+
+**Méthode en 4 étapes pour communiquer efficacement**
+
+**Étape 1 : ANALYSER LA SITUATION**
+- Où suis-je ? (lieu)
+- À qui je parle ? (interlocuteur)
+- Pourquoi je parle ? (objectif)
+- Quel registre utiliser ? (familier, courant, soutenu)
+
+**Étape 2 : CHOISIR LE VOCABULAIRE APPROPRIÉ**
+- Utilisez le vocabulaire spécifique à la situation
+- Adaptez le registre de langue
+
+**Étape 3 : STRUCTURER SON DISCOURS**
+- Commencez par saluer (si nécessaire)
+- Exprimez clairement votre demande / information
+- Concluez poliment (remerciements, salutations)
+
+**Étape 4 : RÉAGIR ET S'ADAPTER**
+- Écoutez la réponse de votre interlocuteur
+- Ajustez votre discours si nécessaire
+- Soyez attentif aux réactions
+
+**Formules utiles à mémoriser**
+
+**Pour demander** :
+- Est-ce que je peux... ?
+- Pourriez-vous... ?
+- J'aimerais...
+- Je voudrais...
+
+**Pour donner son avis** :
+- À mon avis...
+- Selon moi...
+- Je pense que...
+- Il me semble que...
+
+**Pour exprimer une émotion** :
+- Je suis content(e) de...
+- Je suis surpris(e) que...
+- Ça me fait plaisir de...
+- Je regrette que...
+
+**Pour argumenter** :
+- D'abord... ensuite... enfin...
+- En effet...
+- Par exemple...
+- C'est pourquoi...
+
+🔑 **POINTS CLÉS À RETENIR**
+
+1. **Adaptez votre langage à la situation** : Familier avec les amis, courant à l'école, soutenu dans les situations formelles
+2. **Trois registres de langue** : Familier, courant, soutenu
+3. **Analysez avant de parler** : Lieu, interlocuteur, objectif, registre
+4. **Utilisez le vocabulaire approprié** : Chaque situation a son lexique spécifique
+5. **Soyez poli** : Formules de politesse essentielles (s'il vous plaît, merci, excusez-moi)
+6. **Structurez votre discours** : Début, milieu, fin
+7. **La pratique rend parfait** : Plus vous pratiquez, plus vous serez à l'aise`,
+    exemplesExercices: `**EXERCICES DE COMMUNICATION EN SITUATION**
+
+**Exercice 1 : Identifier le registre**
+Identifiez le registre de langue (familier, courant, soutenu) :
+1. "Salut ! T'as vu Marie ?" → _____________
+2. "Bonjour. Avez-vous vu Marie ?" → _____________
+3. "Yo ! T'as vu Marie ?" → _____________
+
+**Exercice 2 : Adapter le registre**
+Transformez cette phrase familière en registre courant, puis soutenu :
+"J'ai pas compris, tu peux répéter ?"
+- Courant : _______________________________
+- Soutenu : _______________________________
+
+**Exercice 3 : Jeu de rôle - Au marché**
+Imaginez un dialogue entre vous et un vendeur. Vous voulez acheter des mangues. (6-8 lignes)
+
+**Exercice 4 : Jeu de rôle - En classe**
+Vous devez demander au professeur de répéter une consigne. Écrivez le dialogue. (4-6 lignes)
+
+**Exercice 5 : Actes de langage**
+Pour chaque situation, écrivez une phrase appropriée :
+1. Saluer votre professeur le matin : _______________________________
+2. Demander poliment un stylo à un camarade : _______________________________
+3. Refuser poliment une invitation : _______________________________
+4. Remercier quelqu'un qui vous aide : _______________________________
+5. S'excuser d'être en retard : _______________________________
+
+**Auto-évaluation** :
+- Sais-tu adapter ton langage selon la situation ?
+- Connais-tu les trois registres de langue ?
+- Utilises-tu les formules de politesse appropriées ?
+- Peux-tu structurer un dialogue simple ?
+- Es-tu à l'aise pour communiquer en français ?`
   },
   // Mars - Semaines 1 et 2
   {
