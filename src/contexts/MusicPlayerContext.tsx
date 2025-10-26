@@ -102,12 +102,31 @@ export const MusicPlayerProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const initPlayer = () => {
-    if (playerRef.current || tracks.length === 0) return;
+    if (tracks.length === 0) return;
+
+    // Destroy existing player if any
+    if (playerRef.current && typeof playerRef.current.destroy === 'function') {
+      try {
+        playerRef.current.destroy();
+      } catch (e) {
+        console.warn('Could not destroy player:', e);
+      }
+      playerRef.current = null;
+    }
 
     const initialize = () => {
       if (window.YT && window.YT.Player) {
         try {
           console.log('🎵 Initializing YouTube player with track:', tracks[currentTrackIndex].title);
+          
+          // Create a new div for the player if it doesn't exist
+          let playerDiv = document.getElementById("global-music-player");
+          if (!playerDiv) {
+            playerDiv = document.createElement("div");
+            playerDiv.id = "global-music-player";
+            document.body.appendChild(playerDiv);
+          }
+
           playerRef.current = new window.YT.Player("global-music-player", {
             height: "0",
             width: "0",
@@ -116,6 +135,7 @@ export const MusicPlayerProvider = ({ children }: { children: ReactNode }) => {
               autoplay: 1,
               controls: 0,
               enablejsapi: 1,
+              origin: window.location.origin,
             },
             events: {
               onReady: (event: any) => {
@@ -137,7 +157,10 @@ export const MusicPlayerProvider = ({ children }: { children: ReactNode }) => {
               },
               onError: (event: any) => {
                 console.error('❌ YouTube player error:', event.data);
-                // Auto-skip to next track on error
+                console.error('❌ Error occurred for video:', tracks[currentTrackIndex].id);
+                // Destroy and reinitialize on error
+                setPlayerReady(false);
+                playerRef.current = null;
                 setTimeout(() => {
                   nextTrack();
                 }, 1000);
@@ -146,6 +169,8 @@ export const MusicPlayerProvider = ({ children }: { children: ReactNode }) => {
           });
         } catch (error) {
           console.error("❌ Failed to initialize YouTube player:", error);
+          setPlayerReady(false);
+          playerRef.current = null;
         }
       } else {
         setTimeout(initialize, 100);
@@ -159,7 +184,7 @@ export const MusicPlayerProvider = ({ children }: { children: ReactNode }) => {
     console.log('▶️ Playing track:', index, tracks[index]?.title);
     setCurrentTrackIndex(index);
     
-    if (playerRef.current && playerReady) {
+    if (playerRef.current && playerReady && typeof playerRef.current.loadVideoById === 'function') {
       try {
         console.log('🎵 Loading video:', tracks[index].id);
         playerRef.current.loadVideoById(tracks[index].id);
@@ -168,76 +193,44 @@ export const MusicPlayerProvider = ({ children }: { children: ReactNode }) => {
       } catch (error) {
         console.error('❌ Error playing track:', error);
         // Reinitialize player on error
-        playerRef.current = null;
         setPlayerReady(false);
+        playerRef.current = null;
         initPlayer();
       }
     } else {
-      console.log('⏳ Player not ready, initializing...');
-      // Initialize player if not ready
-      setTimeout(() => {
-        if (window.YT && window.YT.Player) {
-          try {
-            playerRef.current = new window.YT.Player("global-music-player", {
-              height: "0",
-              width: "0",
-              videoId: tracks[index].id,
-              playerVars: {
-                autoplay: 1,
-                controls: 0,
-                enablejsapi: 1,
-              },
-              events: {
-                onReady: (event: any) => {
-                  console.log('✅ Player initialized and ready');
-                  setPlayerReady(true);
-                  event.target.playVideo();
-                  setIsPlaying(true);
-                },
-                onStateChange: (event: any) => {
-                  console.log('🎵 State change:', event.data);
-                  if (event.data === window.YT.PlayerState.ENDED) {
-                    nextTrack();
-                  }
-                  if (event.data === window.YT.PlayerState.PLAYING) {
-                    setIsPlaying(true);
-                  } else if (event.data === window.YT.PlayerState.PAUSED) {
-                    setIsPlaying(false);
-                  }
-                },
-                onError: (event: any) => {
-                  console.error('❌ Player error:', event.data);
-                  setTimeout(() => {
-                    nextTrack();
-                  }, 1000);
-                },
-              },
-            });
-          } catch (error) {
-            console.error('❌ Failed to create player:', error);
-          }
-        }
-      }, 500);
+      console.log('⏳ Player not ready, reinitializing...');
+      setPlayerReady(false);
+      playerRef.current = null;
+      initPlayer();
     }
   };
 
   const playPause = () => {
-    if (!playerRef.current) {
+    if (!playerRef.current || !playerReady || typeof playerRef.current.pauseVideo !== 'function') {
+      console.log('⏳ Player not ready, initializing...');
       initPlayer();
       return;
     }
 
-    if (isPlaying) {
-      playerRef.current.pauseVideo();
-      setIsPlaying(false);
-    } else {
-      playerRef.current.playVideo();
-      setIsPlaying(true);
+    try {
+      if (isPlaying) {
+        playerRef.current.pauseVideo();
+        setIsPlaying(false);
+      } else {
+        playerRef.current.playVideo();
+        setIsPlaying(true);
+      }
+    } catch (error) {
+      console.error('❌ Error toggling playback:', error);
+      setPlayerReady(false);
+      playerRef.current = null;
+      initPlayer();
     }
   };
 
   const nextTrack = () => {
     const nextIndex = (currentTrackIndex + 1) % tracks.length;
+    console.log('⏭️ Moving to next track:', nextIndex);
     playTrack(nextIndex);
   };
 
