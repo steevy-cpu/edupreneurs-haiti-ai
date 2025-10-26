@@ -28,6 +28,30 @@ export const YouTubeManager = ({ lesson, onUpdate }: YouTubeManagerProps) => {
   const [searchVideos, setSearchVideos] = useState<YouTubeVideo[]>([]);
   const [isLoadingVideos, setIsLoadingVideos] = useState(false);
   const [hiddenVideoIds, setHiddenVideoIds] = useState<Set<string>>(new Set());
+  const [currentUserNickname, setCurrentUserNickname] = useState<string>("");
+  const [canDelete, setCanDelete] = useState(false);
+
+  const AUTHORIZED_USERS = ['Djoodoodson Florent', 'Steeve Andolf Celestin'];
+
+  // Check current user permissions
+  useEffect(() => {
+    const checkUserPermissions = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('nickname')
+          .eq('user_id', user.id)
+          .single();
+        
+        if (profile?.nickname) {
+          setCurrentUserNickname(profile.nickname);
+          setCanDelete(AUTHORIZED_USERS.includes(profile.nickname));
+        }
+      }
+    };
+    checkUserPermissions();
+  }, []);
 
   // Update local state when lesson changes
   useEffect(() => {
@@ -155,6 +179,11 @@ export const YouTubeManager = ({ lesson, onUpdate }: YouTubeManagerProps) => {
   };
 
   const handleRemove = async () => {
+    if (!canDelete) {
+      toast.error("Vous n'avez pas la permission de supprimer cette vidéo");
+      return;
+    }
+
     setIsSaving(true);
     try {
       const { error } = await supabase
@@ -218,17 +247,23 @@ export const YouTubeManager = ({ lesson, onUpdate }: YouTubeManagerProps) => {
                   <Save className="mr-2 h-4 w-4" />
                   Enregistrer
                 </Button>
-                {lesson.youtube_url && (
+                {lesson.youtube_url && canDelete && (
                   <Button 
                     onClick={handleRemove} 
                     disabled={isSaving}
                     variant="destructive"
                     size="sm"
+                    title="Supprimer la vidéo personnalisée"
                   >
                     <Trash2 className="h-4 w-4" />
                   </Button>
                 )}
               </div>
+              {lesson.youtube_url && !canDelete && (
+                <p className="text-xs text-muted-foreground italic">
+                  Seuls Djoodoodson Florent et Steeve Andolf Celestin peuvent supprimer cette vidéo
+                </p>
+              )}
             </div>
 
             {/* Custom Video Preview */}
@@ -279,15 +314,17 @@ export const YouTubeManager = ({ lesson, onUpdate }: YouTubeManagerProps) => {
                           allowFullScreen
                           className="w-full h-full"
                         />
-                        <Button
-                          size="sm"
-                          variant="destructive"
-                          onClick={() => hideVideo(video.id)}
-                          className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity h-8 w-8 p-0"
-                          title="Masquer cette vidéo"
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
+                        {canDelete && (
+                          <Button
+                            size="sm"
+                            variant="destructive"
+                            onClick={() => hideVideo(video.id)}
+                            className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity h-8 w-8 p-0"
+                            title="Masquer cette vidéo suggérée"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        )}
                       </div>
                       <div className="p-3 bg-muted/30">
                         <h4 className="font-medium text-xs line-clamp-2 mb-1">
