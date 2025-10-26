@@ -113,7 +113,7 @@ export const YouTubeVideoSection = ({ lessonTitle, objectives, gradeLevel = "AF7
     try {
       const searchQuery = buildOptimalSearchQuery();
       
-      console.log("YouTube search query:", searchQuery); // For debugging
+      console.log("🎬 [YouTube] Searching for videos with query:", searchQuery);
 
       const response = await fetch(
         `https://www.googleapis.com/youtube/v3/search?` +
@@ -136,6 +136,14 @@ export const YouTubeVideoSection = ({ lessonTitle, objectives, gradeLevel = "AF7
       }
 
       const data = await response.json();
+      
+      console.log("🎬 [YouTube] API Response:", data);
+      
+      if (!data.items || data.items.length === 0) {
+        console.warn("🎬 [YouTube] No videos found for query:", searchQuery);
+        setVideos([]);
+        return;
+      }
 
       // Filter videos to ensure French/Creole content with relaxed rules
       const videoList: YouTubeVideo[] = data.items
@@ -162,10 +170,11 @@ export const YouTubeVideoSection = ({ lessonTitle, objectives, gradeLevel = "AF7
           thumbnail: item.snippet.thumbnails.medium.url,
         }));
 
+      console.log("🎬 [YouTube] Filtered videos:", videoList.length, "videos found");
       setVideos(videoList);
     } catch (err) {
-      console.error("YouTube API error:", err);
-      setError("Impossible de charger les vidéos");
+      console.error("🎬 [YouTube] API Error:", err);
+      setError("Impossible de charger les vidéos pour le moment");
     } finally {
       setIsLoading(false);
     }
@@ -226,13 +235,15 @@ export const YouTubeVideoSection = ({ lessonTitle, objectives, gradeLevel = "AF7
           {/* Custom Video (if provided) */}
           {customVideoId && (
             <div className="rounded-xl overflow-hidden shadow-lg bg-background/50 backdrop-blur-sm border-2 border-primary">
-              <div className="relative aspect-video overflow-hidden bg-muted">
+              <div className="relative aspect-video overflow-hidden bg-muted rounded-lg">
                 <iframe
-                  src={`https://www.youtube.com/embed/${customVideoId}`}
+                  src={`https://www.youtube.com/embed/${customVideoId}?rel=0&modestbranding=1`}
                   title="Vidéo personnalisée pour cette leçon"
-                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
                   allowFullScreen
-                  className="w-full h-full"
+                  loading="lazy"
+                  className="w-full h-full border-0"
+                  sandbox="allow-same-origin allow-scripts allow-presentation"
                 />
               </div>
               <div className="p-4 bg-gradient-to-r from-primary/10 to-primary/5">
@@ -250,13 +261,15 @@ export const YouTubeVideoSection = ({ lessonTitle, objectives, gradeLevel = "AF7
               className="rounded-xl overflow-hidden shadow-lg bg-background/50 backdrop-blur-sm border border-purple-200 dark:border-purple-800"
             >
               {/* YouTube Embed */}
-              <div className="relative aspect-video overflow-hidden bg-muted">
+              <div className="relative aspect-video overflow-hidden bg-muted rounded-lg">
                 <iframe
-                  src={`https://www.youtube.com/embed/${video.id}`}
+                  src={`https://www.youtube.com/embed/${video.id}?rel=0&modestbranding=1`}
                   title={video.title}
-                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
                   allowFullScreen
-                  className="w-full h-full"
+                  loading="lazy"
+                  className="w-full h-full border-0"
+                  sandbox="allow-same-origin allow-scripts allow-presentation"
                 />
               </div>
 
