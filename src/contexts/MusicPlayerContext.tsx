@@ -107,6 +107,7 @@ export const MusicPlayerProvider = ({ children }: { children: ReactNode }) => {
     const initialize = () => {
       if (window.YT && window.YT.Player) {
         try {
+          console.log('🎵 Initializing YouTube player with track:', tracks[currentTrackIndex].title);
           playerRef.current = new window.YT.Player("global-music-player", {
             height: "0",
             width: "0",
@@ -114,14 +115,17 @@ export const MusicPlayerProvider = ({ children }: { children: ReactNode }) => {
             playerVars: {
               autoplay: 1,
               controls: 0,
+              enablejsapi: 1,
             },
             events: {
               onReady: (event: any) => {
+                console.log('✅ Player ready');
                 setPlayerReady(true);
                 event.target.playVideo();
                 setIsPlaying(true);
               },
               onStateChange: (event: any) => {
+                console.log('🎵 Player state changed:', event.data);
                 if (event.data === window.YT.PlayerState.ENDED) {
                   nextTrack();
                 }
@@ -131,10 +135,17 @@ export const MusicPlayerProvider = ({ children }: { children: ReactNode }) => {
                   setIsPlaying(false);
                 }
               },
+              onError: (event: any) => {
+                console.error('❌ YouTube player error:', event.data);
+                // Auto-skip to next track on error
+                setTimeout(() => {
+                  nextTrack();
+                }, 1000);
+              },
             },
           });
         } catch (error) {
-          console.error("Failed to initialize YouTube player:", error);
+          console.error("❌ Failed to initialize YouTube player:", error);
         }
       } else {
         setTimeout(initialize, 100);
@@ -145,41 +156,66 @@ export const MusicPlayerProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const playTrack = (index: number) => {
+    console.log('▶️ Playing track:', index, tracks[index]?.title);
     setCurrentTrackIndex(index);
+    
     if (playerRef.current && playerReady) {
-      playerRef.current.loadVideoById(tracks[index].id);
-      playerRef.current.playVideo();
-      setIsPlaying(true);
+      try {
+        console.log('🎵 Loading video:', tracks[index].id);
+        playerRef.current.loadVideoById(tracks[index].id);
+        playerRef.current.playVideo();
+        setIsPlaying(true);
+      } catch (error) {
+        console.error('❌ Error playing track:', error);
+        // Reinitialize player on error
+        playerRef.current = null;
+        setPlayerReady(false);
+        initPlayer();
+      }
     } else {
+      console.log('⏳ Player not ready, initializing...');
       // Initialize player if not ready
       setTimeout(() => {
         if (window.YT && window.YT.Player) {
-          playerRef.current = new window.YT.Player("global-music-player", {
-            height: "0",
-            width: "0",
-            videoId: tracks[index].id,
-            playerVars: {
-              autoplay: 1,
-              controls: 0,
-            },
-            events: {
-              onReady: (event: any) => {
-                setPlayerReady(true);
-                event.target.playVideo();
-                setIsPlaying(true);
+          try {
+            playerRef.current = new window.YT.Player("global-music-player", {
+              height: "0",
+              width: "0",
+              videoId: tracks[index].id,
+              playerVars: {
+                autoplay: 1,
+                controls: 0,
+                enablejsapi: 1,
               },
-              onStateChange: (event: any) => {
-                if (event.data === window.YT.PlayerState.ENDED) {
-                  nextTrack();
-                }
-                if (event.data === window.YT.PlayerState.PLAYING) {
+              events: {
+                onReady: (event: any) => {
+                  console.log('✅ Player initialized and ready');
+                  setPlayerReady(true);
+                  event.target.playVideo();
                   setIsPlaying(true);
-                } else if (event.data === window.YT.PlayerState.PAUSED) {
-                  setIsPlaying(false);
-                }
+                },
+                onStateChange: (event: any) => {
+                  console.log('🎵 State change:', event.data);
+                  if (event.data === window.YT.PlayerState.ENDED) {
+                    nextTrack();
+                  }
+                  if (event.data === window.YT.PlayerState.PLAYING) {
+                    setIsPlaying(true);
+                  } else if (event.data === window.YT.PlayerState.PAUSED) {
+                    setIsPlaying(false);
+                  }
+                },
+                onError: (event: any) => {
+                  console.error('❌ Player error:', event.data);
+                  setTimeout(() => {
+                    nextTrack();
+                  }, 1000);
+                },
               },
-            },
-          });
+            });
+          } catch (error) {
+            console.error('❌ Failed to create player:', error);
+          }
         }
       }, 500);
     }
