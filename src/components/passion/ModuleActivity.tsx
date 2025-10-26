@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { CheckCircle2, Play, Youtube, FileText, Brain, Trophy } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { YouTubeVideoSection } from "@/components/YouTubeVideoSection";
 
 interface Activity {
   id: string;
@@ -18,6 +19,7 @@ interface ModuleActivityProps {
   categoryId: string;
   moduleId: string;
   moduleTitle: string;
+  moduleDescription?: string;
   activities: Activity[];
   onActivityComplete: (activityId: string) => void;
   onModuleComplete: () => void;
@@ -27,6 +29,7 @@ export const ModuleActivity = ({
   categoryId,
   moduleId,
   moduleTitle,
+  moduleDescription,
   activities,
   onActivityComplete,
   onModuleComplete
@@ -79,11 +82,15 @@ export const ModuleActivity = ({
         </CardHeader>
         <CardContent className="space-y-4">
           {selectedActivity.type === "video" && (
-            <div className="aspect-video bg-muted rounded-lg flex items-center justify-center">
-              <div className="text-center">
-                <Youtube className="w-16 h-16 mx-auto mb-4 text-muted-foreground" />
-                <p className="text-sm text-muted-foreground">Vidéo éducative en cours...</p>
-              </div>
+            <div className="space-y-4">
+              <YouTubeVideoSection
+                lessonTitle={`${moduleTitle} - ${selectedActivity.title}`}
+                objectives={selectedActivity.description}
+                subject={categoryId}
+              />
+              <p className="text-sm text-muted-foreground text-center">
+                Regarde ces vidéos pour découvrir et apprendre sur ce sujet passionnant!
+              </p>
             </div>
           )}
 
@@ -137,7 +144,10 @@ export const ModuleActivity = ({
     <Card>
       <CardHeader>
         <CardTitle>{moduleTitle}</CardTitle>
-        <div className="space-y-2">
+        {moduleDescription && (
+          <CardDescription className="mt-2">{moduleDescription}</CardDescription>
+        )}
+        <div className="space-y-2 mt-4">
           <div className="flex justify-between text-sm">
             <span>Progression</span>
             <span className="font-medium">{completedCount}/{activities.length} activités</span>

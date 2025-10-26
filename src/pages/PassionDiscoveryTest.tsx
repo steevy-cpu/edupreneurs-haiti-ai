@@ -983,6 +983,7 @@ const PassionDiscoveryTest = () => {
                 categoryId={currentCategory.id}
                 moduleId={currentModule.id}
                 moduleTitle={currentModule.title}
+                moduleDescription={currentModule.description}
                 activities={currentModule.activities}
                 onActivityComplete={(activityId) => {
                   // Update activity completed state
