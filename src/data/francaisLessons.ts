@@ -4444,38 +4444,708 @@ Un texte informatif a pour but de transmettre des connaissances sur un sujet de 
     id: "lecture-haute-voix",
     title: "Lecture à haute voix",
     mois: "Mai - Semaines 1-2",
-    objectif: "Lire un texte à haute voix de façon audible et intelligible",
-    introduction: "Contenu à venir...",
-    contenu: "Contenu à venir...",
-    exemplesExercices: "Exercices à venir..."
+    objectif: "Lire un texte à haute voix de façon audible, claire et expressive en respectant la ponctuation, l'intonation et le rythme pour faciliter la compréhension de l'auditoire.",
+    introduction: `Lire à haute voix, c'est donner vie aux mots ! 🎭📖 C'est un art qui nécessite de la pratique : bien prononcer, respecter la ponctuation, mettre le ton... Une bonne lecture à haute voix capte l'attention et transmet les émotions du texte. Développons ensemble cette compétence essentielle ! 🌟`,
+    contenu: `
+      <section class="lesson-section">
+        <h3>📚 1. Pourquoi lire à haute voix ?</h3>
+        <p>La lecture à haute voix est une compétence importante qui sert dans de nombreuses situations.</p>
+        <p><strong>Objectifs de la lecture à haute voix :</strong></p>
+        <ul>
+          <li><strong>Partager un texte :</strong> Faire découvrir un texte à d'autres personnes</li>
+          <li><strong>Vérifier sa compréhension :</strong> En lisant bien, on montre qu'on a compris</li>
+          <li><strong>Développer la fluidité :</strong> Améliorer sa vitesse et son aisance de lecture</li>
+          <li><strong>Travailler la prononciation :</strong> Articuler correctement tous les sons</li>
+          <li><strong>Transmettre des émotions :</strong> Faire vivre le texte par l'intonation</li>
+        </ul>
+        <p><strong>Situations d'utilisation :</strong></p>
+        <ul>
+          <li>Lire en classe devant les camarades</li>
+          <li>Réciter un poème</li>
+          <li>Lire une histoire aux plus jeunes</li>
+          <li>Présenter un exposé</li>
+          <li>Participer à un concours de lecture</li>
+        </ul>
+      </section>
+
+      <section class="lesson-section">
+        <h3>🎯 2. Les qualités d'une bonne lecture à haute voix</h3>
+        <p><strong>Une bonne lecture à haute voix doit être :</strong></p>
+        <ul>
+          <li><strong>AUDIBLE :</strong> On doit vous entendre clairement, même au fond de la salle</li>
+          <li><strong>CLAIRE :</strong> Bien articuler chaque mot, ne pas manger les syllabes</li>
+          <li><strong>FLUIDE :</strong> Lire sans hésitation, sans trop de pauses</li>
+          <li><strong>EXPRESSIVE :</strong> Varier l'intonation selon le sens du texte</li>
+          <li><strong>RYTHMÉE :</strong> Ne pas lire trop vite ni trop lentement</li>
+          <li><strong>RESPECTUEUSE de la ponctuation :</strong> Faire les pauses aux bons endroits</li>
+        </ul>
+        <p><strong>Ce qu'il faut éviter :</strong></p>
+        <ul>
+          <li>❌ Lire trop vite (on ne comprend rien)</li>
+          <li>❌ Lire sur un ton monotone (ennuyeux)</li>
+          <li>❌ Mal articuler (on ne comprend pas les mots)</li>
+          <li>❌ Ne pas respecter la ponctuation (sens perturbé)</li>
+          <li>❌ Lire trop doucement (inaudible)</li>
+          <li>❌ Buter sur chaque mot (manque de fluidité)</li>
+        </ul>
+      </section>
+
+      <section class="lesson-section">
+        <h3>🗣️ 3. L'articulation et la prononciation</h3>
+        <p><strong>Bien articuler, c'est prononcer distinctement chaque syllabe et chaque son.</strong></p>
+        <p><strong>Conseils pour une bonne articulation :</strong></p>
+        <ul>
+          <li><strong>Ouvrir la bouche :</strong> Ne pas parler les dents serrées</li>
+          <li><strong>Mobiliser les lèvres :</strong> Bien bouger les lèvres pour former les sons</li>
+          <li><strong>Prononcer les consonnes finales :</strong> Ne pas les "avaler"</li>
+          <li><strong>Détacher les syllabes :</strong> Au début, exagérer un peu l'articulation</li>
+          <li><strong>Éviter les liaisons incorrectes :</strong> Respecter les règles de liaison</li>
+        </ul>
+        <p><strong>Exercices d'articulation (virelangues) :</strong></p>
+        <ul>
+          <li>"Un chasseur sachant chasser doit savoir chasser sans son chien."</li>
+          <li>"Les chaussettes de l'archiduchesse sont-elles sèches ? Archi-sèches !"</li>
+          <li>"Panier, piano, panier, piano..."</li>
+          <li>"Si six scies scient six cyprès, six cent six scies scient six cent six cyprès."</li>
+        </ul>
+        <p><strong>Astuce :</strong> Avant de lire, échauffez votre bouche en prononçant "a-e-i-o-u" de façon exagérée ! 😄</p>
+      </section>
+
+      <section class="lesson-section">
+        <h3>🎵 4. L'intonation et l'expression</h3>
+        <p>L'intonation, c'est la mélodie de la voix. Elle change selon le sens de la phrase.</p>
+        <p><strong>Les types d'intonation :</strong></p>
+        <ul>
+          <li><strong>Affirmation :</strong> Voix descendante à la fin → "Il fait beau." ↘</li>
+          <li><strong>Question :</strong> Voix montante à la fin → "Tu viens ?" ↗</li>
+          <li><strong>Exclamation :</strong> Voix expressive → "Quelle belle journée !" ↗↘</li>
+          <li><strong>Énumération :</strong> Voix montante entre les éléments, descendante à la fin → "J'aime les pommes↗, les bananes↗ et les mangues↘."</li>
+        </ul>
+        <p><strong>Adapter l'intonation au contenu :</strong></p>
+        <ul>
+          <li><strong>Texte joyeux :</strong> Voix enjouée, rythme rapide</li>
+          <li><strong>Texte triste :</strong> Voix douce, rythme lent</li>
+          <li><strong>Suspense :</strong> Voix mystérieuse, pauses stratégiques</li>
+          <li><strong>Colère :</strong> Voix forte, rythme saccadé</li>
+          <li><strong>Dialogue :</strong> Changer légèrement de voix pour chaque personnage</li>
+        </ul>
+        <p><strong>Exemple :</strong> "— Je suis si heureuse ! s'écria Marie." → Lire avec enthousiasme !</p>
+      </section>
+
+      <section class="lesson-section">
+        <h3>⏸️ 5. Le respect de la ponctuation</h3>
+        <p>La ponctuation guide la lecture. Elle indique où faire des pauses et quel ton adopter.</p>
+        <p><strong>Durée des pauses :</strong></p>
+        <ul>
+          <li><strong>Virgule (,) :</strong> Pause courte (1 temps) - respirer légèrement</li>
+          <li><strong>Point-virgule (;) :</strong> Pause moyenne (2 temps)</li>
+          <li><strong>Deux-points (:) :</strong> Pause moyenne avec anticipation</li>
+          <li><strong>Point (.) :</strong> Pause longue (3 temps) - fin d'idée</li>
+          <li><strong>Point d'exclamation (!) :</strong> Pause longue avec expression</li>
+          <li><strong>Point d'interrogation (?) :</strong> Pause longue avec voix montante</li>
+          <li><strong>Points de suspension (...) :</strong> Pause avec suspense</li>
+        </ul>
+        <p><strong>Exemple de lecture respectant la ponctuation :</strong></p>
+        <p>"Marie entra dans la maison<strong>,</strong> [pause courte] retira ses chaussures<strong>,</strong> [pause courte] puis se dirigea vers la cuisine<strong>.</strong> [pause longue] Quelle ne fut pas sa surprise<strong>!</strong> [pause longue + expression] Un magnifique gâteau l'attendait sur la table<strong>.</strong>"</p>
+      </section>
+
+      <section class="lesson-section">
+        <h3>📖 6. Méthode de préparation à la lecture</h3>
+        <p><strong>Étapes pour bien préparer une lecture à haute voix :</strong></p>
+        <ol>
+          <li><strong>Lecture silencieuse :</strong> Lire d'abord le texte en silence pour le comprendre</li>
+          <li><strong>Identification des difficultés :</strong> Repérer les mots difficiles à prononcer</li>
+          <li><strong>Recherche du sens :</strong> Chercher les mots inconnus dans le dictionnaire</li>
+          <li><strong>Repérage de la ponctuation :</strong> Marquer les pauses au crayon</li>
+          <li><strong>Analyse du ton :</strong> Décider de l'intonation pour chaque partie</li>
+          <li><strong>Lecture à voix basse :</strong> S'exercer en chuchotant</li>
+          <li><strong>Lecture à haute voix :</strong> Lire à voix haute plusieurs fois</li>
+          <li><strong>Enregistrement (si possible) :</strong> S'enregistrer et s'écouter</li>
+        </ol>
+        <p><strong>Conseils pour la performance :</strong></p>
+        <ul>
+          <li>✅ Se tenir droit, tête levée</li>
+          <li>✅ Regarder l'auditoire de temps en temps</li>
+          <li>✅ Tenir le livre à bonne hauteur</li>
+          <li>✅ Respirer calmement avant de commencer</li>
+          <li>✅ Parler vers l'auditoire, pas vers le livre</li>
+          <li>✅ Ne pas paniquer en cas d'erreur, reprendre calmement</li>
+        </ul>
+      </section>
+    `,
+    exemplesExercices: `
+      <h4>🗣️ Exercice 1 : Articulation</h4>
+      <p>Lis ces virelangues lentement puis de plus en plus vite :</p>
+      <ol>
+        <li>"Trois petites truites cuites, trois petites truites crues."</li>
+        <li>"Seize chaises sèchent."</li>
+        <li>"Didon dîna, dit-on, du dos dodu d'un dodu dindon."</li>
+      </ol>
+
+      <h4>🎵 Exercice 2 : Intonation</h4>
+      <p>Lis ces phrases avec l'intonation appropriée :</p>
+      <ol>
+        <li>"Quelle belle journée !" (joie)</li>
+        <li>"Où es-tu ?" (question inquiète)</li>
+        <li>"Je suis tellement fatigué..." (tristesse)</li>
+        <li>"Attention ! Un chien méchant !" (avertissement)</li>
+      </ol>
+
+      <h4>⏸️ Exercice 3 : Ponctuation</h4>
+      <p>Marque les pauses dans ce texte (C=courte, M=moyenne, L=longue), puis lis-le :</p>
+      <p>"Pierre se leva tôt ce matin___ Il prit son petit déjeuner___ mit ses chaussures___ et sortit___ Dehors___ le soleil brillait___ Quelle magnifique journée___"</p>
+
+      <h4>📖 Exercice 4 : Lecture préparée</h4>
+      <p>Choisis un court texte (5-7 lignes). Prépare ta lecture en suivant les 8 étapes de la méthode, puis lis-le devant un camarade ou ta famille.</p>
+    `
   },
   {
     id: "correspondance-personnelle",
     title: "Correspondance personnelle",
     mois: "Mai - Semaines 1-2",
-    objectif: "Produire des textes pour ses besoins personnels - lettres, cartes",
-    introduction: "Contenu à venir...",
-    contenu: "Contenu à venir...",
-    exemplesExercices: "Exercices à venir..."
+    objectif: "Produire des textes de correspondance personnelle (lettres, cartes, messages) en respectant les codes de présentation et en adaptant son style au destinataire et à la situation de communication.",
+    introduction: `Écrire une lettre ou une carte, c'est créer un lien avec quelqu'un ! 💌✉️ Même à l'ère des SMS et emails, savoir écrire une belle lettre reste important. C'est un moyen chaleureux et personnel de communiquer, de remercier, d'inviter ou simplement de donner des nouvelles. Apprenons ensemble cet art de la correspondance ! 🌟`,
+    contenu: `
+      <section class="lesson-section">
+        <h3>💌 1. Qu'est-ce que la correspondance personnelle ?</h3>
+        <p>La correspondance personnelle regroupe tous les écrits qu'on adresse à des proches : famille, amis, connaissances.</p>
+        <p><strong>Types de correspondance personnelle :</strong></p>
+        <ul>
+          <li><strong>La lettre amicale :</strong> Pour donner des nouvelles, raconter sa vie</li>
+          <li><strong>La carte postale :</strong> Message court envoyé en voyage</li>
+          <li><strong>La carte de vœux :</strong> Pour souhaiter bonne année, bon anniversaire...</li>
+          <li><strong>La lettre d'invitation :</strong> Pour inviter à un événement</li>
+          <li><strong>La lettre de remerciement :</strong> Pour remercier quelqu'un</li>
+          <li><strong>Le message électronique (email/SMS) :</strong> Version moderne et rapide</li>
+        </ul>
+        <p><strong>Caractéristiques :</strong></p>
+        <ul>
+          <li>Ton personnel et chaleureux</li>
+          <li>Vocabulaire simple et naturel</li>
+          <li>Expression des émotions</li>
+          <li>Structure précise à respecter</li>
+        </ul>
+      </section>
+
+      <section class="lesson-section">
+        <h3>📝 2. Structure d'une lettre personnelle</h3>
+        <p>Une lettre personnelle suit une structure bien précise avec 6 parties essentielles :</p>
+        <p><strong>1. Le lieu et la date (en haut à droite) :</strong></p>
+        <ul>
+          <li>Format : Ville, le jour mois année</li>
+          <li>Exemple : "Port-au-Prince, le 15 mai 2024"</li>
+        </ul>
+        <p><strong>2. La formule d'appel (à gauche) :</strong></p>
+        <ul>
+          <li>"Cher papa," / "Chère maman,"</li>
+          <li>"Cher Pierre," / "Chère Marie,"</li>
+          <li>"Mon cher ami," / "Ma chère amie,"</li>
+          <li>"Salut Jean !" (plus familier)</li>
+        </ul>
+        <p><strong>3. L'introduction :</strong></p>
+        <ul>
+          <li>Prendre des nouvelles : "J'espère que tu vas bien."</li>
+          <li>Répondre à une lettre : "J'ai été très heureux de recevoir ta lettre."</li>
+          <li>Donner le but : "Je t'écris pour te raconter..."</li>
+        </ul>
+        <p><strong>4. Le développement (corps de la lettre) :</strong></p>
+        <ul>
+          <li>Raconter ce qu'on veut dire</li>
+          <li>Organiser en paragraphes (une idée = un paragraphe)</li>
+          <li>Être naturel, comme si on parlait à la personne</li>
+        </ul>
+        <p><strong>5. La conclusion :</strong></p>
+        <ul>
+          <li>Annoncer la fin : "Je dois te laisser maintenant."</li>
+          <li>Demander une réponse : "J'attends ta réponse avec impatience."</li>
+          <li>Transmettre des salutations : "Embrasse toute la famille pour moi."</li>
+        </ul>
+        <p><strong>6. La formule de politesse finale et signature :</strong></p>
+        <ul>
+          <li>"Je t'embrasse," / "Grosses bises,"</li>
+          <li>"Affectueusement," / "Amicalement,"</li>
+          <li>"À bientôt," / "Ton ami(e),"</li>
+          <li>Puis signer : "Marie" ou "Ton fils Pierre"</li>
+        </ul>
+      </section>
+
+      <section class="lesson-section">
+        <h3>🎨 3. Adapter son style au destinataire</h3>
+        <p>Le style de la lettre dépend de la personne à qui on écrit.</p>
+        <p><strong>À un(e) ami(e) proche (registre familier) :</strong></p>
+        <ul>
+          <li>Ton décontracté et spontané</li>
+          <li>"Salut ! Ça va ?"</li>
+          <li>"Devine quoi ! Tu ne vas pas le croire !"</li>
+          <li>"À plus ! Bisous !"</li>
+        </ul>
+        <p><strong>À des parents ou adultes respectés (registre courant/soutenu) :</strong></p>
+        <ul>
+          <li>Ton respectueux mais affectueux</li>
+          <li>"Cher oncle," "Chère grand-mère,"</li>
+          <li>"Je vous écris pour vous donner de mes nouvelles."</li>
+          <li>"Recevez toute mon affection."</li>
+        </ul>
+        <p><strong>Tableau comparatif :</strong></p>
+        <table class="lesson-table">
+          <tr>
+            <th>Situation</th>
+            <th>Familier</th>
+            <th>Courant/Soutenu</th>
+          </tr>
+          <tr>
+            <td>Appel</td>
+            <td>Salut Marie !</td>
+            <td>Chère Marie,</td>
+          </tr>
+          <tr>
+            <td>Prise de nouvelles</td>
+            <td>Ça va ?</td>
+            <td>J'espère que tu vas bien.</td>
+          </tr>
+          <tr>
+            <td>Conclusion</td>
+            <td>Bisous ! À plus !</td>
+            <td>Affectueusement, À bientôt</td>
+          </tr>
+        </table>
+      </section>
+
+      <section class="lesson-section">
+        <h3>🎉 4. Types particuliers de correspondance</h3>
+        <p><strong>La carte postale :</strong></p>
+        <ul>
+          <li>Message court (5-8 lignes maximum)</li>
+          <li>Décrire brièvement l'endroit où on est</li>
+          <li>Exprimer ses sentiments (on s'amuse, on pense à la personne...)</li>
+          <li>Exemple : "Coucou de la plage ! Il fait très beau ici. La mer est magnifique. Je pense à toi. Grosses bises, Marie"</li>
+        </ul>
+        <p><strong>La carte de vœux :</strong></p>
+        <ul>
+          <li>Souhaiter quelque chose à quelqu'un</li>
+          <li>"Joyeux anniversaire ! Je te souhaite beaucoup de bonheur."</li>
+          <li>"Bonne année ! Que 2024 t'apporte santé et réussite."</li>
+          <li>"Joyeux Noël ! Passe de merveilleuses fêtes."</li>
+        </ul>
+        <p><strong>L'invitation :</strong></p>
+        <ul>
+          <li>Indiquer clairement : quoi, où, quand, à quelle heure</li>
+          <li>"Je t'invite à ma fête d'anniversaire le samedi 20 mai à 14h chez moi."</li>
+          <li>"Merci de me confirmer ta présence."</li>
+        </ul>
+        <p><strong>La lettre de remerciement :</strong></p>
+        <ul>
+          <li>Remercier sincèrement</li>
+          <li>Préciser pourquoi on remercie</li>
+          <li>"Merci beaucoup pour le beau cadeau que tu m'as offert. J'étais vraiment touché(e)."</li>
+        </ul>
+      </section>
+
+      <section class="lesson-section">
+        <h3>💻 5. La correspondance électronique (emails, SMS)</h3>
+        <p>Même si le support est différent, on garde les règles de base de politesse.</p>
+        <p><strong>L'email personnel :</strong></p>
+        <ul>
+          <li>Objet clair : "Nouvelles de Port-au-Prince"</li>
+          <li>Formule d'appel : "Bonjour Marie," ou "Salut Pierre,"</li>
+          <li>Message structuré en paragraphes</li>
+          <li>Formule de politesse finale : "Amicalement," + prénom</li>
+        </ul>
+        <p><strong>Le SMS/WhatsApp :</strong></p>
+        <ul>
+          <li>Peut être plus court et direct</li>
+          <li>Mais rester poli et clair</li>
+          <li>Éviter le langage SMS excessif (kikoo, slt, etc.) dans les messages importants</li>
+          <li>Utiliser les emojis avec modération 😊</li>
+        </ul>
+      </section>
+
+      <section class="lesson-section">
+        <h3>✨ 6. Conseils pour une bonne correspondance</h3>
+        <p><strong>À faire ✅ :</strong></p>
+        <ul>
+          <li>Être sincère et authentique</li>
+          <li>Soigner l'orthographe et la présentation</li>
+          <li>Relire avant d'envoyer</li>
+          <li>Répondre aux questions posées dans la lettre reçue</li>
+          <li>Donner des nouvelles précises et intéressantes</li>
+          <li>Terminer sur une note positive</li>
+        </ul>
+        <p><strong>À éviter ❌ :</strong></p>
+        <ul>
+          <li>Écrire de façon désordonnée</li>
+          <li>Faire des phrases trop longues et compliquées</li>
+          <li>Oublier la formule de politesse</li>
+          <li>Écrire uniquement pour se plaindre</li>
+          <li>Être trop bref (une ligne ne suffit pas !)</li>
+        </ul>
+        <p><strong>Astuce :</strong> Avant d'écrire, demande-toi : "Qu'est-ce que j'aimerais recevoir comme lettre ?" 💌</p>
+      </section>
+    `,
+    exemplesExercices: `
+      <h4>💌 Exercice 1 : Structure d'une lettre</h4>
+      <p>Remets dans l'ordre les parties d'une lettre :</p>
+      <p>A. "Je t'embrasse, Marie"<br>
+      B. "Port-au-Prince, le 20 mai 2024"<br>
+      C. "Cher Pierre,"<br>
+      D. "J'espère que tu vas bien. Je t'écris pour te raconter mes vacances..."<br>
+      E. "J'attends ta réponse. À bientôt !"</p>
+      <p>Ordre correct : ___, ___, ___, ___, ___</p>
+
+      <h4>🎨 Exercice 2 : Adapter le registre</h4>
+      <p>Transforme ce message familier en registre courant :</p>
+      <p>"Salut ! Ça va ? Moi, super bien. Je pars en vacances demain. Trop cool ! À plus ! Bisous"</p>
+
+      <h4>🎉 Exercice 3 : Carte d'invitation</h4>
+      <p>Rédige une carte d'invitation pour ton anniversaire. N'oublie pas d'indiquer : la date, l'heure, le lieu, et de demander une confirmation.</p>
+
+      <h4>✍️ Exercice 4 : Lettre amicale complète</h4>
+      <p>Écris une lettre amicale à un(e) ami(e) pour lui raconter une sortie récente (au marché, à la plage, une fête...). Respecte la structure en 6 parties. (120-150 mots)</p>
+    `
   },
   // Mai - Semaine 3
   {
     id: "synonymes-antonymes",
     title: "Synonymes et antonymes",
     mois: "Mai - Semaine 3",
-    objectif: "Utiliser synonymes et antonymes dans un texte",
-    introduction: "Contenu à venir...",
-    contenu: "Contenu à venir...",
-    exemplesExercices: "Exercices à venir..."
+    objectif: "Maîtriser l'utilisation des synonymes et antonymes pour enrichir son vocabulaire, nuancer son expression et créer des effets de style dans ses productions écrites et orales.",
+    introduction: `Les synonymes et antonymes sont deux faces d'une même pièce ! 🔄↔️ Les synonymes se ressemblent (beau/joli), tandis que les antonymes s'opposent (beau/laid). Maîtriser ces deux notions enrichit considérablement votre vocabulaire et vous permet de vous exprimer avec plus de précision et de variété. 🌟📚`,
+    contenu: `
+      <section class="lesson-section">
+        <h3>🔄 1. Rappel : Les synonymes</h3>
+        <p>Les synonymes sont des mots qui ont un sens proche ou similaire. Ils appartiennent à la même classe grammaticale.</p>
+        <p><strong>Exemples de synonymes :</strong></p>
+        <ul>
+          <li><strong>Heureux</strong> = content, joyeux, ravi, satisfait (adjectifs)</li>
+          <li><strong>Maison</strong> = habitation, demeure, logement, résidence (noms)</li>
+          <li><strong>Regarder</strong> = observer, voir, contempler, examiner (verbes)</li>
+        </ul>
+        <p><strong>Utilité :</strong> Éviter les répétitions, varier l'expression, préciser sa pensée.</p>
+      </section>
+
+      <section class="lesson-section">
+        <h3>↔️ 2. Les antonymes : définition et types</h3>
+        <p>Les antonymes sont des mots de sens contraire ou opposé. Comme les synonymes, ils appartiennent à la même classe grammaticale.</p>
+        <p><strong>Exemples d'antonymes :</strong></p>
+        <ul>
+          <li><strong>Grand</strong> ↔ petit, minuscule</li>
+          <li><strong>Chaud</strong> ↔ froid, glacé</li>
+          <li><strong>Monter</strong> ↔ descendre</li>
+          <li><strong>Entrer</strong> ↔ sortir</li>
+          <li><strong>Ami</strong> ↔ ennemi</li>
+        </ul>
+        <p><strong>Types de contraires :</strong></p>
+        <ul>
+          <li><strong>Contraires absolus :</strong> Pas de degré intermédiaire → vivant/mort, vrai/faux</li>
+          <li><strong>Contraires graduels :</strong> Degrés intermédiaires possibles → chaud/tiède/froid, grand/moyen/petit</li>
+          <li><strong>Contraires réciproques :</strong> L'un implique l'autre → acheter/vendre, donner/recevoir</li>
+        </ul>
+      </section>
+
+      <section class="lesson-section">
+        <h3>🔧 3. Formation des antonymes</h3>
+        <p>Les antonymes peuvent se former de deux façons principales :</p>
+        <p><strong>1. Mots différents (antonymes lexicaux) :</strong></p>
+        <ul>
+          <li>Deux mots totalement différents</li>
+          <li>Jour ↔ nuit</li>
+          <li>Beau ↔ laid</li>
+          <li>Rire ↔ pleurer</li>
+          <li>Ouvrir ↔ fermer</li>
+        </ul>
+        <p><strong>2. Ajout d'un préfixe (antonymes morphologiques) :</strong></p>
+        <ul>
+          <li><strong>in-/im-/il-/ir-</strong> : possible → <strong>im</strong>possible, légal → <strong>il</strong>légal, réel → <strong>ir</strong>réel</li>
+          <li><strong>dé-/dés-</strong> : faire → <strong>dé</strong>faire, obéir → <strong>dés</strong>obéir</li>
+          <li><strong>mal-/mé-</strong> : heureux → <strong>mal</strong>heureux, content → <strong>mé</strong>content</li>
+          <li><strong>a-/an-</strong> : normal → <strong>a</strong>normal, alphabète → <strong>an</strong>alphabète</li>
+        </ul>
+        <p><strong>Attention :</strong> Le préfixe dépend du mot !</p>
+        <ul>
+          <li>Correct → <strong>in</strong>correct (pas "dé-correct")</li>
+          <li>Faire → <strong>dé</strong>faire (pas "in-faire")</li>
+        </ul>
+      </section>
+
+      <section class="lesson-section">
+        <h3>📚 4. Antonymes courants à connaître</h3>
+        <p><strong>Adjectifs de qualité :</strong></p>
+        <ul>
+          <li>Grand ↔ petit / beau ↔ laid / jeune ↔ vieux</li>
+          <li>Facile ↔ difficile / simple ↔ compliqué</li>
+          <li>Rapide ↔ lent / fort ↔ faible</li>
+          <li>Gentil ↔ méchant / bon ↔ mauvais</li>
+        </ul>
+        <p><strong>Verbes d'action :</strong></p>
+        <ul>
+          <li>Entrer ↔ sortir / monter ↔ descendre</li>
+          <li>Ouvrir ↔ fermer / allumer ↔ éteindre</li>
+          <li>Commencer ↔ finir / arriver ↔ partir</li>
+          <li>Gagner ↔ perdre / réussir ↔ échouer</li>
+        </ul>
+        <p><strong>Noms :</strong></p>
+        <ul>
+          <li>Jour ↔ nuit / ami ↔ ennemi</li>
+          <li>Paix ↔ guerre / joie ↔ tristesse</li>
+          <li>Richesse ↔ pauvreté / vérité ↔ mensonge</li>
+        </ul>
+        <p><strong>Adverbes :</strong></p>
+        <ul>
+          <li>Beaucoup ↔ peu / toujours ↔ jamais</li>
+          <li>Souvent ↔ rarement / bien ↔ mal</li>
+          <li>Vite ↔ lentement / ici ↔ là-bas</li>
+        </ul>
+      </section>
+
+      <section class="lesson-section">
+        <h3>✍️ 5. Utilisation des synonymes et antonymes dans un texte</h3>
+        <p><strong>1. Pour éviter les répétitions (synonymes) :</strong></p>
+        <p>"Paul est un bon élève. Il a de bons résultats. C'est un bon ami." ❌ (répétitif)</p>
+        <p>"Paul est un <strong>excellent</strong> élève. Il a de <strong>brillants</strong> résultats. C'est un <strong>vrai</strong> ami." ✅</p>
+        <p><strong>2. Pour créer une opposition (antonymes) :</strong></p>
+        <p>"Il fait <strong>chaud</strong> le jour mais <strong>froid</strong> la nuit."</p>
+        <p>"Les uns <strong>rient</strong>, les autres <strong>pleurent</strong>."</p>
+        <p><strong>3. Pour nuancer son propos (synonymes avec nuances) :</strong></p>
+        <ul>
+          <li>"Il est <strong>content</strong>" (niveau faible)</li>
+          <li>"Il est <strong>heureux</strong>" (niveau moyen)</li>
+          <li>"Il est <strong>ravi</strong>" (niveau fort)</li>
+        </ul>
+        <p><strong>4. Pour décrire un changement (antonymes) :</strong></p>
+        <p>"Il était <strong>triste</strong> ce matin, mais maintenant il est <strong>joyeux</strong>."</p>
+      </section>
+
+      <section class="lesson-section">
+        <h3>🎯 6. Exercices pratiques et astuces</h3>
+        <p><strong>Comment trouver un synonyme ou un antonyme :</strong></p>
+        <ul>
+          <li><strong>Le dictionnaire :</strong> Après la définition, on trouve souvent "Syn:" et "Ant:"</li>
+          <li><strong>Le contexte :</strong> Réfléchir à ce qui a un sens proche ou opposé</li>
+          <li><strong>Les familles de mots :</strong> Utiliser les préfixes pour former des antonymes</li>
+        </ul>
+        <p><strong>Pièges à éviter :</strong></p>
+        <ul>
+          <li>❌ Ne pas confondre synonyme et même famille : <strong>fleur</strong> et <strong>fleuriste</strong> ne sont PAS synonymes</li>
+          <li>❌ Vérifier que le synonyme convient au contexte : "Il a <strong>cassé</strong> le verre" → "brisé" ✓ mais pas "rompu" ❌</li>
+          <li>❌ Un mot peut avoir plusieurs antonymes selon le contexte : <strong>monter</strong> ↔ descendre (escalier) ou <strong>monter</strong> ↔ démonter (meuble)</li>
+        </ul>
+        <p><strong>Astuce mnémotechnique :</strong> SYN = pareil, ANTI = contre ! 🎯</p>
+      </section>
+    `,
+    exemplesExercices: `
+      <h4>🔄 Exercice 1 : Identifier synonymes et antonymes</h4>
+      <p>Pour chaque mot, indique si le mot proposé est un synonyme (S) ou un antonyme (A) :</p>
+      <ol>
+        <li>Grand / immense : ___</li>
+        <li>Chaud / froid : ___</li>
+        <li>Joli / beau : ___</li>
+        <li>Entrer / sortir : ___</li>
+      </ol>
+
+      <h4>↔️ Exercice 2 : Trouver des antonymes</h4>
+      <p>Donne l'antonyme de chaque mot :</p>
+      <ol>
+        <li>Heureux : ___________</li>
+        <li>Monter : ___________</li>
+        <li>Facile : ___________</li>
+        <li>Ami : ___________</li>
+        <li>Jour : ___________</li>
+      </ol>
+
+      <h4>🔧 Exercice 3 : Former des antonymes avec des préfixes</h4>
+      <p>Forme l'antonyme en ajoutant un préfixe (in-, dé-, mal-, il-...) :</p>
+      <ol>
+        <li>Possible → ___________</li>
+        <li>Faire → ___________</li>
+        <li>Heureux → ___________</li>
+        <li>Légal → ___________</li>
+        <li>Obéir → ___________</li>
+      </ol>
+
+      <h4>✍️ Exercice 4 : Réécrire avec synonymes et antonymes</h4>
+      <p>Réécris ce texte en remplaçant les mots soulignés par des synonymes ou en ajoutant des antonymes pour créer des oppositions :</p>
+      <p>"Pierre est un <u>bon</u> élève. Il a de <u>bons</u> résultats. Il est <u>content</u> d'aller à l'école."</p>
+    `
   },
   {
     id: "accords-noms-adjectifs-verbes",
     title: "Les accords - noms, adjectifs, verbes",
     mois: "Mai - Semaine 3",
-    objectif: "Effectuer tous les accords simples correctement",
-    introduction: "Contenu à venir...",
-    contenu: "Contenu à venir...",
-    exemplesExercices: "Exercices à venir..."
+    objectif: "Maîtriser l'ensemble des règles d'accord en français : accord des noms et adjectifs en genre et nombre, accord du verbe avec son sujet pour écrire correctement et sans fautes grammaticales.",
+    introduction: `Les accords en français, c'est comme un orchestre : tous les mots doivent jouer ensemble en harmonie ! 🎼✨ Le nom impose son genre et son nombre aux adjectifs, tandis que le sujet impose sa personne et son nombre au verbe. Maîtrisons ensemble ces règles essentielles pour écrire sans fautes ! 📚🎯`,
+    contenu: `
+      <section class="lesson-section">
+        <h3>📚 1. L'accord des noms : genre et nombre</h3>
+        <p><strong>Le genre du nom :</strong></p>
+        <ul>
+          <li><strong>Masculin :</strong> le garçon, un livre, le chat</li>
+          <li><strong>Féminin :</strong> la fille, une table, la maison</li>
+        </ul>
+        <p><strong>Le nombre du nom :</strong></p>
+        <ul>
+          <li><strong>Singulier :</strong> un seul (le chat, la maison)</li>
+          <li><strong>Pluriel :</strong> plusieurs (les chats, les maisons)</li>
+        </ul>
+        <p><strong>Formation du pluriel :</strong></p>
+        <ul>
+          <li><strong>Règle générale :</strong> + s → chat → chat<strong>s</strong></li>
+          <li><strong>Noms en -s, -x, -z :</strong> invariables → cours → cours</li>
+          <li><strong>Noms en -au, -eau, -eu :</strong> + x → bateau → bateau<strong>x</strong></li>
+          <li><strong>Noms en -al :</strong> → -aux → cheval → chev<strong>aux</strong></li>
+          <li><strong>7 noms en -ou :</strong> + x → bijou, caillou, chou, genou, hibou, joujou, pou</li>
+        </ul>
+      </section>
+
+      <section class="lesson-section">
+        <h3>🎨 2. L'accord des adjectifs qualificatifs</h3>
+        <p>L'adjectif s'accorde en genre et en nombre avec le nom qu'il qualifie.</p>
+        <p><strong>Formation du féminin :</strong></p>
+        <ul>
+          <li><strong>Règle générale :</strong> + e → grand → grand<strong>e</strong></li>
+          <li><strong>Déjà en -e :</strong> invariable → jeune → jeune</li>
+          <li><strong>-er → -ère :</strong> léger → légère</li>
+          <li><strong>-eux → -euse :</strong> heureux → heureuse</li>
+          <li><strong>-if → -ive :</strong> actif → active</li>
+          <li><strong>-eau → -elle :</strong> beau → belle</li>
+          <li><strong>Doublement de consonne + e :</strong> bon → bonne, gros → grosse</li>
+        </ul>
+        <p><strong>Formation du pluriel :</strong></p>
+        <ul>
+          <li><strong>Règle générale :</strong> + s → grand → grand<strong>s</strong>, grande → grande<strong>s</strong></li>
+          <li><strong>Déjà en -s ou -x :</strong> invariable → gris → gris, heureux → heureux</li>
+          <li><strong>-eau → -eaux :</strong> beau → beau<strong>x</strong>, nouveau → nouveau<strong>x</strong></li>
+          <li><strong>-al → -aux :</strong> national → nation<strong>aux</strong></li>
+        </ul>
+        <p><strong>Accord complet du GN :</strong></p>
+        <ul>
+          <li>"<strong>Le petit</strong> chat <strong>noir</strong>" (masc. sing.)</li>
+          <li>"<strong>La petite</strong> maison <strong>blanche</strong>" (fém. sing.)</li>
+          <li>"<strong>Les petits</strong> chats <strong>noirs</strong>" (masc. plur.)</li>
+          <li>"<strong>Les petites</strong> maisons <strong>blanches</strong>" (fém. plur.)</li>
+        </ul>
+      </section>
+
+      <section class="lesson-section">
+        <h3>👥 3. L'accord du verbe avec le sujet</h3>
+        <p>Le verbe s'accorde en personne et en nombre avec son sujet.</p>
+        <p><strong>Rappel des personnes :</strong></p>
+        <ul>
+          <li><strong>1re personne :</strong> je (singulier), nous (pluriel)</li>
+          <li><strong>2e personne :</strong> tu (singulier), vous (pluriel)</li>
+          <li><strong>3e personne :</strong> il/elle/on (singulier), ils/elles (pluriel)</li>
+        </ul>
+        <p><strong>Exemples d'accord (présent du verbe "chanter") :</strong></p>
+        <ul>
+          <li>Je chant<strong>e</strong> / Tu chant<strong>es</strong> / Il chant<strong>e</strong></li>
+          <li>Nous chant<strong>ons</strong> / Vous chant<strong>ez</strong> / Ils chant<strong>ent</strong></li>
+        </ul>
+        <p><strong>Règle fondamentale :</strong> Toujours chercher le sujet et accorder le verbe avec lui !</p>
+        <p><strong>Exemples :</strong></p>
+        <ul>
+          <li>"<strong>Les enfants</strong> jou<strong>ent</strong>" (ils = 3e pers. plur.)</li>
+          <li>"<strong>Marie</strong> chant<strong>e</strong>" (elle = 3e pers. sing.)</li>
+          <li>"<strong>Nous</strong> all<strong>ons</strong> à l'école" (1re pers. plur.)</li>
+        </ul>
+      </section>
+
+      <section class="lesson-section">
+        <h3>🔍 4. Cas particuliers d'accord du verbe</h3>
+        <p><strong>1. Sujet éloigné du verbe :</strong></p>
+        <ul>
+          <li>Chercher le sujet même s'il y a des mots entre le sujet et le verbe</li>
+          <li>"Les élèves <em>de cette classe</em> <strong>sont</strong> studieux." (sujet = les élèves)</li>
+          <li>"Le livre <em>que j'ai lu</em> <strong>est</strong> intéressant." (sujet = le livre)</li>
+        </ul>
+        <p><strong>2. Sujet "qui" (pronom relatif) :</strong></p>
+        <ul>
+          <li>"Qui" prend la personne de son antécédent</li>
+          <li>"C'est moi qui <strong>parle</strong>." (qui = moi = 1re pers. sing.)</li>
+          <li>"C'est toi qui <strong>chantes</strong>." (qui = toi = 2e pers. sing.)</li>
+          <li>"Les enfants qui <strong>jouent</strong>" (qui = ils = 3e pers. plur.)</li>
+        </ul>
+        <p><strong>3. Sujets multiples coordonnés :</strong></p>
+        <ul>
+          <li>Plusieurs sujets = pluriel</li>
+          <li>"Pierre <strong>et</strong> Marie <strong>sont</strong> amis." (ils = pluriel)</li>
+          <li>"Le chat <strong>et</strong> le chien <strong>dorment</strong>." (ils = pluriel)</li>
+        </ul>
+        <p><strong>4. Sujet collectif :</strong></p>
+        <ul>
+          <li>"Une foule de gens <strong>est venue</strong>" ou "<strong>sont venus</strong>" (les deux possibles)</li>
+          <li>"La plupart des élèves <strong>ont réussi</strong>" (accord avec le complément)</li>
+        </ul>
+      </section>
+
+      <section class="lesson-section">
+        <h3>⚠️ 5. Erreurs fréquentes à éviter</h3>
+        <p><strong>1. Accorder l'adjectif avec le mauvais nom :</strong></p>
+        <ul>
+          <li>❌ "Une <strong>beau</strong> maison" → ✅ "Une <strong>belle</strong> maison"</li>
+          <li>❌ "Des fleurs <strong>rouge</strong>" → ✅ "Des fleurs <strong>rouges</strong>"</li>
+        </ul>
+        <p><strong>2. Oublier le pluriel :</strong></p>
+        <ul>
+          <li>❌ "Les enfant jouent" → ✅ "Les enfant<strong>s</strong> jouent"</li>
+          <li>❌ "Des beau livres" → ✅ "Des beau<strong>x</strong> livres"</li>
+        </ul>
+        <p><strong>3. Accorder le verbe avec le complément au lieu du sujet :</strong></p>
+        <ul>
+          <li>❌ "Le livre de mes amis <strong>sont</strong> ici" → ✅ "Le livre de mes amis <strong>est</strong> ici" (sujet = le livre)</li>
+        </ul>
+        <p><strong>4. Confondre sujet inversé :</strong></p>
+        <ul>
+          <li>"<strong>Arrivent</strong> les vacances !" (sujet = les vacances, après le verbe)</li>
+        </ul>
+      </section>
+
+      <section class="lesson-section">
+        <h3>✨ 6. Méthode pour ne pas se tromper</h3>
+        <p><strong>Pour les noms et adjectifs :</strong></p>
+        <ol>
+          <li>Identifier le nom-noyau du groupe</li>
+          <li>Déterminer son genre (masculin/féminin) et son nombre (singulier/pluriel)</li>
+          <li>Accorder tous les mots du groupe avec le nom</li>
+        </ol>
+        <p><strong>Pour les verbes :</strong></p>
+        <ol>
+          <li>Poser la question "Qui est-ce qui + verbe ?" pour trouver le sujet</li>
+          <li>Déterminer la personne (je, tu, il...) et le nombre (singulier/pluriel) du sujet</li>
+          <li>Accorder le verbe avec le sujet trouvé</li>
+        </ol>
+        <p><strong>Astuce :</strong> Toujours se relire en vérifiant les accords ! ✅</p>
+      </section>
+    `,
+    exemplesExercices: `
+      <h4>📚 Exercice 1 : Accord des noms au pluriel</h4>
+      <p>Mets ces noms au pluriel :</p>
+      <ol>
+        <li>Un cheval → Des ___________</li>
+        <li>Un bijou → Des ___________</li>
+        <li>Un nez → Des ___________</li>
+        <li>Un bateau → Des ___________</li>
+      </ol>
+
+      <h4>🎨 Exercice 2 : Accord des adjectifs</h4>
+      <p>Accorde les adjectifs entre parenthèses :</p>
+      <ol>
+        <li>Une (grand) ___ maison (blanc) ___.</li>
+        <li>Des enfants (heureux) ___ et (joyeux) ___.</li>
+        <li>Les fleurs (beau) ___ sont (rouge) ___.</li>
+      </ol>
+
+      <h4>👥 Exercice 3 : Accord du verbe avec le sujet</h4>
+      <p>Conjugue le verbe entre parenthèses au présent :</p>
+      <ol>
+        <li>Les élèves (travailler) ___ bien.</li>
+        <li>Marie et Jean (être) ___ amis.</li>
+        <li>Le livre que tu lis (être) ___ intéressant.</li>
+        <li>C'est moi qui (avoir) ___ raison.</li>
+      </ol>
+
+      <h4>✨ Exercice 4 : Correction complète</h4>
+      <p>Corrige toutes les erreurs d'accord dans ce texte :</p>
+      <p>"Les petit fille joue dans le jardin. Elles est content. Leurs robe sont beau et blanc. Le fleur du jardin sent bon."</p>
+    `
   },
   // Juin - Semaine 1
   {
