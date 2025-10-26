@@ -13,6 +13,8 @@ import ericThinking from "@/assets/eric-thinking-pose.png";
 import ericWelcome from "@/assets/eric-welcome.png";
 import ericThumbUp from "@/assets/eric-thumb-up.png";
 import ericPointing from "@/assets/eric-pointing-up.png";
+import ericChairDesk from "@/assets/eric-chair-desk.png";
+import ericRightPointing from "@/assets/eric-right-pointing-2.png";
 
 interface QuizQuestion {
   id: number;
@@ -105,10 +107,10 @@ const PassionDiscoveryTest = () => {
       question: "Quand tu as du temps libre, qu'est-ce que tu préfères faire?",
       ericImage: ericWelcome,
       options: [
-        { text: "Écouter de la musique ou jouer d'un instrument 🎵", passion: "music", ericImage: ericThumbUp },
-        { text: "Dessiner, peindre ou créer quelque chose 🎨", passion: "arts", ericImage: ericThumbUp },
-        { text: "Jouer aux échecs ou résoudre des énigmes 🧠", passion: "chess", ericImage: ericThumbUp },
-        { text: "Lire un livre ou écrire des histoires 📚", passion: "literature", ericImage: ericThumbUp }
+        { text: "Écouter de la musique ou jouer d'un instrument 🎵", passion: "music", ericImage: ericRightPointing },
+        { text: "Dessiner, peindre ou créer quelque chose 🎨", passion: "arts", ericImage: ericRightPointing },
+        { text: "Jouer aux échecs ou résoudre des énigmes 🧠", passion: "chess", ericImage: ericRightPointing },
+        { text: "Lire un livre ou écrire des histoires 📚", passion: "literature", ericImage: ericRightPointing }
       ]
     },
     {
@@ -600,7 +602,7 @@ const PassionDiscoveryTest = () => {
             <>
               <div className="text-center mb-12 animate-fade-in">
                 <div className="inline-block mb-4">
-                  <img src={ericTeaching} alt="Eric" className="w-32 h-32 mx-auto animate-scale-in" loading="lazy" decoding="async" />
+                  <img src={ericChairDesk} alt="Eric" className="w-48 h-48 mx-auto animate-scale-in" loading="lazy" decoding="async" />
                 </div>
                 <h1 className="text-4xl md:text-6xl font-bold mb-4 bg-gradient-to-r from-purple-600 via-pink-600 to-orange-500 bg-clip-text text-transparent">
                   Découverte & Épanouissement
@@ -953,7 +955,7 @@ const PassionDiscoveryTest = () => {
             <Card className="sticky top-6 h-[calc(100vh-8rem)] flex flex-col">
               <CardHeader className="border-b">
                 <div className="flex items-center gap-3">
-                  <img src={ericTeaching} alt="Eric" className="w-12 h-12 rounded-full" loading="lazy" decoding="async" />
+                  <img src={ericRightPointing} alt="Eric" className="w-12 h-12 rounded-full object-cover" loading="lazy" decoding="async" />
                   <div>
                     <CardTitle className="text-lg">Discute avec Eric</CardTitle>
                     <CardDescription className="text-sm">Ton tuteur IA personnel</CardDescription>
