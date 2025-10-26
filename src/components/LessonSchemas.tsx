@@ -227,7 +227,7 @@ export const LessonSchemas = ({ topicId, topicTitle }: LessonSchemasProps) => {
             )}
           </CardHeader>
           <CardContent className="p-4 sm:p-6 bg-background/50">
-            <div className="mermaid-container bg-white dark:bg-slate-900 p-4 sm:p-6 rounded-xl border-2 border-primary/10 overflow-x-auto">
+            <div className="mermaid-container bg-card dark:bg-slate-900 p-4 sm:p-6 rounded-xl border-2 border-primary/10 overflow-x-auto">
               <pre className="mermaid text-center">
                 {schema.mermaid}
               </pre>

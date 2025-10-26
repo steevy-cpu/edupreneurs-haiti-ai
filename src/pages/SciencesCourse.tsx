@@ -190,16 +190,16 @@ export default function SciencesCourse() {
                   <div className="flex items-start justify-between mb-4">
                     <div className={`w-14 h-14 rounded-xl bg-gradient-to-br ${categories.find(c => c.id === topic.category || c.label === topic.category)?.color || 'from-amber-500 to-amber-600'} flex items-center justify-center`}>
                       {isLocked ? (
-                        <Lock className="w-7 h-7 text-white" />
+                        <Lock className="w-7 h-7 text-primary-foreground" />
                       ) : isCompleted ? (
-                        <CheckCircle2 className="w-7 h-7 text-white" />
+                        <CheckCircle2 className="w-7 h-7 text-primary-foreground" />
                       ) : (
-                        <IconComponent className="w-7 h-7 text-white" />
+                        <IconComponent className="w-7 h-7 text-primary-foreground" />
                       )}
                     </div>
                     <Badge 
                       variant="secondary" 
-                      className={`${getDifficultyColor(topic.difficulty)} text-white border-0`}
+                      className={`${getDifficultyColor(topic.difficulty)} text-primary-foreground border-0`}
                     >
                       {topic.difficulty}
                     </Badge>

@@ -68,7 +68,7 @@ export const SpeedCalcGame = ({ onComplete }: SpeedCalcGameProps) => {
     return (
       <Card className="p-8 text-center space-y-6 animate-scale-in">
         <div className="w-20 h-20 mx-auto rounded-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center">
-          <Trophy className="w-10 h-10 text-white" />
+          <Trophy className="w-10 h-10 text-primary-foreground" />
         </div>
         <div>
           <h2 className="text-3xl font-bold mb-2">Temps écoulé!</h2>
@@ -93,7 +93,7 @@ export const SpeedCalcGame = ({ onComplete }: SpeedCalcGameProps) => {
     return (
       <Card className="p-8 text-center space-y-6">
         <div className="w-20 h-20 mx-auto rounded-full bg-gradient-to-br from-secondary to-primary flex items-center justify-center">
-          <Zap className="w-10 h-10 text-white" />
+          <Zap className="w-10 h-10 text-primary-foreground" />
         </div>
         <div>
           <h2 className="text-2xl font-bold mb-2">Calcul Rapide</h2>

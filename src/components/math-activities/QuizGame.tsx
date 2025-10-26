@@ -99,7 +99,7 @@ export const QuizGame = ({ topic, questions, onComplete, onRegenerate }: QuizGam
     return (
       <Card className="p-8 text-center space-y-6 animate-scale-in">
         <div className="w-20 h-20 mx-auto rounded-full bg-gradient-to-br from-accent to-yellow-500 flex items-center justify-center">
-          <Trophy className="w-10 h-10 text-white" />
+          <Trophy className="w-10 h-10 text-primary-foreground" />
         </div>
         <div>
           <h2 className="text-3xl font-bold mb-2">{percentage >= 70 ? "Excellent !" : percentage >= 50 ? "Bien !" : "Continue!"}</h2>

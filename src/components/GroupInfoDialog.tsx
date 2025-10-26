@@ -428,13 +428,13 @@ export const GroupInfoDialog = ({
                   </AvatarFallback>
                 </Avatar>
                 {(group.created_by === currentUserId || members.some(m => m.user_id === currentUserId)) && (
-                  <div className="absolute inset-0 bg-black/60 rounded-full opacity-0 group-hover/avatar:opacity-100 transition-opacity flex items-center justify-center gap-1">
+                  <div className="absolute inset-0 bg-background/80 backdrop-blur-sm rounded-full opacity-0 group-hover/avatar:opacity-100 transition-opacity flex items-center justify-center gap-1">
                     <label htmlFor="group-avatar" className="cursor-pointer">
-                      <Upload className="h-5 w-5 text-white hover:text-primary transition-colors" />
+                      <Upload className="h-5 w-5 text-foreground hover:text-primary transition-colors" />
                     </label>
                     {group.avatar_url && (
                       <button onClick={() => setShowDeleteAvatarConfirm(true)}>
-                        <Trash2 className="h-5 w-5 text-white hover:text-destructive transition-colors" />
+                        <Trash2 className="h-5 w-5 text-foreground hover:text-destructive transition-colors" />
                       </button>
                     )}
                   </div>

@@ -27,7 +27,7 @@ export const MusicSelector = () => {
       <div className="flex items-center justify-between gap-4">
         <div className="flex items-center gap-4">
           <div className="w-14 h-14 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center flex-shrink-0">
-            <Music className="w-7 h-7 text-white" />
+            <Music className="w-7 h-7 text-primary-foreground" />
           </div>
           <div>
             <h3 className="text-lg font-bold mb-1">Musique d'étude 🎵</h3>

@@ -122,3 +122,73 @@ export function cleanupSubscriptions(subscriptions: Array<() => void>): void {
     }
   });
 }
+
+// Cache API responses
+const apiCache = new Map<string, { data: any; timestamp: number }>();
+const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
+
+export function getCachedApiResponse<T>(key: string): T | null {
+  const cached = apiCache.get(key);
+  if (!cached) return null;
+  
+  const isExpired = Date.now() - cached.timestamp > CACHE_DURATION;
+  if (isExpired) {
+    apiCache.delete(key);
+    return null;
+  }
+  
+  return cached.data as T;
+}
+
+export function setCachedApiResponse(key: string, data: any): void {
+  apiCache.set(key, { data, timestamp: Date.now() });
+}
+
+export function clearApiCache(): void {
+  apiCache.clear();
+}
+
+// Optimize images
+export function getOptimizedImageUrl(url: string, width?: number): string {
+  if (!url) return url;
+  
+  // For Supabase storage URLs, add transformation parameters
+  if (url.includes('supabase')) {
+    const params = new URLSearchParams();
+    if (width) params.append('width', width.toString());
+    params.append('quality', '85');
+    return `${url}?${params.toString()}`;
+  }
+  
+  return url;
+}
+
+// Prefetch resources
+export function prefetchResource(url: string, type: 'script' | 'style' | 'image'): void {
+  const link = document.createElement('link');
+  link.rel = 'prefetch';
+  link.as = type;
+  link.href = url;
+  document.head.appendChild(link);
+}
+
+// Reduce API calls with request deduplication
+const pendingRequests = new Map<string, Promise<any>>();
+
+export async function deduplicateRequest<T>(
+  key: string,
+  requestFn: () => Promise<T>
+): Promise<T> {
+  // If request is already pending, return the same promise
+  if (pendingRequests.has(key)) {
+    return pendingRequests.get(key) as Promise<T>;
+  }
+  
+  // Create new request
+  const promise = requestFn().finally(() => {
+    pendingRequests.delete(key);
+  });
+  
+  pendingRequests.set(key, promise);
+  return promise;
+}

@@ -131,8 +131,8 @@ export default function AnglaisCourse() {
           <div className="flex flex-col md:flex-row items-center justify-between gap-6">
             <div className="flex-1 text-center md:text-left">
               <div className="flex flex-col sm:flex-row items-center justify-center md:justify-start gap-3 mb-3 sm:mb-4">
-                <div className="w-12 h-12 sm:w-14 sm:h-14 md:w-16 md:h-16 rounded-2xl bg-white/20 backdrop-blur-sm flex items-center justify-center">
-                  <Languages className="w-7 h-7 sm:w-8 sm:h-8 md:w-10 md:h-10 text-white" />
+                <div className="w-12 h-12 sm:w-14 sm:h-14 md:w-16 md:h-16 rounded-2xl bg-primary/20 backdrop-blur-sm flex items-center justify-center">
+                  <Languages className="w-7 h-7 sm:w-8 sm:h-8 md:w-10 md:h-10 text-primary-foreground" />
                 </div>
                 <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold">
                   Anglais
@@ -207,11 +207,11 @@ export default function AnglaisCourse() {
                   <div className="flex items-start justify-between mb-4">
                     <div className={`w-14 h-14 rounded-xl bg-gradient-to-br ${getMonthColor(lesson.month)} flex items-center justify-center`}>
                       {isLocked ? (
-                        <Lock className="w-7 h-7 text-white" />
+                        <Lock className="w-7 h-7 text-primary-foreground" />
                       ) : isCompleted ? (
-                        <CheckCircle2 className="w-7 h-7 text-white" />
+                        <CheckCircle2 className="w-7 h-7 text-primary-foreground" />
                       ) : (
-                        <Languages className="w-7 h-7 text-white" />
+                        <Languages className="w-7 h-7 text-primary-foreground" />
                       )}
                     </div>
                     <Badge variant="secondary" className="text-xs">

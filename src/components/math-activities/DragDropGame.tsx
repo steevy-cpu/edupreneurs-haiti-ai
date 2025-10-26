@@ -94,7 +94,7 @@ export const DragDropGame = ({ numbers, onComplete }: DragDropGameProps) => {
               onDragStart={(e) => handleDragStart(e, index)}
               onDragOver={handleDragOver}
               onDrop={(e) => handleDrop(e, index)}
-              className="w-16 h-16 bg-gradient-to-br from-primary to-secondary text-white rounded-xl flex items-center justify-center text-2xl font-bold cursor-move shadow-lg hover:scale-110 transition-transform"
+              className="w-16 h-16 bg-gradient-to-br from-primary to-secondary text-primary-foreground rounded-xl flex items-center justify-center text-2xl font-bold cursor-move shadow-lg hover:scale-110 transition-transform"
             >
               {number}
             </div>

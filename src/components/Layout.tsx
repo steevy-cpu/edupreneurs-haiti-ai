@@ -320,7 +320,7 @@ export const Layout = ({ children }: LayoutProps) => {
         <button
           data-tour="menu-button"
           onClick={() => setSidebarOpen(!sidebarOpen)}
-          className="fixed top-3 left-3 z-[1001] bg-gradient-to-br from-[hsl(var(--primary))] to-[hsl(var(--success))] text-white p-2 sm:p-2.5 rounded-lg sm:rounded-xl shadow-md hover:shadow-lg transition-all duration-300 hover:scale-105"
+          className="fixed top-3 left-3 z-[1001] bg-gradient-to-br from-primary to-success text-primary-foreground p-2 sm:p-2.5 rounded-lg sm:rounded-xl shadow-md hover:shadow-lg transition-all duration-300 hover:scale-105"
           aria-label="Menu"
         >
           {sidebarOpen ? <X size={20} className="sm:w-5 sm:h-5" /> : <Menu size={20} className="sm:w-5 sm:h-5" />}
@@ -330,7 +330,7 @@ export const Layout = ({ children }: LayoutProps) => {
       {/* Sidebar Overlay */}
       {!isCommunityPage && !isLessonPage && !isFeedPage && sidebarOpen && (
         <div 
-          className="fixed inset-0 bg-black/50 z-[999] lg:hidden"
+          className="fixed inset-0 bg-background/80 backdrop-blur-sm z-[999] lg:hidden"
           onClick={() => setSidebarOpen(false)}
         />
       )}
@@ -342,7 +342,7 @@ export const Layout = ({ children }: LayoutProps) => {
           className={`fixed top-0 left-0 h-screen w-[240px] sm:w-[260px] lg:w-[280px] bg-card border-r border-border shadow-lg z-[1000] transition-transform duration-300 overflow-y-auto ${sidebarOpen ? "translate-x-0" : "-translate-x-full"}`}
         >
         {/* Sidebar Header */}
-        <div className="bg-gradient-to-br from-[hsl(var(--primary))] to-[hsl(var(--success))] text-white p-3 sm:p-4 lg:p-5 border-b border-white/10 flex items-center justify-center">
+        <div className="bg-gradient-to-br from-primary to-success text-primary-foreground p-3 sm:p-4 lg:p-5 border-b border-border/10 flex items-center justify-center">
           <img 
             src={edupreneursLogo} 
             alt="EDUPRENEURS" 
@@ -487,7 +487,7 @@ export const Layout = ({ children }: LayoutProps) => {
           <hr className="border-border my-2 sm:my-3 lg:my-4 mx-2 sm:mx-2.5 lg:mx-3" />
           <button
             onClick={handleLogout}
-            className="flex items-center gap-2 sm:gap-2.5 lg:gap-3 px-3 sm:px-4 lg:px-5 py-2.5 sm:py-3 lg:py-3.5 mx-2 sm:mx-2.5 lg:mx-3 rounded-lg sm:rounded-xl text-sm sm:text-base text-destructive font-medium hover:bg-destructive hover:text-white hover:translate-x-1 transition-all duration-300 w-[calc(100%-1rem)] sm:w-[calc(100%-1.25rem)] lg:w-[calc(100%-1.5rem)]"
+            className="flex items-center gap-2 sm:gap-2.5 lg:gap-3 px-3 sm:px-4 lg:px-5 py-2.5 sm:py-3 lg:py-3.5 mx-2 sm:mx-2.5 lg:mx-3 rounded-lg sm:rounded-xl text-sm sm:text-base text-destructive font-medium hover:bg-destructive hover:text-destructive-foreground hover:translate-x-1 transition-all duration-300 w-[calc(100%-1rem)] sm:w-[calc(100%-1.25rem)] lg:w-[calc(100%-1.5rem)]"
           >
             <LogOut size={16} className="sm:w-[17px] sm:h-[17px] lg:w-[18px] lg:h-[18px]" />
             Déconnexion

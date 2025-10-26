@@ -206,7 +206,7 @@ export default function OnboardingTour() {
     <>
       {/* Semi-transparent overlay */}
       <div 
-        className="fixed inset-0 z-[9998] pointer-events-none bg-black/60"
+        className="fixed inset-0 z-[9998] pointer-events-none bg-background/60 backdrop-blur-sm"
       />
 
       {/* Spotlight highlight on target element */}

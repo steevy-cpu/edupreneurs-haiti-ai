@@ -175,7 +175,7 @@ const Affiliations = () => {
       {/* Main Content */}
       <div className="pt-4 px-4 lg:px-8 pb-8">
         {/* Header */}
-        <div className="bg-gradient-to-br from-[hsl(var(--primary))] to-[hsl(var(--success))] text-white p-8 rounded-[20px] mb-8 relative overflow-hidden">
+        <div className="bg-gradient-to-br from-primary to-success text-primary-foreground p-8 rounded-[20px] mb-8 relative overflow-hidden">
           <div className="absolute top-0 right-0 w-1/2 h-full opacity-10">
             <div className="w-full h-full bg-gradient-radial from-white/20 to-transparent animate-[float_20s_ease-in-out_infinite]" />
           </div>
@@ -202,10 +202,10 @@ const Affiliations = () => {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 mb-8">
           <Card className="border-none rounded-[20px] shadow-md hover:shadow-lg hover:-translate-y-2 transition-all duration-300">
             <CardContent className="p-7 text-center">
-              <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-[hsl(var(--primary))] to-[hsl(var(--success))] flex items-center justify-center text-white text-2xl mx-auto mb-4">
+              <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-primary to-success flex items-center justify-center text-primary-foreground text-2xl mx-auto mb-4">
                 <UserCheck />
               </div>
-              <div className="text-3xl font-extrabold bg-gradient-to-br from-[hsl(var(--primary))] to-[hsl(var(--success))] bg-clip-text text-transparent mb-2">
+              <div className="text-3xl font-extrabold bg-gradient-to-br from-primary to-success bg-clip-text text-transparent mb-2">
                 {stats.total}
               </div>
               <div className="text-sm font-semibold text-muted-foreground">Total Parrainages</div>
@@ -214,10 +214,10 @@ const Affiliations = () => {
 
           <Card className="border-none rounded-[20px] shadow-md hover:shadow-lg hover:-translate-y-2 transition-all duration-300">
             <CardContent className="p-7 text-center">
-              <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-[hsl(var(--success))] to-[hsl(160_84%_32%)] flex items-center justify-center text-white text-2xl mx-auto mb-4">
+              <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-success to-emerald-600 flex items-center justify-center text-primary-foreground text-2xl mx-auto mb-4">
                 <TrendingUp />
               </div>
-              <div className="text-3xl font-extrabold bg-gradient-to-br from-[hsl(var(--primary))] to-[hsl(var(--success))] bg-clip-text text-transparent mb-2">
+              <div className="text-3xl font-extrabold bg-gradient-to-br from-primary to-success bg-clip-text text-transparent mb-2">
                 {stats.active}
               </div>
               <div className="text-sm font-semibold text-muted-foreground">Actifs</div>
@@ -226,10 +226,10 @@ const Affiliations = () => {
 
           <Card className="border-none rounded-[20px] shadow-md hover:shadow-lg hover:-translate-y-2 transition-all duration-300">
             <CardContent className="p-7 text-center">
-              <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-[hsl(var(--accent))] to-[hsl(25_100%_50%)] flex items-center justify-center text-white text-2xl mx-auto mb-4">
+              <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-accent to-orange-500 flex items-center justify-center text-primary-foreground text-2xl mx-auto mb-4">
                 <Users />
               </div>
-              <div className="text-3xl font-extrabold bg-gradient-to-br from-[hsl(var(--primary))] to-[hsl(var(--success))] bg-clip-text text-transparent mb-2">
+              <div className="text-3xl font-extrabold bg-gradient-to-br from-primary to-success bg-clip-text text-transparent mb-2">
                 {stats.pending}
               </div>
               <div className="text-sm font-semibold text-muted-foreground">En attente</div>
@@ -238,10 +238,10 @@ const Affiliations = () => {
 
           <Card className="border-none rounded-[20px] shadow-md hover:shadow-lg hover:-translate-y-2 transition-all duration-300">
             <CardContent className="p-7 text-center">
-              <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-[hsl(var(--accent))] to-[hsl(25_100%_50%)] flex items-center justify-center text-white text-2xl mx-auto mb-4">
+              <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-accent to-orange-500 flex items-center justify-center text-primary-foreground text-2xl mx-auto mb-4">
                 <Coins />
               </div>
-              <div className="text-3xl font-extrabold bg-gradient-to-br from-[hsl(var(--primary))] to-[hsl(var(--success))] bg-clip-text text-transparent mb-2">
+              <div className="text-3xl font-extrabold bg-gradient-to-br from-primary to-success bg-clip-text text-transparent mb-2">
                 {profile?.affiliation_points || 0}
               </div>
               <div className="text-sm font-semibold text-muted-foreground">Points gagnés</div>
@@ -283,7 +283,7 @@ const Affiliations = () => {
               <Button
                 onClick={shareReferralLink}
                 variant="outline"
-                className="border-2 border-[hsl(var(--primary))] text-[hsl(var(--primary))] hover:bg-[hsl(var(--primary))] hover:text-white"
+                className="border-2 border-primary text-primary hover:bg-primary hover:text-primary-foreground"
               >
                 <Share2 className="mr-2 h-4 w-4" />
                 Partager
@@ -325,7 +325,7 @@ const Affiliations = () => {
                     className="flex items-center justify-between p-4 border border-border rounded-xl hover:shadow-md transition-all"
                   >
                     <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[hsl(var(--primary))] to-[hsl(var(--success))] flex items-center justify-center text-white font-bold">
+                      <div className="w-10 h-10 rounded-full bg-gradient-to-br from-primary to-success flex items-center justify-center text-primary-foreground font-bold">
                         {referral.profiles?.full_name?.charAt(0) || "?"}
                       </div>
                       <div>
