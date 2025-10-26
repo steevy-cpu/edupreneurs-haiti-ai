@@ -243,7 +243,6 @@ export const YouTubeVideoSection = ({ lessonTitle, objectives, gradeLevel = "AF7
                   allowFullScreen
                   loading="lazy"
                   className="w-full h-full border-0"
-                  sandbox="allow-same-origin allow-scripts allow-presentation"
                 />
               </div>
               <div className="p-4 bg-gradient-to-r from-primary/10 to-primary/5">
@@ -269,7 +268,6 @@ export const YouTubeVideoSection = ({ lessonTitle, objectives, gradeLevel = "AF7
                   allowFullScreen
                   loading="lazy"
                   className="w-full h-full border-0"
-                  sandbox="allow-same-origin allow-scripts allow-presentation"
                 />
               </div>
 
