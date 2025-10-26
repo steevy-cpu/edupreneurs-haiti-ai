@@ -7,6 +7,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Youtube, Save, Trash2, Loader2 } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { useContentEditorPermissions } from "@/hooks/useContentEditorPermissions";
 
 interface YouTubeManagerProps {
   lesson: any;
@@ -28,30 +29,8 @@ export const YouTubeManager = ({ lesson, onUpdate }: YouTubeManagerProps) => {
   const [searchVideos, setSearchVideos] = useState<YouTubeVideo[]>([]);
   const [isLoadingVideos, setIsLoadingVideos] = useState(false);
   const [bannedVideoIds, setBannedVideoIds] = useState<Set<string>>(new Set());
-  const [currentUserNickname, setCurrentUserNickname] = useState<string>("");
-  const [canDelete, setCanDelete] = useState(false);
-
-  const AUTHORIZED_USERS = ['Djoodoodson Florent', 'Steeve Andolf Celestin'];
-
-  // Check current user permissions
-  useEffect(() => {
-    const checkUserPermissions = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (user) {
-        const { data: profile } = await supabase
-          .from('profiles')
-          .select('nickname')
-          .eq('user_id', user.id)
-          .single();
-        
-        if (profile?.nickname) {
-          setCurrentUserNickname(profile.nickname);
-          setCanDelete(AUTHORIZED_USERS.includes(profile.nickname));
-        }
-      }
-    };
-    checkUserPermissions();
-  }, []);
+  
+  const { canEdit, canDelete } = useContentEditorPermissions();
 
   // Load banned videos
   useEffect(() => {
@@ -314,7 +293,7 @@ export const YouTubeManager = ({ lesson, onUpdate }: YouTubeManagerProps) => {
               </div>
               {lesson.youtube_url && !canDelete && (
                 <p className="text-xs text-muted-foreground italic">
-                  Seuls Djoodoodson Florent et Steeve Andolf Celestin peuvent supprimer cette vidéo
+                  Seuls les administrateurs peuvent supprimer cette vidéo
                 </p>
               )}
             </div>
