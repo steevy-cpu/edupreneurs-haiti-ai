@@ -237,7 +237,7 @@ export const YouTubeVideoSection = ({ lessonTitle, objectives, gradeLevel = "AF7
             <div className="rounded-xl overflow-hidden shadow-lg bg-background/50 backdrop-blur-sm border-2 border-primary">
               <div className="relative aspect-video overflow-hidden bg-muted rounded-lg">
                 <iframe
-                  src={`https://www.youtube.com/embed/${customVideoId}?rel=0&modestbranding=1`}
+                  src={`https://www.youtube-nocookie.com/embed/${customVideoId}?rel=0&modestbranding=1`}
                   title="Vidéo personnalisée pour cette leçon"
                   allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
                   allowFullScreen
@@ -262,7 +262,7 @@ export const YouTubeVideoSection = ({ lessonTitle, objectives, gradeLevel = "AF7
               {/* YouTube Embed */}
               <div className="relative aspect-video overflow-hidden bg-muted rounded-lg">
                 <iframe
-                  src={`https://www.youtube.com/embed/${video.id}?rel=0&modestbranding=1`}
+                  src={`https://www.youtube-nocookie.com/embed/${video.id}?rel=0&modestbranding=1`}
                   title={video.title}
                   allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
                   allowFullScreen
