@@ -3,7 +3,8 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
-import { Music, Palette, Brain, BookOpen, Play, CheckCircle2, Lock, Loader2, ArrowLeft, Send, Youtube, ArrowRight } from "lucide-react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Music, Palette, Brain, BookOpen, Play, CheckCircle2, Lock, Loader2, ArrowLeft, Send, Youtube, ArrowRight, Award, Users, Heart, Lightbulb } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -215,6 +216,82 @@ const PassionDiscoveryTest = () => {
     }
   ];
 
+  const civicCategories: Category[] = [
+    {
+      id: "rights",
+      title: "Droits Fondamentaux 🏛️",
+      icon: Award,
+      description: "Comprends tes droits et devoirs de citoyen",
+      fullDescription: "Découvre les droits humains fondamentaux : éducation, santé, liberté d'expression, dignité et leur application dans la vie quotidienne en Haïti.",
+      color: "from-indigo-500 to-purple-500",
+      modules: [
+        { id: "education", title: "Droit à l'Éducation", description: "Comprends ton droit fondamental à l'éducation", duration: "15 min", completed: false, locked: false },
+        { id: "health", title: "Droit à la Santé", description: "Découvre les droits liés à la santé et au bien-être", duration: "15 min", completed: false, locked: false },
+        { id: "expression", title: "Liberté d'Expression", description: "Apprends à t'exprimer dans le respect", duration: "15 min", completed: false, locked: false },
+        { id: "duties", title: "Devoirs du Citoyen", description: "Comprends tes responsabilités envers la société", duration: "15 min", completed: false, locked: false }
+      ]
+    },
+    {
+      id: "citizenship",
+      title: "Citoyenneté Active 🗳️",
+      icon: Users,
+      description: "Deviens un citoyen conscient et engagé",
+      fullDescription: "Explore les principes de la démocratie, la participation civique et ton rôle dans la société haïtienne.",
+      color: "from-blue-500 to-indigo-500",
+      modules: [
+        { id: "democracy", title: "Principes de la Démocratie", description: "Comprends comment fonctionne la démocratie", duration: "20 min", completed: false, locked: false },
+        { id: "participation", title: "Participation Civique", description: "Apprends à participer à la vie citoyenne", duration: "20 min", completed: false, locked: false },
+        { id: "laws", title: "Respect des Lois", description: "Comprends l'importance des lois et du vivre-ensemble", duration: "15 min", completed: false, locked: false },
+        { id: "civic-role", title: "Rôle du Citoyen", description: "Découvre ton rôle dans la société", duration: "15 min", completed: false, locked: false }
+      ]
+    },
+    {
+      id: "peace",
+      title: "Culture de la Paix ☮️",
+      icon: Heart,
+      description: "Tolérance, solidarité et justice sociale",
+      fullDescription: "Développe les valeurs de tolérance, respect de la diversité, solidarité et résolution pacifique des conflits.",
+      color: "from-pink-500 to-rose-500",
+      modules: [
+        { id: "tolerance", title: "Tolérance & Diversité", description: "Respecte et célèbre les différences", duration: "15 min", completed: false, locked: false },
+        { id: "solidarity", title: "Solidarité & Entraide", description: "Apprends l'importance de l'entraide", duration: "15 min", completed: false, locked: false },
+        { id: "justice", title: "Justice Sociale", description: "Comprends les principes d'égalité et de justice", duration: "20 min", completed: false, locked: false },
+        { id: "conflict", title: "Résolution de Conflits", description: "Apprends à résoudre les conflits pacifiquement", duration: "20 min", completed: false, locked: false }
+      ]
+    }
+  ];
+
+  const developmentCategories: Category[] = [
+    {
+      id: "personal",
+      title: "Croissance Personnelle 🌱",
+      icon: Lightbulb,
+      description: "Développe tes compétences personnelles",
+      fullDescription: "Maîtrise la gestion du temps, développe ta confiance en soi, ton intelligence émotionnelle et ta communication.",
+      color: "from-yellow-500 to-orange-500",
+      modules: [
+        { id: "time", title: "Gestion du Temps", description: "Organise ton temps efficacement", duration: "20 min", completed: false, locked: false },
+        { id: "stress", title: "Gestion du Stress", description: "Apprends à gérer le stress et la pression", duration: "20 min", completed: false, locked: false },
+        { id: "confidence", title: "Confiance en Soi", description: "Développe l'estime de soi et la pensée positive", duration: "25 min", completed: false, locked: false },
+        { id: "emotional", title: "Intelligence Émotionnelle", description: "Comprends et gère tes émotions", duration: "25 min", completed: false, locked: false }
+      ]
+    },
+    {
+      id: "leadership",
+      title: "Leadership & Impact Social 🌟",
+      icon: Users,
+      description: "Deviens un leader inspirant",
+      fullDescription: "Développe ton leadership transformationnel, apprends le travail en équipe et crée des solutions pour ta communauté.",
+      color: "from-green-500 to-emerald-500",
+      modules: [
+        { id: "lead-basics", title: "Bases du Leadership", description: "Découvre les principes du leadership éthique", duration: "20 min", completed: false, locked: false },
+        { id: "teamwork", title: "Travail en Équipe", description: "Apprends à collaborer efficacement", duration: "20 min", completed: false, locked: false },
+        { id: "community", title: "Impact Communautaire", description: "Crée des solutions pour ta communauté", duration: "25 min", completed: false, locked: false },
+        { id: "service", title: "Valeurs du Service", description: "Développe l'esprit de service et d'écoute", duration: "20 min", completed: false, locked: false }
+      ]
+    }
+  ];
+
   const handleAnswerSelect = (passion: string) => {
     setPassionScores(prev => ({
       ...prev,
@@ -347,7 +424,8 @@ const PassionDiscoveryTest = () => {
     }
   };
 
-  const currentCategory = categories.find(cat => cat.id === selectedCategory);
+  const allCategories = [...categories, ...civicCategories, ...developmentCategories];
+  const currentCategory = allCategories.find(cat => cat.id === selectedCategory);
   const currentModule = currentCategory?.modules.find(mod => mod.id === selectedModule);
 
   // Intro Screen
@@ -525,77 +603,206 @@ const PassionDiscoveryTest = () => {
                   <img src={ericTeaching} alt="Eric" className="w-32 h-32 mx-auto animate-scale-in" loading="lazy" decoding="async" />
                 </div>
                 <h1 className="text-4xl md:text-6xl font-bold mb-4 bg-gradient-to-r from-purple-600 via-pink-600 to-orange-500 bg-clip-text text-transparent">
-                  Découvre ta Passion
+                  Découverte & Épanouissement
                 </h1>
                 <p className="text-lg md:text-xl text-muted-foreground max-w-3xl mx-auto">
-                  Explore les domaines qui t'inspirent et développe tes talents
+                  Explore tes passions, développe ta citoyenneté et deviens la meilleure version de toi-même
                 </p>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-6xl mx-auto">
-                {categories.map((category, index) => {
-                  const Icon = category.icon;
-                  const completedModules = category.modules.filter(m => m.completed).length;
-                  const progress = (completedModules / category.modules.length) * 100;
+              <Tabs defaultValue="passion" className="w-full max-w-6xl mx-auto">
+                <TabsList className="grid w-full grid-cols-3 mb-8">
+                  <TabsTrigger value="passion">Découvre ta Passion</TabsTrigger>
+                  <TabsTrigger value="civic">Éducation Civique</TabsTrigger>
+                  <TabsTrigger value="development">Développement Personnel</TabsTrigger>
+                </TabsList>
 
-                  return (
-                    <Card 
-                      key={category.id} 
-                      className="hover:shadow-2xl transition-all duration-500 overflow-hidden group cursor-pointer transform hover:-translate-y-2 animate-fade-in"
-                      style={{ animationDelay: `${index * 150}ms` }}
-                      onClick={() => setSelectedCategory(category.id)}
-                    >
-                      <div className={`h-2 bg-gradient-to-r ${category.color} group-hover:h-3 transition-all duration-300`} />
-                      <CardHeader>
-                        <div className="flex items-start gap-4">
-                          <div className={`p-4 rounded-xl bg-gradient-to-br ${category.color} text-white shadow-lg group-hover:scale-110 transition-transform duration-300`}>
-                            <Icon className="w-8 h-8" />
-                          </div>
-                          <div className="flex-1">
-                            <CardTitle className="text-2xl mb-2">{category.title}</CardTitle>
-                            <CardDescription className="text-base">
-                              {category.description}
-                            </CardDescription>
-                          </div>
-                        </div>
-                      </CardHeader>
-                      <CardContent className="space-y-4">
-                        <p className="text-sm text-muted-foreground leading-relaxed">
-                          {category.fullDescription}
-                        </p>
-                        
-                        <div>
-                          <div className="flex justify-between text-sm mb-2">
-                            <span className="font-medium">Progression</span>
-                            <span className="text-muted-foreground">{completedModules}/{category.modules.length} modules</span>
-                          </div>
-                          <Progress value={progress} className="h-3" />
-                        </div>
+                {/* Passion Tab */}
+                <TabsContent value="passion" className="space-y-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    {categories.map((category, index) => {
+                      const Icon = category.icon;
+                      const completedModules = category.modules.filter(m => m.completed).length;
+                      const progress = (completedModules / category.modules.length) * 100;
 
-                        <div className="flex flex-wrap gap-2">
-                          {category.modules.map((module) => (
-                            <Badge 
-                              key={module.id} 
-                              variant={module.completed ? "default" : "outline"}
-                              className="text-xs"
-                            >
-                              {module.completed && <CheckCircle2 className="w-3 h-3 mr-1" />}
-                              {module.title}
-                            </Badge>
-                          ))}
-                        </div>
-
-                        <Button 
-                          className={`w-full bg-gradient-to-r ${category.color} hover:opacity-90 text-white font-semibold py-6 text-lg group-hover:scale-105 transition-transform`}
+                      return (
+                        <Card 
+                          key={category.id} 
+                          className="hover:shadow-2xl transition-all duration-500 overflow-hidden group cursor-pointer transform hover:-translate-y-2 animate-fade-in"
+                          style={{ animationDelay: `${index * 150}ms` }}
+                          onClick={() => setSelectedCategory(category.id)}
                         >
-                          Commencer l'exploration
-                          <Play className="ml-2 h-5 w-5" />
-                        </Button>
-                      </CardContent>
-                    </Card>
-                  );
-                })}
-              </div>
+                          <div className={`h-2 bg-gradient-to-r ${category.color} group-hover:h-3 transition-all duration-300`} />
+                          <CardHeader>
+                            <div className="flex items-start gap-4">
+                              <div className={`p-4 rounded-xl bg-gradient-to-br ${category.color} text-white shadow-lg group-hover:scale-110 transition-transform duration-300`}>
+                                <Icon className="w-8 h-8" />
+                              </div>
+                              <div className="flex-1">
+                                <CardTitle className="text-2xl mb-2">{category.title}</CardTitle>
+                                <CardDescription className="text-base">
+                                  {category.description}
+                                </CardDescription>
+                              </div>
+                            </div>
+                          </CardHeader>
+                          <CardContent className="space-y-4">
+                            <p className="text-sm text-muted-foreground leading-relaxed">
+                              {category.fullDescription}
+                            </p>
+                            
+                            <div>
+                              <div className="flex justify-between text-sm mb-2">
+                                <span className="font-medium">Progression</span>
+                                <span className="text-muted-foreground">{completedModules}/{category.modules.length} modules</span>
+                              </div>
+                              <Progress value={progress} className="h-3" />
+                            </div>
+
+                            <div className="flex flex-wrap gap-2">
+                              {category.modules.map((module) => (
+                                <Badge 
+                                  key={module.id} 
+                                  variant={module.completed ? "default" : "outline"}
+                                  className="text-xs"
+                                >
+                                  {module.completed && <CheckCircle2 className="w-3 h-3 mr-1" />}
+                                  {module.title}
+                                </Badge>
+                              ))}
+                            </div>
+
+                            <Button 
+                              className={`w-full bg-gradient-to-r ${category.color} hover:opacity-90 text-white font-semibold py-6 text-lg group-hover:scale-105 transition-transform`}
+                            >
+                              Commencer l'exploration
+                              <Play className="ml-2 h-5 w-5" />
+                            </Button>
+                          </CardContent>
+                        </Card>
+                      );
+                    })}
+                  </div>
+                </TabsContent>
+
+                {/* Civic Education Tab */}
+                <TabsContent value="civic" className="space-y-6">
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    {civicCategories.map((category, index) => {
+                      const Icon = category.icon;
+                      const completedModules = category.modules.filter(m => m.completed).length;
+                      const progress = (completedModules / category.modules.length) * 100;
+
+                      return (
+                        <Card 
+                          key={category.id}
+                          className="hover:shadow-2xl transition-all duration-500 overflow-hidden group cursor-pointer transform hover:-translate-y-2 animate-fade-in"
+                          style={{ animationDelay: `${index * 150}ms` }}
+                          onClick={() => setSelectedCategory(category.id)}
+                        >
+                          <div className={`h-2 bg-gradient-to-r ${category.color} group-hover:h-3 transition-all duration-300`} />
+                          <CardHeader>
+                            <div className="flex flex-col items-center text-center gap-3">
+                              <div className={`p-4 rounded-full bg-gradient-to-br ${category.color} text-white shadow-lg group-hover:scale-110 transition-transform duration-300`}>
+                                <Icon className="w-8 h-8" />
+                              </div>
+                              <CardTitle className="text-xl">{category.title}</CardTitle>
+                              <CardDescription>{category.description}</CardDescription>
+                            </div>
+                          </CardHeader>
+                          <CardContent className="space-y-4">
+                            <p className="text-sm text-muted-foreground leading-relaxed text-center">
+                              {category.fullDescription}
+                            </p>
+                            
+                            <div>
+                              <div className="flex justify-between text-sm mb-2">
+                                <span className="font-medium">Progression</span>
+                                <span className="text-muted-foreground">{completedModules}/{category.modules.length}</span>
+                              </div>
+                              <Progress value={progress} className="h-2" />
+                            </div>
+
+                            <Button 
+                              className={`w-full bg-gradient-to-r ${category.color} hover:opacity-90 text-white font-semibold`}
+                            >
+                              Explorer
+                            </Button>
+                          </CardContent>
+                        </Card>
+                      );
+                    })}
+                  </div>
+                </TabsContent>
+
+                {/* Personal Development Tab */}
+                <TabsContent value="development" className="space-y-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    {developmentCategories.map((category, index) => {
+                      const Icon = category.icon;
+                      const completedModules = category.modules.filter(m => m.completed).length;
+                      const progress = (completedModules / category.modules.length) * 100;
+
+                      return (
+                        <Card 
+                          key={category.id}
+                          className="hover:shadow-2xl transition-all duration-500 overflow-hidden group cursor-pointer transform hover:-translate-y-2 animate-fade-in"
+                          style={{ animationDelay: `${index * 150}ms` }}
+                          onClick={() => setSelectedCategory(category.id)}
+                        >
+                          <div className={`h-2 bg-gradient-to-r ${category.color} group-hover:h-3 transition-all duration-300`} />
+                          <CardHeader>
+                            <div className="flex items-start gap-4">
+                              <div className={`p-4 rounded-xl bg-gradient-to-br ${category.color} text-white shadow-lg group-hover:scale-110 transition-transform duration-300`}>
+                                <Icon className="w-8 h-8" />
+                              </div>
+                              <div className="flex-1">
+                                <CardTitle className="text-2xl mb-2">{category.title}</CardTitle>
+                                <CardDescription className="text-base">
+                                  {category.description}
+                                </CardDescription>
+                              </div>
+                            </div>
+                          </CardHeader>
+                          <CardContent className="space-y-4">
+                            <p className="text-sm text-muted-foreground leading-relaxed">
+                              {category.fullDescription}
+                            </p>
+                            
+                            <div>
+                              <div className="flex justify-between text-sm mb-2">
+                                <span className="font-medium">Progression</span>
+                                <span className="text-muted-foreground">{completedModules}/{category.modules.length} modules</span>
+                              </div>
+                              <Progress value={progress} className="h-3" />
+                            </div>
+
+                            <div className="flex flex-wrap gap-2">
+                              {category.modules.map((module) => (
+                                <Badge 
+                                  key={module.id} 
+                                  variant={module.completed ? "default" : "outline"}
+                                  className="text-xs"
+                                >
+                                  {module.completed && <CheckCircle2 className="w-3 h-3 mr-1" />}
+                                  {module.title}
+                                </Badge>
+                              ))}
+                            </div>
+
+                            <Button 
+                              className={`w-full bg-gradient-to-r ${category.color} hover:opacity-90 text-white font-semibold py-6 text-lg group-hover:scale-105 transition-transform`}
+                            >
+                              Commencer
+                              <Play className="ml-2 h-5 w-5" />
+                            </Button>
+                          </CardContent>
+                        </Card>
+                      );
+                    })}
+                  </div>
+                </TabsContent>
+              </Tabs>
             </>
           )}
 
