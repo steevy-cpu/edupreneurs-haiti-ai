@@ -87,6 +87,7 @@ const PassionDiscoveryTest = () => {
   const [loadingVideos, setLoadingVideos] = useState(false);
   const [userId, setUserId] = useState<string | null>(null);
   const [showActivities, setShowActivities] = useState(false);
+  const [selectedVideo, setSelectedVideo] = useState<YouTubeVideo | null>(null);
   
   const { getModuleProgress, getCategoryProgress, updateProgress, isLoading: progressLoading } = usePassionProgress(userId);
 
@@ -406,23 +407,60 @@ const PassionDiscoveryTest = () => {
   const searchYouTubeVideos = async (query: string) => {
     setLoadingVideos(true);
     try {
-      // Mock videos for testing (replace with real YouTube API)
-      setVideos([
-        {
-          id: "mock1",
-          title: `Tutoriel: ${query}`,
-          thumbnail: "https://via.placeholder.com/320x180/9333ea/ffffff?text=Video+1",
-          channelTitle: "Edupreneurs Learning"
-        },
-        {
-          id: "mock2",
-          title: `Guide pratique: ${query}`,
-          thumbnail: "https://via.placeholder.com/320x180/3b82f6/ffffff?text=Video+2",
-          channelTitle: "Culture & Passion"
-        }
-      ]);
+      const YOUTUBE_API_KEY = "AIzaSyDu6sWsM5NEgb48nFFIz49guKR5amdsGWA";
+      
+      const response = await fetch(
+        `https://www.googleapis.com/youtube/v3/search?` +
+        `part=snippet&` +
+        `maxResults=6&` +
+        `q=${encodeURIComponent(query)}&` +
+        `type=video&` +
+        `videoEmbeddable=true&` +
+        `videoDuration=medium&` +
+        `relevanceLanguage=fr&` +
+        `regionCode=HT&` +
+        `videoDefinition=any&` +
+        `safeSearch=strict&` +
+        `order=relevance&` +
+        `key=${YOUTUBE_API_KEY}`
+      );
+
+      if (!response.ok) {
+        throw new Error("Erreur lors de la recherche de vidéos YouTube");
+      }
+
+      const data = await response.json();
+      
+      if (!data.items || data.items.length === 0) {
+        console.warn("Aucune vidéo trouvée pour:", query);
+        setVideos([]);
+        return;
+      }
+
+      const videoList: YouTubeVideo[] = data.items
+        .filter((item: any) => {
+          const title = item.snippet.title.toLowerCase();
+          const description = item.snippet.description.toLowerCase();
+          
+          const englishIndicators = ['english', 'in english', 'english lesson'];
+          const hasEnglishIndicators = englishIndicators.some(indicator => 
+            title.includes(indicator) || description.includes(indicator)
+          );
+          
+          return !hasEnglishIndicators;
+        })
+        .map((item: any) => ({
+          id: item.id.videoId,
+          title: item.snippet.title,
+          thumbnail: item.snippet.thumbnails.medium.url,
+          channelTitle: item.snippet.channelTitle
+        }));
+
+      setVideos(videoList);
     } catch (error) {
-      console.error("Error fetching videos:", error);
+      console.error("Error fetching YouTube videos:", error);
+      toast.error("Impossible de charger les vidéos. Veuillez réessayer.");
+      setVideos([]);
     } finally {
       setLoadingVideos(false);
     }
@@ -1010,32 +1048,61 @@ const PassionDiscoveryTest = () => {
                     <Youtube className="w-5 h-5 text-red-500" />
                     Vidéos recommandées
                   </CardTitle>
+                  {selectedVideo && (
+                    <Button 
+                      variant="ghost" 
+                      size="sm" 
+                      onClick={() => setSelectedVideo(null)}
+                      className="mt-2"
+                    >
+                      ← Retour aux vidéos
+                    </Button>
+                  )}
                 </CardHeader>
                 <CardContent>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {videos.map((video) => (
-                      <div
-                        key={video.id}
-                        className="group cursor-pointer rounded-lg overflow-hidden border hover:shadow-lg transition-all"
-                        onClick={() => window.open(`https://www.youtube.com/watch?v=${video.id}`, '_blank')}
-                      >
-                        <div className="relative">
-                          <img 
-                            src={video.thumbnail} 
-                            alt={video.title}
-                            className="w-full aspect-video object-cover group-hover:scale-105 transition-transform"
-                          />
-                          <div className="absolute inset-0 bg-black/30 group-hover:bg-black/10 transition-colors flex items-center justify-center">
-                            <Play className="w-12 h-12 text-white" />
+                  {selectedVideo ? (
+                    <div className="space-y-4">
+                      <div className="relative aspect-video overflow-hidden bg-muted rounded-lg">
+                        <iframe
+                          src={`https://www.youtube-nocookie.com/embed/${selectedVideo.id}?rel=0&modestbranding=1`}
+                          title={selectedVideo.title}
+                          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                          allowFullScreen
+                          loading="lazy"
+                          className="w-full h-full border-0"
+                        />
+                      </div>
+                      <div className="p-4 bg-muted/50 rounded-lg">
+                        <h4 className="font-semibold mb-2">{selectedVideo.title}</h4>
+                        <p className="text-sm text-muted-foreground">{selectedVideo.channelTitle}</p>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      {videos.map((video) => (
+                        <div
+                          key={video.id}
+                          className="group cursor-pointer rounded-lg overflow-hidden border hover:shadow-lg transition-all"
+                          onClick={() => setSelectedVideo(video)}
+                        >
+                          <div className="relative">
+                            <img 
+                              src={video.thumbnail} 
+                              alt={video.title}
+                              className="w-full aspect-video object-cover group-hover:scale-105 transition-transform"
+                            />
+                            <div className="absolute inset-0 bg-black/30 group-hover:bg-black/10 transition-colors flex items-center justify-center">
+                              <Play className="w-12 h-12 text-white" />
+                            </div>
+                          </div>
+                          <div className="p-3">
+                            <h4 className="font-semibold text-sm line-clamp-2 mb-1">{video.title}</h4>
+                            <p className="text-xs text-muted-foreground">{video.channelTitle}</p>
                           </div>
                         </div>
-                        <div className="p-3">
-                          <h4 className="font-semibold text-sm line-clamp-2 mb-1">{video.title}</h4>
-                          <p className="text-xs text-muted-foreground">{video.channelTitle}</p>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
+                      ))}
+                    </div>
+                  )}
                 </CardContent>
               </Card>
             )}
