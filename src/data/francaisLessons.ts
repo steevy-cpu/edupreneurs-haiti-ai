@@ -4018,19 +4018,426 @@ Un texte informatif a pour but de transmettre des connaissances sur un sujet de 
     id: "homophones",
     title: "Orthographe des homophones",
     mois: "Avril - Semaine 2",
-    objectif: "Orthographier correctement les homophones",
-    introduction: "Contenu à venir...",
-    contenu: "Contenu à venir...",
-    exemplesExercices: "Exercices à venir..."
+    objectif: "Maîtriser l'orthographe correcte des homophones courants pour éviter les erreurs d'écriture et améliorer la qualité de ses productions écrites.",
+    introduction: `Les homophones sont comme des jumeaux sonores ! 👯 Ils se prononcent pareil mais s'écrivent différemment et ont des sens différents. Savoir les distinguer est essentiel pour écrire sans fautes. Vous connaissez déjà a/à, et/est... découvrons-en d'autres ! 📝✨`,
+    contenu: `
+      <section class="lesson-section">
+        <h3>🎯 1. Qu'est-ce qu'un homophone ?</h3>
+        <p>Un homophone est un mot qui se prononce de la même façon qu'un autre mot mais qui a une orthographe et un sens différents.</p>
+        <p><strong>Caractéristiques des homophones :</strong></p>
+        <ul>
+          <li>Même prononciation</li>
+          <li>Orthographe différente</li>
+          <li>Sens différent</li>
+          <li>Parfois classe grammaticale différente</li>
+        </ul>
+        <p><strong>Exemples :</strong></p>
+        <ul>
+          <li><strong>Mer / mère / maire</strong> [mεʀ] - mer (océan), mère (maman), maire (chef de commune)</li>
+          <li><strong>Vert / verre / vers / ver</strong> [vεʀ] - couleur, objet, direction, animal</li>
+          <li><strong>Seau / sot / sceau</strong> [so] - récipient, stupide, cachet officiel</li>
+        </ul>
+      </section>
+
+      <section class="lesson-section">
+        <h3>📚 2. Homophones grammaticaux - Révision et approfondissement</h3>
+        <p><strong>A / À :</strong></p>
+        <ul>
+          <li><strong>A</strong> (verbe avoir) → remplacer par "avait" → "Il <strong>a</strong> faim" (Il avait faim ✓)</li>
+          <li><strong>À</strong> (préposition) → ne se remplace pas → "Je vais <strong>à</strong> l'école"</li>
+        </ul>
+        <p><strong>SON / SONT :</strong></p>
+        <ul>
+          <li><strong>Son</strong> (déterminant possessif) → "<strong>Son</strong> livre est ici"</li>
+          <li><strong>Sont</strong> (verbe être) → remplacer par "étaient" → "Ils <strong>sont</strong> là" (étaient ✓)</li>
+        </ul>
+        <p><strong>ON / ONT :</strong></p>
+        <ul>
+          <li><strong>On</strong> (pronom) → remplacer par "nous" → "<strong>On</strong> va jouer" (Nous allons ✓)</li>
+          <li><strong>Ont</strong> (verbe avoir) → remplacer par "avaient" → "Ils <strong>ont</strong> faim" (avaient ✓)</li>
+        </ul>
+        <p><strong>ET / EST :</strong></p>
+        <ul>
+          <li><strong>Et</strong> (conjonction) → remplacer par "et puis" → "Pierre <strong>et</strong> Marie"</li>
+          <li><strong>Est</strong> (verbe être) → remplacer par "était" → "Il <strong>est</strong> grand" (était ✓)</li>
+        </ul>
+        <p><strong>OU / OÙ :</strong></p>
+        <ul>
+          <li><strong>Ou</strong> (choix) → remplacer par "ou bien" → "Thé <strong>ou</strong> café ?"</li>
+          <li><strong>Où</strong> (lieu/temps) → question → "<strong>Où</strong> vas-tu ?" / "Le jour <strong>où</strong> je suis né"</li>
+        </ul>
+      </section>
+
+      <section class="lesson-section">
+        <h3>🔍 3. Autres homophones courants</h3>
+        <p><strong>C'EST / S'EST / SAIS / SAIT :</strong></p>
+        <ul>
+          <li><strong>C'est</strong> (cela est) → "C'est beau !" (Cela est beau)</li>
+          <li><strong>S'est</strong> (se + être) → verbe pronominal au passé → "Il s'est levé"</li>
+          <li><strong>Sais / Sait</strong> (verbe savoir) → "Je sais", "Il sait"</li>
+        </ul>
+        <p><strong>CES / SES / C'EST / S'EST :</strong></p>
+        <ul>
+          <li><strong>Ces</strong> (déterminant démonstratif pluriel) → "Ces livres" (= ceux-là)</li>
+          <li><strong>Ses</strong> (déterminant possessif pluriel) → "Ses livres" (= les siens)</li>
+          <li><strong>C'est</strong> → "C'est mon ami"</li>
+          <li><strong>S'est</strong> → "Il s'est blessé"</li>
+        </ul>
+        <p><strong>LA / LÀ / L'A / L'AS :</strong></p>
+        <ul>
+          <li><strong>La</strong> (article ou pronom) → "La maison", "Je la vois"</li>
+          <li><strong>Là</strong> (adverbe de lieu) → "Il est là" (ici)</li>
+          <li><strong>L'a</strong> (le/la + a) → "Il l'a vu" (Il a vu lui/elle)</li>
+          <li><strong>L'as</strong> (le/la + as) → "Tu l'as vu ?"</li>
+        </ul>
+      </section>
+
+      <section class="lesson-section">
+        <h3>📖 4. Homophones lexicaux</h3>
+        <p><strong>Homophones de la nature :</strong></p>
+        <ul>
+          <li><strong>Mer</strong> (océan) / <strong>Mère</strong> (maman) / <strong>Maire</strong> (chef de commune)</li>
+          <li><strong>Ver</strong> (animal) / <strong>Verre</strong> (récipient) / <strong>Vers</strong> (direction) / <strong>Vert</strong> (couleur)</li>
+          <li><strong>Paire</strong> (deux) / <strong>Père</strong> (papa) / <strong>Pair</strong> (nombre)</li>
+        </ul>
+        <p><strong>Autres homophones usuels :</strong></p>
+        <ul>
+          <li><strong>Cent</strong> (100) / <strong>Sans</strong> (privation) / <strong>Sang</strong> (liquide du corps) / <strong>Sent</strong> (verbe sentir)</li>
+          <li><strong>Cou</strong> (partie du corps) / <strong>Coup</strong> (choc) / <strong>Coût</strong> (prix)</li>
+          <li><strong>Fois</strong> (occurrence) / <strong>Foie</strong> (organe) / <strong>Foi</strong> (croyance)</li>
+          <li><strong>Pain</strong> (aliment) / <strong>Pin</strong> (arbre)</li>
+        </ul>
+      </section>
+
+      <section class="lesson-section">
+        <h3>✨ 5. Stratégies pour ne pas confondre les homophones</h3>
+        <p><strong>1. Identifier la classe grammaticale :</strong></p>
+        <ul>
+          <li>Est-ce un verbe ? Un nom ? Un adjectif ? Un déterminant ?</li>
+          <li>Exemple : "son" (déterminant) ≠ "sont" (verbe)</li>
+        </ul>
+        <p><strong>2. Utiliser les tests de remplacement :</strong></p>
+        <ul>
+          <li>Pour les verbes : changer de temps ou de personne</li>
+          <li>"Il <strong>a</strong> faim" → "Il <strong>avait</strong> faim" ✓ (donc "a")</li>
+          <li>Pour les autres : remplacer par un synonyme ou un mot équivalent</li>
+        </ul>
+        <p><strong>3. Analyser le contexte :</strong></p>
+        <ul>
+          <li>Lire la phrase entière pour comprendre le sens</li>
+          <li>"Il va vers la mer" → direction + océan (vers/mer)</li>
+          <li>"Il va <strong>voir</strong> sa mère" → verbe + maman (voir/mère)</li>
+        </ul>
+        <p><strong>4. Créer des mnémotechniques :</strong></p>
+        <ul>
+          <li>"<strong>Là</strong> indique le lieu, <strong>la</strong> devant un nom féminin"</li>
+          <li>"<strong>Et</strong> relie, <strong>est</strong> exprime l'état"</li>
+        </ul>
+      </section>
+
+      <section class="lesson-section">
+        <h3>🎯 6. Tableau récapitulatif des homophones essentiels</h3>
+        <table class="lesson-table">
+          <tr>
+            <th>Homophone</th>
+            <th>Nature</th>
+            <th>Exemple</th>
+            <th>Astuce</th>
+          </tr>
+          <tr>
+            <td>a / à</td>
+            <td>verbe / prép.</td>
+            <td>Il a mal à la tête</td>
+            <td>avait ? → a</td>
+          </tr>
+          <tr>
+            <td>son / sont</td>
+            <td>dét. / verbe</td>
+            <td>Son chien. Ils sont là.</td>
+            <td>étaient ? → sont</td>
+          </tr>
+          <tr>
+            <td>on / ont</td>
+            <td>pron. / verbe</td>
+            <td>On va. Ils ont faim.</td>
+            <td>avaient ? → ont</td>
+          </tr>
+          <tr>
+            <td>et / est</td>
+            <td>conj. / verbe</td>
+            <td>Lui et moi. Il est là.</td>
+            <td>était ? → est</td>
+          </tr>
+          <tr>
+            <td>ou / où</td>
+            <td>conj. / adv.</td>
+            <td>Thé ou café ? Où vas-tu ?</td>
+            <td>lieu ? → où</td>
+          </tr>
+          <tr>
+            <td>ces / ses</td>
+            <td>dém. / poss.</td>
+            <td>Ces livres. Ses livres.</td>
+            <td>les siens ? → ses</td>
+          </tr>
+        </table>
+      </section>
+    `,
+    exemplesExercices: `
+      <h4>📝 Exercice 1 : Choisir le bon homophone (a/à)</h4>
+      <ol>
+        <li>Il ___ un beau vélo ___ vendre.</li>
+        <li>Marie ___ réussi ___ résoudre le problème.</li>
+        <li>Mon frère ___ mal ___ la jambe.</li>
+      </ol>
+
+      <h4>🔍 Exercice 2 : Compléter avec ces/ses/c'est/s'est</h4>
+      <ol>
+        <li>___ livres sont à moi, mais ___ stylos sont à lui.</li>
+        <li>___ un beau jour. Il ___ levé tôt.</li>
+        <li>Elle aime ___ amis. ___ normal.</li>
+      </ol>
+
+      <h4>✨ Exercice 3 : Homophones lexicaux</h4>
+      <p>Complète avec le bon mot (mer/mère/maire) :</p>
+      <ol>
+        <li>Le ___ de la ville a fait un discours.</li>
+        <li>Ma ___ travaille à l'hôpital.</li>
+        <li>Nous allons nous baigner dans la ___.</li>
+      </ol>
+
+      <h4>🎯 Exercice 4 : Correction de texte</h4>
+      <p>Corrige les erreurs d'homophones dans ce texte :</p>
+      <p>"Ont va à l'école. Ses un beau jour. Mon ami et content. Il à son livre et son cahier. Ou vas-tu ? Je vais ou cinéma avec mais amis."</p>
+    `
   },
   {
     id: "pronoms-demonstratifs-possessifs",
     title: "Pronoms démonstratifs, possessifs et indéfinis",
     mois: "Avril - Semaine 2",
-    objectif: "Utiliser correctement les différents types de pronoms",
-    introduction: "Contenu à venir...",
-    contenu: "Contenu à venir...",
-    exemplesExercices: "Exercices à venir..."
+    objectif: "Identifier et utiliser correctement les pronoms démonstratifs, possessifs et indéfinis pour éviter les répétitions, préciser la référence et enrichir son expression écrite et orale.",
+    introduction: `Les pronoms sont des mots magiques qui remplacent les noms ! 🎩✨ Ils évitent les répétitions et rendent nos phrases plus fluides. Au lieu de dire "Le livre de Marie est sur la table de Marie", on dit "Son livre est sur sa table". Découvrons ces pronoms utiles ! 📚`,
+    contenu: `
+      <section class="lesson-section">
+        <h3>🎯 1. Rappel : Qu'est-ce qu'un pronom ?</h3>
+        <p>Un pronom est un mot qui remplace un nom (ou groupe nominal) pour éviter la répétition.</p>
+        <p><strong>Exemple :</strong></p>
+        <ul>
+          <li>"<strong>Marie</strong> est gentille. <strong>Elle</strong> aime lire." (Elle = Marie)</li>
+          <li>"J'ai vu <strong>le film</strong>. <strong>Il</strong> était intéressant." (Il = le film)</li>
+        </ul>
+        <p><strong>Types de pronoms :</strong> Personnels, démonstratifs, possessifs, indéfinis, relatifs, interrogatifs...</p>
+        <p>Dans cette leçon, nous étudions trois types : <strong>démonstratifs, possessifs et indéfinis</strong>. 🎯</p>
+      </section>
+
+      <section class="lesson-section">
+        <h3>👉 2. Les pronoms démonstratifs</h3>
+        <p>Les pronoms démonstratifs désignent une personne ou une chose en la montrant. Ils remplacent un nom précédé d'un déterminant démonstratif (ce, cette, ces).</p>
+        <p><strong>Formes des pronoms démonstratifs :</strong></p>
+        <table class="lesson-table">
+          <tr>
+            <th></th>
+            <th>Masculin singulier</th>
+            <th>Féminin singulier</th>
+            <th>Masculin pluriel</th>
+            <th>Féminin pluriel</th>
+          </tr>
+          <tr>
+            <td><strong>Formes simples</strong></td>
+            <td>celui</td>
+            <td>celle</td>
+            <td>ceux</td>
+            <td>celles</td>
+          </tr>
+          <tr>
+            <td><strong>Formes composées</strong></td>
+            <td>celui-ci / celui-là</td>
+            <td>celle-ci / celle-là</td>
+            <td>ceux-ci / ceux-là</td>
+            <td>celles-ci / celles-là</td>
+          </tr>
+          <tr>
+            <td><strong>Forme neutre</strong></td>
+            <td colspan="4">ce, ceci, cela, ça</td>
+          </tr>
+        </table>
+        <p><strong>Exemples d'utilisation :</strong></p>
+        <ul>
+          <li>"J'aime ce livre, mais je préfère <strong>celui-là</strong>." (celui-là = ce livre-là)</li>
+          <li>"<strong>Celle</strong> qui parle est ma sœur." (celle = la personne)</li>
+          <li>"<strong>Ceux</strong> qui travaillent réussissent." (ceux = les personnes)</li>
+          <li>"<strong>C'est</strong> intéressant." / "<strong>Cela</strong> me plaît." (formes neutres)</li>
+        </ul>
+        <p><strong>Usage :</strong> -ci (proche) / -là (éloigné) → "Prends celui-ci, pas celui-là !"</p>
+      </section>
+
+      <section class="lesson-section">
+        <h3>🏠 3. Les pronoms possessifs</h3>
+        <p>Les pronoms possessifs indiquent la possession. Ils remplacent un nom précédé d'un déterminant possessif (mon, ton, son...).</p>
+        <p><strong>Formes des pronoms possessifs :</strong></p>
+        <table class="lesson-table">
+          <tr>
+            <th>Possesseur</th>
+            <th>Masculin sing.</th>
+            <th>Féminin sing.</th>
+            <th>Masculin plur.</th>
+            <th>Féminin plur.</th>
+          </tr>
+          <tr>
+            <td>Je</td>
+            <td>le mien</td>
+            <td>la mienne</td>
+            <td>les miens</td>
+            <td>les miennes</td>
+          </tr>
+          <tr>
+            <td>Tu</td>
+            <td>le tien</td>
+            <td>la tienne</td>
+            <td>les tiens</td>
+            <td>les tiennes</td>
+          </tr>
+          <tr>
+            <td>Il/Elle</td>
+            <td>le sien</td>
+            <td>la sienne</td>
+            <td>les siens</td>
+            <td>les siennes</td>
+          </tr>
+          <tr>
+            <td>Nous</td>
+            <td>le nôtre</td>
+            <td>la nôtre</td>
+            <td>les nôtres</td>
+            <td>les nôtres</td>
+          </tr>
+          <tr>
+            <td>Vous</td>
+            <td>le vôtre</td>
+            <td>la vôtre</td>
+            <td>les vôtres</td>
+            <td>les vôtres</td>
+          </tr>
+          <tr>
+            <td>Ils/Elles</td>
+            <td>le leur</td>
+            <td>la leur</td>
+            <td>les leurs</td>
+            <td>les leurs</td>
+          </tr>
+        </table>
+        <p><strong>Exemples d'utilisation :</strong></p>
+        <ul>
+          <li>"C'est mon livre." → "C'est <strong>le mien</strong>."</li>
+          <li>"Voici ta voiture et <strong>la mienne</strong>." (la mienne = ma voiture)</li>
+          <li>"Leurs idées sont bonnes, mais je préfère <strong>les nôtres</strong>." (les nôtres = nos idées)</li>
+          <li>"Ce stylo est <strong>le sien</strong>." (le sien = son stylo à lui/elle)</li>
+        </ul>
+        <p><strong>Attention :</strong> Le pronom possessif s'accorde avec l'objet possédé, pas avec le possesseur ! "Sa voiture → la sienne" (féminin car voiture est féminin) 🎯</p>
+      </section>
+
+      <section class="lesson-section">
+        <h3>❓ 4. Les pronoms indéfinis</h3>
+        <p>Les pronoms indéfinis désignent des personnes ou des choses de manière imprécise, non définie.</p>
+        <p><strong>Principaux pronoms indéfinis :</strong></p>
+        <ul>
+          <li><strong>Quelqu'un</strong> : une personne non identifiée → "Quelqu'un a frappé à la porte."</li>
+          <li><strong>Quelque chose</strong> : une chose non identifiée → "J'ai vu quelque chose bouger."</li>
+          <li><strong>Personne</strong> (négatif) : aucune personne → "Personne n'est venu."</li>
+          <li><strong>Rien</strong> (négatif) : aucune chose → "Je ne vois rien."</li>
+          <li><strong>Tout</strong> : la totalité → "Tout est prêt."</li>
+          <li><strong>Tous / Toutes</strong> : l'ensemble des personnes → "Tous sont venus."</li>
+          <li><strong>Chacun / Chacune</strong> : chaque personne individuellement → "Chacun fait son travail."</li>
+          <li><strong>Plusieurs</strong> : un nombre indéfini → "Plusieurs ont réussi."</li>
+          <li><strong>Certains / Certaines</strong> : quelques-uns → "Certains pensent que..."</li>
+          <li><strong>Aucun / Aucune</strong> (négatif) : pas un seul → "Aucun n'a répondu."</li>
+        </ul>
+        <p><strong>Exemples en contexte :</strong></p>
+        <ul>
+          <li>"<strong>Quelqu'un</strong> m'a appelé ce matin, mais je ne sais pas qui."</li>
+          <li>"<strong>Chacun</strong> doit faire son devoir."</li>
+          <li>"<strong>Tous</strong> ont participé à la fête."</li>
+          <li>"Je n'ai <strong>rien</strong> compris." (rien = aucune chose)</li>
+        </ul>
+      </section>
+
+      <section class="lesson-section">
+        <h3>🔍 5. Différences et points d'attention</h3>
+        <p><strong>Ne pas confondre :</strong></p>
+        <ul>
+          <li><strong>Déterminant vs Pronom :</strong>
+            <ul>
+              <li>"<strong>Ce</strong> livre" (déterminant) ≠ "<strong>Celui</strong> qui parle" (pronom)</li>
+              <li>"<strong>Mon</strong> stylo" (déterminant) ≠ "C'est <strong>le mien</strong>" (pronom)</li>
+            </ul>
+          </li>
+          <li><strong>Accord des pronoms :</strong>
+            <ul>
+              <li>Les pronoms s'accordent avec le nom qu'ils remplacent</li>
+              <li>"Les livres → <strong>ceux-ci</strong>" (masculin pluriel)</li>
+              <li>"Les filles → <strong>celles-là</strong>" (féminin pluriel)</li>
+            </ul>
+          </li>
+        </ul>
+        <p><strong>Pronoms suivis de compléments :</strong></p>
+        <ul>
+          <li>"<strong>Celui de</strong> Marie" (+ complément du nom)</li>
+          <li>"<strong>Celle qui</strong> chante" (+ proposition relative)</li>
+          <li>"<strong>Ceux que</strong> j'aime" (+ proposition relative)</li>
+        </ul>
+      </section>
+
+      <section class="lesson-section">
+        <h3>✨ 6. Utilisation pratique dans un texte</h3>
+        <p><strong>Exemple de texte avec répétitions :</strong></p>
+        <p>"J'ai deux chiens. Le premier chien est noir et le deuxième chien est blanc. Le chien noir est le chien de mon frère, et le chien blanc est mon chien." 😴</p>
+        <p><strong>Avec des pronoms (plus fluide) :</strong></p>
+        <p>"J'ai deux chiens. <strong>Le premier</strong> est noir et <strong>le second</strong> est blanc. <strong>Celui-ci</strong> (le noir) est <strong>le sien</strong> (celui de mon frère), et <strong>celui-là</strong> (le blanc) est <strong>le mien</strong>." ✨</p>
+        <p><strong>Conseils d'utilisation :</strong></p>
+        <ul>
+          <li>Utiliser les pronoms pour éviter les répétitions</li>
+          <li>Vérifier que le lecteur comprend à quoi le pronom fait référence</li>
+          <li>Accorder correctement le pronom avec son antécédent</li>
+        </ul>
+      </section>
+    `,
+    exemplesExercices: `
+      <h4>👉 Exercice 1 : Pronoms démonstratifs</h4>
+      <p>Complète avec le pronom démonstratif qui convient :</p>
+      <ol>
+        <li>Prends ce livre ou ___ (là-bas) ?</li>
+        <li>___ qui travaillent réussissent. (les personnes)</li>
+        <li>J'aime cette robe, mais je préfère ___. (cette robe-là)</li>
+        <li>___ sont mes amis. (ces garçons)</li>
+      </ol>
+
+      <h4>🏠 Exercice 2 : Pronoms possessifs</h4>
+      <p>Remplace les mots soulignés par un pronom possessif :</p>
+      <ol>
+        <li>C'est mon stylo. → C'est ___.</li>
+        <li>Voici ta chambre et ma chambre. → Voici ta chambre et ___.</li>
+        <li>Leurs livres sont sur la table. → ___ sont sur la table.</li>
+        <li>C'est le vélo de Pierre. → C'est ___.</li>
+      </ol>
+
+      <h4>❓ Exercice 3 : Pronoms indéfinis</h4>
+      <p>Complète avec un pronom indéfini approprié :</p>
+      <ol>
+        <li>___ a frappé à la porte.</li>
+        <li>___ n'est venu à la fête.</li>
+        <li>___ doit faire son travail.</li>
+        <li>Je ne vois ___ dans le noir.</li>
+      </ol>
+
+      <h4>🎯 Exercice 4 : Identification</h4>
+      <p>Dans ces phrases, souligne les pronoms et indique leur type (D=démonstratif, P=possessif, I=indéfini) :</p>
+      <ol>
+        <li>Celui-ci est le mien, celui-là est le tien.</li>
+        <li>Quelqu'un a pris mes affaires.</li>
+        <li>Tous sont venus, mais personne n'a rien dit.</li>
+        <li>C'est la sienne, pas la nôtre.</li>
+      </ol>
+    `
   },
   // Mai - Semaines 1 et 2
   {
