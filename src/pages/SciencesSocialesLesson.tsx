@@ -344,26 +344,47 @@ export default function SciencesSocialesLesson() {
             </TabsList>
 
             <TabsContent value="introduction" className="space-y-6">
-              <div className="mb-6">
-                <h2 className="text-2xl font-bold text-orange-600 mb-4">Objectif</h2>
-                <p className="text-muted-foreground leading-relaxed">
-                  {lesson.objectif}
-                </p>
-              </div>
-              <div>
-                <h2 className="text-2xl font-bold text-orange-600 mb-4">Introduction</h2>
+              <Card className="p-6 border-l-4 border-l-orange-500 bg-gradient-to-r from-orange-50 to-transparent dark:from-orange-950/20 dark:to-transparent">
+                <div className="flex items-start gap-3 mb-4">
+                  <div className="w-10 h-10 rounded-lg bg-orange-500 flex items-center justify-center flex-shrink-0">
+                    <Lightbulb className="w-5 h-5 text-white" />
+                  </div>
+                  <div>
+                    <h2 className="text-2xl font-bold text-orange-600 dark:text-orange-400 mb-2">Objectif de la leçon</h2>
+                    <p className="text-foreground leading-relaxed">
+                      {lesson.objectif}
+                    </p>
+                  </div>
+                </div>
+              </Card>
+              
+              <Card className="p-6 bg-gradient-to-br from-background to-orange-50/30 dark:to-orange-950/10">
+                <div className="flex items-center gap-3 mb-6">
+                  <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-orange-500 to-orange-600 flex items-center justify-center">
+                    <BookOpen className="w-5 h-5 text-white" />
+                  </div>
+                  <h2 className="text-2xl font-bold text-orange-600 dark:text-orange-400">Introduction</h2>
+                </div>
                 <div 
-                  className="prose prose-lg dark:prose-invert max-w-none"
+                  className="prose prose-lg dark:prose-invert max-w-none [&_p]:text-foreground [&_ul]:text-foreground [&_li]:text-foreground [&_strong]:text-orange-600 dark:[&_strong]:text-orange-400"
                   dangerouslySetInnerHTML={{ __html: lesson.introduction }}
                 />
-              </div>
+              </Card>
             </TabsContent>
 
             <TabsContent value="contenu" className="space-y-6">
-              <div 
-                className="prose prose-lg dark:prose-invert max-w-none"
-                dangerouslySetInnerHTML={{ __html: lesson.contenu }}
-              />
+              <Card className="p-6 bg-gradient-to-br from-background to-orange-50/30 dark:to-orange-950/10">
+                <div 
+                  className="prose prose-lg dark:prose-invert max-w-none
+                    [&_p]:text-foreground [&_p]:leading-relaxed [&_p]:mb-4
+                    [&_ul]:text-foreground [&_ul]:my-4
+                    [&_li]:text-foreground [&_li]:mb-2
+                    [&_strong]:text-orange-600 dark:[&_strong]:text-orange-400 [&_strong]:font-semibold
+                    [&_h3]:text-xl [&_h3]:font-bold [&_h3]:text-orange-600 dark:[&_h3]:text-orange-400 [&_h3]:mb-4 [&_h3]:mt-6
+                    [&_section]:p-4 [&_section]:rounded-lg [&_section]:bg-card [&_section]:border [&_section]:border-orange-200/50 dark:[&_section]:border-orange-800/30 [&_section]:mb-6"
+                  dangerouslySetInnerHTML={{ __html: lesson.contenu }}
+                />
+              </Card>
               
               {/* YouTube Video Section */}
               <div className="mt-8">
@@ -374,13 +395,63 @@ export default function SciencesSocialesLesson() {
                   customYoutubeUrl={youtubeUrl || undefined}
                 />
               </div>
+
+              {/* Additional Resources Card */}
+              <Card className="p-6 bg-gradient-to-br from-blue-50 to-transparent dark:from-blue-950/20 border-l-4 border-l-blue-500">
+                <div className="flex items-start gap-3">
+                  <div className="w-10 h-10 rounded-lg bg-blue-500 flex items-center justify-center flex-shrink-0">
+                    <Lightbulb className="w-5 h-5 text-white" />
+                  </div>
+                  <div>
+                    <h3 className="text-xl font-bold text-blue-600 dark:text-blue-400 mb-2">💡 Le savais-tu ?</h3>
+                    <p className="text-foreground">
+                      L'évolution des sociétés humaines est un processus continu. Les technologies que nous utilisons aujourd'hui (internet, smartphones) transforment nos sociétés aussi profondément que l'invention de l'agriculture il y a 10 000 ans !
+                    </p>
+                  </div>
+                </div>
+              </Card>
             </TabsContent>
 
             <TabsContent value="exemples" className="space-y-6">
-              <div 
-                className="prose prose-lg dark:prose-invert max-w-none"
-                dangerouslySetInnerHTML={{ __html: lesson.exemplesExercices }}
-              />
+              <Card className="p-6 bg-gradient-to-br from-background to-orange-50/30 dark:to-orange-950/10">
+                <div className="flex items-center gap-3 mb-6">
+                  <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-orange-500 to-orange-600 flex items-center justify-center">
+                    <ClipboardCheck className="w-5 h-5 text-white" />
+                  </div>
+                  <h2 className="text-2xl font-bold text-orange-600 dark:text-orange-400">Exemples concrets et exercices</h2>
+                </div>
+                <div 
+                  className="prose prose-lg dark:prose-invert max-w-none
+                    [&_p]:text-foreground [&_p]:leading-relaxed [&_p]:mb-4
+                    [&_ul]:text-foreground [&_ul]:my-4
+                    [&_ol]:text-foreground [&_ol]:my-4
+                    [&_li]:text-foreground [&_li]:mb-2
+                    [&_strong]:text-orange-600 dark:[&_strong]:text-orange-400 [&_strong]:font-semibold
+                    [&_h3]:text-xl [&_h3]:font-bold [&_h3]:text-orange-600 dark:[&_h3]:text-orange-400 [&_h3]:mb-4 [&_h3]:mt-6
+                    [&_h4]:text-lg [&_h4]:font-semibold [&_h4]:text-orange-600 dark:[&_h4]:text-orange-400 [&_h4]:mb-3 [&_h4]:mt-4"
+                  dangerouslySetInnerHTML={{ __html: lesson.exemplesExercices }}
+                />
+              </Card>
+
+              {/* Practice Exercise Card */}
+              <Card className="p-6 bg-gradient-to-br from-green-50 to-transparent dark:from-green-950/20 border-l-4 border-l-green-500">
+                <div className="flex items-start gap-3">
+                  <div className="w-10 h-10 rounded-lg bg-green-500 flex items-center justify-center flex-shrink-0">
+                    <ClipboardCheck className="w-5 h-5 text-white" />
+                  </div>
+                  <div className="flex-1">
+                    <h3 className="text-xl font-bold text-green-600 dark:text-green-400 mb-3">📝 Exercice de réflexion</h3>
+                    <p className="text-foreground mb-4">
+                      Pense à la société haïtienne d'aujourd'hui. Quels changements ont eu lieu au cours des 50 dernières années ? Comment la technologie (téléphones, internet) a-t-elle transformé notre façon de vivre ?
+                    </p>
+                    <div className="p-4 bg-card rounded-lg border border-green-200 dark:border-green-800">
+                      <p className="text-sm text-muted-foreground italic">
+                        💭 Réfléchis à ces questions et note tes idées dans l'onglet "Mes Notes" pour y revenir plus tard.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </Card>
             </TabsContent>
 
             <TabsContent value="notes" className="space-y-6">
