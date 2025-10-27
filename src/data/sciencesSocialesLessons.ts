@@ -13,120 +13,704 @@ export const sciencesSocialesLessons7AF: SciencesSocialesLesson[] = [
     id: "evolution-societes-humaines",
     title: "L'évolution des sociétés humaines",
     mois: "Décembre",
-    objectif: "Comprendre l'évolution des sociétés humaines et la dynamique de cette évolution.",
+    objectif: "Comprendre l'évolution des sociétés humaines et la dynamique de cette évolution à travers les âges.",
     introduction: `
-      <div class="space-y-4">
-        <p>Depuis l'apparition de l'humanité il y a des millions d'années, les sociétés humaines n'ont cessé d'évoluer. De petits groupes de chasseurs-cueilleurs nomades, nous sommes passés à de grandes civilisations organisées avec des villes, des technologies avancées et des systèmes politiques complexes.</p>
-        <p>Cette évolution n'est pas le fruit du hasard, mais résulte de nombreux facteurs : le développement de l'agriculture, la maîtrise du feu, l'invention de l'écriture, et bien d'autres découvertes qui ont transformé la façon dont les humains vivent et interagissent.</p>
-        <p>Comprendre cette évolution nous aide à mieux saisir notre présent et à réfléchir sur l'avenir de nos sociétés.</p>
+      <div class="space-y-6">
+        <div class="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-950/30 dark:to-indigo-950/30 p-6 rounded-lg border-l-4 border-blue-500">
+          <p class="text-lg italic">"L'histoire de l'humanité est celle d'une transformation continue, du premier outil en pierre taillée à la révolution numérique d'aujourd'hui."</p>
+        </div>
+        
+        <p class="text-lg leading-relaxed">Imaginez nos ancêtres, il y a 2 millions d'années, dans les savanes africaines. Pas de maisons, pas de vêtements élaborés, pas d'écriture. Juste de petits groupes errant à la recherche de nourriture, dormant sous les étoiles, vivant au rythme de la nature. Aujourd'hui, nous habitons des gratte-ciels climatisés, nous communiquons instantanément d'un continent à l'autre, nous envoyons des robots sur Mars. Quelle transformation extraordinaire !</p>
+        
+        <p>Cette évolution spectaculaire des sociétés humaines n'est pas le fruit du hasard. Elle résulte d'innovations majeures : la maîtrise du feu qui a permis de cuire les aliments et de se chauffer, le développement de l'agriculture qui a rendu possible la sédentarisation, l'invention de l'écriture qui a révolutionné la transmission des savoirs, et tant d'autres découvertes qui, progressivement, ont transformé la façon dont les humains vivent, travaillent et interagissent.</p>
+        
+        <p>En Haïti, nous sommes les héritiers d'une évolution sociale unique : le passage brutal de sociétés autochtones taïnos à une société coloniale esclavagiste, puis à la première république noire libre du monde. Cette histoire fait de nous un cas d'étude fascinant dans l'évolution des sociétés humaines.</p>
+        
+        <div class="bg-yellow-50 dark:bg-yellow-950/20 border-l-4 border-yellow-500 p-4 my-4">
+          <p class="font-semibold text-yellow-900 dark:text-yellow-200">🎯 Objectifs d'apprentissage</p>
+          <ul class="list-disc ml-6 mt-2 space-y-1">
+            <li>Identifier les grandes étapes de l'évolution des sociétés humaines</li>
+            <li>Comprendre les facteurs qui ont provoqué ces transformations</li>
+            <li>Analyser les changements dans l'organisation sociale à travers le temps</li>
+            <li>Réfléchir sur l'évolution actuelle et future de nos sociétés</li>
+          </ul>
+        </div>
       </div>
     `,
     contenu: `
-      <div class="space-y-6">
+      <div class="space-y-8">
         <section>
-          <h3 class="text-xl font-semibold mb-3">1. Les premières sociétés humaines</h3>
-          <p>Les premiers humains vivaient en petits groupes nomades de 20 à 50 personnes. Ils se déplaçaient constamment à la recherche de nourriture : chasse, pêche et cueillette. Ces sociétés étaient égalitaires, sans hiérarchie stricte.</p>
-          <p><strong>Caractéristiques principales :</strong></p>
-          <ul class="list-disc ml-6 space-y-2">
-            <li>Vie nomade suivant les ressources naturelles</li>
-            <li>Outils simples en pierre (Paléolithique)</li>
-            <li>Organisation sociale basée sur la famille élargie</li>
-            <li>Transmission orale des connaissances</li>
+          <h3 class="text-2xl font-bold mb-4 text-primary">1. Les premiers pas de l'humanité : le Paléolithique</h3>
+          
+          <p class="text-lg mb-4">Il y a environ 2,5 millions d'années, nos ancêtres ont franchi un cap décisif : ils ont commencé à fabriquer des outils. Cette période, appelée <strong>Paléolithique</strong> (âge de la pierre ancienne), s'étend jusqu'à environ 10 000 ans avant notre ère.</p>
+          
+          <h4 class="text-xl font-semibold mt-6 mb-3">Organisation sociale paléolithique</h4>
+          <p>Les premiers humains vivaient en petits groupes nomades de 20 à 50 personnes maximum. Pourquoi si peu ? Parce que vivre de la chasse et de la cueillette demande de vastes territoires. Un groupe trop nombreux aurait épuisé rapidement les ressources locales.</p>
+          
+          <ul class="list-disc ml-8 space-y-3 mt-4">
+            <li><strong>Mode de vie nomade :</strong> Les groupes se déplaçaient constamment, suivant les troupeaux d'animaux et les saisons de cueillette. Pas de maisons permanentes, juste des abris temporaires (grottes, huttes de branchages).</li>
+            <li><strong>Économie de subsistance :</strong> Chasse (mammouths, bisons, cerfs), pêche, cueillette de fruits, racines, baies. Tout ce qui était récolté était immédiatement consommé ou partagé.</li>
+            <li><strong>Outils rudimentaires :</strong> Pierre taillée (bifaces, grattoirs, pointes de flèches), os, bois. Ces outils permettaient de dépecer les animaux, de travailler le cuir, de couper le bois.</li>
+            <li><strong>Société égalitaire :</strong> Pas de chef permanent, pas de classes sociales. Les décisions étaient prises collectivement. Le meilleur chasseur avait du prestige, mais pas de pouvoir absolu.</li>
+            <li><strong>Transmission orale :</strong> Les connaissances (techniques de chasse, plantes comestibles, légendes) se transmettaient de bouche à oreille, autour du feu.</li>
           </ul>
+          
+          <div class="bg-blue-50 dark:bg-blue-950/30 p-5 rounded-lg my-6">
+            <p class="font-semibold text-blue-900 dark:text-blue-200 mb-2">💡 Le savais-tu ?</p>
+            <p class="text-blue-800 dark:text-blue-300">La maîtrise du feu, il y a environ 400 000 ans, a été une révolution ! Le feu permettait de se chauffer, d'éloigner les prédateurs, d'éclairer les grottes, mais surtout de <strong>cuire les aliments</strong>. La cuisson rend la viande plus digestible et tue les parasites, ce qui a contribué au développement du cerveau humain. De plus, le feu est devenu le centre de la vie sociale : c'est autour du foyer que le groupe se réunissait, racontait des histoires, transmettait les savoirs.</p>
+          </div>
+          
+          <h4 class="text-xl font-semibold mt-6 mb-3">L'art paléolithique : premières expressions culturelles</h4>
+          <p>Contrairement à ce qu'on pourrait penser, ces premiers humains n'étaient pas de simples "sauvages". Ils créaient de l'art ! Les peintures rupestres de Lascaux en France (17 000 ans) ou d'Altamira en Espagne montrent des scènes de chasse d'une grande beauté. Ces peintures avaient peut-être une fonction magique ou rituelle : représenter l'animal avant de le chasser pour assurer le succès de la chasse.</p>
+          
+          <p class="mt-3"><em>📹 Suggestion YouTube : Recherchez "Lascaux peintures rupestres" pour voir des images fascinantes de cet art préhistorique.</em></p>
         </section>
 
         <section>
-          <h3 class="text-xl font-semibold mb-3">2. La révolution néolithique</h3>
-          <p>Il y a environ 10 000 ans, une transformation majeure s'est produite : la <strong>révolution néolithique</strong>. Les humains ont commencé à domestiquer les plantes et les animaux, passant de la chasse-cueillette à l'agriculture et à l'élevage.</p>
-          <p><strong>Conséquences de cette révolution :</strong></p>
-          <ul class="list-disc ml-6 space-y-2">
-            <li>Sédentarisation : création de villages permanents</li>
-            <li>Augmentation de la population</li>
-            <li>Apparition de surplus alimentaires</li>
-            <li>Développement de la spécialisation des métiers (potiers, tisserands, forgerons)</li>
-            <li>Naissance des premières inégalités sociales</li>
-          </ul>
+          <h3 class="text-2xl font-bold mb-4 text-primary mt-8">2. La révolution néolithique : le tournant majeur de l'histoire humaine</h3>
+          
+          <p class="text-lg mb-4">Il y a environ 10 000 ans, dans une région du Proche-Orient appelée le "Croissant fertile" (actuels Irak, Syrie, Liban), s'est produit ce que les historiens appellent la <strong>révolution néolithique</strong>. Ce fut l'un des changements les plus importants de toute l'histoire de l'humanité.</p>
+          
+          <h4 class="text-xl font-semibold mt-6 mb-3">Qu'est-ce qui a changé ?</h4>
+          <p>Les humains ont découvert comment <strong>domestiquer</strong> les plantes et les animaux. Au lieu de chasser les gazelles sauvages, ils ont appris à élever des chèvres et des moutons. Au lieu de cueillir des graines sauvages, ils ont planté du blé et de l'orge. C'est le passage de la <strong>prédation</strong> (prendre ce que la nature offre) à la <strong>production</strong> (créer sa propre nourriture).</p>
+          
+          <h4 class="text-xl font-semibold mt-6 mb-3">Conséquences révolutionnaires</h4>
+          <div class="space-y-4">
+            <div class="border-l-4 border-green-500 pl-4">
+              <p class="font-semibold">1. Sédentarisation</p>
+              <p>Plus besoin de suivre les troupeaux ! Les agriculteurs s'installent dans des villages permanents. Les premières maisons en dur apparaissent : en terre séchée (adobe), en pierre. L'un des plus anciens villages connus est Jéricho (Palestine), habité depuis 9 000 ans.</p>
+            </div>
+            
+            <div class="border-l-4 border-green-500 pl-4">
+              <p class="font-semibold">2. Explosion démographique</p>
+              <p>Une femme nomade ne peut porter qu'un bébé à la fois dans ses déplacements, donc elle espace les naissances. Une femme sédentaire peut avoir plus d'enfants. De plus, l'agriculture produit plus de nourriture. Résultat : la population mondiale passe de quelques millions à des dizaines de millions en quelques millénaires.</p>
+            </div>
+            
+            <div class="border-l-4 border-green-500 pl-4">
+              <p class="font-semibold">3. Surplus alimentaires</p>
+              <p>Pour la première fois dans l'histoire, on produit <strong>plus de nourriture que nécessaire</strong>. Ce surplus peut être stocké (greniers, silos) pour l'hiver ou les périodes de disette. Cette réserve change tout : elle libère certaines personnes du travail agricole.</p>
+            </div>
+            
+            <div class="border-l-4 border-green-500 pl-4">
+              <p class="font-semibold">4. Spécialisation des métiers</p>
+              <p>Si tout le monde n'a pas besoin de cultiver pour survivre, certains peuvent devenir <strong>artisans spécialisés</strong> :</p>
+              <ul class="list-disc ml-6 mt-2">
+                <li><strong>Potiers :</strong> Fabriquent des jarres pour stocker grains et liquides</li>
+                <li><strong>Tisserands :</strong> Tissent laine et lin pour les vêtements</li>
+                <li><strong>Forgerons :</strong> Travaillent le cuivre, puis le bronze (alliage cuivre-étain)</li>
+                <li><strong>Prêtres :</strong> Organisent les cérémonies religieuses</li>
+                <li><strong>Soldats :</strong> Protègent le village et ses réserves</li>
+              </ul>
+            </div>
+            
+            <div class="border-l-4 border-green-500 pl-4">
+              <p class="font-semibold">5. Naissance des inégalités</p>
+              <p>Dans les sociétés de chasseurs-cueilleurs, tout était partagé équitablement. Mais avec les surplus, certains accumulent plus de richesses (terres, troupeaux, réserves de grains). Des <strong>classes sociales</strong> apparaissent : riches propriétaires terriens vs paysans pauvres, chefs vs simples villageois. C'est aussi le début de l'esclavage : les prisonniers de guerre deviennent des esclaves agricoles.</p>
+            </div>
+          </div>
+          
+          <div class="bg-blue-50 dark:bg-blue-950/30 p-5 rounded-lg my-6">
+            <p class="font-semibold text-blue-900 dark:text-blue-200 mb-2">💡 Le savais-tu ?</p>
+            <p class="text-blue-800 dark:text-blue-300">La révolution néolithique ne s'est pas produite qu'au Proche-Orient ! Elle a eu lieu <strong>indépendamment</strong> dans plusieurs régions du monde : en Chine (riz, millet), en Amérique centrale (maïs, haricots, courges), en Afrique subsaharienne (sorgho, igname), en Nouvelle-Guinée (taro, canne à sucre). C'est une preuve que les humains, face aux mêmes défis, trouvent des solutions similaires !</p>
+          </div>
+          
+          <p class="mt-4"><em>📹 Suggestion YouTube : Recherchez "Révolution néolithique Croissant fertile" pour des documentaires sur cette période cruciale.</em></p>
         </section>
 
         <section>
-          <h3 class="text-xl font-semibold mb-3">3. L'émergence des civilisations</h3>
-          <p>Les surplus agricoles ont permis à certaines personnes de se consacrer à d'autres activités que l'agriculture. Cela a conduit à l'apparition des premières <strong>civilisations</strong> en Mésopotamie, en Égypte, en Inde et en Chine.</p>
-          <p><strong>Éléments caractéristiques d'une civilisation :</strong></p>
-          <ul class="list-disc ml-6 space-y-2">
-            <li>Urbanisation : construction de villes</li>
-            <li>Écriture pour conserver les informations</li>
-            <li>Organisation politique centralisée (roi, pharaon, empereur)</li>
-            <li>Stratification sociale (nobles, prêtres, artisans, paysans, esclaves)</li>
-            <li>Développement des arts, des sciences et de la religion</li>
-            <li>Commerce à longue distance</li>
-          </ul>
+          <h3 class="text-2xl font-bold mb-4 text-primary mt-8">3. L'émergence des premières civilisations (3500-500 av. J.-C.)</h3>
+          
+          <p class="text-lg mb-4">Avec les surplus agricoles toujours plus importants, certains villages deviennent des <strong>villes</strong>, puis de véritables <strong>civilisations</strong>. Mais qu'est-ce qui définit une civilisation ?</p>
+          
+          <h4 class="text-xl font-semibold mt-6 mb-3">Les 7 critères d'une civilisation</h4>
+          <ol class="list-decimal ml-8 space-y-3">
+            <li><strong>Urbanisation :</strong> Construction de villes avec des milliers d'habitants (Uruk en Mésopotamie comptait 50 000 habitants dès 3000 av. J.-C. !)</li>
+            <li><strong>Architecture monumentale :</strong> Temples, palais, pyramides démontrant la puissance de la société</li>
+            <li><strong>Écriture :</strong> Système pour enregistrer les informations (commerce, lois, histoire, littérature)</li>
+            <li><strong>Administration centralisée :</strong> Un gouvernement organisé (roi, pharaon, empereur) avec des fonctionnaires</li>
+            <li><strong>Stratification sociale :</strong> Hiérarchie claire (nobles, prêtres, artisans, paysans, esclaves)</li>
+            <li><strong>Arts et sciences :</strong> Production artistique, développement des mathématiques, astronomie, médecine</li>
+            <li><strong>Commerce à longue distance :</strong> Échanges économiques entre régions éloignées</li>
+          </ol>
+          
+          <h4 class="text-xl font-semibold mt-6 mb-3">Les premières civilisations : les "berceaux de la civilisation"</h4>
+          
+          <div class="grid gap-4 mt-4">
+            <div class="bg-amber-50 dark:bg-amber-950/20 p-4 rounded-lg">
+              <p class="font-bold text-lg">🏺 Mésopotamie (Irak actuel) - 3500 av. J.-C.</p>
+              <p class="mt-2"><strong>Localisation :</strong> Entre les fleuves Tigre et Euphrate ("Mésopotamie" = "entre les fleuves" en grec)</p>
+              <p class="mt-2"><strong>Inventions majeures :</strong></p>
+              <ul class="list-disc ml-6 mt-1 space-y-1">
+                <li>L'écriture cunéiforme (premiers textes vers 3200 av. J.-C.)</li>
+                <li>La roue (vers 3500 av. J.-C.)</li>
+                <li>Les premières lois écrites (Code d'Hammourabi, 1750 av. J.-C.)</li>
+                <li>Le système sexagésimal (base 60) encore utilisé pour le temps et les angles</li>
+                <li>La bière et le pain levé</li>
+              </ul>
+              <p class="mt-2"><strong>Villes célèbres :</strong> Uruk, Ur, Babylone, Ninive</p>
+            </div>
+            
+            <div class="bg-amber-50 dark:bg-amber-950/20 p-4 rounded-lg">
+              <p class="font-bold text-lg">🔺 Égypte antique - 3100 av. J.-C.</p>
+              <p class="mt-2"><strong>Localisation :</strong> Le long du Nil, fleuve qui apportait la fertilité par ses crues annuelles</p>
+              <p class="mt-2"><strong>Réalisations spectaculaires :</strong></p>
+              <ul class="list-disc ml-6 mt-1 space-y-1">
+                <li>Les pyramides de Gizeh (Khéops : 146 m de haut, 2,3 millions de blocs de pierre !)</li>
+                <li>L'écriture hiéroglyphique (dessins stylisés)</li>
+                <li>La momification (préservation des corps pour l'au-delà)</li>
+                <li>Un système d'irrigation sophistiqué</li>
+                <li>Les papyrus (ancêtre du papier)</li>
+              </ul>
+              <p class="mt-2"><strong>Pharaons célèbres :</strong> Khéops, Ramsès II, Cléopâtre, Toutankhamon</p>
+            </div>
+            
+            <div class="bg-amber-50 dark:bg-amber-950/20 p-4 rounded-lg">
+              <p class="font-bold text-lg">🕉️ Vallée de l'Indus (Pakistan/Inde actuels) - 2600 av. J.-C.</p>
+              <p class="mt-2"><strong>Particularités :</strong> Villes extraordinairement bien planifiées !</p>
+              <ul class="list-disc ml-6 mt-1 space-y-1">
+                <li>Rues tracées au cordeau, perpendiculaires</li>
+                <li>Systèmes d'égouts sophistiqués</li>
+                <li>Bains publics (le "Grand Bain" de Mohenjo-Daro)</li>
+                <li>Maisons en briques cuites avec salles de bain</li>
+              </ul>
+              <p class="mt-2"><strong>Villes principales :</strong> Harappa, Mohenjo-Daro</p>
+            </div>
+            
+            <div class="bg-amber-50 dark:bg-amber-950/20 p-4 rounded-lg">
+              <p class="font-bold text-lg">🐉 Chine ancienne - 2000 av. J.-C.</p>
+              <p class="mt-2"><strong>Contributions majeures :</strong></p>
+              <ul class="list-disc ml-6 mt-1 space-y-1">
+                <li>L'écriture chinoise (idéogrammes, encore utilisée aujourd'hui !)</li>
+                <li>La soie (secret gardé pendant des siècles)</li>
+                <li>Le papier (105 apr. J.-C.)</li>
+                <li>La poudre à canon</li>
+                <li>La boussole</li>
+                <li>L'imprimerie (plusieurs siècles avant Gutenberg)</li>
+              </ul>
+              <p class="mt-2"><strong>Dynasties célèbres :</strong> Shang, Zhou, Qin, Han</p>
+            </div>
+          </div>
+          
+          <div class="bg-blue-50 dark:bg-blue-950/30 p-5 rounded-lg my-6">
+            <p class="font-semibold text-blue-900 dark:text-blue-200 mb-2">💡 Le savais-tu ?</p>
+            <p class="text-blue-800 dark:text-blue-300">En Amérique aussi, des civilisations brillantes se sont développées ! Les <strong>Olmèques</strong> au Mexique (1500 av. J.-C.) ont créé d'immenses têtes de pierre. Les <strong>Mayas</strong> (2000 av. J.-C. - 1500 apr. J.-C.) avaient un système d'écriture complexe, un calendrier précis, et construisaient des pyramides à degrés. Les <strong>Incas</strong> du Pérou ont bâti un empire de 2 millions de km² avec un réseau routier extraordinaire, sans même connaître la roue ni l'écriture alphabétique !</p>
+          </div>
+          
+          <p class="mt-4"><em>📹 Suggestion YouTube : Recherchez "Sept merveilles du monde antique" et "Civilisations précolombiennes" pour des documentaires fascinants.</em></p>
         </section>
 
         <section>
-          <h3 class="text-xl font-semibold mb-3">4. Les facteurs de l'évolution sociale</h3>
-          <p>Plusieurs facteurs expliquent pourquoi les sociétés évoluent :</p>
-          <ul class="list-disc ml-6 space-y-2">
-            <li><strong>Facteurs technologiques :</strong> L'invention de nouveaux outils et techniques transforme les modes de vie</li>
-            <li><strong>Facteurs économiques :</strong> Le développement du commerce et de l'agriculture modifie l'organisation sociale</li>
-            <li><strong>Facteurs environnementaux :</strong> Le climat et les ressources naturelles influencent le mode de vie</li>
-            <li><strong>Facteurs culturels :</strong> Les idées, religions et valeurs façonnent les sociétés</li>
-            <li><strong>Facteurs politiques :</strong> Les guerres, conquêtes et alliances redessinent les frontières et les pouvoirs</li>
+          <h3 class="text-2xl font-bold mb-4 text-primary mt-8">4. Le rôle de l'écriture : une révolution dans la révolution</h3>
+          
+          <p class="text-lg mb-4">Si la révolution néolithique a permis les civilisations, <strong>l'écriture</strong> a rendu possible leur grandeur et leur durée. Pourquoi est-elle si importante ?</p>
+          
+          <h4 class="text-xl font-semibold mt-6 mb-3">Les fonctions de l'écriture</h4>
+          <ul class="list-disc ml-8 space-y-3">
+            <li><strong>Comptabilité :</strong> Les premiers textes sumériens sont... des listes d'inventaire ! "120 jarres d'huile, 50 moutons..." L'écriture naît pour gérer le commerce et les impôts.</li>
+            <li><strong>Législation :</strong> Graver les lois dans la pierre garantit qu'elles ne changeront pas selon le bon vouloir du roi. Le Code d'Hammourabi (1750 av. J.-C.) compte 282 articles !</li>
+            <li><strong>Administration :</strong> Gérer un empire de millions de personnes sans écriture est impossible. Il faut enregistrer qui paie ses impôts, qui doit le service militaire, etc.</li>
+            <li><strong>Histoire :</strong> Grâce aux textes, nous connaissons les pharaons égyptiens, les rois de Babylone, leurs victoires et défaites. Sans écriture, tout serait oublié.</li>
+            <li><strong>Littérature et religion :</strong> L'Épopée de Gilgamesh (Mésopotamie, 2100 av. J.-C.) est le plus ancien récit littéraire connu. Les textes religieux (Bible, Véda, Coran) ont été fixés par écrit.</li>
+            <li><strong>Sciences :</strong> Les mathématiques, l'astronomie, la médecine progressent grâce à la transmission écrite. Chaque génération peut s'appuyer sur les découvertes précédentes.</li>
           </ul>
-        </section>
-
-        <section>
-          <h3 class="text-xl font-semibold mb-3">5. L'évolution continue</h3>
-          <p>L'évolution des sociétés n'est jamais terminée. Au cours des derniers siècles, la révolution industrielle, la révolution numérique et la mondialisation ont profondément transformé nos modes de vie. Aujourd'hui, nous vivons dans des sociétés complexes, interconnectées, où les changements sont de plus en plus rapides.</p>
-          <p>En Haïti, notre société est le résultat d'une histoire riche : les peuples autochtones Taïnos, la colonisation européenne, la traite esclavagiste africaine, et la première révolution d'esclaves victorieuse. Cette diversité fait notre richesse culturelle unique.</p>
-        </section>
-      </div>
-    `,
-    exemplesExercices: `
-      <div class="space-y-6">
-        <section>
-          <h3 class="text-xl font-semibold mb-3">Exemples concrets</h3>
-          <div class="bg-blue-50 p-4 rounded-lg space-y-3">
-            <p><strong>Exemple 1 :</strong> La domestication du maïs en Amérique centrale a permis le développement de grandes civilisations comme les Mayas et les Aztèques.</p>
-            <p><strong>Exemple 2 :</strong> L'invention de l'écriture en Mésopotamie (vers 3500 av. J.-C.) a révolutionné la conservation et la transmission des connaissances.</p>
-            <p><strong>Exemple 3 :</strong> En Haïti, la société coloniale esclavagiste a été complètement transformée par la Révolution de 1804, créant une nouvelle organisation sociale basée sur la liberté.</p>
+          
+          <div class="bg-yellow-50 dark:bg-yellow-950/20 p-5 rounded-lg my-6">
+            <p class="font-semibold text-yellow-900 dark:text-yellow-200 mb-2">⚠️ Point important</p>
+            <p class="text-yellow-800 dark:text-yellow-300">Attention : toutes les civilisations brillantes n'avaient pas d'écriture ! Les <strong>Incas</strong> utilisaient les <em>quipus</em> (cordelettes nouées) pour compter et enregistrer des informations, mais n'avaient pas d'écriture alphabétique. Cela ne les a pas empêchés de bâtir un empire immense et prospère. L'écriture est un critère important, mais pas absolu.</p>
           </div>
         </section>
 
         <section>
-          <h3 class="text-xl font-semibold mb-3">Exercices</h3>
-          <div class="space-y-4">
-            <div>
-              <p class="font-semibold">1. Questions à choix multiples</p>
-              <p>a) La révolution néolithique marque le passage :</p>
-              <ul class="ml-6 list-disc">
-                <li>De la pierre à l'âge du bronze</li>
-                <li>De la chasse-cueillette à l'agriculture ✓</li>
-                <li>De l'esclavage à la liberté</li>
+          <h3 class="text-2xl font-bold mb-4 text-primary mt-8">5. Les facteurs de l'évolution sociale : pourquoi les sociétés changent-elles ?</h3>
+          
+          <p class="text-lg mb-4">L'évolution des sociétés n'est jamais terminée. Mais quels sont les moteurs de ces changements permanents ?</p>
+          
+          <div class="grid gap-4 mt-4">
+            <div class="border-l-4 border-purple-500 pl-4 bg-purple-50 dark:bg-purple-950/20 p-3 rounded-r-lg">
+              <p class="font-bold text-lg">🔧 1. Facteurs technologiques</p>
+              <p class="mt-2">Chaque grande invention bouleverse la société :</p>
+              <ul class="list-disc ml-6 mt-2 space-y-1">
+                <li><strong>L'agriculture</strong> → sédentarisation, villes, civilisations</li>
+                <li><strong>La roue</strong> → transports, commerce à longue distance</li>
+                <li><strong>Le fer</strong> (vers 1200 av. J.-C.) → outils et armes plus efficaces, expansion des empires</li>
+                <li><strong>L'imprimerie</strong> (Gutenberg, 1450) → diffusion massive des livres, Réforme protestante, alphabétisation</li>
+                <li><strong>La machine à vapeur</strong> (1769) → révolution industrielle, usines, chemins de fer</li>
+                <li><strong>L'électricité</strong> (fin XIXe) → transformation totale du mode de vie</li>
+                <li><strong>Internet</strong> (fin XXe) → mondialisation de l'information, réseaux sociaux</li>
+              </ul>
+            </div>
+            
+            <div class="border-l-4 border-purple-500 pl-4 bg-purple-50 dark:bg-purple-950/20 p-3 rounded-r-lg">
+              <p class="font-bold text-lg">💰 2. Facteurs économiques</p>
+              <p class="mt-2">L'économie structure la société :</p>
+              <ul class="list-disc ml-6 mt-2 space-y-1">
+                <li><strong>Le commerce</strong> crée des routes, des villes marchandes (Venise, Tombouctou), des empires commerciaux</li>
+                <li><strong>L'argent</strong> (monnaie) simplifie les échanges et crée de nouvelles classes (marchands, banquiers)</li>
+                <li><strong>Le capitalisme</strong> (XVIe-XVIIe siècles) transforme l'économie mondiale</li>
+                <li><strong>L'industrialisation</strong> crée la classe ouvrière et le syndicalisme</li>
+              </ul>
+              <p class="mt-3"><strong>Exemple haïtien :</strong> L'économie de plantation sucrière (XVIIe-XVIIIe siècles) a structuré toute la société coloniale de Saint-Domingue : une infime minorité de planteurs blancs, une petite classe d'affranchis (mulâtres), et une immense majorité d'esclaves noirs.</p>
+            </div>
+            
+            <div class="border-l-4 border-purple-500 pl-4 bg-purple-50 dark:bg-purple-950/20 p-3 rounded-r-lg">
+              <p class="font-bold text-lg">🌍 3. Facteurs environnementaux</p>
+              <p class="mt-2">Le milieu naturel influence profondément les sociétés :</p>
+              <ul class="list-disc ml-6 mt-2 space-y-1">
+                <li><strong>Climat :</strong> Les sociétés arctiques (Inuits) sont très différentes des sociétés tropicales</li>
+                <li><strong>Ressources :</strong> L'accès à l'eau (fleuves) a permis les premières civilisations. Le pétrole a enrichi les pays du Golfe.</li>
+                <li><strong>Catastrophes :</strong> Sécheresses, éruptions volcaniques, épidémies peuvent détruire des civilisations (les Mayas)</li>
+                <li><strong>Géographie :</strong> Les îles développent souvent des cultures maritimes ; les montagnes isolent et préservent les traditions</li>
+              </ul>
+              <p class="mt-3"><strong>Exemple haïtien :</strong> Notre relief montagneux a favorisé le marronnage (esclaves fugitifs réfugiés dans les montagnes) et a rendu difficile le contrôle colonial, facilitant ainsi la révolution.</p>
+            </div>
+            
+            <div class="border-l-4 border-purple-500 pl-4 bg-purple-50 dark:bg-purple-950/20 p-3 rounded-r-lg">
+              <p class="font-bold text-lg">📚 4. Facteurs culturels et religieux</p>
+              <p class="mt-2">Les idées transforment le monde :</p>
+              <ul class="list-disc ml-6 mt-2 space-y-1">
+                <li><strong>Religions :</strong> Le christianisme a unifié l'Europe médiévale ; l'islam a créé un vaste empire de l'Espagne à l'Inde</li>
+                <li><strong>Philosophies :</strong> Les Lumières (Voltaire, Rousseau, XVIIIe) ont préparé les révolutions démocratiques</li>
+                <li><strong>Idéologies :</strong> Nationalisme, socialisme, féminisme ont restructuré les sociétés modernes</li>
+                <li><strong>Arts et lettres :</strong> Diffusent de nouvelles valeurs et visions du monde</li>
+              </ul>
+              <p class="mt-3"><strong>Exemple haïtien :</strong> Les idées des Lumières (liberté, égalité) ont inspiré Toussaint Louverture et les révolutionnaires haïtiens. Le Vodou a joué un rôle majeur dans l'organisation de la résistance (cérémonie du Bois-Caïman, 1791).</p>
+            </div>
+            
+            <div class="border-l-4 border-purple-500 pl-4 bg-purple-50 dark:bg-purple-950/20 p-3 rounded-r-lg">
+              <p class="font-bold text-lg">⚔️ 5. Facteurs politiques et militaires</p>
+              <p class="mt-2">Guerres et révolutions redessinent le monde :</p>
+              <ul class="list-disc ml-6 mt-2 space-y-1">
+                <li><strong>Conquêtes :</strong> Alexandre le Grand, Empire romain, Gengis Khan ont unifié d'immenses territoires</li>
+                <li><strong>Révolutions :</strong> Révolution française (1789), révolutions américaines, printemps arabes transforment les régimes politiques</li>
+                <li><strong>Guerres mondiales :</strong> Les deux guerres mondiales (1914-18, 1939-45) ont redessiné les frontières et créé de nouvelles puissances</li>
+                <li><strong>Décolonisation :</strong> Après 1945, des dizaines de pays africains et asiatiques deviennent indépendants</li>
+              </ul>
+              <p class="mt-3"><strong>Exemple haïtien :</strong> La <strong>Révolution haïtienne (1791-1804)</strong> est l'événement politique le plus important de notre histoire. Elle a transformé une colonie esclavagiste en république noire libre, première du genre dans le monde. C'est un exemple unique d'évolution sociale brutale et radicale.</p>
+            </div>
+          </div>
+        </section>
+
+        <section>
+          <h3 class="text-2xl font-bold mb-4 text-primary mt-8">6. L'évolution moderne et contemporaine (XIXe-XXIe siècles)</h3>
+          
+          <p class="text-lg mb-4">Les trois derniers siècles ont connu des transformations d'une rapidité inédite dans l'histoire humaine.</p>
+          
+          <h4 class="text-xl font-semibold mt-6 mb-3">A. La révolution industrielle (1760-1900)</h4>
+          <p>Née en Angleterre, elle transforme radicalement la société :</p>
+          <ul class="list-disc ml-8 space-y-2 mt-3">
+            <li><strong>Urbanisation massive :</strong> Exode rural vers les villes-usines (Londres passe de 1 million à 6 millions d'habitants au XIXe)</li>
+            <li><strong>Classe ouvrière :</strong> Naissance du prolétariat industriel, conditions de travail terribles (12-16h/jour, travail des enfants)</li>
+            <li><strong>Capitalisme industriel :</strong> Bourgeoisie d'affaires remplace l'aristocratie foncière au sommet de la société</li>
+            <li><strong>Mouvements sociaux :</strong> Syndicalisme, socialisme, communisme pour défendre les droits des travailleurs</li>
+            <li><strong>Transformation du paysage :</strong> Usines, chemins de fer, mines de charbon</li>
+          </ul>
+          
+          <h4 class="text-xl font-semibold mt-6 mb-3">B. La révolution numérique (1970-aujourd'hui)</h4>
+          <p>Nous vivons actuellement une transformation aussi profonde que la révolution néolithique :</p>
+          <ul class="list-disc ml-8 space-y-2 mt-3">
+            <li><strong>Informatique omniprésente :</strong> Ordinateurs, smartphones, objets connectés</li>
+            <li><strong>Internet :</strong> 5 milliards d'utilisateurs connectés en permanence</li>
+            <li><strong>Réseaux sociaux :</strong> Nouvelles formes de sociabilité et de mobilisation politique</li>
+            <li><strong>Économie numérique :</strong> E-commerce, télétravail, cryptomonnaies</li>
+            <li><strong>Intelligence artificielle :</strong> Début de l'automatisation massive des tâches intellectuelles</li>
+          </ul>
+          
+          <p class="mt-3"><strong>En Haïti :</strong> Même dans les zones rurales reculées, les téléphones portables et internet changent rapidement la société. Les transferts d'argent par mobile (Moncash, Natcash) transforment l'économie. Les réseaux sociaux permettent une mobilisation politique rapide.</p>
+          
+          <h4 class="text-xl font-semibold mt-6 mb-3">C. La mondialisation</h4>
+          <p>Le monde est devenu un "village global" :</p>
+          <ul class="list-disc ml-8 space-y-2 mt-3">
+            <li><strong>Économie mondiale :</strong> Chaînes de production internationales (un iPhone est fabriqué avec des pièces de 43 pays !)</li>
+            <li><strong>Migrations massives :</strong> 280 millions de migrants internationaux (la diaspora haïtienne compte 1,5 million de personnes)</li>
+            <li><strong>Culture globale :</strong> Hollywood, K-pop, football sont connus partout</li>
+            <li><strong>Défis planétaires :</strong> Changement climatique, pandémies (COVID-19) nécessitent des réponses globales</li>
+          </ul>
+        </section>
+
+        <section>
+          <h3 class="text-2xl font-bold mb-4 text-primary mt-8">7. L'évolution continue : quel avenir pour nos sociétés ?</h3>
+          
+          <p class="text-lg mb-4">L'évolution des sociétés n'est jamais terminée. Nous vivons actuellement des transformations rapides qui façonneront le monde de demain.</p>
+          
+          <h4 class="text-xl font-semibold mt-6 mb-3">Défis contemporains</h4>
+          <ul class="list-disc ml-8 space-y-3">
+            <li><strong>Changement climatique :</strong> Réchauffement global, montée des eaux, catastrophes naturelles plus fréquentes. Haïti, avec ses ouragans dévastateurs, est en première ligne.</li>
+            <li><strong>Inégalités croissantes :</strong> Écart grandissant entre riches et pauvres, au sein des pays et entre pays</li>
+            <li><strong>Surpopulation :</strong> Nous sommes 8 milliards d'humains, la pression sur les ressources est immense</li>
+            <li><strong>Intelligence artificielle :</strong> Va-t-elle créer du chômage de masse ou libérer l'humanité des tâches pénibles ?</li>
+            <li><strong>Démocratie en crise :</strong> Montée des régimes autoritaires, désinformation sur internet</li>
+          </ul>
+          
+          <h4 class="text-xl font-semibold mt-6 mb-3">Haïti dans l'évolution mondiale</h4>
+          <p>Notre pays a connu une évolution sociale unique :</p>
+          <ul class="list-disc ml-8 space-y-2 mt-3">
+            <li><strong>1492-1625 :</strong> Société taïno (chasseurs-cueilleurs, agriculture rudimentaire, organisation en caciquats)</li>
+            <li><strong>1625-1804 :</strong> Société coloniale esclavagiste (économie de plantation sucrière, division raciale extrême)</li>
+            <li><strong>1804-1915 :</strong> Première république noire, alternance politique chaotique, économie agraire</li>
+            <li><strong>1915-1934 :</strong> Occupation américaine, modernisation forcée</li>
+            <li><strong>1957-1986 :</strong> Dictatures des Duvalier, exode massif</li>
+            <li><strong>1986-aujourd'hui :</strong> Tentatives démocratiques, instabilité chronique, défis multiples</li>
+          </ul>
+          
+          <p class="mt-4">Aujourd'hui, Haïti fait face à des défis majeurs : pauvreté, déforestation, instabilité politique, catastrophes naturelles. Mais nous avons aussi des atouts : une diaspora dynamique, une culture riche, une jeunesse nombreuse et de plus en plus éduquée, une histoire héroïque. L'évolution de notre société dépend des choix que nous ferons collectivement.</p>
+        </section>
+
+        <section>
+          <h3 class="text-2xl font-bold mb-4 text-primary mt-8">8. Conclusion : comprendre l'évolution pour agir sur le présent</h3>
+          
+          <p class="text-lg mb-4">Étudier l'évolution des sociétés humaines n'est pas un simple exercice académique. C'est comprendre d'où nous venons pour mieux saisir où nous allons.</p>
+          
+          <div class="bg-gradient-to-r from-green-50 to-teal-50 dark:from-green-950/30 dark:to-teal-950/30 p-6 rounded-lg border-l-4 border-green-500">
+            <p class="font-semibold text-lg mb-3">Les grandes leçons de l'histoire de l'évolution sociale :</p>
+            <ul class="list-disc ml-6 space-y-2">
+              <li>Les sociétés changent toujours, rien n'est figé</li>
+              <li>Les grandes transformations viennent souvent d'innovations techniques ou d'idées nouvelles</li>
+              <li>Les changements peuvent être lents (révolution néolithique sur des millénaires) ou rapides (révolution numérique en quelques décennies)</li>
+              <li>Chaque société est unique, produit de son histoire, géographie, culture</li>
+              <li>Les humains ont une capacité extraordinaire d'adaptation et d'innovation</li>
+              <li>Le progrès technique n'est pas toujours synonyme de progrès social (inégalités, guerres)</li>
+              <li>Nous sommes acteurs de l'évolution : nos choix d'aujourd'hui façonnent la société de demain</li>
+            </ul>
+          </div>
+        </section>
+      </div>
+    `,
+    exemplesExercices: `
+      <div class="space-y-8">
+        <section>
+          <h3 class="text-2xl font-bold mb-4 text-primary">Exemples concrets et études de cas</h3>
+          <div class="grid gap-4">
+            <div class="bg-blue-50 dark:bg-blue-950/30 p-5 rounded-lg border-l-4 border-blue-500">
+              <p class="font-bold text-lg mb-2">📍 Exemple 1 : La domestication du maïs en Amérique</p>
+              <p>Il y a environ 9 000 ans, dans le sud du Mexique actuel, les agriculteurs ont commencé à domestiquer une plante sauvage appelée <strong>téosinte</strong>. À force de sélectionner les épis les plus gros, génération après génération, ils ont créé le maïs moderne. Cette céréale est devenue la base de l'alimentation des grandes civilisations amérindiennes : Olmèques, Mayas, Aztèques, Incas. Aujourd'hui, le maïs est la deuxième céréale la plus cultivée au monde (après le blé). Un exemple parfait de comment l'agriculture transforme les sociétés !</p>
+            </div>
+            
+            <div class="bg-blue-50 dark:bg-blue-950/30 p-5 rounded-lg border-l-4 border-blue-500">
+              <p class="font-bold text-lg mb-2">📍 Exemple 2 : L'invention de l'imprimerie et la Réforme protestante</p>
+              <p>En 1450, Johannes Gutenberg invente l'imprimerie à caractères mobiles en Europe. Avant, copier un livre prenait des mois ; après, on peut en produire des centaines en quelques jours. Conséquence : le prix des livres chute, l'alphabétisation progresse. En 1517, Martin Luther affiche ses 95 thèses contre les abus de l'Église catholique. Grâce à l'imprimerie, ses idées se répandent comme une traînée de poudre dans toute l'Europe en quelques semaines. C'est le début de la <strong>Réforme protestante</strong> qui va diviser la chrétienté et transformer la société européenne. Sans l'imprimerie, la Réforme aurait probablement été étouffée localement. Un exemple de comment une technologie (imprimerie) facilite un changement culturel et social (Réforme).</p>
+            </div>
+            
+            <div class="bg-blue-50 dark:bg-blue-950/30 p-5 rounded-lg border-l-4 border-blue-500">
+              <p class="font-bold text-lg mb-2">📍 Exemple 3 : La Révolution haïtienne - une évolution sociale brutale</p>
+              <p>En août 1791, lors de la cérémonie du Bois-Caïman, les esclaves de Saint-Domingue (nom colonial d'Haïti) se soulèvent contre leurs maîtres. En 13 ans de lutte acharnée (1791-1804), ils vont détruire le système esclavagiste et créer la première république noire du monde. C'est une transformation sociale <strong>radicale et rapide</strong> : en une génération, on passe d'une société où 90% de la population est esclave à une société d'hommes libres. Les anciens esclaves deviennent citoyens, soldats, propriétaires terriens. C'est unique dans l'histoire : nulle part ailleurs les esclaves n'ont réussi à vaincre militairement leurs maîtres et à créer un État indépendant. Cette évolution brutale montre que le changement social peut être révolutionnaire, pas seulement progressif.</p>
+            </div>
+            
+            <div class="bg-blue-50 dark:bg-blue-950/30 p-5 rounded-lg border-l-4 border-blue-500">
+              <p class="font-bold text-lg mb-2">📍 Exemple 4 : Les smartphones transforment la société haïtienne</p>
+              <p>En 2010, peu d'Haïtiens possédaient un smartphone. Aujourd'hui, en 2025, même dans les zones rurales, beaucoup de gens ont accès à internet mobile. Cette évolution technologique transforme rapidement notre société : les paysans consultent les prix du marché avant de vendre leurs récoltes (donc obtiennent de meilleurs prix), les transferts d'argent se font par téléphone (Moncash), l'éducation en ligne devient accessible, les jeunes se mobilisent politiquement via les réseaux sociaux. En seulement 15 ans, le smartphone a changé profondément notre manière de communiquer, de commercer, de nous informer, de nous organiser socialement. C'est un exemple d'évolution <strong>rapide</strong> et <strong>technologique</strong>.</p>
+            </div>
+            
+            <div class="bg-blue-50 dark:bg-blue-950/30 p-5 rounded-lg border-l-4 border-blue-500">
+              <p class="font-bold text-lg mb-2">📍 Exemple 5 : Le rôle du climat dans l'effondrement des Mayas</p>
+              <p>La civilisation maya (Mexique, Guatemala actuels) a connu son âge d'or entre 250 et 900 apr. J.-C. : villes immenses (Tikal comptait 100 000 habitants), pyramides monumentales, écriture sophistiquée, calendrier précis. Puis, vers 900, les grandes cités sont mystérieusement abandonnées. Pourquoi ? Les archéologues pensent qu'une série de <strong>sécheresses sévères</strong>, combinée à la surpopulation et à la déforestation, a provoqué des famines, des guerres, et finalement l'effondrement de la civilisation. Cet exemple montre que les facteurs <strong>environnementaux</strong> peuvent détruire même les sociétés les plus brillantes. Leçon importante pour nous aujourd'hui, face au changement climatique !</p>
+            </div>
+            
+            <div class="bg-blue-50 dark:bg-blue-950/30 p-5 rounded-lg border-l-4 border-blue-500">
+              <p class="font-bold text-lg mb-2">📍 Exemple 6 : Comment le COVID-19 a accéléré le télétravail</p>
+              <p>Avant 2020, le télétravail était rare, considéré comme impraticable pour la plupart des emplois. La pandémie de COVID-19 a forcé des millions de gens à travailler de chez eux. Résultat : les entreprises ont découvert que c'était possible ! Aujourd'hui, même après la pandémie, beaucoup de gens continuent à télétravailler plusieurs jours par semaine. Cela transforme l'organisation du travail, réduit les déplacements (donc la pollution), permet de vivre loin des grandes villes. Un exemple de comment une <strong>crise</strong> (sanitaire) peut accélérer une évolution sociale qui était déjà en germe, mais progressait lentement.</p>
+            </div>
+          </div>
+        </section>
+
+        <section>
+          <h3 class="text-2xl font-bold mb-4 text-primary mt-8">Exercices variés</h3>
+          
+          <div class="space-y-6">
+            <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md">
+              <p class="font-bold text-xl mb-4">📝 1. Questions à choix multiples</p>
+              <div class="space-y-4">
+                <div>
+                  <p class="font-semibold">a) La révolution néolithique marque le passage :</p>
+                  <ul class="ml-6 list-disc space-y-1">
+                    <li>De la pierre à l'âge du bronze</li>
+                    <li>De la chasse-cueillette à l'agriculture ✓</li>
+                    <li>De l'esclavage à la liberté</li>
+                    <li>De la monarchie à la démocratie</li>
+                  </ul>
+                </div>
+                
+                <div>
+                  <p class="font-semibold">b) Quelle invention a révolutionné la transmission des connaissances en Europe au XVe siècle ?</p>
+                  <ul class="ml-6 list-disc space-y-1">
+                    <li>L'écriture cunéiforme</li>
+                    <li>Le papyrus égyptien</li>
+                    <li>L'imprimerie de Gutenberg ✓</li>
+                    <li>L'ordinateur</li>
+                  </ul>
+                </div>
+                
+                <div>
+                  <p class="font-semibold">c) Quelle civilisation a construit les pyramides de Gizeh ?</p>
+                  <ul class="ml-6 list-disc space-y-1">
+                    <li>Les Mésopotamiens</li>
+                    <li>Les Égyptiens ✓</li>
+                    <li>Les Mayas</li>
+                    <li>Les Chinois</li>
+                  </ul>
+                </div>
+                
+                <div>
+                  <p class="font-semibold">d) Le Code d'Hammourabi est célèbre comme :</p>
+                  <ul class="ml-6 list-disc space-y-1">
+                    <li>Le premier alphabet</li>
+                    <li>Une des premières compilations de lois écrites ✓</li>
+                    <li>Le premier roman de l'histoire</li>
+                    <li>Une carte géographique ancienne</li>
+                  </ul>
+                </div>
+                
+                <div>
+                  <p class="font-semibold">e) Quelle révolution historique a transformé Haïti de colonie esclavagiste en république libre ?</p>
+                  <ul class="ml-6 list-disc space-y-1">
+                    <li>La révolution française</li>
+                    <li>La révolution américaine</li>
+                    <li>La révolution haïtienne ✓</li>
+                    <li>La révolution industrielle</li>
+                  </ul>
+                </div>
+                
+                <div>
+                  <p class="font-semibold">f) Quel facteur a le PLUS contribué au développement des premières civilisations ?</p>
+                  <ul class="ml-6 list-disc space-y-1">
+                    <li>La maîtrise de l'écriture</li>
+                    <li>Le développement de l'agriculture ✓</li>
+                    <li>L'invention de la roue</li>
+                    <li>La découverte de l'or</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+
+            <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md">
+              <p class="font-bold text-xl mb-4">✔️ 2. Vrai ou Faux (justifiez vos réponses)</p>
+              <ul class="ml-6 space-y-3">
+                <li><strong>a)</strong> Les premières sociétés humaines étaient sédentaires. <br/><span class="text-red-600 font-semibold">(FAUX)</span> - Elles étaient nomades, se déplaçant pour suivre le gibier et les ressources.</li>
+                <li><strong>b)</strong> L'écriture est une caractéristique de toutes les civilisations avancées. <br/><span class="text-red-600 font-semibold">(FAUX)</span> - Les Incas n'avaient pas d'écriture alphabétique mais étaient une civilisation très avancée.</li>
+                <li><strong>c)</strong> Les sociétés n'évoluent plus aujourd'hui. <br/><span class="text-red-600 font-semibold">(FAUX)</span> - Nous vivons une évolution rapide avec la révolution numérique.</li>
+                <li><strong>d)</strong> La révolution néolithique a eu lieu uniquement au Proche-Orient. <br/><span class="text-red-600 font-semibold">(FAUX)</span> - Elle s'est produite indépendamment en Chine, Amérique, Afrique, Nouvelle-Guinée.</li>
+                <li><strong>e)</strong> La maîtrise du feu a contribué au développement du cerveau humain. <br/><span class="text-green-600 font-semibold">(VRAI)</span> - La cuisson rend les aliments plus digestibles, libérant de l'énergie pour le cerveau.</li>
+                <li><strong>f)</strong> Haïti est la première république noire libre du monde. <br/><span class="text-green-600 font-semibold">(VRAI)</span> - Indépendance proclamée le 1er janvier 1804.</li>
+                <li><strong>g)</strong> Dans les sociétés paléolithiques, il y avait une forte hiérarchie sociale. <br/><span class="text-red-600 font-semibold">(FAUX)</span> - Ces sociétés étaient relativement égalitaires.</li>
+                <li><strong>h)</strong> L'agriculture a permis la création de surplus alimentaires. <br/><span class="text-green-600 font-semibold">(VRAI)</span> - C'est un des changements majeurs de la révolution néolithique.</li>
               </ul>
             </div>
 
-            <div>
-              <p class="font-semibold">2. Vrai ou Faux</p>
-              <ul class="ml-6 space-y-2">
-                <li>Les premières sociétés humaines étaient sédentaires. (Faux)</li>
-                <li>L'écriture est une caractéristique des civilisations avancées. (Vrai)</li>
-                <li>Les sociétés n'évoluent plus aujourd'hui. (Faux)</li>
+            <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md">
+              <p class="font-bold text-xl mb-4">🔗 3. Exercice de correspondance</p>
+              <p class="mb-3">Associez chaque invention/événement à son impact principal sur la société :</p>
+              <div class="grid md:grid-cols-2 gap-4">
+                <div>
+                  <p class="font-semibold underline mb-2">Inventions/Événements :</p>
+                  <ol class="list-decimal ml-6 space-y-1">
+                    <li>Agriculture</li>
+                    <li>Écriture</li>
+                    <li>Roue</li>
+                    <li>Imprimerie</li>
+                    <li>Machine à vapeur</li>
+                    <li>Internet</li>
+                    <li>Révolution haïtienne</li>
+                    <li>Smartphone</li>
+                  </ol>
+                </div>
+                <div>
+                  <p class="font-semibold underline mb-2">Impacts :</p>
+                  <ul class="list-none ml-6 space-y-1">
+                    <li>A. Transport et commerce facilités</li>
+                    <li>B. Sédentarisation et villes</li>
+                    <li>C. Révolution industrielle</li>
+                    <li>D. Conservation des informations</li>
+                    <li>E. Diffusion massive des livres</li>
+                    <li>F. Mondialisation de l'information</li>
+                    <li>G. Fin de l'esclavage en Haïti</li>
+                    <li>H. Communication mobile permanente</li>
+                  </ul>
+                </div>
+              </div>
+              <p class="text-sm mt-4 italic">Réponses : 1-B, 2-D, 3-A, 4-E, 5-C, 6-F, 7-G, 8-H</p>
+            </div>
+
+            <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md">
+              <p class="font-bold text-xl mb-4">💭 4. Questions de réflexion approfondie</p>
+              <ul class="ml-6 space-y-4">
+                <li><strong>a)</strong> Quels sont les avantages et les inconvénients de la sédentarisation par rapport au nomadisme ? (Pensez à la liberté de mouvement, la sécurité alimentaire, la santé, les relations sociales)</li>
+                <li><strong>b)</strong> Comment la technologie moderne (smartphones, réseaux sociaux, intelligence artificielle) change-t-elle notre société haïtienne ? Donnez au moins 3 exemples concrets.</li>
+                <li><strong>c)</strong> Pourquoi l'écriture est-elle considérée comme si importante pour le développement d'une société ? Que se passerait-il si l'écriture disparaissait soudainement aujourd'hui ?</li>
+                <li><strong>d)</strong> Comparez la vitesse de l'évolution sociale au Paléolithique (2 millions d'années) et aujourd'hui (changements majeurs en quelques décennies). Pourquoi cette accélération ? Est-ce une bonne chose ?</li>
+                <li><strong>e)</strong> Si vous pouviez choisir une invention qui a transformé l'humanité pour la présenter à votre classe, laquelle choisiriez-vous et pourquoi ? (feu, agriculture, écriture, roue, imprimerie, électricité, internet...)</li>
+                <li><strong>f)</strong> La Révolution haïtienne a transformé brutalement notre société en 13 ans (1791-1804). Pensez-vous que les changements rapides et révolutionnaires sont préférables aux évolutions lentes et progressives ? Justifiez.</li>
               </ul>
             </div>
 
-            <div>
-              <p class="font-semibold">3. Questions de réflexion</p>
-              <ul class="ml-6 space-y-2">
-                <li>Quels sont les avantages et les inconvénients de la sédentarisation ?</li>
-                <li>Comment la technologie moderne change-t-elle notre société haïtienne ?</li>
-                <li>Pourquoi l'écriture est-elle si importante pour le développement d'une société ?</li>
+            <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md">
+              <p class="font-bold text-xl mb-4">📊 5. Activité pratique : Frise chronologique de l'évolution humaine</p>
+              <p class="mb-3"><strong>Projet :</strong> Créez une grande frise chronologique illustrant les grandes étapes de l'évolution des sociétés humaines, de la préhistoire à nos jours.</p>
+              <p class="font-semibold mb-2">Votre frise doit inclure au moins ces 10 événements majeurs avec leurs dates :</p>
+              <ol class="list-decimal ml-6 space-y-2">
+                <li>Apparition des premiers outils (2,5 millions d'années)</li>
+                <li>Maîtrise du feu (400 000 ans)</li>
+                <li>Révolution néolithique (10 000 av. J.-C.)</li>
+                <li>Premières civilisations en Mésopotamie (3500 av. J.-C.)</li>
+                <li>Invention de l'écriture (3200 av. J.-C.)</li>
+                <li>Construction des pyramides d'Égypte (2600 av. J.-C.)</li>
+                <li>Invention de l'imprimerie en Europe (1450)</li>
+                <li>Révolution haïtienne (1791-1804)</li>
+                <li>Révolution industrielle (1760-1900)</li>
+                <li>Révolution numérique (1970-aujourd'hui)</li>
+              </ol>
+              <p class="mt-4"><strong>Bonus :</strong> Ajoutez des illustrations (dessins, images découpées) et utilisez des couleurs différentes pour les différentes périodes (Préhistoire, Antiquité, Moyen Âge, Temps modernes, Époque contemporaine).</p>
+            </div>
+
+            <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md">
+              <p class="font-bold text-xl mb-4">🔍 6. Activité de recherche : Les facteurs de l'évolution sociale en Haïti</p>
+              <p class="mb-3"><strong>Mission :</strong> Identifiez comment chacun des 5 facteurs d'évolution sociale a influencé l'histoire d'Haïti. Remplissez un tableau avec des exemples concrets.</p>
+              <table class="w-full border-collapse mt-3">
+                <thead>
+                  <tr class="bg-gray-200 dark:bg-gray-700">
+                    <th class="border border-gray-400 p-2 text-left">Facteur</th>
+                    <th class="border border-gray-400 p-2 text-left">Exemple haïtien</th>
+                    <th class="border border-gray-400 p-2 text-left">Impact sur la société</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td class="border border-gray-400 p-2">1. Technologique</td>
+                    <td class="border border-gray-400 p-2"><em>Ex: Introduction des smartphones</em></td>
+                    <td class="border border-gray-400 p-2"><em>Ex: Transferts d'argent mobiles (Moncash)</em></td>
+                  </tr>
+                  <tr>
+                    <td class="border border-gray-400 p-2">2. Économique</td>
+                    <td class="border border-gray-400 p-2"><em>À compléter</em></td>
+                    <td class="border border-gray-400 p-2"><em>À compléter</em></td>
+                  </tr>
+                  <tr>
+                    <td class="border border-gray-400 p-2">3. Environnemental</td>
+                    <td class="border border-gray-400 p-2"><em>À compléter</em></td>
+                    <td class="border border-gray-400 p-2"><em>À compléter</em></td>
+                  </tr>
+                  <tr>
+                    <td class="border border-gray-400 p-2">4. Culturel/Religieux</td>
+                    <td class="border border-gray-400 p-2"><em>À compléter</em></td>
+                    <td class="border border-gray-400 p-2"><em>À compléter</em></td>
+                  </tr>
+                  <tr>
+                    <td class="border border-gray-400 p-2">5. Politique/Militaire</td>
+                    <td class="border border-gray-400 p-2"><em>À compléter</em></td>
+                    <td class="border border-gray-400 p-2"><em>À compléter</em></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+            <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md">
+              <p class="font-bold text-xl mb-4">🎨 7. Exercice créatif : Imaginer la société du futur</p>
+              <p class="mb-3"><strong>Consigne :</strong> Nous sommes en 2100. À quoi ressemble la société haïtienne selon vous ? Écrivez un court texte (10-15 lignes) ou dessinez une scène montrant :</p>
+              <ul class="list-disc ml-6 space-y-2">
+                <li>Les technologies utilisées (transports, communication, énergie)</li>
+                <li>L'organisation sociale (famille, travail, éducation)</li>
+                <li>L'environnement (villes, campagnes, forêts)</li>
+                <li>Les relations avec les autres pays</li>
+              </ul>
+              <p class="mt-3"><strong>Réflexion :</strong> Est-ce un futur optimiste ou pessimiste ? Pourquoi ? Que faudrait-il faire dès aujourd'hui pour atteindre ce futur positif ou éviter le futur négatif ?</p>
+            </div>
+
+            <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md">
+              <p class="font-bold text-xl mb-4">🏛️ 8. Comparaison de civilisations anciennes</p>
+              <p class="mb-3"><strong>Activité :</strong> Choisissez DEUX civilisations anciennes parmi : Égypte, Mésopotamie, Chine, Vallée de l'Indus, Mayas, Incas.</p>
+              <p class="mb-2">Comparez-les selon ces critères :</p>
+              <ul class="list-disc ml-6 space-y-1">
+                <li>Période de prospérité</li>
+                <li>Localisation géographique</li>
+                <li>Principales réalisations (architecture, écriture, sciences)</li>
+                <li>Organisation politique (roi, empereur, prêtres)</li>
+                <li>Raisons du déclin ou de la disparition</li>
+              </ul>
+              <p class="mt-3"><strong>Question finale :</strong> Qu'est-ce que ces civilisations ont en commun ? Qu'est-ce qui les différencie ?</p>
+            </div>
+
+            <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md">
+              <p class="font-bold text-xl mb-4">👨‍👩‍👧‍👦 9. Enquête familiale : L'évolution vue par vos grands-parents</p>
+              <p class="mb-3"><strong>Projet :</strong> Interrogez vos parents ou grands-parents (ou une personne âgée de votre entourage) sur les changements qu'ils ont vus au cours de leur vie.</p>
+              <p class="font-semibold mb-2">Questions à poser :</p>
+              <ul class="list-disc ml-6 space-y-2">
+                <li>Quelles technologies n'existaient pas quand vous étiez jeune ? (télévision, téléphone portable, internet, etc.)</li>
+                <li>Comment se passait la vie quotidienne sans ces technologies ? (communication, déplacements, travail)</li>
+                <li>Quels changements politiques avez-vous vécus en Haïti ?</li>
+                <li>Comment la société haïtienne a-t-elle changé ? (rôle des femmes, éducation, économie)</li>
+                <li>Selon vous, la vie était-elle meilleure avant ou maintenant ? Pourquoi ?</li>
+              </ul>
+              <p class="mt-3"><strong>Restitution :</strong> Préparez une présentation de 3-5 minutes pour partager vos découvertes en classe. Qu'avez-vous appris sur l'évolution récente de notre société ?</p>
+            </div>
+
+            <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md">
+              <p class="font-bold text-xl mb-4">📱 10. Débat en classe : "La technologie améliore-t-elle vraiment nos vies ?"</p>
+              <p class="mb-3"><strong>Format :</strong> Débat organisé en deux équipes.</p>
+              <div class="grid md:grid-cols-2 gap-4 mt-3">
+                <div class="border-2 border-green-500 p-3 rounded">
+                  <p class="font-bold text-green-700 dark:text-green-400 mb-2">Équipe POUR (la technologie améliore la vie) :</p>
+                  <p class="text-sm">Arguments possibles : accès à l'information, progrès médical, communication facilitée, confort, éducation en ligne, etc.</p>
+                </div>
+                <div class="border-2 border-red-500 p-3 rounded">
+                  <p class="font-bold text-red-700 dark:text-red-400 mb-2">Équipe CONTRE (la technologie dégrade la vie) :</p>
+                  <p class="text-sm">Arguments possibles : pollution, chômage technologique, addiction aux écrans, surveillance, inégalités numériques, perte de liens humains, etc.</p>
+                </div>
+              </div>
+              <p class="mt-3"><strong>Consigne :</strong> Chaque équipe prépare 5 arguments solides avec des exemples concrets haïtiens ou internationaux. Durée du débat : 20-30 minutes.</p>
+            </div>
+
+            <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md">
+              <p class="font-bold text-xl mb-4">✍️ 11. Dissertation courte</p>
+              <p class="mb-3"><strong>Sujet :</strong> "L'évolution des sociétés humaines est-elle un progrès continu ou comporte-t-elle aussi des reculs ?"</p>
+              <p class="mb-2"><strong>Structure suggérée (1-2 pages) :</strong></p>
+              <ul class="list-disc ml-6 space-y-2">
+                <li><strong>Introduction :</strong> Définissez "évolution" et "progrès". Posez la problématique.</li>
+                <li><strong>Partie 1 - Les progrès :</strong> Exemples d'améliorations (espérance de vie, alphabétisation, droits humains, technologies, etc.)</li>
+                <li><strong>Partie 2 - Les reculs et problèmes :</strong> Guerres mondiales, esclavage moderne, pollution, inégalités croissantes, etc.</li>
+                <li><strong>Partie 3 - Cas d'Haïti :</strong> Analysez l'évolution haïtienne : progrès (indépendance, liberté) vs défis (instabilité, pauvreté, catastrophes)</li>
+                <li><strong>Conclusion :</strong> Votre position personnelle argumentée. L'évolution est-elle un progrès net ? Conditionnelle ? Ambiguë ?</li>
               </ul>
             </div>
 
-            <div>
-              <p class="font-semibold">4. Activité pratique</p>
-              <p>Créez une frise chronologique illustrant les grandes étapes de l'évolution des sociétés humaines, de la préhistoire à nos jours. Incluez au moins 5 événements majeurs avec leurs dates approximatives.</p>
+            <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md">
+              <p class="font-bold text-xl mb-4">🎬 12. Projet vidéo ou podcast : "Une journée dans la vie de..."</p>
+              <p class="mb-3"><strong>Projet créatif de groupe (3-4 élèves) :</strong> Créez une courte vidéo (3-5 min) ou un podcast comparant une journée type dans trois périodes différentes :</p>
+              <ol class="list-decimal ml-6 space-y-2">
+                <li><strong>Paléolithique</strong> (il y a 20 000 ans) - Un chasseur-cueilleur nomade</li>
+                <li><strong>Société agricole</strong> (Haïti au XVIIIe siècle) - Un paysan ou esclave sous la colonisation</li>
+                <li><strong>Aujourd'hui</strong> (2025) - Un jeune Haïtien moderne</li>
+              </ol>
+              <p class="mt-3"><strong>Aspects à montrer :</strong> Réveil, repas, travail/activités, loisirs, relations sociales, coucher. Mettez en évidence les différences et les similitudes.</p>
+              <p class="mt-2"><em>💡 Astuce : Vous pouvez faire des mimes, des dessins animés simples, ou interviewer des gens en jouant les rôles.</em></p>
             </div>
+          </div>
+        </section>
+
+        <section class="mt-8">
+          <h3 class="text-2xl font-bold mb-4 text-primary">Ressources complémentaires et approfondissement</h3>
+          <div class="bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-950/30 dark:to-pink-950/30 p-6 rounded-lg">
+            <p class="font-semibold text-lg mb-3">📚 Pour aller plus loin :</p>
+            <ul class="space-y-2">
+              <li><strong>📹 Vidéos YouTube recommandées :</strong>
+                <ul class="list-disc ml-8 mt-1 space-y-1">
+                  <li>"C'est pas sorcier - La préhistoire"</li>
+                  <li>"Révolution néolithique - Documentaire"</li>
+                  <li>"Les grandes civilisations de l'Antiquité"</li>
+                  <li>"Histoire d'Haïti - De la colonie à l'indépendance"</li>
+                  <li>"L'intelligence artificielle va-t-elle remplacer les humains ?"</li>
+                </ul>
+              </li>
+              <li><strong>📖 Livres accessibles (bibliothèque scolaire) :</strong>
+                <ul class="list-disc ml-8 mt-1">
+                  <li>"Sapiens : Une brève histoire de l'humanité" - Yuval Noah Harari (version jeunesse si disponible)</li>
+                  <li>"Les Jacobins noirs" - C.L.R. James (sur la Révolution haïtienne)</li>
+                </ul>
+              </li>
+              <li><strong>🌐 Sites web éducatifs :</strong>
+                <ul class="list-disc ml-8 mt-1">
+                  <li>Khan Academy - Cours d'histoire mondiale (en français)</li>
+                  <li>Lumni.fr - Ressources pédagogiques sur l'évolution humaine</li>
+                </ul>
+              </li>
+            </ul>
           </div>
         </section>
       </div>
