@@ -722,178 +722,716 @@ export const sciencesSocialesLessons7AF: SciencesSocialesLesson[] = [
     mois: "Décembre",
     objectif: "Découvrir les traits les plus significatifs de l'environnement physique haïtien.",
     introduction: `
-      <div class="space-y-4">
-        <p>Haïti occupe la partie occidentale de l'île d'Hispaniola, la deuxième plus grande île des Grandes Antilles. Avec une superficie de 27 750 km², notre pays présente une diversité géographique remarquable qui influence profondément la vie de ses habitants.</p>
-        <p>Des montagnes majestueuses aux plaines fertiles, des côtes paradisiaques aux vallées verdoyantes, l'espace géographique haïtien est d'une richesse extraordinaire. Cette géographie particulière a façonné notre histoire, notre économie et notre culture.</p>
-        <p>Découvrir notre espace géographique, c'est mieux comprendre notre pays et les défis auxquels nous faisons face.</p>
+      <div class="space-y-6">
+        <div class="bg-gradient-to-r from-emerald-50 to-green-50 dark:from-emerald-950/30 dark:to-green-950/30 p-6 rounded-lg border-l-4 border-emerald-500">
+          <p class="text-lg italic">"Haïti, perle des Antilles... notre terre natale est un joyau de diversité géographique, des sommets enneigés aux plages de sable blanc."</p>
+        </div>
+        
+        <p class="text-lg leading-relaxed">Fermez les yeux et imaginez : vous êtes au sommet du Pic la Selle, à 2 680 mètres d'altitude. Autour de vous, les montagnes s'étendent à perte de vue, couvertes de pins et de nuages. Au loin, vous apercevez la mer des Caraïbes, d'un bleu éclatant. Plus bas, des vallées verdoyantes où coulent des rivières. Voici Haïti dans toute sa splendeur géographique !</p>
+        
+        <p>Notre pays, bien que petit (27 750 km² - à peine la taille de la Belgique), concentre une extraordinaire variété de paysages : montagnes escarpées qui couvrent 75% du territoire, plaines fertiles où pousse notre nourriture, côtes spectaculaires bordant trois mers, îles paradisiaques... Cette diversité géographique fait d'Haïti un territoire unique dans la Caraïbe.</p>
+        
+        <p>Mais notre géographie n'est pas qu'une question de beauté. Elle explique notre histoire (les montagnes ont protégé les marrons en fuite et permis la résistance pendant la révolution), notre économie (les plaines agricoles nourrissent le pays), nos défis (séismes, ouragans, érosion), et même notre culture (chaque région a développé ses propres traditions en fonction de son environnement).</p>
+        
+        <div class="bg-yellow-50 dark:bg-yellow-950/20 border-l-4 border-yellow-500 p-4 my-4">
+          <p class="font-semibold text-yellow-900 dark:text-yellow-200">🎯 Objectifs d'apprentissage</p>
+          <ul class="list-disc ml-6 mt-2 space-y-1">
+            <li>Localiser précisément Haïti dans la Caraïbe et comprendre sa position stratégique</li>
+            <li>Identifier les différents types de relief haïtien et leur impact sur la vie quotidienne</li>
+            <li>Connaître nos principales ressources en eau et leur importance</li>
+            <li>Comprendre les défis géographiques auxquels Haïti fait face (érosion, risques naturels)</li>
+            <li>Apprécier la richesse et la diversité de notre patrimoine géographique</li>
+          </ul>
+        </div>
+        
+        <div class="bg-blue-50 dark:bg-blue-950/30 p-5 rounded-lg my-6">
+          <p class="font-semibold text-blue-900 dark:text-blue-200 mb-2">💡 Le savais-tu ?</p>
+          <p class="text-blue-800 dark:text-blue-300">Le nom "Haïti" vient du mot taïno "Ayiti" qui signifie "terre des hautes montagnes". Les premiers habitants de notre île avaient donc bien remarqué notre relief montagneux ! Christophe Colomb, en arrivant en 1492, a baptisé l'île "Hispaniola" (Petite Espagne), mais nous avons eu la sagesse de revenir à notre nom originel "Haïti" après l'indépendance en 1804. C'est un symbole fort : nous honorons la mémoire des Taïnos qui ont été décimés par la colonisation.</p>
+        </div>
       </div>
     `,
     contenu: `
-      <div class="space-y-6">
+      <div class="space-y-8">
         <section>
-          <h3 class="text-xl font-semibold mb-3">1. Situation géographique</h3>
-          <p>Haïti est situé dans la mer des Caraïbes, entre Cuba au nord-ouest et la Jamaïque au sud-ouest. Notre pays partage l'île d'Hispaniola avec la République Dominicaine à l'est.</p>
-          <p><strong>Coordonnées géographiques :</strong></p>
-          <ul class="list-disc ml-6 space-y-2">
-            <li>Latitude : Entre 18° et 20° Nord</li>
-            <li>Longitude : Entre 71° et 74° Ouest</li>
-            <li>Superficie : 27 750 km²</li>
-            <li>Frontière terrestre avec la République Dominicaine : 376 km</li>
-            <li>Côtes maritimes : Environ 1 771 km</li>
+          <h3 class="text-2xl font-bold mb-4 text-primary">1. Situation et position géographique d'Haïti</h3>
+          
+          <p class="text-lg mb-4">Haïti occupe une position stratégique au cœur de la Caraïbe. Notre pays est situé dans la mer des Caraïbes (aussi appelée mer des Antilles), sur l'île d'Hispaniola qu'il partage avec la République Dominicaine. Cette position a façonné notre histoire : carrefour commercial pendant l'époque coloniale, mais aussi cible des convoitises des grandes puissances.</p>
+          
+          <h4 class="text-xl font-semibold mt-6 mb-3">Localisation précise</h4>
+          <ul class="list-disc ml-8 space-y-3 mt-4">
+            <li><strong>Coordonnées géographiques :</strong> Entre 18° et 20° de latitude Nord, et entre 71° et 74° de longitude Ouest. Cette latitude nous place dans la zone tropicale, d'où notre climat chaud.</li>
+            <li><strong>Superficie totale :</strong> 27 750 km² (27 750 kilomètres carrés), ce qui équivaut à peu près à la taille de la Belgique ou du Maryland (États-Unis). Nous sommes donc un petit pays, mais avec une géographie très variée.</li>
+            <li><strong>Frontières :</strong> 
+              <ul class="list-circle ml-6 mt-2 space-y-1">
+                <li><strong>Frontière terrestre :</strong> 376 km avec la République Dominicaine à l'est. Cette frontière traverse des montagnes, des plateaux et des plaines.</li>
+                <li><strong>Frontière maritime :</strong> Environ 1 771 km de côtes ! Nous avons des côtes sur trois mers différentes : mer des Caraïbes au sud, océan Atlantique au nord, et canal de la Windward (passage entre Haïti et Cuba).</li>
+              </ul>
+            </li>
           </ul>
+          
+          <h4 class="text-xl font-semibold mt-6 mb-3">Nos voisins caribéens</h4>
+          <p>Haïti ne flotte pas seul dans la Caraïbe ! Nous faisons partie d'un ensemble d'îles appelé les <strong>Grandes Antilles</strong>, qui comprend également Cuba, la Jamaïque, Porto Rico et la République Dominicaine.</p>
+          <ul class="list-disc ml-8 space-y-2">
+            <li><strong>Cuba :</strong> À environ 80 km au nord-ouest. C'est la plus grande île des Caraïbes (110 860 km²).</li>
+            <li><strong>Jamaïque :</strong> À environ 190 km au sud-ouest. Île anglophone de 10 991 km².</li>
+            <li><strong>République Dominicaine :</strong> Notre voisin immédiat à l'est, avec qui nous partageons l'île d'Hispaniola. Superficie : 48 442 km² (presque deux fois la taille d'Haïti).</li>
+            <li><strong>Les Bahamas, Porto Rico, les Petites Antilles :</strong> Plus éloignés mais faisant partie de notre espace caribéen.</li>
+          </ul>
+          
+          <div class="bg-blue-50 dark:bg-blue-950/30 p-5 rounded-lg my-6">
+            <p class="font-semibold text-blue-900 dark:text-blue-200 mb-2">💡 Le savais-tu ?</p>
+            <p class="text-blue-800 dark:text-blue-300">L'île d'Hispaniola (qui abrite Haïti et la République Dominicaine) est la <strong>deuxième plus grande île des Caraïbes</strong>, après Cuba. Elle couvre 76 192 km² au total. Quand Christophe Colomb y a débarqué en 1492, il a déclaré : "C'est la plus belle terre que des yeux humains aient jamais vue." Difficile de lui donner tort quand on voit nos paysages !</p>
+          </div>
+          
+          <p class="mt-4"><em>📹 Suggestion YouTube : Recherchez "Carte Caraïbe Grandes Antilles" pour visualiser la position d'Haïti dans la région. Cherchez aussi "Hispaniola from space" pour voir notre île depuis l'espace !</em></p>
         </section>
 
         <section>
-          <h3 class="text-xl font-semibold mb-3">2. Le relief haïtien</h3>
-          <p>Haïti est un pays essentiellement montagneux. Environ 75% du territoire est constitué de montagnes et de collines. Cette topographie accidentée influence grandement l'agriculture, les communications et l'habitat.</p>
-          <p><strong>Principales chaînes de montagnes :</strong></p>
-          <ul class="list-disc ml-6 space-y-2">
-            <li><strong>Massif du Nord :</strong> Culmine au Pic la Selle (2 680 m), le point le plus haut d'Haïti</li>
-            <li><strong>Chaîne des Matheux :</strong> S'étend dans le département de l'Artibonite</li>
-            <li><strong>Massif de la Hotte :</strong> Dans le Sud, comprend le Pic Macaya (2 347 m)</li>
-            <li><strong>Montagnes Noires :</strong> Dans l'Artibonite</li>
+          <h3 class="text-2xl font-bold mb-4 text-primary mt-8">2. Le relief haïtien : un pays de montagnes</h3>
+          
+          <p class="text-lg mb-4">Haïti est l'un des pays les plus montagneux des Caraïbes. Environ <strong>75% de notre territoire</strong> est constitué de montagnes et de collines ! Cette topographie accidentée influence profondément notre vie : elle complique les transports et les communications, mais elle offre aussi des paysages spectaculaires et des microclimats variés.</p>
+          
+          <h4 class="text-xl font-semibold mt-6 mb-3">Les grandes chaînes de montagnes</h4>
+          <p>Notre territoire est traversé par plusieurs chaînes montagneuses importantes :</p>
+          
+          <div class="space-y-4 mt-4">
+            <div class="border-l-4 border-green-500 pl-4">
+              <p class="font-semibold">1. Massif du Nord</p>
+              <p>S'étend dans les départements du Nord et du Nord-Est. Point culminant : Morne Jean-Rabel (1 000 m). Cette chaîne sépare la plaine du Nord du reste du pays et a joué un rôle historique important en protégeant le royaume de Henri Christophe au XIXe siècle.</p>
+            </div>
+            
+            <div class="border-l-4 border-green-500 pl-4">
+              <p class="font-semibold">2. Massif de la Hotte (Sud-Ouest)</p>
+              <p>Abrite le <strong>Pic Macaya (2 347 m)</strong>, deuxième sommet du pays. Cette région est un trésor de biodiversité avec des espèces endémiques d'oiseaux, de grenouilles et de plantes qu'on ne trouve nulle part ailleurs au monde ! Malheureusement, la déforestation menace ce patrimoine unique.</p>
+            </div>
+            
+            <div class="border-l-4 border-green-500 pl-4">
+              <p class="font-semibold">3. Chaîne de la Selle (Sud-Est)</p>
+              <p>C'est ici que se trouve le <strong>Pic la Selle (2 680 m)</strong>, point culminant d'Haïti ! Ce sommet majestueux domine Port-au-Prince et peut être aperçu depuis la capitale les jours clairs. Par temps froid (oui, il fait froid en haut !), on peut même voir du givre ou une fine couche de glace tôt le matin.</p>
+            </div>
+            
+            <div class="border-l-4 border-green-500 pl-4">
+              <p class="font-semibold">4. Chaîne des Matheux (Centre-Ouest)</p>
+              <p>Séparant la plaine de l'Artibonite de la région métropolitaine de Port-au-Prince. Point culminant : Morne La Visite (2 275 m), où se trouve le parc national de La Visite, une des dernières forêts de pins d'Haïti.</p>
+            </div>
+            
+            <div class="border-l-4 border-green-500 pl-4">
+              <p class="font-semibold">5. Montagnes Noires (Artibonite)</p>
+              <p>Culminant à 1 700 m environ, elles bordent la vallée de l'Artibonite au nord et créent une barrière naturelle entre les départements de l'Artibonite et du Nord.</p>
+            </div>
+          </div>
+          
+          <h4 class="text-xl font-semibold mt-6 mb-3">Conséquences du relief montagneux</h4>
+          <ul class="list-disc ml-8 space-y-3 mt-4">
+            <li><strong>Agriculture difficile :</strong> Les pentes raides rendent la culture ardue. Les paysans doivent souvent travailler sur des terrains en pente, ce qui favorise l'érosion des sols quand la terre n'est pas protégée par des arbres ou des cultures en terrasses.</li>
+            <li><strong>Communications compliquées :</strong> Construire des routes en montagne coûte cher et demande beaucoup d'entretien. Certaines régions rurales restent difficiles d'accès, surtout pendant la saison des pluies.</li>
+            <li><strong>Isolement de certaines zones :</strong> Des villages entiers peuvent être coupés du reste du pays après de fortes pluies ou des glissements de terrain.</li>
+            <li><strong>Microclimats variés :</strong> La diversité de relief crée des climats différents. Il peut faire frais en montagne pendant qu'il fait très chaud sur les côtes !</li>
+            <li><strong>Protection historique :</strong> Les montagnes ont servi de refuge aux esclaves marrons qui fuyaient les plantations. Elles ont aussi été des bases stratégiques pendant la guerre d'indépendance.</li>
           </ul>
-          <p><strong>Principales plaines :</strong></p>
-          <ul class="list-disc ml-6 space-y-2">
-            <li><strong>Plaine du Nord :</strong> Région agricole fertile (canne à sucre, bananes)</li>
-            <li><strong>Plaine de l'Artibonite :</strong> Le grenier d'Haïti (riz, maïs)</li>
-            <li><strong>Plaine du Cul-de-Sac :</strong> Où se trouve Port-au-Prince</li>
-            <li><strong>Plaine des Cayes :</strong> Dans le Sud, fertile et agricole</li>
-          </ul>
+          
+          <div class="bg-blue-50 dark:bg-blue-950/30 p-5 rounded-lg my-6">
+            <p class="font-semibold text-blue-900 dark:text-blue-200 mb-2">💡 Le savais-tu ?</p>
+            <p class="text-blue-800 dark:text-blue-300">Le Pic la Selle, notre point culminant, est tellement haut que sa température peut descendre jusqu'à <strong>0°C</strong> en hiver ! Des randonneurs haïtiens et étrangers font l'ascension de ce sommet, ce qui prend environ 6-8 heures de marche depuis le village de Seguin. Au sommet, par temps clair, on peut voir jusqu'à la République Dominicaine et même Cuba ! C'est une expérience inoubliable de voir son pays d'en haut.</p>
+          </div>
+          
+          <p class="mt-4"><em>📹 Suggestion YouTube : Recherchez "Pic la Selle randonnée" ou "Relief Haïti documentaire" pour des images aériennes de nos montagnes.</em></p>
         </section>
 
         <section>
-          <h3 class="text-xl font-semibold mb-3">3. L'hydrographie</h3>
-          <p>Haïti possède plusieurs cours d'eau, bien que la plupart soient de faible débit pendant la saison sèche.</p>
-          <p><strong>Principaux fleuves et rivières :</strong></p>
-          <ul class="list-disc ml-6 space-y-2">
-            <li><strong>L'Artibonite :</strong> Le plus long fleuve (320 km), prend sa source en République Dominicaine</li>
-            <li><strong>Les Trois Rivières :</strong> Important dans le Nord</li>
-            <li><strong>La Grande Rivière du Nord</strong></li>
-            <li><strong>La Rivière Grise :</strong> Alimente Port-au-Prince</li>
+          <h3 class="text-2xl font-bold mb-4 text-primary mt-8">3. Les plaines : greniers agricoles d'Haïti</h3>
+          
+          <p class="text-lg mb-4">Bien qu'elles ne représentent que 25% du territoire, les plaines haïtiennes sont d'une importance capitale. C'est dans ces zones plates et fertiles que se concentre l'essentiel de notre production agricole. Sans nos plaines, Haïti ne pourrait pas nourrir sa population !</p>
+          
+          <h4 class="text-xl font-semibold mt-6 mb-3">Les principales plaines</h4>
+          
+          <div class="grid gap-4 mt-4">
+            <div class="bg-amber-50 dark:bg-amber-950/20 p-4 rounded-lg">
+              <p class="font-bold text-lg">🌾 Plaine de l'Artibonite (Nord-Ouest)</p>
+              <p class="mt-2"><strong>Superficie :</strong> Environ 3 000 km² (la plus grande plaine d'Haïti)</p>
+              <p class="mt-2"><strong>Caractéristiques :</strong></p>
+              <ul class="list-disc ml-6 mt-1 space-y-1">
+                <li>Traversée par le fleuve Artibonite, le plus long d'Haïti (320 km)</li>
+                <li>Système d'irrigation développé (barrage de Péligre construit en 1956)</li>
+                <li>Produit plus de <strong>80% du riz</strong> consommé en Haïti</li>
+                <li>Surnommée "le grenier d'Haïti" car elle nourrit une grande partie du pays</li>
+                <li>Aussi : Bananes, canne à sucre, légumes</li>
+              </ul>
+              <p class="mt-2 text-sm italic">💡 La région est aussi vulnérable aux inondations pendant la saison des ouragans, ce qui peut détruire les récoltes.</p>
+            </div>
+            
+            <div class="bg-amber-50 dark:bg-amber-950/20 p-4 rounded-lg">
+              <p class="font-bold text-lg">🌾 Plaine du Nord (près du Cap-Haïtien)</p>
+              <p class="mt-2"><strong>Superficie :</strong> Environ 500 km²</p>
+              <p class="mt-2"><strong>Caractéristiques :</strong></p>
+              <ul class="list-disc ml-6 mt-1 space-y-1">
+                <li>Sol fertile et bien irrigué</li>
+                <li>Anciennement la région la plus riche d'Haïti à l'époque coloniale (plantations de canne à sucre et café)</li>
+                <li>Aujourd'hui : Bananes, cacao, café, manioc, légumes</li>
+                <li>Climat agréable, moins chaud que le sud</li>
+              </ul>
+            </div>
+            
+            <div class="bg-amber-50 dark:bg-amber-950/20 p-4 rounded-lg">
+              <p class="font-bold text-lg">🌾 Plaine du Cul-de-Sac (Port-au-Prince)</p>
+              <p class="mt-2"><strong>Superficie :</strong> Environ 300 km²</p>
+              <p class="mt-2"><strong>Caractéristiques :</strong></p>
+              <ul class="list-disc ml-6 mt-1 space-y-1">
+                <li>Abrite Port-au-Prince, la capitale et la plus grande ville du pays</li>
+                <li>Forte urbanisation a réduit les terres agricoles</li>
+                <li>Lac Saumâtre (Étang Saumâtre), le plus grand lac d'Haïti (170 km²)</li>
+                <li>Région aride nécessitant l'irrigation</li>
+                <li>Production : Canne à sucre, bananes, légumes pour le marché urbain</li>
+              </ul>
+            </div>
+            
+            <div class="bg-amber-50 dark:bg-amber-950/20 p-4 rounded-lg">
+              <p class="font-bold text-lg">🌾 Plaine des Cayes (Sud)</p>
+              <p class="mt-2"><strong>Superficie :</strong> Environ 200 km²</p>
+              <p class="mt-2"><strong>Caractéristiques :</strong></p>
+              <ul class="list-disc ml-6 mt-1 space-y-1">
+                <li>Région côtière très fertile</li>
+                <li>Production variée : Riz, maïs, haricots, légumes</li>
+                <li>Proche du port des Cayes, facilitant les exportations</li>
+              </ul>
+            </div>
+          </div>
+          
+          <h4 class="text-xl font-semibold mt-6 mb-3">Importance économique des plaines</h4>
+          <p>Les plaines représentent seulement un quart du territoire, mais elles :</p>
+          <ul class="list-disc ml-8 space-y-2 mt-3">
+            <li>Concentrent <strong>la majorité de la production agricole</strong> du pays</li>
+            <li>Abritent les plus grandes villes (Port-au-Prince, Cap-Haïtien, Gonaïves, Les Cayes)</li>
+            <li>Regroupent <strong>plus de 70% de la population</strong> haïtienne</li>
+            <li>Facilitent les infrastructures : routes, aéroports, ports</li>
           </ul>
-          <p><strong>Lacs importants :</strong></p>
-          <ul class="list-disc ml-6 space-y-2">
-            <li><strong>Étang Saumâtre :</strong> Le plus grand lac naturel d'Haïti</li>
-            <li><strong>Lac de Péligre :</strong> Lac artificiel créé par un barrage sur l'Artibonite</li>
-          </ul>
-        </section>
-
-        <section>
-          <h3 class="text-xl font-semibold mb-3">4. Les côtes et les îles</h3>
-          <p>Haïti possède un littoral varié avec de nombreuses baies, presqu'îles et îles adjacentes.</p>
-          <p><strong>Principales baies :</strong></p>
-          <ul class="list-disc ml-6 space-y-2">
-            <li>Baie de Port-au-Prince</li>
-            <li>Golfe de la Gonâve</li>
-            <li>Baie des Gonaïves</li>
-            <li>Baie d'Acul</li>
-            <li>Baie de Fort-Liberté</li>
-          </ul>
-          <p><strong>Îles principales :</strong></p>
-          <ul class="list-disc ml-6 space-y-2">
-            <li><strong>La Gonâve :</strong> La plus grande île (689 km²)</li>
-            <li><strong>Île de la Tortue :</strong> Célèbre dans l'histoire de la piraterie</li>
-            <li><strong>Île à Vache :</strong> Destination touristique au sud</li>
-            <li><strong>Cayemittes :</strong> Groupe d'îlots au sud</li>
-          </ul>
-        </section>
-
-        <section>
-          <h3 class="text-xl font-semibold mb-3">5. Les divisions administratives</h3>
-          <p>Haïti est divisé en <strong>10 départements</strong> géographiques :</p>
-          <ul class="list-disc ml-6 space-y-2">
-            <li><strong>Ouest</strong> - Capitale : Port-au-Prince</li>
-            <li><strong>Sud-Est</strong> - Capitale : Jacmel</li>
-            <li><strong>Nord</strong> - Capitale : Cap-Haïtien</li>
-            <li><strong>Nord-Est</strong> - Capitale : Fort-Liberté</li>
-            <li><strong>Artibonite</strong> - Capitale : Gonaïves</li>
-            <li><strong>Centre</strong> - Capitale : Hinche</li>
-            <li><strong>Sud</strong> - Capitale : Les Cayes</li>
-            <li><strong>Grande Anse</strong> - Capitale : Jérémie</li>
-            <li><strong>Nord-Ouest</strong> - Capitale : Port-de-Paix</li>
-            <li><strong>Nippes</strong> - Capitale : Miragoâne</li>
-          </ul>
-        </section>
-
-        <section>
-          <h3 class="text-xl font-semibold mb-3">6. Défis géographiques</h3>
-          <p>La géographie d'Haïti présente certains défis :</p>
-          <ul class="list-disc ml-6 space-y-2">
-            <li><strong>Déforestation :</strong> Moins de 2% de couverture forestière originelle reste</li>
-            <li><strong>Érosion des sols :</strong> Causée par le relief montagneux et la déforestation</li>
-            <li><strong>Risques sismiques :</strong> Haïti se trouve sur une faille tectonique active</li>
-            <li><strong>Vulnérabilité aux ouragans :</strong> Position dans la trajectoire des cyclones caribéens</li>
-            <li><strong>Accès difficile :</strong> Le relief complique les communications et le transport</li>
-          </ul>
-        </section>
-      </div>
-    `,
-    exemplesExercices: `
-      <div class="space-y-6">
-        <section>
-          <h3 class="text-xl font-semibold mb-3">Exemples concrets</h3>
-          <div class="bg-blue-50 p-4 rounded-lg space-y-3">
-            <p><strong>Exemple 1 :</strong> La plaine de l'Artibonite, grâce à son irrigation, produit plus de 80% du riz consommé en Haïti. C'est une illustration de l'importance des plaines dans l'économie agricole.</p>
-            <p><strong>Exemple 2 :</strong> Le Pic la Selle, point culminant d'Haïti à 2 680 m, abrite une biodiversité unique avec des espèces endémiques d'oiseaux et de plantes.</p>
-            <p><strong>Exemple 3 :</strong> L'île de la Gonâve, bien que proche de Port-au-Prince, reste difficile d'accès et moins développée en raison de son isolement géographique.</p>
+          
+          <div class="bg-blue-50 dark:bg-blue-950/30 p-5 rounded-lg my-6">
+            <p class="font-semibold text-blue-900 dark:text-blue-200 mb-2">💡 Le savais-tu ?</p>
+            <p class="text-blue-800 dark:text-blue-300">Le barrage de Péligre, construit en 1956 sur le fleuve Artibonite, a créé le <strong>lac de Péligre</strong>, le deuxième plus grand lac d'Haïti (après l'Étang Saumâtre). Ce barrage permet d'irriguer 32 000 hectares de terres agricoles dans la vallée de l'Artibonite et produit environ 50 mégawatts d'électricité, soit environ 20% de l'électricité du pays ! C'est un exemple d'aménagement géographique qui a transformé une région.</p>
           </div>
         </section>
 
         <section>
-          <h3 class="text-xl font-semibold mb-3">Exercices</h3>
-          <div class="space-y-4">
-            <div>
-              <p class="font-semibold">1. Questions à choix multiples</p>
-              <p>a) Le point culminant d'Haïti est :</p>
-              <ul class="ml-6 list-disc">
-                <li>Le Morne-à-Cabrit</li>
-                <li>Le Pic la Selle ✓</li>
-                <li>Le Pic Macaya</li>
+          <h3 class="text-2xl font-bold mb-4 text-primary mt-8">4. L'hydrographie : nos rivières et nos lacs</h3>
+          
+          <p class="text-lg mb-4">L'eau est une ressource vitale. Haïti possède un réseau de rivières et quelques lacs, mais la disponibilité en eau potable reste un défi majeur pour le pays.</p>
+          
+          <h4 class="text-xl font-semibold mt-6 mb-3">Les principaux fleuves et rivières</h4>
+          <ul class="list-disc ml-8 space-y-3 mt-4">
+            <li><strong>L'Artibonite (320 km) :</strong> Le plus long fleuve d'Haïti et de toute l'île d'Hispaniola ! Il prend sa source en République Dominicaine, traverse le plateau Central haïtien, puis descend irriguer la vaste plaine de l'Artibonite avant de se jeter dans le golfe de la Gonâve. C'est l'artère vitale de l'agriculture haïtienne.</li>
+            <li><strong>Les Trois Rivières (150 km) :</strong> Dans le département du Nord, elle alimente la région du Cap-Haïtien en eau pour l'irrigation et la consommation.</li>
+            <li><strong>La Rivière Grise (100 km) :</strong> Traverse Port-au-Prince. Malheureusement, elle est gravement polluée par les déchets urbains, ce qui représente un problème de santé publique.</li>
+            <li><strong>La Grande Rivière du Nord :</strong> Importante pour l'irrigation dans le département du Nord.</li>
+          </ul>
+          
+          <p class="mt-4"><strong>Problème majeur :</strong> Beaucoup de nos rivières sont <strong>intermittentes</strong>, c'est-à-dire qu'elles s'assèchent pendant la saison sèche et débordent pendant la saison des pluies. La déforestation aggrave ce phénomène car il n'y a plus d'arbres pour retenir l'eau dans le sol.</p>
+          
+          <h4 class="text-xl font-semibold mt-6 mb-3">Les lacs</h4>
+          <ul class="list-disc ml-8 space-y-3 mt-4">
+            <li><strong>Étang Saumâtre / Lac Azuéi (170 km²) :</strong> Le plus grand lac naturel d'Haïti. Il est situé dans la plaine du Cul-de-Sac, à la frontière avec la République Dominicaine. C'est un lac d'eau salée (d'où son nom "saumâtre") qui abrite des crocodiles, des flamants roses et de nombreuses espèces d'oiseaux migrateurs. Patrimoine écologique important !</li>
+            <li><strong>Lac de Péligre (50 km²) :</strong> Lac artificiel créé par le barrage de Péligre en 1956. Il sert à l'irrigation et à la production d'électricité.</li>
+            <li><strong>Étang de Miragôane :</strong> Petit lac côtier dans le département des Nippes.</li>
+          </ul>
+          
+          <div class="bg-blue-50 dark:bg-blue-950/30 p-5 rounded-lg my-6">
+            <p class="font-semibold text-blue-900 dark:text-blue-200 mb-2">💡 Le savais-tu ?</p>
+            <p class="text-blue-800 dark:text-blue-300">L'Étang Saumâtre abrite une espèce fascinante : le <strong>crocodile américain</strong> (Crocodylus acutus), qui peut atteindre 4 à 5 mètres de long ! Ces reptiles préhistoriques étaient vénérés par les Taïnos. Aujourd'hui, ils sont menacés par la destruction de leur habitat et la pollution. Le lac est aussi un site important pour les oiseaux migrateurs qui voyagent entre l'Amérique du Nord et du Sud. Des milliers de flamants roses y font parfois escale !</p>
+          </div>
+          
+          <p class="mt-4"><em>📹 Suggestion YouTube : Recherchez "Étang Saumâtre Haïti crocodiles" ou "Barrage Péligre" pour voir ces merveilles en vidéo.</em></p>
+        </section>
+
+        <section>
+          <h3 class="text-2xl font-bold mb-4 text-primary mt-8">5. Les côtes et les îles : notre patrimoine maritime</h3>
+          
+          <p class="text-lg mb-4">Avec 1 771 km de côtes, Haïti est un pays maritime ! Nos côtes offrent des paysages variés : plages de sable blanc, mangroves, falaises rocheuses, récifs coralliens...</p>
+          
+          <h4 class="text-xl font-semibold mt-6 mb-3">Les principales îles haïtiennes</h4>
+          <ul class="list-disc ml-8 space-y-3 mt-4">
+            <li><strong>La Gonâve (689 km²) :</strong> La plus grande île d'Haïti, située au milieu du golfe de la Gonâve. Population : environ 120 000 habitants. L'île est montagneuse et aride. Son isolement géographique a créé une culture locale unique. Accès difficile : il faut prendre un bateau depuis Port-au-Prince ou Saint-Marc.</li>
+            <li><strong>Île de la Tortue (180 km²) :</strong> Au nord-ouest, cette île a joué un rôle historique fascinant. Au XVIIe siècle, elle était le <strong>repaire des pirates et boucaniers</strong> qui attaquaient les navires espagnols ! Les Français l'ont ensuite utilisée comme base pour coloniser Haïti. Aujourd'hui, c'est une île paisible avec des plages magnifiques mais peu développées.</li>
+            <li><strong>Île-à-Vache (52 km²) :</strong> Au sud, près des Cayes. Plages paradisiaques, cocotiers, eaux turquoise... C'est une destination touristique potentielle importante. Henri Morgan, le célèbre pirate, y a séjourné au XVIIe siècle !</li>
+            <li><strong>Cayemites (45 km²) :</strong> Deux petites îles (Grande Cayemite et Petite Cayemite) dans le sud-ouest. Isolées mais très belles.</li>
+          </ul>
+          
+          <h4 class="text-xl font-semibold mt-6 mb-3">Patrimoine côtier</h4>
+          <p>Nos côtes abritent des écosystèmes fragiles et précieux :</p>
+          <ul class="list-disc ml-8 space-y-2 mt-3">
+            <li><strong>Récifs coralliens :</strong> Protection naturelle contre l'érosion, habitat de milliers d'espèces de poissons</li>
+            <li><strong>Mangroves :</strong> Forêts côtières qui protègent les côtes des ouragans et servent de nurserie aux poissons et crustacés. Malheureusement, beaucoup ont été coupées pour faire du charbon de bois.</li>
+            <li><strong>Plages :</strong> Potentiel touristique énorme, mais nécessitent d'être protégées de la pollution</li>
+          </ul>
+          
+          <div class="bg-blue-50 dark:bg-blue-950/30 p-5 rounded-lg my-6">
+            <p class="font-semibold text-blue-900 dark:text-blue-200 mb-2">💡 Le savais-tu ?</p>
+            <p class="text-blue-800 dark:text-blue-300">L'Île de la Tortue (Île de la Tortue en français, "Turtle Island" en anglais) était le <strong>quartier général des pirates des Caraïbes au XVIIe siècle</strong> ! Ces pirates (appelés "flibustiers" ou "boucaniers") attaquaient les galions espagnols chargés d'or venant d'Amérique du Sud. Le fameux "Code des Pirates" aurait été rédigé sur cette île. Aujourd'hui, c'est une île tranquille de pêcheurs, mais son passé pirate fascine toujours les historiens et les visiteurs !</p>
+          </div>
+        </section>
+
+        <section>
+          <h3 class="text-2xl font-bold mb-4 text-primary mt-8">6. Les divisions administratives : organisation du territoire</h3>
+          
+          <p class="text-lg mb-4">Pour mieux gérer son territoire, Haïti est divisé en <strong>10 départements géographiques</strong>, eux-mêmes subdivisés en 42 arrondissements, 145 communes et 571 sections communales.</p>
+          
+          <h4 class="text-xl font-semibold mt-6 mb-3">Les 10 départements et leurs caractéristiques</h4>
+          
+          <div class="grid gap-3 mt-4">
+            <div class="border-l-4 border-purple-500 pl-4 py-2">
+              <p class="font-bold">1. Ouest - Capitale : Port-au-Prince</p>
+              <p class="text-sm mt-1">Le plus peuplé (4 millions d'habitants). Concentre le pouvoir politique et économique. Département le plus urbanisé.</p>
+            </div>
+            <div class="border-l-4 border-purple-500 pl-4 py-2">
+              <p class="font-bold">2. Sud-Est - Capitale : Jacmel</p>
+              <p class="text-sm mt-1">Connue pour son carnaval, son architecture coloniale et ses plages. Ville artistique et culturelle.</p>
+            </div>
+            <div class="border-l-4 border-purple-500 pl-4 py-2">
+              <p class="font-bold">3. Nord - Capitale : Cap-Haïtien</p>
+              <p class="text-sm mt-1">Deuxième ville du pays. Riche histoire (capitale du royaume de Henri Christophe). Sites historiques : Citadelle Laferrière, Palais Sans-Souci (UNESCO).</p>
+            </div>
+            <div class="border-l-4 border-purple-500 pl-4 py-2">
+              <p class="font-bold">4. Nord-Est - Capitale : Fort-Liberté</p>
+              <p class="text-sm mt-1">Région frontalière avec la République Dominicaine. Fort-Liberté était un port important à l'époque coloniale.</p>
+            </div>
+            <div class="border-l-4 border-purple-500 pl-4 py-2">
+              <p class="font-bold">5. Artibonite - Capitale : Gonaïves</p>
+              <p class="text-sm mt-1">Plus grand département en superficie. Grenier d'Haïti (plaine de l'Artibonite). Gonaïves = "Ville de l'Indépendance" (proclamation le 1er janvier 1804).</p>
+            </div>
+            <div class="border-l-4 border-purple-500 pl-4 py-2">
+              <p class="font-bold">6. Centre - Capitale : Hinche</p>
+              <p class="text-sm mt-1">Région montagneuse et rurale. Agriculture de subsistance. Région la plus pauvre mais riche en culture traditionnelle.</p>
+            </div>
+            <div class="border-l-4 border-purple-500 pl-4 py-2">
+              <p class="font-bold">7. Sud - Capitale : Les Cayes</p>
+              <p class="text-sm mt-1">Troisième ville du pays. Agriculture diversifiée, pêche. Durement touché par l'ouragan Matthew en 2016.</p>
+            </div>
+            <div class="border-l-4 border-purple-500 pl-4 py-2">
+              <p class="font-bold">8. Grande Anse - Capitale : Jérémie</p>
+              <p class="text-sm mt-1">"Cité des poètes" (beaucoup d'écrivains haïtiens en sont originaires). Région isolée mais fertile. Cacao, café.</p>
+            </div>
+            <div class="border-l-4 border-purple-500 pl-4 py-2">
+              <p class="font-bold">9. Nord-Ouest - Capitale : Port-de-Paix</p>
+              <p class="text-sm mt-1">Région côtière. Proche de l'Île de la Tortue. Port-de-Paix était un port important pour le commerce du café.</p>
+            </div>
+            <div class="border-l-4 border-purple-500 pl-4 py-2">
+              <p class="font-bold">10. Nippes - Capitale : Miragoâne</p>
+              <p class="text-sm mt-1">Le plus récent département (créé en 2003). Petit mais agricole (café, cacao, canne à sucre).</p>
+            </div>
+          </div>
+          
+          <p class="mt-4"><strong>💡 Astuce pour mémoriser :</strong> Créez un mnémonique avec les initiales des départements ! Par exemple : "Oh, Ses Nouveaux Amis Nord-Est Arriveront Ce Soir, Grands Amis Nippois" (Ouest, Sud-Est, Nord, Nord-Est, Artibonite, Centre, Sud, Grande Anse, Nord-Ouest, Nippes).</p>
+        </section>
+
+        <section>
+          <h3 class="text-2xl font-bold mb-4 text-primary mt-8">7. Les défis géographiques majeurs d'Haïti</h3>
+          
+          <p class="text-lg mb-4">Notre géographie, bien que belle et diverse, nous pose aussi des défis considérables que nous devons affronter avec courage et intelligence.</p>
+          
+          <h4 class="text-xl font-semibold mt-6 mb-3">1. La déforestation : un désastre écologique</h4>
+          <p>C'est le problème environnemental le plus grave d'Haïti. Au début du XXe siècle, environ <strong>60% du territoire</strong> était couvert de forêts. Aujourd'hui, il en reste <strong>moins de 2%</strong> ! Où sont passés nos arbres ?</p>
+          <ul class="list-disc ml-8 space-y-2 mt-3">
+            <li><strong>Charbon de bois :</strong> 70% de l'énergie en Haïti provient du charbon de bois. Les arbres sont coupés pour faire du charbon qu'on utilise pour cuisiner.</li>
+            <li><strong>Agriculture sur brûlis :</strong> Les paysans brûlent les forêts pour créer de nouvelles terres agricoles.</li>
+            <li><strong>Pauvreté :</strong> Les gens coupent les arbres pour survivre car ils n'ont pas d'alternative énergétique.</li>
+          </ul>
+          <p class="mt-3"><strong>Conséquences catastrophiques :</strong></p>
+          <ul class="list-disc ml-8 space-y-1 mt-2">
+            <li>Érosion massive des sols (voir ci-dessous)</li>
+            <li>Disparition de la biodiversité (espèces animales et végétales)</li>
+            <li>Réchauffement local du climat</li>
+            <li>Diminution des pluies</li>
+          </ul>
+          
+          <h4 class="text-xl font-semibold mt-6 mb-3">2. L'érosion des sols : la terre qui s'en va</h4>
+          <p>Sans arbres pour retenir la terre, le sol part avec la pluie ! Chaque année, des <strong>millions de tonnes de terre arable</strong> sont emportées vers la mer.</p>
+          <ul class="list-disc ml-8 space-y-2 mt-3">
+            <li><strong>Glissements de terrain :</strong> Pendant les fortes pluies, des pans entiers de montagnes glissent, ensevelissant maisons et routes.</li>
+            <li><strong>Inondations :</strong> L'eau dévale les pentes sans être absorbée, inondant les plaines.</li>
+            <li><strong>Diminution de la fertilité :</strong> La couche fertile du sol disparaît, laissant la roche nue. Les récoltes diminuent d'année en année.</li>
+            <li><strong>Envasement des rivières et barrages :</strong> La terre emportée se dépose dans les cours d'eau, réduisant leur capacité.</li>
+          </ul>
+          <p class="mt-3 italic">📸 <strong>Image satellite tristement célèbre :</strong> Depuis l'espace, on peut voir nettement la différence entre Haïti (brun-gris, déboisé) et la République Dominicaine voisine (verte, avec des forêts). C'est une leçon visuelle puissante sur l'impact de la déforestation.</p>
+          
+          <h4 class="text-xl font-semibold mt-6 mb-3">3. Les risques sismiques : vivre sur une faille</h4>
+          <p>Haïti se trouve sur la frontière entre deux <strong>plaques tectoniques</strong> : la plaque nord-américaine et la plaque caribéenne. Ces plaques se déplacent de quelques centimètres par an, créant des tensions qui se libèrent brutalement sous forme de tremblements de terre.</p>
+          <ul class="list-disc ml-8 space-y-2 mt-3">
+            <li><strong>Séisme de 2010 :</strong> Le 12 janvier 2010, un tremblement de terre de magnitude 7,0 a frappé Port-au-Prince. Bilan : plus de 230 000 morts, 300 000 blessés, 1,5 million de sans-abris. Des quartiers entiers détruits. La catastrophe naturelle la plus meurtrière du XXIe siècle.</li>
+            <li><strong>Séisme de 2021 :</strong> Le 14 août 2021, magnitude 7,2 dans le Sud. Plus de 2 200 morts. Les Cayes et Jérémie gravement touchées.</li>
+            <li><strong>Failles actives :</strong> La faille d'Enriquillo (sud) et la faille septentrionale (nord) sont actives. D'autres séismes surviendront inévitablement.</li>
+          </ul>
+          <p class="mt-3"><strong>Que faire ?</strong> Construire selon les normes antisismiques, se préparer (kit d'urgence, plan familial), savoir quoi faire pendant un séisme (se protéger sous une table solide, s'éloigner des fenêtres).</p>
+          
+          <h4 class="text-xl font-semibold mt-6 mb-3">4. La vulnérabilité aux ouragans</h4>
+          <p>Haïti se trouve dans "l'allée des ouragans" de l'Atlantique. Chaque année, de juin à novembre, des cyclones tropicaux menacent notre pays.</p>
+          <ul class="list-disc ml-8 space-y-2 mt-3">
+            <li><strong>Ouragans récents dévastateurs :</strong>
+              <ul class="list-circle ml-6 mt-1">
+                <li>Matthew (2016) : Catégorie 4, détruit 90% des infrastructures dans le Sud</li>
+                <li>Jeanne (2004) : 3 000 morts dans les Gonaïves</li>
               </ul>
-              <p>b) Le plus long fleuve d'Haïti est :</p>
-              <ul class="ml-6 list-disc">
-                <li>La Rivière Grise</li>
-                <li>L'Artibonite ✓</li>
-                <li>Les Trois Rivières</li>
+            </li>
+            <li><strong>Aggravation par la déforestation :</strong> Sans arbres, les pluies provoquent des coulées de boue meurtrières</li>
+            <li><strong>Pauvreté aggrave les dégâts :</strong> Maisons fragiles en tôle s'envolent facilement</li>
+          </ul>
+          
+          <h4 class="text-xl font-semibold mt-6 mb-3">5. Difficulté d'accès et communications</h4>
+          <p>Le relief montagneux complique énormément les transports et les communications :</p>
+          <ul class="list-disc ml-8 space-y-2 mt-3">
+            <li>Routes en mauvais état, souvent coupées par les pluies</li>
+            <li>Certaines régions rurales isolées n'ont accès qu'à pied ou à dos de mulet</li>
+            <li>Coût élevé du transport de marchandises</li>
+            <li>Difficultés pour l'accès aux services (santé, éducation, commerce)</li>
+          </ul>
+          
+          <div class="bg-red-50 dark:bg-red-950/30 p-5 rounded-lg my-6 border-l-4 border-red-500">
+            <p class="font-semibold text-red-900 dark:text-red-200 mb-2">⚠️ Un constat alarmant mais un espoir possible</p>
+            <p class="text-red-800 dark:text-red-300">Les défis géographiques d'Haïti sont immenses, mais pas insurmontables ! D'autres pays montagneux (Suisse, Népal, Rwanda) ont su transformer leurs contraintes en atouts. Le reboisement massif, les infrastructures modernes, l'énergie solaire, l'agriculture durable... tout cela est possible si nous nous y mettons collectivement. <strong>L'avenir géographique d'Haïti dépend de chaque Haïtien, y compris vous, élèves de 7AF !</strong> Que pouvez-vous faire dès maintenant ? Planter des arbres, économiser l'eau, sensibiliser votre entourage...</p>
+          </div>
+        </section>
+
+        <section class="mt-8">
+          <h3 class="text-2xl font-bold mb-4 text-primary">8. Conclusion : Connaître notre géographie pour mieux la protéger</h3>
+          <p class="text-lg leading-relaxed">L'espace géographique haïtien est un trésor. Nos montagnes majestueuses, nos plaines fertiles, nos côtes magnifiques, nos îles paradisiaques... tout cela forme notre patrimoine national. Mais ce patrimoine est fragile et menacé.</p>
+          <p class="mt-4">Connaître notre géographie, c'est comprendre d'où nous venons, pourquoi nous vivons comme nous vivons, et quels défis nous devons relever. C'est aussi apprendre à aimer notre pays dans toute sa complexité et sa beauté.</p>
+          <p class="mt-4"><strong>La géographie n'est pas une fatalité.</strong> Nous pouvons transformer nos faiblesses en forces : développer l'écotourisme de montagne, protéger nos récifs coralliens, replanter nos forêts, construire des infrastructures modernes... L'avenir géographique d'Haïti est entre nos mains.</p>
+        </section>
+      </div>
+    `,
+    exemplesExercices: `
+      <div class="space-y-8">
+        <section>
+          <h3 class="text-2xl font-bold mb-4 text-primary">📚 Exemples concrets et études de cas</h3>
+          <div class="grid gap-4">
+            <div class="bg-gradient-to-r from-blue-50 to-cyan-50 dark:from-blue-950/30 dark:to-cyan-950/30 p-5 rounded-lg border-l-4 border-blue-500">
+              <p class="font-bold text-lg mb-2">🌾 Exemple 1 : La plaine de l'Artibonite - Grenier d'Haïti</p>
+              <p class="mb-2">La plaine de l'Artibonite produit plus de 80% du riz consommé en Haïti. Sans cette région, le pays devrait importer encore plus de nourriture. Le barrage de Péligre, construit en 1956, permet d'irriguer 32 000 hectares. C'est un parfait exemple de l'importance des plaines dans notre économie agricole et de l'aménagement intelligent du territoire.</p>
+              <p class="text-sm italic mt-2">💡 Réflexion : Que se passerait-il si une catastrophe naturelle détruisait les récoltes de l'Artibonite ? Comment le pays pourrait-il compenser cette perte ?</p>
+            </div>
+            
+            <div class="bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-950/30 dark:to-emerald-950/30 p-5 rounded-lg border-l-4 border-green-500">
+              <p class="font-bold text-lg mb-2">⛰️ Exemple 2 : Le Pic la Selle - Toit d'Haïti</p>
+              <p class="mb-2">À 2 680 mètres d'altitude, le Pic la Selle est le point culminant d'Haïti. Par temps clair, on peut y voir Port-au-Prince, la République Dominicaine, et même Cuba ! La température au sommet peut descendre jusqu'à 0°C en hiver. C'est une démonstration spectaculaire de la diversité de notre relief : à 50 km de distance, on passe d'un climat chaud de bord de mer à un climat de montagne où il peut geler !</p>
+              <p class="text-sm italic mt-2">🎯 Activité : Recherchez des photos du Pic la Selle et comparez-les avec des photos de nos plages. Notez les différences de végétation et de climat.</p>
+            </div>
+            
+            <div class="bg-gradient-to-r from-amber-50 to-orange-50 dark:from-amber-950/30 dark:to-orange-950/30 p-5 rounded-lg border-l-4 border-amber-500">
+              <p class="font-bold text-lg mb-2">🏝️ Exemple 3 : L'île de la Gonâve - Isolement et identité</p>
+              <p class="mb-2">La Gonâve, bien qu'à seulement 60 km de Port-au-Prince, reste difficile d'accès. Il faut prendre un bateau qui met 2-3 heures. Cette île de 689 km² et 120 000 habitants a développé sa propre identité culturelle. L'isolement géographique crée des défis (accès aux services, transport de marchandises coûteux) mais préserve aussi des traditions uniques.</p>
+              <p class="text-sm italic mt-2">🤔 Question : L'isolement géographique est-il toujours négatif ? Quels peuvent être ses avantages ?</p>
+            </div>
+            
+            <div class="bg-gradient-to-r from-red-50 to-pink-50 dark:from-red-950/30 dark:to-pink-950/30 p-5 rounded-lg border-l-4 border-red-500">
+              <p class="font-bold text-lg mb-2">📸 Exemple 4 : La frontière visible depuis l'espace</p>
+              <p class="mb-2">Les images satellites montrent une différence frappante : Haïti (à l'ouest) apparaît brun-gris et déboisé, tandis que la République Dominicaine (à l'est) est verte avec des forêts. Cette "frontière écologique" visible depuis l'espace illustre dramatiquement l'impact de la déforestation. En 1923, les deux côtés avaient une couverture forestière similaire. Aujourd'hui, Haïti a perdu 98% de ses forêts.</p>
+              <p class="text-sm italic mt-2">⚠️ Leçon : La géographie n'est pas figée. Les actions humaines (déforestation, reboisement) transforment radicalement le paysage.</p>
+            </div>
+
+            <div class="bg-gradient-to-r from-purple-50 to-indigo-50 dark:from-purple-950/30 dark:to-indigo-950/30 p-5 rounded-lg border-l-4 border-purple-500">
+              <p class="font-bold text-lg mb-2">🌊 Exemple 5 : L'Étang Saumâtre - Patrimoine écologique</p>
+              <p class="mb-2">Ce lac de 170 km² abrite des crocodiles américains (jusqu'à 5 m de long !), des flamants roses, et des centaines d'espèces d'oiseaux migrateurs. C'est une zone humide d'importance internationale selon la Convention de Ramsar. Les Taïnos considéraient ce lieu comme sacré. Aujourd'hui, il est menacé par la pollution et la destruction de son habitat.</p>
+              <p class="text-sm italic mt-2">🌍 Connexion mondiale : Les oiseaux qui se posent à l'Étang Saumâtre voyagent depuis l'Amérique du Nord jusqu'en Amérique du Sud. Haïti est une escale vitale dans leur migration !</p>
+            </div>
+          </div>
+        </section>
+
+        <section class="mt-8">
+          <h3 class="text-2xl font-bold mb-4 text-primary">✏️ Exercices variés et approfondis</h3>
+          
+          <div class="grid gap-6">
+            <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md">
+              <p class="font-bold text-xl mb-4">📝 1. Questions à choix multiples (QCM)</p>
+              <div class="space-y-4">
+                <div>
+                  <p class="font-semibold">a) Quelle est la superficie d'Haïti ?</p>
+                  <ul class="ml-6 list-disc mt-2">
+                    <li>15 000 km²</li>
+                    <li>27 750 km² ✓</li>
+                    <li>48 000 km²</li>
+                    <li>76 192 km²</li>
+                  </ul>
+                </div>
+                <div>
+                  <p class="font-semibold">b) Le point culminant d'Haïti est :</p>
+                  <ul class="ml-6 list-disc mt-2">
+                    <li>Le Pic Macaya (2 347 m)</li>
+                    <li>Le Morne La Visite (2 275 m)</li>
+                    <li>Le Pic la Selle (2 680 m) ✓</li>
+                    <li>Le Morne-à-Cabrit (1 000 m)</li>
+                  </ul>
+                </div>
+                <div>
+                  <p class="font-semibold">c) Le plus long fleuve d'Haïti est :</p>
+                  <ul class="ml-6 list-disc mt-2">
+                    <li>Les Trois Rivières (150 km)</li>
+                    <li>La Rivière Grise (100 km)</li>
+                    <li>L'Artibonite (320 km) ✓</li>
+                    <li>La Grande Rivière du Nord</li>
+                  </ul>
+                </div>
+                <div>
+                  <p class="font-semibold">d) Quel pourcentage du territoire haïtien est montagneux ?</p>
+                  <ul class="ml-6 list-disc mt-2">
+                    <li>25%</li>
+                    <li>50%</li>
+                    <li>75% ✓</li>
+                    <li>90%</li>
+                  </ul>
+                </div>
+                <div>
+                  <p class="font-semibold">e) La plus grande île haïtienne est :</p>
+                  <ul class="ml-6 list-disc mt-2">
+                    <li>La Tortue (180 km²)</li>
+                    <li>La Gonâve (689 km²) ✓</li>
+                    <li>Île-à-Vache (52 km²)</li>
+                    <li>Cayemites (45 km²)</li>
+                  </ul>
+                </div>
+                <div>
+                  <p class="font-semibold">f) Combien de départements géographiques compte Haïti ?</p>
+                  <ul class="ml-6 list-disc mt-2">
+                    <li>5</li>
+                    <li>8</li>
+                    <li>10 ✓</li>
+                    <li>12</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+
+            <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md">
+              <p class="font-bold text-xl mb-4">✔️ 2. Vrai ou Faux (justifiez vos réponses)</p>
+              <ul class="ml-6 space-y-3">
+                <li><strong>a)</strong> Haïti est un pays essentiellement plat avec quelques collines. 
+                  <br/><span class="text-sm text-red-600 dark:text-red-400">➜ FAUX. Haïti est à 75% montagneux, c'est l'un des pays les plus accidentés de la Caraïbe.</span>
+                </li>
+                <li><strong>b)</strong> La Gonâve est la plus grande île haïtienne. 
+                  <br/><span class="text-sm text-green-600 dark:text-green-400">➜ VRAI. Elle couvre 689 km² et compte environ 120 000 habitants.</span>
+                </li>
+                <li><strong>c)</strong> Haïti possède 10 départements géographiques. 
+                  <br/><span class="text-sm text-green-600 dark:text-green-400">➜ VRAI. Le dernier, Nippes, a été créé en 2003.</span>
+                </li>
+                <li><strong>d)</strong> Plus de 50% du territoire haïtien est couvert de forêts. 
+                  <br/><span class="text-sm text-red-600 dark:text-red-400">➜ FAUX. Moins de 2% de couverture forestière reste aujourd'hui, contre 60% au début du XXe siècle.</span>
+                </li>
+                <li><strong>e)</strong> L'Étang Saumâtre est le plus grand lac naturel d'Haïti. 
+                  <br/><span class="text-sm text-green-600 dark:text-green-400">➜ VRAI. Il couvre 170 km² et abrite des crocodiles et des oiseaux migrateurs.</span>
+                </li>
+                <li><strong>f)</strong> Haïti partage une frontière terrestre avec Cuba. 
+                  <br/><span class="text-sm text-red-600 dark:text-red-400">➜ FAUX. Haïti partage une frontière terrestre uniquement avec la République Dominicaine (376 km). Cuba est séparée d'Haïti par la mer (80 km).</span>
+                </li>
+                <li><strong>g)</strong> La plaine de l'Artibonite produit la majorité du riz haïtien. 
+                  <br/><span class="text-sm text-green-600 dark:text-green-400">➜ VRAI. Plus de 80% du riz consommé en Haïti provient de cette région.</span>
+                </li>
+                <li><strong>h)</strong> Le nom "Haïti" vient d'un mot français. 
+                  <br/><span class="text-sm text-red-600 dark:text-red-400">➜ FAUX. "Haïti" vient du mot taïno "Ayiti" qui signifie "terre des hautes montagnes".</span>
+                </li>
               </ul>
             </div>
 
-            <div>
-              <p class="font-semibold">2. Vrai ou Faux</p>
-              <ul class="ml-6 space-y-2">
-                <li>Haïti est un pays essentiellement plat. (Faux)</li>
-                <li>La Gonâve est la plus grande île haïtienne. (Vrai)</li>
-                <li>Haïti possède 10 départements géographiques. (Vrai)</li>
-                <li>Plus de 50% du territoire est couvert de forêts. (Faux)</li>
+            <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md">
+              <p class="font-bold text-xl mb-4">🔗 3. Associations et correspondances</p>
+              <p class="mb-3">Associez chaque élément géographique à sa caractéristique principale :</p>
+              <div class="grid md:grid-cols-2 gap-4">
+                <div>
+                  <p class="font-semibold underline mb-2">Éléments géographiques :</p>
+                  <ol class="list-decimal ml-6 space-y-1">
+                    <li>Pic la Selle</li>
+                    <li>Plaine de l'Artibonite</li>
+                    <li>Île de la Tortue</li>
+                    <li>Étang Saumâtre</li>
+                    <li>Cap-Haïtien</li>
+                    <li>Fleuve Artibonite</li>
+                    <li>La Gonâve</li>
+                    <li>Port-au-Prince</li>
+                  </ol>
+                </div>
+                <div>
+                  <p class="font-semibold underline mb-2">Caractéristiques :</p>
+                  <ul class="list-none ml-6 space-y-1">
+                    <li>A. Grenier d'Haïti (riz)</li>
+                    <li>B. Plus grande île haïtienne</li>
+                    <li>C. Point culminant (2 680 m)</li>
+                    <li>D. Capitale et plus grande ville</li>
+                    <li>E. Lac avec crocodiles</li>
+                    <li>F. Repaire des pirates au XVIIe siècle</li>
+                    <li>G. Plus long fleuve (320 km)</li>
+                    <li>H. Deuxième ville, sites UNESCO</li>
+                  </ul>
+                </div>
+              </div>
+              <p class="text-sm mt-4 italic text-gray-600 dark:text-gray-400">Réponses : 1-C, 2-A, 3-F, 4-E, 5-H, 6-G, 7-B, 8-D</p>
+            </div>
+
+            <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md">
+              <p class="font-bold text-xl mb-4">💭 4. Questions de réflexion et analyse approfondie</p>
+              <ul class="ml-6 space-y-4">
+                <li><strong>a)</strong> Comment le relief montagneux d'Haïti a-t-il influencé l'histoire de notre pays ? (Pensez aux esclaves marrons, à la guerre d'indépendance, aux communications actuelles)</li>
+                <li><strong>b)</strong> Pourquoi la plaine de l'Artibonite est-elle surnommée "le grenier d'Haïti" ? Que se passerait-il si cette région était gravement affectée par une catastrophe naturelle ?</li>
+                <li><strong>c)</strong> Comparez les avantages et les inconvénients de notre position géographique dans la Caraïbe. (Commerce, tourisme, ouragans, isolement)</li>
+                <li><strong>d)</strong> Expliquez pourquoi la déforestation aggrave les effets des catastrophes naturelles (ouragans, inondations) en Haïti.</li>
+                <li><strong>e)</strong> La frontière entre Haïti et la République Dominicaine est visible depuis l'espace (différence de couleur due à la déforestation). Qu'est-ce que cela nous enseigne sur l'impact humain sur la géographie ?</li>
+                <li><strong>f)</strong> Imaginez que vous êtes ministre de l'Environnement. Quelles trois mesures concrètes prendriez-vous pour protéger notre patrimoine géographique ?</li>
               </ul>
             </div>
 
-            <div>
-              <p class="font-semibold">3. Questions de réflexion</p>
-              <ul class="ml-6 space-y-2">
-                <li>Comment le relief montagneux d'Haïti influence-t-il l'agriculture et les communications ?</li>
-                <li>Pourquoi la plaine de l'Artibonite est-elle surnommée "le grenier d'Haïti" ?</li>
-                <li>Quels sont les avantages et les inconvénients de notre position géographique dans la Caraïbe ?</li>
+            <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md">
+              <p class="font-bold text-xl mb-4">🗺️ 5. Activité pratique : Créer une carte enrichie d'Haïti</p>
+              <p class="mb-3"><strong>Projet :</strong> Dessinez ou imprimez une carte vierge d'Haïti et ajoutez-y les éléments suivants :</p>
+              <div class="grid md:grid-cols-2 gap-4">
+                <div>
+                  <p class="font-semibold underline mb-2">Obligatoire :</p>
+                  <ul class="list-disc ml-6 space-y-1">
+                    <li>Les 10 départements et leurs capitales</li>
+                    <li>Les 5 principales chaînes de montagnes</li>
+                    <li>Le Pic la Selle et le Pic Macaya</li>
+                    <li>Les 4 principales plaines</li>
+                    <li>Le fleuve Artibonite et 2 autres rivières</li>
+                    <li>Les 3 plus grandes îles</li>
+                    <li>Les pays voisins</li>
+                  </ul>
+                </div>
+                <div>
+                  <p class="font-semibold underline mb-2">Bonus (pour plus de points) :</p>
+                  <ul class="list-disc ml-6 space-y-1">
+                    <li>Code couleur pour le relief (vert=plaines, jaune=collines, marron=montagnes)</li>
+                    <li>Symboles pour les ressources (riz, café, etc.)</li>
+                    <li>Flèches indiquant les risques naturels</li>
+                    <li>Photos découpées collées sur chaque région</li>
+                    <li>Légende complète et soignée</li>
+                  </ul>
+                </div>
+              </div>
+              <p class="mt-4 text-sm italic">💡 Astuce : Utilisez des couleurs vives et des dessins pour rendre votre carte attractive et mémorable !</p>
+            </div>
+
+            <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md">
+              <p class="font-bold text-xl mb-4">🔍 6. Enquête sur votre département d'origine</p>
+              <p class="mb-3"><strong>Mission de recherche :</strong> Interrogez vos parents ou grands-parents sur le département géographique d'où vient votre famille. Remplissez cette fiche d'enquête :</p>
+              <ul class="ml-6 space-y-2 list-disc">
+                <li>Nom du département et de la ville/village d'origine</li>
+                <li>Type de relief (montagneux, plaine, côtier)</li>
+                <li>Principales cultures agricoles de la région</li>
+                <li>Rivières ou lacs importants à proximité</li>
+                <li>Particularités géographiques (montagne célèbre, plage, etc.)</li>
+                <li>Défis géographiques de cette région (accès difficile, sécheresse, inondations...)</li>
+                <li>Anecdotes ou histoires familiales liées à la géographie locale</li>
+              </ul>
+              <p class="mt-3"><strong>Restitution :</strong> Préparez une présentation de 3 minutes pour partager vos découvertes avec la classe. Affichez la localisation sur une carte murale.</p>
+            </div>
+
+            <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md">
+              <p class="font-bold text-xl mb-4">🌳 7. Projet écologique : Plan de reboisement local</p>
+              <p class="mb-3"><strong>Travail de groupe (3-4 élèves) :</strong> Identifiez une zone déboisée près de votre école ou quartier. Créez un plan détaillé pour la reboiser :</p>
+              <ol class="list-decimal ml-6 space-y-2">
+                <li>Localisation et superficie de la zone (utilisez Google Maps si possible)</li>
+                <li>État actuel (photos, description de l'érosion visible)</li>
+                <li>Types d'arbres adaptés au climat local (arbres fruitiers, pins, bois d'oeuvre)</li>
+                <li>Nombre d'arbres nécessaires et coût estimé</li>
+                <li>Bénéfices attendus (protection contre l'érosion, fruits, ombre, oxygène)</li>
+                <li>Plan d'action : qui plante, qui arrose, qui surveille ?</li>
+                <li>Partenaires potentiels (mairie, ONG environnementales, école)</li>
+              </ol>
+              <p class="mt-3 text-sm italic">🎯 Objectif : Ce projet vous apprend à passer de la théorie (connaître les problèmes géographiques) à l'action (proposer des solutions concrètes).</p>
+            </div>
+
+            <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md">
+              <p class="font-bold text-xl mb-4">📊 8. Comparaison Haïti vs République Dominicaine</p>
+              <p class="mb-3"><strong>Exercice d'analyse comparative :</strong> Remplissez ce tableau comparatif :</p>
+              <table class="w-full border-collapse mt-3 text-sm">
+                <thead>
+                  <tr class="bg-gray-200 dark:bg-gray-700">
+                    <th class="border border-gray-400 p-2 text-left">Critère</th>
+                    <th class="border border-gray-400 p-2 text-left">Haïti</th>
+                    <th class="border border-gray-400 p-2 text-left">Rép. Dominicaine</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td class="border border-gray-400 p-2">Superficie</td>
+                    <td class="border border-gray-400 p-2">27 750 km²</td>
+                    <td class="border border-gray-400 p-2">48 442 km²</td>
+                  </tr>
+                  <tr>
+                    <td class="border border-gray-400 p-2">Couverture forestière</td>
+                    <td class="border border-gray-400 p-2">< 2%</td>
+                    <td class="border border-gray-400 p-2">~40%</td>
+                  </tr>
+                  <tr>
+                    <td class="border border-gray-400 p-2">Point culminant</td>
+                    <td class="border border-gray-400 p-2">Pic la Selle (2 680 m)</td>
+                    <td class="border border-gray-400 p-2">Pico Duarte (3 098 m)</td>
+                  </tr>
+                  <tr>
+                    <td class="border border-gray-400 p-2">Frontière commune</td>
+                    <td class="border border-gray-400 p-2" colspan="2">376 km traversant montagnes et plaines</td>
+                  </tr>
+                </tbody>
+              </table>
+              <p class="mt-3"><strong>Questions :</strong></p>
+              <ul class="ml-6 list-disc space-y-2">
+                <li>Pourquoi la couverture forestière est-elle si différente alors que les deux pays partagent la même île ?</li>
+                <li>Quelles conséquences cette différence a-t-elle sur l'environnement et l'économie ?</li>
+                <li>Que pourrait apprendre Haïti des politiques environnementales de la République Dominicaine ?</li>
               </ul>
             </div>
 
-            <div>
-              <p class="font-semibold">4. Activité pratique</p>
-              <p>Dessinez une carte simplifiée d'Haïti en y plaçant :</p>
-              <ul class="ml-6 list-disc">
-                <li>Les 10 départements et leurs capitales</li>
-                <li>Le Pic la Selle</li>
-                <li>L'Artibonite (fleuve)</li>
-                <li>La Gonâve</li>
-                <li>Les pays voisins (République Dominicaine, Cuba, Jamaïque)</li>
+            <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md">
+              <p class="font-bold text-xl mb-4">🎬 9. Mini-documentaire vidéo</p>
+              <p class="mb-3"><strong>Projet créatif (groupe de 4-5) :</strong> Créez un mini-documentaire de 5-7 minutes sur un aspect de la géographie haïtienne. Sujets possibles :</p>
+              <ul class="ml-6 list-disc space-y-1">
+                <li>"Le voyage d'une goutte d'eau : de la montagne à la mer"</li>
+                <li>"Un jour dans la vie d'un paysan de l'Artibonite"</li>
+                <li>"Ascension du Pic la Selle : défi géographique"</li>
+                <li>"La Gonâve : vivre sur une île isolée"</li>
+                <li>"Haïti avant/après : histoire de notre déforestation"</li>
               </ul>
+              <p class="mt-3"><strong>Format :</strong> Utilisez un smartphone, combinez interviews, images, narration, musique haïtienne. Montrez-le à la classe !</p>
             </div>
 
-            <div>
-              <p class="font-semibold">5. Recherche</p>
-              <p>Interrogez vos parents ou grands-parents sur le département d'où vient votre famille. Quelles sont les particularités géographiques de cette région ?</p>
+            <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md">
+              <p class="font-bold text-xl mb-4">✍️ 10. Dissertation</p>
+              <p class="mb-3"><strong>Sujet :</strong> "La géographie d'Haïti : contrainte ou opportunité ?"</p>
+              <p class="mb-2"><strong>Structure suggérée (2-3 pages) :</strong></p>
+              <ul class="list-disc ml-6 space-y-2">
+                <li><strong>Introduction :</strong> Présentation de la diversité géographique d'Haïti. Problématique : notre géographie est-elle un obstacle ou un atout pour le développement ?</li>
+                <li><strong>Partie 1 - Les contraintes :</strong> Relief montagneux (transport difficile), déforestation et érosion, vulnérabilité aux catastrophes naturelles, isolement de certaines régions</li>
+                <li><strong>Partie 2 - Les opportunités :</strong> Diversité de paysages (tourisme), plaines fertiles (agriculture), long littoral (pêche, tourisme balnéaire), position stratégique dans la Caraïbe, potentiel énergétique (solaire, hydraulique)</li>
+                <li><strong>Partie 3 - Comment transformer les contraintes en opportunités ?</strong> Exemples de pays similaires (Suisse, Costa Rica, Rwanda), solutions concrètes pour Haïti</li>
+                <li><strong>Conclusion :</strong> Votre position personnelle. La géographie n'est pas une fatalité ; c'est ce que nous en faisons qui compte.</li>
+              </ul>
             </div>
+          </div>
+        </section>
+
+        <section class="mt-8">
+          <h3 class="text-2xl font-bold mb-4 text-primary">📚 Ressources complémentaires</h3>
+          <div class="bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-950/30 dark:to-pink-950/30 p-6 rounded-lg">
+            <p class="font-semibold text-lg mb-3">Pour aller plus loin :</p>
+            <ul class="space-y-2">
+              <li><strong>📹 Vidéos YouTube recommandées :</strong>
+                <ul class="list-disc ml-8 mt-1 space-y-1">
+                  <li>"Haïti vue du ciel - Drone 4K"</li>
+                  <li>"Géographie d'Haïti documentaire"</li>
+                  <li>"Pic la Selle randonnée ascension"</li>
+                  <li>"Déforestation Haïti satellite images"</li>
+                  <li>"Plaine Artibonite culture du riz"</li>
+                  <li>"Étang Saumâtre crocodiles Haïti"</li>
+                </ul>
+              </li>
+              <li><strong>🗺️ Outils en ligne :</strong>
+                <ul class="list-disc ml-8 mt-1">
+                  <li>Google Earth : Explorez Haïti en 3D</li>
+                  <li>Google Maps : Calculez distances et itinéraires</li>
+                  <li>NASA Worldview : Images satellites d'Haïti</li>
+                </ul>
+              </li>
+              <li><strong>📖 Lecture recommandée :</strong>
+                <ul class="list-disc ml-8 mt-1">
+                  <li>"Atlas d'Haïti" - Institut Haïtien de Statistique</li>
+                  <li>"Géographie physique et humaine d'Haïti" - Georges Anglade</li>
+                </ul>
+              </li>
+            </ul>
           </div>
         </section>
       </div>
