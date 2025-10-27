@@ -4947,9 +4947,356 @@ export const sciencesLessons7AF: Record<string, StaticLessonContent> = {
 • Expliquer le principe de la fécondation externe et interne
 • Identifier les vertébrés ovipares et vivipares
 • Préciser un mode de croissance de quelques batraciens : la métamorphose`,
-    introduction: `[Contenu à ajouter]`,
-    contenu: `[Contenu à ajouter]`,
-    exemplesExercices: `[Contenu à ajouter]`
+    introduction: `<div class="space-y-6">
+  <p class="text-lg leading-relaxed">
+    La reproduction est une fonction essentielle permettant aux espèces de perpétuer leur existence. 
+    Chez les vertébrés, elle prend des formes fascinantes et variées !
+  </p>
+  <div class="bg-primary/5 border-l-4 border-primary p-4 rounded-r">
+    <p class="font-semibold text-primary mb-2">🦎 Le saviez-vous ?</p>
+    <p>Certains reptiles peuvent pondre jusqu'à 100 œufs à la fois, tandis que les baleines ne donnent 
+    naissance qu'à un seul petit à la fois, qu'elles nourrissent avec leur lait !</p>
+  </div>
+  
+  <div class="bg-gradient-to-r from-primary/10 to-secondary/10 p-6 rounded-xl">
+    <h3 class="text-xl font-bold mb-4 flex items-center gap-2">
+      <span class="text-2xl">🎯</span>
+      Objectifs de la leçon
+    </h3>
+    <ul class="space-y-2">
+      <li class="flex items-start gap-2">
+        <span class="text-primary shrink-0 mt-1">✓</span>
+        <span>Reconnaître les différents modes de reproduction et développement des vertébrés</span>
+      </li>
+      <li class="flex items-start gap-2">
+        <span class="text-primary shrink-0 mt-1">✓</span>
+        <span>Expliquer que les partenaires sont différenciés en mâle et femelle</span>
+      </li>
+      <li class="flex items-start gap-2">
+        <span class="text-primary shrink-0 mt-1">✓</span>
+        <span>Identifier les vertébrés ovipares et vivipares</span>
+      </li>
+      <li class="flex items-start gap-2">
+        <span class="text-primary shrink-0 mt-1">✓</span>
+        <span>Comprendre le processus de métamorphose chez les batraciens</span>
+      </li>
+    </ul>
+  </div>
+</div>`,
+    contenu: `<div class="space-y-8">
+  <section>
+    <h2 class="text-2xl font-bold text-primary mb-4">👫 Mâle et Femelle : La Différenciation Sexuelle</h2>
+    <div class="bg-gradient-to-r from-blue-50 to-cyan-50 dark:from-blue-950/30 dark:to-cyan-950/30 p-6 rounded-lg border-2 border-blue-200 dark:border-blue-800">
+      <p class="leading-relaxed mb-4">
+        Chez les vertébrés, la reproduction nécessite généralement <strong>deux partenaires</strong> : un <strong>mâle</strong> 
+        et une <strong>femelle</strong>. Chacun possède des caractéristiques spécifiques.
+      </p>
+      
+      <div class="grid md:grid-cols-2 gap-6 mt-4">
+        <div class="bg-blue-100 dark:bg-blue-900/30 p-5 rounded-lg">
+          <h4 class="font-bold text-blue-700 dark:text-blue-300 mb-3">♂️ Le Mâle</h4>
+          <p class="text-sm mb-3"><strong>Différences externes :</strong></p>
+          <ul class="text-sm space-y-2">
+            <li>• Souvent plus coloré (ex: paon)</li>
+            <li>• Parfois plus grand ou plus fort</li>
+            <li>• Peut avoir des attributs spéciaux (crinière du lion, bois du cerf)</li>
+          </ul>
+          <p class="text-sm mt-3 mb-2"><strong>Rôle reproductif :</strong></p>
+          <p class="text-sm">Produit les <strong>spermatozoïdes</strong> (cellules reproductrices mâles)</p>
+        </div>
+        
+        <div class="bg-pink-100 dark:bg-pink-900/30 p-5 rounded-lg">
+          <h4 class="font-bold text-pink-700 dark:text-pink-300 mb-3">♀️ La Femelle</h4>
+          <p class="text-sm mb-3"><strong>Différences externes :</strong></p>
+          <ul class="text-sm space-y-2">
+            <li>• Souvent plus terne pour se camoufler</li>
+            <li>• Peut être plus petite</li>
+            <li>• Possède des mamelles chez les mammifères</li>
+          </ul>
+          <p class="text-sm mt-3 mb-2"><strong>Rôle reproductif :</strong></p>
+          <p class="text-sm">Produit les <strong>ovules</strong> (cellules reproductrices femelles)</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2 class="text-2xl font-bold text-primary mb-4">🥚 Fécondation : Externe ou Interne ?</h2>
+    
+    <div class="space-y-6">
+      <div class="bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-950/30 dark:to-pink-950/30 p-6 rounded-lg border-2 border-purple-200 dark:border-purple-800">
+        <h3 class="text-xl font-bold text-purple-700 dark:text-purple-300 mb-3">💧 Fécondation Externe</h3>
+        <p class="mb-4">La rencontre entre spermatozoïdes et ovules se fait <strong>à l'extérieur du corps</strong> de la femelle, dans l'eau.</p>
+        
+        <div class="bg-white/70 dark:bg-black/30 p-4 rounded-lg">
+          <p class="font-semibold mb-2">Caractéristiques :</p>
+          <ul class="space-y-2 text-sm">
+            <li>• Se produit dans l'eau (milieu aquatique)</li>
+            <li>• La femelle pond ses œufs dans l'eau</li>
+            <li>• Le mâle dépose ensuite son sperme sur les œufs</li>
+            <li>• Production de nombreux œufs (car beaucoup ne survivent pas)</li>
+          </ul>
+          <div class="mt-3 p-3 bg-purple-100 dark:bg-purple-900/50 rounded">
+            <p class="text-sm"><strong>🐟 Exemples :</strong> Poissons, Amphibiens</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="bg-gradient-to-r from-orange-50 to-yellow-50 dark:from-orange-950/30 dark:to-yellow-950/30 p-6 rounded-lg border-2 border-orange-200 dark:border-orange-800">
+        <h3 class="text-xl font-bold text-orange-700 dark:text-orange-300 mb-3">🫄 Fécondation Interne</h3>
+        <p class="mb-4">La rencontre entre spermatozoïdes et ovules se fait <strong>à l'intérieur du corps</strong> de la femelle.</p>
+        
+        <div class="bg-white/70 dark:bg-black/30 p-4 rounded-lg">
+          <p class="font-semibold mb-2">Caractéristiques :</p>
+          <ul class="space-y-2 text-sm">
+            <li>• Nécessite un accouplement</li>
+            <li>• Les spermatozoïdes sont déposés dans le corps de la femelle</li>
+            <li>• Meilleure protection des embryons</li>
+            <li>• Production de moins d'œufs (meilleur taux de survie)</li>
+          </ul>
+          <div class="mt-3 p-3 bg-orange-100 dark:bg-orange-900/50 rounded">
+            <p class="text-sm"><strong>🦎 Exemples :</strong> Reptiles, Oiseaux, Mammifères</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2 class="text-2xl font-bold text-primary mb-4">🐣 Ovipares vs Vivipares</h2>
+    
+    <div class="grid md:grid-cols-2 gap-6">
+      <div class="bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-950/30 dark:to-emerald-950/30 p-6 rounded-lg border-2 border-green-200 dark:border-green-800">
+        <h3 class="text-xl font-bold text-green-700 dark:text-green-300 mb-3">🥚 Ovipares</h3>
+        <p class="mb-4 text-sm">Animaux qui <strong>pondent des œufs</strong>. L'embryon se développe dans l'œuf à l'extérieur du corps de la mère.</p>
+        
+        <div class="space-y-3">
+          <div class="bg-white/70 dark:bg-black/30 p-3 rounded">
+            <p class="font-semibold text-sm mb-1">Développement :</p>
+            <p class="text-xs">L'embryon est protégé par la coquille et se nourrit du vitellus (jaune)</p>
+          </div>
+          
+          <div class="bg-white/70 dark:bg-black/30 p-3 rounded">
+            <p class="font-semibold text-sm mb-1">Protection :</p>
+            <p class="text-xs">Les parents peuvent couver les œufs ou les abandonner</p>
+          </div>
+          
+          <div class="bg-green-100 dark:bg-green-900/50 p-3 rounded">
+            <p class="font-semibold text-sm mb-2">Exemples :</p>
+            <ul class="text-xs space-y-1">
+              <li>• <strong>Poissons</strong> : truite, sardine</li>
+              <li>• <strong>Amphibiens</strong> : grenouille, crapaud</li>
+              <li>• <strong>Reptiles</strong> : tortue, crocodile, serpent</li>
+              <li>• <strong>Oiseaux</strong> : poule, aigle, perroquet</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <div class="bg-gradient-to-br from-pink-50 to-rose-50 dark:from-pink-950/30 dark:to-rose-950/30 p-6 rounded-lg border-2 border-pink-200 dark:border-pink-800">
+        <h3 class="text-xl font-bold text-pink-700 dark:text-pink-300 mb-3">🤰 Vivipares</h3>
+        <p class="mb-4 text-sm">Animaux dont l'embryon se développe <strong>à l'intérieur du corps de la mère</strong>. Elle donne naissance à des petits vivants.</p>
+        
+        <div class="space-y-3">
+          <div class="bg-white/70 dark:bg-black/30 p-3 rounded">
+            <p class="font-semibold text-sm mb-1">Développement :</p>
+            <p class="text-xs">L'embryon est relié à sa mère par le cordon ombilical et se nourrit à travers elle</p>
+          </div>
+          
+          <div class="bg-white/70 dark:bg-black/30 p-3 rounded">
+            <p class="font-semibold text-sm mb-1">Protection :</p>
+            <p class="text-xs">Meilleure protection car l'embryon est dans le corps de la mère</p>
+          </div>
+          
+          <div class="bg-pink-100 dark:bg-pink-900/50 p-3 rounded">
+            <p class="font-semibold text-sm mb-2">Exemples :</p>
+            <ul class="text-xs space-y-1">
+              <li>• <strong>Mammifères</strong> : chien, chat, vache, humain, baleine</li>
+              <li>• <strong>Quelques reptiles</strong> : certains serpents et lézards</li>
+              <li>• Les femelles allaitent leurs petits après la naissance</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="bg-gradient-to-br from-indigo-50 to-purple-50 dark:from-indigo-950/20 dark:to-purple-950/20 p-6 rounded-xl border-2 border-indigo-200 dark:border-indigo-800">
+    <h2 class="text-2xl font-bold text-primary mb-4">🐸 La Métamorphose des Batraciens</h2>
+    <p class="mb-6">
+      Les amphibiens (batraciens) subissent une transformation spectaculaire appelée <strong>métamorphose</strong>. 
+      C'est une série de changements qui transforme le têtard aquatique en adulte terrestre !
+    </p>
+    
+    <div class="space-y-4">
+      <div class="bg-white/80 dark:bg-gray-800/80 p-5 rounded-lg shadow-md">
+        <h4 class="font-bold text-indigo-600 dark:text-indigo-400 mb-3 flex items-center gap-2">
+          <span class="text-2xl">1️⃣</span>
+          Les Œufs (Ponte)
+        </h4>
+        <p class="text-sm">La femelle pond des centaines d'œufs dans l'eau. Ils sont entourés d'une gelée protectrice.</p>
+      </div>
+
+      <div class="bg-white/80 dark:bg-gray-800/80 p-5 rounded-lg shadow-md">
+        <h4 class="font-bold text-indigo-600 dark:text-indigo-400 mb-3 flex items-center gap-2">
+          <span class="text-2xl">2️⃣</span>
+          Le Têtard (Larve aquatique)
+        </h4>
+        <ul class="text-sm space-y-1">
+          <li>• Vit dans l'eau</li>
+          <li>• Respire avec des branchies</li>
+          <li>• Possède une queue pour nager</li>
+          <li>• Pas de pattes</li>
+          <li>• Se nourrit d'algues</li>
+        </ul>
+      </div>
+
+      <div class="bg-white/80 dark:bg-gray-800/80 p-5 rounded-lg shadow-md">
+        <h4 class="font-bold text-indigo-600 dark:text-indigo-400 mb-3 flex items-center gap-2">
+          <span class="text-2xl">3️⃣</span>
+          Transformation (Métamorphose)
+        </h4>
+        <ul class="text-sm space-y-1">
+          <li>• Apparition des pattes arrière, puis des pattes avant</li>
+          <li>• Développement des poumons</li>
+          <li>• Disparition progressive des branchies</li>
+          <li>• Résorption de la queue</li>
+          <li>• Changement de régime alimentaire</li>
+        </ul>
+      </div>
+
+      <div class="bg-white/80 dark:bg-gray-800/80 p-5 rounded-lg shadow-md">
+        <h4 class="font-bold text-indigo-600 dark:text-indigo-400 mb-3 flex items-center gap-2">
+          <span class="text-2xl">4️⃣</span>
+          Grenouille Adulte
+        </h4>
+        <ul class="text-sm space-y-1">
+          <li>• Vit sur terre et dans l'eau (amphibie)</li>
+          <li>• Respire avec des poumons et sa peau</li>
+          <li>• Quatre pattes</li>
+          <li>• Plus de queue</li>
+          <li>• Carnivore (insectes)</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="mt-6 p-4 bg-indigo-100 dark:bg-indigo-900/30 rounded-lg">
+      <p class="text-sm">
+        <strong>⏱️ Durée :</strong> La métamorphose complète prend généralement <strong>12 à 16 semaines</strong> 
+        selon l'espèce et les conditions environnementales (température, nourriture).
+      </p>
+    </div>
+  </section>
+
+  <section>
+    <h2 class="text-2xl font-bold text-primary mb-4">📊 Tableau Récapitulatif</h2>
+    <div class="overflow-x-auto">
+      <table class="w-full border-2 border-gray-300 dark:border-gray-600">
+        <thead class="bg-primary/10">
+          <tr>
+            <th class="border border-gray-300 dark:border-gray-600 p-3">Groupe</th>
+            <th class="border border-gray-300 dark:border-gray-600 p-3">Type de fécondation</th>
+            <th class="border border-gray-300 dark:border-gray-600 p-3">Mode de reproduction</th>
+            <th class="border border-gray-300 dark:border-gray-600 p-3">Exemple</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="border border-gray-300 dark:border-gray-600 p-2"><strong>Poissons</strong></td>
+            <td class="border border-gray-300 dark:border-gray-600 p-2">Externe</td>
+            <td class="border border-gray-300 dark:border-gray-600 p-2">Ovipare</td>
+            <td class="border border-gray-300 dark:border-gray-600 p-2">Saumon</td>
+          </tr>
+          <tr class="bg-gray-50 dark:bg-gray-800/50">
+            <td class="border border-gray-300 dark:border-gray-600 p-2"><strong>Amphibiens</strong></td>
+            <td class="border border-gray-300 dark:border-gray-600 p-2">Externe</td>
+            <td class="border border-gray-300 dark:border-gray-600 p-2">Ovipare + Métamorphose</td>
+            <td class="border border-gray-300 dark:border-gray-600 p-2">Grenouille</td>
+          </tr>
+          <tr>
+            <td class="border border-gray-300 dark:border-gray-600 p-2"><strong>Reptiles</strong></td>
+            <td class="border border-gray-300 dark:border-gray-600 p-2">Interne</td>
+            <td class="border border-gray-300 dark:border-gray-600 p-2">Ovipare (la plupart)</td>
+            <td class="border border-gray-300 dark:border-gray-600 p-2">Tortue</td>
+          </tr>
+          <tr class="bg-gray-50 dark:bg-gray-800/50">
+            <td class="border border-gray-300 dark:border-gray-600 p-2"><strong>Oiseaux</strong></td>
+            <td class="border border-gray-300 dark:border-gray-600 p-2">Interne</td>
+            <td class="border border-gray-300 dark:border-gray-600 p-2">Ovipare</td>
+            <td class="border border-gray-300 dark:border-gray-600 p-2">Aigle</td>
+          </tr>
+          <tr>
+            <td class="border border-gray-300 dark:border-gray-600 p-2"><strong>Mammifères</strong></td>
+            <td class="border border-gray-300 dark:border-gray-600 p-2">Interne</td>
+            <td class="border border-gray-300 dark:border-gray-600 p-2">Vivipare + Allaitement</td>
+            <td class="border border-gray-300 dark:border-gray-600 p-2">Chien</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+</div>`,
+    exemplesExercices: `<div class="space-y-6">
+  <div class="bg-primary/5 p-6 rounded-lg border-2 border-primary/20">
+    <h3 class="text-xl font-bold text-primary mb-4">📝 Exercice 1 : Classification</h3>
+    <p class="mb-4">Classe les animaux suivants en deux catégories : OVIPARE ou VIVIPARE</p>
+    <div class="grid md:grid-cols-2 gap-4">
+      <div>
+        <p class="font-semibold mb-2">Animaux :</p>
+        <ul class="space-y-1 text-sm">
+          <li>1. Dauphin</li>
+          <li>2. Perroquet</li>
+          <li>3. Serpent</li>
+          <li>4. Vache</li>
+          <li>5. Grenouille</li>
+          <li>6. Crocodile</li>
+          <li>7. Chat</li>
+          <li>8. Poule</li>
+        </ul>
+      </div>
+      <div>
+        <p class="font-semibold mb-2">Classement :</p>
+        <p class="text-sm mb-2">Ovipares : _______________________</p>
+        <p class="text-sm">Vivipares : _______________________</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="bg-accent/5 p-6 rounded-lg border-2 border-accent/20">
+    <h3 class="text-xl font-bold text-accent mb-4">📝 Exercice 2 : La Métamorphose</h3>
+    <p class="mb-4">Remets dans l'ordre les étapes de la métamorphose de la grenouille :</p>
+    <div class="space-y-2">
+      <p class="text-sm">A. Grenouille adulte avec 4 pattes et sans queue</p>
+      <p class="text-sm">B. Œufs dans l'eau</p>
+      <p class="text-sm">C. Têtard avec queue et branchies</p>
+      <p class="text-sm">D. Jeune grenouille avec pattes et petite queue</p>
+    </div>
+    <p class="mt-4 font-semibold">Ordre correct : ___ → ___ → ___ → ___</p>
+  </div>
+
+  <div class="bg-secondary/5 p-6 rounded-lg border-2 border-secondary/20">
+    <h3 class="text-xl font-bold text-secondary mb-4">📝 Exercice 3 : Vrai ou Faux</h3>
+    <ol class="space-y-3 list-decimal list-inside">
+      <li>Tous les vertébrés pondent des œufs. <span class="text-muted-foreground ml-2">(V / F)</span></li>
+      <li>La fécondation externe se fait dans l'eau. <span class="text-muted-foreground ml-2">(V / F)</span></li>
+      <li>Les mammifères sont tous vivipares. <span class="text-muted-foreground ml-2">(V / F)</span></li>
+      <li>Le têtard respire avec des poumons. <span class="text-muted-foreground ml-2">(V / F)</span></li>
+      <li>Les oiseaux ont une fécondation interne. <span class="text-muted-foreground ml-2">(V / F)</span></li>
+    </ol>
+  </div>
+
+  <div class="bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-950/20 dark:to-pink-950/20 p-6 rounded-lg border-2 border-purple-200 dark:border-purple-800">
+    <h3 class="text-xl font-bold text-purple-700 dark:text-purple-300 mb-4">📝 Exercice 4 : Recherche</h3>
+    <p class="mb-4">Choisis un vertébré et réponds aux questions :</p>
+    <ol class="space-y-3 list-decimal list-inside">
+      <li>Quel est son mode de reproduction (ovipare/vivipare) ?</li>
+      <li>Quel type de fécondation (externe/interne) ?</li>
+      <li>Combien de petits peut-il avoir à la fois ?</li>
+      <li>Comment les parents s'occupent-ils des petits ?</li>
+    </ol>
+  </div>
+</div>`,
+    musicUrl: "/lovable-uploads/reproduction-vertebres-lesson-music.mp3"
   },
 
   // Les plantes à fleurs
@@ -4961,9 +5308,365 @@ export const sciencesLessons7AF: Record<string, StaticLessonContent> = {
 • Décrire les différentes parties d'une tige et d'une branche
 • Identifier les différentes parties d'une feuille
 • Distinguer les feuilles simples des feuilles composées`,
-    introduction: `[Contenu à ajouter]`,
-    contenu: `[Contenu à ajouter]`,
-    exemplesExercices: `[Contenu à ajouter]`
+    introduction: `<div class="space-y-6">
+  <p class="text-lg leading-relaxed">
+    Les plantes sont des êtres vivants fascinants ! Chaque partie de la plante a un rôle bien précis 
+    pour assurer sa survie et sa croissance.
+  </p>
+  <div class="bg-primary/5 border-l-4 border-primary p-4 rounded-r">
+    <p class="font-semibold text-primary mb-2">🌱 Le saviez-vous ?</p>
+    <p>Un seul arbre peut avoir plus de 200 000 feuilles ! Les racines d'un chêne peuvent s'étendre 
+    sur une distance égale à deux fois sa hauteur.</p>
+  </div>
+  
+  <div class="bg-gradient-to-r from-primary/10 to-secondary/10 p-6 rounded-xl">
+    <h3 class="text-xl font-bold mb-4 flex items-center gap-2">
+      <span class="text-2xl">🎯</span>
+      Objectifs de la leçon
+    </h3>
+    <ul class="space-y-2">
+      <li class="flex items-start gap-2">
+        <span class="text-primary shrink-0 mt-1">✓</span>
+        <span>Identifier et différencier les différents types de racines</span>
+      </li>
+      <li class="flex items-start gap-2">
+        <span class="text-primary shrink-0 mt-1">✓</span>
+        <span>Décrire les parties d'une tige et d'une branche</span>
+      </li>
+      <li class="flex items-start gap-2">
+        <span class="text-primary shrink-0 mt-1">✓</span>
+        <span>Identifier les différentes parties d'une feuille</span>
+      </li>
+      <li class="flex items-start gap-2">
+        <span class="text-primary shrink-0 mt-1">✓</span>
+        <span>Distinguer les feuilles simples des feuilles composées</span>
+      </li>
+    </ul>
+  </div>
+</div>`,
+    contenu: `<div class="space-y-8">
+  <section>
+    <h2 class="text-2xl font-bold text-primary mb-4">🌿 Les Racines : Fondations de la Plante</h2>
+    <div class="bg-gradient-to-r from-amber-50 to-orange-50 dark:from-amber-950/30 dark:to-orange-950/30 p-6 rounded-lg border-2 border-amber-200 dark:border-amber-800">
+      <p class="leading-relaxed mb-4">
+        Les <strong>racines</strong> sont la partie de la plante qui se trouve sous terre. Elles ont plusieurs rôles essentiels :
+      </p>
+      <ul class="space-y-2 mb-6">
+        <li class="flex items-start gap-2">
+          <span class="text-amber-600 dark:text-amber-400">⚓</span>
+          <span><strong>Fixer</strong> la plante dans le sol</span>
+        </li>
+        <li class="flex items-start gap-2">
+          <span class="text-amber-600 dark:text-amber-400">💧</span>
+          <span><strong>Absorber</strong> l'eau et les minéraux du sol</span>
+        </li>
+        <li class="flex items-start gap-2">
+          <span class="text-amber-600 dark:text-amber-400">📦</span>
+          <span><strong>Stocker</strong> des réserves nutritives</span>
+        </li>
+      </ul>
+
+      <h3 class="text-xl font-bold mb-4">🔍 Les Quatre Types de Racines</h3>
+      
+      <div class="grid md:grid-cols-2 gap-6">
+        <div class="bg-white/70 dark:bg-black/30 p-5 rounded-lg">
+          <h4 class="font-bold text-amber-700 dark:text-amber-300 mb-2">1. Racine Pivotante</h4>
+          <p class="text-sm mb-3">Une racine principale épaisse et verticale avec des racines secondaires fines</p>
+          <ul class="text-xs space-y-1">
+            <li>• S'enfonce profondément dans le sol</li>
+            <li>• Très résistante</li>
+            <li>• <strong>Exemples :</strong> carotte, betterave, radis, pissenlit</li>
+          </ul>
+        </div>
+
+        <div class="bg-white/70 dark:bg-black/30 p-5 rounded-lg">
+          <h4 class="font-bold text-amber-700 dark:text-amber-300 mb-2">2. Racine Fasciculée</h4>
+          <p class="text-sm mb-3">Nombreuses racines fines de même épaisseur partant du même point</p>
+          <ul class="text-xs space-y-1">
+            <li>• Forme un réseau dense</li>
+            <li>• Reste près de la surface</li>
+            <li>• <strong>Exemples :</strong> maïs, blé, herbe, poireau</li>
+          </ul>
+        </div>
+
+        <div class="bg-white/70 dark:bg-black/30 p-5 rounded-lg">
+          <h4 class="font-bold text-amber-700 dark:text-amber-300 mb-2">3. Racine Traçante</h4>
+          <p class="text-sm mb-3">S'étend horizontalement sous la surface du sol</p>
+          <ul class="text-xs space-y-1">
+            <li>• Peut couvrir une grande surface</li>
+            <li>• Produit de nouvelles pousses</li>
+            <li>• <strong>Exemples :</strong> framboisier, bambou, chiendent</li>
+          </ul>
+        </div>
+
+        <div class="bg-white/70 dark:bg-black/30 p-5 rounded-lg">
+          <h4 class="font-bold text-amber-700 dark:text-amber-300 mb-2">4. Racine Aérienne</h4>
+          <p class="text-sm mb-3">Se développe au-dessus du sol, dans l'air</p>
+          <ul class="text-xs space-y-1">
+            <li>• Absorbe l'humidité de l'air</li>
+            <li>• Peut servir de support</li>
+            <li>• <strong>Exemples :</strong> orchidée, lierre, figuier banian</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2 class="text-2xl font-bold text-primary mb-4">🥔 Organes de Réserve Souterrains</h2>
+    
+    <div class="grid md:grid-cols-3 gap-6">
+      <div class="bg-gradient-to-br from-yellow-50 to-amber-50 dark:from-yellow-950/30 dark:to-amber-950/30 p-6 rounded-lg border-2 border-yellow-200 dark:border-yellow-800">
+        <h3 class="text-xl font-bold text-yellow-700 dark:text-yellow-300 mb-3">🥔 Tubercule</h3>
+        <p class="text-sm mb-3">Tige souterraine renflée qui stocke des réserves</p>
+        <div class="bg-white/70 dark:bg-black/30 p-3 rounded mt-3">
+          <p class="font-semibold text-sm mb-2">Caractéristiques :</p>
+          <ul class="text-xs space-y-1">
+            <li>• Forme arrondie ou allongée</li>
+            <li>• Contient beaucoup d'amidon</li>
+            <li>• Possède des "yeux" (bourgeons)</li>
+          </ul>
+          <p class="text-xs mt-3"><strong>Exemples :</strong> pomme de terre, topinambour</p>
+        </div>
+      </div>
+
+      <div class="bg-gradient-to-br from-purple-50 to-pink-50 dark:from-purple-950/30 dark:to-pink-950/30 p-6 rounded-lg border-2 border-purple-200 dark:border-purple-800">
+        <h3 class="text-xl font-bold text-purple-700 dark:text-purple-300 mb-3">🧅 Bulbe</h3>
+        <p class="text-sm mb-3">Tige courte entourée de feuilles charnues superposées</p>
+        <div class="bg-white/70 dark:bg-black/30 p-3 rounded mt-3">
+          <p class="font-semibold text-sm mb-2">Caractéristiques :</p>
+          <ul class="text-xs space-y-1">
+            <li>• Couches superposées (écailles)</li>
+            <li>• Tige très courte au centre</li>
+            <li>• Racines à la base</li>
+          </ul>
+          <p class="text-xs mt-3"><strong>Exemples :</strong> oignon, ail, tulipe, lis</p>
+        </div>
+      </div>
+
+      <div class="bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-950/30 dark:to-emerald-950/30 p-6 rounded-lg border-2 border-green-200 dark:border-green-800">
+        <h3 class="text-xl font-bold text-green-700 dark:text-green-300 mb-3">🌾 Rhizome</h3>
+        <p class="text-sm mb-3">Tige horizontale souterraine qui produit racines et tiges</p>
+        <div class="bg-white/70 dark:bg-black/30 p-3 rounded mt-3">
+          <p class="font-semibold text-sm mb-2">Caractéristiques :</p>
+          <ul class="text-xs space-y-1">
+            <li>• Pousse horizontalement</li>
+            <li>• Produit des nœuds</li>
+            <li>• Permet la multiplication</li>
+          </ul>
+          <p class="text-xs mt-3"><strong>Exemples :</strong> gingembre, iris, muguet, bambou</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2 class="text-2xl font-bold text-primary mb-4">🌳 La Tige et les Branches</h2>
+    <div class="bg-gradient-to-r from-blue-50 to-cyan-50 dark:from-blue-950/30 dark:to-cyan-950/30 p-6 rounded-lg border-2 border-blue-200 dark:border-blue-800">
+      <p class="leading-relaxed mb-4">
+        La <strong>tige</strong> est la partie aérienne de la plante qui porte les feuilles, les fleurs et les fruits.
+      </p>
+      
+      <div class="bg-white/70 dark:bg-black/30 p-5 rounded-lg mb-4">
+        <h4 class="font-bold text-blue-700 dark:text-blue-300 mb-3">🎯 Rôles de la Tige</h4>
+        <ul class="space-y-2 text-sm">
+          <li>• <strong>Soutien :</strong> Maintient la plante droite et porte les feuilles vers la lumière</li>
+          <li>• <strong>Transport :</strong> Fait circuler la sève (eau + minéraux) entre les racines et les feuilles</li>
+          <li>• <strong>Stockage :</strong> Peut stocker des réserves (ex: canne à sucre)</li>
+          <li>• <strong>Photosynthèse :</strong> Les tiges vertes participent à la fabrication de nourriture</li>
+        </ul>
+      </div>
+
+      <div class="grid md:grid-cols-2 gap-4">
+        <div class="bg-blue-100 dark:bg-blue-900/30 p-4 rounded-lg">
+          <h4 class="font-bold mb-2">Parties d'une Tige</h4>
+          <ul class="text-sm space-y-2">
+            <li>• <strong>Nœud :</strong> Point d'attache des feuilles</li>
+            <li>• <strong>Entre-nœud :</strong> Partie entre deux nœuds</li>
+            <li>• <strong>Bourgeon terminal :</strong> À l'extrémité, assure la croissance</li>
+            <li>• <strong>Bourgeons axillaires :</strong> À l'aisselle des feuilles, forment des branches</li>
+          </ul>
+        </div>
+
+        <div class="bg-cyan-100 dark:bg-cyan-900/30 p-4 rounded-lg">
+          <h4 class="font-bold mb-2">Types de Tiges</h4>
+          <ul class="text-sm space-y-2">
+            <li>• <strong>Herbacée :</strong> Souple et verte (tomate, haricot)</li>
+            <li>• <strong>Ligneuse :</strong> Dure et rigide (arbre, arbuste)</li>
+            <li>• <strong>Grimpante :</strong> S'accroche à un support (vigne, lierre)</li>
+            <li>• <strong>Rampante :</strong> S'étale sur le sol (fraisier, patate douce)</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2 class="text-2xl font-bold text-primary mb-4">🍃 Les Feuilles : Usines de la Plante</h2>
+    <div class="bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-950/30 dark:to-emerald-950/30 p-6 rounded-lg border-2 border-green-200 dark:border-green-800">
+      <p class="leading-relaxed mb-4">
+        Les <strong>feuilles</strong> sont les organes de la plante où se fait la <strong>photosynthèse</strong>, 
+        le processus qui permet à la plante de fabriquer sa nourriture grâce à la lumière du soleil.
+      </p>
+
+      <div class="bg-white/70 dark:bg-black/30 p-5 rounded-lg mb-6">
+        <h4 class="font-bold text-green-700 dark:text-green-300 mb-3">📐 Parties d'une Feuille</h4>
+        <div class="grid md:grid-cols-3 gap-4 text-sm">
+          <div>
+            <p class="font-semibold mb-1">1. Le Limbe</p>
+            <p class="text-xs">La partie plate et large de la feuille, souvent verte</p>
+          </div>
+          <div>
+            <p class="font-semibold mb-1">2. Le Pétiole</p>
+            <p class="text-xs">Le "pied" qui relie le limbe à la tige</p>
+          </div>
+          <div>
+            <p class="font-semibold mb-1">3. Les Nervures</p>
+            <p class="text-xs">Les "veines" qui transportent la sève dans la feuille</p>
+          </div>
+        </div>
+        <div class="mt-4 p-3 bg-green-100 dark:bg-green-900/50 rounded">
+          <p class="text-xs"><strong>Note :</strong> Certaines feuilles n'ont pas de pétiole, elles sont dites "sessiles" (attachées directement à la tige)</p>
+        </div>
+      </div>
+
+      <div class="space-y-4">
+        <div class="bg-gradient-to-r from-teal-50 to-green-50 dark:from-teal-950/30 dark:to-green-950/30 p-5 rounded-lg border-l-4 border-teal-500">
+          <h4 class="font-bold text-teal-700 dark:text-teal-300 mb-3">🍂 Feuille Simple</h4>
+          <p class="text-sm mb-3">Le limbe forme une seule pièce, même s'il peut être découpé</p>
+          <div class="bg-white/70 dark:bg-black/30 p-3 rounded">
+            <p class="text-xs mb-2"><strong>Caractéristiques :</strong></p>
+            <ul class="text-xs space-y-1">
+              <li>• Un seul limbe par pétiole</li>
+              <li>• Peut avoir des bords lisses, dentés ou lobés</li>
+              <li>• <strong>Exemples :</strong> chêne, érable, rose, manguier</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="bg-gradient-to-r from-lime-50 to-green-50 dark:from-lime-950/30 dark:to-green-950/30 p-5 rounded-lg border-l-4 border-lime-500">
+          <h4 class="font-bold text-lime-700 dark:text-lime-300 mb-3">🌿 Feuille Composée</h4>
+          <p class="text-sm mb-3">Le limbe est divisé en plusieurs petites feuilles appelées <strong>folioles</strong></p>
+          <div class="bg-white/70 dark:bg-black/30 p-3 rounded">
+            <p class="text-xs mb-2"><strong>Caractéristiques :</strong></p>
+            <ul class="text-xs space-y-1">
+              <li>• Plusieurs folioles attachées au même pétiole</li>
+              <li>• Chaque foliole ressemble à une petite feuille</li>
+              <li>• <strong>Exemples :</strong> frêne, acacia, trèfle, tomate</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <div class="mt-6 p-4 bg-yellow-50 dark:bg-yellow-900/20 border-2 border-yellow-300 dark:border-yellow-700 rounded-lg">
+        <p class="font-semibold text-yellow-800 dark:text-yellow-200 mb-2">💡 Comment différencier ?</p>
+        <p class="text-yellow-700 dark:text-yellow-300 text-sm">
+          Pour savoir si c'est une feuille simple ou composée : cherche le <strong>bourgeon</strong> ! 
+          Il se trouve toujours à la base d'une feuille (à l'aisselle), jamais à la base d'une foliole.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2 class="text-2xl font-bold text-primary mb-4">📊 Schéma Récapitulatif</h2>
+    <div class="bg-gradient-to-br from-purple-50 to-pink-50 dark:from-purple-950/20 dark:to-pink-950/20 p-6 rounded-xl border-2 border-purple-200 dark:border-purple-800">
+      <div class="grid md:grid-cols-2 gap-6">
+        <div>
+          <h4 class="font-bold text-purple-700 dark:text-purple-300 mb-3">🌱 Organes Souterrains</h4>
+          <ul class="space-y-2 text-sm">
+            <li>✓ Racines (pivotante, fasciculée, traçante, aérienne)</li>
+            <li>✓ Tubercules (pomme de terre)</li>
+            <li>✓ Bulbes (oignon, ail)</li>
+            <li>✓ Rhizomes (gingembre)</li>
+          </ul>
+        </div>
+        <div>
+          <h4 class="font-bold text-purple-700 dark:text-purple-300 mb-3">🌿 Organes Aériens</h4>
+          <ul class="space-y-2 text-sm">
+            <li>✓ Tige (nœuds, entre-nœuds, bourgeons)</li>
+            <li>✓ Branches (ramifications de la tige)</li>
+            <li>✓ Feuilles simples</li>
+            <li>✓ Feuilles composées (avec folioles)</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+</div>`,
+    exemplesExercices: `<div class="space-y-6">
+  <div class="bg-primary/5 p-6 rounded-lg border-2 border-primary/20">
+    <h3 class="text-xl font-bold text-primary mb-4">📝 Exercice 1 : Identification des Racines</h3>
+    <p class="mb-4">Indique le type de racine pour chaque plante :</p>
+    <ol class="space-y-2 list-decimal list-inside">
+      <li>Carotte : _______________________</li>
+      <li>Maïs : _______________________</li>
+      <li>Orchidée : _______________________</li>
+      <li>Bambou : _______________________</li>
+      <li>Betterave : _______________________</li>
+    </ol>
+  </div>
+
+  <div class="bg-accent/5 p-6 rounded-lg border-2 border-accent/20">
+    <h3 class="text-xl font-bold text-accent mb-4">📝 Exercice 2 : Organes de Réserve</h3>
+    <p class="mb-4">Classe ces plantes selon leur organe de réserve (Tubercule, Bulbe ou Rhizome) :</p>
+    <div class="grid md:grid-cols-3 gap-4 text-sm">
+      <div>
+        <p class="font-semibold mb-2">Plantes :</p>
+        <ul class="space-y-1">
+          <li>• Pomme de terre</li>
+          <li>• Oignon</li>
+          <li>• Gingembre</li>
+          <li>• Ail</li>
+          <li>• Topinambour</li>
+          <li>• Iris</li>
+        </ul>
+      </div>
+      <div class="col-span-2">
+        <p class="font-semibold mb-2">Classification :</p>
+        <p class="mb-2">Tubercules : ______________</p>
+        <p class="mb-2">Bulbes : ______________</p>
+        <p>Rhizomes : ______________</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="bg-secondary/5 p-6 rounded-lg border-2 border-secondary/20">
+    <h3 class="text-xl font-bold text-secondary mb-4">📝 Exercice 3 : Parties de la Feuille</h3>
+    <p class="mb-4">Complète le schéma d'une feuille en identifiant :</p>
+    <ol class="space-y-2 list-decimal list-inside">
+      <li>La partie plate et large : ______________</li>
+      <li>Le "pied" qui attache la feuille : ______________</li>
+      <li>Les lignes qui transportent la sève : ______________</li>
+    </ol>
+  </div>
+
+  <div class="bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-950/20 dark:to-pink-950/20 p-6 rounded-lg border-2 border-purple-200 dark:border-purple-800">
+    <h3 class="text-xl font-bold text-purple-700 dark:text-purple-300 mb-4">📝 Exercice 4 : Feuille Simple ou Composée ?</h3>
+    <p class="mb-4">Pour chaque plante, indique si elle a des feuilles simples (S) ou composées (C) :</p>
+    <ol class="space-y-2 list-decimal list-inside">
+      <li>Chêne : _______</li>
+      <li>Acacia : _______</li>
+      <li>Trèfle : _______</li>
+      <li>Érable : _______</li>
+      <li>Tomate : _______</li>
+      <li>Rose : _______</li>
+    </ol>
+  </div>
+
+  <div class="bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-950/20 dark:to-emerald-950/20 p-6 rounded-lg border-2 border-green-200 dark:border-green-800">
+    <h3 class="text-xl font-bold text-green-700 dark:text-green-300 mb-4">📝 Exercice 5 : Observation</h3>
+    <p class="mb-4">Va dehors et trouve :</p>
+    <ol class="space-y-3 list-decimal list-inside">
+      <li>Une plante avec une racine pivotante</li>
+      <li>Une plante avec une tige grimpante</li>
+      <li>Deux exemples de feuilles simples</li>
+      <li>Un exemple de feuille composée</li>
+    </ol>
+    <p class="mt-4 text-sm text-muted-foreground">Dessine ce que tu as trouvé et note le nom des plantes.</p>
+  </div>
+</div>`,
+    musicUrl: "/lovable-uploads/organes-plantes-lesson-music.mp3"
   },
 
   "fleurs-fruits": {
@@ -4972,9 +5675,348 @@ export const sciencesLessons7AF: Record<string, StaticLessonContent> = {
 • Identifier les fruits secs et les fruits charnus
 • Distinguer parmi les fruits charnus : les baies (à pépins) et les drupes (à noyaux)
 • Réaliser un herbier`,
-    introduction: `[Contenu à ajouter]`,
-    contenu: `[Contenu à ajouter]`,
-    exemplesExercices: `[Contenu à ajouter]`
+    introduction: `<div class="space-y-6">
+  <p class="text-lg leading-relaxed">
+    Les fleurs sont les organes reproducteurs des plantes à fleurs. Elles se transforment en fruits qui contiennent 
+    les graines, assurant ainsi la continuation de l'espèce.
+  </p>
+  <div class="bg-primary/5 border-l-4 border-primary p-4 rounded-r">
+    <p class="font-semibold text-primary mb-2">🌸 Le saviez-vous ?</p>
+    <p>La plus grande fleur du monde est le Rafflesia arnoldii qui peut atteindre 1 mètre de diamètre et peser 
+    jusqu'à 10 kg ! Certaines plantes peuvent produire plus de 500 000 graines par an.</p>
+  </div>
+  
+  <div class="bg-gradient-to-r from-primary/10 to-secondary/10 p-6 rounded-xl">
+    <h3 class="text-xl font-bold mb-4 flex items-center gap-2">
+      <span class="text-2xl">🎯</span>
+      Objectifs de la leçon
+    </h3>
+    <ul class="space-y-2">
+      <li class="flex items-start gap-2">
+        <span class="text-primary shrink-0 mt-1">✓</span>
+        <span>Identifier les différentes parties d'une fleur</span>
+      </li>
+      <li class="flex items-start gap-2">
+        <span class="text-primary shrink-0 mt-1">✓</span>
+        <span>Distinguer les différents types de fruits</span>
+      </li>
+      <li class="flex items-start gap-2">
+        <span class="text-primary shrink-0 mt-1">✓</span>
+        <span>Comprendre le rôle de la fleur dans la reproduction</span>
+      </li>
+      <li class="flex items-start gap-2">
+        <span class="text-primary shrink-0 mt-1">✓</span>
+        <span>Savoir réaliser un herbier</span>
+      </li>
+    </ul>
+  </div>
+</div>`,
+    contenu: `<div class="space-y-8">
+  <section>
+    <h2 class="text-2xl font-bold text-primary mb-4">🌺 Anatomie d'une Fleur</h2>
+    <div class="bg-gradient-to-r from-pink-50 to-rose-50 dark:from-pink-950/30 dark:to-rose-950/30 p-6 rounded-lg border-2 border-pink-200 dark:border-pink-800">
+      <p class="leading-relaxed mb-6">
+        Une <strong>fleur complète</strong> est composée de plusieurs parties, chacune ayant un rôle spécifique 
+        dans la reproduction de la plante.
+      </p>
+
+      <div class="space-y-6">
+        <div class="bg-white/70 dark:bg-black/30 p-5 rounded-lg">
+          <h4 class="font-bold text-pink-700 dark:text-pink-300 mb-3 flex items-center gap-2">
+            <span class="text-2xl">1️⃣</span>
+            Le Pédoncule
+          </h4>
+          <ul class="text-sm space-y-2">
+            <li>• <strong>Définition :</strong> La "tige" qui porte la fleur</li>
+            <li>• <strong>Rôle :</strong> Attache la fleur à la plante et transporte la sève</li>
+            <li>• <strong>Position :</strong> Se trouve à la base de la fleur</li>
+          </ul>
+        </div>
+
+        <div class="bg-white/70 dark:bg-black/30 p-5 rounded-lg">
+          <h4 class="font-bold text-green-700 dark:text-green-300 mb-3 flex items-center gap-2">
+            <span class="text-2xl">2️⃣</span>
+            Le Calice
+          </h4>
+          <ul class="text-sm space-y-2">
+            <li>• <strong>Définition :</strong> Ensemble des <strong>sépales</strong> (petites feuilles vertes)</li>
+            <li>• <strong>Rôle :</strong> Protège le bouton floral avant l'ouverture</li>
+            <li>• <strong>Apparence :</strong> Généralement vert, forme une enveloppe externe</li>
+            <li>• <strong>Particularité :</strong> Reste souvent attaché sous la fleur ouverte</li>
+          </ul>
+        </div>
+
+        <div class="bg-white/70 dark:bg-black/30 p-5 rounded-lg">
+          <h4 class="font-bold text-purple-700 dark:text-purple-300 mb-3 flex items-center gap-2">
+            <span class="text-2xl">3️⃣</span>
+            La Corolle
+          </h4>
+          <ul class="text-sm space-y-2">
+            <li>• <strong>Définition :</strong> Ensemble des <strong>pétales</strong> (parties colorées)</li>
+            <li>• <strong>Rôle :</strong> Attire les insectes pollinisateurs (abeilles, papillons)</li>
+            <li>• <strong>Apparence :</strong> Colorée, parfumée, souvent très décorative</li>
+            <li>• <strong>Couleurs :</strong> Rouge, jaune, bleu, blanc, violet, etc.</li>
+            <li>• <strong>Importance :</strong> Essentielle pour la pollinisation</li>
+          </ul>
+        </div>
+
+        <div class="bg-gradient-to-r from-blue-50 to-cyan-50 dark:from-blue-950/30 dark:to-cyan-950/30 p-5 rounded-lg border-2 border-blue-200 dark:border-blue-800">
+          <h4 class="font-bold text-blue-700 dark:text-blue-300 mb-3 flex items-center gap-2">
+            <span class="text-2xl">4️⃣</span>
+            Les Étamines (Organe Mâle)
+          </h4>
+          <div class="space-y-3">
+            <p class="text-sm">Les organes reproducteurs <strong>mâles</strong> de la fleur, composés de deux parties :</p>
+            <div class="grid md:grid-cols-2 gap-3">
+              <div class="bg-white/70 dark:bg-black/30 p-3 rounded">
+                <p class="font-semibold text-sm mb-1">Le Filet</p>
+                <p class="text-xs">Tige fine qui soutient l'anthère</p>
+              </div>
+              <div class="bg-white/70 dark:bg-black/30 p-3 rounded">
+                <p class="font-semibold text-sm mb-1">L'Anthère</p>
+                <p class="text-xs">Petits sacs au sommet qui contiennent le <strong>pollen</strong> (cellules reproductrices mâles)</p>
+              </div>
+            </div>
+            <div class="p-3 bg-blue-100 dark:bg-blue-900/50 rounded">
+              <p class="text-xs"><strong>🌾 Rôle :</strong> Produire et libérer le pollen pour la fécondation</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="bg-gradient-to-r from-rose-50 to-pink-50 dark:from-rose-950/30 dark:to-pink-950/30 p-5 rounded-lg border-2 border-rose-200 dark:border-rose-800">
+          <h4 class="font-bold text-rose-700 dark:text-rose-300 mb-3 flex items-center gap-2">
+            <span class="text-2xl">5️⃣</span>
+            Le Pistil (Organe Femelle)
+          </h4>
+          <div class="space-y-3">
+            <p class="text-sm">L'organe reproducteur <strong>femelle</strong> de la fleur, situé au centre, composé de trois parties :</p>
+            <div class="space-y-2">
+              <div class="bg-white/70 dark:bg-black/30 p-3 rounded">
+                <p class="font-semibold text-sm mb-1">Le Stigmate</p>
+                <p class="text-xs">Sommet collant du pistil qui capture le pollen</p>
+              </div>
+              <div class="bg-white/70 dark:bg-black/30 p-3 rounded">
+                <p class="font-semibold text-sm mb-1">Le Style</p>
+                <p class="text-xs">Tube qui relie le stigmate à l'ovaire</p>
+              </div>
+              <div class="bg-white/70 dark:bg-black/30 p-3 rounded">
+                <p class="font-semibold text-sm mb-1">L'Ovaire</p>
+                <p class="text-xs">Partie renflée à la base qui contient les <strong>ovules</strong> (futures graines)</p>
+              </div>
+            </div>
+            <div class="p-3 bg-rose-100 dark:bg-rose-900/50 rounded">
+              <p class="text-xs"><strong>🌸 Rôle :</strong> Recevoir le pollen et transformer l'ovaire en fruit après fécondation</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2 class="text-2xl font-bold text-primary mb-4">🐝 La Pollinisation : De la Fleur au Fruit</h2>
+    <div class="bg-gradient-to-r from-yellow-50 to-amber-50 dark:from-yellow-950/30 dark:to-amber-950/30 p-6 rounded-lg border-2 border-yellow-200 dark:border-yellow-800">
+      <div class="space-y-4">
+        <div class="bg-white/80 dark:bg-gray-800/80 p-5 rounded-lg shadow-md">
+          <h4 class="font-bold text-yellow-700 dark:text-yellow-300 mb-2">Étape 1 : Pollinisation</h4>
+          <p class="text-sm">Un insecte (abeille, papillon) ou le vent transporte le pollen d'une fleur à une autre. Le pollen se dépose sur le stigmate.</p>
+        </div>
+
+        <div class="bg-white/80 dark:bg-gray-800/80 p-5 rounded-lg shadow-md">
+          <h4 class="font-bold text-yellow-700 dark:text-yellow-300 mb-2">Étape 2 : Fécondation</h4>
+          <p class="text-sm">Le grain de pollen descend par le style jusqu'à l'ovaire où il féconde les ovules. Les ovules fécondés deviennent des graines.</p>
+        </div>
+
+        <div class="bg-white/80 dark:bg-gray-800/80 p-5 rounded-lg shadow-md">
+          <h4 class="font-bold text-yellow-700 dark:text-yellow-300 mb-2">Étape 3 : Formation du Fruit</h4>
+          <p class="text-sm">Après la fécondation, l'ovaire grossit et se transforme en fruit. Les pétales et étamines tombent. Le fruit protège et nourrit les graines.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2 class="text-2xl font-bold text-primary mb-4">🍎 Classification des Fruits</h2>
+    <p class="mb-6">Les fruits sont classés en deux grandes catégories selon leur texture et leur teneur en eau.</p>
+    
+    <div class="grid md:grid-cols-2 gap-6">
+      <div class="bg-gradient-to-br from-orange-50 to-amber-50 dark:from-orange-950/30 dark:to-amber-950/30 p-6 rounded-lg border-2 border-orange-200 dark:border-orange-800">
+        <h3 class="text-xl font-bold text-orange-700 dark:text-orange-300 mb-4">🌰 Fruits Secs</h3>
+        <p class="text-sm mb-4">Fruits dont la paroi de l'ovaire devient <strong>sèche et dure</strong> à maturité. Ils contiennent peu d'eau.</p>
+        
+        <div class="space-y-3">
+          <div class="bg-white/70 dark:bg-black/30 p-4 rounded">
+            <p class="font-semibold text-sm mb-2">Fruits secs déhiscents</p>
+            <p class="text-xs mb-2">S'ouvrent à maturité pour libérer les graines</p>
+            <p class="text-xs"><strong>Exemples :</strong> haricot, pois, moutarde, coton</p>
+          </div>
+
+          <div class="bg-white/70 dark:bg-black/30 p-4 rounded">
+            <p class="font-semibold text-sm mb-2">Fruits secs indéhiscents</p>
+            <p class="text-xs mb-2">Ne s'ouvrent pas spontanément</p>
+            <p class="text-xs"><strong>Exemples :</strong> noisette, gland, noix, amande, châtaigne</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="bg-gradient-to-br from-red-50 to-pink-50 dark:from-red-950/30 dark:to-pink-950/30 p-6 rounded-lg border-2 border-red-200 dark:border-red-800">
+        <h3 class="text-xl font-bold text-red-700 dark:text-red-300 mb-4">🍓 Fruits Charnus</h3>
+        <p class="text-sm mb-4">Fruits dont la paroi de l'ovaire reste <strong>molle et juteuse</strong> à maturité. Riches en eau et en sucre.</p>
+        
+        <div class="space-y-3">
+          <div class="bg-white/70 dark:bg-black/30 p-4 rounded">
+            <p class="font-semibold text-sm mb-2 flex items-center gap-2">
+              <span>🫐</span>
+              Les Baies (à pépins)
+            </p>
+            <p class="text-xs mb-2">Plusieurs petites graines appelées <strong>pépins</strong> dispersées dans la chair</p>
+            <p class="text-xs"><strong>Exemples :</strong> tomate, raisin, orange, citron, melon, pastèque, kiwi, banane</p>
+          </div>
+
+          <div class="bg-white/70 dark:bg-black/30 p-4 rounded">
+            <p class="font-semibold text-sm mb-2 flex items-center gap-2">
+              <span>🍑</span>
+              Les Drupes (à noyau)
+            </p>
+            <p class="text-xs mb-2">Une seule grosse graine protégée par une enveloppe dure appelée <strong>noyau</strong></p>
+            <p class="text-xs"><strong>Exemples :</strong> pêche, mangue, prune, cerise, abricot, avocat, olive, noix de coco</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="bg-gradient-to-br from-indigo-50 to-purple-50 dark:from-indigo-950/20 dark:to-purple-950/20 p-6 rounded-xl border-2 border-indigo-200 dark:border-indigo-800">
+    <h2 class="text-2xl font-bold text-primary mb-4">📚 Réaliser un Herbier</h2>
+    <p class="mb-6">Un herbier est une <strong>collection de plantes séchées et conservées</strong> à des fins d'étude. C'est un excellent moyen d'apprendre la botanique !</p>
+    
+    <div class="space-y-4">
+      <div class="bg-white/80 dark:bg-gray-800/80 p-5 rounded-lg">
+        <h4 class="font-bold text-indigo-600 dark:text-indigo-400 mb-3">Étape 1 : Récolte</h4>
+        <ul class="text-sm space-y-2">
+          <li>• Choisis des plantes avec fleurs, feuilles et si possible racines</li>
+          <li>• Récolte par temps sec (pas après la pluie)</li>
+          <li>• Prends des spécimens en bon état</li>
+          <li>• Note le lieu et la date de récolte</li>
+        </ul>
+      </div>
+
+      <div class="bg-white/80 dark:bg-gray-800/80 p-5 rounded-lg">
+        <h4 class="font-bold text-indigo-600 dark:text-indigo-400 mb-3">Étape 2 : Séchage</h4>
+        <ul class="text-sm space-y-2">
+          <li>• Place la plante entre deux feuilles de papier journal</li>
+          <li>• Aplatis délicatement et arrange les parties visibles</li>
+          <li>• Empile plusieurs couches séparées par du papier buvard</li>
+          <li>• Mets des poids lourds dessus (gros livres)</li>
+          <li>• Laisse sécher 2-3 semaines en changeant le papier régulièrement</li>
+        </ul>
+      </div>
+
+      <div class="bg-white/80 dark:bg-gray-800/80 p-5 rounded-lg">
+        <h4 class="font-bold text-indigo-600 dark:text-indigo-400 mb-3">Étape 3 : Montage</h4>
+        <ul class="text-sm space-y-2">
+          <li>• Colle la plante sèche sur une feuille cartonnée blanche</li>
+          <li>• Utilise de petites bandes de papier collant transparent</li>
+          <li>• Laisse toutes les parties bien visibles</li>
+        </ul>
+      </div>
+
+      <div class="bg-white/80 dark:bg-gray-800/80 p-5 rounded-lg">
+        <h4 class="font-bold text-indigo-600 dark:text-indigo-400 mb-3">Étape 4 : Étiquetage</h4>
+        <p class="text-sm mb-2">Écris sur l'étiquette :</p>
+        <ul class="text-sm space-y-1">
+          <li>• Nom de la plante (commun et scientifique si possible)</li>
+          <li>• Famille botanique</li>
+          <li>• Lieu de récolte</li>
+          <li>• Date de récolte</li>
+          <li>• Ton nom (le collecteur)</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="mt-6 p-4 bg-indigo-100 dark:bg-indigo-900/30 rounded-lg">
+      <p class="text-sm">
+        <strong>💡 Conseil :</strong> Conserve ton herbier dans un endroit sec, à l'abri de la lumière directe. 
+        Tu peux aussi le plastifier pour une meilleure conservation !
+      </p>
+    </div>
+  </section>
+</div>`,
+    exemplesExercices: `<div class="space-y-6">
+  <div class="bg-primary/5 p-6 rounded-lg border-2 border-primary/20">
+    <h3 class="text-xl font-bold text-primary mb-4">📝 Exercice 1 : Parties de la Fleur</h3>
+    <p class="mb-4">Complète le schéma en identifiant les 5 parties principales :</p>
+    <ol class="space-y-2 list-decimal list-inside">
+      <li>La tige qui porte la fleur : ______________</li>
+      <li>Les feuilles vertes qui protègent le bouton : ______________</li>
+      <li>Les parties colorées qui attirent les insectes : ______________</li>
+      <li>Les organes mâles qui produisent le pollen : ______________</li>
+      <li>L'organe femelle au centre de la fleur : ______________</li>
+    </ol>
+  </div>
+
+  <div class="bg-accent/5 p-6 rounded-lg border-2 border-accent/20">
+    <h3 class="text-xl font-bold text-accent mb-4">📝 Exercice 2 : Fruits Secs ou Charnus ?</h3>
+    <p class="mb-4">Classe ces fruits en deux catégories :</p>
+    <div class="grid md:grid-cols-2 gap-4">
+      <div>
+        <p class="font-semibold mb-2">Fruits à classer :</p>
+        <ul class="text-sm space-y-1">
+          <li>1. Orange</li>
+          <li>2. Noisette</li>
+          <li>3. Pêche</li>
+          <li>4. Noix</li>
+          <li>5. Tomate</li>
+          <li>6. Haricot</li>
+          <li>7. Mangue</li>
+          <li>8. Amande</li>
+        </ul>
+      </div>
+      <div>
+        <p class="font-semibold mb-2">Classification :</p>
+        <p class="text-sm mb-3">Fruits secs : _____________</p>
+        <p class="text-sm">Fruits charnus : _____________</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="bg-secondary/5 p-6 rounded-lg border-2 border-secondary/20">
+    <h3 class="text-xl font-bold text-secondary mb-4">📝 Exercice 3 : Baies ou Drupes ?</h3>
+    <p class="mb-4">Pour chaque fruit charnu, indique s'il s'agit d'une baie (B) ou d'une drupe (D) :</p>
+    <ol class="space-y-2 list-decimal list-inside">
+      <li>Cerise : _______</li>
+      <li>Raisin : _______</li>
+      <li>Abricot : _______</li>
+      <li>Melon : _______</li>
+      <li>Avocat : _______</li>
+      <li>Kiwi : _______</li>
+    </ol>
+  </div>
+
+  <div class="bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-950/20 dark:to-pink-950/20 p-6 rounded-lg border-2 border-purple-200 dark:border-purple-800">
+    <h3 class="text-xl font-bold text-purple-700 dark:text-purple-300 mb-4">📝 Exercice 4 : Vrai ou Faux</h3>
+    <ol class="space-y-3 list-decimal list-inside">
+      <li>Le pistil est l'organe mâle de la fleur. <span class="text-muted-foreground ml-2">(V / F)</span></li>
+      <li>Les pétales forment la corolle. <span class="text-muted-foreground ml-2">(V / F)</span></li>
+      <li>Le pollen est produit par le stigmate. <span class="text-muted-foreground ml-2">(V / F)</span></li>
+      <li>L'ovaire se transforme en fruit après fécondation. <span class="text-muted-foreground ml-2">(V / F)</span></li>
+      <li>Les drupes contiennent plusieurs pépins. <span class="text-muted-foreground ml-2">(V / F)</span></li>
+    </ol>
+  </div>
+
+  <div class="bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-950/20 dark:to-emerald-950/20 p-6 rounded-lg border-2 border-green-200 dark:border-green-800">
+    <h3 class="text-xl font-bold text-green-700 dark:text-green-300 mb-4">📝 Exercice 5 : Projet Herbier</h3>
+    <p class="mb-4">Réalise un herbier avec au moins 5 plantes différentes. Pour chaque plante :</p>
+    <ol class="space-y-2 list-decimal list-inside text-sm">
+      <li>Récolte-la avec ses fleurs et feuilles</li>
+      <li>Fais-la sécher correctement (2-3 semaines)</li>
+      <li>Monte-la sur une feuille cartonnée</li>
+      <li>Crée une étiquette avec toutes les informations</li>
+      <li>Présente ton herbier à la classe</li>
+    </ol>
+  </div>
+</div>`,
+    musicUrl: "/lovable-uploads/fleurs-fruits-lesson-music.mp3"
   },
 
   // Interaction entre les composants du milieu
@@ -4983,9 +6025,96 @@ export const sciencesLessons7AF: Record<string, StaticLessonContent> = {
 • Identifier les trois (3) domaines d'études de l'écologie
 • Spécifier les relations pouvant exister entre individus de même espèce et d'espèces différentes
 • Diviser les êtres vivants en deux groupes : autotrophes et hétérotrophes`,
-    introduction: `[Contenu à ajouter]`,
-    contenu: `[Contenu à ajouter]`,
-    exemplesExercices: `[Contenu à ajouter]`
+    introduction: `<div class="space-y-6">
+  <p class="text-lg leading-relaxed">
+    L'écologie étudie les relations entre les êtres vivants et leur environnement. C'est une science fascinante 
+    qui nous aide à comprendre comment la nature fonctionne !
+  </p>
+  <div class="bg-primary/5 border-l-4 border-primary p-4 rounded-r">
+    <p class="font-semibold text-primary mb-2">🌍 Le saviez-vous ?</p>
+    <p>Le mot "écologie" vient du grec "oikos" (maison) et "logos" (étude). C'est l'étude de notre "maison commune" : la Terre !</p>
+  </div>
+  
+  <div class="bg-gradient-to-r from-primary/10 to-secondary/10 p-6 rounded-xl">
+    <h3 class="text-xl font-bold mb-4 flex items-center gap-2">
+      <span class="text-2xl">🎯</span>
+      Objectifs de la leçon
+    </h3>
+    <ul class="space-y-2">
+      <li class="flex items-start gap-2">
+        <span class="text-primary shrink-0 mt-1">✓</span>
+        <span>Identifier les trois domaines d'études de l'écologie</span>
+      </li>
+      <li class="flex items-start gap-2">
+        <span class="text-primary shrink-0 mt-1">✓</span>
+        <span>Comprendre les relations entre êtres vivants</span>
+      </li>
+      <li class="flex items-start gap-2">
+        <span class="text-primary shrink-0 mt-1">✓</span>
+        <span>Distinguer autotrophes et hétérotrophes</span>
+      </li>
+    </ul>
+  </div>
+</div>`,
+    contenu: `<div class="space-y-8">
+  <section>
+    <h2 class="text-2xl font-bold text-primary mb-4">🔬 Les Trois Domaines de l'Écologie</h2>
+    <div class="grid md:grid-cols-3 gap-6">
+      <div class="bg-gradient-to-br from-blue-50 to-cyan-50 dark:from-blue-950/30 dark:to-cyan-950/30 p-6 rounded-lg border-2 border-blue-200 dark:border-blue-800">
+        <h3 class="text-xl font-bold text-blue-700 dark:text-blue-300 mb-3">1. Autoécologie</h3>
+        <p class="text-sm mb-3">Étude d'une <strong>seule espèce</strong> dans son milieu</p>
+        <p class="text-xs">Exemple : Comment le lion s'adapte à la savane</p>
+      </div>
+      <div class="bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-950/30 dark:to-emerald-950/30 p-6 rounded-lg border-2 border-green-200 dark:border-green-800">
+        <h3 class="text-xl font-bold text-green-700 dark:text-green-300 mb-3">2. Synécologie</h3>
+        <p class="text-sm mb-3">Étude de <strong>plusieurs espèces</strong> vivant ensemble</p>
+        <p class="text-xs">Exemple : Relations entre animaux d'une forêt</p>
+      </div>
+      <div class="bg-gradient-to-br from-purple-50 to-pink-50 dark:from-purple-950/30 dark:to-pink-950/30 p-6 rounded-lg border-2 border-purple-200 dark:border-purple-800">
+        <h3 class="text-xl font-bold text-purple-700 dark:text-purple-300 mb-3">3. Écologie Globale</h3>
+        <p class="text-sm mb-3">Étude de <strong>l'ensemble de la biosphère</strong></p>
+        <p class="text-xs">Exemple : Impact du climat sur toute la planète</p>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2 class="text-2xl font-bold text-primary mb-4">🌱 Autotrophes vs Hétérotrophes</h2>
+    <div class="grid md:grid-cols-2 gap-6">
+      <div class="bg-gradient-to-br from-green-50 to-lime-50 dark:from-green-950/30 dark:to-lime-950/30 p-6 rounded-lg border-2 border-green-200 dark:border-green-800">
+        <h3 class="text-xl font-bold text-green-700 dark:text-green-300 mb-4">🌿 Autotrophes</h3>
+        <p class="text-sm mb-4">Organismes qui <strong>fabriquent leur propre nourriture</strong> grâce à la photosynthèse</p>
+        <ul class="text-sm space-y-2">
+          <li>• Utilisent lumière + CO₂ + eau</li>
+          <li>• Produisent glucose + oxygène</li>
+          <li>• <strong>Exemples :</strong> plantes vertes, algues</li>
+        </ul>
+      </div>
+      <div class="bg-gradient-to-br from-orange-50 to-red-50 dark:from-orange-950/30 dark:to-red-950/30 p-6 rounded-lg border-2 border-orange-200 dark:border-orange-800">
+        <h3 class="text-xl font-bold text-orange-700 dark:text-orange-300 mb-4">🦁 Hétérotrophes</h3>
+        <p class="text-sm mb-4">Organismes qui <strong>se nourrissent d'autres êtres vivants</strong></p>
+        <ul class="text-sm space-y-2">
+          <li>• Ne peuvent pas fabriquer leur nourriture</li>
+          <li>• Consomment plantes ou animaux</li>
+          <li>• <strong>Exemples :</strong> animaux, champignons, humains</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+</div>`,
+    exemplesExercices: `<div class="space-y-6">
+  <div class="bg-primary/5 p-6 rounded-lg border-2 border-primary/20">
+    <h3 class="text-xl font-bold text-primary mb-4">📝 Exercice : Classification</h3>
+    <p class="mb-4">Classe ces organismes : Autotrophe (A) ou Hétérotrophe (H)</p>
+    <ol class="space-y-2 list-decimal list-inside">
+      <li>Arbre : _______</li>
+      <li>Lion : _______</li>
+      <li>Algue : _______</li>
+      <li>Humain : _______</li>
+    </ol>
+  </div>
+</div>`,
+    musicUrl: "/lovable-uploads/ecologie-lesson-music.mp3"
   },
 
   "chaines-alimentaires": {
@@ -4994,9 +6123,53 @@ export const sciencesLessons7AF: Record<string, StaticLessonContent> = {
 • Identifier une chaîne alimentaire comme une suite d'êtres vivants
 • Établir quelques chaînes alimentaires dans différents milieux
 • Identifier le parasitisme, la symbiose et l'association`,
-    introduction: `[Contenu à ajouter]`,
-    contenu: `[Contenu à ajouter]`,
-    exemplesExercices: `[Contenu à ajouter]`
+    introduction: `<div class="space-y-6">
+  <p class="text-lg leading-relaxed">
+    Les chaînes alimentaires montrent comment l'énergie et la matière circulent dans la nature, 
+    d'un être vivant à un autre. C'est l'histoire de "qui mange qui" !
+  </p>
+  <div class="bg-primary/5 border-l-4 border-primary p-4 rounded-r">
+    <p class="font-semibold text-primary mb-2">🍽️ Le saviez-vous ?</p>
+    <p>Sans les producteurs (plantes), aucune vie animale ne serait possible sur Terre !</p>
+  </div>
+</div>`,
+    contenu: `<div class="space-y-8">
+  <section>
+    <h2 class="text-2xl font-bold text-primary mb-4">🔗 Les Trois Éléments d'une Chaîne</h2>
+    <div class="space-y-4">
+      <div class="bg-green-50 dark:bg-green-950/30 p-5 rounded-lg">
+        <h4 class="font-bold text-green-700 dark:text-green-300 mb-2">1. Producteurs 🌱</h4>
+        <p class="text-sm">Plantes qui fabriquent leur nourriture (autotrophes)</p>
+      </div>
+      <div class="bg-orange-50 dark:bg-orange-950/30 p-5 rounded-lg">
+        <h4 class="font-bold text-orange-700 dark:text-orange-300 mb-2">2. Consommateurs 🦁</h4>
+        <p class="text-sm">Animaux qui mangent d'autres organismes (hétérotrophes)</p>
+      </div>
+      <div class="bg-purple-50 dark:bg-purple-950/30 p-5 rounded-lg">
+        <h4 class="font-bold text-purple-700 dark:text-purple-300 mb-2">3. Décomposeurs 🍄</h4>
+        <p class="text-sm">Champignons et bactéries qui recyclent la matière morte</p>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2 class="text-2xl font-bold text-primary mb-4">📊 Exemple de Chaîne</h2>
+    <div class="bg-blue-50 dark:bg-blue-950/30 p-6 rounded-lg">
+      <p class="text-center text-lg font-bold">
+        🌾 Herbe → 🦗 Criquet → 🐸 Grenouille → 🐍 Serpent → 🦅 Aigle
+      </p>
+    </div>
+  </section>
+</div>`,
+    exemplesExercices: `<div class="space-y-6">
+  <div class="bg-primary/5 p-6 rounded-lg border-2 border-primary/20">
+    <h3 class="text-xl font-bold text-primary mb-4">📝 Exercice : Crée une Chaîne</h3>
+    <p class="mb-4">Établis une chaîne alimentaire avec ces éléments :</p>
+    <p class="mb-2">Renard - Herbe - Lapin</p>
+    <p class="mt-4">Réponse : ________ → ________ → ________</p>
+  </div>
+</div>`,
+    musicUrl: "/lovable-uploads/chaines-alimentaires-lesson-music.mp3"
   },
 
   // Manifestation des activités internes du globe terrestre
