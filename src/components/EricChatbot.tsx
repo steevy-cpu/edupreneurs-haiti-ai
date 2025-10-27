@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { X, Send, Volume2 } from "lucide-react";
+import { X, Send } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import ericAvatar from "@/assets/dashboard00.png";
@@ -18,7 +18,6 @@ export const EricChatbot = () => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [isTyping, setIsTyping] = useState(false);
-  const [isSpeaking, setIsSpeaking] = useState<number | null>(null);
   const [userNickname, setUserNickname] = useState<string>("");
   const [userAvatarUrl, setUserAvatarUrl] = useState<string>("");
   const [position, setPosition] = useState<{ x: number; y: number } | null>(null);
@@ -134,22 +133,6 @@ export const EricChatbot = () => {
       }, 0);
     }
   }, [isOpen]);
-
-  const speakMessage = (text: string, index: number) => {
-    if (isSpeaking === index) {
-      window.speechSynthesis.cancel();
-      setIsSpeaking(null);
-      return;
-    }
-
-    const utterance = new SpeechSynthesisUtterance(text);
-    utterance.lang = "fr-FR";
-    utterance.rate = 0.9;
-    utterance.onend = () => setIsSpeaking(null);
-    
-    setIsSpeaking(index);
-    window.speechSynthesis.speak(utterance);
-  };
 
   const sendMessage = async () => {
     if (!input.trim()) return;
@@ -445,19 +428,6 @@ export const EricChatbot = () => {
                     </Button>
                   )}
                 </div>
-                {message.sender === "eric" && (
-                  <div className="eric-message-controls">
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className={`eric-message-speaker-btn ${isSpeaking === index ? "speaking" : ""}`}
-                      onClick={() => speakMessage(message.content, index)}
-                      title="Écouter ce message"
-                    >
-                      <Volume2 className="w-4 h-4" />
-                    </Button>
-                  </div>
-                )}
               </div>
             ))}
             {isTyping && (
