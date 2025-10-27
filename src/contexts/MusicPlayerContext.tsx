@@ -68,7 +68,7 @@ export const MusicPlayerProvider = ({ children }: { children: ReactNode }) => {
       // Bach - Deep Focus
       { id: "6JQm5aSjX6g", title: "Bach - Le Clavier Bien Tempéré", thumbnail: "https://i.ytimg.com/vi/6JQm5aSjX6g/hqdefault.jpg" },
       { id: "Nnuq9PXbywA", title: "Bach - Toccata et Fugue en Ré Mineur", thumbnail: "https://i.ytimg.com/vi/Nnuq9PXbywA/hqdefault.jpg" },
-      { id: "rrVDViSlw6w", title: "Bach - Air on the G String", thumbnail: "https://i.ytimg.com/vi/rrVDViSlw6w/hqdefault.jpg" },
+      { id: "ho9rZjlsyYY", title: "Bach - Prélude en Do Majeur", thumbnail: "https://i.ytimg.com/vi/ho9rZjlsyYY/hqdefault.jpg" },
       
       // Vivaldi - Energizing Baroque
       { id: "GRxofEmo3HA", title: "Vivaldi - Les Quatre Saisons Complet", thumbnail: "https://i.ytimg.com/vi/GRxofEmo3HA/hqdefault.jpg" },
@@ -92,7 +92,7 @@ export const MusicPlayerProvider = ({ children }: { children: ReactNode }) => {
       
       // Schubert - Gentle & Melodic
       { id: "2bosouX_d8Y", title: "Schubert - Ave Maria (Version Orchestrale)", thumbnail: "https://i.ytimg.com/vi/2bosouX_d8Y/hqdefault.jpg" },
-      { id: "AuZPHFCzfP4", title: "Schubert - Moment Musical No. 3", thumbnail: "https://i.ytimg.com/vi/AuZPHFCzfP4/hqdefault.jpg" },
+      { id: "k-x7QBFXguQ", title: "Schubert - Sérénade", thumbnail: "https://i.ytimg.com/vi/k-x7QBFXguQ/hqdefault.jpg" },
       
       // Mixed Study Compilations
       { id: "jgpJVI3tDbY", title: "Mix Classique - 4h Concentration", thumbnail: "https://i.ytimg.com/vi/jgpJVI3tDbY/hqdefault.jpg" },
