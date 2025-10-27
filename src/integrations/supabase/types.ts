@@ -884,6 +884,7 @@ export type Database = {
           gold_earned: number
           id: string
           is_system_account: boolean | null
+          last_seen: string | null
           nickname: string
           phone_confirmed: boolean | null
           phone_number: string
@@ -907,6 +908,7 @@ export type Database = {
           gold_earned?: number
           id?: string
           is_system_account?: boolean | null
+          last_seen?: string | null
           nickname: string
           phone_confirmed?: boolean | null
           phone_number: string
@@ -930,6 +932,7 @@ export type Database = {
           gold_earned?: number
           id?: string
           is_system_account?: boolean | null
+          last_seen?: string | null
           nickname?: string
           phone_confirmed?: boolean | null
           phone_number?: string

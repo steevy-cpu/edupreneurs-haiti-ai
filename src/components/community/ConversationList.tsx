@@ -72,10 +72,34 @@ export function ConversationList({
     return date.toLocaleDateString("fr-FR", { day: "numeric", month: "short" });
   };
 
+  const formatLastSeenTime = (dateString: string) => {
+    try {
+      const date = new Date(dateString);
+      // Format time in New York timezone, French locale, HH:mm format
+      return date.toLocaleTimeString('fr-FR', { 
+        hour: '2-digit', 
+        minute: '2-digit',
+        timeZone: 'America/New_York'
+      });
+    } catch (error) {
+      console.error('Error formatting last seen time:', error);
+      return '--:--';
+    }
+  };
+
   const getLastSeenText = (userId: string) => {
+    // Check if user is online
+    if (onlineUsers.has(userId)) {
+      return "En ligne";
+    }
+    
+    // Check last_seen from database
     const lastSeen = lastSeenTimes[userId];
-    if (!lastSeen) return 'Hors ligne';
-    return `Vu ${formatTimeAgo(lastSeen)}`;
+    if (!lastSeen) return "Hors ligne";
+    
+    // Display "Dernière connexion à HH:mm"
+    const timeString = formatLastSeenTime(lastSeen);
+    return `Dernière connexion à ${timeString}`;
   };
 
   const filteredConversations = conversations.filter(conv => {

@@ -341,26 +341,6 @@ const Community = () => {
           });
           console.log('👥 [Community] Online users:', Array.from(userIds));
           setOnlineUsers(userIds);
-          
-          // Initialize last seen times for offline users
-          setLastSeenTimes(prevTimes => {
-            console.log('🔍 [Community] Current lastSeenTimes:', prevTimes);
-            const newTimes = { ...prevTimes };
-            conversations.forEach(conv => {
-              const otherUserId = conv.otherUser?.user_id;
-              if (otherUserId && !userIds.has(otherUserId)) {
-                if (!newTimes[otherUserId]) {
-                  // User is offline and we don't have a last seen time, set a default
-                  newTimes[otherUserId] = new Date(Date.now() - 300000).toISOString();
-                  console.log('⏰ [Community] Set default last seen for:', otherUserId);
-                } else {
-                  console.log('✅ [Community] Already have last seen for:', otherUserId, newTimes[otherUserId]);
-                }
-              }
-            });
-            console.log('📦 [Community] Final lastSeenTimes:', newTimes);
-            return newTimes;
-          });
         }
       })
       .subscribe((status) => {
@@ -368,7 +348,7 @@ const Community = () => {
         
         // Poll for presence updates every 5 seconds
         if (status === 'SUBSCRIBED') {
-          const pollInterval = setInterval(() => {
+          const pollInterval = setInterval(async () => {
             const allChannels = supabase.getChannels();
             const onlineChannel = allChannels.find(ch => ch.topic === 'realtime:online-users');
             
@@ -387,18 +367,28 @@ const Community = () => {
                 if (JSON.stringify(prevArray) !== JSON.stringify(newArray)) {
                   console.log('👥 [Community] Online users updated:', Array.from(userIds));
                   
-                  // Track who went offline
-                  prev.forEach(userId => {
-                    if (!userIds.has(userId)) {
+                  // Track who went offline and update their last_seen in database
+                  prev.forEach(async (userId) => {
+                    if (!userIds.has(userId) && userId !== ERIC_USER_ID) {
                       console.log('📴 [Community] User went offline:', userId);
-                      setLastSeenTimes(prevTimes => {
-                        const newTimes = {
-                          ...prevTimes,
-                          [userId]: new Date().toISOString()
-                        };
-                        console.log('⏰ [Community] Updated lastSeenTimes:', newTimes);
-                        return newTimes;
-                      });
+                      const now = new Date().toISOString();
+                      
+                      // Update last_seen in database
+                      try {
+                        await supabase
+                          .from('profiles')
+                          .update({ last_seen: now })
+                          .eq('user_id', userId);
+                        console.log('✅ [Community] Updated last_seen in DB for:', userId);
+                      } catch (error) {
+                        console.error('❌ [Community] Error updating last_seen:', error);
+                      }
+                      
+                      // Update local state
+                      setLastSeenTimes(prevTimes => ({
+                        ...prevTimes,
+                        [userId]: now
+                      }));
                     }
                   });
                   
@@ -468,6 +458,37 @@ const Community = () => {
         .from("group_chats")
         .select("*")
         .in("id", groupIds);
+      
+      // Fetch all user IDs involved in conversations
+      const allParticipantIds = new Set<string>();
+      for (const convId of conversationIds) {
+        const { data: participants } = await supabase
+          .from("conversation_participants")
+          .select("user_id")
+          .eq("conversation_id", convId)
+          .neq("user_id", user.id);
+        
+        participants?.forEach(p => allParticipantIds.add(p.user_id));
+      }
+      
+      // Fetch profiles with last_seen for all participants
+      if (allParticipantIds.size > 0) {
+        const { data: profilesData } = await supabase
+          .from('profiles')
+          .select('user_id, last_seen')
+          .in('user_id', Array.from(allParticipantIds));
+        
+        if (profilesData) {
+          const lastSeenMap: Record<string, string> = {};
+          profilesData.forEach(profile => {
+            if (profile.last_seen) {
+              lastSeenMap[profile.user_id] = profile.last_seen;
+            }
+          });
+          setLastSeenTimes(lastSeenMap);
+          console.log('📥 [Community] Fetched last_seen from DB:', lastSeenMap);
+        }
+      }
       
       // Fetch member counts for each group
       const { data: memberCounts } = await supabase
