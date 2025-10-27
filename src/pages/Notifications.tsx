@@ -39,6 +39,7 @@ interface Notification {
 export default function Notifications() {
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [deleteNotificationId, setDeleteNotificationId] = useState<string | null>(null);
+  const [deleteAllDialogOpen, setDeleteAllDialogOpen] = useState(false);
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const navigate = useNavigate();
 
@@ -443,6 +444,37 @@ export default function Notifications() {
     }
   };
 
+  const handleDeleteAllNotifications = async () => {
+    try {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      if (!user) return;
+
+      const { error } = await supabase
+        .from("notifications")
+        .delete()
+        .eq("user_id", user.id);
+
+      if (error) throw error;
+
+      toast({ 
+        title: "Toutes les notifications ont été supprimées",
+      });
+
+      await fetchNotifications();
+    } catch (error) {
+      console.error("Error deleting all notifications:", error);
+      toast({ 
+        title: "Erreur",
+        description: "Impossible de supprimer les notifications",
+        variant: "destructive" 
+      });
+    } finally {
+      setDeleteAllDialogOpen(false);
+    }
+  };
+
   const unreadCount = notifications.filter((n) => !n.read).length;
 
   return (
@@ -456,11 +488,24 @@ export default function Notifications() {
       <div className="max-w-2xl mx-auto">
         <div className="flex items-center justify-between mb-6">
           <h1 className="text-3xl font-bold">Notifications</h1>
-          {unreadCount > 0 && (
-            <Button onClick={markAllAsRead} variant="outline" size="sm">
-              Mark all as read
-            </Button>
-          )}
+          <div className="flex gap-2">
+            {unreadCount > 0 && (
+              <Button onClick={markAllAsRead} variant="outline" size="sm">
+                Mark all as read
+              </Button>
+            )}
+            {notifications.length > 0 && (
+              <Button 
+                onClick={() => setDeleteAllDialogOpen(true)} 
+                variant="outline" 
+                size="sm"
+                className="text-destructive hover:text-destructive"
+              >
+                <Trash2 className="h-4 w-4 mr-2" />
+                Delete All
+              </Button>
+            )}
+          </div>
         </div>
 
         {notifications.length === 0 ? (
@@ -569,6 +614,27 @@ export default function Notifications() {
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
             >
               Supprimer
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Delete All Notifications Confirmation Dialog */}
+      <AlertDialog open={deleteAllDialogOpen} onOpenChange={setDeleteAllDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Supprimer toutes les notifications?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Cette action est irréversible. Toutes vos notifications seront définitivement supprimées.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Annuler</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDeleteAllNotifications}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              Tout supprimer
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
