@@ -1545,5 +1545,1314 @@ export const sciencesSocialesLessons7AF: SciencesSocialesLesson[] = [
         </section>
       </div>
     `
+  },
+
+  // Leçon 10: La famille comme organisation sociale
+  {
+    id: "famille-organisation-sociale",
+    title: "La famille comme organisation sociale",
+    mois: "Mars",
+    objectif: "Comprendre le rôle de la famille comme institution sociale fondamentale.",
+    introduction: `
+      <p class="text-foreground leading-relaxed">
+        La famille est la plus ancienne et la plus universelle des institutions sociales. C'est le premier groupe auquel nous appartenons et où nous apprenons les valeurs, les normes et les comportements de notre société. En Haïti, la famille joue un rôle particulièrement important dans l'éducation, le soutien économique et la transmission culturelle.
+      </p>
+    `,
+    contenu: `
+      <section class="space-y-6">
+        <div>
+          <h3 class="text-xl font-semibold mb-3 text-foreground">1. Types de familles</h3>
+          <ul class="list-disc ml-6 space-y-2 text-foreground">
+            <li><strong>Famille nucléaire :</strong> Parents et enfants</li>
+            <li><strong>Famille élargie :</strong> Inclut grands-parents, oncles, tantes (très courante en Haïti)</li>
+            <li><strong>Famille monoparentale :</strong> Un seul parent</li>
+            <li><strong>Famille recomposée :</strong> Nouveaux couples avec enfants d'unions précédentes</li>
+          </ul>
+        </div>
+
+        <div>
+          <h3 class="text-xl font-semibold mb-3 text-foreground">2. Fonctions de la famille</h3>
+          <ul class="list-disc ml-6 space-y-2 text-foreground">
+            <li><strong>Socialisation :</strong> Apprendre la langue, valeurs, normes</li>
+            <li><strong>Soutien affectif :</strong> Amour, protection, sécurité</li>
+            <li><strong>Fonction économique :</strong> Partage des ressources</li>
+            <li><strong>Transmission culturelle :</strong> Héritage des traditions</li>
+          </ul>
+        </div>
+
+        <div>
+          <h3 class="text-xl font-semibold mb-3 text-foreground">3. La famille haïtienne</h3>
+          <p class="text-foreground mb-3">Caractéristiques particulières :</p>
+          <ul class="list-disc ml-6 space-y-2 text-foreground">
+            <li>Importance de la famille élargie</li>
+            <li>Rôle central de la mère</li>
+            <li>Respect des aînés</li>
+            <li>Solidarité familiale forte</li>
+            <li>Impact de la migration</li>
+          </ul>
+        </div>
+      </section>
+    `,
+    exemplesExercices: `
+      <section class="space-y-4">
+        <div class="bg-primary/5 border-l-4 border-primary p-4 rounded">
+          <h4 class="font-semibold mb-2 text-foreground">💡 Exemple</h4>
+          <p class="text-foreground">
+            En Haïti, il est courant que les grands-parents élèvent leurs petits-enfants pendant que les parents travaillent à l'étranger.
+          </p>
+        </div>
+        
+        <div class="bg-accent/5 border-l-4 border-accent p-4 rounded">
+          <h4 class="font-semibold mb-2 text-foreground">📝 Exercice</h4>
+          <p class="text-foreground">
+            Dessine ton arbre généalogique sur 3 générations. Identifie le type de famille auquel tu appartiens.
+          </p>
+        </div>
+      </section>
+    `
+  },
+
+  // Leçon 11: Les fosses marines
+  {
+    id: "fosses-marines",
+    title: "Les fosses marines",
+    mois: "Avril",
+    objectif: "Découvrir les fosses océaniques et leur importance géologique.",
+    introduction: `
+      <p class="text-foreground leading-relaxed">
+        Les fosses marines sont les endroits les plus profonds des océans. Ces dépressions gigantesques se trouvent principalement dans l'océan Pacifique et peuvent atteindre des profondeurs de plus de 11 000 mètres ! Haïti, situé près de plusieurs fosses, est directement concerné par ces formations géologiques.
+      </p>
+    `,
+    contenu: `
+      <section class="space-y-6">
+        <div>
+          <h3 class="text-xl font-semibold mb-3 text-foreground">1. Qu'est-ce qu'une fosse marine ?</h3>
+          <p class="text-foreground mb-3">Une fosse marine (ou fosse océanique) est une dépression longue et étroite du fond océanique.</p>
+          <ul class="list-disc ml-6 space-y-2 text-foreground">
+            <li><strong>Profondeur :</strong> Entre 6 000 et 11 000 mètres</li>
+            <li><strong>Formation :</strong> Par subduction (une plaque tectonique plonge sous une autre)</li>
+            <li><strong>Localisation :</strong> Principalement dans l'océan Pacifique</li>
+          </ul>
+        </div>
+
+        <div>
+          <h3 class="text-xl font-semibold mb-3 text-foreground">2. Principales fosses marines</h3>
+          <ul class="list-disc ml-6 space-y-2 text-foreground">
+            <li><strong>Fosse des Mariannes :</strong> La plus profonde (10 994 m), Pacifique</li>
+            <li><strong>Fosse de Porto Rico :</strong> 8 605 m, près des Caraïbes</li>
+            <li><strong>Fosse de Caïmans :</strong> 7 686 m, mer des Caraïbes</li>
+            <li><strong>Fosse des Tonga :</strong> 10 882 m, Pacifique Sud</li>
+          </ul>
+        </div>
+
+        <div>
+          <h3 class="text-xl font-semibold mb-3 text-foreground">3. Importance pour Haïti</h3>
+          <p class="text-foreground mb-3">Les fosses proches d'Haïti expliquent l'activité sismique :</p>
+          <ul class="list-disc ml-6 space-y-2 text-foreground">
+            <li>Rencontre de plaques tectoniques</li>
+            <li>Séismes fréquents</li>
+            <li>Tsunamis possibles</li>
+          </ul>
+        </div>
+      </section>
+    `,
+    exemplesExercices: `
+      <section class="space-y-4">
+        <div class="bg-primary/5 border-l-4 border-primary p-4 rounded">
+          <h4 class="font-semibold mb-2 text-foreground">💡 Le savais-tu ?</h4>
+          <p class="text-foreground">
+            Si on plaçait le Mont Everest (8 848 m) dans la fosse des Mariannes, il serait entièrement submergé avec plus de 2 km d'eau au-dessus !
+          </p>
+        </div>
+      </section>
+    `
+  },
+
+  // Leçon 12: Le climat d'Haïti
+  {
+    id: "climat-haiti",
+    title: "Le climat d'Haïti",
+    mois: "Avril",
+    objectif: "Comprendre les caractéristiques climatiques d'Haïti et leurs impacts.",
+    introduction: `
+      <p class="text-foreground leading-relaxed">
+        Haïti bénéficie d'un climat tropical, caractérisé par des températures élevées toute l'année et deux saisons distinctes. Ce climat influence directement l'agriculture, le tourisme et le mode de vie des Haïtiens.
+      </p>
+    `,
+    contenu: `
+      <section class="space-y-6">
+        <div>
+          <h3 class="text-xl font-semibold mb-3 text-foreground">1. Type de climat</h3>
+          <p class="text-foreground mb-3">Haïti a un <strong>climat tropical humide</strong> avec variations selon l'altitude et l'exposition.</p>
+          <ul class="list-disc ml-6 space-y-2 text-foreground">
+            <li><strong>Températures :</strong> Moyenne de 25-27°C</li>
+            <li><strong>Plaines côtières :</strong> 28-32°C</li>
+            <li><strong>Montagnes :</strong> 15-20°C</li>
+          </ul>
+        </div>
+
+        <div>
+          <h3 class="text-xl font-semibold mb-3 text-foreground">2. Les deux saisons</h3>
+          <h4 class="font-semibold mt-3 mb-2 text-foreground">Saison des pluies (avril-novembre)</h4>
+          <ul class="list-disc ml-6 space-y-2 text-foreground">
+            <li>Pluies abondantes</li>
+            <li>Risque d'ouragans (juin-novembre)</li>
+            <li>Températures plus élevées</li>
+          </ul>
+
+          <h4 class="font-semibold mt-3 mb-2 text-foreground">Saison sèche (décembre-mars)</h4>
+          <ul class="list-disc ml-6 space-y-2 text-foreground">
+            <li>Peu de pluies</li>
+            <li>Températures plus fraîches</li>
+            <li>Meilleure période touristique</li>
+          </ul>
+        </div>
+
+        <div>
+          <h3 class="text-xl font-semibold mb-3 text-foreground">3. Les ouragans</h3>
+          <p class="text-foreground">Haïti est régulièrement frappé par des cyclones tropicaux qui causent d'importants dégâts.</p>
+        </div>
+      </section>
+    `,
+    exemplesExercices: `
+      <section class="space-y-4">
+        <div class="bg-accent/5 border-l-4 border-accent p-4 rounded">
+          <h4 class="font-semibold mb-2 text-foreground">📝 Exercice</h4>
+          <p class="text-foreground">
+            Tiens un journal météo pendant une semaine : note la température, le temps (soleil/pluie), et compare avec les normales saisonnières.
+          </p>
+        </div>
+      </section>
+    `
+  },
+
+  // Leçon 13: Les sociétés antillaises avant Colomb
+  {
+    id: "societes-antillaises-precolomb",
+    title: "Les sociétés antillaises avant Colomb",
+    mois: "Mai",
+    objectif: "Découvrir les peuples qui habitaient les Antilles avant l'arrivée des Européens.",
+    introduction: `
+      <p class="text-foreground leading-relaxed">
+        Avant 1492, les Antilles étaient habitées par différents peuples autochtones depuis des milliers d'années. Ces sociétés avaient développé leurs propres cultures, technologies et organisations sociales bien avant l'arrivée de Christophe Colomb.
+      </p>
+    `,
+    contenu: `
+      <section class="space-y-6">
+        <div>
+          <h3 class="text-xl font-semibold mb-3 text-foreground">1. Les Taïnos</h3>
+          <p class="text-foreground mb-3">Peuple principal d'Hispaniola (Haïti et République Dominicaine).</p>
+          <ul class="list-disc ml-6 space-y-2 text-foreground">
+            <li><strong>Organisation :</strong> En chefferies (cacicazgos) dirigées par des caciques</li>
+            <li><strong>Agriculture :</strong> Manioc, patate douce, maïs</li>
+            <li><strong>Artisanat :</strong> Poterie, vannerie, sculptures en bois</li>
+            <li><strong>Religion :</strong> Croyance en des esprits (zemis)</li>
+            <li><strong>Habitat :</strong> Bohíos (maisons rondes en paille)</li>
+          </ul>
+        </div>
+
+        <div>
+          <h3 class="text-xl font-semibold mb-3 text-foreground">2. Les Caribes</h3>
+          <p class="text-foreground mb-3">Peuple guerrier des Petites Antilles.</p>
+          <ul class="list-disc ml-6 space-y-2 text-foreground">
+            <li>Excellents navigateurs</li>
+            <li>Pêcheurs et chasseurs</li>
+            <li>Réputés belliqueux</li>
+          </ul>
+        </div>
+
+        <div>
+          <h3 class="text-xl font-semibold mb-3 text-foreground">3. Héritage autochtone</h3>
+          <ul class="list-disc ml-6 space-y-2 text-foreground">
+            <li><strong>Mots :</strong> Hamac, canoe, ouragan, barbecue</li>
+            <li><strong>Aliments :</strong> Manioc (cassave), maïs</li>
+            <li><strong>Lieux :</strong> Noms comme Xaragua, Marien</li>
+          </ul>
+        </div>
+      </section>
+    `,
+    exemplesExercices: `
+      <section class="space-y-4">
+        <div class="bg-primary/5 border-l-4 border-primary p-4 rounded">
+          <h4 class="font-semibold mb-2 text-foreground">💡 Exemple</h4>
+          <p class="text-foreground">
+            Le nom "Ayiti" (Haïti) vient du taïno et signifie "terre de hautes montagnes". C'est l'un des rares mots taïnos encore utilisé aujourd'hui !
+          </p>
+        </div>
+      </section>
+    `
+  },
+
+  // Leçon 14: Forme et constitution de la Terre
+  {
+    id: "forme-constitution-terre",
+    title: "Forme et constitution de la Terre",
+    mois: "Mai",
+    objectif: "Comprendre la forme et la structure interne de notre planète.",
+    introduction: `
+      <p class="text-foreground leading-relaxed">
+        La Terre n'est pas une sphère parfaite, mais un géoïde légèrement aplati aux pôles. Sa structure interne en couches concentriques détermine les phénomènes géologiques comme les séismes et les volcans.
+      </p>
+    `,
+    contenu: `
+      <section class="space-y-6">
+        <div>
+          <h3 class="text-xl font-semibold mb-3 text-foreground">1. La forme de la Terre</h3>
+          <ul class="list-disc ml-6 space-y-2 text-foreground">
+            <li><strong>Géoïde :</strong> Sphère imparfaite</li>
+            <li><strong>Rayon équatorial :</strong> 6 378 km</li>
+            <li><strong>Rayon polaire :</strong> 6 357 km (21 km de moins)</li>
+            <li><strong>Circonférence :</strong> 40 075 km à l'équateur</li>
+          </ul>
+        </div>
+
+        <div>
+          <h3 class="text-xl font-semibold mb-3 text-foreground">2. Structure interne</h3>
+          <ul class="list-disc ml-6 space-y-2 text-foreground">
+            <li><strong>Noyau interne :</strong> Solide, fer et nickel (5 000°C+)</li>
+            <li><strong>Noyau externe :</strong> Liquide, fer en fusion</li>
+            <li><strong>Manteau :</strong> Roches visqueuses, 2 900 km d'épaisseur</li>
+            <li><strong>Croûte terrestre :</strong> 5-70 km, où nous vivons</li>
+          </ul>
+        </div>
+      </section>
+    `,
+    exemplesExercices: `
+      <section class="space-y-4">
+        <div class="bg-accent/5 border-l-4 border-accent p-4 rounded">
+          <h4 class="font-semibold mb-2 text-foreground">📝 Activité</h4>
+          <p class="text-foreground">
+            Crée une maquette des couches de la Terre en utilisant de la pâte à modeler de différentes couleurs.
+          </p>
+        </div>
+      </section>
+    `
+  },
+
+  // Leçon 15: Les premiers habitants des Antilles
+  {
+    id: "premiers-habitants-antilles",
+    title: "Les premiers habitants des Antilles",
+    mois: "Juin",
+    objectif: "Retracer l'histoire du peuplement des îles antillaises.",
+    introduction: `
+      <p class="text-foreground leading-relaxed">
+        Les Antilles n'ont pas toujours été habitées. Les premiers humains y sont arrivés il y a environ 6 000 ans, venant d'Amérique du Sud en canoe. Ces migrations successives ont donné naissance aux différents peuples antillais.
+      </p>
+    `,
+    contenu: `
+      <section class="space-y-6">
+        <div>
+          <h3 class="text-xl font-semibold mb-3 text-foreground">1. Les vagues migratoires</h3>
+          <h4 class="font-semibold mt-3 mb-2 text-foreground">Première vague : Les Archaïques (6000-2000 av. J.-C.)</h4>
+          <ul class="list-disc ml-6 space-y-2 text-foreground">
+            <li>Chasseurs-cueilleurs et pêcheurs</li>
+            <li>Outils en pierre rudimentaires</li>
+            <li>Pas de poterie</li>
+          </ul>
+
+          <h4 class="font-semibold mt-3 mb-2 text-foreground">Deuxième vague : Les Saladoïdes (500 av. J.-C.)</h4>
+          <ul class="list-disc ml-6 space-y-2 text-foreground">
+            <li>Origine : Venezuela</li>
+            <li>Apportent la poterie et l'agriculture</li>
+            <li>Ancêtres des Taïnos</li>
+          </ul>
+
+          <h4 class="font-semibold mt-3 mb-2 text-foreground">Troisième vague : Les Caribes (1000 ap. J.-C.)</h4>
+          <ul class="list-disc ml-6 space-y-2 text-foreground">
+            <li>Guerriers venus d'Amérique du Sud</li>
+            <li>S'installent dans les Petites Antilles</li>
+          </ul>
+        </div>
+
+        <div>
+          <h3 class="text-xl font-semibold mb-3 text-foreground">2. Mode de voyage</h3>
+          <p class="text-foreground">Les premiers habitants traversaient la mer en <strong>canoes</strong> taillés dans de grands troncs d'arbres, pouvant transporter jusqu'à 50 personnes !</p>
+        </div>
+      </section>
+    `,
+    exemplesExercices: `
+      <section class="space-y-4">
+        <div class="bg-primary/5 border-l-4 border-primary p-4 rounded">
+          <h4 class="font-semibold mb-2 text-foreground">💡 Réflexion</h4>
+          <p class="text-foreground">
+            Imagine le courage qu'il fallait pour traverser la mer en canoe, sans boussole ni carte, vers des terres inconnues !
+          </p>
+        </div>
+      </section>
+    `
+  },
+
+  // Leçon 16: Les mouvements de la Terre
+  {
+    id: "mouvements-terre",
+    title: "Les mouvements de la Terre",
+    mois: "Juin",
+    objectif: "Comprendre les mouvements de rotation et de révolution de la Terre.",
+    introduction: `
+      <p class="text-foreground leading-relaxed">
+        La Terre est en mouvement constant dans l'espace. Elle tourne sur elle-même (rotation) et autour du Soleil (révolution). Ces mouvements expliquent l'alternance du jour et de la nuit, ainsi que les saisons.
+      </p>
+    `,
+    contenu: `
+      <section class="space-y-6">
+        <div>
+          <h3 class="text-xl font-semibold mb-3 text-foreground">1. La rotation</h3>
+          <p class="text-foreground mb-3">Mouvement de la Terre sur son axe.</p>
+          <ul class="list-disc ml-6 space-y-2 text-foreground">
+            <li><strong>Durée :</strong> 24 heures (un jour)</li>
+            <li><strong>Sens :</strong> D'ouest en est</li>
+            <li><strong>Conséquence :</strong> Alternance jour/nuit</li>
+            <li><strong>Vitesse :</strong> 1 670 km/h à l'équateur</li>
+          </ul>
+        </div>
+
+        <div>
+          <h3 class="text-xl font-semibold mb-3 text-foreground">2. La révolution</h3>
+          <p class="text-foreground mb-3">Mouvement de la Terre autour du Soleil.</p>
+          <ul class="list-disc ml-6 space-y-2 text-foreground">
+            <li><strong>Durée :</strong> 365 jours et 1/4 (une année)</li>
+            <li><strong>Trajectoire :</strong> Elliptique (ovale)</li>
+            <li><strong>Conséquence :</strong> Les saisons</li>
+            <li><strong>Vitesse :</strong> 107 000 km/h</li>
+          </ul>
+        </div>
+
+        <div>
+          <h3 class="text-xl font-semibold mb-3 text-foreground">3. L'inclinaison de l'axe</h3>
+          <p class="text-foreground">L'axe de la Terre est incliné de 23,5°, ce qui explique les saisons. Quand l'hémisphère Nord est incliné vers le Soleil, c'est l'été là-bas et l'hiver dans l'hémisphère Sud.</p>
+        </div>
+      </section>
+    `,
+    exemplesExercices: `
+      <section class="space-y-4">
+        <div class="bg-accent/5 border-l-4 border-accent p-4 rounded">
+          <h4 class="font-semibold mb-2 text-foreground">📝 Expérience</h4>
+          <p class="text-foreground">
+            Avec une lampe (Soleil) et un globe, montre la rotation et la révolution de la Terre. Observe comment se créent le jour, la nuit et les saisons.
+          </p>
+        </div>
+      </section>
+    `
+  },
+
+  // Leçon 17: L'humanité dans la Caraïbe
+  {
+    id: "humanite-caraibe",
+    title: "L'humanité dans la Caraïbe",
+    mois: "Juillet",
+    objectif: "Étudier la diversité des populations caribéennes et leur histoire.",
+    introduction: `
+      <p class="text-foreground leading-relaxed">
+        La population caribéenne actuelle est le résultat d'un mélange unique de peuples venus de trois continents : les autochtones américains, les Européens et les Africains. Cette diversité fait la richesse culturelle de notre région.
+      </p>
+    `,
+    contenu: `
+      <section class="space-y-6">
+        <div>
+          <h3 class="text-xl font-semibold mb-3 text-foreground">1. Composition de la population</h3>
+          <ul class="list-disc ml-6 space-y-2 text-foreground">
+            <li><strong>Descendants d'Africains :</strong> Majorité dans la plupart des îles</li>
+            <li><strong>Métis :</strong> Mélange de différentes origines</li>
+            <li><strong>Descendants d'Européens :</strong> Minorité</li>
+            <li><strong>Descendants d'Asiatiques :</strong> Indiens, Chinois (surtout à Trinidad, Jamaïque)</li>
+            <li><strong>Autochtones :</strong> Presque disparus, traces en Dominique</li>
+          </ul>
+        </div>
+
+        <div>
+          <h3 class="text-xl font-semibold mb-3 text-foreground">2. Diversité culturelle</h3>
+          <p class="text-foreground mb-3">Cette diversité humaine a créé une richesse culturelle unique :</p>
+          <ul class="list-disc ml-6 space-y-2 text-foreground">
+            <li><strong>Langues :</strong> Espagnol, français, anglais, néerlandais, créoles</li>
+            <li><strong>Religions :</strong> Christianisme, vodou, santería, rastafari</li>
+            <li><strong>Musiques :</strong> Reggae, salsa, merengue, konpa, calypso</li>
+            <li><strong>Cuisines :</strong> Fusion des traditions africaines, européennes, asiatiques</li>
+          </ul>
+        </div>
+      </section>
+    `,
+    exemplesExercices: `
+      <section class="space-y-4">
+        <div class="bg-primary/5 border-l-4 border-primary p-4 rounded">
+          <h4 class="font-semibold mb-2 text-foreground">💡 Exemple</h4>
+          <p class="text-foreground">
+            À Trinidad, on célèbre le carnaval (tradition européenne/africaine) ET Diwali (fête indienne) - symbole du métissage caribéen !
+          </p>
+        </div>
+      </section>
+    `
+  },
+
+  // Leçon 18: Particularités climatiques des Caraïbes
+  {
+    id: "particularites-climatiques-caraibes",
+    title: "Particularités climatiques des Caraïbes",
+    mois: "Juillet",
+    objectif: "Identifier les caractéristiques spécifiques du climat caribéen.",
+    introduction: `
+      <p class="text-foreground leading-relaxed">
+        La région caribéenne possède un climat tropical maritime avec des caractéristiques particulières qui la distinguent des autres régions tropicales du monde. Ces particularités influencent la vie quotidienne, l'agriculture et l'économie de tous les pays de la région.
+      </p>
+    `,
+    contenu: `
+      <section class="space-y-6">
+        <div>
+          <h3 class="text-xl font-semibold mb-3 text-foreground">1. Climat tropical maritime</h3>
+          <ul class="list-disc ml-6 space-y-2 text-foreground">
+            <li><strong>Températures stables :</strong> 24-30°C toute l'année</li>
+            <li><strong>Faible variation :</strong> Différence de seulement 3-5°C entre les mois</li>
+            <li><strong>Humidité élevée :</strong> 70-80% en moyenne</li>
+            <li><strong>Alizés :</strong> Vents réguliers de l'est, rafraîchissants</li>
+          </ul>
+        </div>
+
+        <div>
+          <h3 class="text-xl font-semibold mb-3 text-foreground">2. Les cyclones tropicaux</h3>
+          <p class="text-foreground mb-3">Particularité majeure de la Caraïbe : la saison des ouragans.</p>
+          <ul class="list-disc ml-6 space-y-2 text-foreground">
+            <li><strong>Saison :</strong> Juin à novembre (pic en septembre)</li>
+            <li><strong>Formation :</strong> Au-dessus de l'océan Atlantique chaud</li>
+            <li><strong>Catégories :</strong> De 1 (faible) à 5 (catastrophique)</li>
+            <li><strong>Impacts :</strong> Vents violents, pluies torrentielles, inondations</li>
+          </ul>
+        </div>
+
+        <div>
+          <h3 class="text-xl font-semibold mb-3 text-foreground">3. Microclimats</h3>
+          <p class="text-foreground">Les îles montagneuses comme Haïti ont des microclimats :</p>
+          <ul class="list-disc ml-6 space-y-2 text-foreground">
+            <li><strong>Côte au vent :</strong> Plus humide (côté est)</li>
+            <li><strong>Côte sous le vent :</strong> Plus sèche (côté ouest)</li>
+            <li><strong>Altitude :</strong> Plus frais en montagne</li>
+          </ul>
+        </div>
+      </section>
+    `,
+    exemplesExercices: `
+      <section class="space-y-4">
+        <div class="bg-accent/5 border-l-4 border-accent p-4 rounded">
+          <h4 class="font-semibold mb-2 text-foreground">📝 Projet</h4>
+          <p class="text-foreground">
+            Crée un plan d'urgence familial pour la saison des ouragans : provisions, lieu sûr, contacts d'urgence.
+          </p>
+        </div>
+      </section>
+    `
+  },
+
+  // Leçon 19: La vie économique
+  {
+    id: "vie-economique",
+    title: "La vie économique",
+    mois: "Août",
+    objectif: "Comprendre les bases de l'économie et les activités économiques en Haïti.",
+    introduction: `
+      <p class="text-foreground leading-relaxed">
+        L'économie concerne la production, la distribution et la consommation des biens et services. En Haïti, l'économie repose principalement sur l'agriculture, les services et les transferts de la diaspora.
+      </p>
+    `,
+    contenu: `
+      <section class="space-y-6">
+        <div>
+          <h3 class="text-xl font-semibold mb-3 text-foreground">1. Les trois secteurs économiques</h3>
+          <h4 class="font-semibold mt-3 mb-2 text-foreground">Secteur primaire (agriculture)</h4>
+          <ul class="list-disc ml-6 space-y-2 text-foreground">
+            <li>Riz, maïs, bananes, canne à sucre</li>
+            <li>Café, cacao, mangues</li>
+            <li>Pêche</li>
+            <li>Emploie environ 40% de la population</li>
+          </ul>
+
+          <h4 class="font-semibold mt-3 mb-2 text-foreground">Secteur secondaire (industrie)</h4>
+          <ul class="list-disc ml-6 space-y-2 text-foreground">
+            <li>Assemblage textile</li>
+            <li>Construction</li>
+            <li>Transformation alimentaire</li>
+          </ul>
+
+          <h4 class="font-semibold mt-3 mb-2 text-foreground">Secteur tertiaire (services)</h4>
+          <ul class="list-disc ml-6 space-y-2 text-foreground">
+            <li>Commerce</li>
+            <li>Télécommunications</li>
+            <li>Banques</li>
+            <li>Tourisme (potentiel sous-exploité)</li>
+          </ul>
+        </div>
+
+        <div>
+          <h3 class="text-xl font-semibold mb-3 text-foreground">2. L'économie informelle</h3>
+          <p class="text-foreground">En Haïti, environ 80% de l'économie est informelle : petits commerces, marchés, transport en commun (tap-tap), etc.</p>
+        </div>
+
+        <div>
+          <h3 class="text-xl font-semibold mb-3 text-foreground">3. La diaspora</h3>
+          <p class="text-foreground">Les Haïtiens vivant à l'étranger envoient environ 2 milliards de dollars par an, représentant près de 30% du PIB.</p>
+        </div>
+      </section>
+    `,
+    exemplesExercices: `
+      <section class="space-y-4">
+        <div class="bg-primary/5 border-l-4 border-primary p-4 rounded">
+          <h4 class="font-semibold mb-2 text-foreground">💡 Activité</h4>
+          <p class="text-foreground">
+            Visite un marché local. Identifie les produits locaux (Haïti) et les produits importés. Dans quel secteur économique travaillent les marchands ?
+          </p>
+        </div>
+      </section>
+    `
+  },
+
+  // Leçon 20: Représentation de la Terre
+  {
+    id: "representation-terre",
+    title: "Représentation de la Terre",
+    mois: "Août",
+    objectif: "Comprendre les différentes façons de représenter la Terre : cartes et globes.",
+    introduction: `
+      <p class="text-foreground leading-relaxed">
+        Pour représenter notre planète sphérique sur une surface plane (carte), les géographes utilisent différentes techniques appelées projections. Chaque méthode a ses avantages et ses limites.
+      </p>
+    `,
+    contenu: `
+      <section class="space-y-6">
+        <div>
+          <h3 class="text-xl font-semibold mb-3 text-foreground">1. Le globe terrestre</h3>
+          <ul class="list-disc ml-6 space-y-2 text-foreground">
+            <li><strong>Avantages :</strong> Représentation exacte, proportions respectées</li>
+            <li><strong>Inconvénients :</strong> Encombrant, on ne voit qu'une partie à la fois</li>
+          </ul>
+        </div>
+
+        <div>
+          <h3 class="text-xl font-semibold mb-3 text-foreground">2. Les cartes</h3>
+          <p class="text-foreground mb-3">Représentation à plat de la Terre ou d'une partie.</p>
+          <h4 class="font-semibold mt-3 mb-2 text-foreground">Types de cartes</h4>
+          <ul class="list-disc ml-6 space-y-2 text-foreground">
+            <li><strong>Carte physique :</strong> Relief, fleuves, montagnes</li>
+            <li><strong>Carte politique :</strong> Pays, frontières, capitales</li>
+            <li><strong>Carte thématique :</strong> Population, climat, économie</li>
+            <li><strong>Carte routière :</strong> Routes, villes</li>
+          </ul>
+        </div>
+
+        <div>
+          <h3 class="text-xl font-semibold mb-3 text-foreground">3. Éléments d'une carte</h3>
+          <ul class="list-disc ml-6 space-y-2 text-foreground">
+            <li><strong>Titre :</strong> Sujet de la carte</li>
+            <li><strong>Échelle :</strong> Rapport entre distance carte/réalité</li>
+            <li><strong>Légende :</strong> Explication des symboles</li>
+            <li><strong>Orientation :</strong> Rose des vents (Nord en haut)</li>
+          </ul>
+        </div>
+
+        <div>
+          <h3 class="text-xl font-semibold mb-3 text-foreground">4. Coordonnées géographiques</h3>
+          <ul class="list-disc ml-6 space-y-2 text-foreground">
+            <li><strong>Latitude :</strong> Distance par rapport à l'équateur (0-90° N ou S)</li>
+            <li><strong>Longitude :</strong> Distance par rapport au méridien de Greenwich (0-180° E ou O)</li>
+          </ul>
+        </div>
+      </section>
+    `,
+    exemplesExercices: `
+      <section class="space-y-4">
+        <div class="bg-accent/5 border-l-4 border-accent p-4 rounded">
+          <h4 class="font-semibold mb-2 text-foreground">📝 Exercice</h4>
+          <p class="text-foreground">
+            Dessine une carte simple de ton quartier avec titre, légende, échelle et rose des vents. Inclus ton école, ta maison, et des points de repère importants.
+          </p>
+        </div>
+      </section>
+    `
+  },
+
+  // Leçon 21: Régions climatiques du globe
+  {
+    id: "regions-climatiques-globe",
+    title: "Les régions climatiques du globe",
+    mois: "Septembre",
+    objectif: "Identifier et comprendre les grandes zones climatiques de la planète.",
+    introduction: `
+      <p class="text-foreground leading-relaxed">
+        La Terre est divisée en plusieurs zones climatiques selon la température, les précipitations et les saisons. Ces zones déterminent la végétation, la faune et les modes de vie humains.
+      </p>
+    `,
+    contenu: `
+      <section class="space-y-6">
+        <div>
+          <h3 class="text-xl font-semibold mb-3 text-foreground">1. Zone tropicale</h3>
+          <p class="text-foreground mb-3">Entre les tropiques (23,5°N et 23,5°S) - Haïti en fait partie !</p>
+          <ul class="list-disc ml-6 space-y-2 text-foreground">
+            <li>Températures élevées toute l'année (>20°C)</li>
+            <li>Forêts tropicales humides</li>
+            <li>Savanes tropicales</li>
+          </ul>
+        </div>
+
+        <div>
+          <h3 class="text-xl font-semibold mb-3 text-foreground">2. Zone tempérée</h3>
+          <p class="text-foreground">Entre les tropiques et les cercles polaires</p>
+          <ul class="list-disc ml-6 space-y-2 text-foreground">
+            <li>Quatre saisons bien marquées</li>
+            <li>Températures modérées</li>
+            <li>Forêts de feuillus et de conifères</li>
+          </ul>
+        </div>
+
+        <div>
+          <h3 class="text-xl font-semibold mb-3 text-foreground">3. Zone polaire</h3>
+          <p class="text-foreground">Au-delà des cercles polaires</p>
+          <ul class="list-disc ml-6 space-y-2 text-foreground">
+            <li>Températures très froides</li>
+            <li>Toundra et glaces permanentes</li>
+            <li>Nuit ou jour polaire (6 mois)</li>
+          </ul>
+        </div>
+      </section>
+    `,
+    exemplesExercices: `
+      <section class="space-y-4">
+        <div class="bg-primary/5 border-l-4 border-primary p-4 rounded">
+          <h4 class="font-semibold mb-2 text-foreground">💡 Exercice</h4>
+          <p class="text-foreground">
+            Sur un planisphère, colorie les trois grandes zones climatiques. Place Haïti et identifie sa zone.
+          </p>
+        </div>
+      </section>
+    `
+  },
+
+  // Leçon 22: Modes de figuration du relief
+  {
+    id: "modes-figuration-relief",
+    title: "Modes de figuration du relief",
+    mois: "Septembre",
+    objectif: "Apprendre à lire et comprendre les différentes représentations du relief sur les cartes.",
+    introduction: `
+      <p class="text-foreground leading-relaxed">
+        Représenter le relief (montagnes, vallées) sur une carte plane est un défi. Les cartographes utilisent plusieurs méthodes : courbes de niveau, couleurs hypsométriques, et représentations 3D.
+      </p>
+    `,
+    contenu: `
+      <section class="space-y-6">
+        <div>
+          <h3 class="text-xl font-semibold mb-3 text-foreground">1. Les courbes de niveau</h3>
+          <p class="text-foreground">Lignes qui relient tous les points situés à la même altitude.</p>
+          <ul class="list-disc ml-6 space-y-2 text-foreground">
+            <li>Lignes rapprochées = pente raide</li>
+            <li>Lignes espacées = pente douce</li>
+            <li>Cercles fermés = sommet ou dépression</li>
+          </ul>
+        </div>
+
+        <div>
+          <h3 class="text-xl font-semibold mb-3 text-foreground">2. Couleurs hypsométriques</h3>
+          <p class="text-foreground">Dégradé de couleurs selon l'altitude :</p>
+          <ul class="list-disc ml-6 space-y-2 text-foreground">
+            <li><strong>Vert :</strong> Plaines (0-200m)</li>
+            <li><strong>Jaune :</strong> Collines (200-500m)</li>
+            <li><strong>Brun :</strong> Montagnes (500-2000m)</li>
+            <li><strong>Marron foncé :</strong> Hautes montagnes (>2000m)</li>
+          </ul>
+        </div>
+
+        <div>
+          <h3 class="text-xl font-semibold mb-3 text-foreground">3. Profils topographiques</h3>
+          <p class="text-foreground">Coupe verticale du terrain montrant les variations d'altitude le long d'une ligne.</p>
+        </div>
+      </section>
+    `,
+    exemplesExercices: `
+      <section class="space-y-4">
+        <div class="bg-accent/5 border-l-4 border-accent p-4 rounded">
+          <h4 class="font-semibold mb-2 text-foreground">📝 Pratique</h4>
+          <p class="text-foreground">
+            Trace un profil topographique d'une coupe d'Haïti, de la côte jusqu'au Pic la Selle.
+          </p>
+        </div>
+      </section>
+    `
+  },
+
+  // Leçon 23: Le potentiel hydraulique
+  {
+    id: "potentiel-hydraulique",
+    title: "Le potentiel hydraulique",
+    mois: "Octobre",
+    objectif: "Comprendre les ressources en eau d'Haïti et leur utilisation.",
+    introduction: `
+      <p class="text-foreground leading-relaxed">
+        Le potentiel hydraulique désigne l'ensemble des ressources en eau d'un pays : rivières, lacs, nappes souterraines. En Haïti, malgré des pluies abondantes, l'eau potable reste un défi majeur.
+      </p>
+    `,
+    contenu: `
+      <section class="space-y-6">
+        <div>
+          <h3 class="text-xl font-semibold mb-3 text-foreground">1. Les ressources en eau d'Haïti</h3>
+          <h4 class="font-semibold mt-3 mb-2 text-foreground">Rivières et fleuves</h4>
+          <ul class="list-disc ml-6 space-y-2 text-foreground">
+            <li><strong>L'Artibonite :</strong> Plus long fleuve (320 km)</li>
+            <li><strong>Les Trois Rivières</strong></li>
+            <li><strong>La Rivière Grise</strong></li>
+            <li>Débit faible en saison sèche</li>
+          </ul>
+
+          <h4 class="font-semibold mt-3 mb-2 text-foreground">Lacs</h4>
+          <ul class="list-disc ml-6 space-y-2 text-foreground">
+            <li><strong>Étang Saumâtre :</strong> Plus grand lac naturel</li>
+            <li><strong>Lac de Péligre :</strong> Lac artificiel (barrage)</li>
+          </ul>
+        </div>
+
+        <div>
+          <h3 class="text-xl font-semibold mb-3 text-foreground">2. Utilisations de l'eau</h3>
+          <ul class="list-disc ml-6 space-y-2 text-foreground">
+            <li><strong>Agriculture :</strong> Irrigation (70% de l'eau)</li>
+            <li><strong>Domestique :</strong> Boisson, cuisine, hygiène</li>
+            <li><strong>Industrie :</strong> Fabrication</li>
+            <li><strong>Énergie :</strong> Centrales hydroélectriques</li>
+          </ul>
+        </div>
+
+        <div>
+          <h3 class="text-xl font-semibold mb-3 text-foreground">3. Problèmes</h3>
+          <ul class="list-disc ml-6 space-y-2 text-foreground">
+            <li>Déforestation réduisant les sources</li>
+            <li>Pollution des rivières</li>
+            <li>Infrastructure insuffisante</li>
+            <li>Seulement 40% de la population a accès à l'eau potable</li>
+          </ul>
+        </div>
+      </section>
+    `,
+    exemplesExercices: `
+      <section class="space-y-4">
+        <div class="bg-primary/5 border-l-4 border-primary p-4 rounded">
+          <h4 class="font-semibold mb-2 text-foreground">💡 Action</h4>
+          <p class="text-foreground">
+            Calcule combien d'eau ta famille utilise par jour. Comment pourriez-vous économiser l'eau ?
+          </p>
+        </div>
+      </section>
+    `
+  },
+
+  // Leçon 24: La société précolombienne
+  {
+    id: "societe-precolombienne",
+    title: "La société précolombienne",
+    mois: "Octobre",
+    objectif: "Approfondir la compréhension de l'organisation sociale des Taïnos.",
+    introduction: `
+      <p class="text-foreground leading-relaxed">
+        La société taïno d'avant 1492 était bien organisée avec une structure sociale hiérarchisée, des croyances religieuses complexes et un mode de vie adapté à l'environnement insulaire.
+      </p>
+    `,
+    contenu: `
+      <section class="space-y-6">
+        <div>
+          <h3 class="text-xl font-semibold mb-3 text-foreground">1. Organisation sociale</h3>
+          <ul class="list-disc ml-6 space-y-2 text-foreground">
+            <li><strong>Cacique :</strong> Chef suprême, héréditaire</li>
+            <li><strong>Nitaínos :</strong> Nobles, guerriers</li>
+            <li><strong>Behiques :</strong> Prêtres, guérisseurs</li>
+            <li><strong>Naborías :</strong> Peuple commun, agriculteurs</li>
+          </ul>
+        </div>
+
+        <div>
+          <h3 class="text-xl font-semibold mb-3 text-foreground">2. Mode de vie</h3>
+          <h4 class="font-semibold mt-3 mb-2 text-foreground">Habitat</h4>
+          <ul class="list-disc ml-6 space-y-2 text-foreground">
+            <li><strong>Bohíos :</strong> Maisons rondes en paille</li>
+            <li><strong>Caney :</strong> Maison rectangulaire du cacique</li>
+            <li>Villages près des rivières et côtes</li>
+          </ul>
+
+          <h4 class="font-semibold mt-3 mb-2 text-foreground">Alimentation</h4>
+          <ul class="list-disc ml-6 space-y-2 text-foreground">
+            <li><strong>Agriculture :</strong> Manioc (cassave), patate douce, maïs</li>
+            <li><strong>Pêche :</strong> Poissons, crustacés</li>
+            <li><strong>Chasse :</strong> Hutias (rongeurs), iguanes, oiseaux</li>
+          </ul>
+        </div>
+
+        <div>
+          <h3 class="text-xl font-semibold mb-3 text-foreground">3. Religion</h3>
+          <ul class="list-disc ml-6 space-y-2 text-foreground">
+            <li><strong>Zemis :</strong> Esprits des ancêtres et de la nature</li>
+            <li><strong>Yucahu :</strong> Dieu suprême du manioc</li>
+            <li><strong>Atabey :</strong> Déesse mère</li>
+            <li><strong>Cérémonies :</strong> Areito (danses et chants religieux)</li>
+          </ul>
+        </div>
+
+        <div>
+          <h3 class="text-xl font-semibold mb-3 text-foreground">4. Arts et artisanat</h3>
+          <ul class="list-disc ml-6 space-y-2 text-foreground">
+            <li>Poterie décorée</li>
+            <li>Sculptures de zemis en bois et pierre</li>
+            <li>Vannerie</li>
+            <li>Bijoux en coquillages et or</li>
+          </ul>
+        </div>
+      </section>
+    `,
+    exemplesExercices: `
+      <section class="space-y-4">
+        <div class="bg-accent/5 border-l-4 border-accent p-4 rounded">
+          <h4 class="font-semibold mb-2 text-foreground">📝 Projet</h4>
+          <p class="text-foreground">
+            Crée une maquette d'un village taïno avec bohíos, caney, et terrain de jeu de balle (batey).
+          </p>
+        </div>
+      </section>
+    `
+  },
+
+  // Leçon 25: Formations végétales de la Caraïbe
+  {
+    id: "formations-vegetales-caraibe",
+    title: "Les formations végétales de la Caraïbe",
+    mois: "Novembre",
+    objectif: "Découvrir la diversité des écosystèmes végétaux caribéens.",
+    introduction: `
+      <p class="text-foreground leading-relaxed">
+        La Caraïbe possède une biodiversité végétale remarquable, avec des forêts tropicales, des mangroves, et des récifs coralliens. Malheureusement, ces écosystèmes sont menacés par la déforestation et le changement climatique.
+      </p>
+    `,
+    contenu: `
+      <section class="space-y-6">
+        <div>
+          <h3 class="text-xl font-semibold mb-3 text-foreground">1. Forêt tropicale humide</h3>
+          <p class="text-foreground">En altitude et zones bien arrosées</p>
+          <ul class="list-disc ml-6 space-y-2 text-foreground">
+            <li>Grande diversité d'espèces</li>
+            <li>Acajou, cèdre, bois de fer</li>
+            <li>Orchidées, fougères, lianes</li>
+            <li>Habitat de nombreux oiseaux endémiques</li>
+          </ul>
+        </div>
+
+        <div>
+          <h3 class="text-xl font-semibold mb-3 text-foreground">2. Mangroves</h3>
+          <p class="text-foreground">Forêts côtières aux racines immergées</p>
+          <ul class="list-disc ml-6 space-y-2 text-foreground">
+            <li><strong>Rôle :</strong> Protection contre érosion et tempêtes</li>
+            <li><strong>Nurserie :</strong> Pour poissons et crustacés</li>
+            <li>Palétuviers (arbres adaptés à l'eau salée)</li>
+          </ul>
+        </div>
+
+        <div>
+          <h3 class="text-xl font-semibold mb-3 text-foreground">3. Végétation xérophile</h3>
+          <p class="text-foreground">Zones sèches (côte sous le vent)</p>
+          <ul class="list-disc ml-6 space-y-2 text-foreground">
+            <li>Cactus, agaves</li>
+            <li>Arbustes épineux</li>
+            <li>Plantes adaptées à la sécheresse</li>
+          </ul>
+        </div>
+
+        <div>
+          <h3 class="text-xl font-semibold mb-3 text-foreground">4. Menaces</h3>
+          <ul class="list-disc ml-6 space-y-2 text-foreground">
+            <li>Déforestation massive</li>
+            <li>Urbanisation</li>
+            <li>Agriculture extensive</li>
+            <li>Changement climatique</li>
+          </ul>
+        </div>
+      </section>
+    `,
+    exemplesExercices: `
+      <section class="space-y-4">
+        <div class="bg-primary/5 border-l-4 border-primary p-4 rounded">
+          <h4 class="font-semibold mb-2 text-foreground">💡 Action</h4>
+          <p class="text-foreground">
+            Participe à une activité de reboisement dans ton école ou communauté. Chaque arbre planté compte !
+          </p>
+        </div>
+      </section>
+    `
+  },
+
+  // Leçon 26: Le système écologique
+  {
+    id: "systeme-ecologique",
+    title: "Le système écologique",
+    mois: "Novembre",
+    objectif: "Comprendre les interactions entre êtres vivants et leur environnement.",
+    introduction: `
+      <p class="text-foreground leading-relaxed">
+        Un écosystème est un ensemble formé par un milieu (biotope) et les êtres vivants qui l'habitent (biocénose), tous en interaction. Comprendre ces systèmes est essentiel pour protéger notre environnement.
+      </p>
+    `,
+    contenu: `
+      <section class="space-y-6">
+        <div>
+          <h3 class="text-xl font-semibold mb-3 text-foreground">1. Composants d'un écosystème</h3>
+          <h4 class="font-semibold mt-3 mb-2 text-foreground">Facteurs abiotiques (non-vivants)</h4>
+          <ul class="list-disc ml-6 space-y-2 text-foreground">
+            <li>Eau, air, sol</li>
+            <li>Lumière, température</li>
+            <li>Nutriments minéraux</li>
+          </ul>
+
+          <h4 class="font-semibold mt-3 mb-2 text-foreground">Facteurs biotiques (vivants)</h4>
+          <ul class="list-disc ml-6 space-y-2 text-foreground">
+            <li><strong>Producteurs :</strong> Plantes (photosynthèse)</li>
+            <li><strong>Consommateurs :</strong> Herbivores, carnivores, omnivores</li>
+            <li><strong>Décomposeurs :</strong> Bactéries, champignons</li>
+          </ul>
+        </div>
+
+        <div>
+          <h3 class="text-xl font-semibold mb-3 text-foreground">2. Chaînes et réseaux alimentaires</h3>
+          <p class="text-foreground">Transfert d'énergie et de matière :</p>
+          <p class="text-foreground ml-6 mt-2">Plante → Chenille → Oiseau → Serpent</p>
+        </div>
+
+        <div>
+          <h3 class="text-xl font-semibold mb-3 text-foreground">3. Équilibre écologique</h3>
+          <p class="text-foreground">Tous les éléments sont interdépendants. La disparition d'une espèce affecte tout l'écosystème.</p>
+        </div>
+
+        <div>
+          <h3 class="text-xl font-semibold mb-3 text-foreground">4. Biodiversité en Haïti</h3>
+          <ul class="list-disc ml-6 space-y-2 text-foreground">
+            <li>Espèces endémiques menacées</li>
+            <li>Déforestation détruisant les habitats</li>
+            <li>Nécessité de protection (parcs nationaux)</li>
+          </ul>
+        </div>
+      </section>
+    `,
+    exemplesExercices: `
+      <section class="space-y-4">
+        <div class="bg-accent/5 border-l-4 border-accent p-4 rounded">
+          <h4 class="font-semibold mb-2 text-foreground">📝 Exercice</h4>
+          <p class="text-foreground">
+            Dessine une chaîne alimentaire de ton environnement local. Identifie producteurs, consommateurs et décomposeurs.
+          </p>
+        </div>
+      </section>
+    `
+  },
+
+  // Leçon 27: L'hydrosphère
+  {
+    id: "hydrosphere",
+    title: "L'hydrosphère",
+    mois: "Décembre",
+    objectif: "Comprendre l'ensemble des eaux de la planète et leur importance.",
+    introduction: `
+      <p class="text-foreground leading-relaxed">
+        L'hydrosphère désigne l'ensemble des eaux présentes sur Terre : océans, mers, lacs, rivières, glaces, nappes souterraines et vapeur d'eau atmosphérique. L'eau couvre 71% de la surface terrestre.
+      </p>
+    `,
+    contenu: `
+      <section class="space-y-6">
+        <div>
+          <h3 class="text-xl font-semibold mb-3 text-foreground">1. Répartition de l'eau sur Terre</h3>
+          <ul class="list-disc ml-6 space-y-2 text-foreground">
+            <li><strong>Eau salée (océans et mers) :</strong> 97,5%</li>
+            <li><strong>Eau douce :</strong> 2,5%
+              <ul class="list-disc ml-6 mt-2">
+                <li>Glaces (pôles, glaciers) : 69%</li>
+                <li>Nappes souterraines : 30%</li>
+                <li>Eaux de surface (lacs, rivières) : 1%</li>
+              </ul>
+            </li>
+          </ul>
+        </div>
+
+        <div>
+          <h3 class="text-xl font-semibold mb-3 text-foreground">2. Le cycle de l'eau</h3>
+          <p class="text-foreground mb-3">L'eau circule continuellement entre les différents réservoirs :</p>
+          <ul class="list-disc ml-6 space-y-2 text-foreground">
+            <li><strong>Évaporation :</strong> Eau liquide → vapeur</li>
+            <li><strong>Transpiration :</strong> Plantes libèrent de la vapeur</li>
+            <li><strong>Condensation :</strong> Vapeur → nuages</li>
+            <li><strong>Précipitations :</strong> Pluie, neige</li>
+            <li><strong>Ruissellement :</strong> Retour vers les océans</li>
+            <li><strong>Infiltration :</strong> Vers les nappes souterraines</li>
+          </ul>
+        </div>
+
+        <div>
+          <h3 class="text-xl font-semibold mb-3 text-foreground">3. Importance de l'eau</h3>
+          <ul class="list-disc ml-6 space-y-2 text-foreground">
+            <li>Essentielle à la vie</li>
+            <li>Régulation du climat</li>
+            <li>Transport (navigation)</li>
+            <li>Agriculture (irrigation)</li>
+            <li>Énergie (hydroélectricité)</li>
+            <li>Industrie</li>
+          </ul>
+        </div>
+
+        <div>
+          <h3 class="text-xl font-semibold mb-3 text-foreground">4. Gestion de l'eau en Haïti</h3>
+          <ul class="list-disc ml-6 space-y-2 text-foreground">
+            <li>Accès limité à l'eau potable</li>
+            <li>Nécessité de protéger les sources</li>
+            <li>Économiser l'eau</li>
+            <li>Ne pas polluer rivières et sources</li>
+          </ul>
+        </div>
+      </section>
+    `,
+    exemplesExercices: `
+      <section class="space-y-4">
+        <div class="bg-primary/5 border-l-4 border-primary p-4 rounded">
+          <h4 class="font-semibold mb-2 text-foreground">💡 Le savais-tu ?</h4>
+          <p class="text-foreground">
+            L'eau que tu bois aujourd'hui est la même eau que buvaient les dinosaures il y a des millions d'années ! L'eau circule en cycle fermé depuis toujours.
+          </p>
+        </div>
+      </section>
+    `
+  },
+
+  // Leçon 28: Formations végétales d'Haïti
+  {
+    id: "formations-vegetales-haiti",
+    title: "Les formations végétales d'Haïti",
+    mois: "Décembre",
+    objectif: "Identifier et comprendre la végétation naturelle d'Haïti.",
+    introduction: `
+      <p class="text-foreground leading-relaxed">
+        Haïti avait autrefois une couverture forestière de 60%. Aujourd'hui, moins de 2% du territoire est boisé. Comprendre notre végétation naturelle est crucial pour les efforts de reboisement.
+      </p>
+    `,
+    contenu: `
+      <section class="space-y-6">
+        <div>
+          <h3 class="text-xl font-semibold mb-3 text-foreground">1. Forêt de pins</h3>
+          <p class="text-foreground">En altitude (>1000m), climat frais</p>
+          <ul class="list-disc ml-6 space-y-2 text-foreground">
+            <li><strong>Espèce principale :</strong> Pin d'Hispaniola (endémique)</li>
+            <li><strong>Zones :</strong> Massif de la Selle, Forêt des Pins</li>
+            <li>Très menacé par déforestation</li>
+          </ul>
+        </div>
+
+        <div>
+          <h3 class="text-xl font-semibold mb-3 text-foreground">2. Forêt humide</h3>
+          <p class="text-foreground">Versants exposés aux pluies</p>
+          <ul class="list-disc ml-6 space-y-2 text-foreground">
+            <li>Acajou, cèdre, campêche</li>
+            <li>Grande biodiversité</li>
+            <li>Presque entièrement détruite</li>
+          </ul>
+        </div>
+
+        <div>
+          <h3 class="text-xl font-semibold mb-3 text-foreground">3. Forêt sèche</h3>
+          <p class="text-foreground">Zones arides (Nord-Ouest, Artibonite)</p>
+          <ul class="list-disc ml-6 space-y-2 text-foreground">
+            <li>Cactus, bayahondes, raquettes</li>
+            <li>Arbres adaptés à la sécheresse</li>
+            <li>Gaïac (bois très dur)</li>
+          </ul>
+        </div>
+
+        <div>
+          <h3 class="text-xl font-semibold mb-3 text-foreground">4. Mangroves</h3>
+          <p class="text-foreground">Côtes protégées</p>
+          <ul class="list-disc ml-6 space-y-2 text-foreground">
+            <li><strong>Zones :</strong> Gonaïves, Sud</li>
+            <li>Protection contre érosion</li>
+            <li>Nurserie pour poissons</li>
+          </ul>
+        </div>
+
+        <div>
+          <h3 class="text-xl font-semibold mb-3 text-foreground">5. Espèces endémiques menacées</h3>
+          <ul class="list-disc ml-6 space-y-2 text-foreground">
+            <li>Pin d'Hispaniola</li>
+            <li>Perroquet d'Hispaniola</li>
+            <li>Solenodon (mammifère rare)</li>
+          </ul>
+        </div>
+
+        <div>
+          <h3 class="text-xl font-semibold mb-3 text-foreground">6. Parcs nationaux</h3>
+          <ul class="list-disc ml-6 space-y-2 text-foreground">
+            <li>Parc national La Visite</li>
+            <li>Parc national Macaya</li>
+            <li>Parc historique de la Citadelle</li>
+          </ul>
+        </div>
+      </section>
+    `,
+    exemplesExercices: `
+      <section class="space-y-4">
+        <div class="bg-accent/5 border-l-4 border-accent p-4 rounded">
+          <h4 class="font-semibold mb-2 text-foreground">📝 Projet</h4>
+          <p class="text-foreground">
+            Organise une campagne de sensibilisation au reboisement dans ton école. Crée des affiches montrant l'importance des arbres.
+          </p>
+        </div>
+      </section>
+    `
+  },
+
+  // Leçon 29: Analyse climatologique
+  {
+    id: "analyse-climatologique",
+    title: "L'analyse climatologique",
+    mois: "Janvier",
+    objectif: "Apprendre à analyser et interpréter les données climatiques.",
+    introduction: `
+      <p class="text-foreground leading-relaxed">
+        L'analyse climatologique consiste à étudier les données météorologiques sur de longues périodes pour comprendre les tendances climatiques. Cette science est cruciale pour l'agriculture, l'urbanisme et la prévention des catastrophes.
+      </p>
+    `,
+    contenu: `
+      <section class="space-y-6">
+        <div>
+          <h3 class="text-xl font-semibold mb-3 text-foreground">1. Éléments climatiques</h3>
+          <ul class="list-disc ml-6 space-y-2 text-foreground">
+            <li><strong>Température :</strong> Mesurée en degrés Celsius</li>
+            <li><strong>Précipitations :</strong> Mesurées en millimètres</li>
+            <li><strong>Humidité :</strong> Pourcentage de vapeur d'eau dans l'air</li>
+            <li><strong>Pression atmosphérique :</strong> En hectopascals</li>
+            <li><strong>Vent :</strong> Direction et vitesse</li>
+          </ul>
+        </div>
+
+        <div>
+          <h3 class="text-xl font-semibold mb-3 text-foreground">2. Instruments de mesure</h3>
+          <ul class="list-disc ml-6 space-y-2 text-foreground">
+            <li><strong>Thermomètre :</strong> Température</li>
+            <li><strong>Pluviomètre :</strong> Précipitations</li>
+            <li><strong>Baromètre :</strong> Pression</li>
+            <li><strong>Anémomètre :</strong> Vitesse du vent</li>
+            <li><strong>Hygromètre :</strong> Humidité</li>
+          </ul>
+        </div>
+
+        <div>
+          <h3 class="text-xl font-semibold mb-3 text-foreground">3. Représentation graphique</h3>
+          <p class="text-foreground mb-3">Diagrammes climatiques (climogrammes) montrent :</p>
+          <ul class="list-disc ml-6 space-y-2 text-foreground">
+            <li>Températures moyennes mensuelles (courbe)</li>
+            <li>Précipitations mensuelles (barres)</li>
+            <li>Permet de visualiser les saisons</li>
+          </ul>
+        </div>
+
+        <div>
+          <h3 class="text-xl font-semibold mb-3 text-foreground">4. Changement climatique</h3>
+          <p class="text-foreground">Les données montrent :</p>
+          <ul class="list-disc ml-6 space-y-2 text-foreground">
+            <li>Augmentation des températures globales</li>
+            <li>Modification des régimes de pluies</li>
+            <li>Intensification des ouragans</li>
+            <li>Nécessité d'adaptation</li>
+          </ul>
+        </div>
+      </section>
+    `,
+    exemplesExercices: `
+      <section class="space-y-4">
+        <div class="bg-primary/5 border-l-4 border-primary p-4 rounded">
+          <h4 class="font-semibold mb-2 text-foreground">📝 Activité</h4>
+          <p class="text-foreground">
+            Crée un diagramme climatique de ta région avec les données de température et précipitations pour chaque mois de l'année.
+          </p>
+        </div>
+      </section>
+    `
+  },
+
+  // Leçon 30: Langues africaines en Haïti
+  {
+    id: "langues-africaines-haiti",
+    title: "Les langues africaines en Haïti",
+    mois: "Janvier",
+    objectif: "Découvrir l'influence des langues africaines sur le créole haïtien.",
+    introduction: `
+      <p class="text-foreground leading-relaxed">
+        Le créole haïtien, bien que basé sur le vocabulaire français, tire sa structure grammaticale et de nombreux mots des langues africaines parlées par les esclaves. Cette influence africaine fait la richesse et l'originalité de notre langue.
+      </p>
+    `,
+    contenu: `
+      <section class="space-y-6">
+        <div>
+          <h3 class="text-xl font-semibold mb-3 text-foreground">1. Origines linguistiques des esclaves</h3>
+          <p class="text-foreground mb-3">Les esclaves venaient principalement de :</p>
+          <ul class="list-disc ml-6 space-y-2 text-foreground">
+            <li><strong>Royaume du Dahomey :</strong> Langue Fon</li>
+            <li><strong>Royaume du Congo :</strong> Langues Kikongo, Kimbundu</li>
+            <li><strong>Royaume Yoruba :</strong> Langue Yoruba</li>
+            <li><strong>Sénégal :</strong> Langue Wolof</li>
+          </ul>
+        </div>
+
+        <div>
+          <h3 class="text-xl font-semibold mb-3 text-foreground">2. Influence sur la structure du créole</h3>
+          <h4 class="font-semibold mt-3 mb-2 text-foreground">Caractéristiques africaines</h4>
+          <ul class="list-disc ml-6 space-y-2 text-foreground">
+            <li><strong>Absence de conjugaison complexe :</strong> Comme en Fon</li>
+            <li><strong>Redoublement :</strong> "vit-vit" (vite), "bèl-bèl" (très beau)</li>
+            <li><strong>Ton :</strong> L'intonation change le sens</li>
+            <li><strong>Ordre des mots :</strong> Sujet-Verbe-Objet</li>
+          </ul>
+        </div>
+
+        <div>
+          <h3 class="text-xl font-semibold mb-3 text-foreground">3. Mots d'origine africaine en créole</h3>
+          <ul class="list-disc ml-6 space-y-2 text-foreground">
+            <li><strong>Zombi :</strong> Du Kikongo "nzambi" (esprit)</li>
+            <li><strong>Makandal :</strong> Guerrier marron célèbre</li>
+            <li><strong>Voudou :</strong> Du Fon "vodun" (esprit)</li>
+            <li><strong>Govi :</strong> Jarre rituelle</li>
+            <li><strong>Asson :</strong> Hochet rituel du hougan</li>
+          </ul>
+        </div>
+
+        <div>
+          <h3 class="text-xl font-semibold mb-3 text-foreground">4. Proverbes créoles d'inspiration africaine</h3>
+          <ul class="list-disc ml-6 space-y-2 text-foreground">
+            <li>"Sak vid pa kanpe" (Un sac vide ne tient pas debout)</li>
+            <li>"Piti piti zwazo fè nich li" (Petit à petit l'oiseau fait son nid)</li>
+            <li>"Men anpil chay pa lou" (Plusieurs mains, le fardeau est léger)</li>
+          </ul>
+        </div>
+
+        <div>
+          <h3 class="text-xl font-semibold mb-3 text-foreground">5. Importance culturelle</h3>
+          <p class="text-foreground">Cette influence africaine :</p>
+          <ul class="list-disc ml-6 space-y-2 text-foreground">
+            <li>Témoigne de notre héritage africain</li>
+            <li>Fait du créole une langue unique</li>
+            <li>Renforce notre identité culturelle</li>
+            <li>Doit être valorisée et préservée</li>
+          </ul>
+        </div>
+      </section>
+    `,
+    exemplesExercices: `
+      <section class="space-y-4">
+        <div class="bg-primary/5 border-l-4 border-primary p-4 rounded">
+          <h4 class="font-semibold mb-2 text-foreground">💡 Activité</h4>
+          <p class="text-foreground">
+            Collecte 10 proverbes créoles auprès de tes parents ou grands-parents. Essaie de trouver leur signification profonde et comment ils guident le comportement.
+          </p>
+        </div>
+        
+        <div class="bg-accent/5 border-l-4 border-accent p-4 rounded">
+          <h4 class="font-semibold mb-2 text-foreground">📝 Projet de classe</h4>
+          <p class="text-foreground">
+            Créez un dictionnaire illustré de mots créoles d'origine africaine. Pour chaque mot : origine, signification, utilisation dans une phrase.
+          </p>
+        </div>
+      </section>
+    `
   }
 ];
+
