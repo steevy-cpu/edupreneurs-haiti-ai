@@ -88,14 +88,14 @@ export const EricChatbot = () => {
     scrollToBottom();
   }, [messages]);
 
-  // Initialize centered position when chatbox opens
+  // Initialize position on the right side when chatbox opens
   useEffect(() => {
     if (isOpen && !position) {
       const chatWidth = 380;
       const chatHeight = 500;
       setPosition({
-        x: (window.innerWidth - chatWidth) / 2,
-        y: (window.innerHeight - chatHeight) / 2
+        x: window.innerWidth - chatWidth - 20,  // 20px margin from right edge
+        y: Math.max(20, (window.innerHeight - chatHeight) / 2)  // Vertically centered with min 20px top margin
       });
     }
   }, [isOpen, position]);
