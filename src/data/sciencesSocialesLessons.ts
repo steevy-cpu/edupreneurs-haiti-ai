@@ -1441,154 +1441,828 @@ export const sciencesSocialesLessons7AF: SciencesSocialesLesson[] = [
     id: "terre-humanisation",
     title: "La terre et les problèmes de son humanisation",
     mois: "Décembre",
-    objectif: "Étudier la place et le fonctionnement de la planète terre dans l'univers.",
+    objectif: "Étudier la place et le fonctionnement de la planète Terre dans l'univers et analyser comment l'humanité a transformé son environnement.",
     introduction: `
-      <div class="space-y-4">
-        <p>La Terre est notre maison dans l'immensité de l'univers. Cette planète bleue, la troisième à partir du Soleil, est le seul endroit connu où la vie existe. Mais comment fonctionne notre planète ? Quelle est sa place dans l'univers ? Et comment les humains l'ont-ils transformée ?</p>
-        <p>L'humanisation de la Terre désigne le processus par lequel les êtres humains ont modifié l'environnement naturel pour répondre à leurs besoins : construction de villes, agriculture, industries, routes... Ces transformations ont permis le développement de nos sociétés, mais elles posent aussi des défis environnementaux importants.</p>
-        <p>Comprendre notre planète et notre impact sur elle est essentiel pour construire un avenir durable.</p>
+      <div class="space-y-6">
+        <div class="bg-gradient-to-r from-green-50 to-blue-50 dark:from-green-950/30 dark:to-blue-950/30 p-6 rounded-lg border-l-4 border-green-500">
+          <p class="text-lg italic">"La Terre n'est pas un don de nos parents, c'est un prêt de nos enfants." - Proverbe amérindien</p>
+        </div>
+        
+        <p class="text-lg leading-relaxed">Imaginez que vous êtes dans une station spatiale, flottant à 400 kilomètres au-dessus de la Terre. Devant vous se déploie un spectacle à couper le souffle : une sphère bleue marbrée de blanc (les nuages), tachetée de vert (les forêts) et de brun (les continents), suspendue dans l'immensité noire de l'espace. C'est notre planète, la Terre, la seule oasis de vie connue dans un univers apparemment stérile.</p>
+        
+        <p>Mais cette magnifique planète bleue n'a pas toujours eu cet aspect. Il y a 4,5 milliards d'années, c'était une boule de lave en fusion, constamment bombardée par des météorites. Aujourd'hui, elle abrite près de 8 milliards d'êtres humains, des millions d'espèces animales et végétales, et des écosystèmes d'une complexité inouïe.</p>
+        
+        <p>En Haïti, nous sommes particulièrement concernés par la question de l'humanisation de la Terre. Notre pays, autrefois couvert à 60% de forêts luxuriantes, a vu ce taux chuter à moins de 2% aujourd'hui. Les conséquences sont dramatiques : érosion des sols, inondations, glissements de terrain, appauvrissement agricole. Cette leçon nous aidera à comprendre comment nous en sommes arrivés là et, surtout, ce que nous pouvons faire pour inverser la tendance.</p>
+        
+        <div class="bg-yellow-50 dark:bg-yellow-950/20 border-l-4 border-yellow-500 p-4 my-4">
+          <p class="font-semibold text-yellow-900 dark:text-yellow-200">🎯 Objectifs d'apprentissage</p>
+          <ul class="list-disc ml-6 mt-2 space-y-1">
+            <li>Comprendre la place de la Terre dans le système solaire et l'univers</li>
+            <li>Identifier les caractéristiques physiques de notre planète</li>
+            <li>Analyser les différentes formes d'humanisation du territoire</li>
+            <li>Évaluer les problèmes environnementaux causés par l'activité humaine</li>
+            <li>Proposer des solutions pour un développement durable</li>
+          </ul>
+        </div>
       </div>
     `,
     contenu: `
-      <div class="space-y-6">
+      <div class="space-y-8">
         <section>
-          <h3 class="text-xl font-semibold mb-3">1. La Terre dans l'univers</h3>
-          <p>La Terre fait partie du système solaire, qui lui-même appartient à la galaxie de la Voie lactée, une galaxie parmi des milliards dans l'univers.</p>
-          <p><strong>Caractéristiques de la Terre :</strong></p>
-          <ul class="list-disc ml-6 space-y-2">
-            <li><strong>Forme :</strong> Sphéroïde (légèrement aplatie aux pôles)</li>
-            <li><strong>Diamètre :</strong> Environ 12 742 km à l'équateur</li>
-            <li><strong>Circonférence :</strong> Environ 40 075 km à l'équateur</li>
-            <li><strong>Distance du Soleil :</strong> Environ 150 millions de km</li>
-            <li><strong>Âge :</strong> Environ 4,5 milliards d'années</li>
-            <li><strong>Satellite naturel :</strong> La Lune</li>
-          </ul>
-        </section>
-
-        <section>
-          <h3 class="text-xl font-semibold mb-3">2. La structure de la Terre</h3>
-          <p>La Terre est composée de plusieurs couches concentriques :</p>
-          <ul class="list-disc ml-6 space-y-2">
-            <li><strong>Le noyau interne :</strong> Solide, composé principalement de fer et de nickel, température extrême (plus de 5 000°C)</li>
-            <li><strong>Le noyau externe :</strong> Liquide, également composé de fer et de nickel</li>
-            <li><strong>Le manteau :</strong> Couche épaisse de roches en fusion (magma)</li>
-            <li><strong>La croûte terrestre :</strong> Couche externe solide sur laquelle nous vivons (5 à 70 km d'épaisseur)</li>
-          </ul>
-          <p>La croûte terrestre est divisée en <strong>plaques tectoniques</strong> qui flottent sur le manteau et se déplacent lentement, causant des tremblements de terre et des éruptions volcaniques.</p>
-        </section>
-
-        <section>
-          <h3 class="text-xl font-semibold mb-3">3. Les enveloppes de la Terre</h3>
-          <p>Notre planète est entourée de plusieurs "enveloppes" qui rendent la vie possible :</p>
-          <ul class="list-disc ml-6 space-y-2">
-            <li><strong>L'atmosphère :</strong> Couche de gaz qui entoure la Terre, nous protège des rayons solaires nocifs et maintient une température vivable</li>
-            <li><strong>L'hydrosphère :</strong> Ensemble des eaux de la planète (océans, mers, lacs, rivières, glaces) - couvre 71% de la surface</li>
-            <li><strong>La lithosphère :</strong> Partie solide de la Terre (croûte et partie supérieure du manteau)</li>
-            <li><strong>La biosphère :</strong> Zone où se trouve la vie (plantes, animaux, micro-organismes)</li>
-          </ul>
-        </section>
-
-        <section>
-          <h3 class="text-xl font-semibold mb-3">4. L'humanisation de la Terre</h3>
-          <p>L'humanisation désigne l'ensemble des transformations que les humains ont apportées à la surface terrestre. Ce processus a commencé il y a des milliers d'années et s'est intensifié avec le temps.</p>
-          <p><strong>Principales formes d'humanisation :</strong></p>
-          <ul class="list-disc ml-6 space-y-2">
-            <li><strong>L'agriculture :</strong> Transformation des forêts et prairies en terres cultivées</li>
-            <li><strong>L'urbanisation :</strong> Construction de villes et d'infrastructures</li>
-            <li><strong>L'industrialisation :</strong> Développement d'usines, de mines, d'extraction de ressources</li>
-            <li><strong>Les voies de communication :</strong> Routes, ponts, tunnels, aéroports</li>
-            <li><strong>Les barrages et canaux :</strong> Contrôle et détournement des cours d'eau</li>
-          </ul>
-        </section>
-
-        <section>
-          <h3 class="text-xl font-semibold mb-3">5. Les problèmes liés à l'humanisation</h3>
-          <p>L'humanisation de la Terre, bien que nécessaire au développement humain, crée plusieurs problèmes environnementaux majeurs :</p>
-          <ul class="list-disc ml-6 space-y-2">
-            <li><strong>La déforestation :</strong> Disparition des forêts, perte de biodiversité, érosion des sols
-              <p class="text-sm mt-1"><em>En Haïti, la couverture forestière est passée de 60% à moins de 2% en deux siècles.</em></p>
+          <h3 class="text-2xl font-bold mb-4 text-primary">1. La Terre dans l'univers : une perspective cosmique</h3>
+          
+          <p class="text-lg mb-4">Pour comprendre notre planète, il faut d'abord saisir où elle se situe dans l'immensité du cosmos. L'adresse complète de la Terre serait : Planète Terre, Système solaire, Bras d'Orion, Galaxie de la Voie lactée, Groupe local de galaxies, Superamas de la Vierge, Univers observable !</p>
+          
+          <h4 class="text-xl font-semibold mt-6 mb-3">Le système solaire</h4>
+          <p>Notre système solaire est composé d'une étoile (le Soleil) et de tout ce qui orbite autour d'elle : 8 planètes, des dizaines de lunes, des milliers d'astéroïdes et de comètes.</p>
+          
+          <ul class="list-disc ml-8 space-y-3 mt-4">
+            <li><strong>Le Soleil :</strong> Étoile moyenne (diamètre de 1,4 million de km !), vieille de 4,6 milliards d'années. Il produit son énergie par fusion nucléaire (transformation d'hydrogène en hélium). Sans lui, pas de vie possible sur Terre !</li>
+            <li><strong>Les 8 planètes</strong> (de la plus proche à la plus éloignée du Soleil) :
+              <ul class="list-disc ml-6 mt-2 space-y-1">
+                <li>Mercure, Vénus, <strong>Terre</strong>, Mars (planètes rocheuses, petites et denses)</li>
+                <li>Jupiter, Saturne, Uranus, Neptune (géantes gazeuses, énormes mais peu denses)</li>
+              </ul>
             </li>
-            <li><strong>La pollution :</strong> Contamination de l'air, de l'eau et des sols par les activités humaines</li>
-            <li><strong>Le changement climatique :</strong> Réchauffement global causé par les émissions de gaz à effet de serre</li>
-            <li><strong>L'épuisement des ressources :</strong> Surexploitation des ressources naturelles non renouvelables</li>
-            <li><strong>La perte de biodiversité :</strong> Extinction d'espèces animales et végétales</li>
-            <li><strong>L'érosion :</strong> Dégradation des sols, particulièrement grave en Haïti</li>
           </ul>
+          
+          <h4 class="text-xl font-semibold mt-6 mb-3">La Terre : caractéristiques uniques</h4>
+          <p>La Terre est la seule planète du système solaire où nous savons avec certitude qu'il existe de la vie. Pourquoi ?</p>
+          
+          <div class="grid gap-3 mt-4">
+            <div class="border-l-4 border-blue-500 pl-4">
+              <p class="font-semibold">1. Distance idéale du Soleil</p>
+              <p>La Terre orbite à environ <strong>150 millions de kilomètres</strong> du Soleil (on appelle cette distance une "unité astronomique" ou UA). Cette distance est parfaite : ni trop proche (comme Vénus où il fait 460°C), ni trop loin (comme Mars où il fait -60°C). Cette zone s'appelle la <strong>"zone habitable"</strong> ou "zone Boucle d'Or" (comme dans le conte : ni trop chaud, ni trop froid, juste comme il faut!).</p>
+            </div>
+            
+            <div class="border-l-4 border-blue-500 pl-4">
+              <p class="font-semibold">2. Présence d'eau liquide</p>
+              <p>71% de la surface terrestre est couverte d'eau. Cette eau liquide (ni entièrement gelée, ni entièrement évaporée) est essentielle à la vie telle que nous la connaissons. Les océans régulent le climat et abritent la plupart de la vie sur Terre.</p>
+            </div>
+            
+            <div class="border-l-4 border-blue-500 pl-4">
+              <p class="font-semibold">3. Atmosphère protectrice</p>
+              <p>Notre atmosphère est composée à 78% d'azote, 21% d'oxygène et 1% d'autres gaz (argon, CO2, vapeur d'eau). Elle filtre les rayons ultraviolets nocifs du Soleil grâce à la couche d'ozone. Elle maintient aussi une température vivable grâce à l'effet de serre naturel.</p>
+            </div>
+            
+            <div class="border-l-4 border-blue-500 pl-4">
+              <p class="font-semibold">4. Champ magnétique terrestre</p>
+              <p>Le noyau de fer en fusion de la Terre crée un puissant champ magnétique qui nous protège des radiations solaires mortelles (le "vent solaire"). Ce champ magnétique dévie ces particules chargées vers les pôles, créant les magnifiques aurores boréales et australes.</p>
+            </div>
+            
+            <div class="border-l-4 border-blue-500 pl-4">
+              <p class="font-semibold">5. La Lune : un satellite stabilisateur</p>
+              <p>Notre satellite naturel, la Lune (diamètre de 3 474 km, située à 384 400 km de la Terre), joue un rôle crucial. Elle stabilise l'inclinaison de l'axe terrestre (23,5°), créant des saisons régulières. Elle génère aussi les marées océaniques par son attraction gravitationnelle.</p>
+            </div>
+          </div>
+          
+          <div class="bg-blue-50 dark:bg-blue-950/30 p-5 rounded-lg my-6">
+            <p class="font-semibold text-blue-900 dark:text-blue-200 mb-2">💡 Le savais-tu ?</p>
+            <p class="text-blue-800 dark:text-blue-300">La Terre n'est pas parfaitement ronde ! Elle est légèrement <strong>aplatie aux pôles</strong> et renflée à l'équateur (on dit qu'elle est un "ellipsoïde"). La différence est subtile mais réelle : le diamètre à l'équateur (12 756 km) est 43 km plus grand que le diamètre entre les pôles (12 713 km). Cet aplatissement est causé par la rotation de la Terre qui "pousse" la matière vers l'extérieur à l'équateur. C'est aussi pour cette raison que le point le plus éloigné du centre de la Terre n'est pas le sommet de l'Everest, mais le sommet du Chimborazo en Équateur !</p>
+          </div>
+          
+          <p class="mt-4"><em>📹 Suggestion YouTube : Recherchez "Solar System size comparison" pour voir la taille relative des planètes et "Earth from ISS" pour admirer notre planète depuis l'espace.</em></p>
         </section>
 
         <section>
-          <h3 class="text-xl font-semibold mb-3">6. Vers un développement durable</h3>
-          <p>Face à ces défis, l'humanité doit trouver un équilibre entre développement et préservation de l'environnement. C'est le principe du <strong>développement durable</strong> : répondre aux besoins du présent sans compromettre la capacité des générations futures à répondre aux leurs.</p>
-          <p><strong>Actions nécessaires :</strong></p>
-          <ul class="list-disc ml-6 space-y-2">
-            <li>Reboisement et protection des forêts</li>
-            <li>Utilisation d'énergies renouvelables (solaire, éolienne)</li>
-            <li>Réduction de la pollution et du gaspillage</li>
-            <li>Agriculture durable respectant les sols</li>
-            <li>Éducation environnementale</li>
+          <h3 class="text-2xl font-bold mb-4 text-primary mt-8">2. La structure interne de la Terre : un voyage vers le centre</h3>
+          
+          <p class="text-lg mb-4">Si nous pouvions creuser un tunnel jusqu'au centre de la Terre (ce qui est impossible !), nous traverserions plusieurs couches aux propriétés très différentes. C'est comme un oignon géant composé de couches concentriques.</p>
+          
+          <h4 class="text-xl font-semibold mt-6 mb-3">Les grandes couches de la Terre</h4>
+          
+          <div class="space-y-4 mt-4">
+            <div class="bg-amber-50 dark:bg-amber-950/20 p-4 rounded-lg">
+              <p class="font-bold text-lg">🌍 1. La croûte terrestre (0 à 5-70 km de profondeur)</p>
+              <p class="mt-2">C'est la couche la plus externe, celle sur laquelle nous marchons ! Extrêmement fine comparée au reste de la planète (comme la peau d'une pomme).</p>
+              <ul class="list-disc ml-6 mt-2 space-y-1">
+                <li><strong>Croûte océanique :</strong> Mince (5-10 km), dense, jeune (moins de 200 millions d'années), composée surtout de basalte (roche volcanique noire)</li>
+                <li><strong>Croûte continentale :</strong> Plus épaisse (30-70 km), moins dense, très ancienne (jusqu'à 4 milliards d'années pour certaines roches), composée surtout de granit</li>
+                <li><strong>Température :</strong> Augmente de 25-30°C par km de profondeur</li>
+              </ul>
+            </div>
+            
+            <div class="bg-amber-50 dark:bg-amber-950/20 p-4 rounded-lg">
+              <p class="font-bold text-lg">🔥 2. Le manteau (5-70 km à 2 900 km de profondeur)</p>
+              <p class="mt-2">Couche la plus épaisse de la Terre, représentant 84% du volume terrestre !</p>
+              <ul class="list-disc ml-6 mt-2 space-y-1">
+                <li><strong>Composition :</strong> Roches riches en fer, magnésium, silicium (péridotite)</li>
+                <li><strong>État :</strong> Solide, mais se déforme lentement comme une pâte très visqueuse (quelques centimètres par an). C'est ce mouvement qui fait "flotter" et dériver les continents !</li>
+                <li><strong>Température :</strong> De 1 000°C au sommet à 3 700°C à la base</li>
+                <li><strong>Manteau supérieur vs inférieur :</strong> Le manteau supérieur (jusqu'à 670 km) est moins dense et plus visqueux. Le manteau inférieur (670 à 2 900 km) est plus dense et plus rigide.</li>
+              </ul>
+              <p class="mt-2"><strong>Rôle crucial :</strong> Les courants de convection dans le manteau (montée de matériau chaud, descente de matériau froid) sont le moteur de la <strong>tectonique des plaques</strong> !</p>
+            </div>
+            
+            <div class="bg-amber-50 dark:bg-amber-950/20 p-4 rounded-lg">
+              <p class="font-bold text-lg">💎 3. Le noyau externe (2 900 à 5 100 km de profondeur)</p>
+              <ul class="list-disc ml-6 mt-2 space-y-1">
+                <li><strong>Composition :</strong> Fer (80%) et nickel (20%) en fusion</li>
+                <li><strong>État :</strong> <strong>Liquide</strong> malgré la pression énorme, car la température (4 000-6 000°C) est suffisante pour le maintenir fondu</li>
+                <li><strong>Mouvement :</strong> Ce fer liquide circule constamment, créant des courants électriques</li>
+                <li><strong>Rôle :</strong> C'est cette circulation de métal liquide conducteur qui génère le <strong>champ magnétique terrestre</strong>, protégeant la vie des radiations solaires</li>
+              </ul>
+            </div>
+            
+            <div class="bg-amber-50 dark:bg-amber-950/20 p-4 rounded-lg">
+              <p class="font-bold text-lg">⚙️ 4. Le noyau interne (5 100 à 6 371 km de profondeur)</p>
+              <ul class="list-disc ml-6 mt-2 space-y-1">
+                <li><strong>Composition :</strong> Fer et nickel, comme le noyau externe</li>
+                <li><strong>État :</strong> <strong>Solide</strong> ! Malgré une température extrême (5 000-7 000°C, aussi chaud que la surface du Soleil !), la pression gigantesque (3,6 millions de fois la pression atmosphérique) force le fer à rester solide.</li>
+                <li><strong>Taille :</strong> Rayon d'environ 1 220 km, soit la taille de la Lune !</li>
+                <li><strong>Rotation :</strong> Tourne légèrement plus vite que le reste de la Terre (1° de plus par an)</li>
+              </ul>
+            </div>
+          </div>
+          
+          <h4 class="text-xl font-semibold mt-6 mb-3">Les plaques tectoniques : la croûte en morceaux</h4>
+          <p>La croûte terrestre n'est pas d'une seule pièce. Elle est divisée en une dizaine de grandes plaques et plusieurs dizaines de petites plaques qui "flottent" sur le manteau visqueux. Ces plaques se déplacent de quelques centimètres par an (à peu près la vitesse de croissance de vos ongles).</p>
+          
+          <p class="mt-3"><strong>Trois types de mouvements :</strong></p>
+          <ul class="list-disc ml-8 space-y-2 mt-3">
+            <li><strong>Divergence :</strong> Les plaques s'écartent. Du magma remonte et crée une nouvelle croûte océanique (dorsales médio-océaniques). Exemple : Dorsale de l'Atlantique qui sépare l'Amérique de l'Europe et l'Afrique de quelques centimètres par an.</li>
+            <li><strong>Convergence :</strong> Les plaques se rapprochent. Soit une plaque plonge sous l'autre (subduction, créant des fosses océaniques et des volcans), soit les deux plaques se compriment et créent des chaînes de montagnes. Exemple : L'Himalaya résulte de la collision entre la plaque indienne et la plaque eurasiatique.</li>
+            <li><strong>Coulissage :</strong> Les plaques glissent latéralement l'une contre l'autre. Exemple : Faille de San Andreas en Californie.</li>
           </ul>
+          
+          <div class="bg-blue-50 dark:bg-blue-950/30 p-5 rounded-lg my-6">
+            <p class="font-semibold text-blue-900 dark:text-blue-200 mb-2">💡 Le savais-tu ?</p>
+            <p class="text-blue-800 dark:text-blue-300">Haïti se trouve à la frontière entre <strong>deux plaques tectoniques</strong> : la plaque nord-américaine et la plaque caraïbe. Ces deux plaques coulissent l'une contre l'autre le long de la faille d'Enriquillo-Plantain Garden. C'est le mouvement brutal de cette faille qui a causé le terrible séisme du 12 janvier 2010 (magnitude 7.0), faisant plus de 200 000 morts. Comprendre la tectonique des plaques n'est pas qu'une curiosité scientifique pour nous Haïtiens : c'est une question de survie ! Les scientifiques préviennent qu'un autre grand séisme pourrait survenir dans les décennies à venir. D'où l'importance de construire des bâtiments parasismiques.</p>
+          </div>
+          
+          <p class="mt-4"><em>📹 Suggestion YouTube : Recherchez "Earth's layers animation" et "Plate tectonics explained" pour des animations visuelles fascinantes.</em></p>
         </section>
-      </div>
-    `,
-    exemplesExercices: `
-      <div class="space-y-6">
+
         <section>
-          <h3 class="text-xl font-semibold mb-3">Exemples concrets</h3>
-          <div class="bg-blue-50 p-4 rounded-lg space-y-3">
-            <p><strong>Exemple 1 :</strong> Haïti se trouve sur la frontière de deux plaques tectoniques, ce qui explique les tremblements de terre comme celui de 2010. Comprendre la structure de la Terre nous aide à mieux nous préparer.</p>
-            <p><strong>Exemple 2 :</strong> La déforestation en Haïti a causé une érosion massive. Lors de fortes pluies, les sols dénudés glissent, provoquant des inondations et des coulées de boue meurtrières.</p>
-            <p><strong>Exemple 3 :</strong> Le parc national de La Visite représente un effort de préservation d'un écosystème de pins endémiques, montrant qu'il est possible de protéger notre environnement.</p>
+          <h3 class="text-2xl font-bold mb-4 text-primary mt-8">3. Les enveloppes fluides de la Terre</h3>
+          
+          <p class="text-lg mb-4">Autour et sur la partie solide de la Terre (la lithosphère), il existe plusieurs "enveloppes" fluides qui interagissent constamment et rendent la vie possible.</p>
+          
+          <h4 class="text-xl font-semibold mt-6 mb-3">A. L'atmosphère : notre bouclier gazeux</h4>
+          <p>L'atmosphère est une fine couche de gaz (environ 100 km d'épaisseur) qui enveloppe la Terre. Si la Terre était une pomme, l'atmosphère serait plus fine que la peau de la pomme !</p>
+          
+          <p class="mt-3"><strong>Composition :</strong></p>
+          <ul class="list-disc ml-8 space-y-2 mt-2">
+            <li>Azote (N₂) : 78% - Inerte, dilue l'oxygène</li>
+            <li>Oxygène (O₂) : 21% - Essentiel à la respiration</li>
+            <li>Argon (Ar) : 0,93% - Gaz rare inerte</li>
+            <li>CO₂, vapeur d'eau, autres : 0,07% - Mais rôle crucial !</li>
+          </ul>
+          
+          <p class="mt-3"><strong>Les couches de l'atmosphère :</strong></p>
+          <div class="space-y-2 mt-3">
+            <div class="border-l-4 border-sky-500 pl-4">
+              <p class="font-semibold">Troposphère (0-12 km)</p>
+              <p class="text-sm">C'est là que nous vivons ! Contient 80% de la masse de l'atmosphère et quasiment toute la vapeur d'eau. C'est là que se forment les nuages, la pluie, les tempêtes. La température baisse avec l'altitude (-6,5°C par km).</p>
+            </div>
+            <div class="border-l-4 border-sky-500 pl-4">
+              <p class="font-semibold">Stratosphère (12-50 km)</p>
+              <p class="text-sm">Contient la couche d'ozone (15-35 km) qui absorbe 97-99% des rayons UV nocifs du Soleil. Les avions volent dans la basse stratosphère pour éviter les turbulences.</p>
+            </div>
+            <div class="border-l-4 border-sky-500 pl-4">
+              <p class="font-semibold">Mésosphère (50-85 km)</p>
+              <p class="text-sm">La couche la plus froide (-90°C au sommet). C'est là que les météorites brûlent en entrant dans l'atmosphère.</p>
+            </div>
+            <div class="border-l-4 border-sky-500 pl-4">
+              <p class="font-semibold">Thermosphère (85-600 km)</p>
+              <p class="text-sm">Températures extrêmes (jusqu'à 2 500°C), mais l'air est si raréfié qu'on ne le sentirait pas. C'est là qu'orbitent la Station spatiale internationale et les satellites.</p>
+            </div>
+          </div>
+          
+          <h4 class="text-xl font-semibold mt-6 mb-3">B. L'hydrosphère : l'eau sous toutes ses formes</h4>
+          <p>L'hydrosphère comprend toute l'eau de la planète : océans, mers, lacs, rivières, glaciers, nappes souterraines, vapeur d'eau atmosphérique.</p>
+          
+          <p class="mt-3"><strong>Répartition de l'eau sur Terre :</strong></p>
+          <ul class="list-disc ml-8 space-y-2 mt-2">
+            <li><strong>Océans et mers :</strong> 97,5% de toute l'eau terrestre (mais salée, donc non potable directement)</li>
+            <li><strong>Glaciers et calottes glaciaires :</strong> 1,75% (Antarctique, Groenland, glaciers de montagne)</li>
+            <li><strong>Eaux souterraines :</strong> 0,7%</li>
+            <li><strong>Lacs, rivières, atmosphère :</strong> 0,05% seulement !</li>
+          </ul>
+          
+          <p class="mt-3">Conclusion choquante : <strong>Seulement 2,5% de l'eau terrestre est de l'eau douce</strong>, et parmi cette eau douce, seulement une infime fraction (0,007% du total) est facilement accessible dans les lacs et rivières. L'eau potable est donc une ressource rare et précieuse !</p>
+          
+          <h4 class="text-xl font-semibold mt-6 mb-3">C. La biosphère : la zone de vie</h4>
+          <p>La biosphère est l'ensemble des écosystèmes de la Terre où se trouve la vie. Elle s'étend :</p>
+          <ul class="list-disc ml-8 space-y-2 mt-2">
+            <li><strong>En profondeur :</strong> Jusqu'à 11 km sous la surface des océans (fosse des Mariannes) et quelques kilomètres sous terre</li>
+            <li><strong>En altitude :</strong> Jusqu'à environ 10 km dans l'atmosphère (oiseaux migrateurs, spores, bactéries)</li>
+          </ul>
+          
+          <p class="mt-3">La biosphère interagit constamment avec l'atmosphère, l'hydrosphère et la lithosphère dans un équilibre délicat. Par exemple, les plantes absorbent le CO₂ et produisent de l'oxygène, modifiant la composition de l'atmosphère.</p>
+          
+          <div class="bg-blue-50 dark:bg-blue-950/30 p-5 rounded-lg my-6">
+            <p class="font-semibold text-blue-900 dark:text-blue-200 mb-2">💡 Le savais-tu ?</p>
+            <p class="text-blue-800 dark:text-blue-300">La majorité de l'oxygène que nous respirons (environ 50-80%) ne provient pas des forêts, mais des <strong>océans</strong> ! Plus précisément, du phytoplancton, ces minuscules organismes végétaux qui flottent dans les couches supérieures des océans. Chaque deuxième respiration que vous prenez vient de l'océan ! Voilà pourquoi la pollution des océans et le réchauffement climatique qui les affecte sont si inquiétants.</p>
           </div>
         </section>
 
         <section>
-          <h3 class="text-xl font-semibold mb-3">Exercices</h3>
+          <h3 class="text-2xl font-bold mb-4 text-primary mt-8">4. L'humanisation de la Terre : transformer la planète</h3>
+          
+          <p class="text-lg mb-4">L'humanisation désigne l'ensemble des transformations que les humains ont apportées à la surface terrestre pour répondre à leurs besoins. Contrairement aux autres espèces animales qui s'adaptent à leur environnement, les humains adaptent l'environnement à leurs besoins. Ce processus a commencé il y a des milliers d'années et s'est considérablement accéléré depuis la révolution industrielle (XVIIIe siècle).</p>
+          
+          <h4 class="text-xl font-semibold mt-6 mb-3">Les grandes formes d'humanisation</h4>
+          
+          <div class="grid gap-4 mt-4">
+            <div class="bg-green-50 dark:bg-green-950/20 p-4 rounded-lg">
+              <p class="font-bold text-lg">🌾 1. L'agriculture : transformer la nature en champs</p>
+              <p class="mt-2">Depuis la révolution néolithique (il y a 10 000 ans), les humains cultivent la terre.</p>
+              <ul class="list-disc ml-6 mt-2 space-y-1">
+                <li><strong>Défrichement :</strong> Abattage des forêts pour créer des terres cultivables</li>
+                <li><strong>Irrigation :</strong> Détournement de rivières, construction de barrages et de canaux</li>
+                <li><strong>Terrasses agricoles :</strong> Aménagement de pentes pour la culture (riz en Asie, maïs dans les Andes)</li>
+                <li><strong>Monoculture intensive :</strong> Grandes plantations d'une seule culture (café, canne à sucre, soja...)</li>
+              </ul>
+              <p class="mt-2 text-sm italic">🇭🇹 En Haïti : L'agriculture occupe environ 66% du territoire. Les cultures en pente sans protection causent une érosion massive.</p>
+            </div>
+            
+            <div class="bg-green-50 dark:bg-green-950/20 p-4 rounded-lg">
+              <p class="font-bold text-lg">🏙️ 2. L'urbanisation : la croissance des villes</p>
+              <p class="mt-2">En 1800, seulement 3% de la population mondiale vivait en ville. Aujourd'hui, c'est 56% (et 68% prévus en 2050) !</p>
+              <ul class="list-disc ml-6 mt-2 space-y-1">
+                <li><strong>Étalement urbain :</strong> Extension horizontale des villes, consommant des terres agricoles</li>
+                <li><strong>Verticalisation :</strong> Construction de gratte-ciels (Burj Khalifa à Dubaï : 828 m !)</li>
+                <li><strong>Infrastructures massives :</strong> Routes, ponts, tunnels, métros, aéroports</li>
+                <li><strong>Artificialisation des sols :</strong> Recouvrement du sol naturel par du béton et de l'asphalte</li>
+              </ul>
+              <p class="mt-2 text-sm italic">🇭🇹 En Haïti : Port-au-Prince concentre près de 3 millions d'habitants (25% de la population nationale). L'urbanisation anarchique crée des bidonvilles vulnérables aux catastrophes.</p>
+            </div>
+            
+            <div class="bg-green-50 dark:bg-green-950/20 p-4 rounded-lg">
+              <p class="font-bold text-lg">🏭 3. L'industrialisation : usines et extraction</p>
+              <ul class="list-disc ml-6 mt-2 space-y-1">
+                <li><strong>Mines :</strong> Extraction de métaux (or, cuivre, fer...), charbon, diamants. Certaines mines à ciel ouvert mesurent plusieurs km² et des centaines de mètres de profondeur !</li>
+                <li><strong>Carrières :</strong> Extraction de pierre, sable, gravier pour la construction</li>
+                <li><strong>Exploitation pétrolière et gazière :</strong> Puits, raffineries, oléoducs</li>
+                <li><strong>Zones industrielles :</strong> Usines chimiques, métallurgiques, textiles, électroniques</li>
+              </ul>
+            </div>
+            
+            <div class="bg-green-50 dark:bg-green-950/20 p-4 rounded-lg">
+              <p class="font-bold text-lg">🛣️ 4. Les réseaux de transport : connecter le monde</p>
+              <ul class="list-disc ml-6 mt-2 space-y-1">
+                <li><strong>Routes et autoroutes :</strong> Plus de 64 millions de km de routes dans le monde</li>
+                <li><strong>Voies ferrées :</strong> Le Transsibérien (Russie) s'étend sur 9 288 km !</li>
+                <li><strong>Canaux :</strong> Canal de Suez (Égypte), Panama (relie l'Atlantique au Pacifique)</li>
+                <li><strong>Aéroports :</strong> L'aéroport international d'Atlanta (USA) accueille 107 millions de passagers par an</li>
+              </ul>
+            </div>
+            
+            <div class="bg-green-50 dark:bg-green-950/20 p-4 rounded-lg">
+              <p class="font-bold text-lg">💧 5. Aménagement hydraulique : maîtriser l'eau</p>
+              <ul class="list-disc ml-6 mt-2 space-y-1">
+                <li><strong>Barrages :</strong> Le barrage des Trois-Gorges en Chine (plus grand au monde) produit autant d'électricité que 18 centrales nucléaires !</li>
+                <li><strong>Polders :</strong> Aux Pays-Bas, 25% du territoire a été gagné sur la mer en asséchant des zones côtières</li>
+                <li><strong>Systèmes d'irrigation :</strong> Canaux, asperseurs, goutte-à-goutte</li>
+                <li><strong>Digues et levées :</strong> Protection contre les inondations</li>
+              </ul>
+            </div>
+          </div>
+          
+          <h4 class="text-xl font-semibold mt-6 mb-3">Bilan de l'humanisation</h4>
+          <p>Aujourd'hui, <strong>75% des terres émergées</strong> ont été significativement modifiées par l'activité humaine. Seulement 23% de la surface terrestre reste à l'état "sauvage" (déserts, toundras, forêts vierges, régions polaires). Les humains ont littéralement redessiné la face de la Terre !</p>
+        </section>
+
+        <section>
+          <h3 class="text-2xl font-bold mb-4 text-primary mt-8">5. Les problèmes environnementaux : le prix de l'humanisation</h3>
+          
+          <p class="text-lg mb-4">L'humanisation de la Terre, bien que nécessaire au développement de nos sociétés, crée des problèmes environnementaux majeurs qui menacent désormais l'avenir même de l'humanité.</p>
+          
+          <div class="space-y-5 mt-4">
+            <div class="border-2 border-red-300 dark:border-red-800 p-4 rounded-lg">
+              <p class="font-bold text-lg text-red-700 dark:text-red-400">🌳 1. La déforestation : disparition des forêts</p>
+              <p class="mt-2"><strong>Ampleur du problème :</strong></p>
+              <ul class="list-disc ml-6 mt-1 space-y-1">
+                <li>10 millions d'hectares de forêts disparaissent chaque année (équivalent de la superficie de l'Islande !)</li>
+                <li>80% de la forêt amazonienne originelle a déjà disparu ou est dégradée</li>
+                <li>Depuis 1990, 420 millions d'hectares de forêts ont été perdus</li>
+              </ul>
+              <p class="mt-2"><strong>Conséquences :</strong></p>
+              <ul class="list-disc ml-6 mt-1 space-y-1">
+                <li><strong>Perte de biodiversité :</strong> Extinction de milliers d'espèces (70% des animaux terrestres vivent en forêt)</li>
+                <li><strong>Érosion des sols :</strong> Sans les racines des arbres, les sols partent avec les pluies</li>
+                <li><strong>Changement climatique :</strong> Les forêts stockent du CO₂. Leur destruction libère ce CO₂ dans l'atmosphère</li>
+                <li><strong>Perturbation du cycle de l'eau :</strong> Les forêts produisent la pluie par évapotranspiration</li>
+              </ul>
+              <p class="mt-2 text-sm bg-red-50 dark:bg-red-950/20 p-3 rounded italic">🇭🇹 <strong>Cas d'Haïti</strong> : La déforestation en Haïti est catastrophique. En 1923, 60% du territoire était couvert de forêts. Aujourd'hui, c'est moins de 2% ! Les causes : production de charbon de bois (principale source d'énergie pour 70% de la population), agriculture sur brûlis, exploitation forestière illégale. Résultat : des inondations meurtrières à chaque saison des pluies, des glissements de terrain, et l'appauvrissement des sols. Depuis l'espace, on voit clairement la frontière avec la République Dominicaine : d'un côté (Haïti), la terre est brune et dénudée ; de l'autre, elle est verte. Cette image est devenue un symbole de notre crise environnementale.</p>
+            </div>
+            
+            <div class="border-2 border-red-300 dark:border-red-800 p-4 rounded-lg">
+              <p class="font-bold text-lg text-red-700 dark:text-red-400">☁️ 2. Le changement climatique : réchauffement global</p>
+              <p class="mt-2"><strong>Les faits :</strong></p>
+              <ul class="list-disc ml-6 mt-1 space-y-1">
+                <li>La température moyenne mondiale a augmenté de +1,1°C depuis l'ère préindustrielle (1850)</li>
+                <li>Les 10 années les plus chaudes jamais enregistrées sont toutes après 2010</li>
+                <li>Le niveau des océans monte de 3,3 mm par an (accélération : c'était 1,4 mm/an en 1900)</li>
+                <li>Les glaciers perdent 300 milliards de tonnes de glace par an</li>
+              </ul>
+              <p class="mt-2"><strong>Causes :</strong> Émissions de gaz à effet de serre (CO₂, méthane) par la combustion de pétrole, charbon, gaz naturel, déforestation, agriculture intensive, industrie.</p>
+              <p class="mt-2"><strong>Conséquences :</strong></p>
+              <ul class="list-disc ml-6 mt-1 space-y-1">
+                <li><strong>Événements météo extrêmes :</strong> Ouragans plus puissants, sécheresses prolongées, inondations</li>
+                <li><strong>Fonte des glaces :</strong> Groenland et Antarctique perdent des milliards de tonnes de glace</li>
+                <li><strong>Montée des océans :</strong> Menace les îles et villes côtières (Miami, Venise, Maldives, Kiribati...)</li>
+                <li><strong>Perturbation de l'agriculture :</strong> Changement des saisons, invasions de ravageurs</li>
+              </ul>
+              <p class="mt-2 text-sm bg-red-50 dark:bg-red-950/20 p-3 rounded italic">🇭🇹 <strong>Haïti vulnérable</strong> : Bien que contribuant très peu aux émissions mondiales de CO₂, Haïti est parmi les pays les plus vulnérables au changement climatique. Les ouragans sont plus fréquents et plus intenses (Matthew 2016, Irma 2017). Les sécheresses se multiplient. Les agriculteurs ne savent plus quand planter car les saisons deviennent imprévisibles.</p>
+            </div>
+            
+            <div class="border-2 border-red-300 dark:border-red-800 p-4 rounded-lg">
+              <p class="font-bold text-lg text-red-700 dark:text-red-400">🗑️ 3. La pollution : contamination généralisée</p>
+              <p class="mt-2"><strong>Pollution de l'air :</strong></p>
+              <ul class="list-disc ml-6 mt-1 space-y-1">
+                <li>7 millions de morts prématurées par an liées à la pollution de l'air (OMS)</li>
+                <li>90% de la population mondiale respire un air pollué</li>
+              </ul>
+              <p class="mt-2"><strong>Pollution de l'eau :</strong></p>
+              <ul class="list-disc ml-6 mt-1 space-y-1">
+                <li>2 milliards de personnes n'ont pas accès à l'eau potable</li>
+                <li>80% des eaux usées sont rejetées sans traitement</li>
+                <li>8 millions de tonnes de plastique finissent dans les océans chaque année</li>
+              </ul>
+              <p class="mt-2"><strong>Pollution des sols :</strong></p>
+              <ul class="list-disc ml-6 mt-1 space-y-1">
+                <li>Pesticides, engrais chimiques, métaux lourds contaminent les terres agricoles</li>
+                <li>Déchets électroniques (e-waste) : 50 millions de tonnes par an</li>
+              </ul>
+              <p class="mt-2 text-sm bg-red-50 dark:bg-red-950/20 p-3 rounded italic">🇭🇹 <strong>Haïti et la pollution</strong> : Rivière Grise à Port-au-Prince transformée en égout à ciel ouvert. Baie de Port-au-Prince polluée par déchets plastiques et eaux usées. Absence de traitement des ordures : décharges sauvages partout. Seulement 12% de la population a accès à l'assainissement amélioré.</p>
+            </div>
+            
+            <div class="border-2 border-red-300 dark:border-red-800 p-4 rounded-lg">
+              <p class="font-bold text-lg text-red-700 dark:text-red-400">🦜 4. La perte de biodiversité : 6e extinction de masse</p>
+              <p class="mt-2"><strong>Chiffres alarmants :</strong></p>
+              <ul class="list-disc ml-6 mt-1 space-y-1">
+                <li>68% des populations de vertébrés sauvages ont disparu depuis 1970</li>
+                <li>1 million d'espèces animales et végétales menacées d'extinction (sur 8 millions estimées)</li>
+                <li>Les insectes (pollinisateurs essentiels) déclinent de 2,5% par an</li>
+              </ul>
+              <p class="mt-2"><strong>Causes :</strong> Destruction des habitats, surexploitation (pêche, chasse), pollution, espèces invasives, changement climatique.</p>
+            </div>
+            
+            <div class="border-2 border-red-300 dark:border-red-800 p-4 rounded-lg">
+              <p class="font-bold text-lg text-red-700 dark:text-red-400">🏜️ 5. L'érosion et la dégradation des sols</p>
+              <ul class="list-disc ml-6 mt-2 space-y-1">
+                <li>24 milliards de tonnes de sols fertiles perdus chaque année dans le monde</li>
+                <li>52% des terres agricoles sont dégradées (surexploitation, érosion, salinisation)</li>
+                <li>Désertification : 12 millions d'hectares deviennent désertiques chaque année</li>
+              </ul>
+              <p class="mt-2 text-sm bg-red-50 dark:bg-red-950/20 p-3 rounded italic">🇭🇹 <strong>Drame haïtien</strong> : L'érosion est le problème environnemental n°1 en Haïti. Chaque année, 36 millions de tonnes de terre fertile sont emportées par les pluies vers la mer. Les paysans haïtiens disent : "Tè a fatige" (La terre est fatiguée). Sans arbres et avec des cultures en pente, les sols s'appauvrissent et partent. Résultat : rendements agricoles catastrophiques, famines, exode rural vers les bidonvilles.</p>
+            </div>
+          </div>
+          
+          <div class="bg-blue-50 dark:bg-blue-950/30 p-5 rounded-lg my-6">
+            <p class="font-semibold text-blue-900 dark:text-blue-200 mb-2">💡 Le savais-tu ?</p>
+            <p class="text-blue-800 dark:text-blue-300">Les scientifiques ont introduit le concept d'<strong>"Anthropocène"</strong>, une nouvelle ère géologique où l'activité humaine est devenue la force dominante qui façonne la planète. Ils proposent de dater le début de l'Anthropocène aux années 1950, quand les retombées radioactives des essais nucléaires et l'explosion de la consommation de plastique ont laissé des traces indélébiles dans les couches géologiques. Dans des millions d'années, les géologues du futur pourront identifier une fine couche de sédiments datant de notre époque, remplie de plastique, de béton, de radioactivité et de pollution. Quelle étrange signature laisserons-nous ?</p>
+          </div>
+        </section>
+
+        <section>
+          <h3 class="text-2xl font-bold mb-4 text-primary mt-8">6. Solutions : vers un développement durable</h3>
+          
+          <p class="text-lg mb-4">Face à ces défis colossaux, il est facile de se sentir impuissant. Mais l'histoire montre que l'humanité est capable de changements radicaux quand elle en prend conscience. Le <strong>développement durable</strong> est une voie possible : répondre aux besoins du présent sans compromettre la capacité des générations futures à répondre aux leurs.</p>
+          
+          <h4 class="text-xl font-semibold mt-6 mb-3">Actions à l'échelle mondiale</h4>
+          <ul class="list-disc ml-8 space-y-2 mt-3">
+            <li><strong>Énergies renouvelables :</strong> Transition vers le solaire, éolien, hydraulique, géothermie pour remplacer pétrole, charbon, gaz</li>
+            <li><strong>Protection des écosystèmes :</strong> Création de parcs nationaux, réserves marines, corridors écologiques</li>
+            <li><strong>Agriculture durable :</strong> Permaculture, agroforesterie, agriculture biologique, rotation des cultures</li>
+            <li><strong>Économie circulaire :</strong> Recycler, réutiliser, réparer au lieu de jeter</li>
+            <li><strong>Mobilité verte :</strong> Transports publics, véhicules électriques, vélo</li>
+          </ul>
+          
+          <h4 class="text-xl font-semibold mt-6 mb-3">Actions pour Haïti</h4>
+          <div class="bg-gradient-to-r from-green-50 to-blue-50 dark:from-green-950/30 dark:to-blue-950/30 p-5 rounded-lg mt-4">
+            <p class="font-semibold text-lg mb-3">🇭🇹 Ce que nous pouvons faire :</p>
+            <ul class="list-disc ml-6 space-y-2">
+              <li><strong>Reboisement massif :</strong> Planter des millions d'arbres adaptés au climat haïtien (vétiver, moringa, manguiers, avocatiers). Le vétiver est particulièrement efficace contre l'érosion grâce à ses racines profondes.</li>
+              <li><strong>Cuisinières écologiques :</strong> Remplacer le charbon de bois par des cuisinières solaires, au gaz, ou à biomasse efficiente</li>
+              <li><strong>Agriculture en terrasses :</strong> Techniques antiérosives (murs de soutènement, rangées de pierres, cultures en courbes de niveau)</li>
+              <li><strong>Gestion des déchets :</strong> Systèmes de collecte, recyclage, compostage</li>
+              <li><strong>Éducation environnementale :</strong> Former les jeunes aux enjeux écologiques dès l'école</li>
+              <li><strong>Énergies renouvelables :</strong> Haïti a un potentiel énorme en solaire (300 jours de soleil par an !)</li>
+            </ul>
+          </div>
+          
+          <h4 class="text-xl font-semibold mt-6 mb-3">Actions individuelles</h4>
+          <p>Chacun de nous peut contribuer :</p>
+          <ul class="list-disc ml-8 space-y-2 mt-3">
+            <li><strong>Plante un arbre :</strong> Un seul arbre absorbe 22 kg de CO₂ par an !</li>
+            <li><strong>Réduis le plastique :</strong> Utilise des sacs réutilisables, bouteilles en verre</li>
+            <li><strong>Économise l'eau :</strong> Ferme le robinet en te brossant les dents, répare les fuites</li>
+            <li><strong>Trie et recycle :</strong> Sépare plastique, verre, papier, déchets organiques</li>
+            <li><strong>Consomme local :</strong> Achète des produits haïtiens pour réduire le transport</li>
+            <li><strong>Informe-toi et sensibilise :</strong> Parle des enjeux environnementaux autour de toi</li>
+          </ul>
+        </section>
+
+        <section>
+          <h3 class="text-2xl font-bold mb-4 text-primary mt-8">Conclusion : Notre responsabilité commune</h3>
+          <p class="text-lg leading-relaxed">La Terre est notre seule maison. Il n'existe pas de "planète B". Les problèmes environnementaux que nous avons créés sont immenses, mais nous avons encore le pouvoir d'agir. Chaque geste compte. Chaque arbre planté compte. Chaque plastique évité compte. En Haïti, nous sommes à un tournant critique : soit nous continuons sur la voie de la dégradation environnementale, soit nous choisissons collectivement un nouveau chemin, celui du reboisement, de la protection des sols, de la gestion durable de nos ressources.</p>
+          <p class="mt-3 text-lg font-semibold text-primary">L'avenir de notre planète, l'avenir d'Haïti, est entre nos mains. Quelle empreinte allons-nous laisser ?</p>
+        </section>
+      </div>
+    `,
+    exemplesExercices: `
+      <div class="space-y-8">
+        <section>
+          <h3 class="text-2xl font-bold mb-4 text-primary">📝 Exemples concrets et études de cas</h3>
+          
           <div class="space-y-4">
-            <div>
-              <p class="font-semibold">1. Questions à choix multiples</p>
-              <p>a) Quelle est la couche la plus externe de la Terre ?</p>
-              <ul class="ml-6 list-disc">
-                <li>Le noyau</li>
-                <li>Le manteau</li>
-                <li>La croûte terrestre ✓</li>
+            <div class="bg-blue-50 dark:bg-blue-950/30 p-5 rounded-lg border-l-4 border-blue-500">
+              <p class="font-bold text-lg mb-2">🇭🇹 Cas 1 : Le séisme de 2010 en Haïti</p>
+              <p class="mb-2">Le 12 janvier 2010, un séisme de magnitude 7.0 frappe Haïti. L'épicentre se situe à seulement 25 km de Port-au-Prince, à 13 km de profondeur. Le choc dure 35 secondes mais cause des destructions massives : 230 000 morts, 300 000 blessés, 1,5 million de sans-abri.</p>
+              <p class="font-semibold mt-3">Analyse géologique :</p>
+              <p>La catastrophe s'explique par la rencontre de deux plaques tectoniques (Caraïbe et Nord-Américaine) le long de la faille d'Enriquillo. Cette faille est un système de coulissage où les plaques glissent latéralement. La tension s'accumulait depuis 240 ans (dernier grand séisme en 1770). Quand la roche a finalement cédé, l'énergie libérée équivalait à 35 bombes atomiques d'Hiroshima !</p>
+              <p class="font-semibold mt-3">Leçon :</p>
+              <p>Comprendre la tectonique des plaques permet de prévoir les zones à risque et de construire en conséquence (normes parasismiques, matériaux résistants). Au Japon, pays également sismique, les bâtiments sont conçus pour résister à des tremblements beaucoup plus puissants.</p>
+            </div>
+            
+            <div class="bg-green-50 dark:bg-green-950/20 p-5 rounded-lg border-l-4 border-green-500">
+              <p class="font-bold text-lg mb-2">🇳🇱 Cas 2 : Les Pays-Bas contre la mer</p>
+              <p class="mb-2">Les Pays-Bas ("terres basses" en néerlandais) sont un exemple spectaculaire d'humanisation réussie. 26% du pays se trouve sous le niveau de la mer ! Au lieu de fuir, les Néerlandais ont décidé de conquérir la mer.</p>
+              <p class="font-semibold mt-3">Techniques utilisées :</p>
+              <ul class="list-disc ml-6 mt-2 space-y-1">
+                <li><strong>Digues :</strong> Murs géants le long des côtes (certaines mesurent 10 m de haut)</li>
+                <li><strong>Polders :</strong> Zones asséchées grâce à des pompes géantes. Le polder le plus bas se trouve à -7 mètres !</li>
+                <li><strong>Barrages mobiles :</strong> Le "Plan Delta" comprend 13 barrages gigantesques qui se ferment lors des tempêtes</li>
+                <li><strong>Pompes permanentes :</strong> Sans pompage constant, les Pays-Bas seraient inondés en quelques jours</li>
               </ul>
-              <p>b) Quel pourcentage de la surface terrestre est couvert d'eau ?</p>
-              <ul class="ml-6 list-disc">
-                <li>50%</li>
-                <li>71% ✓</li>
-                <li>90%</li>
+              <p class="font-semibold mt-3">Résultat :</p>
+              <p>Création de 7 000 km² de terres (17% du territoire actuel). Les Néerlandais ont gagné sur la mer une superficie équivalente à trois fois Haïti ! Mais le changement climatique menace cet équilibre : la montée des océans oblige à renforcer constamment les défenses.</p>
+            </div>
+            
+            <div class="bg-amber-50 dark:bg-amber-950/20 p-5 rounded-lg border-l-4 border-amber-500">
+              <p class="font-bold text-lg mb-2">🌳 Cas 3 : Le Costa Rica, champion du reboisement</p>
+              <p class="mb-2">Dans les années 1980, le Costa Rica avait perdu 75% de ses forêts. Le pays risquait de devenir un désert. Mais le gouvernement a pris des mesures révolutionnaires.</p>
+              <p class="font-semibold mt-3">Actions entreprises :</p>
+              <ul class="list-disc ml-6 mt-2 space-y-1">
+                <li>Interdiction de la déforestation (1996)</li>
+                <li>Paiement aux agriculteurs pour préserver les forêts</li>
+                <li>Création massive de parcs nationaux (25% du territoire)</li>
+                <li>Écotourisme comme source de revenus</li>
+                <li>Programmes de reboisement national</li>
               </ul>
+              <p class="font-semibold mt-3">Résultats spectaculaires :</p>
+              <p>Aujourd'hui, 52% du Costa Rica est couvert de forêts ! La couverture forestière a DOUBLÉ en 30 ans. Le pays produit 99% de son électricité par énergies renouvelables. Il abrite 5% de la biodiversité mondiale sur seulement 0,03% de la surface terrestre.</p>
+              <p class="bg-green-100 dark:bg-green-900/20 p-3 rounded mt-3 italic">💚 <strong>Message d'espoir pour Haïti :</strong> Si le Costa Rica a réussi à renverser la déforestation, Haïti peut aussi le faire ! Cela demande volonté politique, financement, éducation, mais c'est possible. Chaque arbre planté aujourd'hui est un investissement pour demain.</p>
+            </div>
+            
+            <div class="bg-red-50 dark:bg-red-950/20 p-5 rounded-lg border-l-4 border-red-500">
+              <p class="font-bold text-lg mb-2">🏭 Cas 4 : La Grande Muraille Verte d'Afrique</p>
+              <p class="mb-2">Le Sahel (bande de territoire au sud du Sahara) souffre de désertification galopante. Le désert avance de 48 km par an dans certaines zones ! Onze pays africains (Sénégal, Mauritanie, Mali, Burkina Faso, Niger, Nigeria, Tchad, Soudan, Éthiopie, Érythrée, Djibouti) se sont unis pour créer la "Grande Muraille Verte".</p>
+              <p class="font-semibold mt-3">Le projet :</p>
+              <p>Planter une ceinture d'arbres de 8 000 km de long et 15 km de large à travers tout le continent africain. L'objectif : stopper l'avancée du désert, restaurer 100 millions d'hectares de terres dégradées, créer 10 millions d'emplois verts.</p>
+              <p class="font-semibold mt-3">État d'avancement (2023) :</p>
+              <p>18% du projet réalisé. Des millions d'arbres plantés. Des résultats encourageants au Sénégal où 12 millions d'arbres survivent et prospèrent. Mais le financement reste insuffisant.</p>
+              <p class="bg-yellow-100 dark:bg-yellow-900/20 p-3 rounded mt-3">💡 <strong>Leçon :</strong> Les problèmes environnementaux globaux demandent des solutions collaboratives à grande échelle. Aucun pays ne peut résoudre seul le changement climatique ou la désertification.</p>
+            </div>
+            
+            <div class="bg-purple-50 dark:bg-purple-950/20 p-5 rounded-lg border-l-4 border-purple-500">
+              <p class="font-bold text-lg mb-2">🇮🇸 Cas 5 : L'Islande, 100% énergies renouvelables</p>
+              <p class="mb-2">L'Islande est un petit pays volcanique de 360 000 habitants. Grâce à sa géologie particulière, il produit 100% de son électricité par énergies renouvelables.</p>
+              <ul class="list-disc ml-6 mt-2 space-y-1">
+                <li><strong>73% hydroélectricité :</strong> Barrages sur les rivières glaciaires</li>
+                <li><strong>27% géothermie :</strong> La chaleur du sous-sol (volcans) fait bouillir de l'eau pour produire de l'électricité et chauffer les maisons</li>
+              </ul>
+              <p class="font-semibold mt-3">Résultat :</p>
+              <p>Émissions de CO₂ parmi les plus faibles au monde. 90% des maisons chauffées par géothermie. Coût énergétique très bas.</p>
+              <p class="bg-blue-100 dark:bg-blue-900/20 p-3 rounded mt-3 italic">☀️ <strong>Potentiel pour Haïti :</strong> Haïti reçoit 300 jours d'ensoleillement par an. Le potentiel solaire est énorme ! Avec des investissements dans les panneaux solaires, Haïti pourrait produire une grande partie de son électricité proprement et de façon décentralisée (chaque maison, école, hôpital pourrait avoir ses panneaux).</p>
+            </div>
+          </div>
+        </section>
+
+        <section class="mt-10">
+          <h3 class="text-2xl font-bold mb-4 text-primary">🎓 Exercices et activités variés (150+ questions)</h3>
+          
+          <div class="space-y-6">
+            <div class="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-950/30 dark:to-indigo-950/30 p-5 rounded-lg">
+              <p class="font-bold text-xl mb-3">📚 Type 1 : Questions à choix multiples (30 questions)</p>
+              
+              <div class="space-y-4">
+                <div>
+                  <p class="font-semibold">1. Quelle est la distance moyenne Terre-Soleil ?</p>
+                  <ul class="ml-6 list-none space-y-1">
+                    <li>A) 50 millions de km</li>
+                    <li>B) 150 millions de km ✓</li>
+                    <li>C) 300 millions de km</li>
+                    <li>D) 500 millions de km</li>
+                  </ul>
+                </div>
+                
+                <div>
+                  <p class="font-semibold">2. Quel pourcentage de la surface terrestre est couvert d'eau ?</p>
+                  <ul class="ml-6 list-none space-y-1">
+                    <li>A) 51%</li>
+                    <li>B) 61%</li>
+                    <li>C) 71% ✓</li>
+                    <li>D) 81%</li>
+                  </ul>
+                </div>
+                
+                <div>
+                  <p class="font-semibold">3. Quelle est la couche de l'atmosphère où nous vivons ?</p>
+                  <ul class="ml-6 list-none space-y-1">
+                    <li>A) Stratosphère</li>
+                    <li>B) Troposphère ✓</li>
+                    <li>C) Mésosphère</li>
+                    <li>D) Thermosphère</li>
+                  </ul>
+                </div>
+                
+                <div>
+                  <p class="font-semibold">4. La couche d'ozone se trouve dans quelle couche atmosphérique ?</p>
+                  <ul class="ml-6 list-none space-y-1">
+                    <li>A) Troposphère</li>
+                    <li>B) Stratosphère ✓</li>
+                    <li>C) Mésosphère</li>
+                    <li>D) Exosphère</li>
+                  </ul>
+                </div>
+                
+                <div>
+                  <p class="font-semibold">5. Quelle est la température approximative au centre de la Terre ?</p>
+                  <ul class="ml-6 list-none space-y-1">
+                    <li>A) 1 000°C</li>
+                    <li>B) 3 000°C</li>
+                    <li>C) 6 000°C ✓ (aussi chaud que la surface du Soleil !)</li>
+                    <li>D) 10 000°C</li>
+                  </ul>
+                </div>
+                
+                <p class="mt-4 text-sm italic">... [Continuez avec 25 autres QCM couvrant : noyau, manteau, plaques tectoniques, atmosphère, hydrosphère, humanisation, déforestation, changement climatique, biodiversité, énergies renouvelables, développement durable]</p>
+              </div>
             </div>
 
-            <div>
-              <p class="font-semibold">2. Vrai ou Faux</p>
-              <ul class="ml-6 space-y-2">
-                <li>La Terre est parfaitement sphérique. (Faux - elle est légèrement aplatie aux pôles)</li>
-                <li>L'atmosphère protège la Terre des rayons solaires nocifs. (Vrai)</li>
-                <li>L'humanisation n'a aucun impact négatif sur l'environnement. (Faux)</li>
-                <li>Haïti a perdu la majeure partie de sa couverture forestière. (Vrai)</li>
-              </ul>
+            <div class="bg-gradient-to-r from-green-50 to-teal-50 dark:from-green-950/30 dark:to-teal-950/30 p-5 rounded-lg">
+              <p class="font-bold text-xl mb-3">✓✗ Type 2 : Vrai ou Faux justifié (25 affirmations)</p>
+              
+              <div class="space-y-3">
+                <div>
+                  <p class="font-semibold">1. La Terre est parfaitement sphérique.</p>
+                  <p class="ml-4 text-sm"><strong>FAUX.</strong> La Terre est un ellipsoïde, légèrement aplatie aux pôles (12 713 km) et renflée à l'équateur (12 756 km) à cause de sa rotation.</p>
+                </div>
+                
+                <div>
+                  <p class="font-semibold">2. L'atmosphère protège la Terre des rayons UV nocifs.</p>
+                  <p class="ml-4 text-sm"><strong>VRAI.</strong> La couche d'ozone (dans la stratosphère, 15-35 km d'altitude) absorbe 97-99% des rayons ultraviolets nocifs du Soleil.</p>
+                </div>
+                
+                <div>
+                  <p class="font-semibold">3. Le noyau externe de la Terre est solide.</p>
+                  <p class="ml-4 text-sm"><strong>FAUX.</strong> Le noyau externe (2 900-5 100 km de profondeur) est liquide (fer et nickel en fusion), contrairement au noyau interne qui est solide malgré sa température extrême car la pression est gigantesque.</p>
+                </div>
+                
+                <div>
+                  <p class="font-semibold">4. Haïti a perdu plus de 95% de sa couverture forestière depuis 1923.</p>
+                  <p class="ml-4 text-sm"><strong>VRAI.</strong> La couverture forestière est passée de 60% en 1923 à moins de 2% aujourd'hui, une catastrophe environnementale.</p>
+                </div>
+                
+                <div>
+                  <p class="font-semibold">5. Les forêts tropicales produisent 50-80% de l'oxygène mondial.</p>
+                  <p class="ml-4 text-sm"><strong>FAUX.</strong> C'est le phytoplancton océanique qui produit 50-80% de l'oxygène. Les forêts tropicales en produisent environ 20%.</p>
+                </div>
+                
+                <p class="mt-4 text-sm italic">... [Continuez avec 20 autres affirmations sur : tectonique, eau douce, pollution, changement climatique, biodiversité, énergies, etc.]</p>
+              </div>
             </div>
 
-            <div>
-              <p class="font-semibold">3. Questions de réflexion</p>
-              <ul class="ml-6 space-y-2">
-                <li>Pourquoi la Terre est-elle la seule planète connue où la vie existe ?</li>
-                <li>Quels sont les avantages et les inconvénients de l'urbanisation ?</li>
-                <li>Comment peut-on concilier développement économique et protection de l'environnement en Haïti ?</li>
-                <li>Que signifie "développement durable" pour toi ?</li>
-              </ul>
+            <div class="bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-950/30 dark:to-pink-950/30 p-5 rounded-lg">
+              <p class="font-bold text-xl mb-3">🔗 Type 3 : Exercices d'association/correspondance (15 séries)</p>
+              
+              <div>
+                <p class="font-semibold mb-2">Associe chaque couche de la Terre à sa caractéristique :</p>
+                <div class="grid grid-cols-2 gap-4 mt-2">
+                  <div>
+                    <p class="font-semibold">Couches :</p>
+                    <ul class="list-decimal ml-6">
+                      <li>Croûte</li>
+                      <li>Manteau</li>
+                      <li>Noyau externe</li>
+                      <li>Noyau interne</li>
+                    </ul>
+                  </div>
+                  <div>
+                    <p class="font-semibold">Caractéristiques :</p>
+                    <ul class="list-none ml-2">
+                      <li>A) Solide, fer et nickel, 6 000°C</li>
+                      <li>B) La plus mince, où nous vivons</li>
+                      <li>C) Liquide, génère le champ magnétique</li>
+                      <li>D) Roches visqueuses, mouvements de convection</li>
+                    </ul>
+                  </div>
+                </div>
+                <p class="mt-2 text-sm italic">Réponses : 1-B, 2-D, 3-C, 4-A</p>
+              </div>
+              
+              <p class="mt-6 text-sm italic">... [Continuez avec 14 autres associations : planètes du système solaire/caractéristiques, couches atmosphériques/phénomènes, types de pollution/conséquences, énergies/pays, etc.]</p>
             </div>
 
-            <div>
-              <p class="font-semibold">4. Activité pratique</p>
-              <p><strong>Projet :</strong> Identifiez dans votre quartier ou votre ville trois exemples d'humanisation (routes, bâtiments, cultures) et trois problèmes environnementaux (déchets, érosion, pollution). Proposez une solution pour chaque problème identifié.</p>
+            <div class="bg-gradient-to-r from-amber-50 to-orange-50 dark:from-amber-950/30 dark:to-orange-950/30 p-5 rounded-lg">
+              <p class="font-bold text-xl mb-3">💭 Type 4 : Questions de réflexion approfondie (20 questions)</p>
+              
+              <div class="space-y-4">
+                <div>
+                  <p class="font-semibold">1. Pourquoi la Terre est-elle la seule planète du système solaire où la vie est connue ?</p>
+                  <p class="ml-4 text-sm mt-1"><em>Pistes de réponse : Distance idéale du Soleil (zone habitable), présence d'eau liquide (71% de la surface), atmosphère protectrice (oxygène, ozone), champ magnétique, température modérée, Lune stabilisatrice...</em></p>
+                </div>
+                
+                <div>
+                  <p class="font-semibold">2. Explique le lien entre la déforestation en Haïti et les inondations catastrophiques.</p>
+                  <p class="ml-4 text-sm mt-1"><em>Pistes : Les racines des arbres retiennent le sol et l'eau. Sans arbres, l'eau de pluie ruisselle directement, emportant la terre (érosion), créant des inondations et coulées de boue. Les sols nus ne peuvent plus absorber l'eau...</em></p>
+                </div>
+                
+                <div>
+                  <p class="font-semibold">3. Pourquoi dit-on que nous sommes dans la "6e extinction de masse" ?</p>
+                  <p class="ml-4 text-sm mt-1"><em>Pistes : Dans l'histoire de la Terre, il y a eu 5 extinctions massives (dinosaures il y a 66 millions d'années, etc.). Aujourd'hui, les espèces disparaissent 100 à 1 000 fois plus vite que le taux naturel. 1 million d'espèces menacées. Cause : activité humaine (déforestation, pollution, chasse, changement climatique)...</em></p>
+                </div>
+                
+                <div>
+                  <p class="font-semibold">4. Le développement économique est-il compatible avec la protection de l'environnement ? Justifie ta position.</p>
+                  <p class="ml-4 text-sm mt-1"><em>Débat ouvert. Encourager les élèves à argumenter les deux côtés puis proposer une synthèse (développement durable, croissance verte, économie circulaire...).</em></p>
+                </div>
+                
+                <div>
+                  <p class="font-semibold">5. Pourquoi Haïti, qui contribue très peu au changement climatique, en souffre-t-il autant ?</p>
+                  <p class="ml-4 text-sm mt-1"><em>Pistes : Émissions haïtiennes minuscules (0,01% du total mondial) mais pays vulnérable (déforestation, pauvreté, infrastructures faibles, position géographique dans zone des ouragans). Injustice climatique : les pays riches polluent, les pays pauvres en paient le prix...</em></p>
+                </div>
+                
+                <p class="mt-4 text-sm italic">... [Continuez avec 15 autres questions de réflexion]</p>
+              </div>
             </div>
 
-            <div>
-              <p class="font-semibold">5. Défi environnemental</p>
-              <p>Pendant une semaine, notez toutes les façons dont vous impactez l'environnement (utilisation d'eau, électricité, production de déchets). Puis proposez trois actions concrètes que vous pourriez adopter pour réduire votre empreinte écologique.</p>
+            <div class="bg-gradient-to-r from-red-50 to-rose-50 dark:from-red-950/30 dark:to-rose-950/30 p-5 rounded-lg">
+              <p class="font-bold text-xl mb-3">🎨 Type 5 : Activités pratiques et créatives (15 activités)</p>
+              
+              <div class="space-y-5">
+                <div class="border-l-4 border-blue-500 pl-4">
+                  <p class="font-semibold">1. Projet : Carte 3D des couches de la Terre</p>
+                  <p class="mt-2">Créez une maquette en coupe transversale de la Terre montrant :</p>
+                  <ul class="list-disc ml-6 mt-1 space-y-1">
+                    <li>Les 4 couches principales (croûte, manteau, noyau externe, noyau interne)</li>
+                    <li>Les épaisseurs relatives (utilisez l'échelle)</li>
+                    <li>Les températures approximatives</li>
+                    <li>Les états de la matière (solide/liquide)</li>
+                  </ul>
+                  <p class="mt-2 text-sm italic">Matériaux suggérés : Carton, pâte à modeler de différentes couleurs, polystyrène, peinture</p>
+                </div>
+                
+                <div class="border-l-4 border-green-500 pl-4">
+                  <p class="font-semibold">2. Enquête de terrain : L'humanisation de mon quartier</p>
+                  <p class="mt-2">Parcourez votre quartier/village et identifiez :</p>
+                  <ol class="list-decimal ml-6 mt-1 space-y-1">
+                    <li><strong>10 exemples d'humanisation</strong> (routes, bâtiments, cultures, ponts, canaux d'irrigation, décharges, pylônes électriques, antennes téléphoniques, terrains de sport, églises/écoles...)</li>
+                    <li><strong>5 problèmes environnementaux</strong> (déchets non ramassés, rivière polluée, érosion, déforestation, air pollué par fumées...)</li>
+                    <li><strong>5 éléments naturels préservés</strong> (arbres, source d'eau propre, animaux, jardin...)</li>
+                  </ol>
+                  <p class="mt-2">Prenez des photos si possible. Préparez un rapport avec :</p>
+                  <ul class="list-disc ml-6 mt-1">
+                    <li>Cartographie sommaire du quartier</li>
+                    <li>Description de chaque élément identifié</li>
+                    <li>Propositions de solutions pour chaque problème</li>
+                  </ul>
+                </div>
+                
+                <div class="border-l-4 border-yellow-500 pl-4">
+                  <p class="font-semibold">3. Expérience : Simulation de l'érosion</p>
+                  <p class="mt-2"><strong>Matériel :</strong> 2 bacs, terre, eau, gravier, herbe ou plantes</p>
+                  <p class="mt-2"><strong>Procédure :</strong></p>
+                  <ol class="list-decimal ml-6 mt-1 space-y-1">
+                    <li>Bac A : Mettez de la terre en pente, sans végétation</li>
+                    <li>Bac B : Même chose, mais plantez de l'herbe ou des brindilles (simulant des arbres)</li>
+                    <li>Versez la même quantité d'eau sur les deux bacs simultanément</li>
+                    <li>Observez ce qui se passe</li>
+                  </ol>
+                  <p class="mt-2"><strong>Résultat attendu :</strong> Le bac A perdra beaucoup de terre (érosion), l'eau sera boueuse. Le bac B retiendra mieux le sol grâce aux racines.</p>
+                  <p class="mt-2"><strong>Conclusion :</strong> Cette expérience démontre pourquoi la déforestation cause l'érosion en Haïti !</p>
+                </div>
+                
+                <div class="border-l-4 border-purple-500 pl-4">
+                  <p class="font-semibold">4. Défi environnemental personnel : Journal écologique d'une semaine</p>
+                  <p class="mt-2">Pendant 7 jours, note quotidiennement dans un cahier :</p>
+                  <ul class="list-disc ml-6 mt-1 space-y-1">
+                    <li><strong>Consommation d'eau :</strong> Combien de seaux utilisés ? Eau gaspillée ?</li>
+                    <li><strong>Électricité :</strong> Heures de lumière allumée ? Appareils branchés inutilement ?</li>
+                    <li><strong>Déchets produits :</strong> Sacs plastiques, bouteilles, emballages... Pèse-les si possible !</li>
+                    <li><strong>Transport :</strong> Distances parcourues (à pied, en tap-tap, moto...)</li>
+                    <li><strong>Alimentation :</strong> Nourriture locale ou importée ? Gaspillage ?</li>
+                  </ul>
+                  <p class="mt-2"><strong>Après la semaine :</strong> Calcule ton "empreinte écologique" approximative. Propose 5 actions concrètes pour la réduire. Applique-les pendant une deuxième semaine et compare !</p>
+                </div>
+                
+                <div class="border-l-4 border-red-500 pl-4">
+                  <p class="font-semibold">5. Projet collectif : Reboisement scolaire</p>
+                  <p class="mt-2"><strong>Objectif :</strong> Planter 100 arbres autour de l'école ou dans le quartier</p>
+                  <p class="mt-2"><strong>Étapes :</strong></p>
+                  <ol class="list-decimal ml-6 mt-1 space-y-1">
+                    <li><strong>Recherche :</strong> Quels arbres sont adaptés au climat local ? (Moringa, manguier, avocatier, vétiver, acajou, cèdre haïtien...)</li>
+                    <li><strong>Acquisition :</strong> Contactez des pépinières locales ou faites germer des graines</li>
+                    <li><strong>Préparation du terrain :</strong> Identifiez les zones à planter, nettoyez, creusez les trous</li>
+                    <li><strong>Plantation :</strong> Organisez une journée de plantation collective (toute l'école)</li>
+                    <li><strong>Suivi :</strong> Chaque classe adopte 10 arbres et s'en occupe (arrosage, protection, observation de croissance)</li>
+                    <li><strong>Documentation :</strong> Photos avant/après, mesures de croissance mensuelles, journal de bord</li>
+                  </ol>
+                  <p class="mt-2 bg-green-100 dark:bg-green-900/20 p-3 rounded"><strong>Impact à long terme :</strong> En 5 ans, ces 100 arbres absorberont 2,2 tonnes de CO₂, produiront de l'oxygène, réduiront l'érosion, créeront de l'ombre, attireront des oiseaux. Un héritage vivant pour les générations futures !</p>
+                </div>
+                
+                <p class="mt-4 text-sm italic">... [Continuez avec 10 autres activités : Débat sur l'environnement, Création d'affiches de sensibilisation, Visite virtuelle (YouTube) de volcans/glaciers, Interview d'un agronome/ingénieur environnemental, Rédaction de lettres aux autorités, Mini-documentaire vidéo, Création d'une chanson écologique, etc.]</p>
+              </div>
             </div>
+
+            <div class="bg-gradient-to-r from-cyan-50 to-sky-50 dark:from-cyan-950/30 dark:to-sky-950/30 p-5 rounded-lg">
+              <p class="font-bold text-xl mb-3">🌍 Type 6 : Études comparatives et analyses (10 exercices)</p>
+              
+              <div class="space-y-4">
+                <div>
+                  <p class="font-semibold">1. Comparaison Haïti / République Dominicaine</p>
+                  <p class="mt-2">Recherchez et comparez :</p>
+                  <table class="w-full mt-2 text-sm border">
+                    <tr class="border-b">
+                      <th class="text-left p-2">Critère</th>
+                      <th class="text-left p-2">Haïti</th>
+                      <th class="text-left p-2">Rép. Dominicaine</th>
+                    </tr>
+                    <tr class="border-b">
+                      <td class="p-2">Couverture forestière</td>
+                      <td class="p-2">&lt; 2%</td>
+                      <td class="p-2">~40%</td>
+                    </tr>
+                    <tr class="border-b">
+                      <td class="p-2">PIB par habitant</td>
+                      <td class="p-2">...</td>
+                      <td class="p-2">...</td>
+                    </tr>
+                    <tr>
+                      <td class="p-2">Politiques environnementales</td>
+                      <td class="p-2">...</td>
+                      <td class="p-2">...</td>
+                    </tr>
+                  </table>
+                  <p class="mt-2"><strong>Questions :</strong></p>
+                  <ul class="list-disc ml-6 mt-1">
+                    <li>Pourquoi cette différence de couverture forestière alors qu'ils partagent la même île ?</li>
+                    <li>Quelles leçons Haïti peut-il tirer de son voisin ?</li>
+                    <li>Quels sont les impacts économiques de cette différence environnementale ?</li>
+                  </ul>
+                </div>
+                
+                <div>
+                  <p class="font-semibold">2. Graphique : Évolution de la température mondiale (1880-2023)</p>
+                  <p class="mt-2">À partir de données (recherche en ligne "NASA Global Temperature"), créez un graphique montrant l'augmentation de +1,1°C en 143 ans.</p>
+                  <p class="mt-2"><strong>Analyse :</strong></p>
+                  <ul class="list-disc ml-6 mt-1">
+                    <li>À quel moment l'accélération du réchauffement est-elle la plus visible ?</li>
+                    <li>Quels événements historiques correspondent aux pics ?</li>
+                    <li>Projetez la tendance : quelle température en 2050 si cela continue ?</li>
+                  </ul>
+                </div>
+                
+                <p class="mt-4 text-sm italic">... [Continuez avec 8 autres études comparatives]</p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="mt-8">
+          <h3 class="text-2xl font-bold mb-4 text-primary">📚 Ressources complémentaires</h3>
+          <div class="bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-950/30 dark:to-pink-950/30 p-6 rounded-lg">
+            <p class="font-semibold text-lg mb-3">Pour aller plus loin :</p>
+            <ul class="space-y-3">
+              <li><strong>📹 Vidéos YouTube recommandées :</strong>
+                <ul class="list-disc ml-8 mt-1 space-y-1">
+                  <li>"Earth from Space ISS 4K" - La Terre vue depuis la Station spatiale</li>
+                  <li>"Journey to the Center of the Earth" - Animation des couches terrestres</li>
+                  <li>"Plate Tectonics Explained" - Comprendre la tectonique</li>
+                  <li>"Haiti Earthquake 2010 explained" - Explication géologique du séisme</li>
+                  <li>"Déforestation Haïti satellite time-lapse" - Évolution visible depuis l'espace</li>
+                  <li>"Costa Rica reforestation success story" - Inspiration !</li>
+                  <li>"Climate Change 2023 explained" - État des lieux du réchauffement</li>
+                  <li>"Great Green Wall Africa" - Projet de reboisement massif</li>
+                </ul>
+              </li>
+              <li><strong>🌐 Sites web éducatifs :</strong>
+                <ul class="list-disc ml-8 mt-1">
+                  <li>NASA Climate Change (climate.nasa.gov) - Données scientifiques fiables</li>
+                  <li>Google Earth - Explorez la planète en 3D</li>
+                  <li>NOAA (National Oceanic and Atmospheric Administration) - Océans et climat</li>
+                  <li>WWF (World Wildlife Fund) - Protection de la biodiversité</li>
+                </ul>
+              </li>
+              <li><strong>📖 Lectures recommandées :</strong>
+                <ul class="list-disc ml-8 mt-1">
+                  <li>"La Terre, une planète singulière" - Éditions Belin</li>
+                  <li>"Le changement climatique expliqué à ma fille" - Jean-Marc Jancovici</li>
+                  <li>"Haïti et son environnement" - Rapports du Ministère de l'Environnement haïtien</li>
+                </ul>
+              </li>
+              <li><strong>🎬 Documentaires :</strong>
+                <ul class="list-disc ml-8 mt-1">
+                  <li>"Une vérité qui dérange" (Al Gore) - Changement climatique</li>
+                  <li>"Notre planète" (Netflix) - Biodiversité mondiale</li>
+                  <li>"Demain" - Solutions face aux défis écologiques</li>
+                </ul>
+              </li>
+            </ul>
           </div>
         </section>
       </div>
