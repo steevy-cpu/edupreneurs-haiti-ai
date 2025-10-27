@@ -1241,5 +1241,309 @@ export const sciencesSocialesLessons7AF: SciencesSocialesLesson[] = [
         </section>
       </div>
     `
+  },
+
+  // Leçon 8: Le système solaire et la Terre
+  {
+    id: "systeme-solaire-terre",
+    title: "Le système solaire et la Terre",
+    mois: "Février",
+    objectif: "Comprendre la place de la Terre dans le système solaire et les caractéristiques de notre planète.",
+    introduction: `
+      <div class="space-y-4">
+        <p>La Terre n'est pas seule dans l'univers. Elle fait partie d'un système planétaire appelé le système solaire, composé du Soleil et de tous les objets qui gravitent autour de lui. Ce système comprend 8 planètes, dont la Terre est la troisième à partir du Soleil.</p>
+        <p>Comprendre notre système solaire nous aide à apprécier la position unique de notre planète, la seule connue à abriter la vie. Cette connaissance est essentielle pour saisir les phénomènes naturels qui affectent notre quotidien.</p>
+      </div>
+    `,
+    contenu: `
+      <div class="space-y-6">
+        <section>
+          <h3 class="text-xl font-semibold mb-3 text-foreground">1. Le Soleil : étoile de notre système</h3>
+          <p class="text-foreground">Le Soleil est une étoile de taille moyenne située au centre de notre système solaire.</p>
+          <ul class="list-disc ml-6 space-y-2">
+            <li><strong>Composition :</strong> 73% d'hydrogène, 25% d'hélium</li>
+            <li><strong>Température de surface :</strong> 5 500°C</li>
+            <li><strong>Âge :</strong> 4,6 milliards d'années</li>
+            <li><strong>Rôle :</strong> Source de lumière et de chaleur pour toutes les planètes</li>
+          </ul>
+          <div class="bg-primary/5 p-4 rounded-lg mt-3">
+            <p class="text-sm text-foreground italic">
+              🌟 [Image suggérée : Le Soleil avec ses éruptions solaires]
+            </p>
+          </div>
+        </section>
+
+        <section>
+          <h3 class="text-xl font-semibold mb-3 text-foreground">2. Les huit planètes</h3>
+          <p class="text-foreground mb-3">Voici les planètes du système solaire, de la plus proche à la plus éloignée du Soleil :</p>
+          
+          <h4 class="font-semibold mt-4 mb-2 text-foreground">Planètes rocheuses (telluriques)</h4>
+          <ul class="list-disc ml-6 space-y-2 text-foreground">
+            <li><strong>Mercure :</strong> La plus petite et la plus proche du Soleil</li>
+            <li><strong>Vénus :</strong> Surnommée "l'étoile du berger", très chaude (465°C)</li>
+            <li><strong>Terre :</strong> Notre planète bleue, seule à avoir de la vie</li>
+            <li><strong>Mars :</strong> La planète rouge, avec ses déserts et canyons</li>
+          </ul>
+
+          <h4 class="font-semibold mt-4 mb-2 text-foreground">Planètes géantes gazeuses</h4>
+          <ul class="list-disc ml-6 space-y-2 text-foreground">
+            <li><strong>Jupiter :</strong> La plus grande planète, avec sa Grande Tache Rouge</li>
+            <li><strong>Saturne :</strong> Célèbre pour ses anneaux spectaculaires</li>
+            <li><strong>Uranus :</strong> Inclinée sur le côté, de couleur bleu-vert</li>
+            <li><strong>Neptune :</strong> La planète la plus éloignée, bleu profond</li>
+          </ul>
+          <div class="bg-primary/5 p-4 rounded-lg mt-3">
+            <p class="text-sm text-foreground italic">
+              🎥 [Vidéo suggérée : Animation montrant les orbites des planètes]
+            </p>
+          </div>
+        </section>
+
+        <section>
+          <h3 class="text-xl font-semibold mb-3 text-foreground">3. La Terre : une planète unique</h3>
+          <p class="text-foreground mb-3">La Terre possède des caractéristiques qui la rendent unique dans le système solaire :</p>
+          <ul class="list-disc ml-6 space-y-2 text-foreground">
+            <li><strong>Atmosphère respirable :</strong> 78% d'azote, 21% d'oxygène</li>
+            <li><strong>Eau liquide :</strong> Couvre 71% de la surface</li>
+            <li><strong>Température modérée :</strong> Moyenne de 15°C</li>
+            <li><strong>Champ magnétique :</strong> Protège des radiations solaires</li>
+            <li><strong>Distance idéale du Soleil :</strong> Ni trop chaud, ni trop froid (zone habitable)</li>
+            <li><strong>La Lune :</strong> Satellite naturel qui stabilise l'axe de rotation</li>
+          </ul>
+        </section>
+
+        <section>
+          <h3 class="text-xl font-semibold mb-3 text-foreground">4. Autres corps célestes</h3>
+          <ul class="list-disc ml-6 space-y-2 text-foreground">
+            <li><strong>Planètes naines :</strong> Pluton, Cérès, Éris</li>
+            <li><strong>Astéroïdes :</strong> Rochers rocheux entre Mars et Jupiter</li>
+            <li><strong>Comètes :</strong> Boules de glace et de poussière</li>
+            <li><strong>Satellites naturels :</strong> Lunes qui orbitent autour des planètes</li>
+          </ul>
+        </section>
+
+        <section>
+          <h3 class="text-xl font-semibold mb-3 text-foreground">5. La révolution et la rotation terrestres</h3>
+          <p class="text-foreground mb-3"><strong>Révolution :</strong> Mouvement de la Terre autour du Soleil</p>
+          <ul class="list-disc ml-6 space-y-2 text-foreground">
+            <li>Durée : 365 jours et 1/4 (une année)</li>
+            <li>Cause les saisons</li>
+            <li>Orbite elliptique de 150 millions de km</li>
+          </ul>
+
+          <p class="text-foreground mt-4 mb-3"><strong>Rotation :</strong> Mouvement de la Terre sur elle-même</p>
+          <ul class="list-disc ml-6 space-y-2 text-foreground">
+            <li>Durée : 24 heures (un jour)</li>
+            <li>Cause l'alternance jour/nuit</li>
+            <li>Rotation d'ouest en est</li>
+          </ul>
+        </section>
+      </div>
+    `,
+    exemplesExercices: `
+      <div class="space-y-6">
+        <section>
+          <h3 class="text-xl font-semibold mb-3 text-foreground">Exemples concrets</h3>
+          <div class="bg-primary/5 border-l-4 border-primary p-4 rounded">
+            <p class="text-foreground"><strong>Exemple 1 :</strong> Le Soleil est si grand qu'on pourrait y placer 1,3 million de Terres !</p>
+            <p class="text-foreground mt-2"><strong>Exemple 2 :</strong> Si le Soleil était gros comme un ballon de football, la Terre serait de la taille d'une tête d'épingle.</p>
+            <p class="text-foreground mt-2"><strong>Exemple 3 :</strong> La lumière du Soleil met 8 minutes pour atteindre la Terre.</p>
+          </div>
+        </section>
+        
+        <section>
+          <h3 class="text-xl font-semibold mb-3 text-foreground">Exercices pratiques</h3>
+          <div class="space-y-4">
+            <div>
+              <p class="font-semibold text-foreground">1. Maquette du système solaire</p>
+              <p class="text-foreground">Créez une maquette avec des balles de différentes tailles représentant les planètes. Respectez l'ordre des planètes.</p>
+            </div>
+            <div>
+              <p class="font-semibold text-foreground">2. Journal d'observation</p>
+              <p class="text-foreground">Pendant une semaine, dessinez la position du Soleil dans le ciel le matin, à midi et le soir. Que remarques-tu ?</p>
+            </div>
+          </div>
+        </section>
+      </div>
+    `
+  },
+
+  // Leçon 9: Les civilisations anciennes
+  {
+    id: "civilisations-anciennes",
+    title: "Les civilisations anciennes",
+    mois: "Mars",
+    objectif: "Découvrir les grandes civilisations anciennes et comprendre leur héritage.",
+    introduction: `
+      <div class="space-y-4">
+        <p>Bien avant notre époque moderne, de grandes civilisations se sont développées partout dans le monde. Ces sociétés ont construit des villes impressionnantes, développé l'écriture, créé des systèmes politiques complexes et produit des œuvres d'art remarquables.</p>
+        <p>Étudier ces civilisations nous aide à comprendre comment les sociétés humaines se sont organisées et évoluées, et comment leurs innovations continuent d'influencer notre monde aujourd'hui.</p>
+      </div>
+    `,
+    contenu: `
+      <div class="space-y-6">
+        <section>
+          <h3 class="text-xl font-semibold mb-3 text-foreground">1. La Mésopotamie : berceau de la civilisation</h3>
+          <p class="text-foreground mb-3">Située entre les fleuves Tigre et Euphrate (Irak actuel), c'est l'une des premières civilisations (3500 av. J.-C.).</p>
+          <ul class="list-disc ml-6 space-y-2 text-foreground">
+            <li><strong>Invention de l'écriture cunéiforme :</strong> Première forme d'écriture</li>
+            <li><strong>Code d'Hammourabi :</strong> Premier code de lois écrit</li>
+            <li><strong>Cités-États :</strong> Babylone, Our, Ninive</li>
+            <li><strong>Innovations :</strong> Roue, irrigation, astronomie, mathématiques</li>
+          </ul>
+          <div class="bg-primary/5 p-4 rounded-lg mt-3">
+            <p class="text-sm text-foreground italic">
+              📸 [Image suggérée : Tablette d'argile avec écriture cunéiforme]
+            </p>
+          </div>
+        </section>
+
+        <section>
+          <h3 class="text-xl font-semibold mb-3 text-foreground">2. L'Égypte ancienne</h3>
+          <p class="text-foreground mb-3">Civilisation développée le long du Nil (3100 av. J.-C. - 30 av. J.-C.).</p>
+          <ul class="list-disc ml-6 space-y-2 text-foreground">
+            <li><strong>Les pharaons :</strong> Rois considérés comme des dieux</li>
+            <li><strong>Pyramides :</strong> Tombeaux monumentaux (Khéops, Khéphren, Mykérinos)</li>
+            <li><strong>Écriture hiéroglyphique :</strong> Système d'écriture sacrée</li>
+            <li><strong>Momification :</strong> Préservation des corps</li>
+            <li><strong>Sciences :</strong> Médecine avancée, calendrier de 365 jours</li>
+            <li><strong>Agriculture :</strong> Maîtrise de l'irrigation grâce aux crues du Nil</li>
+          </ul>
+          <div class="bg-secondary/10 p-4 rounded-lg mt-3">
+            <h4 class="font-semibold mb-2 text-foreground">💡 Le savais-tu ?</h4>
+            <p class="text-foreground">
+              La Grande Pyramide de Khéops est restée le plus haut bâtiment du monde pendant 3 800 ans !
+            </p>
+          </div>
+        </section>
+
+        <section>
+          <h3 class="text-xl font-semibold mb-3 text-foreground">3. La Grèce antique</h3>
+          <p class="text-foreground mb-3">Civilisation développée dans la péninsule balkanique et les îles de la mer Égée (800-146 av. J.-C.).</p>
+          <ul class="list-disc ml-6 space-y-2 text-foreground">
+            <li><strong>Démocratie :</strong> Invention à Athènes (gouvernement par le peuple)</li>
+            <li><strong>Philosophie :</strong> Socrate, Platon, Aristote</li>
+            <li><strong>Jeux Olympiques :</strong> Créés en 776 av. J.-C.</li>
+            <li><strong>Théâtre :</strong> Tragédies et comédies</li>
+            <li><strong>Sciences :</strong> Mathématiques (Pythagore), géométrie (Euclide)</li>
+            <li><strong>Art :</strong> Sculptures, architecture (Parthénon)</li>
+          </ul>
+        </section>
+
+        <section>
+          <h3 class="text-xl font-semibold mb-3 text-foreground">4. L'Empire romain</h3>
+          <p class="text-foreground mb-3">Civilisation qui a dominé le bassin méditerranéen (753 av. J.-C. - 476 ap. J.-C.).</p>
+          <ul class="list-disc ml-6 space-y-2 text-foreground">
+            <li><strong>Organisation :</strong> République puis Empire</li>
+            <li><strong>Droit romain :</strong> Base du droit moderne</li>
+            <li><strong>Armée puissante :</strong> Légions disciplinées</li>
+            <li><strong>Infrastructure :</strong> Routes, aqueducs, ponts</li>
+            <li><strong>Latin :</strong> Langue qui a donné le français, l'espagnol, l'italien</li>
+            <li><strong>Architecture :</strong> Colisée, Forum, Panthéon</li>
+          </ul>
+          <div class="bg-primary/5 p-4 rounded-lg mt-3">
+            <p class="text-sm text-foreground italic">
+              🎥 [Vidéo suggérée : Animation 3D de la Rome antique]
+            </p>
+          </div>
+        </section>
+
+        <section>
+          <h3 class="text-xl font-semibold mb-3 text-foreground">5. Les civilisations asiatiques</h3>
+          
+          <h4 class="font-semibold mt-4 mb-2 text-foreground">A. La Chine ancienne</h4>
+          <ul class="list-disc ml-6 space-y-2 text-foreground">
+            <li><strong>Grande Muraille :</strong> Plus de 6 000 km de fortifications</li>
+            <li><strong>Inventions :</strong> Papier, boussole, poudre à canon, imprimerie</li>
+            <li><strong>Philosophie :</strong> Confucius, Lao Tseu</li>
+            <li><strong>Dynasties impériales :</strong> Qin, Han, Tang, Ming</li>
+          </ul>
+
+          <h4 class="font-semibold mt-4 mb-2 text-foreground">B. L'Inde ancienne</h4>
+          <ul class="list-disc ml-6 space-y-2 text-foreground">
+            <li><strong>Civilisation de l'Indus :</strong> Villes planifiées (Mohenjo-Daro)</li>
+            <li><strong>Religions :</strong> Hindouisme, bouddhisme, jaïnisme</li>
+            <li><strong>Mathématiques :</strong> Invention du zéro, système décimal</li>
+            <li><strong>Littérature :</strong> Védas, Mahabharata</li>
+          </ul>
+        </section>
+
+        <section>
+          <h3 class="text-xl font-semibold mb-3 text-foreground">6. Les civilisations précolombiennes</h3>
+          
+          <h4 class="font-semibold mt-4 mb-2 text-foreground">A. Les Mayas</h4>
+          <ul class="list-disc ml-6 space-y-2 text-foreground">
+            <li><strong>Localisation :</strong> Amérique centrale (Mexique, Guatemala)</li>
+            <li><strong>Calendrier complexe :</strong> Astronomie avancée</li>
+            <li><strong>Écriture glyphique :</strong> Système d'écriture élaboré</li>
+            <li><strong>Architecture :</strong> Pyramides, temples (Chichén Itzá)</li>
+          </ul>
+
+          <h4 class="font-semibold mt-4 mb-2 text-foreground">B. Les Aztèques</h4>
+          <ul class="list-disc ml-6 space-y-2 text-foreground">
+            <li><strong>Capitale :</strong> Tenochtitlan (Mexico actuel)</li>
+            <li><strong>Agriculture :</strong> Chinampas (jardins flottants)</li>
+            <li><strong>Empire puissant :</strong> Domination militaire</li>
+          </ul>
+
+          <h4 class="font-semibold mt-4 mb-2 text-foreground">C. Les Incas</h4>
+          <ul class="list-disc ml-6 space-y-2 text-foreground">
+            <li><strong>Localisation :</strong> Cordillère des Andes (Pérou, Bolivie, Équateur)</li>
+            <li><strong>Machu Picchu :</strong> Cité perchée dans les montagnes</li>
+            <li><strong>Routes :</strong> Réseau routier de 40 000 km</li>
+            <li><strong>Architecture en pierre :</strong> Sans mortier, très résistante</li>
+          </ul>
+        </section>
+
+        <section>
+          <h3 class="text-xl font-semibold mb-3 text-foreground">7. L'héritage des civilisations anciennes</h3>
+          <p class="text-foreground mb-3">Ces civilisations nous ont légué :</p>
+          <ul class="list-disc ml-6 space-y-2 text-foreground">
+            <li><strong>L'écriture :</strong> Base de toute notre connaissance</li>
+            <li><strong>Les mathématiques et sciences :</strong> Fondements de la science moderne</li>
+            <li><strong>Le droit et la politique :</strong> Systèmes juridiques et démocratiques</li>
+            <li><strong>L'architecture :</strong> Techniques de construction</li>
+            <li><strong>L'agriculture :</strong> Domestication des plantes et animaux</li>
+            <li><strong>L'art et la culture :</strong> Inspiration pour les créateurs d'aujourd'hui</li>
+          </ul>
+        </section>
+      </div>
+    `,
+    exemplesExercices: `
+      <div class="space-y-6">
+        <section>
+          <h3 class="text-xl font-semibold mb-3 text-foreground">Exemples concrets</h3>
+          <div class="bg-primary/5 border-l-4 border-primary p-4 rounded">
+            <p class="text-foreground"><strong>Exemple 1 :</strong> Le mot "alphabet" vient du grec "alpha" et "bêta", les deux premières lettres de leur alphabet.</p>
+            <p class="text-foreground mt-2"><strong>Exemple 2 :</strong> Les Romains ont construit des aqueducs pour transporter l'eau sur des dizaines de kilomètres - certains fonctionnent encore aujourd'hui !</p>
+            <p class="text-foreground mt-2"><strong>Exemple 3 :</strong> Le calendrier que nous utilisons vient de l'Égypte ancienne et a été perfectionné par les Romains.</p>
+          </div>
+        </section>
+        
+        <section>
+          <h3 class="text-xl font-semibold mb-3 text-foreground">Exercices pratiques</h3>
+          <div class="space-y-4">
+            <div>
+              <p class="font-semibold text-foreground">1. Projet de recherche</p>
+              <p class="text-foreground">Choisis une civilisation ancienne et crée une affiche présentant :</p>
+              <ul class="ml-6 list-disc text-foreground">
+                <li>Sa localisation géographique</li>
+                <li>Ses principales réalisations</li>
+                <li>Un monument célèbre</li>
+                <li>Son héritage aujourd'hui</li>
+              </ul>
+            </div>
+            <div>
+              <p class="font-semibold text-foreground">2. Ligne du temps</p>
+              <p class="text-foreground">Crée une frise chronologique situant les grandes civilisations anciennes de 4000 av. J.-C. à 500 ap. J.-C.</p>
+            </div>
+            <div>
+              <p class="font-semibold text-foreground">3. Comparaison</p>
+              <p class="text-foreground">Compare deux civilisations anciennes : quels points communs ? Quelles différences ? Utilise un tableau comparatif.</p>
+            </div>
+          </div>
+        </section>
+      </div>
+    `
   }
 ];
