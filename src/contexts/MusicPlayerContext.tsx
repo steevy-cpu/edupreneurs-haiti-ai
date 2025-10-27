@@ -56,7 +56,7 @@ export const MusicPlayerProvider = ({ children }: { children: ReactNode }) => {
       { id: "hOA-2hl1Vbc", title: "Mozart - Eine Kleine Nachtmusik", thumbnail: "https://i.ytimg.com/vi/hOA-2hl1Vbc/hqdefault.jpg" },
       
       // Chopin - Peaceful Piano
-      { id: "NONg06Ee5Wg", title: "Chopin - Piano Paisible pour Étudier", thumbnail: "https://i.ytimg.com/vi/NONg06Ee5Wg/hqdefault.jpg" },
+      { id: "9E6b3swbnWg", title: "Chopin - Nocturne Op. 9 No. 2", thumbnail: "https://i.ytimg.com/vi/9E6b3swbnWg/hqdefault.jpg" },
       { id: "wygy721nzRc", title: "Chopin - Nocturnes Complets", thumbnail: "https://i.ytimg.com/vi/wygy721nzRc/hqdefault.jpg" },
       { id: "EhO_MrRfftU", title: "Chopin - Valses Célèbres", thumbnail: "https://i.ytimg.com/vi/EhO_MrRfftU/hqdefault.jpg" },
       
@@ -68,7 +68,7 @@ export const MusicPlayerProvider = ({ children }: { children: ReactNode }) => {
       // Bach - Deep Focus
       { id: "6JQm5aSjX6g", title: "Bach - Le Clavier Bien Tempéré", thumbnail: "https://i.ytimg.com/vi/6JQm5aSjX6g/hqdefault.jpg" },
       { id: "Nnuq9PXbywA", title: "Bach - Toccata et Fugue en Ré Mineur", thumbnail: "https://i.ytimg.com/vi/Nnuq9PXbywA/hqdefault.jpg" },
-      { id: "pVEEbZn52TY", title: "Bach - Suites pour Violoncelle", thumbnail: "https://i.ytimg.com/vi/pVEEbZn52TY/hqdefault.jpg" },
+      { id: "rrVDViSlw6w", title: "Bach - Air on the G String", thumbnail: "https://i.ytimg.com/vi/rrVDViSlw6w/hqdefault.jpg" },
       
       // Vivaldi - Energizing Baroque
       { id: "GRxofEmo3HA", title: "Vivaldi - Les Quatre Saisons Complet", thumbnail: "https://i.ytimg.com/vi/GRxofEmo3HA/hqdefault.jpg" },
@@ -91,8 +91,8 @@ export const MusicPlayerProvider = ({ children }: { children: ReactNode }) => {
       { id: "FRqfbBM2pQQ", title: "Brahms - Berceuse", thumbnail: "https://i.ytimg.com/vi/FRqfbBM2pQQ/hqdefault.jpg" },
       
       // Schubert - Gentle & Melodic
-      { id: "BY87mfYVT3Y", title: "Schubert - Ave Maria", thumbnail: "https://i.ytimg.com/vi/BY87mfYVT3Y/hqdefault.jpg" },
-      { id: "yxVLGh3ExKs", title: "Schubert - Symphonie Inachevée", thumbnail: "https://i.ytimg.com/vi/yxVLGh3ExKs/hqdefault.jpg" },
+      { id: "2bosouX_d8Y", title: "Schubert - Ave Maria (Version Orchestrale)", thumbnail: "https://i.ytimg.com/vi/2bosouX_d8Y/hqdefault.jpg" },
+      { id: "AuZPHFCzfP4", title: "Schubert - Moment Musical No. 3", thumbnail: "https://i.ytimg.com/vi/AuZPHFCzfP4/hqdefault.jpg" },
       
       // Mixed Study Compilations
       { id: "jgpJVI3tDbY", title: "Mix Classique - 4h Concentration", thumbnail: "https://i.ytimg.com/vi/jgpJVI3tDbY/hqdefault.jpg" },
