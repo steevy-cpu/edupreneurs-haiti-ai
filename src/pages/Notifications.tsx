@@ -451,6 +451,9 @@ export default function Notifications() {
       } = await supabase.auth.getUser();
       if (!user) return;
 
+      setDeleteAllDialogOpen(false);
+      setNotifications([]);
+
       const { error } = await supabase
         .from("notifications")
         .delete()
@@ -461,8 +464,6 @@ export default function Notifications() {
       toast({ 
         title: "Toutes les notifications ont été supprimées",
       });
-
-      await fetchNotifications();
     } catch (error) {
       console.error("Error deleting all notifications:", error);
       toast({ 
@@ -470,8 +471,7 @@ export default function Notifications() {
         description: "Impossible de supprimer les notifications",
         variant: "destructive" 
       });
-    } finally {
-      setDeleteAllDialogOpen(false);
+      await fetchNotifications();
     }
   };
 
