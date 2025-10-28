@@ -6556,54 +6556,482 @@ export const sciencesSocialesLessons7AF: SciencesSocialesLesson[] = [
     mois: "Avril",
     objectif: "Comprendre les caractéristiques climatiques d'Haïti et leurs impacts.",
     introduction: `
-      <p class="text-foreground leading-relaxed">
-        Haïti bénéficie d'un climat tropical, caractérisé par des températures élevées toute l'année et deux saisons distinctes. Ce climat influence directement l'agriculture, le tourisme et le mode de vie des Haïtiens.
-      </p>
+      <div class="space-y-4">
+        <p class="text-lg leading-relaxed">
+          ☀️🌧️ Pourquoi fait-il si chaud en Haïti ? Pourquoi pleut-il autant en mai-juin ? Pourquoi devons-nous craindre les cyclones chaque année ? La réponse : notre CLIMAT ! Le climat, c'est l'ensemble des conditions atmosphériques (température, pluie, vent, humidité) qui caractérisent une région sur une longue période (au moins 30 ans). Il est différent de la météo qui change jour après jour.
+        </p>
+        <p>
+          Haïti possède un <strong>climat tropical</strong>, ce qui signifie qu'il fait chaud toute l'année avec deux saisons principales : une saison des pluies et une saison sèche. Ce climat détermine notre agriculture, notre mode de vie, nos habits, notre alimentation, et même notre architecture !
+        </p>
+        <p class="text-primary font-semibold">
+          🌴 Comprendre notre climat est essentiel pour mieux vivre en Haïti et nous adapter aux défis climatiques actuels (ouragans plus violents, sécheresses prolongées, changement climatique global).
+        </p>
+      </div>
     `,
     contenu: `
-      <section class="space-y-6">
-        <div>
-          <h3 class="text-xl font-semibold mb-3 text-foreground">1. Type de climat</h3>
-          <p class="text-foreground mb-3">Haïti a un <strong>climat tropical humide</strong> avec variations selon l'altitude et l'exposition.</p>
-          <ul class="list-disc ml-6 space-y-2 text-foreground">
-            <li><strong>Températures :</strong> Moyenne de 25-27°C</li>
-            <li><strong>Plaines côtières :</strong> 28-32°C</li>
-            <li><strong>Montagnes :</strong> 15-20°C</li>
-          </ul>
-        </div>
+      <div class="space-y-8">
+        <section>
+          <h3 class="text-2xl font-bold mb-4 text-blue-700 dark:text-blue-400">1. Le climat tropical d'Haïti : caractéristiques générales 🌡️</h3>
+          
+          <div class="bg-gradient-to-r from-yellow-50 to-orange-50 dark:from-yellow-950/30 dark:to-orange-950/30 p-6 rounded-lg mb-6">
+            <h4 class="text-xl font-semibold mb-3">Pourquoi Haïti a-t-il un climat tropical ?</h4>
+            <p class="mb-3">Haïti se situe dans la <strong>zone tropicale</strong>, entre les tropiques du Cancer et du Capricorne, plus précisément entre 18° et 20° de latitude Nord. À cette latitude, le Soleil est presque à la verticale toute l'année, ce qui explique les températures élevées constantes.</p>
+            
+            <p class="font-semibold text-lg mt-4 mb-2">Caractéristiques du climat tropical haïtien :</p>
+            <ul class="list-disc ml-6 space-y-2">
+              <li><strong>Températures élevées toute l'année :</strong> Moyenne annuelle de 25-27°C</li>
+              <li><strong>Faible amplitude thermique :</strong> La différence entre le mois le plus chaud et le plus froid est de seulement 3-4°C</li>
+              <li><strong>Deux saisons bien marquées :</strong> Saison des pluies et saison sèche</li>
+              <li><strong>Humidité élevée :</strong> Surtout pendant la saison des pluies (70-85%)</li>
+              <li><strong>Ensoleillement important :</strong> Environ 8-9 heures de soleil par jour</li>
+            </ul>
+          </div>
 
-        <div>
-          <h3 class="text-xl font-semibold mb-3 text-foreground">2. Les deux saisons</h3>
-          <h4 class="font-semibold mt-3 mb-2 text-foreground">Saison des pluies (avril-novembre)</h4>
-          <ul class="list-disc ml-6 space-y-2 text-foreground">
-            <li>Pluies abondantes</li>
-            <li>Risque d'ouragans (juin-novembre)</li>
-            <li>Températures plus élevées</li>
-          </ul>
+          <div class="grid md:grid-cols-2 gap-4">
+            <div class="bg-blue-50 dark:bg-blue-950/30 p-5 rounded-lg">
+              <h4 class="text-xl font-semibold mb-3">📍 Températures selon les régions</h4>
+              <ul class="space-y-3">
+                <li><strong>Plaines côtières (0-200m) :</strong><br/>28-32°C<br/><em>Ex: Port-au-Prince, Gonaïves, Cap-Haïtien</em></li>
+                <li><strong>Plateaux et collines (200-800m) :</strong><br/>22-26°C<br/><em>Ex: Pétion-Ville, Kenscoff (partie basse)</em></li>
+                <li><strong>Hautes montagnes (>800m) :</strong><br/>15-20°C<br/><em>Ex: Kenscoff (hauteurs), Furcy, Seguin</em></li>
+              </ul>
+              <p class="mt-3 text-sm italic">💡 Plus on monte en altitude, plus il fait frais ! C'est pourquoi les gens riches de Port-au-Prince ont des résidences d'été à Kenscoff pour fuir la chaleur.</p>
+            </div>
 
-          <h4 class="font-semibold mt-3 mb-2 text-foreground">Saison sèche (décembre-mars)</h4>
-          <ul class="list-disc ml-6 space-y-2 text-foreground">
-            <li>Peu de pluies</li>
-            <li>Températures plus fraîches</li>
-            <li>Meilleure période touristique</li>
-          </ul>
-        </div>
+            <div class="bg-amber-50 dark:bg-amber-950/30 p-5 rounded-lg">
+              <h4 class="text-xl font-semibold mb-3">☀️ Record de températures</h4>
+              <ul class="space-y-2">
+                <li><strong>Température maximale enregistrée :</strong> 42°C à Port-au-Prince (été)</li>
+                <li><strong>Température minimale :</strong> 2°C au Pic la Selle (2 680m, en hiver)</li>
+                <li><strong>Mois les plus chauds :</strong> Juillet-août</li>
+                <li><strong>Mois les plus "frais" :</strong> Janvier-février</li>
+              </ul>
+              <p class="mt-3 font-semibold text-amber-900 dark:text-amber-200">❄️ Fait surprenant : Il peut faire si froid en altitude qu'on y voit parfois du GIVRE le matin au Pic la Selle ! Mais jamais de neige.</p>
+            </div>
+          </div>
+        </section>
 
-        <div>
-          <h3 class="text-xl font-semibold mb-3 text-foreground">3. Les ouragans</h3>
-          <p class="text-foreground">Haïti est régulièrement frappé par des cyclones tropicaux qui causent d'importants dégâts.</p>
-        </div>
-      </section>
+        <section>
+          <h3 class="text-2xl font-bold mb-4 text-green-700 dark:text-green-400">2. Les deux saisons d'Haïti 🌧️☀️</h3>
+          
+          <div class="space-y-4">
+            <div class="bg-green-50 dark:bg-green-950/30 p-6 rounded-lg">
+              <h4 class="text-xl font-semibold mb-3">🌧️ A. La saison des pluies (Avril à Novembre)</h4>
+              <p class="mb-3">Appelée "lè lapli" ou "sezon lapli" en créole. Elle se divise en deux périodes :</p>
+              
+              <div class="ml-4 space-y-4">
+                <div>
+                  <p class="font-bold">1️⃣ Première période de pluies : Avril-Juin</p>
+                  <ul class="list-disc ml-6 space-y-1">
+                    <li>Pluies régulières, souvent l'après-midi</li>
+                    <li>Orages courts mais violents</li>
+                    <li>Mai est généralement le mois le plus pluvieux (jusqu'à 250mm de pluie !)</li>
+                  </ul>
+                </div>
+
+                <div>
+                  <p class="font-bold">2️⃣ Petite saison sèche intermédiaire : Juillet</p>
+                  <ul class="list-disc ml-6 space-y-1">
+                    <li>Courte pause dans les pluies (2-3 semaines)</li>
+                    <li>Appelée "veranillo" (petit été)</li>
+                  </ul>
+                </div>
+
+                <div>
+                  <p class="font-bold">3️⃣ Deuxième période de pluies : Août-Novembre</p>
+                  <ul class="list-disc ml-6 space-y-1">
+                    <li>Pluies encore plus abondantes</li>
+                    <li><strong>Saison des cyclones !!!</strong> (pic en septembre-octobre)</li>
+                    <li>Risques d'inondations et de glissements de terrain</li>
+                  </ul>
+                </div>
+              </div>
+
+              <div class="bg-white dark:bg-gray-800 p-4 rounded-lg mt-4">
+                <p class="font-semibold mb-2">🇭🇹 Impact sur la vie quotidienne :</p>
+                <ul class="list-disc ml-6 space-y-1 text-sm">
+                  <li>Routes inondées, circulation difficile</li>
+                  <li>Maisons précaires endommagées</li>
+                  <li>Maladies liées à l'eau (choléra, dengue, malaria)</li>
+                  <li>Agriculture : saison de plantation pour profiter des pluies</li>
+                  <li>Écoles parfois fermées lors d'ouragans</li>
+                </ul>
+              </div>
+            </div>
+
+            <div class="bg-yellow-50 dark:bg-yellow-950/30 p-6 rounded-lg">
+              <h4 class="text-xl font-semibold mb-3">☀️ B. La saison sèche (Décembre à Mars)</h4>
+              <p class="mb-3">Appelée "sezon fredi" (saison fraîche) ou "sezon sèk" (saison sèche). La plus agréable de l'année !</p>
+              
+              <ul class="list-disc ml-6 space-y-2 mb-4">
+                <li><strong>Très peu de pluies :</strong> Parfois aucune pluie pendant des semaines</li>
+                <li><strong>Températures plus supportables :</strong> Nuits fraîches, journées chaudes mais ventilées</li>
+                <li><strong>Ciel bleu :</strong> Idéal pour les activités extérieures</li>
+                <li><strong>Alizés :</strong> Vents constants de l'est qui rafraîchissent</li>
+              </ul>
+
+              <div class="bg-white dark:bg-gray-800 p-4 rounded-lg">
+                <p class="font-semibold mb-2">🇭🇹 Impact sur la vie quotidienne :</p>
+                <ul class="list-disc ml-6 space-y-1 text-sm">
+                  <li>Meilleure période touristique : Carnaval, Pâques</li>
+                  <li>Agriculture : récoltes des cultures plantées pendant la saison des pluies</li>
+                  <li>Sécheresse dans certaines régions (Artibonite, Nord-Ouest)</li>
+                  <li>Pénurie d'eau potable, notamment en zone rurale</li>
+                  <li>Risques d'incendies de forêt</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section>
+          <h3 class="text-2xl font-bold mb-4 text-red-700 dark:text-red-400">3. Les cyclones : la menace annuelle 🌀</h3>
+          
+          <div class="bg-gradient-to-r from-red-50 to-orange-50 dark:from-red-950/30 dark:to-orange-950/30 p-6 rounded-lg mb-6">
+            <h4 class="text-xl font-semibold mb-3">Qu'est-ce qu'un cyclone tropical ?</h4>
+            <p class="mb-3">Un cyclone (appelé aussi ouragan ou typhon selon les régions) est une gigantesque tempête tournante qui se forme au-dessus des océans tropicaux chauds. Il peut atteindre 500-1000 km de diamètre avec des vents dépassant 250 km/h !</p>
+            
+            <div class="bg-white dark:bg-gray-800 p-4 rounded-lg mt-3">
+              <p class="font-bold mb-2">🌊 Conditions de formation :</p>
+              <ul class="list-disc ml-6 space-y-1">
+                <li>Eau de mer à plus de 26,5°C</li>
+                <li>Évaporation massive créant des nuages</li>
+                <li>Rotation de la Terre (force de Coriolis)</li>
+                <li>Le cyclone "se nourrit" de l'énergie de l'océan chaud</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="space-y-4">
+            <div class="bg-purple-50 dark:bg-purple-950/30 p-5 rounded-lg">
+              <h4 class="text-xl font-semibold mb-3">📊 L'échelle Saffir-Simpson (classification des ouragans)</h4>
+              <table class="w-full mt-3 text-sm">
+                <thead>
+                  <tr class="bg-gray-100 dark:bg-gray-700">
+                    <th class="border p-2">Catégorie</th>
+                    <th class="border p-2">Vents (km/h)</th>
+                    <th class="border p-2">Dégâts</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr><td class="border p-2 font-bold">1</td><td class="border p-2">119-153</td><td class="border p-2">Minimes (arbres, toitures légères)</td></tr>
+                  <tr><td class="border p-2 font-bold">2</td><td class="border p-2">154-177</td><td class="border p-2">Modérés (toits endommagés, pannes d'électricité)</td></tr>
+                  <tr><td class="border p-2 font-bold">3</td><td class="border p-2">178-208</td><td class="border p-2">Étendus (maisons détruites, inondations)</td></tr>
+                  <tr><td class="border p-2 font-bold">4</td><td class="border p-2">209-251</td><td class="border p-2">Extrêmes (dévastation massive)</td></tr>
+                  <tr><td class="border p-2 font-bold">5</td><td class="border p-2">>252</td><td class="border p-2">Catastrophiques (tout est détruit)</td></tr>
+                </tbody>
+              </table>
+            </div>
+
+            <div class="bg-red-50 dark:bg-red-950/30 p-5 rounded-lg">
+              <h4 class="text-xl font-semibold mb-3">🇭🇹 Cyclones historiques ayant frappé Haïti</h4>
+              <ul class="space-y-3">
+                <li><strong>Hurricane Flora (1963) :</strong> Plus de 5 000 morts en Haïti</li>
+                <li><strong>Hurricane Georges (1998) :</strong> 500 morts, dégâts massifs</li>
+                <li><strong>Hurricane Jeanne (2004) :</strong> 3 000 morts à Gonaïves, ville sous l'eau</li>
+                <li><strong>Hurricane Matthew (2016) :</strong> Catégorie 4, Sud d'Haïti dévasté, 1 000 morts</li>
+                <li><strong>Hurricane Laura (2020) :</strong> Dégâts modérés mais cultures détruites</li>
+              </ul>
+              <p class="mt-3 font-semibold text-red-900 dark:text-red-200">💔 En Haïti, les cyclones font encore plus de dégâts qu'ailleurs à cause de : la déforestation (glissements de terrain), les maisons fragiles, l'absence de système d'alerte efficace, la pauvreté généralisée.</p>
+            </div>
+
+            <div class="bg-blue-50 dark:bg-blue-950/30 p-5 rounded-lg">
+              <h4 class="text-xl font-semibold mb-3">🛡️ Comment se protéger des cyclones ?</h4>
+              <ul class="list-disc ml-6 space-y-2">
+                <li><strong>Avant :</strong> Écouter la radio, faire des provisions (eau, nourriture, bougies, allumettes), renforcer sa maison, évacuer si nécessaire</li>
+                <li><strong>Pendant :</strong> Rester à l'intérieur loin des fenêtres, se protéger sous une table solide, NE PAS sortir même si le vent semble calmé (œil du cyclone !)</li>
+                <li><strong>Après :</strong> Attention aux fils électriques tombés, ne pas boire l'eau des puits contaminés, aider les voisins</li>
+              </ul>
+            </div>
+          </div>
+        </section>
+
+        <section>
+          <h3 class="text-2xl font-bold mb-4 text-purple-700 dark:text-purple-400">4. Microclimats et diversité climatique 🗺️</h3>
+          
+          <div class="bg-purple-50 dark:bg-purple-950/30 p-6 rounded-lg">
+            <p class="mb-4">Bien qu'Haïti soit un petit pays (27 750 km²), il présente une grande diversité climatique due au relief montagneux. On parle de <strong>microclimats</strong>.</p>
+            
+            <div class="space-y-4">
+              <div>
+                <h4 class="font-bold text-lg mb-2">🌊 Côte au vent (Versant Est)</h4>
+                <ul class="list-disc ml-6 space-y-1">
+                  <li>Exposée aux alizés humides venant de l'océan Atlantique</li>
+                  <li>Pluies abondantes (jusqu'à 2 500 mm/an)</li>
+                  <li>Végétation luxuriante</li>
+                  <li><em>Exemple : Nord-Est, région de Jacmel</em></li>
+                </ul>
+              </div>
+
+              <div>
+                <h4 class="font-bold text-lg mb-2">🏜️ Côte sous le vent (Versant Ouest)</h4>
+                <ul class="list-disc ml-6 space-y-1">
+                  <li>Protégée par les montagnes qui bloquent les nuages</li>
+                  <li>Climat semi-aride (moins de 500 mm/an)</li>
+                  <li>Végétation clairsemée, cactus</li>
+                  <li><em>Exemple : Nord-Ouest (Port-de-Paix, Môle St-Nicolas), Artibonite</em></li>
+                </ul>
+              </div>
+
+              <div>
+                <h4 class="font-bold text-lg mb-2">⛰️ Climat de montagne</h4>
+                <ul class="list-disc ml-6 space-y-1">
+                  <li>Températures fraîches à froides</li>
+                  <li>Pluies fréquentes en altitude</li>
+                  <li>Brouillard régulier</li>
+                  <li><em>Exemple : Massif de la Selle, Massif du Nord</em></li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section>
+          <h3 class="text-2xl font-bold mb-4 text-teal-700 dark:text-teal-400">5. Impact du climat sur la vie haïtienne 🌾🏠</h3>
+          
+          <div class="grid md:grid-cols-2 gap-4">
+            <div class="bg-green-50 dark:bg-green-950/30 p-5 rounded-lg">
+              <h4 class="text-xl font-semibold mb-3">🌾 Agriculture</h4>
+              <ul class="list-disc ml-6 space-y-2">
+                <li>Le climat tropical permet 2 récoltes par an</li>
+                <li>Cultures principales : riz, maïs, haricots, bananes, mangues</li>
+                <li>Problème : sécheresses et inondations détruisent les récoltes</li>
+              </ul>
+            </div>
+
+            <div class="bg-amber-50 dark:bg-amber-950/30 p-5 rounded-lg">
+              <h4 class="text-xl font-semibold mb-3">🏠 Architecture</h4>
+              <ul class="list-disc ml-6 space-y-2">
+                <li>Maisons ventilées avec galeries</li>
+                <li>Toits en tôle (légers, résistent moins aux cyclones)</li>
+                <li>Peu de chauffage nécessaire</li>
+              </ul>
+            </div>
+
+            <div class="bg-blue-50 dark:bg-blue-950/30 p-5 rounded-lg">
+              <h4 class="text-xl font-semibold mb-3">👗 Habillement</h4>
+              <ul class="list-disc ml-6 space-y-2">
+                <li>Vêtements légers en coton</li>
+                <li>Pull nécessaire uniquement en montagne</li>
+                <li>Chapeau pour se protéger du soleil</li>
+              </ul>
+            </div>
+
+            <div class="bg-pink-50 dark:bg-pink-950/30 p-5 rounded-lg">
+              <h4 class="text-xl font-semibold mb-3">💧 Eau</h4>
+              <ul class="list-disc ml-6 space-y-2">
+                <li>Pénurie d'eau en saison sèche</li>
+                <li>Eau de pluie récoltée dans des citernes</li>
+                <li>Besoin constant d'hydrater (chaleur)</li>
+              </ul>
+            </div>
+          </div>
+        </section>
+
+        <section>
+          <h3 class="text-2xl font-bold mb-4 text-orange-700 dark:text-orange-400">6. Changement climatique et Haïti 🌍🔥</h3>
+          
+          <div class="bg-gradient-to-r from-orange-50 to-red-50 dark:from-orange-950/30 dark:to-red-950/30 p-6 rounded-lg">
+            <p class="mb-4 text-lg font-semibold">Haïti est l'un des pays les plus vulnérables au changement climatique mondial !</p>
+            
+            <div class="space-y-3">
+              <div>
+                <p class="font-bold">🌡️ Augmentation des températures :</p>
+                <p>+1°C en moyenne depuis 1950, et ça continue d'augmenter</p>
+              </div>
+
+              <div>
+                <p class="font-bold">🌀 Cyclones plus violents :</p>
+                <p>Les ouragans sont de plus en plus puissants et fréquents</p>
+              </div>
+
+              <div>
+                <p class="font-bold">🏜️ Sécheresses prolongées :</p>
+                <p>Certaines régions ne voient plus de pluie pendant des mois</p>
+              </div>
+
+              <div>
+                <p class="font-bold">🌊 Montée du niveau de la mer :</p>
+                <p>Risque pour les villes côtières (Port-au-Prince, Cap-Haïtien, Gonaïves)</p>
+              </div>
+
+              <div>
+                <p class="font-bold">🌾 Impacts sur l'agriculture :</p>
+                <p>Baisse des rendements, insécurité alimentaire croissante</p>
+              </div>
+            </div>
+
+            <p class="mt-4 bg-white dark:bg-gray-800 p-4 rounded-lg font-semibold">
+              ⚠️ Paradoxe : Haïti ne contribue presque pas au changement climatique (très peu d'industries, peu de voitures) mais en subit les conséquences les plus graves ! Les pays riches pollueurs doivent aider Haïti à s'adapter.
+            </p>
+          </div>
+        </section>
+      </div>
     `,
     exemplesExercices: `
-      <section class="space-y-4">
-        <div class="bg-accent/5 border-l-4 border-accent p-4 rounded">
-          <h4 class="font-semibold mb-2 text-foreground">📝 Exercice</h4>
-          <p class="text-foreground">
-            Tiens un journal météo pendant une semaine : note la température, le temps (soleil/pluie), et compare avec les normales saisonnières.
-          </p>
+      <div class="space-y-6">
+        <h3 class="text-2xl font-bold mb-4 text-primary">📝 Exercices variés</h3>
+
+        <div class="space-y-6">
+          <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md">
+            <p class="font-bold text-xl mb-4">1. Journal météo (1 semaine)</p>
+            <p class="mb-3">Pendant une semaine, note chaque jour :</p>
+            <ul class="list-disc ml-6 space-y-2">
+              <li>La température (matin, midi, soir)</li>
+              <li>Le temps (soleil, nuages, pluie)</li>
+              <li>La durée de la pluie (si il pleut)</li>
+              <li>L'humidité ressentie (sec/humide)</li>
+              <li>Le vent (faible/fort)</li>
+            </ul>
+            <p class="mt-3"><strong>À la fin de la semaine :</strong> Calcule la température moyenne et identifie la tendance (saison sèche ou pluvieuse).</p>
+          </div>
+
+          <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md">
+            <p class="font-bold text-xl mb-4">2. Tableau comparatif : Les deux saisons</p>
+            <p class="mb-3">Complète ce tableau :</p>
+            <table class="w-full border-collapse border border-gray-300 mt-3">
+              <thead>
+                <tr class="bg-gray-100 dark:bg-gray-700">
+                  <th class="border border-gray-300 p-2">Critère</th>
+                  <th class="border border-gray-300 p-2">Saison des pluies</th>
+                  <th class="border border-gray-300 p-2">Saison sèche</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr><td class="border p-2">Mois</td><td class="border p-2">...</td><td class="border p-2">...</td></tr>
+                <tr><td class="border p-2">Température</td><td class="border p-2">...</td><td class="border p-2">...</td></tr>
+                <tr><td class="border p-2">Pluies</td><td class="border p-2">...</td><td class="border p-2">...</td></tr>
+                <tr><td class="border p-2">Avantages</td><td class="border p-2">...</td><td class="border p-2">...</td></tr>
+                <tr><td class="border p-2">Inconvénients</td><td class="border p-2">...</td><td class="border p-2">...</td></tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md">
+            <p class="font-bold text-xl mb-4">3. Carte climatique d'Haïti</p>
+            <p class="mb-3">Sur une carte muette d'Haïti :</p>
+            <ol class="list-decimal ml-6 space-y-2">
+              <li>Colorie en vert les régions humides (côte au vent)</li>
+              <li>Colorie en jaune les régions sèches (côte sous le vent)</li>
+              <li>Place des symboles ⛰️ pour les zones montagneuses fraîches</li>
+              <li>Trace les flèches → montrant la direction des alizés</li>
+            </ol>
+          </div>
+
+          <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md">
+            <p class="font-bold text-xl mb-4">4. Plan d'urgence cyclone</p>
+            <p class="mb-3">Crée un plan d'urgence pour ta famille en cas de cyclone :</p>
+            <div class="space-y-3">
+              <div>
+                <p class="font-semibold">A. Kit de survie (liste)</p>
+                <p class="text-sm italic">Nourriture non périssable, eau, lampes, radio, médicaments, documents importants...</p>
+              </div>
+              <div>
+                <p class="font-semibold">B. Lieu de refuge</p>
+                <p class="text-sm italic">Où aller si ta maison n'est pas sûre ? École, église, maison d'un parent ?</p>
+              </div>
+              <div>
+                <p class="font-semibold">C. Numéros d'urgence</p>
+                <p class="text-sm italic">Protection Civile, parents, voisins...</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md">
+            <p class="font-bold text-xl mb-4">5. Recherche : Cyclones historiques</p>
+            <p class="mb-3">Choisis un cyclone majeur ayant frappé Haïti et fais une fiche :</p>
+            <ul class="list-disc ml-6 space-y-1">
+              <li>Nom du cyclone</li>
+              <li>Date</li>
+              <li>Catégorie</li>
+              <li>Régions touchées</li>
+              <li>Nombre de victimes</li>
+              <li>Dégâts matériels</li>
+              <li>Photos (si disponible)</li>
+            </ul>
+            <p class="mt-3 text-sm italic">Suggestions : Matthew (2016), Jeanne (2004), Georges (1998)</p>
+          </div>
+
+          <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md">
+            <p class="font-bold text-xl mb-4">6. Graphique de températures</p>
+            <p class="mb-3">Crée un graphique en courbe montrant la température moyenne de chaque mois à Port-au-Prince.</p>
+            <p class="text-sm">Données moyennes : Jan 25°, Fév 25°, Mar 26°, Avr 27°, Mai 28°, Juin 29°, Juil 29°, Août 29°, Sep 28°, Oct 27°, Nov 26°, Déc 25°</p>
+            <p class="mt-3"><strong>Questions :</strong></p>
+            <ul class="list-disc ml-6 space-y-1 text-sm">
+              <li>Quel est le mois le plus chaud ?</li>
+              <li>Quel est le mois le plus frais ?</li>
+              <li>Quelle est l'amplitude thermique annuelle ?</li>
+            </ul>
+          </div>
+
+          <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md">
+            <p class="font-bold text-xl mb-4">7. Expérience : Formation d'un nuage</p>
+            <p class="mb-3"><strong>Matériel :</strong> Bouteille en plastique, eau chaude, glaçon</p>
+            <p class="mb-3"><strong>Démarche :</strong></p>
+            <ol class="list-decimal ml-6 space-y-2">
+              <li>Verse un peu d'eau chaude dans la bouteille</li>
+              <li>Place un glaçon sur l'ouverture</li>
+              <li>Observe ce qui se passe à l'intérieur</li>
+            </ol>
+            <p class="mt-3"><strong>Explication :</strong> L'air chaud humide monte, rencontre l'air froid du glaçon, se condense et forme un nuage ! C'est le même principe dans l'atmosphère qui crée les pluies.</p>
+          </div>
+
+          <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md">
+            <p class="font-bold text-xl mb-4">8. Interview : Souvenir de cyclone</p>
+            <p class="mb-3">Interview une personne de ta famille ou de ton quartier qui a vécu un cyclone majeur.</p>
+            <p class="mb-2"><strong>Questions :</strong></p>
+            <ol class="list-decimal ml-6 space-y-1">
+              <li>Quel cyclone as-tu vécu ?</li>
+              <li>Où étais-tu pendant le cyclone ?</li>
+              <li>Qu'as-tu ressenti ?</li>
+              <li>Quels dégâts as-tu observés ?</li>
+              <li>Comment as-tu survécu ?</li>
+              <li>Quel conseil donnerais-tu aux jeunes ?</li>
+            </ol>
+            <p class="mt-3">Écris un compte-rendu de 150-200 mots.</p>
+          </div>
+
+          <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md">
+            <p class="font-bold text-xl mb-4">9. Rédaction : Mon climat idéal</p>
+            <p class="mb-3">Si tu pouvais changer le climat d'Haïti, que changerais-tu ? Écris un texte de 200 mots expliquant :</p>
+            <ul class="list-disc ml-6 space-y-1">
+              <li>Ce que tu garderais du climat actuel</li>
+              <li>Ce que tu modifierais</li>
+              <li>Pourquoi ces changements seraient bénéfiques</li>
+              <li>Les conséquences possibles sur l'agriculture, le tourisme, la vie quotidienne</li>
+            </ul>
+          </div>
+
+          <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md">
+            <p class="font-bold text-xl mb-4">10. Débat : Changement climatique</p>
+            <p class="mb-3"><strong>Sujet :</strong> "Les pays riches doivent-ils payer pour aider Haïti à s'adapter au changement climatique ?"</p>
+            <div class="mt-3">
+              <p class="font-semibold mb-2">Équipe POUR (arguments possibles) :</p>
+              <ul class="list-disc ml-8 space-y-1 text-sm">
+                <li>Ce sont eux qui polluent le plus</li>
+                <li>Haïti subit les conséquences sans avoir causé le problème</li>
+                <li>Justice climatique : responsabilité historique</li>
+              </ul>
+              <p class="font-semibold mt-3 mb-2">Équipe CONTRE (arguments possibles) :</p>
+              <ul class="list-disc ml-8 space-y-1 text-sm">
+                <li>Chaque pays doit se débrouiller seul</li>
+                <li>L'argent donné est souvent mal géré</li>
+                <li>Il vaut mieux aider Haïti à se développer économiquement</li>
+              </ul>
+            </div>
+          </div>
         </div>
-      </section>
+
+        <div class="bg-primary/10 p-6 rounded-lg mt-8">
+          <h4 class="font-bold text-lg mb-3">📚 Pour aller plus loin :</h4>
+          <ul class="list-disc ml-6 space-y-2">
+            <li><strong>Site météo :</strong> weather.com (prévisions pour Haïti)</li>
+            <li><strong>Suivi cyclones :</strong> nhc.noaa.gov (Centre National des Ouragans USA)</li>
+            <li><strong>Vidéo :</strong> "Comment se forme un cyclone ?" sur YouTube</li>
+            <li><strong>Application :</strong> Windy (visualisation des vents et précipitations)</li>
+          </ul>
+        </div>
+      </div>
     `
   },
 
