@@ -4803,120 +4803,366 @@ export const sciencesSocialesLessons7AF: SciencesSocialesLesson[] = [
     mois: "Février",
     objectif: "Comprendre la place de la Terre dans le système solaire et les caractéristiques de notre planète.",
     introduction: `
-      <div class="space-y-4">
-        <p>La Terre n'est pas seule dans l'univers. Elle fait partie d'un système planétaire appelé le système solaire, composé du Soleil et de tous les objets qui gravitent autour de lui. Ce système comprend 8 planètes, dont la Terre est la troisième à partir du Soleil.</p>
-        <p>Comprendre notre système solaire nous aide à apprécier la position unique de notre planète, la seule connue à abriter la vie. Cette connaissance est essentielle pour saisir les phénomènes naturels qui affectent notre quotidien.</p>
+      <div class="space-y-6">
+        <div class="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-950/30 dark:to-indigo-950/30 p-6 rounded-lg border-l-4 border-blue-500">
+          <h2 class="text-2xl font-bold mb-3 text-blue-900 dark:text-blue-200">🚀 Voyage dans l'espace : Notre place dans l'univers</h2>
+          <p class="text-lg italic text-blue-800 dark:text-blue-300">"Imagine un instant que tu es sur le toit de ta maison à Port-au-Prince, Gonaïves ou aux Cayes, et que tu lèves les yeux vers le ciel nocturne, loin des lumières de la ville. Que vois-tu ? Des milliers d'étoiles scintillantes ! Parfois, un point lumineux traverse le ciel comme une étoile filante. Mais derrière ces points lumineux se cache un univers immense..."</p>
+        </div>
+        
+        <p class="text-lg leading-relaxed">Bonjour chers explorateurs de l'espace ! 🌟 Aujourd'hui, nous allons embarquer pour un voyage extraordinaire, bien au-delà des montagnes d'Haïti et des eaux turquoise de la Caraïbe. Nous allons découvrir notre "quartier" cosmique : le <strong>Système Solaire</strong> ! Nous apprendrons comment notre planète, la Terre, est née, pourquoi elle est si spéciale, et comment elle interagit avec le Soleil et les autres planètes.</p>
+        
+        <p>Cette aventure nous aidera à mieux comprendre notre place dans l'immensité de l'espace et à apprécier encore plus la beauté de notre île, Haïti, cette petite perle dans un grand océan de mystères cosmiques. Prêts à décoller ? 🚀</p>
+        
+        <div class="bg-yellow-50 dark:bg-yellow-950/20 border-l-4 border-yellow-500 p-5 my-6">
+          <p class="font-semibold text-yellow-900 dark:text-yellow-200 mb-3">🎯 Objectifs d'apprentissage</p>
+          <ul class="list-disc ml-6 space-y-2 text-yellow-800 dark:text-yellow-300">
+            <li>Définir ce qu'est le Système Solaire et identifier ses principaux composants</li>
+            <li>Citer les planètes du Système Solaire dans l'ordre de leur éloignement par rapport au Soleil</li>
+            <li>Décrire les principales caractéristiques de la Terre et expliquer pourquoi elle est unique</li>
+            <li>Comprendre la relation entre le Soleil et la Terre (rotation, révolution et leurs conséquences)</li>
+            <li>Expliquer l'importance du Système Solaire dans notre vie quotidienne en Haïti</li>
+          </ul>
+        </div>
+        
+        <div class="bg-green-50 dark:bg-green-950/30 p-5 rounded-lg">
+          <p class="font-semibold text-green-900 dark:text-green-200 mb-2">💡 Le savais-tu ?</p>
+          <p class="text-green-800 dark:text-green-300">Le mot "solaire" vient du latin "sol", qui signifie "soleil". Donc, le "Système Solaire" signifie littéralement le "Système du Soleil" ! Et quand tu regardes le ciel d'Haïti la nuit et que tu vois cette bande blanchâtre qui traverse le ciel (la Voie lactée), tu observes en fait notre galaxie qui contient plus de 200 milliards d'étoiles comme notre Soleil ! 🌌</p>
+        </div>
       </div>
     `,
     contenu: `
       <div class="space-y-6">
         <section>
-          <h3 class="text-xl font-semibold mb-3 text-foreground">1. Le Soleil : étoile de notre système</h3>
-          <p class="text-foreground">Le Soleil est une étoile de taille moyenne située au centre de notre système solaire.</p>
-          <ul class="list-disc ml-6 space-y-2">
-            <li><strong>Composition :</strong> 73% d'hydrogène, 25% d'hélium</li>
-            <li><strong>Température de surface :</strong> 5 500°C</li>
-            <li><strong>Âge :</strong> 4,6 milliards d'années</li>
-            <li><strong>Rôle :</strong> Source de lumière et de chaleur pour toutes les planètes</li>
+          <h3 class="text-2xl font-bold mb-4 text-indigo-700 dark:text-indigo-400">1. Qu'est-ce que le Système Solaire ? 🤔</h3>
+          <p class="mb-4 text-lg">Le Système Solaire, c'est comme une grande famille cosmique dont le Soleil est le "chef". Il est composé de notre étoile, le Soleil, et de tous les corps célestes qui tournent autour de lui, un peu comme les enfants tournent autour de leurs parents. Ces corps célestes incluent les planètes, les planètes naines, les astéroïdes, les comètes, et les lunes de toutes ces planètes. C'est un système gravitationnellement lié, ce qui veut dire que la forte attraction du Soleil maintient tout le monde en orbite autour de lui.</p>
+          <p class="mb-4">Imagine une mangue mûre qui tombe d'un arbre à Delmas ou à Cap-Haïtien. Sa chute est due à la gravité de la Terre. De la même manière, les planètes ne s'échappent pas dans l'espace parce que la gravité immense du Soleil les retient.</p>
+        </section>
+
+        <section>
+          <h3 class="text-2xl font-bold mb-4 text-indigo-700 dark:text-indigo-400">2. Le Soleil, notre étoile géante et lumineuse ☀️</h3>
+          <p class="mb-4">Le Soleil n'est pas une planète, mais une <strong>étoile</strong> ! Une étoile est une énorme boule de gaz très chauds qui produit sa propre lumière et sa propre chaleur grâce à des réactions nucléaires en son cœur. Sans le Soleil, pas de vie possible sur Terre. C'est lui qui nous donne la lumière du jour que nous apprécions tant en Haïti pour faire sécher notre linge, pour faire pousser nos mangues et nos avocats, et pour nous réchauffer. Il est tellement grand qu'on pourrait y faire rentrer plus d'<strong>un million de Terres</strong> !</p>
+          <ul class="list-disc ml-8 space-y-3 mb-4">
+            <li><strong>Position :</strong> Il est au centre de notre Système Solaire</li>
+            <li><strong>Composition :</strong> 73% d'hydrogène et 25% d'hélium (les deux gaz les plus légers)</li>
+            <li><strong>Température :</strong> 5 500°C à la surface, mais 15 millions °C au cœur !</li>
+            <li><strong>Âge :</strong> 4,6 milliards d'années (il est à mi-vie, il vivra encore 5 milliards d'années)</li>
+            <li><strong>Distance de la Terre :</strong> 150 millions de kilomètres (la lumière du Soleil met 8 minutes pour nous atteindre)</li>
+            <li><strong>Importance :</strong> Sa chaleur et sa lumière sont vitales pour la vie sur Terre - photosynthèse des plantes, cycle de l'eau, climat</li>
           </ul>
-          <div class="bg-primary/5 p-4 rounded-lg mt-3">
-            <p class="text-sm text-foreground italic">
-              🌟 [Image suggérée : Le Soleil avec ses éruptions solaires]
-            </p>
+          <p class="mb-4">Quand le soleil tape fort à midi sur les rues de Pétion-Ville, rappelez-vous que cette chaleur vient d'une étoile située à des millions de kilomètres !</p>
+          <div class="bg-yellow-50 dark:bg-yellow-950/30 border-l-4 border-yellow-500 p-4 my-4">
+            <p class="font-semibold text-yellow-900 dark:text-yellow-200 mb-2">💡 Anecdote haïtienne</p>
+            <p class="text-yellow-800 dark:text-yellow-300">En Haïti, nous avons environ 2800 heures d'ensoleillement par an ! C'est beaucoup plus que dans les pays européens (Paris n'en a que 1600). Cette abondance de soleil explique pourquoi notre agriculture tropicale est si riche, et pourquoi les panneaux solaires seraient une excellente source d'énergie pour notre pays.</p>
           </div>
         </section>
 
         <section>
-          <h3 class="text-xl font-semibold mb-3 text-foreground">2. Les huit planètes</h3>
-          <p class="text-foreground mb-3">Voici les planètes du système solaire, de la plus proche à la plus éloignée du Soleil :</p>
+          <h3 class="text-2xl font-bold mb-4 text-indigo-700 dark:text-indigo-400">3. Les Huit Planètes de notre Système Solaire 🌍</h3>
+          <p class="mb-4">Autour du Soleil, tournent huit planètes, chacune avec ses propres caractéristiques. On les classe souvent en deux groupes :</p>
           
-          <h4 class="font-semibold mt-4 mb-2 text-foreground">Planètes rocheuses (telluriques)</h4>
-          <ul class="list-disc ml-6 space-y-2 text-foreground">
-            <li><strong>Mercure :</strong> La plus petite et la plus proche du Soleil</li>
-            <li><strong>Vénus :</strong> Surnommée "l'étoile du berger", très chaude (465°C)</li>
-            <li><strong>Terre :</strong> Notre planète bleue, seule à avoir de la vie</li>
-            <li><strong>Mars :</strong> La planète rouge, avec ses déserts et canyons</li>
-          </ul>
+          <div class="mb-6">
+            <h4 class="text-xl font-semibold mb-3 text-primary">Les planètes telluriques (rocheuses)</h4>
+            <p class="mb-3">Elles sont proches du Soleil, petites et composées principalement de roches et de métaux.</p>
+            <ul class="list-disc ml-8 space-y-3">
+              <li><strong class="text-primary">Mercure :</strong> La plus proche du Soleil (58 millions de km). Très chaude le jour (430°C), très froide la nuit (-180°C). Pas d'atmosphère pour retenir la chaleur. Surface criblée de cratères comme la Lune.</li>
+              <li><strong class="text-primary">Vénus :</strong> Appelée "l'étoile du berger" car très brillante dans le ciel. C'est la planète la plus chaude du Système Solaire (465°C) à cause d'un effet de serre intense. Son atmosphère est composée de 96% de CO₂. Elle tourne dans le sens inverse des autres planètes !</li>
+              <li><strong class="text-primary">Terre (notre maison !) 🌍:</strong> La seule planète connue pour abriter la vie. Température moyenne de 15°C. 71% d'eau liquide. Atmosphère respirable (21% d'oxygène). C'est notre perle bleue dans l'espace !</li>
+              <li><strong class="text-primary">Mars (la planète rouge) 🔴:</strong> Surnommée ainsi à cause de l'oxyde de fer (rouille) dans son sol. Température moyenne -60°C. Possède des calottes glaciaires aux pôles. Actuellement explorée par des robots (Perseverance, Curiosity) pour chercher des traces de vie passée.</li>
+            </ul>
+          </div>
 
-          <h4 class="font-semibold mt-4 mb-2 text-foreground">Planètes géantes gazeuses</h4>
-          <ul class="list-disc ml-6 space-y-2 text-foreground">
-            <li><strong>Jupiter :</strong> La plus grande planète, avec sa Grande Tache Rouge</li>
-            <li><strong>Saturne :</strong> Célèbre pour ses anneaux spectaculaires</li>
-            <li><strong>Uranus :</strong> Inclinée sur le côté, de couleur bleu-vert</li>
-            <li><strong>Neptune :</strong> La planète la plus éloignée, bleu profond</li>
-          </ul>
-          <div class="bg-primary/5 p-4 rounded-lg mt-3">
-            <p class="text-sm text-foreground italic">
-              🎥 [Vidéo suggérée : Animation montrant les orbites des planètes]
-            </p>
+          <div class="mb-6">
+            <h4 class="text-xl font-semibold mb-3 text-primary">Les planètes joviennes (géantes gazeuses)</h4>
+            <p class="mb-3">Elles sont plus éloignées du Soleil, beaucoup plus grandes et composées principalement de gaz.</p>
+            <ul class="list-disc ml-8 space-y-3">
+              <li><strong class="text-primary">Jupiter (le géant) 🪐:</strong> La plus grande planète du Système Solaire ! Si elle était creuse, on pourrait y mettre 1 300 Terres. Elle possède une énorme tempête appelée la "Grande Tache Rouge" qui dure depuis au moins 350 ans ! Elle a 79 lunes connues.</li>
+              <li><strong class="text-primary">Saturne (la belle aux anneaux) 💫:</strong> Célèbre pour ses magnifiques anneaux composés de milliards de morceaux de glace et de roche. Si légère qu'elle flotterait dans l'eau (si on trouvait un océan assez grand) ! Elle a 82 lunes.</li>
+              <li><strong class="text-primary">Uranus (la couchée) 🌀:</strong> Une planète froide et bleue-verte à cause du méthane dans son atmosphère. Particularité unique : elle tourne "couchée" sur le côté (son axe est incliné à 98°), probablement suite à une collision ancienne.</li>
+              <li><strong class="text-primary">Neptune (la bleue profonde) 🌊:</strong> La plus éloignée du Soleil (4,5 milliards de km). Température de -220°C. Vents les plus violents du Système Solaire (2 000 km/h !). Couleur bleu profond magnifique due au méthane.</li>
+            </ul>
+          </div>
+
+          <div class="bg-blue-50 dark:bg-blue-950/30 p-5 rounded-lg my-4">
+            <p class="font-semibold text-lg mb-3">🎵 Astuce pour mémoriser l'ordre des planètes :</p>
+            <p class="text-lg italic">"<strong class="text-primary">M</strong>on <strong class="text-primary">V</strong>ieux, <strong class="text-primary">T</strong>u <strong class="text-primary">M</strong>'as <strong class="text-primary">J</strong>eté <strong class="text-primary">S</strong>ur <strong class="text-primary">U</strong>ne <strong class="text-primary">N</strong>ouvelle planète !"</p>
+            <p class="mt-2"><strong>M</strong>ercure - <strong>V</strong>énus - <strong>T</strong>erre - <strong>M</strong>ars - <strong>J</strong>upiter - <strong>S</strong>aturne - <strong>U</strong>ranus - <strong>N</strong>eptune</p>
+          </div>
+
+          <div class="bg-green-50 dark:bg-green-950/30 border-l-4 border-green-500 p-4 my-4">
+            <p class="font-semibold text-green-900 dark:text-green-200 mb-2">💡 Et Pluton alors ?</p>
+            <p class="text-green-800 dark:text-green-300">Avant 2006, Pluton était considérée comme la neuvième planète. Mais les scientifiques l'ont reclassée comme une "planète naine" car elle ne remplit pas tous les critères pour être une planète (elle n'a pas "nettoyé" son orbite des autres objets). C'est comme si votre petit cousin était si petit qu'on ne le laissait pas jouer au basket avec les grands ! Il y a d'autres planètes naines : Cérès, Éris, Makemake, Haumea.</p>
           </div>
         </section>
 
         <section>
-          <h3 class="text-xl font-semibold mb-3 text-foreground">3. La Terre : une planète unique</h3>
-          <p class="text-foreground mb-3">La Terre possède des caractéristiques qui la rendent unique dans le système solaire :</p>
-          <ul class="list-disc ml-6 space-y-2 text-foreground">
-            <li><strong>Atmosphère respirable :</strong> 78% d'azote, 21% d'oxygène</li>
-            <li><strong>Eau liquide :</strong> Couvre 71% de la surface</li>
-            <li><strong>Température modérée :</strong> Moyenne de 15°C</li>
-            <li><strong>Champ magnétique :</strong> Protège des radiations solaires</li>
-            <li><strong>Distance idéale du Soleil :</strong> Ni trop chaud, ni trop froid (zone habitable)</li>
-            <li><strong>La Lune :</strong> Satellite naturel qui stabilise l'axe de rotation</li>
+          <h3 class="text-2xl font-bold mb-4 text-indigo-700 dark:text-indigo-400">4. La Terre, notre oasis bleue 🌎💙</h3>
+          <p class="mb-4">Parmi toutes ces planètes, la Terre est notre foyer, notre "Ginen" cosmique ! Elle est unique pour plusieurs raisons :</p>
+          <ul class="list-disc ml-8 space-y-3 mb-4">
+            <li><strong>Eau liquide :</strong> C'est la seule planète où l'eau existe sous forme liquide en grande quantité, formant les océans, les lacs et les rivières que l'on retrouve partout dans le monde, y compris la mer des Caraïbes qui borde nos côtes haïtiennes. L'eau couvre 71% de la surface terrestre !</li>
+            <li><strong>Atmosphère respirable :</strong> Son atmosphère contient 21% d'oxygène, essentiel pour la respiration des êtres vivants. Elle nous protège aussi des rayons ultraviolets dangereux du Soleil et des météorites qui brûlent en entrant dans l'atmosphère (étoiles filantes).</li>
+            <li><strong>Température idéale :</strong> La Terre est à la bonne distance du Soleil (ni trop près comme Vénus, ni trop loin comme Mars) pour que les températures ne soient ni trop chaudes ni trop froides. Cette zone s'appelle la "zone habitable" ou "zone Boucles d'or".</li>
+            <li><strong>Champ magnétique puissant :</strong> Le noyau de fer en fusion de la Terre génère un champ magnétique qui nous protège des vents solaires nocifs (particules chargées émises par le Soleil). Sans ce bouclier invisible, la vie serait impossible !</li>
+            <li><strong>La Lune, notre compagne :</strong> Notre satellite naturel stabilise l'axe de rotation de la Terre, ce qui maintient notre climat stable. Elle cause aussi les marées que nous observons sur nos côtes (Côte des Arcadins, Jacmel, etc.).</li>
+            <li><strong>Tectonique des plaques :</strong> Le recyclage constant de la croûte terrestre enrichit le sol et crée de nouvelles terres (mais cause aussi les séismes, comme celui de 2010 en Haïti).</li>
           </ul>
+          <p class="mb-4">Pensez à la richesse de nos écosystèmes en Haïti : des récifs coralliens de la Côte des Arcadins aux forêts de pins des Matheux, des mangroves de Baradères aux plages de sable blanc de l'Île-à-Vache. Tout cela est possible grâce aux conditions uniques de la Terre !</p>
         </section>
 
         <section>
-          <h3 class="text-xl font-semibold mb-3 text-foreground">4. Autres corps célestes</h3>
-          <ul class="list-disc ml-6 space-y-2 text-foreground">
-            <li><strong>Planètes naines :</strong> Pluton, Cérès, Éris</li>
-            <li><strong>Astéroïdes :</strong> Rochers rocheux entre Mars et Jupiter</li>
-            <li><strong>Comètes :</strong> Boules de glace et de poussière</li>
-            <li><strong>Satellites naturels :</strong> Lunes qui orbitent autour des planètes</li>
-          </ul>
+          <h3 class="text-2xl font-bold mb-4 text-indigo-700 dark:text-indigo-400">5. Les Mouvements de la Terre : Rotation et Révolution 🔄</h3>
+          <p class="mb-4">La Terre n'est pas immobile dans l'espace. Elle effectue deux mouvements principaux qui rythment notre vie quotidienne :</p>
+          
+          <div class="mb-6">
+            <h4 class="text-xl font-semibold mb-3 text-primary">La Rotation (mouvement sur elle-même)</h4>
+            <p class="mb-3">C'est le mouvement de la Terre sur elle-même, comme une toupie. Elle tourne d'ouest en est (dans le sens inverse des aiguilles d'une montre si on regarde depuis le pôle Nord).</p>
+            <ul class="list-disc ml-8 space-y-2">
+              <li><strong>Durée :</strong> 24 heures (un jour)</li>
+              <li><strong>Vitesse :</strong> À l'équateur, la Terre tourne à 1 670 km/h ! (Haïti, près du tropique, tourne à environ 1 500 km/h)</li>
+              <li><strong>Conséquence principale :</strong> L'alternance du jour et de la nuit. Quand c'est le jour en Haïti (face au Soleil), c'est la nuit de l'autre côté du globe (Chine, Australie). C'est pourquoi quand nos parents nous appellent de la diaspora (États-Unis, Canada, France), l'heure peut être différente !</li>
+              <li><strong>Fuseaux horaires :</strong> La Terre est divisée en 24 fuseaux horaires. Haïti est à UTC-5 (même heure que New York en hiver).</li>
+            </ul>
+          </div>
+
+          <div class="mb-6">
+            <h4 class="text-xl font-semibold mb-3 text-primary">La Révolution (mouvement autour du Soleil)</h4>
+            <p class="mb-3">C'est le mouvement de la Terre autour du Soleil. La Terre suit une orbite elliptique (forme d'œuf légèrement aplati).</p>
+            <ul class="list-disc ml-8 space-y-2">
+              <li><strong>Durée :</strong> 365 jours et 1/4 (une année). C'est pour compenser ce quart de jour qu'on ajoute un jour tous les 4 ans : l'année bissextile (29 février) !</li>
+              <li><strong>Distance parcourue :</strong> 940 millions de kilomètres par an (vitesse moyenne de 107 000 km/h)</li>
+              <li><strong>Conséquence principale :</strong> Les saisons. L'axe de la Terre est incliné de 23,5° par rapport à son orbite. Cette inclinaison fait que les rayons du Soleil frappent différemment l'hémisphère Nord et Sud selon la période de l'année.</li>
+              <li><strong>En Haïti :</strong> Situés près du tropique du Cancer (19°N), nous avons deux saisons principales : la saison sèche (novembre-mars) et la saison des pluies (avril-octobre), plutôt que les quatre saisons des pays tempérés.</li>
+            </ul>
+          </div>
+
+          <div class="bg-purple-50 dark:bg-purple-950/30 p-5 rounded-lg">
+            <p class="font-semibold text-purple-900 dark:text-purple-200 mb-2">🌙 La Lune et ses phases</p>
+            <p class="text-purple-800 dark:text-purple-300 mb-3">La Lune tourne autour de la Terre en 29,5 jours. Elle ne produit pas sa propre lumière ; elle reflète celle du Soleil. Selon sa position par rapport à la Terre et au Soleil, nous voyons différentes phases :</p>
+            <ul class="list-disc ml-6 space-y-1 text-purple-800 dark:text-purple-300">
+              <li><strong>Nouvelle lune :</strong> Invisible (entre Terre et Soleil)</li>
+              <li><strong>Premier croissant :</strong> Fine lame visible le soir</li>
+              <li><strong>Premier quartier :</strong> Demi-lune</li>
+              <li><strong>Pleine lune :</strong> Totalement éclairée (nuits de pleine lune en Haïti !)</li>
+              <li><strong>Dernier quartier :</strong> Demi-lune décroissante</li>
+            </ul>
+            <p class="mt-3 text-purple-800 dark:text-purple-300">Les marées haïtiennes (montée et descente de la mer) sont causées par l'attraction gravitationnelle de la Lune sur les océans !</p>
+          </div>
         </section>
 
         <section>
-          <h3 class="text-xl font-semibold mb-3 text-foreground">5. La révolution et la rotation terrestres</h3>
-          <p class="text-foreground mb-3"><strong>Révolution :</strong> Mouvement de la Terre autour du Soleil</p>
-          <ul class="list-disc ml-6 space-y-2 text-foreground">
-            <li>Durée : 365 jours et 1/4 (une année)</li>
-            <li>Cause les saisons</li>
-            <li>Orbite elliptique de 150 millions de km</li>
-          </ul>
-
-          <p class="text-foreground mt-4 mb-3"><strong>Rotation :</strong> Mouvement de la Terre sur elle-même</p>
-          <ul class="list-disc ml-6 space-y-2 text-foreground">
-            <li>Durée : 24 heures (un jour)</li>
-            <li>Cause l'alternance jour/nuit</li>
-            <li>Rotation d'ouest en est</li>
+          <h3 class="text-2xl font-bold mb-4 text-indigo-700 dark:text-indigo-400">6. Autres corps célestes du Système Solaire 🌠</h3>
+          <ul class="list-disc ml-8 space-y-3">
+            <li><strong>Ceinture d'astéroïdes :</strong> Entre Mars et Jupiter, des millions de rochers rocheux de toutes tailles orbitent. Le plus gros est Cérès (950 km de diamètre).</li>
+            <li><strong>Comètes :</strong> Boules de glace, de poussière et de roches qui viennent de loin dans le Système Solaire. Quand elles s'approchent du Soleil, la glace se sublime et forme une magnifique queue lumineuse (comète de Halley visible tous les 76 ans).</li>
+            <li><strong>Ceinture de Kuiper :</strong> Au-delà de Neptune, région où se trouvent des milliers d'objets glacés, dont Pluton.</li>
+            <li><strong>Satellites naturels (lunes) :</strong> La Terre n'est pas la seule à avoir une lune ! Mars en a 2, Jupiter 79, Saturne 82 !</li>
           </ul>
         </section>
       </div>
     `,
     exemplesExercices: `
       <div class="space-y-6">
-        <section>
-          <h3 class="text-xl font-semibold mb-3 text-foreground">Exemples concrets</h3>
-          <div class="bg-primary/5 border-l-4 border-primary p-4 rounded">
-            <p class="text-foreground"><strong>Exemple 1 :</strong> Le Soleil est si grand qu'on pourrait y placer 1,3 million de Terres !</p>
-            <p class="text-foreground mt-2"><strong>Exemple 2 :</strong> Si le Soleil était gros comme un ballon de football, la Terre serait de la taille d'une tête d'épingle.</p>
-            <p class="text-foreground mt-2"><strong>Exemple 3 :</strong> La lumière du Soleil met 8 minutes pour atteindre la Terre.</p>
-          </div>
-        </section>
+        <h3 class="text-2xl font-bold mb-4 text-primary">🇭🇹 Exemples concrets liés à Haïti et à notre quotidien</h3>
         
-        <section>
-          <h3 class="text-xl font-semibold mb-3 text-foreground">Exercices pratiques</h3>
-          <div class="space-y-4">
-            <div>
-              <p class="font-semibold text-foreground">1. Maquette du système solaire</p>
-              <p class="text-foreground">Créez une maquette avec des balles de différentes tailles représentant les planètes. Respectez l'ordre des planètes.</p>
-            </div>
-            <div>
-              <p class="font-semibold text-foreground">2. Journal d'observation</p>
-              <p class="text-foreground">Pendant une semaine, dessinez la position du Soleil dans le ciel le matin, à midi et le soir. Que remarques-tu ?</p>
-            </div>
+        <div class="bg-blue-50 dark:bg-blue-950/30 border-l-4 border-blue-500 p-5 rounded-lg mb-4">
+          <p class="font-bold text-lg mb-2">🌞 Exemple 1 : Le Soleil et notre agriculture haïtienne</p>
+          <p>Sans le Soleil, nos plantations de canne à sucre, de café, de mangues et de bananes ne pourraient pas pousser ! Les plantes utilisent la lumière du Soleil pour fabriquer leur nourriture grâce à la photosynthèse. C'est grâce au Soleil que nos marchés regorgent de fruits tropicaux délicieux !</p>
+        </div>
+
+        <div class="bg-blue-50 dark:bg-blue-950/30 border-l-4 border-blue-500 p-5 rounded-lg mb-4">
+          <p class="font-bold text-lg mb-2">🌊 Exemple 2 : Les marées en Haïti</p>
+          <p>Si tu vas à la plage de Gelée (Les Cayes) ou à Labadie (Cap-Haïtien), tu remarqueras que le niveau de la mer monte et descend deux fois par jour. Ce sont les marées, causées par l'attraction gravitationnelle de la Lune sur les océans ! Les pêcheurs haïtiens connaissent bien ces cycles pour planifier leurs sorties en mer.</p>
+        </div>
+
+        <div class="bg-blue-50 dark:bg-blue-950/30 border-l-4 border-blue-500 p-5 rounded-lg mb-4">
+          <p class="font-bold text-lg mb-2">⏰ Exemple 3 : Le décalage horaire avec la diaspora</p>
+          <p>Quand il est midi à Port-au-Prince, il est 18h à Paris ! C'est à cause de la rotation de la Terre et des fuseaux horaires. La Terre tourne, donc différentes régions sont face au Soleil à des moments différents. C'est pourquoi nos parents de la diaspora nous appellent parfois tard le soir leur temps, mais c'est l'après-midi pour nous !</p>
+        </div>
+
+        <div class="bg-blue-50 dark:bg-blue-950/30 border-l-4 border-blue-500 p-5 rounded-lg mb-4">
+          <p class="font-bold text-lg mb-2">🌡️ Exemple 4 : Pourquoi il fait toujours chaud en Haïti</p>
+          <p>Haïti se trouve près du tropique du Cancer (environ 19°N). Les rayons du Soleil tombent presque perpendiculairement sur nous toute l'année, ce qui explique notre climat chaud et tropical. Si nous étions plus près du pôle Nord (comme le Canada), les rayons arriveraient de biais et il ferait beaucoup plus froid !</p>
+        </div>
+
+        <div class="bg-blue-50 dark:bg-blue-950/30 border-l-4 border-blue-500 p-5 rounded-lg mb-4">
+          <p class="font-bold text-lg mb-2">🌙 Exemple 5 : Les nuits de pleine lune en Haïti</p>
+          <p>Tu as sûrement remarqué que certaines nuits, la Lune est si brillante qu'on peut presque lire dehors ! C'est la pleine lune. Dans les campagnes haïtiennes, les gens profitent de ces nuits claires pour organiser des veillées, des contes, ou travailler aux champs. Nos ancêtres taïnos et africains utilisaient aussi les phases de la Lune pour planifier leurs activités agricoles.</p>
+        </div>
+
+        <div class="bg-blue-50 dark:bg-blue-950/30 border-l-4 border-blue-500 p-5 rounded-lg">
+          <p class="font-bold text-lg mb-2">☀️ Exemple 6 : L'énergie solaire en Haïti</p>
+          <p>Avec nos 2 800 heures d'ensoleillement par an, Haïti pourrait devenir un champion de l'énergie solaire ! De plus en plus de familles haïtiennes installent des panneaux solaires pour avoir de l'électricité sans dépendre de l'EDH. Le Soleil nous offre une énergie gratuite, propre et inépuisable !</p>
+        </div>
+
+        <h3 class="text-2xl font-bold mb-4 text-primary mt-8">📝 Exercices variés et stimulants</h3>
+
+        <div class="space-y-6">
+          <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md">
+            <p class="font-bold text-xl mb-4">1. QCM (Choisis la bonne réponse)</p>
+            <ol class="space-y-4">
+              <li><strong>a) Combien de planètes compte notre Système Solaire ?</strong>
+                <br/>① 7  ② 8  ③ 9  ④ 10
+              </li>
+              <li><strong>b) Quelle est la planète la plus proche du Soleil ?</strong>
+                <br/>① Vénus  ② Mercure  ③ Terre  ④ Mars
+              </li>
+              <li><strong>c) Pourquoi la Terre est-elle unique dans le Système Solaire ?</strong>
+                <br/>① Elle est la plus grande  ② Elle a de l'eau liquide et de la vie  ③ Elle est la plus proche du Soleil  ④ Elle a des anneaux
+              </li>
+              <li><strong>d) Combien de temps met la Terre pour faire un tour complet autour du Soleil ?</strong>
+                <br/>① 24 heures  ② 30 jours  ③ 365 jours  ④ 1 mois
+              </li>
+              <li><strong>e) Quel mouvement de la Terre cause l'alternance jour/nuit ?</strong>
+                <br/>① La révolution  ② La rotation  ③ L'inclinaison  ④ Les marées
+              </li>
+            </ol>
+            <p class="mt-4 text-sm italic">Réponses : a)②  b)②  c)②  d)③  e)②</p>
           </div>
-        </section>
+
+          <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md">
+            <p class="font-bold text-xl mb-4">2. Vrai ou Faux (Justifie ta réponse)</p>
+            <ol class="space-y-3">
+              <li>□ Le Soleil est une planète. <em>(Faux - c'est une étoile)</em></li>
+              <li>□ Jupiter est plus grande que toutes les autres planètes réunies. <em>(Vrai - elle contient 2,5 fois la masse de toutes les autres planètes)</em></li>
+              <li>□ Pluton est toujours considérée comme la 9ème planète. <em>(Faux - reclassée planète naine en 2006)</em></li>
+              <li>□ La Terre tourne en 24 heures sur elle-même. <em>(Vrai - c'est la rotation)</em></li>
+              <li>□ En Haïti, nous avons 4 saisons distinctes comme en Europe. <em>(Faux - nous avons 2 saisons : sèche et humide)</em></li>
+            </ol>
+          </div>
+
+          <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md">
+            <p class="font-bold text-xl mb-4">3. Appariement (Relie la planète à sa caractéristique)</p>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <p class="font-semibold mb-2">Planètes :</p>
+                <ol type="A" class="space-y-1">
+                  <li>Mercure</li>
+                  <li>Vénus</li>
+                  <li>Mars</li>
+                  <li>Jupiter</li>
+                  <li>Saturne</li>
+                </ol>
+              </div>
+              <div>
+                <p class="font-semibold mb-2">Caractéristiques :</p>
+                <ol class="space-y-1">
+                  <li>La planète rouge</li>
+                  <li>La plus grande planète</li>
+                  <li>Possède de magnifiques anneaux</li>
+                  <li>La planète la plus chaude</li>
+                  <li>La plus proche du Soleil</li>
+                </ol>
+              </div>
+            </div>
+            <p class="mt-3 text-sm italic">Réponses : A-5, B-4, C-1, D-2, E-3</p>
+          </div>
+
+          <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md">
+            <p class="font-bold text-xl mb-4">4. Questions de réflexion (Réponds en 3-5 phrases)</p>
+            <ol class="space-y-4">
+              <li><strong>a)</strong> Pourquoi dit-on que la Terre est la "planète bleue" ? Explique l'importance de l'eau pour la vie.</li>
+              <li><strong>b)</strong> Si tu étais sur Mars, comment ta vie serait-elle différente ? (pense à la température, l'atmosphère, la gravité...)</li>
+              <li><strong>c)</strong> Pourquoi l'énergie solaire serait-elle particulièrement avantageuse pour Haïti ? Cite au moins 3 raisons.</li>
+              <li><strong>d)</strong> Explique pourquoi nous avons des saisons différentes en Haïti comparé à l'Europe ou au Canada.</li>
+            </ol>
+          </div>
+
+          <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md">
+            <p class="font-bold text-xl mb-4">5. Activité pratique : Construis une maquette du Système Solaire</p>
+            <p class="mb-3"><strong>Matériel :</strong> Balles ou ballons de différentes tailles, peinture, fil, carton</p>
+            <p class="mb-3"><strong>Instructions :</strong></p>
+            <ol class="list-decimal ml-6 space-y-2">
+              <li>Utilise un gros ballon pour le Soleil (jaune/orange)</li>
+              <li>Trouve 8 balles de tailles différentes pour les planètes (respecte les proportions relatives)</li>
+              <li>Peins chaque planète de sa couleur caractéristique</li>
+              <li>Dispose-les dans le bon ordre sur un carton ou suspends-les avec du fil</li>
+              <li>Ajoute des étiquettes avec le nom de chaque planète et une caractéristique</li>
+            </ol>
+            <p class="mt-3 text-sm italic">💡 Astuce : Tu peux utiliser une orange pour Jupiter, une balle de tennis pour la Terre, un grain de poivre pour Mercure !</p>
+          </div>
+
+          <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md">
+            <p class="font-bold text-xl mb-4">6. Observation nocturne du ciel haïtien 🌙⭐</p>
+            <p class="mb-3"><strong>Projet sur 1 semaine :</strong></p>
+            <ol class="list-decimal ml-6 space-y-2">
+              <li>Chaque soir pendant 7 jours, observe le ciel vers 19h-20h (si possible loin des lumières)</li>
+              <li>Dessine la phase de la Lune que tu vois (croissant, quartier, pleine...)</li>
+              <li>Note l'heure du coucher du soleil</li>
+              <li>Essaie de repérer l'étoile Polaire (au Nord) et quelques constellations</li>
+              <li>Si tu vois une "étoile" très brillante qui ne scintille pas, c'est peut-être Vénus ou Jupiter !</li>
+            </ol>
+            <p class="mt-3"><strong>Question :</strong> Qu'as-tu remarqué concernant la position de la Lune chaque soir ? A-t-elle changé ?</p>
+          </div>
+
+          <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md">
+            <p class="font-bold text-xl mb-4">7. Recherche sur Internet : Les missions spatiales</p>
+            <p class="mb-3">Fais une recherche et rédige un court paragraphe (100-150 mots) sur l'une de ces missions :</p>
+            <ul class="list-disc ml-6 space-y-1">
+              <li>Apollo 11 : Les premiers hommes sur la Lune (1969)</li>
+              <li>Perseverance : Robot explorateur sur Mars (2021)</li>
+              <li>James Webb : Télescope spatial ultra-puissant (2021)</li>
+              <li>Voyager 1 : La sonde la plus éloignée de la Terre</li>
+            </ul>
+            <p class="mt-3"><strong>À inclure :</strong> Date, objectif de la mission, découvertes principales, images marquantes</p>
+          </div>
+
+          <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md">
+            <p class="font-bold text-xl mb-4">8. Débat en classe : L'exploration spatiale est-elle une priorité ?</p>
+            <p class="mb-3"><strong>Question :</strong> Les pays devraient-ils investir des milliards dans l'exploration de Mars alors qu'il y a tant de problèmes sur Terre (pauvreté, faim, éducation) ?</p>
+            <div class="grid md:grid-cols-2 gap-4 mt-4">
+              <div class="bg-green-50 dark:bg-green-950/30 p-4 rounded">
+                <p class="font-semibold text-green-900 dark:text-green-200 mb-2">Arguments POUR :</p>
+                <ul class="list-disc ml-6 text-sm space-y-1">
+                  <li>Innovations technologiques (GPS, satellites météo, matériaux)</li>
+                  <li>Inspiration pour la jeunesse</li>
+                  <li>Connaissance de l'univers</li>
+                  <li>Plan B si la Terre devient invivable</li>
+                </ul>
+              </div>
+              <div class="bg-red-50 dark:bg-red-950/30 p-4 rounded">
+                <p class="font-semibold text-red-900 dark:text-red-200 mb-2">Arguments CONTRE :</p>
+                <ul class="list-disc ml-6 text-sm space-y-1">
+                  <li>Coût énorme (100 milliards $ pour aller sur Mars)</li>
+                  <li>Urgences terrestres prioritaires</li>
+                  <li>Technologie pourrait aider sur Terre d'abord</li>
+                  <li>Mars est inhabitable de toute façon</li>
+                </ul>
+              </div>
+            </div>
+            <p class="mt-3 text-sm italic">Organisez un débat en classe : la moitié défend l'exploration, l'autre défend les priorités terrestres.</p>
+          </div>
+
+          <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md">
+            <p class="font-bold text-xl mb-4">9. Mini-recherche : Un astronaute haïtien ?</p>
+            <p class="mb-3"><strong>Sujet de réflexion :</strong> Aucun Haïtien n'est encore allé dans l'espace. Fais une recherche sur les astronautes africains ou caribéens qui ont voyagé dans l'espace. Qui sont-ils ? Quand ? Pour quelle mission ?</p>
+            <p class="mt-3"><strong>Ensuite, réponds :</strong> Que faudrait-il pour qu'Haïti ait un jour son propre astronaute ? (éducation, programmes scientifiques, partenariats internationaux...)</p>
+          </div>
+
+          <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md">
+            <p class="font-bold text-xl mb-4">10. Composition finale (200-250 mots)</p>
+            <p class="mb-3"><strong>Sujet :</strong> "Si je pouvais visiter une planète du Système Solaire..."</p>
+            <p class="mb-2">Dans ta composition, tu dois :</p>
+            <ul class="list-disc ml-6 space-y-1">
+              <li>Choisir une planète et expliquer pourquoi tu la choisis</li>
+              <li>Décrire les caractéristiques de cette planète (taille, température, atmosphère...)</li>
+              <li>Imaginer ce que tu ferais là-bas</li>
+              <li>Expliquer les défis que tu rencontrerais</li>
+              <li>Terminer par ce que cette exploration pourrait apprendre à l'humanité</li>
+            </ul>
+            <p class="mt-3 text-sm italic">Sois créatif mais reste scientifiquement précis !</p>
+          </div>
+        </div>
+
+        <div class="bg-purple-50 dark:bg-purple-950/20 p-6 rounded-lg mt-8">
+          <p class="font-semibold text-lg mb-3">🎥 Ressources vidéo YouTube suggérées</p>
+          <ul class="list-disc ml-6 space-y-2">
+            <li>"C'est quoi le Système Solaire ?" - <em>1 jour, 1 question</em></li>
+            <li>"Le Système Solaire expliqué aux enfants" - <em>Tout comprendre</em></li>
+            <li>"Pourquoi y a-t-il le jour et la nuit ?" - <em>C'est pas sorcier</em></li>
+            <li>"Voyage aux confins du Système Solaire" - <em>Documentaire ARTE</em></li>
+            <li>"Les phases de la Lune expliquées simplement"</li>
+            <li>"Mars : la planète rouge mystérieuse" - <em>National Geographic</em></li>
+          </ul>
+        </div>
       </div>
     `
   },
