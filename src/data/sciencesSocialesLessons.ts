@@ -5175,173 +5175,533 @@ export const sciencesSocialesLessons7AF: SciencesSocialesLesson[] = [
     objectif: "Découvrir les grandes civilisations anciennes et comprendre leur héritage.",
     introduction: `
       <div class="space-y-4">
-        <p>Bien avant notre époque moderne, de grandes civilisations se sont développées partout dans le monde. Ces sociétés ont construit des villes impressionnantes, développé l'écriture, créé des systèmes politiques complexes et produit des œuvres d'art remarquables.</p>
-        <p>Étudier ces civilisations nous aide à comprendre comment les sociétés humaines se sont organisées et évoluées, et comment leurs innovations continuent d'influencer notre monde aujourd'hui.</p>
+        <p class="text-lg leading-relaxed">🏛️ <strong>Voyage dans le passé : 5 000 ans d'histoire humaine !</strong></p>
+        <p>Imagine un monde sans téléphone, sans ordinateur, sans électricité... et pourtant, des êtres humains ont réussi à construire des pyramides gigantesques, à inventer l'écriture, à créer des villes de centaines de milliers d'habitants, à développer les mathématiques et l'astronomie ! Comment ont-ils fait ? C'est ce que nous allons découvrir ensemble en explorant les grandes civilisations anciennes.</p>
+        <p>Ces civilisations ne sont pas que de l'histoire poussiéreuse dans les livres : elles ont inventé l'alphabet que tu utilises pour écrire, les chiffres que tu utilises en mathématiques, le calendrier qui organise ton année scolaire, et même des lois qui protègent tes droits aujourd'hui ! Chaque fois que tu écris, que tu comptes, que tu votes (plus tard), tu utilises leur héritage.</p>
+        <p class="text-primary font-semibold">🇭🇹 Lien avec Haïti : Nous aussi, nous avons hérité de ces civilisations ! Notre langue créole contient des mots d'origine latine (de Rome), notre système juridique s'inspire du droit romain et français, et nos ancêtres taïnos avaient leur propre civilisation avancée avant l'arrivée des Européens.</p>
       </div>
     `,
     contenu: `
-      <div class="space-y-6">
+      <div class="space-y-8">
         <section>
-          <h3 class="text-xl font-semibold mb-3 text-foreground">1. La Mésopotamie : berceau de la civilisation</h3>
-          <p class="text-foreground mb-3">Située entre les fleuves Tigre et Euphrate (Irak actuel), c'est l'une des premières civilisations (3500 av. J.-C.).</p>
-          <ul class="list-disc ml-6 space-y-2 text-foreground">
-            <li><strong>Invention de l'écriture cunéiforme :</strong> Première forme d'écriture</li>
-            <li><strong>Code d'Hammourabi :</strong> Premier code de lois écrit</li>
-            <li><strong>Cités-États :</strong> Babylone, Our, Ninive</li>
-            <li><strong>Innovations :</strong> Roue, irrigation, astronomie, mathématiques</li>
-          </ul>
-          <div class="bg-primary/5 p-4 rounded-lg mt-3">
-            <p class="text-sm text-foreground italic">
-              📸 [Image suggérée : Tablette d'argile avec écriture cunéiforme]
-            </p>
-          </div>
-        </section>
-
-        <section>
-          <h3 class="text-xl font-semibold mb-3 text-foreground">2. L'Égypte ancienne</h3>
-          <p class="text-foreground mb-3">Civilisation développée le long du Nil (3100 av. J.-C. - 30 av. J.-C.).</p>
-          <ul class="list-disc ml-6 space-y-2 text-foreground">
-            <li><strong>Les pharaons :</strong> Rois considérés comme des dieux</li>
-            <li><strong>Pyramides :</strong> Tombeaux monumentaux (Khéops, Khéphren, Mykérinos)</li>
-            <li><strong>Écriture hiéroglyphique :</strong> Système d'écriture sacrée</li>
-            <li><strong>Momification :</strong> Préservation des corps</li>
-            <li><strong>Sciences :</strong> Médecine avancée, calendrier de 365 jours</li>
-            <li><strong>Agriculture :</strong> Maîtrise de l'irrigation grâce aux crues du Nil</li>
-          </ul>
-          <div class="bg-secondary/10 p-4 rounded-lg mt-3">
-            <h4 class="font-semibold mb-2 text-foreground">💡 Le savais-tu ?</h4>
-            <p class="text-foreground">
-              La Grande Pyramide de Khéops est restée le plus haut bâtiment du monde pendant 3 800 ans !
-            </p>
-          </div>
-        </section>
-
-        <section>
-          <h3 class="text-xl font-semibold mb-3 text-foreground">3. La Grèce antique</h3>
-          <p class="text-foreground mb-3">Civilisation développée dans la péninsule balkanique et les îles de la mer Égée (800-146 av. J.-C.).</p>
-          <ul class="list-disc ml-6 space-y-2 text-foreground">
-            <li><strong>Démocratie :</strong> Invention à Athènes (gouvernement par le peuple)</li>
-            <li><strong>Philosophie :</strong> Socrate, Platon, Aristote</li>
-            <li><strong>Jeux Olympiques :</strong> Créés en 776 av. J.-C.</li>
-            <li><strong>Théâtre :</strong> Tragédies et comédies</li>
-            <li><strong>Sciences :</strong> Mathématiques (Pythagore), géométrie (Euclide)</li>
-            <li><strong>Art :</strong> Sculptures, architecture (Parthénon)</li>
-          </ul>
-        </section>
-
-        <section>
-          <h3 class="text-xl font-semibold mb-3 text-foreground">4. L'Empire romain</h3>
-          <p class="text-foreground mb-3">Civilisation qui a dominé le bassin méditerranéen (753 av. J.-C. - 476 ap. J.-C.).</p>
-          <ul class="list-disc ml-6 space-y-2 text-foreground">
-            <li><strong>Organisation :</strong> République puis Empire</li>
-            <li><strong>Droit romain :</strong> Base du droit moderne</li>
-            <li><strong>Armée puissante :</strong> Légions disciplinées</li>
-            <li><strong>Infrastructure :</strong> Routes, aqueducs, ponts</li>
-            <li><strong>Latin :</strong> Langue qui a donné le français, l'espagnol, l'italien</li>
-            <li><strong>Architecture :</strong> Colisée, Forum, Panthéon</li>
-          </ul>
-          <div class="bg-primary/5 p-4 rounded-lg mt-3">
-            <p class="text-sm text-foreground italic">
-              🎥 [Vidéo suggérée : Animation 3D de la Rome antique]
-            </p>
-          </div>
-        </section>
-
-        <section>
-          <h3 class="text-xl font-semibold mb-3 text-foreground">5. Les civilisations asiatiques</h3>
+          <h3 class="text-2xl font-bold mb-4 text-indigo-700 dark:text-indigo-400">1. La Mésopotamie : Le berceau de la civilisation (3500-539 av. J.-C.) 🏛️</h3>
+          <p class="text-lg mb-4">Le mot "Mésopotamie" vient du grec et signifie "entre les fleuves". Cette région, située entre le Tigre et l'Euphrate (Irak et Syrie actuels), est considérée comme le berceau de la civilisation car c'est là que sont nées beaucoup d'innovations qui ont changé l'humanité.</p>
           
-          <h4 class="font-semibold mt-4 mb-2 text-foreground">A. La Chine ancienne</h4>
-          <ul class="list-disc ml-6 space-y-2 text-foreground">
-            <li><strong>Grande Muraille :</strong> Plus de 6 000 km de fortifications</li>
-            <li><strong>Inventions :</strong> Papier, boussole, poudre à canon, imprimerie</li>
-            <li><strong>Philosophie :</strong> Confucius, Lao Tseu</li>
-            <li><strong>Dynasties impériales :</strong> Qin, Han, Tang, Ming</li>
-          </ul>
+          <div class="bg-blue-50 dark:bg-blue-950/30 p-5 rounded-lg mb-4">
+            <h4 class="text-xl font-semibold mb-3">📍 Localisation et géographie</h4>
+            <p class="mb-3">Imagine un territoire désertique traversé par deux grands fleuves qui apportent l'eau et rendent la terre fertile. C'est exactement ce qu'était la Mésopotamie ! Grâce aux crues annuelles du Tigre et de l'Euphrate, les Mésopotamiens ont développé une agriculture prospère.</p>
+            <ul class="list-disc ml-6 space-y-2">
+              <li><strong>Principales villes :</strong> Ur, Babylone, Ninive, Akkad</li>
+              <li><strong>Peuples :</strong> Sumériens, Babyloniens, Assyriens, Akkadiens</li>
+              <li><strong>Période :</strong> De 3500 av. J.-C. à 539 av. J.-C. (conquête perse)</li>
+            </ul>
+          </div>
 
-          <h4 class="font-semibold mt-4 mb-2 text-foreground">B. L'Inde ancienne</h4>
-          <ul class="list-disc ml-6 space-y-2 text-foreground">
-            <li><strong>Civilisation de l'Indus :</strong> Villes planifiées (Mohenjo-Daro)</li>
-            <li><strong>Religions :</strong> Hindouisme, bouddhisme, jaïnisme</li>
-            <li><strong>Mathématiques :</strong> Invention du zéro, système décimal</li>
-            <li><strong>Littérature :</strong> Védas, Mahabharata</li>
-          </ul>
+          <div class="bg-amber-50 dark:bg-amber-950/30 p-5 rounded-lg mb-4">
+            <h4 class="text-xl font-semibold mb-3">✍️ L'invention de l'écriture cunéiforme (vers 3200 av. J.-C.)</h4>
+            <p class="mb-3">C'est l'une des plus grandes inventions de l'humanité ! Les Sumériens ont inventé l'écriture pour compter leurs récoltes, leurs moutons, et enregistrer les transactions commerciales. Au début, c'étaient des dessins simples (pictogrammes), puis ils ont évolué vers des signes en forme de coins gravés sur des tablettes d'argile avec un roseau taillé (le calame).</p>
+            <p class="font-semibold text-amber-900 dark:text-amber-200">🇭🇹 Comparaison haïtienne : C'est comme si nos marchandes notaient toutes leurs ventes dans un cahier pour ne rien oublier ! L'écriture est née du besoin pratique de garder trace des choses importantes.</p>
+          </div>
+
+          <div class="bg-purple-50 dark:bg-purple-950/30 p-5 rounded-lg mb-4">
+            <h4 class="text-xl font-semibold mb-3">⚖️ Le Code d'Hammourabi (vers 1750 av. J.-C.)</h4>
+            <p class="mb-3">Le roi Hammourabi de Babylone a créé le premier code de lois écrit de l'histoire ! Ce code contenait 282 lois gravées sur une grande stèle (colonne) de pierre noire de 2,25 mètres de haut. Il traitait de tout : commerce, famille, propriété, esclavage, salaires...</p>
+            <p class="mb-3"><strong>Principe célèbre :</strong> "Œil pour œil, dent pour dent" - Si quelqu'un te fait du mal, la punition doit être égale au mal causé.</p>
+            <p class="text-purple-900 dark:text-purple-200 font-semibold">💡 Pourquoi c'est important ? C'est la première fois qu'on écrit les lois pour que tout le monde les connaisse ! Avant, les rois décidaient au cas par cas. Avec des lois écrites, c'est plus juste et prévisible.</p>
+          </div>
+
+          <div class="bg-green-50 dark:bg-green-950/30 p-5 rounded-lg">
+            <h4 class="text-xl font-semibold mb-3">🔬 Inventions et innovations mésopotamiennes</h4>
+            <ul class="list-disc ml-6 space-y-3">
+              <li><strong>La roue (vers 3500 av. J.-C.) :</strong> Révolution du transport ! Au début pour les poteries, puis pour les chars et chariots.</li>
+              <li><strong>L'irrigation :</strong> Systèmes de canaux pour apporter l'eau des fleuves aux champs éloignés.</li>
+              <li><strong>Les mathématiques :</strong> Système sexagésimal (base 60) - c'est pour ça qu'aujourd'hui on a 60 minutes dans une heure et 360 degrés dans un cercle !</li>
+              <li><strong>L'astronomie :</strong> Observation des étoiles, création du calendrier lunaire, prédiction des éclipses.</li>
+              <li><strong>L'architecture :</strong> Ziggourats (grandes pyramides à étages), temples, palais en briques de terre cuite.</li>
+              <li><strong>La bière :</strong> Oui, les Sumériens ont inventé la bière en faisant fermenter de l'orge !</li>
+            </ul>
+          </div>
         </section>
 
         <section>
-          <h3 class="text-xl font-semibold mb-3 text-foreground">6. Les civilisations précolombiennes</h3>
+          <h3 class="text-2xl font-bold mb-4 text-amber-700 dark:text-amber-400">2. L'Égypte ancienne : La civilisation du Nil (3100 av. J.-C. - 30 av. J.-C.) 🔺</h3>
+          <p class="text-lg mb-4">L'Égypte ancienne est probablement la civilisation antique la plus fascinante et la plus connue grâce à ses pyramides monumentales, ses pharaons légendaires et ses trésors archéologiques spectaculaires !</p>
+
+          <div class="bg-blue-50 dark:bg-blue-950/30 p-5 rounded-lg mb-4">
+            <h4 class="text-xl font-semibold mb-3">🌊 Le don du Nil</h4>
+            <p class="mb-3">L'historien grec Hérodote a dit : <em>"L'Égypte est un don du Nil"</em>. Pourquoi ? Parce que sans ce fleuve gigantesque, l'Égypte ne serait qu'un désert inhabitable ! Chaque année, le Nil débordait et déposait du limon (boue fertile) sur ses rives, créant une bande de terre extrêmement fertile au milieu du désert.</p>
+            <p class="font-semibold text-blue-900 dark:text-blue-200">🇭🇹 Comparaison avec Haïti : C'est un peu comme nos plaines de l'Artibonite qui sont fertiles grâce à l'irrigation. L'eau, c'est la vie !</p>
+          </div>
+
+          <div class="bg-amber-50 dark:bg-amber-950/30 p-5 rounded-lg mb-4">
+            <h4 class="text-xl font-semibold mb-3">👑 Les Pharaons : Rois-dieux de l'Égypte</h4>
+            <p class="mb-3">Les pharaons n'étaient pas de simples rois : ils étaient considérés comme des dieux vivants, intermédiaires entre les dieux et les humains ! Ils avaient un pouvoir absolu sur tout l'Égypte.</p>
+            <ul class="list-disc ml-6 space-y-2 mb-3">
+              <li><strong>Khéops (Khoufou) :</strong> A fait construire la plus grande pyramide (146 m de haut à l'origine !)</li>
+              <li><strong>Toutânkhamon :</strong> Le plus célèbre grâce à sa tombe intacte découverte en 1922, remplie de trésors</li>
+              <li><strong>Ramsès II :</strong> Le plus grand pharaon guerrier, a régné 66 ans, a fait construire Abou Simbel</li>
+              <li><strong>Cléopâtre VII :</strong> Dernière pharaonne, célèbre pour son intelligence et ses relations avec Jules César et Marc-Antoine</li>
+            </ul>
+          </div>
+
+          <div class="bg-yellow-50 dark:bg-yellow-950/30 p-5 rounded-lg mb-4">
+            <h4 class="text-xl font-semibold mb-3">🔺 Les Pyramides de Gizeh : Merveille du monde antique</h4>
+            <p class="mb-3">Les trois pyramides principales de Gizeh (Khéops, Khéphren, Mykérinos) sont les seules des Sept Merveilles du monde antique encore debout aujourd'hui ! Comment les Égyptiens ont-ils pu construire de telles structures il y a 4 500 ans ?</p>
+            <p class="mb-3"><strong>Chiffres impressionnants de la pyramide de Khéops :</strong></p>
+            <ul class="list-disc ml-6 space-y-2">
+              <li>Hauteur originale : 146 mètres (comme un immeuble de 45 étages !)</li>
+              <li>Poids : 5 millions de tonnes</li>
+              <li>Nombre de blocs : 2,3 millions de pierres calcaires</li>
+              <li>Poids moyen d'un bloc : 2,5 tonnes (certains pèsent 70 tonnes !)</li>
+              <li>Temps de construction : Environ 20 ans</li>
+              <li>Main d'œuvre : 20 000 à 30 000 ouvriers (pas des esclaves, mais des paysans payés pendant la crue du Nil)</li>
+            </ul>
+            <p class="mt-3 text-yellow-900 dark:text-yellow-200 font-semibold">🔍 Mystère : Avec des outils en cuivre et en pierre, sans machines modernes, comment ont-ils réussi ? Probablement avec des rampes, des leviers, des traîneaux en bois, et beaucoup, beaucoup de travail humain coordonné !</p>
+          </div>
+
+          <div class="bg-indigo-50 dark:bg-indigo-950/30 p-5 rounded-lg mb-4">
+            <h4 class="text-xl font-semibold mb-3">📜 Les hiéroglyphes : Écriture sacrée</h4>
+            <p class="mb-3">Les Égyptiens utilisaient trois types d'écriture :</p>
+            <ul class="list-disc ml-6 space-y-2 mb-3">
+              <li><strong>Hiéroglyphes :</strong> Écriture sacrée pour les temples et monuments (plus de 700 signes !)</li>
+              <li><strong>Hiératique :</strong> Version simplifiée pour les documents administratifs</li>
+              <li><strong>Démotique :</strong> Écriture populaire, encore plus simple</li>
+            </ul>
+            <p class="mb-3"><strong>La Pierre de Rosette (1799) :</strong> Cette pierre a permis de déchiffrer les hiéroglyphes ! Elle contenait le même texte en trois écritures : hiéroglyphes, démotique et grec ancien. Le Français Jean-François Champollion a réussi à la déchiffrer en 1822.</p>
+          </div>
+
+          <div class="bg-purple-50 dark:bg-purple-950/30 p-5 rounded-lg mb-4">
+            <h4 class="text-xl font-semibold mb-3">🏺 La momification : Préserver les morts pour l'éternité</h4>
+            <p class="mb-3">Les Égyptiens croyaient en la vie après la mort. Pour que l'âme (le "ka") puisse reconnaître et réhabiter le corps dans l'au-delà, il fallait préserver le corps en le momifiant.</p>
+            <p class="mb-3"><strong>Processus de momification (70 jours) :</strong></p>
+            <ol class="list-decimal ml-6 space-y-2">
+              <li>Retirer les organes internes (sauf le cœur, siège de l'intelligence) et les placer dans des vases canopes</li>
+              <li>Retirer le cerveau par le nez avec un crochet (ils pensaient que ça ne servait à rien !)</li>
+              <li>Recouvrir le corps de natron (sel) pendant 40 jours pour le déshydrater</li>
+              <li>Emballer le corps avec des bandelettes de lin (plusieurs centaines de mètres !)</li>
+              <li>Placer des amulettes protectrices entre les bandelettes</li>
+              <li>Mettre le corps dans un ou plusieurs sarcophages décorés</li>
+            </ol>
+          </div>
+
+          <div class="bg-teal-50 dark:bg-teal-950/30 p-5 rounded-lg">
+            <h4 class="text-xl font-semibold mb-3">🔬 Sciences et innovations égyptiennes</h4>
+            <ul class="list-disc ml-6 space-y-3">
+              <li><strong>Médecine avancée :</strong> Chirurgie (trépanation du crâne), dentisterie, connaissances anatomiques détaillées grâce à la momification</li>
+              <li><strong>Calendrier solaire :</strong> 365 jours divisés en 12 mois de 30 jours + 5 jours épagomènes (jours supplémentaires)</li>
+              <li><strong>Géométrie :</strong> Nécessaire pour mesurer les terres après les crues du Nil et construire les pyramides</li>
+              <li><strong>Papyrus :</strong> Support d'écriture fabriqué à partir de la plante du même nom (ancêtre du papier)</li>
+              <li><strong>Cosmétiques :</strong> Khôl (maquillage des yeux), parfums, perruques</li>
+            </ul>
+          </div>
+        </section>
+
+        <section>
+          <h3 class="text-2xl font-bold mb-4 text-blue-700 dark:text-blue-400">3. La Grèce antique : Berceau de la démocratie et de la philosophie (800-146 av. J.-C.) 🏛️</h3>
           
-          <h4 class="font-semibold mt-4 mb-2 text-foreground">A. Les Mayas</h4>
-          <ul class="list-disc ml-6 space-y-2 text-foreground">
-            <li><strong>Localisation :</strong> Amérique centrale (Mexique, Guatemala)</li>
-            <li><strong>Calendrier complexe :</strong> Astronomie avancée</li>
-            <li><strong>Écriture glyphique :</strong> Système d'écriture élaboré</li>
-            <li><strong>Architecture :</strong> Pyramides, temples (Chichén Itzá)</li>
-          </ul>
+          <div class="bg-blue-50 dark:bg-blue-950/30 p-5 rounded-lg mb-4">
+            <h4 class="text-xl font-semibold mb-3">🗳️ Athènes et la naissance de la démocratie</h4>
+            <p class="mb-3">Le mot "démocratie" vient du grec "demos" (peuple) et "kratos" (pouvoir) : le pouvoir du peuple ! C'est à Athènes, vers 508 av. J.-C., que la première démocratie du monde a été créée.</p>
+            <p class="mb-3"><strong>Comment ça fonctionnait ?</strong></p>
+            <ul class="list-disc ml-6 space-y-2">
+              <li>Les citoyens athéniens (hommes libres de plus de 18 ans) se réunissaient sur l'Agora (place publique) pour voter les lois</li>
+              <li>Chacun avait le droit de parler et de proposer des lois</li>
+              <li>Les décisions étaient prises à la majorité des votes</li>
+            </ul>
+            <p class="mt-3 text-blue-900 dark:text-blue-200 font-semibold">⚠️ Attention : La démocratie athénienne n'était pas parfaite ! Les femmes, les esclaves et les étrangers n'avaient pas le droit de vote. Seulement 10-20% de la population participait.</p>
+          </div>
 
-          <h4 class="font-semibold mt-4 mb-2 text-foreground">B. Les Aztèques</h4>
-          <ul class="list-disc ml-6 space-y-2 text-foreground">
-            <li><strong>Capitale :</strong> Tenochtitlan (Mexico actuel)</li>
-            <li><strong>Agriculture :</strong> Chinampas (jardins flottants)</li>
-            <li><strong>Empire puissant :</strong> Domination militaire</li>
-          </ul>
+          <div class="bg-purple-50 dark:bg-purple-950/30 p-5 rounded-lg mb-4">
+            <h4 class="text-xl font-semibold mb-3">🤔 Les grands philosophes grecs</h4>
+            <ul class="list-disc ml-6 space-y-3">
+              <li><strong>Socrate (470-399 av. J.-C.) :</strong> "Connais-toi toi-même". Il posait des questions pour faire réfléchir les gens (méthode socratique). Condamné à mort pour avoir "corrompu la jeunesse" !</li>
+              <li><strong>Platon (427-347 av. J.-C.) :</strong> Élève de Socrate. A fondé l'Académie (première université). Théorie des Idées : le monde réel n'est qu'une ombre du monde des Idées parfaites.</li>
+              <li><strong>Aristote (384-322 av. J.-C.) :</strong> Élève de Platon. A classifié les sciences (biologie, physique, métaphysique, éthique). Précepteur d'Alexandre le Grand.</li>
+            </ul>
+          </div>
 
-          <h4 class="font-semibold mt-4 mb-2 text-foreground">C. Les Incas</h4>
-          <ul class="list-disc ml-6 space-y-2 text-foreground">
-            <li><strong>Localisation :</strong> Cordillère des Andes (Pérou, Bolivie, Équateur)</li>
-            <li><strong>Machu Picchu :</strong> Cité perchée dans les montagnes</li>
-            <li><strong>Routes :</strong> Réseau routier de 40 000 km</li>
-            <li><strong>Architecture en pierre :</strong> Sans mortier, très résistante</li>
-          </ul>
+          <div class="bg-amber-50 dark:bg-amber-950/30 p-5 rounded-lg mb-4">
+            <h4 class="text-xl font-semibold mb-3">🏃 Les Jeux Olympiques (776 av. J.-C.)</h4>
+            <p class="mb-3">Créés en 776 av. J.-C. à Olympie, en l'honneur du dieu Zeus. Pendant les Jeux (tous les 4 ans), toutes les guerres entre cités grecques s'arrêtaient (trêve olympique) !</p>
+            <p class="mb-3"><strong>Épreuves :</strong> Course à pied, lutte, boxe, pentathlon (5 épreuves), course de chars...</p>
+            <p class="text-amber-900 dark:text-amber-200 font-semibold">🏅 Les vainqueurs recevaient une couronne d'olivier et devenaient des héros dans leur cité ! Les Jeux modernes (depuis 1896) s'inspirent directement de cette tradition.</p>
+          </div>
+
+          <div class="bg-green-50 dark:bg-green-950/30 p-5 rounded-lg">
+            <h4 class="text-xl font-semibold mb-3">🎭 Théâtre, arts et sciences</h4>
+            <ul class="list-disc ml-6 space-y-2">
+              <li><strong>Théâtre :</strong> Tragédies (Sophocle, Euripide) et comédies (Aristophane). Invention des masques de théâtre.</li>
+              <li><strong>Architecture :</strong> Le Parthénon d'Athènes, chef-d'œuvre de l'architecture classique</li>
+              <li><strong>Sculpture :</strong> Représentations réalistes du corps humain (Vénus de Milo, Discobole)</li>
+              <li><strong>Mathématiques :</strong> Pythagore (théorème), Euclide (géométrie), Archimède (physique)</li>
+            </ul>
+          </div>
         </section>
 
         <section>
-          <h3 class="text-xl font-semibold mb-3 text-foreground">7. L'héritage des civilisations anciennes</h3>
-          <p class="text-foreground mb-3">Ces civilisations nous ont légué :</p>
-          <ul class="list-disc ml-6 space-y-2 text-foreground">
-            <li><strong>L'écriture :</strong> Base de toute notre connaissance</li>
-            <li><strong>Les mathématiques et sciences :</strong> Fondements de la science moderne</li>
-            <li><strong>Le droit et la politique :</strong> Systèmes juridiques et démocratiques</li>
-            <li><strong>L'architecture :</strong> Techniques de construction</li>
-            <li><strong>L'agriculture :</strong> Domestication des plantes et animaux</li>
-            <li><strong>L'art et la culture :</strong> Inspiration pour les créateurs d'aujourd'hui</li>
-          </ul>
+          <h3 class="text-2xl font-bold mb-4 text-red-700 dark:text-red-400">4. L'Empire romain : Maîtres du monde antique (753 av. J.-C. - 476 ap. J.-C.) 🦅</h3>
+          
+          <div class="bg-red-50 dark:bg-red-950/30 p-5 rounded-lg mb-4">
+            <h4 class="text-xl font-semibold mb-3">🏛️ De la République à l'Empire</h4>
+            <p class="mb-3"><strong>République romaine (509-27 av. J.-C.) :</strong> Gouvernement avec deux consuls élus chaque année, un Sénat, et des assemblées populaires.</p>
+            <p class="mb-3"><strong>Empire romain (27 av. J.-C. - 476 ap. J.-C.) :</strong> Après des guerres civiles, Auguste devient le premier empereur. À son apogée (IIe siècle ap. J.-C.), l'Empire romain s'étendait de l'Écosse au Sahara, de l'Espagne à la Mésopotamie !</p>
+          </div>
+
+          <div class="bg-blue-50 dark:bg-blue-950/30 p-5 rounded-lg mb-4">
+            <h4 class="text-xl font-semibold mb-3">⚖️ Le droit romain : Fondement du droit moderne</h4>
+            <p class="mb-3">Les Romains ont créé un système juridique très avancé qui influence encore nos lois aujourd'hui !</p>
+            <ul class="list-disc ml-6 space-y-2">
+              <li><strong>Présomption d'innocence :</strong> Accusé innocent jusqu'à preuve du contraire</li>
+              <li><strong>Droit de la défense :</strong> Droit d'être défendu par un avocat</li>
+              <li><strong>Contrats écrits :</strong> Accords légaux entre parties</li>
+              <li><strong>"Dura lex, sed lex" :</strong> "La loi est dure, mais c'est la loi" - principe de l'État de droit</li>
+            </ul>
+          </div>
+
+          <div class="bg-gray-50 dark:bg-gray-950/30 p-5 rounded-lg mb-4">
+            <h4 class="text-xl font-semibold mb-3">🏗️ Ingénierie et architecture romaines</h4>
+            <ul class="list-disc ml-6 space-y-3">
+              <li><strong>Routes :</strong> Plus de 400 000 km de routes pavées ! "Tous les chemins mènent à Rome."</li>
+              <li><strong>Aqueducs :</strong> Transportaient l'eau sur des centaines de kilomètres (Pont du Gard en France : 49 m de haut !)</li>
+              <li><strong>Colisée :</strong> Amphithéâtre de 50 000 places, construit en 8 ans (70-80 ap. J.-C.)</li>
+              <li><strong>Panthéon :</strong> Temple avec le plus grand dôme en béton non armé du monde (2 000 ans et toujours debout !)</li>
+              <li><strong>Thermes :</strong> Bains publics avec eau chaude, froide, tiède, bibliothèques, salles de sport</li>
+            </ul>
+          </div>
+
+          <div class="bg-purple-50 dark:bg-purple-950/30 p-5 rounded-lg">
+            <h4 class="text-xl font-semibold mb-3">🌍 L'héritage romain</h4>
+            <ul class="list-disc ml-6 space-y-2">
+              <li><strong>Langues romanes :</strong> Français, espagnol, italien, portugais, roumain viennent tous du latin</li>
+              <li><strong>Alphabet latin :</strong> L'alphabet que tu utilises pour écrire !</li>
+              <li><strong>Système judiciaire :</strong> Base du droit dans la plupart des pays occidentaux</li>
+              <li><strong>Architecture :</strong> Arcs, voûtes, dômes, colonnes</li>
+            </ul>
+            <p class="mt-3 text-purple-900 dark:text-purple-200 font-semibold">🇭🇹 Lien haïtien : Nos langues (français et créole) descendent directement du latin ! Des mots comme "kay" (casa en latin), "bonè" (bonus), "sitwon" (citrus) viennent du latin via le français.</p>
+          </div>
+        </section>
+
+        <section>
+          <h3 class="text-2xl font-bold mb-4 text-emerald-700 dark:text-emerald-400">5. Les civilisations d'Amérique précolombienne 🌎</h3>
+          
+          <div class="bg-amber-50 dark:bg-amber-950/30 p-5 rounded-lg mb-4">
+            <h4 class="text-xl font-semibold mb-3">🌽 Les Mayas (2000 av. J.-C. - 1500 ap. J.-C.)</h4>
+            <p class="mb-3">Civilisation brillante d'Amérique centrale (Guatemala, Mexique, Belize, Honduras).</p>
+            <ul class="list-disc ml-6 space-y-2">
+              <li><strong>Écriture glyphique :</strong> Seul système d'écriture complet des Amériques précolombiennes</li>
+              <li><strong>Calendrier très précis :</strong> Année de 365,2420 jours (presque exacte !)</li>
+              <li><strong>Mathématiques :</strong> Invention du zéro (indépendamment de l'Inde)</li>
+              <li><strong>Astronomie :</strong> Observation précise de Vénus, prédiction d'éclipses</li>
+              <li><strong>Architecture :</strong> Pyramides à degrés (Chichén Itzá, Tikal, Palenque)</li>
+            </ul>
+          </div>
+
+          <div class="bg-red-50 dark:bg-red-950/30 p-5 rounded-lg mb-4">
+            <h4 class="text-xl font-semibold mb-3">🦅 Les Aztèques (1345-1521)</h4>
+            <p class="mb-3">Empire puissant du Mexique central, avec une capitale spectaculaire : Tenochtitlan.</p>
+            <ul class="list-disc ml-6 space-y-2">
+              <li><strong>Tenochtitlan :</strong> Ville de 200 000 habitants construite sur un lac ! Plus grande que Paris à l'époque !</li>
+              <li><strong>Chinampas :</strong> "Jardins flottants" - îles artificielles très fertiles</li>
+              <li><strong>Système d'éducation :</strong> Obligatoire pour tous les enfants (rare à l'époque !)</li>
+              <li><strong>Cacao :</strong> Utilisé comme monnaie et pour faire du chocolat (boisson des nobles)</li>
+            </ul>
+          </div>
+
+          <div class="bg-yellow-50 dark:bg-yellow-950/30 p-5 rounded-lg">
+            <h4 class="text-xl font-semibold mb-3">⛰️ Les Incas (1438-1533)</h4>
+            <p class="mb-3">Plus grand empire des Amériques précolombiennes, s'étendant sur 5 000 km le long de la cordillère des Andes !</p>
+            <ul class="list-disc ml-6 space-y-2">
+              <li><strong>Machu Picchu :</strong> Cité perchée à 2 430 m d'altitude, invisible depuis la vallée</li>
+              <li><strong>Qhapaq Ñan :</strong> Réseau routier de 40 000 km dans les montagnes</li>
+              <li><strong>Agriculture en terrasses :</strong> Culture sur les pentes des montagnes</li>
+              <li><strong>Quipus :</strong> Système de cordes nouées pour compter et enregistrer des informations</li>
+              <li><strong>Maçonnerie parfaite :</strong> Pierres assemblées sans mortier, si précises qu'une lame de couteau ne peut pas passer entre elles !</li>
+            </ul>
+            <p class="mt-3 text-yellow-900 dark:text-yellow-200 font-semibold">🇭🇹 Lien avec Haïti : Comme les peuples précolombiens d'Amérique, Haïti avait aussi ses peuples autochtones : les Taïnos ! Ils cultivaient le manioc, le maïs, la patate douce, et vivaient en harmonie avec la nature.</p>
+          </div>
+        </section>
+
+        <section>
+          <h3 class="text-2xl font-bold mb-4 text-indigo-700 dark:text-indigo-400">6. Synthèse : L'héritage des civilisations anciennes dans notre vie quotidienne 🌟</h3>
+          
+          <div class="bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-950/30 dark:to-purple-950/30 p-6 rounded-lg">
+            <p class="text-lg mb-4 font-semibold">Ces civilisations anciennes ne sont pas mortes : elles vivent à travers nous chaque jour !</p>
+            
+            <div class="space-y-4">
+              <div>
+                <p class="font-bold text-primary">✍️ Quand tu écris...</p>
+                <p>Tu utilises l'alphabet (Phéniciens → Grecs → Romains), l'écriture cunéiforme ou hiéroglyphique (Mésopotamie, Égypte).</p>
+              </div>
+
+              <div>
+                <p class="font-bold text-primary">🔢 Quand tu comptes...</p>
+                <p>Tu utilises le système décimal (Inde), le zéro (Inde et Mayas), ou la base 60 pour le temps (Mésopotamie : 60 secondes, 60 minutes).</p>
+              </div>
+
+              <div>
+                <p class="font-bold text-primary">⚖️ Quand tu parles de justice...</p>
+                <p>Tu appliques des principes du droit romain : présomption d'innocence, égalité devant la loi.</p>
+              </div>
+
+              <div>
+                <p class="font-bold text-primary">🗳️ Quand tu votes (plus tard)...</p>
+                <p>Tu pratiques la démocratie inventée par les Grecs.</p>
+              </div>
+
+              <div>
+                <p class="font-bold text-primary">📅 Quand tu regardes le calendrier...</p>
+                <p>Tu utilises le calendrier égyptien perfectionné par les Romains (calendrier julien puis grégorien).</p>
+              </div>
+
+              <div>
+                <p class="font-bold text-primary">🏛️ Quand tu vois un bâtiment officiel...</p>
+                <p>Il a souvent des colonnes et une architecture inspirées de la Grèce et de Rome.</p>
+              </div>
+
+              <div>
+                <p class="font-bold text-primary">💬 Quand tu parles français ou créole...</p>
+                <p>Tu utilises des mots d'origine latine (Rome) et grecque.</p>
+              </div>
+            </div>
+
+            <p class="mt-6 text-lg font-semibold text-purple-900 dark:text-purple-200 bg-white/50 dark:bg-black/20 p-4 rounded-lg">
+              🌍 Conclusion : Nous sommes les héritiers de 5 000 ans d'histoire humaine. Chaque invention, chaque idée, chaque découverte des civilisations anciennes a contribué à construire le monde moderne dans lequel nous vivons aujourd'hui !
+            </p>
+          </div>
         </section>
       </div>
     `,
     exemplesExercices: `
       <div class="space-y-6">
-        <section>
-          <h3 class="text-xl font-semibold mb-3 text-foreground">Exemples concrets</h3>
-          <div class="bg-primary/5 border-l-4 border-primary p-4 rounded">
-            <p class="text-foreground"><strong>Exemple 1 :</strong> Le mot "alphabet" vient du grec "alpha" et "bêta", les deux premières lettres de leur alphabet.</p>
-            <p class="text-foreground mt-2"><strong>Exemple 2 :</strong> Les Romains ont construit des aqueducs pour transporter l'eau sur des dizaines de kilomètres - certains fonctionnent encore aujourd'hui !</p>
-            <p class="text-foreground mt-2"><strong>Exemple 3 :</strong> Le calendrier que nous utilisons vient de l'Égypte ancienne et a été perfectionné par les Romains.</p>
-          </div>
-        </section>
+        <h3 class="text-2xl font-bold mb-4 text-primary">🇭🇹 Exemples concrets liés à Haïti et notre quotidien</h3>
         
-        <section>
-          <h3 class="text-xl font-semibold mb-3 text-foreground">Exercices pratiques</h3>
-          <div class="space-y-4">
-            <div>
-              <p class="font-semibold text-foreground">1. Projet de recherche</p>
-              <p class="text-foreground">Choisis une civilisation ancienne et crée une affiche présentant :</p>
-              <ul class="ml-6 list-disc text-foreground">
-                <li>Sa localisation géographique</li>
-                <li>Ses principales réalisations</li>
-                <li>Un monument célèbre</li>
-                <li>Son héritage aujourd'hui</li>
-              </ul>
-            </div>
-            <div>
-              <p class="font-semibold text-foreground">2. Ligne du temps</p>
-              <p class="text-foreground">Crée une frise chronologique situant les grandes civilisations anciennes de 4000 av. J.-C. à 500 ap. J.-C.</p>
-            </div>
-            <div>
-              <p class="font-semibold text-foreground">3. Comparaison</p>
-              <p class="text-foreground">Compare deux civilisations anciennes : quels points communs ? Quelles différences ? Utilise un tableau comparatif.</p>
-            </div>
+        <div class="bg-blue-50 dark:bg-blue-950/30 border-l-4 border-blue-500 p-5 rounded-lg mb-4">
+          <p class="font-bold text-lg mb-2">📜 Exemple 1 : Notre langue créole et le latin</p>
+          <p>Beaucoup de mots créoles viennent directement du latin via le français ! Par exemple :</p>
+          <ul class="list-disc ml-6 mt-2 space-y-1">
+            <li><strong>"Kay"</strong> (maison) vient de "casa" en latin</li>
+            <li><strong>"Lekòl"</strong> (école) vient de "schola" en latin</li>
+            <li><strong>"Liv"</strong> (livre) vient de "liber" en latin</li>
+            <li><strong>"Lanmou"</strong> (amour) vient de "amor" en latin</li>
+          </ul>
+          <p class="mt-3">Sans les Romains qui ont répandu le latin, nous ne parlerions pas créole aujourd'hui !</p>
+        </div>
+
+        <div class="bg-blue-50 dark:bg-blue-950/30 border-l-4 border-blue-500 p-5 rounded-lg mb-4">
+          <p class="font-bold text-lg mb-2">⚖️ Exemple 2 : Notre système juridique haïtien</p>
+          <p>Le Code Civil haïtien (depuis 1825) est directement inspiré du Code Civil français (Code Napoléon), qui lui-même s'inspire du droit romain ! Quand un juge haïtien applique la loi, il utilise des principes vieux de 2 000 ans :</p>
+          <ul class="list-disc ml-6 mt-2">
+            <li>Présomption d'innocence</li>
+            <li>Droit à un avocat</li>
+            <li>Contrats légaux</li>
+          </ul>
+        </div>
+
+        <div class="bg-blue-50 dark:bg-blue-950/30 border-l-4 border-blue-500 p-5 rounded-lg mb-4">
+          <p class="font-bold text-lg mb-2">🌽 Exemple 3 : Les Taïnos, nos ancêtres autochtones</p>
+          <p>Avant l'arrivée de Christophe Colomb en 1492, Haïti (Ayiti) était habitée par les Taïnos, un peuple amérindien avancé. Ils nous ont laissé :</p>
+          <ul class="list-disc ml-6 mt-2">
+            <li><strong>Le nom "Haïti"</strong> (Ayiti = "terre montagneuse")</li>
+            <li><strong>Des mots :</strong> hamac, ouragan, tabac, canot, barbecue</li>
+            <li><strong>Des aliments :</strong> manioc (kassav), patate douce, maïs</li>
+            <li><strong>Le jeu de balle :</strong> Ancêtre du football</li>
+          </ul>
+          <p class="mt-3">Même si les Taïnos ont été décimés par la colonisation, leur héritage vit à travers nous !</p>
+        </div>
+
+        <div class="bg-blue-50 dark:bg-blue-950/30 border-l-4 border-blue-500 p-5 rounded-lg mb-4">
+          <p class="font-bold text-lg mb-2">🏛️ Exemple 4 : L'architecture du Palais National (avant 2010)</p>
+          <p>Le Palais National d'Haïti (détruit en 2010) avait des colonnes et un dôme inspirés de l'architecture grecque et romaine ! Beaucoup de bâtiments officiels dans le monde copient ce style "néoclassique".</p>
+        </div>
+
+        <div class="bg-blue-50 dark:bg-blue-950/30 border-l-4 border-blue-500 p-5 rounded-lg mb-4">
+          <p class="font-bold text-lg mb-2">📅 Exemple 5 : Notre calendrier et nos mois</p>
+          <p>Les noms de nos mois viennent des Romains :</p>
+          <ul class="list-disc ml-6 mt-2">
+            <li><strong>Janvier :</strong> Janus (dieu des débuts)</li>
+            <li><strong>Mars :</strong> Mars (dieu de la guerre)</li>
+            <li><strong>Juillet :</strong> Jules César</li>
+            <li><strong>Août :</strong> Auguste (premier empereur romain)</li>
+          </ul>
+          <p class="mt-3">Chaque fois que tu dis "Bon mwa Out" (Bon mois d'août), tu honores un empereur romain !</p>
+        </div>
+
+        <h3 class="text-2xl font-bold mb-4 text-primary mt-8">📝 Exercices variés et stimulants</h3>
+
+        <div class="space-y-6">
+          <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md">
+            <p class="font-bold text-xl mb-4">1. QCM (Choisis la bonne réponse)</p>
+            <ol class="space-y-4">
+              <li><strong>a) Qui a inventé l'écriture cunéiforme ?</strong>
+                <br/>① Les Égyptiens ② Les Sumériens ③ Les Grecs ④ Les Romains
+              </li>
+              <li><strong>b) Quelle civilisation a construit les pyramides de Gizeh ?</strong>
+                <br/>① La Mésopotamie ② La Grèce ③ L'Égypte ④ Rome
+              </li>
+              <li><strong>c) Où est née la démocratie ?</strong>
+                <br/>① Rome ② Athènes ③ Babylone ④ Alexandrie
+              </li>
+              <li><strong>d) Quel empire a dominé le bassin méditerranéen pendant des siècles ?</strong>
+                <br/>① L'Empire grec ② L'Empire perse ③ L'Empire romain ④ L'Empire égyptien
+              </li>
+              <li><strong>e) Quelle civilisation précolombienne a construit Machu Picchu ?</strong>
+                <br/>① Les Mayas ② Les Aztèques ③ Les Incas ④ Les Taïnos
+              </li>
+            </ol>
+            <p class="mt-4 text-sm italic">Réponses : a)② b)③ c)② d)③ e)③</p>
           </div>
-        </section>
+
+          <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md">
+            <p class="font-bold text-xl mb-4">2. Frise chronologique interactive</p>
+            <p class="mb-3">Sur une grande feuille, crée une ligne du temps de 4000 av. J.-C. à 500 ap. J.-C. Place-y :</p>
+            <ul class="list-disc ml-6 space-y-2">
+              <li>L'invention de l'écriture cunéiforme (3200 av. J.-C.)</li>
+              <li>La construction de la pyramide de Khéops (2560 av. J.-C.)</li>
+              <li>Le Code d'Hammourabi (1750 av. J.-C.)</li>
+              <li>Les premiers Jeux Olympiques (776 av. J.-C.)</li>
+              <li>La fondation de Rome (753 av. J.-C.)</li>
+              <li>La naissance de la démocratie athénienne (508 av. J.-C.)</li>
+              <li>Alexandre le Grand (336-323 av. J.-C.)</li>
+              <li>L'apogée de l'Empire romain (Ier-IIe siècles ap. J.-C.)</li>
+              <li>La chute de l'Empire romain d'Occident (476 ap. J.-C.)</li>
+            </ul>
+            <p class="mt-3 text-sm italic">💡 Utilise des couleurs différentes pour chaque civilisation !</p>
+          </div>
+
+          <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md">
+            <p class="font-bold text-xl mb-4">3. Tableau comparatif : Deux civilisations face à face</p>
+            <p class="mb-3">Choisis deux civilisations anciennes et compare-les dans un tableau avec ces catégories :</p>
+            <ul class="list-disc ml-6 space-y-1">
+              <li>Période historique</li>
+              <li>Localisation géographique</li>
+              <li>Type de gouvernement</li>
+              <li>Principales innovations</li>
+              <li>Monuments célèbres</li>
+              <li>Héritage laissé à l'humanité</li>
+            </ul>
+            <p class="mt-3"><strong>Exemple :</strong> Compare l'Égypte ancienne et la Grèce antique.</p>
+          </div>
+
+          <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md">
+            <p class="font-bold text-xl mb-4">4. Projet : Affiche "Ma civilisation préférée"</p>
+            <p class="mb-3">Crée une affiche A3 ou digitale présentant ta civilisation ancienne préférée. Include :</p>
+            <ul class="list-disc ml-6 space-y-2">
+              <li>Une carte montrant sa localisation</li>
+              <li>Des images de monuments ou objets célèbres</li>
+              <li>3-5 inventions majeures</li>
+              <li>Un personnage important (pharaon, philosophe, empereur...)</li>
+              <li>Son influence sur le monde d'aujourd'hui</li>
+              <li>Pourquoi tu l'as choisie (ton avis personnel)</li>
+            </ul>
+            <p class="mt-3 text-sm italic">🎨 Sois créatif ! Utilise des dessins, des photos imprimées, des couleurs...</p>
+          </div>
+
+          <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md">
+            <p class="font-bold text-xl mb-4">5. Enquête linguistique : Les mots venus de l'Antiquité</p>
+            <p class="mb-3">Trouve 10 mots créoles ou français que nous utilisons en Haïti qui viennent du grec ancien ou du latin. Pour chacun, indique :</p>
+            <ul class="list-disc ml-6 space-y-1">
+              <li>Le mot en créole/français</li>
+              <li>Son origine (grec ou latin)</li>
+              <li>Sa signification originale</li>
+            </ul>
+            <p class="mt-3"><strong>Exemples pour t'aider :</strong></p>
+            <ul class="list-disc ml-8 text-sm">
+              <li>Téléphone = "tele" (loin) + "phone" (son) en grec</li>
+              <li>Démocratie = "demos" (peuple) + "kratos" (pouvoir) en grec</li>
+              <li>École = "schola" (loisir consacré à l'étude) en latin</li>
+            </ul>
+          </div>
+
+          <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md">
+            <p class="font-bold text-xl mb-4">6. Jeu de rôle : Conseil démocratique athénien</p>
+            <p class="mb-3"><strong>Scénario :</strong> Votre classe est l'Agora d'Athènes en 450 av. J.-C. Vous devez voter sur une proposition :</p>
+            <p class="mb-3 italic">"Faut-il construire un nouveau temple pour Athéna avec l'argent de la cité, ou le distribuer aux citoyens pauvres ?"</p>
+            <p class="mb-3"><strong>Déroulement :</strong></p>
+            <ol class="list-decimal ml-6 space-y-2">
+              <li>Le professeur présente le problème</li>
+              <li>5 élèves préparent un discours POUR le temple (2 min chacun)</li>
+              <li>5 élèves préparent un discours CONTRE (2 min chacun)</li>
+              <li>Débat ouvert : chaque élève peut prendre la parole</li>
+              <li>Vote à main levée</li>
+              <li>La majorité l'emporte !</li>
+            </ol>
+            <p class="mt-3 text-sm italic">🎭 Vous pouvez porter des toges (draps blancs) pour l'ambiance !</p>
+          </div>
+
+          <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md">
+            <p class="font-bold text-xl mb-4">7. Recherche : Les 7 Merveilles du monde antique</p>
+            <p class="mb-3">Les Grecs anciens ont listé les 7 plus belles constructions de leur époque. Fais une recherche et crée une fiche pour chacune :</p>
+            <ol class="list-decimal ml-6 space-y-1">
+              <li>La Grande Pyramide de Gizeh (Égypte) - seule encore debout</li>
+              <li>Les Jardins suspendus de Babylone (Mésopotamie)</li>
+              <li>La Statue de Zeus à Olympie (Grèce)</li>
+              <li>Le Temple d'Artémis à Éphèse (Turquie actuelle)</li>
+              <li>Le Mausolée d'Halicarnasse (Turquie actuelle)</li>
+              <li>Le Colosse de Rhodes (Grèce)</li>
+              <li>Le Phare d'Alexandrie (Égypte)</li>
+            </ol>
+            <p class="mt-3"><strong>Pour chaque merveille, note :</strong> Date de construction, dimensions, pourquoi elle était extraordinaire, ce qu'il en reste aujourd'hui.</p>
+          </div>
+
+          <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md">
+            <p class="font-bold text-xl mb-4">8. Activité créative : Invente ton système d'écriture</p>
+            <p class="mb-3">Les Sumériens, les Égyptiens, les Mayas ont tous inventé leur propre écriture. À ton tour !</p>
+            <p class="mb-3"><strong>Consignes :</strong></p>
+            <ul class="list-disc ml-6 space-y-2">
+              <li>Crée 20 symboles représentant des lettres, des sons ou des concepts</li>
+              <li>Écris une courte phrase (10-15 mots) avec ton système</li>
+              <li>Fais-la déchiffrer par un(e) camarade en lui donnant la clé</li>
+            </ul>
+            <p class="mt-3 text-sm italic">🖊️ Tu réaliseras à quel point l'invention de l'écriture était géniale !</p>
+          </div>
+
+          <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md">
+            <p class="font-bold text-xl mb-4">9. Débat : Quelle est la plus grande civilisation ancienne ?</p>
+            <p class="mb-3">Divisez la classe en 5 groupes, chacun défendant une civilisation :</p>
+            <ul class="list-disc ml-6 space-y-1">
+              <li>Groupe 1 : Mésopotamie</li>
+              <li>Groupe 2 : Égypte ancienne</li>
+              <li>Groupe 3 : Grèce antique</li>
+              <li>Groupe 4 : Empire romain</li>
+              <li>Groupe 5 : Civilisations précolombiennes (Mayas, Aztèques, Incas)</li>
+            </ul>
+            <p class="mt-3"><strong>Chaque groupe doit préparer :</strong></p>
+            <ul class="list-disc ml-6 space-y-1">
+              <li>3 arguments principaux</li>
+              <li>Des preuves concrètes (inventions, monuments, influence)</li>
+              <li>Une conclusion percutante</li>
+            </ul>
+            <p class="mt-3 text-sm italic">À la fin, votez pour la civilisation la plus convaincante (sauf la vôtre !).</p>
+          </div>
+
+          <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md">
+            <p class="font-bold text-xl mb-4">10. Composition finale (300 mots)</p>
+            <p class="mb-3"><strong>Sujet :</strong> "Si je pouvais voyager dans le temps, je visiterais..."</p>
+            <p class="mb-2">Choisis une civilisation ancienne et imagine que tu peux la visiter pendant une journée. Décris :</p>
+            <ul class="list-disc ml-6 space-y-2">
+              <li>Quelle civilisation et quelle période exacte</li>
+              <li>Ce que tu verrais en te promenant dans les rues</li>
+              <li>Les personnes que tu aimerais rencontrer</li>
+              <li>Les monuments ou sites que tu visiterais</li>
+              <li>Ce que tu apprendrais ou rapporterais de ce voyage</li>
+              <li>Comment cette expérience changerait ta vision du monde moderne</li>
+            </ul>
+            <p class="mt-3 text-sm italic">✨ Sois descriptif et immersif ! Fais-nous vivre ton voyage dans le temps !</p>
+          </div>
+        </div>
+
+        <div class="bg-purple-50 dark:bg-purple-950/20 p-6 rounded-lg mt-8">
+          <p class="font-semibold text-lg mb-3">🎥 Ressources vidéo YouTube suggérées</p>
+          <ul class="list-disc ml-6 space-y-2">
+            <li>"Les grandes civilisations de l'Antiquité" - <em>Documentaire complet</em></li>
+            <li>"L'Égypte ancienne expliquée simplement" - <em>C'est pas sorcier</em></li>
+            <li>"La Grèce antique : berceau de la démocratie" - <em>Histoire pour tous</em></li>
+            <li>"Rome : de la République à l'Empire" - <em>Documentaire ARTE</em></li>
+            <li>"Les mystères des pyramides" - <em>National Geographic</em></li>
+            <li>"Les Mayas : une civilisation brillante" - <em>Documentaire</em></li>
+            <li>"Les Incas et Machu Picchu" - <em>Voyage dans l'histoire</em></li>
+          </ul>
+        </div>
       </div>
     `
   },
