@@ -2838,149 +2838,931 @@ export const sciencesSocialesLessons7AF: SciencesSocialesLesson[] = [
     mois: "Janvier",
     objectif: "Identifier et comprendre les différentes formes d'organisation sociale dans les sociétés humaines.",
     introduction: `
-      <div class="space-y-4">
-        <p>Depuis toujours, les humains ont besoin de s'organiser pour vivre ensemble. L'organisation sociale désigne la manière dont une société structure ses relations, ses institutions et ses règles de fonctionnement. Ces formes d'organisation varient selon les cultures, les époques et les besoins des communautés.</p>
-        <p>Dans cette leçon, nous allons découvrir les principales institutions sociales qui structurent nos sociétés : la famille, l'école, l'État, les communautés, et bien d'autres. Chacune joue un rôle essentiel dans le bon fonctionnement de la vie collective.</p>
-        <p>Comprendre ces formes d'organisation nous aide à mieux saisir notre place dans la société et nos responsabilités envers les autres.</p>
+      <div class="space-y-6">
+        <div class="bg-gradient-to-r from-purple-50 to-blue-50 dark:from-purple-950/30 dark:to-blue-950/30 p-6 rounded-xl border-l-4 border-purple-500">
+          <h2 class="text-2xl font-bold text-purple-800 dark:text-purple-300 mb-3">🏛️ Comment les humains s'organisent-ils pour vivre ensemble ?</h2>
+          <p class="text-lg leading-relaxed">Imagine un monde sans règles, sans famille, sans école, sans gouvernement... Ce serait le chaos total ! Depuis la nuit des temps, les êtres humains ont compris qu'ils devaient s'organiser pour survivre et prospérer. De la petite cellule familiale aux grandes institutions comme l'État, chaque forme d'organisation sociale joue un rôle crucial dans notre vie quotidienne.</p>
+        </div>
+
+        <div class="grid md:grid-cols-3 gap-4 my-6">
+          <div class="bg-blue-50 dark:bg-blue-950/30 p-4 rounded-lg text-center">
+            <div class="text-3xl mb-2">👨‍👩‍👧‍👦</div>
+            <div class="font-bold text-blue-800 dark:text-blue-300">La Famille</div>
+            <div class="text-sm">Première cellule sociale</div>
+          </div>
+          <div class="bg-green-50 dark:bg-green-950/30 p-4 rounded-lg text-center">
+            <div class="text-3xl mb-2">🤝</div>
+            <div class="font-bold text-green-800 dark:text-green-300">La Communauté</div>
+            <div class="text-sm">Solidarité locale</div>
+          </div>
+          <div class="bg-purple-50 dark:bg-purple-950/30 p-4 rounded-lg text-center">
+            <div class="text-3xl mb-2">🏛️</div>
+            <div class="font-bold text-purple-800 dark:text-purple-300">L'État</div>
+            <div class="text-sm">Organisation politique</div>
+          </div>
+        </div>
+
+        <div class="space-y-3">
+          <p class="text-lg"><strong>Qu'est-ce qu'une organisation sociale ?</strong> C'est la manière dont une société structure ses relations, ses institutions et ses règles de fonctionnement. Comme les pièces d'un puzzle géant, chaque institution sociale (famille, école, État, communauté, église, entreprise...) s'emboîte avec les autres pour former une société cohérente et fonctionnelle.</p>
+          
+          <p>Ces formes d'organisation varient considérablement selon les cultures, les époques et les besoins des communautés. Ce qui fonctionne dans une société moderne urbaine n'est pas nécessairement adapté à une communauté rurale traditionnelle. Et ce qui existait il y a 500 ans a beaucoup évolué aujourd'hui.</p>
+          
+          <p><strong>Pourquoi étudier l'organisation sociale ?</strong> Parce que comprendre ces structures nous aide à :</p>
+          <ul class="list-disc ml-6 space-y-1">
+            <li>Mieux saisir notre place dans la société</li>
+            <li>Comprendre nos droits et nos responsabilités</li>
+            <li>Identifier les problèmes sociaux et proposer des solutions</li>
+            <li>Apprécier la richesse de notre héritage culturel haïtien</li>
+            <li>Devenir des citoyens actifs et responsables</li>
+          </ul>
+        </div>
+
+        <div class="bg-yellow-50 dark:bg-yellow-950/30 border-l-4 border-yellow-500 p-4 rounded-r-lg">
+          <p class="font-semibold text-yellow-800 dark:text-yellow-300 mb-2">🎯 Objectifs d'apprentissage</p>
+          <ul class="space-y-1 text-sm">
+            <li>✓ Identifier les principales formes d'organisation sociale</li>
+            <li>✓ Comprendre le rôle de chaque institution dans la société</li>
+            <li>✓ Analyser les spécificités de l'organisation sociale haïtienne</li>
+            <li>✓ Comparer différents types d'organisations sociales</li>
+            <li>✓ Réfléchir sur l'évolution des structures sociales</li>
+          </ul>
+        </div>
       </div>
     `,
     contenu: `
-      <div class="space-y-6">
+      <div class="space-y-8">
         <section>
-          <h3 class="text-xl font-semibold mb-3">1. La famille : cellule de base</h3>
-          <p>La famille est la plus ancienne et la plus fondamentale des institutions sociales. C'est le premier lieu de socialisation de l'enfant.</p>
-          <h4 class="font-semibold mt-4 mb-2">Types de familles</h4>
-          <ul class="list-disc ml-6 space-y-2">
-            <li><strong>Famille nucléaire :</strong> Parents et enfants vivant ensemble</li>
-            <li><strong>Famille élargie :</strong> Inclut grands-parents, oncles, tantes, cousins</li>
-            <li><strong>Famille monoparentale :</strong> Un seul parent avec enfants</li>
-            <li><strong>Famille recomposée :</strong> Nouveaux couples avec enfants de précédentes unions</li>
-          </ul>
-          <h4 class="font-semibold mt-4 mb-2">Fonctions de la famille</h4>
-          <ul class="list-disc ml-6 space-y-2">
-            <li><strong>Reproduction :</strong> Assurer la continuité de la société</li>
-            <li><strong>Socialisation :</strong> Enseigner les valeurs, normes, langue</li>
-            <li><strong>Protection :</strong> Sécurité physique et affective</li>
-            <li><strong>Transmission :</strong> Héritage culturel et matériel</li>
-            <li><strong>Économique :</strong> Partage des ressources</li>
-          </ul>
-        </section>
+          <h3 class="text-2xl font-bold mb-4 text-purple-800 dark:text-purple-300">1. Qu'est-ce qu'une organisation sociale ? 🏗️</h3>
+          
+          <p class="text-lg mb-4">Une <strong>organisation sociale</strong> est un ensemble structuré de personnes qui interagissent selon des règles établies pour atteindre des objectifs communs. C'est comme un système où chaque pièce a sa place et son rôle.</p>
+          
+          <div class="bg-blue-50 dark:bg-blue-950/30 p-5 rounded-lg my-4">
+            <h4 class="font-bold text-blue-800 dark:text-blue-300 mb-3">📚 Définitions clés</h4>
+            <ul class="space-y-2">
+              <li><strong>Institution sociale :</strong> Structure stable et durable qui encadre les comportements humains (famille, école, État, église...)</li>
+              <li><strong>Rôle social :</strong> Ensemble de comportements attendus d'une personne selon sa position (père, élève, professeur...)</li>
+              <li><strong>Statut social :</strong> Position qu'occupe une personne dans la société</li>
+              <li><strong>Norme sociale :</strong> Règle de conduite partagée par un groupe</li>
+            </ul>
+          </div>
 
-        <section>
-          <h3 class="text-xl font-semibold mb-3">2. L'école comme institution</h3>
-          <p>L'école est l'institution chargée de l'éducation formelle des jeunes.</p>
-          <h4 class="font-semibold mt-4 mb-2">Rôles de l'école</h4>
-          <ul class="list-disc ml-6 space-y-2">
-            <li><strong>Transmission des connaissances :</strong> Lecture, écriture, calcul, sciences</li>
-            <li><strong>Socialisation secondaire :</strong> Apprentissage de la vie en collectivité</li>
-            <li><strong>Formation citoyenne :</strong> Valeurs démocratiques, droits et devoirs</li>
-            <li><strong>Intégration sociale :</strong> Réduction des inégalités, promotion sociale</li>
-            <li><strong>Préparation professionnelle :</strong> Compétences pour le monde du travail</li>
-          </ul>
-          <p class="mt-3">En Haïti, l'éducation de base est gratuite et obligatoire selon la Constitution de 1987.</p>
-        </section>
-
-        <section>
-          <h3 class="text-xl font-semibold mb-3">3. L'État et l'organisation politique</h3>
-          <p>L'État est l'organisation politique suprême d'une société. Il exerce le pouvoir sur un territoire défini.</p>
-          <h4 class="font-semibold mt-4 mb-2">Fonctions de l'État</h4>
-          <ul class="list-disc ml-6 space-y-2">
-            <li><strong>Sécurité :</strong> Police, armée, justice</li>
-            <li><strong>Services publics :</strong> Éducation, santé, infrastructures</li>
-            <li><strong>Législation :</strong> Création et application des lois</li>
-            <li><strong>Régulation économique :</strong> Monnaie, impôts, commerce</li>
-            <li><strong>Représentation :</strong> Relations internationales</li>
-          </ul>
-          <p class="mt-3">En Haïti, l'État est organisé selon un système démocratique avec trois pouvoirs : exécutif (Président), législatif (Parlement), judiciaire (Tribunaux).</p>
-        </section>
-
-        <section>
-          <h3 class="text-xl font-semibold mb-3">4. Les communautés</h3>
-          <p>Une communauté est un groupe de personnes partageant des intérêts, valeurs ou un territoire communs.</p>
-          <h4 class="font-semibold mt-4 mb-2">Types de communautés</h4>
-          <ul class="list-disc ml-6 space-y-2">
-            <li><strong>Communauté locale :</strong> Quartier, village (lakou en Haïti)</li>
-            <li><strong>Communauté religieuse :</strong> Églises, temples, houmforts</li>
-            <li><strong>Communauté professionnelle :</strong> Syndicats, associations</li>
-            <li><strong>Communauté virtuelle :</strong> Réseaux sociaux, forums en ligne</li>
-          </ul>
-          <p class="mt-3">En Haïti, les pratiques comme le <strong>konbit</strong> (travail collectif agricole) et l'<strong>eskwad</strong> (entraide communautaire) illustrent l'importance des communautés.</p>
-        </section>
-
-        <section>
-          <h3 class="text-xl font-semibold mb-3">5. Les organisations de la société civile</h3>
-          <p>Ce sont des groupements non gouvernementaux qui agissent pour l'intérêt général.</p>
-          <h4 class="font-semibold mt-4 mb-2">Exemples</h4>
-          <ul class="list-disc ml-6 space-y-2">
-            <li><strong>ONG :</strong> Organisations non gouvernementales (aide humanitaire, développement)</li>
-            <li><strong>Associations :</strong> Sportives, culturelles, caritatives</li>
-            <li><strong>Syndicats :</strong> Défense des droits des travailleurs</li>
-            <li><strong>Coopératives :</strong> Regroupement économique solidaire</li>
-          </ul>
-        </section>
-
-        <section>
-          <h3 class="text-xl font-semibold mb-3">6. Les institutions économiques</h3>
-          <p>Elles organisent la production, distribution et consommation des biens et services.</p>
-          <ul class="list-disc ml-6 space-y-2">
-            <li><strong>Entreprises :</strong> Production de biens et services</li>
-            <li><strong>Banques :</strong> Gestion de l'argent, crédits</li>
-            <li><strong>Marchés :</strong> Lieux d'échange commercial</li>
-            <li><strong>Chambres de commerce :</strong> Représentation des commerçants</li>
-          </ul>
-        </section>
-
-        <section>
-          <h3 class="text-xl font-semibold mb-3">7. Les médias</h3>
-          <p>Les médias (presse, radio, TV, internet) jouent un rôle croissant dans l'organisation sociale.</p>
-          <h4 class="font-semibold mt-4 mb-2">Fonctions des médias</h4>
-          <ul class="list-disc ml-6 space-y-2">
-            <li><strong>Information :</strong> Diffusion de nouvelles</li>
-            <li><strong>Éducation :</strong> Programmes éducatifs</li>
-            <li><strong>Divertissement :</strong> Films, musique, séries</li>
-            <li><strong>Contrôle social :</strong> Surveillance des pouvoirs publics</li>
-          </ul>
-        </section>
-      </div>
-    `,
-    exemplesExercices: `
-      <div class="space-y-6">
-        <section>
-          <h3 class="text-xl font-semibold mb-3">Exemples concrets</h3>
-          <div class="bg-blue-50 dark:bg-blue-950/30 p-4 rounded-lg space-y-3">
-            <p><strong>Exemple 1 :</strong> Dans un village haïtien, le lakou est une forme d'organisation où plusieurs familles partagent un espace commun, avec des règles établies par le chef de lakou.</p>
-            <p><strong>Exemple 2 :</strong> Le konbit illustre la solidarité : tous les membres de la communauté se réunissent pour aider un paysan à labourer son champ, puis passent au champ suivant.</p>
-            <p><strong>Exemple 3 :</strong> Une école primaire est une organisation formelle avec directeur, enseignants, règlement intérieur, horaires précis.</p>
+          <h4 class="font-semibold text-lg mt-6 mb-3">Les trois niveaux d'organisation sociale</h4>
+          <div class="grid md:grid-cols-3 gap-4">
+            <div class="border-2 border-green-300 dark:border-green-700 p-4 rounded-lg">
+              <div class="text-2xl mb-2">🏠</div>
+              <div class="font-bold mb-2">Niveau Micro</div>
+              <div class="text-sm">Relations interpersonnelles : famille, amis, voisins</div>
+            </div>
+            <div class="border-2 border-blue-300 dark:border-blue-700 p-4 rounded-lg">
+              <div class="text-2xl mb-2">🏘️</div>
+              <div class="font-bold mb-2">Niveau Méso</div>
+              <div class="text-sm">Groupes intermédiaires : associations, entreprises, écoles</div>
+            </div>
+            <div class="border-2 border-purple-300 dark:border-purple-700 p-4 rounded-lg">
+              <div class="text-2xl mb-2">🌍</div>
+              <div class="font-bold mb-2">Niveau Macro</div>
+              <div class="text-sm">Grandes structures : État, système économique, culture nationale</div>
+            </div>
           </div>
         </section>
 
         <section>
-          <h3 class="text-xl font-semibold mb-3">Exercices pratiques</h3>
+          <h3 class="text-2xl font-bold mb-4 text-pink-800 dark:text-pink-300">2. La famille : première cellule sociale 👨‍👩‍👧‍👦</h3>
+          
+          <p class="text-lg mb-4">La famille est <strong>la plus ancienne et la plus fondamentale</strong> des institutions sociales. C'est le premier lieu où l'enfant apprend à parler, à se comporter, à distinguer le bien du mal. Sans famille, il n'y aurait pas de société !</p>
+
+          <div class="bg-pink-50 dark:bg-pink-950/30 p-5 rounded-lg my-4 border-l-4 border-pink-500">
+            <h4 class="font-bold mb-2">💡 Le savais-tu ?</h4>
+            <p>En Haïti, le concept de famille est très large ! On parle de "fanmi" pour désigner non seulement les parents et enfants, mais aussi les cousins éloignés, les parrains/marraines, et même les amis très proches. C'est ce qu'on appelle la famille sociale élargie.</p>
+          </div>
+
+          <h4 class="font-semibold text-lg mt-6 mb-3">Types de structures familiales</h4>
+          <div class="space-y-3">
+            <div class="border-l-4 border-blue-400 pl-4">
+              <p><strong>1. Famille nucléaire :</strong> Parents (père et mère) vivant avec leurs enfants biologiques ou adoptifs dans le même foyer. C'est le modèle le plus répandu en milieu urbain haïtien.</p>
+              <p class="text-sm mt-1 text-gray-600 dark:text-gray-400"><em>Exemple :</em> Monsieur et Madame Dupont avec leurs 3 enfants à Port-au-Prince.</p>
+            </div>
+            
+            <div class="border-l-4 border-green-400 pl-4">
+              <p><strong>2. Famille élargie (extended family) :</strong> Inclut plusieurs générations et branches : grands-parents, oncles, tantes, cousins vivant ensemble ou très proches. C'est le modèle traditionnel haïtien, surtout en milieu rural.</p>
+              <p class="text-sm mt-1 text-gray-600 dark:text-gray-400"><em>Exemple :</em> Le système de "lakou" où 3-4 générations partagent un même espace de vie.</p>
+            </div>
+            
+            <div class="border-l-4 border-orange-400 pl-4">
+              <p><strong>3. Famille monoparentale :</strong> Un seul parent (généralement la mère) élève seul(e) les enfants. Très fréquente en Haïti, surtout après la migration du père.</p>
+              <p class="text-sm mt-1 text-gray-600 dark:text-gray-400"><em>Exemple :</em> Une maman marchande qui élève seule ses 4 enfants après le départ du père en diaspora.</p>
+            </div>
+            
+            <div class="border-l-4 border-purple-400 pl-4">
+              <p><strong>4. Famille recomposée :</strong> Nouveaux couples formés avec enfants de précédentes unions ("fanmi melanje").</p>
+              <p class="text-sm mt-1 text-gray-600 dark:text-gray-400"><em>Exemple :</em> Un père avec 2 enfants qui se remarie avec une femme ayant 3 enfants.</p>
+            </div>
+            
+            <div class="border-l-4 border-red-400 pl-4">
+              <p><strong>5. Famille d'accueil (Restavèk - à abolir) :</strong> Enfants placés chez des familles, souvent dans des conditions difficiles. C'est une pratique malheureusement encore présente en Haïti mais combattue par les organisations de droits humains.</p>
+            </div>
+          </div>
+
+          <h4 class="font-semibold text-lg mt-6 mb-3">Les fonctions essentielles de la famille</h4>
+          <div class="grid md:grid-cols-2 gap-4">
+            <div class="bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-950/30 dark:to-blue-900/30 p-4 rounded-lg">
+              <div class="font-bold mb-2">🧬 Fonction de reproduction</div>
+              <p class="text-sm">Assurer la continuité de l'espèce humaine et la transmission du nom de famille.</p>
+            </div>
+            <div class="bg-gradient-to-br from-green-50 to-green-100 dark:from-green-950/30 dark:to-green-900/30 p-4 rounded-lg">
+              <div class="font-bold mb-2">👶 Fonction de socialisation</div>
+              <p class="text-sm">Enseigner la langue (créole, français), les valeurs, les comportements sociaux acceptables.</p>
+            </div>
+            <div class="bg-gradient-to-br from-purple-50 to-purple-100 dark:from-purple-950/30 dark:to-purple-900/30 p-4 rounded-lg">
+              <div class="font-bold mb-2">🛡️ Fonction de protection</div>
+              <p class="text-sm">Assurer la sécurité physique, affective, économique des membres, surtout des enfants et personnes âgées.</p>
+            </div>
+            <div class="bg-gradient-to-br from-pink-50 to-pink-100 dark:from-pink-950/30 dark:to-pink-900/30 p-4 rounded-lg">
+              <div class="font-bold mb-2">💰 Fonction économique</div>
+              <p class="text-sm">Production, consommation, partage des ressources. En Haïti, la famille est souvent une unité économique de survie.</p>
+            </div>
+            <div class="bg-gradient-to-br from-yellow-50 to-yellow-100 dark:from-yellow-950/30 dark:to-yellow-900/30 p-4 rounded-lg">
+              <div class="font-bold mb-2">📜 Fonction de transmission</div>
+              <p class="text-sm">Héritage culturel (traditions, proverbes), matériel (terres, maison), et affectif (mémoire familiale).</p>
+            </div>
+            <div class="bg-gradient-to-br from-red-50 to-red-100 dark:from-red-950/30 dark:to-red-900/30 p-4 rounded-lg">
+              <div class="font-bold mb-2">❤️ Fonction affective</div>
+              <p class="text-sm">Donner et recevoir de l'amour, du soutien émotionnel. "Lakay se lakay" (il n'y a pas de place comme chez soi).</p>
+            </div>
+          </div>
+
+          <div class="bg-yellow-50 dark:bg-yellow-950/30 p-5 rounded-lg my-4 border-l-4 border-yellow-500">
+            <h4 class="font-bold mb-2">🇭🇹 Spécificités de la famille haïtienne</h4>
+            <ul class="space-y-2 text-sm">
+              <li>• <strong>Matriarcat de fait :</strong> Les femmes jouent souvent un rôle central dans la famille haïtienne, gérant le budget et prenant les décisions importantes.</li>
+              <li>• <strong>Diaspora familiale :</strong> Beaucoup de familles sont séparées géographiquement (membres en diaspora) mais restent très unies.</li>
+              <li>• <strong>Solidarité élargie :</strong> Le système d'"eskalye" où les familles s'entraident financièrement.</li>
+              <li>• <strong>Parenté spirituelle :</strong> Les parrains et marraines (konpè, komè) font partie intégrante de la famille.</li>
+            </ul>
+          </div>
+        </section>
+
+        <section>
+          <h3 class="text-2xl font-bold mb-4 text-green-800 dark:text-green-300">3. Le lakou et la communauté : organisation locale 🏘️</h3>
+          
+          <p class="text-lg mb-4">En Haïti, le <strong>lakou</strong> représente une forme unique d'organisation sociale communautaire. C'est bien plus qu'un simple espace géographique : c'est un système social complet !</p>
+
+          <div class="bg-green-50 dark:bg-green-950/30 p-5 rounded-lg my-4">
+            <h4 class="font-bold text-green-800 dark:text-green-300 mb-3">🏡 Le système du lakou</h4>
+            <p class="mb-3">Le lakou est une cour familiale où cohabitent plusieurs familles nucléaires liées par le sang ou l'alliance. Toutes les maisons (kay) sont disposées autour d'une cour commune (lakou) où se déroulent les activités collectives.</p>
+            
+            <h5 class="font-semibold mt-4 mb-2">Organisation du lakou traditionnel :</h5>
+            <ul class="list-disc ml-6 space-y-2">
+              <li><strong>Chef de lakou (chèf lakou) :</strong> Généralement le patriarche ou la matriarche, il/elle règle les conflits, organise les cérémonies, représente le lakou</li>
+              <li><strong>Cour commune :</strong> Espace partagé pour les repas, jeux d'enfants, discussions, cérémonies</li>
+              <li><strong>Maisons individuelles :</strong> Chaque famille nucléaire a sa propre maison (kay)</li>
+              <li><strong>Espaces sacrés :</strong> Péristyle (pour le vodou), arbre ancestral (pye bwa)</li>
+              <li><strong>Espaces économiques :</strong> Jardin collectif (jaden), élevage commun</li>
+            </ul>
+
+            <p class="mt-3 text-sm italic">Le lakou incarne les valeurs haïtiennes de solidarité, partage et respect des anciens.</p>
+          </div>
+
+          <h4 class="font-semibold text-lg mt-6 mb-3">Le konbit : travail collectif agricole</h4>
+          <p class="mb-3">Le <strong>konbit</strong> est une forme traditionnelle d'organisation du travail agricole en Haïti. Tous les membres de la communauté se réunissent pour travailler le champ d'un paysan, puis passent au champ suivant, et ainsi de suite.</p>
+          
+          <div class="grid md:grid-cols-2 gap-4 my-4">
+            <div class="border-2 border-green-400 p-4 rounded-lg">
+              <h5 class="font-bold mb-2">✅ Avantages du konbit</h5>
+              <ul class="text-sm space-y-1">
+                <li>• Travail rapide et efficace</li>
+                <li>• Renforcement des liens sociaux</li>
+                <li>• Pas de paiement monétaire nécessaire</li>
+                <li>• Solidarité et entraide</li>
+                <li>• Ambiance festive (musique, chants)</li>
+              </ul>
+            </div>
+            <div class="border-2 border-orange-400 p-4 rounded-lg">
+              <h5 class="font-bold mb-2">⚠️ Défis modernes</h5>
+              <ul class="text-sm space-y-1">
+                <li>• Urbanisation croissante</li>
+                <li>• Individualisme moderne</li>
+                <li>• Migration vers les villes</li>
+                <li>• Changement des valeurs</li>
+                <li>• Moins de temps disponible</li>
+              </ul>
+            </div>
+          </div>
+
+          <h4 class="font-semibold text-lg mt-6 mb-3">Autres formes de solidarité communautaire en Haïti</h4>
+          <div class="space-y-3">
+            <div class="bg-blue-50 dark:bg-blue-950/30 p-4 rounded-lg">
+              <p><strong>🤝 Sòl (Tontine) :</strong> Système d'épargne rotative où chaque membre contribue une somme fixe régulièrement, et chacun reçoit à tour de rôle le montant total collecté.</p>
+            </div>
+            <div class="bg-purple-50 dark:bg-purple-950/30 p-4 rounded-lg">
+              <p><strong>📚 Eskwad :</strong> Groupe d'entraide pour les funérailles, mariages, et autres événements importants.</p>
+            </div>
+            <div class="bg-pink-50 dark:bg-pink-950/30 p-4 rounded-lg">
+              <p><strong>🌾 Kòve :</strong> Échange de travail agricole entre voisins sans paiement monétaire.</p>
+            </div>
+          </div>
+
+          <div class="bg-blue-50 dark:bg-blue-950/30 p-5 rounded-lg my-4 border-l-4 border-blue-500">
+            <h4 class="font-bold mb-2">💡 Le savais-tu ?</h4>
+            <p>Le mot "lakou" vient probablement du français "la cour". Mais le système du lakou haïtien ressemble beaucoup aux organisations communautaires africaines, notamment les "compounds" d'Afrique de l'Ouest. C'est un héritage de nos ancêtres africains adapté au contexte haïtien !</p>
+          </div>
+        </section>
+
+        <section>
+          <h3 class="text-2xl font-bold mb-4 text-blue-800 dark:text-blue-300">4. Les groupes sociaux 👥</h3>
+          
+          <p class="text-lg mb-4">Un <strong>groupe social</strong> est un ensemble de personnes qui interagissent régulièrement et qui ont conscience d'appartenir à un même collectif.</p>
+
+          <h4 class="font-semibold text-lg mt-6 mb-3">Classification des groupes sociaux</h4>
+          
+          <div class="grid md:grid-cols-2 gap-6 my-4">
+            <div class="border-2 border-blue-400 p-5 rounded-lg">
+              <h5 class="font-bold text-blue-700 dark:text-blue-300 mb-3">Groupes primaires</h5>
+              <p class="text-sm mb-3">Relations directes, intimes, affectives, durables</p>
+              <ul class="text-sm space-y-2">
+                <li>✓ <strong>Famille</strong> - Relations de sang ou d'alliance</li>
+                <li>✓ <strong>Amis proches</strong> - Relations d'amitié profonde</li>
+                <li>✓ <strong>Voisins immédiats</strong> - Proximité géographique quotidienne</li>
+              </ul>
+              <p class="text-sm mt-3 italic">Ces groupes façonnent notre identité profonde.</p>
+            </div>
+            
+            <div class="border-2 border-purple-400 p-5 rounded-lg">
+              <h5 class="font-bold text-purple-700 dark:text-purple-300 mb-3">Groupes secondaires</h5>
+              <p class="text-sm mb-3">Relations impersonnelles, formelles, utilitaires, temporaires</p>
+              <ul class="text-sm space-y-2">
+                <li>✓ <strong>École/Classe</strong> - Relations professionnelles/éducatives</li>
+                <li>✓ <strong>Entreprise</strong> - Relations de travail</li>
+                <li>✓ <strong>Association</strong> - Objectifs communs spécifiques</li>
+                <li>✓ <strong>Syndicat</strong> - Défense d'intérêts professionnels</li>
+              </ul>
+              <p class="text-sm mt-3 italic">Ces groupes structurent notre vie sociale et professionnelle.</p>
+            </div>
+          </div>
+
+          <h4 class="font-semibold text-lg mt-6 mb-3">Autres classifications importantes</h4>
+          <div class="space-y-3">
+            <div class="border-l-4 border-green-400 pl-4">
+              <p><strong>Groupe d'appartenance :</strong> Groupe auquel on appartient réellement (ma famille, mon école, mon quartier)</p>
+            </div>
+            <div class="border-l-4 border-blue-400 pl-4">
+              <p><strong>Groupe de référence :</strong> Groupe auquel on aimerait appartenir ou qui influence nos comportements (célébrités, modèles)</p>
+            </div>
+            <div class="border-l-4 border-purple-400 pl-4">
+              <p><strong>In-group (nous) :</strong> Groupe auquel on s'identifie ("nous les Haïtiens", "nous les élèves de cette école")</p>
+            </div>
+            <div class="border-l-4 border-red-400 pl-4">
+              <p><strong>Out-group (eux) :</strong> Groupe perçu comme différent ou étranger</p>
+            </div>
+          </div>
+        </section>
+
+        <section>
+          <h3 class="text-2xl font-bold mb-4 text-purple-800 dark:text-purple-300">5. L'État : organisation politique suprême 🏛️</h3>
+          
+          <p class="text-lg mb-4">L'<strong>État</strong> est l'organisation politique qui exerce le pouvoir souverain sur un territoire défini et une population donnée. C'est la forme d'organisation sociale la plus large et la plus puissante.</p>
+
+          <div class="bg-purple-50 dark:bg-purple-950/30 p-5 rounded-lg my-4">
+            <h4 class="font-bold text-purple-800 dark:text-purple-300 mb-3">Les trois éléments constitutifs de l'État</h4>
+            <div class="grid md:grid-cols-3 gap-4 mt-3">
+              <div class="text-center">
+                <div class="text-4xl mb-2">🗺️</div>
+                <div class="font-bold">TERRITOIRE</div>
+                <p class="text-sm mt-1">Espace géographique délimité par des frontières (Haïti: 27,750 km²)</p>
+              </div>
+              <div class="text-center">
+                <div class="text-4xl mb-2">👥</div>
+                <div class="font-bold">POPULATION</div>
+                <p class="text-sm mt-1">Ensemble des personnes vivant sur le territoire (Haïti: ~11,5 millions)</p>
+              </div>
+              <div class="text-center">
+                <div class="text-4xl mb-2">⚖️</div>
+                <div class="font-bold">GOUVERNEMENT</div>
+                <p class="text-sm mt-1">Autorité politique qui exerce le pouvoir</p>
+              </div>
+            </div>
+          </div>
+
+          <h4 class="font-semibold text-lg mt-6 mb-3">Fonctions principales de l'État</h4>
+          <div class="grid md:grid-cols-2 gap-4">
+            <div class="bg-red-50 dark:bg-red-950/30 p-4 rounded-lg">
+              <div class="font-bold mb-2">🛡️ Fonction de sécurité</div>
+              <p class="text-sm">Police nationale, justice, protection des frontières, maintien de l'ordre public</p>
+            </div>
+            <div class="bg-blue-50 dark:bg-blue-950/30 p-4 rounded-lg">
+              <div class="font-bold mb-2">📚 Fonction de service public</div>
+              <p class="text-sm">Éducation gratuite, santé publique, routes, électricité, eau potable</p>
+            </div>
+            <div class="bg-green-50 dark:bg-green-950/30 p-4 rounded-lg">
+              <div class="font-bold mb-2">📜 Fonction législative</div>
+              <p class="text-sm">Création des lois, réglementation de la vie sociale, application de la justice</p>
+            </div>
+            <div class="bg-yellow-50 dark:bg-yellow-950/30 p-4 rounded-lg">
+              <div class="font-bold mb-2">💰 Fonction économique</div>
+              <p class="text-sm">Gestion de la monnaie (gourde), collecte des impôts, régulation du commerce</p>
+            </div>
+            <div class="bg-purple-50 dark:bg-purple-950/30 p-4 rounded-lg">
+              <div class="font-bold mb-2">🌍 Fonction de représentation</div>
+              <p class="text-sm">Relations diplomatiques, traités internationaux, défense des intérêts nationaux</p>
+            </div>
+            <div class="bg-pink-50 dark:bg-pink-950/30 p-4 rounded-lg">
+              <div class="font-bold mb-2">🤝 Fonction sociale</div>
+              <p class="text-sm">Lutte contre la pauvreté, aide sociale, protection des plus vulnérables</p>
+            </div>
+          </div>
+
+          <div class="bg-green-50 dark:bg-green-950/30 p-5 rounded-lg my-4 border-l-4 border-green-500">
+            <h4 class="font-bold mb-3">🇭🇹 L'État haïtien : Organisation et histoire</h4>
+            <p class="mb-3"><strong>Haïti</strong> est devenue le <strong>premier État noir indépendant</strong> du monde le 1er janvier 1804, après la révolution des esclaves contre la France coloniale.</p>
+            
+            <h5 class="font-semibold mt-4 mb-2">Organisation actuelle (Constitution de 1987) :</h5>
+            <div class="space-y-2 text-sm">
+              <p>🏛️ <strong>Pouvoir exécutif :</strong> Président de la République élu pour 5 ans, Premier Ministre, Ministres</p>
+              <p>📜 <strong>Pouvoir législatif :</strong> Parlement bicaméral (Chambre des Députés + Sénat)</p>
+              <p>⚖️ <strong>Pouvoir judiciaire :</strong> Cour de Cassation, Cours d'Appel, Tribunaux</p>
+            </div>
+          </div>
+
+          <h4 class="font-semibold text-lg mt-6 mb-3">Types de gouvernements dans le monde</h4>
+          <div class="space-y-2 text-sm">
+            <p>• <strong>Démocratie :</strong> Pouvoir du peuple (Haïti, États-Unis, France)</p>
+            <p>• <strong>Monarchie :</strong> Pouvoir d'un roi/reine (Royaume-Uni, Maroc)</p>
+            <p>• <strong>Dictature :</strong> Pouvoir d'un seul individu sans contrôle</p>
+            <p>• <strong>Théocratie :</strong> Pouvoir religieux (Vatican)</p>
+          </div>
+        </section>
+
+        <section>
+          <h3 class="text-2xl font-bold mb-4 text-orange-800 dark:text-orange-300">6. La société civile et les organisations 🤝</h3>
+          
+          <p class="text-lg mb-4">La <strong>société civile</strong> regroupe toutes les organisations non gouvernementales qui agissent pour l'intérêt collectif, indépendamment de l'État et du secteur privé lucratif.</p>
+
+          <h4 class="font-semibold text-lg mt-4 mb-3">Types d'organisations de la société civile</h4>
           <div class="space-y-4">
-            <div>
-              <p class="font-semibold">1. Identifiez l'institution</p>
-              <p>Pour chaque situation, identifiez quelle institution est concernée :</p>
-              <ul class="ml-6 list-disc space-y-2">
-                <li>Votre maman vous apprend à parler créole → (Famille)</li>
-                <li>Vous apprenez à lire et écrire → (École)</li>
-                <li>La police arrête un voleur → (État)</li>
-                <li>Les voisins s'entraident pour reconstruire une maison → (Communauté)</li>
+            <div class="bg-blue-50 dark:bg-blue-950/30 p-4 rounded-lg">
+              <h5 class="font-bold text-blue-800 dark:text-blue-300 mb-2">🌍 ONG (Organisations Non Gouvernementales)</h5>
+              <p class="text-sm mb-2">Associations à but non lucratif travaillant dans divers domaines.</p>
+              <p class="text-sm"><em>Exemples en Haïti :</em> Médecins Sans Frontières, Croix-Rouge, UNICEF, organisations locales de développement</p>
+            </div>
+
+            <div class="bg-green-50 dark:bg-green-950/30 p-4 rounded-lg">
+              <h5 class="font-bold text-green-800 dark:text-green-300 mb-2">🏃 Associations sportives et culturelles</h5>
+              <p class="text-sm mb-2">Clubs de football, associations de danse, groupes de musique (rara, racine)</p>
+              <p class="text-sm"><em>Exemples :</em> Clubs de football communautaires, groupes de tambou</p>
+            </div>
+
+            <div class="bg-purple-50 dark:bg-purple-950/30 p-4 rounded-lg">
+              <h5 class="font-bold text-purple-800 dark:text-purple-300 mb-2">✊ Syndicats et organisations professionnelles</h5>
+              <p class="text-sm mb-2">Défense des droits des travailleurs et professionnels</p>
+              <p class="text-sm"><em>Exemples :</em> Syndicats d'enseignants, associations de médecins, chambres de commerce</p>
+            </div>
+
+            <div class="bg-pink-50 dark:bg-pink-950/30 p-4 rounded-lg">
+              <h5 class="font-bold text-pink-800 dark:text-pink-300 mb-2">⛪ Organisations religieuses</h5>
+              <p class="text-sm mb-2">Églises, temples, associations caritatives religieuses</p>
+              <p class="text-sm"><em>Rôle en Haïti :</em> Les églises jouent un rôle social majeur (éducation, santé, aide sociale)</p>
+            </div>
+
+            <div class="bg-yellow-50 dark:bg-yellow-950/30 p-4 rounded-lg">
+              <h5 class="font-bold text-yellow-800 dark:text-yellow-300 mb-2">🤝 Coopératives</h5>
+              <p class="text-sm mb-2">Regroupements économiques solidaires</p>
+              <p class="text-sm"><em>Exemples :</em> Coopératives agricoles, coopératives de crédit, coopératives artisanales</p>
+            </div>
+          </div>
+
+          <div class="bg-orange-50 dark:bg-orange-950/30 p-5 rounded-lg my-4 border-l-4 border-orange-500">
+            <h4 class="font-bold mb-2">💡 Le savais-tu ?</h4>
+            <p>Après le séisme de 2010, plus de 10,000 ONG étaient présentes en Haïti ! C'est pourquoi certains appellent Haïti "la république des ONG". Ces organisations jouent un rôle crucial mais parfois controversé dans le développement du pays.</p>
+          </div>
+        </section>
+
+        <section>
+          <h3 class="text-2xl font-bold mb-4 text-red-800 dark:text-red-300">7. Les classes sociales et la stratification 📊</h3>
+          
+          <p class="text-lg mb-4">Une <strong>classe sociale</strong> est un groupe de personnes partageant une position économique et sociale similaire dans la société. La <strong>stratification sociale</strong> est l'organisation hiérarchique de ces groupes.</p>
+
+          <div class="bg-gray-50 dark:bg-gray-900 p-5 rounded-lg my-4">
+            <h4 class="font-bold mb-3">Les critères de stratification sociale</h4>
+            <div class="space-y-2 text-sm">
+              <p>💰 <strong>Économique :</strong> Revenu, patrimoine, profession</p>
+              <p>🎓 <strong>Culturel :</strong> Niveau d'éducation, savoir</p>
+              <p>⚡ <strong>Politique :</strong> Pouvoir, influence</p>
+              <p>✨ <strong>Symbolique :</strong> Prestige, reconnaissance sociale</p>
+            </div>
+          </div>
+
+          <h4 class="font-semibold text-lg mt-6 mb-3">La structure sociale haïtienne (simplifiée)</h4>
+          <div class="space-y-3">
+            <div class="bg-yellow-50 dark:bg-yellow-950/30 border-2 border-yellow-400 p-4 rounded-lg">
+              <div class="font-bold">🏆 Classe supérieure (Elite)</div>
+              <p class="text-sm mt-1">Grands propriétaires, hommes d'affaires, hauts fonctionnaires, intellectuels reconnus. Souvent bilingues (français-créole), éducation à l'étranger.</p>
+            </div>
+            
+            <div class="bg-blue-50 dark:bg-blue-950/30 border-2 border-blue-400 p-4 rounded-lg">
+              <div class="font-bold">🏢 Classe moyenne</div>
+              <p class="text-sm mt-1">Professionnels (enseignants, infirmières, fonctionnaires moyens), petits commerçants, artisans qualifiés. En croissance mais encore limitée en Haïti.</p>
+            </div>
+            
+            <div class="bg-green-50 dark:bg-green-950/30 border-2 border-green-400 p-4 rounded-lg">
+              <div class="font-bold">🌾 Classe populaire/paysannerie</div>
+              <p class="text-sm mt-1">Petits paysans, ouvriers agricoles, marchandes, artisans non qualifiés, travailleurs informels. Majorité de la population haïtienne.</p>
+            </div>
+          </div>
+
+          <div class="bg-red-50 dark:bg-red-950/30 p-5 rounded-lg my-4 border-l-4 border-red-500">
+            <h4 class="font-bold mb-2">⚠️ Inégalités sociales en Haïti</h4>
+            <p class="text-sm mb-3">Haïti est l'un des pays les plus inégalitaires du monde. Les écarts entre riches et pauvres sont énormes :</p>
+            <ul class="text-sm space-y-1">
+              <li>• Plus de 60% de la population vit sous le seuil de pauvreté</li>
+              <li>• Accès inégal à l'éducation, santé, emploi</li>
+              <li>• Concentration de la richesse dans quelques familles</li>
+              <li>• Mobilité sociale très limitée</li>
+            </ul>
+          </div>
+
+          <h4 class="font-semibold text-lg mt-6 mb-3">Mobilité sociale</h4>
+          <p class="mb-2">La <strong>mobilité sociale</strong> est la possibilité de changer de classe sociale.</p>
+          <div class="grid md:grid-cols-2 gap-4 text-sm">
+            <div class="border-2 border-green-400 p-3 rounded">
+              <p class="font-bold mb-1">✅ Facteurs de mobilité ascendante</p>
+              <p>• Éducation de qualité<br>• Talent et travail<br>• Opportunités économiques<br>• Réseau social (connections)</p>
+            </div>
+            <div class="border-2 border-red-400 p-3 rounded">
+              <p class="font-bold mb-1">❌ Obstacles en Haïti</p>
+              <p>• Coût élevé de l'éducation<br>• Népotisme<br>• Manque d'opportunités<br>• Crises politiques récurrentes</p>
+            </div>
+          </div>
+        </section>
+
+        <section>
+          <h3 class="text-2xl font-bold mb-4 text-indigo-800 dark:text-indigo-300">8. Évolution des organisations sociales 🌍</h3>
+          
+          <p class="text-lg mb-4">Les formes d'organisation sociale ont profondément évolué au cours de l'histoire humaine, des sociétés les plus simples aux sociétés modernes complexes.</p>
+
+          <div class="space-y-4">
+            <div class="border-l-4 border-indigo-400 pl-4 py-2">
+              <h5 class="font-bold">1️⃣ Sociétés de chasseurs-cueilleurs (Préhistoire)</h5>
+              <p class="text-sm">Petits groupes nomades (20-50 personnes), organisation égalitaire, partage des ressources, pas de hiérarchie forte.</p>
+            </div>
+
+            <div class="border-l-4 border-blue-400 pl-4 py-2">
+              <h5 class="font-bold">2️⃣ Sociétés tribales (Néolithique)</h5>
+              <p class="text-sm">Sédentarisation, agriculture, tribus dirigées par des chefs, début de la propriété, organisation en clans familiaux.</p>
+            </div>
+
+            <div class="border-l-4 border-purple-400 pl-4 py-2">
+              <h5 class="font-bold">3️⃣ Sociétés agraires traditionnelles (Antiquité-Moyen Âge)</h5>
+              <p class="text-sm">Royaumes, empires, féodalité, forte hiérarchie sociale, économie agricole, pouvoir monarchique ou théocratique.</p>
+            </div>
+
+            <div class="border-l-4 border-green-400 pl-4 py-2">
+              <h5 class="font-bold">4️⃣ Sociétés industrielles (18e-20e siècles)</h5>
+              <p class="text-sm">Industrialisation, urbanisation, classes sociales (bourgeoisie/prolétariat), État-nation moderne, démocratie.</p>
+            </div>
+
+            <div class="border-l-4 border-orange-400 pl-4 py-2">
+              <h5 class="font-bold">5️⃣ Sociétés post-industrielles (Aujourd'hui)</h5>
+              <p class="text-sm">Économie de services et d'information, mondialisation, réseaux sociaux, organisations transnationales, diversité des modes de vie.</p>
+            </div>
+          </div>
+
+          <div class="bg-indigo-50 dark:bg-indigo-950/30 p-5 rounded-lg my-4">
+            <h4 class="font-bold mb-3">🇭🇹 L'évolution de la société haïtienne</h4>
+            <div class="space-y-2 text-sm">
+              <p><strong>Période précolombienne :</strong> Taïnos organisés en caciquats (chefferies)</p>
+              <p><strong>Période coloniale (1492-1804) :</strong> Société de plantation esclavagiste très hiérarchisée</p>
+              <p><strong>Post-indépendance (1804-1915) :</strong> Tensions entre élite urbaine francophone et masses paysannes créolophones</p>
+              <p><strong>Occupation américaine (1915-1934) :</strong> Modernisation forcée, nouvelles structures administratives</p>
+              <p><strong>Dictatures (1957-1986) :</strong> État autoritaire centralisé sous Duvalier (Papa Doc et Baby Doc)</p>
+              <p><strong>Période démocratique (1986-aujourd'hui) :</strong> Instabilité politique, croissance de la société civile, influence des ONG</p>
+            </div>
+          </div>
+        </section>
+
+        <section>
+          <h3 class="text-2xl font-bold mb-4 text-teal-800 dark:text-teal-300">9. Tendances actuelles et défis 🔮</h3>
+          
+          <div class="grid md:grid-cols-2 gap-4">
+            <div class="bg-green-50 dark:bg-green-950/30 p-4 rounded-lg">
+              <h4 class="font-bold text-green-800 dark:text-green-300 mb-3">✅ Tendances positives</h4>
+              <ul class="text-sm space-y-2">
+                <li>• Démocratisation de l'éducation</li>
+                <li>• Émancipation des femmes</li>
+                <li>• Technologies de communication</li>
+                <li>• Conscience écologique croissante</li>
+                <li>• Diversité culturelle reconnue</li>
               </ul>
             </div>
 
-            <div>
-              <p class="font-semibold">2. Dessinez votre famille</p>
-              <p>Créez un arbre généalogique simple de votre famille montrant au moins 3 générations (grands-parents, parents, vous et vos frères/sœurs).</p>
+            <div class="bg-red-50 dark:bg-red-950/30 p-4 rounded-lg">
+              <h4 class="font-bold text-red-800 dark:text-red-300 mb-3">⚠️ Défis majeurs</h4>
+              <ul class="text-sm space-y-2">
+                <li>• Individualisme excessif</li>
+                <li>• Affaiblissement des solidarités traditionnelles</li>
+                <li>• Inégalités croissantes</li>
+                <li>• Insécurité et violence (en Haïti)</li>
+                <li>• Crise de confiance envers les institutions</li>
+              </ul>
+            </div>
+          </div>
+        </section>
+
+        <section>
+          <h3 class="text-2xl font-bold mb-4">🎯 En résumé</h3>
+          <div class="bg-gradient-to-r from-purple-50 to-blue-50 dark:from-purple-950/30 dark:to-blue-950/30 p-6 rounded-xl">
+            <p class="mb-3 font-semibold">Les organisations sociales sont les structures qui permettent aux humains de vivre ensemble de manière ordonnée et harmonieuse.</p>
+            <ul class="space-y-2 text-sm">
+              <li>✓ Elles vont du niveau micro (famille) au niveau macro (État)</li>
+              <li>✓ Chaque institution a des fonctions spécifiques mais complémentaires</li>
+              <li>✓ En Haïti, des formes traditionnelles (lakou, konbit) coexistent avec des structures modernes</li>
+              <li>✓ La solidarité communautaire reste une valeur centrale de la culture haïtienne</li>
+              <li>✓ Les défis actuels nécessitent de repenser certaines formes d'organisation tout en préservant nos valeurs</li>
+            </ul>
+          </div>
+        </section>
+      </div>
+    `,
+    exemplesExercices: `
+      <div class="space-y-8">
+        <section>
+          <h3 class="text-2xl font-bold mb-4 text-purple-800 dark:text-purple-300">📚 Exemples concrets haïtiens</h3>
+          
+          <div class="grid md:grid-cols-2 gap-4">
+            <div class="bg-blue-50 dark:bg-blue-950/30 p-5 rounded-lg border-l-4 border-blue-500">
+              <h4 class="font-bold text-blue-800 dark:text-blue-300 mb-2">Exemple 1 : Le lakou de Souvenance</h4>
+              <p class="text-sm">Dans le village de Souvenance (Gonaïves), le lakou Badjo est célèbre. Plus de 15 familles y cohabitent depuis des générations. Le chef de lakou, Ti Jan, règle les conflits, organise les cérémonies vodou annuelles, et coordonne le travail agricole collectif. Toutes les grandes décisions se prennent en assemblée familiale sous le mapou sacré.</p>
             </div>
 
-            <div>
-              <p class="font-semibold">3. Enquête sur votre école</p>
-              <p>Listez toutes les règles de votre école et expliquez pourquoi chacune est importante pour l'organisation.</p>
+            <div class="bg-green-50 dark:bg-green-950/30 p-5 rounded-lg border-l-4 border-green-500">
+              <h4 class="font-bold text-green-800 dark:text-green-300 mb-2">Exemple 2 : Un konbit moderne</h4>
+              <p class="text-sm">À Hinche, les paysans organisent encore des konbits pour la récolte du riz. En novembre 2024, 40 personnes se sont réunies pour récolter 5 hectares en une journée. Le propriétaire du champ a offert le repas et le clairin, et un groupe rara a animé le travail avec des chansons traditionnelles. Chacun sait qu'il bénéficiera du même soutien quand viendra son tour.</p>
             </div>
 
-            <div>
-              <p class="font-semibold">4. Le konbit moderne</p>
-              <p>Réfléchissez : Comment pourrait-on organiser un konbit moderne dans votre quartier pour améliorer l'environnement ? (nettoyage, plantation d'arbres, etc.)</p>
+            <div class="bg-purple-50 dark:bg-purple-950/30 p-5 rounded-lg border-l-4 border-purple-500">
+              <h4 class="font-bold text-purple-800 dark:text-purple-300 mb-2">Exemple 3 : Le sòl du quartier</h4>
+              <p class="text-sm">Dans le quartier de Delmas, 12 femmes marchandes ont créé un sòl. Chaque semaine, chacune verse 500 gourdes. À tour de rôle, une d'entre elles reçoit les 6000 gourdes. Cela permet d'acheter des marchandises en gros ou de faire face à une urgence. Manman Rose, la doyenne, gère le système depuis 15 ans sans un seul incident.</p>
+            </div>
+
+            <div class="bg-orange-50 dark:bg-orange-950/30 p-5 rounded-lg border-l-4 border-orange-500">
+              <h4 class="font-bold text-orange-800 dark:text-orange-300 mb-2">Exemple 4 : Une famille diasporique</h4>
+              <p class="text-sm">La famille Hyppolite illustre la famille haïtienne moderne : le père travaille à Miami, la mère à Port-au-Prince gère une boutique, 2 enfants étudient en Haïti, 1 fille est à Montréal. Malgré la distance, ils restent très unis. Chaque dimanche, ils font un appel vidéo de groupe. Le père envoie régulièrement de l'argent qui aide toute la famille élargie.</p>
+            </div>
+
+            <div class="bg-pink-50 dark:bg-pink-950/30 p-5 rounded-lg border-l-4 border-pink-500">
+              <h4 class="font-bold text-pink-800 dark:text-pink-300 mb-2">Exemple 5 : Une association de jeunes</h4>
+              <p class="text-sm">À Jacmel, un groupe de 25 jeunes a créé l'association "Jèn Ayiti Reveye" (Jeunesse Haïtienne Éveillée). Ils organisent des nettoyages de plages, des cours de soutien gratuits pour les enfants défavorisés, et des tournois sportifs. C'est un exemple parfait d'organisation de société civile créée par et pour la jeunesse.</p>
+            </div>
+
+            <div class="bg-red-50 dark:bg-red-950/30 p-5 rounded-lg border-l-4 border-red-500">
+              <h4 class="font-bold text-red-800 dark:text-red-300 mb-2">Exemple 6 : Rôle de l'État après catastrophe</h4>
+              <p class="text-sm">Après le séisme du 14 août 2021 dans le Sud, l'État haïtien a coordonné avec les ONG la distribution d'aide alimentaire, l'installation d'abris temporaires, et la reconstruction des écoles. La Protection Civile a joué un rôle central, montrant l'importance de l'organisation étatique en temps de crise.</p>
+            </div>
+          </div>
+        </section>
+
+        <section>
+          <h3 class="text-2xl font-bold mb-4 text-blue-800 dark:text-blue-300">✍️ Exercices et Activités</h3>
+          
+          <div class="space-y-6">
+            <!-- QCM -->
+            <div class="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-950/30 dark:to-indigo-950/30 p-5 rounded-lg">
+              <h4 class="font-bold text-lg mb-3">📝 Exercice 1 : Questions à Choix Multiples (QCM)</h4>
+              <div class="space-y-4">
+                <div class="bg-white dark:bg-gray-800 p-4 rounded">
+                  <p class="font-semibold mb-2">1. Quelle est la première institution de socialisation ?</p>
+                  <div class="ml-4 space-y-1 text-sm">
+                    <p>a) L'école</p>
+                    <p>b) La famille ✓</p>
+                    <p>c) L'État</p>
+                    <p>d) La religion</p>
+                  </div>
+                </div>
+
+                <div class="bg-white dark:bg-gray-800 p-4 rounded">
+                  <p class="font-semibold mb-2">2. Qu'est-ce qu'un "lakou" en Haïti ?</p>
+                  <div class="ml-4 space-y-1 text-sm">
+                    <p>a) Un marché public</p>
+                    <p>b) Une école communautaire</p>
+                    <p>c) Une cour familiale où cohabitent plusieurs familles ✓</p>
+                    <p>d) Un temple vodou</p>
+                  </div>
+                </div>
+
+                <div class="bg-white dark:bg-gray-800 p-4 rounded">
+                  <p class="font-semibold mb-2">3. Que signifie "konbit" ?</p>
+                  <div class="ml-4 space-y-1 text-sm">
+                    <p>a) Un combat traditionnel</p>
+                    <p>b) Un travail agricole collectif ✓</p>
+                    <p>c) Une danse folklorique</p>
+                    <p>d) Un repas de fête</p>
+                  </div>
+                </div>
+
+                <div class="bg-white dark:bg-gray-800 p-4 rounded">
+                  <p class="font-semibold mb-2">4. Quels sont les trois éléments constitutifs d'un État ?</p>
+                  <div class="ml-4 space-y-1 text-sm">
+                    <p>a) Territoire, population, gouvernement ✓</p>
+                    <p>b) Armée, police, justice</p>
+                    <p>c) Président, ministres, députés</p>
+                    <p>d) Villes, villages, quartiers</p>
+                  </div>
+                </div>
+
+                <div class="bg-white dark:bg-gray-800 p-4 rounded">
+                  <p class="font-semibold mb-2">5. Qu'est-ce qu'un "sòl" ?</p>
+                  <div class="ml-4 space-y-1 text-sm">
+                    <p>a) Un type de sol agricole</p>
+                    <p>b) Une danse traditionnelle</p>
+                    <p>c) Un système d'épargne rotative ✓</p>
+                    <p>d) Un instrument de musique</p>
+                  </div>
+                </div>
+
+                <div class="bg-white dark:bg-gray-800 p-4 rounded">
+                  <p class="font-semibold mb-2">6. Qu'est-ce qu'une ONG ?</p>
+                  <div class="ml-4 space-y-1 text-sm">
+                    <p>a) Organisation Nouvelle Génération</p>
+                    <p>b) Organisation Non Gouvernementale ✓</p>
+                    <p>c) Organisation Nationale Gratuite</p>
+                    <p>d) Organisation Numériquement Gérée</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Vrai ou Faux -->
+            <div class="bg-gradient-to-r from-green-50 to-teal-50 dark:from-green-950/30 dark:to-teal-950/30 p-5 rounded-lg">
+              <h4 class="font-bold text-lg mb-3">✔️ Exercice 2 : Vrai ou Faux</h4>
+              <div class="space-y-3">
+                <div class="flex items-start gap-3">
+                  <span class="font-bold text-green-600">V</span>
+                  <p class="text-sm"><strong>1.</strong> La famille est la première cellule sociale. <span class="text-green-600 font-bold">(VRAI)</span></p>
+                </div>
+                <div class="flex items-start gap-3">
+                  <span class="font-bold text-red-600">F</span>
+                  <p class="text-sm"><strong>2.</strong> Le konbit est une forme de travail individuel. <span class="text-red-600 font-bold">(FAUX - c'est collectif)</span></p>
+                </div>
+                <div class="flex items-start gap-3">
+                  <span class="font-bold text-green-600">V</span>
+                  <p class="text-sm"><strong>3.</strong> Haïti a été le premier État noir indépendant du monde. <span class="text-green-600 font-bold">(VRAI)</span></p>
+                </div>
+                <div class="flex items-start gap-3">
+                  <span class="font-bold text-red-600">F</span>
+                  <p class="text-sm"><strong>4.</strong> Les groupes primaires sont des relations impersonnelles. <span class="text-red-600 font-bold">(FAUX - ce sont les groupes secondaires)</span></p>
+                </div>
+                <div class="flex items-start gap-3">
+                  <span class="font-bold text-green-600">V</span>
+                  <p class="text-sm"><strong>5.</strong> La société civile regroupe les organisations non gouvernementales. <span class="text-green-600 font-bold">(VRAI)</span></p>
+                </div>
+                <div class="flex items-start gap-3">
+                  <span class="font-bold text-red-600">F</span>
+                  <p class="text-sm"><strong>6.</strong> Le lakou est une invention moderne. <span class="text-red-600 font-bold">(FAUX - c'est traditionnel)</span></p>
+                </div>
+              </div>
+            </div>
+
+            <!-- Appariement -->
+            <div class="bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-950/30 dark:to-pink-950/30 p-5 rounded-lg">
+              <h4 class="font-bold text-lg mb-3">🔗 Exercice 3 : Appariement</h4>
+              <p class="text-sm mb-3">Reliez chaque institution à sa fonction principale :</p>
+              <div class="grid md:grid-cols-2 gap-4">
+                <div class="bg-white dark:bg-gray-800 p-4 rounded">
+                  <p class="font-semibold mb-2">Institutions :</p>
+                  <ol class="list-decimal ml-5 space-y-1 text-sm">
+                    <li>Famille</li>
+                    <li>École</li>
+                    <li>État</li>
+                    <li>ONG</li>
+                    <li>Lakou</li>
+                    <li>Konbit</li>
+                  </ol>
+                </div>
+                <div class="bg-white dark:bg-gray-800 p-4 rounded">
+                  <p class="font-semibold mb-2">Fonctions :</p>
+                  <ol type="A" class="list-[upper-alpha] ml-5 space-y-1 text-sm">
+                    <li>Travail agricole collectif</li>
+                    <li>Aide humanitaire et développement</li>
+                    <li>Sécurité et lois</li>
+                    <li>Socialisation primaire</li>
+                    <li>Organisation communautaire traditionnelle</li>
+                    <li>Instruction formelle</li>
+                  </ol>
+                </div>
+              </div>
+              <div class="mt-3 p-3 bg-gray-100 dark:bg-gray-900 rounded text-sm">
+                <p class="font-semibold">Réponses :</p>
+                <p>1→D, 2→F, 3→C, 4→B, 5→E, 6→A</p>
+              </div>
+            </div>
+
+            <!-- Questions de réflexion -->
+            <div class="bg-gradient-to-r from-orange-50 to-yellow-50 dark:from-orange-950/30 dark:to-yellow-950/30 p-5 rounded-lg">
+              <h4 class="font-bold text-lg mb-3">💭 Exercice 4 : Questions de réflexion critique</h4>
+              <div class="space-y-3 text-sm">
+                <div class="bg-white dark:bg-gray-800 p-4 rounded">
+                  <p class="font-semibold mb-2">1. Pourquoi le lakou est-il moins fréquent en ville qu'en campagne ?</p>
+                  <p class="text-gray-600 dark:text-gray-400 mt-2 italic">Pistes de réflexion : Urbanisation, individualisme, coût du terrain, mode de vie moderne...</p>
+                </div>
+
+                <div class="bg-white dark:bg-gray-800 p-4 rounded">
+                  <p class="font-semibold mb-2">2. Comment les réseaux sociaux (Facebook, WhatsApp) changent-ils les formes d'organisation sociale traditionnelles ?</p>
+                  <p class="text-gray-600 dark:text-gray-400 mt-2 italic">Pistes : Nouvelles communautés virtuelles, rapidité de communication, mobilisation rapide...</p>
+                </div>
+
+                <div class="bg-white dark:bg-gray-800 p-4 rounded">
+                  <p class="font-semibold mb-2">3. Selon toi, quel est le plus grand défi de l'État haïtien aujourd'hui ?</p>
+                  <p class="text-gray-600 dark:text-gray-400 mt-2 italic">Pistes : Sécurité, éducation, santé, corruption, justice...</p>
+                </div>
+
+                <div class="bg-white dark:bg-gray-800 p-4 rounded">
+                  <p class="font-semibold mb-2">4. Les pratiques de solidarité comme le konbit et le sòl sont-elles encore pertinentes aujourd'hui ? Pourquoi ?</p>
+                  <p class="text-gray-600 dark:text-gray-400 mt-2 italic">Débat ouvert entre tradition et modernité</p>
+                </div>
+              </div>
+            </div>
+
+            <!-- Étude de cas -->
+            <div class="bg-gradient-to-r from-blue-50 to-cyan-50 dark:from-blue-950/30 dark:to-cyan-950/30 p-5 rounded-lg">
+              <h4 class="font-bold text-lg mb-3">🔍 Exercice 5 : Étude de cas comparée</h4>
+              <div class="bg-white dark:bg-gray-800 p-5 rounded text-sm">
+                <p class="font-semibold mb-3">Comparez l'organisation familiale dans ces deux contextes :</p>
+                
+                <div class="grid md:grid-cols-2 gap-4 mb-4">
+                  <div class="border-2 border-green-400 p-3 rounded">
+                    <p class="font-bold text-green-700 dark:text-green-300 mb-2">🌾 Famille rurale (Plateau Central)</p>
+                    <p>Famille élargie de 20 personnes dans un lakou. 3 générations sous l'autorité du grand-père. Agriculture de subsistance. Entraide quotidienne. Décisions collectives.</p>
+                  </div>
+                  <div class="border-2 border-blue-400 p-3 rounded">
+                    <p class="font-bold text-blue-700 dark:text-blue-300 mb-2">🏙️ Famille urbaine (Port-au-Prince)</p>
+                    <p>Famille nucléaire de 5 personnes (parents + 3 enfants). Appartement loué. Parents salariés. Enfants à l'école privée. Décisions des parents seuls.</p>
+                  </div>
+                </div>
+
+                <p class="font-semibold mb-2">Analysez :</p>
+                <ul class="list-disc ml-6 space-y-1">
+                  <li>Les différences dans la structure familiale</li>
+                  <li>Les avantages et inconvénients de chaque modèle</li>
+                  <li>L'impact sur l'éducation des enfants</li>
+                  <li>Les formes de solidarité dans chaque cas</li>
+                  <li>Quel modèle préférez-vous et pourquoi ?</li>
+                </ul>
+              </div>
+            </div>
+
+            <!-- Activité pratique -->
+            <div class="bg-gradient-to-r from-pink-50 to-rose-50 dark:from-pink-950/30 dark:to-rose-950/30 p-5 rounded-lg">
+              <h4 class="font-bold text-lg mb-3">🎨 Exercice 6 : Dessine ton organisation sociale</h4>
+              <div class="space-y-3 text-sm">
+                <p><strong>Activité A :</strong> Dessine l'arbre généalogique de ta famille sur 3 générations minimum (grands-parents, parents, toi et tes frères/sœurs, éventuellement tes enfants/neveux/nièces).</p>
+                
+                <p><strong>Activité B :</strong> Crée un schéma montrant toutes les organisations sociales dont tu fais partie :</p>
+                <ul class="list-disc ml-6">
+                  <li>Place-toi au centre</li>
+                  <li>Dessine autour : ta famille, ton école, ton église/temple, ton quartier, tes groupes d'amis, tes activités (sport, musique...), ton pays</li>
+                  <li>Utilise des flèches pour montrer les liens entre ces différents cercles</li>
+                </ul>
+
+                <p><strong>Activité C :</strong> Dessine le plan d'un lakou traditionnel avec ses différents espaces (maisons, cour commune, jardin, péristyle, etc.)</p>
+              </div>
+            </div>
+
+            <!-- Enquête familiale -->
+            <div class="bg-gradient-to-r from-indigo-50 to-violet-50 dark:from-indigo-950/30 dark:to-violet-950/30 p-5 rounded-lg">
+              <h4 class="font-bold text-lg mb-3">🎤 Exercice 7 : Enquête familiale</h4>
+              <div class="bg-white dark:bg-gray-800 p-5 rounded text-sm">
+                <p class="font-semibold mb-3">Interviewe un grand-parent ou une personne âgée de ta famille/quartier sur ces questions :</p>
+                <ol class="list-decimal ml-5 space-y-2">
+                  <li>Comment était organisée votre famille quand vous étiez jeune ?</li>
+                  <li>Est-ce que vous avez vécu dans un lakou ? Racontez-moi comment c'était.</li>
+                  <li>Avez-vous participé à des konbits ? Comment ça se passait ?</li>
+                  <li>Quelles traditions de solidarité existaient dans votre jeunesse ?</li>
+                  <li>Qu'est-ce qui a changé selon vous dans l'organisation sociale haïtienne ?</li>
+                  <li>Quelles valeurs de solidarité voulez-vous nous transmettre ?</li>
+                </ol>
+                <p class="mt-3 italic text-gray-600 dark:text-gray-400">Écris un résumé de 200 mots de cette interview et présente-le en classe.</p>
+              </div>
+            </div>
+
+            <!-- Débat -->
+            <div class="bg-gradient-to-r from-red-50 to-orange-50 dark:from-red-950/30 dark:to-orange-950/30 p-5 rounded-lg">
+              <h4 class="font-bold text-lg mb-3">🗣️ Exercice 8 : Débat en classe</h4>
+              <div class="bg-white dark:bg-gray-800 p-5 rounded text-sm">
+                <p class="font-semibold mb-3">Sujet : "Faut-il préserver les organisations sociales traditionnelles (lakou, konbit) ou les moderniser ?"</p>
+                
+                <div class="grid md:grid-cols-2 gap-4 my-3">
+                  <div class="border-l-4 border-green-500 pl-3">
+                    <p class="font-bold text-green-700 dark:text-green-300">POUR la préservation</p>
+                    <p class="text-xs mt-1">Arguments : Identité culturelle, solidarité, lien social, sagesse ancestrale...</p>
+                  </div>
+                  <div class="border-l-4 border-blue-500 pl-3">
+                    <p class="font-bold text-blue-700 dark:text-blue-300">POUR la modernisation</p>
+                    <p class="text-xs mt-1">Arguments : Efficacité, adaptation au monde moderne, individualisme nécessaire...</p>
+                  </div>
+                </div>
+
+                <p class="italic">La classe se divise en deux groupes qui débattent pendant 20 minutes. Chaque groupe prépare 5 arguments.</p>
+              </div>
+            </div>
+
+            <!-- Projet de recherche -->
+            <div class="bg-gradient-to-r from-teal-50 to-emerald-50 dark:from-teal-950/30 dark:to-emerald-950/30 p-5 rounded-lg">
+              <h4 class="font-bold text-lg mb-3">📖 Exercice 9 : Mini-projet de recherche</h4>
+              <div class="bg-white dark:bg-gray-800 p-5 rounded text-sm">
+                <p class="font-semibold mb-3">Choisissez UN sujet et réalisez une recherche de 500 mots :</p>
+                <ol class="list-decimal ml-5 space-y-2">
+                  <li><strong>L'évolution du lakou :</strong> Comparez le lakou traditionnel rural avec les formes modernes d'habitat urbain. Est-ce que le lakou existe encore en ville ? Sous quelle forme ?</li>
+                  <li><strong>Le rôle des femmes :</strong> Étudiez le rôle central des femmes dans l'organisation familiale et économique haïtienne (marchandes, chefs de famille, gestion du sòl...).</li>
+                  <li><strong>Les ONG en Haïti :</strong> Identifiez 5 ONG présentes en Haïti, leurs domaines d'action, et évaluez leur impact positif ou négatif.</li>
+                  <li><strong>La diaspora haïtienne :</strong> Comment la diaspora contribue-t-elle à l'organisation sociale et économique d'Haïti ?</li>
+                </ol>
+                <p class="mt-3 font-semibold">Présentez votre recherche sous forme d'exposé de 5 minutes avec support visuel (affiche ou PowerPoint).</p>
+              </div>
+            </div>
+
+            <!-- Exercice créatif -->
+            <div class="bg-gradient-to-r from-yellow-50 to-amber-50 dark:from-yellow-950/30 dark:to-amber-950/30 p-5 rounded-lg">
+              <h4 class="font-bold text-lg mb-3">🎭 Exercice 10 : Activité créative - "Imagine ta société idéale"</h4>
+              <div class="bg-white dark:bg-gray-800 p-5 rounded text-sm">
+                <p class="mb-3">Tu as le pouvoir de créer une société idéale pour Haïti ! Réponds aux questions suivantes :</p>
+                <ol class="list-decimal ml-5 space-y-3">
+                  <li><strong>Organisation familiale :</strong> Quel type de famille privilégierais-tu ? Pourquoi ?</li>
+                  <li><strong>Communauté :</strong> Comment organiserais-tu les quartiers/villages pour favoriser la solidarité ?</li>
+                  <li><strong>État :</strong> Quelles seraient les 5 priorités de ton gouvernement ?</li>
+                  <li><strong>Éducation :</strong> Comment serait organisé le système scolaire ?</li>
+                  <li><strong>Économie :</strong> Comment réduirais-tu les inégalités sociales ?</li>
+                  <li><strong>Traditions :</strong> Quelles traditions garderais-tu ? Lesquelles abandonnerais-tu ?</li>
+                  <li><strong>Innovation :</strong> Quelle nouvelle forme d'organisation sociale inventerais-tu ?</li>
+                </ol>
+                <p class="mt-4 italic text-gray-600 dark:text-gray-400">Présente ton projet sous forme de récit illustré, de bande dessinée, ou de maquette. Sois créatif !</p>
+              </div>
+            </div>
+
+            <!-- Activité de terrain -->
+            <div class="bg-gradient-to-r from-green-50 to-lime-50 dark:from-green-950/30 dark:to-lime-950/30 p-5 rounded-lg">
+              <h4 class="font-bold text-lg mb-3">🚶 Exercice 11 : Enquête de terrain dans ton quartier</h4>
+              <div class="bg-white dark:bg-gray-800 p-5 rounded text-sm">
+                <p class="mb-3 font-semibold">Explore les organisations sociales de ton quartier :</p>
+                <div class="space-y-2">
+                  <p><strong>1. Identifie :</strong></p>
+                  <ul class="list-disc ml-6">
+                    <li>Les églises/temples présents</li>
+                    <li>Les associations sportives ou culturelles</li>
+                    <li>Les comités de quartier</li>
+                    <li>Les commerces communautaires</li>
+                    <li>Les groupes de solidarité (sòl, eskwad...)</li>
+                  </ul>
+                  
+                  <p class="mt-3"><strong>2. Interview :</strong> Parle avec un responsable d'une de ces organisations pour comprendre :</p>
+                  <ul class="list-disc ml-6">
+                    <li>Quand et pourquoi elle a été créée</li>
+                    <li>Combien de membres elle compte</li>
+                    <li>Quelles sont ses activités principales</li>
+                    <li>Quels sont ses défis</li>
+                  </ul>
+                  
+                  <p class="mt-3"><strong>3. Présente :</strong> Crée une carte de ton quartier montrant toutes ces organisations et leurs liens.</p>
+                </div>
+              </div>
+            </div>
+
+            <!-- Exercice de synthèse -->
+            <div class="bg-gradient-to-r from-purple-50 to-fuchsia-50 dark:from-purple-950/30 dark:to-fuchsia-950/30 p-5 rounded-lg">
+              <h4 class="font-bold text-lg mb-3">📝 Exercice 12 : Composition finale</h4>
+              <div class="bg-white dark:bg-gray-800 p-5 rounded text-sm">
+                <p class="font-semibold mb-3">Rédige une composition de 300-400 mots sur UN de ces sujets :</p>
+                <ol class="list-decimal ml-5 space-y-2">
+                  <li>"Mon expérience personnelle de la solidarité familiale ou communautaire"</li>
+                  <li>"Comment améliorer l'organisation sociale de mon quartier ?"</li>
+                  <li>"Les défis de l'organisation familiale haïtienne au 21e siècle"</li>
+                  <li>"L'importance des traditions comme le lakou et le konbit aujourd'hui"</li>
+                  <li>"Si j'étais responsable de mon école/quartier, que changerais-je dans son organisation ?"</li>
+                </ol>
+                <div class="mt-4 p-3 bg-blue-50 dark:bg-blue-950/30 rounded">
+                  <p class="font-semibold">Critères d'évaluation :</p>
+                  <ul class="text-xs space-y-1 mt-2">
+                    <li>✓ Introduction claire (contexte + problématique)</li>
+                    <li>✓ Développement structuré avec exemples concrets</li>
+                    <li>✓ Utilisation correcte des concepts du cours</li>
+                    <li>✓ Réflexion personnelle et esprit critique</li>
+                    <li>✓ Conclusion avec ouverture</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </section>
+
+        <section class="mt-8">
+          <div class="bg-gradient-to-r from-indigo-100 to-purple-100 dark:from-indigo-900/30 dark:to-purple-900/30 p-6 rounded-xl border-2 border-indigo-300 dark:border-indigo-700">
+            <h3 class="text-xl font-bold mb-3 text-indigo-900 dark:text-indigo-200">🎥 Ressources vidéo suggérées</h3>
+            <div class="space-y-2 text-sm">
+              <p>• "L'organisation sociale des sociétés humaines" - Documentaire anthropologique</p>
+              <p>• "Le lakou haïtien : un modèle de vie communautaire" - Documentaire culturel</p>
+              <p>• "C'est quoi la famille ?" - Vidéo éducative</p>
+              <p>• "Le rôle de l'État" - Cours d'éducation civique</p>
+              <p>• "Solidarité haïtienne : konbit et entraide" - Reportage sur les traditions</p>
+              <p>• "Les inégalités sociales expliquées" - Vidéo pédagogique</p>
             </div>
           </div>
         </section>
