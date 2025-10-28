@@ -4354,9 +4354,47 @@ export const sciencesSocialesLessons7AF: SciencesSocialesLesson[] = [
     mois: "Février",
     objectif: "Décrire et analyser les caractéristiques du relief d'Haïti.",
     introduction: `
-      <div class="space-y-4">
-        <p>Haïti est un pays très montagneux. En fait, son nom taïno "Ayiti" signifie précisément "terre de hautes montagnes". Environ 75% du territoire haïtien est constitué de montagnes et de collines, ce qui fait d'Haïti l'un des pays les plus montagneux des Caraïbes.</p>
-        <p>Cette configuration montagneuse influence profondément la vie du pays : le climat local, l'agriculture, les communications, et même la répartition de la population. Comprendre le relief haïtien, c'est comprendre un élément fondamental de notre géographie nationale.</p>
+      <div class="space-y-6">
+        <div class="bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-950/30 dark:to-emerald-950/30 p-6 rounded-lg border-l-4 border-green-500">
+          <h2 class="text-xl font-bold mb-2">🏔️ Terre de hautes montagnes</h2>
+          <p class="text-lg italic">"Ayiti : un nom qui résonne comme une promesse de sommets majestueux et de vallées profondes."</p>
+        </div>
+        
+        <p class="text-lg leading-relaxed">Imagine que tu survoles Haïti en avion. Que vois-tu ? Des montagnes à perte de vue ! Des chaînes qui se succèdent, des vallées qui serpentent, des sommets qui percent les nuages. Haïti est l'un des pays les plus montagneux non seulement des Caraïbes, mais du monde entier. Environ 75% de notre territoire est constitué de montagnes et de collines. C'est cette particularité qui a donné à notre pays son nom taïno <strong>"Ayiti"</strong>, qui signifie littéralement "terre de hautes montagnes".</p>
+        
+        <p>Cette géographie tourmentée n'est pas qu'un simple détail touristique. Elle façonne profondément notre vie quotidienne : le climat local varie selon l'altitude, l'agriculture s'adapte aux pentes, les routes contournent les massifs, et la population se concentre dans les plaines rares et précieuses. Quand il pleut sur les montagnes du Massif de la Selle, cela affecte l'approvisionnement en eau de Port-au-Prince. Quand les montagnes sont déboisées, c'est toute la plaine en aval qui subit l'érosion et les inondations.</p>
+        
+        <p>Mais le relief haïtien raconte aussi une histoire géologique fascinante : celle de la rencontre violente entre deux plaques tectoniques, celle des séismes qui ont façonné nos montagnes, celle des volcans aujourd'hui éteints qui ont créé nos sols fertiles. Comprendre le relief haïtien, c'est comprendre pourquoi nous subissons des tremblements de terre, pourquoi certaines régions sont fertiles et d'autres arides, pourquoi Port-au-Prince est si vulnérable.</p>
+        
+        <div class="bg-yellow-50 dark:bg-yellow-950/20 border-l-4 border-yellow-500 p-4 my-4">
+          <p class="font-semibold text-yellow-900 dark:text-yellow-200">🎯 Objectifs d'apprentissage</p>
+          <ul class="list-disc ml-6 mt-2 space-y-1">
+            <li>Identifier et localiser les cinq massifs montagneux principaux d'Haïti</li>
+            <li>Comprendre la formation géologique de notre relief</li>
+            <li>Analyser l'influence du relief sur le climat, l'agriculture et l'habitat</li>
+            <li>Reconnaître les principales plaines et leur importance économique</li>
+            <li>Réfléchir aux défis environnementaux liés au relief (érosion, glissements de terrain)</li>
+            <li>Apprécier la beauté et la diversité du paysage haïtien</li>
+          </ul>
+        </div>
+        
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
+          <div class="bg-blue-50 dark:bg-blue-950/20 p-4 rounded-lg text-center">
+            <p class="text-3xl font-bold text-blue-600 dark:text-blue-400">2 680 m</p>
+            <p class="text-sm font-semibold">Pic la Selle</p>
+            <p class="text-xs">Point culminant d'Haïti</p>
+          </div>
+          <div class="bg-green-50 dark:bg-green-950/20 p-4 rounded-lg text-center">
+            <p class="text-3xl font-bold text-green-600 dark:text-green-400">75%</p>
+            <p class="text-sm font-semibold">du territoire</p>
+            <p class="text-xs">est montagneux</p>
+          </div>
+          <div class="bg-amber-50 dark:bg-amber-950/20 p-4 rounded-lg text-center">
+            <p class="text-3xl font-bold text-amber-600 dark:text-amber-400">5</p>
+            <p class="text-sm font-semibold">massifs principaux</p>
+            <p class="text-xs">traversent le pays</p>
+          </div>
+        </div>
       </div>
     `,
     contenu: `
@@ -4468,44 +4506,290 @@ export const sciencesSocialesLessons7AF: SciencesSocialesLesson[] = [
       </div>
     `,
     exemplesExercices: `
-      <div class="space-y-6">
+      <div class="space-y-8">
         <section>
-          <h3 class="text-xl font-semibold mb-3">Exemples pratiques</h3>
-          <div class="bg-blue-50 dark:bg-blue-950/30 p-4 rounded-lg space-y-3">
-            <p><strong>Exemple 1 :</strong> Le Pic la Selle à 2 680m a un climat frais (10-15°C) alors qu'à Port-au-Prince à 30 km, il fait 30°C - effet de l'altitude.</p>
-            <p><strong>Exemple 2 :</strong> L'Artibonite, grâce à sa grande plaine fertile, produit 80% du riz consommé en Haïti.</p>
-            <p><strong>Exemple 3 :</strong> Les Gonaïves, située dans une plaine entre montagnes, subit des inondations catastrophiques quand il pleut dans les montagnes environnantes.</p>
+          <h3 class="text-2xl font-bold mb-4 text-primary">📝 Exemples concrets et études de cas</h3>
+          
+          <div class="space-y-4">
+            <div class="bg-blue-50 dark:bg-blue-950/30 p-5 rounded-lg border-l-4 border-blue-500">
+              <p class="font-bold text-lg mb-2">🇭🇹 Exemple 1 : Le Pic la Selle, château d'eau d'Haïti</p>
+              <p class="mb-2">Le Pic la Selle, à 2 680 mètres d'altitude, est le point culminant d'Haïti. Situé à seulement 30 km de Port-au-Prince, il présente un contraste climatique saisissant : alors qu'il fait 32°C dans la capitale étouffante, au sommet du Pic la Selle, la température peut descendre à 10-15°C, avec parfois du givre en hiver !</p>
+              <p class="font-semibold mt-3">Importance écologique :</p>
+              <p>Le massif de la Selle est un <strong>château d'eau naturel</strong>. Les pluies abondantes qui s'abattent sur ses flancs alimentent des dizaines de sources qui descendent vers Port-au-Prince et le Cul-de-Sac. Sans ces montagnes, la capitale n'aurait pratiquement pas d'eau douce. Malheureusement, la déforestation menace cet équilibre fragile.</p>
+            </div>
+            
+            <div class="bg-green-50 dark:bg-green-950/20 p-5 rounded-lg border-l-4 border-green-500">
+              <p class="font-bold text-lg mb-2">🌾 Exemple 2 : La Plaine de l'Artibonite, grenier d'Haïti</p>
+              <p class="mb-2">Avec ses 600 km² de terres fertiles, la Plaine de l'Artibonite est la plus grande et la plus productive d'Haïti. Elle produit à elle seule 80% du riz consommé dans le pays ! Comment est-ce possible ?</p>
+              <ul class="list-disc ml-6 mt-2 space-y-1">
+                <li><strong>Sol alluvial riche :</strong> Déposé par les crues du fleuve Artibonite pendant des millénaires</li>
+                <li><strong>Système d'irrigation :</strong> Barrages de Péligre et canaux qui permettent deux récoltes par an</li>
+                <li><strong>Relief plat :</strong> Facilite la mécanisation et les grandes parcelles</li>
+              </ul>
+              <p class="mt-3 bg-yellow-100 dark:bg-yellow-900/20 p-3 rounded italic">⚠️ <strong>Défi actuel :</strong> L'érosion des montagnes en amont dépose du sable dans les canaux d'irrigation, réduisant progressivement la productivité de cette plaine vitale.</p>
+            </div>
+            
+            <div class="bg-red-50 dark:bg-red-950/20 p-5 rounded-lg border-l-4 border-red-500">
+              <p class="font-bold text-lg mb-2">🌊 Exemple 3 : Les Gonaïves, ville martyre des inondations</p>
+              <p class="mb-2">La ville des Gonaïves, où fut proclamée l'indépendance d'Haïti en 1804, est tragiquement célèbre pour ses inondations dévastatrices. Pourquoi cette ville est-elle si vulnérable ?</p>
+              <p class="font-semibold mt-3">Géographie piège :</p>
+              <ul class="list-disc ml-6 mt-2 space-y-1">
+                <li>Les Gonaïves sont situées dans une <strong>cuvette</strong> entre plusieurs massifs montagneux</li>
+                <li>Quand il pleut sur les montagnes environnantes, toute l'eau converge vers cette plaine</li>
+                <li>Les montagnes sont <strong>totalement déboisées</strong> : plus d'arbres pour retenir l'eau, qui dévale en torrents boueux</li>
+                <li>La ville est proche du niveau de la mer : l'eau n'a nulle part où s'écouler</li>
+              </ul>
+              <p class="mt-3"><strong>Conséquence :</strong> En 2004, l'ouragan Jeanne a tué plus de 3 000 personnes aux Gonaïves. En 2008, quatre cyclones successifs ont inondé la ville à répétition. C'est le prix dramatique de la déforestation.</p>
+            </div>
+            
+            <div class="bg-amber-50 dark:bg-amber-950/20 p-5 rounded-lg border-l-4 border-amber-500">
+              <p class="font-bold text-lg mb-2">⛰️ Exemple 4 : Le Plateau Central, zone d'élevage</p>
+              <p class="mb-2">Le Plateau Central n'est ni vraiment une plaine ni vraiment une montagne. C'est un plateau d'altitude moyenne (200-500 m) qui s'étend entre les chaînes montagneuses du nord et du sud.</p>
+              <p class="font-semibold mt-3">Spécificité :</p>
+              <p>Son relief de collines douces et son climat plus frais en font une <strong>zone d'élevage privilégiée</strong>. On y élève des bovins, des chèvres, des moutons. C'est aussi une région de culture de sorgho (mil), céréale résistante à la sécheresse. La ville d'Hinche, au cœur du plateau, est le centre de cette économie rurale.</p>
+            </div>
+            
+            <div class="bg-purple-50 dark:bg-purple-950/20 p-5 rounded-lg border-l-4 border-purple-500">
+              <p class="font-bold text-lg mb-2">🏝️ Exemple 5 : La Gonâve, île montagneuse au cœur du golfe</p>
+              <p class="mb-2">L'île de la Gonâve (700 km², 100 000 habitants) est un petit Haïti dans Haïti : elle aussi est très montagneuse, culminant à 778 m au Morne la Pierre. Sa position au milieu du golfe de la Gonâve en fait une île particulièrement aride.</p>
+              <p class="mt-2"><strong>Pourquoi si sèche ?</strong> Les vents chargés d'humidité déposent leur pluie sur les côtes d'Haïti continentale avant d'atteindre l'île. Résultat : la Gonâve reçoit deux fois moins de pluie que le continent. L'agriculture y est très difficile, la population dépend de la pêche et du commerce avec le continent.</p>
+            </div>
+
+            <div class="bg-indigo-50 dark:bg-indigo-950/20 p-5 rounded-lg border-l-4 border-indigo-500">
+              <p class="font-bold text-lg mb-2">🌄 Exemple 6 : Furcy, village dans les nuages</p>
+              <p>À 1 500 mètres d'altitude sur les flancs du Massif de la Selle, le village de Furcy offre un spectacle rare en Haïti : des forêts de pins luxuriantes, de l'air frais et pur, parfois même du brouillard épais qui enveloppe les maisons. C'est le lieu de villégiature préféré des Port-au-Princiens fortunés qui fuient la chaleur de la capitale. Furcy produit aussi des fruits tempérés qu'on ne trouve nulle part ailleurs en Haïti : fraises, pommes, pêches !</p>
+            </div>
           </div>
         </section>
 
-        <section>
-          <h3 class="text-xl font-semibold mb-3">Exercices</h3>
-          <div class="space-y-4">
-            <div>
-              <p class="font-semibold">1. Carte du relief</p>
-              <p>Dessinez une carte simple d'Haïti et placez-y :</p>
-              <ul class="ml-6 list-disc">
-                <li>Les 5 massifs montagneux</li>
-                <li>Les 4 principales plaines</li>
-                <li>Le Pic la Selle</li>
+        <section class="mt-10">
+          <h3 class="text-2xl font-bold mb-4 text-primary">🎓 Exercices et activités variés</h3>
+          
+          <div class="space-y-6">
+            <div class="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-950/30 dark:to-indigo-950/30 p-5 rounded-lg">
+              <p class="font-bold text-xl mb-3">📚 Type 1 : Questions à choix multiples (QCM)</p>
+              
+              <div class="space-y-3">
+                <div>
+                  <p class="font-semibold">1. Quelle est l'altitude du Pic la Selle, point culminant d'Haïti ?</p>
+                  <ul class="ml-6 list-none space-y-1">
+                    <li>A) 1 680 m</li>
+                    <li>B) 2 280 m</li>
+                    <li>C) 2 680 m ✓</li>
+                    <li>D) 3 080 m</li>
+                  </ul>
+                </div>
+                
+                <div>
+                  <p class="font-semibold">2. Quel pourcentage du territoire haïtien est montagneux ?</p>
+                  <ul class="ml-6 list-none space-y-1">
+                    <li>A) 50%</li>
+                    <li>B) 65%</li>
+                    <li>C) 75% ✓</li>
+                    <li>D) 85%</li>
+                  </ul>
+                </div>
+                
+                <div>
+                  <p class="font-semibold">3. Quelle est la plus grande plaine d'Haïti ?</p>
+                  <ul class="ml-6 list-none space-y-1">
+                    <li>A) Plaine du Nord</li>
+                    <li>B) Plaine du Cul-de-Sac</li>
+                    <li>C) Plaine de l'Artibonite ✓</li>
+                    <li>D) Plaine des Gonaïves</li>
+                  </ul>
+                </div>
+                
+                <div>
+                  <p class="font-semibold">4. Combien Haïti compte-t-il de massifs montagneux principaux ?</p>
+                  <ul class="ml-6 list-none space-y-1">
+                    <li>A) 3</li>
+                    <li>B) 5 ✓</li>
+                    <li>C) 7</li>
+                    <li>D) 9</li>
+                  </ul>
+                </div>
+                
+                <div>
+                  <p class="font-semibold">5. Quelle plaine est surnommée "le grenier d'Haïti" ?</p>
+                  <ul class="ml-6 list-none space-y-1">
+                    <li>A) Plaine du Nord</li>
+                    <li>B) Plaine de l'Artibonite ✓</li>
+                    <li>C) Plaine du Cul-de-Sac</li>
+                    <li>D) Plateau Central</li>
+                  </ul>
+                </div>
+
+                <div>
+                  <p class="font-semibold">6. Quel est le nom taïno d'Haïti et que signifie-t-il ?</p>
+                  <ul class="ml-6 list-none space-y-1">
+                    <li>A) "Quisqueya" - mère de toutes les terres</li>
+                    <li>B) "Ayiti" - terre de hautes montagnes ✓</li>
+                    <li>C) "Bohio" - grande île</li>
+                    <li>D) "Xaragua" - terre de l'eau</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+
+            <div class="bg-gradient-to-r from-green-50 to-teal-50 dark:from-green-950/30 dark:to-teal-950/30 p-5 rounded-lg">
+              <p class="font-bold text-xl mb-3">✓✗ Type 2 : Vrai ou Faux justifié</p>
+              
+              <div class="space-y-3">
+                <div>
+                  <p class="font-semibold">1. Haïti est un pays principalement plat.</p>
+                  <p class="ml-4 text-sm"><strong>FAUX.</strong> 75% du territoire haïtien est montagneux, ce qui en fait l'un des pays les plus montagneux des Caraïbes.</p>
+                </div>
+                
+                <div>
+                  <p class="font-semibold">2. Le Pic la Selle est visible depuis Port-au-Prince par temps clair.</p>
+                  <p class="ml-4 text-sm"><strong>VRAI.</strong> Le Pic la Selle (2 680 m) domine Port-au-Prince et est visible depuis la capitale, surtout tôt le matin avant que la brume ne l'enveloppe.</p>
+                </div>
+                
+                <div>
+                  <p class="font-semibold">3. La Plaine de l'Artibonite produit la majorité du café haïtien.</p>
+                  <p class="ml-4 text-sm"><strong>FAUX.</strong> La Plaine de l'Artibonite produit surtout du riz (80% de la production nationale). Le café pousse en altitude, sur les pentes montagneuses (Massif du Nord, Massif de la Selle).</p>
+                </div>
+                
+                <div>
+                  <p class="font-semibold">4. Les montagnes d'Haïti sont d'origine volcanique.</p>
+                  <p class="ml-4 text-sm"><strong>PARTIELLEMENT VRAI.</strong> Certaines montagnes sont issues d'anciennes activités volcaniques (aujourd'hui éteintes), mais la plupart résultent de la collision et du plissement des plaques tectoniques caraïbe et nord-américaine.</p>
+                </div>
+                
+                <div>
+                  <p class="font-semibold">5. Le climat est identique partout en Haïti.</p>
+                  <p class="ml-4 text-sm"><strong>FAUX.</strong> Le relief crée de nombreux microclimats. En montagne (Furcy, Kenscoff), il fait frais (15-20°C), tandis que dans les plaines côtières, il fait chaud (28-32°C). Les versants est (au vent) sont plus arrosés que les versants ouest (sous le vent).</p>
+                </div>
+              </div>
+            </div>
+
+            <div class="bg-gradient-to-r from-amber-50 to-orange-50 dark:from-amber-950/30 dark:to-orange-950/30 p-5 rounded-lg">
+              <p class="font-bold text-xl mb-3">🔗 Type 3 : Appariement</p>
+              <p class="mb-3">Associe chaque massif montagneux à sa caractéristique principale :</p>
+              
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="bg-white dark:bg-gray-800 p-3 rounded">
+                  <p class="font-semibold mb-2">Massifs :</p>
+                  <ol class="list-decimal ml-6">
+                    <li>Massif de la Selle</li>
+                    <li>Massif du Nord</li>
+                    <li>Massif de la Hotte</li>
+                    <li>Chaîne des Matheux</li>
+                    <li>Montagnes Noires</li>
+                  </ol>
+                </div>
+                
+                <div class="bg-white dark:bg-gray-800 p-3 rounded">
+                  <p class="font-semibold mb-2">Caractéristiques :</p>
+                  <ul class="list-none ml-6">
+                    <li>A) Contient le point culminant d'Haïti (Pic la Selle, 2 680 m)</li>
+                    <li>B) Produit beaucoup de café de qualité</li>
+                    <li>C) Extrême sud-ouest, très isolé, riche en biodiversité unique</li>
+                    <li>D) Sépare le Plateau Central de l'Artibonite</li>
+                    <li>E) Au centre, entre Artibonite et Plateau Central</li>
+                  </ul>
+                </div>
+              </div>
+              
+              <p class="text-sm mt-3 italic">Réponses : 1-A, 2-B, 3-C, 4-D, 5-E</p>
+            </div>
+
+            <div class="bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-950/30 dark:to-pink-950/30 p-5 rounded-lg">
+              <p class="font-bold text-xl mb-3">💭 Type 4 : Questions de réflexion</p>
+              
+              <div class="space-y-3">
+                <p class="font-semibold">1. Pourquoi les routes en Haïti sont-elles si difficiles à construire et à entretenir ? (Réfléchis au relief et à l'érosion)</p>
+                <p class="font-semibold">2. Si tu étais ministre de l'Agriculture, quelles cultures privilégierais-tu dans les montagnes ? Dans les plaines ? Pourquoi ?</p>
+                <p class="font-semibold">3. Comment le relief montagneux d'Haïti explique-t-il que certaines régions soient isolées et difficiles d'accès ?</p>
+                <p class="font-semibold">4. Pourquoi la protection des montagnes (reboisement) est-elle essentielle pour éviter les catastrophes dans les plaines ?</p>
+              </div>
+            </div>
+
+            <div class="bg-gradient-to-r from-rose-50 to-red-50 dark:from-rose-950/30 dark:to-red-950/30 p-5 rounded-lg">
+              <p class="font-bold text-xl mb-3">🎨 Type 5 : Activité pratique - Carte du relief</p>
+              <p class="mb-3">Crée une carte en relief d'Haïti :</p>
+              <ol class="list-decimal ml-6 space-y-2">
+                <li><strong>Matériel :</strong> Papier cartonné, pâte à modeler (ou pâte à sel), crayons de couleur</li>
+                <li><strong>Étape 1 :</strong> Dessine le contour d'Haïti sur le carton</li>
+                <li><strong>Étape 2 :</strong> Avec la pâte à modeler, modèle les 5 massifs montagneux (utilise plus de pâte pour les zones élevées)</li>
+                <li><strong>Étape 3 :</strong> Laisse les plaines plates</li>
+                <li><strong>Étape 4 :</strong> Colorie : vert foncé pour les montagnes, vert clair pour les collines, jaune pour les plaines</li>
+                <li><strong>Étape 5 :</strong> Place des étiquettes : Pic la Selle, Plaine de l'Artibonite, Plaine du Nord, etc.</li>
+              </ol>
+              <p class="mt-3 bg-blue-100 dark:bg-blue-900/20 p-3 rounded italic">💡 <strong>Bonus :</strong> Ajoute les principales villes (Port-au-Prince, Cap-Haïtien, Gonaïves) et observe où elles se situent (plaines ? montagnes ?).</p>
+            </div>
+
+            <div class="bg-gradient-to-r from-cyan-50 to-blue-50 dark:from-cyan-950/30 dark:to-blue-950/30 p-5 rounded-lg">
+              <p class="font-bold text-xl mb-3">🔍 Type 6 : Enquête locale</p>
+              <p class="mb-3">Mène une enquête sur le relief de ta région :</p>
+              <div class="space-y-2">
+                <p><strong>1.</strong> Dans quel type de relief habites-tu ? (plaine, colline, montagne, plateau)</p>
+                <p><strong>2.</strong> Quelle est l'altitude approximative de ta ville/village ?</p>
+                <p><strong>3.</strong> Quel massif montagneux ou quelle plaine es-tu le plus proche ?</p>
+                <p><strong>4.</strong> Quelles cultures sont pratiquées dans ta région ? Pourquoi ?</p>
+                <p><strong>5.</strong> Y a-t-il des problèmes d'érosion ou d'inondations ? Si oui, pourquoi ?</p>
+                <p><strong>6.</strong> Interroge un adulte de ta famille : comment le relief influence-t-il la vie quotidienne ? (accès à l'eau, construction, agriculture, transport)</p>
+              </div>
+            </div>
+
+            <div class="bg-gradient-to-r from-indigo-50 to-purple-50 dark:from-indigo-950/30 dark:to-purple-950/30 p-5 rounded-lg">
+              <p class="font-bold text-xl mb-3">🎯 Type 7 : Débat en classe</p>
+              <p class="mb-3"><strong>Sujet :</strong> "Le relief montagneux d'Haïti est-il un avantage ou un inconvénient pour notre pays ?"</p>
+              
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-3">
+                <div class="bg-green-100 dark:bg-green-900/20 p-3 rounded">
+                  <p class="font-semibold mb-2">Arguments "Avantage" :</p>
+                  <ul class="list-disc ml-6 text-sm space-y-1">
+                    <li>Diversité des cultures selon l'altitude</li>
+                    <li>Microclimats variés</li>
+                    <li>Paysages magnifiques pour le tourisme</li>
+                    <li>Châteaux d'eau naturels</li>
+                    <li>Richesse écologique (biodiversité unique en altitude)</li>
+                  </ul>
+                </div>
+                
+                <div class="bg-red-100 dark:bg-red-900/20 p-3 rounded">
+                  <p class="font-semibold mb-2">Arguments "Inconvénient" :</p>
+                  <ul class="list-disc ml-6 text-sm space-y-1">
+                    <li>Difficulté de construire routes et infrastructures</li>
+                    <li>Érosion massive des sols</li>
+                    <li>Isolement de certaines régions</li>
+                    <li>Glissements de terrain et inondations</li>
+                    <li>Agriculture difficile en pente</li>
+                  </ul>
+                </div>
+              </div>
+              
+              <p class="mt-3 text-sm italic">Divise la classe en deux groupes, préparez vos arguments, et débattez !</p>
+            </div>
+
+            <div class="bg-gradient-to-r from-teal-50 to-green-50 dark:from-teal-950/30 dark:to-green-950/30 p-5 rounded-lg">
+              <p class="font-bold text-xl mb-3">📖 Type 8 : Composition écrite</p>
+              <p class="mb-3"><strong>Sujet :</strong> "Une journée dans les montagnes haïtiennes"</p>
+              <p class="mb-2">Imagine que tu passes une journée à Furcy (1 500 m d'altitude). Décris :</p>
+              <ul class="list-disc ml-6 space-y-1">
+                <li>Le paysage que tu vois (forêts de pins, brouillard, vue sur Port-au-Prince en contrebas)</li>
+                <li>Le climat (frais, parfois froid le matin)</li>
+                <li>Les activités des habitants (culture de fraises, tourisme, vente de bois)</li>
+                <li>Les défis de la vie en altitude (accès difficile, électricité rare, etc.)</li>
+                <li>Tes impressions et ce que tu ressens face à cette nature montagneuse</li>
               </ul>
+              <p class="mt-3 text-sm"><strong>Longueur :</strong> 200-300 mots minimum.</p>
             </div>
+          </div>
+        </section>
 
-            <div>
-              <p class="font-semibold">2. Comparaison</p>
-              <p>Remplissez ce tableau comparatif :</p>
-              <table class="ml-6 border">
-                <tr><th>Zone</th><th>Altitude</th><th>Cultures</th></tr>
-                <tr><td>Plaines</td><td>0-200m</td><td>?</td></tr>
-                <tr><td>Collines</td><td>200-800m</td><td>?</td></tr>
-                <tr><td>Montagnes</td><td>>800m</td><td>?</td></tr>
-              </table>
-            </div>
-
-            <div>
-              <p class="font-semibold">3. Enquête locale</p>
-              <p>Renseignez-vous : Dans quel type de relief se trouve votre ville/village ? (plaine, colline, montagne). Quelles sont les conséquences sur l'agriculture locale ?</p>
-            </div>
+        <section class="mt-10">
+          <div class="bg-purple-50 dark:bg-purple-950/20 border-l-4 border-purple-500 p-5 rounded-lg">
+            <p class="font-semibold text-lg mb-2">🎥 Ressources vidéo suggérées</p>
+            <ul class="list-disc ml-6 space-y-2">
+              <li>"Survol d'Haïti en drone - montagnes et plaines" (documentaire géographique)</li>
+              <li>"Le Pic la Selle : randonnée au sommet d'Haïti" (vidéo YouTube)</li>
+              <li>"La Plaine de l'Artibonite : grenier d'Haïti" (reportage agricole)</li>
+              <li>"Érosion en Haïti : le drame des montagnes pelées" (documentaire environnemental)</li>
+              <li>"Tectonique des plaques et relief d'Haïti" (animation scientifique)</li>
+              <li>"Les Gonaïves : comprendre les inondations" (reportage explicatif)</li>
+            </ul>
           </div>
         </section>
       </div>
