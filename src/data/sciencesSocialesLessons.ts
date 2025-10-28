@@ -6147,52 +6147,405 @@ export const sciencesSocialesLessons7AF: SciencesSocialesLesson[] = [
     mois: "Avril",
     objectif: "Découvrir les fosses océaniques et leur importance géologique.",
     introduction: `
-      <p class="text-foreground leading-relaxed">
-        Les fosses marines sont les endroits les plus profonds des océans. Ces dépressions gigantesques se trouvent principalement dans l'océan Pacifique et peuvent atteindre des profondeurs de plus de 11 000 mètres ! Haïti, situé près de plusieurs fosses, est directement concerné par ces formations géologiques.
-      </p>
+      <div class="space-y-4">
+        <p class="text-lg leading-relaxed">🌊 <strong>Plongée dans les abysses : Les fosses marines, les endroits les plus mystérieux de la Terre !</strong></p>
+        <p>Savais-tu que nous connaissons mieux la surface de la Lune que le fond des océans ? Les fosses marines sont les zones les plus profondes et les plus inaccessibles de notre planète. Certaines descendent à plus de 11 000 mètres sous la surface de l'eau - si tu mettais le Mont Everest (8 848 m) au fond de la fosse des Mariannes, il serait complètement submergé avec encore 2 km d'eau au-dessus !</p>
+        <p>Ces gouffres océaniques ne sont pas juste des "trous dans l'eau". Ils jouent un rôle crucial dans la géologie de notre planète : ils sont le résultat du mouvement des plaques tectoniques, et ils expliquent pourquoi certaines régions du monde - <strong>comme Haïti et les Caraïbes</strong> - sont si souvent touchées par des tremblements de terre et des tsunamis.</p>
+        <p class="text-primary font-semibold">🇭🇹 Pourquoi c'est important pour Haïti ? Parce que nous vivons près de plusieurs fosses marines très actives : la fosse de Porto Rico (8 605 m) et la fosse des Caïmans (7 686 m). Ces fosses sont directement responsables de l'activité sismique intense qui a causé le terrible tremblement de terre du 12 janvier 2010. Comprendre les fosses marines, c'est comprendre pourquoi notre pays tremble régulièrement !</p>
+      </div>
     `,
     contenu: `
-      <section class="space-y-6">
-        <div>
-          <h3 class="text-xl font-semibold mb-3 text-foreground">1. Qu'est-ce qu'une fosse marine ?</h3>
-          <p class="text-foreground mb-3">Une fosse marine (ou fosse océanique) est une dépression longue et étroite du fond océanique.</p>
-          <ul class="list-disc ml-6 space-y-2 text-foreground">
-            <li><strong>Profondeur :</strong> Entre 6 000 et 11 000 mètres</li>
-            <li><strong>Formation :</strong> Par subduction (une plaque tectonique plonge sous une autre)</li>
-            <li><strong>Localisation :</strong> Principalement dans l'océan Pacifique</li>
-          </ul>
-        </div>
+      <div class="space-y-8">
+        <section>
+          <h3 class="text-2xl font-bold mb-4 text-blue-700 dark:text-blue-400">1. Qu'est-ce qu'une fosse marine ? Définition et formation 🌊</h3>
+          
+          <div class="bg-blue-50 dark:bg-blue-950/30 p-5 rounded-lg mb-4">
+            <h4 class="text-xl font-semibold mb-3">📖 Définition</h4>
+            <p class="mb-3">Une <strong>fosse marine</strong> (ou fosse océanique, ou tranchée abyssale) est une <strong>dépression très profonde, longue et étroite</strong> du fond des océans. C'est l'équivalent sous-marin d'un canyon ou d'une vallée extrêmement profonde.</p>
+            <ul class="list-disc ml-6 space-y-2">
+              <li><strong>Profondeur :</strong> Entre 6 000 et 11 000 mètres (en comparaison, l'océan a une profondeur moyenne de 3 800 m)</li>
+              <li><strong>Forme :</strong> Longues et étroites, en forme de croissant ou de V</li>
+              <li><strong>Longueur :</strong> Peuvent s'étendre sur des milliers de kilomètres</li>
+              <li><strong>Largeur :</strong> Généralement entre 50 et 100 km</li>
+            </ul>
+          </div>
 
-        <div>
-          <h3 class="text-xl font-semibold mb-3 text-foreground">2. Principales fosses marines</h3>
-          <ul class="list-disc ml-6 space-y-2 text-foreground">
-            <li><strong>Fosse des Mariannes :</strong> La plus profonde (10 994 m), Pacifique</li>
-            <li><strong>Fosse de Porto Rico :</strong> 8 605 m, près des Caraïbes</li>
-            <li><strong>Fosse de Caïmans :</strong> 7 686 m, mer des Caraïbes</li>
-            <li><strong>Fosse des Tonga :</strong> 10 882 m, Pacifique Sud</li>
-          </ul>
-        </div>
+          <div class="bg-purple-50 dark:bg-purple-950/30 p-5 rounded-lg">
+            <h4 class="text-xl font-semibold mb-3">🌍 Comment se forment les fosses marines ? (Subduction des plaques tectoniques)</h4>
+            <p class="mb-3">Pour comprendre les fosses marines, il faut d'abord comprendre que la croûte terrestre n'est pas d'un seul bloc solide. Elle est divisée en plusieurs <strong>plaques tectoniques</strong> qui flottent sur le manteau terrestre (une couche de roche en fusion) et bougent lentement (quelques centimètres par an).</p>
+            
+            <p class="mb-3"><strong>Le processus de subduction (plongée d'une plaque sous une autre) :</strong></p>
+            <ol class="list-decimal ml-6 space-y-3">
+              <li><strong>Rencontre de deux plaques :</strong> Une plaque océanique (plus dense, plus lourde) rencontre une autre plaque (océanique ou continentale)</li>
+              <li><strong>La plaque océanique plonge :</strong> Étant plus lourde, la plaque océanique s'enfonce sous l'autre plaque</li>
+              <li><strong>Formation de la fosse :</strong> Au point de rencontre, la plaque qui plonge crée une dépression profonde : c'est la fosse marine !</li>
+              <li><strong>La plaque continue de s'enfoncer :</strong> Elle descend dans le manteau terrestre où elle fond progressivement (recyclage de la croûte terrestre)</li>
+            </ol>
 
-        <div>
-          <h3 class="text-xl font-semibold mb-3 text-foreground">3. Importance pour Haïti</h3>
-          <p class="text-foreground mb-3">Les fosses proches d'Haïti expliquent l'activité sismique :</p>
-          <ul class="list-disc ml-6 space-y-2 text-foreground">
-            <li>Rencontre de plaques tectoniques</li>
-            <li>Séismes fréquents</li>
-            <li>Tsunamis possibles</li>
-          </ul>
-        </div>
-      </section>
+            <div class="bg-white/50 dark:bg-black/20 p-4 rounded-lg mt-4">
+              <p class="font-semibold mb-2">🔥 Conséquences de la subduction :</p>
+              <ul class="list-disc ml-6 space-y-2">
+                <li><strong>Tremblements de terre :</strong> Le frottement entre les deux plaques provoque des séismes violents</li>
+                <li><strong>Volcans :</strong> La plaque qui fond libère des gaz et du magma qui remontent et créent des volcans</li>
+                <li><strong>Tsunamis :</strong> Les séismes sous-marins peuvent déplacer d'énormes volumes d'eau</li>
+                <li><strong>Chaînes de montagnes sous-marines :</strong> Formation d'arcs insulaires volcaniques</li>
+              </ul>
+            </div>
+          </div>
+        </section>
+
+        <section>
+          <h3 class="text-2xl font-bold mb-4 text-indigo-700 dark:text-indigo-400">2. Les principales fosses marines du monde 🗺️</h3>
+          
+          <div class="space-y-4">
+            <div class="bg-indigo-50 dark:bg-indigo-950/30 p-5 rounded-lg">
+              <h4 class="text-xl font-semibold mb-3">🏆 Fosse des Mariannes (Pacifique Ouest) - La championne du monde !</h4>
+              <ul class="list-disc ml-6 space-y-2">
+                <li><strong>Profondeur maximale :</strong> 10 994 mètres (point Challenger Deep)</li>
+                <li><strong>Localisation :</strong> Océan Pacifique, près de l'île de Guam</li>
+                <li><strong>Record :</strong> L'endroit le plus profond de la Terre !</li>
+                <li><strong>Exploration :</strong> Seulement 4 personnes y sont descendues dans l'histoire (James Cameron, le réalisateur de Titanic, en 2012 !)</li>
+                <li><strong>Pression :</strong> 1 100 fois la pression atmosphérique au niveau de la mer - ton corps serait écrasé instantanément !</li>
+              </ul>
+              <p class="mt-3 text-sm italic">💡 Si tu lâchais une pierre au fond de la fosse des Mariannes, elle mettrait plus d'une heure pour toucher le fond !</p>
+            </div>
+
+            <div class="bg-red-50 dark:bg-red-950/30 p-5 rounded-lg">
+              <h4 class="text-xl font-semibold mb-3">🇭🇹 Fosse de Porto Rico (Atlantique) - Notre voisine dangereuse !</h4>
+              <ul class="list-disc ml-6 space-y-2">
+                <li><strong>Profondeur maximale :</strong> 8 605 mètres (Milwaukee Deep)</li>
+                <li><strong>Localisation :</strong> Au nord de Porto Rico et d'Haïti, dans l'océan Atlantique</li>
+                <li><strong>Importance pour Haïti :</strong> C'est LA fosse qui nous concerne directement !</li>
+                <li><strong>Danger :</strong> Zone de subduction très active = séismes fréquents + risque de tsunami</li>
+                <li><strong>Record :</strong> La fosse la plus profonde de l'océan Atlantique</li>
+              </ul>
+              <p class="mt-3 font-semibold text-red-900 dark:text-red-200">⚠️ C'est l'activité de cette fosse qui a provoqué le séisme du 12 janvier 2010 en Haïti (magnitude 7.0, plus de 200 000 morts). La plaque nord-américaine glisse sous la plaque caribéenne au niveau de cette fosse.</p>
+            </div>
+
+            <div class="bg-teal-50 dark:bg-teal-950/30 p-5 rounded-lg">
+              <h4 class="text-xl font-semibold mb-3">🌴 Fosse des Caïmans (Mer des Caraïbes)</h4>
+              <ul class="list-disc ml-6 space-y-2">
+                <li><strong>Profondeur maximale :</strong> 7 686 mètres</li>
+                <li><strong>Localisation :</strong> Entre la Jamaïque et les îles Caïmans</li>
+                <li><strong>Particularité :</strong> C'est la plus profonde de la mer des Caraïbes</li>
+                <li><strong>Impact sur Haïti :</strong> Contribue aussi à l'instabilité sismique de notre région</li>
+              </ul>
+            </div>
+
+            <div class="bg-yellow-50 dark:bg-yellow-950/30 p-5 rounded-lg">
+              <h4 class="text-xl font-semibold mb-3">🌏 Autres fosses majeures du monde</h4>
+              <ul class="list-disc ml-6 space-y-2">
+                <li><strong>Fosse des Tonga :</strong> 10 882 m (Pacifique Sud)</li>
+                <li><strong>Fosse des Philippines :</strong> 10 540 m (Pacifique Ouest)</li>
+                <li><strong>Fosse des Kermadec :</strong> 10 047 m (Pacifique Sud-Ouest)</li>
+                <li><strong>Fosse du Japon :</strong> 8 412 m (Pacifique Ouest) - responsable du tsunami de 2011</li>
+                <li><strong>Fosse du Pérou-Chili :</strong> 8 065 m (Pacifique Est)</li>
+              </ul>
+            </div>
+          </div>
+        </section>
+
+        <section>
+          <h3 class="text-2xl font-bold mb-4 text-purple-700 dark:text-purple-400">3. La vie dans les fosses marines : Un monde extraterrestre sur Terre 👽</h3>
+          
+          <div class="bg-purple-50 dark:bg-purple-950/30 p-5 rounded-lg mb-4">
+            <h4 class="text-xl font-semibold mb-3">Conditions extrêmes</h4>
+            <ul class="list-disc ml-6 space-y-2">
+              <li><strong>Obscurité totale :</strong> Aucune lumière du soleil ne descend au-delà de 1 000 m</li>
+              <li><strong>Pression écrasante :</strong> Plus de 1 000 fois la pression au niveau de la mer</li>
+              <li><strong>Température glaciale :</strong> Entre 1°C et 4°C</li>
+              <li><strong>Pas de photosynthèse :</strong> Les plantes ne peuvent pas pousser</li>
+            </ul>
+          </div>
+
+          <div class="bg-blue-50 dark:bg-blue-950/30 p-5 rounded-lg">
+            <h4 class="text-xl font-semibold mb-3">Et pourtant, la vie existe ! 🦐</h4>
+            <p class="mb-3">Contre toute attente, des créatures extraordinaires vivent dans ces abysses :</p>
+            <ul class="list-disc ml-6 space-y-3">
+              <li><strong>Poissons des abysses :</strong> Corps transparent ou bioluminescent (qui produit de la lumière), yeux énormes, dents gigantesques (poisson-vipère, poisson-lanterne)</li>
+              <li><strong>Amphipodes géants :</strong> Sortes de crevettes géantes de 30 cm (taille normale : 1 cm !)</li>
+              <li><strong>Concombres de mer géants :</strong> Animaux mous qui rampent au fond</li>
+              <li><strong>Sources hydrothermales :</strong> Cheminées sous-marines qui crachent de l'eau à 400°C, entourées de bactéries et de vers tubicoles de 2 mètres !</li>
+              <li><strong>Méduses transparentes :</strong> Flottent dans les eaux profondes</li>
+            </ul>
+            <p class="mt-3 font-semibold text-blue-900 dark:text-blue-200">🔬 Ces créatures ont développé des adaptations incroyables : bioluminescence pour attirer les proies, organes internes flexibles pour résister à la pression, métabolisme ultra-lent...</p>
+          </div>
+        </section>
+
+        <section>
+          <h3 class="text-2xl font-bold mb-4 text-red-700 dark:text-red-400">4. Impact direct sur Haïti : Pourquoi notre pays tremble 🌍🇭🇹</h3>
+          
+          <div class="bg-gradient-to-r from-red-50 to-orange-50 dark:from-red-950/30 dark:to-orange-950/30 p-6 rounded-lg">
+            <h4 class="text-xl font-semibold mb-3">La situation tectonique d'Haïti</h4>
+            <p class="mb-3">Haïti se trouve à un endroit géologiquement très complexe et dangereux : <strong>la frontière entre la plaque nord-américaine et la plaque caribéenne</strong>.</p>
+            
+            <div class="bg-white/50 dark:bg-black/20 p-4 rounded-lg mb-4">
+              <p class="font-semibold mb-2">📍 Configuration des plaques :</p>
+              <ul class="list-disc ml-6 space-y-2">
+                <li>La <strong>plaque nord-américaine</strong> (qui porte les USA et le Canada) plonge sous la plaque caribéenne au niveau de la fosse de Porto Rico</li>
+                <li>La <strong>plaque caribéenne</strong> (qui porte Haïti, la République Dominicaine, Cuba) se déplace vers l'est à environ 2 cm par an</li>
+                <li>Les deux plaques se frottent le long d'une <strong>faille transformante</strong> (faille d'Enriquillo-Plantain Garden) qui traverse Haïti d'est en ouest</li>
+              </ul>
+            </div>
+
+            <div class="bg-red-100 dark:bg-red-900/30 p-4 rounded-lg mb-4">
+              <h5 class="font-bold text-lg mb-2">⚠️ Conséquences pour Haïti :</h5>
+              <ol class="list-decimal ml-6 space-y-3">
+                <li><strong>Séismes fréquents :</strong>
+                  <ul class="list-disc ml-6 mt-2">
+                    <li>12 janvier 2010 : Magnitude 7.0 - Léogâne/Port-au-Prince (230 000 morts, 300 000 blessés)</li>
+                    <li>14 août 2021 : Magnitude 7.2 - Sud d'Haïti (2 200 morts)</li>
+                    <li>De nombreux petits séismes tout le temps</li>
+                  </ul>
+                </li>
+                <li><strong>Risque de tsunami :</strong> Si un gros séisme se produit sous la mer près de la fosse de Porto Rico, un tsunami pourrait frapper nos côtes en quelques minutes</li>
+                <li><strong>Déformations du relief :</strong> Les montagnes d'Haïti ont été créées par la collision des plaques</li>
+                <li><strong>Sources chaudes :</strong> Présence de sources d'eau chaude naturelles (Source Puante, Source Matelas...)</li>
+              </ol>
+            </div>
+
+            <div class="bg-yellow-100 dark:bg-yellow-900/30 p-4 rounded-lg">
+              <h5 class="font-bold text-lg mb-2">🛡️ Ce que nous devons faire :</h5>
+              <ul class="list-disc ml-6 space-y-2">
+                <li>Construire des bâtiments parasismiques (résistants aux tremblements de terre)</li>
+                <li>Avoir un plan d'évacuation en cas de séisme</li>
+                <li>Connaître les gestes qui sauvent (se mettre sous une table, s'éloigner des fenêtres...)</li>
+                <li>Installer des systèmes d'alerte précoce pour les tsunamis</li>
+                <li>Éduquer toute la population sur les risques sismiques</li>
+              </ul>
+            </div>
+          </div>
+        </section>
+
+        <section>
+          <h3 class="text-2xl font-bold mb-4 text-teal-700 dark:text-teal-400">5. Exploration des fosses marines : Mission (presque) impossible 🤿</h3>
+          
+          <div class="bg-teal-50 dark:bg-teal-950/30 p-5 rounded-lg">
+            <h4 class="text-xl font-semibold mb-3">Les défis de l'exploration</h4>
+            <ul class="list-disc ml-6 space-y-3 mb-4">
+              <li><strong>Pression extrême :</strong> Un sous-marin normal serait écrasé comme une canette vide</li>
+              <li><strong>Obscurité totale :</strong> Besoin de lumières artificielles puissantes</li>
+              <li><strong>Froid :</strong> Tout le matériel peut geler</li>
+              <li><strong>Distance :</strong> Il faut plusieurs heures pour descendre et remonter</li>
+              <li><strong>Coût :</strong> Chaque expédition coûte des millions de dollars</li>
+            </ul>
+
+            <h4 class="text-xl font-semibold mb-3">Quelques expéditions historiques :</h4>
+            <ul class="list-disc ml-6 space-y-2">
+              <li><strong>1960 :</strong> Jacques Piccard et Don Walsh descendent à 10 916 m dans le bathyscaphe Trieste (première fois !)</li>
+              <li><strong>2012 :</strong> James Cameron (réalisateur de Titanic et Avatar) descend en solitaire au fond de la fosse des Mariannes</li>
+              <li><strong>2019 :</strong> Victor Vescovo bat le record de profondeur avec 10 928 m</li>
+            </ul>
+
+            <p class="mt-4 font-semibold">💡 On estime que seulement 5% des fonds océaniques ont été explorés. Il reste tant de mystères à découvrir !</p>
+          </div>
+        </section>
+      </div>
     `,
     exemplesExercices: `
-      <section class="space-y-4">
-        <div class="bg-primary/5 border-l-4 border-primary p-4 rounded">
-          <h4 class="font-semibold mb-2 text-foreground">💡 Le savais-tu ?</h4>
-          <p class="text-foreground">
-            Si on plaçait le Mont Everest (8 848 m) dans la fosse des Mariannes, il serait entièrement submergé avec plus de 2 km d'eau au-dessus !
-          </p>
+      <div class="space-y-6">
+        <h3 class="text-2xl font-bold mb-4 text-primary">🇭🇹 Exemples concrets liés à Haïti</h3>
+        
+        <div class="bg-red-50 dark:bg-red-950/30 border-l-4 border-red-500 p-5 rounded-lg mb-4">
+          <p class="font-bold text-lg mb-2">💔 Exemple 1 : Le séisme du 12 janvier 2010</p>
+          <p class="mb-3">Le 12 janvier 2010 à 16h53, un tremblement de terre de magnitude 7.0 a frappé Haïti. L'épicentre était à Léogâne, à seulement 25 km de Port-au-Prince. Résultat catastrophique :</p>
+          <ul class="list-disc ml-6 space-y-1 mb-3">
+            <li>Plus de 230 000 morts</li>
+            <li>300 000 blessés</li>
+            <li>1,5 million de sans-abris</li>
+            <li>Le Palais National s'est effondré</li>
+            <li>Des milliers de bâtiments détruits</li>
+          </ul>
+          <p><strong>Cause :</strong> Mouvement brutal le long de la faille d'Enriquillo, liée à la fosse de Porto Rico et à la subduction des plaques tectoniques.</p>
+          <p class="mt-2 italic">C'était le plus grand désastre humanitaire de l'histoire d'Haïti. Aujourd'hui encore, le pays s'en remet.</p>
         </div>
-      </section>
+
+        <div class="bg-red-50 dark:bg-red-950/30 border-l-4 border-red-500 p-5 rounded-lg mb-4">
+          <p class="font-bold text-lg mb-2">💔 Exemple 2 : Le séisme du 14 août 2021</p>
+          <p class="mb-3">À peine 11 ans après 2010, un autre séisme majeur frappe le sud d'Haïti :</p>
+          <ul class="list-disc ml-6 space-y-1 mb-3">
+            <li>Magnitude : 7.2 (plus fort que 2010 !)</li>
+            <li>Épicentre : Petit-Trou-de-Nippes</li>
+            <li>Plus de 2 200 morts</li>
+            <li>12 000 blessés</li>
+            <li>Villes touchées : Les Cayes, Jérémie, Camp-Perrin...</li>
+          </ul>
+          <p><strong>Leçon :</strong> Haïti est situé dans une zone sismique TRÈS active. Les séismes majeurs ne sont pas des événements isolés, ils se répètent régulièrement !</p>
+        </div>
+
+        <div class="bg-blue-50 dark:bg-blue-950/30 border-l-4 border-blue-500 p-5 rounded-lg mb-4">
+          <p class="font-bold text-lg mb-2">🌊 Exemple 3 : Le risque de tsunami en Haïti</p>
+          <p class="mb-3">En 2004, un tsunami géant a frappé l'Indonésie (causé par un séisme dans la fosse de Java) : 230 000 morts ! Haïti court le même risque :</p>
+          <ul class="list-disc ml-6 space-y-2">
+            <li>Si un gros séisme (magnitude 8+) se produit dans la fosse de Porto Rico, il pourrait générer un tsunami</li>
+            <li>Le tsunami atteindrait les côtes haïtiennes en 10-15 minutes seulement</li>
+            <li>Villes côtières menacées : Cap-Haïtien, Gonaïves, Port-au-Prince, Les Cayes...</li>
+          </ul>
+          <p class="mt-3 font-semibold">⚠️ C'est pourquoi il faut avoir des systèmes d'alerte et des plans d'évacuation !</p>
+        </div>
+
+        <div class="bg-blue-50 dark:bg-blue-950/30 border-l-4 border-blue-500 p-5 rounded-lg mb-4">
+          <p class="font-bold text-lg mb-2">🏔️ Exemple 4 : Les montagnes d'Haïti, créées par les plaques</p>
+          <p>Le relief montagneux d'Haïti (Massif de la Hotte, Massif de la Selle, Chaîne des Matheux) est le résultat direct de millions d'années de collision entre les plaques caribéenne et nord-américaine. Chaque fois que les plaques se heurtent, elles soulèvent la terre et créent des montagnes !</p>
+        </div>
+
+        <h3 class="text-2xl font-bold mb-4 text-primary mt-8">📝 Exercices variés</h3>
+
+        <div class="space-y-6">
+          <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md">
+            <p class="font-bold text-xl mb-4">1. Carte des fosses marines</p>
+            <p class="mb-3">Sur une carte du monde, localise et dessine :</p>
+            <ul class="list-disc ml-6 space-y-2">
+              <li>La fosse des Mariannes (Pacifique Ouest)</li>
+              <li>La fosse de Porto Rico (au nord d'Haïti)</li>
+              <li>La fosse des Caïmans (mer des Caraïbes)</li>
+              <li>La fosse du Japon</li>
+              <li>La fosse du Pérou-Chili</li>
+            </ul>
+            <p class="mt-3">Note la profondeur de chaque fosse à côté.</p>
+          </div>
+
+          <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md">
+            <p class="font-bold text-xl mb-4">2. QCM</p>
+            <ol class="space-y-4">
+              <li><strong>a) Quelle est la fosse la plus profonde du monde ?</strong>
+                <br/>① Fosse de Porto Rico ② Fosse des Mariannes ③ Fosse des Tonga ④ Fosse du Japon
+              </li>
+              <li><strong>b) Comment se forment les fosses marines ?</strong>
+                <br/>① Par érosion ② Par subduction des plaques ③ Par explosion volcanique ④ Par courants marins
+              </li>
+              <li><strong>c) Quelle fosse est la plus proche d'Haïti ?</strong>
+                <br/>① Fosse des Mariannes ② Fosse du Japon ③ Fosse de Porto Rico ④ Fosse des Tonga
+              </li>
+              <li><strong>d) Pourquoi Haïti a-t-il beaucoup de tremblements de terre ?</strong>
+                <br/>① Parce qu'il pleut beaucoup ② Parce qu'il y a beaucoup de fosses marines à proximité ③ À cause de la pollution ④ Par hasard
+              </li>
+            </ol>
+            <p class="mt-4 text-sm italic">Réponses : a)② b)② c)③ d)②</p>
+          </div>
+
+          <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md">
+            <p class="font-bold text-xl mb-4">3. Schéma : La subduction expliquée</p>
+            <p class="mb-3">Dessine un schéma montrant :</p>
+            <ul class="list-disc ml-6 space-y-2">
+              <li>Deux plaques tectoniques qui se rencontrent</li>
+              <li>La plaque océanique qui plonge sous l'autre</li>
+              <li>La formation de la fosse marine</li>
+              <li>Un volcan qui se forme au-dessus</li>
+              <li>L'épicentre d'un séisme</li>
+            </ul>
+            <p class="mt-3">Utilise des flèches pour montrer le mouvement des plaques.</p>
+          </div>
+
+          <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md">
+            <p class="font-bold text-xl mb-4">4. Comparaison de profondeurs</p>
+            <p class="mb-3">Fais un tableau comparant :</p>
+            <ul class="list-disc ml-6 space-y-1">
+              <li>Profondeur de la fosse des Mariannes : 10 994 m</li>
+              <li>Hauteur du Mont Everest : 8 848 m</li>
+              <li>Profondeur moyenne des océans : 3 800 m</li>
+              <li>Profondeur à laquelle un sous-marin militaire peut descendre : 600 m</li>
+              <li>Profondeur à laquelle un plongeur humain peut descendre : 330 m (record)</li>
+            </ul>
+            <p class="mt-3"><strong>Question :</strong> Qu'est-ce qui est le plus haut : le Mont Everest ou la fosse des Mariannes est profonde ?</p>
+          </div>
+
+          <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md">
+            <p class="font-bold text-xl mb-4">5. Recherche : Les créatures des abysses</p>
+            <p class="mb-3">Fais une recherche sur 3 créatures vivant dans les fosses marines. Pour chacune, note :</p>
+            <ul class="list-disc ml-6 space-y-1">
+              <li>Son nom</li>
+              <li>À quelle profondeur elle vit</li>
+              <li>Ses adaptations spéciales (bioluminescence, pression, nourriture...)</li>
+              <li>Une image ou un dessin</li>
+            </ul>
+            <p class="mt-3"><strong>Suggestions :</strong> Poisson-lanterne, poisson-vipère, amphipode géant, méduse dumbo, concombre de mer géant.</p>
+          </div>
+
+          <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md">
+            <p class="font-bold text-xl mb-4">6. Plan d'urgence séisme pour ta famille</p>
+            <p class="mb-3">Haïti est en zone sismique. Prépare un plan d'urgence avec ta famille :</p>
+            <ol class="list-decimal ml-6 space-y-2">
+              <li>Identifier les endroits sûrs dans la maison (sous une table solide, loin des fenêtres)</li>
+              <li>Préparer un sac d'urgence (eau, nourriture, lampe, radio, trousse de premiers soins, copies des documents importants)</li>
+              <li>Définir un point de rassemblement familial à l'extérieur</li>
+              <li>Mémoriser les gestes qui sauvent (S'accroupir, se couvrir, s'accrocher)</li>
+              <li>Savoir où couper l'eau, le gaz, l'électricité</li>
+            </ol>
+            <p class="mt-3">Présente ton plan en classe.</p>
+          </div>
+
+          <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md">
+            <p class="font-bold text-xl mb-4">7. Composition : "Le 12 janvier 2010, je me souviens..."</p>
+            <p class="mb-3">Si tu étais né en 2010 ou avant, écris un témoignage de ce que tu te souviens du séisme (ou ce que tes parents t'ont raconté). Si tu es né après, interview un adulte qui l'a vécu.</p>
+            <p class="mb-2">Inclus :</p>
+            <ul class="list-disc ml-6 space-y-1">
+              <li>Où était la personne quand ça a commencé</li>
+              <li>Ce qu'elle a ressenti (peur, choc...)</li>
+              <li>Les dégâts autour d'elle</li>
+              <li>Comment elle a survécu</li>
+              <li>Les leçons tirées de cette expérience</li>
+            </ul>
+            <p class="mt-3 text-sm italic">(Traite ce sujet avec respect et sensibilité - c'est un traumatisme national)</p>
+          </div>
+
+          <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md">
+            <p class="font-bold text-xl mb-4">8. Débat : "Faut-il explorer les fosses marines ?"</p>
+            <p class="mb-3">Arguments POUR l'exploration :</p>
+            <ul class="list-disc ml-6 space-y-1 mb-3">
+              <li>Découvrir de nouvelles espèces</li>
+              <li>Comprendre les plaques tectoniques</li>
+              <li>Trouver des ressources (minéraux, pétrole)</li>
+              <li>Avancées scientifiques</li>
+            </ul>
+            <p class="mb-3">Arguments CONTRE :</p>
+            <ul class="list-disc ml-6 space-y-1">
+              <li>Coût énorme (millions de dollars par expédition)</li>
+              <li>Risque de pollution des abysses</li>
+              <li>Danger pour les explorateurs</li>
+              <li>L'argent pourrait servir à d'autres priorités</li>
+            </ul>
+            <p class="mt-3">Organisez un débat en classe !</p>
+          </div>
+
+          <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md">
+            <p class="font-bold text-xl mb-4">9. Calcul : Temps de chute dans la fosse</p>
+            <p class="mb-3"><strong>Problème :</strong> Une pierre est lâchée à la surface de l'océan au-dessus de la fosse des Mariannes (10 994 m de profondeur). Elle coule à une vitesse constante de 3 mètres par seconde.</p>
+            <p class="mb-2"><strong>Questions :</strong></p>
+            <ol class="list-decimal ml-6 space-y-2">
+              <li>Combien de secondes mettra-t-elle pour toucher le fond ?</li>
+              <li>Convertis ce temps en minutes et secondes.</li>
+              <li>Combien de temps faudrait-il à la même vitesse pour descendre dans la fosse de Porto Rico (8 605 m) ?</li>
+            </ol>
+            <p class="mt-3 text-sm italic">Réponses : 1) 3 665 secondes  2) 61 minutes et 5 secondes (plus d'une heure !)  3) 2 868 secondes = 47 min 48 sec</p>
+          </div>
+
+          <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md">
+            <p class="font-bold text-xl mb-4">10. Projet : Affiche de prévention sismique</p>
+            <p class="mb-3">Crée une affiche colorée destinée aux écoles haïtiennes pour sensibiliser aux risques sismiques.</p>
+            <p class="mb-2">L'affiche doit contenir :</p>
+            <ul class="list-disc ml-6 space-y-2">
+              <li>Un titre accrocheur</li>
+              <li>Les gestes qui sauvent pendant un séisme</li>
+              <li>Ce qu'il faut avoir dans un sac d'urgence</li>
+              <li>Un numéro d'urgence (18 pour les pompiers)</li>
+              <li>Des illustrations claires</li>
+            </ul>
+            <p class="mt-3">L'affiche doit être en créole ET en français pour toucher tout le monde !</p>
+          </div>
+        </div>
+
+        <div class="bg-purple-50 dark:bg-purple-950/20 p-6 rounded-lg mt-8">
+          <p class="font-semibold text-lg mb-3">🎥 Ressources vidéo suggérées</p>
+          <ul class="list-disc ml-6 space-y-2">
+            <li>"Les fosses marines expliquées" - <em>C'est pas sorcier</em></li>
+            <li>"Voyage au fond de la fosse des Mariannes" - <em>James Cameron</em></li>
+            <li>"Les créatures des abysses" - <em>National Geographic</em></li>
+            <li>"Haïti et les plaques tectoniques" - <em>Documentaire géologique</em></li>
+            <li>"Le séisme du 12 janvier 2010 : témoignages" - <em>Archives TV</em></li>
+          </ul>
+        </div>
+      </div>
     `
   },
 
