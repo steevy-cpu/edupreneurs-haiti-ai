@@ -3,6 +3,9 @@ project_id = "xdyavylcmucjpueybdku"
 [functions.content-ai-assistant]
 verify_jwt = true
 
+[functions.generate-lesson-content]
+verify_jwt = false
+
 [functions.send-push-notification]
 verify_jwt = false
 
