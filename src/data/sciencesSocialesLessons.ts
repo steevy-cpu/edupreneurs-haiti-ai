@@ -5713,61 +5713,430 @@ export const sciencesSocialesLessons7AF: SciencesSocialesLesson[] = [
     mois: "Mars",
     objectif: "Comprendre le rôle de la famille comme institution sociale fondamentale.",
     introduction: `
-      <p class="text-foreground leading-relaxed">
-        La famille est la plus ancienne et la plus universelle des institutions sociales. C'est le premier groupe auquel nous appartenons et où nous apprenons les valeurs, les normes et les comportements de notre société. En Haïti, la famille joue un rôle particulièrement important dans l'éducation, le soutien économique et la transmission culturelle.
-      </p>
+      <div class="space-y-4">
+        <p class="text-lg leading-relaxed">👨‍👩‍👧‍👦 <strong>La famille : notre première école de vie !</strong></p>
+        <p>Imagine une seconde si tu n'avais pas de famille : pas de parents pour t'apprendre à parler, à manger, à marcher... Pas de frères et sœurs pour jouer, pas de grands-parents pour te raconter des histoires, pas de tantes et oncles pour te câliner quand ça ne va pas. La famille, c'est le premier cercle social dans lequel nous naissons et grandissons. C'est là que nous apprenons TOUT : la langue, les bonnes manières, les valeurs morales, la religion, la culture, et même comment interagir avec les autres !</p>
+        <p>La famille est bien plus qu'un groupe de personnes qui vivent ensemble. C'est une <strong>institution sociale</strong>, c'est-à-dire une organisation structurée par des règles, des rôles, et des responsabilités. Elle existe dans toutes les sociétés humaines, même si elle prend des formes différentes selon les cultures.</p>
+        <p class="text-primary font-semibold">🇭🇹 En Haïti, la famille a une importance CAPITALE. Elle est souvent le seul filet de sécurité sociale : quand il n'y a pas de travail, pas d'hôpital accessible, pas d'aide de l'État, c'est la famille qui nous soutient. "Fanmi se richès" (La famille est une richesse), comme on dit chez nous !</p>
+      </div>
     `,
     contenu: `
-      <section class="space-y-6">
-        <div>
-          <h3 class="text-xl font-semibold mb-3 text-foreground">1. Types de familles</h3>
-          <ul class="list-disc ml-6 space-y-2 text-foreground">
-            <li><strong>Famille nucléaire :</strong> Parents et enfants</li>
-            <li><strong>Famille élargie :</strong> Inclut grands-parents, oncles, tantes (très courante en Haïti)</li>
-            <li><strong>Famille monoparentale :</strong> Un seul parent</li>
-            <li><strong>Famille recomposée :</strong> Nouveaux couples avec enfants d'unions précédentes</li>
-          </ul>
-        </div>
+      <div class="space-y-8">
+        <section>
+          <h3 class="text-2xl font-bold mb-4 text-blue-700 dark:text-blue-400">1. Qu'est-ce qu'une famille ? Définition et universalité 🏠</h3>
+          <p class="mb-4">La famille est un groupe social fondé sur des liens de <strong>parenté</strong> (biologique ou adoptif) et/ou d'<strong>alliance</strong> (mariage, union libre). C'est la cellule de base de toute société humaine.</p>
+          
+          <div class="bg-blue-50 dark:bg-blue-950/30 p-5 rounded-lg">
+            <h4 class="text-xl font-semibold mb-3">🌍 Une institution universelle mais diverse</h4>
+            <p class="mb-3">Toutes les sociétés humaines, de la plus simple à la plus complexe, ont une forme d'organisation familiale. Cependant, la famille prend des formes très différentes selon les cultures :</p>
+            <ul class="list-disc ml-6 space-y-2">
+              <li>En Europe et Amérique du Nord : famille nucléaire dominante (2 parents + enfants)</li>
+              <li>En Afrique et dans beaucoup de pays en développement : famille élargie (plusieurs générations sous le même toit)</li>
+              <li>Dans certaines sociétés : familles polygames (un homme, plusieurs femmes), polyandres (une femme, plusieurs hommes - rare)</li>
+              <li>Aujourd'hui : familles homoparentales (deux papas ou deux mamans)</li>
+            </ul>
+          </div>
+        </section>
 
-        <div>
-          <h3 class="text-xl font-semibold mb-3 text-foreground">2. Fonctions de la famille</h3>
-          <ul class="list-disc ml-6 space-y-2 text-foreground">
-            <li><strong>Socialisation :</strong> Apprendre la langue, valeurs, normes</li>
-            <li><strong>Soutien affectif :</strong> Amour, protection, sécurité</li>
-            <li><strong>Fonction économique :</strong> Partage des ressources</li>
-            <li><strong>Transmission culturelle :</strong> Héritage des traditions</li>
-          </ul>
-        </div>
+        <section>
+          <h3 class="text-2xl font-bold mb-4 text-purple-700 dark:text-purple-400">2. Les différents types de structures familiales 👨‍👩‍👧‍👦</h3>
+          
+          <div class="space-y-4">
+            <div class="bg-purple-50 dark:bg-purple-950/30 p-5 rounded-lg">
+              <h4 class="text-xl font-semibold mb-3">A. Famille nucléaire (ou conjugale)</h4>
+              <p class="mb-3">Composée des <strong>deux parents</strong> (père et mère) et de leurs <strong>enfants biologiques ou adoptifs</strong>. C'est le modèle dominant dans les sociétés occidentales industrialisées.</p>
+              <p class="text-sm italic">🇭🇹 En Haïti : Environ 30-40% des familles suivent ce modèle, surtout en milieu urbain et dans la classe moyenne.</p>
+            </div>
 
-        <div>
-          <h3 class="text-xl font-semibold mb-3 text-foreground">3. La famille haïtienne</h3>
-          <p class="text-foreground mb-3">Caractéristiques particulières :</p>
-          <ul class="list-disc ml-6 space-y-2 text-foreground">
-            <li>Importance de la famille élargie</li>
-            <li>Rôle central de la mère</li>
-            <li>Respect des aînés</li>
-            <li>Solidarité familiale forte</li>
-            <li>Impact de la migration</li>
-          </ul>
-        </div>
-      </section>
+            <div class="bg-amber-50 dark:bg-amber-950/30 p-5 rounded-lg">
+              <h4 class="text-xl font-semibold mb-3">B. Famille élargie (ou famille étendue)</h4>
+              <p class="mb-3">Inclut <strong>plusieurs générations</strong> vivant ensemble ou à proximité : grands-parents, parents, enfants, oncles, tantes, cousins, parfois même des personnes sans lien de sang ("restés avec" - enfants confiés).</p>
+              <ul class="list-disc ml-6 space-y-2 mb-3">
+                <li><strong>Avantages :</strong> Solidarité forte, partage des responsabilités, transmission culturelle, garde des enfants assurée</li>
+                <li><strong>Inconvénients :</strong> Conflits possibles, manque d'intimité, dépendance économique</li>
+              </ul>
+              <p class="text-amber-900 dark:text-amber-200 font-semibold">🇭🇹 En Haïti : C'est le modèle DOMINANT ! Environ 50-60% des familles haïtiennes fonctionnent ainsi. Les grands-parents élèvent souvent leurs petits-enfants pendant que les parents travaillent à Port-au-Prince ou à l'étranger.</p>
+            </div>
+
+            <div class="bg-pink-50 dark:bg-pink-950/30 p-5 rounded-lg">
+              <h4 class="text-xl font-semibold mb-3">C. Famille monoparentale</h4>
+              <p class="mb-3">Un <strong>seul parent</strong> élève les enfants, généralement la mère (mais parfois le père). Causes possibles :</p>
+              <ul class="list-disc ml-6 space-y-1 mb-3">
+                <li>Décès du conjoint</li>
+                <li>Divorce ou séparation</li>
+                <li>Naissance hors mariage</li>
+                <li>Migration du conjoint</li>
+              </ul>
+              <p class="text-pink-900 dark:text-pink-200 font-semibold">🇭🇹 En Haïti : Très courant, surtout en milieu urbain pauvre. Beaucoup de "fanm poto mitan" (femmes piliers) élèvent seules leurs enfants. Ces mères font des miracles : commerce, petits boulots, solidarité entre voisines...</p>
+            </div>
+
+            <div class="bg-teal-50 dark:bg-teal-950/30 p-5 rounded-lg">
+              <h4 class="text-xl font-semibold mb-3">D. Famille recomposée</h4>
+              <p class="mb-3">Formation d'une nouvelle famille avec des enfants issus d'unions précédentes. Exemple : Un papa divorcé avec 2 enfants se remarie avec une maman divorcée qui a 1 enfant → famille recomposée de 3 enfants.</p>
+              <p class="text-sm italic">🇭🇹 En Haïti : De plus en plus fréquent, surtout en milieu urbain.</p>
+            </div>
+
+            <div class="bg-green-50 dark:bg-green-950/30 p-5 rounded-lg">
+              <h4 class="text-xl font-semibold mb-3">E. Plasaj (union libre à l'haïtienne)</h4>
+              <p class="mb-3">Spécificité haïtienne ! Le "plasaj" est une union de fait sans mariage officiel, mais stable et reconnue socialement. Les couples vivent ensemble, ont des enfants, mais ne sont pas mariés civilement ou religieusement.</p>
+              <ul class="list-disc ml-6 space-y-2">
+                <li>Très répandu en milieu rural et populaire urbain</li>
+                <li>Raisons : coût du mariage, procédures complexes, traditions culturelles</li>
+                <li>Les enfants nés de ces unions ont les mêmes droits que les enfants "légitimes"</li>
+              </ul>
+            </div>
+          </div>
+        </section>
+
+        <section>
+          <h3 class="text-2xl font-bold mb-4 text-indigo-700 dark:text-indigo-400">3. Les fonctions essentielles de la famille 🎯</h3>
+          
+          <div class="space-y-4">
+            <div class="bg-blue-50 dark:bg-blue-950/30 p-5 rounded-lg">
+              <h4 class="text-xl font-semibold mb-3">A. Fonction de reproduction et de survie de l'espèce 👶</h4>
+              <p>C'est la fonction biologique de base : avoir des enfants pour assurer la continuité de l'humanité. Sans reproduction, l'espèce humaine disparaîtrait !</p>
+            </div>
+
+            <div class="bg-purple-50 dark:bg-purple-950/30 p-5 rounded-lg">
+              <h4 class="text-xl font-semibold mb-3">B. Fonction de socialisation (la plus importante !) 📚</h4>
+              <p class="mb-3">La famille est la <strong>première école</strong> où l'enfant apprend TOUT :</p>
+              <ul class="list-disc ml-6 space-y-2">
+                <li><strong>La langue :</strong> C'est en famille que tu as appris à parler créole (ou français)</li>
+                <li><strong>Les normes sociales :</strong> Dire bonjour, merci, respecter les adultes, ne pas voler...</li>
+                <li><strong>Les valeurs morales :</strong> Honnêteté, solidarité, courage, respect...</li>
+                <li><strong>Les rôles sociaux :</strong> Comment être un homme ou une femme dans notre culture</li>
+                <li><strong>La culture :</strong> Religion, traditions, cuisine, musique, proverbes...</li>
+              </ul>
+              <p class="mt-3 font-semibold text-purple-900 dark:text-purple-200">🇭🇹 Exemple haïtien : C'est en famille qu'on apprend à respecter les aînés ("Respekte granmoun"), à partager ("Pataje pa chich"), à être solidaire ("Mèt ansanm pou n rive"), à croire en Dieu...</p>
+            </div>
+
+            <div class="bg-green-50 dark:bg-green-950/30 p-5 rounded-lg">
+              <h4 class="text-xl font-semibold mb-3">C. Fonction affective et psychologique 💖</h4>
+              <p class="mb-3">La famille offre :</p>
+              <ul class="list-disc ml-6 space-y-2">
+                <li><strong>Amour inconditionnel :</strong> Tes parents t'aiment même quand tu fais des bêtises</li>
+                <li><strong>Sécurité émotionnelle :</strong> Un lieu où tu peux être toi-même sans jugement</li>
+                <li><strong>Protection :</strong> Contre les dangers du monde extérieur</li>
+                <li><strong>Réconfort :</strong> Quand tu es triste, malade, découragé</li>
+                <li><strong>Encouragement :</strong> Tes parents croient en toi et te poussent à réussir</li>
+              </ul>
+              <p class="mt-3 italic">Sans cette base affective solide, un enfant peut développer des troubles psychologiques (dépression, anxiété, manque de confiance en soi...).</p>
+            </div>
+
+            <div class="bg-amber-50 dark:bg-amber-950/30 p-5 rounded-lg">
+              <h4 class="text-xl font-semibold mb-3">D. Fonction économique 💰</h4>
+              <p class="mb-3">La famille est une unité de production et de consommation :</p>
+              <ul class="list-disc ml-6 space-y-2">
+                <li><strong>Production :</strong> Les parents travaillent pour gagner de l'argent</li>
+                <li><strong>Consommation :</strong> L'argent sert à acheter nourriture, vêtements, payer l'école...</li>
+                <li><strong>Partage des ressources :</strong> Ce qui est gagné est partagé entre tous les membres</li>
+              </ul>
+              <p class="mt-3 font-semibold text-amber-900 dark:text-amber-200">🇭🇹 En Haïti : La fonction économique est CRUCIALE ! Quand un membre de la famille a un travail, il soutient souvent 5, 10, parfois 15 personnes ! Les transferts d'argent de la diaspora (environ 3 milliards de dollars par an) font vivre des millions de familles haïtiennes.</p>
+            </div>
+
+            <div class="bg-pink-50 dark:bg-pink-950/30 p-5 rounded-lg">
+              <h4 class="text-xl font-semibold mb-3">E. Fonction de transmission culturelle et identitaire 🎭</h4>
+              <p class="mb-3">La famille transmet de génération en génération :</p>
+              <ul class="list-disc ml-6 space-y-2">
+                <li>L'histoire familiale (d'où viennent nos ancêtres ?)</li>
+                <li>Les traditions (Noël, Pâques, fêtes de famille)</li>
+                <li>La religion (vaudou, catholicisme, protestantisme...)</li>
+                <li>La cuisine (recettes de grand-mère)</li>
+                <li>Les chants, contes, proverbes</li>
+              </ul>
+              <p class="mt-3 font-semibold text-pink-900 dark:text-pink-200">🇭🇹 Exemple : C'est grâce à la famille que tu connais l'histoire de l'esclavage, de l'indépendance d'Haïti, les proverbes créoles, les recettes de diri ak pwa, les chansons de carnaval...</p>
+            </div>
+          </div>
+        </section>
+
+        <section>
+          <h3 class="text-2xl font-bold mb-4 text-teal-700 dark:text-teal-400">4. La famille haïtienne : Spécificités et défis 🇭🇹</h3>
+          
+          <div class="space-y-4">
+            <div class="bg-yellow-50 dark:bg-yellow-950/30 p-5 rounded-lg">
+              <h4 class="text-xl font-semibold mb-3">A. La famille élargie comme norme</h4>
+              <p class="mb-3">En Haïti, la famille ne se limite pas aux parents et enfants. Elle inclut :</p>
+              <ul class="list-disc ml-6 space-y-2">
+                <li><strong>Granmoun yo</strong> (les grands-parents) : Très respectés, gardiens de la sagesse</li>
+                <li><strong>Tonton, tant, kouzen</strong> (oncles, tantes, cousins) : Très proches, presque comme des frères/sœurs</li>
+                <li><strong>Marenn, parenn</strong> (marraine, parrain) : Deuxièmes parents spirituels</li>
+                <li><strong>Timoun yo</strong> (les enfants) : Tous les enfants, même ceux des voisins qu'on aide</li>
+                <li><strong>"Restès avec"</strong> : Enfants confiés à une famille pour les aider (phénomène complexe)</li>
+              </ul>
+              <p class="mt-3 font-semibold">💡 Proverbe haïtien : "Pitit se richès malere" (Les enfants sont la richesse du pauvre)</p>
+            </div>
+
+            <div class="bg-blue-50 dark:bg-blue-950/30 p-5 rounded-lg">
+              <h4 class="text-xl font-semibold mb-3">B. Le rôle central de la mère (fanm poto mitan)</h4>
+              <p class="mb-3">En Haïti, la mère est souvent le pilier de la famille :</p>
+              <ul class="list-disc ml-6 space-y-2">
+                <li>Elle gère le budget familial</li>
+                <li>Elle élève les enfants (parfois seule)</li>
+                <li>Elle travaille (commerce, marchande, couturière...)</li>
+                <li>Elle organise la vie quotidienne</li>
+                <li>Elle maintient les liens familiaux</li>
+              </ul>
+              <p class="mt-3 italic">Beaucoup de mères haïtiennes sont des héroïnes du quotidien qui font des miracles avec peu de moyens !</p>
+            </div>
+
+            <div class="bg-red-50 dark:bg-red-950/30 p-5 rounded-lg">
+              <h4 class="text-xl font-semibold mb-3">C. L'impact de la migration sur les familles haïtiennes 🛫</h4>
+              <p class="mb-3">Plus de 2 millions d'Haïtiens vivent à l'étranger (diaspora). Conséquences sur les familles :</p>
+              <ul class="list-disc ml-6 space-y-2 mb-3">
+                <li><strong>Séparations :</strong> Parents partis travailler aux USA, Canada, France, Chili...</li>
+                <li><strong>Grands-parents élevant les petits-enfants :</strong> Très courant</li>
+                <li><strong>Enfants grandissant sans leurs parents :</strong> Problèmes affectifs possibles</li>
+                <li><strong>Transferts d'argent :</strong> Les "remittances" font vivre des millions de familles</li>
+                <li><strong>Familles transnationales :</strong> Maintien des liens par téléphone, WhatsApp, envois de colis</li>
+              </ul>
+              <p class="font-semibold text-red-900 dark:text-red-200">💔 Dilemme : L'argent envoyé permet aux enfants d'aller à l'école et de manger, mais l'absence des parents crée un vide affectif difficile...</p>
+            </div>
+
+            <div class="bg-purple-50 dark:bg-purple-950/30 p-5 rounded-lg">
+              <h4 class="text-xl font-semibold mb-3">D. Le respect des aînés (respè granmoun)</h4>
+              <p class="mb-3">En Haïti, les personnes âgées sont hautement respectées :</p>
+              <ul class="list-disc ml-6 space-y-2">
+                <li>On leur parle avec vouvoiement ("Ou" au lieu de "w")</li>
+                <li>On leur cède la place assise</li>
+                <li>On écoute leurs conseils</li>
+                <li>On les prend en charge quand ils vieillissent (pas de maisons de retraite)</li>
+              </ul>
+              <p class="mt-3 font-semibold">📜 Proverbe : "Granmoun se bwa kajou, yo pa janm tonbe atè" (Les personnes âgées sont comme le fruit de l'acajou, elles ne tombent jamais par terre - on les soutient toujours)</p>
+            </div>
+
+            <div class="bg-teal-50 dark:bg-teal-950/30 p-5 rounded-lg">
+              <h4 class="text-xl font-semibold mb-3">E. La solidarité familiale exceptionnelle</h4>
+              <p class="mb-3">Face aux difficultés économiques et à l'absence de protection sociale de l'État, les Haïtiens comptent sur leur famille :</p>
+              <ul class="list-disc ml-6 space-y-2">
+                <li>Quand quelqu'un perd son travail, la famille l'héberge et le nourrit</li>
+                <li>Quand un enfant est malade, toute la famille cotise pour les soins</li>
+                <li>Les frais scolaires sont parfois payés par les oncles/tantes</li>
+                <li>Les cérémonies (mariages, funérailles) sont financées collectivement</li>
+              </ul>
+              <p class="mt-3 font-semibold text-teal-900 dark:text-teal-200">✨ "Men anpil chay pa lou" (Plusieurs mains rendent le fardeau léger) - ensemble, on est plus fort !</p>
+            </div>
+          </div>
+        </section>
+
+        <section>
+          <h3 class="text-2xl font-bold mb-4 text-red-700 dark:text-red-400">5. Défis et évolutions de la famille moderne 🌐</h3>
+          
+          <div class="bg-gradient-to-r from-red-50 to-orange-50 dark:from-red-950/30 dark:to-orange-950/30 p-5 rounded-lg">
+            <h4 class="text-xl font-semibold mb-3">Défis contemporains :</h4>
+            <ul class="list-disc ml-6 space-y-3">
+              <li><strong>Pauvreté :</strong> Difficultés à nourrir, loger, éduquer les enfants</li>
+              <li><strong>Chômage :</strong> Parents sans revenus stables</li>
+              <li><strong>Urbanisation :</strong> Passage de la campagne à la ville, rupture avec traditions rurales</li>
+              <li><strong>Violence domestique :</strong> Maltraitance, abus (problème sérieux en Haïti)</li>
+              <li><strong>Nouvelles technologies :</strong> Les jeunes passent plus de temps sur les téléphones que avec la famille</li>
+              <li><strong>Individualisme croissant :</strong> Moins de solidarité qu'avant, surtout en ville</li>
+            </ul>
+            
+            <h4 class="text-xl font-semibold mt-6 mb-3">Évolutions positives :</h4>
+            <ul class="list-disc ml-6 space-y-2">
+              <li><strong>Éducation des filles :</strong> De plus en plus de filles vont à l'école</li>
+              <li><strong>Partage des tâches :</strong> Les pères participent plus à l'éducation des enfants</li>
+              <li><strong>Planification familiale :</strong> Moins d'enfants mais mieux éduqués</li>
+              <li><strong>Droits de l'enfant :</strong> Meilleure protection contre les abus</li>
+            </ul>
+          </div>
+        </section>
+      </div>
     `,
     exemplesExercices: `
-      <section class="space-y-4">
-        <div class="bg-primary/5 border-l-4 border-primary p-4 rounded">
-          <h4 class="font-semibold mb-2 text-foreground">💡 Exemple</h4>
-          <p class="text-foreground">
-            En Haïti, il est courant que les grands-parents élèvent leurs petits-enfants pendant que les parents travaillent à l'étranger.
-          </p>
-        </div>
+      <div class="space-y-6">
+        <h3 class="text-2xl font-bold mb-4 text-primary">🇭🇹 Exemples concrets de familles haïtiennes</h3>
         
-        <div class="bg-accent/5 border-l-4 border-accent p-4 rounded">
-          <h4 class="font-semibold mb-2 text-foreground">📝 Exercice</h4>
-          <p class="text-foreground">
-            Dessine ton arbre généalogique sur 3 générations. Identifie le type de famille auquel tu appartiens.
-          </p>
+        <div class="bg-blue-50 dark:bg-blue-950/30 border-l-4 border-blue-500 p-5 rounded-lg mb-4">
+          <p class="font-bold text-lg mb-2">👵 Exemple 1 : Marie, 12 ans, élevée par sa grand-mère</p>
+          <p>Les parents de Marie travaillent à Miami. Elle vit avec sa grand-mère à Pétion-Ville depuis qu'elle a 5 ans. Sa grand-mère l'emmène à l'école, vérifie ses devoirs, lui prépare à manger. Chaque dimanche, Marie appelle ses parents sur WhatsApp. Ils lui envoient de l'argent chaque mois pour l'école et ses besoins. Marie aime beaucoup sa grand-mère, mais ses parents lui manquent énormément...</p>
+          <p class="mt-2 text-sm italic">Type de famille : Famille élargie avec migration parentale</p>
         </div>
-      </section>
+
+        <div class="bg-blue-50 dark:bg-blue-950/30 border-l-4 border-blue-500 p-5 rounded-lg mb-4">
+          <p class="font-bold text-lg mb-2">👩‍👧‍👦 Exemple 2 : Madame Josette, mère courage</p>
+          <p>Madame Josette, 35 ans, élève seule ses 3 enfants (9, 12, 14 ans) à Carrefour. Le père est parti il y a 5 ans et ne donne plus de nouvelles. Elle vend des légumes au marché de 5h du matin à 6h du soir. Avec ses gains, elle paie le loyer, la nourriture, l'école. C'est difficile, mais elle ne lâche jamais ! Sa voisine l'aide parfois en gardant les enfants. Elle dit toujours : "Timoun mwen yo ap vin yon bagay, m ap fè tout sakrifis !" (Mes enfants vont devenir quelqu'un, je fais tous les sacrifices !)</p>
+          <p class="mt-2 text-sm italic">Type de famille : Famille monoparentale (mère seule)</p>
+        </div>
+
+        <div class="bg-blue-50 dark:bg-blue-950/30 border-l-4 border-blue-500 p-5 rounded-lg mb-4">
+          <p class="font-bold text-lg mb-2">👨‍👩‍👧‍👦 Exemple 3 : La famille Joseph, famille nucléaire</p>
+          <p>Monsieur et Madame Joseph vivent à Delmas avec leurs 2 enfants (un garçon de 10 ans, une fille de 7 ans). Papa Joseph travaille comme comptable, Maman Joseph est infirmière. Ils ont un appartement, une voiture. Les enfants vont dans une bonne école privée. Le dimanche, ils vont à l'église ensemble et rendent visite aux grands-parents. Cette famille ressemble aux familles qu'on voit dans les films américains !</p>
+          <p class="mt-2 text-sm italic">Type de famille : Famille nucléaire de classe moyenne</p>
+        </div>
+
+        <div class="bg-blue-50 dark:bg-blue-950/30 border-l-4 border-blue-500 p-5 rounded-lg mb-4">
+          <p class="font-bold text-lg mb-2">🏠 Exemple 4 : La lakou familiale de Jacmel</p>
+          <p>Dans la même cour (lakou) à Jacmel vivent : Grand-père Ti-Jean (75 ans), Grand-mère Lourdes (70 ans), leurs 3 fils avec leurs femmes et enfants, soit 18 personnes au total ! Chaque famille a sa petite maison, mais ils partagent la cour, le puits, et mangent souvent ensemble. Quand quelqu'un a un problème, tout le monde aide. C'est bruyant, parfois il y a des disputes, mais jamais personne n'est seul !</p>
+          <p class="mt-2 text-sm italic">Type de famille : Grande famille élargie traditionnelle</p>
+        </div>
+
+        <h3 class="text-2xl font-bold mb-4 text-primary mt-8">📝 Exercices variés</h3>
+
+        <div class="space-y-6">
+          <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md">
+            <p class="font-bold text-xl mb-4">1. Mon arbre généalogique (Projet créatif)</p>
+            <p class="mb-3">Dessine ton arbre généalogique sur 3 générations minimum :</p>
+            <ul class="list-disc ml-6 space-y-2">
+              <li><strong>Génération 1 (en haut) :</strong> Tes grands-parents paternels et maternels</li>
+              <li><strong>Génération 2 (milieu) :</strong> Tes parents, oncles, tantes</li>
+              <li><strong>Génération 3 (en bas) :</strong> Toi, tes frères/sœurs, cousins</li>
+            </ul>
+            <p class="mt-3">Pour chaque personne, note :</p>
+            <ul class="list-disc ml-6 space-y-1">
+              <li>Prénom et nom</li>
+              <li>Profession</li>
+              <li>Lieu de résidence</li>
+            </ul>
+            <p class="mt-3"><strong>Bonus :</strong> Décore avec des photos, dessins, couleurs !</p>
+          </div>
+
+          <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md">
+            <p class="font-bold text-xl mb-4">2. Identifie ton type de famille</p>
+            <p class="mb-3">En te basant sur ta situation personnelle, identifie à quel type de famille tu appartiens :</p>
+            <ul class="list-disc ml-6 space-y-1">
+              <li>□ Famille nucléaire</li>
+              <li>□ Famille élargie</li>
+              <li>□ Famille monoparentale</li>
+              <li>□ Famille recomposée</li>
+              <li>□ Autre (précise)</li>
+            </ul>
+            <p class="mt-3"><strong>Puis réponds :</strong> Quels sont les avantages et inconvénients de ta situation familiale ? (5-8 lignes)</p>
+          </div>
+
+          <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md">
+            <p class="font-bold text-xl mb-4">3. Interview d'un membre de ta famille</p>
+            <p class="mb-3">Choisis une personne âgée de ta famille (grand-parent, oncle/tante âgé(e)) et pose-lui ces questions :</p>
+            <ol class="list-decimal ml-6 space-y-2">
+              <li>Comment était la famille quand tu étais enfant ?</li>
+              <li>Combien de frères et sœurs avais-tu ?</li>
+              <li>Quelles étaient les règles à la maison ?</li>
+              <li>Comment les enfants aidaient-ils les parents ?</li>
+              <li>Qu'est-ce qui a changé dans les familles haïtiennes depuis ton enfance ?</li>
+            </ol>
+            <p class="mt-3">Écris un compte-rendu de 150-200 mots avec les réponses.</p>
+          </div>
+
+          <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md">
+            <p class="font-bold text-xl mb-4">4. Les fonctions de MA famille (Tableau)</p>
+            <p class="mb-3">Crée un tableau montrant comment ta famille remplit ses différentes fonctions :</p>
+            <table class="w-full border-collapse border border-gray-300 mt-3">
+              <thead>
+                <tr class="bg-gray-100 dark:bg-gray-700">
+                  <th class="border border-gray-300 p-2">Fonction</th>
+                  <th class="border border-gray-300 p-2">Comment ma famille la remplit</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td class="border border-gray-300 p-2">Socialisation</td>
+                  <td class="border border-gray-300 p-2">Ex: Ma mère m'apprend les bonnes manières</td>
+                </tr>
+                <tr>
+                  <td class="border border-gray-300 p-2">Affective</td>
+                  <td class="border border-gray-300 p-2">Ex: Mon père me console quand je suis triste</td>
+                </tr>
+                <tr>
+                  <td class="border border-gray-300 p-2">Économique</td>
+                  <td class="border border-gray-300 p-2">Ex: Mon oncle nous aide financièrement</td>
+                </tr>
+                <tr>
+                  <td class="border border-gray-300 p-2">Culturelle</td>
+                  <td class="border border-gray-300 p-2">Ex: Ma grand-mère me raconte l'histoire d'Haïti</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md">
+            <p class="font-bold text-xl mb-4">5. Composition : "Ma famille, ma richesse"</p>
+            <p class="mb-3"><strong>Sujet :</strong> Écris un texte de 200-250 mots sur ta famille.</p>
+            <p class="mb-2">Tu dois inclure :</p>
+            <ul class="list-disc ml-6 space-y-1">
+              <li>La composition de ta famille (qui vit avec toi ?)</li>
+              <li>Ce que tu aimes le plus dans ta famille</li>
+              <li>Les difficultés que vous rencontrez</li>
+              <li>Un souvenir familial marquant</li>
+              <li>Ce que ta famille t'a appris de plus important</li>
+            </ul>
+          </div>
+
+          <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md">
+            <p class="font-bold text-xl mb-4">6. Débat : "La famille élargie vs la famille nucléaire"</p>
+            <p class="mb-3">Divisez la classe en deux groupes :</p>
+            <ul class="list-disc ml-6 space-y-2">
+              <li><strong>Groupe A :</strong> Défend la famille élargie (plusieurs générations ensemble)</li>
+              <li><strong>Groupe B :</strong> Défend la famille nucléaire (parents + enfants seulement)</li>
+            </ul>
+            <p class="mt-3">Chaque groupe prépare 3 arguments et les présente. Ensuite, débat ouvert !</p>
+          </div>
+
+          <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md">
+            <p class="font-bold text-xl mb-4">7. Proverbes haïtiens sur la famille</p>
+            <p class="mb-3">Explique le sens de ces proverbes créoles :</p>
+            <ol class="list-decimal ml-6 space-y-3">
+              <li><strong>"Fanmi se richès malere"</strong> (La famille est la richesse du pauvre)</li>
+              <li><strong>"Men anpil, chay pa lou"</strong> (Beaucoup de mains, le fardeau n'est pas lourd)</li>
+              <li><strong>"Pitit se baton veyès"</strong> (Les enfants sont le bâton de vieillesse)</li>
+              <li><strong>"Se fanmi ki konnen si pay ki nan dlo a chèch oswa li mouye"</strong> (C'est la famille qui sait si la paille dans l'eau est sèche ou mouillée - les problèmes familiaux restent en famille)</li>
+            </ol>
+          </div>
+
+          <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md">
+            <p class="font-bold text-xl mb-4">8. Étude de cas : Les défis des familles haïtiennes</p>
+            <p class="mb-3">Lis ces situations et propose des solutions :</p>
+            <div class="space-y-4 mt-3">
+              <div class="bg-gray-50 dark:bg-gray-700 p-3 rounded">
+                <p class="font-semibold">Cas 1 : Manuela, 11 ans</p>
+                <p>Ses parents sont partis au Chili. Elle vit avec sa tante qui a déjà 5 enfants. La tante est débordée et parfois crie sur Manuela. Manuela se sent rejetée et ses notes baissent.</p>
+                <p class="mt-2 italic">→ Que peut faire Manuela ? Comment sa famille pourrait-elle l'aider ?</p>
+              </div>
+              <div class="bg-gray-50 dark:bg-gray-700 p-3 rounded">
+                <p class="font-semibold">Cas 2 : La famille Dupont</p>
+                <p>Papa a perdu son travail. Maman vend au marché mais ça ne suffit pas. Ils ont 4 enfants à nourrir et l'école à payer. Les tensions montent à la maison.</p>
+                <p class="mt-2 italic">→ Quelles solutions pourraient aider cette famille ?</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md">
+            <p class="font-bold text-xl mb-4">9. Recherche : La famille dans différentes cultures</p>
+            <p class="mb-3">Compare la famille haïtienne avec la famille dans 2 autres cultures (tu peux choisir : France, États-Unis, Japon, Sénégal, Brésil...).</p>
+            <p class="mb-2">Points de comparaison :</p>
+            <ul class="list-disc ml-6 space-y-1">
+              <li>Structure familiale dominante</li>
+              <li>Rôle des grands-parents</li>
+              <li>Nombre moyen d'enfants</li>
+              <li>Âge du mariage</li>
+              <li>Solidarité familiale</li>
+            </ul>
+            <p class="mt-3">Présente tes résultats sous forme de tableau comparatif.</p>
+          </div>
+
+          <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md">
+            <p class="font-bold text-xl mb-4">10. Projet final : "Portrait de ma famille" (Présentation orale)</p>
+            <p class="mb-3">Prépare une présentation de 3-5 minutes sur ta famille pour la classe. Inclus :</p>
+            <ul class="list-disc ml-6 space-y-2">
+              <li>Ton arbre généalogique (support visuel)</li>
+              <li>Le type de famille</li>
+              <li>Les membres importants et leur rôle</li>
+              <li>Une tradition familiale</li>
+              <li>Un défi que votre famille a surmonté</li>
+              <li>Ce qui rend ta famille spéciale</li>
+            </ul>
+            <p class="mt-3 text-sm italic">💡 Tu peux apporter des photos, objets familiaux, préparer un diaporama...</p>
+          </div>
+        </div>
+
+        <div class="bg-purple-50 dark:bg-purple-950/20 p-6 rounded-lg mt-8">
+          <p class="font-semibold text-lg mb-3">📚 Pour aller plus loin</p>
+          <ul class="list-disc ml-6 space-y-2">
+            <li>Regarde le film haïtien "Poto Mitan" sur les femmes haïtiennes piliers de famille</li>
+            <li>Lis des contes haïtiens qui parlent de la famille (Bouqui et Malice, etc.)</li>
+            <li>Écoute des chansons haïtiennes sur la famille (Ti Coca "Manman", Beethova Obas "Fanm Ayisyen")</li>
+          </ul>
+        </div>
+      </div>
     `
   },
 
