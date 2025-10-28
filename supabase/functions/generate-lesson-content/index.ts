@@ -11,7 +11,14 @@ serve(async (req) => {
   }
 
   try {
-    const { lessonTitle, lessonNumber, subject, grade, targetWords } = await req.json();
+//    co// removed destructure line
+    t//
+    const url = new URL(req.url);
+cons lessonTitle = url.searchParams.get("lessonTitle");
+const lessonNumber = url.searchParams.get("lessonNumber");
+const subject = url.searchParams.get("subject");
+const grade = url.searchParams.get("grade");
+const targetWords = url.searchParams.get("targetWords");{ lessonTitle, lessonNumber, subject, grade, targetWords } = await req.json();
     
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) {
