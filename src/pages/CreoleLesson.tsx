@@ -56,10 +56,11 @@ export default function CreoleLesson() {
 
   const fetchYoutubeUrl = async () => {
     try {
+      // @ts-ignore - Avoiding deep type instantiation error
       const { data, error } = await supabase
         .from('lessons')
         .select('youtube_url')
-        .eq('subject', 'kreyol')
+        .eq('subject_id', 'kreyol')
         .eq('lesson_number', lessonId.toString())
         .maybeSingle();
 
