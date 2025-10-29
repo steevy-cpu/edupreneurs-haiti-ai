@@ -2820,44 +2820,101 @@ Describe tu rutina diaria en español (mínimo 8 frases).`,
         </div>
       </div>
     `,
-    exemplesExercices: `## Ejercicios prácticos
+    exemplesExercices: `
+      <div class="exercises-content space-y-6">
+        <h3 class="text-2xl font-bold mb-6">Ejercicios prácticos</h3>
 
-### Ejercicio 1: Completar los diálogos
-Completa con la expresión apropiada:
-1. A: ¿_____ venir a mi cumpleaños? (Quieres/Quisiera)
-   B: ¡_____ que sí! (Claro/Con mucho gusto)
+        <div class="bg-purple-50 dark:bg-purple-900/20 p-6 rounded-lg mb-6">
+          <h4 class="text-lg font-semibold mb-4 flex items-center gap-2">
+            <span class="text-purple-600 dark:text-purple-400">📝</span>
+            Ejercicio 1: Completar los diálogos
+          </h4>
+          <p class="mb-4">Completa con la expresión apropiada:</p>
+          <div class="space-y-4">
+            <div class="bg-white dark:bg-gray-800 p-4 rounded">
+              <p class="font-semibold mb-2">1. A: ¿_____ venir a mi cumpleaños? (Quieres/Quisiera)</p>
+              <p class="ml-4">B: ¡_____ que sí! (Claro/Con mucho gusto)</p>
+            </div>
+            <div class="bg-white dark:bg-gray-800 p-4 rounded">
+              <p class="font-semibold mb-2">2. A: ¿Te gustaría ir al cine el viernes?</p>
+              <p class="ml-4">B: Lo siento, _____ estudiar para un examen. (tengo que/debe)</p>
+            </div>
+            <div class="bg-white dark:bg-gray-800 p-4 rounded">
+              <p class="font-semibold mb-2">3. A: ¿_____ acompañarme al concierto?</p>
+              <p class="ml-4">B: _____ mucho gusto. (Le gustaría/Con)</p>
+            </div>
+          </div>
+        </div>
 
-2. A: ¿Te gustaría ir al cine el viernes?
-   B: Lo siento, _____ estudiar para un examen. (tengo que/debe)
+        <div class="bg-green-50 dark:bg-green-900/20 p-6 rounded-lg mb-6">
+          <h4 class="text-lg font-semibold mb-4 flex items-center gap-2">
+            <span class="text-green-600 dark:text-green-400">💭</span>
+            Ejercicio 2: Situaciones
+          </h4>
+          <p class="mb-4">Escribe lo que dirías en estas situaciones:</p>
+          <div class="space-y-4">
+            <div class="bg-white dark:bg-gray-800 p-4 rounded">
+              <p class="font-semibold mb-2">Situación 1:</p>
+              <p class="mb-2">Tu amigo te invita a una fiesta, pero tienes que ayudar a tu madre.</p>
+              <p class="text-sm italic text-gray-600 dark:text-gray-400">Respuesta: _________________</p>
+            </div>
+            <div class="bg-white dark:bg-gray-800 p-4 rounded">
+              <p class="font-semibold mb-2">Situación 2:</p>
+              <p class="mb-2">Quieres invitar a tu compañero a jugar fútbol.</p>
+              <p class="text-sm italic text-gray-600 dark:text-gray-400">Respuesta: _________________</p>
+            </div>
+            <div class="bg-white dark:bg-gray-800 p-4 rounded">
+              <p class="font-semibold mb-2">Situación 3:</p>
+              <p class="mb-2">Alguien te invita a la playa y aceptas con entusiasmo.</p>
+              <p class="text-sm italic text-gray-600 dark:text-gray-400">Respuesta: _________________</p>
+            </div>
+          </div>
+        </div>
 
-3. A: ¿_____ acompañarme al concierto?
-   B: _____ mucho gusto. (Le gustaría/Con)
+        <div class="bg-blue-50 dark:bg-blue-900/20 p-6 rounded-lg mb-6">
+          <h4 class="text-lg font-semibold mb-4 flex items-center gap-2">
+            <span class="text-blue-600 dark:text-blue-400">💬</span>
+            Ejercicio 3: Crear un diálogo
+          </h4>
+          <p class="mb-4">Crea un diálogo completo entre dos amigos donde:</p>
+          <ul class="space-y-2 mb-4">
+            <li class="flex items-start">
+              <span class="mr-2">•</span>
+              <span>Uno invita al otro a una actividad</span>
+            </li>
+            <li class="flex items-start">
+              <span class="mr-2">•</span>
+              <span>El otro pregunta detalles (hora, lugar)</span>
+            </li>
+            <li class="flex items-start">
+              <span class="mr-2">•</span>
+              <span>Acepta o rechaza con razón</span>
+            </li>
+            <li class="flex items-start">
+              <span class="mr-2">•</span>
+              <span>Proponen una alternativa si es necesario</span>
+            </li>
+          </ul>
+          <div class="bg-white dark:bg-gray-800 p-4 rounded">
+            <p class="text-sm italic text-gray-600 dark:text-gray-400">Escribe tu diálogo aquí...</p>
+          </div>
+        </div>
 
-### Ejercicio 2: Situaciones
-Escribe lo que dirías en estas situaciones:
-
-**Situación 1:** Tu amigo te invita a una fiesta, pero tienes que ayudar a tu madre.
-**Respuesta:** _________________
-
-**Situación 2:** Quieres invitar a tu compañero a jugar fútbol.
-**Respuesta:** _________________
-
-**Situación 3:** Alguien te invita a la playa y aceptas con entusiasmo.
-**Respuesta:** _________________
-
-### Ejercicio 3: Crear un diálogo
-Crea un diálogo completo entre dos amigos donde:
-- Uno invita al otro a una actividad
-- El otro pregunta detalles (hora, lugar)
-- Acepta o rechaza con razón
-- Proponen una alternativa si es necesario
-
-### Ejercicio 4: Traducir
-Traduce estas frases al español:
-1. Veux-tu venir à ma fête d'anniversaire ?
-2. J'adorerais, mais je ne peux pas.
-3. Pourquoi tu ne viens pas jouer avec nous ?
-4. Ce sera un plaisir d'accepter ton invitation.`,
+        <div class="bg-amber-50 dark:bg-amber-900/20 p-6 rounded-lg">
+          <h4 class="text-lg font-semibold mb-4 flex items-center gap-2">
+            <span class="text-amber-600 dark:text-amber-400">🔄</span>
+            Ejercicio 4: Traducir
+          </h4>
+          <p class="mb-4">Traduce estas frases al español:</p>
+          <ol class="space-y-3 list-decimal list-inside">
+            <li>Veux-tu venir à ma fête d'anniversaire ?</li>
+            <li>J'adorerais, mais je ne peux pas.</li>
+            <li>Pourquoi tu ne viens pas jouer avec nous ?</li>
+            <li>Ce sera un plaisir d'accepter ton invitation.</li>
+          </ol>
+        </div>
+      </div>
+    `,
     references: ["MENFP - Programme 7e AF", "Expresiones sociales en español"]
   },
 
@@ -3048,75 +3105,134 @@ Traduce estas frases al español:
         </div>
       </div>
     `,
-    exemplesExercices: `## Ejercicios de práctica
+    exemplesExercices: `
+      <div class="exercises-content space-y-6">
+        <h3 class="text-2xl font-bold mb-6">Ejercicios de práctica</h3>
 
-### Ejercicio 1: Completar con la estructura correcta
-Completa con "tener que", "deber" o "hay que":
+        <div class="bg-purple-50 dark:bg-purple-900/20 p-6 rounded-lg mb-6">
+          <h4 class="text-lg font-semibold mb-4 flex items-center gap-2">
+            <span class="text-purple-600 dark:text-purple-400">✍️</span>
+            Ejercicio 1: Completar con la estructura correcta
+          </h4>
+          <p class="mb-4">Completa con "tener que", "deber" o "hay que":</p>
+          <ol class="space-y-3 list-decimal list-inside">
+            <li>Yo _____ estudiar para el examen de mañana. <span class="text-sm italic">(tener que)</span></li>
+            <li>Los alumnos _____ respetar al profesor. <span class="text-sm italic">(deber)</span></li>
+            <li>Nosotros _____ llegar temprano a la escuela. <span class="text-sm italic">(tener que)</span></li>
+            <li>_____ trabajar mucho para tener éxito. <span class="text-sm italic">(hay que)</span></li>
+            <li>Tú _____ ayudar a tu madre en casa. <span class="text-sm italic">(deber)</span></li>
+            <li>_____ ser honesto siempre. <span class="text-sm italic">(hay que)</span></li>
+            <li>Ellos _____ terminar la tarea hoy. <span class="text-sm italic">(tener que)</span></li>
+          </ol>
+        </div>
 
-1. Yo _____ estudiar para el examen de mañana. (tener que)
-2. Los alumnos _____ respetar al profesor. (deber)
-3. Nosotros _____ llegar temprano a la escuela. (tener que)
-4. _____ trabajar mucho para tener éxito. (hay que)
-5. Tú _____ ayudar a tu madre en casa. (deber)
-6. _____ ser honesto siempre. (hay que)
-7. Ellos _____ terminar la tarea hoy. (tener que)
+        <div class="bg-green-50 dark:bg-green-900/20 p-6 rounded-lg mb-6">
+          <h4 class="text-lg font-semibold mb-4 flex items-center gap-2">
+            <span class="text-green-600 dark:text-green-400">🔤</span>
+            Ejercicio 2: Conjugar en subjuntivo
+          </h4>
+          <p class="mb-4">Conjuga los verbos en presente de subjuntivo:</p>
+          <ol class="space-y-3 list-decimal list-inside">
+            <li>Es necesario que tú (estudiar) _____ más.</li>
+            <li>Hace falta que nosotros (trabajar) _____ juntos.</li>
+            <li>Es importante que ellos (comer) _____ bien.</li>
+            <li>Hace falta que ella (escribir) _____ la carta.</li>
+            <li>Es necesario que yo (hablar) _____ con el profesor.</li>
+            <li>Hace falta que vosotros (vivir) _____ mejor.</li>
+          </ol>
+        </div>
 
-### Ejercicio 2: Conjugar en subjuntivo
-Conjuga los verbos en presente de subjuntivo:
+        <div class="bg-blue-50 dark:bg-blue-900/20 p-6 rounded-lg mb-6">
+          <h4 class="text-lg font-semibold mb-4 flex items-center gap-2">
+            <span class="text-blue-600 dark:text-blue-400">🔄</span>
+            Ejercicio 3: Transformar con "hace falta que + subjuntivo"
+          </h4>
+          <p class="mb-4">Transforma estas frases usando "hace falta que + subjuntivo":</p>
+          <div class="space-y-3">
+            <div class="bg-white dark:bg-gray-800 p-3 rounded">
+              <p>1. Tengo que estudiar → <strong>Hace falta que estudie</strong></p>
+            </div>
+            <div class="bg-white dark:bg-gray-800 p-3 rounded">
+              <p>2. Debes trabajar → _____________________</p>
+            </div>
+            <div class="bg-white dark:bg-gray-800 p-3 rounded">
+              <p>3. Tienen que venir → _____________________</p>
+            </div>
+            <div class="bg-white dark:bg-gray-800 p-3 rounded">
+              <p>4. Debemos ayudar → _____________________</p>
+            </div>
+            <div class="bg-white dark:bg-gray-800 p-3 rounded">
+              <p>5. Tienes que escuchar → _____________________</p>
+            </div>
+          </div>
+        </div>
 
-1. Es necesario que tú (estudiar) _____ más.
-2. Hace falta que nosotros (trabajar) _____ juntos.
-3. Es importante que ellos (comer) _____ bien.
-4. Hace falta que ella (escribir) _____ la carta.
-5. Es necesario que yo (hablar) _____ con el profesor.
-6. Hace falta que vosotros (vivir) _____ mejor.
+        <div class="bg-amber-50 dark:bg-amber-900/20 p-6 rounded-lg mb-6">
+          <h4 class="text-lg font-semibold mb-4 flex items-center gap-2">
+            <span class="text-amber-600 dark:text-amber-400">📝</span>
+            Ejercicio 4: Situaciones
+          </h4>
+          <p class="mb-4">Escribe 5 obligaciones que tienes en tu vida usando las cuatro estructuras diferentes:</p>
+          
+          <div class="space-y-4">
+            <div class="bg-white dark:bg-gray-800 p-4 rounded">
+              <p class="font-semibold mb-2">Con "tener que":</p>
+              <p class="text-sm mb-2 italic">Ejemplo: Tengo que hacer mis deberes cada día.</p>
+              <p class="text-sm text-gray-600 dark:text-gray-400">1. _____________________</p>
+            </div>
+            
+            <div class="bg-white dark:bg-gray-800 p-4 rounded">
+              <p class="font-semibold mb-2">Con "deber":</p>
+              <p class="text-sm mb-2 italic">Ejemplo: Debo respetar a mis profesores.</p>
+              <p class="text-sm text-gray-600 dark:text-gray-400">2. _____________________</p>
+            </div>
+            
+            <div class="bg-white dark:bg-gray-800 p-4 rounded">
+              <p class="font-semibold mb-2">Con "hay que":</p>
+              <p class="text-sm mb-2 italic">Ejemplo: Hay que estudiar para aprender.</p>
+              <p class="text-sm text-gray-600 dark:text-gray-400">3. _____________________</p>
+            </div>
+            
+            <div class="bg-white dark:bg-gray-800 p-4 rounded">
+              <p class="font-semibold mb-2">Con "hace falta que + subjuntivo":</p>
+              <p class="text-sm mb-2 italic">Ejemplo: Hace falta que yo practique más español.</p>
+              <p class="text-sm text-gray-600 dark:text-gray-400">4. _____________________</p>
+              <p class="text-sm text-gray-600 dark:text-gray-400">5. _____________________</p>
+            </div>
+          </div>
+        </div>
 
-### Ejercicio 3: Transformar con "hace falta que + subjuntivo"
-Transforma estas frases usando "hace falta que + subjuntivo":
+        <div class="bg-purple-50 dark:bg-purple-900/20 p-6 rounded-lg mb-6">
+          <h4 class="text-lg font-semibold mb-4 flex items-center gap-2">
+            <span class="text-purple-600 dark:text-purple-400">🌍</span>
+            Ejercicio 5: Traducción
+          </h4>
+          <p class="mb-4">Traduce al español:</p>
+          <ol class="space-y-2 list-decimal list-inside">
+            <li>Je dois étudier l'espagnol.</li>
+            <li>Il faut respecter les règles.</li>
+            <li>Il faut que tu viennes demain.</li>
+            <li>Nous devons travailler ensemble.</li>
+            <li>Tu dois écouter ton professeur.</li>
+          </ol>
+        </div>
 
-1. Tengo que estudiar → Hace falta que estudie
-2. Debes trabajar → _____________________
-3. Tienen que venir → _____________________
-4. Debemos ayudar → _____________________
-5. Tienes que escuchar → _____________________
-
-### Ejercicio 4: Situaciones
-Escribe 5 obligaciones que tienes en tu vida usando las cuatro estructuras diferentes:
-
-**Con "tener que":**
-Ejemplo: Tengo que hacer mis deberes cada día.
-1. _____________________
-
-**Con "deber":**
-Ejemplo: Debo respetar a mis profesores.
-2. _____________________
-
-**Con "hay que":**
-Ejemplo: Hay que estudiar para aprender.
-3. _____________________
-
-**Con "hace falta que + subjuntivo":**
-Ejemplo: Hace falta que yo practique más español.
-4. _____________________
-5. _____________________
-
-### Ejercicio 5: Traducción
-Traduce al español:
-
-1. Je dois étudier l'espagnol.
-2. Il faut respecter les règles.
-3. Il faut que tu viennes demain.
-4. Nous devons travailler ensemble.
-5. Tu dois écouter ton professeur.
-
-### Ejercicio 6: Crear frases
-Crea frases lógicas usando las palabras dadas:
-
-1. (Yo / tener que / ir / médico)
-2. (Estudiantes / deber / respetar / profesores)
-3. (Hay que / comer / frutas / verduras)
-4. (Hace falta que / nosotros / estudiar / más)
-5. (Ellos / tener que / terminar / trabajo)`,
+        <div class="bg-green-50 dark:bg-green-900/20 p-6 rounded-lg">
+          <h4 class="text-lg font-semibold mb-4 flex items-center gap-2">
+            <span class="text-green-600 dark:text-green-400">🏗️</span>
+            Ejercicio 6: Crear frases
+          </h4>
+          <p class="mb-4">Crea frases lógicas usando las palabras dadas:</p>
+          <ol class="space-y-2 list-decimal list-inside">
+            <li>(Yo / tener que / ir / médico)</li>
+            <li>(Estudiantes / deber / respetar / profesores)</li>
+            <li>(Hay que / comer / frutas / verduras)</li>
+            <li>(Hace falta que / nosotros / estudiar / más)</li>
+            <li>(Ellos / tener que / terminar / trabajo)</li>
+          </ol>
+        </div>
+      </div>
+    `,
     references: ["MENFP - Programme 7e AF", "Gramática española - El subjuntivo"]
   },
 
@@ -3304,24 +3420,69 @@ Crea frases lógicas usando las palabras dadas:
         </div>
       </div>
     `,
-    exemplesExercices: `## Ejercicios
+    exemplesExercices: `
+      <div class="exercises-content space-y-6">
+        <h3 class="text-2xl font-bold mb-6">Ejercicios</h3>
 
-### Ejercicio 1: Orden alfabético
-Clasifica según el orden alfabético:
-banco – alumno – cantante – profesor – bebida – canción – partida – anteayer
+        <div class="bg-purple-50 dark:bg-purple-900/20 p-6 rounded-lg mb-6">
+          <h4 class="text-lg font-semibold mb-4 flex items-center gap-2">
+            <span class="text-purple-600 dark:text-purple-400">🔤</span>
+            Ejercicio 1: Orden alfabético
+          </h4>
+          <p class="mb-4">Clasifica según el orden alfabético:</p>
+          <div class="bg-white dark:bg-gray-800 p-4 rounded mb-4">
+            <p class="font-mono text-sm">banco – alumno – cantante – profesor – bebida – canción – partida – anteayer</p>
+          </div>
+          <div class="bg-blue-50 dark:bg-blue-900/20 p-4 rounded">
+            <p class="font-semibold mb-2">Respuesta:</p>
+            <p class="font-mono text-sm">alumno – anteayer – banco – bebida – canción – cantante – partida – profesor</p>
+          </div>
+        </div>
 
-Respuesta: alumno – anteayer – banco – bebida – canción – cantante – partida – profesor
+        <div class="bg-green-50 dark:bg-green-900/20 p-6 rounded-lg mb-6">
+          <h4 class="text-lg font-semibold mb-4 flex items-center gap-2">
+            <span class="text-green-600 dark:text-green-400">✂️</span>
+            Ejercicio 2: Separar en sílabas
+          </h4>
+          <p class="mb-4">Separa las siguientes palabras:</p>
+          <ol class="space-y-3 list-decimal list-inside">
+            <li class="bg-white dark:bg-gray-800 p-3 rounded">
+              <strong>Profesor</strong>
+              <span class="ml-4 text-sm text-gray-600 dark:text-gray-400">→ ___ - ___ - ___</span>
+            </li>
+            <li class="bg-white dark:bg-gray-800 p-3 rounded">
+              <strong>Estudiante</strong>
+              <span class="ml-4 text-sm text-gray-600 dark:text-gray-400">→ ___ - ___ - ___ - ___</span>
+            </li>
+            <li class="bg-white dark:bg-gray-800 p-3 rounded">
+              <strong>Guitarra</strong>
+              <span class="ml-4 text-sm text-gray-600 dark:text-gray-400">→ ___ - ___ - ___</span>
+            </li>
+            <li class="bg-white dark:bg-gray-800 p-3 rounded">
+              <strong>Maravilla</strong>
+              <span class="ml-4 text-sm text-gray-600 dark:text-gray-400">→ ___ - ___ - ___ - ___</span>
+            </li>
+            <li class="bg-white dark:bg-gray-800 p-3 rounded">
+              <strong>Capacidad</strong>
+              <span class="ml-4 text-sm text-gray-600 dark:text-gray-400">→ ___ - ___ - ___ - ___</span>
+            </li>
+          </ol>
+        </div>
 
-### Ejercicio 2: Separar en sílabas
-Separa las siguientes palabras:
-1. Profesor
-2. Estudiante
-3. Guitarra
-4. Maravilla
-5. Capacidad
-
-### Ejercicio 3: Justificar
-Justifica el número de sílabas que tiene cada palabra.`,
+        <div class="bg-blue-50 dark:bg-blue-900/20 p-6 rounded-lg">
+          <h4 class="text-lg font-semibold mb-4 flex items-center gap-2">
+            <span class="text-blue-600 dark:text-blue-400">💡</span>
+            Ejercicio 3: Justificar
+          </h4>
+          <p class="mb-4">Justifica el número de sílabas que tiene cada palabra.</p>
+          <div class="bg-white dark:bg-gray-800 p-4 rounded">
+            <p class="text-sm italic text-gray-600 dark:text-gray-400">
+              Exemple : "Profesor" tiene 3 sílabas porque se separa en pro-fe-sor según la regla de dos consonantes entre vocales.
+            </p>
+          </div>
+        </div>
+      </div>
+    `,
     references: ["MENFP - Programme 7e AF"]
   },
 
@@ -3562,26 +3723,74 @@ Justifica el número de sílabas que tiene cada palabra.`,
         </div>
       </div>
     `,
-    exemplesExercices: `## Ejercicios
+    exemplesExercices: `
+      <div class="exercises-content space-y-6">
+        <h3 class="text-2xl font-bold mb-6">Ejercicios</h3>
 
-### Ejercicio 1: Artículos definidos
-Escribe delante de cada palabra el artículo definido conveniente:
-- _____ árbol
-- _____ pulgar
-- _____ naranja
-- _____ mujeres
+        <div class="bg-purple-50 dark:bg-purple-900/20 p-6 rounded-lg mb-6">
+          <h4 class="text-lg font-semibold mb-4 flex items-center gap-2">
+            <span class="text-purple-600 dark:text-purple-400">📋</span>
+            Ejercicio 1: Artículos definidos
+          </h4>
+          <p class="mb-4">Escribe delante de cada palabra el artículo definido conveniente:</p>
+          <div class="grid md:grid-cols-2 gap-3">
+            <div class="bg-white dark:bg-gray-800 p-3 rounded">
+              <p>_____ <strong>árbol</strong></p>
+            </div>
+            <div class="bg-white dark:bg-gray-800 p-3 rounded">
+              <p>_____ <strong>pulgar</strong></p>
+            </div>
+            <div class="bg-white dark:bg-gray-800 p-3 rounded">
+              <p>_____ <strong>naranja</strong></p>
+            </div>
+            <div class="bg-white dark:bg-gray-800 p-3 rounded">
+              <p>_____ <strong>mujeres</strong></p>
+            </div>
+          </div>
+        </div>
 
-### Ejercicio 2: Femenino
-Da el femenino de las siguientes palabras:
-- Un alumno
-- El profesor
-- Un guitarrista
+        <div class="bg-green-50 dark:bg-green-900/20 p-6 rounded-lg mb-6">
+          <h4 class="text-lg font-semibold mb-4 flex items-center gap-2">
+            <span class="text-green-600 dark:text-green-400">♀️</span>
+            Ejercicio 2: Femenino
+          </h4>
+          <p class="mb-4">Da el femenino de las siguientes palabras:</p>
+          <div class="space-y-3">
+            <div class="bg-white dark:bg-gray-800 p-3 rounded">
+              <p><strong>Un alumno</strong> → _______________</p>
+            </div>
+            <div class="bg-white dark:bg-gray-800 p-3 rounded">
+              <p><strong>El profesor</strong> → _______________</p>
+            </div>
+            <div class="bg-white dark:bg-gray-800 p-3 rounded">
+              <p><strong>Un guitarrista</strong> → _______________</p>
+            </div>
+          </div>
+        </div>
 
-### Ejercicio 3: Transformar
-Cambia al femenino:
-- El rey habla bien
-- Un cantante famoso
-- El artista talentoso`,
+        <div class="bg-blue-50 dark:bg-blue-900/20 p-6 rounded-lg">
+          <h4 class="text-lg font-semibold mb-4 flex items-center gap-2">
+            <span class="text-blue-600 dark:text-blue-400">🔄</span>
+            Ejercicio 3: Transformar
+          </h4>
+          <p class="mb-4">Cambia al femenino:</p>
+          <div class="space-y-3">
+            <div class="bg-white dark:bg-gray-800 p-3 rounded">
+              <p><strong>El rey habla bien</strong></p>
+              <p class="text-sm text-gray-600 dark:text-gray-400 mt-2">→ _______________</p>
+            </div>
+            <div class="bg-white dark:bg-gray-800 p-3 rounded">
+              <p><strong>Un cantante famoso</strong></p>
+              <p class="text-sm text-gray-600 dark:text-gray-400 mt-2">→ _______________</p>
+            </div>
+            <div class="bg-white dark:bg-gray-800 p-3 rounded">
+              <p><strong>El artista talentoso</strong></p>
+              <p class="text-sm text-gray-600 dark:text-gray-400 mt-2">→ _______________</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    `,
     references: ["MENFP - Programme 7e AF"]
   },
 
@@ -3782,28 +3991,89 @@ Cambia al femenino:
         </div>
       </div>
     `,
-    exemplesExercices: `## Ejercicios
+    exemplesExercices: `
+      <div class="exercises-content space-y-6">
+        <h3 class="text-2xl font-bold mb-6">Ejercicios</h3>
 
-### Ejercicio 1: Singular → Plural
-Pasa al plural:
-- El pie
-- La falda
-- El pantalón
-- La ley
-- El lápiz
+        <div class="bg-purple-50 dark:bg-purple-900/20 p-6 rounded-lg mb-6">
+          <h4 class="text-lg font-semibold mb-4 flex items-center gap-2">
+            <span class="text-purple-600 dark:text-purple-400">➕</span>
+            Ejercicio 1: Singular → Plural
+          </h4>
+          <p class="mb-4">Pasa al plural:</p>
+          <div class="space-y-3">
+            <div class="bg-white dark:bg-gray-800 p-3 rounded flex items-center justify-between">
+              <span><strong>El pie</strong></span>
+              <span class="text-sm text-gray-600 dark:text-gray-400">→ _______________</span>
+            </div>
+            <div class="bg-white dark:bg-gray-800 p-3 rounded flex items-center justify-between">
+              <span><strong>La falda</strong></span>
+              <span class="text-sm text-gray-600 dark:text-gray-400">→ _______________</span>
+            </div>
+            <div class="bg-white dark:bg-gray-800 p-3 rounded flex items-center justify-between">
+              <span><strong>El pantalón</strong></span>
+              <span class="text-sm text-gray-600 dark:text-gray-400">→ _______________</span>
+            </div>
+            <div class="bg-white dark:bg-gray-800 p-3 rounded flex items-center justify-between">
+              <span><strong>La ley</strong></span>
+              <span class="text-sm text-gray-600 dark:text-gray-400">→ _______________</span>
+            </div>
+            <div class="bg-white dark:bg-gray-800 p-3 rounded flex items-center justify-between">
+              <span><strong>El lápiz</strong></span>
+              <span class="text-sm text-gray-600 dark:text-gray-400">→ _______________</span>
+            </div>
+          </div>
+        </div>
 
-### Ejercicio 2: Plural → Singular
-Encuentra el singular:
-- Los reyes
-- Las casas
-- Los profesores
-- Las luces
+        <div class="bg-green-50 dark:bg-green-900/20 p-6 rounded-lg mb-6">
+          <h4 class="text-lg font-semibold mb-4 flex items-center gap-2">
+            <span class="text-green-600 dark:text-green-400">➖</span>
+            Ejercicio 2: Plural → Singular
+          </h4>
+          <p class="mb-4">Encuentra el singular:</p>
+          <div class="space-y-3">
+            <div class="bg-white dark:bg-gray-800 p-3 rounded flex items-center justify-between">
+              <span><strong>Los reyes</strong></span>
+              <span class="text-sm text-gray-600 dark:text-gray-400">→ _______________</span>
+            </div>
+            <div class="bg-white dark:bg-gray-800 p-3 rounded flex items-center justify-between">
+              <span><strong>Las casas</strong></span>
+              <span class="text-sm text-gray-600 dark:text-gray-400">→ _______________</span>
+            </div>
+            <div class="bg-white dark:bg-gray-800 p-3 rounded flex items-center justify-between">
+              <span><strong>Los profesores</strong></span>
+              <span class="text-sm text-gray-600 dark:text-gray-400">→ _______________</span>
+            </div>
+            <div class="bg-white dark:bg-gray-800 p-3 rounded flex items-center justify-between">
+              <span><strong>Las luces</strong></span>
+              <span class="text-sm text-gray-600 dark:text-gray-400">→ _______________</span>
+            </div>
+          </div>
+        </div>
 
-### Ejercicio 3: Oraciones completas
-Pasa al plural:
-- El rey habla bien
-- La alumna estudia mucho
-- El profesor enseña español`,
+        <div class="bg-blue-50 dark:bg-blue-900/20 p-6 rounded-lg">
+          <h4 class="text-lg font-semibold mb-4 flex items-center gap-2">
+            <span class="text-blue-600 dark:text-blue-400">📝</span>
+            Ejercicio 3: Oraciones completas
+          </h4>
+          <p class="mb-4">Pasa al plural:</p>
+          <div class="space-y-4">
+            <div class="bg-white dark:bg-gray-800 p-4 rounded">
+              <p class="font-semibold mb-2"><strong>El rey habla bien</strong></p>
+              <p class="text-sm text-gray-600 dark:text-gray-400">→ _______________</p>
+            </div>
+            <div class="bg-white dark:bg-gray-800 p-4 rounded">
+              <p class="font-semibold mb-2"><strong>La alumna estudia mucho</strong></p>
+              <p class="text-sm text-gray-600 dark:text-gray-400">→ _______________</p>
+            </div>
+            <div class="bg-white dark:bg-gray-800 p-4 rounded">
+              <p class="font-semibold mb-2"><strong>El profesor enseña español</strong></p>
+              <p class="text-sm text-gray-600 dark:text-gray-400">→ _______________</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    `,
     references: ["MENFP - Programme 7e AF"]
   },
 
