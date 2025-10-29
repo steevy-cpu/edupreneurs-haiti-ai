@@ -4082,42 +4082,100 @@ Describe tu rutina diaria en español (mínimo 8 frases).`,
     mois: "Avril",
     objectif: "Usar correctamente los pronombres personales",
     introduction: "Aprenderás a identificar y usar los pronombres personales sujetos y complementos.",
-    contenu: `## El pronombre personal
+    contenu: `
+      <div class="lesson-content space-y-6">
+        <section class="mb-6">
+          <h3 class="text-xl font-semibold mb-4">Les pronoms personnels sujets (Pronombres personales sujetos)</h3>
+          <p class="mb-4">Les pronoms personnels remplacent les noms et s'utilisent pour désigner les personnes qui parlent, celles à qui on parle, ou celles dont on parle.</p>
+          
+          <div class="bg-purple-50 dark:bg-purple-900/20 p-4 rounded-lg mb-4">
+            <h4 class="font-semibold mb-3">Les pronoms sujets :</h4>
+            <div class="grid md:grid-cols-2 gap-4">
+              <div>
+                <ul class="space-y-2">
+                  <li>• <strong>Yo</strong> - Je</li>
+                  <li>• <strong>Tú</strong> - Tu</li>
+                  <li>• <strong>Él / Ella / Usted</strong> - Il / Elle / Vous (formel)</li>
+                </ul>
+              </div>
+              <div>
+                <ul class="space-y-2">
+                  <li>• <strong>Nosotros / Nosotras</strong> - Nous</li>
+                  <li>• <strong>Vosotros / Vosotras</strong> - Vous</li>
+                  <li>• <strong>Ellos / Ellas / Ustedes</strong> - Ils / Elles / Vous (pluriel formel)</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </section>
 
-### Pronombres personales sujetos
-- **Yo** - Je
-- **Tú** - Tu
-- **Él / Ella / Usted** - Il / Elle / Vous (formel)
-- **Nosotros / Nosotras** - Nous
-- **Vosotros / Vosotras** - Vous
-- **Ellos / Ellas / Ustedes** - Ils / Elles / Vous (pluriel formel)
+        <section class="mb-6">
+          <h3 class="text-xl font-semibold mb-4">Les pronoms compléments (Pronombres complementos)</h3>
+          <p class="mb-4">Les pronoms compléments remplacent un nom complément d'objet direct ou indirect.</p>
+          
+          <div class="bg-green-50 dark:bg-green-900/20 p-4 rounded-lg mb-4">
+            <h4 class="font-semibold mb-3">Compléments directs (Complementos directos) :</h4>
+            <p class="text-sm mb-3 italic">Répondent à la question "qui ?" ou "quoi ?"</p>
+            <div class="grid md:grid-cols-2 gap-3">
+              <ul class="space-y-2 text-sm">
+                <li>• <strong>Me</strong> - Me</li>
+                <li>• <strong>Te</strong> - Te</li>
+                <li>• <strong>Lo / La / Le</strong> - Le/La</li>
+              </ul>
+              <ul class="space-y-2 text-sm">
+                <li>• <strong>Nos</strong> - Nous</li>
+                <li>• <strong>Os</strong> - Vous</li>
+                <li>• <strong>Los / Las / Les</strong> - Les</li>
+              </ul>
+            </div>
+            <p class="text-xs mt-3 bg-white dark:bg-gray-800 p-2 rounded">
+              💡 <strong>Astuce :</strong> "Lo" pour masculin, "La" pour féminin, "Le" pour les personnes
+            </p>
+          </div>
 
-### Pronombres personales complementos
+          <div class="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg">
+            <h4 class="font-semibold mb-3">Compléments indirects (Complementos indirectos) :</h4>
+            <p class="text-sm mb-3 italic">Répondent à la question "à qui ?"</p>
+            <div class="grid md:grid-cols-2 gap-3">
+              <ul class="space-y-2 text-sm">
+                <li>• <strong>Me</strong> - Me (à moi)</li>
+                <li>• <strong>Te</strong> - Te (à toi)</li>
+                <li>• <strong>Se</strong> - Se (à lui/elle)</li>
+              </ul>
+              <ul class="space-y-2 text-sm">
+                <li>• <strong>Nos</strong> - Nous (à nous)</li>
+                <li>• <strong>Os</strong> - Vous (à vous)</li>
+                <li>• <strong>Se</strong> - Se (à eux/elles)</li>
+              </ul>
+            </div>
+          </div>
+        </section>
 
-**Complementos directos:**
-- Me - Me
-- Te - Te
-- Lo / La / Le - Le/La (lo para masculino, la para femenino, le para personas)
-- Nos - Nous
-- Os - Vous
-- Los / Las / Les - Les
+        <section class="mb-6">
+          <h3 class="text-xl font-semibold mb-4">Concordance verbe-sujet (Concordancia verbo-sujeto)</h3>
+          <p class="mb-4">Le verbe DOIT toujours s'accorder avec le sujet en personne et en nombre. C'est une règle fondamentale !</p>
+          
+          <div class="bg-amber-50 dark:bg-amber-900/20 p-4 rounded-lg">
+            <h4 class="font-semibold mb-3">Exemple avec le verbe "hablar" (parler) :</h4>
+            <div class="space-y-2">
+              <p>• <strong>Yo hablo</strong> - Je parle</p>
+              <p>• <strong>Tú hablas</strong> - Tu parles</p>
+              <p>• <strong>Él/Ella habla</strong> - Il/Elle parle</p>
+              <p>• <strong>Nosotros hablamos</strong> - Nous parlons</p>
+              <p>• <strong>Vosotros habláis</strong> - Vous parlez</p>
+              <p>• <strong>Ellos/Ellas hablan</strong> - Ils/Elles parlent</p>
+            </div>
+          </div>
+        </section>
 
-**Complementos indirectos:**
-- Me - Me
-- Te - Te
-- Se - Se
-- Nos - Nous
-- Os - Vous
-- Se - Se
-
-### Concordancia verbo-sujeto
-El verbo debe concordar con el sujeto en persona y número:
-- Yo hablo
-- Tú hablas
-- Él habla
-- Nosotros hablamos
-- Vosotros habláis
-- Ellos hablan`,
+        <div class="bg-blue-50 dark:bg-blue-900/20 border-l-4 border-blue-500 p-4 rounded-r-lg">
+          <h4 class="text-blue-700 dark:text-blue-400 font-semibold mb-2">💡 Suggestions de vidéos YouTube</h4>
+          <p class="text-blue-600 dark:text-blue-300">
+            Recherchez "pronombres personales en español" ou "pronombres complementos directos e indirectos" pour des explications visuelles avec de nombreux exemples pratiques.
+          </p>
+        </div>
+      </div>
+    `,
     exemplesExercices: `
       <div class="exercises-content space-y-6">
         <h3 class="text-2xl font-bold mb-6">Ejercicios</h3>
@@ -4188,36 +4246,167 @@ El verbo debe concordar con el sujeto en persona y número:
     mois: "Avril",
     objectif: "Escribir formas verbales en diferentes tiempos",
     introduction: "Aprenderás a conjugar verbos regulares en presente, pretérito imperfecto y futuro.",
-    contenu: `## El verbo
+    contenu: `
+      <div class="lesson-content space-y-6">
+        <section class="mb-6">
+          <h3 class="text-xl font-semibold mb-4">Les verbes réguliers (Verbos regulares)</h3>
+          <p class="mb-4">Les verbes sont essentiels pour construire des phrases ! En espagnol, on distingue trois groupes de verbes réguliers selon leur terminaison : <strong>-AR</strong>, <strong>-ER</strong>, et <strong>-IR</strong>.</p>
+          
+          <div class="bg-purple-50 dark:bg-purple-900/20 p-4 rounded-lg mb-4">
+            <h4 class="font-semibold mb-3">Verbes réguliers principaux :</h4>
+            <div class="grid md:grid-cols-2 gap-3">
+              <div>
+                <ul class="space-y-1 text-sm">
+                  <li>• <strong>Aprender</strong> - Apprendre</li>
+                  <li>• <strong>Escuchar</strong> - Écouter</li>
+                  <li>• <strong>Leer</strong> - Lire</li>
+                  <li>• <strong>Escribir</strong> - Écrire</li>
+                  <li>• <strong>Hablar</strong> - Parler</li>
+                  <li>• <strong>Mirar</strong> - Regarder</li>
+                  <li>• <strong>Llegar</strong> - Arriver</li>
+                </ul>
+              </div>
+              <div>
+                <ul class="space-y-1 text-sm">
+                  <li>• <strong>Comer</strong> - Manger</li>
+                  <li>• <strong>Pasar</strong> - Passer</li>
+                  <li>• <strong>Salir</strong> - Sortir</li>
+                  <li>• <strong>Comprender</strong> - Comprendre</li>
+                  <li>• <strong>Ayudar</strong> - Aider</li>
+                  <li>• <strong>Perdonar</strong> - Pardonner</li>
+                  <li>• <strong>Presentar</strong> - Présenter</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </section>
 
-### Verbos regulares principales
-- Aprender - Apprendre
-- Escuchar - Écouter
-- Leer - Lire
-- Escribir - Écrire
-- Hablar - Parler
-- Mirar - Regarder
-- Llegar - Arriver
-- Comer - Manger
-- Pasar - Passer
-- Salir - Sortir
-- Comprender - Comprendre
-- Ayudar - Aider
-- Perdonar - Pardonner
-- Presentar - Présenter
+        <section class="mb-6">
+          <h3 class="text-xl font-semibold mb-4">Le présent de l'indicatif (Presente de indicativo)</h3>
+          <p class="mb-4">Au présent, chaque groupe de verbes a ses propres terminaisons. Mémorisez-les bien !</p>
+          
+          <div class="bg-green-50 dark:bg-green-900/20 p-4 rounded-lg mb-4">
+            <h4 class="font-semibold mb-3">Verbes en -AR (exemple : hablar) :</h4>
+            <div class="grid md:grid-cols-2 gap-3">
+              <div class="text-sm">
+                <p><strong>Terminaisons :</strong> -o, -as, -a, -amos, -áis, -an</p>
+              </div>
+              <div class="text-sm">
+                <ul class="space-y-1">
+                  <li>• Yo hablo</li>
+                  <li>• Tú hablas</li>
+                  <li>• Él/Ella habla</li>
+                  <li>• Nosotros hablamos</li>
+                  <li>• Vosotros habláis</li>
+                  <li>• Ellos hablan</li>
+                </ul>
+              </div>
+            </div>
+          </div>
 
-### Presente de indicativo
-**-AR (hablar):** hablo, hablas, habla, hablamos, habláis, hablan
-**-ER (comer):** como, comes, come, comemos, coméis, comen
-**-IR (vivir):** vivo, vives, vive, vivimos, vivís, viven
+          <div class="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg mb-4">
+            <h4 class="font-semibold mb-3">Verbes en -ER (exemple : comer) :</h4>
+            <div class="grid md:grid-cols-2 gap-3">
+              <div class="text-sm">
+                <p><strong>Terminaisons :</strong> -o, -es, -e, -emos, -éis, -en</p>
+              </div>
+              <div class="text-sm">
+                <ul class="space-y-1">
+                  <li>• Yo como</li>
+                  <li>• Tú comes</li>
+                  <li>• Él/Ella come</li>
+                  <li>• Nosotros comemos</li>
+                  <li>• Vosotros coméis</li>
+                  <li>• Ellos comen</li>
+                </ul>
+              </div>
+            </div>
+          </div>
 
-### Pretérito imperfecto
-**-AR:** -aba, -abas, -aba, -ábamos, -abais, -aban
-**-ER/-IR:** -ía, -ías, -ía, -íamos, -íais, -ían
+          <div class="bg-amber-50 dark:bg-amber-900/20 p-4 rounded-lg">
+            <h4 class="font-semibold mb-3">Verbes en -IR (exemple : vivir) :</h4>
+            <div class="grid md:grid-cols-2 gap-3">
+              <div class="text-sm">
+                <p><strong>Terminaisons :</strong> -o, -es, -e, -imos, -ís, -en</p>
+              </div>
+              <div class="text-sm">
+                <ul class="space-y-1">
+                  <li>• Yo vivo</li>
+                  <li>• Tú vives</li>
+                  <li>• Él/Ella vive</li>
+                  <li>• Nosotros vivimos</li>
+                  <li>• Vosotros vivís</li>
+                  <li>• Ellos viven</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </section>
 
-### Futuro de indicativo
-**Todos los verbos:** -é, -ás, -á, -emos, -éis, -án
-- Hablaré, comeré, viviré`,
+        <section class="mb-6">
+          <h3 class="text-xl font-semibold mb-4">Le prétérit imparfait (Pretérito imperfecto)</h3>
+          <p class="mb-4">L'imparfait exprime des actions habituelles ou continues dans le passé.</p>
+          
+          <div class="grid md:grid-cols-2 gap-4">
+            <div class="bg-purple-50 dark:bg-purple-900/20 p-4 rounded-lg">
+              <h4 class="font-semibold mb-3">Verbes en -AR :</h4>
+              <p class="text-sm mb-2"><strong>Terminaisons :</strong></p>
+              <ul class="text-sm space-y-1">
+                <li>-aba, -abas, -aba</li>
+                <li>-ábamos, -abais, -aban</li>
+              </ul>
+            </div>
+
+            <div class="bg-green-50 dark:bg-green-900/20 p-4 rounded-lg">
+              <h4 class="font-semibold mb-3">Verbes en -ER/-IR :</h4>
+              <p class="text-sm mb-2"><strong>Terminaisons :</strong></p>
+              <ul class="text-sm space-y-1">
+                <li>-ía, -ías, -ía</li>
+                <li>-íamos, -íais, -ían</li>
+              </ul>
+            </div>
+          </div>
+        </section>
+
+        <section class="mb-6">
+          <h3 class="text-xl font-semibold mb-4">Le futur de l'indicatif (Futuro de indicativo)</h3>
+          <p class="mb-4">Bonne nouvelle ! Au futur, TOUS les verbes réguliers utilisent les MÊMES terminaisons !</p>
+          
+          <div class="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg">
+            <h4 class="font-semibold mb-3">Terminaisons universelles du futur :</h4>
+            <p class="mb-3 text-sm">On ajoute ces terminaisons à l'infinitif complet du verbe :</p>
+            <div class="grid md:grid-cols-2 gap-4">
+              <div>
+                <p class="font-semibold text-sm mb-2">Terminaisons :</p>
+                <ul class="text-sm space-y-1">
+                  <li>• -é (yo)</li>
+                  <li>• -ás (tú)</li>
+                  <li>• -á (él/ella)</li>
+                  <li>• -emos (nosotros)</li>
+                  <li>• -éis (vosotros)</li>
+                  <li>• -án (ellos/ellas)</li>
+                </ul>
+              </div>
+              <div>
+                <p class="font-semibold text-sm mb-2">Exemples :</p>
+                <ul class="text-sm space-y-1">
+                  <li>• <strong>Hablaré</strong> (je parlerai)</li>
+                  <li>• <strong>Comeré</strong> (je mangerai)</li>
+                  <li>• <strong>Viviré</strong> (je vivrai)</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <div class="bg-blue-50 dark:bg-blue-900/20 border-l-4 border-blue-500 p-4 rounded-r-lg">
+          <h4 class="text-blue-700 dark:text-blue-400 font-semibold mb-2">💡 Suggestions de vidéos YouTube</h4>
+          <p class="text-blue-600 dark:text-blue-300">
+            Recherchez "conjugación verbos regulares español" ou "presente pretérito futuro español" pour des explications détaillées avec des tableaux de conjugaison.
+          </p>
+        </div>
+      </div>
+    `,
     exemplesExercices: `
       <div class="exercises-content space-y-6">
         <h3 class="text-2xl font-bold mb-6">Ejercicios</h3>
@@ -4288,33 +4477,128 @@ El verbo debe concordar con el sujeto en persona y número:
     mois: "Avril",
     objectif: "Construir un texto sobre una fiesta",
     introduction: "Aprenderás a describir una fiesta usando el vocabulario apropiado.",
-    contenu: `## La fiesta
+    contenu: `
+      <div class="lesson-content space-y-6">
+        <section class="mb-6">
+          <h3 class="text-xl font-semibold mb-4">Le vocabulaire de la fête (Vocabulario de fiestas)</h3>
+          <p class="mb-4">Que ce soit pour une fête nationale, un anniversaire ou une célébration, voici le vocabulaire essentiel pour parler des festivités en espagnol !</p>
+          
+          <div class="bg-purple-50 dark:bg-purple-900/20 p-4 rounded-lg mb-4">
+            <h4 class="font-semibold mb-3">Mots clés des festivités :</h4>
+            <div class="grid md:grid-cols-2 gap-3">
+              <div>
+                <ul class="space-y-2 text-sm">
+                  <li>• <strong>Fiesta nacional</strong> - Fête nationale</li>
+                  <li>• <strong>Baile</strong> - Danse, bal</li>
+                  <li>• <strong>Discurso</strong> - Discours</li>
+                  <li>• <strong>Mensaje</strong> - Message</li>
+                  <li>• <strong>Amigos(as)</strong> - Ami(e)s</li>
+                </ul>
+              </div>
+              <div>
+                <ul class="space-y-2 text-sm">
+                  <li>• <strong>Festejar</strong> - Fêter</li>
+                  <li>• <strong>Bebida</strong> - Boisson</li>
+                  <li>• <strong>Comida</strong> - Nourriture</li>
+                  <li>• <strong>Preparación</strong> - Préparation</li>
+                  <li>• <strong>Preparativos</strong> - Préparatifs</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </section>
 
-### Vocabulario de fiestas
-- **Fiesta nacional** - Fête nationale
-- **Baile** - Danse, bal
-- **Discurso** - Discours
-- **Mensaje** - Message
-- **Amigos(as)** - Ami(e)s
-- **Festejar** - Fêter
-- **Bebida** - Boisson
-- **Comida** - Nourriture
-- **Preparación** - Préparation
-- **Preparativos** - Préparatifs
+        <section class="mb-6">
+          <h3 class="text-xl font-semibold mb-4">Les verbes utiles (Verbos útiles)</h3>
+          <p class="mb-4">Ces verbes te permettront de décrire les activités et les émotions lors d'une fête.</p>
+          
+          <div class="bg-green-50 dark:bg-green-900/20 p-4 rounded-lg">
+            <h4 class="font-semibold mb-3">Verbes d'action et de préférence :</h4>
+            <div class="grid md:grid-cols-2 gap-3">
+              <div>
+                <ul class="space-y-2 text-sm">
+                  <li>• <strong>Gustar</strong> - Aimer, plaire</li>
+                  <li>• <strong>Preferir</strong> - Préférer</li>
+                  <li>• <strong>Celebrar</strong> - Célébrer</li>
+                  <li>• <strong>Invitar</strong> - Inviter</li>
+                </ul>
+              </div>
+              <div>
+                <ul class="space-y-2 text-sm">
+                  <li>• <strong>Bailar</strong> - Danser</li>
+                  <li>• <strong>Cantar</strong> - Chanter</li>
+                  <li>• <strong>Disfrutar</strong> - Profiter</li>
+                  <li>• <strong>Divertirse</strong> - S'amuser</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </section>
 
-### Verbos útiles
-- **Gustar** - Aimer, plaire
-- **Preferir** - Préférer
-- **Celebrar** - Célébrer
-- **Invitar** - Inviter
-- **Bailar** - Danser
-- **Cantar** - Chanter
-- **Disfrutar** - Profiter
+        <section class="mb-6">
+          <h3 class="text-xl font-semibold mb-4">Expressions courantes (Expresiones)</h3>
+          <p class="mb-4">Utilise ces expressions pour parler de tes goûts et de tes projets de fête !</p>
+          
+          <div class="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg mb-4">
+            <h4 class="font-semibold mb-3">Exprimer ses préférences :</h4>
+            <div class="space-y-3">
+              <div class="bg-white dark:bg-gray-800 p-3 rounded">
+                <p class="font-semibold text-sm">Me gusta la fiesta</p>
+                <p class="text-xs text-gray-600 dark:text-gray-400">J'aime la fête</p>
+              </div>
+              <div class="bg-white dark:bg-gray-800 p-3 rounded">
+                <p class="font-semibold text-sm">Prefiero bailar</p>
+                <p class="text-xs text-gray-600 dark:text-gray-400">Je préfère danser</p>
+              </div>
+              <div class="bg-white dark:bg-gray-800 p-3 rounded">
+                <p class="font-semibold text-sm">Vamos a celebrar</p>
+                <p class="text-xs text-gray-600 dark:text-gray-400">Nous allons célébrer</p>
+              </div>
+            </div>
+          </div>
 
-### Expresiones
-- Me gusta la fiesta - J'aime la fête
-- Prefiero bailar - Je préfère danser
-- Vamos a celebrar - Nous allons célébrer`,
+          <div class="bg-amber-50 dark:bg-amber-900/20 p-4 rounded-lg">
+            <h4 class="font-semibold mb-3">Phrases utiles pour organiser une fête :</h4>
+            <div class="space-y-2 text-sm">
+              <p>• <strong>¿Qué vamos a celebrar?</strong> - Qu'allons-nous célébrer ?</p>
+              <p>• <strong>Voy a invitar a mis amigos</strong> - Je vais inviter mes amis</p>
+              <p>• <strong>¿Cuándo es la fiesta?</strong> - Quand est la fête ?</p>
+              <p>• <strong>Tenemos que preparar la comida</strong> - Nous devons préparer la nourriture</p>
+              <p>• <strong>¡Vamos a divertirnos!</strong> - Nous allons nous amuser !</p>
+            </div>
+          </div>
+        </section>
+
+        <section class="mb-6">
+          <h3 class="text-xl font-semibold mb-4">Fêtes haïtiennes importantes</h3>
+          <p class="mb-4">Connais-tu les grandes fêtes célébrées en Haïti ? Voici les principales :</p>
+          
+          <div class="bg-purple-50 dark:bg-purple-900/20 p-4 rounded-lg">
+            <ul class="space-y-3">
+              <li>
+                <p class="font-semibold">🇭🇹 <strong>1 de enero</strong> - Día de la Independencia</p>
+                <p class="text-sm">Célébration de l'indépendance d'Haïti</p>
+              </li>
+              <li>
+                <p class="font-semibold">🎌 <strong>18 de mayo</strong> - Día de la Bandera</p>
+                <p class="text-sm">Journée du drapeau haïtien</p>
+              </li>
+              <li>
+                <p class="font-semibold">🎭 <strong>Carnaval</strong></p>
+                <p class="text-sm">Grande célébration traditionnelle avec défilés et musique</p>
+              </li>
+            </ul>
+          </div>
+        </section>
+
+        <div class="bg-blue-50 dark:bg-blue-900/20 border-l-4 border-blue-500 p-4 rounded-r-lg">
+          <h4 class="text-blue-700 dark:text-blue-400 font-semibold mb-2">💡 Suggestions de vidéos YouTube</h4>
+          <p class="text-blue-600 dark:text-blue-300">
+            Recherchez "vocabulario de fiestas en español" ou "describir una fiesta en español" pour des exemples de descriptions de fêtes et de célébrations.
+          </p>
+        </div>
+      </div>
+    `,
     exemplesExercices: `
       <div class="exercises-content space-y-6">
         <h3 class="text-2xl font-bold mb-6">Ejercicios</h3>
