@@ -9828,7 +9828,7 @@ export const sciencesSocialesLessons7AF: SciencesSocialesLesson[] = [
   // Leçon 19: La vie économique
   {
     id: "vie-economique",
-    title: "La vie économique",
+    title: "La vie économique : Comprendre l'économie haïtienne",
     mois: "Août",
     objectif: "Comprendre les bases de l'économie et les activités économiques en Haïti.",
     introduction: `
