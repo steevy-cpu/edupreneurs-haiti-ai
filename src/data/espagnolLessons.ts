@@ -2291,49 +2291,390 @@ export const espagnolLessons7AF = {
   "la-familia": {
     title: "La Familia",
     mois: "Février",
-    objectif: "Invitarse, aceptar o rechazar una invitación",
-    introduction: "Aprenderás a invitar a alguien y a responder apropiadamente a invitaciones.",
-    contenu: `## Invitación
+    objectif: "Hablar de su familia y usar los adjetivos posesivos",
+    introduction: "Découvrons comment parler de notre famille en espagnol et utiliser les adjectifs possessifs.",
+    contenu: `
+### Les Membres de la Famille
 
-### Aceptar una invitación
-- **Con mucho gusto** - Avec grand plaisir
-- **Me encanta** - J'adore
-- **Muy amable** - Très aimable
-- **Sí, acepto** - Oui, j'accepte
+**La famille nucléaire (La familia nuclear) :**
 
-### Rechazar una invitación
-- **No puedo** - Je ne peux pas
-- **No podré** - Je ne pourrai pas
-- **Lo siento** - Je suis désolé(e)
+Dans la culture hispanophone, comme en Haïti, la famille occupe une place centrale dans la vie quotidienne. Commençons par les membres les plus proches :
 
-### Expresiones de tiempo
-- **Hoy** - Aujourd'hui
-- **Cada mes** - Chaque mois
-- **Todos los fines de semana** - Tous les week-ends
+- **El padre / El papá** = Le père / Papa
+- **La madre / La mamá** = La mère / Maman
+- **El hijo** = Le fils
+- **La hija** = La fille
+- **Los hijos** = Les enfants (quand on parle des garçons ET des filles ensemble)
+- **El hermano** = Le frère
+- **La hermana** = La sœur
+- **Los hermanos** = Les frères et sœurs
 
-### Tiempos verbales
-**Presente de indicativo:**
-- Yo invito, tú invitas, él invita...
+**Point culturel :** Dans les familles hispanophones, on utilise souvent "papá" et "mamá" plutôt que "padre" et "madre" dans la vie quotidienne, tout comme on dit "manman" et "papa" en créole haïtien !
 
-**Futuro de indicativo:**
-- Yo invitaré, tú invitarás, él invitará...`,
+**La famille élargie (La familia extendida) :**
+
+Dans la culture caribéenne et hispanophone, la famille élargie joue un rôle très important :
+
+- **El abuelo** = Le grand-père
+- **La abuela** = La grand-mère
+- **Los abuelos** = Les grands-parents
+- **El tío** = L'oncle
+- **La tía** = La tante
+- **El primo / La prima** = Le cousin / La cousine
+- **Los primos** = Les cousins
+- **El sobrino / La sobrina** = Le neveu / La nièce
+- **El nieto / La nieta** = Le petit-fils / La petite-fille
+
+### Les Adjectifs Possessifs (Los Adjetivos Posesivos)
+
+**Règle importante :** En espagnol, les adjectifs possessifs s'accordent EN NOMBRE avec le nom possédé (singulier ou pluriel), mais PAS en genre !
+
+**Formes courtes (avant le nom) :**
+
+**Singulier :**
+- **Mi** = Mon/Ma (Mi padre = Mon père, Mi madre = Ma mère)
+- **Tu** = Ton/Ta (Tu hermano = Ton frère, Tu hermana = Ta sœur)
+- **Su** = Son/Sa (Su familia = Sa famille)
+
+**Pluriel :**
+- **Mis** = Mes (Mis padres = Mes parents, Mis hermanas = Mes sœurs)
+- **Tus** = Tes (Tus abuelos = Tes grands-parents)
+- **Sus** = Ses (Sus hijos = Ses enfants)
+
+**Formes longues (après le nom pour insister) :**
+- **Mío/mía/míos/mías** = À moi / Le mien
+- **Tuyo/tuya/tuyos/tuyas** = À toi / Le tien
+- **Suyo/suya/suyos/suyas** = À lui/elle / Le sien
+
+Exemple : "Un amigo mío" = Un ami à moi
+
+**Attention :** Pour clarifier "su/sus" qui peut signifier "son/sa/ses" OU "leur/leurs", on peut utiliser : de él (à lui), de ella (à elle), de ellos (à eux), de ustedes (à vous).
+
+### Décrire sa Famille
+
+**Structure de base :**
+- "Mi familia es..." = Ma famille est...
+- "En mi familia hay..." = Dans ma famille il y a...
+- "Tengo..." = J'ai...
+- "Somos ... personas" = Nous sommes ... personnes
+
+**Adjectifs utiles :**
+- Grande = Grande
+- Pequeña = Petite
+- Unida = Unie
+- Numerosa = Nombreuse
+- Cariñosa = Affectueuse
+
+**Pour indiquer des quantités :**
+- No tengo hermanos = Je n'ai pas de frères/sœurs (je suis enfant unique)
+- Tengo un hermano = J'ai un frère
+- Tengo dos hermanas = J'ai deux sœurs
+- Somos cinco en casa = Nous sommes cinq à la maison
+
+**Vidéo recommandée :** Cherche "la familia en español para niños" ou "los miembros de la familia en español" sur YouTube pour voir des exemples visuels et entendre la prononciation correcte !
+    `,
     exemplesExercices: `## Ejercicios
 
-### Ejercicio 1: Diálogos (Trabajo en grupos)
-Unos alumnos invitan a otros a una fiesta:
-- Algunos aceptan la invitación
-- Otros rechazan la invitación
-- Reaccionen apropiadamente
+### Ejercicio 1: Traducir
+- Mi familia es grande y cariñosa = Ma famille est grande et affectueuse
+- Tengo dos hermanos mayores = J'ai deux grands frères
+- Mis abuelos viven en el campo = Mes grands-parents vivent à la campagne
+- ¿Cuántas personas hay en tu familia? = Combien de personnes y a-t-il dans ta famille ?
+- En mi familia somos seis personas = Dans ma famille nous sommes six personnes
+- Mi hermana menor tiene 8 años = Ma petite sœur a 8 ans
 
-Ejemplo:
-- ¿Quieres venir a mi fiesta?
-  - Sí, con mucho gusto / Lo siento, no puedo
+### Ejercicio 2: Completar con posesivos
+1. _____ padre trabaja en Puerto Príncipe (Mon)
+2. _____ hermanos estudian en la universidad (Tes)
+3. _____ abuela cocina muy bien (Sa)
+4. _____ familia es muy unida (Notre)
 
-### Ejercicio 2: Situaciones
-Crea invitaciones para:
-1. Una fiesta de cumpleaños
-2. Un partido de fútbol
-3. Estudiar juntos`,
+### Ejercicio 3: Descripción
+Describe tu familia en español (mínimo 5 frases).`,
+    references: ["MENFP - Programme 7e AF"]
+  },
+
+  "los-alimentos": {
+    title: "Los Alimentos",
+    mois: "Février",
+    objectif: "Hablar de los alimentos y expresar el hambre y la sed",
+    introduction: "Découvrons le vocabulaire des aliments et comment exprimer nos besoins en espagnol.",
+    contenu: `
+### Les Aliments de Base (Los Alimentos Básicos)
+
+**Les fruits (Las frutas) :**
+
+Les fruits tropicaux sont très populaires dans les pays hispanophones et en Haïti :
+
+- **La manzana** = La pomme
+- **El plátano** = La banane
+- **La naranja** = L'orange
+- **La piña** = L'ananas
+- **El mango** = La mangue
+- **La papaya** = La papaye
+- **La sandía** = La pastèque
+- **El aguacate** = L'avocat
+- **El limón** = Le citron
+- **Las uvas** = Les raisins
+
+**Les légumes (Las verduras / Los vegetales) :**
+
+- **La zanahoria** = La carotte
+- **El tomate** = La tomate
+- **La lechuga** = La laitue
+- **La papa / La patata** = La pomme de terre (en Amérique latine on dit "papa")
+- **El maíz** = Le maïs
+- **La cebolla** = L'oignon
+- **El pimiento** = Le poivron
+- **El ajo** = L'ail
+- **La yuca** = Le manioc (très important dans la cuisine caribéenne !)
+
+**Les protéines et féculents :**
+
+- **El pollo** = Le poulet
+- **El pescado** = Le poisson
+- **La carne** = La viande
+- **El arroz** = Le riz
+- **Los frijoles** = Les haricots
+- **Las lentejas** = Les lentilles
+- **El huevo** = L'œuf
+- **El queso** = Le fromage
+
+**Les boissons (Las bebidas) :**
+
+- **El agua** = L'eau
+- **La leche** = Le lait
+- **El jugo / El zumo** = Le jus
+- **El refresco** = Le soda
+- **El café** = Le café
+- **El té** = Le thé
+
+### Exprimer la Faim et la Soif (Expresar el Hambre y la Sed)
+
+**Expressions avec TENER (avoir) :**
+
+En espagnol, contrairement au français, on utilise le verbe TENER (avoir) pour exprimer la faim et la soif :
+
+- **Tengo hambre** = J'ai faim (littéralement : "J'ai faim")
+- **Tengo sed** = J'ai soif (littéralement : "J'ai soif")
+- **Tengo mucha hambre** = J'ai très faim
+- **Tengo un poco de hambre** = J'ai un peu faim
+- **No tengo hambre** = Je n'ai pas faim
+
+**Les trois repas (Las tres comidas) :**
+
+- **El desayuno** = Le petit-déjeuner
+- **El almuerzo** = Le déjeuner (repas de midi)
+- **La cena** = Le dîner (repas du soir)
+- **La merienda** = Le goûter
+
+**Verbes utiles pour parler de nourriture :**
+
+- **Comer** = Manger (Yo como = Je mange)
+- **Beber** = Boire (Yo bebo = Je bois)
+- **Desayunar** = Prendre le petit-déjeuner
+- **Almorzar** = Déjeuner
+- **Cenar** = Dîner
+- **Cocinar** = Cuisiner
+
+### Exprimer ses Préférences
+
+**Pour dire ce qu'on aime manger :**
+- Me gusta + singulier : "Me gusta el arroz" = J'aime le riz
+- Me gustan + pluriel : "Me gustan las frutas" = J'aime les fruits
+- Me encanta = J'adore
+- No me gusta = Je n'aime pas
+
+**Adjectifs pour décrire la nourriture :**
+- **Delicioso/a** = Délicieux
+- **Rico/a** = Bon/Délicieux
+- **Sabroso/a** = Savoureux
+- **Fresco/a** = Frais
+- **Dulce** = Sucré
+- **Salado/a** = Salé
+- **Picante** = Épicé
+
+**Au restaurant :**
+- "Quisiera..." = Je voudrais...
+- "¿Qué me recomienda?" = Que me recommandez-vous ?
+- "La cuenta, por favor" = L'addition, s'il vous plaît
+
+**Vidéo recommandée :** Cherche "los alimentos en español" ou "comida en español para niños" sur YouTube pour apprendre avec des images et la prononciation !
+    `,
+    exemplesExercices: `## Ejercicios
+
+### Ejercicio 1: Traducir
+- Tengo mucha hambre, quiero comer arroz con frijoles = J'ai très faim, je veux manger du riz avec des haricots
+- Me encanta el pollo con plátano frito = J'adore le poulet avec de la banane frite
+- ¿Qué quieres para el desayuno? = Que veux-tu pour le petit-déjeuner ?
+- Necesito beber agua, tengo sed = J'ai besoin de boire de l'eau, j'ai soif
+- En el almuerzo como pescado con verduras = Au déjeuner je mange du poisson avec des légumes
+
+### Ejercicio 2: Completar
+1. Tengo _____ (faim)
+2. Me _____ las frutas (j'aime - pluriel)
+3. El _____ es a las 7 de la mañana (petit-déjeuner)
+4. Quiero _____ agua (boire)
+
+### Ejercicio 3: Tu menú
+Escribe tu menú favorito para un día completo (desayuno, almuerzo, cena).`,
+    references: ["MENFP - Programme 7e AF"]
+  },
+
+  "las-actividades-cotidianas": {
+    title: "Las Actividades Cotidianas",
+    mois: "Février",
+    objectif: "Hablar de las actividades diarias y conjugar verbos regulares",
+    introduction: "Apprenons à parler de nos activités quotidiennes avec les verbes au présent.",
+    contenu: `
+### Les Verbes d'Activités Quotidiennes (Los Verbos de Actividades Diarias)
+
+**Le matin (Por la mañana) :**
+
+- **Despertarse** = Se réveiller (verbe réflexif)
+- **Levantarse** = Se lever (verbe réflexif)
+- **Ducharse** = Se doucher (verbe réflexif)
+- **Vestirse** = S'habiller (verbe réflexif)
+- **Desayunar** = Prendre le petit-déjeuner
+- **Cepillarse los dientes** = Se brosser les dents
+- **Peinarse** = Se coiffer
+
+**Pendant la journée (Durante el día) :**
+
+- **Estudiar** = Étudier
+- **Trabajar** = Travailler
+- **Almorzar** = Déjeuner
+- **Caminar** = Marcher
+- **Jugar** = Jouer
+- **Hablar** = Parler
+- **Escuchar** = Écouter
+
+**Le soir (Por la noche) :**
+
+- **Cenar** = Dîner
+- **Hacer la tarea** = Faire les devoirs
+- **Ver televisión** = Regarder la télévision
+- **Leer** = Lire
+- **Acostarse** = Se coucher
+- **Dormir** = Dormir
+
+### La Conjugaison au Présent (El Presente de Indicativo)
+
+**Les trois groupes de verbes réguliers :**
+
+En espagnol, les verbes réguliers se divisent en trois groupes selon leur terminaison à l'infinitif : -AR, -ER, -IR.
+
+**1. Verbes en -AR (exemple: HABLAR - parler) :**
+
+- **Yo hablo** = Je parle
+- **Tú hablas** = Tu parles
+- **Él/Ella/Usted habla** = Il/Elle parle / Vous parlez (formel)
+- **Nosotros/as hablamos** = Nous parlons
+- **Vosotros/as habláis** = Vous parlez (en Espagne)
+- **Ellos/Ellas/Ustedes hablan** = Ils/Elles parlent / Vous parlez (pluriel)
+
+**Note :** En Amérique latine, on n'utilise pas "vosotros" et on utilise "ustedes" pour "vous" pluriel.
+
+**Autres verbes en -AR :**
+- Estudiar → Yo estudio (J'étudie)
+- Trabajar → Tú trabajas (Tu travailles)
+- Caminar → Él camina (Il marche)
+
+**2. Verbes en -ER (exemple: COMER - manger) :**
+
+- **Yo como** = Je mange
+- **Tú comes** = Tu manges
+- **Él/Ella come** = Il/Elle mange
+- **Nosotros comemos** = Nous mangeons
+- **Ellos comen** = Ils mangent
+
+**Autres verbes en -ER :**
+- Leer → Yo leo (Je lis)
+- Beber → Tú bebes (Tu bois)
+- Aprender → Ella aprende (Elle apprend)
+
+**3. Verbes en -IR (exemple: VIVIR - vivre) :**
+
+- **Yo vivo** = Je vis
+- **Tú vives** = Tu vis
+- **Él/Ella vive** = Il/Elle vit
+- **Nosotros vivimos** = Nous vivons
+- **Ellos viven** = Ils vivent
+
+**Autres verbes en -IR :**
+- Escribir → Yo escribo (J'écris)
+- Abrir → Tú abres (Tu ouvres)
+- Recibir → Él recibe (Il reçoit)
+
+**Astuce :** Les verbes en -ER et -IR ont des conjugaisons très similaires ! La seule différence est pour "nosotros" (-emos vs -imos) et "vosotros" (-éis vs -ís).
+
+### Les Verbes Réflexifs (Los Verbos Reflexivos)
+
+Les verbes réflexifs sont très importants pour décrire la routine quotidienne. Ils s'utilisent avec les pronoms réflexifs :
+
+**Pronoms réflexifs :**
+- Me (moi-même)
+- Te (toi-même)
+- Se (lui-même/elle-même)
+- Nos (nous-mêmes)
+- Se (eux-mêmes)
+
+**Exemple: LEVANTARSE (se lever) :**
+- Yo **me levanto** a las 6 = Je me lève à 6h
+- Tú **te levantas** temprano = Tu te lèves tôt
+- Él **se levanta** tarde = Il se lève tard
+- Nosotros **nos levantamos** juntos = Nous nous levons ensemble
+
+### Les Expressions de Temps (Las Expresiones de Tiempo)
+
+**Les moments de la journée :**
+- **Por la mañana** = Le matin
+- **Al mediodía** = À midi
+- **Por la tarde** = L'après-midi
+- **Por la noche** = Le soir/La nuit
+- **De madrugada** = À l'aube/Très tôt le matin
+
+**La fréquence :**
+- **Siempre** = Toujours
+- **Todos los días** = Tous les jours
+- **A menudo** = Souvent
+- **A veces** = Parfois
+- **Raramente** = Rarement
+- **Nunca** = Jamais
+
+**L'heure :**
+- A las seis = À six heures
+- A las siete y media = À sept heures et demie
+- A las ocho menos cuarto = À huit heures moins le quart
+
+**Décrire une routine complète :**
+
+Pour raconter ta journée, utilise des connecteurs :
+- **Primero** = D'abord
+- **Luego / Después** = Ensuite
+- **Más tarde** = Plus tard
+- **Finalmente / Por último** = Finalement
+
+**Vidéo recommandée :** Cherche "rutina diaria en español" ou "actividades cotidianas en español" sur YouTube pour voir des exemples de routines et améliorer ta compréhension orale !
+    `,
+    exemplesExercices: `## Ejercicios
+
+### Ejercicio 1: Traducir
+- Me levanto a las seis de la mañana todos los días = Je me lève à six heures du matin tous les jours
+- Desayuno con mi familia a las siete = Je prends le petit-déjeuner avec ma famille à sept heures
+- Estudio español por la tarde = J'étudie l'espagnol l'après-midi
+- Por la noche leo un libro antes de dormir = Le soir je lis un livre avant de dormir
+- Siempre me ducho antes de desayunar = Je me douche toujours avant de prendre le petit-déjeuner
+
+### Ejercicio 2: Conjugar
+Conjuga los siguientes verbos para YO, TÚ, ÉL:
+1. Estudiar
+2. Comer
+3. Vivir
+4. Levantarse
+
+### Ejercicio 3: Mi rutina
+Describe tu rutina diaria en español (mínimo 8 frases).`,
     references: ["MENFP - Programme 7e AF"]
   },
 
