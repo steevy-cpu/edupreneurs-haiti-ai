@@ -10081,54 +10081,287 @@ export const sciencesSocialesLessons7AF: SciencesSocialesLesson[] = [
     id: "regions-climatiques-globe",
     title: "Les régions climatiques du globe",
     mois: "Septembre",
-    objectif: "Identifier et comprendre les grandes zones climatiques de la planète.",
+    objectif: "Identifier et comprendre les principales zones climatiques de la Terre, leurs caractéristiques et leur impact sur la vie.",
     introduction: `
+      <p class="text-foreground leading-relaxed mb-4">
+        Notre planète présente une grande diversité de climats, de l'équateur glacial des pôles aux chaleurs tropicales de l'équateur. Ces zones climatiques déterminent la végétation, la faune et même les modes de vie des populations.
+      </p>
       <p class="text-foreground leading-relaxed">
-        La Terre est divisée en plusieurs zones climatiques selon la température, les précipitations et les saisons. Ces zones déterminent la végétation, la faune et les modes de vie humains.
+        Découvrons ensemble cette fascinante géographie climatique mondiale qui façonne notre environnement et influence nos sociétés. Haïti, situé dans la zone tropicale, en est un exemple parfait !
       </p>
     `,
     contenu: `
-      <section class="space-y-6">
-        <div>
-          <h3 class="text-xl font-semibold mb-3 text-foreground">1. Zone tropicale</h3>
-          <p class="text-foreground mb-3">Entre les tropiques (23,5°N et 23,5°S) - Haïti en fait partie !</p>
-          <ul class="list-disc ml-6 space-y-2 text-foreground">
-            <li>Températures élevées toute l'année (>20°C)</li>
-            <li>Forêts tropicales humides</li>
-            <li>Savanes tropicales</li>
-          </ul>
+      <section class="space-y-8">
+        <div class="bg-gradient-to-r from-blue-50 to-cyan-50 dark:from-blue-950/30 dark:to-cyan-950/30 p-6 rounded-lg">
+          <h3 class="text-2xl font-bold mb-4 text-primary">🌍 Introduction : La diversité climatique mondiale</h3>
+          <p class="text-foreground mb-4">
+            Le climat de la Terre varie considérablement selon plusieurs facteurs : la latitude, l'altitude, la proximité des océans, les courants marins et les vents dominants. Les scientifiques divisent généralement la Terre en cinq grandes zones climatiques principales.
+          </p>
         </div>
 
         <div>
-          <h3 class="text-xl font-semibold mb-3 text-foreground">2. Zone tempérée</h3>
-          <p class="text-foreground">Entre les tropiques et les cercles polaires</p>
-          <ul class="list-disc ml-6 space-y-2 text-foreground">
-            <li>Quatre saisons bien marquées</li>
-            <li>Températures modérées</li>
-            <li>Forêts de feuillus et de conifères</li>
-          </ul>
+          <h3 class="text-2xl font-bold mb-4 text-primary">I. La zone équatoriale 🌴</h3>
+          
+          <div class="bg-green-50 dark:bg-green-950/30 p-6 rounded-lg mb-4">
+            <h4 class="text-xl font-semibold mb-3 text-foreground">Caractéristiques climatiques</h4>
+            <p class="text-foreground mb-3">S'étend entre 5°N et 5°S de latitude :</p>
+            <ul class="list-disc ml-6 space-y-2 text-foreground">
+              <li><strong>Températures :</strong> 25-30°C toute l'année, constantes</li>
+              <li><strong>Précipitations :</strong> Plus de 2000 mm/an, réparties toute l'année</li>
+              <li><strong>Humidité :</strong> Très élevée en permanence</li>
+              <li><strong>Saisons :</strong> Aucune variation saisonnière marquée</li>
+            </ul>
+          </div>
+
+          <div class="bg-emerald-50 dark:bg-emerald-950/30 p-6 rounded-lg mb-4">
+            <h4 class="text-xl font-semibold mb-3 text-foreground">Végétation et biodiversité</h4>
+            <p class="text-foreground mb-3">
+              <strong>Forêt équatoriale dense</strong> (forêt tropicale humide) - l'écosystème le plus riche de la planète !
+            </p>
+            <ul class="list-disc ml-6 space-y-2 text-foreground">
+              <li>Abrite plus de 50% des espèces animales et végétales</li>
+              <li>Végétation luxuriante sur plusieurs étages</li>
+              <li>Biodiversité exceptionnelle</li>
+            </ul>
+          </div>
+
+          <div class="bg-teal-50 dark:bg-teal-950/30 p-4 rounded-lg">
+            <p class="text-foreground"><strong>📍 Régions concernées :</strong></p>
+            <ul class="list-disc ml-6 mt-2 text-foreground">
+              <li>Bassin amazonien (Amérique du Sud)</li>
+              <li>Bassin du Congo (Afrique centrale)</li>
+              <li>Indonésie et Malaisie (Asie du Sud-Est)</li>
+            </ul>
+          </div>
         </div>
 
         <div>
-          <h3 class="text-xl font-semibold mb-3 text-foreground">3. Zone polaire</h3>
-          <p class="text-foreground">Au-delà des cercles polaires</p>
+          <h3 class="text-2xl font-bold mb-4 text-primary">II. Les zones tropicales ☀️</h3>
+          
+          <div class="bg-amber-50 dark:bg-amber-950/30 p-6 rounded-lg mb-4">
+            <h4 class="text-xl font-semibold mb-3 text-foreground">Caractéristiques (entre tropiques et équateur)</h4>
+            <ul class="list-disc ml-6 space-y-2 text-foreground">
+              <li><strong>Températures :</strong> 20-30°C en moyenne</li>
+              <li><strong>Alternance :</strong> Saison des pluies (été) et saison sèche (hiver)</li>
+              <li><strong>Précipitations :</strong> Variables (500-2000 mm/an)</li>
+            </ul>
+          </div>
+
+          <div class="grid md:grid-cols-2 gap-4 mb-4">
+            <div class="bg-yellow-50 dark:bg-yellow-950/30 p-4 rounded-lg">
+              <p class="font-bold mb-2 text-foreground">🌳 Climat tropical humide</p>
+              <p class="text-sm text-foreground">Saison des pluies longue, savane boisée</p>
+            </div>
+            <div class="bg-orange-50 dark:bg-orange-950/30 p-4 rounded-lg">
+              <p class="font-bold mb-2 text-foreground">🌾 Climat tropical sec</p>
+              <p class="text-sm text-foreground">Saison sèche prolongée, savane herbeuse</p>
+            </div>
+          </div>
+
+          <div class="bg-red-50 dark:bg-red-950/30 p-4 rounded-lg">
+            <p class="text-foreground mb-2"><strong>📍 Régions concernées (dont Haïti !) :</strong></p>
+            <ul class="list-disc ml-6 text-foreground">
+              <li>Caraïbes (Haïti, Cuba, Jamaïque...)</li>
+              <li>Afrique subsaharienne</li>
+              <li>Inde et Asie du Sud-Est</li>
+              <li>Nord de l'Australie</li>
+            </ul>
+            <p class="text-foreground mt-3"><strong>Agriculture :</strong> Riz, canne à sucre, café, cacao</p>
+          </div>
+        </div>
+
+        <div>
+          <h3 class="text-2xl font-bold mb-4 text-primary">III. Les zones tempérées 🍂</h3>
+          
+          <div class="bg-blue-50 dark:bg-blue-950/30 p-6 rounded-lg mb-4">
+            <h4 class="text-xl font-semibold mb-3 text-foreground">Le royaume des quatre saisons</h4>
+            <p class="text-foreground mb-3">Situées entre 30° et 60° de latitude :</p>
+            <ul class="list-disc ml-6 space-y-2 text-foreground">
+              <li><strong>Quatre saisons distinctes :</strong> Printemps, été, automne, hiver</li>
+              <li><strong>Températures :</strong> -5°C à 25°C selon les saisons</li>
+              <li><strong>Précipitations :</strong> Réparties toute l'année</li>
+            </ul>
+          </div>
+
+          <div class="space-y-3 mb-4">
+            <div class="bg-cyan-50 dark:bg-cyan-950/30 p-4 rounded">
+              <p class="font-bold text-foreground">🌊 Climat océanique</p>
+              <p class="text-sm text-foreground">Températures douces, pluies régulières (Europe de l'Ouest)</p>
+            </div>
+            <div class="bg-indigo-50 dark:bg-indigo-950/30 p-4 rounded">
+              <p class="font-bold text-foreground">❄️ Climat continental</p>
+              <p class="text-sm text-foreground">Étés chauds, hivers froids (Europe Est, USA centre)</p>
+            </div>
+            <div class="bg-violet-50 dark:bg-violet-950/30 p-4 rounded">
+              <p class="font-bold text-foreground">🌞 Climat méditerranéen</p>
+              <p class="text-sm text-foreground">Étés chauds et secs, hivers doux (Méditerranée, Californie)</p>
+            </div>
+          </div>
+
+          <div class="bg-purple-50 dark:bg-purple-950/30 p-4 rounded-lg">
+            <p class="text-foreground"><strong>Végétation :</strong> Forêts de feuillus et conifères, prairies</p>
+            <p class="text-foreground mt-2"><strong>Zones très peuplées</strong> avec agriculture diversifiée : céréales, fruits, légumes, élevage</p>
+          </div>
+        </div>
+
+        <div>
+          <h3 class="text-2xl font-bold mb-4 text-primary">IV. Les zones polaires 🧊</h3>
+          
+          <div class="bg-slate-50 dark:bg-slate-950/30 p-6 rounded-lg mb-4">
+            <h4 class="text-xl font-semibold mb-3 text-foreground">Les déserts froids</h4>
+            <p class="text-foreground mb-3">Au-delà des cercles polaires (66°33' de latitude) :</p>
+            <ul class="list-disc ml-6 space-y-2 text-foreground">
+              <li><strong>Températures :</strong> Moyennes négatives, jusqu'à -50°C</li>
+              <li><strong>Précipitations :</strong> Très faibles (moins de 250 mm/an)</li>
+              <li><strong>Jours/nuits polaires :</strong> 6 mois de jour, 6 mois de nuit aux pôles</li>
+              <li><strong>Sol gelé :</strong> Pergélisol (permafrost) permanent</li>
+            </ul>
+          </div>
+
+          <div class="grid md:grid-cols-2 gap-4 mb-4">
+            <div class="bg-gray-50 dark:bg-gray-900/30 p-4 rounded-lg">
+              <p class="font-bold mb-2 text-foreground">🐻 Arctique (Pôle Nord)</p>
+              <p class="text-sm text-foreground">Océan Arctique, Canada, Groenland, Sibérie. Ours polaires, phoques, rennes</p>
+            </div>
+            <div class="bg-zinc-50 dark:bg-zinc-900/30 p-4 rounded-lg">
+              <p class="font-bold mb-2 text-foreground">🐧 Antarctique (Pôle Sud)</p>
+              <p class="text-sm text-foreground">Continent antarctique. Pingouins, phoques</p>
+            </div>
+          </div>
+
+          <div class="bg-blue-50 dark:bg-blue-950/30 p-4 rounded-lg">
+            <p class="text-foreground"><strong>Végétation :</strong> Quasi absente. En périphérie : toundra (mousses, lichens, arbustes nains)</p>
+          </div>
+        </div>
+
+        <div>
+          <h3 class="text-2xl font-bold mb-4 text-primary">V. Les zones de montagne ⛰️</h3>
+          
+          <div class="bg-stone-50 dark:bg-stone-950/30 p-6 rounded-lg">
+            <h4 class="text-xl font-semibold mb-3 text-foreground">L'étagement climatique</h4>
+            <p class="text-foreground mb-3">Le climat varie avec l'altitude sur une même montagne :</p>
+            <ul class="list-disc ml-6 space-y-2 text-foreground">
+              <li><strong>Étage de base :</strong> Climat de la région environnante</li>
+              <li><strong>Étage montagnard :</strong> Plus frais, forêts</li>
+              <li><strong>Étage alpin :</strong> Froid, prairies d'altitude</li>
+              <li><strong>Étage nival :</strong> Neiges éternelles, glaciers</li>
+            </ul>
+            <p class="text-foreground mt-4 font-semibold">
+              ⚠️ Règle : La température diminue d'environ 0,6°C tous les 100 mètres !
+            </p>
+            <p class="text-foreground mt-2 text-sm italic">
+              Exemple : Le Kilimandjaro en Tanzanie (équateur) a des glaciers à son sommet à 5895 m d'altitude.
+            </p>
+          </div>
+        </div>
+
+        <div>
+          <h3 class="text-2xl font-bold mb-4 text-primary">VI. Facteurs influençant les climats 🌡️</h3>
+          
+          <div class="space-y-3">
+            <div class="bg-gradient-to-r from-yellow-50 to-red-50 dark:from-yellow-950/30 dark:to-red-950/30 p-4 rounded-lg">
+              <p class="font-bold text-foreground">☀️ Latitude</p>
+              <p class="text-sm text-foreground">Plus on s'éloigne de l'équateur, plus il fait froid et plus les saisons sont marquées</p>
+            </div>
+            
+            <div class="bg-gradient-to-r from-blue-50 to-cyan-50 dark:from-blue-950/30 dark:to-cyan-950/30 p-4 rounded-lg">
+              <p class="font-bold text-foreground">🌊 Courants marins</p>
+              <p class="text-sm text-foreground">Transportent chaleur ou froideur (ex: Gulf Stream réchauffe l'Europe)</p>
+            </div>
+            
+            <div class="bg-gradient-to-r from-teal-50 to-emerald-50 dark:from-teal-950/30 dark:to-emerald-950/30 p-4 rounded-lg">
+              <p class="font-bold text-foreground">🏖️ Proximité des océans</p>
+              <p class="text-sm text-foreground">Modère les températures, climats côtiers plus doux</p>
+            </div>
+            
+            <div class="bg-gradient-to-r from-stone-50 to-gray-50 dark:from-stone-950/30 dark:to-gray-950/30 p-4 rounded-lg">
+              <p class="font-bold text-foreground">⛰️ Altitude</p>
+              <p class="text-sm text-foreground">Plus on monte, plus il fait froid (-0,6°C/100m)</p>
+            </div>
+            
+            <div class="bg-gradient-to-r from-sky-50 to-blue-50 dark:from-sky-950/30 dark:to-blue-950/30 p-4 rounded-lg">
+              <p class="font-bold text-foreground">💨 Vents dominants</p>
+              <p class="text-sm text-foreground">Transportent humidité ou sécheresse (ex: alizés en zone tropicale)</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="bg-red-50 dark:bg-red-950/30 p-6 rounded-lg border-l-4 border-red-500">
+          <h3 class="text-2xl font-bold mb-4 text-primary">⚠️ Changement climatique</h3>
+          <p class="text-foreground mb-3">Le réchauffement climatique modifie les zones climatiques :</p>
           <ul class="list-disc ml-6 space-y-2 text-foreground">
-            <li>Températures très froides</li>
-            <li>Toundra et glaces permanentes</li>
-            <li>Nuit ou jour polaire (6 mois)</li>
+            <li>Fonte accélérée des glaces polaires</li>
+            <li>Extension des zones arides (désertification)</li>
+            <li>Déplacement des zones tempérées vers les pôles</li>
+            <li>Événements climatiques extrêmes plus fréquents</li>
           </ul>
+          <p class="text-foreground mt-4 font-semibold">
+            Ces changements affectent l'agriculture, l'eau, la biodiversité et forcent des migrations humaines.
+          </p>
         </div>
       </section>
     `,
     exemplesExercices: `
-      <section class="space-y-4">
-        <div class="bg-primary/5 border-l-4 border-primary p-4 rounded">
-          <h4 class="font-semibold mb-2 text-foreground">💡 Exercice</h4>
-          <p class="text-foreground">
-            Sur un planisphère, colorie les trois grandes zones climatiques. Place Haïti et identifie sa zone.
-          </p>
+      <div class="space-y-6">
+        <h3 class="text-2xl font-bold mb-4 text-primary">📝 Exercices pratiques</h3>
+
+        <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md">
+          <p class="font-bold text-xl mb-4">1. Carte des zones climatiques</p>
+          <p class="mb-3">Sur une carte du monde vierge :</p>
+          <ul class="list-disc ml-6 space-y-2">
+            <li>Colorier les cinq grandes zones climatiques avec un code couleur</li>
+            <li>Ajouter trois pays représentatifs pour chaque zone</li>
+            <li>Placer Haïti et identifier sa zone</li>
+            <li>Ajouter une légende claire</li>
+          </ul>
         </div>
-      </section>
+
+        <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md">
+          <p class="font-bold text-xl mb-4">2. Tableau comparatif</p>
+          <p class="mb-3">Compléter un tableau avec les critères suivants :</p>
+          <table class="w-full border text-sm">
+            <thead>
+              <tr class="bg-primary/10">
+                <th class="border p-2">Zone</th>
+                <th class="border p-2">Température</th>
+                <th class="border p-2">Précipitations</th>
+                <th class="border p-2">Végétation</th>
+                <th class="border p-2">Pays exemple</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr><td class="border p-2">Équatoriale</td><td class="border p-2">...</td><td class="border p-2">...</td><td class="border p-2">...</td><td class="border p-2">...</td></tr>
+              <tr><td class="border p-2">Tropicale</td><td class="border p-2">...</td><td class="border p-2">...</td><td class="border p-2">...</td><td class="border p-2">...</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md">
+          <p class="font-bold text-xl mb-4">3. Analyse de cas : Haïti vs France</p>
+          <p class="mb-3"><strong>Situation :</strong> Marie habite à Paris (climat tempéré), son cousin Jean vit à Port-au-Prince (climat tropical).</p>
+          <p class="mb-3"><strong>Question :</strong> Expliquer pourquoi leur quotidien est différent :</p>
+          <ul class="list-disc ml-6 space-y-2">
+            <li>Vêtements portés en janvier</li>
+            <li>Type d'agriculture possible</li>
+            <li>Rythme de vie selon les saisons</li>
+          </ul>
+        </div>
+
+        <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md">
+          <p class="font-bold text-xl mb-4">4. Questions de réflexion</p>
+          <ol class="list-decimal ml-6 space-y-3">
+            <li>Quels sont les avantages et défis du climat tropical pour Haïti ?</li>
+            <li>Pourquoi les zones tempérées sont-elles les plus peuplées ?</li>
+            <li>Comment le changement climatique affecte-t-il les zones polaires ?</li>
+            <li>Si tu pouvais vivre dans une autre zone climatique, laquelle choisirais-tu et pourquoi ?</li>
+          </ol>
+        </div>
+
+        <div class="bg-primary/5 border-l-4 border-primary p-4 rounded">
+          <p class="font-bold mb-2">🎨 Projet créatif (optionnel)</p>
+          <p>Créer une affiche sur une zone climatique : caractéristiques, végétation, animaux, populations, défis environnementaux.</p>
+        </div>
+      </div>
     `
   },
 
@@ -10137,50 +10370,351 @@ export const sciencesSocialesLessons7AF: SciencesSocialesLesson[] = [
     id: "modes-figuration-relief",
     title: "Modes de figuration du relief",
     mois: "Septembre",
-    objectif: "Apprendre à lire et comprendre les différentes représentations du relief sur les cartes.",
+    objectif: "Maîtriser les différentes techniques de représentation du relief sur les cartes et apprendre à lire et interpréter les informations topographiques.",
     introduction: `
+      <p class="text-foreground leading-relaxed mb-4">
+        Comment représenter les montagnes, vallées et plateaux sur une feuille de papier plate ? C'est le défi que relèvent les cartographes depuis des siècles !
+      </p>
       <p class="text-foreground leading-relaxed">
-        Représenter le relief (montagnes, vallées) sur une carte plane est un défi. Les cartographes utilisent plusieurs méthodes : courbes de niveau, couleurs hypsométriques, et représentations 3D.
+        La représentation du relief est essentielle pour comprendre la géographie d'un territoire, planifier des infrastructures ou simplement pour randonner en montagne. Découvrons les techniques ingénieuses qui permettent de "voir" le relief sur une carte. 🗺️
       </p>
     `,
     contenu: `
-      <section class="space-y-6">
-        <div>
-          <h3 class="text-xl font-semibold mb-3 text-foreground">1. Les courbes de niveau</h3>
-          <p class="text-foreground">Lignes qui relient tous les points situés à la même altitude.</p>
-          <ul class="list-disc ml-6 space-y-2 text-foreground">
-            <li>Lignes rapprochées = pente raide</li>
-            <li>Lignes espacées = pente douce</li>
-            <li>Cercles fermés = sommet ou dépression</li>
-          </ul>
+      <section class="space-y-8">
+        <div class="bg-gradient-to-r from-amber-50 to-orange-50 dark:from-amber-950/30 dark:to-orange-950/30 p-6 rounded-lg">
+          <h3 class="text-2xl font-bold mb-4 text-primary">📐 Le défi de la troisième dimension</h3>
+          <p class="text-foreground mb-4">
+            La Terre est en trois dimensions (longueur, largeur, hauteur), mais une carte est plate (2D). Comment montrer les montagnes et vallées ?
+          </p>
+          <p class="text-foreground"><strong>Solution :</strong> Les cartographes ont développé plusieurs méthodes complémentaires !</p>
         </div>
 
         <div>
-          <h3 class="text-xl font-semibold mb-3 text-foreground">2. Couleurs hypsométriques</h3>
-          <p class="text-foreground">Dégradé de couleurs selon l'altitude :</p>
-          <ul class="list-disc ml-6 space-y-2 text-foreground">
-            <li><strong>Vert :</strong> Plaines (0-200m)</li>
-            <li><strong>Jaune :</strong> Collines (200-500m)</li>
-            <li><strong>Brun :</strong> Montagnes (500-2000m)</li>
-            <li><strong>Marron foncé :</strong> Hautes montagnes (>2000m)</li>
-          </ul>
+          <h3 class="text-2xl font-bold mb-4 text-primary">I. Les courbes de niveau 📏</h3>
+          
+          <div class="bg-blue-50 dark:bg-blue-950/30 p-6 rounded-lg mb-4">
+            <h4 class="text-xl font-semibold mb-3 text-foreground">Définition et principe</h4>
+            <p class="text-foreground mb-3">
+              Les <strong>courbes de niveau</strong> (ou isohypses) sont des lignes qui relient tous les points situés à la même altitude. C'est la méthode la plus précise !
+            </p>
+            <div class="bg-white dark:bg-gray-800 p-4 rounded mt-3">
+              <p class="text-foreground text-sm italic">
+                💡 Imagine qu'on découpe une montagne en tranches horizontales régulières (tous les 10, 20 ou 50 mètres). Vue du dessus, le contour de chaque tranche forme une courbe de niveau.
+              </p>
+            </div>
+          </div>
+
+          <div class="grid md:grid-cols-2 gap-4 mb-4">
+            <div class="bg-cyan-50 dark:bg-cyan-950/30 p-4 rounded-lg">
+              <p class="font-bold mb-2 text-foreground">📌 Caractéristiques</p>
+              <ul class="list-disc ml-4 text-sm text-foreground space-y-1">
+                <li>Équidistance constante (ex: tous les 20m)</li>
+                <li>Ne se croisent jamais</li>
+                <li>Forment des lignes fermées</li>
+                <li>Courbes maîtresses plus épaisses (tous les 100m)</li>
+              </ul>
+            </div>
+            <div class="bg-teal-50 dark:bg-teal-950/30 p-4 rounded-lg">
+              <p class="font-bold mb-2 text-foreground">🔍 Interprétation</p>
+              <ul class="list-disc ml-4 text-sm text-foreground space-y-1">
+                <li><strong>Courbes rapprochées</strong> = pente forte ⛰️</li>
+                <li><strong>Courbes écartées</strong> = pente douce 🏞️</li>
+                <li><strong>Courbes absentes</strong> = plaine 🌾</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="bg-indigo-50 dark:bg-indigo-950/30 p-6 rounded-lg">
+            <h4 class="text-xl font-semibold mb-3 text-foreground">Formes du relief</h4>
+            <div class="space-y-3">
+              <div class="flex items-start gap-3">
+                <span class="text-2xl">🏔️</span>
+                <div>
+                  <p class="font-semibold text-foreground">Sommet/Montagne</p>
+                  <p class="text-sm text-foreground">Courbes concentriques, altitude croissante vers le centre</p>
+                </div>
+              </div>
+              <div class="flex items-start gap-3">
+                <span class="text-2xl">🏞️</span>
+                <div>
+                  <p class="font-semibold text-foreground">Vallée</p>
+                  <p class="text-sm text-foreground">Courbes en "V" pointant vers le haut</p>
+                </div>
+              </div>
+              <div class="flex items-start gap-3">
+                <span class="text-2xl">⛰️</span>
+                <div>
+                  <p class="font-semibold text-foreground">Crête</p>
+                  <p class="text-sm text-foreground">Courbes en "V" pointant vers le bas</p>
+                </div>
+              </div>
+              <div class="flex items-start gap-3">
+                <span class="text-2xl">🕳️</span>
+                <div>
+                  <p class="font-semibold text-foreground">Dépression</p>
+                  <p class="text-sm text-foreground">Courbes concentriques, altitude décroissante vers le centre</p>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
 
         <div>
-          <h3 class="text-xl font-semibold mb-3 text-foreground">3. Profils topographiques</h3>
-          <p class="text-foreground">Coupe verticale du terrain montrant les variations d'altitude le long d'une ligne.</p>
+          <h3 class="text-2xl font-bold mb-4 text-primary">II. Les teintes hypsométriques 🎨</h3>
+          
+          <div class="bg-gradient-to-r from-green-100 via-yellow-100 via-orange-100 to-red-100 dark:from-green-950/30 dark:via-yellow-950/30 dark:via-orange-950/30 dark:to-red-950/30 p-6 rounded-lg mb-4">
+            <h4 class="text-xl font-semibold mb-3 text-foreground">La visualisation par couleurs</h4>
+            <p class="text-foreground mb-3">
+              Attribuer une couleur à chaque tranche d'altitude. Vision immédiate du relief !
+            </p>
+          </div>
+
+          <div class="bg-white dark:bg-gray-800 p-6 rounded-lg mb-4">
+            <h4 class="text-xl font-semibold mb-4 text-foreground">Code des couleurs conventionnelles</h4>
+            <div class="space-y-2">
+              <div class="flex items-center gap-3 p-2 rounded" style="background-color: #2d5016">
+                <div class="w-12 h-8 rounded" style="background-color: #2d5016"></div>
+                <p class="text-white text-sm"><strong>Vert foncé :</strong> Plaines basses (0-200 m)</p>
+              </div>
+              <div class="flex items-center gap-3 p-2 rounded" style="background-color: #7cb342">
+                <div class="w-12 h-8 rounded" style="background-color: #7cb342"></div>
+                <p class="text-white text-sm"><strong>Vert clair :</strong> Collines (200-500 m)</p>
+              </div>
+              <div class="flex items-center gap-3 p-2 rounded" style="background-color: #fdd835">
+                <div class="w-12 h-8 rounded" style="background-color: #fdd835"></div>
+                <p class="text-gray-900 text-sm"><strong>Jaune :</strong> Plateaux (500-1000 m)</p>
+              </div>
+              <div class="flex items-center gap-3 p-2 rounded" style="background-color: #fb8c00">
+                <div class="w-12 h-8 rounded" style="background-color: #fb8c00"></div>
+                <p class="text-white text-sm"><strong>Orange :</strong> Montagnes moyennes (1000-2000 m)</p>
+              </div>
+              <div class="flex items-center gap-3 p-2 rounded" style="background-color: #8d6e63">
+                <div class="w-12 h-8 rounded" style="background-color: #8d6e63"></div>
+                <p class="text-white text-sm"><strong>Marron clair :</strong> Hautes montagnes (2000-3000 m)</p>
+              </div>
+              <div class="flex items-center gap-3 p-2 rounded" style="background-color: #5d4037">
+                <div class="w-12 h-8 rounded" style="background-color: #5d4037"></div>
+                <p class="text-white text-sm"><strong>Marron foncé :</strong> Très hautes montagnes (3000-4000 m)</p>
+              </div>
+              <div class="flex items-center gap-3 p-2 rounded bg-gray-100 dark:bg-gray-700">
+                <div class="w-12 h-8 rounded bg-white border"></div>
+                <p class="text-foreground text-sm"><strong>Blanc :</strong> Sommets et neiges éternelles (>4000 m)</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="grid md:grid-cols-2 gap-4">
+            <div class="bg-green-50 dark:bg-green-950/30 p-4 rounded-lg">
+              <p class="font-bold mb-2 text-foreground">✅ Avantages</p>
+              <ul class="list-disc ml-4 text-sm text-foreground space-y-1">
+                <li>Vision immédiate et intuitive</li>
+                <li>Esthétiquement agréable</li>
+                <li>Parfait pour vue d'ensemble</li>
+              </ul>
+            </div>
+            <div class="bg-amber-50 dark:bg-amber-950/30 p-4 rounded-lg">
+              <p class="font-bold mb-2 text-foreground">⚠️ Limites</p>
+              <ul class="list-disc ml-4 text-sm text-foreground space-y-1">
+                <li>Moins précis que courbes</li>
+                <li>Tranches parfois larges</li>
+                <li>Peut masquer détails</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <h3 class="text-2xl font-bold mb-4 text-primary">III. L'estompage (ombrage) 🌄</h3>
+          
+          <div class="bg-gradient-to-br from-gray-100 to-gray-300 dark:from-gray-800 dark:to-gray-900 p-6 rounded-lg mb-4">
+            <h4 class="text-xl font-semibold mb-3 text-foreground">Simulation de lumière et ombre</h4>
+            <p class="text-foreground mb-3">
+              Technique qui simule l'éclairage du terrain par le soleil (généralement depuis le nord-ouest). Donne une impression 3D !
+            </p>
+            <div class="bg-white dark:bg-gray-800 p-4 rounded mt-3">
+              <ul class="list-disc ml-6 text-sm text-foreground space-y-2">
+                <li><strong>Zones claires :</strong> Versants exposés à la lumière</li>
+                <li><strong>Zones sombres :</strong> Versants à l'ombre</li>
+                <li><strong>Contraste fort :</strong> Relief marqué (montagnes, falaises)</li>
+                <li><strong>Contraste faible :</strong> Relief doux (plaines, collines)</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="bg-blue-50 dark:bg-blue-950/30 p-4 rounded-lg">
+            <p class="text-foreground mb-2"><strong>💡 Aujourd'hui :</strong></p>
+            <p class="text-sm text-foreground">
+              Calculé automatiquement par ordinateur à partir de modèles numériques de terrain (MNT). Souvent superposé aux courbes de niveau et teintes pour enrichir la visualisation.
+            </p>
+          </div>
+        </div>
+
+        <div>
+          <h3 class="text-2xl font-bold mb-4 text-primary">IV. Autres méthodes 📊</h3>
+          
+          <div class="space-y-4">
+            <div class="bg-purple-50 dark:bg-purple-950/30 p-4 rounded-lg">
+              <p class="font-bold mb-2 text-foreground">📍 Points cotés</p>
+              <p class="text-sm text-foreground">
+                Points précis où l'altitude exacte est indiquée (sommets, cols, ponts). Ex: "Pic la Selle 2680 m"
+              </p>
+            </div>
+
+            <div class="bg-pink-50 dark:bg-pink-950/30 p-4 rounded-lg">
+              <p class="font-bold mb-2 text-foreground">📈 Profils topographiques</p>
+              <p class="text-sm text-foreground mb-2">
+                Vue en coupe du relief le long d'une ligne. Montre les variations d'altitude sur un trajet.
+              </p>
+              <div class="bg-white dark:bg-gray-800 p-3 rounded mt-2">
+                <p class="text-sm font-semibold text-foreground mb-2">Comment réaliser un profil ?</p>
+                <ol class="list-decimal ml-6 text-xs text-foreground space-y-1">
+                  <li>Tracer une ligne (AB) sur la carte</li>
+                  <li>Relever altitudes où la ligne croise les courbes</li>
+                  <li>Reporter sur un graphique (distance/altitude)</li>
+                  <li>Relier les points</li>
+                </ol>
+              </div>
+            </div>
+
+            <div class="bg-cyan-50 dark:bg-cyan-950/30 p-4 rounded-lg">
+              <p class="font-bold mb-2 text-foreground">🖥️ Modèles 3D numériques</p>
+              <p class="text-sm text-foreground">
+                Applications modernes (Google Earth, GPS) : visualisation 3D interactive, changement d'angle, exagération du relief !
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <h3 class="text-2xl font-bold mb-4 text-primary">V. Lire une carte topographique 🔍</h3>
+          
+          <div class="bg-gradient-to-r from-indigo-50 to-purple-50 dark:from-indigo-950/30 dark:to-purple-950/30 p-6 rounded-lg">
+            <h4 class="text-xl font-semibold mb-4 text-foreground">Méthode en 4 étapes</h4>
+            <div class="space-y-4">
+              <div class="bg-white dark:bg-gray-800 p-4 rounded">
+                <p class="font-bold mb-2 text-foreground">1️⃣ Identifier les éléments</p>
+                <p class="text-sm text-foreground">Titre, échelle (1/25 000 = 1cm = 250m), légende, orientation (Nord)</p>
+              </div>
+              <div class="bg-white dark:bg-gray-800 p-4 rounded">
+                <p class="font-bold mb-2 text-foreground">2️⃣ Vue d'ensemble</p>
+                <p class="text-sm text-foreground">Teintes hypsométriques pour repérer plaines et montagnes, estompage pour forme générale</p>
+              </div>
+              <div class="bg-white dark:bg-gray-800 p-4 rounded">
+                <p class="font-bold mb-2 text-foreground">3️⃣ Analyse détaillée</p>
+                <p class="text-sm text-foreground">Courbes de niveau : repérer sommets, vallées, crêtes, évaluer pentes</p>
+              </div>
+              <div class="bg-white dark:bg-gray-800 p-4 rounded">
+                <p class="font-bold mb-2 text-foreground">4️⃣ Localisation précise</p>
+                <p class="text-sm text-foreground">Points cotés pour altitudes exactes, interpolation entre courbes</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <h3 class="text-2xl font-bold mb-4 text-primary">VI. Applications pratiques 🎯</h3>
+          
+          <div class="grid md:grid-cols-2 gap-4">
+            <div class="bg-green-50 dark:bg-green-950/30 p-4 rounded-lg">
+              <p class="font-bold mb-2 text-foreground">🥾 Randonnée</p>
+              <p class="text-sm text-foreground">Choisir itinéraire, estimer temps, anticiper difficultés, se repérer</p>
+            </div>
+            <div class="bg-blue-50 dark:bg-blue-950/30 p-4 rounded-lg">
+              <p class="font-bold mb-2 text-foreground">🏗️ Urbanisme</p>
+              <p class="text-sm text-foreground">Tracés routes/voies ferrées, zones à risque, barrages, ponts, tunnels</p>
+            </div>
+            <div class="bg-amber-50 dark:bg-amber-950/30 p-4 rounded-lg">
+              <p class="font-bold mb-2 text-foreground">🌾 Agriculture</p>
+              <p class="text-sm text-foreground">Irrigation naturelle, terrasses, systèmes de drainage</p>
+            </div>
+            <div class="bg-red-50 dark:bg-red-950/30 p-4 rounded-lg">
+              <p class="font-bold mb-2 text-foreground">⚠️ Risques naturels</p>
+              <p class="text-sm text-foreground">Zones avalancheuses, crues, glissements de terrain</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="bg-gradient-to-r from-orange-50 to-red-50 dark:from-orange-950/30 dark:to-red-950/30 p-6 rounded-lg border-l-4 border-orange-500">
+          <h3 class="text-xl font-bold mb-3 text-primary">🇭🇹 Importance pour Haïti</h3>
+          <p class="text-foreground">
+            Haïti est un pays au relief très accidenté (montagnes, vallées profondes). La maîtrise de la lecture des cartes topographiques est particulièrement précieuse pour :
+          </p>
+          <ul class="list-disc ml-6 mt-3 space-y-2 text-foreground">
+            <li>Aménagement du territoire (routes en montagne)</li>
+            <li>Gestion des risques naturels (glissements, inondations)</li>
+            <li>Agriculture en terrasses</li>
+            <li>Protection des bassins versants</li>
+          </ul>
         </div>
       </section>
     `,
     exemplesExercices: `
-      <section class="space-y-4">
-        <div class="bg-accent/5 border-l-4 border-accent p-4 rounded">
-          <h4 class="font-semibold mb-2 text-foreground">📝 Pratique</h4>
-          <p class="text-foreground">
-            Trace un profil topographique d'une coupe d'Haïti, de la côte jusqu'au Pic la Selle.
-          </p>
+      <div class="space-y-6">
+        <h3 class="text-2xl font-bold mb-4 text-primary">📝 Exercices pratiques</h3>
+
+        <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md">
+          <p class="font-bold text-xl mb-4">1. Lecture de courbes de niveau</p>
+          <p class="mb-3">Observer une carte topographique (équidistance 20 m) et répondre :</p>
+          <ol class="list-decimal ml-6 space-y-2">
+            <li>Quelle est l'altitude du sommet principal ?</li>
+            <li>Entre les points A et B, où la pente est-elle la plus forte ? Justifier.</li>
+            <li>Tracer le trajet le plus facile (pente douce) entre deux points.</li>
+          </ol>
         </div>
-      </section>
+
+        <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md">
+          <p class="font-bold text-xl mb-4">2. Réalisation d'un profil topographique</p>
+          <p class="mb-3">À partir d'une carte avec courbes de niveau :</p>
+          <ul class="list-disc ml-6 space-y-2">
+            <li>Tracer le profil le long d'une ligne AB donnée</li>
+            <li>Échelles suggérées : horizontale 1/50 000, verticale 1/10 000</li>
+            <li>Identifier sommets, vallées, pentes</li>
+          </ul>
+        </div>
+
+        <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md">
+          <p class="font-bold text-xl mb-4">3. Carte d'Haïti avec teintes</p>
+          <p class="mb-3">Observer une carte d'Haïti avec teintes hypsométriques :</p>
+          <ol class="list-decimal ml-6 space-y-2">
+            <li>Identifier les principales chaînes de montagnes</li>
+            <li>Localiser les plaines et leur altitude approximative</li>
+            <li>Repérer les zones les plus élevées du pays</li>
+            <li>Expliquer pourquoi le relief d'Haïti complique l'aménagement</li>
+          </ol>
+        </div>
+
+        <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md">
+          <p class="font-bold text-xl mb-4">4. Comparaison des méthodes</p>
+          <p class="mb-3">Trois cartes de la même région : (1) courbes seules, (2) teintes seules, (3) combinaison avec estompage.</p>
+          <p class="mb-2"><strong>Pour chaque situation, quelle carte est la plus utile ?</strong></p>
+          <ul class="list-disc ml-6 space-y-2">
+            <li>a) Planifier une randonnée précise</li>
+            <li>b) Présenter la géographie générale dans un manuel</li>
+            <li>c) Calculer le dénivelé exact d'un col</li>
+          </ul>
+        </div>
+
+        <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md">
+          <p class="font-bold text-xl mb-4">5. Cas pratique : Route en montagne</p>
+          <p class="mb-3"><strong>Contexte :</strong> Construction d'une route reliant deux villes haïtiennes à travers une région montagneuse.</p>
+          <p class="mb-2"><strong>Mission :</strong> À l'aide d'une carte topographique :</p>
+          <ul class="list-disc ml-6 space-y-2">
+            <li>Proposer deux tracés possibles</li>
+            <li>Comparer dénivelé, longueur, difficulté</li>
+            <li>Justifier votre choix du meilleur tracé</li>
+          </ul>
+        </div>
+
+        <div class="bg-primary/5 border-l-4 border-primary p-4 rounded">
+          <p class="font-bold mb-2">🎨 Projet créatif (optionnel)</p>
+          <p class="mb-2">Créer une maquette en relief à partir d'une carte :</p>
+          <ul class="list-disc ml-6 text-sm">
+            <li>Superposer des couches de carton selon les courbes</li>
+            <li>Peindre avec les teintes hypsométriques</li>
+            <li>Ajouter une légende</li>
+          </ul>
+        </div>
+      </div>
     `
   },
 
@@ -10189,61 +10723,404 @@ export const sciencesSocialesLessons7AF: SciencesSocialesLesson[] = [
     id: "potentiel-hydraulique",
     title: "Le potentiel hydraulique",
     mois: "Octobre",
-    objectif: "Comprendre les ressources en eau d'Haïti et leur utilisation.",
+    objectif: "Comprendre l'importance de l'eau comme ressource vitale, analyser le potentiel hydraulique d'un territoire et réfléchir aux enjeux de sa gestion durable.",
     introduction: `
+      <p class="text-foreground leading-relaxed mb-4">
+        L'eau est la ressource la plus précieuse de notre planète. Sans elle, aucune vie n'est possible. Pourtant, cette ressource est inégalement répartie et souvent menacée par la pollution et le gaspillage.
+      </p>
       <p class="text-foreground leading-relaxed">
-        Le potentiel hydraulique désigne l'ensemble des ressources en eau d'un pays : rivières, lacs, nappes souterraines. En Haïti, malgré des pluies abondantes, l'eau potable reste un défi majeur.
+        Le "potentiel hydraulique" désigne la quantité d'eau disponible dans une région et les possibilités de l'exploiter. En Haïti, pays confronté à de graves problèmes d'accès à l'eau, comprendre ce potentiel et apprendre à le gérer durablement est un enjeu majeur pour notre avenir. 💧
       </p>
     `,
     contenu: `
-      <section class="space-y-6">
-        <div>
-          <h3 class="text-xl font-semibold mb-3 text-foreground">1. Les ressources en eau d'Haïti</h3>
-          <h4 class="font-semibold mt-3 mb-2 text-foreground">Rivières et fleuves</h4>
-          <ul class="list-disc ml-6 space-y-2 text-foreground">
-            <li><strong>L'Artibonite :</strong> Plus long fleuve (320 km)</li>
-            <li><strong>Les Trois Rivières</strong></li>
-            <li><strong>La Rivière Grise</strong></li>
-            <li>Débit faible en saison sèche</li>
-          </ul>
-
-          <h4 class="font-semibold mt-3 mb-2 text-foreground">Lacs</h4>
-          <ul class="list-disc ml-6 space-y-2 text-foreground">
-            <li><strong>Étang Saumâtre :</strong> Plus grand lac naturel</li>
-            <li><strong>Lac de Péligre :</strong> Lac artificiel (barrage)</li>
-          </ul>
+      <section class="space-y-8">
+        <div class="bg-gradient-to-r from-blue-50 to-cyan-50 dark:from-blue-950/30 dark:to-cyan-950/30 p-6 rounded-lg">
+          <h3 class="text-2xl font-bold mb-4 text-primary">💧 L'eau, or bleu du XXIe siècle</h3>
+          <p class="text-foreground mb-4">
+            L'eau recouvre 71% de la Terre, mais seulement 2,5% est douce, et moins de 1% est facilement accessible ! Cette rareté fait de l'eau une ressource stratégique.
+          </p>
+          <div class="bg-white dark:bg-gray-800 p-4 rounded">
+            <p class="text-foreground font-semibold mb-2">Le potentiel hydraulique dépend de :</p>
+            <ul class="list-disc ml-6 text-foreground space-y-1">
+              <li>Climat (précipitations, évaporation)</li>
+              <li>Relief (bassins versants, lacs, fleuves)</li>
+              <li>Géologie (nappes souterraines)</li>
+              <li>État des écosystèmes (forêts, sols)</li>
+            </ul>
+          </div>
         </div>
 
         <div>
-          <h3 class="text-xl font-semibold mb-3 text-foreground">2. Utilisations de l'eau</h3>
-          <ul class="list-disc ml-6 space-y-2 text-foreground">
-            <li><strong>Agriculture :</strong> Irrigation (70% de l'eau)</li>
-            <li><strong>Domestique :</strong> Boisson, cuisine, hygiène</li>
-            <li><strong>Industrie :</strong> Fabrication</li>
-            <li><strong>Énergie :</strong> Centrales hydroélectriques</li>
-          </ul>
+          <h3 class="text-2xl font-bold mb-4 text-primary">I. Le cycle de l'eau 🔄</h3>
+          
+          <div class="bg-sky-50 dark:bg-sky-950/30 p-6 rounded-lg">
+            <h4 class="text-xl font-semibold mb-3 text-foreground">Les étapes du cycle hydrologique</h4>
+            <div class="grid md:grid-cols-2 gap-3">
+              <div class="bg-white dark:bg-gray-800 p-3 rounded">
+                <p class="font-bold text-sm text-foreground mb-1">1. ☀️ Évaporation</p>
+                <p class="text-xs text-foreground">L'eau des océans/lacs se transforme en vapeur</p>
+              </div>
+              <div class="bg-white dark:bg-gray-800 p-3 rounded">
+                <p class="font-bold text-sm text-foreground mb-1">2. 🌿 Évapotranspiration</p>
+                <p class="text-xs text-foreground">Les plantes rejettent de la vapeur</p>
+              </div>
+              <div class="bg-white dark:bg-gray-800 p-3 rounded">
+                <p class="font-bold text-sm text-foreground mb-1">3. ☁️ Condensation</p>
+                <p class="text-xs text-foreground">La vapeur forme des nuages en altitude</p>
+              </div>
+              <div class="bg-white dark:bg-gray-800 p-3 rounded">
+                <p class="font-bold text-sm text-foreground mb-1">4. 🌧️ Précipitations</p>
+                <p class="text-xs text-foreground">L'eau retombe (pluie, neige, grêle)</p>
+              </div>
+              <div class="bg-white dark:bg-gray-800 p-3 rounded">
+                <p class="font-bold text-sm text-foreground mb-1">5. 💦 Infiltration</p>
+                <p class="text-xs text-foreground">L'eau s'infiltre dans le sol (nappes)</p>
+              </div>
+              <div class="bg-white dark:bg-gray-800 p-3 rounded">
+                <p class="font-bold text-sm text-foreground mb-1">6. 🌊 Ruissellement</p>
+                <p class="text-xs text-foreground">L'eau rejoint rivières, lacs, océans</p>
+              </div>
+            </div>
+            <div class="bg-amber-50 dark:bg-amber-950/30 p-3 rounded mt-4">
+              <p class="text-sm text-foreground">
+                <strong>⚠️ Menaces :</strong> Déforestation, urbanisation excessive et changement climatique perturbent ce cycle !
+              </p>
+            </div>
+          </div>
         </div>
 
         <div>
-          <h3 class="text-xl font-semibold mb-3 text-foreground">3. Problèmes</h3>
-          <ul class="list-disc ml-6 space-y-2 text-foreground">
-            <li>Déforestation réduisant les sources</li>
-            <li>Pollution des rivières</li>
-            <li>Infrastructure insuffisante</li>
-            <li>Seulement 40% de la population a accès à l'eau potable</li>
-          </ul>
+          <h3 class="text-2xl font-bold mb-4 text-primary">II. Les sources d'eau 🏞️</h3>
+          
+          <div class="space-y-4">
+            <div class="bg-blue-50 dark:bg-blue-950/30 p-6 rounded-lg">
+              <h4 class="text-xl font-semibold mb-3 text-foreground">A. Eaux de surface</h4>
+              
+              <div class="space-y-3">
+                <div class="bg-white dark:bg-gray-800 p-4 rounded">
+                  <p class="font-bold mb-2 text-foreground">🏞️ Rivières et fleuves</p>
+                  <p class="text-sm text-foreground mb-2">Cours d'eau permanents ou temporaires.</p>
+                  <p class="text-sm text-foreground"><strong>Haïti :</strong> Artibonite (320 km), Trois-Rivières, Grande Rivière du Nord</p>
+                  <p class="text-xs text-foreground mt-1 italic">Essentiels pour irrigation, mais vulnérables à pollution et tarissement en saison sèche</p>
+                </div>
+
+                <div class="bg-white dark:bg-gray-800 p-4 rounded">
+                  <p class="font-bold mb-2 text-foreground">🌊 Lacs et étangs</p>
+                  <p class="text-sm text-foreground mb-2">Réservoirs naturels d'eau douce.</p>
+                  <p class="text-sm text-foreground"><strong>Haïti :</strong> Étang Saumâtre, Lac de Péligre (artificiel, barrage)</p>
+                  <p class="text-xs text-foreground mt-1 italic">Régulent débits et constituent réserves stratégiques</p>
+                </div>
+
+                <div class="bg-white dark:bg-gray-800 p-4 rounded">
+                  <p class="font-bold mb-2 text-foreground">🦩 Zones humides</p>
+                  <p class="text-sm text-foreground">Marais, mangroves, deltas. Filtrage naturel + biodiversité</p>
+                  <p class="text-xs text-foreground mt-1 italic text-red-600 dark:text-red-400">⚠️ Menacées par urbanisation</p>
+                </div>
+              </div>
+            </div>
+
+            <div class="bg-teal-50 dark:bg-teal-950/30 p-6 rounded-lg">
+              <h4 class="text-xl font-semibold mb-3 text-foreground">B. Eaux souterraines</h4>
+              
+              <div class="space-y-3">
+                <div class="bg-white dark:bg-gray-800 p-4 rounded">
+                  <p class="font-bold mb-2 text-foreground">💧 Nappes phréatiques</p>
+                  <p class="text-sm text-foreground mb-2">Eau stockée dans pores et fissures des roches perméables.</p>
+                  <div class="grid md:grid-cols-2 gap-2 mt-2">
+                    <div class="bg-green-50 dark:bg-green-950/30 p-2 rounded">
+                      <p class="text-xs font-semibold text-foreground">✅ Avantages</p>
+                      <ul class="text-xs text-foreground list-disc ml-4">
+                        <li>Meilleure qualité (filtrée)</li>
+                        <li>Protégée pollution surface</li>
+                      </ul>
+                    </div>
+                    <div class="bg-red-50 dark:bg-red-950/30 p-2 rounded">
+                      <p class="text-xs font-semibold text-foreground">⚠️ Inconvénients</p>
+                      <ul class="text-xs text-foreground list-disc ml-4">
+                        <li>Renouvellement lent</li>
+                        <li>Forages coûteux</li>
+                      </ul>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="bg-white dark:bg-gray-800 p-4 rounded">
+                  <p class="font-bold mb-2 text-foreground">⛲ Sources et résurgences</p>
+                  <p class="text-sm text-foreground">Eau souterraine émergeant naturellement. Sources d'eau fraîche et potable, traditionnellement utilisées en milieu rural.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <h3 class="text-2xl font-bold mb-4 text-primary">III. Les usages de l'eau 🚰</h3>
+          
+          <div class="space-y-4">
+            <div class="bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-950/30 dark:to-emerald-950/30 p-6 rounded-lg">
+              <h4 class="text-xl font-semibold mb-3 text-foreground">A. Consommation domestique</h4>
+              <p class="text-foreground mb-3">Eau potable : boire, cuisiner, se laver. <strong>Besoin vital prioritaire !</strong></p>
+              <div class="bg-white dark:bg-gray-800 p-4 rounded">
+                <p class="text-sm text-foreground mb-2"><strong>📊 OMS recommande :</strong></p>
+                <ul class="list-disc ml-6 text-sm text-foreground space-y-1">
+                  <li>Minimum 20 L/personne/jour (besoins de base)</li>
+                  <li>50 L/personne/jour (vie décente)</li>
+                </ul>
+                <div class="bg-red-50 dark:bg-red-950/30 p-3 rounded mt-3">
+                  <p class="text-sm text-foreground">
+                    <strong>🇭🇹 Haïti :</strong> Seulement 64% de la population a accès à l'eau potable. Zones rurales particulièrement touchées. Corvée d'eau souvent confiée aux femmes et enfants.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div class="bg-gradient-to-r from-yellow-50 to-amber-50 dark:from-yellow-950/30 dark:to-amber-950/30 p-6 rounded-lg">
+              <h4 class="text-xl font-semibold mb-3 text-foreground">B. Agriculture et irrigation 🌾</h4>
+              <p class="text-foreground mb-3">Premier consommateur mondial : <strong>~70% de l'eau douce utilisée !</strong></p>
+              <div class="bg-white dark:bg-gray-800 p-4 rounded">
+                <p class="text-sm text-foreground mb-2"><strong>🇭🇹 En Haïti :</strong></p>
+                <ul class="list-disc ml-6 text-sm text-foreground space-y-1">
+                  <li>Agriculture = 50% population active</li>
+                  <li>Vallée de l'Artibonite : plaine rizicole irriguée (zone la plus productive)</li>
+                  <li>Irrigation traditionnelle inefficace (gaspillage par évaporation)</li>
+                </ul>
+                <div class="bg-green-50 dark:bg-green-950/30 p-3 rounded mt-3">
+                  <p class="text-sm text-foreground">
+                    <strong>💡 Techniques modernes :</strong> Goutte-à-goutte, aspersion → économisent l'eau, améliorent rendements
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div class="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-950/30 dark:to-indigo-950/30 p-6 rounded-lg">
+              <h4 class="text-xl font-semibold mb-3 text-foreground">C. Industrie et énergie ⚡</h4>
+              <div class="space-y-3">
+                <div class="bg-white dark:bg-gray-800 p-3 rounded">
+                  <p class="font-bold text-sm mb-1 text-foreground">🏭 Industrie</p>
+                  <p class="text-xs text-foreground">Refroidir machines, nettoyer, transformer produits. ⚠️ Source majeure de pollution</p>
+                </div>
+                <div class="bg-white dark:bg-gray-800 p-3 rounded">
+                  <p class="font-bold text-sm mb-1 text-foreground">⚡ Hydroélectricité</p>
+                  <p class="text-xs text-foreground mb-2">Barrages font tourner turbines → électricité renouvelable et non polluante !</p>
+                  <p class="text-xs text-foreground"><strong>🇭🇹 Haïti :</strong> Barrage de Péligre produit part importante électricité nationale. Potentiel inexploité dans rivières montagneuses.</p>
+                </div>
+              </div>
+            </div>
+
+            <div class="bg-purple-50 dark:bg-purple-950/30 p-4 rounded-lg">
+              <p class="font-bold mb-2 text-foreground">D. Autres usages</p>
+              <ul class="list-disc ml-6 text-sm text-foreground space-y-1">
+                <li>Navigation fluviale (transport marchandises)</li>
+                <li>Pêche (activité économique)</li>
+                <li>Tourisme et loisirs (plages, sports nautiques)</li>
+                <li>Écosystèmes (biodiversité a besoin d'eau !)</li>
+              </ul>
+            </div>
+
+            <div class="bg-orange-50 dark:bg-orange-950/30 p-4 rounded-lg border-l-4 border-orange-500">
+              <p class="font-bold mb-2 text-foreground">⚖️ Concurrence et arbitrages</p>
+              <p class="text-sm text-foreground">
+                Les différents usages peuvent entrer en conflit : eau potable des villes vs irrigation agricole vs production électrique ? Nécessite une <strong>gestion intégrée et équitable</strong> !
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <h3 class="text-2xl font-bold mb-4 text-primary">IV. Menaces sur l'eau ⚠️</h3>
+          
+          <div class="space-y-4">
+            <div class="bg-red-50 dark:bg-red-950/30 p-6 rounded-lg border-l-4 border-red-500">
+              <h4 class="text-xl font-semibold mb-3 text-foreground">A. Déforestation : Désastre pour l'eau 🌳❌</h4>
+              <p class="text-foreground mb-3"><strong>Haïti a perdu plus de 98% de ses forêts !</strong> Conséquences dramatiques :</p>
+              <ul class="list-disc ml-6 text-sm text-foreground space-y-2">
+                <li><strong>Érosion massive :</strong> Terre emportée par pluies sans racines d'arbres</li>
+                <li><strong>Envasement :</strong> Rivières et barrages remplis de terre</li>
+                <li><strong>Infiltration réduite :</strong> Eau ruisselle au lieu de recharger nappes</li>
+                <li><strong>Crues violentes + sécheresses :</strong> Eau non régulée naturellement</li>
+              </ul>
+            </div>
+
+            <div class="bg-amber-50 dark:bg-amber-950/30 p-6 rounded-lg">
+              <h4 class="text-xl font-semibold mb-3 text-foreground">B. Pollution de l'eau 🧪</h4>
+              <div class="grid md:grid-cols-2 gap-3">
+                <div class="bg-white dark:bg-gray-800 p-3 rounded">
+                  <p class="font-bold text-sm mb-1 text-foreground">💩 Domestique</p>
+                  <p class="text-xs text-foreground">Eaux usées non traitées → rivières/mer. Risques : maladies diarrhéiques, choléra</p>
+                </div>
+                <div class="bg-white dark:bg-gray-800 p-3 rounded">
+                  <p class="font-bold text-sm mb-1 text-foreground">🌾 Agricole</p>
+                  <p class="text-xs text-foreground">Pesticides, engrais chimiques → nappes/cours d'eau</p>
+                </div>
+                <div class="bg-white dark:bg-gray-800 p-3 rounded">
+                  <p class="font-bold text-sm mb-1 text-foreground">🏭 Industrielle</p>
+                  <p class="text-xs text-foreground">Produits chimiques toxiques, métaux lourds</p>
+                </div>
+                <div class="bg-white dark:bg-gray-800 p-3 rounded">
+                  <p class="font-bold text-sm mb-1 text-foreground">🗑️ Déchets solides</p>
+                  <p class="text-xs text-foreground">Plastiques, ordures jetées dans rivières</p>
+                </div>
+              </div>
+            </div>
+
+            <div class="bg-blue-50 dark:bg-blue-950/30 p-4 rounded-lg">
+              <h4 class="text-xl font-semibold mb-3 text-foreground">C. Changement climatique 🌡️</h4>
+              <ul class="list-disc ml-6 text-sm text-foreground space-y-1">
+                <li>Sécheresses plus fréquentes et prolongées</li>
+                <li>Pluies plus intenses mais irrégulières</li>
+                <li>Élévation niveau mer → salinisation nappes côtières</li>
+              </ul>
+            </div>
+
+            <div class="bg-purple-50 dark:bg-purple-950/30 p-4 rounded-lg">
+              <h4 class="text-xl font-semibold mb-3 text-foreground">D. Surexploitation des nappes 💧📉</h4>
+              <p class="text-sm text-foreground">Pompage excessif (forages privés non régulés) plus rapide que recharge → abaissement nappes, tarissement sources, intrusion eau salée</p>
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <h3 class="text-2xl font-bold mb-4 text-primary">V. Gestion durable : Solutions 💡</h3>
+          
+          <div class="space-y-4">
+            <div class="bg-green-50 dark:bg-green-950/30 p-6 rounded-lg">
+              <h4 class="text-xl font-semibold mb-3 text-foreground">A. Niveau individuel et communautaire 🏠</h4>
+              <div class="grid md:grid-cols-2 gap-4">
+                <div class="bg-white dark:bg-gray-800 p-4 rounded">
+                  <p class="font-bold mb-2 text-foreground">💧 Économiser l'eau</p>
+                  <ul class="list-disc ml-4 text-xs text-foreground space-y-1">
+                    <li>Réparer fuites (1 goutte = 100L/jour !)</li>
+                    <li>Fermer robinet (brossage dents, savonnage)</li>
+                    <li>Récupérer eau de pluie</li>
+                    <li>Réutiliser eau grise (rinçage → toilettes)</li>
+                    <li>Douches courtes vs bains</li>
+                  </ul>
+                </div>
+                <div class="bg-white dark:bg-gray-800 p-4 rounded">
+                  <p class="font-bold mb-2 text-foreground">🌳 Protéger les sources</p>
+                  <ul class="list-disc ml-4 text-xs text-foreground space-y-1">
+                    <li>Ne jamais jeter déchets dans rivières</li>
+                    <li>Éviter pesticides/engrais excessifs</li>
+                    <li>Campagnes de nettoyage</li>
+                    <li>Planter arbres (sources, pentes)</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+
+            <div class="bg-blue-50 dark:bg-blue-950/30 p-6 rounded-lg">
+              <h4 class="text-xl font-semibold mb-3 text-foreground">B. Niveau national 🇭🇹</h4>
+              <div class="space-y-3">
+                <div class="bg-white dark:bg-gray-800 p-3 rounded">
+                  <p class="font-bold text-sm mb-1 text-foreground">🏗️ Infrastructures</p>
+                  <p class="text-xs text-foreground">Barrages, réseaux eau potable ruraux, assainissement/traitement eaux usées</p>
+                </div>
+                <div class="bg-white dark:bg-gray-800 p-3 rounded">
+                  <p class="font-bold text-sm mb-1 text-foreground">⚖️ Législation</p>
+                  <p class="text-xs text-foreground">Protection sources/nappes, contrôle pollution, régulation forages, tarification incitative</p>
+                </div>
+                <div class="bg-white dark:bg-gray-800 p-3 rounded">
+                  <p class="font-bold text-sm mb-1 text-foreground">📚 Éducation</p>
+                  <p class="text-xs text-foreground">Campagnes sensibilisation, éducation environnementale écoles, formation agriculteurs</p>
+                </div>
+              </div>
+            </div>
+
+            <div class="bg-gradient-to-r from-orange-50 to-red-50 dark:from-orange-950/30 dark:to-red-950/30 p-6 rounded-lg border-l-4 border-orange-500">
+              <h4 class="text-xl font-semibold mb-3 text-foreground">🇭🇹 Priorités pour Haïti</h4>
+              <ol class="list-decimal ml-6 text-sm text-foreground space-y-2">
+                <li><strong>Reforestation massive</strong> : Reconstituer couvert forestier, priorité bassins versants</li>
+                <li><strong>Assainissement</strong> : Traiter eaux usées avant rejet</li>
+                <li><strong>Infrastructures</strong> : Réhabiliter/étendre réseaux eau potable et irrigation</li>
+                <li><strong>Éducation</strong> : Former citoyens à valeur et gestion de l'eau</li>
+                <li><strong>Gouvernance</strong> : Renforcer institutions de l'eau</li>
+              </ol>
+            </div>
+          </div>
+        </div>
+
+        <div class="bg-gradient-to-r from-cyan-50 to-blue-50 dark:from-cyan-950/30 dark:to-blue-950/30 p-6 rounded-lg border-l-4 border-cyan-500">
+          <h3 class="text-2xl font-bold mb-3 text-primary">🌍 Conclusion</h3>
+          <p class="text-foreground mb-3">
+            L'eau est source de vie et facteur de développement. Le potentiel hydraulique ne se limite pas à la quantité disponible, mais englobe la capacité à la gérer durablement, la protéger et l'utiliser efficacement.
+          </p>
+          <p class="text-foreground font-semibold">
+            En Haïti, les défis sont immenses (déforestation, pollution, infrastructure), mais les solutions existent et sont à notre portée. Chacun, à son niveau, peut contribuer à préserver notre or bleu ! 💧
+          </p>
+          <p class="text-foreground mt-3 italic text-sm">
+            "Nous n'héritons pas de la terre de nos ancêtres, nous l'empruntons à nos enfants." — Cela vaut aussi pour l'eau.
+          </p>
         </div>
       </section>
     `,
     exemplesExercices: `
-      <section class="space-y-4">
-        <div class="bg-primary/5 border-l-4 border-primary p-4 rounded">
-          <h4 class="font-semibold mb-2 text-foreground">💡 Action</h4>
-          <p class="text-foreground">
-            Calcule combien d'eau ta famille utilise par jour. Comment pourriez-vous économiser l'eau ?
-          </p>
+      <div class="space-y-6">
+        <h3 class="text-2xl font-bold mb-4 text-primary">📝 Exercices pratiques</h3>
+
+        <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md">
+          <p class="font-bold text-xl mb-4">1. Enquête sur l'eau dans ta communauté</p>
+          <p class="mb-3">Interroger 10 familles de ton quartier/village :</p>
+          <ol class="list-decimal ml-6 space-y-2 text-sm">
+            <li>Quelle est leur source d'eau principale ? (robinet, source, puits, rivière, camion...)</li>
+            <li>Combien de temps pour chercher l'eau quotidiennement ?</li>
+            <li>Quels sont les principaux usages ?</li>
+            <li>Ont-ils observé des changements (diminution, pollution) ?</li>
+          </ol>
+          <p class="mt-3 text-sm"><strong>Présentation :</strong> Tableau et graphique. Conclure sur les défis locaux.</p>
         </div>
-      </section>
+
+        <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md">
+          <p class="font-bold text-xl mb-4">2. Calcul de consommation d'eau</p>
+          <p class="mb-3">Estimer ta consommation quotidienne personnelle :</p>
+          <ul class="list-disc ml-6 space-y-2 text-sm">
+            <li>Lister toutes activités utilisant eau (boire, cuisiner, douche, lessive...)</li>
+            <li>Estimer quantités pour chaque activité</li>
+            <li>Comparer avec recommandation OMS (50 L/personne/jour)</li>
+            <li>Proposer 3 actions concrètes pour réduire consommation</li>
+          </ul>
+        </div>
+
+        <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md">
+          <p class="font-bold text-xl mb-4">3. Carte des bassins versants d'Haïti</p>
+          <p class="mb-3">Observer une carte des bassins versants et identifier :</p>
+          <ol class="list-decimal ml-6 space-y-2 text-sm">
+            <li>Le plus grand bassin versant (Artibonite)</li>
+            <li>Zones de montagne (têtes de bassin)</li>
+            <li>Plaines irrigables</li>
+            <li>Zones à risque d'inondation</li>
+          </ol>
+          <p class="mt-3 text-sm"><strong>Expliquer :</strong> Pourquoi protection des forêts en montagne est cruciale pour eau en plaine ?</p>
+        </div>
+
+        <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md">
+          <p class="font-bold text-xl mb-4">4. Débat : Conflit d'usage de l'eau</p>
+          <p class="mb-3"><strong>Situation :</strong> Un fleuve dessert 3 communautés :</p>
+          <ul class="list-disc ml-6 text-sm mb-3">
+            <li>(A) Village besoin eau potable</li>
+            <li>(B) Agriculteurs veulent irriguer champs</li>
+            <li>(C) Entreprise veut barrage hydroélectrique</li>
+          </ul>
+          <p class="text-sm mb-2"><strong>L'eau disponible ne suffit pas pour tous !</strong></p>
+          <p class="text-sm"><strong>Mission :</strong> Former 3 groupes, préparer arguments, débattre, trouver solution de compromis équitable.</p>
+        </div>
+
+        <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md">
+          <p class="font-bold text-xl mb-4">5. Projet d'action concrète</p>
+          <p class="mb-3">En groupe, concevoir un mini-projet dans ton école/communauté :</p>
+          <ul class="list-disc ml-6 space-y-2 text-sm">
+            <li><strong>Option A :</strong> Campagne d'affichage sur gestes d'économie d'eau</li>
+            <li><strong>Option B :</strong> Installation récupération eau de pluie</li>
+            <li><strong>Option C :</strong> Journée nettoyage source/rivière locale</li>
+            <li><strong>Option D :</strong> Pépinière d'arbres pour reforester bassin versant</li>
+          </ul>
+          <p class="mt-3 text-sm"><strong>Présentation :</strong> Objectif, actions, matériel, budget estimé, résultats attendus</p>
+        </div>
+
+        <div class="bg-primary/5 border-l-4 border-primary p-4 rounded">
+          <p class="font-bold mb-2">🎨 Projet bonus : Cycle de l'eau en maquette</p>
+          <p class="text-sm">Réaliser maquette illustrant cycle de l'eau avec matériaux récupération (bouteilles, terre, plantes). Simuler évaporation, condensation, précipitations, infiltration, ruissellement.</p>
+        </div>
+      </div>
     `
   },
 
