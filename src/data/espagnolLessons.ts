@@ -2678,58 +2678,304 @@ Describe tu rutina diaria en español (mínimo 8 frases).`,
     references: ["MENFP - Programme 7e AF"]
   },
 
+  "invitacion": {
+    title: "La invitación (The invitation)",
+    mois: "Février",
+    objectif: "Apprendre à inviter quelqu'un et à accepter ou refuser une invitation",
+    introduction: "Tu vas apprendre à inviter des amis, accepter ou refuser poliment une invitation, et à exprimer tes préférences pour des activités sociales.",
+    contenu: `## Comment inviter quelqu'un
+
+### Phrases pour inviter
+**Invitations formelles :**
+- ¿Quisiera venir a mi casa? - Voudriez-vous venir chez moi ?
+- ¿Le gustaría acompañarme al cine? - Aimeriez-vous m'accompagner au cinéma ?
+- Tengo el gusto de invitarle a... - J'ai le plaisir de vous inviter à...
+
+**Invitations informelles :**
+- ¿Quieres venir a mi fiesta? - Tu veux venir à ma fête ?
+- ¿Te gustaría ir al parque? - Tu aimerais aller au parc ?
+- ¿Vienes conmigo al concierto? - Tu viens avec moi au concert ?
+- ¿Por qué no vienes a jugar? - Pourquoi tu ne viens pas jouer ?
+
+### Accepter une invitation
+**Acceptation formelle :**
+- Con mucho gusto - Avec grand plaisir
+- Encantado/a de aceptar - Enchanté(e) d'accepter
+- Será un honor - Ce sera un honneur
+
+**Acceptation informelle :**
+- ¡Claro que sí! - Bien sûr !
+- ¡Por supuesto! - Évidemment !
+- ¡Vale! / ¡De acuerdo! - D'accord !
+- ¡Genial! Me encantaría - Génial ! J'adorerais
+- ¡Qué bien! Allí estaré - Super ! Je serai là
+
+### Refuser poliment
+**Refus formel :**
+- Lo siento mucho, pero no puedo - Je suis vraiment désolé(e), mais je ne peux pas
+- Me encantaría, pero tengo otro compromiso - J'adorerais, mais j'ai un autre engagement
+- Desafortunadamente, no me será posible - Malheureusement, ça ne me sera pas possible
+
+**Refus informel :**
+- Lo siento, pero no puedo - Désolé(e), mais je ne peux pas
+- Me gustaría, pero tengo que... - J'aimerais bien, mais je dois...
+- Esta vez no puedo, pero la próxima sí - Cette fois je ne peux pas, mais la prochaine oui
+- Qué pena, tengo planes - Quel dommage, j'ai des plans
+
+### Proposer une alternative
+- ¿Qué tal otro día? - Et un autre jour ?
+- ¿Podemos hacerlo el sábado? - On peut le faire samedi ?
+- ¿Y si vamos mejor al cine? - Et si on allait plutôt au cinéma ?
+- Prefiero ir a... - Je préfère aller à...
+
+### Vocabulaire des activités sociales
+**Eventos :**
+- Una fiesta - Une fête
+- Un cumpleaños - Un anniversaire
+- Una reunión - Une réunion
+- Una cena - Un dîner
+- Un concierto - Un concert
+- Un partido - Un match
+
+**Lugares :**
+- El cine - Le cinéma
+- El parque - Le parc
+- La playa - La plage
+- Un restaurante - Un restaurant
+- El centro comercial - Le centre commercial
+- Mi casa - Ma maison
+
+### Verbes utiles
+- Invitar - Inviter
+- Aceptar - Accepter
+- Rechazar - Refuser
+- Acompañar - Accompagner
+- Celebrar - Célébrer
+- Asistir - Assister
+
+**💡 Suggestions de vidéos YouTube :**
+Recherchez "invitaciones en español" ou "cómo invitar en español conversación" pour des dialogues pratiques et des situations réelles d'invitation.`,
+    exemplesExercices: `## Ejercicios prácticos
+
+### Ejercicio 1: Completar los diálogos
+Completa con la expresión apropiada:
+1. A: ¿_____ venir a mi cumpleaños? (Quieres/Quisiera)
+   B: ¡_____ que sí! (Claro/Con mucho gusto)
+
+2. A: ¿Te gustaría ir al cine el viernes?
+   B: Lo siento, _____ estudiar para un examen. (tengo que/debe)
+
+3. A: ¿_____ acompañarme al concierto?
+   B: _____ mucho gusto. (Le gustaría/Con)
+
+### Ejercicio 2: Situaciones
+Escribe lo que dirías en estas situaciones:
+
+**Situación 1:** Tu amigo te invita a una fiesta, pero tienes que ayudar a tu madre.
+**Respuesta:** _________________
+
+**Situación 2:** Quieres invitar a tu compañero a jugar fútbol.
+**Respuesta:** _________________
+
+**Situación 3:** Alguien te invita a la playa y aceptas con entusiasmo.
+**Respuesta:** _________________
+
+### Ejercicio 3: Crear un diálogo
+Crea un diálogo completo entre dos amigos donde:
+- Uno invita al otro a una actividad
+- El otro pregunta detalles (hora, lugar)
+- Acepta o rechaza con razón
+- Proponen una alternativa si es necesario
+
+### Ejercicio 4: Traducir
+Traduce estas frases al español:
+1. Veux-tu venir à ma fête d'anniversaire ?
+2. J'adorerais, mais je ne peux pas.
+3. Pourquoi tu ne viens pas jouer avec nous ?
+4. Ce sera un plaisir d'accepter ton invitation.`,
+    references: ["MENFP - Programme 7e AF", "Expresiones sociales en español"]
+  },
+
   "obligacion": {
     title: "Obligación (obligation)",
     mois: "Février",
-    objectif: "Expresar obligación usando diferentes estructuras",
-    introduction: "Aprenderás a expresar obligación y necesidad de diferentes maneras.",
-    contenu: `## Expresar obligación
+    objectif: "Expresar obligación usando diferentes estructuras y el presente de subjuntivo",
+    introduction: "Dans cette leçon, tu vas découvrir les différentes manières d'exprimer l'obligation et la nécessité en espagnol, ainsi que l'utilisation du subjonctif présent.",
+    contenu: `## Exprimer l'obligation en espagnol
 
-### Estructuras de obligación
+### Les quatre structures principales
 
-**1. Tener que + infinitivo** (obligation de faire)
-- Tengo que estudiar - Je dois étudier
-- Tienes que trabajar - Tu dois travailler
+**1. Tener que + infinitivo** (obligation personnelle forte)
+Cette structure exprime une obligation personnelle, quelque chose qu'on doit absolument faire.
+
+**Conjugaison de TENER (avoir) au présent :**
+- Yo tengo - J'ai
+- Tú tienes - Tu as
+- Él/Ella tiene - Il/Elle a
+- Nosotros tenemos - Nous avons
+- Vosotros tenéis - Vous avez
+- Ellos tienen - Ils ont
+
+**Exemples :**
+- Tengo que estudiar para el examen - Je dois étudier pour l'examen
+- Tienes que trabajar más - Tu dois travailler plus
 - Tiene que llegar temprano - Il/Elle doit arriver tôt
+- Tenemos que ayudar en casa - Nous devons aider à la maison
+- Tienen que respetar las reglas - Ils doivent respecter les règles
 
-**2. Deber + infinitivo** (contrainte liée à un devoir)
-- Debo obedecer - Je dois obéir
-- Debes respetar - Tu dois respecter
-- Juliana debe obedecer a su padre - Juliana doit obéir à son père
+**2. Deber + infinitivo** (devoir moral, responsabilité)
+Cette structure exprime un devoir moral, une responsabilité ou une recommandation.
+
+**Conjugaison de DEBER (devoir) au présent :**
+- Yo debo - Je dois
+- Tú debes - Tu dois
+- Él/Ella debe - Il/Elle doit
+- Nosotros debemos - Nous devons
+- Vosotros debéis - Vous devez
+- Ellos deben - Ils doivent
+
+**Exemples :**
+- Debo obedecer a mis padres - Je dois obéir à mes parents
+- Debes respetar a tus profesores - Tu dois respecter tes professeurs
+- Juliana debe estudiar mucho - Juliana doit beaucoup étudier
+- Debemos ser honestos - Nous devons être honnêtes
+- Los estudiantes deben llegar a tiempo - Les étudiants doivent arriver à l'heure
 
 **3. Hay que + infinitivo** (il faut - impersonnel)
+Structure impersonnelle qui exprime une obligation générale, sans préciser qui doit faire l'action.
+
+**Exemples :**
 - Hay que estudiar - Il faut étudier
-- Hay que trabajar - Il faut travailler
+- Hay que trabajar duro para tener éxito - Il faut travailler dur pour réussir
+- Hay que comer bien - Il faut bien manger
+- Hay que respetar a los demás - Il faut respecter les autres
+- Hay que llegar temprano - Il faut arriver tôt
 
-**4. Hace falta que + subjuntivo**
-- Hace falta que estudies - Il faut que tu étudies
-- Hace falta que trabajemos - Il faut que nous travaillions
-- Hace falta que los haitianos encuentren una solución
+**4. Hace falta que + subjuntivo** (il faut que + subjonctif)
+Cette structure exprime la nécessité et requiert l'utilisation du subjonctif présent.
 
-### Presente de subjuntivo - Desinencias
-**Verbos en -AR:** e, es, e, emos, éis, en
-- Hablar → hable, hables, hable, hablemos, habléis, hablen
+**Exemples :**
+- Hace falta que estudies - Il faut que tu études
+- Hace falta que trabajemos juntos - Il faut que nous travaillions ensemble
+- Hace falta que los estudiantes presten atención - Il faut que les étudiants prêtent attention
+- Hace falta que tú vengas - Il faut que tu viennes
 
-**Verbos en -ER/-IR:** a, as, a, amos, áis, an
-- Comer → coma, comas, coma, comamos, comáis, coman
-- Escribir → escriba, escribas, escriba, escribamos, escribáis, escriban`,
-    exemplesExercices: `## Ejercicios
+### Le présent du subjonctif (Presente de subjuntivo)
 
-### Ejercicio 1: Completar
-Usa "tener que" o "deber":
-1. Yo _____ estudiar para el examen (tener que)
-2. Los alumnos _____ respetar al profesor (deber)
-3. Nosotros _____ llegar temprano (tener que)
+**Formation du subjonctif :**
+On prend la première personne du présent de l'indicatif (yo), on enlève le -o et on ajoute les terminaisons opposées :
 
-### Ejercicio 2: Transformar
-Transforma usando "hace falta que + subjuntivo":
+**Verbes en -AR → terminaisons en -E**
+| Personne | Terminaison | Hablar | Estudiar |
+|----------|-------------|---------|-----------|
+| Yo | -e | hable | estudie |
+| Tú | -es | hables | estudies |
+| Él/Ella | -e | hable | estudie |
+| Nosotros | -emos | hablemos | estudiemos |
+| Vosotros | -éis | habléis | estudiéis |
+| Ellos | -en | hablen | estudien |
+
+**Verbes en -ER/-IR → terminaisons en -A**
+| Personne | Terminaison | Comer | Escribir |
+|----------|-------------|--------|-----------|
+| Yo | -a | coma | escriba |
+| Tú | -as | comas | escribas |
+| Él/Ella | -a | coma | escriba |
+| Nosotros | -amos | comamos | escribamos |
+| Vosotros | -áis | comáis | escribáis |
+| Ellos | -an | coman | escriban |
+
+**Autres exemples :**
+- Vivir: viva, vivas, viva, vivamos, viváis, vivan
+- Beber: beba, bebas, beba, bebamos, bebáis, beban
+- Trabajar: trabaje, trabajes, trabaje, trabajemos, trabajéis, trabajen
+
+### Différences entre les structures
+
+**TENER QUE** → Obligation personnelle nécessaire
+"Tengo que ir al médico" (je n'ai pas le choix)
+
+**DEBER** → Devoir moral, conseil
+"Debes respetar a tus padres" (c'est ton devoir)
+
+**HAY QUE** → Obligation générale impersonnelle
+"Hay que estudiar para aprender" (tout le monde)
+
+**HACE FALTA QUE** → Nécessité avec emphase
+"Hace falta que todos participen" (c'est nécessaire que)
+
+**💡 Suggestions de vidéos YouTube :**
+Recherchez "expresar obligación en español" ou "presente de subjuntivo español" pour des explications détaillées et des exercices interactifs.`,
+    exemplesExercices: `## Ejercicios de práctica
+
+### Ejercicio 1: Completar con la estructura correcta
+Completa con "tener que", "deber" o "hay que":
+
+1. Yo _____ estudiar para el examen de mañana. (tener que)
+2. Los alumnos _____ respetar al profesor. (deber)
+3. Nosotros _____ llegar temprano a la escuela. (tener que)
+4. _____ trabajar mucho para tener éxito. (hay que)
+5. Tú _____ ayudar a tu madre en casa. (deber)
+6. _____ ser honesto siempre. (hay que)
+7. Ellos _____ terminar la tarea hoy. (tener que)
+
+### Ejercicio 2: Conjugar en subjuntivo
+Conjuga los verbos en presente de subjuntivo:
+
+1. Es necesario que tú (estudiar) _____ más.
+2. Hace falta que nosotros (trabajar) _____ juntos.
+3. Es importante que ellos (comer) _____ bien.
+4. Hace falta que ella (escribir) _____ la carta.
+5. Es necesario que yo (hablar) _____ con el profesor.
+6. Hace falta que vosotros (vivir) _____ mejor.
+
+### Ejercicio 3: Transformar con "hace falta que + subjuntivo"
+Transforma estas frases usando "hace falta que + subjuntivo":
+
 1. Tengo que estudiar → Hace falta que estudie
-2. Debes trabajar → Hace falta que trabajes
-3. Tienen que venir → Hace falta que vengan
+2. Debes trabajar → _____________________
+3. Tienen que venir → _____________________
+4. Debemos ayudar → _____________________
+5. Tienes que escuchar → _____________________
 
-### Ejercicio 3: Situaciones
-Escribe 5 obligaciones que tienes como estudiante usando diferentes estructuras.`,
-    references: ["MENFP - Programme 7e AF"]
+### Ejercicio 4: Situaciones
+Escribe 5 obligaciones que tienes en tu vida usando las cuatro estructuras diferentes:
+
+**Con "tener que":**
+Ejemplo: Tengo que hacer mis deberes cada día.
+1. _____________________
+
+**Con "deber":**
+Ejemplo: Debo respetar a mis profesores.
+2. _____________________
+
+**Con "hay que":**
+Ejemplo: Hay que estudiar para aprender.
+3. _____________________
+
+**Con "hace falta que + subjuntivo":**
+Ejemplo: Hace falta que yo practique más español.
+4. _____________________
+5. _____________________
+
+### Ejercicio 5: Traducción
+Traduce al español:
+
+1. Je dois étudier l'espagnol.
+2. Il faut respecter les règles.
+3. Il faut que tu viennes demain.
+4. Nous devons travailler ensemble.
+5. Tu dois écouter ton professeur.
+
+### Ejercicio 6: Crear frases
+Crea frases lógicas usando las palabras dadas:
+
+1. (Yo / tener que / ir / médico)
+2. (Estudiantes / deber / respetar / profesores)
+3. (Hay que / comer / frutas / verduras)
+4. (Hace falta que / nosotros / estudiar / más)
+5. (Ellos / tener que / terminar / trabajo)`,
+    references: ["MENFP - Programme 7e AF", "Gramática española - El subjuntivo"]
   },
 
   "clasificar-palabras": {

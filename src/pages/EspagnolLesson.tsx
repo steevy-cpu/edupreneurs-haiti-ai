@@ -35,6 +35,10 @@ import {
   losAlimentosMatching,
   lasActividadesCotidianasQuiz,
   lasActividadesCotidianasMatching,
+  invitacionQuiz,
+  invitacionMatching,
+  obligacionQuiz,
+  obligacionMatching,
 } from "@/data/espagnolActivities";
 import { QuizGame } from "@/components/math-activities/QuizGame";
 import { MatchingGame } from "@/components/math-activities/MatchingGame";
@@ -156,6 +160,8 @@ export default function EspagnolLesson() {
     "la-familia": { quiz: laFamiliaQuiz, matching: laFamiliaMatching },
     "los-alimentos": { quiz: losAlimentosQuiz, matching: losAlimentosMatching },
     "las-actividades-cotidianas": { quiz: lasActividadesCotidianasQuiz, matching: lasActividadesCotidianasMatching },
+    "invitacion": { quiz: invitacionQuiz, matching: invitacionMatching },
+    "obligacion": { quiz: obligacionQuiz, matching: obligacionMatching },
   };
     return topicId ? quizMap[topicId] || null : null;
   };

@@ -670,3 +670,168 @@ export const lasActividadesCotidianasMatching = {
   ]
 };
 
+// ============= FÉVRIER LESSONS =============
+
+// Invitacion Quiz
+export const invitacionQuiz = {
+  questions: [
+    {
+      question: "Comment dit-on 'Veux-tu venir à ma fête ?' en espagnol ?",
+      options: ["¿Quieres venir a mi fiesta?", "¿Vienes a mi fiesta?", "¿Puedes venir a mi fiesta?", "¿Vas a mi fiesta?"],
+      correctAnswer: 0,
+      explanation: "'¿Quieres venir a mi fiesta?' est la manière correcte d'inviter quelqu'un à une fête de manière informelle."
+    },
+    {
+      question: "Quelle expression utilise-t-on pour accepter une invitation avec enthousiasme ?",
+      options: ["Vale", "¡Claro que sí!", "De acuerdo", "Sí"],
+      correctAnswer: 1,
+      explanation: "'¡Claro que sí!' signifie 'Bien sûr !' et montre de l'enthousiasme. C'est une réponse très positive."
+    },
+    {
+      question: "Comment refuse-t-on poliment une invitation ?",
+      options: ["No quiero", "No puedo venir", "Lo siento, pero no puedo", "No me gusta"],
+      correctAnswer: 2,
+      explanation: "'Lo siento, pero no puedo' est la manière polie de refuser. On s'excuse d'abord avec 'lo siento'."
+    },
+    {
+      question: "Que signifie '¿Te gustaría ir al cine?' ?",
+      options: [
+        "Tu vas au cinéma ?",
+        "Tu aimes le cinéma ?",
+        "Tu aimerais aller au cinéma ?",
+        "Tu veux acheter un cinéma ?"
+      ],
+      correctAnswer: 2,
+      explanation: "'¿Te gustaría...?' est une forme polie pour inviter, équivalent à 'Tu aimerais...'."
+    },
+    {
+      question: "Comment dit-on 'Avec plaisir' pour accepter une invitation formelle ?",
+      options: ["¡Genial!", "Con mucho gusto", "¡Vale!", "¡Qué bien!"],
+      correctAnswer: 1,
+      explanation: "'Con mucho gusto' signifie 'Avec grand plaisir'. C'est une réponse formelle et polie."
+    },
+    {
+      question: "Quelle expression propose une alternative à une invitation ?",
+      options: ["No puedo", "Lo siento", "¿Qué tal otro día?", "Tengo que estudiar"],
+      correctAnswer: 2,
+      explanation: "'¿Qué tal otro día?' signifie 'Et un autre jour ?' C'est une manière positive de proposer une alternative."
+    },
+    {
+      question: "Comment dit-on 'Je suis désolé(e), j'ai des plans' ?",
+      options: [
+        "Lo siento, tengo planes",
+        "Qué pena, tengo planes",
+        "No puedo, tengo planes",
+        "Perdón, tengo planes"
+      ],
+      correctAnswer: 1,
+      explanation: "'Qué pena, tengo planes' exprime le regret et donne la raison. 'Qué pena' signifie 'Quel dommage'."
+    },
+    {
+      question: "Quelle forme utilise-t-on pour une invitation formelle ?",
+      options: [
+        "¿Quieres venir?",
+        "¿Vienes conmigo?",
+        "¿Quisiera venir a mi casa?",
+        "¿Por qué no vienes?"
+      ],
+      correctAnswer: 2,
+      explanation: "'¿Quisiera...?' (conditionnel de 'querer') est la forme très polie pour inviter formellement."
+    }
+  ]
+};
+
+export const invitacionMatching = {
+  pairs: [
+    { id: "1", question: "¿Quieres venir?", answer: "Tu veux venir ?" },
+    { id: "2", question: "¡Claro que sí!", answer: "Bien sûr !" },
+    { id: "3", question: "Lo siento, no puedo", answer: "Désolé(e), je ne peux pas" },
+    { id: "4", question: "Con mucho gusto", answer: "Avec grand plaisir" },
+    { id: "5", question: "¿Te gustaría...?", answer: "Tu aimerais...?" },
+    { id: "6", question: "Qué pena", answer: "Quel dommage" },
+    { id: "7", question: "Una fiesta", answer: "Une fête" },
+    { id: "8", question: "Un cumpleaños", answer: "Un anniversaire" },
+    { id: "9", question: "¿Qué tal otro día?", answer: "Et un autre jour ?" },
+    { id: "10", question: "Me encantaría", answer: "J'adorerais" }
+  ]
+};
+
+// Obligacion Quiz
+export const obligacionQuiz = {
+  questions: [
+    {
+      question: "Quelle structure utilise-t-on pour exprimer une obligation personnelle forte ?",
+      options: ["Deber + infinitivo", "Tener que + infinitivo", "Hay que + infinitivo", "Hace falta que + subjuntivo"],
+      correctAnswer: 1,
+      explanation: "'Tener que + infinitivo' exprime une obligation personnelle nécessaire, quelque chose qu'on doit absolument faire."
+    },
+    {
+      question: "Comment dit-on 'Je dois étudier' en espagnol ?",
+      options: ["Debo estudiar", "Tengo que estudiar", "Hay que estudiar", "Les deux A et B"],
+      correctAnswer: 3,
+      explanation: "Les deux sont corrects ! 'Tengo que estudiar' (obligation forte) et 'Debo estudiar' (devoir moral)."
+    },
+    {
+      question: "Quelle structure est impersonnelle et signifie 'il faut' ?",
+      options: ["Tener que", "Deber", "Hay que", "Hace falta"],
+      correctAnswer: 2,
+      explanation: "'Hay que + infinitivo' est impersonnel et signifie 'il faut'. On ne précise pas qui doit faire l'action."
+    },
+    {
+      question: "Quel mode verbal utilise-t-on après 'Hace falta que' ?",
+      options: ["Indicatif", "Subjonctif", "Infinitif", "Impératif"],
+      correctAnswer: 1,
+      explanation: "'Hace falta que' requiert le subjonctif : 'Hace falta que estudies' (Il faut que tu études)."
+    },
+    {
+      question: "Comment conjugue-t-on 'hablar' au subjonctif pour 'yo' ?",
+      options: ["Hablo", "Hable", "Habla", "Hables"],
+      correctAnswer: 1,
+      explanation: "Les verbes en -AR prennent des terminaisons en -E au subjonctif : 'hable, hables, hable...'."
+    },
+    {
+      question: "Quelle est la terminaison du subjonctif pour les verbes en -ER/-IR à 'nosotros' ?",
+      options: ["-emos/-imos", "-amos", "-emos", "-imos"],
+      correctAnswer: 1,
+      explanation: "Au subjonctif, -ER et -IR prennent tous les deux -amos : 'comamos, escribamos'."
+    },
+    {
+      question: "Que signifie 'Los estudiantes deben respetar al profesor' ?",
+      options: [
+        "Les étudiants doivent respecter le professeur",
+        "Les étudiants respectent le professeur",
+        "Les étudiants ont respecté le professeur",
+        "Il faut que les étudiants respectent le professeur"
+      ],
+      correctAnswer: 0,
+      explanation: "'Deber + infinitivo' exprime un devoir moral. Ici, c'est le devoir de respecter le professeur."
+    },
+    {
+      question: "Comment traduit-on 'Il faut que nous travaillions ensemble' ?",
+      options: [
+        "Hay que trabajar juntos",
+        "Tenemos que trabajar juntos",
+        "Hace falta que trabajemos juntos",
+        "Debemos trabajar juntos"
+      ],
+      correctAnswer: 2,
+      explanation: "'Il faut que + subjonctif' se traduit par 'Hace falta que + subjuntivo' : 'trabajemos' est le subjonctif."
+    }
+  ]
+};
+
+export const obligacionMatching = {
+  pairs: [
+    { id: "1", question: "Tengo que estudiar", answer: "Je dois étudier" },
+    { id: "2", question: "Debo respetar", answer: "Je dois respecter" },
+    { id: "3", question: "Hay que trabajar", answer: "Il faut travailler" },
+    { id: "4", question: "Hace falta que estudies", answer: "Il faut que tu études" },
+    { id: "5", question: "Hable", answer: "Que je parle (subjonctif)" },
+    { id: "6", question: "Coma", answer: "Que je mange (subjonctif)" },
+    { id: "7", question: "Escriba", answer: "Que j'écrive (subjonctif)" },
+    { id: "8", question: "Una obligación", answer: "Une obligation" },
+    { id: "9", question: "Es necesario", answer: "C'est nécessaire" },
+    { id: "10", question: "El deber", answer: "Le devoir" }
+  ]
+};
+
