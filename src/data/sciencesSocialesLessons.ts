@@ -7997,212 +7997,1831 @@ export const sciencesSocialesLessons7AF: SciencesSocialesLesson[] = [
   // Leçon 15: Les premiers habitants des Antilles
   {
     id: "premiers-habitants-antilles",
-    title: "Les premiers habitants des Antilles",
+    title: "Les premiers habitants des Antilles : Voyage dans le temps",
     mois: "Juin",
-    objectif: "Retracer l'histoire du peuplement des îles antillaises.",
+    objectif: "Retracer l'histoire fascinante du peuplement des îles antillaises et comprendre les migrations ancestrales qui ont façonné notre région.",
     introduction: `
-      <p class="text-foreground leading-relaxed">
-        Les Antilles n'ont pas toujours été habitées. Les premiers humains y sont arrivés il y a environ 6 000 ans, venant d'Amérique du Sud en canoe. Ces migrations successives ont donné naissance aux différents peuples antillais.
-      </p>
+      <div class="space-y-6">
+        <div class="bg-gradient-to-r from-blue-50 to-cyan-50 dark:from-blue-950/30 dark:to-cyan-950/30 p-6 rounded-lg border-l-4 border-blue-500">
+          <p class="text-lg italic">"Bien avant que nos ancêtres africains arrivent en Haïti, d'autres peuples avaient déjà tracé les premières routes maritimes de notre archipel, naviguant courageusement d'île en île sous les étoiles."</p>
+        </div>
+        
+        <p class="text-lg leading-relaxed">Imagine la scène : nous sommes il y a 6 000 ans. L'océan Atlantique s'étend à perte de vue. Soudain, à l'horizon, des silhouettes de pirogues apparaissent. À bord, des familles entières, des enfants, des anciens, portant leurs outils, leurs semences, leurs rêves. Ils viennent d'Amérique du Sud, de la région de l'Orénoque (actuel Venezuela). Ces courageux explorateurs ne savent pas ce qu'ils vont trouver. Ils suivent les oiseaux, les courants, les étoiles. Après des jours de navigation périlleuse, ils aperçoivent enfin une terre : les Antilles !</p>
+        
+        <p>Ces premiers habitants n'étaient pas un peuple unique, mais plusieurs vagues successives de migrations qui se sont étalées sur des millénaires. Chasseurs, pêcheurs, agriculteurs, guerriers : chaque groupe apportait ses techniques, ses croyances, sa culture. Progressivement, ils ont colonisé l'ensemble de l'arc antillais, du nord de Cuba jusqu'à Trinidad, créant des sociétés complexes et sophistiquées.</p>
+        
+        <p>Aujourd'hui, nous Haïtiens, bien que descendants principalement d'Africains, portons aussi l'héritage de ces premiers Antillais. Des mots que nous utilisons (canot, hamac, ouragan), des aliments que nous cultivons (manioc, maïs, patate), des techniques de pêche, des noms de lieux (Xaragua, Marién) : tout cela vient d'eux. Étudier les premiers habitants des Antilles, c'est découvrir une partie essentielle de notre histoire commune caribéenne.</p>
+        
+        <div class="bg-yellow-50 dark:bg-yellow-950/20 border-l-4 border-yellow-500 p-4 my-4">
+          <p class="font-semibold text-yellow-900 dark:text-yellow-200">🎯 Objectifs d'apprentissage</p>
+          <ul class="list-disc ml-6 mt-2 space-y-1">
+            <li>Identifier les différentes vagues de peuplement des Antilles</li>
+            <li>Comprendre les routes migratoires depuis l'Amérique du Sud</li>
+            <li>Découvrir les modes de vie des peuples précolombiens</li>
+            <li>Reconnaître l'évolution technologique et culturelle à travers le temps</li>
+            <li>Apprécier le courage et l'ingéniosité de ces premiers navigateurs</li>
+          </ul>
+        </div>
+      </div>
     `,
     contenu: `
-      <section class="space-y-6">
-        <div>
-          <h3 class="text-xl font-semibold mb-3 text-foreground">1. Les vagues migratoires</h3>
-          <h4 class="font-semibold mt-3 mb-2 text-foreground">Première vague : Les Archaïques (6000-2000 av. J.-C.)</h4>
-          <ul class="list-disc ml-6 space-y-2 text-foreground">
-            <li>Chasseurs-cueilleurs et pêcheurs</li>
-            <li>Outils en pierre rudimentaires</li>
-            <li>Pas de poterie</li>
-          </ul>
+      <div class="space-y-8">
+        <section>
+          <h3 class="text-2xl font-bold mb-4 text-primary">1. Les quatre grandes vagues migratoires 🌊</h3>
+          
+          <p class="text-lg mb-4">Le peuplement des Antilles s'est fait progressivement, par vagues successives depuis l'Amérique du Sud. Chaque groupe apportait de nouvelles techniques et transformait la région.</p>
+          
+          <div class="space-y-6 mt-6">
+            <div class="bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-950/30 dark:to-emerald-950/30 p-6 rounded-lg border-l-4 border-green-500">
+              <h4 class="text-xl font-semibold mb-3">🪨 Première vague : Les Paléo-Indiens/Archaïques (7000-2000 av. J.-C.)</h4>
+              <p class="mb-3"><strong>Origine :</strong> Floride et Amérique centrale</p>
+              <p class="mb-3"><strong>Mode de vie :</strong> Chasseurs-cueilleurs-pêcheurs nomades. Ils se déplaçaient constamment à la recherche de nourriture.</p>
+              
+              <div class="ml-4 space-y-2 mt-3">
+                <p><strong>🎣 Alimentation :</strong></p>
+                <ul class="list-disc ml-6 space-y-1">
+                  <li>Pêche en mer et en rivière (poissons, crustacés, mollusques)</li>
+                  <li>Chasse de petits animaux (iguanes, oiseaux, tortues marines)</li>
+                  <li>Cueillette de fruits sauvages, racines, coquillages</li>
+                </ul>
+                
+                <p class="mt-3"><strong>🛠️ Outils :</strong></p>
+                <ul class="list-disc ml-6 space-y-1">
+                  <li>Outils en pierre taillée très rudimentaires (haches, grattoirs)</li>
+                  <li>Hameçons en os et en coquillage</li>
+                  <li>Aucune poterie (mangeaient dans des coquillages ou feuilles)</li>
+                </ul>
+                
+                <p class="mt-3"><strong>🏠 Habitat :</strong> Grottes naturelles ou abris sous roche. Vestiges archéologiques trouvés à Cuba, en Jamaïque, et dans plusieurs grottes d'Haïti (notamment dans le Sud).</p>
+              </div>
+              
+              <div class="bg-white dark:bg-gray-800 p-4 rounded-lg mt-4">
+                <p class="font-semibold">💡 Le savais-tu ?</p>
+                <p class="text-sm">Ces premiers habitants vivaient de la même façon que nos ancêtres africains de l'âge de pierre ! Ils ne connaissaient ni l'agriculture, ni l'écriture, mais maîtrisaient parfaitement leur environnement naturel.</p>
+              </div>
+            </div>
 
-          <h4 class="font-semibold mt-3 mb-2 text-foreground">Deuxième vague : Les Saladoïdes (500 av. J.-C.)</h4>
-          <ul class="list-disc ml-6 space-y-2 text-foreground">
-            <li>Origine : Venezuela</li>
-            <li>Apportent la poterie et l'agriculture</li>
-            <li>Ancêtres des Taïnos</li>
-          </ul>
+            <div class="bg-gradient-to-r from-amber-50 to-orange-50 dark:from-amber-950/30 dark:to-orange-950/30 p-6 rounded-lg border-l-4 border-amber-500">
+              <h4 class="text-xl font-semibold mb-3">🏺 Deuxième vague : Les Saladoïdes (500 av. J.-C. - 500 apr. J.-C.)</h4>
+              <p class="mb-3"><strong>Origine :</strong> Bassin de l'Orénoque (Venezuela actuel)</p>
+              <p class="mb-3"><strong>Mode de vie :</strong> Agriculteurs sédentaires. Première vraie "révolution" culturelle des Antilles !</p>
+              
+              <div class="ml-4 space-y-2 mt-3">
+                <p><strong>🌱 Agriculture :</strong></p>
+                <ul class="list-disc ml-6 space-y-1">
+                  <li>Introduction de la culture du <strong>manioc</strong> (yuca) : plante miraculeuse qui deviendra l'aliment de base</li>
+                  <li>Maïs, patate douce, courges, piments</li>
+                  <li>Technique des <strong>conucos</strong> : monticules de terre surélevés pour améliorer drainage et fertilité</li>
+                </ul>
+                
+                <p class="mt-3"><strong>🎨 Artisanat :</strong></p>
+                <ul class="list-disc ml-6 space-y-1">
+                  <li><strong>Poterie magnifique</strong> : Première apparition de la céramique aux Antilles ! Vases, bols, plats décorés de motifs géométriques blancs sur fond rouge</li>
+                  <li>Vannerie (paniers tressés en fibres végétales)</li>
+                  <li>Parures en coquillages et en pierre</li>
+                </ul>
+                
+                <p class="mt-3"><strong>🏘️ Villages :</strong> Installations permanentes près des rivières et des côtes. Construction de maisons rondes (bohíos) en bois et en feuilles de palmier.</p>
+              </div>
+              
+              <div class="bg-white dark:bg-gray-800 p-4 rounded-lg mt-4">
+                <p class="font-semibold">💡 Importance historique</p>
+                <p class="text-sm">Les Saladoïdes sont les ancêtres directs des <strong>Taïnos</strong> que Christophe Colomb rencontrera en 1492. Toute la civilisation taïno vient d'eux !</p>
+              </div>
+            </div>
 
-          <h4 class="font-semibold mt-3 mb-2 text-foreground">Troisième vague : Les Caribes (1000 ap. J.-C.)</h4>
-          <ul class="list-disc ml-6 space-y-2 text-foreground">
-            <li>Guerriers venus d'Amérique du Sud</li>
-            <li>S'installent dans les Petites Antilles</li>
-          </ul>
-        </div>
+            <div class="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-950/30 dark:to-indigo-950/30 p-6 rounded-lg border-l-4 border-blue-500">
+              <h4 class="text-xl font-semibold mb-3">🌴 Troisième vague : Les Taïnos (900-1492 apr. J.-C.)</h4>
+              <p class="mb-3"><strong>Origine :</strong> Descendants des Saladoïdes, évolution sur place</p>
+              <p class="mb-3"><strong>Zone géographique :</strong> Grandes Antilles (Cuba, Jamaïque, Porto Rico, Hispaniola)</p>
+              <p class="mb-3"><strong>Mode de vie :</strong> Société agricole avancée, organisée en chefferies (cacicazgos)</p>
+              
+              <div class="ml-4 space-y-2 mt-3">
+                <p><strong>👑 Organisation sociale :</strong></p>
+                <ul class="list-disc ml-6 space-y-1">
+                  <li>Chefs (caciques) héréditaires gouvernant des territoires</li>
+                  <li>Haïti divisé en 5 grands cacicazgos : Marién, Maguá, Maguana, Xaragua, Higüey</li>
+                  <li>Population estimée : 300 000 à 1 million en Hispaniola (débat historique)</li>
+                </ul>
+                
+                <p class="mt-3"><strong>🎭 Culture riche :</strong></p>
+                <ul class="list-disc ml-6 space-y-1">
+                  <li>Religion animiste (culte des zemis)</li>
+                  <li>Cérémonies collectives (areytos) avec danses, chants, musique</li>
+                  <li>Art développé : sculpture, orfèvrerie (bijoux en or)</li>
+                  <li>Sports rituels : jeu de balle (batey)</li>
+                </ul>
+              </div>
+              
+              <div class="bg-white dark:bg-gray-800 p-4 rounded-lg mt-4">
+                <p class="font-semibold">⚠️ Tragédie historique</p>
+                <p class="text-sm">En 1492, Colomb rencontre les Taïnos. En moins de 50 ans, la quasi-totalité de cette civilisation millénaire disparaît : maladies européennes (variole, grippe), massacres, travail forcé dans les mines d'or. C'est l'un des plus grands génocides de l'histoire.</p>
+              </div>
+            </div>
 
-        <div>
-          <h3 class="text-xl font-semibold mb-3 text-foreground">2. Mode de voyage</h3>
-          <p class="text-foreground">Les premiers habitants traversaient la mer en <strong>canoes</strong> taillés dans de grands troncs d'arbres, pouvant transporter jusqu'à 50 personnes !</p>
-        </div>
-      </section>
+            <div class="bg-gradient-to-r from-red-50 to-pink-50 dark:from-red-950/30 dark:to-pink-950/30 p-6 rounded-lg border-l-4 border-red-500">
+              <h4 class="text-xl font-semibold mb-3">⚔️ Quatrième vague : Les Caribes (1200-1492 apr. J.-C.)</h4>
+              <p class="mb-3"><strong>Origine :</strong> Amérique du Sud (Guyanes, Venezuela)</p>
+              <p class="mb-3"><strong>Zone géographique :</strong> Petites Antilles (Guadeloupe, Martinique, Dominique, Sainte-Lucie...)</p>
+              <p class="mb-3"><strong>Mode de vie :</strong> Guerriers-agriculteurs-pêcheurs</p>
+              
+              <div class="ml-4 space-y-2 mt-3">
+                <p><strong>⚔️ Réputation guerrière :</strong></p>
+                <ul class="list-disc ml-6 space-y-1">
+                  <li>Excellents navigateurs et guerriers redoutés</li>
+                  <li>Attaquaient les Taïnos pacifiques des Grandes Antilles pour capturer des esclaves</li>
+                  <li>Armes : arcs, flèches empoisonnées, massues</li>
+                </ul>
+                
+                <p class="mt-3"><strong>🛶 Navigation exceptionnelle :</strong></p>
+                <ul class="list-disc ml-6 space-y-1">
+                  <li>Pirogues de guerre pouvant transporter jusqu'à 50 guerriers</li>
+                  <li>Raids éclairs sur les îles voisines</li>
+                </ul>
+              </div>
+              
+              <div class="bg-white dark:bg-gray-800 p-4 rounded-lg mt-4">
+                <p class="font-semibold">📚 Héritage linguistique</p>
+                <p class="text-sm">Le mot <strong>"Caraïbe"</strong> vient du nom de ce peuple ! La mer des Caraïbes, les îles Caraïbes : tout porte leur nom. Le mot <strong>"cannibale"</strong> vient aussi d'une déformation de "caribe" par les Espagnols.</p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section>
+          <h3 class="text-2xl font-bold mb-4 text-primary">2. Les routes migratoires : comment sont-ils arrivés ? 🛶</h3>
+          
+          <div class="bg-cyan-50 dark:bg-cyan-950/30 p-6 rounded-lg">
+            <h4 class="text-xl font-semibold mb-3">🗺️ Les chemins de la mer</h4>
+            <p class="mb-4">Les migrations se sont faites progressivement, d'île en île, depuis l'embouchure de l'Orénoque (Venezuela) vers le nord.</p>
+            
+            <div class="space-y-3">
+              <div class="bg-white dark:bg-gray-800 p-4 rounded-lg">
+                <p class="font-semibold mb-2">Route 1 : Arc des Petites Antilles</p>
+                <p class="text-sm">Venezuela → Trinidad → Grenade → Saint-Vincent → Martinique → Dominique → Guadeloupe → Antigua</p>
+                <p class="text-sm mt-2">Distance entre chaque île : 50-150 km. Chaque traversée prenait 1-3 jours en pirogue.</p>
+              </div>
+              
+              <div class="bg-white dark:bg-gray-800 p-4 rounded-lg">
+                <p class="font-semibold mb-2">Route 2 : Vers les Grandes Antilles</p>
+                <p class="text-sm">Petites Antilles → Porto Rico → Hispaniola (Haïti) → Cuba → Jamaïque</p>
+                <p class="text-sm mt-2">Traversées plus longues et plus dangereuses (200-300 km).</p>
+              </div>
+            </div>
+            
+            <p class="mt-4 font-semibold">🧭 Comment naviguaient-ils sans GPS ni boussole ?</p>
+            <ul class="list-disc ml-6 space-y-2 mt-2">
+              <li><strong>Les étoiles :</strong> Navigation astronomique nocturne (Polaire, Croix du Sud)</li>
+              <li><strong>Les oiseaux :</strong> Suivaient les oiseaux marins qui retournaient à terre le soir</li>
+              <li><strong>Les courants :</strong> Connaissance parfaite des courants marins</li>
+              <li><strong>Les nuages :</strong> Au-dessus d'une île, les nuages ont une forme caractéristique</li>
+            </ul>
+          </div>
+        </section>
+
+        <section>
+          <h3 class="text-2xl font-bold mb-4 text-primary">3. Les pirogues : chefs-d'œuvre de technologie maritime 🛶</h3>
+          
+          <div class="grid md:grid-cols-2 gap-4">
+            <div class="bg-amber-50 dark:bg-amber-950/30 p-5 rounded-lg">
+              <h4 class="text-xl font-semibold mb-3">🔨 Fabrication</h4>
+              <ul class="list-disc ml-6 space-y-2">
+                <li>Taillées dans un seul tronc d'arbre géant (acajou, gommier)</li>
+                <li>Travail collectif de plusieurs semaines</li>
+                <li>Utilisation du feu pour creuser et façonner le bois</li>
+                <li>Outils en pierre polie et en coquillage</li>
+              </ul>
+            </div>
+
+            <div class="bg-green-50 dark:bg-green-950/30 p-5 rounded-lg">
+              <h4 class="text-xl font-semibold mb-3">📏 Dimensions</h4>
+              <ul class="list-disc ml-6 space-y-2">
+                <li><strong>Petites pirogues :</strong> 3-5 mètres (2-5 personnes) pour la pêche</li>
+                <li><strong>Grandes pirogues :</strong> 15-25 mètres (50-100 personnes) pour les migrations et la guerre</li>
+                <li>Voiles en feuilles de palmier tressées</li>
+                <li>Stabilité assurée par balanciers latéraux</li>
+              </ul>
+            </div>
+          </div>
+          
+          <div class="bg-blue-50 dark:bg-blue-950/30 p-5 rounded-lg mt-4">
+            <p class="font-semibold mb-2">💡 Le savais-tu ?</p>
+            <p>Le mot haïtien <strong>"kanòt"</strong> (canot/pirogue) vient directement de la langue taïno ! Les Espagnols ont adopté ce mot ("canoa") qui est ensuite passé dans toutes les langues européennes (canoe en anglais, canoa en espagnol, etc.).</p>
+          </div>
+        </section>
+
+        <section>
+          <h3 class="text-2xl font-bold mb-4 text-primary">4. L'héritage des premiers habitants dans l'Haïti moderne 🇭🇹</h3>
+          
+          <div class="space-y-4">
+            <div class="bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-950/30 dark:to-pink-950/30 p-6 rounded-lg">
+              <h4 class="text-xl font-semibold mb-3">🗣️ Mots créoles d'origine taïno</h4>
+              <div class="grid md:grid-cols-2 gap-3 mt-3">
+                <div class="bg-white dark:bg-gray-800 p-3 rounded">
+                  <p class="font-bold">Kanòt</p>
+                  <p class="text-sm">Pirogue, embarcation</p>
+                </div>
+                <div class="bg-white dark:bg-gray-800 p-3 rounded">
+                  <p class="font-bold">Amak</p>
+                  <p class="text-sm">Hamac (du taïno "hamaca")</p>
+                </div>
+                <div class="bg-white dark:bg-gray-800 p-3 rounded">
+                  <p class="font-bold">Manyòk</p>
+                  <p class="text-sm">Manioc</p>
+                </div>
+                <div class="bg-white dark:bg-gray-800 p-3 rounded">
+                  <p class="font-bold">Mayi</p>
+                  <p class="text-sm">Maïs</p>
+                </div>
+                <div class="bg-white dark:bg-gray-800 p-3 rounded">
+                  <p class="font-bold">Patàt</p>
+                  <p class="text-sm">Patate (du taïno "batata")</p>
+                </div>
+                <div class="bg-white dark:bg-gray-800 p-3 rounded">
+                  <p class="font-bold">Kasav</p>
+                  <p class="text-sm">Cassave (pain de manioc)</p>
+                </div>
+              </div>
+            </div>
+
+            <div class="bg-green-50 dark:bg-green-950/30 p-6 rounded-lg">
+              <h4 class="text-xl font-semibold mb-3">🌍 Noms de lieux d'origine taïno en Haïti</h4>
+              <ul class="list-disc ml-6 space-y-2">
+                <li><strong>Xaragua :</strong> Ancien royaume taïno (Sud-Ouest d'Haïti)</li>
+                <li><strong>Marién :</strong> Ancien royaume taïno (Nord-Ouest)</li>
+                <li><strong>Maguá, Maguana, Higüey :</strong> Autres royaumes taïnos</li>
+                <li>Beaucoup de noms de rivières, montagnes, villages portent encore des noms taïnos</li>
+              </ul>
+            </div>
+          </div>
+        </section>
+      </div>
     `,
     exemplesExercices: `
-      <section class="space-y-4">
-        <div class="bg-primary/5 border-l-4 border-primary p-4 rounded">
-          <h4 class="font-semibold mb-2 text-foreground">💡 Réflexion</h4>
-          <p class="text-foreground">
-            Imagine le courage qu'il fallait pour traverser la mer en canoe, sans boussole ni carte, vers des terres inconnues !
-          </p>
+      <div class="space-y-6">
+        <h3 class="text-2xl font-bold mb-4 text-primary">📝 Exercices variés</h3>
+
+        <div class="space-y-6">
+          <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md">
+            <p class="font-bold text-xl mb-4">1. Carte migratoire</p>
+            <p class="mb-3">Sur une carte vierge des Antilles :</p>
+            <ul class="list-disc ml-6 space-y-2">
+              <li>Trace les routes migratoires depuis le Venezuela</li>
+              <li>Indique les différentes îles colonisées</li>
+              <li>Utilise des couleurs différentes pour chaque vague migratoire</li>
+              <li>Marque les 5 cacicazgos d'Haïti</li>
+            </ul>
+          </div>
+
+          <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md">
+            <p class="font-bold text-xl mb-4">2. Frise chronologique</p>
+            <p class="mb-3">Crée une frise du peuplement des Antilles :</p>
+            <ul class="list-disc ml-6 space-y-2">
+              <li>De -7000 jusqu'à 1492</li>
+              <li>Place les 4 vagues migratoires</li>
+              <li>Illustre chaque période avec un dessin caractéristique</li>
+              <li>Indique les progrès techniques (agriculture, poterie, etc.)</li>
+            </ul>
+          </div>
+
+          <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md">
+            <p class="font-bold text-xl mb-4">3. Comparaison des peuples</p>
+            <p class="mb-3">Complète ce tableau comparatif :</p>
+            <table class="w-full border-collapse border border-gray-300 mt-3">
+              <thead>
+                <tr class="bg-gray-100 dark:bg-gray-700">
+                  <th class="border p-2">Peuple</th>
+                  <th class="border p-2">Période</th>
+                  <th class="border p-2">Mode de vie</th>
+                  <th class="border p-2">Innovations</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr><td class="border p-2">Archaïques</td><td class="border p-2">...</td><td class="border p-2">...</td><td class="border p-2">...</td></tr>
+                <tr><td class="border p-2">Saladoïdes</td><td class="border p-2">...</td><td class="border p-2">...</td><td class="border p-2">...</td></tr>
+                <tr><td class="border p-2">Taïnos</td><td class="border p-2">...</td><td class="border p-2">...</td><td class="border p-2">...</td></tr>
+                <tr><td class="border p-2">Caribes</td><td class="border p-2">...</td><td class="border p-2">...</td><td class="border p-2">...</td></tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md">
+            <p class="font-bold text-xl mb-4">4. Enquête sur l'héritage taïno</p>
+            <p class="mb-3">Dans ta vie quotidienne, trouve :</p>
+            <ul class="list-disc ml-6 space-y-2">
+              <li>5 mots créoles qui viennent du taïno</li>
+              <li>3 aliments que tu manges d'origine taïno</li>
+              <li>2 techniques ou objets hérités des Taïnos (ex: hamac, pirogue)</li>
+              <li>Présente tes découvertes à la classe</li>
+            </ul>
+          </div>
+
+          <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md">
+            <p class="font-bold text-xl mb-4">5. Questions de réflexion</p>
+            <ol class="list-decimal ml-6 space-y-3">
+              <li>Pourquoi les premiers habitants ont-ils quitté l'Amérique du Sud pour coloniser les Antilles ?</li>
+              <li>Quel courage fallait-il pour traverser l'océan en pirogue sans instruments de navigation ?</li>
+              <li>Pourquoi la civilisation taïno a-t-elle presque entièrement disparu après 1492 ?</li>
+              <li>Quels progrès techniques les Saladoïdes ont-ils apportés par rapport aux Archaïques ?</li>
+            </ol>
+          </div>
+
+          <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md">
+            <p class="font-bold text-xl mb-4">6. Activité créative : Construis une maquette</p>
+            <p class="mb-3">Avec des matériaux de récupération, construis :</p>
+            <ul class="list-disc ml-6 space-y-2">
+              <li>Une pirogue taïno (bouteille en plastique, bois, etc.)</li>
+              <li>Un village avec des bohíos (maisons rondes)</li>
+              <li>Des conucos (monticules agricoles)</li>
+            </ul>
+            <p class="mt-3">Présente ta maquette en expliquant la vie quotidienne de ces premiers habitants.</p>
+          </div>
+
+          <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md">
+            <p class="font-bold text-xl mb-4">7. Calcul mathématique</p>
+            <p class="mb-3">Sachant qu'une grande pirogue pouvait transporter 50 personnes et que la distance Trinidad → Grenade est de 150 km :</p>
+            <ul class="list-decimal ml-6 space-y-2">
+              <li>Si la pirogue avance à 5 km/h, combien de temps dure la traversée ?</li>
+              <li>Si 10 pirogues partent ensemble, combien de personnes peuvent migrer en une seule expédition ?</li>
+              <li>Si une famille de 6 personnes emmène 20 kg de provisions chacune, combien de kg transportent-elles au total ?</li>
+            </ul>
+          </div>
+
+          <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md">
+            <p class="font-bold text-xl mb-4">8. Rédaction : Journal de bord d'un migrant</p>
+            <p class="mb-3">Imagine que tu es un jeune Saladoïde en l'an 200 av. J.-C. Tu participes à la grande migration depuis le Venezuela vers Trinidad. Rédige ton journal de bord (200 mots minimum) en racontant :</p>
+            <ul class="list-disc ml-6 space-y-2">
+              <li>Les préparatifs du départ (provisions, construction de la pirogue)</li>
+              <li>Tes peurs et tes espoirs</li>
+              <li>Le voyage en mer (tempêtes, dauphins, étoiles)</li>
+              <li>L'arrivée sur une nouvelle terre</li>
+            </ul>
+          </div>
         </div>
-      </section>
+
+        <div class="bg-primary/10 p-6 rounded-lg mt-8">
+          <h4 class="font-bold text-lg mb-3">📚 Pour aller plus loin :</h4>
+          <ul class="list-disc ml-6 space-y-2">
+            <li><strong>Visite :</strong> Musée du Panthéon National Haïtien (MUPANAH) à Port-au-Prince - artefacts taïnos</li>
+            <li><strong>Livre :</strong> "Les Taïnos d'Hispaniola" - Histoire illustrée</li>
+            <li><strong>Vidéo :</strong> "Les premiers habitants des Caraïbes" sur YouTube</li>
+            <li><strong>Site web :</strong> Smithsonian Museum - Collection précolombienne des Antilles</li>
+          </ul>
+        </div>
+      </div>
     `
   },
 
   // Leçon 16: Les mouvements de la Terre
   {
     id: "mouvements-terre",
-    title: "Les mouvements de la Terre",
+    title: "Les mouvements de la Terre : Une danse cosmique",
     mois: "Juin",
-    objectif: "Comprendre les mouvements de rotation et de révolution de la Terre.",
+    objectif: "Comprendre les mouvements de rotation et de révolution de la Terre et leurs conséquences sur notre vie quotidienne.",
     introduction: `
-      <p class="text-foreground leading-relaxed">
-        La Terre est en mouvement constant dans l'espace. Elle tourne sur elle-même (rotation) et autour du Soleil (révolution). Ces mouvements expliquent l'alternance du jour et de la nuit, ainsi que les saisons.
-      </p>
+      <div class="space-y-6">
+        <div class="bg-gradient-to-r from-indigo-50 to-purple-50 dark:from-indigo-950/30 dark:to-purple-950/30 p-6 rounded-lg border-l-4 border-indigo-500">
+          <p class="text-lg italic">"Chaque jour, sans que tu t'en rendes compte, tu voyages à une vitesse vertigineuse de 1 670 km/h sur cette planète qui tourne sur elle-même. Et en plus, la Terre entière file à 107 000 km/h autour du Soleil ! Bienvenue dans la grande danse cosmique."</p>
+        </div>
+        
+        <p class="text-lg leading-relaxed">Quand tu regardes le Soleil se lever à l'est le matin et se coucher à l'ouest le soir, tu as l'impression que c'est le Soleil qui bouge autour de la Terre, n'est-ce pas ? C'est exactement ce que pensaient nos ancêtres pendant des milliers d'années ! Mais en réalité, c'est l'inverse : <strong>c'est la Terre qui tourne</strong>, et le Soleil reste (presque) immobile. Cette découverte, faite par les scientifiques comme Copernic et Galilée au 16e siècle, a révolutionné notre compréhension de l'Univers.</p>
+        
+        <p>La Terre effectue en permanence deux mouvements principaux : la <strong>rotation</strong> (elle tourne sur elle-même comme une toupie) et la <strong>révolution</strong> (elle tourne autour du Soleil comme un manège). Ces deux mouvements expliquent des phénomènes que tu observes tous les jours : pourquoi le jour et la nuit alternent, pourquoi il fait plus chaud en été qu'en hiver, pourquoi les jours sont plus longs en juin qu'en décembre.</p>
+        
+        <p>En Haïti, bien que nous soyons dans la zone tropicale et que nous n'ayons pas de vraies saisons marquées comme en Europe ou en Amérique du Nord, nous ressentons quand même les effets de ces mouvements : variations légères de température, durée du jour qui change un peu, position du Soleil dans le ciel...</p>
+        
+        <div class="bg-yellow-50 dark:bg-yellow-950/20 border-l-4 border-yellow-500 p-4 my-4">
+          <p class="font-semibold text-yellow-900 dark:text-yellow-200">🎯 Objectifs d'apprentissage</p>
+          <ul class="list-disc ml-6 mt-2 space-y-1">
+            <li>Comprendre le mouvement de rotation et ses conséquences</li>
+            <li>Comprendre le mouvement de révolution et ses conséquences</li>
+            <li>Expliquer l'alternance jour/nuit</li>
+            <li>Expliquer la succession des saisons</li>
+            <li>Calculer des vitesses et des durées liées aux mouvements terrestres</li>
+          </ul>
+        </div>
+      </div>
     `,
     contenu: `
-      <section class="space-y-6">
-        <div>
-          <h3 class="text-xl font-semibold mb-3 text-foreground">1. La rotation</h3>
-          <p class="text-foreground mb-3">Mouvement de la Terre sur son axe.</p>
-          <ul class="list-disc ml-6 space-y-2 text-foreground">
-            <li><strong>Durée :</strong> 24 heures (un jour)</li>
-            <li><strong>Sens :</strong> D'ouest en est</li>
-            <li><strong>Conséquence :</strong> Alternance jour/nuit</li>
-            <li><strong>Vitesse :</strong> 1 670 km/h à l'équateur</li>
-          </ul>
-        </div>
+      <div class="space-y-8">
+        <section>
+          <h3 class="text-2xl font-bold mb-4 text-primary">1. La rotation : quand la Terre tourne sur elle-même 🌍↻</h3>
+          
+          <div class="bg-gradient-to-r from-blue-50 to-cyan-50 dark:from-blue-950/30 dark:to-cyan-950/30 p-6 rounded-lg">
+            <h4 class="text-xl font-semibold mb-3">Qu'est-ce que la rotation ?</h4>
+            <p class="mb-4">La rotation est le mouvement de la Terre qui tourne sur elle-même, autour d'un axe imaginaire qui traverse les deux pôles (Pôle Nord et Pôle Sud). C'est comme quand tu fais tourner une toupie ou un globe terrestre !</p>
+            
+            <div class="grid md:grid-cols-2 gap-4 mt-4">
+              <div class="bg-white dark:bg-gray-800 p-4 rounded-lg">
+                <p class="font-bold mb-2">⏱️ Durée</p>
+                <p><strong>24 heures</strong> (exactement 23h 56min 4s)</p>
+                <p class="text-sm mt-2">C'est ce qui définit un <strong>jour</strong>.</p>
+              </div>
+              
+              <div class="bg-white dark:bg-gray-800 p-4 rounded-lg">
+                <p class="font-bold mb-2">🧭 Sens de rotation</p>
+                <p><strong>D'ouest en est</strong> (sens antihoraire vu du Pôle Nord)</p>
+                <p class="text-sm mt-2">C'est pourquoi le Soleil se lève toujours à l'est !</p>
+              </div>
+              
+              <div class="bg-white dark:bg-gray-800 p-4 rounded-lg">
+                <p class="font-bold mb-2">⚡ Vitesse à l'équateur</p>
+                <p><strong>1 670 km/h</strong></p>
+                <p class="text-sm mt-2">Plus rapide qu'un avion de ligne (900 km/h) !</p>
+              </div>
+              
+              <div class="bg-white dark:bg-gray-800 p-4 rounded-lg">
+                <p class="font-bold mb-2">📐 Inclinaison de l'axe</p>
+                <p><strong>23,5°</strong> par rapport au plan de l'orbite</p>
+                <p class="text-sm mt-2">Cet axe pointe toujours vers l'étoile Polaire (Pôle Nord).</p>
+              </div>
+            </div>
+          </div>
+          
+          <div class="mt-6 space-y-4">
+            <div class="bg-amber-50 dark:bg-amber-950/30 p-5 rounded-lg">
+              <h4 class="text-xl font-semibold mb-3">🌅 Conséquence principale : L'alternance jour/nuit</h4>
+              <p class="mb-3">Quand la Terre tourne sur elle-même, une moitié de la planète fait face au Soleil (c'est le <strong>jour</strong>), pendant que l'autre moitié est dans l'ombre (c'est la <strong>nuit</strong>).</p>
+              
+              <div class="ml-4 space-y-2">
+                <p><strong>🌞 Côté jour :</strong> Le Soleil illumine cette partie de la Terre. Il fait chaud et lumineux.</p>
+                <p><strong>🌙 Côté nuit :</strong> Cette partie est dans l'ombre de la Terre elle-même. Il fait noir et plus frais.</p>
+                <p class="mt-3"><strong>🔄 Rotation continue :</strong> En 24 heures, toutes les régions de la Terre passent successivement du jour à la nuit.</p>
+              </div>
+              
+              <div class="bg-white dark:bg-gray-800 p-4 rounded-lg mt-4">
+                <p class="font-semibold mb-2">💡 Exemple pour Haïti</p>
+                <p class="text-sm">Quand il est midi à Port-au-Prince (Haïti), le Soleil est au plus haut dans le ciel. À ce moment précis :</p>
+                <ul class="list-disc ml-6 space-y-1 text-sm mt-2">
+                  <li>À Paris (France) : Il est 18h (6 heures de plus) - début de soirée</li>
+                  <li>À New York (USA) : Il est 13h (1 heure de plus) - début d'après-midi</li>
+                  <li>À Tokyo (Japon) : Il est 1h du matin le lendemain (13 heures de plus) - pleine nuit !</li>
+                </ul>
+              </div>
+            </div>
 
-        <div>
-          <h3 class="text-xl font-semibold mb-3 text-foreground">2. La révolution</h3>
-          <p class="text-foreground mb-3">Mouvement de la Terre autour du Soleil.</p>
-          <ul class="list-disc ml-6 space-y-2 text-foreground">
-            <li><strong>Durée :</strong> 365 jours et 1/4 (une année)</li>
-            <li><strong>Trajectoire :</strong> Elliptique (ovale)</li>
-            <li><strong>Conséquence :</strong> Les saisons</li>
-            <li><strong>Vitesse :</strong> 107 000 km/h</li>
-          </ul>
-        </div>
+            <div class="bg-purple-50 dark:bg-purple-950/30 p-5 rounded-lg">
+              <h4 class="text-xl font-semibold mb-3">🕐 Autres conséquences de la rotation</h4>
+              <ul class="list-disc ml-6 space-y-3">
+                <li><strong>Fuseaux horaires :</strong> La Terre est divisée en 24 fuseaux horaires (un par heure). Quand on voyage vers l'est ou l'ouest, on change d'heure.</li>
+                <li><strong>Mouvement apparent du Soleil :</strong> Le Soleil semble se déplacer d'est en ouest dans le ciel (lever à l'est, coucher à l'ouest), alors que c'est la Terre qui tourne.</li>
+                <li><strong>Aplatissement aux pôles :</strong> La force centrifuge due à la rotation fait que la Terre n'est pas une sphère parfaite : elle est légèrement aplatie aux pôles et renflée à l'équateur.</li>
+              </ul>
+            </div>
 
-        <div>
-          <h3 class="text-xl font-semibold mb-3 text-foreground">3. L'inclinaison de l'axe</h3>
-          <p class="text-foreground">L'axe de la Terre est incliné de 23,5°, ce qui explique les saisons. Quand l'hémisphère Nord est incliné vers le Soleil, c'est l'été là-bas et l'hiver dans l'hémisphère Sud.</p>
-        </div>
-      </section>
+            <div class="bg-blue-50 dark:bg-blue-950/30 p-5 rounded-lg">
+              <h4 class="text-xl font-semibold mb-3">🧮 Calculs pratiques</h4>
+              <div class="space-y-3">
+                <div>
+                  <p class="font-semibold">Vitesse de rotation à différentes latitudes :</p>
+                  <ul class="list-disc ml-6 space-y-1 mt-2">
+                    <li><strong>À l'équateur (0°) :</strong> 1 670 km/h</li>
+                    <li><strong>À Port-au-Prince, Haïti (19°N) :</strong> Environ 1 580 km/h</li>
+                    <li><strong>À Paris, France (49°N) :</strong> Environ 1 090 km/h</li>
+                    <li><strong>Aux pôles (90°N ou S) :</strong> 0 km/h (sur place !)</li>
+                  </ul>
+                  <p class="text-sm mt-2 italic">Plus on s'approche des pôles, plus la vitesse diminue car le rayon de rotation est plus petit.</p>
+                </div>
+                
+                <div class="mt-3">
+                  <p class="font-semibold">Distance parcourue en une journée :</p>
+                  <p class="mt-2">Si tu restes immobile à Port-au-Prince pendant 24 heures, tu parcours quand même :</p>
+                  <p class="text-lg font-bold text-primary mt-1">1 580 km/h × 24h = 37 920 km !</p>
+                  <p class="text-sm mt-1">C'est presque la circonférence complète de la Terre à l'équateur (40 075 km).</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section>
+          <h3 class="text-2xl font-bold mb-4 text-primary">2. La révolution : quand la Terre tourne autour du Soleil ☀️🌍</h3>
+          
+          <div class="bg-gradient-to-r from-orange-50 to-red-50 dark:from-orange-950/30 dark:to-red-950/30 p-6 rounded-lg">
+            <h4 class="text-xl font-semibold mb-3">Qu'est-ce que la révolution ?</h4>
+            <p class="mb-4">La révolution est le mouvement de la Terre qui tourne autour du Soleil, sur une trajectoire appelée <strong>orbite</strong>. C'est comme un manège géant où la Terre est un cheval et le Soleil est le centre du manège.</p>
+            
+            <div class="grid md:grid-cols-2 gap-4 mt-4">
+              <div class="bg-white dark:bg-gray-800 p-4 rounded-lg">
+                <p class="font-bold mb-2">⏱️ Durée</p>
+                <p><strong>365 jours et 1/4</strong> (365,25 jours exactement)</p>
+                <p class="text-sm mt-2">C'est ce qui définit une <strong>année</strong>.</p>
+              </div>
+              
+              <div class="bg-white dark:bg-gray-800 p-4 rounded-lg">
+                <p class="font-bold mb-2">🔄 Sens de révolution</p>
+                <p><strong>Sens antihoraire</strong> (comme la rotation)</p>
+                <p class="text-sm mt-2">Vu du Pôle Nord céleste.</p>
+              </div>
+              
+              <div class="bg-white dark:bg-gray-800 p-4 rounded-lg">
+                <p class="font-bold mb-2">🛣️ Forme de l'orbite</p>
+                <p><strong>Elliptique (ovale)</strong>, pas parfaitement circulaire</p>
+                <p class="text-sm mt-2">Le Soleil n'est pas exactement au centre.</p>
+              </div>
+              
+              <div class="bg-white dark:bg-gray-800 p-4 rounded-lg">
+                <p class="font-bold mb-2">⚡ Vitesse orbitale</p>
+                <p><strong>107 000 km/h</strong> (29,78 km/s)</p>
+                <p class="text-sm mt-2">Incroyablement rapide !</p>
+              </div>
+            </div>
+            
+            <div class="bg-white dark:bg-gray-800 p-4 rounded-lg mt-4">
+              <p class="font-semibold mb-2">📏 Distances</p>
+              <ul class="list-disc ml-6 space-y-1">
+                <li><strong>Distance moyenne Terre-Soleil :</strong> 150 millions de km (1 UA - Unité Astronomique)</li>
+                <li><strong>Distance minimale (périhélie) :</strong> 147 millions de km (début janvier)</li>
+                <li><strong>Distance maximale (aphélie) :</strong> 152 millions de km (début juillet)</li>
+              </ul>
+              <p class="text-sm mt-2 italic">⚠️ Contrairement à ce qu'on pourrait penser, ce n'est PAS la distance au Soleil qui crée les saisons, mais l'inclinaison de l'axe terrestre !</p>
+            </div>
+          </div>
+          
+          <div class="mt-6 space-y-4">
+            <div class="bg-green-50 dark:bg-green-950/30 p-5 rounded-lg">
+              <h4 class="text-xl font-semibold mb-3">🍂 Conséquence principale : Les saisons</h4>
+              <p class="mb-3">Les saisons sont causées par l'inclinaison de 23,5° de l'axe de rotation de la Terre par rapport au plan de son orbite. À cause de cette inclinaison, les rayons du Soleil n'arrivent pas avec le même angle tout au long de l'année.</p>
+              
+              <div class="space-y-4 mt-4">
+                <div class="bg-white dark:bg-gray-800 p-4 rounded-lg">
+                  <p class="font-bold mb-2">☀️ Été (dans l'hémisphère Nord : juin-septembre)</p>
+                  <ul class="list-disc ml-6 space-y-1 text-sm">
+                    <li>L'hémisphère Nord est incliné <strong>vers</strong> le Soleil</li>
+                    <li>Rayons du Soleil plus directs (perpendiculaires) → plus de chaleur</li>
+                    <li>Jours plus longs (jusqu'à 16h de lumière en Europe)</li>
+                    <li>Soleil plus haut dans le ciel à midi</li>
+                  </ul>
+                  <p class="text-sm mt-2"><strong>Au même moment :</strong> C'est l'hiver dans l'hémisphère Sud (Australie, Argentine, Afrique du Sud)</p>
+                </div>
+                
+                <div class="bg-white dark:bg-gray-800 p-4 rounded-lg">
+                  <p class="font-bold mb-2">❄️ Hiver (dans l'hémisphère Nord : décembre-mars)</p>
+                  <ul class="list-disc ml-6 space-y-1 text-sm">
+                    <li>L'hémisphère Nord est incliné <strong>loin</strong> du Soleil</li>
+                    <li>Rayons du Soleil obliques → moins de chaleur</li>
+                    <li>Jours plus courts (jusqu'à 8h de lumière en Europe)</li>
+                    <li>Soleil plus bas dans le ciel</li>
+                  </ul>
+                  <p class="text-sm mt-2"><strong>Au même moment :</strong> C'est l'été dans l'hémisphère Sud</p>
+                </div>
+                
+                <div class="bg-white dark:bg-gray-800 p-4 rounded-lg">
+                  <p class="font-bold mb-2">🍂🌸 Printemps et Automne (équinoxes)</p>
+                  <ul class="list-disc ml-6 space-y-1 text-sm">
+                    <li>L'axe de la Terre n'est incliné ni vers ni loin du Soleil</li>
+                    <li>Jour et nuit de durée égale partout sur Terre (12h/12h)</li>
+                    <li><strong>Équinoxe de printemps :</strong> 20-21 mars</li>
+                    <li><strong>Équinoxe d'automne :</strong> 22-23 septembre</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+
+            <div class="bg-teal-50 dark:bg-teal-950/30 p-5 rounded-lg">
+              <h4 class="text-xl font-semibold mb-3">🇭🇹 Et en Haïti ? Pourquoi n'avons-nous pas de vraies saisons ?</h4>
+              <p class="mb-3">Haïti se trouve dans la <strong>zone tropicale</strong>, à environ 19° de latitude Nord, très près du tropique du Cancer (23,5°N). À cette latitude, les variations de l'angle des rayons solaires au cours de l'année sont beaucoup plus faibles qu'en Europe ou au Canada.</p>
+              
+              <div class="space-y-3 mt-3">
+                <div class="bg-white dark:bg-gray-800 p-3 rounded-lg">
+                  <p class="font-semibold">Résultat :</p>
+                  <ul class="list-disc ml-6 space-y-1 text-sm">
+                    <li>Température stable toute l'année (25-32°C)</li>
+                    <li>Variation de seulement 3-4°C entre le mois le plus chaud et le plus frais</li>
+                    <li>Durée du jour presque constante (environ 12h toute l'année)</li>
+                  </ul>
+                </div>
+                
+                <div class="bg-white dark:bg-gray-800 p-3 rounded-lg">
+                  <p class="font-semibold">Nos "saisons" sont plutôt basées sur les pluies :</p>
+                  <ul class="list-disc ml-6 space-y-1 text-sm">
+                    <li><strong>Saison des pluies :</strong> Avril-novembre (chaud et humide)</li>
+                    <li><strong>Saison sèche :</strong> Décembre-mars (chaud et sec)</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+
+            <div class="bg-pink-50 dark:bg-pink-950/30 p-5 rounded-lg">
+              <h4 class="text-xl font-semibold mb-3">📅 L'année bissextile : pourquoi ajoutons-nous un jour tous les 4 ans ?</h4>
+              <p class="mb-3">La révolution de la Terre dure exactement <strong>365 jours et 1/4</strong> (365,25 jours). Or notre calendrier compte seulement 365 jours. Que faire de ce quart de jour restant ?</p>
+              
+              <div class="bg-white dark:bg-gray-800 p-4 rounded-lg mt-3">
+                <p class="font-semibold mb-2">Solution : L'année bissextile</p>
+                <ul class="list-disc ml-6 space-y-2 text-sm">
+                  <li>Tous les <strong>4 ans</strong>, on ajoute 1 jour supplémentaire : le <strong>29 février</strong></li>
+                  <li>Calcul : 1/4 de jour × 4 ans = 1 jour complet</li>
+                  <li>Années bissextiles : 2020, 2024, 2028, 2032...</li>
+                  <li>Règle : Une année est bissextile si elle est divisible par 4 (sauf exceptions pour les siècles)</li>
+                </ul>
+                <p class="mt-3 text-sm"><strong>Pourquoi c'est important ?</strong> Sans année bissextile, après 100 ans, notre calendrier serait décalé de 25 jours par rapport aux saisons ! Noël finirait par arriver en plein été...</p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section>
+          <h3 class="text-2xl font-bold mb-4 text-primary">3. Les dates clés de l'année ☀️📅</h3>
+          
+          <div class="grid md:grid-cols-2 gap-4">
+            <div class="bg-yellow-50 dark:bg-yellow-950/30 p-5 rounded-lg">
+              <h4 class="text-xl font-semibold mb-3">☀️ Solstices</h4>
+              <p class="mb-3">Moments où le Soleil atteint sa position la plus haute ou la plus basse dans le ciel.</p>
+              
+              <div class="space-y-3">
+                <div>
+                  <p class="font-bold">Solstice d'été (21 juin - Hémisphère Nord)</p>
+                  <ul class="list-disc ml-6 space-y-1 text-sm">
+                    <li>Jour le plus long de l'année (jusqu'à 16h de lumière en Europe)</li>
+                    <li>Début de l'été</li>
+                    <li>Le Soleil éclaire directement le tropique du Cancer (23,5°N)</li>
+                  </ul>
+                </div>
+                
+                <div>
+                  <p class="font-bold">Solstice d'hiver (21 décembre - Hémisphère Nord)</p>
+                  <ul class="list-disc ml-6 space-y-1 text-sm">
+                    <li>Jour le plus court de l'année</li>
+                    <li>Début de l'hiver</li>
+                    <li>Le Soleil éclaire directement le tropique du Capricorne (23,5°S)</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+
+            <div class="bg-green-50 dark:bg-green-950/30 p-5 rounded-lg">
+              <h4 class="text-xl font-semibold mb-3">⚖️ Équinoxes</h4>
+              <p class="mb-3">Moments où le jour et la nuit ont la même durée partout sur Terre (12h/12h).</p>
+              
+              <div class="space-y-3">
+                <div>
+                  <p class="font-bold">Équinoxe de printemps (20-21 mars)</p>
+                  <ul class="list-disc ml-6 space-y-1 text-sm">
+                    <li>Début du printemps (Hémisphère Nord)</li>
+                    <li>Le Soleil éclaire directement l'équateur</li>
+                  </ul>
+                </div>
+                
+                <div>
+                  <p class="font-bold">Équinoxe d'automne (22-23 septembre)</p>
+                  <ul class="list-disc ml-6 space-y-1 text-sm">
+                    <li>Début de l'automne (Hémisphère Nord)</li>
+                    <li>Le Soleil éclaire directement l'équateur</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+      </div>
     `,
     exemplesExercices: `
-      <section class="space-y-4">
-        <div class="bg-accent/5 border-l-4 border-accent p-4 rounded">
-          <h4 class="font-semibold mb-2 text-foreground">📝 Expérience</h4>
-          <p class="text-foreground">
-            Avec une lampe (Soleil) et un globe, montre la rotation et la révolution de la Terre. Observe comment se créent le jour, la nuit et les saisons.
-          </p>
+      <div class="space-y-6">
+        <h3 class="text-2xl font-bold mb-4 text-primary">📝 Exercices variés</h3>
+
+        <div class="space-y-6">
+          <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md">
+            <p class="font-bold text-xl mb-4">1. Expérience pratique : Simulation de la rotation</p>
+            <p class="mb-3"><strong>Matériel :</strong> Un globe terrestre (ou une balle), une lampe de poche (représente le Soleil)</p>
+            <p class="mb-3"><strong>Instructions :</strong></p>
+            <ol class="list-decimal ml-6 space-y-2">
+              <li>Place la lampe sur une table (Soleil fixe)</li>
+              <li>Tourne lentement le globe sur lui-même face à la lampe</li>
+              <li>Observe comment Haïti passe de la lumière (jour) à l'ombre (nuit)</li>
+              <li>Remarque que pendant qu'Haïti est dans la lumière, la Chine (de l'autre côté) est dans l'ombre</li>
+            </ol>
+            <p class="mt-3"><strong>Question :</strong> Combien de tours complets le globe doit-il faire pour représenter une semaine ? (Réponse : 7 tours)</p>
+          </div>
+
+          <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md">
+            <p class="font-bold text-xl mb-4">2. Calculs mathématiques sur la rotation</p>
+            <ol class="list-decimal ml-6 space-y-3">
+              <li>
+                <p class="font-semibold">La Terre tourne à 1 670 km/h à l'équateur. Combien de kilomètres parcourt-elle en :</p>
+                <ul class="list-disc ml-6 space-y-1 text-sm">
+                  <li>1 heure ? (Facile : 1 670 km)</li>
+                  <li>12 heures ? (1 670 × 12 = ...)</li>
+                  <li>1 semaine ? (1 670 × 24 × 7 = ...)</li>
+                </ul>
+              </li>
+              <li>
+                <p class="font-semibold">Si la circonférence de la Terre à l'équateur est de 40 075 km, combien de temps met un point de l'équateur pour faire un tour complet ?</p>
+                <p class="text-sm mt-1">(Formule : Temps = Distance ÷ Vitesse)</p>
+              </li>
+              <li>
+                <p class="font-semibold">La Terre met 365,25 jours pour faire le tour du Soleil. Combien d'années bissextiles y a-t-il eu depuis ta naissance ?</p>
+              </li>
+            </ol>
+          </div>
+
+          <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md">
+            <p class="font-bold text-xl mb-4">3. Diagramme des saisons</p>
+            <p class="mb-3">Dessine un schéma montrant :</p>
+            <ul class="list-disc ml-6 space-y-2">
+              <li>Le Soleil au centre</li>
+              <li>4 positions de la Terre autour du Soleil (une pour chaque saison)</li>
+              <li>L'inclinaison de l'axe terrestre (23,5°) à chaque position</li>
+              <li>Indique les dates des solstices et équinoxes</li>
+              <li>Colorie en jaune l'hémisphère qui reçoit le plus de lumière</li>
+            </ul>
+          </div>
+
+          <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md">
+            <p class="font-bold text-xl mb-4">4. Questions de compréhension</p>
+            <ol class="list-decimal ml-6 space-y-3">
+              <li>Pourquoi le Soleil semble-t-il se lever à l'est et se coucher à l'ouest ?</li>
+              <li>Si la Terre s'arrêtait de tourner sur elle-même, que se passerait-il ?</li>
+              <li>Pourquoi avons-nous besoin d'années bissextiles ?</li>
+              <li>Explique pourquoi Haïti n'a pas de vraies saisons comme l'Europe.</li>
+              <li>Quand c'est l'hiver au Canada, quelle saison est-ce en Argentine (hémisphère Sud) ?</li>
+              <li>Le 21 juin, quel hémisphère reçoit le plus de lumière solaire ?</li>
+            </ol>
+          </div>
+
+          <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md">
+            <p class="font-bold text-xl mb-4">5. Observation du Soleil (pendant une semaine)</p>
+            <p class="mb-3">⚠️ Ne regarde JAMAIS le Soleil directement ! Observe son ombre.</p>
+            <p class="mb-3"><strong>Instructions :</strong></p>
+            <ul class="list-disc ml-6 space-y-2">
+              <li>Chaque jour à midi (12h), plante un bâton verticalement dans le sol</li>
+              <li>Trace la direction et la longueur de son ombre sur le sol</li>
+              <li>Après une semaine, compare : l'ombre change-t-elle ?</li>
+              <li>Recommence l'expérience 3 mois plus tard : que remarques-tu ?</li>
+            </ul>
+            <p class="mt-3 text-sm italic">Cette expérience montre comment la position du Soleil dans le ciel change au cours de l'année (révolution).</p>
+          </div>
+
+          <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md">
+            <p class="font-bold text-xl mb-4">6. Vrai ou Faux ?</p>
+            <ol class="list-decimal ml-6 space-y-2">
+              <li>La Terre tourne sur elle-même en 24 heures. (V/F)</li>
+              <li>Les saisons sont causées par la distance Terre-Soleil qui varie. (V/F)</li>
+              <li>La Terre tourne d'est en ouest. (V/F)</li>
+              <li>L'axe de la Terre est parfaitement vertical. (V/F)</li>
+              <li>Aux équinoxes, le jour et la nuit ont la même durée. (V/F)</li>
+              <li>Une année dure exactement 365 jours. (V/F)</li>
+              <li>Haïti se trouve dans l'hémisphère Nord. (V/F)</li>
+              <li>Plus on s'approche des pôles, plus on tourne vite. (V/F)</li>
+            </ol>
+            <p class="text-sm mt-3 italic">Réponses : V, F (c'est l'inclinaison !), F (ouest en est), F (23,5°), V, F (365,25), V, F (on tourne moins vite)</p>
+          </div>
+
+          <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md">
+            <p class="font-bold text-xl mb-4">7. Projet de recherche : Les fuseaux horaires</p>
+            <p class="mb-3">Sur une carte du monde :</p>
+            <ul class="list-disc ml-6 space-y-2">
+              <li>Identifie le fuseau horaire d'Haïti (UTC-5 ou UTC-4 selon la période)</li>
+              <li>Trouve 5 pays dans des fuseaux horaires différents</li>
+              <li>Si tu appelles un ami en France à 14h (heure haïtienne), quelle heure est-il en France ?</li>
+              <li>Explique pourquoi certains pays très larges (Russie, USA, Canada) ont plusieurs fuseaux horaires</li>
+            </ul>
+          </div>
+
+          <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md">
+            <p class="font-bold text-xl mb-4">8. Débat : Et si la Terre ne tournait plus ?</p>
+            <p class="mb-3"><strong>Sujet :</strong> Imagine que la Terre arrête subitement de tourner. Quelles seraient les conséquences ?</p>
+            <p class="mb-3"><strong>Pistes de réflexion :</strong></p>
+            <ul class="list-disc ml-6 space-y-2">
+              <li>Un côté de la Terre serait toujours face au Soleil (jour éternel), l'autre dans l'ombre (nuit éternelle)</li>
+              <li>Températures extrêmes : très chaud d'un côté, très froid de l'autre</li>
+              <li>Vents violents entre les deux zones</li>
+              <li>Vie humaine impossible dans ces conditions</li>
+            </ul>
+          </div>
         </div>
-      </section>
+
+        <div class="bg-primary/10 p-6 rounded-lg mt-8">
+          <h4 class="font-bold text-lg mb-3">📚 Pour aller plus loin :</h4>
+          <ul class="list-disc ml-6 space-y-2">
+            <li><strong>Vidéo :</strong> "Les mouvements de la Terre expliqués en 3D" sur YouTube</li>
+            <li><strong>Application :</strong> "Solar Walk" - Simulateur du système solaire</li>
+            <li><strong>Site web :</strong> timeanddate.com - Observe la durée du jour partout dans le monde</li>
+            <li><strong>Livre :</strong> "Le système solaire pour les nuls"</li>
+          </ul>
+        </div>
+      </div>
     `
   },
 
   // Leçon 17: L'humanité dans la Caraïbe
   {
     id: "humanite-caraibe",
-    title: "L'humanité dans la Caraïbe",
+    title: "L'humanité dans la Caraïbe : Un creuset de civilisations",
     mois: "Juillet",
-    objectif: "Étudier la diversité des populations caribéennes et leur histoire.",
+    objectif: "Étudier la riche diversité des populations caribéennes, comprendre leur histoire complexe et célébrer le métissage culturel unique de notre région.",
     introduction: `
-      <p class="text-foreground leading-relaxed">
-        La population caribéenne actuelle est le résultat d'un mélange unique de peuples venus de trois continents : les autochtones américains, les Européens et les Africains. Cette diversité fait la richesse culturelle de notre région.
-      </p>
+      <div class="space-y-6">
+        <div class="bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-950/30 dark:to-pink-950/30 p-6 rounded-lg border-l-4 border-purple-500">
+          <p class="text-lg italic">"La Caraïbe est une mosaïque humaine où se rencontrent trois continents : l'Amérique, l'Afrique et l'Europe. De cette rencontre tragique et violente est né un peuple nouveau, métissé, créatif, résilient. Nous sommes les enfants de l'histoire caribéenne."</p>
+        </div>
+        
+        <p class="text-lg leading-relaxed">Ferme les yeux et imagine un marché de Port-au-Prince, un samedi matin. Tu entends des marchandes parler créole avec un accent africain, tu croises des visages de toutes les couleurs de peau, tu sens l'odeur du café (d'origine africaine), du pain français, du riz chinois. Tu vois des vêtements de style américain, des bijoux artisanaux taïnos, de la musique konpa qui mélange rythmes africains et mélodies européennes. Tout cela, c'est la Caraïbe : un extraordinaire mélange de cultures venues des quatre coins du monde.</p>
+        
+        <p>Mais cette diversité n'est pas tombée du ciel. Elle est le résultat d'une histoire longue, douloureuse et complexe : les peuples autochtones décimés par la colonisation, les millions d'Africains arrachés à leur terre et réduits en esclavage, les colons européens venus s'enrichir, les travailleurs asiatiques venus après l'abolition de l'esclavage, les migrations récentes... Chaque groupe a laissé son empreinte indélébile sur notre région.</p>
+        
+        <p>Aujourd'hui, la Caraïbe compte environ 44 millions d'habitants répartis sur plus de 7 000 îles ! Nous parlons des dizaines de langues (créoles, espagnol, anglais, français, néerlandais), nous pratiquons diverses religions (christianisme, vodou, santería, rastafari, islam, hindouisme), nous avons des cuisines variées, des styles musicaux innombrables. Cette diversité est notre plus grande richesse !</p>
+        
+        <div class="bg-yellow-50 dark:bg-yellow-950/20 border-l-4 border-yellow-500 p-4 my-4">
+          <p class="font-semibold text-yellow-900 dark:text-yellow-200">🎯 Objectifs d'apprentissage</p>
+          <ul class="list-disc ml-6 mt-2 space-y-1">
+            <li>Comprendre la composition ethnique complexe de la population caribéenne</li>
+            <li>Retracer l'histoire des différents groupes humains de la région</li>
+            <li>Identifier les contributions culturelles de chaque groupe</li>
+            <li>Célébrer le métissage et la créolisation comme forces créatives</li>
+            <li>Reconnaître l'unité dans la diversité caribéenne</li>
+          </ul>
+        </div>
+      </div>
     `,
     contenu: `
-      <section class="space-y-6">
-        <div>
-          <h3 class="text-xl font-semibold mb-3 text-foreground">1. Composition de la population</h3>
-          <ul class="list-disc ml-6 space-y-2 text-foreground">
-            <li><strong>Descendants d'Africains :</strong> Majorité dans la plupart des îles</li>
-            <li><strong>Métis :</strong> Mélange de différentes origines</li>
-            <li><strong>Descendants d'Européens :</strong> Minorité</li>
-            <li><strong>Descendants d'Asiatiques :</strong> Indiens, Chinois (surtout à Trinidad, Jamaïque)</li>
-            <li><strong>Autochtones :</strong> Presque disparus, traces en Dominique</li>
-          </ul>
-        </div>
+      <div class="space-y-8">
+        <section>
+          <h3 class="text-2xl font-bold mb-4 text-primary">1. Les trois grands piliers de l'humanité caribéenne 🌍</h3>
+          
+          <p class="text-lg mb-4">La population actuelle de la Caraïbe est le résultat du mélange de trois grands groupes venus de trois continents différents. Chacun a apporté sa langue, sa religion, sa cuisine, sa musique, créant ainsi la culture caribéenne unique que nous connaissons aujourd'hui.</p>
+          
+          <div class="space-y-6 mt-6">
+            <div class="bg-gradient-to-r from-amber-50 to-orange-50 dark:from-amber-950/30 dark:to-orange-950/30 p-6 rounded-lg border-l-4 border-amber-500">
+              <h4 class="text-xl font-semibold mb-3">🪶 1. Les peuples autochtones (Amérindiens)</h4>
+              <p class="mb-3"><strong>Origine :</strong> Amérique du Sud (bassin de l'Orénoque, Venezuela)</p>
+              <p class="mb-3"><strong>Arrivée :</strong> Il y a 6 000-7 000 ans, par vagues successives</p>
+              <p class="mb-3"><strong>Principaux peuples :</strong> Taïnos (Grandes Antilles), Caribes (Petites Antilles), Arawaks</p>
+              
+              <div class="bg-white dark:bg-gray-800 p-4 rounded-lg mt-3">
+                <p class="font-semibold mb-2">📊 Situation actuelle</p>
+                <p class="text-sm mb-2">Aujourd'hui, les populations amérindiennes pures ont presque entièrement disparu de la Caraïbe, victimes de :</p>
+                <ul class="list-disc ml-6 space-y-1 text-sm">
+                  <li><strong>Maladies européennes</strong> (variole, grippe, rougeole) contre lesquelles ils n'avaient aucune immunité : 90% de mortalité !</li>
+                  <li><strong>Massacres et guerres</strong> de conquête menées par les Espagnols</li>
+                  <li><strong>Travail forcé</strong> dans les mines d'or et les plantations : épuisement, famine</li>
+                </ul>
+                <p class="mt-3 text-sm"><strong>Survivants :</strong> Quelques milliers de descendants de Caribes vivent encore en Dominique (île des Petites Antilles). Ils constituent la seule communauté amérindienne précolombienne encore vivante dans la Caraïbe.</p>
+              </div>
+              
+              <div class="bg-white dark:bg-gray-800 p-4 rounded-lg mt-3">
+                <p class="font-semibold mb-2">🎨 Héritage culturel toujours vivant</p>
+                <p class="text-sm">Bien que les peuples autochtones aient disparu, leur héritage reste omniprésent :</p>
+                <ul class="list-disc ml-6 space-y-1 text-sm mt-2">
+                  <li><strong>Langue :</strong> Mots créoles (kanòt, manyòk, mayi, kasav, amak, barbecue, ouragan)</li>
+                  <li><strong>Alimentation :</strong> Manioc, maïs, patate douce, piments, ananas</li>
+                  <li><strong>Techniques :</strong> Fabrication de pirogues, pêche, agriculture sur conucos</li>
+                  <li><strong>Toponymie :</strong> Noms de lieux (Xaragua, Marién, Haïti lui-même signifie "terre montagneuse" en taïno)</li>
+                </ul>
+              </div>
+            </div>
 
-        <div>
-          <h3 class="text-xl font-semibold mb-3 text-foreground">2. Diversité culturelle</h3>
-          <p class="text-foreground mb-3">Cette diversité humaine a créé une richesse culturelle unique :</p>
-          <ul class="list-disc ml-6 space-y-2 text-foreground">
-            <li><strong>Langues :</strong> Espagnol, français, anglais, néerlandais, créoles</li>
-            <li><strong>Religions :</strong> Christianisme, vodou, santería, rastafari</li>
-            <li><strong>Musiques :</strong> Reggae, salsa, merengue, konpa, calypso</li>
-            <li><strong>Cuisines :</strong> Fusion des traditions africaines, européennes, asiatiques</li>
-          </ul>
-        </div>
-      </section>
+            <div class="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-950/30 dark:to-indigo-950/30 p-6 rounded-lg border-l-4 border-blue-500">
+              <h4 class="text-xl font-semibold mb-3">⛵ 2. Les Européens (colons)</h4>
+              <p class="mb-3"><strong>Origine :</strong> Principalement Espagne, France, Angleterre, Pays-Bas, Portugal</p>
+              <p class="mb-3"><strong>Arrivée :</strong> À partir de 1492 (Christophe Colomb)</p>
+              <p class="mb-3"><strong>Raisons de leur venue :</strong> Conquête, colonisation, exploitation des richesses (or, puis sucre, café, coton)</p>
+              
+              <div class="space-y-3 mt-4">
+                <div class="bg-white dark:bg-gray-800 p-4 rounded-lg">
+                  <p class="font-semibold mb-2">🗺️ Répartition coloniale de la Caraïbe</p>
+                  <ul class="list-disc ml-6 space-y-2 text-sm">
+                    <li><strong>Colonies espagnoles :</strong> Cuba, Porto Rico, République Dominicaine, Trinidad (jusqu'en 1797)</li>
+                    <li><strong>Colonies françaises :</strong> Haïti (Saint-Domingue), Guadeloupe, Martinique, Saint-Martin (partie)</li>
+                    <li><strong>Colonies britanniques :</strong> Jamaïque, Barbade, Trinidad (depuis 1797), Bahamas, îles Vierges britanniques</li>
+                    <li><strong>Colonies néerlandaises :</strong> Aruba, Curaçao, Saint-Martin (partie), Suriname</li>
+                  </ul>
+                  <p class="text-sm mt-3 italic">💡 Cette division coloniale explique pourquoi la Caraïbe parle tant de langues différentes aujourd'hui !</p>
+                </div>
+                
+                <div class="bg-white dark:bg-gray-800 p-4 rounded-lg">
+                  <p class="font-semibold mb-2">📊 Population européenne actuelle</p>
+                  <p class="text-sm">Aujourd'hui, les descendants directs d'Européens (Blancs) représentent une minorité dans la plupart des îles caribéennes :</p>
+                  <ul class="list-disc ml-6 space-y-1 text-sm mt-2">
+                    <li><strong>Haïti :</strong> Moins de 1% (petite élite économique, descendants de colons français et de nouveaux immigrants européens/américains)</li>
+                    <li><strong>Cuba :</strong> 65% (forte immigration espagnole au 20e siècle)</li>
+                    <li><strong>République Dominicaine :</strong> 16% (métissés avec autochtones et Africains)</li>
+                  </ul>
+                </div>
+              </div>
+              
+              <div class="bg-white dark:bg-gray-800 p-4 rounded-lg mt-3">
+                <p class="font-semibold mb-2">🎨 Héritage culturel européen</p>
+                <ul class="list-disc ml-6 space-y-1 text-sm">
+                  <li><strong>Langues :</strong> Espagnol, français, anglais, néerlandais (et créoles dérivés)</li>
+                  <li><strong>Religion :</strong> Christianisme (catholicisme, protestantisme)</li>
+                  <li><strong>Système juridique et politique :</strong> Démocratie, droit civil</li>
+                  <li><strong>Architecture :</strong> Églises coloniales, maisons en gingerbread, forts</li>
+                  <li><strong>Cuisine :</strong> Pain, fromage, vin, techniques de cuisson européennes</li>
+                  <li><strong>Musique :</strong> Instruments (guitare, violon), harmonies</li>
+                </ul>
+              </div>
+            </div>
+
+            <div class="bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-950/30 dark:to-emerald-950/30 p-6 rounded-lg border-l-4 border-green-500">
+              <h4 class="text-xl font-semibold mb-3">⛓️ 3. Les Africains (esclaves, puis citoyens libres)</h4>
+              <p class="mb-3"><strong>Origine :</strong> Afrique de l'Ouest et Afrique centrale (Sénégal, Bénin, Nigeria, Ghana, Congo, Angola...)</p>
+              <p class="mb-3"><strong>Arrivée :</strong> 16e-19e siècle (traite négrière transatlantique)</p>
+              <p class="mb-3"><strong>Raisons de leur venue :</strong> Déportation forcée pour travailler comme esclaves dans les plantations de sucre, café, coton</p>
+              
+              <div class="bg-red-50 dark:bg-red-950/30 p-4 rounded-lg mt-3 border-l-4 border-red-500">
+                <p class="font-semibold mb-2">💔 La tragédie de la traite négrière</p>
+                <p class="text-sm mb-2">Entre 1500 et 1850, environ <strong>12 millions d'Africains</strong> ont été capturés, enchaînés et déportés de force vers les Amériques dans des conditions atroces. C'est l'un des plus grands crimes de l'histoire humaine.</p>
+                <ul class="list-disc ml-6 space-y-1 text-sm mt-2">
+                  <li><strong>Le "Passage du Milieu"</strong> : Traversée de l'Atlantique dans des bateaux négriers surpeuplés. Mortalité : 10-20%</li>
+                  <li><strong>Conditions d'esclavage :</strong> Travail forcé 16h/jour, punitions cruelles, séparation des familles, interdiction de pratiquer leur religion et leur langue</li>
+                  <li><strong>Résistance :</strong> Révoltes d'esclaves (dont la Révolution haïtienne 1791-1804, seule révolte réussie), marronnage (fuite vers les montagnes)</li>
+                </ul>
+                <p class="text-sm mt-3 font-semibold">⚖️ Abolition de l'esclavage :</p>
+                <ul class="list-disc ml-6 space-y-1 text-sm">
+                  <li>Haïti : 1793 (première abolition au monde !)</li>
+                  <li>Colonies britanniques : 1834</li>
+                  <li>Colonies françaises : 1848</li>
+                  <li>Cuba (dernière) : 1886</li>
+                </ul>
+              </div>
+              
+              <div class="bg-white dark:bg-gray-800 p-4 rounded-lg mt-3">
+                <p class="font-semibold mb-2">📊 Population afro-caribéenne actuelle</p>
+                <p class="text-sm">Les descendants d'Africains constituent aujourd'hui la <strong>majorité</strong> de la population caribéenne :</p>
+                <ul class="list-disc ml-6 space-y-1 text-sm mt-2">
+                  <li><strong>Haïti :</strong> 95% (population quasi totalement afro-descendante)</li>
+                  <li><strong>Jamaïque :</strong> 92%</li>
+                  <li><strong>Barbade :</strong> 90%</li>
+                  <li><strong>Antilles françaises :</strong> 80-85%</li>
+                  <li><strong>Cuba :</strong> 35% (Noirs) + 25% (Métis) = 60% d'origine africaine</li>
+                </ul>
+              </div>
+              
+              <div class="bg-white dark:bg-gray-800 p-4 rounded-lg mt-3">
+                <p class="font-semibold mb-2">🎨 Héritage culturel africain (le plus dominant !)</p>
+                <p class="text-sm">L'Afrique a profondément marqué la culture caribéenne, plus que tout autre continent :</p>
+                <ul class="list-disc ml-6 space-y-2 text-sm mt-2">
+                  <li><strong>Langues :</strong> Créoles haïtien, jamaïcain, guadeloupéen... (structures grammaticales africaines + vocabulaire européen)</li>
+                  <li><strong>Religions :</strong> Vodou haïtien, Santería cubaine, Candomblé brésilien (mélange de croyances africaines et chrétiennes)</li>
+                  <li><strong>Musiques et danses :</strong> Rara, konpa, reggae, calypso, salsa, merengue (rythmes africains dominants !)</li>
+                  <li><strong>Instruments :</strong> Tambours (tanbou), maracas, balafon</li>
+                  <li><strong>Cuisine :</strong> Riz, haricots, bananes plantains, ignames, gombo, épices</li>
+                  <li><strong>Traditions orales :</strong> Contes (Ti Malis, Bouki), proverbes, devinettes</li>
+                  <li><strong>Art :</strong> Peinture naïve haïtienne, sculpture, tissage</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section>
+          <h3 class="text-2xl font-bold mb-4 text-primary">2. Les "nouveaux arrivants" : diversité récente 🌏</h3>
+          
+          <p class="text-lg mb-4">Après l'abolition de l'esclavage au 19e siècle, les planteurs ont fait venir de nouveaux travailleurs d'Asie et du Moyen-Orient pour remplacer la main-d'œuvre esclave. Ces migrations ont ajouté encore plus de diversité à la mosaïque caribéenne.</p>
+          
+          <div class="space-y-4">
+            <div class="bg-yellow-50 dark:bg-yellow-950/30 p-5 rounded-lg">
+              <h4 class="text-xl font-semibold mb-3">🇮🇳 Travailleurs indiens (Indo-Caribéens)</h4>
+              <p class="mb-3"><strong>Origine :</strong> Inde (principalement Bihar, Uttar Pradesh)</p>
+              <p class="mb-3"><strong>Arrivée :</strong> 1838-1917 (système de "l'engagement" - contrat de travail de 5 ans qui ressemblait souvent à de l'esclavage déguisé)</p>
+              <p class="mb-3"><strong>Destinations principales :</strong> Trinidad (35% de la population), Guyana (40%), Suriname (27%), Jamaïque, Guadeloupe, Martinique</p>
+              
+              <div class="bg-white dark:bg-gray-800 p-3 rounded-lg mt-3">
+                <p class="font-semibold text-sm mb-2">Contributions culturelles :</p>
+                <ul class="list-disc ml-6 space-y-1 text-sm">
+                  <li><strong>Religion :</strong> Hindouisme, Islam (mosquées et temples)</li>
+                  <li><strong>Cuisine :</strong> Curry, roti, dhalpuri, samosa</li>
+                  <li><strong>Fêtes :</strong> Diwali (fête des lumières), Phagwa (fête des couleurs)</li>
+                  <li><strong>Musique :</strong> Chutney, soca (fusion indo-caribéenne)</li>
+                </ul>
+              </div>
+            </div>
+
+            <div class="bg-red-50 dark:bg-red-950/30 p-5 rounded-lg">
+              <h4 class="text-xl font-semibold mb-3">🇨🇳 Travailleurs chinois</h4>
+              <p class="mb-3"><strong>Origine :</strong> Chine du Sud (Guangdong, Fujian)</p>
+              <p class="mb-3"><strong>Arrivée :</strong> 1850-1950</p>
+              <p class="mb-3"><strong>Destinations :</strong> Cuba (1% de la population), Jamaïque, Trinidad, Guyana</p>
+              
+              <div class="bg-white dark:bg-gray-800 p-3 rounded-lg mt-3">
+                <p class="font-semibold text-sm mb-2">Contributions :</p>
+                <ul class="list-disc ml-6 space-y-1 text-sm">
+                  <li><strong>Commerce :</strong> Épiceries, restaurants, magasins</li>
+                  <li><strong>Cuisine :</strong> Riz frit, chow mein, dim sum (adaptés au goût caribéen)</li>
+                  <li><strong>En Haïti :</strong> Petite communauté chinoise à Port-au-Prince, commerce de détail</li>
+                </ul>
+              </div>
+            </div>
+
+            <div class="bg-pink-50 dark:bg-pink-950/30 p-5 rounded-lg">
+              <h4 class="text-xl font-semibold mb-3">🇱🇧🇸🇾 Travailleurs libanais et syriens</h4>
+              <p class="mb-3"><strong>Origine :</strong> Liban, Syrie (Empire ottoman)</p>
+              <p class="mb-3"><strong>Arrivée :</strong> Fin 19e - début 20e siècle</p>
+              <p class="mb-3"><strong>Destinations :</strong> Haïti, Jamaïque, République Dominicaine, Trinidad</p>
+              
+              <div class="bg-white dark:bg-gray-800 p-3 rounded-lg mt-3">
+                <p class="font-semibold text-sm mb-2">En Haïti :</p>
+                <ul class="list-disc ml-6 space-y-1 text-sm">
+                  <li>Importante communauté (appelés "Syriens" ou "Arabes")</li>
+                  <li>Dominent le commerce de détail (magasins, boutiques)</li>
+                  <li>Certains sont devenus très riches et influents</li>
+                  <li>Cuisine levantine populaire : taboulé, houmous, shawarma</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section>
+          <h3 class="text-2xl font-bold mb-4 text-primary">3. Le métissage : force créatrice de la Caraïbe 🌈</h3>
+          
+          <div class="bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-950/30 dark:to-pink-950/30 p-6 rounded-lg">
+            <h4 class="text-xl font-semibold mb-3">Qu'est-ce que le métissage ?</h4>
+            <p class="mb-4">Le métissage, c'est le mélange de personnes d'origines ethniques différentes. Dans la Caraïbe, le métissage est omniprésent depuis 500 ans : Africains + Européens = Mulâtres, Africains + Amérindiens = Zambos, Européens + Amérindiens = Mestizos, et toutes les combinaisons possibles !</p>
+            
+            <div class="grid md:grid-cols-2 gap-4 mt-4">
+              <div class="bg-white dark:bg-gray-800 p-4 rounded-lg">
+                <p class="font-semibold mb-2">🎨 Créolisation culturelle</p>
+                <p class="text-sm">Le métissage ne concerne pas seulement les personnes, mais aussi les cultures ! On parle de <strong>créolisation</strong> : la fusion de plusieurs traditions pour créer quelque chose de nouveau et d'unique.</p>
+                <p class="text-sm mt-2 italic">Exemples : le créole haïtien (mélange de français, d'africain, de taïno), le vodou (fusion de religions africaines et du catholicisme), la cuisine caribéenne (fusion africaine-européenne-amérindienne).</p>
+              </div>
+              
+              <div class="bg-white dark:bg-gray-800 p-4 rounded-lg">
+                <p class="font-semibold mb-2">🌟 Identité caribéenne</p>
+                <p class="text-sm">Aujourd'hui, la majorité des Caribéens se considèrent comme <strong>métissés</strong>, c'est-à-dire porteurs de plusieurs héritages à la fois. C'est notre force ! Nous ne sommes ni purement africains, ni purement européens, ni purement amérindiens : nous sommes CARIBÉENS, avec une culture unique au monde.</p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section>
+          <h3 class="text-2xl font-bold mb-4 text-primary">4. Diversité linguistique et religieuse 🗣️✝️🕌</h3>
+          
+          <div class="grid md:grid-cols-2 gap-4">
+            <div class="bg-blue-50 dark:bg-blue-950/30 p-5 rounded-lg">
+              <h4 class="text-xl font-semibold mb-3">🗣️ Langues de la Caraïbe</h4>
+              <ul class="list-disc ml-6 space-y-2">
+                <li><strong>Espagnol :</strong> Cuba, République Dominicaine, Porto Rico</li>
+                <li><strong>Anglais :</strong> Jamaïque, Barbade, Trinidad, Bahamas</li>
+                <li><strong>Français + Créole :</strong> Haïti, Guadeloupe, Martinique</li>
+                <li><strong>Néerlandais :</strong> Aruba, Curaçao</li>
+                <li><strong>Créoles divers :</strong> Chaque île a son propre créole !</li>
+              </ul>
+            </div>
+
+            <div class="bg-green-50 dark:bg-green-950/30 p-5 rounded-lg">
+              <h4 class="text-xl font-semibold mb-3">✝️ Religions</h4>
+              <ul class="list-disc ml-6 space-y-2">
+                <li><strong>Christianisme :</strong> Catholicisme, protestantisme (majoritaire)</li>
+                <li><strong>Religions afro-caribéennes :</strong> Vodou (Haïti), Santería (Cuba), Obeah (Jamaïque)</li>
+                <li><strong>Hindouisme :</strong> Trinidad, Guyana</li>
+                <li><strong>Islam :</strong> Trinidad, Suriname</li>
+                <li><strong>Rastafari :</strong> Jamaïque (mouvement spirituel et politique)</li>
+              </ul>
+            </div>
+          </div>
+        </section>
+      </div>
     `,
     exemplesExercices: `
-      <section class="space-y-4">
-        <div class="bg-primary/5 border-l-4 border-primary p-4 rounded">
-          <h4 class="font-semibold mb-2 text-foreground">💡 Exemple</h4>
-          <p class="text-foreground">
-            À Trinidad, on célèbre le carnaval (tradition européenne/africaine) ET Diwali (fête indienne) - symbole du métissage caribéen !
-          </p>
+      <div class="space-y-6">
+        <h3 class="text-2xl font-bold mb-4 text-primary">📝 Exercices variés</h3>
+
+        <div class="space-y-6">
+          <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md">
+            <p class="font-bold text-xl mb-4">1. Arbre généalogique caribéen</p>
+            <p class="mb-3">Crée un arbre généalogique illustrant ta propre famille ou une famille fictive caribéenne typique en remontant 3 générations. Identifie les origines ethniques possibles (africaine, européenne, amérindienne, etc.) et les pays d'origine.</p>
+            <ul class="list-disc ml-6 space-y-2">
+              <li>Dessine l'arbre avec photos ou dessins</li>
+              <li>Indique les origines de chaque personne</li>
+              <li>Note les langues parlées par chaque génération</li>
+              <li>Identifie les traditions transmises (cuisine, musique, religion)</li>
+            </ul>
+          </div>
+
+          <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md">
+            <p class="font-bold text-xl mb-4">2. Carte de la diversité caribéenne</p>
+            <p class="mb-3">Sur une carte muette de la Caraïbe :</p>
+            <ul class="list-disc ml-6 space-y-2">
+              <li>Colorie chaque île selon la langue principale (rouge = espagnol, bleu = anglais, vert = français/créole, orange = néerlandais)</li>
+              <li>Indique par des symboles les groupes ethniques majoritaires</li>
+              <li>Marque les îles où vivent des communautés indiennes, chinoises, libanaises</li>
+            </ul>
+          </div>
+
+          <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md">
+            <p class="font-bold text-xl mb-4">3. Tableau comparatif des contributions culturelles</p>
+            <p class="mb-3">Complète ce tableau :</p>
+            <table class="w-full border-collapse border border-gray-300 mt-3">
+              <thead>
+                <tr class="bg-gray-100 dark:bg-gray-700">
+                  <th class="border p-2">Origine</th>
+                  <th class="border p-2">Langues</th>
+                  <th class="border p-2">Religions</th>
+                  <th class="border p-2">Musiques</th>
+                  <th class="border p-2">Aliments</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr><td class="border p-2">Amérindienne</td><td class="border p-2">...</td><td class="border p-2">...</td><td class="border p-2">...</td><td class="border p-2">...</td></tr>
+                <tr><td class="border p-2">Africaine</td><td class="border p-2">...</td><td class="border p-2">...</td><td class="border p-2">...</td><td class="border p-2">...</td></tr>
+                <tr><td class="border p-2">Européenne</td><td class="border p-2">...</td><td class="border p-2">...</td><td class="border p-2">...</td><td class="border p-2">...</td></tr>
+                <tr><td class="border p-2">Indienne</td><td class="border p-2">...</td><td class="border p-2">...</td><td class="border p-2">...</td><td class="border p-2">...</td></tr>
+                <tr><td class="border p-2">Chinoise</td><td class="border p-2">...</td><td class="border p-2">...</td><td class="border p-2">...</td><td class="border p-2">...</td></tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md">
+            <p class="font-bold text-xl mb-4">4. Enquête familiale : D'où viens-je ?</p>
+            <p class="mb-3">Interroge tes parents, grands-parents ou proches pour découvrir :</p>
+            <ul class="list-disc ml-6 space-y-2">
+              <li>Les origines de ta famille (régions d'Haïti, autres pays)</li>
+              <li>Les langues parlées par tes ancêtres</li>
+              <li>Les traditions transmises (cuisine, proverbes, chants)</li>
+              <li>Les histoires de migration familiale</li>
+            </ul>
+            <p class="mt-3">Rédige un texte de 200 mots racontant l'histoire de ta famille.</p>
+          </div>
+
+          <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md">
+            <p class="font-bold text-xl mb-4">5. Projet créatif : Assiette caribéenne</p>
+            <p class="mb-3">Crée une "assiette caribéenne" en identifiant l'origine de chaque ingrédient :</p>
+            <ul class="list-disc ml-6 space-y-2">
+              <li>Prends un plat haïtien typique (ex: riz-djon-djon, griot, tassot)</li>
+              <li>Liste tous les ingrédients</li>
+              <li>Recherche l'origine géographique de chaque ingrédient (Afrique, Europe, Amérique, Asie)</li>
+              <li>Présente tes découvertes sous forme de dessin coloré</li>
+            </ul>
+            <p class="text-sm mt-3 italic">Exemple : Riz (Asie) + Haricots (Amériques) + Huile d'olive (Europe) + Épices (Afrique) = Plat créole !</p>
+          </div>
+
+          <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md">
+            <p class="font-bold text-xl mb-4">6. Questions de réflexion critique</p>
+            <ol class="list-decimal ml-6 space-y-3">
+              <li>Pourquoi les populations amérindiennes ont-elles presque entièrement disparu alors que les Africains ont survécu malgré l'esclavage ?</li>
+              <li>En quoi la diversité culturelle de la Caraïbe est-elle une richesse pour notre région ?</li>
+              <li>Penses-tu qu'il existe une "identité caribéenne" commune malgré toutes nos différences de langues et de pays ?</li>
+              <li>Comment la traite négrière a-t-elle façonné la Caraïbe que nous connaissons aujourd'hui ?</li>
+            </ol>
+          </div>
+
+          <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md">
+            <p class="font-bold text-xl mb-4">7. Statistiques et mathématiques</p>
+            <ol class="list-decimal ml-6 space-y-3">
+              <li>La Caraïbe compte 44 millions d'habitants. Si 80% sont d'origine africaine, combien cela représente-t-il de personnes ? (44 000 000 × 0,80 = ...)</li>
+              <li>Trinidad compte 1,4 million d'habitants dont 35% sont d'origine indienne. Combien d'Indo-Trinidadiens cela représente-t-il ?</li>
+              <li>Si 12 millions d'Africains ont été déportés et 20% sont morts pendant la traversée, combien sont arrivés vivants en Amérique ?</li>
+            </ol>
+          </div>
+
+          <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md">
+            <p class="font-bold text-xl mb-4">8. Débat : Unité vs Diversité</p>
+            <p class="mb-3"><strong>Sujet :</strong> "La diversité culturelle de la Caraïbe est-elle une force ou une faiblesse pour notre région ?"</p>
+            <div class="mt-3">
+              <p class="font-semibold mb-2">Équipe FORCE (arguments) :</p>
+              <ul class="list-disc ml-8 space-y-1 text-sm">
+                <li>Richesse culturelle unique (musique, cuisine, langues)</li>
+                <li>Créativité née du métissage</li>
+                <li>Tolérance et ouverture d'esprit</li>
+              </ul>
+              <p class="font-semibold mt-3 mb-2">Équipe FAIBLESSE (arguments) :</p>
+              <ul class="list-disc ml-8 space-y-1 text-sm">
+                <li>Division linguistique (difficulté de communication)</li>
+                <li>Absence d'unité politique caribéenne</li>
+                <li>Tensions ethniques dans certaines îles</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md">
+            <p class="font-bold text-xl mb-4">9. Exposition : Visages de la Caraïbe</p>
+            <p class="mb-3">Crée une exposition de portraits (photos, dessins) montrant la diversité ethnique des Caribéens :</p>
+            <ul class="list-disc ml-6 space-y-2">
+              <li>Au moins 8 portraits de personnes d'origines différentes</li>
+              <li>Légende indiquant l'origine ethnique et le pays</li>
+              <li>Citation de chaque personne sur son identité caribéenne</li>
+            </ul>
+          </div>
+
+          <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md">
+            <p class="font-bold text-xl mb-4">10. Rédaction : Lettre à mes ancêtres</p>
+            <p class="mb-3">Écris une lettre de 300 mots à tes ancêtres (africains, européens, amérindiens, ou autres) en leur racontant :</p>
+            <ul class="list-disc ml-6 space-y-2">
+              <li>Qui tu es aujourd'hui</li>
+              <li>Comment leur héritage culturel vit encore en toi</li>
+              <li>Les défis et les beautés de la Caraïbe moderne</li>
+              <li>Tes espoirs pour l'avenir</li>
+            </ul>
+          </div>
         </div>
-      </section>
+
+        <div class="bg-primary/10 p-6 rounded-lg mt-8">
+          <h4 class="font-bold text-lg mb-3">📚 Pour aller plus loin :</h4>
+          <ul class="list-disc ml-6 space-y-2">
+            <li><strong>Livre :</strong> "Les peuples de la Caraïbe" - Histoire illustrée</li>
+            <li><strong>Film :</strong> "Sucre amer" (sur l'esclavage dans les Antilles)</li>
+            <li><strong>Documentaire :</strong> "Routes de l'esclave" (UNESCO)</li>
+            <li><strong>Musée :</strong> MUPANAH (Musée du Panthéon National Haïtien) - Section sur la traite négrière</li>
+            <li><strong>Site web :</strong> slavevoyages.org - Base de données sur la traite transatlantique</li>
+          </ul>
+        </div>
+      </div>
     `
   },
 
   // Leçon 18: Particularités climatiques des Caraïbes
   {
     id: "particularites-climatiques-caraibes",
-    title: "Particularités climatiques des Caraïbes",
+    title: "Particularités climatiques des Caraïbes : Entre paradis tropical et fureurs naturelles",
     mois: "Juillet",
-    objectif: "Identifier les caractéristiques spécifiques du climat caribéen.",
+    objectif: "Identifier et comprendre les caractéristiques spécifiques du climat caribéen et leurs impacts sur la vie quotidienne, l'agriculture et l'économie de notre région.",
     introduction: `
-      <p class="text-foreground leading-relaxed">
-        La région caribéenne possède un climat tropical maritime avec des caractéristiques particulières qui la distinguent des autres régions tropicales du monde. Ces particularités influencent la vie quotidienne, l'agriculture et l'économie de tous les pays de la région.
-      </p>
+      <div class="space-y-6">
+        <div class="bg-gradient-to-r from-cyan-50 to-blue-50 dark:from-cyan-950/30 dark:to-blue-950/30 p-6 rounded-lg border-l-4 border-cyan-500">
+          <p class="text-lg italic">"Soleil éclatant, mer turquoise, cocotiers qui dansent dans les alizés... La Caraïbe évoque le paradis tropical. Mais ce même paradis cache aussi des cyclones dévastateurs, des sécheresses meurtrières et des pluies torrentielles. Comprendre notre climat, c'est apprendre à vivre avec ses bienfaits et ses dangers."</p>
+        </div>
+        
+        <p class="text-lg leading-relaxed">Imagine : tu te réveilles un matin de septembre. Le ciel est étrangement gris, les oiseaux se taisent, le vent commence à souffler fort. À la radio, tu entends : "Attention, un cyclone de catégorie 4 se dirige vers Haïti. Préparez vos provisions d'urgence." Ton cœur bat plus vite. C'est la réalité de la vie dans les Caraïbes : nous vivons sous un climat magnifique mais capricieux, où le temps peut passer du soleil radieux à la tempête destructrice en quelques heures.</p>
+        
+        <p>La région caribéenne possède un climat <strong>tropical maritime</strong> unique, différent de tous les autres climats tropicaux du monde. Nous sommes coincés entre deux océans (Atlantique et Pacifique), baignés par des courants marins chauds, balayés par les alizés, et menacés chaque année par les ouragans. Ce climat influence tout dans notre vie : ce que nous mangeons, comment nous construisons nos maisons, quand nous plantons nos récoltes, où nous habitons.</p>
+        
+        <p>Mais le climat caribéen n'est pas homogène ! Entre une plage de Barbade et une montagne haïtienne, entre le Nord-Ouest sec d'Haïti et la Jamaïque humide, les différences sont énormes. C'est ce qu'on appelle les <strong>microclimats</strong> : au sein d'une même île, on peut avoir des zones très sèches et d'autres très humides, des endroits chauds et d'autres frais.</p>
+        
+        <div class="bg-yellow-50 dark:bg-yellow-950/20 border-l-4 border-yellow-500 p-4 my-4">
+          <p class="font-semibold text-yellow-900 dark:text-yellow-200">🎯 Objectifs d'apprentissage</p>
+          <ul class="list-disc ml-6 mt-2 space-y-1">
+            <li>Identifier les caractéristiques du climat tropical maritime caribéen</li>
+            <li>Comprendre la saison des cyclones et ses dangers</li>
+            <li>Expliquer les microclimats liés au relief</li>
+            <li>Analyser les impacts du climat sur la vie quotidienne et l'agriculture</li>
+            <li>Se préparer aux catastrophes naturelles liées au climat</li>
+          </ul>
+        </div>
+      </div>
     `,
     contenu: `
-      <section class="space-y-6">
-        <div>
-          <h3 class="text-xl font-semibold mb-3 text-foreground">1. Climat tropical maritime</h3>
-          <ul class="list-disc ml-6 space-y-2 text-foreground">
-            <li><strong>Températures stables :</strong> 24-30°C toute l'année</li>
-            <li><strong>Faible variation :</strong> Différence de seulement 3-5°C entre les mois</li>
-            <li><strong>Humidité élevée :</strong> 70-80% en moyenne</li>
-            <li><strong>Alizés :</strong> Vents réguliers de l'est, rafraîchissants</li>
-          </ul>
-        </div>
+      <div class="space-y-8">
+        <section>
+          <h3 class="text-2xl font-bold mb-4 text-primary">1. Le climat tropical maritime : définition et caractéristiques ☀️🌊</h3>
+          
+          <div class="bg-gradient-to-r from-blue-50 to-cyan-50 dark:from-blue-950/30 dark:to-cyan-950/30 p-6 rounded-lg">
+            <h4 class="text-xl font-semibold mb-3">Qu'est-ce qu'un climat tropical maritime ?</h4>
+            <p class="mb-4">La Caraïbe se trouve dans la <strong>zone intertropicale</strong> (entre le tropique du Cancer au nord et le tropique du Capricorne au sud), entourée par l'océan Atlantique et la mer des Caraïbes. Cette position géographique unique crée un climat chaud et humide toute l'année, avec des variations légères selon les saisons.</p>
+            
+            <div class="grid md:grid-cols-2 gap-4 mt-4">
+              <div class="bg-white dark:bg-gray-800 p-4 rounded-lg">
+                <p class="font-bold mb-2">🌡️ Températures</p>
+                <ul class="list-disc ml-6 space-y-1 text-sm">
+                  <li><strong>Moyenne annuelle :</strong> 24-30°C</li>
+                  <li><strong>Très faible variation :</strong> Seulement 3-5°C entre le mois le plus chaud et le plus frais</li>
+                  <li><strong>Pas de vrai hiver :</strong> Il fait chaud toute l'année !</li>
+                  <li><strong>Haïti :</strong> 25-32°C en plaine, 15-25°C en montagne</li>
+                </ul>
+              </div>
+              
+              <div class="bg-white dark:bg-gray-800 p-4 rounded-lg">
+                <p class="font-bold mb-2">💧 Précipitations</p>
+                <ul class="list-disc ml-6 space-y-1 text-sm">
+                  <li><strong>Forte humidité :</strong> 70-80% en moyenne</li>
+                  <li><strong>Pluies abondantes :</strong> 1 000-2 500 mm/an selon les régions</li>
+                  <li><strong>Pluies tropicales :</strong> Courtes mais très intenses (orages violents)</li>
+                  <li><strong>Variations locales :</strong> Certaines zones très sèches, d'autres très humides</li>
+                </ul>
+              </div>
+              
+              <div class="bg-white dark:bg-gray-800 p-4 rounded-lg">
+                <p class="font-bold mb-2">🌬️ Vents (Alizés)</p>
+                <ul class="list-disc ml-6 space-y-1 text-sm">
+                  <li><strong>Origine :</strong> Viennent de l'est (océan Atlantique)</li>
+                  <li><strong>Caractère :</strong> Réguliers, constants, rafraîchissants</li>
+                  <li><strong>Vitesse :</strong> 20-30 km/h en moyenne</li>
+                  <li><strong>Effet :</strong> Rendent la chaleur plus supportable</li>
+                </ul>
+              </div>
+              
+              <div class="bg-white dark:bg-gray-800 p-4 rounded-lg">
+                <p class="font-bold mb-2">☀️ Ensoleillement</p>
+                <ul class="list-disc ml-6 space-y-1 text-sm">
+                  <li><strong>Très fort :</strong> 8-10 heures de soleil par jour</li>
+                  <li><strong>UV élevés :</strong> Protection solaire indispensable</li>
+                  <li><strong>Durée du jour stable :</strong> Environ 12h toute l'année (proche de l'équateur)</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+          
+          <div class="mt-6 bg-teal-50 dark:bg-teal-950/30 p-5 rounded-lg">
+            <h4 class="text-xl font-semibold mb-3">🌍 Comparaison avec d'autres climats</h4>
+            <table class="w-full border-collapse border border-gray-300 mt-3">
+              <thead>
+                <tr class="bg-gray-100 dark:bg-gray-700">
+                  <th class="border p-2">Région</th>
+                  <th class="border p-2">Climat</th>
+                  <th class="border p-2">Température moy.</th>
+                  <th class="border p-2">Saisons</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td class="border p-2 font-bold">Caraïbe (Haïti)</td>
+                  <td class="border p-2">Tropical maritime</td>
+                  <td class="border p-2">25-30°C</td>
+                  <td class="border p-2">2 : pluies/sèche</td>
+                </tr>
+                <tr>
+                  <td class="border p-2">Paris (France)</td>
+                  <td class="border p-2">Tempéré océanique</td>
+                  <td class="border p-2">3-25°C</td>
+                  <td class="border p-2">4 : printemps, été, automne, hiver</td>
+                </tr>
+                <tr>
+                  <td class="border p-2">Sahara (Afrique)</td>
+                  <td class="border p-2">Désertique</td>
+                  <td class="border p-2">20-45°C</td>
+                  <td class="border p-2">Très peu de pluies</td>
+                </tr>
+                <tr>
+                  <td class="border p-2">Amazonie (Brésil)</td>
+                  <td class="border p-2">Équatorial humide</td>
+                  <td class="border p-2">25-28°C</td>
+                  <td class="border p-2">Pluies toute l'année</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
 
-        <div>
-          <h3 class="text-xl font-semibold mb-3 text-foreground">2. Les cyclones tropicaux</h3>
-          <p class="text-foreground mb-3">Particularité majeure de la Caraïbe : la saison des ouragans.</p>
-          <ul class="list-disc ml-6 space-y-2 text-foreground">
-            <li><strong>Saison :</strong> Juin à novembre (pic en septembre)</li>
-            <li><strong>Formation :</strong> Au-dessus de l'océan Atlantique chaud</li>
-            <li><strong>Catégories :</strong> De 1 (faible) à 5 (catastrophique)</li>
-            <li><strong>Impacts :</strong> Vents violents, pluies torrentielles, inondations</li>
-          </ul>
-        </div>
+        <section>
+          <h3 class="text-2xl font-bold mb-4 text-primary">2. Les deux saisons caribéennes 🌧️☀️</h3>
+          
+          <p class="text-lg mb-4">Contrairement aux pays tempérés qui ont 4 saisons (printemps, été, automne, hiver), la Caraïbe n'a que <strong>2 saisons</strong> basées sur les précipitations, pas sur la température qui reste stable toute l'année.</p>
+          
+          <div class="grid md:grid-cols-2 gap-4">
+            <div class="bg-green-50 dark:bg-green-950/30 p-6 rounded-lg">
+              <h4 class="text-xl font-semibold mb-3">🌧️ Saison des pluies (Mai à Novembre)</h4>
+              <p class="mb-3"><strong>En créole :</strong> "Sezon lapli" ou "Lè lapli"</p>
+              
+              <div class="space-y-3 mt-3">
+                <div class="bg-white dark:bg-gray-800 p-3 rounded-lg">
+                  <p class="font-semibold mb-2">Caractéristiques :</p>
+                  <ul class="list-disc ml-6 space-y-1 text-sm">
+                    <li>Pluies fréquentes, souvent l'après-midi</li>
+                    <li>Orages courts mais violents</li>
+                    <li>Humidité très élevée (85-95%)</li>
+                    <li>Chaleur étouffante (sensation de 35-40°C)</li>
+                    <li>Ciel souvent nuageux</li>
+                  </ul>
+                </div>
+                
+                <div class="bg-white dark:bg-gray-800 p-3 rounded-lg">
+                  <p class="font-semibold mb-2">⚠️ Dangers :</p>
+                  <ul class="list-disc ml-6 space-y-1 text-sm">
+                    <li><strong>CYCLONES</strong> (juin-novembre, pic septembre-octobre)</li>
+                    <li>Inondations soudaines (crues éclair)</li>
+                    <li>Glissements de terrain</li>
+                    <li>Maladies liées à l'eau stagnante (dengue, malaria, choléra)</li>
+                  </ul>
+                </div>
+                
+                <div class="bg-white dark:bg-gray-800 p-3 rounded-lg">
+                  <p class="font-semibold mb-2">🌱 Avantages :</p>
+                  <ul class="list-disc ml-6 space-y-1 text-sm">
+                    <li>Saison de plantation agricole</li>
+                    <li>Nappes phréatiques rechargées</li>
+                    <li>Végétation luxuriante, paysages verts</li>
+                    <li>Rivières pleines</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
 
-        <div>
-          <h3 class="text-xl font-semibold mb-3 text-foreground">3. Microclimats</h3>
-          <p class="text-foreground">Les îles montagneuses comme Haïti ont des microclimats :</p>
-          <ul class="list-disc ml-6 space-y-2 text-foreground">
-            <li><strong>Côte au vent :</strong> Plus humide (côté est)</li>
-            <li><strong>Côte sous le vent :</strong> Plus sèche (côté ouest)</li>
-            <li><strong>Altitude :</strong> Plus frais en montagne</li>
-          </ul>
-        </div>
-      </section>
+            <div class="bg-yellow-50 dark:bg-yellow-950/30 p-6 rounded-lg">
+              <h4 class="text-xl font-semibold mb-3">☀️ Saison sèche (Décembre à Avril)</h4>
+              <p class="mb-3"><strong>En créole :</strong> "Sezon sèk" ou "Sezon fredi" (saison fraîche - car températures légèrement plus basses la nuit)</p>
+              
+              <div class="space-y-3 mt-3">
+                <div class="bg-white dark:bg-gray-800 p-3 rounded-lg">
+                  <p class="font-semibold mb-2">Caractéristiques :</p>
+                  <ul class="list-disc ml-6 space-y-1 text-sm">
+                    <li>Très peu de pluies (parfois aucune pendant des semaines)</li>
+                    <li>Ciel bleu éclatant, soleil radieux</li>
+                    <li>Alizés forts et constants (vent rafraîchissant)</li>
+                    <li>Nuits fraîches (20-23°C), journées chaudes (28-32°C)</li>
+                    <li>Humidité plus supportable (60-70%)</li>
+                  </ul>
+                </div>
+                
+                <div class="bg-white dark:bg-gray-800 p-3 rounded-lg">
+                  <p class="font-semibold mb-2">⚠️ Dangers :</p>
+                  <ul class="list-disc ml-6 space-y-1 text-sm">
+                    <li>Sécheresse dans certaines régions (Nord-Ouest, Artibonite)</li>
+                    <li>Pénurie d'eau potable (puits asséchés)</li>
+                    <li>Incendies de forêt et de cultures</li>
+                    <li>Famine si la sécheresse est prolongée</li>
+                  </ul>
+                </div>
+                
+                <div class="bg-white dark:bg-gray-800 p-3 rounded-lg">
+                  <p class="font-semibold mb-2">🌱 Avantages :</p>
+                  <ul class="list-disc ml-6 space-y-1 text-sm">
+                    <li><strong>Meilleure saison touristique</strong> (Carnaval, Pâques, vacances)</li>
+                    <li>Saison des récoltes agricoles</li>
+                    <li>Conditions idéales pour activités extérieures</li>
+                    <li>Moins de maladies tropicales</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section>
+          <h3 class="text-2xl font-bold mb-4 text-primary">3. Les cyclones tropicaux : la menace annuelle 🌀💨</h3>
+          
+          <div class="bg-gradient-to-r from-red-50 to-orange-50 dark:from-red-950/30 dark:to-orange-950/30 p-6 rounded-lg">
+            <h4 class="text-xl font-semibold mb-3">Qu'est-ce qu'un cyclone tropical ?</h4>
+            <p class="mb-4">Un cyclone (appelé aussi <strong>ouragan</strong> dans l'Atlantique, ou <strong>typhon</strong> dans le Pacifique) est une gigantesque tempête tournante qui se forme au-dessus des océans tropicaux chauds. C'est l'un des phénomènes naturels les plus destructeurs de la planète. La Caraïbe est l'une des régions du monde les plus touchées par les cyclones.</p>
+            
+            <div class="bg-white dark:bg-gray-800 p-4 rounded-lg mt-3">
+              <p class="font-semibold mb-2">🌊 Comment se forme un cyclone ?</p>
+              <ol class="list-decimal ml-6 space-y-2 text-sm">
+                <li><strong>Eau chaude (>26,5°C) :</strong> L'océan tropicale chauffe l'air au-dessus de lui</li>
+                <li><strong>Évaporation massive :</strong> L'eau s'évapore, créant des nuages géants</li>
+                <li><strong>Air chaud monte :</strong> Crée une zone de basse pression (dépression)</li>
+                <li><strong>Rotation (force de Coriolis) :</strong> L'air tourne à cause de la rotation de la Terre</li>
+                <li><strong>Alimentation continue :</strong> Le cyclone "se nourrit" de la chaleur de l'océan et grossit</li>
+              </ol>
+              <p class="mt-3 text-sm italic">💡 Quand le cyclone arrive sur la terre ferme, il perd sa source d'énergie (océan chaud) et s'affaiblit progressivement.</p>
+            </div>
+          </div>
+          
+          <div class="mt-6 space-y-4">
+            <div class="bg-purple-50 dark:bg-purple-950/30 p-5 rounded-lg">
+              <h4 class="text-xl font-semibold mb-3">📊 L'échelle Saffir-Simpson (classification des ouragans)</h4>
+              <table class="w-full mt-3 border-collapse border border-gray-300">
+                <thead>
+                  <tr class="bg-gray-100 dark:bg-gray-700">
+                    <th class="border p-2">Catégorie</th>
+                    <th class="border p-2">Vents (km/h)</th>
+                    <th class="border p-2">Dégâts attendus</th>
+                    <th class="border p-2">Exemples en Haïti</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr class="bg-yellow-50 dark:bg-yellow-950/20">
+                    <td class="border p-2 font-bold text-center">1</td>
+                    <td class="border p-2">119-153</td>
+                    <td class="border p-2 text-sm">Minimes : arbres cassés, toitures légères arrachées</td>
+                    <td class="border p-2 text-sm">Fay (2008)</td>
+                  </tr>
+                  <tr class="bg-yellow-100 dark:bg-yellow-900/20">
+                    <td class="border p-2 font-bold text-center">2</td>
+                    <td class="border p-2">154-177</td>
+                    <td class="border p-2 text-sm">Modérés : toits endommagés, pannes d'électricité prolongées</td>
+                    <td class="border p-2 text-sm">Gustav (2008)</td>
+                  </tr>
+                  <tr class="bg-orange-50 dark:bg-orange-950/20">
+                    <td class="border p-2 font-bold text-center">3</td>
+                    <td class="border p-2">178-208</td>
+                    <td class="border p-2 text-sm">Étendus : maisons détruites, inondations majeures</td>
+                    <td class="border p-2 text-sm">Jeanne (2004)</td>
+                  </tr>
+                  <tr class="bg-red-50 dark:bg-red-950/20">
+                    <td class="border p-2 font-bold text-center">4</td>
+                    <td class="border p-2">209-251</td>
+                    <td class="border p-2 text-sm">Extrêmes : dévastation massive, région inhabitable pendant des semaines</td>
+                    <td class="border p-2 text-sm">Matthew (2016)</td>
+                  </tr>
+                  <tr class="bg-red-100 dark:bg-red-900/20">
+                    <td class="border p-2 font-bold text-center">5</td>
+                    <td class="border p-2">>252</td>
+                    <td class="border p-2 text-sm">Catastrophiques : tout est détruit, apocalypse</td>
+                    <td class="border p-2 text-sm">Rare en Haïti (Irma proche 2017)</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+            <div class="bg-red-50 dark:bg-red-950/30 p-5 rounded-lg">
+              <h4 class="text-xl font-semibold mb-3">🇭🇹 Cyclones historiques ayant frappé Haïti</h4>
+              <div class="space-y-3">
+                <div class="bg-white dark:bg-gray-800 p-3 rounded-lg">
+                  <p class="font-bold">Hurricane Matthew (2016) - Catégorie 4</p>
+                  <ul class="list-disc ml-6 space-y-1 text-sm">
+                    <li>Vents : 233 km/h</li>
+                    <li>Zone touchée : Sud d'Haïti (Jérémie, Anse-d'Ainault, Les Cayes)</li>
+                    <li>Bilan : 1 000 morts, 350 000 personnes sinistrées</li>
+                    <li>Dégâts : Maisons rasées, agriculture dévastée (90% des récoltes perdues), arbres arrachés</li>
+                  </ul>
+                </div>
+                
+                <div class="bg-white dark:bg-gray-800 p-3 rounded-lg">
+                  <p class="font-bold">Hurricane Jeanne (2004) - Catégorie 3</p>
+                  <ul class="list-disc ml-6 space-y-1 text-sm">
+                    <li>Zone touchée : Gonaïves (complètement sous l'eau)</li>
+                    <li>Bilan : 3 000 morts</li>
+                    <li>Pluies diluviennes : 500 mm en 24h (inondations catastrophiques)</li>
+                    <li>Glissements de terrain massifs dans les montagnes déboisées</li>
+                  </ul>
+                </div>
+                
+                <div class="bg-white dark:bg-gray-800 p-3 rounded-lg">
+                  <p class="font-bold">Hurricane Georges (1998) - Catégorie 3</p>
+                  <ul class="list-disc ml-6 space-y-1 text-sm">
+                    <li>Bilan : 500 morts</li>
+                    <li>Dégâts massifs sur tout le pays</li>
+                    <li>Infrastructure détruite (routes, ponts, écoles, hôpitaux)</li>
+                  </ul>
+                </div>
+              </div>
+              
+              <div class="bg-white dark:bg-gray-800 p-4 rounded-lg mt-4">
+                <p class="font-semibold mb-2">💔 Pourquoi Haïti est-il si vulnérable aux cyclones ?</p>
+                <ul class="list-disc ml-6 space-y-1 text-sm">
+                  <li><strong>Déforestation :</strong> 98% des forêts ont disparu → plus rien ne retient l'eau ni la terre → glissements de terrain mortels</li>
+                  <li><strong>Pauvreté :</strong> Maisons fragiles (tôle, bois, boue) qui ne résistent pas aux vents</li>
+                  <li><strong>Absence de système d'alerte efficace :</strong> Beaucoup de gens ne sont pas prévenus à temps</li>
+                  <li><strong>Urbanisation anarchique :</strong> Maisons construites dans zones inondables (ravines, plaines)</li>
+                  <li><strong>Manque de préparation :</strong> Peu de gens ont des provisions d'urgence</li>
+                </ul>
+              </div>
+            </div>
+
+            <div class="bg-blue-50 dark:bg-blue-950/30 p-5 rounded-lg">
+              <h4 class="text-xl font-semibold mb-3">🛡️ Comment se protéger des cyclones ? (Kit de survie)</h4>
+              
+              <div class="space-y-3">
+                <div class="bg-white dark:bg-gray-800 p-3 rounded-lg">
+                  <p class="font-bold mb-2">🔔 AVANT le cyclone (Préparation)</p>
+                  <ul class="list-disc ml-6 space-y-1 text-sm">
+                    <li>Écouter la radio/télé pour les alertes météo</li>
+                    <li>Faire des provisions : eau (4L/personne/jour pour 3 jours), aliments non périssables (riz, pâtes, conserves), bougies, allumettes, lampe de poche, piles</li>
+                    <li>Médicaments essentiels</li>
+                    <li>Documents importants dans un sac plastique étanche</li>
+                    <li>Renforcer sa maison (clouer les tôles, fermer les fenêtres)</li>
+                    <li>Identifier un abri solide (école en béton, église) si sa maison est fragile</li>
+                    <li>Évacuer les zones à risque (ravines, bords de mer, pentes de montagnes)</li>
+                  </ul>
+                </div>
+                
+                <div class="bg-white dark:bg-gray-800 p-3 rounded-lg">
+                  <p class="font-bold mb-2">⚠️ PENDANT le cyclone</p>
+                  <ul class="list-disc ml-6 space-y-1 text-sm">
+                    <li><strong>Rester à l'intérieur !</strong> Ne JAMAIS sortir même si le vent semble calme</li>
+                    <li>S'éloigner des fenêtres et des portes</li>
+                    <li>Se réfugier dans la pièce la plus solide (salle de bain, couloir intérieur)</li>
+                    <li>Se protéger sous une table solide</li>
+                    <li>ATTENTION à l'œil du cyclone : moment de calme trompeur où les gens sortent, puis le vent revient encore plus fort de l'autre côté !</li>
+                    <li>Ne pas utiliser de bougies (risque d'incendie), utiliser lampe de poche</li>
+                  </ul>
+                </div>
+                
+                <div class="bg-white dark:bg-gray-800 p-3 rounded-lg">
+                  <p class="font-bold mb-2">✅ APRÈS le cyclone</p>
+                  <ul class="list-disc ml-6 space-y-1 text-sm">
+                    <li>Attendre l'annonce officielle de fin d'alerte avant de sortir</li>
+                    <li>Faire attention aux fils électriques tombés (risque d'électrocution)</li>
+                    <li>Ne pas boire l'eau des puits (contaminée), faire bouillir l'eau ou utiliser pastilles de purification</li>
+                    <li>Éviter de manger des aliments qui ont été mouillés</li>
+                    <li>Aider les voisins, signaler les blessés</li>
+                    <li>Ne pas propager de fausses rumeurs</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section>
+          <h3 class="text-2xl font-bold mb-4 text-primary">4. Les microclimats caribéens : une mosaïque de climats locaux 🗺️</h3>
+          
+          <div class="bg-purple-50 dark:bg-purple-950/30 p-6 rounded-lg">
+            <p class="mb-4">Bien que la Caraïbe partage globalement le même climat tropical maritime, chaque île, et même chaque région d'une île, peut avoir un climat très différent. C'est ce qu'on appelle les <strong>microclimats</strong>, causés principalement par le relief (montagnes).</p>
+            
+            <h4 class="text-xl font-semibold mt-6 mb-3">⛰️ Influence du relief sur les microclimats</h4>
+            
+            <div class="space-y-4">
+              <div class="bg-white dark:bg-gray-800 p-4 rounded-lg">
+                <p class="font-bold mb-2">🌧️ Côte au vent (Versant Est)</p>
+                <ul class="list-disc ml-6 space-y-1 text-sm">
+                  <li><strong>Exposition :</strong> Face aux alizés humides venant de l'océan Atlantique</li>
+                  <li><strong>Pluies abondantes :</strong> 2 000-2 500 mm/an</li>
+                  <li><strong>Végétation :</strong> Luxuriante, forêts tropicales humides</li>
+                  <li><strong>Exemples en Haïti :</strong> Nord-Est (Fort-Liberté), région de Jacmel (Sud-Est)</li>
+                </ul>
+              </div>
+              
+              <div class="bg-white dark:bg-gray-800 p-4 rounded-lg">
+                <p class="font-bold mb-2">🏜️ Côte sous le vent (Versant Ouest)</p>
+                <ul class="list-disc ml-6 space-y-1 text-sm">
+                  <li><strong>Exposition :</strong> Protégée par les montagnes qui bloquent les nuages</li>
+                  <li><strong>Climat semi-aride :</strong> Moins de 500 mm/an</li>
+                  <li><strong>Végétation :</strong> Clairsemée, cactus, arbustes épineux</li>
+                  <li><strong>Exemples en Haïti :</strong> Nord-Ouest (Port-de-Paix, Môle St-Nicolas), Artibonite (Gonaïves), certaines zones du Sud</li>
+                  <li><strong>Problème :</strong> Sécheresse chronique, famine récurrente</li>
+                </ul>
+              </div>
+              
+              <div class="bg-white dark:bg-gray-800 p-4 rounded-lg">
+                <p class="font-bold mb-2">⛰️ Climat de montagne (Altitude)</p>
+                <ul class="list-disc ml-6 space-y-1 text-sm">
+                  <li><strong>Températures fraîches à froides :</strong> 15-20°C en journée, 5-10°C la nuit</li>
+                  <li><strong>Record :</strong> 2°C au Pic la Selle (2 680m) en hiver - givre possible !</li>
+                  <li><strong>Pluies fréquentes :</strong> Brouillard régulier, pluies orographiques</li>
+                  <li><strong>Exemples :</strong> Massif de la Selle (Sud-Est), Massif du Nord, montagnes de Kenscoff</li>
+                  <li><strong>Agriculture :</strong> Café, légumes tempérés (carottes, choux)</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section>
+          <h3 class="text-2xl font-bold mb-4 text-primary">5. Impacts du climat sur la vie quotidienne haïtienne 🏠🌾</h3>
+          
+          <div class="grid md:grid-cols-2 gap-4">
+            <div class="bg-green-50 dark:bg-green-950/30 p-5 rounded-lg">
+              <h4 class="text-xl font-semibold mb-3">🌾 Agriculture</h4>
+              <ul class="list-disc ml-6 space-y-2 text-sm">
+                <li>Climat tropical permet <strong>2 récoltes par an</strong> (mars-mai et août-octobre)</li>
+                <li>Cultures tropicales : riz, maïs, haricots, bananes, mangues, café, cacao</li>
+                <li><strong>Problème majeur :</strong> Sécheresses et inondations détruisent les récoltes → insécurité alimentaire</li>
+                <li>Agriculture très dépendante de la pluie (manque d'irrigation)</li>
+              </ul>
+            </div>
+
+            <div class="bg-amber-50 dark:bg-amber-950/30 p-5 rounded-lg">
+              <h4 class="text-xl font-semibold mb-3">🏠 Architecture</h4>
+              <ul class="list-disc ml-6 space-y-2 text-sm">
+                <li>Maisons ventilées avec galeries (protègent du soleil et de la pluie)</li>
+                <li>Toits en tôle (légers, mais arrachés par cyclones)</li>
+                <li>Pas besoin de chauffage (climat toujours chaud)</li>
+                <li>Problème : maisons fragiles ne résistent pas aux cyclones</li>
+              </ul>
+            </div>
+
+            <div class="bg-pink-50 dark:bg-pink-950/30 p-5 rounded-lg">
+              <h4 class="text-xl font-semibold mb-3">👗 Habillement</h4>
+              <ul class="list-disc ml-6 space-y-2 text-sm">
+                <li>Vêtements légers en coton (respirant)</li>
+                <li>Couleurs claires (réfléchissent le soleil)</li>
+                <li>Pull nécessaire uniquement en montagne</li>
+                <li>Chapeau/casquette pour se protéger du soleil intense</li>
+              </ul>
+            </div>
+
+            <div class="bg-blue-50 dark:bg-blue-950/30 p-5 rounded-lg">
+              <h4 class="text-xl font-semibold mb-3">💧 Eau</h4>
+              <ul class="list-disc ml-6 space-y-2 text-sm">
+                <li>Pénurie d'eau en saison sèche (puits asséchés)</li>
+                <li>Eau de pluie récoltée dans citernes/bassins</li>
+                <li>Besoin constant de s'hydrater (chaleur, humidité)</li>
+                <li>Contamination de l'eau après cyclones → maladies</li>
+              </ul>
+            </div>
+          </div>
+        </section>
+      </div>
     `,
     exemplesExercices: `
-      <section class="space-y-4">
-        <div class="bg-accent/5 border-l-4 border-accent p-4 rounded">
-          <h4 class="font-semibold mb-2 text-foreground">📝 Projet</h4>
-          <p class="text-foreground">
-            Crée un plan d'urgence familial pour la saison des ouragans : provisions, lieu sûr, contacts d'urgence.
-          </p>
+      <div class="space-y-6">
+        <h3 class="text-2xl font-bold mb-4 text-primary">📝 Exercices variés</h3>
+
+        <div class="space-y-6">
+          <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md">
+            <p class="font-bold text-xl mb-4">1. Calendrier climatique annuel</p>
+            <p class="mb-3">Crée un calendrier des 12 mois de l'année en indiquant pour chaque mois :</p>
+            <ul class="list-disc ml-6 space-y-2">
+              <li>Saison (pluies ou sèche)</li>
+              <li>Température moyenne</li>
+              <li>Quantité de pluies (faible/moyenne/forte)</li>
+              <li>Risque cyclonique (vert = aucun, jaune = faible, orange = moyen, rouge = élevé)</li>
+              <li>Activités agricoles (plantation ou récolte)</li>
+            </ul>
+          </div>
+
+          <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md">
+            <p class="font-bold text-xl mb-4">2. Plan d'urgence familial pour cyclones</p>
+            <p class="mb-3">Prépare un plan d'urgence complet pour ta famille :</p>
+            <ul class="list-disc ml-6 space-y-2">
+              <li>Liste des provisions à acheter (eau, nourriture, médicaments, etc.)</li>
+              <li>Identification du lieu de refuge le plus proche (école, église en béton)</li>
+              <li>Numéros de téléphone d'urgence (famille, Protection Civile : 115)</li>
+              <li>Documents importants à protéger dans un sac étanche</li>
+              <li>Plan d'évacuation si la maison est en zone dangereuse</li>
+            </ul>
+            <p class="mt-3 text-sm italic">Discute de ce plan avec ta famille et fais une simulation d'évacuation !</p>
+          </div>
+
+          <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md">
+            <p class="font-bold text-xl mb-4">3. Carte des microclimats d'Haïti</p>
+            <p class="mb-3">Sur une carte muette d'Haïti :</p>
+            <ul class="list-disc ml-6 space-y-2">
+              <li>Colorie en vert les zones humides (côte au vent)</li>
+              <li>Colorie en jaune les zones semi-arides (côte sous le vent)</li>
+              <li>Colorie en bleu les zones de montagne</li>
+              <li>Trace des flèches montrant la direction des alizés (de l'est)</li>
+              <li>Indique les principales chaînes de montagnes</li>
+            </ul>
+          </div>
+
+          <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md">
+            <p class="font-bold text-xl mb-4">4. Comparaison des saisons</p>
+            <p class="mb-3">Complète ce tableau comparatif :</p>
+            <table class="w-full border-collapse border border-gray-300 mt-3">
+              <thead>
+                <tr class="bg-gray-100 dark:bg-gray-700">
+                  <th class="border p-2">Critère</th>
+                  <th class="border p-2">Saison des pluies</th>
+                  <th class="border p-2">Saison sèche</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr><td class="border p-2">Mois</td><td class="border p-2">...</td><td class="border p-2">...</td></tr>
+                <tr><td class="border p-2">Température</td><td class="border p-2">...</td><td class="border p-2">...</td></tr>
+                <tr><td class="border p-2">Pluies</td><td class="border p-2">...</td><td class="border p-2">...</td></tr>
+                <tr><td class="border p-2">Humidité</td><td class="border p-2">...</td><td class="border p-2">...</td></tr>
+                <tr><td class="border p-2">Dangers</td><td class="border p-2">...</td><td class="border p-2">...</td></tr>
+                <tr><td class="border p-2">Avantages</td><td class="border p-2">...</td><td class="border p-2">...</td></tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md">
+            <p class="font-bold text-xl mb-4">5. Journal météo (1 semaine)</p>
+            <p class="mb-3">Pendant une semaine, note chaque jour à 12h :</p>
+            <ul class="list-disc ml-6 space-y-2">
+              <li>Température (si tu as un thermomètre) ou ressenti (chaud/très chaud)</li>
+              <li>Temps (soleil, nuages, pluie)</li>
+              <li>Durée et intensité de la pluie (si il pleut)</li>
+              <li>Direction et force du vent</li>
+              <li>Humidité ressentie (sec/humide/très humide)</li>
+            </ul>
+            <p class="mt-3">À la fin, analyse : Es-tu en saison sèche ou des pluies ?</p>
+          </div>
+
+          <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md">
+            <p class="font-bold text-xl mb-4">6. Questions de compréhension</p>
+            <ol class="list-decimal ml-6 space-y-3">
+              <li>Pourquoi la Caraïbe n'a-t-elle que 2 saisons au lieu de 4 ?</li>
+              <li>Explique comment se forme un cyclone.</li>
+              <li>Pourquoi le Nord-Ouest d'Haïti est-il si sec alors que le Nord-Est est humide ?</li>
+              <li>Pourquoi Haïti est-il plus vulnérable aux cyclones que d'autres pays caribéens ?</li>
+              <li>Quels sont les dangers de sortir pendant "l'œil du cyclone" ?</li>
+              <li>Comment le climat tropical influence-t-il l'agriculture haïtienne ?</li>
+            </ol>
+          </div>
+
+          <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md">
+            <p class="font-bold text-xl mb-4">7. Projet créatif : Affiche de sensibilisation</p>
+            <p class="mb-3">Crée une affiche colorée (format A3) sur le thème :</p>
+            <p class="font-semibold mb-2">"Comment se protéger des cyclones"</p>
+            <ul class="list-disc ml-6 space-y-2">
+              <li>Dessins ou images illustrant les gestes à faire</li>
+              <li>Couleurs vives pour attirer l'attention</li>
+              <li>Messages courts et clairs en créole</li>
+              <li>Les 3 sections : AVANT - PENDANT - APRÈS</li>
+            </ul>
+            <p class="mt-3 text-sm italic">Cette affiche pourrait être affichée dans ton école ou ton quartier !</p>
+          </div>
+
+          <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md">
+            <p class="font-bold text-xl mb-4">8. Calculs mathématiques</p>
+            <ol class="list-decimal ml-6 space-y-3">
+              <li>Un cyclone de catégorie 3 a des vents de 200 km/h. En combien de temps parcourt-il 1 000 km ? (Temps = Distance ÷ Vitesse)</li>
+              <li>Si ta famille a besoin de 4 litres d'eau par personne par jour et que vous êtes 5, combien de litres faut-il prévoir pour 3 jours ?</li>
+              <li>La région de Jacmel reçoit 2 000 mm de pluie par an. Port-de-Paix en reçoit 500 mm. Combien de fois plus de pluie tombe à Jacmel ?</li>
+            </ol>
+          </div>
+
+          <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md">
+            <p class="font-bold text-xl mb-4">9. Rédaction : Récit de cyclone</p>
+            <p class="mb-3">Imagine que tu vis l'arrivée d'un cyclone de catégorie 4. Rédige un récit de 300 mots racontant :</p>
+            <ul class="list-disc ml-6 space-y-2">
+              <li>Les jours avant (préparatifs, angoisse)</li>
+              <li>Le passage du cyclone (vents, pluies, bruits terrifiants)</li>
+              <li>L'après-cyclone (dégâts, solidarité, reconstruction)</li>
+            </ul>
+            <p class="mt-3 text-sm">Si tu as vécu un vrai cyclone, raconte ton expérience réelle.</p>
+          </div>
+
+          <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md">
+            <p class="font-bold text-xl mb-4">10. Débat : Changement climatique</p>
+            <p class="mb-3"><strong>Sujet :</strong> "Le changement climatique rend-il les cyclones plus dangereux pour Haïti ?"</p>
+            <div class="mt-3">
+              <p class="font-semibold mb-2">Recherche à faire :</p>
+              <ul class="list-disc ml-8 space-y-1 text-sm">
+                <li>Les cyclones sont-ils plus fréquents aujourd'hui qu'avant ?</li>
+                <li>Les cyclones sont-ils plus puissants (catégories 4-5 plus fréquentes) ?</li>
+                <li>Température des océans en augmentation → plus d'énergie pour cyclones ?</li>
+                <li>Que peut faire Haïti pour s'adapter ?</li>
+              </ul>
+            </div>
+          </div>
         </div>
-      </section>
+
+        <div class="bg-primary/10 p-6 rounded-lg mt-8">
+          <h4 class="font-bold text-lg mb-3">📚 Pour aller plus loin :</h4>
+          <ul class="list-disc ml-6 space-y-2">
+            <li><strong>Site météo :</strong> nhc.noaa.gov - Centre National des Ouragans (USA) - suivi en temps réel des cyclones</li>
+            <li><strong>Application mobile :</strong> Windy - Visualisation interactive des vents et précipitations</li>
+            <li><strong>Vidéo :</strong> "Comment se forme un cyclone ?" sur YouTube</li>
+            <li><strong>Documentaire :</strong> "Matthew, le cyclone qui a dévasté Haïti" (2016)</li>
+            <li><strong>Numéro d'urgence Haïti :</strong> Protection Civile 115</li>
+          </ul>
+        </div>
+      </div>
     `
   },
 
