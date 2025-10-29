@@ -4865,26 +4865,71 @@ Describe tu rutina diaria en español (mínimo 8 frases).`,
         </div>
       </div>
     `,
-    exemplesExercices: `## Ejercicios
+    exemplesExercices: `
+      <div class="exercises-content space-y-6">
+        <h3 class="text-2xl font-bold mb-6">Ejercicios</h3>
 
-### Ejercicio 1: Llenar espacios
-Completa con el pronombre reflexivo apropiado:
-- Yo _____ baño en el mar
-- Tú _____ preparas para la fiesta
-- Ella _____ corta el pelo
-- Nosotros _____ pintamos
+        <div class="bg-purple-50 dark:bg-purple-900/20 p-6 rounded-lg mb-6">
+          <h4 class="text-lg font-semibold mb-4 flex items-center gap-2">
+            <span class="text-purple-600 dark:text-purple-400">✍️</span>
+            Ejercicio 1: Llenar espacios
+          </h4>
+          <p class="mb-4">Completa con el pronombre reflexivo apropiado:</p>
+          <div class="space-y-3">
+            <div class="bg-white dark:bg-gray-800 p-3 rounded">
+              <p>Yo _____ baño en el mar</p>
+            </div>
+            <div class="bg-white dark:bg-gray-800 p-3 rounded">
+              <p>Tú _____ preparas para la fiesta</p>
+            </div>
+            <div class="bg-white dark:bg-gray-800 p-3 rounded">
+              <p>Ella _____ corta el pelo</p>
+            </div>
+            <div class="bg-white dark:bg-gray-800 p-3 rounded">
+              <p>Nosotros _____ pintamos</p>
+            </div>
+          </div>
+        </div>
 
-### Ejercicio 2: Presente
-Conjuga en presente:
-1. Yo (levantarse)
-2. Tú (peinarse)
-3. Nosotros (bañarse)
+        <div class="bg-green-50 dark:bg-green-900/20 p-6 rounded-lg mb-6">
+          <h4 class="text-lg font-semibold mb-4 flex items-center gap-2">
+            <span class="text-green-600 dark:text-green-400">🎯</span>
+            Ejercicio 2: Presente
+          </h4>
+          <p class="mb-4">Conjuga en presente:</p>
+          <div class="space-y-3">
+            <div class="bg-white dark:bg-gray-800 p-3 rounded">
+              <p>1. Yo (levantarse)</p>
+            </div>
+            <div class="bg-white dark:bg-gray-800 p-3 rounded">
+              <p>2. Tú (peinarse)</p>
+            </div>
+            <div class="bg-white dark:bg-gray-800 p-3 rounded">
+              <p>3. Nosotros (bañarse)</p>
+            </div>
+          </div>
+        </div>
 
-### Ejercicio 3: Pretérito
-Conjuga en pretérito indefinido:
-1. Ella (lavarse)
-2. Ellos (prepararse)
-3. Yo (cortarse)`,
+        <div class="bg-blue-50 dark:bg-blue-900/20 p-6 rounded-lg">
+          <h4 class="text-lg font-semibold mb-4 flex items-center gap-2">
+            <span class="text-blue-600 dark:text-blue-400">⏰</span>
+            Ejercicio 3: Pretérito
+          </h4>
+          <p class="mb-4">Conjuga en pretérito indefinido:</p>
+          <div class="space-y-3">
+            <div class="bg-white dark:bg-gray-800 p-3 rounded">
+              <p>1. Ella (lavarse)</p>
+            </div>
+            <div class="bg-white dark:bg-gray-800 p-3 rounded">
+              <p>2. Ellos (prepararse)</p>
+            </div>
+            <div class="bg-white dark:bg-gray-800 p-3 rounded">
+              <p>3. Yo (cortarse)</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    `,
     references: ["MENFP - Programme 7e AF"]
   },
 
@@ -5078,26 +5123,77 @@ Conjuga en pretérito indefinido:
         </div>
       </div>
     `,
-    exemplesExercices: `## Ejercicios
+    exemplesExercices: `
+      <div class="exercises-content space-y-6">
+        <h3 class="text-2xl font-bold mb-6">Ejercicios</h3>
 
-### Ejercicio 1: Identificar
-Indica si es reflexivo (R) o simple (S):
-1. Me lavo las manos ( )
-2. Lavo el carro ( )
-3. Se prepara para salir ( )
-4. Prepara la comida ( )
+        <div class="bg-purple-50 dark:bg-purple-900/20 p-6 rounded-lg mb-6">
+          <h4 class="text-lg font-semibold mb-4 flex items-center gap-2">
+            <span class="text-purple-600 dark:text-purple-400">🔍</span>
+            Ejercicio 1: Identificar
+          </h4>
+          <p class="mb-4">Indica si es reflexivo (R) o simple (S):</p>
+          <div class="space-y-3">
+            <div class="bg-white dark:bg-gray-800 p-3 rounded">
+              <p>1. Me lavo las manos <span class="text-sm text-gray-600 dark:text-gray-400">( )</span></p>
+            </div>
+            <div class="bg-white dark:bg-gray-800 p-3 rounded">
+              <p>2. Lavo el carro <span class="text-sm text-gray-600 dark:text-gray-400">( )</span></p>
+            </div>
+            <div class="bg-white dark:bg-gray-800 p-3 rounded">
+              <p>3. Se prepara para salir <span class="text-sm text-gray-600 dark:text-gray-400">( )</span></p>
+            </div>
+            <div class="bg-white dark:bg-gray-800 p-3 rounded">
+              <p>4. Prepara la comida <span class="text-sm text-gray-600 dark:text-gray-400">( )</span></p>
+            </div>
+          </div>
+        </div>
 
-### Ejercicio 2: Completar
-Llena los puntos por un pronombre personal reflexivo cuando sea necesario:
-1. Yo _____ baño en el mar / Yo baño al bebé
-2. Juan _____ prepara para la fiesta / Juan prepara los bocadillos
-3. Ella _____ corta el pelo / Ella corta la carne
+        <div class="bg-green-50 dark:bg-green-900/20 p-6 rounded-lg mb-6">
+          <h4 class="text-lg font-semibold mb-4 flex items-center gap-2">
+            <span class="text-green-600 dark:text-green-400">✏️</span>
+            Ejercicio 2: Completar
+          </h4>
+          <p class="mb-4">Llena los puntos por un pronombre personal reflexivo cuando sea necesario:</p>
+          <div class="space-y-3">
+            <div class="bg-white dark:bg-gray-800 p-3 rounded">
+              <p class="mb-2">1. Yo _____ baño en el mar</p>
+              <p class="text-sm text-gray-600 dark:text-gray-400 pl-4">Yo baño al bebé</p>
+            </div>
+            <div class="bg-white dark:bg-gray-800 p-3 rounded">
+              <p class="mb-2">2. Juan _____ prepara para la fiesta</p>
+              <p class="text-sm text-gray-600 dark:text-gray-400 pl-4">Juan prepara los bocadillos</p>
+            </div>
+            <div class="bg-white dark:bg-gray-800 p-3 rounded">
+              <p class="mb-2">3. Ella _____ corta el pelo</p>
+              <p class="text-sm text-gray-600 dark:text-gray-400 pl-4">Ella corta la carne</p>
+            </div>
+          </div>
+        </div>
 
-### Ejercicio 3: Transformar
-Cambia de reflexivo a simple o viceversa:
-1. Me peino → Peino a...
-2. Lavo la ropa → Me lavo...
-3. Se mira en el espejo → Mira...`,
+        <div class="bg-blue-50 dark:bg-blue-900/20 p-6 rounded-lg">
+          <h4 class="text-lg font-semibold mb-4 flex items-center gap-2">
+            <span class="text-blue-600 dark:text-blue-400">🔄</span>
+            Ejercicio 3: Transformar
+          </h4>
+          <p class="mb-4">Cambia de reflexivo a simple o viceversa:</p>
+          <div class="space-y-3">
+            <div class="bg-white dark:bg-gray-800 p-3 rounded">
+              <p class="font-semibold mb-1">1. Me peino</p>
+              <p class="text-sm text-gray-600 dark:text-gray-400">→ Peino a...</p>
+            </div>
+            <div class="bg-white dark:bg-gray-800 p-3 rounded">
+              <p class="font-semibold mb-1">2. Lavo la ropa</p>
+              <p class="text-sm text-gray-600 dark:text-gray-400">→ Me lavo...</p>
+            </div>
+            <div class="bg-white dark:bg-gray-800 p-3 rounded">
+              <p class="font-semibold mb-1">3. Se mira en el espejo</p>
+              <p class="text-sm text-gray-600 dark:text-gray-400">→ Mira...</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    `,
     references: ["MENFP - Programme 7e AF"]
   },
 
@@ -5366,27 +5462,73 @@ Cambia de reflexivo a simple o viceversa:
         </div>
       </div>
     `,
-    exemplesExercices: `## Ejercicios
+    exemplesExercices: `
+      <div class="exercises-content space-y-6">
+        <h3 class="text-2xl font-bold mb-6">Ejercicios</h3>
 
-### Ejercicio 1: Responder
-Contesta las siguientes preguntas:
-1. ¿A qué hora vas a la escuela?
-2. ¿Cuántos hermanos tienes?
-3. ¿Qué regalas a tu mamá para su cumpleaños?
-4. ¿Dónde trabaja tu padre?
+        <div class="bg-purple-50 dark:bg-purple-900/20 p-6 rounded-lg mb-6">
+          <h4 class="text-lg font-semibold mb-4 flex items-center gap-2">
+            <span class="text-purple-600 dark:text-purple-400">💬</span>
+            Ejercicio 1: Responder
+          </h4>
+          <p class="mb-4 font-semibold">Contesta las siguientes preguntas:</p>
+          <div class="space-y-3">
+            <div class="bg-white dark:bg-gray-800 p-3 rounded">
+              <p>1. ¿A qué hora vas a la escuela?</p>
+            </div>
+            <div class="bg-white dark:bg-gray-800 p-3 rounded">
+              <p>2. ¿Cuántos hermanos tienes?</p>
+            </div>
+            <div class="bg-white dark:bg-gray-800 p-3 rounded">
+              <p>3. ¿Qué regalas a tu mamá para su cumpleaños?</p>
+            </div>
+            <div class="bg-white dark:bg-gray-800 p-3 rounded">
+              <p>4. ¿Dónde trabaja tu padre?</p>
+            </div>
+          </div>
+        </div>
 
-### Ejercicio 2: Posesivos
-Completa usando posesivos:
-1. _____ amigo (mi)
-2. _____ casa (tu)
-3. _____ libros (nuestro)
-4. Un amigo _____ (mío)
+        <div class="bg-green-50 dark:bg-green-900/20 p-6 rounded-lg mb-6">
+          <h4 class="text-lg font-semibold mb-4 flex items-center gap-2">
+            <span class="text-green-600 dark:text-green-400">📝</span>
+            Ejercicio 2: Posesivos
+          </h4>
+          <p class="mb-4">Completa usando posesivos:</p>
+          <div class="space-y-3">
+            <div class="bg-white dark:bg-gray-800 p-3 rounded">
+              <p>1. _____ amigo <span class="text-sm text-gray-600 dark:text-gray-400">(mi)</span></p>
+            </div>
+            <div class="bg-white dark:bg-gray-800 p-3 rounded">
+              <p>2. _____ casa <span class="text-sm text-gray-600 dark:text-gray-400">(tu)</span></p>
+            </div>
+            <div class="bg-white dark:bg-gray-800 p-3 rounded">
+              <p>3. _____ libros <span class="text-sm text-gray-600 dark:text-gray-400">(nuestro)</span></p>
+            </div>
+            <div class="bg-white dark:bg-gray-800 p-3 rounded">
+              <p>4. Un amigo _____ <span class="text-sm text-gray-600 dark:text-gray-400">(mío)</span></p>
+            </div>
+          </div>
+        </div>
 
-### Ejercicio 3: Entrevista
-En parejas, haz 5 preguntas a tu compañero sobre:
-- Su rutina diaria
-- Su familia
-- Sus gustos`,
+        <div class="bg-blue-50 dark:bg-blue-900/20 p-6 rounded-lg">
+          <h4 class="text-lg font-semibold mb-4 flex items-center gap-2">
+            <span class="text-blue-600 dark:text-blue-400">👥</span>
+            Ejercicio 3: Entrevista
+          </h4>
+          <p class="mb-4 font-semibold">En parejas, haz 5 preguntas a tu compañero sobre:</p>
+          <div class="bg-white dark:bg-gray-800 p-4 rounded">
+            <ul class="space-y-2">
+              <li>• <strong>Su rutina diaria</strong></li>
+              <li>• <strong>Su familia</strong></li>
+              <li>• <strong>Sus gustos</strong></li>
+            </ul>
+            <p class="text-sm text-gray-600 dark:text-gray-400 mt-3 italic">
+              💡 Utiliza las preguntas aprendidas en esta lección para crear un diálogo interesante.
+            </p>
+          </div>
+        </div>
+      </div>
+    `,
     references: ["MENFP - Programme 7e AF"]
   },
 
