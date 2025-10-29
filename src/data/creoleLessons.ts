@@ -1446,10 +1446,270 @@ Pratik kouté epi rezime mesaj oral.`,
     title: "Egzekisyon konsiy konplèks",
     description: "Swiv epi egzekite konsiy konplèks ou tande",
     objectif: "Devlope kapasite pou swiv enstriksyon konplèks",
-    introduction: `<p>Konsiy konplèks mande plis atansyon.</p>`,
-    contenu: `<h2>Koute Byen</h2><p>Poze kesyon si ou pa konprann.</p>`,
-    exemplesExercices: `<p>Pratik: Swiv enstriksyon etap pa etap.</p>`,
-    duration: "45 minit",
+    youtube_url: "https://www.youtube.com/watch?v=0bQ7m3ZyHyc",
+    introduction: `
+      <div class="bg-gradient-to-r from-cyan-50 to-blue-50 dark:from-cyan-950 dark:to-blue-950 p-6 rounded-lg border-l-4 border-cyan-500">
+        <h3 class="text-xl font-bold text-cyan-700 dark:text-cyan-300 mb-3">🎯 Objektif Leson an</h3>
+        <p class="text-gray-700 dark:text-gray-300 mb-3">
+          Lè yon mèt ba w plizyè konsiy nan menm tan, ki jan w fè pou w pa bliye okenn? Lè yon granmoun di w: 
+          "Al fè sa, epi apre fè sa, men anvan sa fè lòt bagay," kijan w òganize tèt ou?
+        </p>
+        <p class="text-gray-700 dark:text-gray-300">
+          Nan vi chak jou, nou souvan resevwa <strong>konsiy konplèks</strong> — konsiy ki gen plizyè etap, konsiy ki gen kondisyon, 
+          oswa konsiy ki mare ansanm. Nan leson sa a, n ap aprann kijan pou koute byen, òganize konsiy yo nan tèt nou, 
+          epi egzekite yo nan bon lòd. Se yon kapasite enpòtan pou reyisi nan klas, nan travay, epi nan relasyon ak moun.
+        </p>
+      </div>
+      
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
+        <div class="bg-yellow-50 dark:bg-yellow-950 p-5 rounded-lg border border-yellow-300 dark:border-yellow-700">
+          <h4 class="font-semibold text-yellow-800 dark:text-yellow-200 mb-2">🤔 Reflechi</h4>
+          <ul class="list-disc list-inside text-gray-700 dark:text-gray-300 space-y-1">
+            <li>Ki konsiy konplèks ou te resevwa nan dènye jou yo?</li>
+            <li>Ki fason ou itilize pou pa bliye etap yo?</li>
+            <li>Èske ou te janm mal konprann yon konsiy? Sa ki te rive?</li>
+          </ul>
+        </div>
+
+        <div class="bg-green-50 dark:bg-green-950 p-5 rounded-lg border border-green-300 dark:border-green-700">
+          <h4 class="font-semibold text-green-800 dark:text-green-200 mb-2">🎯 Objektif Aprantisaj</h4>
+          <ul class="list-disc list-inside text-gray-700 dark:text-gray-300 space-y-1">
+            <li>Koute ak atansyon konsiy ki gen plizyè etap</li>
+            <li>Idantifye etap ki prensipal yo ak etap ki segondè yo</li>
+            <li>Kenbe konsiy yo nan memwa pou egzekite yo kòrèkteman</li>
+            <li>Rekonèt kondisyon ak tan nan konsiy konplèks</li>
+            <li>Poze kesyon pou klèsi lè konsiy la pa klè</li>
+          </ul>
+        </div>
+      </div>
+    `,
+    contenu: `
+      <h2 class="text-2xl font-bold text-primary mb-4">📚 Konprann Konsiy Konplèks</h2>
+      
+      <div class="space-y-6">
+        <div class="bg-blue-50 dark:bg-blue-950 p-6 rounded-lg border-l-4 border-blue-500">
+          <h3 class="text-xl font-semibold text-blue-700 dark:text-blue-300 mb-3">1. Sa ki Konsiy Konplèks?</h3>
+          <p class="text-gray-700 dark:text-gray-300 mb-3">Yon <strong>konsiy konplèks</strong> se yon konsiy ki:</p>
+          <ul class="text-gray-700 dark:text-gray-300 space-y-2 ml-4 list-disc list-inside">
+            <li>Gen <strong>plizyè etap</strong> ki dwe fèt nan yon lòd espesifik</li>
+            <li>Gen <strong>kondisyon</strong> (si, lè, depi, jiskaske…)</li>
+            <li>Gen <strong>chwa</strong> (oswa, swa… swa…)</li>
+            <li>Gen <strong>limit tan</strong> (anvan, apre, pandan, jiskaske…)</li>
+            <li>Gen <strong>plizyè objektif</strong> ki mare ansanm</li>
+          </ul>
+
+          <div class="mt-4 bg-white dark:bg-gray-800 p-4 rounded-lg">
+            <h4 class="text-blue-600 dark:text-blue-400 font-semibold mb-2">Egzanp konsiy senp vs konplèks</h4>
+            <p class="text-gray-700 dark:text-gray-300 mb-2"><strong>Konsiy senp:</strong> « Al achte wòch nan boutik la. »</p>
+            <p class="text-gray-700 dark:text-gray-300"><strong>Konsiy konplèks:</strong> « Anvan w al achte wòch, konte lajan ki nan bous ou. Si w gen ase lajan, al achte wòch ak kreyon. Men si ou pa gen ase, tounen lakay epi mande manman w pou lajan. »</p>
+          </div>
+        </div>
+
+        <div class="bg-purple-50 dark:bg-purple-950 p-6 rounded-lg border-l-4 border-purple-500">
+          <h3 class="text-xl font-semibold text-purple-700 dark:text-purple-300 mb-3">2. Estrateji pou Koute ak Kenbe Konsiy yo</h3>
+          <p class="text-gray-700 dark:text-gray-300 mb-4">Pou kapab swiv konsiy konplèks, ou bezwen:</p>
+          
+          <div class="space-y-4">
+            <div class="bg-white dark:bg-gray-800 p-4 rounded-lg">
+              <h4 class="font-semibold text-purple-600 dark:text-purple-400 mb-2">a) Koute ak tout kò ou</h4>
+              <ul class="text-gray-700 dark:text-gray-300 space-y-1 text-sm list-disc list-inside">
+                <li>Retire distraksyon (telefòn, bri)</li>
+                <li>Gade moun ki ap pale (li bouch, jes li)</li>
+                <li>Poze tèt ou an plas: konsantre sou sa ou tande</li>
+              </ul>
+            </div>
+
+            <div class="bg-white dark:bg-gray-800 p-4 rounded-lg">
+              <h4 class="font-semibold text-indigo-600 dark:text-indigo-400 mb-2">b) Chèche mo kle yo</h4>
+              <p class="text-gray-700 dark:text-gray-300 text-sm mb-2">Mo sa yo endike lòd, kondisyon, tan:</p>
+              <ul class="text-gray-700 dark:text-gray-300 space-y-1 text-sm ml-4">
+                <li><strong>Lòd:</strong> premye, dezyèm, apre, nan fen, an dènye, anvan</li>
+                <li><strong>Kondisyon:</strong> si, lè, depi, jiskaske, jis nan tan</li>
+                <li><strong>Tan:</strong> kounye a, imedyatman, pita, demen, avèk vitès</li>
+                <li><strong>Chwa:</strong> oswa, swa... swa..., ni... ni...</li>
+              </ul>
+            </div>
+
+            <div class="bg-white dark:bg-gray-800 p-4 rounded-lg">
+              <h4 class="font-semibold text-teal-600 dark:text-teal-400 mb-2">c) Kreye yon ti lis mental</h4>
+              <p class="text-gray-700 dark:text-gray-300 text-sm mb-2">Nan tèt ou, ranje etap yo nan yon sekans:</p>
+              <p class="text-gray-600 dark:text-gray-400 text-sm italic">
+                « 1) Konte lajan<br/>
+                2) Si gen ase → achte wòch ak kreyon<br/>
+                3) Si pa gen ase → tounen lakay → mande lajan »
+              </p>
+            </div>
+
+            <div class="bg-white dark:bg-gray-800 p-4 rounded-lg">
+              <h4 class="font-semibold text-orange-600 dark:text-orange-400 mb-2">d) Poze kesyon pou klèsi</h4>
+              <p class="text-gray-700 dark:text-gray-300 text-sm mb-2">Si ou pa konprann, pa pè mande:</p>
+              <ul class="text-gray-700 dark:text-gray-300 space-y-1 text-sm ml-4 list-disc list-inside">
+                <li>« Èske mwen dwe fè sa premye? »</li>
+                <li>« Ki lè mwen dwe fè sa? »</li>
+                <li>« Si sa rive, kisa mwen dwe fè? »</li>
+                <li>« Èske mwen ka chwazi ant de bagay? »</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+
+        <div class="bg-green-50 dark:bg-green-950 p-6 rounded-lg border-l-4 border-green-500">
+          <h3 class="text-xl font-semibold text-green-700 dark:text-green-300 mb-3">3. Kijan Idantifye Etap yo nan yon Konsiy Konplèks?</h3>
+          <p class="text-gray-700 dark:text-gray-300 mb-3">
+            Chak konsiy konplèks gen <strong>etap prensipal</strong> ak <strong>etap segondè</strong>. 
+            Etap segondè yo se konsiy ki vini anba kondisyon oswa chwa.
+          </p>
+          
+          <div class="bg-white dark:bg-gray-800 p-4 rounded-lg">
+            <p class="text-gray-700 dark:text-gray-300 font-semibold mb-2">Egzanp analiz konsiy:</p>
+            <p class="text-gray-600 dark:text-gray-400 mb-3">
+              « <strong>Al nan boutik la</strong> [etap 1], <strong>achete diri ak pwa</strong> [etap 2]. 
+              <strong>Si boutik la pa gen diri</strong> [kondisyon], <strong>al chèche nan lòt boutik</strong> [etap segondè]. 
+              <strong>Apre sa</strong> [tan], <strong>tounen lakay ou</strong> [etap 3]. »
+            </p>
+            <div class="space-y-1 text-sm text-gray-600 dark:text-gray-400">
+              <p>✅ Etap prensipal: 1) Al nan boutik, 2) Achete, 3) Tounen lakay</p>
+              <p>⚠️ Etap segondè (sou kondisyon): Si pa gen diri → chèche lòt boutik</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="bg-orange-50 dark:bg-orange-950 p-6 rounded-lg border-l-4 border-orange-500">
+          <h3 class="text-xl font-semibold text-orange-700 dark:text-orange-300 mb-3">4. Rekonèt Kondisyon nan Konsiy</h3>
+          <p class="text-gray-700 dark:text-gray-300 mb-3">
+            Gen konsiy ki depann de yon kondisyon: si kondisyon an rive, ou fè yon bagay; 
+            si li pa rive, ou fè yon lòt bagay.
+          </p>
+          
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div class="bg-white dark:bg-gray-800 p-4 rounded-lg">
+              <h4 class="font-semibold text-green-600 dark:text-green-400 mb-2">Kondisyon "Si..."</h4>
+              <p class="text-gray-700 dark:text-gray-300 text-sm">
+                « <em>Si</em> lapli tonbe, <em>pa</em> soti nan lakou a. Men <em>si</em> solèy klere, ou ka al jwe. »
+              </p>
+            </div>
+            <div class="bg-white dark:bg-gray-800 p-4 rounded-lg">
+              <h4 class="font-semibold text-red-600 dark:text-red-400 mb-2">Kondisyon "Lè..."</h4>
+              <p class="text-gray-700 dark:text-gray-300 text-sm">
+                « <em>Lè</em> w fini devwa ou, <em>al</em> ede manman w nan kay la. »
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div class="bg-red-50 dark:bg-red-950 p-6 rounded-lg border-l-4 border-red-500">
+          <h3 class="text-xl font-semibold text-red-700 dark:text-red-300 mb-3">5. Estrateji Egzekisyon Etap pa Etap</h3>
+          <p class="text-gray-700 dark:text-gray-300 mb-3">Lè w ap egzekite yon konsiy konplèks:</p>
+          <ol class="list-decimal list-inside space-y-2 text-gray-700 dark:text-gray-300">
+            <li><strong>Revize konsiy la</strong> — di li nan tèt ou nan lòd kòrèk</li>
+            <li><strong>Kòmanse ak premye etap</strong> — pa kouri, fè tout etap nan bon lòd</li>
+            <li><strong>Tcheke kondisyon yo</strong> — gade si kondisyon yo rive avan ou kontinye</li>
+            <li><strong>Swiv lòd ki bay</strong> — respekte sekans la</li>
+            <li><strong>Verifye w ap fè tout etap</strong> — pa bliye okenn etap</li>
+            <li><strong>Si w pa ka fè yon etap</strong> — poze kesyon, mande èd</li>
+          </ol>
+          
+          <div class="mt-4 bg-yellow-50 dark:bg-yellow-950 p-4 rounded-lg border border-yellow-300 dark:border-yellow-700">
+            <h4 class="text-yellow-800 dark:text-yellow-200 font-semibold mb-2">💡 Konsèy</h4>
+            <p class="text-gray-700 dark:text-gray-300 text-sm">
+              Si konsiy la long, ou ka ekri etap yo sou papye pou pa bliye. Menm nan klas, ou ka fè yon ti nòt rapid.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <div class="mt-8 bg-indigo-50 dark:bg-indigo-950 p-6 rounded-lg border-l-4 border-indigo-500">
+        <h3 class="text-xl font-semibold text-indigo-700 dark:text-indigo-300 mb-3">📺 Videyo pou Ale Pi Lwen</h3>
+        <p class="text-gray-700 dark:text-gray-300 mb-3">
+          Gade videyo a, note 3 estrateji ki ede w kenbe konsiy yo nan tèt ou.
+        </p>
+      </div>
+
+      <div class="mt-6 bg-gradient-to-r from-cyan-100 to-blue-100 dark:from-cyan-900 dark:to-blue-900 p-6 rounded-lg">
+        <h3 class="text-xl font-semibold text-cyan-800 dark:text-cyan-200 mb-2">🌟 Sonje!</h3>
+        <p class="text-gray-700 dark:text-gray-300 text-lg">
+          Pratike chak jou: koute byen nan klas, nan lakay, nan kominote a. Chak konsiy ou koute, 
+          se yon chans pou w amelyore kapasite ou!
+        </p>
+      </div>
+    `,
+    exemplesExercices: `
+      <h2 class="text-2xl font-bold text-primary mb-4">✏️ Pratik ak Egzèsis</h2>
+      
+      <div class="space-y-6">
+        <div class="bg-blue-50 dark:bg-blue-950 p-6 rounded-lg border border-blue-300 dark:border-blue-700">
+          <h3 class="text-lg font-semibold text-blue-700 dark:text-blue-300 mb-3">Egzèsis 1 — Idantifye Etap yo</h3>
+          <p class="text-gray-700 dark:text-gray-300 mb-3">
+            Koute konsiy sa a, ekri etap prensipal yo ak etap segondè yo:
+          </p>
+          
+          <div class="bg-white dark:bg-gray-800 p-4 rounded-lg mb-4">
+            <p class="text-gray-700 dark:text-gray-300 italic">
+              « Anvan w al nan mache, pran yon sak epi mete lajan ou ladan li. Lè w rive nan mache, 
+              al nan boutik pòm nan. Si yo gen diri, achte 2 kilo. Men si yo pa gen, al chèche nan boutik machann an. 
+              Apre w fin achte, tounen lakay ou epi mete diri a nan depo. »
+            </p>
+          </div>
+          
+          <label class="font-semibold text-gray-700 dark:text-gray-300">Etap prensipal:</label>
+          <textarea class="w-full border border-gray-300 dark:border-gray-600 rounded p-3 mt-2 min-h-[100px]" 
+                    placeholder="Ekri etap yo..."></textarea>
+        </div>
+
+        <div class="bg-green-50 dark:bg-green-950 p-6 rounded-lg border border-green-300 dark:border-green-700">
+          <h3 class="text-lg font-semibold text-green-700 dark:text-green-300 mb-3">Egzèsis 2 — Jwe Wòl</h3>
+          <p class="text-gray-700 dark:text-gray-300 mb-3">
+            Nan gwoup de: yon elèv ba lòt la yon konsiy konplèks (5 etap), epi elèv la dwe egzekite li kòrèkteman. 
+            Chanje wòl yo.
+          </p>
+          <div class="bg-white dark:bg-gray-800 p-4 rounded-lg">
+            <p class="text-gray-600 dark:text-gray-400 text-sm">
+              <strong>Idea pou konsiy:</strong> koman pou prepare yon sandwich, koman pou òganize liv yo, 
+              koman pou fè yon eksperyans senp.
+            </p>
+          </div>
+        </div>
+
+        <div class="bg-purple-50 dark:bg-purple-950 p-6 rounded-lg border border-purple-300 dark:border-purple-700">
+          <h3 class="text-lg font-semibold text-purple-700 dark:text-purple-300 mb-3">Egzèsis 3 — Chèche Kondisyon ak Chwa</h3>
+          <p class="text-gray-700 dark:text-gray-300 mb-3">
+            Nan konsiy yo, souliye mo ki endike kondisyon ak chwa:
+          </p>
+          <div class="space-y-3">
+            <div class="bg-white dark:bg-gray-800 p-3 rounded">
+              <p class="text-gray-700 dark:text-gray-300">a) « Si ou fini devwa ou, ou ka al jwe. Men si ou pa fini, ou dwe rete nan kay. »</p>
+              <input type="text" class="w-full border border-gray-300 dark:border-gray-600 rounded p-2 mt-2" 
+                     placeholder="Mo kondisyon..." />
+            </div>
+            <div class="bg-white dark:bg-gray-800 p-3 rounded">
+              <p class="text-gray-700 dark:text-gray-300">b) « Swa ou vini jodi a, swa ou vini demen. »</p>
+              <input type="text" class="w-full border border-gray-300 dark:border-gray-600 rounded p-2 mt-2" 
+                     placeholder="Mo chwa..." />
+            </div>
+            <div class="bg-white dark:bg-gray-800 p-3 rounded">
+              <p class="text-gray-700 dark:text-gray-300">c) « Lè w fini manje, lave asyèt yo. Apre sa, si w gen tan, al ede papa w. »</p>
+              <input type="text" class="w-full border border-gray-300 dark:border-gray-600 rounded p-2 mt-2" 
+                     placeholder="Mo kondisyon ak tan..." />
+            </div>
+          </div>
+        </div>
+
+        <div class="bg-orange-50 dark:bg-orange-950 p-6 rounded-lg border border-orange-300 dark:border-orange-700">
+          <h3 class="text-lg font-semibold text-orange-700 dark:text-orange-300 mb-3">Egzèsis 4 — Kreye Konsiy Konplèks</h3>
+          <p class="text-gray-700 dark:text-gray-300 mb-3">
+            Ekri yon konsiy konplèks (3-5 etap) pou youn nan sitiyasyon sa yo:
+          </p>
+          <ul class="list-disc list-inside text-gray-700 dark:text-gray-300 mb-3 space-y-1">
+            <li>Kijan pou prepare yon ti dejene</li>
+            <li>Kijan pou ranje yon chanm</li>
+            <li>Kijan pou al nan yon kote ki lwen</li>
+          </ul>
+          <textarea class="w-full border border-gray-300 dark:border-gray-600 rounded p-3 min-h-[120px]" 
+                    placeholder="Ekri konsiy konplèks ou isit..."></textarea>
+        </div>
+      </div>
+    `,
+    duration: "60 minit",
     difficulty: "Intermediaire",
     category: "Kominikasyon Oral"
   },
@@ -1459,10 +1719,374 @@ Pratik kouté epi rezime mesaj oral.`,
     title: "Tip fraz yo",
     description: "Idantifye tip fraz: deklaratif, entèwogatif, ekslamatif, enpératif",
     objectif: "Konnen epi itilize diferan tip fraz",
-    introduction: `<p>Gen kat tip fraz prensipal.</p>`,
-    contenu: `<h2>Deklaratif, Entèwogatif, Ekslamatif, Enpératif</h2><p>Chak tip gen yon itilizasyon.</p>`,
-    exemplesExercices: `<p>Pratik: Kreye fraz nan chak tip.</p>`,
-    duration: "45 minit",
+    youtube_url: "https://www.youtube.com/watch?v=0bQ7m3ZyHyc",
+    introduction: `
+      <div class="bg-gradient-to-r from-slate-50 to-gray-50 dark:from-slate-950 dark:to-gray-950 p-6 rounded-lg border-l-4 border-slate-500">
+        <h3 class="text-xl font-bold text-slate-700 dark:text-slate-300 mb-3">🎯 Objektif Leson an</h3>
+        <p class="text-gray-700 dark:text-gray-300 mb-3">
+          Kijan w ka di kèl tip fraz se yon fraz? Ki sa ki fè yon fraz se yon kesyon, yon lòt se yon lòd, 
+          yon lòt ankò se yon deklarasyon?
+        </p>
+        <p class="text-gray-700 dark:text-gray-300">
+          Nan lang kreyòl, gen <strong>kat tip fraz prensipal</strong> selon <em>objektif</em> ou <em>fonksyon</em> yo: 
+          fraz ki <strong>deklare</strong> yon bagay, fraz ki <strong>poze kesyon</strong>, fraz ki <strong>eksprime emosyon</strong>, 
+          ak fraz ki <strong>bay lòd oswa konsiy</strong>. Konnen tip fraz yo ap ede w li pi byen, ekri pi klè, 
+          epi kominike pi efikas.
+        </p>
+      </div>
+      
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
+        <div class="bg-yellow-50 dark:bg-yellow-950 p-5 rounded-lg border border-yellow-300 dark:border-yellow-700">
+          <h4 class="font-semibold text-yellow-800 dark:text-yellow-200 mb-2">🤔 Reflechi</h4>
+          <ul class="list-disc list-inside text-gray-700 dark:text-gray-300 space-y-1">
+            <li>Ki tip fraz ou itilize pi souvan nan chak jou?</li>
+            <li>Ki siy ponktiyasyon ki endike yon kesyon? Yon lòd?</li>
+            <li>Poukisa li enpòtan konnen tip fraz yo?</li>
+          </ul>
+        </div>
+
+        <div class="bg-green-50 dark:bg-green-950 p-5 rounded-lg border border-green-300 dark:border-green-700">
+          <h4 class="font-semibold text-green-800 dark:text-green-200 mb-2">🎯 Objektif Aprantisaj</h4>
+          <ul class="list-disc list-inside text-gray-700 dark:text-gray-300 space-y-1">
+            <li>Rekonèt kat tip fraz prensipal yo</li>
+            <li>Idantifye siy ponktiyasyon ki asosye ak chak tip</li>
+            <li>Konprann itilizasyon chak tip fraz</li>
+            <li>Kreye fraz nan chak kategori</li>
+            <li>Itilize tip fraz yo kòrèkteman nan ekriti</li>
+          </ul>
+        </div>
+      </div>
+    `,
+    contenu: `
+      <h2 class="text-2xl font-bold text-primary mb-4">📝 Kat Tip Fraz Prensipal yo</h2>
+      
+      <div class="space-y-6">
+        <div class="bg-blue-50 dark:bg-blue-950 p-6 rounded-lg border-l-4 border-blue-500">
+          <h3 class="text-xl font-semibold text-blue-700 dark:text-blue-300 mb-3">1. Fraz Deklaratif (Fraz ki deklare)</h3>
+          <p class="text-gray-700 dark:text-gray-300 mb-3">
+            Yon <strong>fraz deklaratif</strong> se yon fraz ki <em>bay enfòmasyon</em>, ki <em>deklare</em> yon bagay, 
+            ki <em>di</em> yon reyalite, yon reyèl, oswa yon opinyon. Li fini ak yon <strong>pwen (.)</strong>.
+          </p>
+          
+          <div class="bg-white dark:bg-gray-800 p-4 rounded-lg mb-3">
+            <h4 class="text-blue-600 dark:text-blue-400 font-semibold mb-2">Karakteristik</h4>
+            <ul class="text-gray-700 dark:text-gray-300 space-y-1 text-sm list-disc list-inside">
+              <li>Li bay enfòmasyon san poze kesyon</li>
+              <li>Li deklare yon fè, yon eta, yon aksyon</li>
+              <li>Li fini ak <strong>pwen (.)</strong></li>
+              <li>Li ka afirmatif: « Mwen li liv la. »</li>
+              <li>Li ka negatif: « Mwen pa li liv la. »</li>
+            </ul>
+          </div>
+
+          <div class="bg-white dark:bg-gray-800 p-4 rounded-lg">
+            <p class="text-gray-700 dark:text-gray-300 font-semibold mb-2">Egzanp fraz deklaratif:</p>
+            <ul class="text-gray-700 dark:text-gray-300 space-y-1 ml-4 list-disc list-inside">
+              <li>« Ayiti gen anpil bèl plaj. »</li>
+              <li>« Timoun yo ap jwe nan lakou a. »</li>
+              <li>« Mwen renmen mizik konpa. »</li>
+              <li>« Manman ap kwit manje a. »</li>
+              <li>« Lekòl la ap gen vakans demen. »</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="bg-purple-50 dark:bg-purple-950 p-6 rounded-lg border-l-4 border-purple-500">
+          <h3 class="text-xl font-semibold text-purple-700 dark:text-purple-300 mb-3">2. Fraz Entèwogatif (Fraz ki poze kesyon)</h3>
+          <p class="text-gray-700 dark:text-gray-300 mb-3">
+            Yon <strong>fraz entèwogatif</strong> se yon fraz ki <em>poze kesyon</em>, ki <em>mande enfòmasyon</em>. 
+            Li fini ak yon <strong>pwen entèwogasyon (?)</strong>.
+          </p>
+          
+          <div class="bg-white dark:bg-gray-800 p-4 rounded-lg mb-3">
+            <h4 class="text-purple-600 dark:text-purple-400 font-semibold mb-2">Karakteristik</h4>
+            <ul class="text-gray-700 dark:text-gray-300 space-y-1 text-sm list-disc list-inside">
+              <li>Li mande enfòmasyon, sekirite, konfimasyon</li>
+              <li>Li kòmanse ak <strong>ki, kisa, ki lè, ki kote, poukisa, kijan, kiyès</strong></li>
+              <li>Li ka kòmanse ak <strong>Èske</strong> (pou kesyon repons wi/non)</li>
+              <li>Li fini ak <strong>pwen entèwogasyon (?)</strong></li>
+            </ul>
+          </div>
+
+          <div class="bg-white dark:bg-gray-800 p-4 rounded-lg mb-3">
+            <p class="text-gray-700 dark:text-gray-300 font-semibold mb-2">Egzanp fraz entèwogatif:</p>
+            <ul class="text-gray-700 dark:text-gray-300 space-y-1 ml-4 list-disc list-inside">
+              <li>« Ki jan ou ye? »</li>
+              <li>« Kisa w ap fè? »</li>
+              <li>« Kiyès ki nan kay la? »</li>
+              <li>« Ki lè klas la ap fini? »</li>
+              <li>« Èske ou gen lajan? »</li>
+              <li>« Poukisa w pa vini? »</li>
+            </ul>
+          </div>
+
+          <div class="bg-indigo-50 dark:bg-indigo-950 p-4 rounded-lg border border-indigo-300 dark:border-indigo-700">
+            <h4 class="text-indigo-800 dark:text-indigo-200 font-semibold mb-2">⚠️ Remak</h4>
+            <p class="text-gray-700 dark:text-gray-300 text-sm">
+              Nan kreyòl, kesyon "Èske..." gen de tip repons posib: <strong>Wi</strong> (afirmatif) oswa <strong>Non</strong> (negatif).
+            </p>
+          </div>
+        </div>
+
+        <div class="bg-yellow-50 dark:bg-yellow-950 p-6 rounded-lg border-l-4 border-yellow-500">
+          <h3 class="text-xl font-semibold text-yellow-700 dark:text-yellow-300 mb-3">3. Fraz Ekslamatif (Fraz ki eksprime emosyon)</h3>
+          <p class="text-gray-700 dark:text-gray-300 mb-3">
+            Yon <strong>fraz ekslamatif</strong> se yon fraz ki <em>eksprime emosyon</em> (kontantman, fache, soupris, admirasyon...). 
+            Li fini ak yon <strong>pwen esklamasyon (!)</strong>.
+          </p>
+          
+          <div class="bg-white dark:bg-gray-800 p-4 rounded-lg mb-3">
+            <h4 class="text-yellow-600 dark:text-yellow-400 font-semibold mb-2">Karakteristik</h4>
+            <ul class="text-gray-700 dark:text-gray-300 space-y-1 text-sm list-disc list-inside">
+              <li>Li eksprime emosyon fò (jwa, fache, soupris, admirasyon)</li>
+              <li>Li ka kòmanse ak <strong>Ala, Mèt Bondye, O, A</strong></li>
+              <li>Li fini ak <strong>pwen esklamasyon (!)</strong></li>
+              <li>Li ka gen ton anfle nan pwononsiyasyon</li>
+            </ul>
+          </div>
+
+          <div class="bg-white dark:bg-gray-800 p-4 rounded-lg">
+            <p class="text-gray-700 dark:text-gray-300 font-semibold mb-2">Egzanp fraz ekslamatif:</p>
+            <ul class="text-gray-700 dark:text-gray-300 space-y-1 ml-4 list-disc list-inside">
+              <li>« Ala bèl kay sa! » (admirasyon)</li>
+              <li>« Mèt Bondye, lapli tonbe fò! » (soupris, laperèz)</li>
+              <li>« Mwen kontan anpil! » (jwa)</li>
+              <li>« Pa fè sa! » (òd/fache)</li>
+              <li>« O, ki bèl! » (admirasyon)</li>
+              <li>« A, mwen wè ou! » (rekonèt)</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="bg-green-50 dark:bg-green-950 p-6 rounded-lg border-l-4 border-green-500">
+          <h3 class="text-xl font-semibold text-green-700 dark:text-green-300 mb-3">4. Fraz Enpératif (Fraz ki bay lòd/konsiy)</h3>
+          <p class="text-gray-700 dark:text-gray-300 mb-3">
+            Yon <strong>fraz enpératif</strong> se yon fraz ki <em>bay lòd</em>, ki <em>mande</em> yon moun fè yon bagay, 
+            ki <em>bay konsiy</em> oswa <em>priye</em>. Li ka fini ak yon <strong>pwen (.)</strong> oswa <strong>pwen esklamasyon (!)</strong>.
+          </p>
+          
+          <div class="bg-white dark:bg-gray-800 p-4 rounded-lg mb-3">
+            <h4 class="text-green-600 dark:text-green-400 font-semibold mb-2">Karakteristik</h4>
+            <ul class="text-gray-700 dark:text-gray-300 space-y-1 text-sm list-disc list-inside">
+              <li>Li bay lòd, konsiy, priyè</li>
+              <li>Gen de fòm: <strong>lòd dirèk</strong> ak <strong>priyè</strong></li>
+              <li>Lòd dirèk: kòmanse dirèkteman ak vèb (san "ou", "w", "nou")</li>
+              <li>Priyè: gen "tanpri", "souple", oswa ton ki dou</li>
+              <li>Li ka fini ak (.) pou priyè oswa (!) pou lòd fò</li>
+            </ul>
+          </div>
+
+          <div class="bg-white dark:bg-gray-800 p-4 rounded-lg mb-3">
+            <p class="text-gray-700 dark:text-gray-300 font-semibold mb-2">Egzanp fraz enpératif:</p>
+            <p class="text-gray-600 dark:text-gray-400 text-sm mb-1"><strong>Lòd dirèk (fò):</strong></p>
+            <ul class="text-gray-700 dark:text-gray-300 space-y-1 ml-4 list-disc list-inside mb-3">
+              <li>« Fèmen pòt la! »</li>
+              <li>« Chita la! »</li>
+              <li>« Pa kouri! »</li>
+            </ul>
+            <p class="text-gray-600 dark:text-gray-400 text-sm mb-1"><strong>Priyè/konsiy (dou):</strong></p>
+            <ul class="text-gray-700 dark:text-gray-300 space-y-1 ml-4 list-disc list-inside">
+              <li>« Tanpri, ede m souple. »</li>
+              <li>« Se pou ou li byen. »</li>
+              <li>« Vini isit. »</li>
+            </ul>
+          </div>
+
+          <div class="bg-red-50 dark:bg-red-950 p-4 rounded-lg border border-red-300 dark:border-red-700">
+            <h4 class="text-red-800 dark:text-red-200 font-semibold mb-2">⚠️ Remak</h4>
+            <p class="text-gray-700 dark:text-gray-300 text-sm">
+              Nan kreyòl, fraz enpératif souvan kòmanse dirèkteman ak vèb la san pwonon sijè. 
+              Egzanp: « <em>Chita</em> la! » (oubyen « <em>W chita</em> la! » men se mwens komen).
+            </p>
+          </div>
+        </div>
+
+        <div class="bg-orange-50 dark:bg-orange-950 p-6 rounded-lg border-l-4 border-orange-500">
+          <h3 class="text-xl font-semibold text-orange-700 dark:text-orange-300 mb-3">5. Tablo Rezime: Tip Fraz, Siy, Fonksyon</h3>
+          <div class="overflow-x-auto">
+            <table class="w-full bg-white dark:bg-gray-800 rounded-lg">
+              <thead class="bg-gray-100 dark:bg-gray-700">
+                <tr>
+                  <th class="p-3 text-left text-gray-700 dark:text-gray-300">Tip fraz</th>
+                  <th class="p-3 text-left text-gray-700 dark:text-gray-300">Siy fen</th>
+                  <th class="p-3 text-left text-gray-700 dark:text-gray-300">Fonksyon</th>
+                </tr>
+              </thead>
+              <tbody class="text-gray-700 dark:text-gray-300">
+                <tr class="border-t border-gray-200 dark:border-gray-700">
+                  <td class="p-3">Deklaratif</td>
+                  <td class="p-3">Pwen (.)</td>
+                  <td class="p-3">Bay enfòmasyon, deklare</td>
+                </tr>
+                <tr class="border-t border-gray-200 dark:border-gray-700">
+                  <td class="p-3">Entèwogatif</td>
+                  <td class="p-3">Pwen entèwogasyon (?)</td>
+                  <td class="p-3">Poze kesyon, mande enfòmasyon</td>
+                </tr>
+                <tr class="border-t border-gray-200 dark:border-gray-700">
+                  <td class="p-3">Ekslamatif</td>
+                  <td class="p-3">Pwen esklamasyon (!)</td>
+                  <td class="p-3">Eksprime emosyon (jwa, fache...)</td>
+                </tr>
+                <tr class="border-t border-gray-200 dark:border-gray-700">
+                  <td class="p-3">Enpératif</td>
+                  <td class="p-3">Pwen (.) oswa (!)</td>
+                  <td class="p-3">Bay lòd, konsiy, priye</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <div class="mt-8 bg-indigo-50 dark:bg-indigo-950 p-6 rounded-lg border-l-4 border-indigo-500">
+        <h3 class="text-xl font-semibold text-indigo-700 dark:text-indigo-300 mb-3">📺 Videyo pou Ale Pi Lwen</h3>
+        <p class="text-gray-700 dark:text-gray-300 mb-3">
+          Gade videyo a, note 4 tip fraz yo ak siy ponktiyasyon yo.
+        </p>
+      </div>
+
+      <div class="mt-6 bg-gradient-to-r from-slate-100 to-gray-100 dark:from-slate-900 dark:to-gray-900 p-6 rounded-lg">
+        <h3 class="text-xl font-semibold text-slate-800 dark:text-slate-200 mb-2">🌟 Sonje!</h3>
+        <p class="text-gray-700 dark:text-gray-300 text-lg">
+          Pratike chak jou: ekri fraz nan diferan tip yo. Chak tip gen yon fonksyon espesyal nan kominikasyon!
+        </p>
+      </div>
+    `,
+    exemplesExercices: `
+      <h2 class="text-2xl font-bold text-primary mb-4">✏️ Pratik ak Egzèsis</h2>
+      
+      <div class="space-y-6">
+        <div class="bg-blue-50 dark:bg-blue-950 p-6 rounded-lg border border-blue-300 dark:border-blue-700">
+          <h3 class="text-lg font-semibold text-blue-700 dark:text-blue-300 mb-3">Egzèsis 1 — Idantifye Tip Fraz yo</h3>
+          <p class="text-gray-700 dark:text-gray-300 mb-4">
+            Ekri tip fraz la (deklaratif, entèwogatif, ekslamatif, enpératif) pou chak fraz:
+          </p>
+          
+          <div class="space-y-3">
+            <div class="bg-white dark:bg-gray-800 p-4 rounded flex justify-between items-center">
+              <span class="text-gray-700 dark:text-gray-300">a) « Ki jan ou ye? »</span>
+              <input type="text" class="border border-gray-300 dark:border-gray-600 rounded p-2 w-48" 
+                     placeholder="Tip fraz..." />
+            </div>
+            <div class="bg-white dark:bg-gray-800 p-4 rounded flex justify-between items-center">
+              <span class="text-gray-700 dark:text-gray-300">b) « Mwen kontan wè ou. »</span>
+              <input type="text" class="border border-gray-300 dark:border-gray-600 rounded p-2 w-48" 
+                     placeholder="Tip fraz..." />
+            </div>
+            <div class="bg-white dark:bg-gray-800 p-4 rounded flex justify-between items-center">
+              <span class="text-gray-700 dark:text-gray-300">c) « Ala bèl sa! »</span>
+              <input type="text" class="border border-gray-300 dark:border-gray-600 rounded p-2 w-48" 
+                     placeholder="Tip fraz..." />
+            </div>
+            <div class="bg-white dark:bg-gray-800 p-4 rounded flex justify-between items-center">
+              <span class="text-gray-700 dark:text-gray-300">d) « Chita la souple. »</span>
+              <input type="text" class="border border-gray-300 dark:border-gray-600 rounded p-2 w-48" 
+                     placeholder="Tip fraz..." />
+            </div>
+            <div class="bg-white dark:bg-gray-800 p-4 rounded flex justify-between items-center">
+              <span class="text-gray-700 dark:text-gray-300">e) « Ayiti gen anpil kilti. »</span>
+              <input type="text" class="border border-gray-300 dark:border-gray-600 rounded p-2 w-48" 
+                     placeholder="Tip fraz..." />
+            </div>
+          </div>
+        </div>
+
+        <div class="bg-green-50 dark:bg-green-950 p-6 rounded-lg border border-green-300 dark:border-green-700">
+          <h3 class="text-lg font-semibold text-green-700 dark:text-green-300 mb-3">Egzèsis 2 — Ranpli Siy Ponktiyasyon</h3>
+          <p class="text-gray-700 dark:text-gray-300 mb-4">
+            Mete siy kòrèk la: (.), (?), oswa (!)
+          </p>
+          
+          <div class="space-y-3">
+            <div class="bg-white dark:bg-gray-800 p-4 rounded flex justify-between items-center">
+              <span class="text-gray-700 dark:text-gray-300">a) « Ki lè w pral vini »</span>
+              <input type="text" class="border border-gray-300 dark:border-gray-600 rounded p-2 w-16 text-center" 
+                     maxlength="1" placeholder="?" />
+            </div>
+            <div class="bg-white dark:bg-gray-800 p-4 rounded flex justify-between items-center">
+              <span class="text-gray-700 dark:text-gray-300">b) « Mwen fini devwa mwen »</span>
+              <input type="text" class="border border-gray-300 dark:border-gray-600 rounded p-2 w-16 text-center" 
+                     maxlength="1" placeholder="?" />
+            </div>
+            <div class="bg-white dark:bg-gray-800 p-4 rounded flex justify-between items-center">
+              <span class="text-gray-700 dark:text-gray-300">c) « Pa kouri nan klas la »</span>
+              <input type="text" class="border border-gray-300 dark:border-gray-600 rounded p-2 w-16 text-center" 
+                     maxlength="1" placeholder="?" />
+            </div>
+            <div class="bg-white dark:bg-gray-800 p-4 rounded flex justify-between items-center">
+              <span class="text-gray-700 dark:text-gray-300">d) « Ala bèl solèy »</span>
+              <input type="text" class="border border-gray-300 dark:border-gray-600 rounded p-2 w-16 text-center" 
+                     maxlength="1" placeholder="?" />
+            </div>
+          </div>
+        </div>
+
+        <div class="bg-purple-50 dark:bg-purple-950 p-6 rounded-lg border border-purple-300 dark:border-purple-700">
+          <h3 class="text-lg font-semibold text-purple-700 dark:text-purple-300 mb-3">Egzèsis 3 — Kreye Fraz</h3>
+          <p class="text-gray-700 dark:text-gray-300 mb-4">
+            Ekri yon fraz nan chak kategori (4 fraz an total):
+          </p>
+          
+          <div class="space-y-4">
+            <div>
+              <label class="text-sm font-semibold text-gray-700 dark:text-gray-300">• Deklaratif:</label>
+              <textarea class="w-full border border-gray-300 dark:border-gray-600 rounded p-3 mt-2 min-h-[60px]" 
+                        placeholder="Ekri isit..."></textarea>
+            </div>
+
+            <div>
+              <label class="text-sm font-semibold text-gray-700 dark:text-gray-300">• Entèwogatif:</label>
+              <textarea class="w-full border border-gray-300 dark:border-gray-600 rounded p-3 mt-2 min-h-[60px]" 
+                        placeholder="Ekri isit..."></textarea>
+            </div>
+
+            <div>
+              <label class="text-sm font-semibold text-gray-700 dark:text-gray-300">• Ekslamatif:</label>
+              <textarea class="w-full border border-gray-300 dark:border-gray-600 rounded p-3 mt-2 min-h-[60px]" 
+                        placeholder="Ekri isit..."></textarea>
+            </div>
+
+            <div>
+              <label class="text-sm font-semibold text-gray-700 dark:text-gray-300">• Enpératif:</label>
+              <textarea class="w-full border border-gray-300 dark:border-gray-600 rounded p-3 mt-2 min-h-[60px]" 
+                        placeholder="Ekri isit..."></textarea>
+            </div>
+          </div>
+        </div>
+
+        <div class="bg-orange-50 dark:bg-orange-950 p-6 rounded-lg border border-orange-300 dark:border-orange-700">
+          <h3 class="text-lg font-semibold text-orange-700 dark:text-orange-300 mb-3">Egzèsis 4 — Transfòme Fraz yo</h3>
+          <p class="text-gray-700 dark:text-gray-300 mb-4">
+            Pran fraz deklaratif sa a epi transfòme l nan lòt tip yo:
+          </p>
+          
+          <div class="bg-white dark:bg-gray-800 p-4 rounded-lg mb-4">
+            <p class="text-gray-700 dark:text-gray-300 font-semibold">Fraz orijinal (deklaratif):</p>
+            <p class="text-gray-600 dark:text-gray-400 italic">« Timoun yo ap jwe nan lakou a. »</p>
+          </div>
+
+          <div class="space-y-3">
+            <div>
+              <label class="text-sm font-semibold text-gray-700 dark:text-gray-300">Transfòme an entèwogatif:</label>
+              <input type="text" class="w-full border border-gray-300 dark:border-gray-600 rounded p-2 mt-1" 
+                     placeholder="Ki kote...?" />
+            </div>
+            <div>
+              <label class="text-sm font-semibold text-gray-700 dark:text-gray-300">Transfòme an ekslamatif:</label>
+              <input type="text" class="w-full border border-gray-300 dark:border-gray-600 rounded p-2 mt-1" 
+                     placeholder="Ala...!" />
+            </div>
+            <div>
+              <label class="text-sm font-semibold text-gray-700 dark:text-gray-300">Transfòme an enpératif:</label>
+              <input type="text" class="w-full border border-gray-300 dark:border-gray-600 rounded p-2 mt-1" 
+                     placeholder="Al jwe...!" />
+            </div>
+          </div>
+        </div>
+      </div>
+    `,
+    duration: "60 minit",
     difficulty: "Intermediaire",
     category: "Gramè"
   },
