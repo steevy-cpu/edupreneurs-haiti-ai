@@ -4118,25 +4118,68 @@ El verbo debe concordar con el sujeto en persona y número:
 - Nosotros hablamos
 - Vosotros habláis
 - Ellos hablan`,
-    exemplesExercices: `## Ejercicios
+    exemplesExercices: `
+      <div class="exercises-content space-y-6">
+        <h3 class="text-2xl font-bold mb-6">Ejercicios</h3>
 
-### Ejercicio 1: Completar con pronombres sujetos
-Escribe delante de cada verbo el pronombre personal conveniente:
-1. _____ va a cantar (femenino)
-2. _____ estudias la lección
-3. Juan y _____ vamos a la playa
+        <div class="bg-purple-50 dark:bg-purple-900/20 p-6 rounded-lg mb-6">
+          <h4 class="text-lg font-semibold mb-4 flex items-center gap-2">
+            <span class="text-purple-600 dark:text-purple-400">👤</span>
+            Ejercicio 1: Completar con pronombres sujetos
+          </h4>
+          <p class="mb-4">Escribe delante de cada verbo el pronombre personal conveniente:</p>
+          <div class="space-y-3">
+            <div class="bg-white dark:bg-gray-800 p-3 rounded">
+              <p>_____ va a cantar <span class="text-sm text-gray-600 dark:text-gray-400">(femenino)</span></p>
+            </div>
+            <div class="bg-white dark:bg-gray-800 p-3 rounded">
+              <p>_____ estudias la lección</p>
+            </div>
+            <div class="bg-white dark:bg-gray-800 p-3 rounded">
+              <p>Juan y _____ vamos a la playa</p>
+            </div>
+          </div>
+        </div>
 
-### Ejercicio 2: Complementos
-Completa con el complemento apropiado:
-- A Juliana _____ gusta montar a caballo
-- _____ veo todos los días (te/lo/la)
-- _____ escribo una carta (te/le)
+        <div class="bg-green-50 dark:bg-green-900/20 p-6 rounded-lg mb-6">
+          <h4 class="text-lg font-semibold mb-4 flex items-center gap-2">
+            <span class="text-green-600 dark:text-green-400">📌</span>
+            Ejercicio 2: Complementos
+          </h4>
+          <p class="mb-4">Completa con el complemento apropiado:</p>
+          <div class="space-y-3">
+            <div class="bg-white dark:bg-gray-800 p-3 rounded">
+              <p>A Juliana _____ gusta montar a caballo</p>
+            </div>
+            <div class="bg-white dark:bg-gray-800 p-3 rounded">
+              <p>_____ veo todos los días <span class="text-sm text-gray-600 dark:text-gray-400">(te/lo/la)</span></p>
+            </div>
+            <div class="bg-white dark:bg-gray-800 p-3 rounded">
+              <p>_____ escribo una carta <span class="text-sm text-gray-600 dark:text-gray-400">(te/le)</span></p>
+            </div>
+          </div>
+        </div>
 
-### Ejercicio 3: Concordancia
-Corrige si es necesario:
-- Nosotros va a la playa
-- Ellos estudia español
-- Tú come mucho`,
+        <div class="bg-blue-50 dark:bg-blue-900/20 p-6 rounded-lg">
+          <h4 class="text-lg font-semibold mb-4 flex items-center gap-2">
+            <span class="text-blue-600 dark:text-blue-400">✏️</span>
+            Ejercicio 3: Concordancia
+          </h4>
+          <p class="mb-4">Corrige si es necesario:</p>
+          <div class="space-y-3">
+            <div class="bg-white dark:bg-gray-800 p-3 rounded">
+              <p>Nosotros va a la playa</p>
+            </div>
+            <div class="bg-white dark:bg-gray-800 p-3 rounded">
+              <p>Ellos estudia español</p>
+            </div>
+            <div class="bg-white dark:bg-gray-800 p-3 rounded">
+              <p>Tú come mucho</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    `,
     references: ["MENFP - Programme 7e AF"]
   },
 
@@ -4175,25 +4218,68 @@ Corrige si es necesario:
 ### Futuro de indicativo
 **Todos los verbos:** -é, -ás, -á, -emos, -éis, -án
 - Hablaré, comeré, viviré`,
-    exemplesExercices: `## Ejercicios
+    exemplesExercices: `
+      <div class="exercises-content space-y-6">
+        <h3 class="text-2xl font-bold mb-6">Ejercicios</h3>
 
-### Ejercicio 1: Presente
-Escribe la terminación del verbo en presente de indicativo:
-- Ella me mir_____
-- Nosotros aprend_____
-- Tú escrib_____
+        <div class="bg-purple-50 dark:bg-purple-900/20 p-6 rounded-lg mb-6">
+          <h4 class="text-lg font-semibold mb-4 flex items-center gap-2">
+            <span class="text-purple-600 dark:text-purple-400">🎯</span>
+            Ejercicio 1: Presente
+          </h4>
+          <p class="mb-4">Escribe la terminación del verbo en presente de indicativo:</p>
+          <div class="space-y-3">
+            <div class="bg-white dark:bg-gray-800 p-3 rounded">
+              <p>Ella me mir_____</p>
+            </div>
+            <div class="bg-white dark:bg-gray-800 p-3 rounded">
+              <p>Nosotros aprend_____</p>
+            </div>
+            <div class="bg-white dark:bg-gray-800 p-3 rounded">
+              <p>Tú escrib_____</p>
+            </div>
+          </div>
+        </div>
 
-### Ejercicio 2: Imperfecto
-Escribe en pretérito imperfecto:
-- Tú ayuda_____ al señor
-- Yo habl_____ español
-- Ellos com_____ mucho
+        <div class="bg-green-50 dark:bg-green-900/20 p-6 rounded-lg mb-6">
+          <h4 class="text-lg font-semibold mb-4 flex items-center gap-2">
+            <span class="text-green-600 dark:text-green-400">⏰</span>
+            Ejercicio 2: Imperfecto
+          </h4>
+          <p class="mb-4">Escribe en pretérito imperfecto:</p>
+          <div class="space-y-3">
+            <div class="bg-white dark:bg-gray-800 p-3 rounded">
+              <p>Tú ayuda_____ al señor</p>
+            </div>
+            <div class="bg-white dark:bg-gray-800 p-3 rounded">
+              <p>Yo habl_____ español</p>
+            </div>
+            <div class="bg-white dark:bg-gray-800 p-3 rounded">
+              <p>Ellos com_____ mucho</p>
+            </div>
+          </div>
+        </div>
 
-### Ejercicio 3: Futuro
-Escribe en futuro de indicativo:
-- Yo te escribir_____
-- Nosotros llegar_____
-- Ella estudiar_____`,
+        <div class="bg-blue-50 dark:bg-blue-900/20 p-6 rounded-lg">
+          <h4 class="text-lg font-semibold mb-4 flex items-center gap-2">
+            <span class="text-blue-600 dark:text-blue-400">🚀</span>
+            Ejercicio 3: Futuro
+          </h4>
+          <p class="mb-4">Escribe en futuro de indicativo:</p>
+          <div class="space-y-3">
+            <div class="bg-white dark:bg-gray-800 p-3 rounded">
+              <p>Yo te escribir_____</p>
+            </div>
+            <div class="bg-white dark:bg-gray-800 p-3 rounded">
+              <p>Nosotros llegar_____</p>
+            </div>
+            <div class="bg-white dark:bg-gray-800 p-3 rounded">
+              <p>Ella estudiar_____</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    `,
     references: ["MENFP - Programme 7e AF"]
   },
 
@@ -4229,27 +4315,59 @@ Escribe en futuro de indicativo:
 - Me gusta la fiesta - J'aime la fête
 - Prefiero bailar - Je préfère danser
 - Vamos a celebrar - Nous allons célébrer`,
-    exemplesExercices: `## Ejercicios
+    exemplesExercices: `
+      <div class="exercises-content space-y-6">
+        <h3 class="text-2xl font-bold mb-6">Ejercicios</h3>
 
-### Ejercicio 1: Producción escrita
-Escribe un texto sobre la fiesta principal de tu localidad. Incluye:
-- ¿Cuándo es?
-- ¿Qué se celebra?
-- ¿Qué actividades hay?
-- ¿Qué te gusta más?
+        <div class="bg-purple-50 dark:bg-purple-900/20 p-6 rounded-lg mb-6">
+          <h4 class="text-lg font-semibold mb-4 flex items-center gap-2">
+            <span class="text-purple-600 dark:text-purple-400">🎉</span>
+            Ejercicio 1: Producción escrita
+          </h4>
+          <p class="mb-4 font-semibold">Escribe un texto sobre la fiesta principal de tu localidad. Incluye:</p>
+          <div class="bg-white dark:bg-gray-800 p-4 rounded">
+            <ul class="space-y-2">
+              <li>• ¿Cuándo es?</li>
+              <li>• ¿Qué se celebra?</li>
+              <li>• ¿Qué actividades hay?</li>
+              <li>• ¿Qué te gusta más?</li>
+            </ul>
+          </div>
+        </div>
 
-### Ejercicio 2: Fiestas nacionales
-Elabora un texto sobre una de las fiestas nacionales de tu país:
-- 1 de enero (Independencia)
-- 18 de mayo (Día de la Bandera)
-- Carnaval
+        <div class="bg-green-50 dark:bg-green-900/20 p-6 rounded-lg mb-6">
+          <h4 class="text-lg font-semibold mb-4 flex items-center gap-2">
+            <span class="text-green-600 dark:text-green-400">🇭🇹</span>
+            Ejercicio 2: Fiestas nacionales
+          </h4>
+          <p class="mb-4 font-semibold">Elabora un texto sobre una de las fiestas nacionales de tu país:</p>
+          <div class="bg-white dark:bg-gray-800 p-4 rounded">
+            <ul class="space-y-2">
+              <li>• <strong>1 de enero</strong> - Día de la Independencia</li>
+              <li>• <strong>18 de mayo</strong> - Día de la Bandera</li>
+              <li>• <strong>Carnaval</strong> - Celebración tradicional</li>
+            </ul>
+          </div>
+        </div>
 
-### Ejercicio 3: Planificar
-Describe los preparativos para una fiesta de cumpleaños:
-- La comida
-- La bebida
-- Los invitados
-- La música`,
+        <div class="bg-blue-50 dark:bg-blue-900/20 p-6 rounded-lg">
+          <h4 class="text-lg font-semibold mb-4 flex items-center gap-2">
+            <span class="text-blue-600 dark:text-blue-400">🎂</span>
+            Ejercicio 3: Planificar
+          </h4>
+          <p class="mb-4 font-semibold">Describe los preparativos para una fiesta de cumpleaños:</p>
+          <div class="bg-white dark:bg-gray-800 p-4 rounded">
+            <ul class="space-y-2">
+              <li>• <strong>La comida</strong> - ¿Qué vas a preparar?</li>
+              <li>• <strong>La bebida</strong> - ¿Qué vas a servir?</li>
+              <li>• <strong>Las decoraciones</strong> - ¿Cómo vas a decorar?</li>
+              <li>• <strong>Los invitados</strong> - ¿A quién vas a invitar?</li>
+              <li>• <strong>La música</strong> - ¿Qué música vas a poner?</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    `,
     references: ["MENFP - Programme 7e AF"]
   },
 
