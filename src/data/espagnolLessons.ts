@@ -1,335 +1,79 @@
 export const espagnolLessons7AF = {
   "saludo-presentacion": {
+    title: "Saludo y Presentación (formules de courtoisie)",
     mois: "Décembre",
-    objectif: "Apprendre à saluer et se présenter en espagnol avec aisance dans des situations formelles et informelles.",
+    objectif: "Utiliser les salutations de base en espagnol selon le moment du jour, se présenter (nombre, edad, nacionalidad, colegio), employer des formules de courtoisie (por favor, gracias, perdón), et réagir à une présentation avec politesse.",
     introduction: `
-      <div class="lesson-intro">
-        <h2>🌟 Bienvenue dans le monde hispanophone !</h2>
-        
-        <div class="reflection-box bg-primary/10 p-4 rounded-lg mb-4">
-          <h3 class="font-semibold mb-2">💭 Questions de réflexion</h3>
-          <ul class="list-disc ml-6 space-y-2">
-            <li>Comment te présentes-tu en créole ? En français ? Quels mots utilises-tu ?</li>
-            <li>Sais-tu que plus de 500 millions de personnes parlent espagnol dans le monde ?</li>
-            <li>Connais-tu des mots espagnols utilisés en créole haïtien ? (Ex: kompa vient de "compás")</li>
-          </ul>
+      <div class="space-y-4">
+        <div class="bg-gray-100 dark:bg-gray-800 rounded-lg p-4">
+          <p class="text-lg italic font-medium">« Comment te présentes-tu à un nouveau camarade ? Que dis-tu au directeur de l'école le matin ? Et à ta grand-mère au téléphone ? »</p>
         </div>
-
-        <p class="text-lg leading-relaxed mb-4">
-          Imagine que tu rencontres des touristes dominicains à Port-au-Prince, ou que tu voyages en République Dominicaine pendant les vacances. Comment vas-tu te présenter ? Les formules de salutation sont la première clé pour ouvrir les portes de la communication en espagnol !
+        
+        <p class="leading-relaxed">
+          En espagnol comme en français, saluer et se présenter c'est montrer du respect et créer du lien. En Haïti, on salue souvent avec chaleur : « Bonjou, kijan ou ye ? ». En espagnol, on dira : « Hola, ¿cómo estás? ». Dans cette leçon, on apprend les formules de salutation, de présentation et de courtoisie de base pour interagir avec politesse en classe, à la maison et dans la communauté.
         </p>
 
-        <p class="mb-4">
-          Dans cette leçon, nous allons découvrir comment les hispanophones se saluent, se présentent et font connaissance. Tu verras que l'espagnol partage beaucoup de similitudes avec le français, ce qui facilitera ton apprentissage. De plus, Haïti partage l'île d'Hispaniola avec la République Dominicaine, notre voisin hispanophone ! Connaître l'espagnol t'ouvrira des opportunités incroyables.
-        </p>
-
-        <div class="info-box bg-accent/10 p-4 rounded-lg">
-          <h3 class="font-semibold mb-2">🎯 Objectifs d'apprentissage</h3>
-          <ul class="list-disc ml-6 space-y-1">
-            <li>Maîtriser les formules de salutation formelles et informelles en espagnol</li>
-            <li>Se présenter en donnant son nom, son âge et sa nationalité</li>
-            <li>Utiliser les verbes SER et ESTAR correctement</li>
-            <li>Demander et donner des informations personnelles basiques</li>
-            <li>Comprendre les différences culturelles dans les salutations</li>
-          </ul>
+        <div class="grid md:grid-cols-2 gap-6">
+          <div class="bg-yellow-50 dark:bg-yellow-900/20 border-l-4 border-yellow-500 p-4 rounded-r-lg">
+            <h3 class="text-yellow-700 dark:text-yellow-400 font-semibold mb-2">🤔 Réflexion</h3>
+            <ul class="text-yellow-800 dark:text-yellow-300 text-sm space-y-1">
+              <li>• Dans quelles situations salues-tu en premier (école, église, marché) ?</li>
+              <li>• Quelles différences entends-tu entre « Bonjour » et « Hola » ?</li>
+              <li>• Pourquoi la politesse est-elle importante dans la culture haïtienne et caribéenne ?</li>
+            </ul>
+          </div>
+          <div class="bg-green-50 dark:bg-green-900/20 border-l-4 border-green-500 p-4 rounded-r-lg">
+            <h3 class="text-green-700 dark:text-green-400 font-semibold mb-2">🎯 Objectifs d'apprentissage</h3>
+            <ul class="text-green-800 dark:text-green-300 text-sm space-y-1">
+              <li>• Utiliser les salutations de base en espagnol selon le moment du jour</li>
+              <li>• Se présenter (nombre, edad, nacionalidad, colegio)</li>
+              <li>• Employer des formules de courtoisie (por favor, gracias, perdón)</li>
+              <li>• Réagir à une présentation avec politesse</li>
+            </ul>
+          </div>
         </div>
       </div>
     `,
     contenu: `
-      <div class="lesson-content">
+      <div class="lesson-content space-y-6">
         <section class="mb-6">
-          <h3 class="text-2xl font-bold mb-4">1️⃣ Les formules de salutation (Los saludos)</h3>
-          
-          <p class="mb-4">
-            En espagnol, comme en français et en créole, nous avons différentes façons de saluer selon le moment de la journée et le contexte social. Regardons les principales formules :
-          </p>
-
-          <div class="vocabulary-table mb-4">
-            <table class="w-full border-collapse">
-              <thead>
-                <tr class="bg-primary/20">
-                  <th class="border p-2">Espagnol</th>
-                  <th class="border p-2">Français</th>
-                  <th class="border p-2">Créole</th>
-                  <th class="border p-2">Contexte</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr>
-                  <td class="border p-2"><strong>¡Hola!</strong></td>
-                  <td class="border p-2">Bonjour / Salut</td>
-                  <td class="border p-2">Bonjou / Alo</td>
-                  <td class="border p-2">Informel, tout moment</td>
-                </tr>
-                <tr>
-                  <td class="border p-2"><strong>Buenos días</strong></td>
-                  <td class="border p-2">Bonjour (matin)</td>
-                  <td class="border p-2">Bonjou</td>
-                  <td class="border p-2">Formel/Informel, matin</td>
-                </tr>
-                <tr>
-                  <td class="border p-2"><strong>Buenas tardes</strong></td>
-                  <td class="border p-2">Bonjour (après-midi)</td>
-                  <td class="border p-2">Bonswa</td>
-                  <td class="border p-2">Formel/Informel, après-midi</td>
-                </tr>
-                <tr>
-                  <td class="border p-2"><strong>Buenas noches</strong></td>
-                  <td class="border p-2">Bonsoir / Bonne nuit</td>
-                  <td class="border p-2">Bonswa / Bonnwit</td>
-                  <td class="border p-2">Formel/Informel, soir</td>
-                </tr>
-                <tr>
-                  <td class="border p-2"><strong>¿Qué tal?</strong></td>
-                  <td class="border p-2">Comment ça va ?</td>
-                  <td class="border p-2">Kijan ou ye?</td>
-                  <td class="border p-2">Informel</td>
-                </tr>
-                <tr>
-                  <td class="border p-2"><strong>¿Cómo está usted?</strong></td>
-                  <td class="border p-2">Comment allez-vous ?</td>
-                  <td class="border p-2">Kijan ou ye?</td>
-                  <td class="border p-2">Formel (vouvoiement)</td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-
-          <div class="tip-box bg-secondary/10 p-4 rounded-lg mb-4">
-            <h4 class="font-semibold mb-2">💡 Astuce culturelle</h4>
-            <p>En République Dominicaine et dans les pays hispanophones, on se serre souvent la main lors des présentations formelles, et on fait la bise (un ou deux baisers sur la joue) entre amis et famille. C'est similaire à Haïti où on dit "pran nouvèl" (prendre des nouvelles) !</p>
+          <h3 class="text-xl font-semibold mb-3">1) Salutations selon le moment de la journée</h3>
+          <ul class="space-y-2 ml-4">
+            <li>• <strong>Buenos días</strong> (le matin, jusqu'à midi) — Au marché de Pétion-Ville : « Buenos días, señora »</li>
+            <li>• <strong>Buenas tardes</strong> (après-midi) — À l'école : « Buenas tardes, profesor »</li>
+            <li>• <strong>Buenas noches</strong> (soir et nuit) — En famille : « Buenas noches, mamá »</li>
+            <li>• <strong>Hola</strong> (informel, toute la journée) — « Hola, ¿qué tal? »</li>
+          </ul>
+          <div class="bg-blue-50 dark:bg-blue-900/20 border-l-4 border-blue-500 p-4 rounded-r-lg mt-3">
+            <h4 class="text-blue-700 dark:text-blue-400 font-semibold mb-2">Exemple de mini-dialogue</h4>
+            <p class="text-blue-600 dark:text-blue-300">— Buenos días, señor. ¿Cómo está?<br>— Muy bien, gracias. ¿Y usted?<br>— Bien, gracias. Me llamo Maritza. Soy estudiante en 7AF.</p>
           </div>
         </section>
 
         <section class="mb-6">
-          <h3 class="text-2xl font-bold mb-4">2️⃣ Se présenter (Presentarse)</h3>
-          
-          <p class="mb-4">
-            Pour se présenter en espagnol, on utilise principalement les expressions suivantes :
-          </p>
-
-          <div class="examples-box bg-accent/10 p-4 rounded-lg mb-4">
-            <h4 class="font-semibold mb-3">🗣️ Formules de présentation</h4>
-            
-            <div class="space-y-3">
-              <div>
-                <p class="font-semibold text-primary">Me llamo Carlos.</p>
-                <p class="text-sm italic">Je m'appelle Carlos. (Mwen rele Carlos.)</p>
-              </div>
-              
-              <div>
-                <p class="font-semibold text-primary">Mi nombre es Marie.</p>
-                <p class="text-sm italic">Mon nom est Marie. (Non m se Marie.)</p>
-              </div>
-              
-              <div>
-                <p class="font-semibold text-primary">Soy Jean-Baptiste.</p>
-                <p class="text-sm italic">Je suis Jean-Baptiste. (Mwen se Jean-Baptiste.)</p>
-              </div>
-              
-              <div>
-                <p class="font-semibold text-primary">Tengo 13 años.</p>
-                <p class="text-sm italic">J'ai 13 ans. (Mwen gen 13 an.)</p>
-              </div>
-              
-              <div>
-                <p class="font-semibold text-primary">Soy de Puerto Príncipe, Haití.</p>
-                <p class="text-sm italic">Je suis de Port-au-Prince, Haïti. (Mwen soti Pòtoprens, Ayiti.)</p>
-              </div>
-            </div>
-          </div>
-
-          <div class="dialogue-example bg-primary/5 p-4 rounded-lg mb-4">
-            <h4 class="font-semibold mb-3">💬 Dialogue modèle : Première rencontre</h4>
-            <div class="space-y-2">
-              <p><strong>Pedro (dominicain):</strong> ¡Hola! ¿Cómo te llamas?</p>
-              <p><strong>Manouchka (haïtienne):</strong> ¡Hola! Me llamo Manouchka. ¿Y tú?</p>
-              <p><strong>Pedro:</strong> Soy Pedro. Mucho gusto.</p>
-              <p><strong>Manouchka:</strong> Encantada. ¿De dónde eres?</p>
-              <p><strong>Pedro:</strong> Soy de Santo Domingo. ¿Y tú?</p>
-              <p><strong>Manouchka:</strong> Yo soy de Puerto Príncipe.</p>
-            </div>
-            <p class="text-sm italic mt-3">
-              Traduction : Salut ! Comment t'appelles-tu ? / Salut ! Je m'appelle Manouchka. Et toi ? / Je suis Pedro. Enchanté. / Enchantée. D'où es-tu ? / Je suis de Saint-Domingue. Et toi ? / Je suis de Port-au-Prince.
-            </p>
+          <h3 class="text-xl font-semibold mb-3">2) Se présenter (Presentarse)</h3>
+          <p class="mb-2">En français, on dit « Je m'appelle… ». En espagnol : <strong>Me llamo…</strong> ou <strong>Mi nombre es…</strong></p>
+          <ul class="space-y-2 ml-4">
+            <li>• <strong>Me llamo</strong> Sofia / <strong>Mi nombre es</strong> Daniel</li>
+            <li>• <strong>Tengo</strong> 12 años (j'ai 12 ans)</li>
+            <li>• <strong>Soy</strong> haitiano/a; <strong>vivo</strong> en Cap-Haitien / Port-au-Prince</li>
+            <li>• <strong>Estudio</strong> en el colegio … (nom de l'école)</li>
+          </ul>
+          <div class="bg-yellow-50 dark:bg-yellow-900/20 border-l-4 border-yellow-500 p-4 rounded-r-lg mt-3">
+            <h4 class="text-yellow-700 dark:text-yellow-400 font-semibold mb-2">Modèle</h4>
+            <p class="text-yellow-600 dark:text-yellow-300">« Hola, buenos días. Me llamo Jonas. Tengo 13 años. Soy haitiano y vivo en Jacmel. Estudio en el colegio Saint-Michel. Mucho gusto. »</p>
           </div>
         </section>
 
         <section class="mb-6">
-          <h3 class="text-2xl font-bold mb-4">3️⃣ Les verbes SER et ESTAR</h3>
-          
-          <p class="mb-4">
-            En espagnol, il existe DEUX verbes pour dire "être" : <strong>SER</strong> et <strong>ESTAR</strong>. C'est différent du français qui n'a qu'un seul verbe "être" ! Mais en créole, nous avons aussi cette nuance : "se" (identité permanente) et "ye" (état temporaire).
-          </p>
-
-          <div class="grammar-box bg-secondary/10 p-4 rounded-lg mb-4">
-            <h4 class="font-semibold mb-3">📖 Le verbe SER (identité, origine, caractéristiques permanentes)</h4>
-            <table class="w-full">
-              <thead>
-                <tr class="bg-primary/20">
-                  <th class="border p-2">Pronom</th>
-                  <th class="border p-2">Conjugaison</th>
-                  <th class="border p-2">Exemple</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr>
-                  <td class="border p-2">Yo (Je)</td>
-                  <td class="border p-2"><strong>soy</strong></td>
-                  <td class="border p-2">Yo soy haitiano</td>
-                </tr>
-                <tr>
-                  <td class="border p-2">Tú (Tu)</td>
-                  <td class="border p-2"><strong>eres</strong></td>
-                  <td class="border p-2">Tú eres estudiante</td>
-                </tr>
-                <tr>
-                  <td class="border p-2">Él/Ella (Il/Elle)</td>
-                  <td class="border p-2"><strong>es</strong></td>
-                  <td class="border p-2">Ella es profesora</td>
-                </tr>
-                <tr>
-                  <td class="border p-2">Nosotros (Nous)</td>
-                  <td class="border p-2"><strong>somos</strong></td>
-                  <td class="border p-2">Nosotros somos amigos</td>
-                </tr>
-                <tr>
-                  <td class="border p-2">Vosotros (Vous)</td>
-                  <td class="border p-2"><strong>sois</strong></td>
-                  <td class="border p-2">Vosotros sois jóvenes</td>
-                </tr>
-                <tr>
-                  <td class="border p-2">Ellos/Ellas (Ils/Elles)</td>
-                  <td class="border p-2"><strong>son</strong></td>
-                  <td class="border p-2">Ellos son dominicanos</td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-
-          <div class="usage-note bg-accent/10 p-4 rounded-lg mb-4">
-            <h4 class="font-semibold mb-2">📝 Utilisation de SER</h4>
-            <ul class="list-disc ml-6 space-y-1">
-              <li><strong>Identité :</strong> Soy Claudette (Je suis Claudette)</li>
-              <li><strong>Origine :</strong> Somos de Jacmel (Nous sommes de Jacmel)</li>
-              <li><strong>Profession :</strong> Mi padre es médico (Mon père est médecin)</li>
-              <li><strong>Nationalité :</strong> Soy haitiano (Je suis haïtien)</li>
-              <li><strong>Caractéristiques permanentes :</strong> Ella es inteligente (Elle est intelligente)</li>
-            </ul>
-          </div>
-
-          <div class="comparison-box bg-primary/5 p-4 rounded-lg">
-            <h4 class="font-semibold mb-2">🔍 Comparaison Créole - Espagnol</h4>
-            <p class="mb-2"><strong>Créole :</strong> "Mwen <u>se</u> Ayisyen" = caractéristique permanente</p>
-            <p><strong>Espagnol :</strong> "Yo <u>soy</u> haitiano" = même idée avec SER</p>
-          </div>
-        </section>
-
-        <section class="mb-6">
-          <h3 class="text-2xl font-bold mb-4">4️⃣ Demander et donner des informations</h3>
-          
-          <p class="mb-4">
-            Voici les questions essentielles pour faire connaissance :
-          </p>
-
-          <div class="questions-box bg-secondary/10 p-4 rounded-lg mb-4">
-            <table class="w-full">
-              <thead>
-                <tr class="bg-primary/20">
-                  <th class="border p-2">Question (Espagnol)</th>
-                  <th class="border p-2">Traduction</th>
-                  <th class="border p-2">Réponse exemple</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr>
-                  <td class="border p-2">¿Cómo te llamas?</td>
-                  <td class="border p-2">Comment t'appelles-tu ?</td>
-                  <td class="border p-2">Me llamo Wideline</td>
-                </tr>
-                <tr>
-                  <td class="border p-2">¿Cuántos años tienes?</td>
-                  <td class="border p-2">Quel âge as-tu ?</td>
-                  <td class="border p-2">Tengo 12 años</td>
-                </tr>
-                <tr>
-                  <td class="border p-2">¿De dónde eres?</td>
-                  <td class="border p-2">D'où es-tu ?</td>
-                  <td class="border p-2">Soy de Cabo Haitiano</td>
-                </tr>
-                <tr>
-                  <td class="border p-2">¿Dónde vives?</td>
-                  <td class="border p-2">Où habites-tu ?</td>
-                  <td class="border p-2">Vivo en Puerto Príncipe</td>
-                </tr>
-                <tr>
-                  <td class="border p-2">¿Cuál es tu nacionalidad?</td>
-                  <td class="border p-2">Quelle est ta nationalité ?</td>
-                  <td class="border p-2">Soy haitiano/haitiana</td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-
-          <div class="cultural-note bg-accent/10 p-4 rounded-lg">
-            <h4 class="font-semibold mb-2">🌍 Le savais-tu ?</h4>
-            <p>
-              La République Dominicaine et Haïti partagent l'île d'Hispaniola (en espagnol "La Española"). Les deux pays ont une histoire commune et de nombreux échanges culturels et commerciaux. Apprendre l'espagnol te permettra de mieux communiquer avec nos voisins dominicains et d'accéder à un monde de 500 millions de locuteurs !
-            </p>
-          </div>
-        </section>
-
-        <section class="mb-6">
-          <h3 class="text-2xl font-bold mb-4">5️⃣ Expressions de courtoisie essentielles</h3>
-          
-          <div class="courtesy-table mb-4">
-            <table class="w-full border-collapse">
-              <thead>
-                <tr class="bg-primary/20">
-                  <th class="border p-2">Espagnol</th>
-                  <th class="border p-2">Français</th>
-                  <th class="border p-2">Quand l'utiliser</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr>
-                  <td class="border p-2"><strong>Mucho gusto</strong></td>
-                  <td class="border p-2">Enchanté(e)</td>
-                  <td class="border p-2">Lors d'une première rencontre</td>
-                </tr>
-                <tr>
-                  <td class="border p-2"><strong>Encantado/a</strong></td>
-                  <td class="border p-2">Enchanté(e)</td>
-                  <td class="border p-2">Alternative plus formelle</td>
-                </tr>
-                <tr>
-                  <td class="border p-2"><strong>Igualmente</strong></td>
-                  <td class="border p-2">De même / Moi aussi</td>
-                  <td class="border p-2">Réponse à "Mucho gusto"</td>
-                </tr>
-                <tr>
-                  <td class="border p-2"><strong>¿Cómo estás?</strong></td>
-                  <td class="border p-2">Comment vas-tu ?</td>
-                  <td class="border p-2">Informel, entre amis</td>
-                </tr>
-                <tr>
-                  <td class="border p-2"><strong>Bien, gracias. ¿Y tú?</strong></td>
-                  <td class="border p-2">Bien, merci. Et toi ?</td>
-                  <td class="border p-2">Réponse standard</td>
-                </tr>
-                <tr>
-                  <td class="border p-2"><strong>Hasta luego</strong></td>
-                  <td class="border p-2">À plus tard</td>
-                  <td class="border p-2">Pour se quitter</td>
-                </tr>
-                <tr>
-                  <td class="border p-2"><strong>Adiós</strong></td>
-                  <td class="border p-2">Au revoir</td>
-                  <td class="border p-2">Plus formel ou définitif</td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
+          <h3 class="text-xl font-semibold mb-3">3) Formules de courtoisie (Cortesía)</h3>
+          <ul class="space-y-2 ml-4">
+            <li>• <strong>Por favor</strong> (s'il te plaît / s'il vous plaît)</li>
+            <li>• <strong>Gracias</strong> / <strong>Muchas gracias</strong> (merci / merci beaucoup)</li>
+            <li>• <strong>De nada</strong> (de rien)</li>
+            <li>• <strong>Perdón</strong> / <strong>Disculpe</strong> (pardon / excusez-moi)</li>
+            <li>• <strong>Con permiso</strong> (avec votre permission — pour passer)</li>
+          </ul>
         </section>
       </div>
     `,
@@ -422,6 +166,7 @@ export const espagnolLessons7AF = {
   },
 
   "saludos-agradecimientos": {
+    title: "Saludos y Agradecimientos (remerciements)",
     mois: "Décembre",
     objectif: "Maîtriser les formules de remerciement et de politesse en espagnol dans différents contextes sociaux.",
     introduction: `
@@ -850,6 +595,7 @@ export const espagnolLessons7AF = {
   },
 
   "gustos": {
+    title: "Gustos (goûts et préférences)",
     mois: "Décembre",
     objectif: "Exprimer ses goûts, préférences et intérêts personnels en utilisant le verbe GUSTAR et des structures similaires.",
     introduction: `
@@ -1288,6 +1034,7 @@ export const espagnolLessons7AF = {
   },
 
   "aula-patio": {
+    title: "Aula y Patio (classe et cour)",
     mois: "Janvier",
     objectif: "Hacer descripciones del aula y del patio de recreo",
     introduction: "Aprenderás a describir tu aula de clase y el patio de recreo usando vocabulario específico.",
@@ -1338,6 +1085,7 @@ Descripción del patio de recreo:
   },
 
   "dias-fechas": {
+    title: "Días y Fechas (jours et dates)",
     mois: "Janvier",
     objectif: "Expresarse sobre los días y las fechas",
     introduction: "Aprenderás los días de la semana, los meses del año y cómo hablar de fechas importantes.",
@@ -1394,6 +1142,7 @@ Los alumnos contarán:
   },
 
   "la-casa": {
+    title: "La Casa (la maison)",
     mois: "Janvier",
     objectif: "Hablar de su casa y describir su cuarto",
     introduction: "Aprenderás a describir tu casa, las habitaciones y los muebles.",
@@ -1447,6 +1196,7 @@ Los alumnos escribirán una poesía a propósito de una casa.`,
   },
 
   "invitacion": {
+    title: "Invitación (invitation)",
     mois: "Février",
     objectif: "Invitarse, aceptar o rechazar una invitación",
     introduction: "Aprenderás a invitar a alguien y a responder apropiadamente a invitaciones.",
@@ -1495,6 +1245,7 @@ Crea invitaciones para:
   },
 
   "obligacion": {
+    title: "Obligación (obligation)",
     mois: "Février",
     objectif: "Expresar obligación usando diferentes estructuras",
     introduction: "Aprenderás a expresar obligación y necesidad de diferentes maneras.",
@@ -1548,6 +1299,7 @@ Escribe 5 obligaciones que tienes como estudiante usando diferentes estructuras.
   },
 
   "clasificar-palabras": {
+    title: "Clasificar Palabras (classer les mots)",
     mois: "Mars",
     objectif: "Clasificar palabras según el orden alfabético y separar sílabas",
     introduction: "Aprenderás a organizar palabras alfabéticamente y a dividirlas en sílabas.",
@@ -1608,6 +1360,7 @@ Justifica el número de sílabas que tiene cada palabra.`,
   },
 
   "articulos-genero": {
+    title: "Artículos y Género (articles et genre)",
     mois: "Mars",
     objectif: "Saber precisar el género de sustantivos",
     introduction: "Aprenderás a usar correctamente los artículos definidos e indefinidos en español.",
@@ -1668,6 +1421,7 @@ Cambia al femenino:
   },
 
   "articulos-numero": {
+    title: "Artículos y Número (articles et nombre)",
     mois: "Mars",
     objectif: "Saber precisar el número (singular y plural)",
     introduction: "Aprenderás las reglas de formación del plural en español.",
@@ -1730,6 +1484,7 @@ Pasa al plural:
   },
 
   "pronombre-personal": {
+    title: "Pronombre Personal (pronoms personnels)",
     mois: "Avril",
     objectif: "Usar correctamente los pronombres personales",
     introduction: "Aprenderás a identificar y usar los pronombres personales sujetos y complementos.",
@@ -1792,6 +1547,7 @@ Corrige si es necesario:
   },
 
   "el-verbo": {
+    title: "El Verbo (le verbe)",
     mois: "Avril",
     objectif: "Escribir formas verbales en diferentes tiempos",
     introduction: "Aprenderás a conjugar verbos regulares en presente, pretérito imperfecto y futuro.",
@@ -1848,6 +1604,7 @@ Escribe en futuro de indicativo:
   },
 
   "la-fiesta": {
+    title: "La Fiesta (la fête)",
     mois: "Avril",
     objectif: "Construir un texto sobre una fiesta",
     introduction: "Aprenderás a describir una fiesta usando el vocabulario apropiado.",
@@ -1903,6 +1660,7 @@ Describe los preparativos para una fiesta de cumpleaños:
   },
 
   "construccion-reflexiva-1": {
+    title: "Construcción Reflexiva 1 (verbes réfléchis 1)",
     mois: "Mai",
     objectif: "Usar correctamente los verbos reflexivos",
     introduction: "Aprenderás a conjugar y usar verbos reflexivos en español.",
@@ -1968,6 +1726,7 @@ Conjuga en pretérito indefinido:
   },
 
   "construccion-reflexiva-2": {
+    title: "Construcción Reflexiva 2 (verbes réfléchis 2)",
     mois: "Mai",
     objectif: "Diferenciar verbos simples de verbos reflexivos",
     introduction: "Aprenderás a distinguir entre verbos reflexivos y no reflexivos.",
@@ -2038,6 +1797,7 @@ Cambia de reflexivo a simple o viceversa:
   },
 
   "preguntas-personales": {
+    title: "Preguntas Personales (questions personnelles)",
     mois: "Mai",
     objectif: "Saber responder correctamente a preguntas personales",
     introduction: "Aprenderás a responder preguntas sobre tu vida cotidiana y tus preferencias.",
@@ -2120,6 +1880,7 @@ En parejas, haz 5 preguntas a tu compañero sobre:
   },
 
   "lectura-texto-1": {
+    title: "Lectura de Texto 1 (lecture de texte 1)",
     mois: "Juin",
     objectif: "Saber leer un texto y extraer elementos gramaticales",
     introduction: "Aprenderás a leer y analizar textos en español, identificando verbos, sujetos y adjetivos.",
@@ -2183,6 +1944,7 @@ El profesor presentará un texto. Deberás:
   },
 
   "lectura-texto-2": {
+    title: "Lectura de Texto 2 (lecture de texte 2)",
     mois: "Juin",
     objectif: "Comentar cortos textos y expresar reacciones",
     introduction: "Aprenderás a leer textos cortos y expresar tus opiniones y reacciones sobre ellos.",
