@@ -9830,124 +9830,249 @@ export const sciencesSocialesLessons7AF: SciencesSocialesLesson[] = [
     id: "vie-economique",
     title: "La vie économique : Comprendre l'économie haïtienne",
     mois: "Août",
-    objectif: "Comprendre les bases de l'économie et les activités économiques en Haïti.",
+    objectif: "Comprendre le fonctionnement de l'économie haïtienne, ses secteurs d'activité, ses défis et son potentiel.",
     introduction: `
-      <p class="text-foreground leading-relaxed">
-        L'économie concerne la production, la distribution et la consommation des biens et services. En Haïti, l'économie repose principalement sur l'agriculture, les services et les transferts de la diaspora.
-      </p>
+      <div class="space-y-6">
+        <div class="bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-950/30 dark:to-emerald-950/30 p-6 rounded-lg border-l-4 border-green-500">
+          <p class="text-lg italic">"L'économie, c'est comme le cœur d'un pays : elle fait circuler la richesse, crée des emplois, nourrit les familles."</p>
+        </div>
+        
+        <p class="text-lg leading-relaxed">Chaque matin, les marchandes vont au marché, les tap-taps transportent des passagers. Toutes ces activités font partie de l'<strong>économie</strong>.</p>
+        
+        <div class="bg-yellow-50 dark:bg-yellow-950/20 border-l-4 border-yellow-500 p-4 my-4">
+          <p class="font-semibold text-yellow-900 dark:text-yellow-200">🎯 Objectifs</p>
+          <ul class="list-disc ml-6 mt-2 space-y-1">
+            <li>Comprendre les trois secteurs économiques</li>
+            <li>Analyser l'économie informelle</li>
+            <li>Reconnaître le rôle de la diaspora</li>
+          </ul>
+        </div>
+      </div>
     `,
     contenu: `
-      <section class="space-y-6">
-        <div>
-          <h3 class="text-xl font-semibold mb-3 text-foreground">1. Les trois secteurs économiques</h3>
-          <h4 class="font-semibold mt-3 mb-2 text-foreground">Secteur primaire (agriculture)</h4>
-          <ul class="list-disc ml-6 space-y-2 text-foreground">
-            <li>Riz, maïs, bananes, canne à sucre</li>
-            <li>Café, cacao, mangues</li>
-            <li>Pêche</li>
-            <li>Emploie environ 40% de la population</li>
-          </ul>
+      <div class="space-y-8">
+        <section>
+          <h3 class="text-2xl font-bold mb-4 text-primary">1. Les trois secteurs économiques</h3>
+          
+          <div class="bg-green-50 dark:bg-green-950/30 p-6 rounded-lg">
+            <h4 class="text-xl font-semibold mb-3">🌾 Secteur primaire</h4>
+            <p>Agriculture, pêche, élevage - emploie 50% de la population</p>
+          </div>
 
-          <h4 class="font-semibold mt-3 mb-2 text-foreground">Secteur secondaire (industrie)</h4>
-          <ul class="list-disc ml-6 space-y-2 text-foreground">
-            <li>Assemblage textile</li>
-            <li>Construction</li>
-            <li>Transformation alimentaire</li>
-          </ul>
+          <div class="bg-blue-50 dark:bg-blue-950/30 p-6 rounded-lg mt-4">
+            <h4 class="text-xl font-semibold mb-3">🏭 Secteur secondaire</h4>
+            <p>Industrie textile, construction, transformation alimentaire</p>
+          </div>
 
-          <h4 class="font-semibold mt-3 mb-2 text-foreground">Secteur tertiaire (services)</h4>
-          <ul class="list-disc ml-6 space-y-2 text-foreground">
-            <li>Commerce</li>
-            <li>Télécommunications</li>
-            <li>Banques</li>
-            <li>Tourisme (potentiel sous-exploité)</li>
-          </ul>
-        </div>
+          <div class="bg-purple-50 dark:bg-purple-950/30 p-6 rounded-lg mt-4">
+            <h4 class="text-xl font-semibold mb-3">💼 Secteur tertiaire</h4>
+            <p>Commerce, transport, banques, tourisme</p>
+          </div>
+        </section>
 
-        <div>
-          <h3 class="text-xl font-semibold mb-3 text-foreground">2. L'économie informelle</h3>
-          <p class="text-foreground">En Haïti, environ 80% de l'économie est informelle : petits commerces, marchés, transport en commun (tap-tap), etc.</p>
-        </div>
+        <section>
+          <h3 class="text-2xl font-bold mb-4 text-primary">2. L'économie informelle</h3>
+          <div class="bg-orange-50 dark:bg-orange-950/30 p-6 rounded-lg">
+            <p class="text-lg mb-4">80-90% de l'économie haïtienne est informelle : marchés, tap-taps, petits commerces.</p>
+          </div>
+        </section>
 
-        <div>
-          <h3 class="text-xl font-semibold mb-3 text-foreground">3. La diaspora</h3>
-          <p class="text-foreground">Les Haïtiens vivant à l'étranger envoient environ 2 milliards de dollars par an, représentant près de 30% du PIB.</p>
-        </div>
-      </section>
+        <section>
+          <h3 class="text-2xl font-bold mb-4 text-primary">3. La diaspora</h3>
+          <div class="bg-indigo-50 dark:bg-indigo-950/30 p-6 rounded-lg">
+            <p class="font-bold text-lg">3,5 milliards de dollars envoyés par an (30-35% du PIB)</p>
+          </div>
+        </section>
+      </div>
     `,
     exemplesExercices: `
-      <section class="space-y-4">
-        <div class="bg-primary/5 border-l-4 border-primary p-4 rounded">
-          <h4 class="font-semibold mb-2 text-foreground">💡 Activité</h4>
-          <p class="text-foreground">
-            Visite un marché local. Identifie les produits locaux (Haïti) et les produits importés. Dans quel secteur économique travaillent les marchands ?
-          </p>
+      <div class="space-y-6">
+        <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md">
+          <p class="font-bold text-xl mb-4">1. Visite d'un marché</p>
+          <p>Liste 10 produits et identifie leur secteur économique.</p>
         </div>
-      </section>
+
+        <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md">
+          <p class="font-bold text-xl mb-4">2. Questions</p>
+          <ol class="list-decimal ml-6 space-y-2">
+            <li>Pourquoi l'économie informelle est-elle si importante ?</li>
+            <li>Comment la diaspora aide-t-elle Haïti ?</li>
+          </ol>
+        </div>
+      </div>
     `
   },
 
   // Leçon 20: Représentation de la Terre
   {
     id: "representation-terre",
-    title: "Représentation de la Terre",
+    title: "Représentation de la Terre : Comprendre les cartes et globes",
     mois: "Août",
-    objectif: "Comprendre les différentes façons de représenter la Terre : cartes et globes.",
+    objectif: "Maîtriser les différentes façons de représenter la Terre et savoir lire une carte géographique.",
     introduction: `
-      <p class="text-foreground leading-relaxed">
-        Pour représenter notre planète sphérique sur une surface plane (carte), les géographes utilisent différentes techniques appelées projections. Chaque méthode a ses avantages et ses limites.
-      </p>
+      <div class="space-y-6">
+        <div class="bg-gradient-to-r from-blue-50 to-cyan-50 dark:from-blue-950/30 dark:to-cyan-950/30 p-6 rounded-lg border-l-4 border-blue-500">
+          <p class="text-lg italic">"Comment représenter une sphère sur une feuille plate ? C'est le grand défi des cartographes depuis des siècles !"</p>
+        </div>
+        
+        <p class="text-lg leading-relaxed">Notre Terre est ronde comme une orange, mais quand tu ouvres ton manuel de géographie, tu vois une carte plate. Comment est-ce possible ? Les cartographes ont inventé des techniques ingénieuses appelées <strong>projections</strong>pour transformer notre planète sphérique en carte plane.</p>
+        
+        <div class="bg-yellow-50 dark:bg-yellow-950/20 border-l-4 border-yellow-500 p-4 my-4">
+          <p class="font-semibold text-yellow-900 dark:text-yellow-200">🎯 Objectifs</p>
+          <ul class="list-disc ml-6 mt-2 space-y-1">
+            <li>Comprendre le globe terrestre vs les cartes</li>
+            <li>Identifier les types de cartes</li>
+            <li>Lire les coordonnées géographiques</li>
+            <li>Utiliser l'échelle et la légende</li>
+          </ul>
+        </div>
+      </div>
     `,
     contenu: `
-      <section class="space-y-6">
-        <div>
-          <h3 class="text-xl font-semibold mb-3 text-foreground">1. Le globe terrestre</h3>
-          <ul class="list-disc ml-6 space-y-2 text-foreground">
-            <li><strong>Avantages :</strong> Représentation exacte, proportions respectées</li>
-            <li><strong>Inconvénients :</strong> Encombrant, on ne voit qu'une partie à la fois</li>
-          </ul>
-        </div>
+      <div class="space-y-8">
+        <section>
+          <h3 class="text-2xl font-bold mb-4 text-primary">1. Le globe terrestre vs les cartes 🌍</h3>
+          
+          <div class="grid md:grid-cols-2 gap-4">
+            <div class="bg-green-50 dark:bg-green-950/30 p-6 rounded-lg">
+              <h4 class="text-xl font-semibold mb-3">🌍 Le globe terrestre</h4>
+              <p class="font-bold mb-2">✅ Avantages :</p>
+              <ul class="list-disc ml-6 space-y-1 text-sm">
+                <li>Représentation exacte de la Terre</li>
+                <li>Proportions respectées</li>
+                <li>Pas de déformation</li>
+              </ul>
+              <p class="font-bold mb-2 mt-3">❌ Inconvénients :</p>
+              <ul class="list-disc ml-6 space-y-1 text-sm">
+                <li>Encombrant</li>
+                <li>On ne voit qu'une partie</li>
+                <li>Difficile à transporter</li>
+              </ul>
+            </div>
 
-        <div>
-          <h3 class="text-xl font-semibold mb-3 text-foreground">2. Les cartes</h3>
-          <p class="text-foreground mb-3">Représentation à plat de la Terre ou d'une partie.</p>
-          <h4 class="font-semibold mt-3 mb-2 text-foreground">Types de cartes</h4>
-          <ul class="list-disc ml-6 space-y-2 text-foreground">
-            <li><strong>Carte physique :</strong> Relief, fleuves, montagnes</li>
-            <li><strong>Carte politique :</strong> Pays, frontières, capitales</li>
-            <li><strong>Carte thématique :</strong> Population, climat, économie</li>
-            <li><strong>Carte routière :</strong> Routes, villes</li>
-          </ul>
-        </div>
+            <div class="bg-blue-50 dark:bg-blue-950/30 p-6 rounded-lg">
+              <h4 class="text-xl font-semibold mb-3">🗺️ Les cartes</h4>
+              <p class="font-bold mb-2">✅ Avantages :</p>
+              <ul class="list-disc ml-6 space-y-1 text-sm">
+                <li>Facile à transporter</li>
+                <li>Vision d'ensemble</li>
+                <li>Détails précis</li>
+              </ul>
+              <p class="font-bold mb-2 mt-3">❌ Inconvénients :</p>
+              <ul class="list-disc ml-6 space-y-1 text-sm">
+                <li>Déformations inévitables</li>
+                <li>Choix de projection nécessaire</li>
+              </ul>
+            </div>
+          </div>
+        </section>
 
-        <div>
-          <h3 class="text-xl font-semibold mb-3 text-foreground">3. Éléments d'une carte</h3>
-          <ul class="list-disc ml-6 space-y-2 text-foreground">
-            <li><strong>Titre :</strong> Sujet de la carte</li>
-            <li><strong>Échelle :</strong> Rapport entre distance carte/réalité</li>
-            <li><strong>Légende :</strong> Explication des symboles</li>
-            <li><strong>Orientation :</strong> Rose des vents (Nord en haut)</li>
-          </ul>
-        </div>
+        <section>
+          <h3 class="text-2xl font-bold mb-4 text-primary">2. Types de cartes 📍</h3>
+          
+          <div class="space-y-4">
+            <div class="bg-amber-50 dark:bg-amber-950/30 p-4 rounded-lg">
+              <p class="font-bold mb-2">🏔️ Carte physique</p>
+              <p class="text-sm">Montre le relief : montagnes, fleuves, océans, plaines</p>
+            </div>
 
-        <div>
-          <h3 class="text-xl font-semibold mb-3 text-foreground">4. Coordonnées géographiques</h3>
-          <ul class="list-disc ml-6 space-y-2 text-foreground">
-            <li><strong>Latitude :</strong> Distance par rapport à l'équateur (0-90° N ou S)</li>
-            <li><strong>Longitude :</strong> Distance par rapport au méridien de Greenwich (0-180° E ou O)</li>
-          </ul>
-        </div>
-      </section>
+            <div class="bg-purple-50 dark:bg-purple-950/30 p-4 rounded-lg">
+              <p class="font-bold mb-2">🏛️ Carte politique</p>
+              <p class="text-sm">Montre les pays, frontières, capitales, villes</p>
+            </div>
+
+            <div class="bg-green-50 dark:bg-green-950/30 p-4 rounded-lg">
+              <p class="font-bold mb-2">📊 Carte thématique</p>
+              <p class="text-sm">Population, climat, économie, ressources</p>
+            </div>
+
+            <div class="bg-blue-50 dark:bg-blue-950/30 p-4 rounded-lg">
+              <p class="font-bold mb-2">🛣️ Carte routière</p>
+              <p class="text-sm">Routes, autoroutes, distances entre villes</p>
+            </div>
+          </div>
+        </section>
+
+        <section>
+          <h3 class="text-2xl font-bold mb-4 text-primary">3. Éléments d'une carte 🧭</h3>
+          
+          <div class="bg-gradient-to-r from-indigo-50 to-purple-50 dark:from-indigo-950/30 dark:to-purple-950/30 p-6 rounded-lg">
+            <div class="grid md:grid-cols-2 gap-4">
+              <div class="bg-white dark:bg-gray-800 p-4 rounded">
+                <p class="font-bold mb-2">📌 Titre</p>
+                <p class="text-sm">Indique le sujet de la carte</p>
+              </div>
+
+              <div class="bg-white dark:bg-gray-800 p-4 rounded">
+                <p class="font-bold mb-2">📏 Échelle</p>
+                <p class="text-sm">1:100 000 = 1 cm sur carte = 1 km réel</p>
+              </div>
+
+              <div class="bg-white dark:bg-gray-800 p-4 rounded">
+                <p class="font-bold mb-2">🔑 Légende</p>
+                <p class="text-sm">Explique les symboles et couleurs</p>
+              </div>
+
+              <div class="bg-white dark:bg-gray-800 p-4 rounded">
+                <p class="font-bold mb-2">🧭 Orientation</p>
+                <p class="text-sm">Rose des vents (Nord en haut)</p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section>
+          <h3 class="text-2xl font-bold mb-4 text-primary">4. Coordonnées géographiques 📐</h3>
+          
+          <div class="space-y-4">
+            <div class="bg-red-50 dark:bg-red-950/30 p-6 rounded-lg">
+              <h4 class="text-xl font-semibold mb-3">🌐 Latitude</h4>
+              <p class="mb-2">Distance par rapport à l'équateur (ligne horizontale)</p>
+              <ul class="list-disc ml-6 space-y-1 text-sm">
+                <li>0° à l'équateur</li>
+                <li>90°N au Pôle Nord</li>
+                <li>90°S au Pôle Sud</li>
+                <li><strong>Haïti : 18-20°N</strong></li>
+              </ul>
+            </div>
+
+            <div class="bg-green-50 dark:bg-green-950/30 p-6 rounded-lg">
+              <h4 class="text-xl font-semibold mb-3">🌍 Longitude</h4>
+              <p class="mb-2">Distance par rapport au méridien de Greenwich (ligne verticale)</p>
+              <ul class="list-disc ml-6 space-y-1 text-sm">
+                <li>0° à Greenwich (Londres)</li>
+                <li>180°E ou 180°O (ligne de changement de date)</li>
+                <li><strong>Haïti : 71-74°O</strong></li>
+              </ul>
+            </div>
+          </div>
+        </section>
+      </div>
     `,
     exemplesExercices: `
-      <section class="space-y-4">
-        <div class="bg-accent/5 border-l-4 border-accent p-4 rounded">
-          <h4 class="font-semibold mb-2 text-foreground">📝 Exercice</h4>
-          <p class="text-foreground">
-            Dessine une carte simple de ton quartier avec titre, légende, échelle et rose des vents. Inclus ton école, ta maison, et des points de repère importants.
-          </p>
+      <div class="space-y-6">
+        <h3 class="text-2xl font-bold mb-4 text-primary">📝 Exercices</h3>
+
+        <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md">
+          <p class="font-bold text-xl mb-4">1. Dessine ta carte</p>
+          <p class="mb-3">Crée une carte de ton quartier avec :</p>
+          <ul class="list-disc ml-6 space-y-1">
+            <li>Titre clair</li>
+            <li>Légende (maison, école, église, marché)</li>
+            <li>Rose des vents</li>
+            <li>Échelle approximative</li>
+          </ul>
         </div>
-      </section>
+
+        <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md">
+          <p class="font-bold text-xl mb-4">2. Questions</p>
+          <ol class="list-decimal ml-6 space-y-2">
+            <li>Quelle est la latitude d'Haïti ?</li>
+            <li>Pourquoi les cartes déforment-elles la réalité ?</li>
+            <li>Quelle différence entre carte physique et politique ?</li>
+          </ol>
+        </div>
+      </div>
     `
   },
 
