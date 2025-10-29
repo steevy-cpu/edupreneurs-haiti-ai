@@ -213,10 +213,356 @@ Pratik kouté epi rezime mesaj oral.`,
     title: "Fraz la (rapèl)",
     description: "Idantifye fraz yo nan yon tèks",
     objectif: "Rekonèt epi konprann estrikti fraz yo nan kreyòl",
-    introduction: `<p>Fraz la se inite debaz kominikasyon nan tout lang.</p>`,
-    contenu: `<h2>Sa ki yon fraz?</h2><p>Yon fraz se yon antite ki gen sans konplè.</p>`,
-    exemplesExercices: `<p>Pratik: Idantifye fraz nan tèks.</p>`,
-    duration: "45 minit",
+    introduction: `
+      <div class="bg-gradient-to-r from-indigo-50 to-blue-50 dark:from-indigo-950 dark:to-blue-950 p-6 rounded-lg border-l-4 border-indigo-500">
+        <h3 class="text-xl font-bold text-indigo-700 dark:text-indigo-300 mb-3">🎯 Objektif Leson an</h3>
+        <p class="text-gray-700 dark:text-gray-300 mb-3">
+          Lè w ap li yon tèks, kijan w konnen kote yon fraz kòmanse, kote li fini? Ki siy ki ede w? 
+          Èske tout liy se fraz?
+        </p>
+        <p class="text-gray-700 dark:text-gray-300">
+          Nan leson sa a, n ap fè yon rapèl sou sa ki rele <strong>fraz</strong> nan kreyòl ayisyen, 
+          epi nou pral pratike kijan pou idantifye chak fraz nan yon tèks. Konnen fraz yo byen ap ede w 
+          li pi klè, ekri pi pwòp, epi konprann pi byen sa w ap li.
+        </p>
+      </div>
+      
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
+        <div class="bg-yellow-50 dark:bg-yellow-950 p-5 rounded-lg border border-yellow-300 dark:border-yellow-700">
+          <h4 class="font-semibold text-yellow-800 dark:text-yellow-200 mb-2">🤔 Reflechi</h4>
+          <ul class="list-disc list-inside text-gray-700 dark:text-gray-300 space-y-1">
+            <li>Èske gen diferans ant yon <em>liy</em> ak yon <em>fraz</em>?</li>
+            <li>Ki siy ponktiyasyon ou konn wè souvan nan fen fraz?</li>
+            <li>Ki sa ki fè yon fraz gen sans konplè?</li>
+          </ul>
+        </div>
+
+        <div class="bg-green-50 dark:bg-green-950 p-5 rounded-lg border border-green-300 dark:border-green-700">
+          <h4 class="font-semibold text-green-800 dark:text-green-200 mb-2">🎯 Objektif Aprantisaj</h4>
+          <ul class="list-disc list-inside text-gray-700 dark:text-gray-300 space-y-1">
+            <li>Rekonèt definisyon ak eleman esansyèl yon fraz</li>
+            <li>Distingue fen fraz yo nan yon tèks (., ?, !)</li>
+            <li>Idantifye gwoup sijè ak gwoup predika senp</li>
+            <li>Separe fraz yo nan yon paragraf san erè</li>
+          </ul>
+        </div>
+      </div>
+    `,
+    contenu: `
+      <h2 class="text-2xl font-bold text-primary mb-4">📖 Konprann Fraz yo</h2>
+      
+      <div class="space-y-6">
+        <div class="bg-blue-50 dark:bg-blue-950 p-6 rounded-lg border-l-4 border-blue-500">
+          <h3 class="text-xl font-semibold text-blue-700 dark:text-blue-300 mb-3">1. Kisa ki yon fraz?</h3>
+          <p class="text-gray-700 dark:text-gray-300 mb-3">
+            Yon <strong>fraz</strong> se yon inite sans konplè: li bay yon mesaj ki fini, li gen yon <em>lide prensipal</em>. 
+            Anjeneral, li kòmanse ak yon lèt majiskil epi li fini ak yon siy ponktiyasyon (pwen, pwen entèwogasyon, pwen esklamasyon).
+          </p>
+          <div class="bg-white dark:bg-gray-800 p-4 rounded-lg">
+            <h4 class="text-blue-600 dark:text-blue-400 font-semibold mb-2">Egzanp</h4>
+            <ul class="text-gray-700 dark:text-gray-300 space-y-1">
+              <li>• « <strong>Jodi a, lapli tonbe fò.</strong> »</li>
+              <li>• « <strong>Èske ou byen?</strong> »</li>
+              <li>• « <strong>Gade kijan solèy la bèl!</strong> »</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="bg-purple-50 dark:bg-purple-950 p-6 rounded-lg border-l-4 border-purple-500">
+          <h3 class="text-xl font-semibold text-purple-700 dark:text-purple-300 mb-3">2. Siy Ponktiyasyon ki Make Fen Fraz</h3>
+          <div class="space-y-3">
+            <div class="bg-white dark:bg-gray-800 p-4 rounded-lg">
+              <p class="font-semibold text-purple-600 dark:text-purple-400 mb-2">• Pwen (.)</p>
+              <p class="text-gray-700 dark:text-gray-300">Bay enfòmasyon/deklare: « Timoun yo antre lakay yo. »</p>
+            </div>
+            
+            <div class="bg-white dark:bg-gray-800 p-4 rounded-lg">
+              <p class="font-semibold text-purple-600 dark:text-purple-400 mb-2">• Pwen Entèwogasyon (?)</p>
+              <p class="text-gray-700 dark:text-gray-300">Poze kesyon: « Kisa w ap li? »</p>
+            </div>
+
+            <div class="bg-white dark:bg-gray-800 p-4 rounded-lg">
+              <p class="font-semibold text-purple-600 dark:text-purple-400 mb-2">• Pwen Esklamasyon (!)</p>
+              <p class="text-gray-700 dark:text-gray-300">Eksprime emosyon/òd: « Pa kouri! » « Ala bèl! »</p>
+            </div>
+          </div>
+
+          <div class="mt-4 bg-yellow-50 dark:bg-yellow-950 p-4 rounded-lg border border-yellow-300 dark:border-yellow-700">
+            <h4 class="text-yellow-800 dark:text-yellow-200 font-semibold mb-2">⚠️ Remak</h4>
+            <p class="text-gray-700 dark:text-gray-300">
+              Nan kreyòl, nou pa mete espas anvan siy yo; nou mete yo dirèkteman apre dènye mo fraz la.
+            </p>
+          </div>
+        </div>
+
+        <div class="bg-green-50 dark:bg-green-950 p-6 rounded-lg border-l-4 border-green-500">
+          <h3 class="text-xl font-semibold text-green-700 dark:text-green-300 mb-3">3. Estrikti Debaz: Gwoup Sijè (GS) ak Gwoup Predika (GP)</h3>
+          <p class="text-gray-700 dark:text-gray-300 mb-4">
+            Pifò fraz gen de gwo pati: <strong>Gwoup Sijè</strong> (moun/bagay nou pale sou li) ak 
+            <strong>Gwoup Predika</strong> (sa n ap di sou sijè a: aksyon, eta, enfòmasyon).
+          </p>
+
+          <div class="bg-white dark:bg-gray-800 p-4 rounded-lg mb-4">
+            <h4 class="text-green-600 dark:text-green-400 font-semibold mb-3">Egzanp ak Koulis</h4>
+            <div class="space-y-2 text-gray-700 dark:text-gray-300">
+              <p><strong class="text-green-600 dark:text-green-400">GS:</strong> « <em>Manmi</em> » — 
+                 <strong class="text-blue-600 dark:text-blue-400">GP:</strong> « <em>ap kwit diri a.</em> » 
+                 → <span class="font-semibold">Manmi ap kwit diri a.</span></p>
+              <p><strong class="text-green-600 dark:text-green-400">GS:</strong> « <em>Ti gason an</em> » — 
+                 <strong class="text-blue-600 dark:text-blue-400">GP:</strong> « <em>te malad yè.</em> »</p>
+            </div>
+          </div>
+
+          <p class="text-gray-700 dark:text-gray-300 text-sm">
+            <strong>Nòt:</strong> Gen fraz enpèsònèl tou (san sijè klè), egzanp: « Lapli tonbe. »
+          </p>
+        </div>
+
+        <div class="bg-orange-50 dark:bg-orange-950 p-6 rounded-lg border-l-4 border-orange-500">
+          <h3 class="text-xl font-semibold text-orange-700 dark:text-orange-300 mb-3">4. Kalite Fraz Selon Estrikti</h3>
+          
+          <div class="space-y-3">
+            <div class="bg-white dark:bg-gray-800 p-4 rounded-lg">
+              <p class="font-semibold text-orange-600 dark:text-orange-400 mb-2">Fraz Senp</p>
+              <p class="text-gray-700 dark:text-gray-300">Yon sèl lide prensipal: « Mwen li liv la. »</p>
+            </div>
+
+            <div class="bg-white dark:bg-gray-800 p-4 rounded-lg">
+              <p class="font-semibold text-orange-600 dark:text-orange-400 mb-2">Fraz Konpoze</p>
+              <p class="text-gray-700 dark:text-gray-300">De lide mare: « Mwen li liv la <em>epi</em> mwen fè devwa mwen. »</p>
+            </div>
+
+            <div class="bg-white dark:bg-gray-800 p-4 rounded-lg">
+              <p class="font-semibold text-orange-600 dark:text-orange-400 mb-2">Fraz ak Subòdone</p>
+              <p class="text-gray-700 dark:text-gray-300">Yon lide depann de yon lòt: « Mwen kontan <em>paske</em> mwen reyisi tès la. »</p>
+            </div>
+          </div>
+
+          <div class="mt-4 bg-indigo-50 dark:bg-indigo-950 p-4 rounded-lg border border-indigo-300 dark:border-indigo-700">
+            <h4 class="text-indigo-800 dark:text-indigo-200 font-semibold mb-2">💡 Konsèy</h4>
+            <p class="text-gray-700 dark:text-gray-300">
+              Pou idantifye fraz yo pi vit, chèche konjonksyon kle yo (epi, men, paske, lè, si, poutèt sa…) 
+              ki souvan separe ide yo.
+            </p>
+          </div>
+        </div>
+
+        <div class="bg-red-50 dark:bg-red-950 p-6 rounded-lg border-l-4 border-red-500">
+          <h3 class="text-xl font-semibold text-red-700 dark:text-red-300 mb-3">5. Idantifye Fraz yo nan yon Tèks</h3>
+          <p class="text-gray-700 dark:text-gray-300 mb-3">
+            Lè w ap li yon paragraf, suiv etap sa yo pou separe fraz yo san konfonn:
+          </p>
+          
+          <ol class="list-decimal list-inside space-y-2 text-gray-700 dark:text-gray-300 mb-4">
+            <li>Chèche majiskil ki kòmanse apre yon pwen, yon kesyon oswa yon esklamasyon.</li>
+            <li>Make kote siy fen fraz yo ye (., ?, !).</li>
+            <li>Verifye si pati ant kòmansman ak siy la bay yon lide konplè.</li>
+            <li>Si w nan dout, li anwo vwa: èske li sonnen tankou yon mesaj fini?</li>
+            <li>Fè tès GS/GP rapid: èske gen <em>ki sa/oswa kiyès</em> + <em>kisa nou di sou li</em>?</li>
+          </ol>
+
+          <div class="bg-white dark:bg-gray-800 p-4 rounded-lg">
+            <p class="text-gray-700 dark:text-gray-300 font-semibold mb-2">Paragraf pou Pratike:</p>
+            <p class="text-gray-600 dark:text-gray-400 italic mb-3">
+              « Yè swa, kouran te koupe nan katye a. Manman limen bouji a pou nou ka li devwa nou. 
+              Ti frè m nan te santi l pè, men nou te rete trankil. Apre yon ti tan, kouran tounen. 
+              Nou te kontan anpil! »
+            </p>
+            <p class="text-sm text-gray-600 dark:text-gray-400">
+              <strong>Tâch:</strong> Separe paragraf la an fraz, konte yo, epi make siy fen yo.
+            </p>
+          </div>
+        </div>
+
+        <div class="bg-pink-50 dark:bg-pink-950 p-6 rounded-lg border-l-4 border-pink-500">
+          <h3 class="text-xl font-semibold text-pink-700 dark:text-pink-300 mb-3">6. Erè ki Souvan Fèt lè n ap Separe Fraz</h3>
+          
+          <div class="space-y-3">
+            <div class="bg-white dark:bg-gray-800 p-4 rounded-lg">
+              <p class="font-semibold text-red-600 dark:text-red-400 mb-1">❌ Erè 1: Konfonn liy ak fraz</p>
+              <p class="text-gray-700 dark:text-gray-300 text-sm">Yon liy ka gen plizyè fraz; yon fraz ka pran plizyè liy.</p>
+            </div>
+
+            <div class="bg-white dark:bg-gray-800 p-4 rounded-lg">
+              <p class="font-semibold text-red-600 dark:text-red-400 mb-1">❌ Erè 2: Bliye siy fen fraz</p>
+              <p class="text-gray-700 dark:text-gray-300 text-sm">Fraz san pwen ap fè lektè a pèdi souf.</p>
+            </div>
+
+            <div class="bg-white dark:bg-gray-800 p-4 rounded-lg">
+              <p class="font-semibold text-red-600 dark:text-red-400 mb-1">❌ Erè 3: Mete twòp pwen</p>
+              <p class="text-gray-700 dark:text-gray-300 text-sm">Koupe yon lide an moso ki pa konplè.</p>
+            </div>
+          </div>
+
+          <div class="mt-4 bg-green-50 dark:bg-green-950 p-4 rounded-lg border border-green-300 dark:border-green-700">
+            <h4 class="text-green-800 dark:text-green-200 font-semibold mb-2">✅ Kijan pou Ranje Yo</h4>
+            <ul class="text-gray-700 dark:text-gray-300 text-sm space-y-1">
+              <li>• Li dousman epi chèche lide prensipal la</li>
+              <li>• Tcheke si chak pati gen sans konplè avan ou mete pwen</li>
+              <li>• Sèvi ak kesyon: kiyès/kisa + kisa nou di sou li?</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <div class="mt-8 bg-gradient-to-r from-indigo-100 to-purple-100 dark:from-indigo-900 dark:to-purple-900 p-6 rounded-lg">
+        <h3 class="text-xl font-semibold text-indigo-800 dark:text-indigo-200 mb-2">🌟 Sonje!</h3>
+        <p class="text-gray-700 dark:text-gray-300 text-lg">
+          Lè w konprann estrikti fraz yo byen, ou ka li pi vit, ekri pi klè, epi eksprime tèt ou pi byen. 
+          Pratike chak jou pou fè pwogre!
+        </p>
+      </div>
+    `,
+    exemplesExercices: `
+      <h2 class="text-2xl font-bold text-primary mb-4">✏️ Pratik ak Egzèsis</h2>
+      
+      <div class="space-y-6">
+        <div class="bg-blue-50 dark:bg-blue-950 p-6 rounded-lg border border-blue-300 dark:border-blue-700">
+          <h3 class="text-lg font-semibold text-blue-700 dark:text-blue-300 mb-3">Egzèsis 1 — Separe Fraz yo</h3>
+          <p class="text-gray-700 dark:text-gray-300 mb-4">
+            Kopi paragraf sa a, mete pwen kote sa nesesè, epi konte konbyen fraz li genyen.
+          </p>
+          
+          <div class="bg-white dark:bg-gray-800 p-4 rounded-lg mb-4">
+            <p class="text-gray-700 dark:text-gray-300 italic">
+              « Nan mache a gen anpil moun moun yo ap achte legim ak fwi ti machann yo rele kliyan yo 
+              yo di yo gen bon pri tan farin kòmanse tonbe »
+            </p>
+          </div>
+
+          <textarea class="w-full border border-gray-300 dark:border-gray-600 rounded p-3 min-h-[120px]" 
+                    placeholder="Ekri tèks la ak ponktiyasyon kòrèk isit..."></textarea>
+          
+          <p class="text-sm text-gray-600 dark:text-gray-400 mt-2">
+            <strong>Konte:</strong> Konbyen fraz? _____
+          </p>
+        </div>
+
+        <div class="bg-green-50 dark:bg-green-950 p-6 rounded-lg border border-green-300 dark:border-green-700">
+          <h3 class="text-lg font-semibold text-green-700 dark:text-green-300 mb-3">Egzèsis 2 — Idantifye GS ak GP</h3>
+          <p class="text-gray-700 dark:text-gray-300 mb-4">
+            Souliye <strong>Gwoup Sijè</strong> a epi antoure <strong>Gwoup Predika</strong> a nan chak fraz.
+          </p>
+          
+          <div class="space-y-3">
+            <div class="bg-white dark:bg-gray-800 p-4 rounded">
+              <p class="text-gray-700 dark:text-gray-300">1. Timoun yo ap chante nan lakou a.</p>
+              <input type="text" class="w-full border border-gray-300 dark:border-gray-600 rounded p-2 mt-2" 
+                     placeholder="GS: ________ | GP: ________" />
+            </div>
+
+            <div class="bg-white dark:bg-gray-800 p-4 rounded">
+              <p class="text-gray-700 dark:text-gray-300">2. Lapli te tonbe tout lannuit.</p>
+              <input type="text" class="w-full border border-gray-300 dark:border-gray-600 rounded p-2 mt-2" 
+                     placeholder="GS: ________ | GP: ________" />
+            </div>
+
+            <div class="bg-white dark:bg-gray-800 p-4 rounded">
+              <p class="text-gray-700 dark:text-gray-300">3. Manje a santi bon anpil.</p>
+              <input type="text" class="w-full border border-gray-300 dark:border-gray-600 rounded p-2 mt-2" 
+                     placeholder="GS: ________ | GP: ________" />
+            </div>
+          </div>
+        </div>
+
+        <div class="bg-purple-50 dark:bg-purple-950 p-6 rounded-lg border border-purple-300 dark:border-purple-700">
+          <h3 class="text-lg font-semibold text-purple-700 dark:text-purple-300 mb-3">Egzèsis 3 — Chwazi Siy ki Kòrèk la</h3>
+          <p class="text-gray-700 dark:text-gray-300 mb-4">
+            Ranpli ak pwen (.), pwen entèwogasyon (?) oswa pwen esklamasyon (!).
+          </p>
+          
+          <div class="space-y-3">
+            <div class="bg-white dark:bg-gray-800 p-4 rounded flex items-center justify-between">
+              <span class="text-gray-700 dark:text-gray-300">Ki lè klas la ap fini</span>
+              <input type="text" class="border border-gray-300 dark:border-gray-600 rounded p-2 w-16 text-center" 
+                     placeholder="?" maxlength="1" />
+            </div>
+
+            <div class="bg-white dark:bg-gray-800 p-4 rounded flex items-center justify-between">
+              <span class="text-gray-700 dark:text-gray-300">Pa jete fatra atè</span>
+              <input type="text" class="border border-gray-300 dark:border-gray-600 rounded p-2 w-16 text-center" 
+                     placeholder="?" maxlength="1" />
+            </div>
+
+            <div class="bg-white dark:bg-gray-800 p-4 rounded flex items-center justify-between">
+              <span class="text-gray-700 dark:text-gray-300">Nou pral fè revizyon demen</span>
+              <input type="text" class="border border-gray-300 dark:border-gray-600 rounded p-2 w-16 text-center" 
+                     placeholder="?" maxlength="1" />
+            </div>
+          </div>
+        </div>
+
+        <div class="bg-orange-50 dark:bg-orange-950 p-6 rounded-lg border border-orange-300 dark:border-orange-700">
+          <h3 class="text-lg font-semibold text-orange-700 dark:text-orange-300 mb-3">Egzèsis 4 — Detekte Erè yo</h3>
+          <p class="text-gray-700 dark:text-gray-300 mb-4">
+            Tèks sa a gen erè ponktiyasyon. Kòrije li:
+          </p>
+          
+          <div class="bg-white dark:bg-gray-800 p-4 rounded-lg mb-4">
+            <p class="text-red-600 dark:text-red-400 italic">
+              « mari ale nan mache li achte pen ak lèt li tounen lakay li manje yon bon dejene 
+              èske ou vle ale avè l demen »
+            </p>
+          </div>
+
+          <label class="font-semibold text-gray-700 dark:text-gray-300">Vèsyon Kòrije:</label>
+          <textarea class="w-full border border-gray-300 dark:border-gray-600 rounded p-3 mt-2 min-h-[100px]" 
+                    placeholder="Ekri vèsyon kòrèk la isit..."></textarea>
+        </div>
+
+        <div class="bg-teal-50 dark:bg-teal-950 p-6 rounded-lg border border-teal-300 dark:border-teal-700">
+          <h3 class="text-lg font-semibold text-teal-700 dark:text-teal-300 mb-3">Egzèsis 5 — Kreye Pwòp Fraz ou</h3>
+          <p class="text-gray-700 dark:text-gray-300 mb-4">
+            Ekri 5 fraz sou sijè « Yon bèl jounen nan lavi m ». Itilize diferan tip fraz:
+          </p>
+          
+          <div class="space-y-3">
+            <div>
+              <label class="text-sm font-semibold text-gray-700 dark:text-gray-300">1. Fraz deklaratif (.)</label>
+              <input type="text" class="w-full border border-gray-300 dark:border-gray-600 rounded p-2 mt-1" />
+            </div>
+
+            <div>
+              <label class="text-sm font-semibold text-gray-700 dark:text-gray-300">2. Fraz entèwogatif (?)</label>
+              <input type="text" class="w-full border border-gray-300 dark:border-gray-600 rounded p-2 mt-1" />
+            </div>
+
+            <div>
+              <label class="text-sm font-semibold text-gray-700 dark:text-gray-300">3. Fraz ekslamatif (!)</label>
+              <input type="text" class="w-full border border-gray-300 dark:border-gray-600 rounded p-2 mt-1" />
+            </div>
+
+            <div>
+              <label class="text-sm font-semibold text-gray-700 dark:text-gray-300">4. Fraz konpoze (ak "epi")</label>
+              <input type="text" class="w-full border border-gray-300 dark:border-gray-600 rounded p-2 mt-1" />
+            </div>
+
+            <div>
+              <label class="text-sm font-semibold text-gray-700 dark:text-gray-300">5. Fraz ak subòdone (ak "paske")</label>
+              <input type="text" class="w-full border border-gray-300 dark:border-gray-600 rounded p-2 mt-1" />
+            </div>
+          </div>
+        </div>
+
+        <div class="bg-indigo-50 dark:bg-indigo-950 p-6 rounded-lg border-l-4 border-indigo-500">
+          <h3 class="text-lg font-semibold text-indigo-700 dark:text-indigo-300 mb-3">📺 Videyo pou Ale Pi Lwen</h3>
+          <p class="text-gray-700 dark:text-gray-300 mb-3">
+            Gade videyo a, note 3 règ ki ede w separe fraz yo nan nenpòt tèks.
+          </p>
+          <div class="bg-gray-700 p-2 rounded-lg text-center">
+            <p class="text-gray-400 text-sm">[Videyo YouTube sou fraz yo]</p>
+            <p class="text-gray-500 text-xs mt-1">URL: https://www.youtube.com/embed/0bQ7m3ZyHyc</p>
+          </div>
+        </div>
+
+        <div class="text-center mt-6 p-6 bg-gradient-to-r from-blue-100 to-purple-100 dark:from-blue-900 dark:to-purple-900 rounded-lg">
+          <p class="text-xl text-gray-800 dark:text-gray-200 font-semibold">
+            🌟 Kontinye pratike chak jou: li, separe fraz yo, epi ekri pwòp fraz pa w!
+          </p>
+        </div>
+      </div>
+    `,
+    duration: "60 minit",
     difficulty: "Debutant",
     category: "Gramè"
   },
