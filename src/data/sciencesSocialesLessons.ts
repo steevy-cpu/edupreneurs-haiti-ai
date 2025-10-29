@@ -11892,61 +11892,379 @@ export const sciencesSocialesLessons7AF: SciencesSocialesLesson[] = [
     id: "systeme-ecologique",
     title: "Le système écologique",
     mois: "Novembre",
-    objectif: "Comprendre les interactions entre êtres vivants et leur environnement.",
+    objectif: "Comprendre les interactions entre êtres vivants et leur environnement, analyser les différents composants des écosystèmes et leur interdépendance, et réaliser l'importance de la biodiversité haïtienne.",
     introduction: `
+      <p class="text-foreground leading-relaxed mb-4">
+        Bonjour chers élèves ! Aujourd'hui, nous allons découvrir un concept fondamental en écologie : <strong>l'écosystème</strong>. Imagine un instant une rivière cristalline près de chez toi, avec ses poissons, ses plantes aquatiques, ses libellules qui dansent au-dessus de l'eau, et même les pierres, le sable et le courant qui l'animent. Tout cela forme un <strong>écosystème</strong> : un monde vivant où chaque élément, vivant ou non-vivant, joue un rôle précis et interagit avec les autres.
+      </p>
       <p class="text-foreground leading-relaxed">
-        Un écosystème est un ensemble formé par un milieu (biotope) et les êtres vivants qui l'habitent (biocénose), tous en interaction. Comprendre ces systèmes est essentiel pour protéger notre environnement.
+        Un écosystème, c'est comme une <strong>grande famille</strong> où tout le monde dépend de tout le monde. Les plantes ont besoin du soleil, de l'eau et du sol. Les animaux ont besoin des plantes pour se nourrir. Et même les décomposeurs (champignons, bactéries) ont un rôle crucial en recyclant les déchets ! Comprendre les écosystèmes, c'est comprendre la vie elle-même et apprendre à protéger notre précieuse nature haïtienne. Allons-y ! 🌿🐾
       </p>
     `,
     contenu: `
-      <section class="space-y-6">
-        <div>
-          <h3 class="text-xl font-semibold mb-3 text-foreground">1. Composants d'un écosystème</h3>
-          <h4 class="font-semibold mt-3 mb-2 text-foreground">Facteurs abiotiques (non-vivants)</h4>
-          <ul class="list-disc ml-6 space-y-2 text-foreground">
-            <li>Eau, air, sol</li>
-            <li>Lumière, température</li>
-            <li>Nutriments minéraux</li>
+      <section class="space-y-8">
+        <div class="bg-gradient-to-r from-green-50 to-teal-50 dark:from-green-950/30 dark:to-teal-950/30 p-6 rounded-lg">
+          <h3 class="text-2xl font-bold mb-4 text-primary">🌍 Qu'est-ce qu'un écosystème ?</h3>
+          <p class="text-foreground mb-3">
+            Un <strong>écosystème</strong> est l'ensemble formé par :
+          </p>
+          <ul class="list-disc ml-6 text-foreground space-y-2">
+            <li><strong>Un biotope</strong> : le milieu physique (eau, air, sol, lumière, température, etc.)</li>
+            <li><strong>Une biocénose</strong> : l'ensemble des êtres vivants (plantes, animaux, micro-organismes)</li>
+            <li><strong>Les interactions</strong> : toutes les relations entre les êtres vivants ET entre les êtres vivants et leur milieu</li>
           </ul>
-
-          <h4 class="font-semibold mt-3 mb-2 text-foreground">Facteurs biotiques (vivants)</h4>
-          <ul class="list-disc ml-6 space-y-2 text-foreground">
-            <li><strong>Producteurs :</strong> Plantes (photosynthèse)</li>
-            <li><strong>Consommateurs :</strong> Herbivores, carnivores, omnivores</li>
-            <li><strong>Décomposeurs :</strong> Bactéries, champignons</li>
-          </ul>
+          <div class="bg-white dark:bg-gray-800 p-4 rounded mt-4">
+            <p class="text-foreground font-semibold">💡 Formule simple :</p>
+            <p class="text-foreground text-center text-lg mt-2">
+              <strong>Écosystème = Biotope (milieu) + Biocénose (êtres vivants) + Interactions</strong>
+            </p>
+          </div>
         </div>
 
         <div>
-          <h3 class="text-xl font-semibold mb-3 text-foreground">2. Chaînes et réseaux alimentaires</h3>
-          <p class="text-foreground">Transfert d'énergie et de matière :</p>
-          <p class="text-foreground ml-6 mt-2">Plante → Chenille → Oiseau → Serpent</p>
+          <h3 class="text-2xl font-bold mb-4 text-primary">I. Les composants d'un écosystème 🧩</h3>
+          
+          <div class="bg-blue-50 dark:bg-blue-950/30 p-6 rounded-lg mb-4">
+            <h4 class="text-xl font-semibold mb-3 text-foreground">A. Les facteurs abiotiques (non-vivants)</h4>
+            <p class="text-foreground mb-3">
+              Ce sont les éléments du milieu physique qui influencent la vie mais qui ne sont pas vivants eux-mêmes.
+            </p>
+            <div class="grid md:grid-cols-2 gap-3">
+              <div class="bg-white dark:bg-gray-800 p-3 rounded">
+                <p class="font-bold mb-2 text-foreground">💧 L'eau</p>
+                <p class="text-sm text-foreground">Indispensable à toute forme de vie. Sa disponibilité détermine la végétation (forêt humide vs désert).</p>
+              </div>
+              <div class="bg-white dark:bg-gray-800 p-3 rounded">
+                <p class="font-bold mb-2 text-foreground">🌡️ La température</p>
+                <p class="text-sm text-foreground">Influence le métabolisme des êtres vivants. Chaque espèce a sa température optimale.</p>
+              </div>
+              <div class="bg-white dark:bg-gray-800 p-3 rounded">
+                <p class="font-bold mb-2 text-foreground">☀️ La lumière</p>
+                <p class="text-sm text-foreground">Source d'énergie pour les plantes (photosynthèse). Régule les rythmes biologiques (jour/nuit).</p>
+              </div>
+              <div class="bg-white dark:bg-gray-800 p-3 rounded">
+                <p class="font-bold mb-2 text-foreground">🌬️ L'air (gaz atmosphériques)</p>
+                <p class="text-sm text-foreground">Oxygène (O₂) pour la respiration, dioxyde de carbone (CO₂) pour la photosynthèse.</p>
+              </div>
+              <div class="bg-white dark:bg-gray-800 p-3 rounded">
+                <p class="font-bold mb-2 text-foreground">🪨 Le sol</p>
+                <p class="text-sm text-foreground">Support physique et réservoir de nutriments (azote, phosphore, potassium). Sa qualité conditionne la végétation.</p>
+              </div>
+              <div class="bg-white dark:bg-gray-800 p-3 rounded">
+                <p class="font-bold mb-2 text-foreground">🧪 Le pH (acidité/alcalinité)</p>
+                <p class="text-sm text-foreground">Détermine quelles plantes peuvent pousser. Certaines préfèrent les sols acides, d'autres les sols basiques.</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="bg-green-50 dark:bg-green-950/30 p-6 rounded-lg">
+            <h4 class="text-xl font-semibold mb-3 text-foreground">B. Les facteurs biotiques (vivants)</h4>
+            <p class="text-foreground mb-4">
+              Ce sont tous les êtres vivants de l'écosystème. On les classe selon leur rôle dans la chaîne alimentaire.
+            </p>
+            
+            <div class="space-y-3">
+              <div class="bg-white dark:bg-gray-800 p-4 rounded">
+                <p class="font-bold text-lg mb-2 text-foreground">🌱 1. Les Producteurs (autotrophes)</p>
+                <p class="text-foreground mb-2">
+                  <strong>Qui sont-ils ?</strong> Les plantes vertes, les algues, certaines bactéries (cyanobactéries).
+                </p>
+                <p class="text-foreground mb-2">
+                  <strong>Leur super-pouvoir :</strong> La <strong>photosynthèse</strong> ! Ils fabriquent leur propre nourriture (glucose) à partir de CO₂, d'eau et de lumière solaire.
+                </p>
+                <p class="text-foreground">
+                  <strong>Rôle :</strong> Base de toute chaîne alimentaire. Sans producteurs, aucune vie animale possible !
+                </p>
+              </div>
+
+              <div class="bg-white dark:bg-gray-800 p-4 rounded">
+                <p class="font-bold text-lg mb-2 text-foreground">🦌 2. Les Consommateurs (hétérotrophes)</p>
+                <p class="text-foreground mb-2">
+                  Ils ne peuvent pas fabriquer leur nourriture : ils doivent <strong>manger</strong> d'autres organismes.
+                </p>
+                <div class="ml-4 space-y-2 mt-2">
+                  <div>
+                    <p class="font-semibold text-foreground">• Herbivores (consommateurs primaires) 🐄</p>
+                    <p class="text-sm text-foreground">Mangent uniquement des plantes. Ex : vaches, cabris, chenilles, papillons, lapins.</p>
+                  </div>
+                  <div>
+                    <p class="font-semibold text-foreground">• Carnivores (consommateurs secondaires ou tertiaires) 🦅</p>
+                    <p class="text-sm text-foreground">Mangent d'autres animaux. Ex : serpents, oiseaux de proie, chats sauvages.</p>
+                  </div>
+                  <div>
+                    <p class="font-semibold text-foreground">• Omnivores 🐗</p>
+                    <p class="text-sm text-foreground">Mangent à la fois des plantes ET des animaux. Ex : humains, cochons, rats.</p>
+                  </div>
+                  <div>
+                    <p class="font-semibold text-foreground">• Charognards (nécrophages) 🦅</p>
+                    <p class="text-sm text-foreground">Se nourrissent de cadavres. Ex : vautours, certaines mouches.</p>
+                  </div>
+                </div>
+              </div>
+
+              <div class="bg-white dark:bg-gray-800 p-4 rounded">
+                <p class="font-bold text-lg mb-2 text-foreground">🍄 3. Les Décomposeurs (saprophytes)</p>
+                <p class="text-foreground mb-2">
+                  <strong>Qui sont-ils ?</strong> Champignons, bactéries, certains vers de terre, insectes.
+                </p>
+                <p class="text-foreground mb-2">
+                  <strong>Leur mission cruciale :</strong> Ils décomposent la matière organique morte (feuilles mortes, cadavres, excréments) en nutriments minéraux simples.
+                </p>
+                <p class="text-foreground">
+                  <strong>Rôle :</strong> <strong>Recycleurs de la nature !</strong> Ils rendent les nutriments au sol, permettant aux plantes de les réutiliser. Sans eux, la Terre serait recouverte de déchets !
+                </p>
+              </div>
+            </div>
+          </div>
         </div>
 
         <div>
-          <h3 class="text-xl font-semibold mb-3 text-foreground">3. Équilibre écologique</h3>
-          <p class="text-foreground">Tous les éléments sont interdépendants. La disparition d'une espèce affecte tout l'écosystème.</p>
+          <h3 class="text-2xl font-bold mb-4 text-primary">II. Les chaînes et réseaux alimentaires 🔗</h3>
+          
+          <div class="bg-yellow-50 dark:bg-yellow-950/30 p-6 rounded-lg mb-4">
+            <h4 class="text-xl font-semibold mb-3 text-foreground">A. La chaîne alimentaire</h4>
+            <p class="text-foreground mb-3">
+              Une <strong>chaîne alimentaire</strong> montre le transfert d'énergie et de matière d'un être vivant à un autre.
+            </p>
+            <div class="bg-white dark:bg-gray-800 p-4 rounded">
+              <p class="text-foreground font-bold mb-2">Exemple simple (écosystème terrestre haïtien) :</p>
+              <p class="text-center text-lg text-foreground">
+                🌾 Herbe → 🐛 Chenille → 🐦 Oiseau (Ti zwezo) → 🐍 Coulèv (Serpent)
+              </p>
+              <ul class="list-disc ml-6 mt-3 text-sm text-foreground space-y-1">
+                <li><strong>Producteur :</strong> L'herbe fabrique sa nourriture par photosynthèse</li>
+                <li><strong>Consommateur 1er ordre :</strong> La chenille mange l'herbe</li>
+                <li><strong>Consommateur 2e ordre :</strong> L'oiseau mange la chenille</li>
+                <li><strong>Consommateur 3e ordre :</strong> Le serpent mange l'oiseau</li>
+              </ul>
+            </div>
+
+            <div class="bg-white dark:bg-gray-800 p-4 rounded mt-3">
+              <p class="text-foreground font-bold mb-2">Exemple aquatique (rivière haïtienne) :</p>
+              <p class="text-center text-lg text-foreground">
+                🌿 Algues → 🦐 Kribich (petites crevettes) → 🐟 Ti pwason → 🦆 Malfini dlo (Martin-pêcheur)
+              </p>
+            </div>
+          </div>
+
+          <div class="bg-orange-50 dark:bg-orange-950/30 p-6 rounded-lg mb-4">
+            <h4 class="text-xl font-semibold mb-3 text-foreground">B. Le réseau alimentaire (réseau trophique)</h4>
+            <p class="text-foreground mb-3">
+              Dans la réalité, les chaînes alimentaires sont interconnectées : un animal peut manger plusieurs types de proies, et être lui-même mangé par plusieurs prédateurs. C'est ce qu'on appelle un <strong>réseau alimentaire</strong>, beaucoup plus complexe qu'une simple chaîne.
+            </p>
+            <div class="bg-white dark:bg-gray-800 p-4 rounded">
+              <p class="text-foreground font-bold mb-2">💡 Pourquoi c'est important ?</p>
+              <p class="text-foreground text-sm">
+                Si une espèce disparaît, d'autres peuvent compenser en modifiant leur régime. Le réseau rend l'écosystème plus résilient (plus résistant aux perturbations).
+              </p>
+            </div>
+          </div>
+
+          <div class="bg-indigo-50 dark:bg-indigo-950/30 p-6 rounded-lg">
+            <h4 class="text-xl font-semibold mb-3 text-foreground">C. La pyramide écologique (pyramide d'énergie)</h4>
+            <p class="text-foreground mb-3">
+              L'énergie circule dans l'écosystème de manière <strong>unidirectionnelle</strong> (dans un seul sens) et se <strong>perd</strong> à chaque niveau.
+            </p>
+            <div class="space-y-2">
+              <div class="bg-green-700 dark:bg-green-900 text-white p-3 rounded text-center">
+                🌱 <strong>Producteurs</strong> (100% de l'énergie captée)
+              </div>
+              <div class="bg-green-600 dark:bg-green-800 text-white p-3 rounded text-center w-5/6 mx-auto">
+                🐄 <strong>Herbivores</strong> (~10% transmis)
+              </div>
+              <div class="bg-green-500 dark:bg-green-700 text-white p-3 rounded text-center w-4/6 mx-auto">
+                🦅 <strong>Carnivores 1</strong> (~1% transmis)
+              </div>
+              <div class="bg-green-400 dark:bg-green-600 text-white p-3 rounded text-center w-3/6 mx-auto">
+                🦅 <strong>Carnivores 2</strong> (~0,1% transmis)
+              </div>
+            </div>
+            <p class="text-foreground text-sm mt-3 italic">
+              ⚠️ Seulement environ <strong>10%</strong> de l'énergie d'un niveau est transmise au niveau suivant. Le reste est utilisé pour la respiration, les mouvements, la chaleur corporelle, ou perdu.
+            </p>
+          </div>
         </div>
 
         <div>
-          <h3 class="text-xl font-semibold mb-3 text-foreground">4. Biodiversité en Haïti</h3>
-          <ul class="list-disc ml-6 space-y-2 text-foreground">
-            <li>Espèces endémiques menacées</li>
-            <li>Déforestation détruisant les habitats</li>
-            <li>Nécessité de protection (parcs nationaux)</li>
+          <h3 class="text-2xl font-bold mb-4 text-primary">III. L'équilibre écologique ⚖️</h3>
+          
+          <div class="bg-purple-50 dark:bg-purple-950/30 p-6 rounded-lg mb-4">
+            <h4 class="text-xl font-semibold mb-3 text-foreground">A. Qu'est-ce que l'équilibre écologique ?</h4>
+            <p class="text-foreground mb-3">
+              Un écosystème est en <strong>équilibre</strong> quand les populations d'êtres vivants restent relativement stables dans le temps. Cela ne signifie pas que rien ne change, mais que les variations restent dans des limites normales.
+            </p>
+            <div class="bg-white dark:bg-gray-800 p-4 rounded">
+              <p class="text-foreground font-bold mb-2">Exemple : Relation prédateur-proie</p>
+              <p class="text-foreground text-sm">
+                Si la population de lapins augmente → plus de nourriture pour les renards → population de renards augmente → plus de lapins sont mangés → population de lapins diminue → moins de nourriture pour les renards → population de renards diminue → les lapins peuvent se reproduire à nouveau... et le cycle continue !
+              </p>
+            </div>
+          </div>
+
+          <div class="bg-red-50 dark:bg-red-950/30 p-6 rounded-lg border-l-4 border-red-500">
+            <h4 class="text-xl font-semibold mb-3 text-foreground">B. Les menaces sur l'équilibre écologique</h4>
+            <div class="space-y-2">
+              <div class="bg-white dark:bg-gray-800 p-3 rounded">
+                <p class="font-bold text-foreground">🔥 Déforestation</p>
+                <p class="text-sm text-foreground">Destruction de l'habitat → disparition d'espèces → rupture des chaînes alimentaires.</p>
+              </div>
+              <div class="bg-white dark:bg-gray-800 p-3 rounded">
+                <p class="font-bold text-foreground">🏭 Pollution</p>
+                <p class="text-sm text-foreground">Pesticides, déchets industriels empoisonnent l'eau, l'air, le sol → mort d'organismes → déséquilibre.</p>
+              </div>
+              <div class="bg-white dark:bg-gray-800 p-3 rounded">
+                <p class="font-bold text-foreground">🦏 Surexploitation</p>
+                <p class="text-sm text-foreground">Chasse ou pêche excessive → disparition d'espèces clés → effondrement de l'écosystème.</p>
+              </div>
+              <div class="bg-white dark:bg-gray-800 p-3 rounded">
+                <p class="font-bold text-foreground">🐀 Espèces invasives</p>
+                <p class="text-sm text-foreground">Introduction d'espèces étrangères qui n'ont pas de prédateurs naturels → elles prolifèrent et éliminent les espèces locales.</p>
+              </div>
+              <div class="bg-white dark:bg-gray-800 p-3 rounded">
+                <p class="font-bold text-foreground">🌡️ Changement climatique</p>
+                <p class="text-sm text-foreground">Modification des températures et des régimes de pluie → espèces incapables de s'adapter disparaissent.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <h3 class="text-2xl font-bold mb-4 text-primary">IV. La biodiversité en Haïti 🇭🇹🦜</h3>
+          
+          <div class="bg-gradient-to-r from-green-50 to-blue-50 dark:from-green-950/30 dark:to-blue-950/30 p-6 rounded-lg mb-4">
+            <h4 class="text-xl font-semibold mb-3 text-foreground">A. Un trésor naturel menacé</h4>
+            <p class="text-foreground mb-3">
+              Haïti possédait autrefois une biodiversité exceptionnelle. Malheureusement, la déforestation massive (moins de <strong>2% de forêt originale</strong> subsiste !) a détruit la majorité des écosystèmes naturels.
+            </p>
+            <div class="bg-white dark:bg-gray-800 p-4 rounded">
+              <p class="font-bold mb-2 text-foreground">🦎 Espèces endémiques (qui n'existent qu'en Haïti) :</p>
+              <ul class="list-disc ml-6 text-sm text-foreground space-y-1">
+                <li><strong>Solenodon d'Hispaniola (Solenodo)</strong> : petit mammifère insectivore, vieux de 76 millions d'années !</li>
+                <li><strong>Hutia d'Hispaniola (Zagouti)</strong> : rongeur arboricole, en danger critique</li>
+                <li><strong>Grenouille peinte d'Hispaniola</strong> : amphibien coloré</li>
+                <li><strong>Perroquet d'Hispaniola (Jako)</strong> : magnifique oiseau vert, menacé</li>
+                <li><strong>Diverses espèces de lézards, serpents, papillons</strong></li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="bg-teal-50 dark:bg-teal-950/30 p-6 rounded-lg">
+            <h4 class="text-xl font-semibold mb-3 text-foreground">B. Efforts de conservation</h4>
+            <div class="space-y-2">
+              <div class="bg-white dark:bg-gray-800 p-3 rounded">
+                <p class="font-bold text-foreground">🏞️ Parcs nationaux</p>
+                <p class="text-sm text-foreground">Parc national La Visite, Parc Macaya, Parc historique de la Citadelle : zones protégées pour préserver biodiversité.</p>
+              </div>
+              <div class="bg-white dark:bg-gray-800 p-3 rounded">
+                <p class="font-bold text-foreground">🌳 Reforestation</p>
+                <p class="text-sm text-foreground">Programmes de plantation d'arbres pour restaurer forêts et habitats.</p>
+              </div>
+              <div class="bg-white dark:bg-gray-800 p-3 rounded">
+                <p class="font-bold text-foreground">📚 Éducation environnementale</p>
+                <p class="text-sm text-foreground">Sensibiliser la population (vous inclus !) à l'importance de protéger la nature.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="bg-primary/5 border-l-4 border-primary p-6 rounded-lg">
+          <h3 class="text-xl font-bold mb-3 text-primary">🌟 Ce que TU peux faire !</h3>
+          <ul class="list-disc ml-6 text-foreground space-y-2">
+            <li>Ne pas jeter de déchets dans la nature (rivières, forêts)</li>
+            <li>Planter des arbres dans ton quartier ou ton école</li>
+            <li>Ne pas capturer ou tuer les animaux sauvages</li>
+            <li>Économiser l'eau et l'électricité</li>
+            <li>Sensibiliser ta famille et tes amis à la protection de l'environnement</li>
           </ul>
+          <p class="text-foreground mt-4 font-semibold italic">
+            "Tè a se pa eritaj nou, se prè nou prè l' nan men timoun nou yo" (La terre n'est pas notre héritage, nous l'empruntons à nos enfants). 🌍💚
+          </p>
         </div>
       </section>
     `,
     exemplesExercices: `
-      <section class="space-y-4">
-        <div class="bg-accent/5 border-l-4 border-accent p-4 rounded">
-          <h4 class="font-semibold mb-2 text-foreground">📝 Exercice</h4>
-          <p class="text-foreground">
-            Dessine une chaîne alimentaire de ton environnement local. Identifie producteurs, consommateurs et décomposeurs.
-          </p>
+      <div class="space-y-6">
+        <h3 class="text-2xl font-bold mb-4 text-primary">📝 Exercices pratiques</h3>
+
+        <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md">
+          <p class="font-bold text-xl mb-4">1. Dessine une chaîne alimentaire haïtienne</p>
+          <p class="mb-3">Crée une chaîne alimentaire à 4 niveaux utilisant des espèces que tu connais en Haïti. Pour chaque organisme, indique :</p>
+          <ul class="list-disc ml-6 space-y-1">
+            <li>Son nom en créole et en français</li>
+            <li>Son rôle (producteur, herbivore, carnivore, décomposeur)</li>
+            <li>Ce qu'il mange ou comment il produit sa nourriture</li>
+          </ul>
         </div>
-      </section>
+
+        <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md">
+          <p class="font-bold text-xl mb-4">2. Comparaison de deux écosystèmes</p>
+          <p class="mb-3">Remplis un tableau comparant deux écosystèmes haïtiens (exemple : une forêt de pins et une mangrove côtière) :</p>
+          <table class="w-full text-sm border-collapse mt-2">
+            <tr class="bg-primary/10">
+              <th class="border p-2">Critère</th>
+              <th class="border p-2">Forêt de pins</th>
+              <th class="border p-2">Mangrove</th>
+            </tr>
+            <tr>
+              <td class="border p-2">Localisation</td>
+              <td class="border p-2">...</td>
+              <td class="border p-2">...</td>
+            </tr>
+            <tr>
+              <td class="border p-2">Climat</td>
+              <td class="border p-2">...</td>
+              <td class="border p-2">...</td>
+            </tr>
+            <tr>
+              <td class="border p-2">Plantes dominantes</td>
+              <td class="border p-2">...</td>
+              <td class="border p-2">...</td>
+            </tr>
+            <tr>
+              <td class="border p-2">Animaux typiques</td>
+              <td class="border p-2">...</td>
+              <td class="border p-2">...</td>
+            </tr>
+          </table>
+        </div>
+
+        <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md">
+          <p class="font-bold text-xl mb-4">3. Enquête sur un déséquilibre écologique</p>
+          <p class="mb-3">Choisis un problème environnemental de ta région (déforestation, pollution d'une rivière, disparition d'espèces...) et rédige un rapport incluant :</p>
+          <ul class="list-disc ml-6 space-y-1">
+            <li>Description du problème</li>
+            <li>Causes identifiées</li>
+            <li>Conséquences sur l'écosystème</li>
+            <li>Solutions possibles</li>
+          </ul>
+        </div>
+
+        <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md">
+          <p class="font-bold text-xl mb-4">4. Construis une pyramide écologique</p>
+          <p class="mb-3">À partir de la chaîne alimentaire suivante : Herbe → Criquet → Lézard → Serpent → Aigle</p>
+          <p>Dessine une pyramide montrant :</p>
+          <ul class="list-disc ml-6 space-y-1">
+            <li>La quantité d'énergie à chaque niveau</li>
+            <li>Le nombre approximatif d'individus nécessaires</li>
+            <li>Pourquoi la pyramide se rétrécit en montant</li>
+          </ul>
+        </div>
+
+        <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md">
+          <p class="font-bold text-xl mb-4">5. Questions de réflexion</p>
+          <ol class="list-decimal ml-6 space-y-3">
+            <li>Que se passerait-il si tous les décomposeurs disparaissaient d'un écosystème ?</li>
+            <li>Pourquoi la déforestation en Haïti menace-t-elle autant la biodiversité ?</li>
+            <li>Explique pourquoi il est impossible d'avoir une chaîne alimentaire de 10 niveaux.</li>
+            <li>Comment une espèce invasive peut-elle déséquilibrer un écosystème ?</li>
+          </ol>
+        </div>
+
+        <div class="bg-primary/5 border-l-4 border-primary p-4 rounded">
+          <p class="font-bold mb-2">🌱 Projet pratique : Mini-écosystème en bouteille</p>
+          <p class="text-sm">Crée un terrarium fermé dans une bouteille transparente : terre, plantes, insectes, eau. Observe comment l'écosystème s'autorégule pendant plusieurs semaines. Note tes observations sur le cycle de l'eau, la croissance des plantes, et les interactions entre organismes.</p>
+        </div>
+      </div>
     `
   },
 
