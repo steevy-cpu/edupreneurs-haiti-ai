@@ -1,4 +1,3 @@
-import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 
 const corsHeaders = {
@@ -12,58 +11,98 @@ serve(async (req) => {
   }
 
   try {
-    console.log("Received request:", req.method, req.url);
-    
     const url = new URL(req.url);
     const lessonTitle = url.searchParams.get("lessonTitle");
     const lessonNumber = url.searchParams.get("lessonNumber");
     const subject = url.searchParams.get("subject");
     const grade = url.searchParams.get("grade");
     const targetWords = url.searchParams.get("targetWords");
-
-    console.log("Parameters:", { lessonTitle, lessonNumber, subject, grade, targetWords });
-
+    
     if (!lessonTitle || !lessonNumber || !subject || !grade || !targetWords) {
-      console.error("Missing parameters");
-      return new Response(
-        JSON.stringify({ error: "Missing required parameters" }),
-        { 
-          status: 400, 
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
-        }
-      );
+      throw new Error("Missing required parameters");
     }
-
+    
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) {
-      console.error("LOVABLE_API_KEY not configured");
-      return new Response(
-        JSON.stringify({ error: "LOVABLE_API_KEY is not configured" }),
-        { 
-          status: 500, 
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
-        }
-      );
+      throw new Error("LOVABLE_API_KEY is not configured");
     }
 
-    console.log("Calling AI Gateway...");
+    const systemPrompt = `Tu es un expert pédagogue haïtien créant des leçons de Sciences Sociales pour le niveau ${grade} (7AF - 12-13 ans) selon le programme du MENFP d'Haïti.
 
-    const systemPrompt = `Tu es un expert pédagogique haïtien créant du contenu éducatif pour des élèves de ${grade}e année en ${subject}. 
-Génère un contenu riche et détaillé d'environ ${targetWords} mots pour la leçon "${lessonTitle}".
+CONTEXTE CRITIQUE:
+- Public: Élèves haïtiens de 7AF (12-13 ans)
+- Langue: Français accessible avec vocabulaire adapté
+- Contextualisation: MAXIMUM d'exemples, références et situations haïtiennes/caribéennes
+- Ton: Captivant, stimulant, encourageant la curiosité
 
-Le contenu doit être structuré en 3 sections:
-1. introduction: Une introduction engageante qui capte l'attention des élèves
-2. contenu: Le contenu principal détaillé de la leçon avec des exemples haïtiens pertinents
-3. exemplesExercices: Des exercices variés et progressifs avec des exemples pratiques`;
+STRUCTURE REQUISE (~${targetWords} mots):
 
-    const userPrompt = `Génère le contenu pour la leçon ${lessonNumber}: "${lessonTitle}" en ${subject} pour la ${grade}e année.
-Objectif: environ ${targetWords} mots au total.
-Contexte haïtien obligatoire avec des exemples locaux pertinents.`;
+1. INTRODUCTION (250-300 mots):
+   - Accroche captivante avec question stimulante ou citation
+   - 2-3 paragraphes de mise en contexte avec lien haïtien fort
+   - 4-5 objectifs d'apprentissage clairs et mesurables
+   - Utiliser émojis et encadrés colorés
 
-    const aiResponse = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+2. CONTENU DÉTAILLÉ (900-1000 mots):
+   - 6-7 sections principales (h3) bien développées
+   - Explications claires avec vocabulaire adapté niveau 7AF
+   - 2-3 encadrés "💡 Le savais-tu ?" avec anecdotes haïtiennes/caribéennes fascinantes
+   - Listes structurées avec puces
+   - Exemples concrets haïtiens intégrés dans chaque section
+   - 2-3 suggestions YouTube intégrées dans le contenu (format: "🎥 Vidéo recommandée: '[Titre]'")
+
+3. EXEMPLES ET EXERCICES (350-400 mots):
+   - 5-6 exemples concrets haïtiens détaillés (encadrés bleus 🇭🇹)
+   - 8-10 types d'exercices VARIÉS:
+     * QCM (5 questions, 4 choix)
+     * Vrai/Faux (5 affirmations)
+     * Appariement/Correspondance
+     * Questions de réflexion (3-4 questions ouvertes)
+     * Étude de cas haïtien
+     * Activité pratique (observation, enquête, création)
+     * Recherche/Investigation
+     * Débat ou discussion
+     * Mini-recherche
+     * Composition/Rédaction
+   - 3-4 suggestions YouTube finales avec titres précis
+
+FORMAT HTML AVEC TAILWIND:
+- Utiliser classes Tailwind pour dark/light mode
+- Encadrés colorés: bg-[color]-50 dark:bg-[color]-950/30 border-l-4 border-[color]-500
+- Émojis pour capter attention
+- Structure claire avec h2, h3, p, ul, li
+- Tableaux comparatifs si pertinent
+
+PRINCIPES PÉDAGOGIQUES:
+✅ Contextualisation haïtienne MAXIMALE
+✅ Langage adapté 7AF (12-13 ans)
+✅ Exactitude scientifique/historique
+✅ Ton engageant et motivant
+✅ Diversité des activités
+✅ Ancrage dans la réalité haïtienne
+
+RÉPONDS UNIQUEMENT AVEC LE CONTENU HTML, SANS PRÉAMBULE.`;
+
+    const userPrompt = `Génère le contenu complet pour la Leçon ${lessonNumber}: "${lessonTitle}" du cours de ${subject} niveau ${grade}.
+
+Structure attendue:
+1. Introduction (250-300 mots)
+2. Contenu détaillé (900-1000 mots, 6-7 sections)
+3. Exemples et Exercices (350-400 mots)
+
+Total: ~${targetWords} mots
+
+IMPORTANT:
+- Maximum de contextualisation haïtienne
+- Exemples concrets de la vie en Haïti
+- Anecdotes caribéennes fascinantes
+- Exercices variés et stimulants
+- Format HTML avec classes Tailwind`;
+
+    const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
       headers: {
-        "Authorization": `Bearer ${LOVABLE_API_KEY}`,
+        Authorization: `Bearer ${LOVABLE_API_KEY}`,
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
@@ -72,112 +111,81 @@ Contexte haïtien obligatoire avec des exemples locaux pertinents.`;
           { role: "system", content: systemPrompt },
           { role: "user", content: userPrompt }
         ],
-        tools: [
-          {
-            type: "function",
-            function: {
-              name: "generate_lesson_content",
-              description: "Generate structured lesson content",
-              parameters: {
-                type: "object",
-                properties: {
-                  introduction: {
-                    type: "string",
-                    description: "Engaging introduction for the lesson"
-                  },
-                  contenu: {
-                    type: "string",
-                    description: "Detailed main content of the lesson"
-                  },
-                  exemplesExercices: {
-                    type: "string",
-                    description: "Varied exercises and examples"
-                  }
-                },
-                required: ["introduction", "contenu", "exemplesExercices"],
-                additionalProperties: false
-              }
-            }
-          }
-        ],
-        tool_choice: { type: "function", function: { name: "generate_lesson_content" } }
+        temperature: 0.8,
+        max_tokens: 4000,
       }),
     });
 
-    console.log("AI Gateway response status:", aiResponse.status);
-
-    if (!aiResponse.ok) {
-      const errorText = await aiResponse.text();
-      console.error("AI Gateway error:", aiResponse.status, errorText);
-      
-      if (aiResponse.status === 429) {
-        return new Response(
-          JSON.stringify({ error: "Rate limit exceeded. Please try again later." }),
-          { 
-            status: 429, 
-            headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
-          }
-        );
+    if (!response.ok) {
+      if (response.status === 429) {
+        return new Response(JSON.stringify({ error: "Rate limits exceeded, please try again later." }), {
+          status: 429,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
       }
-      
-      if (aiResponse.status === 402) {
-        return new Response(
-          JSON.stringify({ error: "Payment required. Please add credits to your Lovable AI workspace." }),
-          { 
-            status: 402, 
-            headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
-          }
-        );
+      if (response.status === 402) {
+        return new Response(JSON.stringify({ error: "Payment required, please add funds to your Lovable AI workspace." }), {
+          status: 402,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
       }
-
-      return new Response(
-        JSON.stringify({ error: "AI Gateway error", details: errorText }),
-        { 
-          status: 500, 
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
-        }
-      );
+      const errorText = await response.text();
+      console.error("AI gateway error:", response.status, errorText);
+      return new Response(JSON.stringify({ error: "AI gateway error" }), {
+        status: 500,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
     }
 
-    const data = await aiResponse.json();
-    console.log("AI Response received, parsing...");
-
-    // Extract the tool call result
-    const toolCall = data.choices?.[0]?.message?.tool_calls?.[0];
-    if (!toolCall?.function?.arguments) {
-      console.error("No tool call in response:", JSON.stringify(data));
-      return new Response(
-        JSON.stringify({ 
-          error: "No valid content generated", 
-          details: "Tool call not found in AI response" 
-        }),
-        { 
-          status: 500, 
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
-        }
-      );
-    }
-
-    const generatedContent = JSON.parse(toolCall.function.arguments);
-    console.log("Content generated successfully");
+    const data = await response.json();
+    let generatedContent = data.choices[0].message.content;
     
-    return new Response(
-      JSON.stringify(generatedContent),
-      { 
-        status: 200, 
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
-      }
-    );
+    // Remove markdown code blocks if present
+    generatedContent = generatedContent.replace(/```html\n?/g, '').replace(/```\n?/g, '');
+    
+    // Split content into three sections based on HTML comments or headers
+    let introduction = '';
+    let contenu = '';
+    let exemplesExercices = '';
+    
+    // Try to find section markers in the content
+    const introMatch = generatedContent.match(/<!-- Introduction -->([\s\S]*?)<!-- Contenu|<h3[^>]*>.*?Contenu Détaillé/i);
+    const contenuMatch = generatedContent.match(/<!-- Contenu Détaillé|Contenu -->([\s\S]*?)<!-- Exemples et Exercices|<h3[^>]*>.*?Exemples et Exercices/i);
+    const exercicesMatch = generatedContent.match(/<!-- Exemples et Exercices -->([\s\S]*)/i);
+    
+    if (introMatch) {
+      introduction = introMatch[1].trim();
+    }
+    if (contenuMatch) {
+      contenu = contenuMatch[1].trim();
+    }
+    if (exercicesMatch) {
+      exemplesExercices = exercicesMatch[1].trim();
+    }
+    
+    // If sections not found by markers, try to split by detecting patterns
+    if (!introduction || !contenu || !exemplesExercices) {
+      // Fallback: use the full content as contenu
+      contenu = generatedContent;
+      introduction = '<div class="mb-4"><p>Contenu généré par IA.</p></div>';
+      exemplesExercices = '<div class="mb-4"><p>Exercices à compléter.</p></div>';
+    }
+
+    return new Response(JSON.stringify({ 
+      introduction,
+      contenu,
+      exemplesExercices,
+      lessonTitle,
+      lessonNumber 
+    }), {
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    });
 
   } catch (error) {
-    console.error("Error in generate-lesson-content:", error);
-    const errorMessage = error instanceof Error ? error.message : String(error);
-    return new Response(
-      JSON.stringify({ error: "Internal server error", message: errorMessage }),
-      { 
-        status: 500, 
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
-      }
-    );
+    console.error('Error in generate-lesson-content function:', error);
+    return new Response(JSON.stringify({ error: error instanceof Error ? error.message : "Unknown error" }), {
+      status: 500,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    });
   }
 });
