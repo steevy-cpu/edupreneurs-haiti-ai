@@ -37,43 +37,205 @@ export const espagnolLessons7AF = {
     contenu: `
       <div class="lesson-content space-y-6">
         <section class="mb-6">
-          <h3 class="text-xl font-semibold mb-3">1) Salutations selon le moment de la journée</h3>
-          <ul class="space-y-2 ml-4">
-            <li>• <strong>Buenos días</strong> (le matin, jusqu'à midi) — Au marché de Pétion-Ville : « Buenos días, señora »</li>
-            <li>• <strong>Buenas tardes</strong> (après-midi) — À l'école : « Buenas tardes, profesor »</li>
-            <li>• <strong>Buenas noches</strong> (soir et nuit) — En famille : « Buenas noches, mamá »</li>
-            <li>• <strong>Hola</strong> (informel, toute la journée) — « Hola, ¿qué tal? »</li>
-          </ul>
-          <div class="bg-blue-50 dark:bg-blue-900/20 border-l-4 border-blue-500 p-4 rounded-r-lg mt-3">
-            <h4 class="text-blue-700 dark:text-blue-400 font-semibold mb-2">Exemple de mini-dialogue</h4>
-            <p class="text-blue-600 dark:text-blue-300">— Buenos días, señor. ¿Cómo está?<br>— Muy bien, gracias. ¿Y usted?<br>— Bien, gracias. Me llamo Maritza. Soy estudiante en 7AF.</p>
+          <h3 class="text-xl font-semibold mb-4">1) Salutations selon le moment de la journée</h3>
+          <p class="mb-4">En espagnol, comme en français et en créole, nous avons différentes façons de saluer selon le moment de la journée et le contexte social. La politesse est très importante dans la culture hispanophone !</p>
+          
+          <div class="bg-purple-50 dark:bg-purple-900/20 p-4 rounded-lg mb-4">
+            <h4 class="font-semibold mb-3">Les principales salutations :</h4>
+            <ul class="space-y-3">
+              <li class="flex items-start">
+                <span class="font-bold text-purple-600 dark:text-purple-400 mr-2">•</span>
+                <div>
+                  <strong>Buenos días</strong> (le matin, jusqu'à midi)<br/>
+                  <span class="text-sm italic">Exemple : Au marché de Pétion-Ville : « Buenos días, señora. ¿Cómo está? »</span>
+                </div>
+              </li>
+              <li class="flex items-start">
+                <span class="font-bold text-purple-600 dark:text-purple-400 mr-2">•</span>
+                <div>
+                  <strong>Buenas tardes</strong> (l'après-midi, de midi à 19h environ)<br/>
+                  <span class="text-sm italic">Exemple : À l'école : « Buenas tardes, profesor. ¿Cómo le va? »</span>
+                </div>
+              </li>
+              <li class="flex items-start">
+                <span class="font-bold text-purple-600 dark:text-purple-400 mr-2">•</span>
+                <div>
+                  <strong>Buenas noches</strong> (le soir et la nuit, après 19h)<br/>
+                  <span class="text-sm italic">Exemple : En famille : « Buenas noches, mamá. Hasta mañana. »</span>
+                </div>
+              </li>
+              <li class="flex items-start">
+                <span class="font-bold text-purple-600 dark:text-purple-400 mr-2">•</span>
+                <div>
+                  <strong>Hola</strong> (informel, à tout moment de la journée)<br/>
+                  <span class="text-sm italic">Exemple : Entre amis : « ¡Hola! ¿Qué tal? ¿Cómo estás? »</span>
+                </div>
+              </li>
+            </ul>
+          </div>
+
+          <div class="bg-blue-50 dark:bg-blue-900/20 border-l-4 border-blue-500 p-4 rounded-r-lg">
+            <h4 class="text-blue-700 dark:text-blue-400 font-semibold mb-2">💬 Exemple de mini-dialogue</h4>
+            <div class="space-y-1 text-blue-600 dark:text-blue-300">
+              <p><strong>Maritza:</strong> Buenos días, señor. ¿Cómo está?</p>
+              <p><strong>Señor García:</strong> Muy bien, gracias. ¿Y usted?</p>
+              <p><strong>Maritza:</strong> Bien, gracias. Me llamo Maritza. Soy estudiante en 7AF.</p>
+              <p><strong>Señor García:</strong> Mucho gusto, Maritza. Yo soy el profesor García.</p>
+            </div>
+          </div>
+
+          <div class="bg-amber-50 dark:bg-amber-900/20 p-4 rounded-lg mt-4">
+            <h4 class="font-semibold mb-2">📝 Note importante</h4>
+            <p class="text-sm">En République Dominicaine et dans les pays hispanophones, on se serre souvent la main lors des présentations formelles, et on fait la bise (généralement sur la joue droite) entre amis et en famille.</p>
           </div>
         </section>
 
         <section class="mb-6">
-          <h3 class="text-xl font-semibold mb-3">2) Se présenter (Presentarse)</h3>
-          <p class="mb-2">En français, on dit « Je m'appelle… ». En espagnol : <strong>Me llamo…</strong> ou <strong>Mi nombre es…</strong></p>
-          <ul class="space-y-2 ml-4">
-            <li>• <strong>Me llamo</strong> Sofia / <strong>Mi nombre es</strong> Daniel</li>
-            <li>• <strong>Tengo</strong> 12 años (j'ai 12 ans)</li>
-            <li>• <strong>Soy</strong> haitiano/a; <strong>vivo</strong> en Cap-Haitien / Port-au-Prince</li>
-            <li>• <strong>Estudio</strong> en el colegio … (nom de l'école)</li>
-          </ul>
-          <div class="bg-yellow-50 dark:bg-yellow-900/20 border-l-4 border-yellow-500 p-4 rounded-r-lg mt-3">
-            <h4 class="text-yellow-700 dark:text-yellow-400 font-semibold mb-2">Modèle</h4>
-            <p class="text-yellow-600 dark:text-yellow-300">« Hola, buenos días. Me llamo Jonas. Tengo 13 años. Soy haitiano y vivo en Jacmel. Estudio en el colegio Saint-Michel. Mucho gusto. »</p>
+          <h3 class="text-xl font-semibold mb-4">2) Se présenter (Presentarse)</h3>
+          <p class="mb-4">Savoir se présenter est essentiel pour créer des liens ! En espagnol, il existe plusieurs façons de donner son nom et parler de soi.</p>
+          
+          <div class="bg-green-50 dark:bg-green-900/20 p-4 rounded-lg mb-4">
+            <h4 class="font-semibold mb-3">Les formules de présentation :</h4>
+            <ul class="space-y-3">
+              <li><strong>Me llamo</strong> + [nom] = Je m'appelle + [nom]<br/>
+                <span class="text-sm italic">Exemple : Me llamo Sofia. (Je m'appelle Sofia.)</span>
+              </li>
+              <li><strong>Mi nombre es</strong> + [nom] = Mon nom est + [nom]<br/>
+                <span class="text-sm italic">Exemple : Mi nombre es Daniel. (Mon nom est Daniel.)</span>
+              </li>
+              <li><strong>Soy</strong> + [nom] = Je suis + [nom]<br/>
+                <span class="text-sm italic">Exemple : Soy Jean-Baptiste. (Je suis Jean-Baptiste.)</span>
+              </li>
+            </ul>
+          </div>
+
+          <div class="bg-purple-50 dark:bg-purple-900/20 p-4 rounded-lg mb-4">
+            <h4 class="font-semibold mb-3">Donner plus d'informations sur soi :</h4>
+            <ul class="space-y-2">
+              <li>• <strong>Tengo</strong> 12 años = J'ai 12 ans (Mwen gen 12 an)</li>
+              <li>• <strong>Soy haitiano/a</strong> = Je suis haïtien(ne) (Mwen se Ayisyen)</li>
+              <li>• <strong>Vivo en</strong> Port-au-Prince = J'habite à Port-au-Prince</li>
+              <li>• <strong>Estudio en</strong> el colegio Saint-Michel = J'étudie au collège Saint-Michel</li>
+              <li>• <strong>Mi escuela está en</strong> Delmas = Mon école est à Delmas</li>
+            </ul>
+          </div>
+
+          <div class="bg-yellow-50 dark:bg-yellow-900/20 border-l-4 border-yellow-500 p-4 rounded-r-lg">
+            <h4 class="text-yellow-700 dark:text-yellow-400 font-semibold mb-2">🎯 Modèle de présentation complète</h4>
+            <p class="text-yellow-600 dark:text-yellow-300 leading-relaxed">
+              « ¡Hola! Buenos días. <strong>Me llamo</strong> Jonas Beauvais. <strong>Tengo</strong> 13 años. <strong>Soy haitiano</strong> y <strong>vivo en</strong> Jacmel, en el sur de Haití. <strong>Estudio en</strong> el colegio Saint-Michel. Me gusta mucho el fútbol y la música. <strong>Mucho gusto</strong>. »
+            </p>
           </div>
         </section>
 
         <section class="mb-6">
-          <h3 class="text-xl font-semibold mb-3">3) Formules de courtoisie (Cortesía)</h3>
-          <ul class="space-y-2 ml-4">
-            <li>• <strong>Por favor</strong> (s'il te plaît / s'il vous plaît)</li>
-            <li>• <strong>Gracias</strong> / <strong>Muchas gracias</strong> (merci / merci beaucoup)</li>
-            <li>• <strong>De nada</strong> (de rien)</li>
-            <li>• <strong>Perdón</strong> / <strong>Disculpe</strong> (pardon / excusez-moi)</li>
-            <li>• <strong>Con permiso</strong> (avec votre permission — pour passer)</li>
-          </ul>
+          <h3 class="text-xl font-semibold mb-4">3) Le verbe SER (être)</h3>
+          <p class="mb-4">En espagnol, le verbe SER est utilisé pour exprimer l'identité, l'origine, la nationalité et les caractéristiques permanentes. C'est un verbe irrégulier très important !</p>
+          
+          <div class="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg mb-4">
+            <h4 class="font-semibold mb-3">Conjugaison du verbe SER (présent) :</h4>
+            <div class="grid md:grid-cols-2 gap-4">
+              <div>
+                <ul class="space-y-2">
+                  <li>• <strong>Yo soy</strong> = Je suis</li>
+                  <li>• <strong>Tú eres</strong> = Tu es</li>
+                  <li>• <strong>Él/Ella es</strong> = Il/Elle est</li>
+                </ul>
+              </div>
+              <div>
+                <ul class="space-y-2">
+                  <li>• <strong>Nosotros somos</strong> = Nous sommes</li>
+                  <li>• <strong>Vosotros sois</strong> = Vous êtes</li>
+                  <li>• <strong>Ellos/Ellas son</strong> = Ils/Elles sont</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+
+          <div class="bg-green-50 dark:bg-green-900/20 p-4 rounded-lg mb-4">
+            <h4 class="font-semibold mb-3">Utilisations du verbe SER :</h4>
+            <ul class="space-y-2">
+              <li>• <strong>Identité :</strong> Soy Claudette (Je suis Claudette)</li>
+              <li>• <strong>Origine :</strong> Somos de Jacmel (Nous sommes de Jacmel)</li>
+              <li>• <strong>Nationalité :</strong> Soy haitiano (Je suis haïtien)</li>
+              <li>• <strong>Profession :</strong> Mi padre es médico (Mon père est médecin)</li>
+              <li>• <strong>Caractéristiques :</strong> Ella es inteligente (Elle est intelligente)</li>
+            </ul>
+          </div>
+        </section>
+
+        <section class="mb-6">
+          <h3 class="text-xl font-semibold mb-4">4) Formules de courtoisie (Cortesía)</h3>
+          <p class="mb-4">La politesse est essentielle dans toutes les langues. Voici les expressions de courtoisie que tu dois connaître en espagnol :</p>
+          
+          <div class="bg-pink-50 dark:bg-pink-900/20 p-4 rounded-lg mb-4">
+            <h4 class="font-semibold mb-3">Expressions essentielles :</h4>
+            <ul class="space-y-3">
+              <li class="flex items-start">
+                <span class="font-bold text-pink-600 dark:text-pink-400 mr-2">•</span>
+                <div>
+                  <strong>Por favor</strong> = S'il te plaît / S'il vous plaît (Silvouplè)<br/>
+                  <span class="text-sm italic">Exemple : ¿Me pasas el lápiz, por favor?</span>
+                </div>
+              </li>
+              <li class="flex items-start">
+                <span class="font-bold text-pink-600 dark:text-pink-400 mr-2">•</span>
+                <div>
+                  <strong>Gracias / Muchas gracias</strong> = Merci / Merci beaucoup (Mèsi / Mèsi anpil)<br/>
+                  <span class="text-sm italic">Exemple : Muchas gracias por tu ayuda.</span>
+                </div>
+              </li>
+              <li class="flex items-start">
+                <span class="font-bold text-pink-600 dark:text-pink-400 mr-2">•</span>
+                <div>
+                  <strong>De nada</strong> = De rien (Pa gen anyen)<br/>
+                  <span class="text-sm italic">Réponse à « Gracias »</span>
+                </div>
+              </li>
+              <li class="flex items-start">
+                <span class="font-bold text-pink-600 dark:text-pink-400 mr-2">•</span>
+                <div>
+                  <strong>Perdón / Disculpe</strong> = Pardon / Excusez-moi (Eskize m)<br/>
+                  <span class="text-sm italic">Exemple : Perdón, ¿dónde está el baño?</span>
+                </div>
+              </li>
+              <li class="flex items-start">
+                <span class="font-bold text-pink-600 dark:text-pink-400 mr-2">•</span>
+                <div>
+                  <strong>Con permiso</strong> = Avec votre permission (pour passer)<br/>
+                  <span class="text-sm italic">Quand on veut passer devant quelqu'un</span>
+                </div>
+              </li>
+              <li class="flex items-start">
+                <span class="font-bold text-pink-600 dark:text-pink-400 mr-2">•</span>
+                <div>
+                  <strong>Mucho gusto</strong> = Enchanté(e) (Anch anté)<br/>
+                  <span class="text-sm italic">Lors d'une première rencontre</span>
+                </div>
+              </li>
+            </ul>
+          </div>
+
+          <div class="bg-purple-50 dark:bg-purple-900/20 border-l-4 border-purple-500 p-4 rounded-r-lg">
+            <h4 class="text-purple-700 dark:text-purple-400 font-semibold mb-2">🌟 Astuce culturelle</h4>
+            <p class="text-purple-600 dark:text-purple-300">Dans les pays hispanophones, on utilise beaucoup ces expressions de politesse au quotidien. C'est considéré comme très impoli de ne pas dire « por favor » ou « gracias » ! La culture hispanophone accorde une grande importance au respect et à la courtoisie.</p>
+          </div>
+        </section>
+
+        <section class="mb-6">
+          <h3 class="text-xl font-semibold mb-4">5) Questions pour faire connaissance</h3>
+          <div class="bg-amber-50 dark:bg-amber-900/20 p-4 rounded-lg">
+            <h4 class="font-semibold mb-3">Questions utiles :</h4>
+            <ul class="space-y-2">
+              <li>• <strong>¿Cómo te llamas?</strong> = Comment t'appelles-tu ?</li>
+              <li>• <strong>¿Cuántos años tienes?</strong> = Quel âge as-tu ?</li>
+              <li>• <strong>¿De dónde eres?</strong> = D'où es-tu ?</li>
+              <li>• <strong>¿Dónde vives?</strong> = Où habites-tu ?</li>
+              <li>• <strong>¿En qué escuela estudias?</strong> = Dans quelle école étudies-tu ?</li>
+              <li>• <strong>¿Cómo estás?</strong> = Comment vas-tu ? (informel)</li>
+              <li>• <strong>¿Cómo está usted?</strong> = Comment allez-vous ? (formel)</li>
+            </ul>
+          </div>
         </section>
       </div>
     `,

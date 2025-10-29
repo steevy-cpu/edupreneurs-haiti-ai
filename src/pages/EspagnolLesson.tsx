@@ -16,6 +16,16 @@ import {
   Award
 } from "lucide-react";
 import { espagnolLessons7AF } from "@/data/espagnolLessons";
+import {
+  saludoPresentacionQuiz,
+  saludoPresentacionMatching,
+  saludosAgradecimientosQuiz,
+  saludosAgradecimientosMatching,
+  gustosQuiz,
+  gustosMatching
+} from "@/data/espagnolActivities";
+import { QuizGame } from "@/components/math-activities/QuizGame";
+import { MatchingGame } from "@/components/math-activities/MatchingGame";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { YouTubeVideoSection } from "@/components/YouTubeVideoSection";
 import { useState, useEffect } from "react";
@@ -123,6 +133,27 @@ export default function EspagnolLesson() {
     }
   };
 
+  const getQuizData = () => {
+    const quizMap: Record<string, { quiz: any; matching: any }> = {
+      "saludo-presentacion": { quiz: saludoPresentacionQuiz, matching: saludoPresentacionMatching },
+      "saludos-agradecimientos": { quiz: saludosAgradecimientosQuiz, matching: saludosAgradecimientosMatching },
+      "gustos": { quiz: gustosQuiz, matching: gustosMatching }
+    };
+    return topicId ? quizMap[topicId] || null : null;
+  };
+
+  const quizData = getQuizData();
+
+  const handleQuizComplete = (goldEarned: number) => {
+    setEarnedPoints(prev => prev + goldEarned);
+    setLessonCompleted(true);
+
+    toast({
+      title: "🎉 Bravo !",
+      description: `Tu as gagné ${goldEarned} points !`,
+    });
+  };
+
   if (!lesson) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -207,7 +238,7 @@ export default function EspagnolLesson() {
         {/* Lesson Content Tabs */}
         <Card className="p-4 md:p-6 mb-8 overflow-hidden">
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-            <TabsList className="grid w-full grid-cols-4 mb-6 h-auto">
+            <TabsList className="grid w-full grid-cols-5 mb-6 h-auto">
               <TabsTrigger value="introduction" className="gap-2 text-xs md:text-sm px-2 py-2">
                 <Lightbulb className="w-4 h-4 shrink-0" />
                 <span className="hidden sm:inline">Introduction</span>
@@ -223,6 +254,10 @@ export default function EspagnolLesson() {
               <TabsTrigger value="notes" className="gap-2 text-xs md:text-sm px-2 py-2">
                 <NotebookPen className="w-4 h-4 shrink-0" />
                 <span className="hidden sm:inline">Mes Notes</span>
+              </TabsTrigger>
+              <TabsTrigger value="quiz" className="gap-2 text-xs md:text-sm px-2 py-2">
+                <Trophy className="w-4 h-4 shrink-0" />
+                <span className="hidden sm:inline">Quiz Final</span>
               </TabsTrigger>
             </TabsList>
 
@@ -356,6 +391,67 @@ export default function EspagnolLesson() {
                   </ul>
                 </div>
               </Card>
+            </TabsContent>
+
+            <TabsContent value="quiz" className="space-y-6">
+              {quizData ? (
+                <>
+                  <Card className="p-6 bg-gradient-to-br from-background to-purple-50/30 dark:to-purple-950/10 border-l-4 border-l-purple-500">
+                    <div className="flex items-center gap-3 mb-6">
+                      <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-purple-500 to-purple-600 flex items-center justify-center">
+                        <Trophy className="w-5 h-5 text-white" />
+                      </div>
+                      <div>
+                        <h2 className="text-2xl font-bold text-purple-600 dark:text-purple-400">Quiz de validation</h2>
+                        <p className="text-sm text-muted-foreground">Teste tes connaissances et gagne des points !</p>
+                      </div>
+                    </div>
+                    <QuizGame
+                      topic={lesson.title}
+                      questions={quizData.quiz.questions}
+                      onComplete={handleQuizComplete}
+                    />
+                  </Card>
+
+                  <Card className="p-6 bg-gradient-to-br from-background to-blue-50/30 dark:to-blue-950/10 border-l-4 border-l-blue-500">
+                    <div className="flex items-center gap-3 mb-6">
+                      <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center">
+                        <Award className="w-5 h-5 text-white" />
+                      </div>
+                      <div>
+                        <h2 className="text-2xl font-bold text-blue-600 dark:text-blue-400">Jeu d'association</h2>
+                        <p className="text-sm text-muted-foreground">Associe les mots espagnols à leur traduction</p>
+                      </div>
+                    </div>
+                    <MatchingGame
+                      pairs={quizData.matching.pairs}
+                      onComplete={handleQuizComplete}
+                    />
+                  </Card>
+
+                  {lessonCompleted && (
+                    <Card className="p-6 bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-950/20 dark:to-emerald-950/20 border-2 border-green-500">
+                      <div className="flex items-center gap-4">
+                        <div className="w-16 h-16 rounded-full bg-gradient-to-br from-green-500 to-emerald-500 flex items-center justify-center">
+                          <Trophy className="w-8 h-8 text-white" />
+                        </div>
+                        <div>
+                          <h3 className="text-xl font-bold text-green-700 dark:text-green-300">🎉 Félicitations !</h3>
+                          <p className="text-green-600 dark:text-green-400">Tu as complété cette leçon et gagné <strong>{earnedPoints} points d'or</strong> !</p>
+                        </div>
+                      </div>
+                    </Card>
+                  )}
+                </>
+              ) : (
+                <Card className="p-12 text-center border-dashed border-2">
+                  <Trophy className="w-16 h-16 mx-auto mb-4 text-muted-foreground opacity-50" />
+                  <h3 className="text-xl font-semibold mb-2">Quiz bientôt disponible</h3>
+                  <p className="text-muted-foreground">
+                    Le quiz interactif pour cette leçon sera ajouté prochainement !
+                  </p>
+                </Card>
+              )}
             </TabsContent>
           </Tabs>
         </Card>
