@@ -4660,44 +4660,211 @@ Describe tu rutina diaria en español (mínimo 8 frases).`,
     mois: "Mai",
     objectif: "Usar correctamente los verbos reflexivos",
     introduction: "Aprenderás a conjugar y usar verbos reflexivos en español.",
-    contenu: `## La construcción reflexiva
+    contenu: `
+      <div class="lesson-content space-y-6">
+        <section class="mb-6">
+          <h3 class="text-xl font-semibold mb-4">Qu'est-ce qu'un verbe réfléchi ? (¿Qué es un verbo reflexivo?)</h3>
+          <p class="mb-4">Les verbes réfléchis sont des verbes où <strong>l'action revient sur le sujet lui-même</strong>. En espagnol, on utilise toujours un <strong>pronom réfléchi</strong> devant le verbe conjugué pour indiquer que la personne fait l'action sur elle-même.</p>
+          
+          <div class="bg-purple-50 dark:bg-purple-900/20 p-4 rounded-lg mb-4">
+            <h4 class="font-semibold mb-3 flex items-center gap-2">
+              <span>💡</span>
+              Exemple de différence :
+            </h4>
+            <div class="space-y-3">
+              <div class="bg-white dark:bg-gray-800 p-3 rounded">
+                <p class="font-semibold text-sm mb-1">Verbe simple :</p>
+                <p class="text-sm"><strong>Lavo el carro</strong> - Je lave la voiture (j'agis sur quelque chose d'autre)</p>
+              </div>
+              <div class="bg-white dark:bg-gray-800 p-3 rounded">
+                <p class="font-semibold text-sm mb-1">Verbe réfléchi :</p>
+                <p class="text-sm"><strong>Me lavo</strong> - Je me lave (j'agis sur moi-même)</p>
+              </div>
+            </div>
+          </div>
+        </section>
 
-### Pronombres reflexivos
-- **Me** - Me (yo)
-- **Te** - Te (tú)
-- **Se** - Se (él/ella/usted)
-- **Nos** - Nous (nosotros)
-- **Os** - Vous (vosotros)
-- **Se** - Se (ellos/ellas/ustedes)
+        <section class="mb-6">
+          <h3 class="text-xl font-semibold mb-4">Les pronoms réfléchis (Pronombres reflexivos)</h3>
+          <p class="mb-4">Chaque personne a son propre pronom réfléchi. Ils se placent TOUJOURS devant le verbe conjugué !</p>
+          
+          <div class="bg-green-50 dark:bg-green-900/20 p-4 rounded-lg">
+            <h4 class="font-semibold mb-3">Les pronoms réfléchis en espagnol :</h4>
+            <div class="grid md:grid-cols-2 gap-4">
+              <div>
+                <ul class="space-y-2 text-sm">
+                  <li>• <strong>Me</strong> - Me (yo)</li>
+                  <li>• <strong>Te</strong> - Te (tú)</li>
+                  <li>• <strong>Se</strong> - Se (él/ella/usted)</li>
+                </ul>
+              </div>
+              <div>
+                <ul class="space-y-2 text-sm">
+                  <li>• <strong>Nos</strong> - Nous (nosotros/nosotras)</li>
+                  <li>• <strong>Os</strong> - Vous (vosotros/vosotras)</li>
+                  <li>• <strong>Se</strong> - Se (ellos/ellas/ustedes)</li>
+                </ul>
+              </div>
+            </div>
+            <p class="text-xs mt-3 bg-white dark:bg-gray-800 p-2 rounded italic">
+              💡 <strong>Astuce :</strong> Attention ! "Se" s'utilise pour la 3e personne du singulier ET du pluriel !
+            </p>
+          </div>
+        </section>
 
-### Verbos reflexivos comunes
-- **Lavarse** - Se laver
-- **Prepararse** - Se préparer
-- **Mirarse** - Se regarder
-- **Peinarse** - Se peigner
-- **Pintarse** - Se maquiller
-- **Bañarse** - Se baigner
-- **Cepillarse** - Se brosser
-- **Levantarse** - Se lever
-- **Cortarse** - Se couper
+        <section class="mb-6">
+          <h3 class="text-xl font-semibold mb-4">Verbes réfléchis de la vie quotidienne</h3>
+          <p class="mb-4">Voici les verbes réfléchis les plus utilisés dans la routine quotidienne :</p>
+          
+          <div class="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg mb-4">
+            <h4 class="font-semibold mb-3">Hygiène et préparation personnelle :</h4>
+            <div class="grid md:grid-cols-2 gap-3">
+              <div>
+                <ul class="space-y-2 text-sm">
+                  <li>• <strong>Lavarse</strong> - Se laver</li>
+                  <li>• <strong>Bañarse</strong> - Se baigner</li>
+                  <li>• <strong>Ducharse</strong> - Se doucher</li>
+                  <li>• <strong>Peinarse</strong> - Se peigner</li>
+                  <li>• <strong>Cepillarse</strong> - Se brosser</li>
+                </ul>
+              </div>
+              <div>
+                <ul class="space-y-2 text-sm">
+                  <li>• <strong>Pintarse</strong> - Se maquiller</li>
+                  <li>• <strong>Afeitarse</strong> - Se raser</li>
+                  <li>• <strong>Vestirse</strong> - S'habiller</li>
+                  <li>• <strong>Prepararse</strong> - Se préparer</li>
+                  <li>• <strong>Secarse</strong> - Se sécher</li>
+                </ul>
+              </div>
+            </div>
+          </div>
 
-### Conjugación en presente
-**Lavarse:**
-- Yo me lavo
-- Tú te lavas
-- Él/Ella se lava
-- Nosotros nos lavamos
-- Vosotros os laváis
-- Ellos/Ellas se lavan
+          <div class="bg-amber-50 dark:bg-amber-900/20 p-4 rounded-lg">
+            <h4 class="font-semibold mb-3">Actions quotidiennes :</h4>
+            <div class="grid md:grid-cols-2 gap-3">
+              <div>
+                <ul class="space-y-2 text-sm">
+                  <li>• <strong>Levantarse</strong> - Se lever</li>
+                  <li>• <strong>Despertarse</strong> - Se réveiller</li>
+                  <li>• <strong>Acostarse</strong> - Se coucher</li>
+                  <li>• <strong>Sentarse</strong> - S'asseoir</li>
+                </ul>
+              </div>
+              <div>
+                <ul class="space-y-2 text-sm">
+                  <li>• <strong>Mirarse</strong> - Se regarder</li>
+                  <li>• <strong>Cortarse</strong> - Se couper</li>
+                  <li>• <strong>Quedarse</strong> - Rester</li>
+                  <li>• <strong>Llamarse</strong> - S'appeler</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </section>
 
-### Pretérito indefinido
-**Lavarse:**
-- Me lavé
-- Te lavaste
-- Se lavó
-- Nos lavamos
-- Os lavasteis
-- Se lavaron`,
+        <section class="mb-6">
+          <h3 class="text-xl font-semibold mb-4">Conjugaison au présent (Conjugación en presente)</h3>
+          <p class="mb-4">Voici comment conjuguer les verbes réfléchis au présent. Le pronom réfléchi change selon la personne, mais le verbe se conjugue normalement.</p>
+          
+          <div class="bg-purple-50 dark:bg-purple-900/20 p-4 rounded-lg mb-4">
+            <h4 class="font-semibold mb-3">Exemple avec "Lavarse" (se laver) :</h4>
+            <div class="grid md:grid-cols-2 gap-4">
+              <div>
+                <p class="font-semibold text-sm mb-2">Conjugaison complète :</p>
+                <ul class="space-y-1 text-sm">
+                  <li>• <strong>Yo me lavo</strong> - Je me lave</li>
+                  <li>• <strong>Tú te lavas</strong> - Tu te laves</li>
+                  <li>• <strong>Él/Ella se lava</strong> - Il/Elle se lave</li>
+                  <li>• <strong>Nosotros nos lavamos</strong> - Nous nous lavons</li>
+                  <li>• <strong>Vosotros os laváis</strong> - Vous vous lavez</li>
+                  <li>• <strong>Ellos/Ellas se lavan</strong> - Ils/Elles se lavent</li>
+                </ul>
+              </div>
+              <div>
+                <p class="font-semibold text-sm mb-2">Dans une phrase :</p>
+                <div class="space-y-2 text-sm">
+                  <p><strong>Yo me lavo las manos</strong><br/>Je me lave les mains</p>
+                  <p><strong>Tú te lavas la cara</strong><br/>Tu te laves le visage</p>
+                  <p><strong>Él se lava el pelo</strong><br/>Il se lave les cheveux</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="bg-green-50 dark:bg-green-900/20 p-4 rounded-lg">
+            <h4 class="font-semibold mb-3">Autre exemple avec "Peinarse" (se peigner) :</h4>
+            <div class="space-y-2 text-sm">
+              <p>• <strong>Yo me peino</strong> cada mañana - Je me peigne chaque matin</p>
+              <p>• <strong>Tú te peinas</strong> muy bien - Tu te peignes très bien</p>
+              <p>• <strong>Ella se peina</strong> antes de salir - Elle se peigne avant de sortir</p>
+              <p>• <strong>Nosotros nos peinamos</strong> rápido - Nous nous peignons rapidement</p>
+              <p>• <strong>Ellos se peinan</strong> en el baño - Ils se peignent dans la salle de bain</p>
+            </div>
+          </div>
+        </section>
+
+        <section class="mb-6">
+          <h3 class="text-xl font-semibold mb-4">Le passé simple (Pretérito indefinido)</h3>
+          <p class="mb-4">Au passé simple, les pronoms réfléchis restent devant le verbe conjugué. Voici comment former ce temps :</p>
+          
+          <div class="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg">
+            <h4 class="font-semibold mb-3">Conjugaison de "Lavarse" au passé simple :</h4>
+            <div class="grid md:grid-cols-2 gap-4">
+              <div>
+                <p class="font-semibold text-sm mb-2">Formes conjuguées :</p>
+                <ul class="space-y-1 text-sm">
+                  <li>• <strong>Me lavé</strong> - Je me suis lavé(e)</li>
+                  <li>• <strong>Te lavaste</strong> - Tu t'es lavé(e)</li>
+                  <li>• <strong>Se lavó</strong> - Il/Elle s'est lavé(e)</li>
+                  <li>• <strong>Nos lavamos</strong> - Nous nous sommes lavés</li>
+                  <li>• <strong>Os lavasteis</strong> - Vous vous êtes lavés</li>
+                  <li>• <strong>Se lavaron</strong> - Ils/Elles se sont lavés</li>
+                </ul>
+              </div>
+              <div>
+                <p class="font-semibold text-sm mb-2">Exemples en contexte :</p>
+                <div class="space-y-2 text-sm">
+                  <p><strong>Me lavé temprano</strong><br/>Je me suis lavé tôt</p>
+                  <p><strong>Te lavaste ayer</strong><br/>Tu t'es lavé hier</p>
+                  <p><strong>Se lavó rápido</strong><br/>Il/Elle s'est lavé(e) rapidement</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="mb-6">
+          <h3 class="text-xl font-semibold mb-4">Position des pronoms réfléchis</h3>
+          <p class="mb-4">Les pronoms réfléchis changent de position selon la forme du verbe :</p>
+          
+          <div class="bg-amber-50 dark:bg-amber-900/20 p-4 rounded-lg">
+            <h4 class="font-semibold mb-3">Règles de placement :</h4>
+            <div class="space-y-3">
+              <div class="bg-white dark:bg-gray-800 p-3 rounded">
+                <p class="font-semibold text-sm mb-1">1. Avant le verbe conjugué :</p>
+                <p class="text-sm"><strong>Me lavo</strong> - Je me lave</p>
+              </div>
+              <div class="bg-white dark:bg-gray-800 p-3 rounded">
+                <p class="font-semibold text-sm mb-1">2. Attaché à l'infinitif :</p>
+                <p class="text-sm"><strong>Voy a lavarme</strong> - Je vais me laver</p>
+              </div>
+              <div class="bg-white dark:bg-gray-800 p-3 rounded">
+                <p class="font-semibold text-sm mb-1">3. Attaché au gérondif :</p>
+                <p class="text-sm"><strong>Estoy lavándome</strong> - Je suis en train de me laver</p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <div class="bg-blue-50 dark:bg-blue-900/20 border-l-4 border-blue-500 p-4 rounded-r-lg">
+          <h4 class="text-blue-700 dark:text-blue-400 font-semibold mb-2">💡 Suggestions de vidéos YouTube</h4>
+          <p class="text-blue-600 dark:text-blue-300">
+            Recherchez "verbos reflexivos en español" ou "pronombres reflexivos español" pour des explications visuelles avec de nombreux exemples de la vie quotidienne.
+          </p>
+        </div>
+      </div>
+    `,
     exemplesExercices: `## Ejercicios
 
 ### Ejercicio 1: Llenar espacios
@@ -4726,49 +4893,191 @@ Conjuga en pretérito indefinido:
     mois: "Mai",
     objectif: "Diferenciar verbos simples de verbos reflexivos",
     introduction: "Aprenderás a distinguir entre verbos reflexivos y no reflexivos.",
-    contenu: `## Verbos simples vs reflexivos
+    contenu: `
+      <div class="lesson-content space-y-6">
+        <section class="mb-6">
+          <h3 class="text-xl font-semibold mb-4">La grande différence : Verbes simples vs Verbes réfléchis</h3>
+          <p class="mb-4">Cette leçon est TRÈS importante ! Beaucoup de verbes en espagnol peuvent être utilisés de DEUX façons différentes : comme verbe simple OU comme verbe réfléchi. Le sens change complètement selon l'utilisation !</p>
+          
+          <div class="bg-purple-50 dark:bg-purple-900/20 p-4 rounded-lg mb-4">
+            <h4 class="font-semibold mb-3">Principe fondamental :</h4>
+            <div class="grid md:grid-cols-2 gap-4">
+              <div class="bg-white dark:bg-gray-800 p-3 rounded">
+                <p class="font-semibold text-sm text-purple-600 dark:text-purple-400 mb-2">🔄 Verbe RÉFLÉCHI :</p>
+                <p class="text-sm mb-2">L'action revient sur le <strong>sujet lui-même</strong></p>
+                <p class="text-xs italic">Exemple : <strong>Me baño</strong> - Je ME lave (moi-même)</p>
+              </div>
+              <div class="bg-white dark:bg-gray-800 p-3 rounded">
+                <p class="font-semibold text-sm text-green-600 dark:text-green-400 mb-2">➡️ Verbe SIMPLE :</p>
+                <p class="text-sm mb-2">L'action est faite sur <strong>quelqu'un ou quelque chose d'autre</strong></p>
+                <p class="text-xs italic">Exemple : <strong>Baño al bebé</strong> - Je lave LE BÉBÉ (quelqu'un d'autre)</p>
+              </div>
+            </div>
+          </div>
+        </section>
 
-### Diferencias importantes
+        <section class="mb-6">
+          <h3 class="text-xl font-semibold mb-4">Comparaisons détaillées verbe par verbe</h3>
+          <p class="mb-4">Étudions les paires de verbes les plus courantes pour bien comprendre la différence :</p>
+          
+          <div class="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg mb-4">
+            <h4 class="font-semibold mb-3">1. Bañarse / Bañar (se baigner / baigner)</h4>
+            <div class="space-y-3">
+              <div class="bg-white dark:bg-gray-800 p-3 rounded">
+                <p class="text-sm font-semibold text-purple-600 dark:text-purple-400">RÉFLÉCHI :</p>
+                <p class="text-sm mb-1"><strong>Me baño en el mar</strong> - Je me baigne dans la mer</p>
+                <p class="text-sm mb-1"><strong>Te bañas cada día</strong> - Tu te baignes chaque jour</p>
+                <p class="text-sm"><strong>Los niños se bañan por la noche</strong> - Les enfants se baignent le soir</p>
+              </div>
+              <div class="bg-white dark:bg-gray-800 p-3 rounded">
+                <p class="text-sm font-semibold text-green-600 dark:text-green-400">SIMPLE :</p>
+                <p class="text-sm mb-1"><strong>Baño al bebé</strong> - Je baigne le bébé</p>
+                <p class="text-sm mb-1"><strong>María baña a su perro</strong> - María baigne son chien</p>
+                <p class="text-sm"><strong>Bañamos al gato</strong> - Nous baignons le chat</p>
+              </div>
+            </div>
+          </div>
 
-**Verbos reflexivos:** La acción recae sobre el sujeto mismo
-- Me baño - Je me lave (moi-même)
-- Te preparas - Tu te prépares
-- Se peina - Il/Elle se peigne
+          <div class="bg-green-50 dark:bg-green-900/20 p-4 rounded-lg mb-4">
+            <h4 class="font-semibold mb-3">2. Prepararse / Preparar (se préparer / préparer)</h4>
+            <div class="space-y-3">
+              <div class="bg-white dark:bg-gray-800 p-3 rounded">
+                <p class="text-sm font-semibold text-purple-600 dark:text-purple-400">RÉFLÉCHI :</p>
+                <p class="text-sm mb-1"><strong>Juan se prepara para la fiesta</strong> - Juan se prépare pour la fête</p>
+                <p class="text-sm mb-1"><strong>Me preparo rápidamente</strong> - Je me prépare rapidement</p>
+                <p class="text-sm"><strong>Nos preparamos para salir</strong> - Nous nous préparons pour sortir</p>
+              </div>
+              <div class="bg-white dark:bg-gray-800 p-3 rounded">
+                <p class="text-sm font-semibold text-green-600 dark:text-green-400">SIMPLE :</p>
+                <p class="text-sm mb-1"><strong>Juan prepara los bocadillos</strong> - Juan prépare les sandwichs</p>
+                <p class="text-sm mb-1"><strong>Preparo la comida</strong> - Je prépare le repas</p>
+                <p class="text-sm"><strong>Preparamos la mesa</strong> - Nous préparons la table</p>
+              </div>
+            </div>
+          </div>
 
-**Verbos simples:** La acción recae sobre otra persona/cosa
-- Baño al bebé - Je lave le bébé
-- Preparas los bocadillos - Tu prépares les sandwichs
-- Peina a su hija - Il/Elle peigne sa fille
+          <div class="bg-amber-50 dark:bg-amber-900/20 p-4 rounded-lg mb-4">
+            <h4 class="font-semibold mb-3">3. Peinarse / Peinar (se peigner / peigner)</h4>
+            <div class="space-y-3">
+              <div class="bg-white dark:bg-gray-800 p-3 rounded">
+                <p class="text-sm font-semibold text-purple-600 dark:text-purple-400">RÉFLÉCHI :</p>
+                <p class="text-sm mb-1"><strong>Ella se peina cada mañana</strong> - Elle se peigne chaque matin</p>
+                <p class="text-sm mb-1"><strong>Me peino frente al espejo</strong> - Je me peigne devant le miroir</p>
+                <p class="text-sm"><strong>Los niños se peinan solos</strong> - Les enfants se peignent tout seuls</p>
+              </div>
+              <div class="bg-white dark:bg-gray-800 p-3 rounded">
+                <p class="text-sm font-semibold text-green-600 dark:text-green-400">SIMPLE :</p>
+                <p class="text-sm mb-1"><strong>Ella peina a su hermana</strong> - Elle peigne sa sœur</p>
+                <p class="text-sm mb-1"><strong>Peino a mi hija</strong> - Je peigne ma fille</p>
+                <p class="text-sm"><strong>La madre peina a los niños</strong> - La mère peigne les enfants</p>
+              </div>
+            </div>
+          </div>
 
-### Ejemplos comparativos
+          <div class="bg-purple-50 dark:bg-purple-900/20 p-4 rounded-lg mb-4">
+            <h4 class="font-semibold mb-3">4. Lavarse / Lavar (se laver / laver)</h4>
+            <div class="space-y-3">
+              <div class="bg-white dark:bg-gray-800 p-3 rounded">
+                <p class="text-sm font-semibold text-purple-600 dark:text-purple-400">RÉFLÉCHI :</p>
+                <p class="text-sm mb-1"><strong>Nos lavamos las manos</strong> - Nous nous lavons les mains</p>
+                <p class="text-sm mb-1"><strong>Me lavo la cara</strong> - Je me lave le visage</p>
+                <p class="text-sm"><strong>Te lavas antes de comer</strong> - Tu te laves avant de manger</p>
+              </div>
+              <div class="bg-white dark:bg-gray-800 p-3 rounded">
+                <p class="text-sm font-semibold text-green-600 dark:text-green-400">SIMPLE :</p>
+                <p class="text-sm mb-1"><strong>Lavamos el carro</strong> - Nous lavons la voiture</p>
+                <p class="text-sm mb-1"><strong>Lavo la ropa</strong> - Je lave les vêtements</p>
+                <p class="text-sm"><strong>Lavas los platos</strong> - Tu laves la vaisselle</p>
+              </div>
+            </div>
+          </div>
 
-**Bañarse / Bañar:**
-- Me baño en el mar (reflexivo)
-- Baño al bebé (simple)
+          <div class="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg mb-4">
+            <h4 class="font-semibold mb-3">5. Cortarse / Cortar (se couper / couper)</h4>
+            <div class="space-y-3">
+              <div class="bg-white dark:bg-gray-800 p-3 rounded">
+                <p class="text-sm font-semibold text-purple-600 dark:text-purple-400">RÉFLÉCHI :</p>
+                <p class="text-sm mb-1"><strong>Ella se corta el pelo</strong> - Elle se coupe les cheveux</p>
+                <p class="text-sm mb-1"><strong>Me corté con el cuchillo</strong> - Je me suis coupé avec le couteau</p>
+                <p class="text-sm"><strong>Te cortas las uñas</strong> - Tu te coupes les ongles</p>
+              </div>
+              <div class="bg-white dark:bg-gray-800 p-3 rounded">
+                <p class="text-sm font-semibold text-green-600 dark:text-green-400">SIMPLE :</p>
+                <p class="text-sm mb-1"><strong>Ella corta la carne</strong> - Elle coupe la viande</p>
+                <p class="text-sm mb-1"><strong>Corto el pan</strong> - Je coupe le pain</p>
+                <p class="text-sm"><strong>Cortas las frutas</strong> - Tu coupes les fruits</p>
+              </div>
+            </div>
+          </div>
 
-**Prepararse / Preparar:**
-- Juan se prepara para la fiesta (reflexivo)
-- Juan prepara los bocadillos (simple)
+          <div class="bg-green-50 dark:bg-green-900/20 p-4 rounded-lg mb-4">
+            <h4 class="font-semibold mb-3">6. Pintarse / Pintar (se maquiller / peindre)</h4>
+            <div class="space-y-3">
+              <div class="bg-white dark:bg-gray-800 p-3 rounded">
+                <p class="text-sm font-semibold text-purple-600 dark:text-purple-400">RÉFLÉCHI :</p>
+                <p class="text-sm mb-1"><strong>Nosotras nos pintamos</strong> - Nous nous maquillons</p>
+                <p class="text-sm mb-1"><strong>Me pinto los labios</strong> - Je me maquille les lèvres</p>
+                <p class="text-sm"><strong>Se pinta para la fiesta</strong> - Elle se maquille pour la fête</p>
+              </div>
+              <div class="bg-white dark:bg-gray-800 p-3 rounded">
+                <p class="text-sm font-semibold text-green-600 dark:text-green-400">SIMPLE :</p>
+                <p class="text-sm mb-1"><strong>Pintamos la casa</strong> - Nous peignons la maison</p>
+                <p class="text-sm mb-1"><strong>Pinto un cuadro</strong> - Je peins un tableau</p>
+                <p class="text-sm"><strong>Pintas la pared</strong> - Tu peins le mur</p>
+              </div>
+            </div>
+          </div>
 
-**Peinarse / Peinar:**
-- Ella se peina (reflexivo)
-- Ella peina a su hermana (simple)
+          <div class="bg-amber-50 dark:bg-amber-900/20 p-4 rounded-lg">
+            <h4 class="font-semibold mb-3">7. Cepillarse / Cepillar (se brosser / brosser)</h4>
+            <div class="space-y-3">
+              <div class="bg-white dark:bg-gray-800 p-3 rounded">
+                <p class="text-sm font-semibold text-purple-600 dark:text-purple-400">RÉFLÉCHI :</p>
+                <p class="text-sm mb-1"><strong>Me cepillo los dientes</strong> - Je me brosse les dents</p>
+                <p class="text-sm mb-1"><strong>Te cepillas el pelo</strong> - Tu te brosses les cheveux</p>
+                <p class="text-sm"><strong>Se cepilla después de comer</strong> - Il/Elle se brosse après manger</p>
+              </div>
+              <div class="bg-white dark:bg-gray-800 p-3 rounded">
+                <p class="text-sm font-semibold text-green-600 dark:text-green-400">SIMPLE :</p>
+                <p class="text-sm mb-1"><strong>Cepillo al perro</strong> - Je brosse le chien</p>
+                <p class="text-sm mb-1"><strong>Cepillas el abrigo</strong> - Tu brosses le manteau</p>
+                <p class="text-sm"><strong>Cepilla los zapatos</strong> - Il/Elle brosse les chaussures</p>
+              </div>
+            </div>
+          </div>
+        </section>
 
-**Lavarse / Lavar:**
-- Nos lavamos (reflexivo)
-- Lavamos el carro (simple)
+        <section class="mb-6">
+          <h3 class="text-xl font-semibold mb-4">Comment reconnaître la différence ?</h3>
+          <p class="mb-4">Voici des astuces pour savoir si un verbe est réfléchi ou simple dans une phrase :</p>
+          
+          <div class="bg-purple-50 dark:bg-purple-900/20 p-4 rounded-lg">
+            <h4 class="font-semibold mb-3">Questions à se poser :</h4>
+            <div class="space-y-3">
+              <div class="bg-white dark:bg-gray-800 p-3 rounded">
+                <p class="font-semibold text-sm mb-1">1. Y a-t-il un pronom réfléchi (me, te, se, nos, os) ?</p>
+                <p class="text-xs">→ OUI = verbe réfléchi / NON = verbe simple</p>
+              </div>
+              <div class="bg-white dark:bg-gray-800 p-3 rounded">
+                <p class="font-semibold text-sm mb-1">2. L'action revient-elle sur le sujet ?</p>
+                <p class="text-xs">→ OUI = réfléchi / NON = simple</p>
+              </div>
+              <div class="bg-white dark:bg-gray-800 p-3 rounded">
+                <p class="font-semibold text-sm mb-1">3. Y a-t-il un complément d'objet direct mentionné ?</p>
+                <p class="text-xs">→ OUI (le bébé, la voiture, etc.) = simple / NON = probablement réfléchi</p>
+              </div>
+            </div>
+          </div>
+        </section>
 
-**Cortarse / Cortar:**
-- Ella se corta el pelo (reflexivo)
-- Ella corta la carne (simple)
-
-**Pintarse / Pintar:**
-- Nosotras nos pintamos (reflexivo)
-- Pintamos la casa (simple)
-
-**Cepillarse / Cepillar:**
-- Me cepillo los dientes (reflexivo)
-- Cepillo el perro (simple)`,
+        <div class="bg-blue-50 dark:bg-blue-900/20 border-l-4 border-blue-500 p-4 rounded-r-lg">
+          <h4 class="text-blue-700 dark:text-blue-400 font-semibold mb-2">💡 Suggestions de vidéos YouTube</h4>
+          <p class="text-blue-600 dark:text-blue-300">
+            Recherchez "diferencia verbos reflexivos y no reflexivos español" ou "verbos reflexivos vs verbos simples" pour des explications détaillées avec de nombreux exemples comparatifs.
+          </p>
+        </div>
+      </div>
+    `,
     exemplesExercices: `## Ejercicios
 
 ### Ejercicio 1: Identificar
@@ -4797,60 +5106,266 @@ Cambia de reflexivo a simple o viceversa:
     mois: "Mai",
     objectif: "Saber responder correctamente a preguntas personales",
     introduction: "Aprenderás a responder preguntas sobre tu vida cotidiana y tus preferencias.",
-    contenu: `## Preguntas personales
+    contenu: `
+      <div class="lesson-content space-y-6">
+        <section class="mb-6">
+          <h3 class="text-xl font-semibold mb-4">Les questions personnelles en espagnol</h3>
+          <p class="mb-4">Savoir répondre à des questions sur toi-même est essentiel pour avoir une conversation ! Dans cette leçon, tu vas apprendre à répondre correctement aux questions les plus courantes sur ta vie quotidienne, ta famille et tes goûts.</p>
+          
+          <div class="bg-purple-50 dark:bg-purple-900/20 p-4 rounded-lg">
+            <h4 class="font-semibold mb-3">💡 Rappel important :</h4>
+            <p class="text-sm">En espagnol, les questions commencent TOUJOURS par un point d'interrogation inversé <strong>¿</strong> et se terminent par un point d'interrogation normal <strong>?</strong></p>
+            <p class="text-sm mt-2">Exemple : <strong>¿Cómo te llamas?</strong> - Comment t'appelles-tu ?</p>
+          </div>
+        </section>
 
-### Tipos de preguntas
+        <section class="mb-6">
+          <h3 class="text-xl font-semibold mb-4">Questions sur ta routine quotidienne</h3>
+          <p class="mb-4">Ces questions portent sur tes activités de tous les jours :</p>
+          
+          <div class="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg mb-4">
+            <h4 class="font-semibold mb-3">Questions et réponses types :</h4>
+            <div class="space-y-3">
+              <div class="bg-white dark:bg-gray-800 p-3 rounded">
+                <p class="font-semibold text-sm mb-1">¿A qué hora vas a la escuela?</p>
+                <p class="text-xs text-gray-600 dark:text-gray-400 mb-2">À quelle heure vas-tu à l'école ?</p>
+                <p class="text-sm text-green-600 dark:text-green-400">→ <strong>Voy a la escuela a las siete de la mañana</strong></p>
+                <p class="text-xs">Je vais à l'école à sept heures du matin</p>
+              </div>
+              
+              <div class="bg-white dark:bg-gray-800 p-3 rounded">
+                <p class="font-semibold text-sm mb-1">¿Qué haces los fines de semana?</p>
+                <p class="text-xs text-gray-600 dark:text-gray-400 mb-2">Que fais-tu les week-ends ?</p>
+                <p class="text-sm text-green-600 dark:text-green-400">→ <strong>Los fines de semana juego con mis amigos</strong></p>
+                <p class="text-xs">Les week-ends, je joue avec mes amis</p>
+              </div>
 
-**Sobre rutina:**
-- ¿A qué hora vas a la escuela?
-- ¿Qué haces los fines de semana?
-- ¿Dónde estudias?
-- ¿Cuándo haces tus deberes?
+              <div class="bg-white dark:bg-gray-800 p-3 rounded">
+                <p class="font-semibold text-sm mb-1">¿Dónde estudias?</p>
+                <p class="text-xs text-gray-600 dark:text-gray-400 mb-2">Où études-tu ?</p>
+                <p class="text-sm text-green-600 dark:text-green-400">→ <strong>Estudio en el Liceo de Puerto Príncipe</strong></p>
+                <p class="text-xs">J'étudie au Lycée de Port-au-Prince</p>
+              </div>
 
-**Sobre familia:**
-- ¿Cuántos hermanos tienes?
-- ¿Dónde trabaja tu padre?
-- ¿Cómo se llama tu madre?
+              <div class="bg-white dark:bg-gray-800 p-3 rounded">
+                <p class="font-semibold text-sm mb-1">¿Cuándo haces tus deberes?</p>
+                <p class="text-xs text-gray-600 dark:text-gray-400 mb-2">Quand fais-tu tes devoirs ?</p>
+                <p class="text-sm text-green-600 dark:text-green-400">→ <strong>Hago mis deberes por la tarde</strong></p>
+                <p class="text-xs">Je fais mes devoirs l'après-midi</p>
+              </div>
+            </div>
+          </div>
+        </section>
 
-**Sobre gustos:**
-- ¿Qué te gusta hacer?
-- ¿Cuál es tu deporte favorito?
-- ¿Qué música prefieres?
+        <section class="mb-6">
+          <h3 class="text-xl font-semibold mb-4">Questions sur ta famille</h3>
+          <p class="mb-4">Ces questions concernent les membres de ta famille et leur situation :</p>
+          
+          <div class="bg-green-50 dark:bg-green-900/20 p-4 rounded-lg">
+            <h4 class="font-semibold mb-3">Questions familiales courantes :</h4>
+            <div class="space-y-3">
+              <div class="bg-white dark:bg-gray-800 p-3 rounded">
+                <p class="font-semibold text-sm mb-1">¿Cuántos hermanos tienes?</p>
+                <p class="text-xs text-gray-600 dark:text-gray-400 mb-2">Combien de frères et sœurs as-tu ?</p>
+                <p class="text-sm text-green-600 dark:text-green-400">→ <strong>Tengo dos hermanos y una hermana</strong></p>
+                <p class="text-xs">J'ai deux frères et une sœur</p>
+              </div>
 
-**Sobre regalos:**
-- ¿Qué regalas a tu mamá para su cumpleaños?
-- ¿Qué quieres recibir?
-- ¿Qué te gusta regalar?
+              <div class="bg-white dark:bg-gray-800 p-3 rounded">
+                <p class="font-semibold text-sm mb-1">¿Dónde trabaja tu padre?</p>
+                <p class="text-xs text-gray-600 dark:text-gray-400 mb-2">Où travaille ton père ?</p>
+                <p class="text-sm text-green-600 dark:text-green-400">→ <strong>Mi padre trabaja en un hospital</strong></p>
+                <p class="text-xs">Mon père travaille dans un hôpital</p>
+              </div>
 
-### Los adjetivos posesivos
+              <div class="bg-white dark:bg-gray-800 p-3 rounded">
+                <p class="font-semibold text-sm mb-1">¿Cómo se llama tu madre?</p>
+                <p class="text-xs text-gray-600 dark:text-gray-400 mb-2">Comment s'appelle ta mère ?</p>
+                <p class="text-sm text-green-600 dark:text-green-400">→ <strong>Mi madre se llama Marie</strong></p>
+                <p class="text-xs">Ma mère s'appelle Marie</p>
+              </div>
 
-**Uso 1:** Adjetivo posesivo + nombre
-- Mi amigo
-- Tu casa
-- Su libro
-- Nuestro colegio
-- Vuestro profesor
-- Su familia
+              <div class="bg-white dark:bg-gray-800 p-3 rounded">
+                <p class="font-semibold text-sm mb-1">¿Con quién vives?</p>
+                <p class="text-xs text-gray-600 dark:text-gray-400 mb-2">Avec qui vis-tu ?</p>
+                <p class="text-sm text-green-600 dark:text-green-400">→ <strong>Vivo con mis padres y mis hermanos</strong></p>
+                <p class="text-xs">Je vis avec mes parents et mes frères et sœurs</p>
+              </div>
+            </div>
+          </div>
+        </section>
 
-**Uso 2:** Nombre + posesivo
-- Amigo mío
-- Casa tuya
-- Libro suyo
-- Colegio nuestro
-- Profesor vuestro
+        <section class="mb-6">
+          <h3 class="text-xl font-semibold mb-4">Questions sur tes goûts et préférences</h3>
+          <p class="mb-4">Ces questions t'aident à exprimer ce que tu aimes et ce que tu préfères :</p>
+          
+          <div class="bg-amber-50 dark:bg-amber-900/20 p-4 rounded-lg">
+            <h4 class="font-semibold mb-3">Exprimer tes préférences :</h4>
+            <div class="space-y-3">
+              <div class="bg-white dark:bg-gray-800 p-3 rounded">
+                <p class="font-semibold text-sm mb-1">¿Qué te gusta hacer?</p>
+                <p class="text-xs text-gray-600 dark:text-gray-400 mb-2">Qu'aimes-tu faire ?</p>
+                <p class="text-sm text-green-600 dark:text-green-400">→ <strong>Me gusta leer y jugar al fútbol</strong></p>
+                <p class="text-xs">J'aime lire et jouer au football</p>
+              </div>
 
-### Vocabulario útil
-- Días de la semana
-- La hora
-- Ir a la escuela
-- Gustar
-- Querer (voluntad)
-- Tener
-- Escribir
-- Regalar
-- Trabajar
-- Recibir
-- Aprender a tocar...`,
+              <div class="bg-white dark:bg-gray-800 p-3 rounded">
+                <p class="font-semibold text-sm mb-1">¿Cuál es tu deporte favorito?</p>
+                <p class="text-xs text-gray-600 dark:text-gray-400 mb-2">Quel est ton sport préféré ?</p>
+                <p class="text-sm text-green-600 dark:text-green-400">→ <strong>Mi deporte favorito es el baloncesto</strong></p>
+                <p class="text-xs">Mon sport préféré est le basketball</p>
+              </div>
+
+              <div class="bg-white dark:bg-gray-800 p-3 rounded">
+                <p class="font-semibold text-sm mb-1">¿Qué música prefieres?</p>
+                <p class="text-xs text-gray-600 dark:text-gray-400 mb-2">Quelle musique préfères-tu ?</p>
+                <p class="text-sm text-green-600 dark:text-green-400">→ <strong>Prefiero la música de rap y el kompa</strong></p>
+                <p class="text-xs">Je préfère la musique rap et le kompa</p>
+              </div>
+
+              <div class="bg-white dark:bg-gray-800 p-3 rounded">
+                <p class="font-semibold text-sm mb-1">¿Cuál es tu materia favorita?</p>
+                <p class="text-xs text-gray-600 dark:text-gray-400 mb-2">Quelle est ta matière préférée ?</p>
+                <p class="text-sm text-green-600 dark:text-green-400">→ <strong>Mi materia favorita es matemáticas</strong></p>
+                <p class="text-xs">Ma matière préférée est les mathématiques</p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="mb-6">
+          <h3 class="text-xl font-semibold mb-4">Questions sur les cadeaux</h3>
+          <p class="mb-4">Questions spécifiques sur ce que tu offres ou souhaites recevoir :</p>
+          
+          <div class="bg-purple-50 dark:bg-purple-900/20 p-4 rounded-lg">
+            <h4 class="font-semibold mb-3">Parler de cadeaux :</h4>
+            <div class="space-y-3">
+              <div class="bg-white dark:bg-gray-800 p-3 rounded">
+                <p class="font-semibold text-sm mb-1">¿Qué regalas a tu mamá para su cumpleaños?</p>
+                <p class="text-xs text-gray-600 dark:text-gray-400 mb-2">Qu'offres-tu à ta maman pour son anniversaire ?</p>
+                <p class="text-sm text-green-600 dark:text-green-400">→ <strong>Le regalo flores y una tarjeta</strong></p>
+                <p class="text-xs">Je lui offre des fleurs et une carte</p>
+              </div>
+
+              <div class="bg-white dark:bg-gray-800 p-3 rounded">
+                <p class="font-semibold text-sm mb-1">¿Qué quieres recibir para tu cumpleaños?</p>
+                <p class="text-xs text-gray-600 dark:text-gray-400 mb-2">Que veux-tu recevoir pour ton anniversaire ?</p>
+                <p class="text-sm text-green-600 dark:text-green-400">→ <strong>Quiero recibir un teléfono nuevo</strong></p>
+                <p class="text-xs">Je veux recevoir un nouveau téléphone</p>
+              </div>
+
+              <div class="bg-white dark:bg-gray-800 p-3 rounded">
+                <p class="font-semibold text-sm mb-1">¿Qué te gusta regalar?</p>
+                <p class="text-xs text-gray-600 dark:text-gray-400 mb-2">Qu'aimes-tu offrir ?</p>
+                <p class="text-sm text-green-600 dark:text-green-400">→ <strong>Me gusta regalar libros y juguetes</strong></p>
+                <p class="text-xs">J'aime offrir des livres et des jouets</p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="mb-6">
+          <h3 class="text-xl font-semibold mb-4">Les adjectifs possessifs (Los adjetivos posesivos)</h3>
+          <p class="mb-4">Les adjectifs possessifs indiquent à qui appartient quelque chose. Ils sont TRÈS utilisés dans les réponses aux questions personnelles !</p>
+          
+          <div class="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg mb-4">
+            <h4 class="font-semibold mb-3">Usage 1 : Adjectif possessif + nom</h4>
+            <p class="text-sm mb-3 italic">C'est la forme la plus courante, placée AVANT le nom :</p>
+            <div class="grid md:grid-cols-2 gap-3">
+              <div>
+                <ul class="space-y-2 text-sm">
+                  <li>• <strong>Mi</strong> amigo - Mon ami</li>
+                  <li>• <strong>Tu</strong> casa - Ta maison</li>
+                  <li>• <strong>Su</strong> libro - Son livre</li>
+                </ul>
+              </div>
+              <div>
+                <ul class="space-y-2 text-sm">
+                  <li>• <strong>Nuestro</strong> colegio - Notre collège</li>
+                  <li>• <strong>Vuestro</strong> profesor - Votre professeur</li>
+                  <li>• <strong>Su</strong> familia - Leur famille</li>
+                </ul>
+              </div>
+            </div>
+            <p class="text-xs mt-3 bg-white dark:bg-gray-800 p-2 rounded">
+              💡 <strong>Astuce :</strong> "Mi", "tu" et "su" ne changent jamais ! "Nuestro" et "vuestro" s'accordent au pluriel : "nuestros", "vuestros"
+            </p>
+          </div>
+
+          <div class="bg-green-50 dark:bg-green-900/20 p-4 rounded-lg">
+            <h4 class="font-semibold mb-3">Usage 2 : Nom + possessif</h4>
+            <p class="text-sm mb-3 italic">Cette forme est plus emphatique et se place APRÈS le nom :</p>
+            <div class="grid md:grid-cols-2 gap-3">
+              <div>
+                <ul class="space-y-2 text-sm">
+                  <li>• Un amigo <strong>mío</strong> - Un ami à moi</li>
+                  <li>• La casa <strong>tuya</strong> - La maison à toi</li>
+                  <li>• El libro <strong>suyo</strong> - Le livre à lui/elle</li>
+                </ul>
+              </div>
+              <div>
+                <ul class="space-y-2 text-sm">
+                  <li>• El colegio <strong>nuestro</strong> - Le collège à nous</li>
+                  <li>• El profesor <strong>vuestro</strong> - Le professeur à vous</li>
+                  <li>• Amigos <strong>suyos</strong> - Des amis à eux/elles</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="mb-6">
+          <h3 class="text-xl font-semibold mb-4">Vocabulaire utile pour répondre</h3>
+          <p class="mb-4">Voici les mots et expressions essentiels pour bien répondre aux questions personnelles :</p>
+          
+          <div class="bg-amber-50 dark:bg-amber-900/20 p-4 rounded-lg">
+            <div class="grid md:grid-cols-2 gap-4">
+              <div>
+                <h4 class="font-semibold text-sm mb-2">Le temps :</h4>
+                <ul class="space-y-1 text-sm">
+                  <li>• <strong>Días de la semana</strong> - Jours de la semaine</li>
+                  <li>• <strong>La hora</strong> - L'heure</li>
+                  <li>• <strong>Por la mañana/tarde/noche</strong> - Le matin/après-midi/soir</li>
+                </ul>
+              </div>
+              <div>
+                <h4 class="font-semibold text-sm mb-2">Verbes importants :</h4>
+                <ul class="space-y-1 text-sm">
+                  <li>• <strong>Ir</strong> - Aller</li>
+                  <li>• <strong>Gustar</strong> - Aimer, plaire</li>
+                  <li>• <strong>Querer</strong> - Vouloir</li>
+                  <li>• <strong>Tener</strong> - Avoir</li>
+                </ul>
+              </div>
+              <div>
+                <h4 class="font-semibold text-sm mb-2">Actions :</h4>
+                <ul class="space-y-1 text-sm">
+                  <li>• <strong>Escribir</strong> - Écrire</li>
+                  <li>• <strong>Regalar</strong> - Offrir</li>
+                  <li>• <strong>Trabajar</strong> - Travailler</li>
+                  <li>• <strong>Recibir</strong> - Recevoir</li>
+                </ul>
+              </div>
+              <div>
+                <h4 class="font-semibold text-sm mb-2">Autres :</h4>
+                <ul class="space-y-1 text-sm">
+                  <li>• <strong>Aprender a tocar</strong> - Apprendre à jouer (instrument)</li>
+                  <li>• <strong>Estudiar</strong> - Étudier</li>
+                  <li>• <strong>Vivir</strong> - Vivre</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <div class="bg-blue-50 dark:bg-blue-900/20 border-l-4 border-blue-500 p-4 rounded-r-lg">
+          <h4 class="text-blue-700 dark:text-blue-400 font-semibold mb-2">💡 Suggestions de vidéos YouTube</h4>
+          <p class="text-blue-600 dark:text-blue-300">
+            Recherchez "preguntas personales en español" ou "conversación básica español" pour des dialogues réels et des exemples de questions-réponses sur la vie quotidienne.
+          </p>
+        </div>
+      </div>
+    `,
     exemplesExercices: `## Ejercicios
 
 ### Ejercicio 1: Responder
