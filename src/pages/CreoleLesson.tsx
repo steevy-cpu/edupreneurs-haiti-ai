@@ -88,9 +88,17 @@ export default function CreoleLesson() {
 
           {/* Lesson Content */}
           <Card className="p-8 mb-8">
-            <div className="prose prose-lg max-w-none dark:prose-invert">
-              <ReactMarkdown>{lesson.content}</ReactMarkdown>
-            </div>
+          <div className="prose prose-lg max-w-none dark:prose-invert">
+            {lesson.introduction && (
+              <div dangerouslySetInnerHTML={{ __html: lesson.introduction }} />
+            )}
+            {lesson.contenu && (
+              <div dangerouslySetInnerHTML={{ __html: lesson.contenu }} />
+            )}
+            {lesson.exemplesExercices && (
+              <div dangerouslySetInnerHTML={{ __html: lesson.exemplesExercices }} />
+            )}
+          </div>
           </Card>
 
           {/* Completion Button */}
