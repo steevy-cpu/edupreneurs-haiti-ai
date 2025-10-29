@@ -407,6 +407,14 @@ Pratik kouté epi rezime mesaj oral.`,
         </div>
       </div>
 
+      <div class="mt-8 bg-indigo-50 dark:bg-indigo-950 p-6 rounded-lg border-l-4 border-indigo-500">
+        <h3 class="text-xl font-semibold text-indigo-700 dark:text-indigo-300 mb-3">📺 Videyo pou Ale Pi Lwen</h3>
+        <p class="text-gray-700 dark:text-gray-300 mb-3">
+          Gade videyo sa a ki eksplike kijan pou separe fraz yo nan yon tèks an kreyòl. 
+          Note 3 règ ki pi enpòtan yo pou ede w.
+        </p>
+      </div>
+
       <div class="mt-8 bg-gradient-to-r from-indigo-100 to-purple-100 dark:from-indigo-900 dark:to-purple-900 p-6 rounded-lg">
         <h3 class="text-xl font-semibold text-indigo-800 dark:text-indigo-200 mb-2">🌟 Sonje!</h3>
         <p class="text-gray-700 dark:text-gray-300 text-lg">
