@@ -13440,84 +13440,486 @@ export const sciencesSocialesLessons7AF: SciencesSocialesLesson[] = [
     id: "langues-africaines-haiti",
     title: "Les langues africaines en Haïti",
     mois: "Janvier",
-    objectif: "Découvrir l'influence des langues africaines sur le créole haïtien.",
+    objectif: "Découvrir l'influence des langues africaines sur le créole haïtien, comprendre les origines linguistiques de notre langue nationale, et valoriser cet héritage africain.",
     introduction: `
+      <p class="text-foreground leading-relaxed mb-4">
+        Bonjour chers élèves ! Aujourd'hui, nous allons explorer un aspect fascinant de notre identité haïtienne : les <strong>racines africaines du créole</strong> ! 🌍🇭🇹 Quand tu parles créole, savais-tu que tu utilises des mots et des structures grammaticales qui viennent directement d'Afrique ? Notre langue nationale n'est pas qu'un "français déformé" comme certains le pensent à tort. C'est une <strong>langue créole</strong> unique, riche et complexe, née de la rencontre entre le vocabulaire français et les langues africaines parlées par nos ancêtres esclaves.
+      </p>
+      <p class="text-foreground leading-relaxed mb-4">
+        Le créole haïtien est un magnifique exemple de <strong>résilience culturelle</strong>. Malgré l'esclavage, la violence et l'oppression, nos ancêtres africains ont préservé une partie de leurs langues en les fusionnant avec le français des colons. Le résultat ? Une langue totalement nouvelle, avec sa propre grammaire, sa propre musicalité, et sa propre âme africaine. C'est la langue de notre indépendance, de notre révolution, de notre fierté nationale !
+      </p>
       <p class="text-foreground leading-relaxed">
-        Le créole haïtien, bien que basé sur le vocabulaire français, tire sa structure grammaticale et de nombreux mots des langues africaines parlées par les esclaves. Cette influence africaine fait la richesse et l'originalité de notre langue.
+        Dans cette leçon, nous allons découvrir d'où venaient nos ancêtres africains, quelles langues ils parlaient, comment ces langues ont influencé le créole, et pourquoi il est si important de valoriser cet héritage. Prépare-toi à un voyage linguistique passionnant entre l'Afrique et Haïti ! ✊🏿🗣️
       </p>
     `,
     contenu: `
-      <section class="space-y-6">
-        <div>
-          <h3 class="text-xl font-semibold mb-3 text-foreground">1. Origines linguistiques des esclaves</h3>
-          <p class="text-foreground mb-3">Les esclaves venaient principalement de :</p>
-          <ul class="list-disc ml-6 space-y-2 text-foreground">
-            <li><strong>Royaume du Dahomey :</strong> Langue Fon</li>
-            <li><strong>Royaume du Congo :</strong> Langues Kikongo, Kimbundu</li>
-            <li><strong>Royaume Yoruba :</strong> Langue Yoruba</li>
-            <li><strong>Sénégal :</strong> Langue Wolof</li>
-          </ul>
+      <section class="space-y-8">
+        <div class="bg-gradient-to-r from-amber-50 to-orange-50 dark:from-amber-950/30 dark:to-orange-950/30 p-6 rounded-lg">
+          <h3 class="text-2xl font-bold mb-4 text-primary">🌍 Contexte historique : La traite négrière et Saint-Domingue</h3>
+          <p class="text-foreground mb-3">
+            Entre le <strong>XVIe et le XIXe siècle</strong>, environ <strong>12 millions d'Africains</strong> ont été arrachés à leur continent et déportés de force vers les Amériques dans le cadre de la traite négrière (commerce triangulaire).
+          </p>
+          <div class="bg-white dark:bg-gray-800 p-4 rounded">
+            <p class="font-bold text-foreground mb-2">🇭🇹 Saint-Domingue (future Haïti) :</p>
+            <ul class="list-disc ml-6 text-sm text-foreground space-y-1">
+              <li>Colonie française la plus riche du XVIIIe siècle (café, sucre, indigo)</li>
+              <li>Population esclave : environ <strong>500 000 personnes</strong> en 1789</li>
+              <li>Ces esclaves venaient de <strong>différentes régions d'Afrique de l'Ouest et centrale</strong></li>
+              <li>Parlaient des <strong>dizaines de langues différentes</strong>, souvent incompréhensibles entre elles</li>
+            </ul>
+            <p class="text-foreground text-sm mt-3 italic">
+              💡 <strong>Problème de communication :</strong> Les esclaves ne parlaient pas la même langue entre eux, et ne parlaient pas français. Il fallait donc créer une langue commune pour survivre et communiquer → Naissance du <strong>créole haïtien</strong> !
+            </p>
+          </div>
         </div>
 
         <div>
-          <h3 class="text-xl font-semibold mb-3 text-foreground">2. Influence sur la structure du créole</h3>
-          <h4 class="font-semibold mt-3 mb-2 text-foreground">Caractéristiques africaines</h4>
-          <ul class="list-disc ml-6 space-y-2 text-foreground">
-            <li><strong>Absence de conjugaison complexe :</strong> Comme en Fon</li>
-            <li><strong>Redoublement :</strong> "vit-vit" (vite), "bèl-bèl" (très beau)</li>
-            <li><strong>Ton :</strong> L'intonation change le sens</li>
-            <li><strong>Ordre des mots :</strong> Sujet-Verbe-Objet</li>
-          </ul>
+          <h3 class="text-2xl font-bold mb-4 text-primary">I. Origines géographiques et linguistiques des esclaves 🗺️</h3>
+          
+          <div class="bg-green-50 dark:bg-green-950/30 p-6 rounded-lg mb-4">
+            <h4 class="text-xl font-semibold mb-3 text-foreground">A. Les grandes régions de provenance</h4>
+            <p class="text-foreground mb-3">
+              Les esclaves déportés à Saint-Domingue provenaient principalement de quatre grandes zones d'Afrique :
+            </p>
+            
+            <div class="space-y-3">
+              <div class="bg-white dark:bg-gray-800 p-4 rounded">
+                <p class="font-bold text-lg mb-2 text-foreground">1. 🌴 Golfe de Guinée (Afrique de l'Ouest)</p>
+                <p class="text-foreground text-sm mb-2"><strong>Régions :</strong> Côte de l'Or (Ghana actuel), Côte des Esclaves (Bénin, Togo, Nigeria)</p>
+                <p class="text-foreground text-sm mb-2"><strong>Royaumes :</strong></p>
+                <ul class="list-disc ml-6 text-xs text-foreground space-y-1">
+                  <li><strong>Royaume du Dahomey</strong> (Bénin actuel) → <strong>Langue Fon (ou Fongbe)</strong></li>
+                  <li><strong>Royaume Yoruba</strong> (Nigeria) → <strong>Langue Yoruba</strong></li>
+                  <li><strong>Royaume Ashanti</strong> (Ghana) → <strong>Langue Akan/Twi</strong></li>
+                </ul>
+                <p class="text-xs text-foreground mt-2 italic">📊 Environ <strong>40-50%</strong> des esclaves de Saint-Domingue venaient de cette région.</p>
+              </div>
+
+              <div class="bg-white dark:bg-gray-800 p-4 rounded">
+                <p class="font-bold text-lg mb-2 text-foreground">2. 🌊 Bassin du Congo (Afrique centrale)</p>
+                <p class="text-foreground text-sm mb-2"><strong>Régions :</strong> Congo, Angola, République Démocratique du Congo actuelle</p>
+                <p class="text-foreground text-sm mb-2"><strong>Royaumes :</strong></p>
+                <ul class="list-disc ml-6 text-xs text-foreground space-y-1">
+                  <li><strong>Royaume Kongo</strong> → <strong>Langue Kikongo</strong></li>
+                  <li><strong>Royaume d'Angola</strong> → <strong>Langue Kimbundu</strong></li>
+                </ul>
+                <p class="text-xs text-foreground mt-2 italic">📊 Environ <strong>30-40%</strong> des esclaves provenaient du bassin du Congo.</p>
+              </div>
+
+              <div class="bg-white dark:bg-gray-800 p-4 rounded">
+                <p class="font-bold text-lg mb-2 text-foreground">3. 🏜️ Sénégambie (Afrique de l'Ouest)</p>
+                <p class="text-foreground text-sm mb-2"><strong>Régions :</strong> Sénégal, Gambie actuels</p>
+                <p class="text-foreground text-sm mb-2"><strong>Peuples et langues :</strong></p>
+                <ul class="list-disc ml-6 text-xs text-foreground space-y-1">
+                  <li><strong>Wolof</strong> → Langue Wolof</li>
+                  <li><strong>Mandingue</strong> → Langue Mandinka</li>
+                  <li><strong>Peul (Fulani)</strong> → Langue Peul (Fulfulde)</li>
+                </ul>
+                <p class="text-xs text-foreground mt-2 italic">📊 Environ <strong>10-15%</strong> des esclaves.</p>
+              </div>
+
+              <div class="bg-white dark:bg-gray-800 p-4 rounded">
+                <p class="font-bold text-lg mb-2 text-foreground">4. 🌴 Autres régions</p>
+                <p class="text-foreground text-sm">Mozambique, Madagascar (minorité)</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="bg-blue-50 dark:bg-blue-950/30 p-6 rounded-lg">
+            <h4 class="text-xl font-semibold mb-3 text-foreground">B. Les langues africaines majoritaires en Haïti</h4>
+            <p class="text-foreground mb-3">
+              Les linguistes ont identifié que <strong>quatre langues africaines</strong> ont eu l'influence la plus forte sur le créole haïtien :
+            </p>
+            <div class="grid md:grid-cols-2 gap-3">
+              <div class="bg-white dark:bg-gray-800 p-3 rounded">
+                <p class="font-bold text-foreground">🥇 1. Fon (Fongbe)</p>
+                <p class="text-sm text-foreground">Langue du royaume du Dahomey. <strong>Influence grammaticale majeure</strong> sur le créole.</p>
+              </div>
+              <div class="bg-white dark:bg-gray-800 p-3 rounded">
+                <p class="font-bold text-foreground">🥈 2. Kikongo</p>
+                <p class="text-sm text-foreground">Langue du royaume Kongo. Nombreux mots d'origine Kikongo en créole et dans le Vodou.</p>
+              </div>
+              <div class="bg-white dark:bg-gray-800 p-3 rounded">
+                <p class="font-bold text-foreground">🥉 3. Yoruba</p>
+                <p class="text-sm text-foreground">Langue du peuple Yoruba. Forte influence religieuse (Vodou, noms de lwa).</p>
+              </div>
+              <div class="bg-white dark:bg-gray-800 p-3 rounded">
+                <p class="font-bold text-foreground">4. Wolof</p>
+                <p class="text-sm text-foreground">Langue du Sénégal. Quelques mots et structures conservés.</p>
+              </div>
+            </div>
+          </div>
         </div>
 
         <div>
-          <h3 class="text-xl font-semibold mb-3 text-foreground">3. Mots d'origine africaine en créole</h3>
-          <ul class="list-disc ml-6 space-y-2 text-foreground">
-            <li><strong>Zombi :</strong> Du Kikongo "nzambi" (esprit)</li>
-            <li><strong>Makandal :</strong> Guerrier marron célèbre</li>
-            <li><strong>Voudou :</strong> Du Fon "vodun" (esprit)</li>
-            <li><strong>Govi :</strong> Jarre rituelle</li>
-            <li><strong>Asson :</strong> Hochet rituel du hougan</li>
-          </ul>
+          <h3 class="text-2xl font-bold mb-4 text-primary">II. Influence africaine sur la structure grammaticale du créole 📚</h3>
+          
+          <div class="bg-purple-50 dark:bg-purple-950/30 p-6 rounded-lg mb-4">
+            <h4 class="text-xl font-semibold mb-3 text-foreground">A. Absence de conjugaison complexe</h4>
+            <p class="text-foreground mb-3">
+              <strong>En créole</strong>, les verbes ne se conjuguent pas comme en français. Ils gardent la même forme, et on ajoute des <strong>marqueurs</strong> devant pour indiquer le temps.
+            </p>
+            <div class="bg-white dark:bg-gray-800 p-4 rounded">
+              <p class="font-bold text-foreground mb-2">Exemple : Verbe "manger"</p>
+              <div class="grid md:grid-cols-2 gap-3 mt-2">
+                <div>
+                  <p class="text-sm font-semibold text-foreground mb-1">🇫🇷 Français (conjugaison) :</p>
+                  <ul class="text-xs text-foreground space-y-1">
+                    <li>Je mange</li>
+                    <li>Tu manges</li>
+                    <li>Il/Elle mange</li>
+                    <li>Nous mangeons</li>
+                    <li>Vous mangez</li>
+                    <li>Ils/Elles mangent</li>
+                  </ul>
+                </div>
+                <div>
+                  <p class="text-sm font-semibold text-foreground mb-1">🇭🇹 Créole (pas de conjugaison) :</p>
+                  <ul class="text-xs text-foreground space-y-1">
+                    <li>Mwen <strong>manje</strong></li>
+                    <li>Ou <strong>manje</strong></li>
+                    <li>Li <strong>manje</strong></li>
+                    <li>Nou <strong>manje</strong></li>
+                    <li>Nou <strong>manje</strong></li>
+                    <li>Yo <strong>manje</strong></li>
+                  </ul>
+                </div>
+              </div>
+              <p class="text-foreground text-sm mt-3">
+                ➡️ Le verbe <em>manje</em> reste identique pour tous les pronoms ! C'est exactement comme en <strong>Fon</strong> et en <strong>Kikongo</strong>.
+              </p>
+            </div>
+          </div>
+
+          <div class="bg-yellow-50 dark:bg-yellow-950/30 p-6 rounded-lg mb-4">
+            <h4 class="text-xl font-semibold mb-3 text-foreground">B. Marqueurs temporels (aspect verbal)</h4>
+            <p class="text-foreground mb-3">
+              Pour indiquer le <strong>passé, présent, futur</strong>, le créole utilise des marqueurs placés <strong>avant le verbe</strong>, comme en Fon.
+            </p>
+            <div class="bg-white dark:bg-gray-800 p-4 rounded">
+              <p class="font-bold text-foreground mb-2">Exemples :</p>
+              <ul class="list-disc ml-6 text-sm text-foreground space-y-2">
+                <li><strong>Présent :</strong> Mwen <u>manje</u> (Je mange) → Pas de marqueur</li>
+                <li><strong>Passé :</strong> Mwen <strong>te</strong> manje (J'ai mangé / Je mangeais) → Marqueur <em>te</em></li>
+                <li><strong>Futur :</strong> Mwen <strong>ap</strong> manje / Mwen <strong>pral</strong> manje (Je mangerai) → Marqueurs <em>ap, pral, a</em></li>
+                <li><strong>Conditionnel :</strong> Mwen <strong>ta</strong> manje (Je mangerais) → Marqueur <em>ta</em></li>
+              </ul>
+              <p class="text-foreground text-sm mt-3 italic">
+                🌍 Cette structure vient directement des langues africaines comme le <strong>Fon</strong>, qui fonctionne exactement de la même manière !
+              </p>
+            </div>
+          </div>
+
+          <div class="bg-pink-50 dark:bg-pink-950/30 p-6 rounded-lg mb-4">
+            <h4 class="text-xl font-semibold mb-3 text-foreground">C. Redoublement (intensification)</h4>
+            <p class="text-foreground mb-3">
+              En créole, on <strong>double un mot</strong> pour renforcer son sens ou exprimer l'intensité. Cette technique est très courante en Fon, Kikongo et Yoruba.
+            </p>
+            <div class="bg-white dark:bg-gray-800 p-4 rounded">
+              <p class="font-bold text-foreground mb-2">Exemples de redoublement :</p>
+              <ul class="list-disc ml-6 text-sm text-foreground space-y-1">
+                <li><strong>Vit-vit</strong> (très vite, rapidement)</li>
+                <li><strong>Bèl-bèl</strong> (très beau/belle)</li>
+                <li><strong>Dousman-dousman</strong> (tout doucement)</li>
+                <li><strong>Piti-piti</strong> (petit à petit, progressivement)</li>
+                <li><strong>Cho-cho</strong> (très chaud, brûlant)</li>
+                <li><strong>Gran-gran</strong> (très grand, immense)</li>
+              </ul>
+              <p class="text-foreground text-sm mt-3">
+                🇫🇷 En français, on ne double pas les mots de cette façon. C'est une <strong>structure africaine</strong> intégrée au créole.
+              </p>
+            </div>
+          </div>
+
+          <div class="bg-teal-50 dark:bg-teal-950/30 p-6 rounded-lg">
+            <h4 class="text-xl font-semibold mb-3 text-foreground">D. Ton et intonation</h4>
+            <p class="text-foreground mb-3">
+              Comme dans beaucoup de langues africaines, l'<strong>intonation</strong> (ton de la voix) peut changer le sens d'un mot en créole.
+            </p>
+            <div class="bg-white dark:bg-gray-800 p-4 rounded">
+              <p class="font-bold text-foreground mb-2">Exemple :</p>
+              <ul class="list-disc ml-6 text-sm text-foreground space-y-1">
+                <li><strong>"Li <u>bò</u>" (ton montant)</strong> → "Il est beau/belle"</li>
+                <li><strong>"Li <u>bò</u>" (ton descendant)</strong> → "Il/Elle embrasse"</li>
+              </ul>
+              <p class="text-foreground text-sm mt-3 italic">
+                Le contexte et le ton permettent de distinguer les sens ! C'est typique des langues tonales africaines comme le Yoruba et le Fon.
+              </p>
+            </div>
+          </div>
         </div>
 
         <div>
-          <h3 class="text-xl font-semibold mb-3 text-foreground">4. Proverbes créoles d'inspiration africaine</h3>
-          <ul class="list-disc ml-6 space-y-2 text-foreground">
-            <li>"Sak vid pa kanpe" (Un sac vide ne tient pas debout)</li>
-            <li>"Piti piti zwazo fè nich li" (Petit à petit l'oiseau fait son nid)</li>
-            <li>"Men anpil chay pa lou" (Plusieurs mains, le fardeau est léger)</li>
-          </ul>
+          <h3 class="text-2xl font-bold mb-4 text-primary">III. Mots d'origine africaine dans le créole haïtien 🗣️</h3>
+          
+          <div class="bg-indigo-50 dark:bg-indigo-950/30 p-6 rounded-lg mb-4">
+            <h4 class="text-xl font-semibold mb-3 text-foreground">A. Vocabulaire religieux et spirituel (Vodou)</h4>
+            <p class="text-foreground mb-3">
+              Le <strong>Vodou</strong>, religion traditionnelle haïtienne, a conservé de très nombreux mots africains.
+            </p>
+            <div class="bg-white dark:bg-gray-800 p-4 rounded">
+              <p class="font-bold text-foreground mb-2">Exemples :</p>
+              <ul class="list-disc ml-6 text-sm text-foreground space-y-1">
+                <li><strong>Vodou / Voudou</strong> : du Fon <em>"vodun"</em> = esprit, divinité</li>
+                <li><strong>Lwa (loa)</strong> : du Kikongo <em>"nloa"</em> = esprit, divinité</li>
+                <li><strong>Zombi</strong> : du Kikongo <em>"nzambi"</em> = esprit, âme errante</li>
+                <li><strong>Govi</strong> : du Fon <em>"govi"</em> = jarre rituelle contenant l'esprit d'un ancêtre</li>
+                <li><strong>Asson</strong> : du Fon <em>"asen"</em> = hochet rituel du hougan (prêtre)</li>
+                <li><strong>Hougan</strong> : du Fon <em>"houngan"</em> = prêtre Vodou</li>
+                <li><strong>Manbo</strong> : du Fon <em>"mambo"</em> = prêtresse Vodou</li>
+                <li><strong>Peristil</strong> : temple Vodou (du français "péristyle" mais concept africain)</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="bg-orange-50 dark:bg-orange-950/30 p-6 rounded-lg mb-4">
+            <h4 class="text-xl font-semibold mb-3 text-foreground">B. Vocabulaire quotidien</h4>
+            <div class="space-y-3">
+              <div class="bg-white dark:bg-gray-800 p-3 rounded">
+                <p class="font-bold text-foreground mb-2">Nourriture et objets :</p>
+                <ul class="list-disc ml-6 text-sm text-foreground space-y-1">
+                  <li><strong>Banane</strong> : du Wolof <em>"banaana"</em></li>
+                  <li><strong>Gombo</strong> : du Kikongo <em>"ngombo"</em> (légume visqueux)</li>
+                  <li><strong>Calenda</strong> : du Kikongo <em>"kalenda"</em> (danse)</li>
+                  <li><strong>Makandal</strong> : nom du célèbre leader marron (origine Kikongo)</li>
+                </ul>
+              </div>
+
+              <div class="bg-white dark:bg-gray-800 p-3 rounded">
+                <p class="font-bold text-foreground mb-2">Expressions et interjections :</p>
+                <ul class="list-disc ml-6 text-sm text-foreground space-y-1">
+                  <li><strong>Dada</strong> : du Yoruba <em>"dada"</em> = sœur aînée, grande sœur</li>
+                  <li><strong>Baka</strong> : du Kikongo <em>"mbaka"</em> = esprit maléfique</li>
+                  <li><strong>Makak</strong> : du Kikongo <em>"makaku"</em> = singe (insulte : personne bête)</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+
+          <div class="bg-green-50 dark:bg-green-950/30 p-6 rounded-lg">
+            <h4 class="text-xl font-semibold mb-3 text-foreground">C. Noms de lieux et de personnes</h4>
+            <p class="text-foreground mb-3">Beaucoup de noms de lieux en Haïti ont des origines africaines :</p>
+            <div class="bg-white dark:bg-gray-800 p-4 rounded">
+              <ul class="list-disc ml-6 text-sm text-foreground space-y-1">
+                <li><strong>Gonaïves</strong> : possiblement du Fon</li>
+                <li><strong>Môle Saint-Nicolas</strong> : "Môle" pourrait venir d'une langue africaine</li>
+                <li>De nombreux prénoms haïtiens ont des racines africaines : <em>Makandal, Boukman, Cécile Fatiman</em></li>
+              </ul>
+            </div>
+          </div>
         </div>
 
         <div>
-          <h3 class="text-xl font-semibold mb-3 text-foreground">5. Importance culturelle</h3>
-          <p class="text-foreground">Cette influence africaine :</p>
-          <ul class="list-disc ml-6 space-y-2 text-foreground">
-            <li>Témoigne de notre héritage africain</li>
-            <li>Fait du créole une langue unique</li>
-            <li>Renforce notre identité culturelle</li>
-            <li>Doit être valorisée et préservée</li>
-          </ul>
+          <h3 class="text-2xl font-bold mb-4 text-primary">IV. Proverbes créoles d'inspiration africaine 💬</h3>
+          
+          <div class="bg-gradient-to-r from-yellow-50 to-amber-50 dark:from-yellow-950/30 dark:to-amber-950/30 p-6 rounded-lg">
+            <p class="text-foreground mb-4">
+              Les proverbes haïtiens reflètent la sagesse africaine transmise de génération en génération. Ils enseignent des valeurs de solidarité, patience, humilité et résilience.
+            </p>
+            <div class="space-y-3">
+              <div class="bg-white dark:bg-gray-800 p-4 rounded">
+                <p class="font-bold text-foreground mb-1">"Sak vid pa kanpe"</p>
+                <p class="text-sm text-foreground italic mb-2">Traduction : Un sac vide ne tient pas debout.</p>
+                <p class="text-xs text-foreground">💡 Sens : Une personne affamée ou sans ressources ne peut pas être efficace. Il faut d'abord satisfaire les besoins de base.</p>
+              </div>
+
+              <div class="bg-white dark:bg-gray-800 p-4 rounded">
+                <p class="font-bold text-foreground mb-1">"Piti piti zwazo fè nich li"</p>
+                <p class="text-sm text-foreground italic mb-2">Traduction : Petit à petit l'oiseau fait son nid.</p>
+                <p class="text-xs text-foreground">💡 Sens : La patience et la persévérance permettent d'accomplir de grandes choses progressivement.</p>
+              </div>
+
+              <div class="bg-white dark:bg-gray-800 p-4 rounded">
+                <p class="font-bold text-foreground mb-1">"Men anpil, chay pa lou"</p>
+                <p class="text-sm text-foreground italic mb-2">Traduction : Plusieurs mains, le fardeau n'est pas lourd.</p>
+                <p class="text-xs text-foreground">💡 Sens : L'union fait la force. Ensemble, les tâches difficiles deviennent faciles.</p>
+              </div>
+
+              <div class="bg-white dark:bg-gray-800 p-4 rounded">
+                <p class="font-bold text-foreground mb-1">"Deye mòn gen mòn"</p>
+                <p class="text-sm text-foreground italic mb-2">Traduction : Derrière les montagnes, il y a d'autres montagnes.</p>
+                <p class="text-xs text-foreground">💡 Sens : Il y a toujours des défis à surmonter. Il ne faut jamais baisser les bras.</p>
+              </div>
+
+              <div class="bg-white dark:bg-gray-800 p-4 rounded">
+                <p class="font-bold text-foreground mb-1">"Bouch manje tout manje, men li pa di tout pawòl"</p>
+                <p class="text-sm text-foreground italic mb-2">Traduction : La bouche mange toutes sortes de nourriture, mais elle ne dit pas toutes les paroles.</p>
+                <p class="text-xs text-foreground">💡 Sens : Il faut savoir garder le silence, ne pas tout dire. La discrétion est une vertu.</p>
+              </div>
+
+              <div class="bg-white dark:bg-gray-800 p-4 rounded">
+                <p class="font-bold text-foreground mb-1">"Se pa tout bèt ki genyen kòn ki towo"</p>
+                <p class="text-sm text-foreground italic mb-2">Traduction : Ce n'est pas tout animal qui a des cornes qui est un taureau.</p>
+                <p class="text-xs text-foreground">💡 Sens : Les apparences sont trompeuses. Il ne faut pas juger sur l'apparence.</p>
+              </div>
+            </div>
+            <p class="text-foreground text-sm mt-4 italic">
+              🌍 Ces proverbes ressemblent beaucoup aux proverbes africains en Fon, Kikongo, Yoruba, qui utilisent des images de la nature pour enseigner des leçons de vie.
+            </p>
+          </div>
+        </div>
+
+        <div>
+          <h3 class="text-2xl font-bold mb-4 text-primary">V. Importance culturelle et fierté nationale 🇭🇹✊🏿</h3>
+          
+          <div class="bg-red-50 dark:bg-red-950/30 p-6 rounded-lg mb-4">
+            <h4 class="text-xl font-semibold mb-3 text-foreground">A. Le créole, langue de la résistance et de l'indépendance</h4>
+            <p class="text-foreground mb-3">
+              Le créole a été la langue de la <strong>Révolution haïtienne</strong> (1791-1804). Les esclaves révoltés communiquaient en créole, planifiaient leurs stratégies en créole, et c'est en créole que <strong>Dessalines</strong> proclama l'indépendance.
+            </p>
+            <div class="bg-white dark:bg-gray-800 p-4 rounded">
+              <p class="text-foreground text-sm mb-2">
+                🗣️ <strong>Citation célèbre de Boukman (cérémonie du Bois Caïman, 1791) :</strong>
+              </p>
+              <p class="text-foreground italic text-sm">
+                "Bondye ki fè la tè. Bondye ki fè solèy ki klere nou anwo. Bondye ki soulve lanmè. Bondye ki fè gronde loray. Bondye nou ki gen de zòrèy pou tande. Li kache nan niaj. Li gade nou. Li wè tout sa blan fè. Bondye blan yo mande krim. Bondye nou vle byen fè. Men bondye nou an ki si bon, ki si jis, li ordone vanjans. Se li ki pral kondui bra nou. Se li ki pral ban nou asistans."
+              </p>
+              <p class="text-foreground text-xs mt-2">
+                💡 Ce discours fondateur de la révolution était en <strong>créole</strong>, pas en français. C'est la preuve que le créole était déjà une langue mature et puissante.
+              </p>
+            </div>
+          </div>
+
+          <div class="bg-blue-50 dark:bg-blue-950/30 p-6 rounded-lg mb-4">
+            <h4 class="text-xl font-semibold mb-3 text-foreground">B. Reconnaissance officielle du créole</h4>
+            <div class="bg-white dark:bg-gray-800 p-4 rounded">
+              <ul class="list-disc ml-6 text-sm text-foreground space-y-2">
+                <li><strong>1987 :</strong> La Constitution haïtienne reconnaît le créole comme <strong>langue co-officielle</strong> avec le français (Article 5)</li>
+                <li><strong>Aujourd'hui :</strong> Le créole est parlé par <strong>100% de la population haïtienne</strong> (contre seulement 5-10% qui maîtrisent bien le français)</li>
+                <li>Le créole est enseigné à l'école, utilisé dans l'administration, à la radio, à la télévision</li>
+                <li>Des écrivains haïtiens écrivent en créole (Frankétienne, Georges Castera, Felix Morisseau-Leroy)</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="bg-purple-50 dark:bg-purple-950/30 p-6 rounded-lg">
+            <h4 class="text-xl font-semibold mb-3 text-foreground">C. Pourquoi valoriser l'héritage africain du créole ?</h4>
+            <div class="space-y-2">
+              <div class="bg-white dark:bg-gray-800 p-3 rounded">
+                <p class="font-bold text-foreground">✊🏿 Fierté identitaire</p>
+                <p class="text-sm text-foreground">Reconnaître nos racines africaines renforce notre identité et notre estime de soi en tant qu'Haïtiens.</p>
+              </div>
+              <div class="bg-white dark:bg-gray-800 p-3 rounded">
+                <p class="font-bold text-foreground">🌍 Connexion avec l'Afrique</p>
+                <p class="text-sm text-foreground">Nous sommes liés culturellement et linguistiquement à l'Afrique. C'est une richesse à célébrer.</p>
+              </div>
+              <div class="bg-white dark:bg-gray-800 p-3 rounded">
+                <p class="font-bold text-foreground">🗣️ Valorisation du créole</p>
+                <p class="text-sm text-foreground">Comprendre que le créole n'est pas un "mauvais français" mais une langue à part entière avec ses propres règles grammaticales africaines.</p>
+              </div>
+              <div class="bg-white dark:bg-gray-800 p-3 rounded">
+                <p class="font-bold text-foreground">📚 Transmission culturelle</p>
+                <p class="text-sm text-foreground">Préserver les proverbes, contes, chants et traditions orales qui viennent de nos ancêtres africains.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="bg-primary/5 border-l-4 border-primary p-6 rounded-lg">
+          <h3 class="text-xl font-bold mb-3 text-primary">🌟 Message final : Soyez fiers du créole haïtien !</h3>
+          <p class="text-foreground mb-3">
+            Le créole haïtien est bien plus qu'une simple langue. C'est un <strong>symbole de résistance</strong>, de <strong>créativité</strong> et de <strong>survie</strong>. Nos ancêtres africains, malgré la violence de l'esclavage, ont réussi à préserver une partie de leur âme et de leurs langues en créant le créole.
+          </p>
+          <p class="text-foreground mb-3">
+            Quand tu parles créole, tu fais vivre l'héritage de millions d'Africains déportés. Tu fais honneur à Boukman, Dessalines, Toussaint Louverture qui ont parlé créole. Tu perpétues une langue unique au monde, née de la fusion de l'Afrique et de la Caraïbe.
+          </p>
+          <p class="text-foreground font-semibold italic text-center">
+            "Pale kreyòl, se pale listwa nou. Se pale fòs nou. Se pale libète nou !" 🇭🇹✊🏿
+          </p>
+          <p class="text-foreground text-sm text-center mt-2 italic">
+            (Parler créole, c'est parler notre histoire. C'est parler notre force. C'est parler notre liberté !)
+          </p>
         </div>
       </section>
     `,
     exemplesExercices: `
-      <section class="space-y-4">
+      <div class="space-y-6">
+        <h3 class="text-2xl font-bold mb-4 text-primary">📝 Exercices pratiques</h3>
+
+        <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md">
+          <p class="font-bold text-xl mb-4">1. Enquête sur les langues africaines</p>
+          <p class="mb-3">Fais une recherche sur <strong>une des quatre langues africaines</strong> principales qui ont influencé le créole (Fon, Kikongo, Yoruba, Wolof) et crée une fiche incluant :</p>
+          <ul class="list-disc ml-6 space-y-1">
+            <li>Le pays ou la région où cette langue est parlée aujourd'hui</li>
+            <li>Le nombre approximatif de locuteurs</li>
+            <li>Trois mots de cette langue qui existent en créole haïtien</li>
+            <li>Une particularité grammaticale de cette langue</li>
+          </ul>
+        </div>
+
+        <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md">
+          <p class="font-bold text-xl mb-4">2. Collecte de proverbes créoles</p>
+          <p class="mb-3">Interroge tes parents, grands-parents ou voisins et collecte <strong>10 proverbes créoles</strong>. Pour chacun :</p>
+          <ul class="list-disc ml-6 space-y-1">
+            <li>Écris le proverbe en créole</li>
+            <li>Traduis-le en français</li>
+            <li>Explique sa signification profonde</li>
+            <li>Donne un exemple de situation où on peut l'utiliser</li>
+          </ul>
+        </div>
+
+        <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md">
+          <p class="font-bold text-xl mb-4">3. Comparaison grammaticale</p>
+          <p class="mb-3">Compare la conjugaison d'un verbe en français et en créole :</p>
+          <table class="w-full text-sm border-collapse mt-2">
+            <tr class="bg-primary/10">
+              <th class="border p-2">Temps</th>
+              <th class="border p-2">Français (verbe "parler")</th>
+              <th class="border p-2">Créole (verbe "pale")</th>
+            </tr>
+            <tr>
+              <td class="border p-2">Présent</td>
+              <td class="border p-2">Je parle</td>
+              <td class="border p-2">...</td>
+            </tr>
+            <tr>
+              <td class="border p-2">Passé</td>
+              <td class="border p-2">J'ai parlé</td>
+              <td class="border p-2">...</td>
+            </tr>
+            <tr>
+              <td class="border p-2">Futur</td>
+              <td class="border p-2">Je parlerai</td>
+              <td class="border p-2">...</td>
+            </tr>
+          </table>
+          <p class="mt-3">Explique les différences que tu observes.</p>
+        </div>
+
+        <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md">
+          <p class="font-bold text-xl mb-4">4. Dictionnaire créole-africain illustré</p>
+          <p class="mb-3">En groupe, créez un mini-dictionnaire illustré de <strong>20 mots créoles d'origine africaine</strong>. Pour chaque mot :</p>
+          <ul class="list-disc ml-6 space-y-1">
+            <li>Le mot en créole</li>
+            <li>Son origine (langue africaine + mot original)</li>
+            <li>Sa signification</li>
+            <li>Une phrase d'exemple en créole</li>
+            <li>Un dessin ou une photo illustrant le mot</li>
+          </ul>
+        </div>
+
+        <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md">
+          <p class="font-bold text-xl mb-4">5. Questions de réflexion</p>
+          <ol class="list-decimal ml-6 space-y-3">
+            <li>Pourquoi dit-on que le créole haïtien a une "âme africaine" ?</li>
+            <li>Explique comment le redoublement en créole (ex: vit-vit, bèl-bèl) vient des langues africaines.</li>
+            <li>Pourquoi est-il important de reconnaître l'influence africaine sur le créole ?</li>
+            <li>En quoi le créole a-t-il été une arme de résistance pendant l'esclavage et la révolution ?</li>
+          </ol>
+        </div>
+
         <div class="bg-primary/5 border-l-4 border-primary p-4 rounded">
-          <h4 class="font-semibold mb-2 text-foreground">💡 Activité</h4>
-          <p class="text-foreground">
-            Collecte 10 proverbes créoles auprès de tes parents ou grands-parents. Essaie de trouver leur signification profonde et comment ils guident le comportement.
+          <p class="font-bold mb-2">🎭 Projet créatif : Pièce de théâtre en créole</p>
+          <p class="text-sm">En groupe, créez une courte pièce de théâtre (10-15 minutes) <strong>entièrement en créole</strong>, racontant l'histoire de la création du créole haïtien. Incluez des personnages d'esclaves parlant différentes langues africaines qui doivent communiquer et créer une langue commune. Utilisez des proverbes créoles dans vos dialogues !</p>
+        </div>
+
+        <div class="bg-green-50 dark:bg-green-950/30 p-4 rounded">
+          <p class="font-bold mb-2 text-foreground">💡 Le savais-tu ?</p>
+          <p class="text-foreground text-sm">
+            Le mot <strong>"zombi"</strong> que tu connais dans les films d'horreur américains vient en réalité du créole haïtien, qui l'a emprunté au Kikongo <em>"nzambi"</em> (esprit, âme errante) ! Le concept de zombie dans la culture populaire mondiale est donc d'origine haïtienne et africaine. 🧟‍♂️🇭🇹
           </p>
         </div>
-        
-        <div class="bg-accent/5 border-l-4 border-accent p-4 rounded">
-          <h4 class="font-semibold mb-2 text-foreground">📝 Projet de classe</h4>
-          <p class="text-foreground">
-            Créez un dictionnaire illustré de mots créoles d'origine africaine. Pour chaque mot : origine, signification, utilisation dans une phrase.
-          </p>
-        </div>
-      </section>
+      </div>
     `
   }
 ];
