@@ -7042,53 +7042,396 @@ export const sciencesSocialesLessons7AF: SciencesSocialesLesson[] = [
     mois: "Mai",
     objectif: "Découvrir les peuples qui habitaient les Antilles avant l'arrivée des Européens.",
     introduction: `
-      <p class="text-foreground leading-relaxed">
-        Avant 1492, les Antilles étaient habitées par différents peuples autochtones depuis des milliers d'années. Ces sociétés avaient développé leurs propres cultures, technologies et organisations sociales bien avant l'arrivée de Christophe Colomb.
-      </p>
+      <div class="space-y-6">
+        <div class="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-950/30 dark:to-indigo-950/30 p-6 rounded-lg border-l-4 border-blue-500">
+          <p class="text-lg italic">"Bien avant que Christophe Colomb ne pose le pied dans nos îles, des civilisations entières y prospéraient, cultivant la terre, naviguant sur les mers, créant de l'art et vivant en harmonie avec la nature."</p>
+        </div>
+        
+        <p class="text-lg leading-relaxed">Ferme les yeux et imagine les Antilles il y a 600 ans, avant 1492. Pas de villes modernes, pas de voitures, pas d'électricité. Mais imagine des villages animés le long des rivières et des côtes, des pirogues élégantes glissant sur les eaux turquoise, des enfants jouant au bord des plages, des femmes cultivant le manioc et le maïs, des hommes pêchant avec des filets tissés à la main, des artisans sculptant des figurines religieuses en bois et en pierre...</p>
+        
+        <p>Les Antilles n'étaient pas une "terre vierge" découverte par les Européens. C'était un archipel habité et cultivé depuis des millénaires par des peuples sophistiqués : les Taïnos, les Caribes, les Arawaks, et bien d'autres. Ces sociétés avaient développé leur propre agriculture, leur artisanat, leurs croyances religieuses, leur organisation politique. Puis, en quelques décennies après 1492, ces cultures millénaires ont presque entièrement disparu, victimes de la colonisation, des maladies et de l'esclavage.</p>
+        
+        <p>Aujourd'hui, nous Haïtiens sommes les héritiers de cet héritage autochtone. Des mots que nous utilisons quotidiennement (hamac, canot, ouragan), des aliments que nous mangeons (manioc, maïs), des lieux que nous habitons (Xaragua, Marien) portent encore la trace de ces premiers Antillais. Étudier les sociétés antillaises avant Colomb, c'est renouer avec nos racines les plus profondes.</p>
+        
+        <div class="bg-yellow-50 dark:bg-yellow-950/20 border-l-4 border-yellow-500 p-4 my-4">
+          <p class="font-semibold text-yellow-900 dark:text-yellow-200">🎯 Objectifs d'apprentissage</p>
+          <ul class="list-disc ml-6 mt-2 space-y-1">
+            <li>Identifier les principaux peuples précolombiens des Antilles</li>
+            <li>Comprendre leur organisation sociale, économique et religieuse</li>
+            <li>Reconnaître l'héritage autochtone dans la culture haïtienne actuelle</li>
+            <li>Réfléchir sur l'impact de la colonisation sur ces civilisations</li>
+            <li>Valoriser la richesse culturelle de nos ancêtres autochtones</li>
+          </ul>
+        </div>
+      </div>
     `,
     contenu: `
-      <section class="space-y-6">
-        <div>
-          <h3 class="text-xl font-semibold mb-3 text-foreground">1. Les Taïnos</h3>
-          <p class="text-foreground mb-3">Peuple principal d'Hispaniola (Haïti et République Dominicaine).</p>
-          <ul class="list-disc ml-6 space-y-2 text-foreground">
-            <li><strong>Organisation :</strong> En chefferies (cacicazgos) dirigées par des caciques</li>
-            <li><strong>Agriculture :</strong> Manioc, patate douce, maïs</li>
-            <li><strong>Artisanat :</strong> Poterie, vannerie, sculptures en bois</li>
-            <li><strong>Religion :</strong> Croyance en des esprits (zemis)</li>
-            <li><strong>Habitat :</strong> Bohíos (maisons rondes en paille)</li>
-          </ul>
-        </div>
+      <div class="space-y-8">
+        <section>
+          <h3 class="text-2xl font-bold mb-4 text-primary">1. Les premiers habitants : une histoire de migrations</h3>
+          
+          <p class="text-lg mb-4">Les Antilles n'ont pas toujours été habitées. Les premiers humains y sont arrivés par vagues de migrations successives depuis le continent sud-américain, en particulier depuis la région du bassin de l'Orénoque (actuel Venezuela).</p>
+          
+          <h4 class="text-xl font-semibold mt-6 mb-3">Les grandes vagues de peuplement</h4>
+          
+          <div class="space-y-4">
+            <div class="border-l-4 border-green-500 pl-4">
+              <p class="font-semibold">Première vague : Les Siboneys (7000-5000 av. J.-C.)</p>
+              <p>Chasseurs-cueilleurs nomades, les Siboneys furent les tout premiers habitants des Antilles. Ils vivaient dans des grottes, ne pratiquaient pas l'agriculture et se nourrissaient de pêche, de chasse (iguanes, oiseaux, lamantins) et de cueillette (fruits sauvages, coquillages). Traces archéologiques trouvées à Cuba, en Jamaïque et en Haïti.</p>
+            </div>
+            
+            <div class="border-l-4 border-green-500 pl-4">
+              <p class="font-semibold">Deuxième vague : Les Arawaks (500 av. J.-C. - 500 apr. J.-C.)</p>
+              <p>Agriculteurs sédentaires venus d'Amérique du Sud. Ils ont introduit la culture du manioc (cassave), la poterie, la vannerie. Ils vivaient dans des villages organisés et maîtrisaient la navigation en pirogue. C'est de ce peuple que descendent les Taïnos.</p>
+            </div>
+            
+            <div class="border-l-4 border-green-500 pl-4">
+              <p class="font-semibold">Troisième vague : Les Taïnos (900-1492 apr. J.-C.)</p>
+              <p>Les Taïnos (mot signifiant "les bons, les nobles") sont les descendants directs des Arawaks. Ils se sont installés dans les Grandes Antilles : Cuba, Jamaïque, Porto Rico, et surtout Hispaniola (Haïti et République Dominicaine). C'est eux que Christophe Colomb a rencontrés en 1492.</p>
+            </div>
+            
+            <div class="border-l-4 border-green-500 pl-4">
+              <p class="font-semibold">Quatrième vague : Les Caribes (1200-1492 apr. J.-C.)</p>
+              <p>Guerriers redoutables venus eux aussi d'Amérique du Sud, les Caribes ont colonisé les Petites Antilles (Guadeloupe, Martinique, Dominique, Sainte-Lucie...). Ils étaient en conflit permanent avec les Taïnos pacifiques des Grandes Antilles, qu'ils attaquaient en pirogue pour capturer des esclaves et contrôler de nouveaux territoires.</p>
+            </div>
+          </div>
+          
+          <div class="bg-blue-50 dark:bg-blue-950/30 p-5 rounded-lg my-6">
+            <p class="font-semibold text-blue-900 dark:text-blue-200 mb-2">💡 Le savais-tu ?</p>
+            <p class="text-blue-800 dark:text-blue-300">Le mot <strong>"Caraïbes"</strong> vient du nom du peuple caribe ! Les Espagnols ont nommé toute la région "mer des Caraïbes" en référence à ce peuple guerrier. De même, le mot <strong>"cannibale"</strong> vient d'une déformation du mot "caribe" par les Espagnols, qui croyaient (à tort) que les Caribes pratiquaient le cannibalisme de manière systématique. En réalité, les preuves archéologiques sont très minces.</p>
+          </div>
+        </section>
 
-        <div>
-          <h3 class="text-xl font-semibold mb-3 text-foreground">2. Les Caribes</h3>
-          <p class="text-foreground mb-3">Peuple guerrier des Petites Antilles.</p>
-          <ul class="list-disc ml-6 space-y-2 text-foreground">
-            <li>Excellents navigateurs</li>
-            <li>Pêcheurs et chasseurs</li>
-            <li>Réputés belliqueux</li>
+        <section>
+          <h3 class="text-2xl font-bold mb-4 text-primary mt-8">2. Les Taïnos : peuple principal d'Haïti précolonial</h3>
+          
+          <p class="text-lg mb-4">Lorsque Christophe Colomb débarque à Hispaniola le 5 décembre 1492, il estime la population taïno de l'île à <strong>plusieurs centaines de milliers de personnes</strong> (certains historiens parlent de 300 000 à 1 million d'habitants). En 1548, soit 56 ans plus tard, il n'en reste plus que quelques milliers. Cette disparition tragique est l'une des plus grandes catastrophes démographiques de l'histoire humaine.</p>
+          
+          <h4 class="text-xl font-semibold mt-6 mb-3">Organisation politique : les cacicazgos</h4>
+          <p>La société taïno était organisée en <strong>cacicazgos</strong> (chefferies), des territoires dirigés par un chef suprême appelé <strong>cacique</strong> (kasike en langue taïno). Haïti était divisé en 5 grands cacicazgos :</p>
+          
+          <ul class="list-disc ml-8 space-y-2 mt-4">
+            <li><strong>Marién</strong> (Nord-Ouest) - Cacique : Guacanagarix (ami de Colomb)</li>
+            <li><strong>Maguá</strong> (Nord-Est) - Cacique : Guarionex</li>
+            <li><strong>Maguana</strong> (Centre) - Cacique : Caonabo (résistant farouche aux Espagnols)</li>
+            <li><strong>Xaragua</strong> (Sud-Ouest) - Cacique : Bohéchio, puis sa sœur la reine Anacaona (poétesse et leader)</li>
+            <li><strong>Higüey</strong> (Sud-Est) - Cacique : Cayacoa</li>
           </ul>
-        </div>
+          
+          <p class="mt-4">Le cacique était un chef héréditaire (le pouvoir se transmettait dans la famille, souvent de l'oncle maternel au neveu). Il avait un pouvoir politique, militaire et religieux. Il organisait les travaux agricoles collectifs, les fêtes religieuses (areytos), rendait la justice et décidait de la paix ou de la guerre.</p>
+          
+          <h4 class="text-xl font-semibold mt-6 mb-3">Hiérarchie sociale</h4>
+          <div class="bg-amber-50 dark:bg-amber-950/20 p-4 rounded-lg my-4">
+            <ol class="list-decimal ml-6 space-y-2">
+              <li><strong>Caciques</strong> : Chefs suprêmes. Reconnaissables à leurs ornements en or (pendentifs, bracelets)</li>
+              <li><strong>Nitaínos</strong> : Nobles, conseillers du cacique, guerriers d'élite</li>
+              <li><strong>Bohíques</strong> : Prêtres-chamans, guérisseurs, intermédiaires avec les esprits (zemis)</li>
+              <li><strong>Naborías</strong> : Peuple commun (agriculteurs, pêcheurs, artisans)</li>
+            </ol>
+          </div>
+          
+          <p>Contrairement aux sociétés européennes, l'esclavage n'existait pas vraiment chez les Taïnos. Tous travaillaient pour la communauté, et le cacique redistribuait les richesses selon les besoins.</p>
+          
+          <div class="bg-blue-50 dark:bg-blue-950/30 p-5 rounded-lg my-6">
+            <p class="font-semibold text-blue-900 dark:text-blue-200 mb-2">💡 Le savais-tu ?</p>
+            <p class="text-blue-800 dark:text-blue-300">La reine <strong>Anacaona</strong> (1474-1503), cacique de Xaragua, est l'une des figures les plus emblématiques de la résistance taïno. Poétesse talentueuse, danseuse et chanteuse, elle a d'abord accueilli pacifiquement les Espagnols. Mais face à leurs exigences d'or et de travail forcé, elle a organisé la résistance. Trahie, elle fut capturée et pendue par les Espagnols en 1503. Elle reste un symbole de courage et de fierté pour le peuple haïtien !</p>
+          </div>
+        </section>
 
-        <div>
-          <h3 class="text-xl font-semibold mb-3 text-foreground">3. Héritage autochtone</h3>
-          <ul class="list-disc ml-6 space-y-2 text-foreground">
-            <li><strong>Mots :</strong> Hamac, canoe, ouragan, barbecue</li>
-            <li><strong>Aliments :</strong> Manioc (cassave), maïs</li>
-            <li><strong>Lieux :</strong> Noms comme Xaragua, Marien</li>
+        <section>
+          <h3 class="text-2xl font-bold mb-4 text-primary mt-8">3. Économie et vie quotidienne des Taïnos</h3>
+          
+          <h4 class="text-xl font-semibold mt-6 mb-3">Agriculture : la base de l'alimentation</h4>
+          <p>Les Taïnos pratiquaient une agriculture sophistiquée basée sur le système des <strong>conucos</strong> (monticules de terre surélevés). Cette technique ingénieuse permettait de :</p>
+          <ul class="list-disc ml-8 space-y-2 mt-3">
+            <li>Améliorer le drainage (éviter que les racines pourrissent)</li>
+            <li>Enrichir le sol avec des cendres et du compost</li>
+            <li>Cultiver plusieurs plantes ensemble (polyculture)</li>
           </ul>
-        </div>
-      </section>
+          
+          <h4 class="text-xl font-semibold mt-6 mb-3">Principales cultures</h4>
+          <div class="grid gap-3 mt-4">
+            <div class="bg-green-50 dark:bg-green-950/20 p-3 rounded-lg">
+              <p class="font-semibold">🌾 Manioc (yuca)</p>
+              <p class="text-sm">Aliment de base. Transformé en cassave (pain plat), en farine, en boisson fermentée. Les Taïnos avaient développé une technique pour éliminer le poison naturel (acide cyanhydrique) du manioc amer.</p>
+            </div>
+            <div class="bg-green-50 dark:bg-green-950/20 p-3 rounded-lg">
+              <p class="font-semibold">🌽 Maïs</p>
+              <p class="text-sm">Cultivé et consommé grillé, bouilli ou en farine</p>
+            </div>
+            <div class="bg-green-50 dark:bg-green-950/20 p-3 rounded-lg">
+              <p class="font-semibold">🍠 Patate douce (batata)</p>
+              <p class="text-sm">Très nutritive, facile à cultiver</p>
+            </div>
+            <div class="bg-green-50 dark:bg-green-950/20 p-3 rounded-lg">
+              <p class="font-semibold">🫘 Haricots, courges, piments, ananas, goyaves, mamey</p>
+              <p class="text-sm">Diversité alimentaire importante</p>
+            </div>
+          </div>
+          
+          <h4 class="text-xl font-semibold mt-6 mb-3">Pêche et chasse</h4>
+          <ul class="list-disc ml-8 space-y-2 mt-3">
+            <li><strong>Pêche :</strong> En pirogue ou depuis la côte. Filets tissés, hameçons en os, nasses. Poissons, crabes, lamantins (grande vache marine aujourd'hui en danger)</li>
+            <li><strong>Chasse :</strong> Petits animaux (iguanes, hutias - petit rongeur endémique, oiseaux, serpents). Pas de grands mammifères aux Antilles !</li>
+          </ul>
+          
+          <h4 class="text-xl font-semibold mt-6 mb-3">Artisanat</h4>
+          <ul class="list-disc ml-8 space-y-2 mt-3">
+            <li><strong>Poterie :</strong> Magnifiques céramiques décorées de motifs géométriques et de visages stylisés</li>
+            <li><strong>Vannerie :</strong> Paniers, nattes, chapeaux en fibres végétales tressées</li>
+            <li><strong>Sculpture :</strong> Statuettes religieuses (zemis) en bois, pierre, coquillage, os</li>
+            <li><strong>Tissage :</strong> Vêtements simples en coton (nagua pour les femmes, les hommes allaient souvent nus)</li>
+            <li><strong>Orfèvrerie :</strong> Bijoux en or martelé (pendentifs, anneaux de nez et d'oreilles) réservés aux nobles</li>
+          </ul>
+        </section>
+
+        <section>
+          <h3 class="text-2xl font-bold mb-4 text-primary mt-8">4. Religion et croyances : le monde des zemis</h3>
+          
+          <p class="text-lg mb-4">La religion taïno était <strong>animiste</strong> : ils croyaient que les éléments de la nature (montagnes, rivières, arbres, animaux) étaient habités par des esprits appelés <strong>zemis</strong> (ou cemís).</p>
+          
+          <h4 class="text-xl font-semibold mt-6 mb-3">Les principales divinités</h4>
+          <ul class="list-disc ml-8 space-y-3 mt-4">
+            <li><strong>Yúcahu Bagua Maórocoti</strong> : Dieu suprême, créateur du manioc et de la mer. Représenté sans bras ni jambes (esprit pur)</li>
+            <li><strong>Atabey</strong> : Déesse-mère, déesse de la fertilité et des eaux douces</li>
+            <li><strong>Guabancex</strong> : Déesse des ouragans et des tempêtes (très redoutée !)</li>
+            <li><strong>Maketauri Guayaba</strong> : Seigneur de la terre des morts (Coaybay)</li>
+            <li><strong>Yocahu</strong> : Esprit du manioc</li>
+          </ul>
+          
+          <h4 class="text-xl font-semibold mt-6 mb-3">Les bohíques : prêtres-chamans</h4>
+          <p>Les bohíques étaient les intermédiaires entre les humains et les zemis. Ils pratiquaient :</p>
+          <ul class="list-disc ml-8 space-y-2 mt-3">
+            <li>Des rituels de divination pour connaître l'avenir</li>
+            <li>Des cérémonies de guérison avec des plantes médicinales</li>
+            <li>Des trances rituelles (en inhalant la poudre de cohoba, une plante hallucinogène) pour communiquer avec les esprits</li>
+          </ul>
+          
+          <h4 class="text-xl font-semibold mt-6 mb-3">Les areytos : fêtes religieuses et sociales</h4>
+          <p>Les areytos étaient de grandes cérémonies collectives combinant chant, danse, musique et récits mythologiques. Elles pouvaient durer plusieurs jours ! On y racontait l'histoire des ancêtres, des dieux, des grands caciques. C'était la mémoire vivante du peuple, transmise oralement de génération en génération.</p>
+          
+          <div class="bg-blue-50 dark:bg-blue-950/30 p-5 rounded-lg my-6">
+            <p class="font-semibold text-blue-900 dark:text-blue-200 mb-2">💡 Le savais-tu ?</p>
+            <p class="text-blue-800 dark:text-blue-300">Les Taïnos croyaient que les <strong>ouragans</strong> étaient des manifestations de la colère de la déesse Guabancex. Le mot "ouragan" vient d'ailleurs du taïno <strong>"hurakán"</strong> ! De même, le mot <strong>"hamac"</strong> vient du taïno "hamaca". Les Espagnols ont découvert cet objet génial dans les Antilles et l'ont adopté immédiatement. Aujourd'hui, le hamac est utilisé partout dans le monde !</p>
+          </div>
+          
+          <p class="mt-4"><em>🎥 Vidéo recommandée : "Culture taïno - Civilisations précolombiennes"</em></p>
+        </section>
+
+        <section>
+          <h3 class="text-2xl font-bold mb-4 text-primary mt-8">5. Les Caribes : guerriers des Petites Antilles</h3>
+          
+          <p class="text-lg mb-4">Les Caribes (ou Kalinagos) occupaient les Petites Antilles (Guadeloupe, Dominique, Martinique...). Contrairement aux Taïnos pacifiques, les Caribes avaient une réputation de guerriers redoutables.</p>
+          
+          <h4 class="text-xl font-semibold mt-6 mb-3">Caractéristiques des Caribes</h4>
+          <ul class="list-disc ml-8 space-y-3 mt-4">
+            <li><strong>Excellents navigateurs :</strong> Leurs pirogues de guerre pouvaient transporter jusqu'à 100 guerriers ! Ils effectuaient des raids sur les îles voisines.</li>
+            <li><strong>Guerriers :</strong> Ils attaquaient régulièrement les villages taïnos pour capturer des prisonniers (qui devenaient esclaves ou épouses)</li>
+            <li><strong>Pêcheurs et chasseurs :</strong> Moins agriculteurs que les Taïnos, ils vivaient davantage de la pêche et de la chasse</li>
+            <li><strong>Organisation sociale :</strong> Société patriarcale dirigée par un chef de guerre élu pour sa bravoure</li>
+          </ul>
+          
+          <p class="mt-4">Les Caribes ont mieux résisté à la colonisation espagnole que les Taïnos, notamment grâce à leur combativité et à l'isolement géographique des Petites Antilles. Certaines communautés caribes existent encore aujourd'hui en Dominique et au Venezuela !</p>
+        </section>
+
+        <section>
+          <h3 class="text-2xl font-bold mb-4 text-primary mt-8">6. L'héritage autochtone en Haïti aujourd'hui</h3>
+          
+          <p class="text-lg mb-4">Même si les Taïnos ont presque entièrement disparu, leur héritage est toujours bien vivant en Haïti !</p>
+          
+          <h4 class="text-xl font-semibold mt-6 mb-3">🗣️ Dans la langue</h4>
+          <p class="mb-3">De nombreux mots créoles et français viennent du taïno :</p>
+          <ul class="list-disc ml-8 space-y-1">
+            <li><strong>Hamac</strong> (hamaca) - lit suspendu</li>
+            <li><strong>Canot</strong> (canoa) - petite embarcation</li>
+            <li><strong>Ouragan</strong> (hurakán) - tempête tropicale</li>
+            <li><strong>Tabac</strong> (tabaco) - plante fumée</li>
+            <li><strong>Barbecue</strong> (barbacoa) - grillade sur claies de bois</li>
+            <li><strong>Maïs</strong> (mahís)</li>
+            <li><strong>Cacique</strong> - chef</li>
+          </ul>
+          
+          <h4 class="text-xl font-semibold mt-6 mb-3">🗺️ Dans les noms de lieux</h4>
+          <ul class="list-disc ml-8 space-y-1 mt-3">
+            <li><strong>Haïti</strong> (Ayiti) - "terre de hautes montagnes"</li>
+            <li><strong>Xaragua</strong> - ancien cacicazgo du Sud-Ouest</li>
+            <li><strong>Maguá, Marién, Maguana</strong> - noms des anciens territoires taïnos</li>
+          </ul>
+          
+          <h4 class="text-xl font-semibold mt-6 mb-3">🍽️ Dans l'alimentation</h4>
+          <ul class="list-disc ml-8 space-y-1 mt-3">
+            <li><strong>Cassave</strong> - pain de manioc encore consommé en Haïti</li>
+            <li><strong>Maïs moulu</strong> - base de nombreux plats haïtiens</li>
+            <li><strong>Piment</strong> - incontournable dans la cuisine haïtienne</li>
+          </ul>
+          
+          <h4 class="text-xl font-semibold mt-6 mb-3">🎨 Dans la culture</h4>
+          <ul class="list-disc ml-8 space-y-1 mt-3">
+            <li>Certaines <strong>techniques agricoles</strong> (conucos)</li>
+            <li>L'utilisation du <strong>hamac</strong></li>
+            <li>Quelques <strong>remèdes traditionnels</strong> à base de plantes</li>
+            <li>Le respect de la <strong>nature</strong> et de ses esprits (lien avec le vodou)</li>
+          </ul>
+          
+          <div class="bg-blue-50 dark:bg-blue-950/30 p-5 rounded-lg my-6">
+            <p class="font-semibold text-blue-900 dark:text-blue-200 mb-2">💡 Le savais-tu ?</p>
+            <p class="text-blue-800 dark:text-blue-300">Certains historiens pensent que des Taïnos ont survécu en se réfugiant dans les montagnes inaccessibles d'Haïti, où ils se sont mélangés aux esclaves africains marrons (évadés). Cette hypothèse expliquerait pourquoi certaines pratiques culturelles haïtiennes (herboristerie, techniques agricoles, croyances animistes) ressemblent à celles des Taïnos. Des tests ADN récents ont même révélé que jusqu'à 15% de la population dominicaine (pays voisin) possède des gènes autochtones taïnos !</p>
+          </div>
+          
+          <p class="mt-4"><em>🎥 Vidéo recommandée : "Héritage taïno dans les Caraïbes modernes"</em></p>
+          <p class="mt-2"><em>🎥 Vidéo recommandée : "Anacaona - Reine d'Haïti"</em></p>
+        </section>
+      </div>
     `,
     exemplesExercices: `
-      <section class="space-y-4">
-        <div class="bg-primary/5 border-l-4 border-primary p-4 rounded">
-          <h4 class="font-semibold mb-2 text-foreground">💡 Exemple</h4>
-          <p class="text-foreground">
-            Le nom "Ayiti" (Haïti) vient du taïno et signifie "terre de hautes montagnes". C'est l'un des rares mots taïnos encore utilisé aujourd'hui !
-          </p>
-        </div>
-      </section>
+      <div class="space-y-8">
+        <section>
+          <h3 class="text-xl font-bold mb-4 text-primary">🇭🇹 Exemples concrets haïtiens</h3>
+          
+          <div class="space-y-4">
+            <div class="bg-blue-50 dark:bg-blue-950/30 border-l-4 border-blue-500 p-4 rounded-lg">
+              <p class="font-semibold text-blue-900 dark:text-blue-200">Exemple 1 : Les cinq cacicazgos d'Haïti</p>
+              <p class="text-blue-800 dark:text-blue-300 mt-2">Avant 1492, Haïti était divisé en 5 royaumes taïnos : Marién (Nord-Ouest, chef Guacanagarix), Maguá (Nord-Est, chef Guarionex), Maguana (Centre, chef Caonabo), Xaragua (Sud-Ouest, reine Anacaona), et Higüey (Sud-Est, chef Cayacoa). Chaque royaume avait son propre cacique mais ils partageaient la même culture et langue. Aujourd'hui, ces noms géographiques survivent dans notre toponymie !</p>
+            </div>
+            
+            <div class="bg-blue-50 dark:bg-blue-950/30 border-l-4 border-blue-500 p-4 rounded-lg">
+              <p class="font-semibold text-blue-900 dark:text-blue-200">Exemple 2 : La cassave, pain ancestral</p>
+              <p class="text-blue-800 dark:text-blue-300 mt-2">Les Taïnos cultivaient le manioc et le transformaient en cassave (pain plat et sec). Cette technique a été transmise aux esclaves africains, puis aux générations suivantes. Aujourd'hui encore, de nombreux Haïtiens, surtout en zone rurale, consomment la cassave avec du beurre, du maïs moulu ou du hareng. C'est un lien culinaire direct avec nos ancêtres taïnos d'il y a 600 ans !</p>
+            </div>
+            
+            <div class="bg-blue-50 dark:bg-blue-950/30 border-l-4 border-blue-500 p-4 rounded-lg">
+              <p class="font-semibold text-blue-900 dark:text-blue-200">Exemple 3 : Le nom "Ayiti"</p>
+              <p class="text-blue-800 dark:text-blue-300 mt-2">Le nom "Haïti" vient du mot taïno "Ayiti" qui signifie "terre de hautes montagnes". Les Taïnos avaient parfaitement identifié la caractéristique géographique majeure de notre île ! Quand nos ancêtres ont proclamé l'indépendance en 1804, ils ont choisi de redonner à notre pays son nom autochtone originel, en rejetant le nom colonial "Saint-Domingue". C'était une façon de renouer avec les racines premières de notre terre.</p>
+            </div>
+            
+            <div class="bg-blue-50 dark:bg-blue-950/30 border-l-4 border-blue-500 p-4 rounded-lg">
+              <p class="font-semibold text-blue-900 dark:text-blue-200">Exemple 4 : La résistance de Caonabo</p>
+              <p class="text-blue-800 dark:text-blue-300 mt-2">Caonabo, cacique de Maguana et époux d'Anacaona, fut le premier grand résistant anti-colonial d'Haïti. En 1493, il attaqua et détruisit le fort La Navidad construit par Colomb, tuant tous les Espagnols qui maltraitaient les Taïnos. Capturé par ruse en 1494, il fut enchaîné et mourut en mer lors de son transfert vers l'Espagne. Son courage face aux oppresseurs européens inspire encore aujourd'hui les Haïtiens épris de liberté.</p>
+            </div>
+            
+            <div class="bg-blue-50 dark:bg-blue-950/30 border-l-4 border-blue-500 p-4 rounded-lg">
+              <p class="font-semibold text-blue-900 dark:text-blue-200">Exemple 5 : Le Parc National Historique de La Citadelle</p>
+              <p class="text-blue-800 dark:text-blue-300 mt-2">Dans les montagnes du Nord d'Haïti, on trouve encore aujourd'hui des pétroglyphes (gravures sur pierre) et des sites archéologiques taïnos. Certaines grottes contiennent des représentations de zemis (divinités). Ces vestiges nous rappellent que bien avant la Citadelle de Henri Christophe, ces montagnes étaient déjà sacrées pour les Taïnos. Protéger ces sites, c'est honorer nos ancêtres autochtones.</p>
+            </div>
+          </div>
+        </section>
+
+        <section>
+          <h3 class="text-xl font-bold mb-4 text-primary mt-8">📝 Exercices variés</h3>
+          
+          <div class="space-y-6">
+            <div class="bg-gray-50 dark:bg-gray-900/30 p-4 rounded-lg">
+              <h4 class="font-semibold mb-3">1. Questions à Choix Multiples (QCM)</h4>
+              <ol class="list-decimal ml-6 space-y-3">
+                <li>Quel était le nom du peuple principal d'Haïti avant 1492 ?
+                  <br/>a) Les Mayas  b) Les Aztèques  c) Les Taïnos  d) Les Incas</li>
+                <li>Comment appelait-on les chefs taïnos ?
+                  <br/>a) Rois  b) Caciques  c) Empereurs  d) Sultans</li>
+                <li>Quel était l'aliment de base des Taïnos ?
+                  <br/>a) Le blé  b) Le riz  c) Le manioc  d) La pomme de terre</li>
+                <li>Quelle reine taïno a résisté aux Espagnols ?
+                  <br/>a) Cléopâtre  b) Anacaona  c) Isabelle  d) Marie</li>
+                <li>D'où vient le mot "ouragan" ?
+                  <br/>a) Du français  b) De l'espagnol  c) Du taïno  d) De l'africain</li>
+              </ol>
+            </div>
+            
+            <div class="bg-gray-50 dark:bg-gray-900/30 p-4 rounded-lg">
+              <h4 class="font-semibold mb-3">2. Vrai ou Faux</h4>
+              <ol class="list-decimal ml-6 space-y-2">
+                <li>Les Taïnos vivaient dans des gratte-ciels. (Vrai / Faux)</li>
+                <li>Haïti était divisé en 5 cacicazgos avant 1492. (Vrai / Faux)</li>
+                <li>Les Caribes étaient des guerriers redoutés. (Vrai / Faux)</li>
+                <li>Les Taïnos ne connaissaient pas l'agriculture. (Vrai / Faux)</li>
+                <li>Le mot "Haïti" signifie "terre de hautes montagnes". (Vrai / Faux)</li>
+              </ol>
+            </div>
+            
+            <div class="bg-gray-50 dark:bg-gray-900/30 p-4 rounded-lg">
+              <h4 class="font-semibold mb-3">3. Exercice d'appariement</h4>
+              <p class="mb-2">Associe chaque terme à sa définition :</p>
+              <div class="grid grid-cols-2 gap-4 mt-2">
+                <div>
+                  <p class="font-semibold">Termes :</p>
+                  <ol class="list-decimal ml-6">
+                    <li>Cacique</li>
+                    <li>Bohíque</li>
+                    <li>Zemi</li>
+                    <li>Conuco</li>
+                    <li>Areyto</li>
+                  </ol>
+                </div>
+                <div>
+                  <p class="font-semibold">Définitions :</p>
+                  <ul class="list-none space-y-1">
+                    <li>a) Fête religieuse avec danses et chants</li>
+                    <li>b) Chef d'un territoire taïno</li>
+                    <li>c) Prêtre-chaman</li>
+                    <li>d) Divinité ou esprit</li>
+                    <li>e) Monticule de terre cultivée</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+            
+            <div class="bg-gray-50 dark:bg-gray-900/30 p-4 rounded-lg">
+              <h4 class="font-semibold mb-3">4. Questions de réflexion</h4>
+              <ol class="list-decimal ml-6 space-y-2">
+                <li>Pourquoi les Taïnos ont-ils presque entièrement disparu après 1492 ?</li>
+                <li>Quels mots taïnos utilises-tu dans ta vie quotidienne sans le savoir ?</li>
+                <li>En quoi la société taïno était-elle différente de la société haïtienne actuelle ?</li>
+                <li>Penses-tu qu'il est important de préserver la mémoire des peuples autochtones ? Pourquoi ?</li>
+              </ol>
+            </div>
+            
+            <div class="bg-gray-50 dark:bg-gray-900/30 p-4 rounded-lg">
+              <h4 class="font-semibold mb-3">5. Étude de cas : La rencontre de 1492</h4>
+              <p class="mb-2">Imagine que tu es un jeune Taïno et que tu vois arriver les caravelles de Christophe Colomb sur la plage. Décris :</p>
+              <ul class="list-disc ml-6 space-y-1">
+                <li>Ce que tu ressens</li>
+                <li>Ce que tu penses de ces étrangers</li>
+                <li>Comment ton village réagit</li>
+              </ul>
+            </div>
+            
+            <div class="bg-gray-50 dark:bg-gray-900/30 p-4 rounded-lg">
+              <h4 class="font-semibold mb-3">6. Activité pratique : Carte des cacicazgos</h4>
+              <p>Dessine une carte simplifiée d'Haïti et place-y les 5 cacicazgos taïnos (Marién, Maguá, Maguana, Xaragua, Higüey) avec leurs caciques respectifs.</p>
+            </div>
+            
+            <div class="bg-gray-50 dark:bg-gray-900/30 p-4 rounded-lg">
+              <h4 class="font-semibold mb-3">7. Recherche : Mots taïnos</h4>
+              <p>Fais une liste de 10 mots d'origine taïno encore utilisés en créole ou en français. Pour chaque mot, indique sa signification originale.</p>
+            </div>
+            
+            <div class="bg-gray-50 dark:bg-gray-900/30 p-4 rounded-lg">
+              <h4 class="font-semibold mb-3">8. Débat : Faut-il renommer des lieux en Haïti avec des noms taïnos ?</h4>
+              <p>Organise un débat en classe : certains élèves défendent l'idée de redonner des noms taïnos aux villes haïtiennes (par exemple renommer Port-au-Prince en "Bohéchio"), d'autres s'y opposent. Arguments pour et contre ?</p>
+            </div>
+            
+            <div class="bg-gray-50 dark:bg-gray-900/30 p-4 rounded-lg">
+              <h4 class="font-semibold mb-3">9. Mini-recherche : Anacaona</h4>
+              <p>Fais une recherche sur la reine Anacaona : sa vie, son rôle politique, sa résistance aux Espagnols, sa mort tragique. Présente tes découvertes en 10 lignes.</p>
+            </div>
+            
+            <div class="bg-gray-50 dark:bg-gray-900/30 p-4 rounded-lg">
+              <h4 class="font-semibold mb-3">10. Composition : Lettre à Christophe Colomb</h4>
+              <p>Imagine que tu es Anacaona en 1503, juste avant ta mort. Écris une lettre à Christophe Colomb pour lui expliquer les souffrances que les Espagnols ont infligées à ton peuple et pour défendre la dignité des Taïnos.</p>
+            </div>
+          </div>
+        </section>
+
+        <section class="mt-8">
+          <h3 class="text-xl font-bold mb-4 text-primary">🎥 Suggestions YouTube pour approfondir</h3>
+          <ul class="list-disc ml-6 space-y-2">
+            <li><strong>"Les Taïnos - Premiers habitants d'Haïti"</strong> - Documentaire historique</li>
+            <li><strong>"Anacaona - La reine d'or d'Haïti"</strong> - Biographie</li>
+            <li><strong>"Civilisations précolombiennes des Caraïbes"</strong> - Vue d'ensemble</li>
+            <li><strong>"Héritage taïno dans la culture haïtienne moderne"</strong> - Analyse culturelle</li>
+            <li><strong>"Sites archéologiques taïnos en Haïti"</strong> - Reportage</li>
+          </ul>
+        </section>
+      </div>
     `
   },
 
