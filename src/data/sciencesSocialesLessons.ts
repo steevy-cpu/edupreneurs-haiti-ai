@@ -12979,67 +12979,459 @@ export const sciencesSocialesLessons7AF: SciencesSocialesLesson[] = [
     id: "analyse-climatologique",
     title: "L'analyse climatologique",
     mois: "Janvier",
-    objectif: "Apprendre à analyser et interpréter les données climatiques.",
+    objectif: "Apprendre à analyser et interpréter les données climatiques, comprendre les éléments du climat et leur mesure, et saisir les enjeux du changement climatique pour Haïti.",
     introduction: `
+      <p class="text-foreground leading-relaxed mb-4">
+        Bonjour chers élèves ! Aujourd'hui, nous allons devenir des <strong>détectives du climat</strong> ! 🕵️‍♂️🌤️ Avez-vous déjà remarqué que certains mois de l'année sont plus chauds que d'autres ? Que la pluie tombe davantage en été qu'en hiver ? Que certaines régions d'Haïti reçoivent beaucoup plus de pluie que d'autres ? Comment peut-on mesurer, comprendre et prédire ces phénomènes ? C'est exactement ce que nous allons découvrir !
+      </p>
+      <p class="text-foreground leading-relaxed mb-4">
+        L'<strong>analyse climatologique</strong> est la science qui étudie le climat en collectant, mesurant, analysant et interprétant des données météorologiques sur de longues périodes (au moins 30 ans). Elle nous permet de comprendre les tendances climatiques et d'anticiper l'avenir.
+      </p>
       <p class="text-foreground leading-relaxed">
-        L'analyse climatologique consiste à étudier les données météorologiques sur de longues périodes pour comprendre les tendances climatiques. Cette science est cruciale pour l'agriculture, l'urbanisme et la prévention des catastrophes.
+        Cette science est cruciale pour Haïti : elle aide nos agriculteurs à savoir quand planter et récolter, permet aux urbanistes de construire des villes résilientes, et aide à prévenir les catastrophes naturelles comme les ouragans et les inondations. Prêts à explorer le monde fascinant de la climatologie ? Allons-y ! 🌍☀️🌧️
       </p>
     `,
     contenu: `
-      <section class="space-y-6">
-        <div>
-          <h3 class="text-xl font-semibold mb-3 text-foreground">1. Éléments climatiques</h3>
-          <ul class="list-disc ml-6 space-y-2 text-foreground">
-            <li><strong>Température :</strong> Mesurée en degrés Celsius</li>
-            <li><strong>Précipitations :</strong> Mesurées en millimètres</li>
-            <li><strong>Humidité :</strong> Pourcentage de vapeur d'eau dans l'air</li>
-            <li><strong>Pression atmosphérique :</strong> En hectopascals</li>
-            <li><strong>Vent :</strong> Direction et vitesse</li>
-          </ul>
+      <section class="space-y-8">
+        <div class="bg-gradient-to-r from-blue-50 to-sky-50 dark:from-blue-950/30 dark:to-sky-950/30 p-6 rounded-lg">
+          <h3 class="text-2xl font-bold mb-4 text-primary">☀️ Climat vs Météo : Quelle est la différence ?</h3>
+          <div class="grid md:grid-cols-2 gap-4">
+            <div class="bg-white dark:bg-gray-800 p-4 rounded">
+              <p class="font-bold text-lg mb-2 text-foreground">🌤️ Météo (Temps qu'il fait)</p>
+              <p class="text-foreground text-sm mb-2">État de l'atmosphère à un <strong>moment précis</strong> et en un <strong>lieu précis</strong>.</p>
+              <p class="text-foreground text-xs"><strong>Exemple :</strong> "Aujourd'hui à Port-au-Prince, il fait 32°C, ensoleillé, vent léger."</p>
+              <p class="text-foreground text-xs mt-2"><strong>Durée :</strong> Quelques heures à quelques jours.</p>
+            </div>
+            <div class="bg-white dark:bg-gray-800 p-4 rounded">
+              <p class="font-bold text-lg mb-2 text-foreground">🌍 Climat</p>
+              <p class="text-foreground text-sm mb-2">Conditions atmosphériques <strong>moyennes</strong> observées sur une <strong>longue période</strong> (au moins 30 ans) dans une région donnée.</p>
+              <p class="text-foreground text-xs"><strong>Exemple :</strong> "Le climat de Port-au-Prince est tropical, chaud toute l'année avec une saison humide de mai à novembre."</p>
+              <p class="text-foreground text-xs mt-2"><strong>Durée :</strong> Décennies, siècles.</p>
+            </div>
+          </div>
+          <div class="bg-yellow-50 dark:bg-yellow-950/30 p-3 rounded mt-3">
+            <p class="text-foreground font-semibold">💡 Analogie simple :</p>
+            <p class="text-foreground text-sm">La <strong>météo</strong>, c'est ton humeur aujourd'hui (joyeux, triste, énervé). Le <strong>climat</strong>, c'est ta personnalité générale (calme, nerveux, optimiste).</p>
+          </div>
         </div>
 
         <div>
-          <h3 class="text-xl font-semibold mb-3 text-foreground">2. Instruments de mesure</h3>
-          <ul class="list-disc ml-6 space-y-2 text-foreground">
-            <li><strong>Thermomètre :</strong> Température</li>
-            <li><strong>Pluviomètre :</strong> Précipitations</li>
-            <li><strong>Baromètre :</strong> Pression</li>
-            <li><strong>Anémomètre :</strong> Vitesse du vent</li>
-            <li><strong>Hygromètre :</strong> Humidité</li>
-          </ul>
+          <h3 class="text-2xl font-bold mb-4 text-primary">I. Les éléments du climat 🌡️☔</h3>
+          
+          <div class="bg-orange-50 dark:bg-orange-950/30 p-6 rounded-lg mb-4">
+            <h4 class="text-xl font-semibold mb-3 text-foreground">A. La température 🌡️</h4>
+            <p class="text-foreground mb-3">
+              La <strong>température</strong> mesure la chaleur ou le froid de l'air. C'est l'élément climatique le plus connu.
+            </p>
+            <div class="bg-white dark:bg-gray-800 p-4 rounded mb-3">
+              <p class="font-bold text-foreground mb-2">📏 Unité de mesure :</p>
+              <p class="text-sm text-foreground">• <strong>Degrés Celsius (°C)</strong> : utilisé en Haïti et dans la majorité des pays</p>
+              <p class="text-sm text-foreground">• <strong>Degrés Fahrenheit (°F)</strong> : utilisé aux États-Unis</p>
+              <p class="text-xs text-foreground mt-2 italic">Conversion : °C = (°F - 32) × 5/9</p>
+            </div>
+            <div class="bg-white dark:bg-gray-800 p-4 rounded">
+              <p class="font-bold text-foreground mb-2">🇭🇹 Températures moyennes en Haïti :</p>
+              <ul class="list-disc ml-6 text-sm text-foreground space-y-1">
+                <li><strong>Port-au-Prince :</strong> 28°C (moyenne annuelle)</li>
+                <li><strong>Cap-Haïtien :</strong> 27°C</li>
+                <li><strong>Zones montagneuses (ex: Kenscoff) :</strong> 15-20°C</li>
+              </ul>
+              <p class="text-xs text-foreground mt-2 italic">Haïti a un climat tropical : chaud toute l'année avec peu de variations de température saisonnières.</p>
+            </div>
+          </div>
+
+          <div class="bg-blue-50 dark:bg-blue-950/30 p-6 rounded-lg mb-4">
+            <h4 class="text-xl font-semibold mb-3 text-foreground">B. Les précipitations (Pluie) 🌧️</h4>
+            <p class="text-foreground mb-3">
+              Les <strong>précipitations</strong> désignent toute forme d'eau qui tombe du ciel : pluie, neige, grêle, bruine (en Haïti, principalement de la pluie).
+            </p>
+            <div class="bg-white dark:bg-gray-800 p-4 rounded mb-3">
+              <p class="font-bold text-foreground mb-2">📏 Unité de mesure :</p>
+              <p class="text-sm text-foreground"><strong>Millimètres (mm)</strong> : hauteur d'eau tombée au sol</p>
+              <p class="text-xs text-foreground mt-2">Exemple : 10 mm de pluie = 10 litres d'eau par mètre carré (m²)</p>
+            </div>
+            <div class="bg-white dark:bg-gray-800 p-4 rounded">
+              <p class="font-bold text-foreground mb-2">🇭🇹 Précipitations moyennes en Haïti :</p>
+              <ul class="list-disc ml-6 text-sm text-foreground space-y-1">
+                <li><strong>Nord-Ouest (zone aride) :</strong> 400-600 mm/an</li>
+                <li><strong>Port-au-Prince :</strong> 1 300 mm/an</li>
+                <li><strong>Montagnes humides (Massif de la Selle) :</strong> 2 000-3 000 mm/an</li>
+              </ul>
+              <p class="text-xs text-foreground mt-2 font-semibold">🌧️ Saison des pluies : Mai à novembre (période des ouragans)</p>
+              <p class="text-xs text-foreground">☀️ Saison sèche : Décembre à avril</p>
+            </div>
+          </div>
+
+          <div class="bg-purple-50 dark:bg-purple-950/30 p-6 rounded-lg mb-4">
+            <h4 class="text-xl font-semibold mb-3 text-foreground">C. L'humidité atmosphérique 💧</h4>
+            <p class="text-foreground mb-3">
+              L'<strong>humidité</strong> mesure la quantité de vapeur d'eau présente dans l'air.
+            </p>
+            <div class="bg-white dark:bg-gray-800 p-4 rounded">
+              <p class="font-bold text-foreground mb-2">📏 Unité de mesure :</p>
+              <p class="text-sm text-foreground"><strong>Pourcentage (%)</strong> : humidité relative</p>
+              <ul class="list-disc ml-6 text-xs text-foreground space-y-1 mt-2">
+                <li>0% : Air totalement sec (désert)</li>
+                <li>50-70% : Agréable</li>
+                <li>80-100% : Air saturé, très lourd, difficile à respirer</li>
+              </ul>
+              <p class="text-xs text-foreground mt-2">🇭🇹 En Haïti, l'humidité varie de 70-90% (climat tropical humide), surtout en saison des pluies.</p>
+            </div>
+          </div>
+
+          <div class="bg-green-50 dark:bg-green-950/30 p-6 rounded-lg mb-4">
+            <h4 class="text-xl font-semibold mb-3 text-foreground">D. La pression atmosphérique ⚖️</h4>
+            <p class="text-foreground mb-3">
+              La <strong>pression atmosphérique</strong> est le poids de l'air au-dessus de nous.
+            </p>
+            <div class="bg-white dark:bg-gray-800 p-4 rounded">
+              <p class="font-bold text-foreground mb-2">📏 Unité de mesure :</p>
+              <p class="text-sm text-foreground"><strong>Hectopascals (hPa)</strong> ou millibars (mb)</p>
+              <p class="text-xs text-foreground mt-2">• Pression normale au niveau de la mer : <strong>1013 hPa</strong></p>
+              <p class="text-xs text-foreground">• Haute pression → beau temps</p>
+              <p class="text-xs text-foreground">• Basse pression → pluie, tempêtes</p>
+              <p class="text-xs text-foreground mt-2 font-semibold text-red-600 dark:text-red-400">⚠️ Pression très basse (< 950 hPa) = ouragan approche !</p>
+            </div>
+          </div>
+
+          <div class="bg-teal-50 dark:bg-teal-950/30 p-6 rounded-lg">
+            <h4 class="text-xl font-semibold mb-3 text-foreground">E. Le vent 💨</h4>
+            <p class="text-foreground mb-3">
+              Le <strong>vent</strong> est le déplacement de l'air d'une zone de haute pression vers une zone de basse pression.
+            </p>
+            <div class="bg-white dark:bg-gray-800 p-4 rounded">
+              <p class="font-bold text-foreground mb-2">📏 Mesures :</p>
+              <ul class="list-disc ml-6 text-sm text-foreground space-y-1">
+                <li><strong>Direction :</strong> D'où vient le vent (Nord, Sud, Est, Ouest)</li>
+                <li><strong>Vitesse :</strong> km/h ou m/s</li>
+              </ul>
+              <p class="text-xs text-foreground mt-2">🇭🇹 En Haïti : <strong>Alizés</strong> (vents réguliers venant de l'Est) soufflent toute l'année, apportant fraîcheur et humidité.</p>
+              <p class="text-xs text-foreground mt-2 font-semibold text-red-600 dark:text-red-400">🌀 Pendant les ouragans, vents > 119 km/h (très dangereux !)</p>
+            </div>
+          </div>
         </div>
 
         <div>
-          <h3 class="text-xl font-semibold mb-3 text-foreground">3. Représentation graphique</h3>
-          <p class="text-foreground mb-3">Diagrammes climatiques (climogrammes) montrent :</p>
-          <ul class="list-disc ml-6 space-y-2 text-foreground">
-            <li>Températures moyennes mensuelles (courbe)</li>
-            <li>Précipitations mensuelles (barres)</li>
-            <li>Permet de visualiser les saisons</li>
-          </ul>
+          <h3 class="text-2xl font-bold mb-4 text-primary">II. Les instruments de mesure météorologique 🛠️</h3>
+          
+          <div class="bg-gradient-to-r from-gray-50 to-slate-50 dark:from-gray-950/30 dark:to-slate-950/30 p-6 rounded-lg">
+            <div class="grid md:grid-cols-2 gap-4">
+              <div class="bg-white dark:bg-gray-800 p-4 rounded">
+                <p class="font-bold text-lg mb-2 text-foreground">🌡️ Thermomètre</p>
+                <p class="text-sm text-foreground"><strong>Mesure :</strong> Température</p>
+                <p class="text-xs text-foreground mt-1">Tube de verre contenant du mercure ou de l'alcool coloré qui monte/descend selon la température.</p>
+              </div>
+
+              <div class="bg-white dark:bg-gray-800 p-4 rounded">
+                <p class="font-bold text-lg mb-2 text-foreground">🌧️ Pluviomètre</p>
+                <p class="text-sm text-foreground"><strong>Mesure :</strong> Quantité de pluie (mm)</p>
+                <p class="text-xs text-foreground mt-1">Récipient gradué qui collecte l'eau de pluie. On mesure la hauteur d'eau accumulée.</p>
+              </div>
+
+              <div class="bg-white dark:bg-gray-800 p-4 rounded">
+                <p class="font-bold text-lg mb-2 text-foreground">⚖️ Baromètre</p>
+                <p class="text-sm text-foreground"><strong>Mesure :</strong> Pression atmosphérique (hPa)</p>
+                <p class="text-xs text-foreground mt-1">Indique si la pression monte (beau temps) ou descend (mauvais temps).</p>
+              </div>
+
+              <div class="bg-white dark:bg-gray-800 p-4 rounded">
+                <p class="font-bold text-lg mb-2 text-foreground">💨 Anémomètre</p>
+                <p class="text-sm text-foreground"><strong>Mesure :</strong> Vitesse du vent (km/h)</p>
+                <p class="text-xs text-foreground mt-1">Appareil avec des coupelles qui tournent sous l'effet du vent. Plus elles tournent vite, plus le vent est fort.</p>
+              </div>
+
+              <div class="bg-white dark:bg-gray-800 p-4 rounded">
+                <p class="font-bold text-lg mb-2 text-foreground">🧭 Girouette</p>
+                <p class="text-sm text-foreground"><strong>Mesure :</strong> Direction du vent</p>
+                <p class="text-xs text-foreground mt-1">Flèche qui pivote et indique d'où vient le vent (N, S, E, O).</p>
+              </div>
+
+              <div class="bg-white dark:bg-gray-800 p-4 rounded">
+                <p class="font-bold text-lg mb-2 text-foreground">💧 Hygromètre</p>
+                <p class="text-sm text-foreground"><strong>Mesure :</strong> Humidité de l'air (%)</p>
+                <p class="text-xs text-foreground mt-1">Indique si l'air est sec ou saturé en vapeur d'eau.</p>
+              </div>
+            </div>
+            <div class="bg-blue-50 dark:bg-blue-950/30 p-4 rounded mt-4">
+              <p class="font-bold text-foreground mb-2">🏢 Où trouve-t-on ces instruments ?</p>
+              <p class="text-sm text-foreground">Dans les <strong>stations météorologiques</strong> gérées par le Centre National de Météorologie (CNM) en Haïti. Ces stations collectent les données 24h/24 et les transmettent aux météorologues.</p>
+            </div>
+          </div>
         </div>
 
         <div>
-          <h3 class="text-xl font-semibold mb-3 text-foreground">4. Changement climatique</h3>
-          <p class="text-foreground">Les données montrent :</p>
-          <ul class="list-disc ml-6 space-y-2 text-foreground">
-            <li>Augmentation des températures globales</li>
-            <li>Modification des régimes de pluies</li>
-            <li>Intensification des ouragans</li>
-            <li>Nécessité d'adaptation</li>
+          <h3 class="text-2xl font-bold mb-4 text-primary">III. Représentation graphique des données : Le climogramme 📊</h3>
+          
+          <div class="bg-indigo-50 dark:bg-indigo-950/30 p-6 rounded-lg mb-4">
+            <h4 class="text-xl font-semibold mb-3 text-foreground">A. Qu'est-ce qu'un climogramme (diagramme climatique) ?</h4>
+            <p class="text-foreground mb-3">
+              Un <strong>climogramme</strong> est un graphique qui représente visuellement les températures et précipitations moyennes d'un lieu sur une année (12 mois).
+            </p>
+            <div class="bg-white dark:bg-gray-800 p-4 rounded">
+              <p class="font-bold text-foreground mb-2">📊 Composition :</p>
+              <ul class="list-disc ml-6 text-sm text-foreground space-y-1">
+                <li><strong>Axe horizontal (X) :</strong> Les 12 mois de l'année (J, F, M, A, M, J, J, A, S, O, N, D)</li>
+                <li><strong>Axe vertical gauche (Y1) :</strong> Températures en °C (représentées par une <span class="text-red-600 font-bold">courbe rouge</span>)</li>
+                <li><strong>Axe vertical droit (Y2) :</strong> Précipitations en mm (représentées par des <span class="text-blue-600 font-bold">barres bleues</span>)</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="bg-pink-50 dark:bg-pink-950/30 p-6 rounded-lg mb-4">
+            <h4 class="text-xl font-semibold mb-3 text-foreground">B. Comment lire un climogramme ?</h4>
+            <div class="space-y-3">
+              <div class="bg-white dark:bg-gray-800 p-3 rounded">
+                <p class="font-bold text-foreground mb-1">1️⃣ Identifier les saisons</p>
+                <p class="text-sm text-foreground">• Mois les plus chauds (courbe au plus haut)</p>
+                <p class="text-sm text-foreground">• Mois les plus froids (courbe au plus bas)</p>
+                <p class="text-sm text-foreground">• Saison sèche (barres basses ou absentes)</p>
+                <p class="text-sm text-foreground">• Saison humide (barres hautes)</p>
+              </div>
+
+              <div class="bg-white dark:bg-gray-800 p-3 rounded">
+                <p class="font-bold text-foreground mb-1">2️⃣ Observer les variations</p>
+                <p class="text-sm text-foreground">• Climat stable : courbe plate (températures constantes toute l'année)</p>
+                <p class="text-sm text-foreground">• Climat contrasté : courbe en "vague" (fortes variations saisonnières)</p>
+              </div>
+
+              <div class="bg-white dark:bg-gray-800 p-3 rounded">
+                <p class="font-bold text-foreground mb-1">3️⃣ Comparer précipitations et températures</p>
+                <p class="text-sm text-foreground">• Si barres hautes quand courbe haute → saison chaude ET humide (tropical)</p>
+                <p class="text-sm text-foreground">• Si barres basses quand courbe haute → saison chaude ET sèche</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="bg-yellow-50 dark:bg-yellow-950/30 p-6 rounded-lg">
+            <h4 class="text-xl font-semibold mb-3 text-foreground">C. Exemple : Climogramme de Port-au-Prince 🇭🇹</h4>
+            <div class="bg-white dark:bg-gray-800 p-4 rounded">
+              <p class="font-bold text-foreground mb-2">Caractéristiques :</p>
+              <ul class="list-disc ml-6 text-sm text-foreground space-y-1">
+                <li><strong>Températures :</strong> Stables toute l'année (26-30°C), peu de variations → climat tropical</li>
+                <li><strong>Précipitations :</strong> 
+                  <ul class="list-disc ml-6 mt-1">
+                    <li>Très faibles de décembre à avril (saison sèche)</li>
+                    <li>Très élevées de mai à novembre (saison des pluies), avec pics en mai, août, octobre</li>
+                  </ul>
+                </li>
+              </ul>
+              <p class="text-sm text-foreground mt-2 font-semibold">📝 Interprétation : Port-au-Prince a un climat tropical avec deux saisons distinctes : une saison sèche et une saison des pluies. Les températures restent chaudes toute l'année.</p>
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <h3 class="text-2xl font-bold mb-4 text-primary">IV. Le changement climatique : Un défi majeur pour Haïti 🌍🔥</h3>
+          
+          <div class="bg-red-50 dark:bg-red-950/30 p-6 rounded-lg border-l-4 border-red-500 mb-4">
+            <h4 class="text-xl font-semibold mb-3 text-foreground">A. Qu'est-ce que le changement climatique ?</h4>
+            <p class="text-foreground mb-3">
+              Le <strong>changement climatique</strong> (ou réchauffement climatique) désigne la modification durable et rapide du climat de la Terre, principalement due aux activités humaines (émissions de gaz à effet de serre : CO₂, méthane).
+            </p>
+            <div class="bg-white dark:bg-gray-800 p-4 rounded">
+              <p class="font-bold text-foreground mb-2">📈 Observations mondiales :</p>
+              <ul class="list-disc ml-6 text-sm text-foreground space-y-1">
+                <li>Augmentation de la température moyenne mondiale : <strong>+1,1°C depuis 1880</strong></li>
+                <li>Fonte accélérée des glaces polaires et des glaciers</li>
+                <li>Élévation du niveau des mers (environ 20 cm au XXe siècle)</li>
+                <li>Événements extrêmes plus fréquents (ouragans, sécheresses, inondations)</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="bg-orange-50 dark:bg-orange-950/30 p-6 rounded-lg mb-4">
+            <h4 class="text-xl font-semibold mb-3 text-foreground">B. Impacts du changement climatique en Haïti 🇭🇹</h4>
+            <div class="space-y-3">
+              <div class="bg-white dark:bg-gray-800 p-3 rounded">
+                <p class="font-bold text-foreground">🌀 Intensification des ouragans</p>
+                <p class="text-sm text-foreground">Les ouragans deviennent plus puissants et destructeurs. Haïti, située dans la trajectoire des cyclones, est particulièrement vulnérable.</p>
+                <p class="text-xs text-foreground mt-1 italic">Exemples récents : Matthew (2016), Irma et Maria (2017)</p>
+              </div>
+
+              <div class="bg-white dark:bg-gray-800 p-3 rounded">
+                <p class="font-bold text-foreground">🌧️ Modification des régimes de pluies</p>
+                <p class="text-sm text-foreground">Pluies plus intenses mais plus irrégulières → sécheresses prolongées alternent avec inondations soudaines.</p>
+                <p class="text-xs text-foreground mt-1">⚠️ Impact sur l'agriculture : récoltes imprévisibles, famines possibles</p>
+              </div>
+
+              <div class="bg-white dark:bg-gray-800 p-3 rounded">
+                <p class="font-bold text-foreground">🌊 Élévation du niveau de la mer</p>
+                <p class="text-sm text-foreground">Menace directe pour les villes côtières (Port-au-Prince, Cap-Haïtien, Jacmel). Risque d'inondations, salinisation des nappes phréatiques.</p>
+              </div>
+
+              <div class="bg-white dark:bg-gray-800 p-3 rounded">
+                <p class="font-bold text-foreground">☀️ Augmentation des températures</p>
+                <p class="text-sm text-foreground">Canicules plus fréquentes et intenses. Stress thermique pour les populations, surtout urbaines.</p>
+              </div>
+
+              <div class="bg-white dark:bg-gray-800 p-3 rounded">
+                <p class="font-bold text-foreground">🌾 Insécurité alimentaire</p>
+                <p class="text-sm text-foreground">Changements climatiques perturbent les cycles agricoles → baisse des rendements → hausse des prix alimentaires.</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="bg-green-50 dark:bg-green-950/30 p-6 rounded-lg">
+            <h4 class="text-xl font-semibold mb-3 text-foreground">C. Solutions et adaptation 🌱</h4>
+            <div class="space-y-2">
+              <div class="bg-white dark:bg-gray-800 p-3 rounded">
+                <p class="font-bold text-foreground">🌳 Reforestation massive</p>
+                <p class="text-sm text-foreground">Planter des arbres pour réguler le climat local, protéger les sols et absorber le CO₂.</p>
+              </div>
+              <div class="bg-white dark:bg-gray-800 p-3 rounded">
+                <p class="font-bold text-foreground">🏗️ Infrastructures résilientes</p>
+                <p class="text-sm text-foreground">Construire des maisons et bâtiments capables de résister aux ouragans et inondations.</p>
+              </div>
+              <div class="bg-white dark:bg-gray-800 p-3 rounded">
+                <p class="font-bold text-foreground">🌾 Agriculture adaptée</p>
+                <p class="text-sm text-foreground">Cultures résistantes à la sécheresse, systèmes d'irrigation efficaces, diversification des cultures.</p>
+              </div>
+              <div class="bg-white dark:bg-gray-800 p-3 rounded">
+                <p class="font-bold text-foreground">⚡ Énergies renouvelables</p>
+                <p class="text-sm text-foreground">Remplacer charbon de bois par solaire, éolien, biogaz → réduire déforestation et émissions CO₂.</p>
+              </div>
+              <div class="bg-white dark:bg-gray-800 p-3 rounded">
+                <p class="font-bold text-foreground">📚 Éducation et sensibilisation</p>
+                <p class="text-sm text-foreground">Informer la population sur les risques climatiques et les comportements à adopter.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="bg-primary/5 border-l-4 border-primary p-6 rounded-lg">
+          <h3 class="text-xl font-bold mb-3 text-primary">🌟 Ce que TU peux faire contre le changement climatique !</h3>
+          <ul class="list-disc ml-6 text-foreground space-y-2">
+            <li><strong>Plante des arbres</strong> dans ton école ou ta communauté</li>
+            <li><strong>Économise l'énergie</strong> : éteins les lumières inutiles, limite la climatisation</li>
+            <li><strong>Réduis, réutilise, recycle</strong> : moins de déchets = moins de pollution</li>
+            <li><strong>Sensibilise ton entourage</strong> aux enjeux climatiques</li>
+            <li><strong>Adopte des gestes écoresponsables</strong> au quotidien</li>
           </ul>
+          <p class="text-foreground mt-4 font-semibold italic text-center">
+            "Chak ti jès konte. Ansanm, nou ka fè diferans !" (Chaque petit geste compte. Ensemble, nous pouvons faire la différence !) 🌍💚
+          </p>
         </div>
       </section>
     `,
     exemplesExercices: `
-      <section class="space-y-4">
+      <div class="space-y-6">
+        <h3 class="text-2xl font-bold mb-4 text-primary">📝 Exercices pratiques</h3>
+
+        <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md">
+          <p class="font-bold text-xl mb-4">1. Construction d'un climogramme</p>
+          <p class="mb-3">À partir des données suivantes pour Port-au-Prince, construis un climogramme :</p>
+          <div class="overflow-x-auto">
+            <table class="w-full text-sm border-collapse">
+              <tr class="bg-primary/10">
+                <th class="border p-2">Mois</th>
+                <th class="border p-2">J</th>
+                <th class="border p-2">F</th>
+                <th class="border p-2">M</th>
+                <th class="border p-2">A</th>
+                <th class="border p-2">M</th>
+                <th class="border p-2">J</th>
+                <th class="border p-2">J</th>
+                <th class="border p-2">A</th>
+                <th class="border p-2">S</th>
+                <th class="border p-2">O</th>
+                <th class="border p-2">N</th>
+                <th class="border p-2">D</th>
+              </tr>
+              <tr>
+                <td class="border p-2 font-semibold">T°C</td>
+                <td class="border p-2">26</td>
+                <td class="border p-2">26</td>
+                <td class="border p-2">27</td>
+                <td class="border p-2">28</td>
+                <td class="border p-2">29</td>
+                <td class="border p-2">30</td>
+                <td class="border p-2">30</td>
+                <td class="border p-2">30</td>
+                <td class="border p-2">29</td>
+                <td class="border p-2">28</td>
+                <td class="border p-2">27</td>
+                <td class="border p-2">26</td>
+              </tr>
+              <tr>
+                <td class="border p-2 font-semibold">Précip. (mm)</td>
+                <td class="border p-2">30</td>
+                <td class="border p-2">40</td>
+                <td class="border p-2">60</td>
+                <td class="border p-2">100</td>
+                <td class="border p-2">200</td>
+                <td class="border p-2">120</td>
+                <td class="border p-2">80</td>
+                <td class="border p-2">150</td>
+                <td class="border p-2">180</td>
+                <td class="border p-2">170</td>
+                <td class="border p-2">100</td>
+                <td class="border p-2">40</td>
+              </tr>
+            </table>
+          </div>
+          <ul class="list-disc ml-6 mt-3 space-y-1">
+            <li>Trace la courbe des températures en rouge</li>
+            <li>Dessine les barres des précipitations en bleu</li>
+            <li>Identifie la saison sèche et la saison des pluies</li>
+          </ul>
+        </div>
+
+        <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md">
+          <p class="font-bold text-xl mb-4">2. Collecte de données météorologiques</p>
+          <p class="mb-3">Pendant une semaine, observe et note chaque jour (à la même heure) :</p>
+          <ul class="list-disc ml-6 space-y-1">
+            <li>La température (utilise un thermomètre si possible)</li>
+            <li>Le type de temps (ensoleillé, nuageux, pluvieux)</li>
+            <li>La direction du vent</li>
+            <li>Ton ressenti (chaud, frais, humide, sec)</li>
+          </ul>
+          <p class="mt-2">Crée un tableau et présente tes observations à la classe.</p>
+        </div>
+
+        <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md">
+          <p class="font-bold text-xl mb-4">3. Fabrique un pluviomètre artisanal</p>
+          <p class="mb-3">Matériel : Une bouteille en plastique transparente, des ciseaux, une règle, un marqueur.</p>
+          <ol class="list-decimal ml-6 space-y-2">
+            <li>Coupe le haut de la bouteille</li>
+            <li>Retourne-le et place-le comme un entonnoir dans la partie inférieure</li>
+            <li>Trace des graduations en millimètres sur le côté</li>
+            <li>Place-le à l'extérieur dans un endroit dégagé</li>
+            <li>Mesure l'eau après chaque pluie et note les quantités</li>
+          </ol>
+        </div>
+
+        <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md">
+          <p class="font-bold text-xl mb-4">4. Analyse comparative de climogrammes</p>
+          <p class="mb-3">Compare le climogramme de Port-au-Prince avec celui d'une ville dans une zone aride d'Haïti (ex: Port-de-Paix). Identifie :</p>
+          <ul class="list-disc ml-6 space-y-1">
+            <li>Les différences de températures</li>
+            <li>Les différences de précipitations</li>
+            <li>Les conséquences sur la végétation et l'agriculture</li>
+          </ul>
+        </div>
+
+        <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md">
+          <p class="font-bold text-xl mb-4">5. Questions de réflexion</p>
+          <ol class="list-decimal ml-6 space-y-3">
+            <li>Quelle est la différence entre météo et climat ? Donne un exemple concret pour chacun.</li>
+            <li>Pourquoi les climogrammes sont-ils utiles pour les agriculteurs ?</li>
+            <li>Cite trois impacts du changement climatique sur Haïti.</li>
+            <li>Quelles actions concrètes ta communauté peut-elle entreprendre pour s'adapter au changement climatique ?</li>
+          </ol>
+        </div>
+
         <div class="bg-primary/5 border-l-4 border-primary p-4 rounded">
-          <h4 class="font-semibold mb-2 text-foreground">📝 Activité</h4>
-          <p class="text-foreground">
-            Crée un diagramme climatique de ta région avec les données de température et précipitations pour chaque mois de l'année.
+          <p class="font-bold mb-2">🌍 Projet de classe : Observatoire climatique</p>
+          <p class="text-sm">Créez une station météo simplifiée dans votre école avec des instruments artisanaux (thermomètre, pluviomètre, girouette). Collectez des données quotidiennes pendant un mois et créez des climogrammes. Partagez vos résultats avec d'autres classes !</p>
+        </div>
+
+        <div class="bg-green-50 dark:bg-green-950/30 p-4 rounded">
+          <p class="font-bold mb-2 text-foreground">💡 Le savais-tu ?</p>
+          <p class="text-foreground text-sm">
+            La station météorologique de Port-au-Prince, gérée par le Centre National de Météorologie (CNM), collecte des données climatiques depuis plus de 100 ans ! Ces données historiques sont essentielles pour comprendre l'évolution du climat haïtien et prévoir les tendances futures. 📊🇭🇹
           </p>
         </div>
-      </section>
+      </div>
     `
   },
 
