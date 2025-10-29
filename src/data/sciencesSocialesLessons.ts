@@ -7933,76 +7933,295 @@ export const sciencesSocialesLessons7AF: SciencesSocialesLesson[] = [
     objectif: "Identifier et comprendre la végétation naturelle d'Haïti.",
     introduction: `
       <p class="text-foreground leading-relaxed">
-        Haïti avait autrefois une couverture forestière de 60%. Aujourd'hui, moins de 2% du territoire est boisé. Comprendre notre végétation naturelle est crucial pour les efforts de reboisement.
+        Bienvenue chers élèves de 7e année ! Aujourd'hui, nous partons à la découverte d'un aspect fascinant de notre pays bien-aimé, Haïti : sa végétation ! Imaginez-vous en train de traverser les montagnes verdoyantes, les plaines fertiles et les côtes ensoleillées de notre île. Qu'est-ce que vous voyez ? Des arbres majestueux, des fleurs colorées, des plantes utiles… C'est tout un monde de vie végétale qui nous entoure et qui joue un rôle essentiel dans notre quotidien. La végétation n'est pas seulement un beau paysage à admirer ; elle est le poumon de notre environnement, la source de notre nourriture et même la base de nos traditions et de notre culture. Au cours de cette leçon, nous allons explorer ensemble les différents types de végétation que l'on trouve en Haïti, comprendre comment elle s'adapte à notre climat tropical et découvrir pourquoi il est si important de la protéger pour les générations futures. Préparez-vous à un voyage passionnant au cœur de la nature haïtienne !
       </p>
     `,
     contenu: `
       <section class="space-y-6">
+        <p class="text-foreground leading-relaxed">
+          Haïti, une perle des Caraïbes, est dotée d'une richesse végétale extraordinaire, façonnée par son climat tropical, son relief varié et son histoire. Explorons ensemble les grandes catégories de végétation que l'on rencontre sur notre territoire.
+        </p>
+
         <div>
-          <h3 class="text-xl font-semibold mb-3 text-foreground">1. Forêt de pins</h3>
-          <p class="text-foreground">En altitude (>1000m), climat frais</p>
-          <ul class="list-disc ml-6 space-y-2 text-foreground">
-            <li><strong>Espèce principale :</strong> Pin d'Hispaniola (endémique)</li>
-            <li><strong>Zones :</strong> Massif de la Selle, Forêt des Pins</li>
-            <li>Très menacé par déforestation</li>
-          </ul>
+          <h3 class="text-2xl font-bold mb-4 text-green-700 dark:text-green-400">1. Les Forêts : Poumons Verts d'Haïti</h3>
+          <p class="text-foreground mb-4">Les forêts sont des écosystèmes complexes où les arbres dominent. En Haïti, on distinguait autrefois différents types de forêts qui ont malheureusement subi les pressions de la déforestation. Cependant, des efforts sont faits pour les restaurer et les protéger.</p>
+
+          <div class="bg-amber-50 dark:bg-amber-950/30 p-6 rounded-lg mb-4">
+            <h4 class="text-xl font-semibold mb-3">🌵 Les Forêts Sèches (Xérophiles) : Les Survivantes des Régions Arides</h4>
+            <p class="mb-3">Ces forêts se trouvent principalement dans les régions les plus sèches d'Haïti, notamment dans le Nord-Ouest (comme la Savane Désolée), l'Artibonite (autour de la plaine de l'Artibonite), et certaines parties de l'Ouest et du Sud-Est. Elles sont caractérisées par des arbres et des arbustes qui ont développé des stratégies étonnantes pour survivre avec peu d'eau.</p>
+            
+            <div class="space-y-3 ml-4">
+              <div>
+                <p class="font-bold">🌳 Le Bayahonde (Prosopis juliflora)</p>
+                <p>Cet arbre épineux est partout ! C'est un véritable symbole de résilience. Il fournit du bois de chauffage, des poteaux, et ses gousses sont appréciées du bétail.</p>
+              </div>
+              <div>
+                <p class="font-bold">🌳 Le Campêche (Haematoxylum campechianum)</p>
+                <p>Un autre arbre très commun dans les zones sèches, célèbre pour son bois dur utilisé autrefois pour la teinture et aujourd'hui pour le charbon de bois.</p>
+              </div>
+              <div>
+                <p class="font-bold">🌵 Les Cactus</p>
+                <p>Présents en de multiples formes, les cactus sont les champions de l'adaptation à la sécheresse, stockant l'eau dans leurs tiges charnues.</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="bg-green-50 dark:bg-green-950/30 p-6 rounded-lg mb-4">
+            <h4 class="text-xl font-semibold mb-3">🌲 Les Forêts de Pins : Les Gardiens des Hauteurs</h4>
+            <p class="mb-3">Ces forêts se situent principalement en altitude (généralement au-dessus de 1 000 mètres), où le climat est plus frais et les températures peuvent même être froides la nuit.</p>
+            
+            <div class="bg-white dark:bg-gray-800 p-4 rounded-lg mt-3">
+              <p class="font-semibold mb-2">🇭🇹 Zones principales :</p>
+              <ul class="list-disc ml-6 space-y-1">
+                <li>Massif de la Selle (Sud-Est)</li>
+                <li>Forêt des Pins (Ouest)</li>
+                <li>Massif de la Hotte (Sud)</li>
+                <li>Montagnes du Nord</li>
+              </ul>
+            </div>
+            
+            <p class="mt-3 font-semibold text-red-600 dark:text-red-400">⚠️ Menaces : Déforestation intensive pour le charbon de bois, incendies, exploitation illégale du bois.</p>
+          </div>
+
+          <div class="bg-blue-50 dark:bg-blue-950/30 p-6 rounded-lg mb-4">
+            <h4 class="text-xl font-semibold mb-3">🌴 Les Forêts Tropicales Humides : Les Joyaux Verts (Presque Disparus)</h4>
+            <p class="mb-3">Ces forêts étaient autrefois les plus riches et diversifiées d'Haïti. Elles se trouvaient principalement sur les versants exposés aux vents humides de l'est (côtes "au vent") et dans les vallées bien arrosées.</p>
+            
+            <div class="bg-white dark:bg-gray-800 p-4 rounded-lg mt-3">
+              <p class="font-semibold mb-2">🎋 Espèces caractéristiques :</p>
+              <ul class="list-disc ml-6 space-y-1">
+                <li>Acajou (bois précieux, presque éteint à l'état sauvage)</li>
+                <li>Cèdre (utilisé en ébénisterie)</li>
+                <li>Gaïac (bois le plus dur au monde !)</li>
+                <li>Fougères arborescentes géantes</li>
+                <li>Orchidées endémiques</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="bg-cyan-50 dark:bg-cyan-950/30 p-6 rounded-lg mb-4">
+            <h4 class="text-xl font-semibold mb-3">🌊 Les Mangroves : Les Gardiennes des Côtes</h4>
+            <p class="mb-3">Les mangroves sont des forêts exceptionnelles qui poussent là où l'eau douce des rivières rencontre l'eau salée de la mer. Elles sont vitales pour la protection de nos côtes et la vie marine.</p>
+            
+            <div class="space-y-3 ml-4">
+              <div>
+                <p class="font-bold">🛡️ Protection côtière</p>
+                <p>Les racines enchevêtrées des palétuviers forment une barrière naturelle contre les vagues, les tempêtes et l'érosion côtière.</p>
+              </div>
+              <div>
+                <p class="font-bold">🐟 Nurserie marine</p>
+                <p>Les jeunes poissons, crabes et crevettes se réfugient parmi les racines pour grandir à l'abri des prédateurs.</p>
+              </div>
+            </div>
+            
+            <div class="bg-white dark:bg-gray-800 p-4 rounded-lg mt-3">
+              <p class="font-semibold mb-2">🇭🇹 Zones principales en Haïti :</p>
+              <ul class="list-disc ml-6 space-y-1">
+                <li>Baie des Gonaïves</li>
+                <li>Les Trois Baies (Sud)</li>
+                <li>Baie d'Acul (Nord)</li>
+                <li>Embouchures des rivières Artibonite et Grande Rivière du Nord</li>
+              </ul>
+            </div>
+          </div>
         </div>
 
         <div>
-          <h3 class="text-xl font-semibold mb-3 text-foreground">2. Forêt humide</h3>
-          <p class="text-foreground">Versants exposés aux pluies</p>
-          <ul class="list-disc ml-6 space-y-2 text-foreground">
-            <li>Acajou, cèdre, campêche</li>
-            <li>Grande biodiversité</li>
-            <li>Presque entièrement détruite</li>
-          </ul>
+          <h3 class="text-2xl font-bold mb-4 text-yellow-700 dark:text-yellow-400">2. Les Savanes et les Plaines Cultivées</h3>
+          
+          <div class="bg-yellow-50 dark:bg-yellow-950/30 p-6 rounded-lg mb-4">
+            <h4 class="text-xl font-semibold mb-3">🌾 Les Plaines Agricoles : Le Grenier d'Haïti</h4>
+            <p class="mb-3">Les plaines, bien qu'elles ne représentent qu'une petite partie du territoire haïtien (environ 20%), sont vitales pour notre agriculture et notre alimentation.</p>
+            
+            <div class="bg-white dark:bg-gray-800 p-4 rounded-lg mt-3">
+              <p class="font-semibold mb-2">🌾 Principales plaines agricoles :</p>
+              <ul class="list-disc ml-6 space-y-2">
+                <li><strong>Plaine de l'Artibonite :</strong> La plus grande (environ 2500 km²). Rizières, canne à sucre, bananes. C'est le grenier d'Haïti !</li>
+                <li><strong>Plaine du Cul-de-Sac :</strong> Près de Port-au-Prince. Canne à sucre, agrumes, légumes</li>
+                <li><strong>Plaine du Nord :</strong> Région du Cap-Haïtien. Cacao, café, bananes</li>
+                <li><strong>Plaine des Cayes :</strong> Au Sud. Rizières, cultures maraîchères</li>
+              </ul>
+            </div>
+          </div>
         </div>
 
         <div>
-          <h3 class="text-xl font-semibold mb-3 text-foreground">3. Forêt sèche</h3>
-          <p class="text-foreground">Zones arides (Nord-Ouest, Artibonite)</p>
-          <ul class="list-disc ml-6 space-y-2 text-foreground">
-            <li>Cactus, bayahondes, raquettes</li>
-            <li>Arbres adaptés à la sécheresse</li>
-            <li>Gaïac (bois très dur)</li>
-          </ul>
+          <h3 class="text-2xl font-bold mb-4 text-purple-700 dark:text-purple-400">3. La Végétation Cultivée : Nos Cultures Traditionnelles 🌱</h3>
+          
+          <div class="bg-purple-50 dark:bg-purple-950/30 p-6 rounded-lg mb-4">
+            <p class="mb-4">La plus grande partie de la végétation que vous voyez en Haïti aujourd'hui est cultivée par les paysans et fait partie de notre agriculture.</p>
+            
+            <div class="space-y-4">
+              <div class="bg-white dark:bg-gray-800 p-4 rounded-lg">
+                <p class="font-bold mb-2">🌾 Cultures vivrières (pour manger) :</p>
+                <ul class="list-disc ml-6 space-y-1">
+                  <li>Maïs, riz, haricots (pois)</li>
+                  <li>Manioc (kasav), patate douce, igname</li>
+                  <li>Bananes plantains, bananes douces</li>
+                  <li>Légumes : tomates, choux, carottes, laitues</li>
+                </ul>
+              </div>
+              
+              <div class="bg-white dark:bg-gray-800 p-4 rounded-lg">
+                <p class="font-bold mb-2">☕ Cultures de rente (pour vendre, exporter) :</p>
+                <ul class="list-disc ml-6 space-y-1">
+                  <li>Café (exporté mondialement)</li>
+                  <li>Cacao (chocolat haïtien réputé !)</li>
+                  <li>Mangues (Madame Francis, Baptiste)</li>
+                  <li>Vétiver (racines utilisées en parfumerie)</li>
+                  <li>Canne à sucre</li>
+                </ul>
+              </div>
+            </div>
+          </div>
         </div>
 
         <div>
-          <h3 class="text-xl font-semibold mb-3 text-foreground">4. Mangroves</h3>
-          <p class="text-foreground">Côtes protégées</p>
-          <ul class="list-disc ml-6 space-y-2 text-foreground">
-            <li><strong>Zones :</strong> Gonaïves, Sud</li>
-            <li>Protection contre érosion</li>
-            <li>Nurserie pour poissons</li>
-          </ul>
+          <h3 class="text-2xl font-bold mb-4 text-red-700 dark:text-red-400">4. La Déforestation : Un Drame Environnemental 🚨</h3>
+          
+          <div class="bg-red-50 dark:bg-red-950/30 p-6 rounded-lg mb-4">
+            <p class="mb-3 font-semibold">Haïti a perdu plus de 98% de ses forêts originelles ! C'est l'un des taux de déforestation les plus élevés au monde.</p>
+            
+            <div class="space-y-3 ml-4">
+              <div>
+                <p class="font-bold">🔥 Causes principales :</p>
+                <ul class="list-disc ml-6 space-y-1">
+                  <li>Production de charbon de bois (principale source d'énergie pour la cuisine)</li>
+                  <li>Défrichage pour l'agriculture</li>
+                  <li>Construction anarchique</li>
+                  <li>Exploitation illégale du bois précieux</li>
+                </ul>
+              </div>
+              
+              <div>
+                <p class="font-bold">⚠️ Conséquences dramatiques :</p>
+                <ul class="list-disc ml-6 space-y-1">
+                  <li>Érosion massive des sols</li>
+                  <li>Inondations dévastatrices</li>
+                  <li>Sécheresses aggravées</li>
+                  <li>Perte de biodiversité (espèces endémiques menacées)</li>
+                  <li>Pauvreté accrue dans les zones rurales</li>
+                </ul>
+              </div>
+            </div>
+          </div>
         </div>
 
         <div>
-          <h3 class="text-xl font-semibold mb-3 text-foreground">5. Espèces endémiques menacées</h3>
-          <ul class="list-disc ml-6 space-y-2 text-foreground">
-            <li>Pin d'Hispaniola</li>
-            <li>Perroquet d'Hispaniola</li>
-            <li>Solenodon (mammifère rare)</li>
-          </ul>
-        </div>
-
-        <div>
-          <h3 class="text-xl font-semibold mb-3 text-foreground">6. Parcs nationaux</h3>
-          <ul class="list-disc ml-6 space-y-2 text-foreground">
-            <li>Parc national La Visite</li>
-            <li>Parc national Macaya</li>
-            <li>Parc historique de la Citadelle</li>
-          </ul>
+          <h3 class="text-2xl font-bold mb-4 text-green-700 dark:text-green-400">5. La Protection et le Reboisement : L'Espoir 🌱💚</h3>
+          
+          <div class="bg-green-50 dark:bg-green-950/30 p-6 rounded-lg mb-4">
+            <h4 class="text-xl font-semibold mb-3">🏞️ Parcs Nationaux et Aires Protégées</h4>
+            
+            <ul class="list-disc ml-6 space-y-2">
+              <li><strong>Parc National La Visite :</strong> Forêt de pins en altitude</li>
+              <li><strong>Parc National Macaya :</strong> Dernière grande forêt tropicale humide</li>
+              <li><strong>Parc National Historique - Citadelle, Sans-Souci, Ramiers :</strong> Patrimoine mondial UNESCO</li>
+            </ul>
+          </div>
+          
+          <div class="bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-950/30 dark:to-emerald-950/30 p-6 rounded-lg">
+            <h4 class="text-xl font-semibold mb-3">🌳 Initiatives de Reboisement</h4>
+            <p class="mb-3">De nombreuses organisations (gouvernementales, ONG, communautaires) mènent des campagnes de reboisement à travers le pays :</p>
+            <ul class="list-disc ml-6 space-y-1">
+              <li>Plantation d'arbres fruitiers (mangues, avocats, agrumes)</li>
+              <li>Reforestation avec des espèces locales résistantes</li>
+              <li>Création de pépinières communautaires</li>
+              <li>Éducation environnementale dans les écoles</li>
+            </ul>
+            
+            <p class="mt-4 font-semibold text-green-700 dark:text-green-400">💡 Chaque arbre planté compte ! Ensemble, nous pouvons reverdir Haïti !</p>
+          </div>
         </div>
       </section>
     `,
     exemplesExercices: `
-      <section class="space-y-4">
-        <div class="bg-accent/5 border-l-4 border-accent p-4 rounded">
-          <h4 class="font-semibold mb-2 text-foreground">📝 Projet</h4>
-          <p class="text-foreground">
-            Organise une campagne de sensibilisation au reboisement dans ton école. Crée des affiches montrant l'importance des arbres.
+      <section class="space-y-6">
+        <div class="bg-blue-50 dark:bg-blue-950/30 p-6 rounded-lg">
+          <h4 class="text-xl font-semibold mb-3 text-foreground">📝 Exercice 1 : La végétation et moi</h4>
+          
+          <ol class="list-decimal ml-6 space-y-3 text-foreground">
+            <li>
+              <p class="font-semibold">Nommez trois plantes que vous voyez régulièrement</p>
+              <ul class="list-disc ml-6 mt-2 space-y-1">
+                <li>Quelle est leur utilité pour vous ou votre famille ?</li>
+                <li>Comment s'appelle cette plante en créole et en français ?</li>
+              </ul>
+            </li>
+            <li>
+              <p class="font-semibold">Imaginez que vous êtes un explorateur</p>
+              <p class="mt-1">Vous entrez dans une forêt où les arbres sont très hauts, les feuilles sont larges et il pleut souvent. De quel type de forêt s'agit-il probablement ? Pourquoi ?</p>
+            </li>
+            <li>
+              <p class="font-semibold">Un ami vous dit qu'il a vu des cactus géants</p>
+              <p class="mt-1">Quel type de végétation pense-t-il avoir rencontré ? Dans quelle région d'Haïti se trouve-t-il probablement ?</p>
+            </li>
+          </ol>
+        </div>
+
+        <div class="bg-amber-50 dark:bg-amber-950/30 p-6 rounded-lg">
+          <h4 class="text-xl font-semibold mb-3 text-foreground">✅ Exercice 2 : Vrai ou Faux ? Justifie ta réponse</h4>
+          
+          <ol class="list-decimal ml-6 space-y-3 text-foreground">
+            <li>La Mangrove est une forêt qui pousse en altitude. (Vrai/Faux : explique pourquoi)</li>
+            <li>Le Bayahonde est un arbre qui aime les sols très humides. (Vrai/Faux : explique pourquoi)</li>
+            <li>La déforestation est bonne pour la biodiversité en Haïti. (Vrai/Faux : explique pourquoi)</li>
+            <li>Les plaines sont des zones idéales pour l'agriculture en Haïti. (Vrai/Faux : explique pourquoi)</li>
+            <li>Les plantes médicinales n'ont aucune utilité en Haïti. (Vrai/Faux : explique pourquoi)</li>
+          </ol>
+        </div>
+
+        <div class="bg-green-50 dark:bg-green-950/30 p-6 rounded-lg">
+          <h4 class="text-xl font-semibold mb-3 text-foreground">📚 Exercice 3 : Complète les phrases</h4>
+          
+          <ol class="list-decimal ml-6 space-y-2 text-foreground">
+            <li>La végétation xérophile se trouve dans les régions __________________ d'Haïti.</li>
+            <li>Les Mangroves protègent les côtes contre __________________ et sont un refuge pour __________________.</li>
+            <li>Le vétiver est une plante dont les racines sont utilisées pour fabriquer __________________.</li>
+            <li>La principale cause de la disparition des forêts en Haïti est la __________________.</li>
+            <li>Les plantes endémiques sont des plantes qui __________________.</li>
+          </ol>
+        </div>
+
+        <div class="bg-purple-50 dark:bg-purple-950/30 p-6 rounded-lg">
+          <h4 class="text-xl font-semibold mb-3 text-foreground">🎨 Exercice 4 : Dessine et décris</h4>
+          
+          <div class="space-y-3 text-foreground">
+            <p><strong>1.</strong> Choisis un type de végétation que nous avons étudié (mangrove, forêt sèche, forêt de pins, plaine agricole). Dessine un paysage qui représente ce type de végétation.</p>
+            <p><strong>2.</strong> Décris en quelques phrases les caractéristiques principales de ce paysage et les plantes que l'on y trouve.</p>
+          </div>
+        </div>
+
+        <div class="bg-cyan-50 dark:bg-cyan-950/30 p-6 rounded-lg">
+          <h4 class="text-xl font-semibold mb-3 text-foreground">🔍 Exercice 5 : Recherche et partage</h4>
+          
+          <div class="space-y-3 text-foreground">
+            <p><strong>1.</strong> Choisis une plante spécifique (vétiver, acajou, campêche, cocotier, mahot). Fais une petite recherche :</p>
+            <ul class="list-disc ml-6 space-y-1">
+              <li>Où pousse-t-elle le plus souvent en Haïti ?</li>
+              <li>Comment les gens l'utilisent-ils dans ta communauté ?</li>
+              <li>Y a-t-il des croyances ou des histoires associées à cette plante ?</li>
+            </ul>
+            <p><strong>2.</strong> Partage tes découvertes avec tes camarades de classe.</p>
+          </div>
+        </div>
+
+        <div class="bg-red-50 dark:bg-red-950/30 p-6 rounded-lg border-l-4 border-red-500">
+          <h4 class="text-xl font-semibold mb-3 text-foreground">💭 Exercice 6 : Réflexion</h4>
+          
+          <div class="space-y-3 text-foreground">
+            <p><strong>1.</strong> Pourquoi est-il important de protéger la végétation d'Haïti ? Cite au moins trois raisons concrètes.</p>
+            <p><strong>2.</strong> Quelles actions notre communauté pourrait-elle entreprendre pour aider à protéger la végétation locale ? Donne un exemple d'action que tu pourrais faire toi-même.</p>
+          </div>
+        </div>
+
+        <div class="bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-950/30 dark:to-emerald-950/30 p-6 rounded-lg border-l-4 border-green-500">
+          <h4 class="text-xl font-semibold mb-3 text-foreground">🌳 Projet : Campagne de Reboisement</h4>
+          <p class="text-foreground mb-3">
+            Organise une campagne de sensibilisation au reboisement dans ton école. Crée des affiches montrant l'importance des arbres et les conséquences de la déforestation.
+          </p>
+          <p class="text-foreground font-semibold">
+            💡 Chaque petit geste compte pour reverdir notre Haïti !
           </p>
         </div>
       </section>
