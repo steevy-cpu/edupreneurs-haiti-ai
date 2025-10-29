@@ -207,3 +207,247 @@ export const gustosMatching = {
   ]
 };
 
+// ============= JANVIER LESSONS =============
+
+// Aula y Patio Quiz
+export const aulaPatioQuiz = {
+  questions: [
+    {
+      question: "Comment dit-on 'le pupitre' en espagnol ?",
+      options: ["El escritorio", "El pupitre", "La mesa", "La silla"],
+      correctAnswer: 1,
+      explanation: "'El pupitre' est le bureau d'élève. 'El escritorio' est le bureau du professeur, 'la mesa' est la table, et 'la silla' est la chaise.",
+    },
+    {
+      question: "Quelle préposition utilise-t-on pour dire 'sous le pupitre' ?",
+      options: ["Sobre el pupitre", "Encima del pupitre", "Debajo del pupitre", "Delante del pupitre"],
+      correctAnswer: 2,
+      explanation: "'Debajo de' signifie 'sous'. Rappelle-toi que 'de + el' se contracte en 'del'.",
+    },
+    {
+      question: "Que signifie 'La pizarra está delante de los alumnos' ?",
+      options: [
+        "Le tableau est derrière les élèves",
+        "Le tableau est à côté des élèves",
+        "Le tableau est devant les élèves",
+        "Le tableau est sur les élèves"
+      ],
+      correctAnswer: 2,
+      explanation: "'Delante de' signifie 'devant'. Le tableau est normalement placé devant les élèves dans une classe.",
+    },
+    {
+      question: "Comment dit-on 'le terrain de jeux' en espagnol ?",
+      options: ["El patio", "El terreno de juegos", "La cancha", "El aula"],
+      correctAnswer: 1,
+      explanation: "'El terreno de juegos' est le terrain de jeux. 'El patio' est la cour, 'la cancha' est un terrain de sport, et 'el aula' est la classe.",
+    },
+    {
+      question: "Quelle structure utilise-t-on pour dire 'Il y a 25 élèves' ?",
+      options: ["Son 25 alumnos", "Están 25 alumnos", "Hay 25 alumnos", "Tienen 25 alumnos"],
+      correctAnswer: 2,
+      explanation: "'Hay' est utilisé pour exprimer l'existence de quelque chose ('il y a'). C'est la forme impersonnelle du verbe 'haber'.",
+    },
+    {
+      question: "Comment dit-on 'à côté de' en espagnol ?",
+      options: ["Detrás de", "Delante de", "Al lado de", "Encima de"],
+      correctAnswer: 2,
+      explanation: "'Al lado de' signifie 'à côté de'. C'est une préposition de lieu très utile.",
+    },
+    {
+      question: "Que signifie 'Los alumnos están en el patio' ?",
+      options: [
+        "Les élèves sont dans la classe",
+        "Les élèves sont dans la cour",
+        "Les professeurs sont dans la cour",
+        "Les élèves ont une cour"
+      ],
+      correctAnswer: 1,
+      explanation: "'Están en el patio' signifie 'sont dans la cour'. On utilise ESTAR pour localiser.",
+    },
+    {
+      question: "Comment dit-on 'le ballon' en espagnol ?",
+      options: ["La pelota", "El juego", "El deporte", "La cancha"],
+      correctAnswer: 0,
+      explanation: "'La pelota' ou 'el balón' signifient 'le ballon'. Les deux sont corrects.",
+    }
+  ]
+};
+
+export const aulaPatioMatching = {
+  pairs: [
+    { id: "1", question: "El pupitre", answer: "Le pupitre (bureau d'élève)" },
+    { id: "2", question: "La pizarra", answer: "Le tableau" },
+    { id: "3", question: "El patio", answer: "La cour de récréation" },
+    { id: "4", question: "Debajo de", answer: "Sous" },
+    { id: "5", question: "Al lado de", answer: "À côté de" },
+    { id: "6", question: "La mochila", answer: "Le sac à dos" },
+    { id: "7", question: "Delante de", answer: "Devant" },
+    { id: "8", question: "El terreno de juegos", answer: "Le terrain de jeux" },
+    { id: "9", question: "La pelota", answer: "Le ballon" },
+    { id: "10", question: "El fútbol", answer: "Le football" }
+  ]
+};
+
+// Días y Fechas Quiz
+export const diasFechasQuiz = {
+  questions: [
+    {
+      question: "Comment dit-on 'lundi' en espagnol ?",
+      options: ["Martes", "Lunes", "Miércoles", "Jueves"],
+      correctAnswer: 1,
+      explanation: "'Lunes' signifie lundi. Attention, en espagnol les jours s'écrivent avec une minuscule !",
+    },
+    {
+      question: "Comment dit-on 'le 1er janvier' en espagnol ?",
+      options: ["El uno de enero", "El primero de enero", "Primero enero", "El primer enero"],
+      correctAnswer: 1,
+      explanation: "Pour le premier jour du mois, on utilise 'el primero' (pas 'uno'). Pour tous les autres jours, on utilise les nombres ordinaires.",
+    },
+    {
+      question: "Que signifie '¿Qué día es hoy?' ?",
+      options: [
+        "Quelle date sommes-nous ?",
+        "Quel jour sommes-nous ?",
+        "Quelle heure est-il ?",
+        "Quel mois sommes-nous ?"
+      ],
+      correctAnswer: 1,
+      explanation: "'¿Qué día es hoy?' signifie 'Quel jour sommes-nous ?' C'est la question pour demander le jour de la semaine.",
+    },
+    {
+      question: "Comment dit-on 'juillet' en espagnol ?",
+      options: ["Junio", "Julio", "Agosto", "Marzo"],
+      correctAnswer: 1,
+      explanation: "'Julio' est juillet. 'Junio' est juin, 'agosto' est août, et 'marzo' est mars.",
+    },
+    {
+      question: "Quelle expression signifie 'tous les lundis' (habituellement) ?",
+      options: ["El lunes", "En lunes", "Los lunes", "Cada lunes"],
+      correctAnswer: 2,
+      explanation: "'Los lunes' (avec l'article pluriel) signifie 'tous les lundis, chaque lundi'. 'El lunes' désigne un lundi spécifique.",
+    },
+    {
+      question: "Comment dit-on 'Mon anniversaire est en mars' ?",
+      options: [
+        "Mi cumpleaños es marzo",
+        "Mi cumpleaños es en marzo",
+        "Mi cumpleaños está en marzo",
+        "Mi cumpleaños son en marzo"
+      ],
+      correctAnswer: 1,
+      explanation: "On utilise 'es en' + mois : 'Mi cumpleaños es en marzo'. La préposition 'en' est obligatoire.",
+    },
+    {
+      question: "Que signifie 'Ayer fue domingo' ?",
+      options: [
+        "Demain c'est dimanche",
+        "Hier c'était dimanche",
+        "Aujourd'hui c'est dimanche",
+        "Hier sera dimanche"
+      ],
+      correctAnswer: 1,
+      explanation: "'Ayer fue domingo' signifie 'Hier c'était dimanche'. 'Ayer' = hier, 'fue' = c'était (passé).",
+    },
+    {
+      question: "Comment dit-on 'décembre' en espagnol ?",
+      options: ["Diciembre", "Deciembre", "Disiembre", "Diziembre"],
+      correctAnswer: 0,
+      explanation: "'Diciembre' est décembre. Attention à l'orthographe avec 'c' après 'i'.",
+    }
+  ]
+};
+
+export const diasFechasMatching = {
+  pairs: [
+    { id: "1", question: "Lunes", answer: "Lundi" },
+    { id: "2", question: "Miércoles", answer: "Mercredi" },
+    { id: "3", question: "Viernes", answer: "Vendredi" },
+    { id: "4", question: "Enero", answer: "Janvier" },
+    { id: "5", question: "Julio", answer: "Juillet" },
+    { id: "6", question: "Diciembre", answer: "Décembre" },
+    { id: "7", question: "Hoy", answer: "Aujourd'hui" },
+    { id: "8", question: "Mañana", answer: "Demain" },
+    { id: "9", question: "Ayer", answer: "Hier" },
+    { id: "10", question: "El cumpleaños", answer: "L'anniversaire" }
+  ]
+};
+
+// La Casa Quiz
+export const laCasaQuiz = {
+  questions: [
+    {
+      question: "Comment dit-on 'ma maison' en espagnol ?",
+      options: ["Me casa", "Mi casa", "Mis casa", "Mía casa"],
+      correctAnswer: 1,
+      explanation: "'Mi casa' est la forme correcte. 'Mi' est l'adjectif possessif qui ne change pas selon le genre.",
+    },
+    {
+      question: "Quel démonstratif utilise-t-on pour 'cette maison-ci' (près de moi) ?",
+      options: ["Esa casa", "Aquella casa", "Esta casa", "Este casa"],
+      correctAnswer: 2,
+      explanation: "'Esta casa' (féminin) est correct pour désigner quelque chose de proche. 'Este' serait pour un nom masculin.",
+    },
+    {
+      question: "Comment dit-on 'notre chambre' en espagnol ?",
+      options: ["Nuestra cuarto", "Nuestro cuarto", "Nuestros cuarto", "Nuestras cuarto"],
+      correctAnswer: 1,
+      explanation: "'Nuestro cuarto' est correct car 'cuarto' est masculin. 'Nuestro/a' s'accorde en genre avec le nom possédé.",
+    },
+    {
+      question: "Que signifie 'El sofá está en la sala' ?",
+      options: [
+        "Le canapé est dans la cuisine",
+        "Le canapé est dans le salon",
+        "Le fauteuil est dans le salon",
+        "Le lit est dans la chambre"
+      ],
+      correctAnswer: 1,
+      explanation: "'El sofá' est le canapé et 'la sala' est le salon. 'Está en' signifie 'est dans'.",
+    },
+    {
+      question: "Quel démonstratif désigne quelque chose de loin (là-bas) ?",
+      options: ["Este/esta", "Ese/esa", "Aquel/aquella", "Eso"],
+      correctAnswer: 2,
+      explanation: "'Aquel/aquella' désigne quelque chose qui est loin des deux interlocuteurs. 'Este' est proche, 'ese' est à moyenne distance.",
+    },
+    {
+      question: "Comment dit-on 'le lit' en espagnol ?",
+      options: ["La cama", "El armario", "La mesa", "La silla"],
+      correctAnswer: 0,
+      explanation: "'La cama' signifie 'le lit'. C'est un nom féminin en espagnol.",
+    },
+    {
+      question: "Que signifie 'Mis muebles son viejos' ?",
+      options: [
+        "Mon meuble est vieux",
+        "Mes meubles sont vieux",
+        "Mes maisons sont vieilles",
+        "Mon meuble est nouveau"
+      ],
+      correctAnswer: 1,
+      explanation: "'Mis muebles' = mes meubles (pluriel). 'Son viejos' = sont vieux (pluriel masculin).",
+    },
+    {
+      question: "Comment dit-on 'la cuisine' en espagnol ?",
+      options: ["La cocina", "La sala", "El comedor", "El baño"],
+      correctAnswer: 0,
+      explanation: "'La cocina' signifie 'la cuisine'. 'La sala' est le salon, 'el comedor' est la salle à manger, et 'el baño' est la salle de bain.",
+    }
+  ]
+};
+
+export const laCasaMatching = {
+  pairs: [
+    { id: "1", question: "La cama", answer: "Le lit" },
+    { id: "2", question: "El armario", answer: "L'armoire" },
+    { id: "3", question: "La cocina", answer: "La cuisine" },
+    { id: "4", question: "El baño", answer: "La salle de bain" },
+    { id: "5", question: "Mi cuarto", answer: "Ma chambre" },
+    { id: "6", question: "Nuestra casa", answer: "Notre maison" },
+    { id: "7", question: "Esta silla", answer: "Cette chaise-ci" },
+    { id: "8", question: "El sofá", answer: "Le canapé" },
+    { id: "9", question: "La mesa", answer: "La table" },
+    { id: "10", question: "El espejo", answer: "Le miroir" }
+  ]
+};
+

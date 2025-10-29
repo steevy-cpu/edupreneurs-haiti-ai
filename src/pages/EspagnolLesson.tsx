@@ -22,7 +22,13 @@ import {
   saludosAgradecimientosQuiz,
   saludosAgradecimientosMatching,
   gustosQuiz,
-  gustosMatching
+  gustosMatching,
+  aulaPatioQuiz,
+  aulaPatioMatching,
+  diasFechasQuiz,
+  diasFechasMatching,
+  laCasaQuiz,
+  laCasaMatching
 } from "@/data/espagnolActivities";
 import { QuizGame } from "@/components/math-activities/QuizGame";
 import { MatchingGame } from "@/components/math-activities/MatchingGame";
@@ -137,7 +143,10 @@ export default function EspagnolLesson() {
     const quizMap: Record<string, { quiz: any; matching: any }> = {
       "saludo-presentacion": { quiz: saludoPresentacionQuiz, matching: saludoPresentacionMatching },
       "saludos-agradecimientos": { quiz: saludosAgradecimientosQuiz, matching: saludosAgradecimientosMatching },
-      "gustos": { quiz: gustosQuiz, matching: gustosMatching }
+      "gustos": { quiz: gustosQuiz, matching: gustosMatching },
+      "aula-patio": { quiz: aulaPatioQuiz, matching: aulaPatioMatching },
+      "dias-fechas": { quiz: diasFechasQuiz, matching: diasFechasMatching },
+      "la-casa": { quiz: laCasaQuiz, matching: laCasaMatching }
     };
     return topicId ? quizMap[topicId] || null : null;
   };
