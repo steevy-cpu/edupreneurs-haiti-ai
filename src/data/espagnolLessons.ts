@@ -2683,78 +2683,143 @@ Describe tu rutina diaria en español (mínimo 8 frases).`,
     mois: "Février",
     objectif: "Apprendre à inviter quelqu'un et à accepter ou refuser une invitation",
     introduction: "Tu vas apprendre à inviter des amis, accepter ou refuser poliment une invitation, et à exprimer tes préférences pour des activités sociales.",
-    contenu: `## Comment inviter quelqu'un
+    contenu: `
+      <div class="lesson-content space-y-6">
+        <section class="mb-6">
+          <h3 class="text-xl font-semibold mb-4">Comment inviter quelqu'un</h3>
+          <p class="mb-4">Savoir inviter et répondre à des invitations est essentiel dans les interactions sociales ! En espagnol, il existe différentes façons d'inviter selon le niveau de formalité.</p>
+          
+          <div class="bg-purple-50 dark:bg-purple-900/20 p-4 rounded-lg mb-4">
+            <h4 class="font-semibold mb-3">Invitations formelles :</h4>
+            <ul class="space-y-2">
+              <li>• <strong>¿Quisiera venir a mi casa?</strong> - Voudriez-vous venir chez moi ?</li>
+              <li>• <strong>¿Le gustaría acompañarme al cine?</strong> - Aimeriez-vous m'accompagner au cinéma ?</li>
+              <li>• <strong>Tengo el gusto de invitarle a...</strong> - J'ai le plaisir de vous inviter à...</li>
+            </ul>
+          </div>
 
-### Phrases pour inviter
-**Invitations formelles :**
-- ¿Quisiera venir a mi casa? - Voudriez-vous venir chez moi ?
-- ¿Le gustaría acompañarme al cine? - Aimeriez-vous m'accompagner au cinéma ?
-- Tengo el gusto de invitarle a... - J'ai le plaisir de vous inviter à...
+          <div class="bg-green-50 dark:bg-green-900/20 p-4 rounded-lg mb-4">
+            <h4 class="font-semibold mb-3">Invitations informelles :</h4>
+            <ul class="space-y-2">
+              <li>• <strong>¿Quieres venir a mi fiesta?</strong> - Tu veux venir à ma fête ?</li>
+              <li>• <strong>¿Te gustaría ir al parque?</strong> - Tu aimerais aller au parc ?</li>
+              <li>• <strong>¿Vienes conmigo al concierto?</strong> - Tu viens avec moi au concert ?</li>
+              <li>• <strong>¿Por qué no vienes a jugar?</strong> - Pourquoi tu ne viens pas jouer ?</li>
+            </ul>
+          </div>
+        </section>
 
-**Invitations informelles :**
-- ¿Quieres venir a mi fiesta? - Tu veux venir à ma fête ?
-- ¿Te gustaría ir al parque? - Tu aimerais aller au parc ?
-- ¿Vienes conmigo al concierto? - Tu viens avec moi au concert ?
-- ¿Por qué no vienes a jugar? - Pourquoi tu ne viens pas jouer ?
+        <section class="mb-6">
+          <h3 class="text-xl font-semibold mb-4">Accepter une invitation</h3>
+          
+          <div class="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg mb-4">
+            <h4 class="font-semibold mb-3">Acceptation formelle :</h4>
+            <ul class="space-y-2">
+              <li>• <strong>Con mucho gusto</strong> - Avec grand plaisir</li>
+              <li>• <strong>Encantado/a de aceptar</strong> - Enchanté(e) d'accepter</li>
+              <li>• <strong>Será un honor</strong> - Ce sera un honneur</li>
+            </ul>
+          </div>
 
-### Accepter une invitation
-**Acceptation formelle :**
-- Con mucho gusto - Avec grand plaisir
-- Encantado/a de aceptar - Enchanté(e) d'accepter
-- Será un honor - Ce sera un honneur
+          <div class="bg-green-50 dark:bg-green-900/20 p-4 rounded-lg mb-4">
+            <h4 class="font-semibold mb-3">Acceptation informelle :</h4>
+            <ul class="space-y-2">
+              <li>• <strong>¡Claro que sí!</strong> - Bien sûr !</li>
+              <li>• <strong>¡Por supuesto!</strong> - Évidemment !</li>
+              <li>• <strong>¡Vale! / ¡De acuerdo!</strong> - D'accord !</li>
+              <li>• <strong>¡Genial! Me encantaría</strong> - Génial ! J'adorerais</li>
+              <li>• <strong>¡Qué bien! Allí estaré</strong> - Super ! Je serai là</li>
+            </ul>
+          </div>
+        </section>
 
-**Acceptation informelle :**
-- ¡Claro que sí! - Bien sûr !
-- ¡Por supuesto! - Évidemment !
-- ¡Vale! / ¡De acuerdo! - D'accord !
-- ¡Genial! Me encantaría - Génial ! J'adorerais
-- ¡Qué bien! Allí estaré - Super ! Je serai là
+        <section class="mb-6">
+          <h3 class="text-xl font-semibold mb-4">Refuser poliment</h3>
+          
+          <div class="bg-amber-50 dark:bg-amber-900/20 p-4 rounded-lg mb-4">
+            <h4 class="font-semibold mb-3">Refus formel :</h4>
+            <ul class="space-y-2">
+              <li>• <strong>Lo siento mucho, pero no puedo</strong> - Je suis vraiment désolé(e), mais je ne peux pas</li>
+              <li>• <strong>Me encantaría, pero tengo otro compromiso</strong> - J'adorerais, mais j'ai un autre engagement</li>
+              <li>• <strong>Desafortunadamente, no me será posible</strong> - Malheureusement, ça ne me sera pas possible</li>
+            </ul>
+          </div>
 
-### Refuser poliment
-**Refus formel :**
-- Lo siento mucho, pero no puedo - Je suis vraiment désolé(e), mais je ne peux pas
-- Me encantaría, pero tengo otro compromiso - J'adorerais, mais j'ai un autre engagement
-- Desafortunadamente, no me será posible - Malheureusement, ça ne me sera pas possible
+          <div class="bg-yellow-50 dark:bg-yellow-900/20 p-4 rounded-lg mb-4">
+            <h4 class="font-semibold mb-3">Refus informel :</h4>
+            <ul class="space-y-2">
+              <li>• <strong>Lo siento, pero no puedo</strong> - Désolé(e), mais je ne peux pas</li>
+              <li>• <strong>Me gustaría, pero tengo que...</strong> - J'aimerais bien, mais je dois...</li>
+              <li>• <strong>Esta vez no puedo, pero la próxima sí</strong> - Cette fois je ne peux pas, mais la prochaine oui</li>
+              <li>• <strong>Qué pena, tengo planes</strong> - Quel dommage, j'ai des plans</li>
+            </ul>
+          </div>
+        </section>
 
-**Refus informel :**
-- Lo siento, pero no puedo - Désolé(e), mais je ne peux pas
-- Me gustaría, pero tengo que... - J'aimerais bien, mais je dois...
-- Esta vez no puedo, pero la próxima sí - Cette fois je ne peux pas, mais la prochaine oui
-- Qué pena, tengo planes - Quel dommage, j'ai des plans
+        <section class="mb-6">
+          <h3 class="text-xl font-semibold mb-4">Proposer une alternative</h3>
+          <div class="bg-purple-50 dark:bg-purple-900/20 p-4 rounded-lg mb-4">
+            <ul class="space-y-2">
+              <li>• <strong>¿Qué tal otro día?</strong> - Et un autre jour ?</li>
+              <li>• <strong>¿Podemos hacerlo el sábado?</strong> - On peut le faire samedi ?</li>
+              <li>• <strong>¿Y si vamos mejor al cine?</strong> - Et si on allait plutôt au cinéma ?</li>
+              <li>• <strong>Prefiero ir a...</strong> - Je préfère aller à...</li>
+            </ul>
+          </div>
+        </section>
 
-### Proposer une alternative
-- ¿Qué tal otro día? - Et un autre jour ?
-- ¿Podemos hacerlo el sábado? - On peut le faire samedi ?
-- ¿Y si vamos mejor al cine? - Et si on allait plutôt au cinéma ?
-- Prefiero ir a... - Je préfère aller à...
+        <section class="mb-6">
+          <h3 class="text-xl font-semibold mb-4">Vocabulaire des activités sociales</h3>
+          
+          <div class="grid md:grid-cols-2 gap-4 mb-4">
+            <div class="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg">
+              <h4 class="font-semibold mb-3">Eventos (Événements) :</h4>
+              <ul class="space-y-2">
+                <li>• <strong>Una fiesta</strong> - Une fête</li>
+                <li>• <strong>Un cumpleaños</strong> - Un anniversaire</li>
+                <li>• <strong>Una reunión</strong> - Une réunion</li>
+                <li>• <strong>Una cena</strong> - Un dîner</li>
+                <li>• <strong>Un concierto</strong> - Un concert</li>
+                <li>• <strong>Un partido</strong> - Un match</li>
+              </ul>
+            </div>
 
-### Vocabulaire des activités sociales
-**Eventos :**
-- Una fiesta - Une fête
-- Un cumpleaños - Un anniversaire
-- Una reunión - Une réunion
-- Una cena - Un dîner
-- Un concierto - Un concert
-- Un partido - Un match
+            <div class="bg-green-50 dark:bg-green-900/20 p-4 rounded-lg">
+              <h4 class="font-semibold mb-3">Lugares (Lieux) :</h4>
+              <ul class="space-y-2">
+                <li>• <strong>El cine</strong> - Le cinéma</li>
+                <li>• <strong>El parque</strong> - Le parc</li>
+                <li>• <strong>La playa</strong> - La plage</li>
+                <li>• <strong>Un restaurante</strong> - Un restaurant</li>
+                <li>• <strong>El centro comercial</strong> - Le centre commercial</li>
+                <li>• <strong>Mi casa</strong> - Ma maison</li>
+              </ul>
+            </div>
+          </div>
+        </section>
 
-**Lugares :**
-- El cine - Le cinéma
-- El parque - Le parc
-- La playa - La plage
-- Un restaurante - Un restaurant
-- El centro comercial - Le centre commercial
-- Mi casa - Ma maison
+        <section class="mb-6">
+          <h3 class="text-xl font-semibold mb-4">Verbes utiles</h3>
+          <div class="bg-purple-50 dark:bg-purple-900/20 p-4 rounded-lg">
+            <ul class="space-y-2">
+              <li>• <strong>Invitar</strong> - Inviter</li>
+              <li>• <strong>Aceptar</strong> - Accepter</li>
+              <li>• <strong>Rechazar</strong> - Refuser</li>
+              <li>• <strong>Acompañar</strong> - Accompagner</li>
+              <li>• <strong>Celebrar</strong> - Célébrer</li>
+              <li>• <strong>Asistir</strong> - Assister</li>
+            </ul>
+          </div>
+        </section>
 
-### Verbes utiles
-- Invitar - Inviter
-- Aceptar - Accepter
-- Rechazar - Refuser
-- Acompañar - Accompagner
-- Celebrar - Célébrer
-- Asistir - Assister
-
-**💡 Suggestions de vidéos YouTube :**
-Recherchez "invitaciones en español" ou "cómo invitar en español conversación" pour des dialogues pratiques et des situations réelles d'invitation.`,
+        <div class="bg-blue-50 dark:bg-blue-900/20 border-l-4 border-blue-500 p-4 rounded-r-lg">
+          <h4 class="text-blue-700 dark:text-blue-400 font-semibold mb-2">💡 Suggestions de vidéos YouTube</h4>
+          <p class="text-blue-600 dark:text-blue-300">
+            Recherchez "invitaciones en español" ou "cómo invitar en español conversación" pour des dialogues pratiques et des situations réelles d'invitation.
+          </p>
+        </div>
+      </div>
+    `,
     exemplesExercices: `## Ejercicios prácticos
 
 ### Ejercicio 1: Completar los diálogos
@@ -2801,111 +2866,188 @@ Traduce estas frases al español:
     mois: "Février",
     objectif: "Expresar obligación usando diferentes estructuras y el presente de subjuntivo",
     introduction: "Dans cette leçon, tu vas découvrir les différentes manières d'exprimer l'obligation et la nécessité en espagnol, ainsi que l'utilisation du subjonctif présent.",
-    contenu: `## Exprimer l'obligation en espagnol
+    contenu: `
+      <div class="lesson-content space-y-6">
+        <section class="mb-6">
+          <h3 class="text-xl font-semibold mb-4">Les quatre structures principales</h3>
+          <p class="mb-4">En espagnol, il existe quatre manières principales d'exprimer l'obligation et la nécessité. Chacune a ses propres nuances et utilisations.</p>
+          
+          <div class="bg-purple-50 dark:bg-purple-900/20 p-4 rounded-lg mb-4">
+            <h4 class="font-semibold mb-3">1. Tener que + infinitivo (obligation personnelle forte)</h4>
+            <p class="mb-3">Cette structure exprime une obligation personnelle, quelque chose qu'on doit absolument faire.</p>
+            
+            <div class="bg-white dark:bg-gray-800 p-3 rounded mb-3">
+              <h5 class="font-semibold mb-2">Conjugaison de TENER (avoir) au présent :</h5>
+              <ul class="space-y-1">
+                <li>• <strong>Yo tengo</strong> - J'ai</li>
+                <li>• <strong>Tú tienes</strong> - Tu as</li>
+                <li>• <strong>Él/Ella tiene</strong> - Il/Elle a</li>
+                <li>• <strong>Nosotros tenemos</strong> - Nous avons</li>
+                <li>• <strong>Vosotros tenéis</strong> - Vous avez</li>
+                <li>• <strong>Ellos tienen</strong> - Ils ont</li>
+              </ul>
+            </div>
+            
+            <h5 class="font-semibold mb-2">Exemples :</h5>
+            <ul class="space-y-2">
+              <li>• <strong>Tengo que estudiar para el examen</strong> - Je dois étudier pour l'examen</li>
+              <li>• <strong>Tienes que trabajar más</strong> - Tu dois travailler plus</li>
+              <li>• <strong>Tiene que llegar temprano</strong> - Il/Elle doit arriver tôt</li>
+              <li>• <strong>Tenemos que ayudar en casa</strong> - Nous devons aider à la maison</li>
+              <li>• <strong>Tienen que respetar las reglas</strong> - Ils doivent respecter les règles</li>
+            </ul>
+          </div>
 
-### Les quatre structures principales
+          <div class="bg-green-50 dark:bg-green-900/20 p-4 rounded-lg mb-4">
+            <h4 class="font-semibold mb-3">2. Deber + infinitivo (devoir moral, responsabilité)</h4>
+            <p class="mb-3">Cette structure exprime un devoir moral, une responsabilité ou une recommandation.</p>
+            
+            <div class="bg-white dark:bg-gray-800 p-3 rounded mb-3">
+              <h5 class="font-semibold mb-2">Conjugaison de DEBER (devoir) au présent :</h5>
+              <ul class="space-y-1">
+                <li>• <strong>Yo debo</strong> - Je dois</li>
+                <li>• <strong>Tú debes</strong> - Tu dois</li>
+                <li>• <strong>Él/Ella debe</strong> - Il/Elle doit</li>
+                <li>• <strong>Nosotros debemos</strong> - Nous devons</li>
+                <li>• <strong>Vosotros debéis</strong> - Vous devez</li>
+                <li>• <strong>Ellos deben</strong> - Ils doivent</li>
+              </ul>
+            </div>
+            
+            <h5 class="font-semibold mb-2">Exemples :</h5>
+            <ul class="space-y-2">
+              <li>• <strong>Debo obedecer a mis padres</strong> - Je dois obéir à mes parents</li>
+              <li>• <strong>Debes respetar a tus profesores</strong> - Tu dois respecter tes professeurs</li>
+              <li>• <strong>Juliana debe estudiar mucho</strong> - Juliana doit beaucoup étudier</li>
+              <li>• <strong>Debemos ser honestos</strong> - Nous devons être honnêtes</li>
+              <li>• <strong>Los estudiantes deben llegar a tiempo</strong> - Les étudiants doivent arriver à l'heure</li>
+            </ul>
+          </div>
 
-**1. Tener que + infinitivo** (obligation personnelle forte)
-Cette structure exprime une obligation personnelle, quelque chose qu'on doit absolument faire.
+          <div class="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg mb-4">
+            <h4 class="font-semibold mb-3">3. Hay que + infinitivo (il faut - impersonnel)</h4>
+            <p class="mb-3">Structure impersonnelle qui exprime une obligation générale, sans préciser qui doit faire l'action.</p>
+            
+            <h5 class="font-semibold mb-2">Exemples :</h5>
+            <ul class="space-y-2">
+              <li>• <strong>Hay que estudiar</strong> - Il faut étudier</li>
+              <li>• <strong>Hay que trabajar duro para tener éxito</strong> - Il faut travailler dur pour réussir</li>
+              <li>• <strong>Hay que comer bien</strong> - Il faut bien manger</li>
+              <li>• <strong>Hay que respetar a los demás</strong> - Il faut respecter les autres</li>
+              <li>• <strong>Hay que llegar temprano</strong> - Il faut arriver tôt</li>
+            </ul>
+          </div>
 
-**Conjugaison de TENER (avoir) au présent :**
-- Yo tengo - J'ai
-- Tú tienes - Tu as
-- Él/Ella tiene - Il/Elle a
-- Nosotros tenemos - Nous avons
-- Vosotros tenéis - Vous avez
-- Ellos tienen - Ils ont
+          <div class="bg-amber-50 dark:bg-amber-900/20 p-4 rounded-lg mb-4">
+            <h4 class="font-semibold mb-3">4. Hace falta que + subjuntivo (il faut que + subjonctif)</h4>
+            <p class="mb-3">Cette structure exprime la nécessité et requiert l'utilisation du subjonctif présent.</p>
+            
+            <h5 class="font-semibold mb-2">Exemples :</h5>
+            <ul class="space-y-2">
+              <li>• <strong>Hace falta que estudies</strong> - Il faut que tu études</li>
+              <li>• <strong>Hace falta que trabajemos juntos</strong> - Il faut que nous travaillions ensemble</li>
+              <li>• <strong>Hace falta que los estudiantes presten atención</strong> - Il faut que les étudiants prêtent attention</li>
+              <li>• <strong>Hace falta que tú vengas</strong> - Il faut que tu viennes</li>
+            </ul>
+          </div>
+        </section>
 
-**Exemples :**
-- Tengo que estudiar para el examen - Je dois étudier pour l'examen
-- Tienes que trabajar más - Tu dois travailler plus
-- Tiene que llegar temprano - Il/Elle doit arriver tôt
-- Tenemos que ayudar en casa - Nous devons aider à la maison
-- Tienen que respetar las reglas - Ils doivent respecter les règles
+        <section class="mb-6">
+          <h3 class="text-xl font-semibold mb-4">Le présent du subjonctif (Presente de subjuntivo)</h3>
+          <p class="mb-4">Le subjonctif est un mode verbal essentiel en espagnol. Pour le former, on prend la première personne du présent de l'indicatif (yo), on enlève le -o et on ajoute les terminaisons opposées.</p>
+          
+          <div class="grid md:grid-cols-2 gap-4 mb-4">
+            <div class="bg-purple-50 dark:bg-purple-900/20 p-4 rounded-lg">
+              <h4 class="font-semibold mb-3">Verbes en -AR → terminaisons en -E</h4>
+              <table class="w-full text-sm">
+                <thead>
+                  <tr class="border-b border-purple-300 dark:border-purple-700">
+                    <th class="text-left py-2">Personne</th>
+                    <th class="text-left py-2">Hablar</th>
+                    <th class="text-left py-2">Estudiar</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr><td class="py-1">Yo</td><td><strong>hable</strong></td><td><strong>estudie</strong></td></tr>
+                  <tr><td class="py-1">Tú</td><td><strong>hables</strong></td><td><strong>estudies</strong></td></tr>
+                  <tr><td class="py-1">Él/Ella</td><td><strong>hable</strong></td><td><strong>estudie</strong></td></tr>
+                  <tr><td class="py-1">Nosotros</td><td><strong>hablemos</strong></td><td><strong>estudiemos</strong></td></tr>
+                  <tr><td class="py-1">Vosotros</td><td><strong>habléis</strong></td><td><strong>estudiéis</strong></td></tr>
+                  <tr><td class="py-1">Ellos</td><td><strong>hablen</strong></td><td><strong>estudien</strong></td></tr>
+                </tbody>
+              </table>
+            </div>
 
-**2. Deber + infinitivo** (devoir moral, responsabilité)
-Cette structure exprime un devoir moral, une responsabilité ou une recommandation.
+            <div class="bg-green-50 dark:bg-green-900/20 p-4 rounded-lg">
+              <h4 class="font-semibold mb-3">Verbes en -ER/-IR → terminaisons en -A</h4>
+              <table class="w-full text-sm">
+                <thead>
+                  <tr class="border-b border-green-300 dark:border-green-700">
+                    <th class="text-left py-2">Personne</th>
+                    <th class="text-left py-2">Comer</th>
+                    <th class="text-left py-2">Escribir</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr><td class="py-1">Yo</td><td><strong>coma</strong></td><td><strong>escriba</strong></td></tr>
+                  <tr><td class="py-1">Tú</td><td><strong>comas</strong></td><td><strong>escribas</strong></td></tr>
+                  <tr><td class="py-1">Él/Ella</td><td><strong>coma</strong></td><td><strong>escriba</strong></td></tr>
+                  <tr><td class="py-1">Nosotros</td><td><strong>comamos</strong></td><td><strong>escribamos</strong></td></tr>
+                  <tr><td class="py-1">Vosotros</td><td><strong>comáis</strong></td><td><strong>escribáis</strong></td></tr>
+                  <tr><td class="py-1">Ellos</td><td><strong>coman</strong></td><td><strong>escriban</strong></td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
 
-**Conjugaison de DEBER (devoir) au présent :**
-- Yo debo - Je dois
-- Tú debes - Tu dois
-- Él/Ella debe - Il/Elle doit
-- Nosotros debemos - Nous devons
-- Vosotros debéis - Vous devez
-- Ellos deben - Ils doivent
+          <div class="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg">
+            <h4 class="font-semibold mb-2">Autres exemples :</h4>
+            <ul class="space-y-1">
+              <li>• <strong>Vivir:</strong> viva, vivas, viva, vivamos, viváis, vivan</li>
+              <li>• <strong>Beber:</strong> beba, bebas, beba, bebamos, bebáis, beban</li>
+              <li>• <strong>Trabajar:</strong> trabaje, trabajes, trabaje, trabajemos, trabajéis, trabajen</li>
+            </ul>
+          </div>
+        </section>
 
-**Exemples :**
-- Debo obedecer a mis padres - Je dois obéir à mes parents
-- Debes respetar a tus profesores - Tu dois respecter tes professeurs
-- Juliana debe estudiar mucho - Juliana doit beaucoup étudier
-- Debemos ser honestos - Nous devons être honnêtes
-- Los estudiantes deben llegar a tiempo - Les étudiants doivent arriver à l'heure
+        <section class="mb-6">
+          <h3 class="text-xl font-semibold mb-4">Différences entre les structures</h3>
+          
+          <div class="grid md:grid-cols-2 gap-4">
+            <div class="bg-purple-50 dark:bg-purple-900/20 p-4 rounded-lg">
+              <h4 class="font-semibold mb-2">TENER QUE</h4>
+              <p class="text-sm">→ Obligation personnelle nécessaire</p>
+              <p class="text-sm italic mt-2">"Tengo que ir al médico" (je n'ai pas le choix)</p>
+            </div>
 
-**3. Hay que + infinitivo** (il faut - impersonnel)
-Structure impersonnelle qui exprime une obligation générale, sans préciser qui doit faire l'action.
+            <div class="bg-green-50 dark:bg-green-900/20 p-4 rounded-lg">
+              <h4 class="font-semibold mb-2">DEBER</h4>
+              <p class="text-sm">→ Devoir moral, conseil</p>
+              <p class="text-sm italic mt-2">"Debes respetar a tus padres" (c'est ton devoir)</p>
+            </div>
 
-**Exemples :**
-- Hay que estudiar - Il faut étudier
-- Hay que trabajar duro para tener éxito - Il faut travailler dur pour réussir
-- Hay que comer bien - Il faut bien manger
-- Hay que respetar a los demás - Il faut respecter les autres
-- Hay que llegar temprano - Il faut arriver tôt
+            <div class="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg">
+              <h4 class="font-semibold mb-2">HAY QUE</h4>
+              <p class="text-sm">→ Obligation générale impersonnelle</p>
+              <p class="text-sm italic mt-2">"Hay que estudiar para aprender" (tout le monde)</p>
+            </div>
 
-**4. Hace falta que + subjuntivo** (il faut que + subjonctif)
-Cette structure exprime la nécessité et requiert l'utilisation du subjonctif présent.
+            <div class="bg-amber-50 dark:bg-amber-900/20 p-4 rounded-lg">
+              <h4 class="font-semibold mb-2">HACE FALTA QUE</h4>
+              <p class="text-sm">→ Nécessité avec emphase</p>
+              <p class="text-sm italic mt-2">"Hace falta que todos participen" (c'est nécessaire que)</p>
+            </div>
+          </div>
+        </section>
 
-**Exemples :**
-- Hace falta que estudies - Il faut que tu études
-- Hace falta que trabajemos juntos - Il faut que nous travaillions ensemble
-- Hace falta que los estudiantes presten atención - Il faut que les étudiants prêtent attention
-- Hace falta que tú vengas - Il faut que tu viennes
-
-### Le présent du subjonctif (Presente de subjuntivo)
-
-**Formation du subjonctif :**
-On prend la première personne du présent de l'indicatif (yo), on enlève le -o et on ajoute les terminaisons opposées :
-
-**Verbes en -AR → terminaisons en -E**
-| Personne | Terminaison | Hablar | Estudiar |
-|----------|-------------|---------|-----------|
-| Yo | -e | hable | estudie |
-| Tú | -es | hables | estudies |
-| Él/Ella | -e | hable | estudie |
-| Nosotros | -emos | hablemos | estudiemos |
-| Vosotros | -éis | habléis | estudiéis |
-| Ellos | -en | hablen | estudien |
-
-**Verbes en -ER/-IR → terminaisons en -A**
-| Personne | Terminaison | Comer | Escribir |
-|----------|-------------|--------|-----------|
-| Yo | -a | coma | escriba |
-| Tú | -as | comas | escribas |
-| Él/Ella | -a | coma | escriba |
-| Nosotros | -amos | comamos | escribamos |
-| Vosotros | -áis | comáis | escribáis |
-| Ellos | -an | coman | escriban |
-
-**Autres exemples :**
-- Vivir: viva, vivas, viva, vivamos, viváis, vivan
-- Beber: beba, bebas, beba, bebamos, bebáis, beban
-- Trabajar: trabaje, trabajes, trabaje, trabajemos, trabajéis, trabajen
-
-### Différences entre les structures
-
-**TENER QUE** → Obligation personnelle nécessaire
-"Tengo que ir al médico" (je n'ai pas le choix)
-
-**DEBER** → Devoir moral, conseil
-"Debes respetar a tus padres" (c'est ton devoir)
-
-**HAY QUE** → Obligation générale impersonnelle
-"Hay que estudiar para aprender" (tout le monde)
-
-**HACE FALTA QUE** → Nécessité avec emphase
-"Hace falta que todos participen" (c'est nécessaire que)
-
-**💡 Suggestions de vidéos YouTube :**
-Recherchez "expresar obligación en español" ou "presente de subjuntivo español" pour des explications détaillées et des exercices interactifs.`,
+        <div class="bg-blue-50 dark:bg-blue-900/20 border-l-4 border-blue-500 p-4 rounded-r-lg">
+          <h4 class="text-blue-700 dark:text-blue-400 font-semibold mb-2">💡 Suggestions de vidéos YouTube</h4>
+          <p class="text-blue-600 dark:text-blue-300">
+            Recherchez "expresar obligación en español" ou "presente de subjuntivo español" pour des explications détaillées et des exercices interactifs.
+          </p>
+        </div>
+      </div>
+    `,
     exemplesExercices: `## Ejercicios de práctica
 
 ### Ejercicio 1: Completar con la estructura correcta
