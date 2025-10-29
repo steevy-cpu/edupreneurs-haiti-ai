@@ -1199,162 +1199,1093 @@ export const espagnolLessons7AF = {
     title: "Aula y Patio (classe et cour)",
     mois: "Janvier",
     objectif: "Hacer descripciones del aula y del patio de recreo",
-    introduction: "Aprenderás a describir tu aula de clase y el patio de recreo usando vocabulario específico.",
-    contenu: `## Descripción del aula y el patio
+    introduction: `
+      <div class="lesson-intro">
+        <p class="text-lg mb-4">
+          Ton école est ton deuxième foyer ! Dans cette leçon, tu vas apprendre à décrire ta salle de classe et la cour de récréation en espagnol.
+        </p>
+        <div class="info-box bg-accent/10 p-4 rounded-lg">
+          <h3 class="font-semibold mb-2">🎯 Objectifs</h3>
+          <ul class="list-disc ml-6">
+            <li>Décrire l'aula (salle de classe) et ses objets</li>
+            <li>Utiliser les prépositions de lieu</li>
+            <li>Parler du patio (cour de récréation) et des activités</li>
+          </ul>
+        </div>
+      </div>
+    `,
+    contenu: `
+      <div class="lesson-content">
+        <section class="mb-6">
+          <h3 class="text-2xl font-bold mb-4">1️⃣ Le vocabulaire de l'aula (salle de classe)</h3>
+          
+          <p class="mb-4">
+            L'aula est l'endroit où tu passes la majorité de ton temps à l'école. Connaître le vocabulaire de la classe en espagnol te permettra de communiquer facilement avec des élèves hispanophones et de décrire ton environnement scolaire.
+          </p>
 
-### Vocabulario del aula
-- **Lugar** - Lieu
-- **Escuela** - École
-- **Profesor** - Professeur
-- **Alumnos** - Élèves
-- **Colegio** - Collège
-- **Clase** - Classe
-- **Pupitre** - Pupitre
-- **Silla** - Chaise
-- **Compañero(a)** - Camarade
+          <div class="vocabulary-grid mb-4">
+            <div class="bg-primary/10 p-4 rounded-lg mb-3">
+              <h4 class="font-semibold mb-3">🏫 Les lieux et espaces</h4>
+              <ul class="space-y-2">
+                <li><strong>La escuela</strong> = L'école (Lekòl)</li>
+                <li><strong>El colegio</strong> = Le collège</li>
+                <li><strong>El aula / La clase</strong> = La salle de classe (Klas la)</li>
+                <li><strong>El patio</strong> = La cour de récréation (Lakou lekòl)</li>
+                <li><strong>La biblioteca</strong> = La bibliothèque</li>
+                <li><strong>La dirección</strong> = La direction</li>
+                <li><strong>El baño / Los servicios</strong> = Les toilettes (Twalèt)</li>
+              </ul>
+            </div>
 
-### Expresiones de ubicación
-- **Cerca de** - Près de
-- **Detrás de** - Derrière
-- **Al lado de** - À côté de
-- **Delante de** - Devant
-- **Encima de** - Sur
-- **Debajo de** - Sous
+            <div class="bg-secondary/10 p-4 rounded-lg mb-3">
+              <h4 class="font-semibold mb-3">👥 Les personnes</h4>
+              <ul class="space-y-2">
+                <li><strong>El profesor / La profesora</strong> = Le professeur (Pwofesè)</li>
+                <li><strong>El alumno / La alumna</strong> = L'élève (Elèv)</li>
+                <li><strong>El estudiante</strong> = L'étudiant</li>
+                <li><strong>El compañero / La compañera</strong> = Le/la camarade (Kamarad)</li>
+                <li><strong>El director / La directora</strong> = Le directeur/La directrice</li>
+              </ul>
+            </div>
 
-### El patio de recreo
-- **Terreno de juegos** - Terrain de jeux
-- **Baloncesto** - Basketball
-- **Fútbol** - Football
-- **Voleibol** - Volleyball
-- **Juego** - Jeu
-- **Estudio** - Étude`,
-    exemplesExercices: `## Ejercicios
+            <div class="bg-accent/10 p-4 rounded-lg mb-3">
+              <h4 class="font-semibold mb-3">🪑 Les meubles et objets</h4>
+              <ul class="space-y-2">
+                <li><strong>El pupitre</strong> = Le pupitre, le bureau d'élève (Biro elèv)</li>
+                <li><strong>La silla</strong> = La chaise (Chèz)</li>
+                <li><strong>La mesa</strong> = La table</li>
+                <li><strong>La pizarra / El tablero</strong> = Le tableau noir (Tablo)</li>
+                <li><strong>El escritorio</strong> = Le bureau (du professeur)</li>
+                <li><strong>La puerta</strong> = La porte (Pòt)</li>
+                <li><strong>La ventana</strong> = La fenêtre (Fenèt)</li>
+                <li><strong>El libro</strong> = Le livre (Liv)</li>
+                <li><strong>El cuaderno</strong> = Le cahier (Kaye)</li>
+                <li><strong>El lápiz</strong> = Le crayon (Kreyon)</li>
+                <li><strong>El bolígrafo / La pluma</strong> = Le stylo</li>
+                <li><strong>La mochila</strong> = Le sac à dos (Sak)</li>
+                <li><strong>La regla</strong> = La règle</li>
+                <li><strong>El borrador</strong> = La gomme (Efase)</li>
+              </ul>
+            </div>
+          </div>
 
-### Ejercicio 1: Descripción
-Describe tu aula usando el vocabulario aprendido:
-- ¿Qué hay en tu aula?
-- ¿Dónde está tu pupitre?
-- ¿Quién está cerca de ti?
+          <div class="examples-box bg-primary/5 p-4 rounded-lg">
+            <h4 class="font-semibold mb-3">🗣️ Phrases utiles pour décrire l'aula</h4>
+            <div class="space-y-2">
+              <p>✅ <strong>En mi aula hay 30 pupitres.</strong> (Dans ma classe il y a 30 pupitres.)</p>
+              <p>✅ <strong>La pizarra está al frente.</strong> (Le tableau est devant.)</p>
+              <p>✅ <strong>Mi pupitre está cerca de la ventana.</strong> (Mon pupitre est près de la fenêtre.)</p>
+              <p>✅ <strong>El profesor escribe en la pizarra.</strong> (Le professeur écrit au tableau.)</p>
+              <p>✅ <strong>Los alumnos tienen sus cuadernos.</strong> (Les élèves ont leurs cahiers.)</p>
+            </div>
+          </div>
+        </section>
 
-### Ejercicio 2: Ubicación
-Explica dónde se encuentran (se sientan) ciertos compañeros en el aula y qué tienen sobre su banco.
+        <section class="mb-6">
+          <h3 class="text-2xl font-bold mb-4">2️⃣ Les prépositions de lieu (Preposiciones de lugar)</h3>
+          
+          <p class="mb-4">
+            Pour décrire où se trouvent les objets et les personnes dans la classe, tu dois maîtriser les prépositions de lieu. Ces petits mots sont essentiels pour situer les choses dans l'espace !
+          </p>
 
-### Ejercicio 3: Trabajo en grupos
-Descripción del patio de recreo:
-- ¿Qué deportes se practican?
-- ¿Dónde están los terrenos de juegos?`,
-    references: ["MENFP - Programme 7e AF"]
+          <div class="grammar-box bg-secondary/10 p-4 rounded-lg mb-4">
+            <h4 class="font-semibold mb-3">📍 Prépositions essentielles</h4>
+            <table class="w-full border-collapse">
+              <thead>
+                <tr class="bg-primary/20">
+                  <th class="border p-2">Espagnol</th>
+                  <th class="border p-2">Français</th>
+                  <th class="border p-2">Créole</th>
+                  <th class="border p-2">Exemple</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td class="border p-2"><strong>En</strong></td>
+                  <td class="border p-2">Dans</td>
+                  <td class="border p-2">Nan</td>
+                  <td class="border p-2">En el aula</td>
+                </tr>
+                <tr>
+                  <td class="border p-2"><strong>Sobre / Encima de</strong></td>
+                  <td class="border p-2">Sur</td>
+                  <td class="border p-2">Sou</td>
+                  <td class="border p-2">Sobre la mesa</td>
+                </tr>
+                <tr>
+                  <td class="border p-2"><strong>Debajo de</strong></td>
+                  <td class="border p-2">Sous</td>
+                  <td class="border p-2">Anba</td>
+                  <td class="border p-2">Debajo del pupitre</td>
+                </tr>
+                <tr>
+                  <td class="border p-2"><strong>Delante de</strong></td>
+                  <td class="border p-2">Devant</td>
+                  <td class="border p-2">Devan</td>
+                  <td class="border p-2">Delante de la pizarra</td>
+                </tr>
+                <tr>
+                  <td class="border p-2"><strong>Detrás de</strong></td>
+                  <td class="border p-2">Derrière</td>
+                  <td class="border p-2">Dèyè</td>
+                  <td class="border p-2">Detrás de la puerta</td>
+                </tr>
+                <tr>
+                  <td class="border p-2"><strong>Al lado de</strong></td>
+                  <td class="border p-2">À côté de</td>
+                  <td class="border p-2">Bò kote</td>
+                  <td class="border p-2">Al lado de María</td>
+                </tr>
+                <tr>
+                  <td class="border p-2"><strong>Cerca de</strong></td>
+                  <td class="border p-2">Près de</td>
+                  <td class="border p-2">Tou pre</td>
+                  <td class="border p-2">Cerca de la ventana</td>
+                </tr>
+                <tr>
+                  <td class="border p-2"><strong>Lejos de</strong></td>
+                  <td class="border p-2">Loin de</td>
+                  <td class="border p-2">Lwen</td>
+                  <td class="border p-2">Lejos del profesor</td>
+                </tr>
+                <tr>
+                  <td class="border p-2"><strong>Entre</strong></td>
+                  <td class="border p-2">Entre</td>
+                  <td class="border p-2">Ant</td>
+                  <td class="border p-2">Entre dos sillas</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="tip-box bg-accent/10 p-4 rounded-lg mb-4">
+            <h4 class="font-semibold mb-2">💡 Astuce importante</h4>
+            <p>Quand on dit "de + el", ça se contracte en <strong>DEL</strong> !</p>
+            <ul class="list-disc ml-6 mt-2">
+              <li>❌ Detrás de el pupitre</li>
+              <li>✅ Detrás <strong>del</strong> pupitre</li>
+              <li>❌ Cerca de el profesor</li>
+              <li>✅ Cerca <strong>del</strong> profesor</li>
+            </ul>
+          </div>
+
+          <div class="dialogue-example bg-primary/10 p-4 rounded-lg">
+            <h4 class="font-semibold mb-3">💬 Dialogue : Description de la classe</h4>
+            <div class="space-y-2">
+              <p><strong>Profesora:</strong> Jean-Baptiste, ¿dónde está tu mochila?</p>
+              <p><strong>Jean-Baptiste:</strong> Mi mochila está debajo del pupitre.</p>
+              <p><strong>Profesora:</strong> Muy bien. Y Louisette, ¿dónde te sientas?</p>
+              <p><strong>Louisette:</strong> Yo me siento al lado de la ventana, cerca de Wideline.</p>
+              <p><strong>Profesora:</strong> Perfecto. ¿Y dónde está la pizarra?</p>
+              <p><strong>Clase:</strong> ¡La pizarra está delante de nosotros!</p>
+            </div>
+            <p class="text-sm italic mt-3">
+              Traduction : Professeure : Jean-Baptiste, où est ton sac ? / Jean-Baptiste : Mon sac est sous le pupitre. / Professeure : Très bien. Et Louisette, où es-tu assise ? / Louisette : Je suis assise à côté de la fenêtre, près de Wideline. / Professeure : Parfait. Et où est le tableau ? / Classe : Le tableau est devant nous !
+            </p>
+          </div>
+        </section>
+
+        <section class="mb-6">
+          <h3 class="text-2xl font-bold mb-4">3️⃣ El patio (La cour de récréation)</h3>
+          
+          <p class="mb-4">
+            Le patio est l'endroit préféré des élèves ! C'est là qu'on joue, qu'on discute avec les amis, qu'on mange... Voyons comment décrire cet espace en espagnol.
+          </p>
+
+          <div class="vocabulary-table mb-4">
+            <div class="bg-secondary/10 p-4 rounded-lg mb-3">
+              <h4 class="font-semibold mb-3">🏃 Activités et jeux dans le patio</h4>
+              <ul class="space-y-2">
+                <li><strong>Jugar</strong> = Jouer (Jwe)</li>
+                <li><strong>Correr</strong> = Courir (Kouri)</li>
+                <li><strong>Saltar</strong> = Sauter (Sote)</li>
+                <li><strong>Hablar</strong> = Parler (Pale)</li>
+                <li><strong>Comer</strong> = Manger (Manje)</li>
+                <li><strong>El recreo</strong> = La récréation (Rekrèy)</li>
+                <li><strong>El descanso</strong> = La pause</li>
+              </ul>
+            </div>
+
+            <div class="bg-accent/10 p-4 rounded-lg mb-3">
+              <h4 class="font-semibold mb-3">⚽ Sports et équipements</h4>
+              <ul class="space-y-2">
+                <li><strong>El fútbol</strong> = Le football (Foutbòl)</li>
+                <li><strong>El baloncesto / El básquetbol</strong> = Le basketball</li>
+                <li><strong>El voleibol</strong> = Le volleyball</li>
+                <li><strong>El terreno de juegos</strong> = Le terrain de jeux</li>
+                <li><strong>La cancha</strong> = Le terrain (de sport)</li>
+                <li><strong>La pelota / El balón</strong> = Le ballon (Balon)</li>
+                <li><strong>Las porterías</strong> = Les buts</li>
+                <li><strong>El aro</strong> = Le panier (de basket)</li>
+              </ul>
+            </div>
+
+            <div class="bg-primary/10 p-4 rounded-lg">
+              <h4 class="font-semibold mb-3">🌳 Espaces et zones</h4>
+              <ul class="space-y-2">
+                <li><strong>El árbol</strong> = L'arbre (Pyebwa)</li>
+                <li><strong>La sombra</strong> = L'ombre</li>
+                <li><strong>El banco</strong> = Le banc</li>
+                <li><strong>La zona de juegos</strong> = La zone de jeux</li>
+                <li><strong>El comedor</strong> = La cantine</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="cultural-note bg-purple-50 dark:bg-purple-900/20 border-l-4 border-purple-500 p-4 rounded-r-lg">
+            <h4 class="text-purple-700 dark:text-purple-400 font-semibold mb-2">🌟 Note culturelle</h4>
+            <p class="text-purple-600 dark:text-purple-300">
+              En Haïti comme dans les pays hispanophones, la récréation est un moment sacré ! C'est souvent là qu'on joue au football pieds nus, qu'on partage des fritay ou des bonbons, et qu'on discute entre amis. Dans les écoles dominicaines, on joue beaucoup au "palo encebao" (mât de cocagne) pendant les fêtes scolaires !
+            </p>
+          </div>
+        </section>
+
+        <section class="mb-6">
+          <h3 class="text-2xl font-bold mb-4">4️⃣ Structures pour décrire (HAY et ESTAR)</h3>
+          
+          <p class="mb-4">
+            Pour décrire ce qu'il y a dans l'aula ou dans le patio, tu dois connaître deux structures essentielles :
+          </p>
+
+          <div class="grammar-comparison bg-secondary/10 p-4 rounded-lg mb-4">
+            <h4 class="font-semibold mb-3">🔍 HAY vs ESTAR</h4>
+            
+            <div class="mb-4">
+              <h5 class="font-semibold text-primary">HAY (il y a)</h5>
+              <p class="mb-2">Utilisé pour dire qu'une chose existe dans un lieu (quantité indéfinie)</p>
+              <ul class="list-disc ml-6 space-y-1">
+                <li>✅ <strong>Hay</strong> 25 alumnos en mi clase. (Il y a 25 élèves dans ma classe.)</li>
+                <li>✅ <strong>Hay</strong> una pelota en el patio. (Il y a un ballon dans la cour.)</li>
+                <li>✅ <strong>Hay</strong> árboles cerca del aula. (Il y a des arbres près de la classe.)</li>
+              </ul>
+            </div>
+
+            <div>
+              <h5 class="font-semibold text-primary">ESTAR (être situé)</h5>
+              <p class="mb-2">Utilisé pour localiser une chose ou personne spécifique</p>
+              <ul class="list-disc ml-6 space-y-1">
+                <li>✅ La profesora <strong>está</strong> delante de la pizarra. (La professeure est devant le tableau.)</li>
+                <li>✅ Mi mochila <strong>está</strong> debajo del pupitre. (Mon sac est sous le pupitre.)</li>
+                <li>✅ Los alumnos <strong>están</strong> en el patio. (Les élèves sont dans la cour.)</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="examples-box bg-accent/10 p-4 rounded-lg">
+            <h4 class="font-semibold mb-3">📝 Exemples combinés</h4>
+            <div class="space-y-2">
+              <p>✅ <strong>Hay</strong> un patio grande. <strong>Está</strong> detrás del edificio principal.</p>
+              <p class="text-sm italic ml-6">(Il y a une grande cour. Elle est derrière le bâtiment principal.)</p>
+              <p>✅ <strong>Hay</strong> 30 pupitres. Mi pupitre <strong>está</strong> al fondo del aula.</p>
+              <p class="text-sm italic ml-6">(Il y a 30 pupitres. Mon pupitre est au fond de la classe.)</p>
+            </div>
+          </div>
+        </section>
+
+        <div class="youtube-section bg-gradient-to-r from-red-50 to-pink-50 dark:from-red-900/20 dark:to-pink-900/20 p-6 rounded-lg mt-6">
+          <h3 class="text-xl font-bold mb-4 flex items-center gap-2">
+            <span>🎥</span>
+            <span>Vidéo recommandée</span>
+          </h3>
+          <p class="mb-4">Pour mieux visualiser le vocabulaire de l'école et pratiquer la prononciation, regarde cette vidéo :</p>
+          <div class="bg-white dark:bg-gray-800 p-4 rounded-lg">
+            <p class="font-semibold mb-2">📺 "Spanish School Vocabulary - Classroom Objects"</p>
+            <p class="text-sm italic">Cherche sur YouTube : "vocabulario escuela español" ou "classroom Spanish vocabulary"</p>
+          </div>
+        </div>
+      </div>
+    `,
+    exemplesExercices: `
+      <div class="exercises-section">
+        <h3 class="text-2xl font-bold mb-4">📝 Exercices pratiques</h3>
+
+        <div class="exercise mb-6">
+          <h4 class="font-semibold text-lg mb-3">Exercice 1 : Vocabulaire</h4>
+          <p class="mb-2">Traduis ces mots en espagnol :</p>
+          <div class="bg-accent/10 p-4 rounded-lg space-y-2">
+            <p>1. Le pupitre → _____</p>
+            <p>2. Le tableau → _____</p>
+            <p>3. La cour de récréation → _____</p>
+            <p>4. L'élève → _____</p>
+            <p>5. Le cahier → _____</p>
+            <p>6. Le terrain de jeux → _____</p>
+          </div>
+        </div>
+
+        <div class="exercise mb-6">
+          <h4 class="font-semibold text-lg mb-3">Exercice 2 : Les prépositions</h4>
+          <p class="mb-2">Complète avec la bonne préposition de lieu :</p>
+          <div class="bg-primary/10 p-4 rounded-lg space-y-2">
+            <p>1. Mi libro está _____ la mesa. (sur)</p>
+            <p>2. La mochila está _____ del pupitre. (sous)</p>
+            <p>3. El profesor está _____ de la pizarra. (devant)</p>
+            <p>4. Me siento _____ de mi mejor amigo. (à côté)</p>
+            <p>5. El patio está _____ del aula. (derrière)</p>
+          </div>
+        </div>
+
+        <div class="exercise mb-6">
+          <h4 class="font-semibold text-lg mb-3">Exercice 3 : Description complète</h4>
+          <p class="mb-2">Décris ton aula en utilisant au moins 8 phrases. Mentionne :</p>
+          <ul class="list-disc ml-6 mb-3">
+            <li>Les objets présents (HAY)</li>
+            <li>Où ils se trouvent (ESTAR + prépositions)</li>
+            <li>Où tu t'assois</li>
+            <li>Qui est près de toi</li>
+          </ul>
+          <div class="bg-secondary/10 p-4 rounded-lg">
+            <p class="font-semibold mb-2">Exemple :</p>
+            <p class="italic">
+              Mi aula es grande. Hay 30 pupitres y 30 sillas. La pizarra está delante de los alumnos. Mi pupitre está al lado de la ventana. Louisette está cerca de mí...
+            </p>
+          </div>
+        </div>
+
+        <div class="exercise mb-6">
+          <h4 class="font-semibold text-lg mb-3">Exercice 4 : Le patio</h4>
+          <p class="mb-2">Réponds aux questions suivantes sur le patio de ton école :</p>
+          <div class="bg-accent/10 p-4 rounded-lg space-y-2">
+            <p>1. ¿Cómo es el patio de tu escuela? (grand/petit)</p>
+            <p>2. ¿Qué deportes se practican en el patio?</p>
+            <p>3. ¿Hay árboles en el patio?</p>
+            <p>4. ¿Dónde juegas durante el recreo?</p>
+            <p>5. ¿Qué haces con tus compañeros en el patio?</p>
+          </div>
+        </div>
+      </div>
+    `,
+    references: [
+      "Programme MENFP 7AF - Espagnol",
+      "Vocabulaire scolaire en contexte haïtien",
+      "Prépositions de lieu - Grammaire espagnole élémentaire",
+    ],
   },
 
   "dias-fechas": {
     title: "Días y Fechas (jours et dates)",
     mois: "Janvier",
     objectif: "Expresarse sobre los días y las fechas",
-    introduction: "Aprenderás los días de la semana, los meses del año y cómo hablar de fechas importantes.",
-    contenu: `## Los días y las fechas
+    introduction: `
+      <div class="lesson-intro">
+        <p class="text-lg mb-4">
+          Savoir parler des jours et des dates est essentiel dans toute langue ! C'est utile pour planifier, raconter des événements, et célébrer des occasions spéciales.
+        </p>
+        <div class="info-box bg-accent/10 p-4 rounded-lg">
+          <h3 class="font-semibold mb-2">🎯 Objectifs</h3>
+          <ul class="list-disc ml-6">
+            <li>Maîtriser les jours de la semaine et les mois</li>
+            <li>Dire et comprendre les dates</li>
+            <li>Parler d'événements et de fêtes</li>
+          </ul>
+        </div>
+      </div>
+    `,
+    contenu: `
+      <div class="lesson-content">
+        <section class="mb-6">
+          <h3 class="text-2xl font-bold mb-4">1️⃣ Los días de la semana (Les jours de la semaine)</h3>
+          
+          <p class="mb-4">
+            Les jours de la semaine en espagnol sont faciles à retenir car plusieurs ressemblent aux jours en français ! Une différence importante : en espagnol, les jours de la semaine s'écrivent avec une <strong>minuscule</strong> (pas de majuscule).
+          </p>
 
-### Días de la semana
-- **Lunes** - Lundi
-- **Martes** - Mardi
-- **Miércoles** - Mercredi
-- **Jueves** - Jeudi
-- **Viernes** - Vendredi
-- **Sábado** - Samedi
-- **Domingo** - Dimanche
+          <div class="vocabulary-table mb-4">
+            <table class="w-full border-collapse">
+              <thead>
+                <tr class="bg-primary/20">
+                  <th class="border p-2">Espagnol</th>
+                  <th class="border p-2">Français</th>
+                  <th class="border p-2">Créole</th>
+                  <th class="border p-2">Abréviation</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td class="border p-2"><strong>lunes</strong></td>
+                  <td class="border p-2">lundi</td>
+                  <td class="border p-2">lendi</td>
+                  <td class="border p-2">lun.</td>
+                </tr>
+                <tr>
+                  <td class="border p-2"><strong>martes</strong></td>
+                  <td class="border p-2">mardi</td>
+                  <td class="border p-2">madi</td>
+                  <td class="border p-2">mar.</td>
+                </tr>
+                <tr>
+                  <td class="border p-2"><strong>miércoles</strong></td>
+                  <td class="border p-2">mercredi</td>
+                  <td class="border p-2">mèkredi</td>
+                  <td class="border p-2">mié.</td>
+                </tr>
+                <tr>
+                  <td class="border p-2"><strong>jueves</strong></td>
+                  <td class="border p-2">jeudi</td>
+                  <td class="border p-2">jedi</td>
+                  <td class="border p-2">jue.</td>
+                </tr>
+                <tr>
+                  <td class="border p-2"><strong>viernes</strong></td>
+                  <td class="border p-2">vendredi</td>
+                  <td class="border p-2">vandredi</td>
+                  <td class="border p-2">vie.</td>
+                </tr>
+                <tr>
+                  <td class="border p-2"><strong>sábado</strong></td>
+                  <td class="border p-2">samedi</td>
+                  <td class="border p-2">samdi</td>
+                  <td class="border p-2">sáb.</td>
+                </tr>
+                <tr>
+                  <td class="border p-2"><strong>domingo</strong></td>
+                  <td class="border p-2">dimanche</td>
+                  <td class="border p-2">dimanch</td>
+                  <td class="border p-2">dom.</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
 
-### Meses del año
-- Enero, Febrero, Marzo, Abril, Mayo, Junio
-- Julio, Agosto, Septiembre, Octubre, Noviembre, Diciembre
+          <div class="tip-box bg-accent/10 p-4 rounded-lg mb-4">
+            <h4 class="font-semibold mb-2">💡 Astuces pour retenir</h4>
+            <ul class="list-disc ml-6 space-y-1">
+              <li><strong>Lunes</strong> vient de "Luna" (Lune) → jour de la Lune</li>
+              <li><strong>Martes</strong> vient de "Marte" (Mars) → jour de Mars</li>
+              <li><strong>Miércoles</strong> vient de "Mercurio" (Mercure) → jour de Mercure</li>
+              <li><strong>Jueves</strong> vient de "Júpiter" → jour de Jupiter</li>
+              <li><strong>Viernes</strong> vient de "Venus" → jour de Vénus</li>
+              <li><strong>Sábado</strong> vient de "Sabbat" → jour du Sabbat</li>
+              <li><strong>Domingo</strong> vient de "Dominus" (Seigneur) → jour du Seigneur</li>
+            </ul>
+          </div>
 
-### Las estaciones
-- **Primavera** - Printemps
-- **Verano** - Été
-- **Otoño** - Automne
-- **Invierno** - Hiver
+          <div class="grammar-box bg-secondary/10 p-4 rounded-lg mb-4">
+            <h4 class="font-semibold mb-3">📖 Expressions avec les jours</h4>
+            <div class="space-y-2">
+              <p>✅ <strong>¿Qué día es hoy?</strong> = Quel jour sommes-nous ? (Ki jou jodi a ye?)</p>
+              <p>✅ <strong>Hoy es lunes.</strong> = Aujourd'hui c'est lundi. (Jodi a se lendi.)</p>
+              <p>✅ <strong>Mañana es martes.</strong> = Demain c'est mardi. (Demen se madi.)</p>
+              <p>✅ <strong>Ayer fue domingo.</strong> = Hier c'était dimanche. (Yè te dimanch.)</p>
+              <p>✅ <strong>El lunes</strong> = Le lundi (un lundi spécifique)</p>
+              <p>✅ <strong>Los lunes</strong> = Les lundis (tous les lundis, habituellement)</p>
+              <p class="italic text-sm ml-6">Exemple : Los lunes tengo clase de español. (Tous les lundis j'ai cours d'espagnol.)</p>
+            </div>
+          </div>
 
-### Vocabulario de fechas
-- **Fiestas** - Fêtes
-- **Actualidades** - Actualités
-- **Acontecimientos** - Événements
-- **Cumpleaños** - Anniversaire
-- **Aniversario** - Anniversaire
+          <div class="vocabulary-extra bg-primary/10 p-4 rounded-lg">
+            <h4 class="font-semibold mb-3">📅 Expressions temporelles utiles</h4>
+            <div class="space-y-1">
+              <p><strong>Hoy</strong> = Aujourd'hui (Jodi a)</p>
+              <p><strong>Mañana</strong> = Demain (Demen)</p>
+              <p><strong>Ayer</strong> = Hier (Yè)</p>
+              <p><strong>Anteayer</strong> = Avant-hier</p>
+              <p><strong>Pasado mañana</strong> = Après-demain</p>
+              <p><strong>La semana</strong> = La semaine (Semèn nan)</p>
+              <p><strong>El fin de semana</strong> = Le week-end (Wikenn)</p>
+              <p><strong>Entre semana</strong> = En semaine</p>
+            </div>
+          </div>
+        </section>
 
-### Palabras interrogativas
-- **Qué** - Quoi/Que
-- **Cuál** - Lequel
-- **Cómo** - Comment
-- **Dónde** - Où
-- **Quién** - Qui`,
-    exemplesExercices: `## Ejercicios
+        <section class="mb-6">
+          <h3 class="text-2xl font-bold mb-4">2️⃣ Los meses del año (Les mois de l'année)</h3>
+          
+          <p class="mb-4">
+            Comme les jours, les mois s'écrivent aussi avec une <strong>minuscule</strong> en espagnol. Beaucoup ressemblent au français, ce qui facilite la mémorisation !
+          </p>
 
-### Ejercicio 1: Días de la semana
-1. ¿Qué día es hoy?
-2. ¿Qué día fue ayer?
-3. ¿Qué día será mañana?
+          <div class="vocabulary-grid mb-4">
+            <div class="bg-secondary/10 p-4 rounded-lg mb-3">
+              <h4 class="font-semibold mb-3">🌸 Printemps et Été</h4>
+              <ul class="space-y-2">
+                <li><strong>enero</strong> = janvier (janvye)</li>
+                <li><strong>febrero</strong> = février (fevriye)</li>
+                <li><strong>marzo</strong> = mars (mas)</li>
+                <li><strong>abril</strong> = avril (avril)</li>
+                <li><strong>mayo</strong> = mai (me)</li>
+                <li><strong>junio</strong> = juin (jen)</li>
+              </ul>
+            </div>
 
-### Ejercicio 2: En grupos
-Los alumnos contarán:
-- Uno de sus días en la escuela
-- Lo que hacen los fines de semana
+            <div class="bg-accent/10 p-4 rounded-lg">
+              <h4 class="font-semibold mb-3">🍂 Automne et Hiver</h4>
+              <ul class="space-y-2">
+                <li><strong>julio</strong> = juillet (jiyè)</li>
+                <li><strong>agosto</strong> = août (out)</li>
+                <li><strong>septiembre</strong> = septembre (septanm)</li>
+                <li><strong>octubre</strong> = octobre (oktòb)</li>
+                <li><strong>noviembre</strong> = novembre (novanm)</li>
+                <li><strong>diciembre</strong> = décembre (desanm)</li>
+              </ul>
+            </div>
+          </div>
 
-### Ejercicio 3: Fechas importantes
-- ¿Cuándo es tu cumpleaños?
-- ¿Cuáles son las fiestas principales?`,
-    references: ["MENFP - Programme 7e AF"]
+          <div class="cultural-note bg-purple-50 dark:bg-purple-900/20 border-l-4 border-purple-500 p-4 rounded-r-lg">
+            <h4 class="text-purple-700 dark:text-purple-400 font-semibold mb-2">🌟 Note culturelle</h4>
+            <p class="text-purple-600 dark:text-purple-300">
+              En Haïti, nous n'avons pas vraiment de saisons comme en Europe (printemps, été, automne, hiver). Nous avons plutôt deux saisons : la saison sèche et la saison des pluies ! Mais dans les pays hispanophones d'Amérique latine comme la République Dominicaine, c'est pareil. Par contre, en Espagne et dans le sud de l'Argentine, il y a bien quatre saisons distinctes !
+            </p>
+          </div>
+
+          <div class="examples-box bg-primary/5 p-4 rounded-lg">
+            <h4 class="font-semibold mb-3">🗣️ Phrases avec les mois</h4>
+            <div class="space-y-2">
+              <p>✅ <strong>Mi cumpleaños es en julio.</strong> (Mon anniversaire est en juillet.)</p>
+              <p>✅ <strong>Las clases empiezan en septiembre.</strong> (Les cours commencent en septembre.)</p>
+              <p>✅ <strong>En diciembre celebramos la Navidad.</strong> (En décembre nous célébrons Noël.)</p>
+              <p>✅ <strong>El carnaval es en febrero.</strong> (Le carnaval est en février.)</p>
+            </div>
+          </div>
+        </section>
+
+        <section class="mb-6">
+          <h3 class="text-2xl font-bold mb-4">3️⃣ Las fechas (Les dates)</h3>
+          
+          <p class="mb-4">
+            Pour dire les dates en espagnol, on utilise une structure différente du français. C'est important de bien la maîtriser !
+          </p>
+
+          <div class="grammar-box bg-secondary/10 p-4 rounded-lg mb-4">
+            <h4 class="font-semibold mb-3">📝 Structure des dates</h4>
+            <p class="mb-3"><strong>Article + Numéro + de + Mois + de + Année</strong></p>
+            <div class="space-y-3">
+              <div>
+                <p class="font-semibold">Exception : Le 1er du mois</p>
+                <p>✅ <strong>El primero de enero</strong> = Le premier janvier (NOT "el uno")</p>
+              </div>
+              <div>
+                <p class="font-semibold">Les autres jours (2-31)</p>
+                <p>✅ <strong>El dos de enero</strong> = Le deux janvier</p>
+                <p>✅ <strong>El quince de agosto</strong> = Le quinze août</p>
+                <p>✅ <strong>El veinticinco de diciembre</strong> = Le vingt-cinq décembre</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="numbers-reference bg-accent/10 p-4 rounded-lg mb-4">
+            <h4 class="font-semibold mb-3">🔢 Les nombres 1-31 (pour les dates)</h4>
+            <div class="grid grid-cols-2 gap-2">
+              <div>
+                <p>1 = <strong>primero</strong> (1er)</p>
+                <p>2 = dos</p>
+                <p>3 = tres</p>
+                <p>4 = cuatro</p>
+                <p>5 = cinco</p>
+                <p>10 = diez</p>
+                <p>15 = quince</p>
+              </div>
+              <div>
+                <p>20 = veinte</p>
+                <p>21 = veintiuno</p>
+                <p>25 = veinticinco</p>
+                <p>30 = treinta</p>
+                <p>31 = treinta y uno</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="dialogue-example bg-primary/10 p-4 rounded-lg">
+            <h4 class="font-semibold mb-3">💬 Dialogue : Dates importantes</h4>
+            <div class="space-y-2">
+              <p><strong>Carlos:</strong> Wideline, ¿cuándo es tu cumpleaños?</p>
+              <p><strong>Wideline:</strong> Mi cumpleaños es el 18 de marzo. ¿Y el tuyo?</p>
+              <p><strong>Carlos:</strong> El mío es el primero de junio.</p>
+              <p><strong>Wideline:</strong> ¡Qué bien! ¿Y cuándo es el Día de la Independencia de Haití?</p>
+              <p><strong>Carlos:</strong> Es el primero de enero, ¿verdad?</p>
+              <p><strong>Wideline:</strong> ¡Exacto! Y la Independencia de República Dominicana es el 27 de febrero.</p>
+            </div>
+            <p class="text-sm italic mt-3">
+              Traduction : Carlos : Wideline, c'est quand ton anniversaire ? / Wideline : Mon anniversaire est le 18 mars. Et le tien ? / Carlos : Le mien est le 1er juin. / Wideline : Super ! Et c'est quand la Fête de l'Indépendance d'Haïti ? / Carlos : C'est le 1er janvier, non ? / Wideline : Exactement ! Et l'Indépendance de la République Dominicaine est le 27 février.
+            </p>
+          </div>
+        </section>
+
+        <section class="mb-6">
+          <h3 class="text-2xl font-bold mb-4">4️⃣ Fiestas y acontecimientos (Fêtes et événements)</h3>
+          
+          <p class="mb-4">
+            Connaître les fêtes et événements importants te permettra de mieux comprendre la culture hispanophone et de participer aux conversations !
+          </p>
+
+          <div class="vocabulary-events bg-primary/10 p-4 rounded-lg mb-4">
+            <h4 class="font-semibold mb-3">🎉 Fêtes et célébrations</h4>
+            <ul class="space-y-2">
+              <li><strong>El cumpleaños</strong> = L'anniversaire (Anivèsè nesans)</li>
+              <li><strong>El Año Nuevo</strong> = Le Nouvel An (Nouvo ane)</li>
+              <li><strong>La Navidad</strong> = Noël (Nowèl)</li>
+              <li><strong>El Carnaval</strong> = Le Carnaval (Kanaval)</li>
+              <li><strong>La Semana Santa</strong> = La Semaine Sainte (Semèn Sent)</li>
+              <li><strong>El Día de la Independencia</strong> = Le Jour de l'Indépendance</li>
+              <li><strong>El Día de la Madre</strong> = La Fête des Mères</li>
+              <li><strong>La boda</strong> = Le mariage (Maryaj)</li>
+              <li><strong>La fiesta</strong> = La fête (Fèt)</li>
+            </ul>
+          </div>
+
+          <div class="questions-box bg-secondary/10 p-4 rounded-lg">
+            <h4 class="font-semibold mb-3">❓ Questions pour parler d'événements</h4>
+            <ul class="space-y-2">
+              <li><strong>¿Qué día es...?</strong> = Quel jour c'est... ?</li>
+              <li><strong>¿Cuándo es...?</strong> = Quand c'est... ?</li>
+              <li><strong>¿Cuál es la fecha de...?</strong> = Quelle est la date de... ?</li>
+              <li><strong>¿Cómo se celebra...?</strong> = Comment célèbre-t-on... ?</li>
+              <li><strong>¿Dónde se celebra...?</strong> = Où célèbre-t-on... ?</li>
+            </ul>
+          </div>
+        </section>
+
+        <div class="youtube-section bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20 p-6 rounded-lg mt-6">
+          <h3 class="text-xl font-bold mb-4 flex items-center gap-2">
+            <span>🎥</span>
+            <span>Vidéo recommandée</span>
+          </h3>
+          <p class="mb-4">Pour pratiquer les jours, les mois et les dates en espagnol, regarde cette vidéo :</p>
+          <div class="bg-white dark:bg-gray-800 p-4 rounded-lg">
+            <p class="font-semibold mb-2">📺 "Los Días de la Semana y Los Meses del Año en Español"</p>
+            <p class="text-sm italic">Cherche sur YouTube : "días semana meses español" ou "Spanish days months dates"</p>
+          </div>
+        </div>
+      </div>
+    `,
+    exemplesExercices: `
+      <div class="exercises-section">
+        <h3 class="text-2xl font-bold mb-4">📝 Exercices pratiques</h3>
+
+        <div class="exercise mb-6">
+          <h4 class="font-semibold text-lg mb-3">Exercice 1 : Les jours de la semaine</h4>
+          <p class="mb-2">Réponds aux questions suivantes :</p>
+          <div class="bg-accent/10 p-4 rounded-lg space-y-2">
+            <p>1. ¿Qué día es hoy? → _____</p>
+            <p>2. ¿Qué día fue ayer? → _____</p>
+            <p>3. ¿Qué día será mañana? → _____</p>
+            <p>4. ¿Qué días vas a la escuela? → _____</p>
+            <p>5. ¿Qué haces los domingos? → _____</p>
+          </div>
+        </div>
+
+        <div class="exercise mb-6">
+          <h4 class="font-semibold text-lg mb-3">Exercice 2 : Les mois</h4>
+          <p class="mb-2">Complète les phrases avec le bon mois :</p>
+          <div class="bg-primary/10 p-4 rounded-lg space-y-2">
+            <p>1. La Navidad es en _____. (Noël)</p>
+            <p>2. El Día de la Independencia de Haití es en _____.</p>
+            <p>3. Mi cumpleaños es en _____.</p>
+            <p>4. El Carnaval generalmente es en _____.</p>
+            <p>5. Las clases empiezan en _____.</p>
+          </div>
+        </div>
+
+        <div class="exercise mb-6">
+          <h4 class="font-semibold text-lg mb-3">Exercice 3 : Les dates</h4>
+          <p class="mb-2">Écris ces dates en espagnol :</p>
+          <div class="bg-secondary/10 p-4 rounded-lg space-y-2">
+            <p>1. Le 1er janvier → _____</p>
+            <p>2. Le 14 février → _____</p>
+            <p>3. Le 27 février → _____</p>
+            <p>4. Le 25 décembre → _____</p>
+            <p>5. Ton anniversaire → _____</p>
+          </div>
+        </div>
+
+        <div class="exercise mb-6">
+          <h4 class="font-semibold text-lg mb-3">Exercice 4 : Dialogue en groupe</h4>
+          <p class="mb-2">Par groupes de trois, créez un dialogue où vous :</p>
+          <ul class="list-disc ml-6 mb-3">
+            <li>Demandez les anniversaires de vos camarades</li>
+            <li>Parlez de vos activités pendant la semaine</li>
+            <li>Mentionnez une fête importante et sa date</li>
+          </ul>
+          <p class="text-sm italic">Utilisez les expressions apprises : ¿Cuándo es...? Hoy es... Mi cumpleaños es el...</p>
+        </div>
+      </div>
+    `,
+    references: [
+      "Programme MENFP 7AF - Espagnol",
+      "Calendrier et dates - Grammaire espagnole",
+      "Fêtes et célébrations caribéennes",
+    ],
   },
 
   "la-casa": {
     title: "La Casa (la maison)",
     mois: "Janvier",
     objectif: "Hablar de su casa y describir su cuarto",
-    introduction: "Aprenderás a describir tu casa, las habitaciones y los muebles.",
-    contenu: `## La casa
+    introduction: `
+      <div class="lesson-intro">
+        <p class="text-lg mb-4">
+          Ta maison est ton refuge, ton foyer ! Dans cette leçon, tu vas apprendre à décrire ta maison, ses pièces, et tous les meubles en espagnol.
+        </p>
+        <div class="info-box bg-accent/10 p-4 rounded-lg">
+          <h3 class="font-semibold mb-2">🎯 Objectifs</h3>
+          <ul class="list-disc ml-6">
+            <li>Décrire les pièces de la maison</li>
+            <li>Nommer les meubles et objets domestiques</li>
+            <li>Utiliser les adjectifs possessifs et démonstratifs</li>
+          </ul>
+        </div>
+      </div>
+    `,
+    contenu: `
+      <div class="lesson-content">
+        <section class="mb-6">
+          <h3 class="text-2xl font-bold mb-4">1️⃣ Las partes de la casa (Les pièces de la maison)</h3>
+          
+          <p class="mb-4">
+            Chaque maison est différente, mais la plupart ont des pièces communes. Que tu vives dans une grande maison, un appartement, ou une petite maison traditionnelle haïtienne (kay), tu pourras décrire ton chez-toi en espagnol !
+          </p>
 
-### Partes de la casa
-- **Lugar** - Lieu
-- **Cuarto / Habitación** - Chambre
-- **Salón** - Salon
-- **Techo** - Toit
-- **Construcción** - Construction
+          <div class="vocabulary-grid mb-4">
+            <div class="bg-primary/10 p-4 rounded-lg mb-3">
+              <h4 class="font-semibold mb-3">🏠 Structure et espaces</h4>
+              <ul class="space-y-2">
+                <li><strong>La casa</strong> = La maison (Kay)</li>
+                <li><strong>El apartamento / El piso</strong> = L'appartement</li>
+                <li><strong>El edificio</strong> = Le bâtiment</li>
+                <li><strong>El patio / El jardín</strong> = Le jardin, la cour (Jaden, lakou)</li>
+                <li><strong>La terraza / El balcón</strong> = La terrasse / Le balcon (Balkon)</li>
+                <li><strong>El techo</strong> = Le toit (Tèt kay)</li>
+                <li><strong>La puerta</strong> = La porte (Pòt)</li>
+                <li><strong>La ventana</strong> = La fenêtre (Fenèt)</li>
+                <li><strong>El piso</strong> = Le sol, l'étage</li>
+                <li><strong>La escalera</strong> = L'escalier (Eskalye)</li>
+              </ul>
+            </div>
 
-### Los muebles
-- **Muebles** - Meubles
-- **Tocador / Coqueta** - Coiffeuse
-- **Armario** - Armoire
-- **Cama** - Lit
-- **Sillón** - Fauteuil
-- **Sofá** - Canapé
+            <div class="bg-secondary/10 p-4 rounded-lg mb-3">
+              <h4 class="font-semibold mb-3">🛏️ Les pièces principales</h4>
+              <ul class="space-y-2">
+                <li><strong>El cuarto / La habitación</strong> = La chambre (Chanm)</li>
+                <li><strong>El dormitorio</strong> = La chambre à coucher</li>
+                <li><strong>La sala / El salón</strong> = Le salon (Salon)</li>
+                <li><strong>El comedor</strong> = La salle à manger</li>
+                <li><strong>La cocina</strong> = La cuisine (Kizin)</li>
+                <li><strong>El baño</strong> = La salle de bain (Twalèt, saldbèn)</li>
+                <li><strong>La ducha</strong> = La douche (Douch)</li>
+                <li><strong>El pasillo</strong> = Le couloir</li>
+                <li><strong>La entrada</strong> = L'entrée</li>
+              </ul>
+            </div>
 
-### Los posesivos
-**Adjetivos posesivos:**
-- Mi / mis - Mon/ma, mes
-- Tu / tus - Ton/ta, tes
-- Su / sus - Son/sa, ses
-- Nuestro(a) / nuestros(as) - Notre, nos
-- Vuestro(a) / vuestros(as) - Votre, vos
-- Su / sus - Leur, leurs
+            <div class="bg-accent/10 p-4 rounded-lg">
+              <h4 class="font-semibold mb-3">🌳 Espaces extérieurs</h4>
+              <ul class="space-y-2">
+                <li><strong>El garaje</strong> = Le garage</li>
+                <li><strong>La galería</strong> = La galerie, la véranda (Galri)</li>
+                <li><strong>El patio trasero</strong> = La cour arrière</li>
+                <li><strong>El portal</strong> = Le porche</li>
+              </ul>
+            </div>
+          </div>
 
-### Los demostrativos
-- **Este / esta** - Ce, cette
-- **Estos / estas** - Ces
-- **Ese / esa** - Ce...là, cette...là
-- **Esos / esas** - Ces...là`,
-    exemplesExercices: `## Ejercicios
+          <div class="cultural-note bg-purple-50 dark:bg-purple-900/20 border-l-4 border-purple-500 p-4 rounded-r-lg">
+            <h4 class="text-purple-700 dark:text-purple-400 font-semibold mb-2">🌟 Note culturelle</h4>
+            <p class="text-purple-600 dark:text-purple-300">
+              En Haïti, beaucoup de maisons ont une <strong>galerie</strong> (véranda) où les familles se réunissent le soir pour discuter, écouter de la musique, ou simplement profiter de la fraîcheur. Dans les pays hispanophones, on appelle ça souvent <strong>el portal</strong> ou <strong>la terraza</strong>. C'est un espace de convivialité très important dans la culture caribéenne !
+            </p>
+          </div>
 
-### Ejercicio 1: Descripción
-Describe tu cuarto usando:
-- Los muebles que tienes
-- Los posesivos (mi cama, mi armario...)
-- Los demostrativos (esta silla, ese tocador...)
+          <div class="examples-box bg-primary/5 p-4 rounded-lg">
+            <h4 class="font-semibold mb-3">🗣️ Phrases pour décrire ta maison</h4>
+            <div class="space-y-2">
+              <p>✅ <strong>Mi casa tiene tres cuartos.</strong> (Ma maison a trois chambres.)</p>
+              <p>✅ <strong>Vivo en un apartamento pequeño.</strong> (J'habite dans un petit appartement.)</p>
+              <p>✅ <strong>Nuestra casa tiene un patio grande.</strong> (Notre maison a une grande cour.)</p>
+              <p>✅ <strong>La cocina está al lado del comedor.</strong> (La cuisine est à côté de la salle à manger.)</p>
+              <p>✅ <strong>Mi cuarto está en el segundo piso.</strong> (Ma chambre est au deuxième étage.)</p>
+            </div>
+          </div>
+        </section>
 
-### Ejercicio 2: Ubicación
-- Mi casa está a 3 kilómetros de aquí
-- ¿De quién es esa casa?
-- Esa casa es de mi familia
+        <section class="mb-6">
+          <h3 class="text-2xl font-bold mb-4">2️⃣ Los muebles (Les meubles)</h3>
+          
+          <p class="mb-4">
+            Maintenant que tu connais les pièces de la maison, voyons les meubles et objets qu'on trouve dans chaque espace. C'est essentiel pour décrire ton intérieur en détail !
+          </p>
 
-### Ejercicio 3: Poesía en grupos
-Los alumnos escribirán una poesía a propósito de una casa.`,
-    references: ["MENFP - Programme 7e AF"]
+          <div class="vocabulary-rooms mb-4">
+            <div class="bg-secondary/10 p-4 rounded-lg mb-3">
+              <h4 class="font-semibold mb-3">🛏️ Dans la chambre (En el cuarto)</h4>
+              <ul class="space-y-2">
+                <li><strong>La cama</strong> = Le lit (Kabann)</li>
+                <li><strong>El armario / El clóset</strong> = L'armoire, le placard (Amwa)</li>
+                <li><strong>El tocador / La coqueta</strong> = La coiffeuse</li>
+                <li><strong>La mesita de noche</strong> = La table de nuit</li>
+                <li><strong>La almohada</strong> = L'oreiller (Zorye)</li>
+                <li><strong>La sábana</strong> = Le drap (Dra)</li>
+                <li><strong>La manta / La frazada</strong> = La couverture (Kouvèti)</li>
+                <li><strong>El espejo</strong> = Le miroir (Glas)</li>
+                <li><strong>La lámpara</strong> = La lampe (Lanp)</li>
+              </ul>
+            </div>
+
+            <div class="bg-accent/10 p-4 rounded-lg mb-3">
+              <h4 class="font-semibold mb-3">🛋️ Dans le salon (En la sala)</h4>
+              <ul class="space-y-2">
+                <li><strong>El sofá / El canapé</strong> = Le canapé (Kanape)</li>
+                <li><strong>El sillón</strong> = Le fauteuil (Fotèy)</li>
+                <li><strong>La mesa de centro</strong> = La table basse</li>
+                <li><strong>La televisión / El televisor</strong> = La télévision (Televizyon)</li>
+                <li><strong>La alfombra</strong> = Le tapis</li>
+                <li><strong>El cuadro</strong> = Le tableau (peinture)</li>
+                <li><strong>La cortina</strong> = Le rideau (Rido)</li>
+                <li><strong>El estante</strong> = L'étagère</li>
+              </ul>
+            </div>
+
+            <div class="bg-primary/10 p-4 rounded-lg mb-3">
+              <h4 class="font-semibold mb-3">🍽️ Dans la cuisine et la salle à manger</h4>
+              <ul class="space-y-2">
+                <li><strong>La mesa</strong> = La table (Tab)</li>
+                <li><strong>La silla</strong> = La chaise (Chèz)</li>
+                <li><strong>El refrigerador / La nevera</strong> = Le réfrigérateur (Frijidè)</li>
+                <li><strong>La estufa / La cocina</strong> = La cuisinière (Recho)</li>
+                <li><strong>El horno</strong> = Le four</li>
+                <li><strong>El gabinete</strong> = Le placard (de cuisine)</li>
+                <li><strong>El fregadero</strong> = L'évier (Labò)</li>
+                <li><strong>La olla</strong> = La marmite (Chodyè)</li>
+                <li><strong>El plato</strong> = L'assiette (Asyèt)</li>
+              </ul>
+            </div>
+
+            <div class="bg-secondary/5 p-4 rounded-lg">
+              <h4 class="font-semibold mb-3">🚿 Dans la salle de bain</h4>
+              <ul class="space-y-2">
+                <li><strong>El inodoro</strong> = Les toilettes, la cuvette</li>
+                <li><strong>El lavabo</strong> = Le lavabo</li>
+                <li><strong>La ducha</strong> = La douche (Douch)</li>
+                <li><strong>La bañera</strong> = La baignoire</li>
+                <li><strong>El espejo</strong> = Le miroir (Glas)</li>
+                <li><strong>La toalla</strong> = La serviette (Sèvyèt)</li>
+                <li><strong>El jabón</strong> = Le savon (Savon)</li>
+              </ul>
+            </div>
+          </div>
+        </section>
+
+        <section class="mb-6">
+          <h3 class="text-2xl font-bold mb-4">3️⃣ Los adjetivos posesivos (Les adjectifs possessifs)</h3>
+          
+          <p class="mb-4">
+            Pour dire "ma maison", "ton lit", "notre salon", tu as besoin des adjectifs possessifs. En espagnol, ils s'accordent en nombre (singulier/pluriel) avec l'objet possédé, et certains s'accordent aussi en genre !
+          </p>
+
+          <div class="grammar-box bg-secondary/10 p-4 rounded-lg mb-4">
+            <h4 class="font-semibold mb-3">📖 Tableau des possessifs</h4>
+            <table class="w-full border-collapse">
+              <thead>
+                <tr class="bg-primary/20">
+                  <th class="border p-2">Possesseur</th>
+                  <th class="border p-2">Singulier</th>
+                  <th class="border p-2">Pluriel</th>
+                  <th class="border p-2">Français</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td class="border p-2">Yo</td>
+                  <td class="border p-2"><strong>mi</strong></td>
+                  <td class="border p-2"><strong>mis</strong></td>
+                  <td class="border p-2">mon/ma, mes</td>
+                </tr>
+                <tr>
+                  <td class="border p-2">Tú</td>
+                  <td class="border p-2"><strong>tu</strong></td>
+                  <td class="border p-2"><strong>tus</strong></td>
+                  <td class="border p-2">ton/ta, tes</td>
+                </tr>
+                <tr>
+                  <td class="border p-2">Él/Ella/Usted</td>
+                  <td class="border p-2"><strong>su</strong></td>
+                  <td class="border p-2"><strong>sus</strong></td>
+                  <td class="border p-2">son/sa, ses / votre, vos</td>
+                </tr>
+                <tr>
+                  <td class="border p-2">Nosotros/as</td>
+                  <td class="border p-2"><strong>nuestro/a</strong></td>
+                  <td class="border p-2"><strong>nuestros/as</strong></td>
+                  <td class="border p-2">notre, nos</td>
+                </tr>
+                <tr>
+                  <td class="border p-2">Vosotros/as</td>
+                  <td class="border p-2"><strong>vuestro/a</strong></td>
+                  <td class="border p-2"><strong>vuestros/as</strong></td>
+                  <td class="border p-2">votre, vos (pluriel)</td>
+                </tr>
+                <tr>
+                  <td class="border p-2">Ellos/Ellas/Ustedes</td>
+                  <td class="border p-2"><strong>su</strong></td>
+                  <td class="border p-2"><strong>sus</strong></td>
+                  <td class="border p-2">leur/leurs / votre, vos</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="tip-box bg-accent/10 p-4 rounded-lg mb-4">
+            <h4 class="font-semibold mb-2">💡 Règles importantes</h4>
+            <ul class="list-disc ml-6 space-y-2">
+              <li><strong>Mi, tu, su</strong> ne changent PAS selon le genre (masculin/féminin) : <strong>mi casa</strong>, <strong>mi cuarto</strong></li>
+              <li>Mais ils changent au pluriel : <strong>mis casas</strong>, <strong>mis cuartos</strong></li>
+              <li><strong>Nuestro/vuestro</strong> s'accordent en genre ET en nombre : <strong>nuestro cuarto</strong> (masc.), <strong>nuestra casa</strong> (fém.), <strong>nuestros muebles</strong> (masc. pl.), <strong>nuestras sillas</strong> (fém. pl.)</li>
+            </ul>
+          </div>
+
+          <div class="examples-box bg-primary/5 p-4 rounded-lg">
+            <h4 class="font-semibold mb-3">✅ Exemples avec possessifs</h4>
+            <div class="space-y-2">
+              <p><strong>Mi casa</strong> es grande. (Ma maison est grande.)</p>
+              <p><strong>Tus cuartos</strong> son cómodos. (Tes chambres sont confortables.)</p>
+              <p><strong>Su cocina</strong> está limpia. (Sa cuisine est propre.)</p>
+              <p><strong>Nuestra sala</strong> tiene un sofá nuevo. (Notre salon a un nouveau canapé.)</p>
+              <p><strong>Mis muebles</strong> son viejos. (Mes meubles sont vieux.)</p>
+              <p><strong>Sus ventanas</strong> están abiertas. (Leurs fenêtres sont ouvertes.)</p>
+            </div>
+          </div>
+        </section>
+
+        <section class="mb-6">
+          <h3 class="text-2xl font-bold mb-4">4️⃣ Los demostrativos (Les démonstratifs)</h3>
+          
+          <p class="mb-4">
+            Les démonstratifs servent à désigner des choses selon leur distance : "cette maison-ci", "ce lit-là"... En espagnol, il y a TROIS niveaux de distance (alors qu'en français on en a seulement deux).
+          </p>
+
+          <div class="grammar-box bg-secondary/10 p-4 rounded-lg mb-4">
+            <h4 class="font-semibold mb-3">📍 Les trois niveaux de distance</h4>
+            
+            <table class="w-full border-collapse mb-4">
+              <thead>
+                <tr class="bg-primary/20">
+                  <th class="border p-2">Distance</th>
+                  <th class="border p-2">Masculin sing.</th>
+                  <th class="border p-2">Féminin sing.</th>
+                  <th class="border p-2">Masculin pl.</th>
+                  <th class="border p-2">Féminin pl.</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td class="border p-2"><strong>Proche</strong> (ici)</td>
+                  <td class="border p-2">este</td>
+                  <td class="border p-2">esta</td>
+                  <td class="border p-2">estos</td>
+                  <td class="border p-2">estas</td>
+                </tr>
+                <tr>
+                  <td class="border p-2"><strong>Moyenne</strong> (là)</td>
+                  <td class="border p-2">ese</td>
+                  <td class="border p-2">esa</td>
+                  <td class="border p-2">esos</td>
+                  <td class="border p-2">esas</td>
+                </tr>
+                <tr>
+                  <td class="border p-2"><strong>Loin</strong> (là-bas)</td>
+                  <td class="border p-2">aquel</td>
+                  <td class="border p-2">aquella</td>
+                  <td class="border p-2">aquellos</td>
+                  <td class="border p-2">aquellas</td>
+                </tr>
+              </tbody>
+            </table>
+
+            <div class="distance-visual bg-accent/10 p-4 rounded-lg">
+              <h5 class="font-semibold mb-2">🎯 Visualisation de la distance</h5>
+              <p class="mb-2"><strong>ESTE</strong> → Près de moi (ce...ci)</p>
+              <p class="mb-2"><strong>ESE</strong> → Près de toi / pas très loin (ce...là)</p>
+              <p><strong>AQUEL</strong> → Loin de nous deux (ce...là-bas)</p>
+            </div>
+          </div>
+
+          <div class="examples-box bg-primary/10 p-4 rounded-lg">
+            <h4 class="font-semibold mb-3">🗣️ Exemples en contexte</h4>
+            <div class="space-y-2">
+              <p>✅ <strong>Esta casa</strong> es mía. (Cette maison-ci est à moi.) [près de moi]</p>
+              <p>✅ <strong>Esa silla</strong> es de mi hermano. (Cette chaise-là est à mon frère.) [près de toi]</p>
+              <p>✅ <strong>Aquella casa</strong> está lejos. (Cette maison là-bas est loin.) [très loin]</p>
+              <p>✅ <strong>Estos muebles</strong> son nuevos. (Ces meubles-ci sont neufs.)</p>
+              <p>✅ <strong>Esas ventanas</strong> están sucias. (Ces fenêtres-là sont sales.)</p>
+              <p>✅ <strong>Aquellos edificios</strong> son muy altos. (Ces bâtiments là-bas sont très hauts.)</p>
+            </div>
+          </div>
+        </section>
+
+        <div class="youtube-section bg-gradient-to-r from-orange-50 to-red-50 dark:from-orange-900/20 dark:to-red-900/20 p-6 rounded-lg mt-6">
+          <h3 class="text-xl font-bold mb-4 flex items-center gap-2">
+            <span>🎥</span>
+            <span>Vidéo recommandée</span>
+          </h3>
+          <p class="mb-4">Pour visualiser les pièces de la maison et pratiquer le vocabulaire, regarde cette vidéo :</p>
+          <div class="bg-white dark:bg-gray-800 p-4 rounded-lg">
+            <p class="font-semibold mb-2">📺 "La Casa en Español - Vocabulario de las Habitaciones y Muebles"</p>
+            <p class="text-sm italic">Cherche sur YouTube : "la casa español vocabulario" ou "Spanish house rooms furniture vocabulary"</p>
+          </div>
+        </div>
+      </div>
+    `,
+    exemplesExercices: `
+      <div class="exercises-section">
+        <h3 class="text-2xl font-bold mb-4">📝 Exercices pratiques</h3>
+
+        <div class="exercise mb-6">
+          <h4 class="font-semibold text-lg mb-3">Exercice 1 : Les pièces</h4>
+          <p class="mb-2">Traduis ces phrases en espagnol :</p>
+          <div class="bg-accent/10 p-4 rounded-lg space-y-2">
+            <p>1. Ma maison a trois chambres. → _____</p>
+            <p>2. La cuisine est grande. → _____</p>
+            <p>3. Notre salon a un nouveau canapé. → _____</p>
+            <p>4. Ta chambre est au deuxième étage. → _____</p>
+            <p>5. Leur jardin est très beau. → _____</p>
+          </div>
+        </div>
+
+        <div class="exercise mb-6">
+          <h4 class="font-semibold text-lg mb-3">Exercice 2 : Les possessifs</h4>
+          <p class="mb-2">Complète avec le bon adjectif possessif :</p>
+          <div class="bg-primary/10 p-4 rounded-lg space-y-2">
+            <p>1. (yo) _____ cama es cómoda. (mon lit)</p>
+            <p>2. (tú) _____ muebles son bonitos. (tes meubles)</p>
+            <p>3. (nosotros) _____ casa tiene patio. (notre maison)</p>
+            <p>4. (él) _____ cuarto está limpio. (sa chambre)</p>
+            <p>5. (nosotras) _____ ventanas están abiertas. (nos fenêtres)</p>
+          </div>
+        </div>
+
+        <div class="exercise mb-6">
+          <h4 class="font-semibold text-lg mb-3">Exercice 3 : Les démonstratifs</h4>
+          <p class="mb-2">Choisis le bon démonstratif (este/ese/aquel) :</p>
+          <div class="bg-secondary/10 p-4 rounded-lg space-y-2">
+            <p>1. _____ casa (cerca de mí) es bonita. (cette maison-ci)</p>
+            <p>2. _____ silla (cerca de ti) es nueva. (cette chaise-là)</p>
+            <p>3. _____ edificio (lejos) es muy alto. (ce bâtiment là-bas)</p>
+            <p>4. _____ muebles (cerca de mí) son viejos. (ces meubles-ci)</p>
+            <p>5. _____ ventanas (lejos) están cerradas. (ces fenêtres là-bas)</p>
+          </div>
+        </div>
+
+        <div class="exercise mb-6">
+          <h4 class="font-semibold text-lg mb-3">Exercice 4 : Description complète</h4>
+          <p class="mb-2">Décris ta maison ou ta chambre en 8-10 phrases. Utilise :</p>
+          <ul class="list-disc ml-6 mb-3">
+            <li>Le vocabulaire des pièces et meubles</li>
+            <li>Les adjectifs possessifs (mi, mis, nuestro...)</li>
+            <li>Les démonstratifs (este, ese, aquel...)</li>
+            <li>Les prépositions de lieu (cerca de, al lado de...)</li>
+          </ul>
+          <div class="bg-accent/10 p-4 rounded-lg">
+            <p class="font-semibold mb-2">Exemple :</p>
+            <p class="italic">
+              Mi casa es pequeña pero cómoda. Tiene dos cuartos, una sala, una cocina y un baño. Mi cuarto está al lado del cuarto de mis padres. En mi cuarto hay una cama, un armario y un tocador. Esta cama es muy cómoda. Nuestra sala tiene un sofá grande y una televisión. Me encanta mi casa.
+            </p>
+          </div>
+        </div>
+      </div>
+    `,
+    references: [
+      "Programme MENFP 7AF - Espagnol",
+      "Vocabulaire domestique et familial",
+      "Grammaire - Possessifs et démonstratifs en espagnol",
+    ],
   },
 
   "invitacion": {
