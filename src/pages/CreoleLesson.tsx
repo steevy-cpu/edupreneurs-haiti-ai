@@ -52,7 +52,7 @@ export default function CreoleLesson() {
     window.scrollTo(0, 0);
     loadPersonalNotes();
     fetchYoutubeUrl();
-  }, [topicId, lessonId]);
+  }, [topicId]);
 
   const fetchYoutubeUrl = async () => {
     try {
