@@ -28,7 +28,13 @@ import {
   diasFechasQuiz,
   diasFechasMatching,
   laCasaQuiz,
-  laCasaMatching
+  laCasaMatching,
+  laFamiliaQuiz,
+  laFamiliaMatching,
+  losAlimentosQuiz,
+  losAlimentosMatching,
+  lasActividadesCotidianasQuiz,
+  lasActividadesCotidianasMatching,
 } from "@/data/espagnolActivities";
 import { QuizGame } from "@/components/math-activities/QuizGame";
 import { MatchingGame } from "@/components/math-activities/MatchingGame";
@@ -140,14 +146,17 @@ export default function EspagnolLesson() {
   };
 
   const getQuizData = () => {
-    const quizMap: Record<string, { quiz: any; matching: any }> = {
-      "saludo-presentacion": { quiz: saludoPresentacionQuiz, matching: saludoPresentacionMatching },
-      "saludos-agradecimientos": { quiz: saludosAgradecimientosQuiz, matching: saludosAgradecimientosMatching },
-      "gustos": { quiz: gustosQuiz, matching: gustosMatching },
-      "aula-patio": { quiz: aulaPatioQuiz, matching: aulaPatioMatching },
-      "dias-fechas": { quiz: diasFechasQuiz, matching: diasFechasMatching },
-      "la-casa": { quiz: laCasaQuiz, matching: laCasaMatching }
-    };
+  const quizMap: Record<string, { quiz: any; matching: any }> = {
+    "saludo-presentacion": { quiz: saludoPresentacionQuiz, matching: saludoPresentacionMatching },
+    "saludos-agradecimientos": { quiz: saludosAgradecimientosQuiz, matching: saludosAgradecimientosMatching },
+    "gustos": { quiz: gustosQuiz, matching: gustosMatching },
+    "aula-patio": { quiz: aulaPatioQuiz, matching: aulaPatioMatching },
+    "dias-fechas": { quiz: diasFechasQuiz, matching: diasFechasMatching },
+    "la-casa": { quiz: laCasaQuiz, matching: laCasaMatching },
+    "la-familia": { quiz: laFamiliaQuiz, matching: laFamiliaMatching },
+    "los-alimentos": { quiz: losAlimentosQuiz, matching: losAlimentosMatching },
+    "las-actividades-cotidianas": { quiz: lasActividadesCotidianasQuiz, matching: lasActividadesCotidianasMatching },
+  };
     return topicId ? quizMap[topicId] || null : null;
   };
 

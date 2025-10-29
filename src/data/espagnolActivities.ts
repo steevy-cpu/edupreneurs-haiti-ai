@@ -451,3 +451,222 @@ export const laCasaMatching = {
   ]
 };
 
+// ============= FEVRIER LESSONS =============
+
+// La Familia Quiz
+export const laFamiliaQuiz = {
+  questions: [
+    {
+      question: "Comment dit-on 'mon père' en espagnol ?",
+      options: ["Me padre", "Mi padre", "Mis padre", "Mo padre"],
+      correctAnswer: 1,
+      explanation: "'Mi padre' est correct. 'Mi' ne change pas selon le genre du nom.",
+    },
+    {
+      question: "Quel est le pluriel de 'mi hermano' ?",
+      options: ["Mi hermanos", "Mis hermanos", "Mes hermanos", "Mios hermanos"],
+      correctAnswer: 1,
+      explanation: "'Mis hermanos' est correct. On ajoute un 's' à 'mi' pour former le pluriel.",
+    },
+    {
+      question: "Comment dit-on 'les grands-parents' en espagnol ?",
+      options: ["Los abuelos", "Las abuelas", "El abuelo", "Los padres"],
+      correctAnswer: 0,
+      explanation: "'Los abuelos' désigne les grands-parents. Même s'il y a une grand-mère, on utilise le masculin pluriel.",
+    },
+    {
+      question: "Que signifie 'Mi familia es numerosa' ?",
+      options: [
+        "Ma famille a des numéros",
+        "Ma famille est nombreuse",
+        "Ma famille est petite",
+        "Ma famille est riche"
+      ],
+      correctAnswer: 1,
+      explanation: "'Numerosa' signifie 'nombreuse'. C'est un adjectif pour décrire une grande famille.",
+    },
+    {
+      question: "Comment dit-on 'ma sœur' en espagnol ?",
+      options: ["Mi hermana", "Mis hermana", "Mi hermano", "Me hermana"],
+      correctAnswer: 0,
+      explanation: "'Mi hermana' est correct. 'Hermana' est le féminin de 'hermano' (frère).",
+    },
+    {
+      question: "Que signifie 'Tengo dos primos' ?",
+      options: ["J'ai deux cousines", "J'ai deux frères", "J'ai deux cousins", "J'ai deux oncles"],
+      correctAnswer: 2,
+      explanation: "'Tengo dos primos' signifie 'J'ai deux cousins'. 'Primo' = cousin, 'prima' = cousine.",
+    },
+    {
+      question: "Comment dit-on 'notre maison' en espagnol ?",
+      options: ["Nuestra casa", "Nuestro casa", "Nuestros casa", "Nuestras casa"],
+      correctAnswer: 0,
+      explanation: "'Nuestra casa' est correct car 'casa' est féminin. 'Nuestro/a' s'accorde avec le nom possédé.",
+    },
+    {
+      question: "Que signifie 'Los hijos' ?",
+      options: ["Les fils", "Les filles", "Les enfants", "Les parents"],
+      correctAnswer: 2,
+      explanation: "'Los hijos' signifie 'les enfants' (garçons et filles ensemble). Pour 'les fils' seulement, le contexte le précise.",
+    }
+  ]
+};
+
+export const laFamiliaMatching = {
+  pairs: [
+    { id: "1", question: "El padre", answer: "Le père" },
+    { id: "2", question: "La madre", answer: "La mère" },
+    { id: "3", question: "El hermano", answer: "Le frère" },
+    { id: "4", question: "La hermana", answer: "La sœur" },
+    { id: "5", question: "Los abuelos", answer: "Les grands-parents" },
+    { id: "6", question: "El tío", answer: "L'oncle" },
+    { id: "7", question: "La tía", answer: "La tante" },
+    { id: "8", question: "El primo", answer: "Le cousin" },
+    { id: "9", question: "Mi familia", answer: "Ma famille" },
+    { id: "10", question: "Los hijos", answer: "Les enfants" }
+  ]
+};
+
+// Los Alimentos Quiz
+export const losAlimentosQuiz = {
+  questions: [
+    {
+      question: "Comment dit-on 'J'ai faim' en espagnol ?",
+      options: ["Soy hambre", "Estoy hambre", "Tengo hambre", "Me hambre"],
+      correctAnswer: 2,
+      explanation: "On utilise le verbe TENER (avoir) : 'Tengo hambre'. C'est différent du français !",
+    },
+    {
+      question: "Que signifie 'Me gusta el arroz' ?",
+      options: ["Je mange du riz", "J'aime le riz", "J'ai du riz", "Je veux du riz"],
+      correctAnswer: 1,
+      explanation: "'Me gusta' signifie 'j'aime'. 'El arroz' est 'le riz'.",
+    },
+    {
+      question: "Comment dit-on 'le petit-déjeuner' en espagnol ?",
+      options: ["El almuerzo", "La cena", "El desayuno", "La merienda"],
+      correctAnswer: 2,
+      explanation: "'El desayuno' est le petit-déjeuner. 'El almuerzo' = déjeuner, 'la cena' = dîner.",
+    },
+    {
+      question: "Quelle est la traduction de 'la manzana' ?",
+      options: ["La mangue", "La pomme", "L'ananas", "La banane"],
+      correctAnswer: 1,
+      explanation: "'La manzana' signifie 'la pomme'. Attention à ne pas confondre avec 'el mango' (la mangue).",
+    },
+    {
+      question: "Comment dit-on 'J'ai soif' en espagnol ?",
+      options: ["Tengo sed", "Tengo agua", "Estoy sed", "Soy sed"],
+      correctAnswer: 0,
+      explanation: "'Tengo sed' signifie 'J'ai soif'. On utilise TENER comme pour 'hambre'.",
+    },
+    {
+      question: "Que signifie 'El pollo con arroz' ?",
+      options: [
+        "Le poulet avec du riz",
+        "Le poisson avec du riz",
+        "La viande avec du riz",
+        "Le poulet avec des haricots"
+      ],
+      correctAnswer: 0,
+      explanation: "'El pollo' = le poulet, 'con' = avec, 'arroz' = riz.",
+    },
+    {
+      question: "Quel verbe signifie 'manger' ?",
+      options: ["Beber", "Comer", "Cocinar", "Cenar"],
+      correctAnswer: 1,
+      explanation: "'Comer' signifie 'manger'. 'Beber' = boire, 'cocinar' = cuisiner, 'cenar' = dîner.",
+    },
+    {
+      question: "Comment dit-on 'les fruits' en espagnol ?",
+      options: ["Las frutas", "Los frutas", "Las verduras", "Los alimentos"],
+      correctAnswer: 0,
+      explanation: "'Las frutas' est correct. 'Fruta' est féminin, donc on utilise 'las' au pluriel.",
+    }
+  ]
+};
+
+export const losAlimentosMatching = {
+  pairs: [
+    { id: "1", question: "El plátano", answer: "La banane" },
+    { id: "2", question: "La naranja", answer: "L'orange" },
+    { id: "3", question: "El arroz", answer: "Le riz" },
+    { id: "4", question: "El pollo", answer: "Le poulet" },
+    { id: "5", question: "Tengo hambre", answer: "J'ai faim" },
+    { id: "6", question: "Tengo sed", answer: "J'ai soif" },
+    { id: "7", question: "El desayuno", answer: "Le petit-déjeuner" },
+    { id: "8", question: "La cena", answer: "Le dîner" },
+    { id: "9", question: "Las verduras", answer: "Les légumes" },
+    { id: "10", question: "El agua", answer: "L'eau" }
+  ]
+};
+
+// Las Actividades Cotidianas Quiz
+export const lasActividadesCotidianasQuiz = {
+  questions: [
+    {
+      question: "Quelle est la conjugaison correcte de 'estudiar' pour 'yo' ?",
+      options: ["Estudio", "Estudias", "Estudia", "Estudiamos"],
+      correctAnswer: 0,
+      explanation: "Pour 'yo' avec un verbe en -AR, on remplace -ar par -o : 'Yo estudio'.",
+    },
+    {
+      question: "Comment dit-on 'Je me lève' en espagnol ?",
+      options: ["Me levanto", "Te levantas", "Se levanta", "Levanto"],
+      correctAnswer: 0,
+      explanation: "'Me levanto' est correct. 'Levantarse' est un verbe réflexif qui utilise le pronom 'me'.",
+    },
+    {
+      question: "Que signifie 'Por la mañana' ?",
+      options: ["Le soir", "L'après-midi", "Le matin", "La nuit"],
+      correctAnswer: 2,
+      explanation: "'Por la mañana' signifie 'le matin'. 'Por la tarde' = l'après-midi, 'por la noche' = le soir.",
+    },
+    {
+      question: "Quelle est la conjugaison de 'comer' pour 'nosotros' ?",
+      options: ["Comemos", "Comen", "Como", "Comes"],
+      correctAnswer: 0,
+      explanation: "Pour 'nosotros' avec un verbe en -ER, on utilise -emos : 'Nosotros comemos'.",
+    },
+    {
+      question: "Comment dit-on 'toujours' en espagnol ?",
+      options: ["Nunca", "A veces", "Siempre", "Raramente"],
+      correctAnswer: 2,
+      explanation: "'Siempre' signifie 'toujours'. 'Nunca' = jamais, 'a veces' = parfois.",
+    },
+    {
+      question: "Que signifie 'Hago la tarea' ?",
+      options: ["Je fais la vaisselle", "Je fais les devoirs", "Je fais le lit", "Je fais du sport"],
+      correctAnswer: 1,
+      explanation: "'Hacer la tarea' signifie 'faire les devoirs'. 'Tarea' = devoir scolaire.",
+    },
+    {
+      question: "Quelle est la conjugaison de 'vivir' pour 'tú' ?",
+      options: ["Vivo", "Vives", "Vive", "Vivimos"],
+      correctAnswer: 1,
+      explanation: "Pour 'tú' avec un verbe en -IR, on utilise -es : 'Tú vives'.",
+    },
+    {
+      question: "Comment dit-on 'je me couche' en espagnol ?",
+      options: ["Me acuesto", "Me levanto", "Me duermo", "Me despierto"],
+      correctAnswer: 0,
+      explanation: "'Me acuesto' signifie 'je me couche'. C'est le verbe 'acostarse'.",
+    }
+  ]
+};
+
+export const lasActividadesCotidianasMatching = {
+  pairs: [
+    { id: "1", question: "Levantarse", answer: "Se lever" },
+    { id: "2", question: "Desayunar", answer: "Prendre le petit-déjeuner" },
+    { id: "3", question: "Estudiar", answer: "Étudier" },
+    { id: "4", question: "Almorzar", answer: "Déjeuner" },
+    { id: "5", question: "Ducharse", answer: "Se doucher" },
+    { id: "6", question: "Acostarse", answer: "Se coucher" },
+    { id: "7", question: "Por la mañana", answer: "Le matin" },
+    { id: "8", question: "Por la tarde", answer: "L'après-midi" },
+    { id: "9", question: "Siempre", answer: "Toujours" },
+    { id: "10", question: "Todos los días", answer: "Tous les jours" }
+  ]
+};
+

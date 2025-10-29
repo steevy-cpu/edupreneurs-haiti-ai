@@ -2288,8 +2288,8 @@ export const espagnolLessons7AF = {
     ],
   },
 
-  "invitacion": {
-    title: "Invitación (invitation)",
+  "la-familia": {
+    title: "La Familia",
     mois: "Février",
     objectif: "Invitarse, aceptar o rechazar una invitación",
     introduction: "Aprenderás a invitar a alguien y a responder apropiadamente a invitaciones.",
