@@ -5537,62 +5537,423 @@ Describe tu rutina diaria en español (mínimo 8 frases).`,
     mois: "Juin",
     objectif: "Saber leer un texto y extraer elementos gramaticales",
     introduction: "Aprenderás a leer y analizar textos en español, identificando verbos, sujetos y adjetivos.",
-    contenu: `## Lectura de texto
+    contenu: `
+      <div class="lesson-content space-y-6">
+        <section class="mb-6">
+          <h3 class="text-xl font-semibold mb-4">L'analyse de texte en espagnol</h3>
+          <p class="mb-4">Savoir lire et analyser un texte en espagnol est une compétence essentielle ! Dans cette leçon, tu vas apprendre à identifier les différents éléments grammaticaux qui composent un texte : les verbes, les sujets, les noms, les adjectifs, etc. Cela t'aidera à mieux comprendre ce que tu lis et à enrichir ton vocabulaire.</p>
+          
+          <div class="bg-purple-50 dark:bg-purple-900/20 p-4 rounded-lg">
+            <h4 class="font-semibold mb-3 flex items-center gap-2">
+              <span>🎯</span>
+              Les objectifs de cette leçon :
+            </h4>
+            <ul class="space-y-2 text-sm">
+              <li>• <strong>Comprendre le sens général</strong> d'un texte en espagnol</li>
+              <li>• <strong>Identifier les éléments grammaticaux</strong> (verbes, sujets, noms, adjectifs)</li>
+              <li>• <strong>Enrichir ton vocabulaire</strong> grâce à la lecture</li>
+              <li>• <strong>Développer des stratégies de lecture</strong> efficaces</li>
+            </ul>
+          </div>
+        </section>
 
-### Objetivos de lectura
-- Comprender el texto
-- Identificar elementos gramaticales
-- Ampliar el vocabulario
+        <section class="mb-6">
+          <h3 class="text-xl font-semibold mb-4">Étape 1 : Identifier les verbes conjugués</h3>
+          <p class="mb-4">Les verbes sont le cœur de la phrase ! Ils indiquent l'action ou l'état. Voici comment les repérer et les analyser :</p>
+          
+          <div class="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg mb-4">
+            <h4 class="font-semibold mb-3">Comment identifier un verbe conjugué :</h4>
+            <div class="space-y-3">
+              <div class="bg-white dark:bg-gray-800 p-3 rounded">
+                <p class="font-semibold text-sm mb-1">1. Repérer l'action ou l'état :</p>
+                <p class="text-sm">Le verbe indique ce que fait le sujet ou son état.</p>
+                <p class="text-xs mt-2 italic">Exemple : "María <strong>estudia</strong> español" - María étudie l'espagnol</p>
+              </div>
+              
+              <div class="bg-white dark:bg-gray-800 p-3 rounded">
+                <p class="font-semibold text-sm mb-1">2. Déterminer le temps verbal :</p>
+                <p class="text-sm">Est-ce au présent, au passé ou au futur ?</p>
+                <div class="text-xs mt-2 space-y-1">
+                  <p>• <strong>Presente:</strong> estudia (elle étudie)</p>
+                  <p>• <strong>Pretérito:</strong> estudió (elle a étudié)</p>
+                  <p>• <strong>Futuro:</strong> estudiará (elle étudiera)</p>
+                </div>
+              </div>
 
-### Elementos a identificar
+              <div class="bg-white dark:bg-gray-800 p-3 rounded">
+                <p class="font-semibold text-sm mb-1">3. Reconnaître le sujet :</p>
+                <p class="text-sm">Qui fait l'action ? Le verbe s'accorde avec le sujet.</p>
+                <p class="text-xs mt-2 italic">Exemple : "<strong>Ellos</strong> practican" - La terminaison "-an" indique la 3e personne du pluriel</p>
+              </div>
+            </div>
+          </div>
 
-**1. Verbos conjugados:**
-- Identificar el verbo
-- Determinar el tiempo verbal
-- Reconocer el sujeto
+          <div class="bg-green-50 dark:bg-green-900/20 p-4 rounded-lg">
+            <h4 class="font-semibold mb-3">Exemple d'analyse de verbes dans un texte :</h4>
+            <div class="bg-white dark:bg-gray-800 p-4 rounded mb-3">
+              <p class="text-sm mb-3">"María <strong>estudia</strong> español. Sus amigos <strong>practican</strong> con ella. Ellos <strong>aprenden</strong> mucho."</p>
+              <div class="text-xs space-y-2 border-t border-gray-300 dark:border-gray-600 pt-3">
+                <p><strong>Estudia:</strong> présent, 3e personne singulier (ella)</p>
+                <p><strong>Practican:</strong> présent, 3e personne pluriel (ellos)</p>
+                <p><strong>Aprenden:</strong> présent, 3e personne pluriel (ellos)</p>
+              </div>
+            </div>
+          </div>
+        </section>
 
-**2. Sujetos:**
-- ¿Quién realiza la acción?
-- Identificar si es singular o plural
-- Determinar la persona (1ª, 2ª, 3ª)
+        <section class="mb-6">
+          <h3 class="text-xl font-semibold mb-4">Étape 2 : Identifier les sujets</h3>
+          <p class="mb-4">Le sujet est la personne ou la chose qui fait l'action du verbe. Voici comment le trouver :</p>
+          
+          <div class="bg-amber-50 dark:bg-amber-900/20 p-4 rounded-lg mb-4">
+            <h4 class="font-semibold mb-3">Questions pour identifier le sujet :</h4>
+            <div class="space-y-3">
+              <div class="bg-white dark:bg-gray-800 p-3 rounded">
+                <p class="font-semibold text-sm text-purple-600 dark:text-purple-400 mb-2">¿Quién realiza la acción?</p>
+                <p class="text-sm">Pose la question "Qui ?" avant le verbe</p>
+                <p class="text-xs mt-2 italic">Exemple : "María estudia" → ¿Quién estudia? → <strong>María</strong></p>
+              </div>
+              
+              <div class="bg-white dark:bg-gray-800 p-3 rounded">
+                <p class="font-semibold text-sm text-green-600 dark:text-green-400 mb-2">¿Es singular o plural?</p>
+                <p class="text-sm">Le sujet peut être au singulier ou au pluriel</p>
+                <div class="text-xs mt-2 space-y-1">
+                  <p>• <strong>Singular:</strong> María, el profesor, ella</p>
+                  <p>• <strong>Plural:</strong> Los estudiantes, ellos, nosotros</p>
+                </div>
+              </div>
 
-**3. Género de sustantivos:**
-- Masculino o femenino
-- ¿Cómo lo sabemos? (artículo, terminación)
+              <div class="bg-white dark:bg-gray-800 p-3 rounded">
+                <p class="font-semibold text-sm text-blue-600 dark:text-blue-400 mb-2">¿Qué persona es?</p>
+                <p class="text-sm">1ère, 2e ou 3e personne ?</p>
+                <div class="text-xs mt-2 space-y-1">
+                  <p>• <strong>1ª persona:</strong> Yo, nosotros</p>
+                  <p>• <strong>2ª persona:</strong> Tú, vosotros</p>
+                  <p>• <strong>3ª persona:</strong> Él, ella, ellos, María</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
 
-**4. Adjetivos:**
-- Identificar las palabras descriptivas
-- Concordancia con el sustantivo
+        <section class="mb-6">
+          <h3 class="text-xl font-semibold mb-4">Étape 3 : Déterminer le genre des noms</h3>
+          <p class="mb-4">En espagnol, TOUS les noms ont un genre : masculin ou féminin. Voici comment le reconnaître :</p>
+          
+          <div class="bg-purple-50 dark:bg-purple-900/20 p-4 rounded-lg mb-4">
+            <h4 class="font-semibold mb-3">Indices pour reconnaître le genre :</h4>
+            <div class="grid md:grid-cols-2 gap-4">
+              <div class="bg-white dark:bg-gray-800 p-3 rounded">
+                <p class="font-semibold text-sm text-blue-600 dark:text-blue-400 mb-2">Masculin :</p>
+                <div class="text-sm space-y-2">
+                  <p><strong>1. L'article :</strong></p>
+                  <p class="text-xs">• <strong>El</strong> estudiante, <strong>un</strong> profesor</p>
+                  
+                  <p class="mt-2"><strong>2. La terminaison :</strong></p>
+                  <div class="text-xs space-y-1">
+                    <p>• Souvent en <strong>-o</strong> : libro, amigo</p>
+                    <p>• En <strong>-or</strong> : profesor, dolor</p>
+                    <p>• En <strong>-aje</strong> : viaje, mensaje</p>
+                  </div>
+                </div>
+              </div>
 
-### Estrategias de lectura
-1. Primera lectura: comprensión general
-2. Segunda lectura: análisis detallado
-3. Identificar palabras clave
-4. Subrayar elementos gramaticales
-5. Hacer preguntas sobre el texto`,
-    exemplesExercices: `## Ejercicio: Análisis de texto
+              <div class="bg-white dark:bg-gray-800 p-3 rounded">
+                <p class="font-semibold text-sm text-pink-600 dark:text-pink-400 mb-2">Féminin :</p>
+                <div class="text-sm space-y-2">
+                  <p><strong>1. L'article :</strong></p>
+                  <p class="text-xs">• <strong>La</strong> estudiante, <strong>una</strong> profesora</p>
+                  
+                  <p class="mt-2"><strong>2. La terminaison :</strong></p>
+                  <div class="text-xs space-y-1">
+                    <p>• Souvent en <strong>-a</strong> : casa, mesa</p>
+                    <p>• En <strong>-ción/-sión</strong> : lección, pasión</p>
+                    <p>• En <strong>-dad/-tad</strong> : ciudad, libertad</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
 
-Lee el siguiente texto y responde:
+          <div class="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg">
+            <h4 class="font-semibold mb-3">Exemples d'analyse :</h4>
+            <div class="space-y-2 text-sm">
+              <p>• <strong>El estudiante</strong> → Masculin (article "el")</p>
+              <p>• <strong>Los profesores</strong> → Masculin pluriel (article "los", terminaison "-es")</p>
+              <p>• <strong>La clase</strong> → Féminin (article "la")</p>
+              <p>• <strong>Una lección</strong> → Féminin (article "una", terminaison "-ción")</p>
+              <p>• <strong>Los amigos</strong> → Masculin pluriel (article "los", terminaison "-os")</p>
+            </div>
+          </div>
+        </section>
 
-**Texto ejemplo:**
-"María es una estudiante inteligente. Ella estudia español todos los días en la escuela. Sus profesores son muy amables y pacientes. María tiene muchos amigos en la clase. Ellos practican juntos después de las clases."
+        <section class="mb-6">
+          <h3 class="text-xl font-semibold mb-4">Étape 4 : Repérer les adjectifs</h3>
+          <p class="mb-4">Les adjectifs qualifient les noms et doivent s'accorder avec eux en genre et en nombre :</p>
+          
+          <div class="bg-green-50 dark:bg-green-900/20 p-4 rounded-lg mb-4">
+            <h4 class="font-semibold mb-3">Comment identifier un adjectif :</h4>
+            <div class="space-y-3">
+              <div class="bg-white dark:bg-gray-800 p-3 rounded">
+                <p class="font-semibold text-sm mb-2">1. Trouver les mots descriptifs :</p>
+                <p class="text-sm mb-2">L'adjectif décrit une qualité, une caractéristique</p>
+                <div class="text-xs space-y-1">
+                  <p>• Una estudiante <strong>inteligente</strong> - Une étudiante intelligente</p>
+                  <p>• Profesores <strong>amables</strong> - Des professeurs aimables</p>
+                  <p>• Un libro <strong>interesante</strong> - Un livre intéressant</p>
+                </div>
+              </div>
 
-### Preguntas:
-1. Extrae todos los verbos conjugados del texto
-2. Identifica los sujetos de cada verbo
-3. Determina el género de los sustantivos:
-   - Estudiante
-   - Profesores
-   - Amigos
-   - Clase
-4. Encuentra todos los adjetivos
+              <div class="bg-white dark:bg-gray-800 p-3 rounded">
+                <p class="font-semibold text-sm mb-2">2. Vérifier la concordance :</p>
+                <p class="text-sm mb-2">L'adjectif s'accorde avec le nom qu'il qualifie</p>
+                <div class="text-xs space-y-1">
+                  <p>• Un amigo <strong>simpático</strong> (masculin singulier)</p>
+                  <p>• Una amiga <strong>simpática</strong> (féminin singulier)</p>
+                  <p>• Amigos <strong>simpáticos</strong> (masculin pluriel)</p>
+                  <p>• Amigas <strong>simpáticas</strong> (féminin pluriel)</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
 
-### Ejercicio 2: Tu turno
-El profesor presentará un texto. Deberás:
-- Leerlo primero
-- Sacar los verbos conjugados
-- Identificar los sujetos
-- Determinar el género de los sustantivos`,
+        <section class="mb-6">
+          <h3 class="text-xl font-semibold mb-4">Stratégies de lecture efficaces</h3>
+          <p class="mb-4">Pour bien analyser un texte, suis ces étapes méthodiques :</p>
+          
+          <div class="bg-amber-50 dark:bg-amber-900/20 p-4 rounded-lg">
+            <h4 class="font-semibold mb-3">La méthode en 5 étapes :</h4>
+            <div class="space-y-3">
+              <div class="flex items-start gap-3 bg-white dark:bg-gray-800 p-3 rounded">
+                <span class="bg-purple-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs flex-shrink-0">1</span>
+                <div>
+                  <p class="font-semibold text-sm mb-1">Première lecture : Comprension générale</p>
+                  <p class="text-xs">Lis le texte une première fois pour comprendre de quoi il parle</p>
+                </div>
+              </div>
+
+              <div class="flex items-start gap-3 bg-white dark:bg-gray-800 p-3 rounded">
+                <span class="bg-blue-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs flex-shrink-0">2</span>
+                <div>
+                  <p class="font-semibold text-sm mb-1">Deuxième lecture : Analyse détaillée</p>
+                  <p class="text-xs">Relis en prêtant attention aux détails grammaticaux</p>
+                </div>
+              </div>
+
+              <div class="flex items-start gap-3 bg-white dark:bg-gray-800 p-3 rounded">
+                <span class="bg-green-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs flex-shrink-0">3</span>
+                <div>
+                  <p class="font-semibold text-sm mb-1">Identifier les mots-clés</p>
+                  <p class="text-xs">Repère les mots importants pour comprendre le sens</p>
+                </div>
+              </div>
+
+              <div class="flex items-start gap-3 bg-white dark:bg-gray-800 p-3 rounded">
+                <span class="bg-amber-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs flex-shrink-0">4</span>
+                <div>
+                  <p class="font-semibold text-sm mb-1">Souligner les éléments grammaticaux</p>
+                  <p class="text-xs">Marque les verbes, sujets, noms et adjectifs avec des couleurs différentes</p>
+                </div>
+              </div>
+
+              <div class="flex items-start gap-3 bg-white dark:bg-gray-800 p-3 rounded">
+                <span class="bg-pink-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs flex-shrink-0">5</span>
+                <div>
+                  <p class="font-semibold text-sm mb-1">Poser des questions sur le texte</p>
+                  <p class="text-xs">Qui ? Quoi ? Où ? Quand ? Pourquoi ? Comment ?</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="mb-6">
+          <h3 class="text-xl font-semibold mb-4">Exemple complet d'analyse</h3>
+          <p class="mb-4">Voyons comment analyser un texte complet en appliquant toutes ces techniques :</p>
+          
+          <div class="bg-purple-50 dark:bg-purple-900/20 p-4 rounded-lg">
+            <h4 class="font-semibold mb-3">Texte à analyser :</h4>
+            <div class="bg-white dark:bg-gray-800 p-4 rounded mb-4">
+              <p class="text-sm leading-relaxed">
+                "María es una estudiante inteligente. Ella estudia español todos los días en la escuela. Sus profesores son muy amables y pacientes. María tiene muchos amigos en la clase. Ellos practican juntos después de las clases."
+              </p>
+            </div>
+
+            <div class="space-y-4">
+              <div class="bg-blue-50 dark:bg-blue-900/20 p-3 rounded">
+                <p class="font-semibold text-sm mb-2">🔵 Verbes conjugués :</p>
+                <ul class="text-xs space-y-1">
+                  <li>• <strong>es</strong> (ser, présent) - sujet : María</li>
+                  <li>• <strong>estudia</strong> (estudiar, présent) - sujet : Ella</li>
+                  <li>• <strong>son</strong> (ser, présent) - sujet : Sus profesores</li>
+                  <li>• <strong>tiene</strong> (tener, présent) - sujet : María</li>
+                  <li>• <strong>practican</strong> (practicar, présent) - sujet : Ellos</li>
+                </ul>
+              </div>
+
+              <div class="bg-green-50 dark:bg-green-900/20 p-3 rounded">
+                <p class="font-semibold text-sm mb-2">🟢 Genre des noms :</p>
+                <ul class="text-xs space-y-1">
+                  <li>• <strong>estudiante</strong> - Féminin (una estudiante)</li>
+                  <li>• <strong>español</strong> - Masculin (le espagnol)</li>
+                  <li>• <strong>escuela</strong> - Féminin (la escuela)</li>
+                  <li>• <strong>profesores</strong> - Masculin pluriel (los profesores)</li>
+                  <li>• <strong>amigos</strong> - Masculin pluriel (los amigos)</li>
+                  <li>• <strong>clase</strong> - Féminin (la clase)</li>
+                  <li>• <strong>clases</strong> - Féminin pluriel (las clases)</li>
+                </ul>
+              </div>
+
+              <div class="bg-amber-50 dark:bg-amber-900/20 p-3 rounded">
+                <p class="font-semibold text-sm mb-2">🟡 Adjectifs :</p>
+                <ul class="text-xs space-y-1">
+                  <li>• <strong>inteligente</strong> (f. sing.) - qualifie "estudiante"</li>
+                  <li>• <strong>amables</strong> (m. plur.) - qualifie "profesores"</li>
+                  <li>• <strong>pacientes</strong> (m. plur.) - qualifie "profesores"</li>
+                  <li>• <strong>muchos</strong> (m. plur.) - qualifie "amigos"</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <div class="bg-blue-50 dark:bg-blue-900/20 border-l-4 border-blue-500 p-4 rounded-r-lg">
+          <h4 class="text-blue-700 dark:text-blue-400 font-semibold mb-2">💡 Suggestions de vidéos YouTube</h4>
+          <p class="text-blue-600 dark:text-blue-300">
+            Recherchez "análisis de texto en español" ou "elementos gramaticales español" pour des démonstrations visuelles d'analyse de textes avec des exemples détaillés.
+          </p>
+        </div>
+      </div>
+    `,
+    exemplesExercices: `
+      <div class="exercises-content space-y-6">
+        <h3 class="text-2xl font-bold mb-6">Ejercicios de Análisis</h3>
+
+        <div class="bg-purple-50 dark:bg-purple-900/20 p-6 rounded-lg mb-6">
+          <h4 class="text-lg font-semibold mb-4 flex items-center gap-2">
+            <span class="text-purple-600 dark:text-purple-400">📖</span>
+            Ejercicio 1: Análisis completo de texto
+          </h4>
+          
+          <div class="bg-white dark:bg-gray-800 p-4 rounded mb-4">
+            <p class="font-semibold mb-2">Lee el siguiente texto:</p>
+            <p class="text-sm leading-relaxed italic mb-4">
+              "María es una estudiante inteligente. Ella estudia español todos los días en la escuela. Sus profesores son muy amables y pacientes. María tiene muchos amigos en la clase. Ellos practican juntos después de las clases."
+            </p>
+          </div>
+
+          <p class="mb-3 font-semibold">Ahora responde:</p>
+          <div class="space-y-3">
+            <div class="bg-white dark:bg-gray-800 p-3 rounded">
+              <p class="font-semibold text-sm mb-2">1. Extrae todos los verbos conjugados del texto</p>
+              <p class="text-xs text-gray-600 dark:text-gray-400">Pista: Busca las palabras que indican acciones o estados</p>
+            </div>
+
+            <div class="bg-white dark:bg-gray-800 p-3 rounded">
+              <p class="font-semibold text-sm mb-2">2. Identifica los sujetos de cada verbo</p>
+              <p class="text-xs text-gray-600 dark:text-gray-400">Pregunta: ¿Quién realiza cada acción?</p>
+            </div>
+
+            <div class="bg-white dark:bg-gray-800 p-3 rounded">
+              <p class="font-semibold text-sm mb-2">3. Determina el género de los sustantivos:</p>
+              <ul class="text-xs mt-2 space-y-1 pl-4">
+                <li>• Estudiante: ___________</li>
+                <li>• Español: ___________</li>
+                <li>• Profesores: ___________</li>
+                <li>• Amigos: ___________</li>
+                <li>• Clase: ___________</li>
+              </ul>
+            </div>
+
+            <div class="bg-white dark:bg-gray-800 p-3 rounded">
+              <p class="font-semibold text-sm mb-2">4. Encuentra todos los adjetivos</p>
+              <p class="text-xs text-gray-600 dark:text-gray-400">¿Qué palabras describen a los sustantivos?</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="bg-green-50 dark:bg-green-900/20 p-6 rounded-lg mb-6">
+          <h4 class="text-lg font-semibold mb-4 flex items-center gap-2">
+            <span class="text-green-600 dark:text-green-400">✍️</span>
+            Ejercicio 2: Tu turno - Análisis independiente
+          </h4>
+          <p class="mb-4">El profesor presentará un texto. Deberás realizar un análisis completo siguiendo estos pasos:</p>
+          <div class="space-y-3">
+            <div class="bg-white dark:bg-gray-800 p-3 rounded flex items-start gap-3">
+              <span class="bg-green-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs flex-shrink-0">1</span>
+              <div>
+                <p class="font-semibold text-sm">Leer el texto primero</p>
+                <p class="text-xs text-gray-600 dark:text-gray-400">Lee dos veces para comprender bien</p>
+              </div>
+            </div>
+
+            <div class="bg-white dark:bg-gray-800 p-3 rounded flex items-start gap-3">
+              <span class="bg-green-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs flex-shrink-0">2</span>
+              <div>
+                <p class="font-semibold text-sm">Sacar los verbos conjugados</p>
+                <p class="text-xs text-gray-600 dark:text-gray-400">Subraya todos los verbos que encuentres</p>
+              </div>
+            </div>
+
+            <div class="bg-white dark:bg-gray-800 p-3 rounded flex items-start gap-3">
+              <span class="bg-green-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs flex-shrink-0">3</span>
+              <div>
+                <p class="font-semibold text-sm">Identificar los sujetos</p>
+                <p class="text-xs text-gray-600 dark:text-gray-400">¿Quién hace cada acción?</p>
+              </div>
+            </div>
+
+            <div class="bg-white dark:bg-gray-800 p-3 rounded flex items-start gap-3">
+              <span class="bg-green-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs flex-shrink-0">4</span>
+              <div>
+                <p class="font-semibold text-sm">Determinar el género de los sustantivos</p>
+                <p class="text-xs text-gray-600 dark:text-gray-400">Masculino o femenino - usa los artículos como pista</p>
+              </div>
+            </div>
+
+            <div class="bg-white dark:bg-gray-800 p-3 rounded flex items-start gap-3">
+              <span class="bg-green-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs flex-shrink-0">5</span>
+              <div>
+                <p class="font-semibold text-sm">Encontrar los adjetivos</p>
+                <p class="text-xs text-gray-600 dark:text-gray-400">Busca las palabras descriptivas</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="bg-blue-50 dark:bg-blue-900/20 p-6 rounded-lg">
+          <h4 class="text-lg font-semibold mb-4 flex items-center gap-2">
+            <span class="text-blue-600 dark:text-blue-400">🎯</span>
+            Ejercicio 3: Práctica con código de colores
+          </h4>
+          <p class="mb-4 font-semibold">Usa diferentes colores para marcar los elementos:</p>
+          <div class="bg-white dark:bg-gray-800 p-4 rounded">
+            <ul class="space-y-2">
+              <li class="flex items-center gap-2">
+                <span class="w-4 h-4 bg-blue-500 rounded"></span>
+                <span class="text-sm"><strong>Azul</strong> - Verbos conjugados</span>
+              </li>
+              <li class="flex items-center gap-2">
+                <span class="w-4 h-4 bg-green-500 rounded"></span>
+                <span class="text-sm"><strong>Verde</strong> - Sujetos</span>
+              </li>
+              <li class="flex items-center gap-2">
+                <span class="w-4 h-4 bg-yellow-500 rounded"></span>
+                <span class="text-sm"><strong>Amarillo</strong> - Sustantivos</span>
+              </li>
+              <li class="flex items-center gap-2">
+                <span class="w-4 h-4 bg-pink-500 rounded"></span>
+                <span class="text-sm"><strong>Rosa</strong> - Adjetivos</span>
+              </li>
+            </ul>
+            <p class="text-xs text-gray-600 dark:text-gray-400 mt-4 italic">
+              💡 Esta técnica te ayudará a visualizar mejor la estructura del texto y recordar los elementos gramaticales.
+            </p>
+          </div>
+        </div>
+      </div>
+    `,
     references: ["MENFP - Programme 7e AF"]
   },
 
@@ -5601,71 +5962,389 @@ El profesor presentará un texto. Deberás:
     mois: "Juin",
     objectif: "Comentar cortos textos y expresar reacciones",
     introduction: "Aprenderás a leer textos cortos y expresar tus opiniones y reacciones sobre ellos.",
-    contenu: `## Lectura y comentario
+    contenu: `
+      <div class="lesson-content space-y-6">
+        <section class="mb-6">
+          <h3 class="text-xl font-semibold mb-4">Lire et commenter des textes courts</h3>
+          <p class="mb-4">Dans cette leçon, tu vas apprendre une compétence très importante : exprimer tes opinions et tes réactions face à un texte ! Ce n'est pas seulement une question de compréhension, mais aussi de pouvoir dire ce que tu penses, ce que tu ressens, et pourquoi le texte t'intéresse ou non.</p>
+          
+          <div class="bg-purple-50 dark:bg-purple-900/20 p-4 rounded-lg">
+            <h4 class="font-semibold mb-3 flex items-center gap-2">
+              <span>💭</span>
+              Pourquoi apprendre à commenter ?
+            </h4>
+            <ul class="space-y-2 text-sm">
+              <li>• Développer ton <strong>esprit critique</strong></li>
+              <li>• Exprimer tes <strong>opinions personnelles</strong> en espagnol</li>
+              <li>• Enrichir ton <strong>vocabulaire</strong> des émotions et opinions</li>
+              <li>• Participer à des <strong>discussions</strong> sur ce que tu lis</li>
+            </ul>
+          </div>
+        </section>
 
-### Cómo comentar un texto
+        <section class="mb-6">
+          <h3 class="text-xl font-semibold mb-4">Étape 1 : Comprendre le texte</h3>
+          <p class="mb-4">Avant de commenter, il faut d'abord bien comprendre ! Voici les questions essentielles à se poser :</p>
+          
+          <div class="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg mb-4">
+            <h4 class="font-semibold mb-3">Les 4 questions de base :</h4>
+            <div class="space-y-3">
+              <div class="bg-white dark:bg-gray-800 p-3 rounded">
+                <p class="font-semibold text-sm text-purple-600 dark:text-purple-400 mb-2">¿De qué trata el texto?</p>
+                <p class="text-sm mb-1">De quoi parle le texte ?</p>
+                <p class="text-xs italic text-gray-600 dark:text-gray-400">Identifie le sujet principal, le thème général</p>
+                <p class="text-xs mt-2">Exemple : <strong>El texto trata de la amistad</strong> - Le texte parle de l'amitié</p>
+              </div>
 
-**1. Comprensión:**
-- ¿De qué trata el texto?
-- ¿Quiénes son los personajes?
-- ¿Dónde ocurre?
-- ¿Cuándo ocurre?
+              <div class="bg-white dark:bg-gray-800 p-3 rounded">
+                <p class="font-semibold text-sm text-blue-600 dark:text-blue-400 mb-2">¿Quiénes son los personajes?</p>
+                <p class="text-sm mb-1">Qui sont les personnages ?</p>
+                <p class="text-xs italic text-gray-600 dark:text-gray-400">Repère les personnes ou êtres mentionnés</p>
+                <p class="text-xs mt-2">Exemple : <strong>Los personajes son María y Juan</strong> - Les personnages sont María et Juan</p>
+              </div>
 
-**2. Expresar opiniones:**
-- Me gusta este texto porque...
-- No me gusta porque...
-- Es interesante porque...
-- Pienso que...
-- Creo que...
+              <div class="bg-white dark:bg-gray-800 p-3 rounded">
+                <p class="font-semibold text-sm text-green-600 dark:text-green-400 mb-2">¿Dónde ocurre?</p>
+                <p class="text-sm mb-1">Où cela se passe-t-il ?</p>
+                <p class="text-xs italic text-gray-600 dark:text-gray-400">Identifie le lieu de l'action</p>
+                <p class="text-xs mt-2">Exemple : <strong>Ocurre en una escuela</strong> - Cela se passe dans une école</p>
+              </div>
 
-**3. Reacciones personales:**
-- Este texto me hace pensar en...
-- Me recuerda...
-- Me siento... (triste, feliz, sorprendido)
+              <div class="bg-white dark:bg-gray-800 p-3 rounded">
+                <p class="font-semibold text-sm text-amber-600 dark:text-amber-400 mb-2">¿Cuándo ocurre?</p>
+                <p class="text-sm mb-1">Quand cela se passe-t-il ?</p>
+                <p class="text-xs italic text-gray-600 dark:text-gray-400">Repère les indications de temps</p>
+                <p class="text-xs mt-2">Exemple : <strong>Ocurre durante el verano</strong> - Cela se passe pendant l'été</p>
+              </div>
+            </div>
+          </div>
+        </section>
 
-### Vocabulario para comentar
-**Nombres:**
-- El tema - Le thème
-- El personaje - Le personnage
-- La historia - L'histoire
-- El mensaje - Le message
+        <section class="mb-6">
+          <h3 class="text-xl font-semibold mb-4">Étape 2 : Exprimer tes opinions</h3>
+          <p class="mb-4">Maintenant que tu as compris le texte, voici comment exprimer ce que tu en penses :</p>
+          
+          <div class="bg-green-50 dark:bg-green-900/20 p-4 rounded-lg mb-4">
+            <h4 class="font-semibold mb-3">Structures pour exprimer ton opinion :</h4>
+            <div class="space-y-3">
+              <div class="bg-white dark:bg-gray-800 p-3 rounded">
+                <p class="font-semibold text-sm mb-2">Opinions positives :</p>
+                <div class="space-y-1 text-sm">
+                  <p>• <strong>Me gusta este texto porque...</strong></p>
+                  <p class="text-xs pl-4">J'aime ce texte parce que...</p>
+                  <p class="text-xs pl-4 italic text-gray-600 dark:text-gray-400">Exemple : Me gusta porque es divertido</p>
+                  
+                  <p class="mt-2">• <strong>Es interesante porque...</strong></p>
+                  <p class="text-xs pl-4">C'est intéressant parce que...</p>
+                  <p class="text-xs pl-4 italic text-gray-600 dark:text-gray-400">Exemple : Es interesante porque habla de la naturaleza</p>
+                  
+                  <p class="mt-2">• <strong>Me encanta este texto...</strong></p>
+                  <p class="text-xs pl-4">J'adore ce texte...</p>
+                </div>
+              </div>
 
-**Adjetivos:**
-- Interesante - Intéressant
-- Aburrido - Ennuyeux
-- Divertido - Amusant
-- Triste - Triste
-- Alegre - Joyeux
-- Importante - Important
+              <div class="bg-white dark:bg-gray-800 p-3 rounded">
+                <p class="font-semibold text-sm mb-2">Opinions négatives :</p>
+                <div class="space-y-1 text-sm">
+                  <p>• <strong>No me gusta porque...</strong></p>
+                  <p class="text-xs pl-4">Je n'aime pas parce que...</p>
+                  <p class="text-xs pl-4 italic text-gray-600 dark:text-gray-400">Exemple : No me gusta porque es muy largo</p>
+                  
+                  <p class="mt-2">• <strong>Es aburrido porque...</strong></p>
+                  <p class="text-xs pl-4">C'est ennuyeux parce que...</p>
+                  
+                  <p class="mt-2">• <strong>No entiendo por qué...</strong></p>
+                  <p class="text-xs pl-4">Je ne comprends pas pourquoi...</p>
+                </div>
+              </div>
 
-**Verbos:**
-- Pensar - Penser
-- Creer - Croire
-- Opinar - Donner son avis
-- Comentar - Commenter
-- Reflexionar - Réfléchir`,
-    exemplesExercices: `## Ejercicios
+              <div class="bg-white dark:bg-gray-800 p-3 rounded">
+                <p class="font-semibold text-sm mb-2">Opinions nuancées :</p>
+                <div class="space-y-1 text-sm">
+                  <p>• <strong>Pienso que...</strong> - Je pense que...</p>
+                  <p>• <strong>Creo que...</strong> - Je crois que...</p>
+                  <p>• <strong>En mi opinión...</strong> - À mon avis...</p>
+                  <p>• <strong>Para mí...</strong> - Pour moi...</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
 
-### Ejercicio 1: Lectura y reacción
-El profesor presentará un texto corto. Los alumnos deberán:
-1. Leer el texto
-2. Identificar nombres, adjetivos y verbos
-3. Comentar sobre el contenido
-4. Expresar sus reacciones
+        <section class="mb-6">
+          <h3 class="text-xl font-semibold mb-4">Étape 3 : Exprimer tes réactions personnelles</h3>
+          <p class="mb-4">Un bon commentaire inclut aussi tes émotions et tes souvenirs personnels liés au texte :</p>
+          
+          <div class="bg-amber-50 dark:bg-amber-900/20 p-4 rounded-lg mb-4">
+            <h4 class="font-semibold mb-3">Parler de tes émotions et souvenirs :</h4>
+            <div class="space-y-3">
+              <div class="bg-white dark:bg-gray-800 p-3 rounded">
+                <p class="font-semibold text-sm mb-2">Ce que le texte t'évoque :</p>
+                <div class="space-y-2 text-sm">
+                  <p>• <strong>Este texto me hace pensar en...</strong></p>
+                  <p class="text-xs pl-4">Ce texte me fait penser à...</p>
+                  <p class="text-xs pl-4 italic text-gray-600 dark:text-gray-400">Exemple : Me hace pensar en mi familia</p>
+                  
+                  <p class="mt-2">• <strong>Me recuerda...</strong></p>
+                  <p class="text-xs pl-4">Cela me rappelle...</p>
+                  <p class="text-xs pl-4 italic text-gray-600 dark:text-gray-400">Exemple : Me recuerda mis vacaciones</p>
+                </div>
+              </div>
 
-### Ejercicio 2: Expresar opiniones
-Usa las siguientes estructuras para comentar:
-- "Este texto trata de..."
-- "Me gusta porque..."
-- "El personaje principal es..."
-- "Pienso que el mensaje es..."
+              <div class="bg-white dark:bg-gray-800 p-3 rounded">
+                <p class="font-semibold text-sm mb-2">Tes émotions :</p>
+                <div class="space-y-2 text-sm">
+                  <p>• <strong>Me siento triste</strong> - Je me sens triste</p>
+                  <p>• <strong>Me siento feliz</strong> - Je me sens heureux/heureuse</p>
+                  <p>• <strong>Me siento sorprendido(a)</strong> - Je me sens surpris(e)</p>
+                  <p>• <strong>Me siento conmovido(a)</strong> - Je suis ému(e)</p>
+                  <p>• <strong>Me siento inspirado(a)</strong> - Je me sens inspiré(e)</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
 
-### Ejercicio 3: Análisis en grupos
-En grupos, analicen un texto corto y preparen:
-- Un resumen
-- Comentarios sobre los personajes
-- Sus opiniones personales
-- Una presentación oral`,
+        <section class="mb-6">
+          <h3 class="text-xl font-semibold mb-4">Vocabulaire essentiel pour commenter</h3>
+          <p class="mb-4">Enrichis ton vocabulaire avec ces mots et expressions utiles :</p>
+          
+          <div class="bg-purple-50 dark:bg-purple-900/20 p-4 rounded-lg mb-4">
+            <h4 class="font-semibold mb-3">Noms (Nombres) :</h4>
+            <div class="grid md:grid-cols-2 gap-3">
+              <div class="bg-white dark:bg-gray-800 p-3 rounded">
+                <ul class="space-y-1 text-sm">
+                  <li>• <strong>El tema</strong> - Le thème</li>
+                  <li>• <strong>El personaje</strong> - Le personnage</li>
+                  <li>• <strong>La historia</strong> - L'histoire</li>
+                  <li>• <strong>El mensaje</strong> - Le message</li>
+                </ul>
+              </div>
+              <div class="bg-white dark:bg-gray-800 p-3 rounded">
+                <ul class="space-y-1 text-sm">
+                  <li>• <strong>El autor</strong> - L'auteur</li>
+                  <li>• <strong>La trama</strong> - L'intrigue</li>
+                  <li>• <strong>El final</strong> - La fin</li>
+                  <li>• <strong>La moraleja</strong> - La morale</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+
+          <div class="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg mb-4">
+            <h4 class="font-semibold mb-3">Adjectifs (Adjetivos) :</h4>
+            <div class="grid md:grid-cols-3 gap-3">
+              <div class="bg-white dark:bg-gray-800 p-3 rounded">
+                <p class="text-xs font-semibold mb-2 text-green-600 dark:text-green-400">Positifs :</p>
+                <ul class="space-y-1 text-xs">
+                  <li>• <strong>Interesante</strong> - Intéressant</li>
+                  <li>• <strong>Divertido</strong> - Amusant</li>
+                  <li>• <strong>Emocionante</strong> - Émouvant</li>
+                  <li>• <strong>Importante</strong> - Important</li>
+                  <li>• <strong>Fascinante</strong> - Fascinant</li>
+                </ul>
+              </div>
+              <div class="bg-white dark:bg-gray-800 p-3 rounded">
+                <p class="text-xs font-semibold mb-2 text-red-600 dark:text-red-400">Négatifs :</p>
+                <ul class="space-y-1 text-xs">
+                  <li>• <strong>Aburrido</strong> - Ennuyeux</li>
+                  <li>• <strong>Confuso</strong> - Confus</li>
+                  <li>• <strong>Complicado</strong> - Compliqué</li>
+                  <li>• <strong>Difícil</strong> - Difficile</li>
+                  <li>• <strong>Triste</strong> - Triste</li>
+                </ul>
+              </div>
+              <div class="bg-white dark:bg-gray-800 p-3 rounded">
+                <p class="text-xs font-semibold mb-2 text-purple-600 dark:text-purple-400">Émotions :</p>
+                <ul class="space-y-1 text-xs">
+                  <li>• <strong>Alegre</strong> - Joyeux</li>
+                  <li>• <strong>Misterioso</strong> - Mystérieux</li>
+                  <li>• <strong>Inspirador</strong> - Inspirant</li>
+                  <li>• <strong>Conmovedor</strong> - Touchant</li>
+                  <li>• <strong>Sorprendente</strong> - Surprenant</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+
+          <div class="bg-green-50 dark:bg-green-900/20 p-4 rounded-lg">
+            <h4 class="font-semibold mb-3">Verbes utiles (Verbos) :</h4>
+            <div class="grid md:grid-cols-2 gap-3">
+              <div class="bg-white dark:bg-gray-800 p-3 rounded">
+                <ul class="space-y-1 text-sm">
+                  <li>• <strong>Pensar</strong> - Penser</li>
+                  <li>• <strong>Creer</strong> - Croire</li>
+                  <li>• <strong>Opinar</strong> - Donner son avis</li>
+                  <li>• <strong>Comentar</strong> - Commenter</li>
+                </ul>
+              </div>
+              <div class="bg-white dark:bg-gray-800 p-3 rounded">
+                <ul class="space-y-1 text-sm">
+                  <li>• <strong>Reflexionar</strong> - Réfléchir</li>
+                  <li>• <strong>Sentir</strong> - Ressentir</li>
+                  <li>• <strong>Recordar</strong> - Se souvenir</li>
+                  <li>• <strong>Imaginar</strong> - Imaginer</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="mb-6">
+          <h3 class="text-xl font-semibold mb-4">Exemple de commentaire complet</h3>
+          <p class="mb-4">Voici un exemple de bon commentaire structuré :</p>
+          
+          <div class="bg-amber-50 dark:bg-amber-900/20 p-4 rounded-lg">
+            <div class="bg-white dark:bg-gray-800 p-4 rounded mb-4">
+              <p class="font-semibold mb-2">Texte court :</p>
+              <p class="text-sm italic leading-relaxed">
+                "Pedro era un niño muy tímido. Un día, tuvo que presentar un proyecto frente a toda la clase. Tenía mucho miedo, pero sus amigos lo apoyaron. Al final, hizo una presentación excelente y todos aplaudieron."
+              </p>
+            </div>
+
+            <div class="bg-white dark:bg-gray-800 p-4 rounded">
+              <p class="font-semibold mb-3">Ejemplo de comentario :</p>
+              <div class="text-sm space-y-3 leading-relaxed">
+                <p><strong>Comprensión:</strong> Este texto trata de un niño tímido que supera su miedo. El personaje principal es Pedro y la historia ocurre en una escuela.</p>
+                
+                <p><strong>Opinión:</strong> Me gusta este texto porque es inspirador. Pienso que el mensaje es muy importante: con el apoyo de los amigos, podemos superar nuestros miedos.</p>
+                
+                <p><strong>Reacción personal:</strong> Este texto me hace pensar en mi primera presentación en clase. Yo también estaba muy nervioso, pero mis compañeros me ayudaron. Me siento identificado con Pedro.</p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <div class="bg-blue-50 dark:bg-blue-900/20 border-l-4 border-blue-500 p-4 rounded-r-lg">
+          <h4 class="text-blue-700 dark:text-blue-400 font-semibold mb-2">💡 Suggestions de vidéos YouTube</h4>
+          <p class="text-blue-600 dark:text-blue-300">
+            Recherchez "cómo comentar un texto en español" ou "expresar opiniones español" pour des exemples de commentaires et des techniques pour structurer tes réactions.
+          </p>
+        </div>
+      </div>
+    `,
+    exemplesExercices: `
+      <div class="exercises-content space-y-6">
+        <h3 class="text-2xl font-bold mb-6">Ejercicios de Comentario</h3>
+
+        <div class="bg-purple-50 dark:bg-purple-900/20 p-6 rounded-lg mb-6">
+          <h4 class="text-lg font-semibold mb-4 flex items-center gap-2">
+            <span class="text-purple-600 dark:text-purple-400">📚</span>
+            Ejercicio 1: Lectura y reacción
+          </h4>
+          <p class="mb-4">El profesor presentará un texto corto. Los alumnos deberán seguir estos pasos:</p>
+          <div class="space-y-3">
+            <div class="bg-white dark:bg-gray-800 p-3 rounded flex items-start gap-3">
+              <span class="bg-purple-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs flex-shrink-0">1</span>
+              <div>
+                <p class="font-semibold text-sm">Leer el texto</p>
+                <p class="text-xs text-gray-600 dark:text-gray-400">Lee con atención dos veces</p>
+              </div>
+            </div>
+
+            <div class="bg-white dark:bg-gray-800 p-3 rounded flex items-start gap-3">
+              <span class="bg-purple-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs flex-shrink-0">2</span>
+              <div>
+                <p class="font-semibold text-sm">Identificar nombres, adjetivos y verbos</p>
+                <p class="text-xs text-gray-600 dark:text-gray-400">Subraya los elementos gramaticales importantes</p>
+              </div>
+            </div>
+
+            <div class="bg-white dark:bg-gray-800 p-3 rounded flex items-start gap-3">
+              <span class="bg-purple-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs flex-shrink-0">3</span>
+              <div>
+                <p class="font-semibold text-sm">Comentar sobre el contenido</p>
+                <p class="text-xs text-gray-600 dark:text-gray-400">¿De qué trata? ¿Quiénes son los personajes?</p>
+              </div>
+            </div>
+
+            <div class="bg-white dark:bg-gray-800 p-3 rounded flex items-start gap-3">
+              <span class="bg-purple-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs flex-shrink-0">4</span>
+              <div>
+                <p class="font-semibold text-sm">Expresar tus reacciones</p>
+                <p class="text-xs text-gray-600 dark:text-gray-400">¿Qué piensas? ¿Cómo te sientes?</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="bg-green-50 dark:bg-green-900/20 p-6 rounded-lg mb-6">
+          <h4 class="text-lg font-semibold mb-4 flex items-center gap-2">
+            <span class="text-green-600 dark:text-green-400">💬</span>
+            Ejercicio 2: Expresar opiniones
+          </h4>
+          <p class="mb-4 font-semibold">Usa las siguientes estructuras para comentar un texto:</p>
+          <div class="space-y-3">
+            <div class="bg-white dark:bg-gray-800 p-3 rounded">
+              <p class="font-semibold text-sm mb-2">Para describir el contenido:</p>
+              <p class="text-sm">"<strong>Este texto trata de...</strong>"</p>
+              <p class="text-xs text-gray-600 dark:text-gray-400 mt-1">Ejemplo: Este texto trata de la amistad entre dos niños</p>
+            </div>
+
+            <div class="bg-white dark:bg-gray-800 p-3 rounded">
+              <p class="font-semibold text-sm mb-2">Para expresar tu opinión:</p>
+              <p class="text-sm">"<strong>Me gusta porque...</strong>"</p>
+              <p class="text-xs text-gray-600 dark:text-gray-400 mt-1">Ejemplo: Me gusta porque es una historia inspiradora</p>
+            </div>
+
+            <div class="bg-white dark:bg-gray-800 p-3 rounded">
+              <p class="font-semibold text-sm mb-2">Para hablar de los personajes:</p>
+              <p class="text-sm">"<strong>El personaje principal es...</strong>"</p>
+              <p class="text-xs text-gray-600 dark:text-gray-400 mt-1">Ejemplo: El personaje principal es valiente y generoso</p>
+            </div>
+
+            <div class="bg-white dark:bg-gray-800 p-3 rounded">
+              <p class="font-semibold text-sm mb-2">Para comentar el mensaje:</p>
+              <p class="text-sm">"<strong>Pienso que el mensaje es...</strong>"</p>
+              <p class="text-xs text-gray-600 dark:text-gray-400 mt-1">Ejemplo: Pienso que el mensaje es muy importante para los jóvenes</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="bg-blue-50 dark:bg-blue-900/20 p-6 rounded-lg">
+          <h4 class="text-lg font-semibold mb-4 flex items-center gap-2">
+            <span class="text-blue-600 dark:text-blue-400">👥</span>
+            Ejercicio 3: Análisis en grupos
+          </h4>
+          <p class="mb-4 font-semibold">En grupos, analicen un texto corto y preparen:</p>
+          <div class="space-y-3">
+            <div class="bg-white dark:bg-gray-800 p-3 rounded">
+              <p class="font-semibold text-sm text-purple-600 dark:text-purple-400 mb-2">1. Un resumen</p>
+              <p class="text-xs">Escribe 3-4 oraciones resumiendo el texto</p>
+              <p class="text-xs text-gray-600 dark:text-gray-400 mt-1">Incluye: personajes, lugar, tema principal</p>
+            </div>
+
+            <div class="bg-white dark:bg-gray-800 p-3 rounded">
+              <p class="font-semibold text-sm text-green-600 dark:text-green-400 mb-2">2. Comentarios sobre los personajes</p>
+              <p class="text-xs">Describe a cada personaje y su papel en la historia</p>
+              <p class="text-xs text-gray-600 dark:text-gray-400 mt-1">Usa adjetivos: valiente, tímido, inteligente, amable...</p>
+            </div>
+
+            <div class="bg-white dark:bg-gray-800 p-3 rounded">
+              <p class="font-semibold text-sm text-blue-600 dark:text-blue-400 mb-2">3. Sus opiniones personales</p>
+              <p class="text-xs">¿Qué piensa cada miembro del grupo sobre el texto?</p>
+              <p class="text-xs text-gray-600 dark:text-gray-400 mt-1">Usa: "Me gusta...", "Pienso que...", "Me parece..."</p>
+            </div>
+
+            <div class="bg-white dark:bg-gray-800 p-3 rounded">
+              <p class="font-semibold text-sm text-amber-600 dark:text-amber-400 mb-2">4. Una presentación oral</p>
+              <p class="text-xs">Preparen una presentación de 2-3 minutos para la clase</p>
+              <p class="text-xs text-gray-600 dark:text-gray-400 mt-1">Cada miembro debe hablar</p>
+            </div>
+          </div>
+
+          <div class="mt-4 p-3 bg-amber-100 dark:bg-amber-900/30 rounded">
+            <p class="text-xs font-semibold mb-1">💡 Consejo para la presentación:</p>
+            <ul class="text-xs space-y-1 pl-4">
+              <li>• Habla claramente y despacio</li>
+              <li>• Mira a tus compañeros</li>
+              <li>• Usa las estructuras aprendidas</li>
+              <li>• Comparte tu opinión personal</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    `,
     references: ["MENFP - Programme 7e AF"]
   }
 };
