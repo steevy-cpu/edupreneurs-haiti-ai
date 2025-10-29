@@ -7435,49 +7435,562 @@ export const sciencesSocialesLessons7AF: SciencesSocialesLesson[] = [
     `
   },
 
-  // Leçon 14: Forme et constitution de la Terre
+  // Leçon 14: La diaspora haïtienne
   {
-    id: "forme-constitution-terre",
-    title: "Forme et constitution de la Terre",
+    id: "la-diaspora-haitienne",
+    title: "La diaspora haïtienne : une force mondiale",
     mois: "Mai",
-    objectif: "Comprendre la forme et la structure interne de notre planète.",
+    objectif: "Comprendre le rôle et l'impact de la diaspora haïtienne dans le monde et en Haïti.",
     introduction: `
-      <p class="text-foreground leading-relaxed">
-        La Terre n'est pas une sphère parfaite, mais un géoïde légèrement aplati aux pôles. Sa structure interne en couches concentriques détermine les phénomènes géologiques comme les séismes et les volcans.
-      </p>
+      <div class="space-y-6">
+        <div class="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-950/30 dark:to-indigo-950/30 p-6 rounded-lg border-l-4 border-blue-500">
+          <p class="text-lg italic">"La dixième province d'Haïti n'est pas sur notre territoire. Elle se trouve à New York, Miami, Montréal, Paris... Partout où des Haïtiens travaillent, créent, rêvent et n'oublient jamais leur terre natale."</p>
+        </div>
+        
+        <p class="text-lg leading-relaxed">Imagine : sur 11 millions d'Haïtiens dans le monde, environ 3 millions vivent à l'étranger. C'est presque un Haïtien sur trois ! Aux États-Unis, en République Dominicaine, au Canada, en France, au Brésil, au Chili... Partout, des Haïtiens construisent une vie meilleure tout en restant profondément attachés à Haïti.</p>
+        
+        <p>Cette diaspora haïtienne n'est pas simplement un phénomène migratoire. C'est une force économique, culturelle et politique majeure. Chaque année, elle envoie plus de 2 milliards de dollars en Haïti, soutenant des milliers de familles. Elle exporte notre culture - notre musique, notre art, notre cuisine - aux quatre coins du globe. Elle produit des médecins, des ingénieurs, des artistes, des entrepreneurs brillants qui rayonnent internationalement.</p>
+        
+        <p>Mais la diaspora, c'est aussi une histoire de sacrifice et de déchirement. C'est des parents qui partent laisser leurs enfants pour leur offrir un meilleur avenir. C'est des jeunes qui quittent leur pays avec un rêve dans le cœur et souvent un pincement au ventre. C'est une relation compliquée entre ceux qui sont partis et ceux qui sont restés, mélange d'admiration, de jalousie parfois, mais surtout d'amour pour la même terre.</p>
+        
+        <div class="bg-yellow-50 dark:bg-yellow-950/20 border-l-4 border-yellow-500 p-4 my-4">
+          <p class="font-semibold text-yellow-900 dark:text-yellow-200">🎯 Objectifs d'apprentissage</p>
+          <ul class="list-disc ml-6 mt-2 space-y-1">
+            <li>Comprendre l'histoire et les causes de la migration haïtienne</li>
+            <li>Identifier les principales destinations de la diaspora</li>
+            <li>Analyser le rôle économique de la diaspora (transferts d'argent)</li>
+            <li>Reconnaître l'impact culturel et social des Haïtiens de l'extérieur</li>
+            <li>Réfléchir sur le lien entre diaspora et développement d'Haïti</li>
+          </ul>
+        </div>
+      </div>
     `,
     contenu: `
-      <section class="space-y-6">
-        <div>
-          <h3 class="text-xl font-semibold mb-3 text-foreground">1. La forme de la Terre</h3>
-          <ul class="list-disc ml-6 space-y-2 text-foreground">
-            <li><strong>Géoïde :</strong> Sphère imparfaite</li>
-            <li><strong>Rayon équatorial :</strong> 6 378 km</li>
-            <li><strong>Rayon polaire :</strong> 6 357 km (21 km de moins)</li>
-            <li><strong>Circonférence :</strong> 40 075 km à l'équateur</li>
-          </ul>
-        </div>
+      <div class="space-y-8">
+        <section>
+          <h3 class="text-2xl font-bold mb-4 text-primary">1. Histoire de l'émigration haïtienne : pourquoi partir ?</h3>
+          
+          <p class="text-lg mb-4">Les Haïtiens n'ont pas toujours émigré massivement. Pendant longtemps, la grande majorité de la population restait en Haïti. Mais plusieurs vagues migratoires successives ont créé la diaspora actuelle.</p>
+          
+          <h4 class="text-xl font-semibold mt-6 mb-3">Les grandes vagues d'émigration</h4>
+          
+          <div class="space-y-4">
+            <div class="bg-amber-50 dark:bg-amber-950/20 p-4 rounded-lg">
+              <p class="font-bold text-lg">Première vague (1915-1934) : L'occupation américaine</p>
+              <p class="mt-2">Pendant l'occupation américaine d'Haïti, des milliers d'Haïtiens fuient vers Cuba et la République Dominicaine pour travailler dans les plantations de canne à sucre. C'est le début de l'émigration haïtienne moderne.</p>
+              <ul class="list-disc ml-6 mt-2 space-y-1 text-sm">
+                <li><strong>Destination principale :</strong> Cuba (environ 500 000 Haïtiens dans les années 1920)</li>
+                <li><strong>Type de travail :</strong> Coupe de canne, agriculture</li>
+                <li><strong>Conditions :</strong> Très dures, exploitation, discrimination</li>
+              </ul>
+            </div>
+            
+            <div class="bg-amber-50 dark:bg-amber-950/20 p-4 rounded-lg">
+              <p class="font-bold text-lg">Deuxième vague (1957-1986) : La dictature des Duvalier</p>
+              <p class="mt-2">François "Papa Doc" Duvalier (1957-1971) puis son fils Jean-Claude "Baby Doc" (1971-1986) instaurent une dictature sanglante. Les opposants politiques, intellectuels, professionnels fuient massivement.</p>
+              <ul class="list-disc ml-6 mt-2 space-y-1 text-sm">
+                <li><strong>Destinations :</strong> États-Unis (New York, Miami), Canada (Montréal), France (Paris)</li>
+                <li><strong>Profil :</strong> Classe moyenne éduquée, opposants politiques, professionnels</li>
+                <li><strong>Impact :</strong> "Brain drain" - fuite des cerveaux (médecins, ingénieurs, professeurs)</li>
+                <li><strong>Nombre :</strong> Environ 300 000 à 500 000 Haïtiens partent</li>
+              </ul>
+              <p class="mt-2 text-sm bg-blue-50 dark:bg-blue-950/30 p-3 rounded">💡 Anecdote : Les Tontons Macoutes, milice privée de Papa Doc, terrorisaient la population. Beaucoup d'Haïtiens fuyaient de nuit en bateau vers les Bahamas et la Floride, au risque de leur vie. On les appelait les "boat people" haïtiens.</p>
+            </div>
+            
+            <div class="bg-amber-50 dark:bg-amber-950/20 p-4 rounded-lg">
+              <p class="font-bold text-lg">Troisième vague (1991-1994) : Le coup d'État contre Aristide</p>
+              <p class="mt-2">En 1991, le président démocratiquement élu Jean-Bertrand Aristide est renversé par un coup d'État militaire. Une nouvelle vague de répression politique pousse des milliers d'Haïtiens à fuir.</p>
+              <ul class="list-disc ml-6 mt-2 space-y-1 text-sm">
+                <li><strong>Méthode :</strong> Boat people vers la Floride dans des embarcations de fortune</li>
+                <li><strong>Nombre :</strong> Plus de 60 000 tentatives interceptées par les gardes-côtes américains</li>
+                <li><strong>Controverse :</strong> Les réfugiés haïtiens étaient renvoyés, contrairement aux Cubains qui étaient accueillis</li>
+              </ul>
+            </div>
+            
+            <div class="bg-amber-50 dark:bg-amber-950/20 p-4 rounded-lg">
+              <p class="font-bold text-lg">Quatrième vague (2010-aujourd'hui) : Séisme et instabilité</p>
+              <p class="mt-2">Le séisme du 12 janvier 2010 (230 000 morts) et l'instabilité politique chronique depuis 2018 poussent de nouvelles vagues à partir.</p>
+              <ul class="list-disc ml-6 mt-2 space-y-1 text-sm">
+                <li><strong>Nouvelles destinations :</strong> Brésil, Chili, Turquie (Chili devient une destination prisée depuis 2012)</li>
+                <li><strong>Route migratoire :</strong> Beaucoup d'Haïtiens passent par l'Amérique du Sud puis remontent vers les États-Unis</li>
+                <li><strong>Nombre :</strong> Environ 500 000 Haïtiens supplémentaires émigrent entre 2010 et 2023</li>
+              </ul>
+            </div>
+          </div>
+          
+          <h4 class="text-xl font-semibold mt-6 mb-3">Les causes de l'émigration haïtienne</h4>
+          
+          <div class="grid md:grid-cols-2 gap-4 mt-4">
+            <div class="bg-red-50 dark:bg-red-950/20 p-4 rounded-lg border-l-4 border-red-500">
+              <p class="font-bold mb-2">🔴 Causes politiques</p>
+              <ul class="list-disc ml-6 space-y-1 text-sm">
+                <li>Dictatures (Duvalier 1957-1986)</li>
+                <li>Coups d'État répétés</li>
+                <li>Insécurité, gangs armés</li>
+                <li>Corruption généralisée</li>
+                <li>Impunité judiciaire</li>
+              </ul>
+            </div>
+            
+            <div class="bg-orange-50 dark:bg-orange-950/20 p-4 rounded-lg border-l-4 border-orange-500">
+              <p class="font-bold mb-2">🟠 Causes économiques</p>
+              <ul class="list-disc ml-6 space-y-1 text-sm">
+                <li>Chômage massif (60-70%)</li>
+                <li>Pauvreté extrême (60% vivent avec moins de 2$/jour)</li>
+                <li>Agriculture en déclin</li>
+                <li>Salaires très bas (300 gourdes/jour = 2$)</li>
+                <li>Manque d'opportunités professionnelles</li>
+              </ul>
+            </div>
+            
+            <div class="bg-yellow-50 dark:bg-yellow-950/20 p-4 rounded-lg border-l-4 border-yellow-500">
+              <p class="font-bold mb-2">🟡 Causes sociales</p>
+              <ul class="list-disc ml-6 space-y-1 text-sm">
+                <li>Système éducatif défaillant</li>
+                <li>Santé publique insuffisante</li>
+                <li>Manque d'eau potable et d'électricité</li>
+                <li>Inégalités sociales extrêmes</li>
+              </ul>
+            </div>
+            
+            <div class="bg-green-50 dark:bg-green-950/20 p-4 rounded-lg border-l-4 border-green-500">
+              <p class="font-bold mb-2">🟢 Causes naturelles</p>
+              <ul class="list-disc ml-6 space-y-1 text-sm">
+                <li>Catastrophes naturelles (séismes, ouragans)</li>
+                <li>Déforestation massive (moins de 2% de forêt)</li>
+                <li>Érosion et perte de terres agricoles</li>
+                <li>Changement climatique</li>
+              </ul>
+            </div>
+          </div>
+        </section>
 
-        <div>
-          <h3 class="text-xl font-semibold mb-3 text-foreground">2. Structure interne</h3>
-          <ul class="list-disc ml-6 space-y-2 text-foreground">
-            <li><strong>Noyau interne :</strong> Solide, fer et nickel (5 000°C+)</li>
-            <li><strong>Noyau externe :</strong> Liquide, fer en fusion</li>
-            <li><strong>Manteau :</strong> Roches visqueuses, 2 900 km d'épaisseur</li>
-            <li><strong>Croûte terrestre :</strong> 5-70 km, où nous vivons</li>
+        <section>
+          <h3 class="text-2xl font-bold mb-4 text-primary mt-8">2. Géographie de la diaspora : où sont les Haïtiens ?</h3>
+          
+          <p class="text-lg mb-4">La diaspora haïtienne est présente sur tous les continents, mais avec des concentrations majeures dans certains pays.</p>
+          
+          <div class="space-y-4">
+            <div class="bg-blue-50 dark:bg-blue-950/30 p-5 rounded-lg border-l-4 border-blue-500">
+              <p class="font-bold text-lg mb-2">🇺🇸 États-Unis : La plus grande communauté (environ 1,5 million)</p>
+              <p class="mb-2">Les Haïtiens se concentrent principalement en Floride et à New York.</p>
+              <div class="mt-3 space-y-2 text-sm">
+                <p><strong>• Miami/Floride (400 000+) :</strong> Surnommée "Ti Ayiti" (Petite Haïti). Quartier Little Haiti vibrant, commerces haïtiens, églises, restaurants. Influent politiquement.</p>
+                <p><strong>• New York/Brooklyn (350 000+) :</strong> Quartiers de Flatbush, Crown Heights. Centre culturel haïtien majeur. Beaucoup de professionnels.</p>
+                <p><strong>• Boston (70 000) :</strong> Quartier de Mattapan. Forte communauté étudiante.</p>
+                <p><strong>Profil :</strong> Diversifié - professionnels, ouvriers, chauffeurs de taxi, infirmières, médecins, avocats, entrepreneurs.</p>
+              </div>
+            </div>
+            
+            <div class="bg-blue-50 dark:bg-blue-950/30 p-5 rounded-lg border-l-4 border-blue-500">
+              <p class="font-bold text-lg mb-2">🇩🇴 République Dominicaine : La plus proche (environ 800 000)</p>
+              <p class="mb-2">Beaucoup d'Haïtiens traversent la frontière pour travailler dans l'agriculture, la construction, le tourisme.</p>
+              <ul class="list-disc ml-6 mt-2 space-y-1 text-sm">
+                <li><strong>Conditions :</strong> Souvent difficiles, exploitation, discrimination raciale ("anti-haitianisme")</li>
+                <li><strong>Travail :</strong> Coupe de canne à sucre, construction, agriculture, services domestiques</li>
+                <li><strong>Statut :</strong> Beaucoup sont sans papiers. Les enfants nés en RD de parents haïtiens perdent parfois leur nationalité</li>
+                <li><strong>Incidents :</strong> En 2013, arrêt de la Cour constitutionnelle dominicaine retirant la nationalité à 200 000 Dominicains d'origine haïtienne</li>
+              </ul>
+            </div>
+            
+            <div class="bg-blue-50 dark:bg-blue-950/30 p-5 rounded-lg border-l-4 border-blue-500">
+              <p class="font-bold text-lg mb-2">🇨🇦 Canada : La communauté francophone (environ 200 000)</p>
+              <p class="mb-2"><strong>• Montréal (150 000+) :</strong> Plus grande communauté haïtienne au Canada. Quartiers de Saint-Michel, Montréal-Nord. Forte présence dans la fonction publique, l'éducation, la santé.</p>
+              <ul class="list-disc ml-6 mt-2 space-y-1 text-sm">
+                <li><strong>Profil :</strong> Classe moyenne éduquée. Beaucoup d'enseignants, infirmières, fonctionnaires.</li>
+                <li><strong>Culture :</strong> Festivals haïtiens, médias créoles, écoles haïtiennes.</li>
+                <li><strong>Influence :</strong> Michaëlle Jean, Haïtienne d'origine, a été Gouverneure générale du Canada (2005-2010)!</li>
+              </ul>
+            </div>
+            
+            <div class="bg-blue-50 dark:bg-blue-950/30 p-5 rounded-lg border-l-4 border-blue-500">
+              <p class="font-bold text-lg mb-2">🇫🇷 France : La diaspora francophone européenne (environ 80 000)</p>
+              <p class="mb-2"><strong>• Paris et banlieue :</strong> Concentrations à Belleville, La Courneuve, Créteil.</p>
+              <ul class="list-disc ml-6 mt-2 space-y-1 text-sm">
+                <li><strong>Profil :</strong> Intellectuels, artistes, étudiants. Beaucoup d'Haïtiens ont étudié en France.</li>
+                <li><strong>Influence culturelle :</strong> Écrivains (Dany Laferrière - Académie française), musiciens, artistes.</li>
+              </ul>
+            </div>
+            
+            <div class="bg-blue-50 dark:bg-blue-950/30 p-5 rounded-lg border-l-4 border-blue-500">
+              <p class="font-bold text-lg mb-2">🇧🇷🇨🇱 Amérique du Sud : Les nouvelles destinations (environ 150 000)</p>
+              <p class="mb-2">Depuis 2010, de nombreux Haïtiens émigrent vers le Brésil et le Chili.</p>
+              <ul class="list-disc ml-6 mt-2 space-y-1 text-sm">
+                <li><strong>Brésil (80 000) :</strong> Arrivés après le séisme de 2010. Travaillent dans la construction, l'industrie. Beaucoup repartent ensuite vers le Chili ou les États-Unis.</li>
+                <li><strong>Chili (70 000) :</strong> Destination très prisée depuis 2015. Santiago. Travail dans la restauration, construction, services.</li>
+              </ul>
+            </div>
+          </div>
+          
+          <div class="bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-950/30 dark:to-pink-950/30 p-5 rounded-lg my-6">
+            <p class="font-semibold text-purple-900 dark:text-purple-200 mb-2">💡 Le savais-tu ?</p>
+            <p class="text-purple-800 dark:text-purple-300">On appelle souvent la diaspora haïtienne la <strong>"Dixième Province"</strong> ou le <strong>"11ème département"</strong> d'Haïti (Haïti comptant officiellement 10 départements géographiques). Cette expression montre que les Haïtiens de l'extérieur sont considérés comme faisant toujours partie intégrante de la nation haïtienne, même s'ils vivent loin.</p>
+          </div>
+        </section>
+
+        <section>
+          <h3 class="text-2xl font-bold mb-4 text-primary mt-8">3. L'impact économique : les transferts d'argent (remittances)</h3>
+          
+          <p class="text-lg mb-4">L'argent envoyé par la diaspora haïtienne est la <strong>principale source de devises</strong> d'Haïti. C'est l'impact économique le plus direct et le plus mesurable.</p>
+          
+          <div class="bg-green-50 dark:bg-green-950/30 p-6 rounded-lg border-l-4 border-green-500 mb-6">
+            <p class="font-bold text-2xl mb-3 text-green-900 dark:text-green-200">💵 Chiffres clés :</p>
+            <ul class="list-disc ml-6 space-y-2">
+              <li><strong>2 à 2,5 milliards de dollars par an</strong> envoyés en Haïti par la diaspora</li>
+              <li>Cela représente environ <strong>30% du PIB</strong> d'Haïti (Produit Intérieur Brut)</li>
+              <li>Plus d'<strong>1 famille haïtienne sur 3</strong> reçoit de l'argent de l'étranger</li>
+              <li>Les transferts dépassent largement l'aide internationale et les exportations haïtiennes</li>
+            </ul>
+          </div>
+          
+          <h4 class="text-xl font-semibold mt-6 mb-3">Comment l'argent est-il envoyé ?</h4>
+          
+          <div class="grid md:grid-cols-2 gap-4 mt-4">
+            <div class="bg-blue-50 dark:bg-blue-950/30 p-4 rounded-lg">
+              <p class="font-bold mb-2">Moyens traditionnels</p>
+              <ul class="list-disc ml-6 space-y-1 text-sm">
+                <li><strong>Western Union, MoneyGram :</strong> Compagnies de transfert d'argent. Rapide mais coûteux (frais 5-10%)</li>
+                <li><strong>CAM (Caisse d'Aide Mutuelle) :</strong> Réseau haïtien</li>
+                <li><strong>Porteurs informels :</strong> Personnes qui voyagent avec l'argent en cash</li>
+              </ul>
+            </div>
+            
+            <div class="bg-blue-50 dark:bg-blue-950/30 p-4 rounded-lg">
+              <p class="font-bold mb-2">Moyens modernes</p>
+              <ul class="list-disc ml-6 space-y-1 text-sm">
+                <li><strong>Moncash :</strong> Service mobile de transfert haïtien</li>
+                <li><strong>Applications :</strong> Remitly, WorldRemit, Xoom</li>
+                <li><strong>Cryptomonnaies :</strong> Certains utilisent Bitcoin pour éviter les frais</li>
+              </ul>
+            </div>
+          </div>
+          
+          <h4 class="text-xl font-semibold mt-6 mb-3">À quoi sert cet argent ?</h4>
+          
+          <div class="space-y-3 mt-4">
+            <div class="bg-amber-50 dark:bg-amber-950/20 p-4 rounded-lg">
+              <p class="font-semibold">1. Besoins de base (60-70%)</p>
+              <ul class="list-disc ml-6 mt-2 text-sm">
+                <li>Nourriture quotidienne</li>
+                <li>Loyer, électricité, eau</li>
+                <li>Vêtements</li>
+                <li>Médicaments</li>
+              </ul>
+            </div>
+            
+            <div class="bg-amber-50 dark:bg-amber-950/20 p-4 rounded-lg">
+              <p class="font-semibold">2. Éducation (15-20%)</p>
+              <ul class="list-disc ml-6 mt-2 text-sm">
+                <li>Frais de scolarité (écoles privées)</li>
+                <li>Uniformes, livres, fournitures</li>
+                <li>Cours particuliers</li>
+                <li>Université</li>
+              </ul>
+            </div>
+            
+            <div class="bg-amber-50 dark:bg-amber-950/20 p-4 rounded-lg">
+              <p class="font-semibold">3. Santé (5-10%)</p>
+              <ul class="list-disc ml-6 mt-2 text-sm">
+                <li>Consultations médicales</li>
+                <li>Médicaments</li>
+                <li>Opérations chirurgicales</li>
+              </ul>
+            </div>
+            
+            <div class="bg-amber-50 dark:bg-amber-950/20 p-4 rounded-lg">
+              <p class="font-semibold">4. Investissement (5-10%)</p>
+              <ul class="list-disc ml-6 mt-2 text-sm">
+                <li>Construction de maisons</li>
+                <li>Achat de terrains</li>
+                <li>Petit commerce</li>
+              </ul>
+            </div>
+          </div>
+          
+          <div class="bg-blue-50 dark:bg-blue-950/30 p-5 rounded-lg my-6">
+            <p class="font-semibold text-blue-900 dark:text-blue-200 mb-2">💡 Impact macro-économique</p>
+            <p class="text-blue-800 dark:text-blue-300 text-sm">Sans les transferts de la diaspora, l'économie haïtienne s'effondrerait. Ces 2 milliards de dollars par an maintiennent à flot des centaines de milliers de familles, financent l'éducation de milliers d'enfants, permettent la construction de maisons. Mais c'est aussi une dépendance problématique : Haïti compte trop sur l'argent venant de l'extérieur au lieu de développer sa propre production.</p>
+          </div>
+        </section>
+
+        <section>
+          <h3 class="text-2xl font-bold mb-4 text-primary mt-8">4. Impact culturel et social : la diaspora comme ambassadeur</h3>
+          
+          <p class="text-lg mb-4">Au-delà de l'argent, la diaspora haïtienne rayonne culturellement dans le monde entier.</p>
+          
+          <h4 class="text-xl font-semibold mt-6 mb-3">Personnalités haïtiennes célèbres de la diaspora</h4>
+          
+          <div class="grid md:grid-cols-2 gap-4 mt-4">
+            <div class="bg-purple-50 dark:bg-purple-950/20 p-4 rounded-lg">
+              <p class="font-bold mb-2">🎭 Arts et Culture</p>
+              <ul class="list-disc ml-6 space-y-1 text-sm">
+                <li><strong>Wyclef Jean :</strong> Rappeur, fondateur des Fugees (États-Unis)</li>
+                <li><strong>Edwidge Danticat :</strong> Écrivaine renommée (États-Unis)</li>
+                <li><strong>Dany Laferrière :</strong> Écrivain, Académie française (Canada/France)</li>
+                <li><strong>Jean-Michel Basquiat :</strong> Peintre mondialement célèbre (États-Unis, décédé 1988)</li>
+              </ul>
+            </div>
+            
+            <div class="bg-purple-50 dark:bg-purple-950/20 p-4 rounded-lg">
+              <p class="font-bold mb-2">👔 Politique et Société</p>
+              <ul class="list-disc ml-6 space-y-1 text-sm">
+                <li><strong>Michaëlle Jean :</strong> Ex-Gouverneure générale du Canada (2005-2010)</li>
+                <li><strong>Patrick Gaspard :</strong> Ambassadeur US en Afrique du Sud</li>
+                <li><strong>Mia Love :</strong> Première femme noire républicaine élue au Congrès US</li>
+              </ul>
+            </div>
+            
+            <div class="bg-purple-50 dark:bg-purple-950/20 p-4 rounded-lg">
+              <p class="font-bold mb-2">⚽ Sport</p>
+              <ul class="list-disc ml-6 space-y-1 text-sm">
+                <li><strong>Samuel Dalembert :</strong> Joueur NBA (Canada)</li>
+                <li><strong>Yohan Maccaisse :</strong> Athlète paralympique</li>
+                <li><strong>Naomi Osaka :</strong> Championne de tennis (origine haïtiano-japonaise)</li>
+              </ul>
+            </div>
+            
+            <div class="bg-purple-50 dark:bg-purple-950/20 p-4 rounded-lg">
+              <p class="font-bold mb-2">🔬 Sciences et Médecine</p>
+              <ul class="list-disc ml-6 space-y-1 text-sm">
+                <li><strong>Dr. Jacques Pépin :</strong> Spécialiste VIH (Canada)</li>
+                <li><strong>Dr. Paul Farmer :</strong> Médecin et anthropologue (Harvard, travaillait en Haïti)</li>
+                <li>Des milliers de médecins et infirmières haïtiens dans les hôpitaux nord-américains</li>
+              </ul>
+            </div>
+          </div>
+          
+          <h4 class="text-xl font-semibold mt-6 mb-3">Diffusion de la culture haïtienne</h4>
+          
+          <ul class="list-disc ml-8 space-y-2 mt-3">
+            <li><strong>Musique :</strong> Le konpa, le zouk, le rasin sont joués dans le monde entier. Festivals haïtiens à Miami, Montréal, Paris.</li>
+            <li><strong>Cuisine :</strong> Restaurants haïtiens partout (griot, diri kole ak pwa, bannann peze, tassot). Haïti est présente dans les food trucks new-yorkais !</li>
+            <li><strong>Art :</strong> L'art naïf haïtien est exposé dans les musées internationaux.</li>
+            <li><strong>Langue :</strong> Le créole haïtien est enseigné dans certaines universités américaines.</li>
+            <li><strong>Carnaval :</strong> Le carnaval haïtien est célébré dans les grandes villes de la diaspora.</li>
           </ul>
-        </div>
-      </section>
+        </section>
+
+        <section>
+          <h3 class="text-2xl font-bold mb-4 text-primary mt-8">5. Défis et tensions : une relation complexe</h3>
+          
+          <p class="text-lg mb-4">La relation entre la diaspora et Haïti n'est pas toujours simple. Il existe des tensions, des incompréhensions, des jalousies.</p>
+          
+          <div class="space-y-4">
+            <div class="border-2 border-orange-300 dark:border-orange-800 p-4 rounded-lg">
+              <p class="font-bold text-lg text-orange-700 dark:text-orange-400">Défis pour la diaspora</p>
+              <ul class="list-disc ml-6 mt-2 space-y-1 text-sm">
+                <li><strong>Nostalgie et culpabilité :</strong> Sentiment de culpabilité d'avoir réussi à l'étranger pendant que les proches en Haïti souffrent</li>
+                <li><strong>Pression financière :</strong> Obligation morale d'envoyer de l'argent régulièrement, même si eux-mêmes ont des difficultés</li>
+                <li><strong>Perte d'identité :</strong> Les enfants nés à l'étranger parlent parfois mal créole, connaissent peu Haïti</li>
+                <li><strong>Discrimination :</strong> Racisme, xénophobie dans les pays d'accueil</li>
+              </ul>
+            </div>
+            
+            <div class="border-2 border-orange-300 dark:border-orange-800 p-4 rounded-lg">
+              <p class="font-bold text-lg text-orange-700 dark:text-orange-400">Tensions avec ceux restés en Haïti</p>
+              <ul class="list-disc ml-6 mt-2 space-y-1 text-sm">
+                <li><strong>Jalousie :</strong> Parfois, perception que la diaspora est riche et ne comprend plus les difficultés haïtiennes</li>
+                <li><strong>Critique :</strong> Accusation que la diaspora critique Haïti sans y vivre et sans comprendre les réalités du quotidien</li>
+                <li><strong>Exploitation :</strong> Certains en Haïti abusent de la générosité de la famille à l'étranger (demandes d'argent excessives)</li>
+                <li><strong>Culture :</strong> Diaspora parfois vue comme "trop américanisée" ou "pas assez haïtienne"</li>
+              </ul>
+            </div>
+            
+            <div class="border-2 border-orange-300 dark:border-orange-800 p-4 rounded-lg">
+              <p class="font-bold text-lg text-orange-700 dark:text-orange-400">Défis d'intégration</p>
+              <ul class="list-disc ml-6 mt-2 space-y-1 text-sm">
+                <li><strong>Langue :</strong> Barrière linguistique (anglais, espagnol, portugais à apprendre)</li>
+                <li><strong>Diplômes :</strong> Diplômes haïtiens souvent non reconnus à l'étranger</li>
+                <li><strong>Travail :</strong> Médecins haïtiens travaillant comme infirmiers, ingénieurs devenant chauffeurs</li>
+                <li><strong>Racisme :</strong> Discrimination anti-noire, anti-immigrés</li>
+              </ul>
+            </div>
+          </div>
+        </section>
+
+        <section>
+          <h3 class="text-2xl font-bold mb-4 text-primary mt-8">Conclusion : La diaspora, force et espoir pour Haïti</h3>
+          
+          <p class="text-lg leading-relaxed">La diaspora haïtienne est une richesse immense. Ces 3 millions d'Haïtiens à l'étranger ne sont pas des "traîtres" ou des "déserteurs". Ce sont des pionniers, des combattants, des sacrifiés qui travaillent dur pour donner un meilleur avenir à leurs familles.</p>
+          
+          <p class="mt-4">Ils maintiennent l'économie haïtienne à flot avec leurs 2 milliards de dollars par an. Ils rayonnent culturellement et font connaître Haïti positivement dans le monde. Ils forment la prochaine génération de leaders, d'entrepreneurs, d'intellectuels qui reviendront peut-être un jour contribuer au développement d'Haïti.</p>
+          
+          <div class="bg-gradient-to-r from-green-50 to-blue-50 dark:from-green-950/30 dark:to-blue-950/30 p-6 rounded-lg mt-6">
+            <p class="font-semibold text-lg mb-3">💭 Question pour réfléchir :</p>
+            <p>Si tu avais l'opportunité de partir vivre à l'étranger avec ta famille pour avoir une vie meilleure, partirais-tu ? Ou resterais-tu en Haïti pour participer à son développement ? Il n'y a pas de bonne ou mauvaise réponse – c'est une question que des millions d'Haïtiens se posent chaque jour.</p>
+          </div>
+        </section>
+      </div>
     `,
     exemplesExercices: `
-      <section class="space-y-4">
-        <div class="bg-accent/5 border-l-4 border-accent p-4 rounded">
-          <h4 class="font-semibold mb-2 text-foreground">📝 Activité</h4>
-          <p class="text-foreground">
-            Crée une maquette des couches de la Terre en utilisant de la pâte à modeler de différentes couleurs.
-          </p>
-        </div>
-      </section>
+      <div class="space-y-8">
+        <section>
+          <h3 class="text-2xl font-bold mb-4 text-primary">Exemples concrets et études de cas</h3>
+          
+          <div class="grid gap-4">
+            <div class="bg-blue-50 dark:bg-blue-950/30 p-5 rounded-lg border-l-4 border-blue-500">
+              <p class="font-bold text-lg mb-2">🇭🇹 Exemple 1 : Histoire de Manman Rose</p>
+              <p>Rose, 45 ans, vit à Port-au-Prince avec ses 4 enfants. Son mari, Jean, est parti à Miami en 2012 pour travailler. Il est chauffeur de taxi et travaille 12 heures par jour, 6 jours par semaine. Chaque mois, il envoie 300 dollars via Western Union (frais : 15 dollars). Rose utilise cet argent pour : 150$ nourriture, 80$ école des enfants, 40$ loyer, 30$ économies. Sans cet argent, la famille ne survivrait pas. Mais Rose est triste : ses enfants grandissent sans leur père, et Jean lui manque terriblement. Cela fait 3 ans qu'ils ne se sont pas vus.</p>
+              <p class="mt-2 font-semibold">Réflexion : Est-ce que le sacrifice de Jean vaut le coup ? Quel est le prix humain de l'émigration ?</p>
+            </div>
+            
+            <div class="bg-blue-50 dark:bg-blue-950/30 p-5 rounded-lg border-l-4 border-blue-500">
+              <p class="font-bold text-lg mb-2">🇨🇦 Exemple 2 : Success story de Dr. Pierre</p>
+              <p>Le Dr. Jacques Pierre a quitté Haïti en 1985, fuyant la dictature de Duvalier. Arrivé au Canada avec 50 dollars en poche, il a travaillé comme serveur pendant 5 ans tout en passant ses examens de médecine. Aujourd'hui, il est chirurgien réputé à Montréal, gagne bien sa vie, et a fondé une ONG qui finance des bourses pour étudiants haïtiens en médecine. Il retourne en Haïti 2 fois par an pour opérer gratuitement dans des hôpitaux. Ses 3 enfants, nés au Canada, parlent créole et sont fiers de leur héritage haïtien.</p>
+              <p class="mt-2 font-semibold">Réflexion : Comment la diaspora peut-elle contribuer au développement d'Haïti au-delà de l'argent ?</p>
+            </div>
+            
+            <div class="bg-blue-50 dark:bg-blue-950/30 p-5 rounded-lg border-l-4 border-blue-500">
+              <p class="font-bold text-lg mb-2">🇩🇴 Exemple 3 : La dure réalité en République Dominicaine</p>
+              <p>Marc, 28 ans, coupe la canne à sucre dans une plantation dominicaine. Il travaille 10 heures par jour sous le soleil brûlant, pour 200 pesos dominicains (environ 3,50 dollars US). Il vit dans un "batey" (camp de travailleurs) sans électricité ni eau potable. Il est entré illégalement en RD et a peur d'être arrêté et déporté. Chaque mois, il envoie péniblement 50 dollars à sa mère en Haïti. Il rêve d'aller aux États-Unis mais n'a pas les moyens. Sa vie est dure, mais il dit : "Au moins ici je travaille. En Haïti, il n'y a rien."</p>
+              <p class="mt-2 font-semibold">Réflexion : Pourquoi tant d'Haïtiens acceptent-ils ces conditions misérables en RD ?</p>
+            </div>
+          </div>
+        </section>
+
+        <section>
+          <h3 class="text-2xl font-bold mb-4 text-primary mt-8">Exercices variés</h3>
+          
+          <div class="space-y-6">
+            <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md">
+              <p class="font-bold text-xl mb-4">📝 1. Questions à choix multiples</p>
+              <div class="space-y-4">
+                <div>
+                  <p class="font-semibold">a) Combien de dollars la diaspora haïtienne envoie-t-elle chaque année en Haïti ?</p>
+                  <ul class="ml-6 list-disc space-y-1">
+                    <li>500 millions</li>
+                    <li>1 milliard</li>
+                    <li>2-2,5 milliards ✓</li>
+                    <li>5 milliards</li>
+                  </ul>
+                </div>
+                
+                <div>
+                  <p class="font-semibold">b) Quelle ville américaine est surnommée "Ti Ayiti" (Petite Haïti) ?</p>
+                  <ul class="ml-6 list-disc space-y-1">
+                    <li>New York</li>
+                    <li>Miami ✓</li>
+                    <li>Boston</li>
+                    <li>Los Angeles</li>
+                  </ul>
+                </div>
+                
+                <div>
+                  <p class="font-semibold">c) Quel pays compte la plus grande concentration d'Haïtiens après les États-Unis ?</p>
+                  <ul class="ml-6 list-disc space-y-1">
+                    <li>Canada</li>
+                    <li>France</li>
+                    <li>République Dominicaine ✓</li>
+                    <li>Brésil</li>
+                  </ul>
+                </div>
+                
+                <div>
+                  <p class="font-semibold">d) Quelle dictature a provoqué l'émigration massive d'Haïtiens entre 1957 et 1986 ?</p>
+                  <ul class="ml-6 list-disc space-y-1">
+                    <li>Duvalier (Papa Doc et Baby Doc) ✓</li>
+                    <li>Aristide</li>
+                    <li>Martelly</li>
+                    <li>Préval</li>
+                  </ul>
+                </div>
+                
+                <div>
+                  <p class="font-semibold">e) Les transferts d'argent de la diaspora représentent environ quel pourcentage du PIB haïtien ?</p>
+                  <ul class="ml-6 list-disc space-y-1">
+                    <li>10%</li>
+                    <li>20%</li>
+                    <li>30% ✓</li>
+                    <li>50%</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+
+            <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md">
+              <p class="font-bold text-xl mb-4">💭 2. Questions de réflexion approfondie</p>
+              <ul class="ml-6 space-y-4">
+                <li><strong>a)</strong> Penses-tu que la diaspora devrait avoir le droit de vote en Haïti même si elle n'y vit pas ? Pourquoi ou pourquoi non ?</li>
+                <li><strong>b)</strong> Haïti dépend trop des transferts de la diaspora. Quelles solutions pourrais-tu proposer pour que le pays développe sa propre économie ?</li>
+                <li><strong>c)</strong> Certains disent que les meilleurs Haïtiens (médecins, ingénieurs, enseignants) partent et abandonnent le pays. Es-tu d'accord ? Justifie ta réponse.</li>
+                <li><strong>d)</strong> Si tu étais président, quelles politiques mettrais-tu en place pour encourager la diaspora à investir en Haïti ?</li>
+              </ul>
+            </div>
+
+            <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md">
+              <p class="font-bold text-xl mb-4">🗺️ 3. Activité cartographique</p>
+              <p class="mb-3">Sur une carte du monde :</p>
+              <ol class="list-decimal ml-6 space-y-2">
+                <li>Colorie en bleu les 5 principaux pays d'accueil de la diaspora haïtienne</li>
+                <li>Trace des flèches rouges depuis Haïti vers ces pays</li>
+                <li>Indique le nombre approximatif d'Haïtiens dans chaque pays</li>
+                <li>Ajoute des symboles 💵 pour représenter les flux d'argent retournant vers Haïti</li>
+              </ol>
+            </div>
+
+            <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md">
+              <p class="font-bold text-xl mb-4">📊 4. Mathématiques appliquées : Calcul des transferts</p>
+              <p class="mb-3"><strong>Problème :</strong> Marie vit en France et gagne 2 000 euros par mois. Elle envoie 300 euros à sa famille en Haïti chaque mois via Western Union (frais : 5%).</p>
+              <p class="mb-2">Questions :</p>
+              <ol class="list-decimal ml-6 space-y-2">
+                <li>Quel montant exact sa famille reçoit-elle après les frais ?</li>
+                <li>Combien Marie perd-elle en frais sur une année ?</li>
+                <li>Si Marie utilisait une application avec seulement 2% de frais, combien économiserait-elle par an ?</li>
+                <li>Quel pourcentage de son salaire Marie envoie-t-elle à sa famille ?</li>
+              </ol>
+            </div>
+
+            <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md">
+              <p class="font-bold text-xl mb-4">🎭 5. Jeu de rôle : Débat sur l'émigration</p>
+              <p class="mb-3">Organisez un débat en classe avec 3 positions :</p>
+              <ul class="list-disc ml-6 space-y-2">
+                <li><strong>Groupe A (PRO-émigration) :</strong> "Partir est la meilleure solution pour aider sa famille et avoir un meilleur avenir"</li>
+                <li><strong>Groupe B (CONTRE) :</strong> "Il faut rester en Haïti et se battre pour développer le pays"</li>
+                <li><strong>Groupe C (POSITION NUANCÉE) :</strong> "L'émigration temporaire peut être bénéfique, mais le retour est essentiel"</li>
+              </ul>
+              <p class="mt-3">Chaque groupe prépare 5 arguments solides et les présente. Puis discussion ouverte.</p>
+            </div>
+
+            <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md">
+              <p class="font-bold text-xl mb-4">✍️ 6. Composition : Lettre à un membre de la diaspora</p>
+              <p class="mb-3">Écris une lettre (300 mots) à un oncle/tante/cousin qui vit à l'étranger depuis 10 ans. Dans ta lettre :</p>
+              <ul class="list-disc ml-6 space-y-1">
+                <li>Raconte comment la famille va</li>
+                <li>Décris les changements en Haïti</li>
+                <li>Exprime comment son absence se fait sentir</li>
+                <li>Explique à quoi sert l'argent qu'il envoie</li>
+                <li>Invite-le à revenir visiter</li>
+              </ul>
+            </div>
+
+            <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md">
+              <p class="font-bold text-xl mb-4">🔍 7. Recherche : Interview</p>
+              <p class="mb-3">Interview une personne de ta famille ou de ton quartier qui a vécu à l'étranger ou qui a de la famille dans la diaspora.</p>
+              <p class="font-semibold mb-2">Questions suggérées :</p>
+              <ol class="list-decimal ml-6 space-y-1">
+                <li>Pourquoi cette personne est-elle partie ?</li>
+                <li>Quelle a été la chose la plus difficile là-bas ?</li>
+                <li>Comment reste-t-elle connectée à Haïti ?</li>
+                <li>Envoie-t-elle de l'argent ? À quelle fréquence ?</li>
+                <li>A-t-elle l'intention de revenir un jour vivre en Haïti ?</li>
+              </ol>
+              <p class="mt-3">Présente tes résultats en classe.</p>
+            </div>
+          </div>
+        </section>
+
+        <section class="mt-8">
+          <h3 class="text-xl font-bold mb-4 text-primary">🎥 Suggestions YouTube pour approfondir</h3>
+          <ul class="list-disc ml-6 space-y-2">
+            <li><strong>"La diaspora haïtienne : force et défis"</strong> - Documentaire</li>
+            <li><strong>"Little Haiti Miami : visite du quartier haïtien"</strong> - Reportage</li>
+            <li><strong>"Haïtiens en République Dominicaine : la dure réalité"</strong> - Investigation</li>
+            <li><strong>"Wyclef Jean : l'histoire d'un Haïtien devenu star"</strong> - Biographie</li>
+            <li><strong>"Transferts d'argent en Haïti : impact économique"</strong> - Analyse</li>
+            <li><strong>"Retour au pays : témoignages d'Haïtiens de la diaspora"</strong> - Interviews</li>
+          </ul>
+        </section>
+      </div>
     `
   },
 
