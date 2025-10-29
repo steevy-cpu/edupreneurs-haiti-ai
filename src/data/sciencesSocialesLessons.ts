@@ -11955,73 +11955,401 @@ export const sciencesSocialesLessons7AF: SciencesSocialesLesson[] = [
     id: "hydrosphere",
     title: "L'hydrosphère",
     mois: "Décembre",
-    objectif: "Comprendre l'ensemble des eaux de la planète et leur importance.",
+    objectif: "Comprendre la répartition de l'eau sur Terre, analyser le cycle de l'eau et ses processus, et réaliser l'importance vitale de cette ressource, particulièrement dans le contexte haïtien.",
     introduction: `
+      <p class="text-foreground leading-relaxed mb-4">
+        Bonjour chers élèves ! Savez-vous que notre belle planète Terre devrait s'appeler "Planète Eau" ? En effet, <strong>71% de sa surface</strong> est recouverte d'eau ! Océans, rivières, lacs, glaces, nappes souterraines, nuages... l'eau est partout, sous différentes formes. L'ensemble de toutes ces eaux forme ce qu'on appelle <strong>l'hydrosphère</strong>.
+      </p>
+      <p class="text-foreground leading-relaxed mb-4">
+        L'eau est le miracle de la vie : sans elle, aucun être vivant ne pourrait exister. Elle circule sans cesse entre la terre, l'air et les océans dans un cycle fascinant qui dure depuis des milliards d'années. L'eau que vous buvez aujourd'hui est la même eau que buvaient les Taïnos, les dinosaures, et même les toutes premières créatures vivantes !
+      </p>
       <p class="text-foreground leading-relaxed">
-        L'hydrosphère désigne l'ensemble des eaux présentes sur Terre : océans, mers, lacs, rivières, glaces, nappes souterraines et vapeur d'eau atmosphérique. L'eau couvre 71% de la surface terrestre.
+        Mais en Haïti, l'accès à l'eau potable est un défi majeur. Comprendre l'hydrosphère, c'est comprendre l'importance de protéger et de gérer cette ressource précieuse. Plongeons ensemble dans le monde merveilleux de l'eau ! 💧🌍
       </p>
     `,
     contenu: `
-      <section class="space-y-6">
+      <section class="space-y-8">
+        <div class="bg-gradient-to-r from-blue-50 to-cyan-50 dark:from-blue-950/30 dark:to-cyan-950/30 p-6 rounded-lg">
+          <h3 class="text-2xl font-bold mb-4 text-primary">🌊 Qu'est-ce que l'hydrosphère ?</h3>
+          <p class="text-foreground mb-3">
+            L'<strong>hydrosphère</strong> (du grec <em>hydro</em> = eau et <em>sphère</em> = globe) désigne l'<strong>ensemble de toutes les eaux</strong> présentes sur, sous et au-dessus de la surface de la Terre, sous leurs trois états physiques :
+          </p>
+          <ul class="list-disc ml-6 text-foreground space-y-2">
+            <li><strong>Liquide</strong> : océans, mers, lacs, rivières, nappes souterraines</li>
+            <li><strong>Solide</strong> : glaces des pôles, glaciers, neige, grêle</li>
+            <li><strong>Gazeux</strong> : vapeur d'eau dans l'atmosphère (humidité, nuages)</li>
+          </ul>
+          <div class="bg-white dark:bg-gray-800 p-4 rounded mt-4">
+            <p class="text-foreground font-semibold">📊 Chiffres clés :</p>
+            <ul class="list-disc ml-6 text-sm text-foreground space-y-1 mt-2">
+              <li>Volume total d'eau sur Terre : environ <strong>1,386 milliard de km³</strong></li>
+              <li>Surface terrestre couverte d'eau : <strong>71%</strong></li>
+              <li>Masse de l'hydrosphère : environ <strong>0,023%</strong> de la masse totale de la Terre</li>
+            </ul>
+          </div>
+        </div>
+
         <div>
-          <h3 class="text-xl font-semibold mb-3 text-foreground">1. Répartition de l'eau sur Terre</h3>
-          <ul class="list-disc ml-6 space-y-2 text-foreground">
-            <li><strong>Eau salée (océans et mers) :</strong> 97,5%</li>
-            <li><strong>Eau douce :</strong> 2,5%
-              <ul class="list-disc ml-6 mt-2">
-                <li>Glaces (pôles, glaciers) : 69%</li>
-                <li>Nappes souterraines : 30%</li>
-                <li>Eaux de surface (lacs, rivières) : 1%</li>
+          <h3 class="text-2xl font-bold mb-4 text-primary">I. Répartition de l'eau sur Terre 🌍💧</h3>
+          
+          <div class="bg-blue-50 dark:bg-blue-950/30 p-6 rounded-lg mb-4">
+            <h4 class="text-xl font-semibold mb-3 text-foreground">A. Distribution globale</h4>
+            <p class="text-foreground mb-4">
+              Toute l'eau de la planète n'est pas utilisable de la même manière. Voici comment elle se répartit :
+            </p>
+            
+            <div class="space-y-3">
+              <div class="bg-white dark:bg-gray-800 p-4 rounded">
+                <p class="font-bold text-lg text-foreground">🌊 Eau salée : 97,5%</p>
+                <ul class="list-disc ml-6 text-sm text-foreground space-y-1 mt-2">
+                  <li><strong>Océans</strong> (Pacifique, Atlantique, Indien, Arctique, Austral) : 96,5%</li>
+                  <li><strong>Mers fermées et lacs salés</strong> (Mer Morte, Grand Lac Salé) : 1%</li>
+                </ul>
+                <p class="text-sm text-foreground mt-2 italic">
+                  ⚠️ L'eau salée n'est <strong>pas potable</strong> directement (sauf après dessalement, coûteux). Les océans sont essentiels pour le climat et la biodiversité marine.
+                </p>
+              </div>
+
+              <div class="bg-white dark:bg-gray-800 p-4 rounded">
+                <p class="font-bold text-lg text-foreground">💧 Eau douce : seulement 2,5% !</p>
+                <p class="text-sm text-foreground mb-2">Mais attention, toute l'eau douce n'est pas facilement accessible :</p>
+                <div class="ml-4 space-y-2">
+                  <div class="bg-blue-50 dark:bg-blue-900/30 p-3 rounded">
+                    <p class="font-semibold text-foreground">❄️ Glaces et neiges éternelles : 69% de l'eau douce</p>
+                    <p class="text-xs text-foreground">Calottes polaires (Antarctique, Groenland), glaciers de montagne. Gelées donc difficiles à utiliser directement.</p>
+                  </div>
+                  <div class="bg-blue-50 dark:bg-blue-900/30 p-3 rounded">
+                    <p class="font-semibold text-foreground">💦 Nappes souterraines (aquifères) : 30% de l'eau douce</p>
+                    <p class="text-xs text-foreground">Eau infiltrée dans le sol et le sous-sol. Accessibles par puits et forages. Cruciales en Haïti !</p>
+                  </div>
+                  <div class="bg-blue-50 dark:bg-blue-900/30 p-3 rounded">
+                    <p class="font-semibold text-foreground">🏞️ Eaux de surface : à peine 1% de l'eau douce</p>
+                    <ul class="text-xs text-foreground ml-4 mt-1 space-y-1">
+                      <li>• Lacs d'eau douce : 87%</li>
+                      <li>• Marécages et zones humides : 11%</li>
+                      <li>• Rivières et fleuves : 2%</li>
+                    </ul>
+                    <p class="text-xs text-foreground mt-1 italic">C'est pourtant cette infime fraction que nous utilisons le plus facilement !</p>
+                  </div>
+                  <div class="bg-blue-50 dark:bg-blue-900/30 p-3 rounded">
+                    <p class="font-semibold text-foreground">☁️ Vapeur d'eau atmosphérique : 0,001% de l'eau douce</p>
+                    <p class="text-xs text-foreground">Minuscule quantité, mais essentielle pour le cycle de l'eau et le climat.</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="bg-red-50 dark:bg-red-950/30 border-l-4 border-red-500 p-4 rounded mt-4">
+              <p class="text-foreground font-bold">💡 Conclusion choquante :</p>
+              <p class="text-foreground text-sm">
+                Sur les 100% d'eau sur Terre, <strong>moins de 1%</strong> est de l'eau douce liquide facilement accessible pour l'humanité ! D'où l'urgence absolue de la protéger.
+              </p>
+            </div>
+          </div>
+
+          <div class="bg-cyan-50 dark:bg-cyan-950/30 p-6 rounded-lg">
+            <h4 class="text-xl font-semibold mb-3 text-foreground">B. Les ressources en eau d'Haïti 🇭🇹</h4>
+            <p class="text-foreground mb-3">
+              Haïti possède des ressources en eau diversifiées mais <strong>menacées</strong> et <strong>mal gérées</strong>.
+            </p>
+            <div class="space-y-2">
+              <div class="bg-white dark:bg-gray-800 p-3 rounded">
+                <p class="font-bold text-foreground">🏞️ Fleuves et rivières principaux</p>
+                <p class="text-sm text-foreground">Artibonite (le plus long, 320 km), Trois Rivières, Grande Rivière du Nord, Massacre, Estère. Souvent pollués par déchets et érosion.</p>
+              </div>
+              <div class="bg-white dark:bg-gray-800 p-3 rounded">
+                <p class="font-bold text-foreground">🏔️ Lacs</p>
+                <p class="text-sm text-foreground">Étang Saumâtre (plus grand lac naturel), Lac de Péligre (artificiel, barrage hydroélectrique).</p>
+              </div>
+              <div class="bg-white dark:bg-gray-800 p-3 rounded">
+                <p class="font-bold text-foreground">💧 Sources et nappes souterraines</p>
+                <p class="text-sm text-foreground">Nombreuses sources naturelles en montagne. Nappes souterraines exploitées par puits et forages, mais surexploitées dans certaines zones.</p>
+              </div>
+              <div class="bg-white dark:bg-gray-800 p-3 rounded">
+                <p class="font-bold text-foreground">🌧️ Précipitations</p>
+                <p class="text-sm text-foreground">Variables selon les régions : 400 mm/an (Nord-Ouest aride) à 2000+ mm/an (montagnes humides).</p>
+              </div>
+            </div>
+            <p class="text-foreground text-sm mt-3 italic font-semibold text-red-600 dark:text-red-400">
+              ⚠️ Problème majeur : Déforestation → érosion des sols → ensablement des rivières → réduction de la capacité de stockage d'eau.
+            </p>
+          </div>
+        </div>
+
+        <div>
+          <h3 class="text-2xl font-bold mb-4 text-primary">II. Le cycle de l'eau (cycle hydrologique) 🔄💧</h3>
+          
+          <div class="bg-purple-50 dark:bg-purple-950/30 p-6 rounded-lg mb-4">
+            <h4 class="text-xl font-semibold mb-3 text-foreground">A. Qu'est-ce que le cycle de l'eau ?</h4>
+            <p class="text-foreground mb-3">
+              Le <strong>cycle de l'eau</strong> est le mouvement perpétuel de l'eau entre les différents réservoirs de l'hydrosphère. L'eau change d'état (liquide ↔ vapeur ↔ glace) mais ne se crée ni ne se détruit : elle circule en <strong>circuit fermé</strong> depuis des milliards d'années.
+            </p>
+            <div class="bg-white dark:bg-gray-800 p-4 rounded">
+              <p class="text-foreground font-semibold">💡 Fun Fact :</p>
+              <p class="text-foreground text-sm">
+                L'eau que tu bois aujourd'hui a peut-être été bue par un dinosaure, navigué dans les océans avec les premiers poissons, ou fait partie d'un iceberg en Antarctique. L'eau est éternellement recyclée ! ♻️
+              </p>
+            </div>
+          </div>
+
+          <div class="bg-gradient-to-r from-blue-50 to-green-50 dark:from-blue-950/30 dark:to-green-950/30 p-6 rounded-lg mb-4">
+            <h4 class="text-xl font-semibold mb-3 text-foreground">B. Les étapes du cycle de l'eau</h4>
+            <div class="space-y-3">
+              <div class="bg-white dark:bg-gray-800 p-4 rounded">
+                <p class="font-bold text-lg text-foreground">☀️ 1. Évaporation</p>
+                <p class="text-foreground text-sm mb-2">
+                  <strong>Définition :</strong> Transformation de l'eau liquide en vapeur d'eau (gaz) sous l'effet de la chaleur du soleil.
+                </p>
+                <ul class="list-disc ml-6 text-xs text-foreground space-y-1">
+                  <li><strong>Où ?</strong> Principalement à la surface des océans (86%), mais aussi lacs, rivières, sols humides</li>
+                  <li><strong>Énergie :</strong> Le soleil fournit l'énergie nécessaire</li>
+                  <li><strong>Quantité :</strong> Environ 500 000 km³ d'eau s'évaporent chaque année !</li>
+                </ul>
+              </div>
+
+              <div class="bg-white dark:bg-gray-800 p-4 rounded">
+                <p class="font-bold text-lg text-foreground">🌿 2. Transpiration (ou Évapotranspiration)</p>
+                <p class="text-foreground text-sm mb-2">
+                  <strong>Définition :</strong> Rejet de vapeur d'eau par les plantes à travers leurs feuilles (stomates).
+                </p>
+                <ul class="list-disc ml-6 text-xs text-foreground space-y-1">
+                  <li>Les plantes absorbent l'eau du sol par leurs racines et la libèrent dans l'air</li>
+                  <li>Représente environ <strong>10%</strong> de l'eau retournée dans l'atmosphère</li>
+                  <li>⚠️ La déforestation réduit drastiquement la transpiration, perturbant le cycle local de l'eau</li>
+                </ul>
+              </div>
+
+              <div class="bg-white dark:bg-gray-800 p-4 rounded">
+                <p class="font-bold text-lg text-foreground">☁️ 3. Condensation</p>
+                <p class="text-foreground text-sm mb-2">
+                  <strong>Définition :</strong> Transformation de la vapeur d'eau en minuscules gouttelettes d'eau liquide, formant les nuages et le brouillard.
+                </p>
+                <ul class="list-disc ml-6 text-xs text-foreground space-y-1">
+                  <li>L'air chargé de vapeur monte en altitude, se refroidit</li>
+                  <li>La vapeur se condense autour de particules (poussières, sel marin) formant des gouttelettes</li>
+                  <li>Des milliards de gouttelettes = un nuage !</li>
+                </ul>
+              </div>
+
+              <div class="bg-white dark:bg-gray-800 p-4 rounded">
+                <p class="font-bold text-lg text-foreground">🌧️ 4. Précipitations</p>
+                <p class="text-foreground text-sm mb-2">
+                  <strong>Définition :</strong> Retour de l'eau vers la surface terrestre sous forme de pluie, neige, grêle, bruine.
+                </p>
+                <ul class="list-disc ml-6 text-xs text-foreground space-y-1">
+                  <li>Les gouttelettes dans les nuages se regroupent et deviennent lourdes</li>
+                  <li>Elles tombent sous l'effet de la gravité</li>
+                  <li>Forme : pluie (température > 0°C), neige ou grêle (température < 0°C)</li>
+                </ul>
+              </div>
+
+              <div class="bg-white dark:bg-gray-800 p-4 rounded">
+                <p class="font-bold text-lg text-foreground">🏞️ 5. Ruissellement</p>
+                <p class="text-foreground text-sm mb-2">
+                  <strong>Définition :</strong> Écoulement de l'eau à la surface du sol vers les rivières, puis vers la mer.
+                </p>
+                <ul class="list-disc ml-6 text-xs text-foreground space-y-1">
+                  <li>L'eau de pluie qui ne s'infiltre pas dans le sol s'écoule en suivant la pente</li>
+                  <li>Forme des ruisseaux → rivières → fleuves → océans</li>
+                  <li>⚠️ Déforestation et imperméabilisation (béton, routes) augmentent le ruissellement → inondations + érosion</li>
+                </ul>
+              </div>
+
+              <div class="bg-white dark:bg-gray-800 p-4 rounded">
+                <p class="font-bold text-lg text-foreground">💧 6. Infiltration et percolation</p>
+                <p class="text-foreground text-sm mb-2">
+                  <strong>Définition :</strong> Pénétration de l'eau dans le sol et le sous-sol pour alimenter les nappes souterraines.
+                </p>
+                <ul class="list-disc ml-6 text-xs text-foreground space-y-1">
+                  <li>L'eau s'infiltre à travers les pores du sol (sable, roche poreuse)</li>
+                  <li>S'accumule dans les nappes phréatiques (aquifères)</li>
+                  <li>Ces nappes sont essentielles : elles fournissent l'eau des puits et sources</li>
+                  <li>⚠️ Un sol dégradé (érosion, compactage) perd sa capacité d'infiltration</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+
+          <div class="bg-teal-50 dark:bg-teal-950/30 p-6 rounded-lg">
+            <h4 class="text-xl font-semibold mb-3 text-foreground">C. Importance du cycle de l'eau</h4>
+            <ul class="list-disc ml-6 text-foreground space-y-2">
+              <li><strong>Régulation climatique :</strong> Redistribution de la chaleur, formation de nuages qui réfléchissent les rayons solaires</li>
+              <li><strong>Vie :</strong> Toutes les formes de vie dépendent de l'eau douce apportée par les précipitations</li>
+              <li><strong>Érosion et formation des paysages :</strong> L'eau sculpte les montagnes, creuse les vallées</li>
+              <li><strong>Purification naturelle :</strong> Le cycle filtre et purifie l'eau (évaporation laisse impuretés derrière)</li>
+            </ul>
+          </div>
+        </div>
+
+        <div>
+          <h3 class="text-2xl font-bold mb-4 text-primary">III. Importance de l'eau pour l'humanité 🚰</h3>
+          
+          <div class="bg-yellow-50 dark:bg-yellow-950/30 p-6 rounded-lg mb-4">
+            <h4 class="text-xl font-semibold mb-3 text-foreground">Les usages multiples de l'eau</h4>
+            <div class="grid md:grid-cols-2 gap-3">
+              <div class="bg-white dark:bg-gray-800 p-3 rounded">
+                <p class="font-bold text-foreground">💧 Vie et santé</p>
+                <p class="text-xs text-foreground">Corps humain = 60% d'eau. Besoin de 2-3L/jour pour survivre. Hygiène, prévention des maladies.</p>
+              </div>
+              <div class="bg-white dark:bg-gray-800 p-3 rounded">
+                <p class="font-bold text-foreground">🌾 Agriculture</p>
+                <p class="text-xs text-foreground">70% de l'eau douce mondiale utilisée pour irrigation. Cruciale pour la sécurité alimentaire.</p>
+              </div>
+              <div class="bg-white dark:bg-gray-800 p-3 rounded">
+                <p class="font-bold text-foreground">🏭 Industrie</p>
+                <p class="text-xs text-foreground">Production d'électricité, fabrication (textile, papier, chimie), refroidissement.</p>
+              </div>
+              <div class="bg-white dark:bg-gray-800 p-3 rounded">
+                <p class="font-bold text-foreground">⚡ Énergie</p>
+                <p class="text-xs text-foreground">Hydroélectricité (barrage de Péligre en Haïti). Énergie propre et renouvelable.</p>
+              </div>
+              <div class="bg-white dark:bg-gray-800 p-3 rounded">
+                <p class="font-bold text-foreground">🚢 Transport</p>
+                <p class="text-xs text-foreground">Navigation maritime et fluviale. Commerce international.</p>
+              </div>
+              <div class="bg-white dark:bg-gray-800 p-3 rounded">
+                <p class="font-bold text-foreground">🌡️ Climat</p>
+                <p class="text-xs text-foreground">Océans régulent températures, absorbent CO₂. Essentiel pour stabilité climatique.</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="bg-red-50 dark:bg-red-950/30 p-6 rounded-lg border-l-4 border-red-500">
+            <h4 class="text-xl font-semibold mb-3 text-foreground">La crise de l'eau en Haïti 🇭🇹💔</h4>
+            <p class="text-foreground mb-3">
+              Haïti fait face à une <strong>crise hydrique sévère</strong>. Seulement <strong>64%</strong> de la population a accès à l'eau potable (et bien moins en milieu rural).
+            </p>
+            <div class="space-y-2">
+              <div class="bg-white dark:bg-gray-800 p-3 rounded">
+                <p class="font-bold text-foreground">🌳 Déforestation catastrophique</p>
+                <p class="text-sm text-foreground">Moins de 2% de couverture forestière → érosion massive → ensablement des rivières et sources → réduction des réserves d'eau.</p>
+              </div>
+              <div class="bg-white dark:bg-gray-800 p-3 rounded">
+                <p class="font-bold text-foreground">🏭 Pollution</p>
+                <p class="text-sm text-foreground">Déchets plastiques, eaux usées non traitées, produits chimiques. Rivières et sources contaminées.</p>
+              </div>
+              <div class="bg-white dark:bg-gray-800 p-3 rounded">
+                <p class="font-bold text-foreground">💰 Infrastructures défaillantes</p>
+                <p class="text-sm text-foreground">Réseaux de distribution vétustes et limités. Gaspillage par fuites. Absence de traitement.</p>
+              </div>
+              <div class="bg-white dark:bg-gray-800 p-3 rounded">
+                <p class="font-bold text-foreground">🌡️ Changement climatique</p>
+                <p class="text-sm text-foreground">Sécheresses plus longues, pluies irrégulières. Vulnérabilité accrue.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="bg-primary/5 border-l-4 border-primary p-6 rounded-lg">
+          <h3 class="text-xl font-bold mb-3 text-primary">🌟 Solutions et actions : Ce que TU peux faire !</h3>
+          <div class="grid md:grid-cols-2 gap-3">
+            <div>
+              <p class="font-bold text-foreground mb-2">💧 Économiser l'eau :</p>
+              <ul class="list-disc ml-6 text-sm text-foreground space-y-1">
+                <li>Fermer le robinet en te brossant les dents</li>
+                <li>Réutiliser l'eau de rinçage (arroser plantes)</li>
+                <li>Réparer les fuites</li>
               </ul>
-            </li>
-          </ul>
-        </div>
-
-        <div>
-          <h3 class="text-xl font-semibold mb-3 text-foreground">2. Le cycle de l'eau</h3>
-          <p class="text-foreground mb-3">L'eau circule continuellement entre les différents réservoirs :</p>
-          <ul class="list-disc ml-6 space-y-2 text-foreground">
-            <li><strong>Évaporation :</strong> Eau liquide → vapeur</li>
-            <li><strong>Transpiration :</strong> Plantes libèrent de la vapeur</li>
-            <li><strong>Condensation :</strong> Vapeur → nuages</li>
-            <li><strong>Précipitations :</strong> Pluie, neige</li>
-            <li><strong>Ruissellement :</strong> Retour vers les océans</li>
-            <li><strong>Infiltration :</strong> Vers les nappes souterraines</li>
-          </ul>
-        </div>
-
-        <div>
-          <h3 class="text-xl font-semibold mb-3 text-foreground">3. Importance de l'eau</h3>
-          <ul class="list-disc ml-6 space-y-2 text-foreground">
-            <li>Essentielle à la vie</li>
-            <li>Régulation du climat</li>
-            <li>Transport (navigation)</li>
-            <li>Agriculture (irrigation)</li>
-            <li>Énergie (hydroélectricité)</li>
-            <li>Industrie</li>
-          </ul>
-        </div>
-
-        <div>
-          <h3 class="text-xl font-semibold mb-3 text-foreground">4. Gestion de l'eau en Haïti</h3>
-          <ul class="list-disc ml-6 space-y-2 text-foreground">
-            <li>Accès limité à l'eau potable</li>
-            <li>Nécessité de protéger les sources</li>
-            <li>Économiser l'eau</li>
-            <li>Ne pas polluer rivières et sources</li>
-          </ul>
+            </div>
+            <div>
+              <p class="font-bold text-foreground mb-2">🚯 Ne pas polluer :</p>
+              <ul class="list-disc ml-6 text-sm text-foreground space-y-1">
+                <li>Ne jamais jeter de déchets dans rivières ou sources</li>
+                <li>Utiliser poubelles</li>
+                <li>Éviter produits chimiques dangereux</li>
+              </ul>
+            </div>
+            <div>
+              <p class="font-bold text-foreground mb-2">🌳 Planter des arbres :</p>
+              <ul class="list-disc ml-6 text-sm text-foreground space-y-1">
+                <li>Les arbres retiennent l'eau dans le sol</li>
+                <li>Participent au cycle par transpiration</li>
+                <li>Protègent contre l'érosion</li>
+              </ul>
+            </div>
+            <div>
+              <p class="font-bold text-foreground mb-2">📚 Sensibiliser :</p>
+              <ul class="list-disc ml-6 text-sm text-foreground space-y-1">
+                <li>Parler de l'importance de l'eau à ta famille</li>
+                <li>Organiser des campagnes de nettoyage</li>
+                <li>Promouvoir la protection des sources</li>
+              </ul>
+            </div>
+          </div>
+          <p class="text-foreground mt-4 font-semibold italic text-center">
+            "Dlo se lavi, pwoteje dlo se pwoteje lavi" (L'eau c'est la vie, protéger l'eau c'est protéger la vie). 💙
+          </p>
         </div>
       </section>
     `,
     exemplesExercices: `
-      <section class="space-y-4">
+      <div class="space-y-6">
+        <h3 class="text-2xl font-bold mb-4 text-primary">📝 Exercices pratiques</h3>
+
+        <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md">
+          <p class="font-bold text-xl mb-4">1. Diagramme du cycle de l'eau</p>
+          <p class="mb-3">Dessine le cycle de l'eau en incluant :</p>
+          <ul class="list-disc ml-6 space-y-1">
+            <li>Océan, montagne, rivière, nuages, soleil</li>
+            <li>Les 6 processus avec des flèches : évaporation, transpiration, condensation, précipitations, ruissellement, infiltration</li>
+            <li>Légende avec définition courte de chaque processus</li>
+          </ul>
+        </div>
+
+        <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md">
+          <p class="font-bold text-xl mb-4">2. Calcul de répartition de l'eau</p>
+          <p class="mb-3">Si la Terre contient 1000 litres d'eau, calcule :</p>
+          <ul class="list-disc ml-6 space-y-1">
+            <li>Combien de litres sont de l'eau salée ?</li>
+            <li>Combien de litres sont de l'eau douce ?</li>
+            <li>Combien de litres d'eau douce sont sous forme de glace ?</li>
+            <li>Combien de litres d'eau douce liquide sont facilement accessibles ?</li>
+          </ul>
+        </div>
+
+        <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md">
+          <p class="font-bold text-xl mb-4">3. Enquête sur l'eau dans ta communauté</p>
+          <p class="mb-3">Interroge 5 familles de ton quartier et rédige un rapport :</p>
+          <ul class="list-disc ml-6 space-y-1">
+            <li>D'où vient leur eau ? (robinet, puits, source, camion-citerne...)</li>
+            <li>Est-elle potable directement ou doit-elle être traitée ?</li>
+            <li>Quels problèmes rencontrent-ils ? (coupures, pollution, coût...)</li>
+            <li>Quelles solutions proposent-ils ?</li>
+          </ul>
+        </div>
+
+        <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md">
+          <p class="font-bold text-xl mb-4">4. Carte des ressources hydriques d'Haïti</p>
+          <p class="mb-3">Sur une carte muette d'Haïti, localise et colorie :</p>
+          <ul class="list-disc ml-6 space-y-1">
+            <li>Les principaux fleuves (Artibonite, Grande Rivière du Nord, Trois Rivières...)</li>
+            <li>Les lacs (Étang Saumâtre, Lac de Péligre)</li>
+            <li>Les zones à fortes précipitations (en vert) et zones arides (en jaune/orange)</li>
+          </ul>
+        </div>
+
+        <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md">
+          <p class="font-bold text-xl mb-4">5. Questions de réflexion</p>
+          <ol class="list-decimal ml-6 space-y-3">
+            <li>Explique pourquoi la déforestation en Haïti aggrave la crise de l'eau.</li>
+            <li>Si les glaciers fondent à cause du réchauffement climatique, pourquoi cela pose-t-il un problème alors que c'est de l'eau douce ?</li>
+            <li>Propose 3 solutions concrètes pour améliorer l'accès à l'eau potable dans les zones rurales haïtiennes.</li>
+            <li>Pourquoi dit-on que "l'eau que tu bois aujourd'hui a déjà été bue par un dinosaure" ?</li>
+          </ol>
+        </div>
+
         <div class="bg-primary/5 border-l-4 border-primary p-4 rounded">
-          <h4 class="font-semibold mb-2 text-foreground">💡 Le savais-tu ?</h4>
-          <p class="text-foreground">
-            L'eau que tu bois aujourd'hui est la même eau que buvaient les dinosaures il y a des millions d'années ! L'eau circule en cycle fermé depuis toujours.
+          <p class="font-bold mb-2">💧 Projet pratique : Campagne de sensibilisation</p>
+          <p class="text-sm">En groupe, créez une affiche ou une petite pièce de théâtre pour sensibiliser votre école à l'économie d'eau et à la protection des sources. Incluez des slogans accrocheurs en créole !</p>
+        </div>
+
+        <div class="bg-blue-50 dark:bg-blue-950/30 p-4 rounded">
+          <p class="font-bold mb-2 text-foreground">💡 Le savais-tu ?</p>
+          <p class="text-foreground text-sm">
+            L'eau que tu bois aujourd'hui est la <strong>même eau</strong> que buvaient les dinosaures il y a 65 millions d'années ! L'eau circule en cycle fermé depuis la formation de la Terre. Aucune goutte ne se perd, aucune ne se crée : elle se transforme et voyage éternellement. 🦕💧
           </p>
         </div>
-      </section>
+      </div>
     `
   },
 
