@@ -393,6 +393,7 @@ export default function SciencesSocialesLesson() {
                   objectives={lesson.objectif || ""}
                   gradeLevel="AF7"
                   customYoutubeUrl={youtubeUrl || undefined}
+                  subject="Sciences Sociales"
                 />
               </div>
 
