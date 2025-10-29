@@ -10,6 +10,7 @@ export interface CreoleLesson {
   duration: string;
   difficulty: string;
   category: string;
+  youtube_url?: string;
 }
 
 export const creoleLessons7AF: CreoleLesson[] = [
@@ -213,6 +214,7 @@ Pratik kouté epi rezime mesaj oral.`,
     title: "Fraz la (rapèl)",
     description: "Idantifye fraz yo nan yon tèks",
     objectif: "Rekonèt epi konprann estrikti fraz yo nan kreyòl",
+    youtube_url: "https://www.youtube.com/watch?v=0bQ7m3ZyHyc",
     introduction: `
       <div class="bg-gradient-to-r from-indigo-50 to-blue-50 dark:from-indigo-950 dark:to-blue-950 p-6 rounded-lg border-l-4 border-indigo-500">
         <h3 class="text-xl font-bold text-indigo-700 dark:text-indigo-300 mb-3">🎯 Objektif Leson an</h3>
