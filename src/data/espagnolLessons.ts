@@ -3124,42 +3124,186 @@ Crea frases lógicas usando las palabras dadas:
     title: "Clasificar Palabras (classer les mots)",
     mois: "Mars",
     objectif: "Clasificar palabras según el orden alfabético y separar sílabas",
-    introduction: "Aprenderás a organizar palabras alfabéticamente y a dividirlas en sílabas.",
-    contenu: `## Clasificación de palabras
+    introduction: "Dans cette leçon, tu vas apprendre à classer les mots par ordre alphabétique et à les diviser en syllabes, deux compétences essentielles pour améliorer ton espagnol écrit et oral.",
+    contenu: `
+      <div class="lesson-content space-y-6">
+        <section class="mb-6">
+          <h3 class="text-xl font-semibold mb-4">L'alphabet espagnol (El alfabeto español)</h3>
+          <p class="mb-4">L'alphabet espagnol contient 27 lettres, incluant la lettre <strong>Ñ</strong> qui est unique à l'espagnol et qui se prononce comme "gn" en français (comme dans "montagne").</p>
+          
+          <div class="bg-purple-50 dark:bg-purple-900/20 p-4 rounded-lg mb-4">
+            <h4 class="font-semibold mb-3">L'alphabet complet :</h4>
+            <div class="text-center text-lg font-mono tracking-wider mb-3">
+              A B C D E F G H I J K L M N <span class="text-purple-600 dark:text-purple-400 font-bold">Ñ</span> O P Q R S T U V W X Y Z
+            </div>
+            <p class="text-sm italic">Note : La lettre <strong>Ñ</strong> se situe entre N et O dans l'ordre alphabétique.</p>
+          </div>
 
-### Orden alfabético
-El alfabeto español:
-A B C D E F G H I J K L M N Ñ O P Q R S T U V W X Y Z
+          <div class="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg mb-4">
+            <h4 class="font-semibold mb-3">Particularités de l'alphabet espagnol :</h4>
+            <ul class="space-y-2">
+              <li>• <strong>CH</strong> et <strong>LL</strong> ne sont plus considérées comme des lettres séparées (depuis 1994)</li>
+              <li>• <strong>Ñ</strong> (eñe) est une lettre à part entière</li>
+              <li>• <strong>W</strong> (uve doble) est principalement utilisée pour les mots étrangers</li>
+              <li>• <strong>K</strong> est rare et se trouve surtout dans les mots empruntés</li>
+            </ul>
+          </div>
+        </section>
 
-### Palabras para clasificar
-- Palacio
-- María
-- Hacia
-- Luisa
-- Canción
-- Simpatía
-- Árbol
-- Viudo
-- Maravilla
-- Salud
-- Bolígrafo
-- Camiseta
-- Hola
-- Banquito
-- Capacidad
-- Fácil
-- Luces
-- Dádiva
-- Salón
-- Guitarra
-- Peluquería
+        <section class="mb-6">
+          <h3 class="text-xl font-semibold mb-4">Classer par ordre alphabétique (Orden alfabético)</h3>
+          <p class="mb-4">Pour organiser les mots alphabétiquement, on suit l'ordre des lettres. Si la première lettre est identique, on regarde la deuxième, puis la troisième, et ainsi de suite.</p>
+          
+          <div class="bg-green-50 dark:bg-green-900/20 p-4 rounded-lg mb-4">
+            <h4 class="font-semibold mb-3">Méthode étape par étape :</h4>
+            <ol class="space-y-2 list-decimal list-inside">
+              <li>Compare la <strong>première lettre</strong> de chaque mot</li>
+              <li>Si elles sont identiques, compare la <strong>deuxième lettre</strong></li>
+              <li>Continue jusqu'à trouver une différence</li>
+              <li>Le mot avec la lettre qui vient avant dans l'alphabet se place en premier</li>
+            </ol>
+          </div>
 
-### Separación de sílabas
-Reglas básicas:
-- Una consonante entre vocales: ca-sa
-- Dos consonantes: par-te, lá-piz
-- Tres consonantes: ins-pi-rar
-- ch, ll, rr son inseparables: mu-cha-cho, ca-lle, pe-rro`,
+          <div class="bg-amber-50 dark:bg-amber-900/20 p-4 rounded-lg mb-4">
+            <h4 class="font-semibold mb-3">Exemple pratique :</h4>
+            <div class="space-y-3">
+              <div>
+                <p class="font-semibold mb-1">Mots à classer :</p>
+                <p class="text-sm">Palacio - María - Hacia - Luisa - Canción</p>
+              </div>
+              <div>
+                <p class="font-semibold mb-1">Ordre alphabétique :</p>
+                <ol class="text-sm list-decimal list-inside">
+                  <li><strong>Canción</strong> (commence par C)</li>
+                  <li><strong>Hacia</strong> (commence par H)</li>
+                  <li><strong>Luisa</strong> (commence par L)</li>
+                  <li><strong>María</strong> (commence par M)</li>
+                  <li><strong>Palacio</strong> (commence par P)</li>
+                </ol>
+              </div>
+            </div>
+          </div>
+
+          <div class="bg-blue-50 dark:bg-blue-900/20 border-l-4 border-blue-500 p-4 rounded-r-lg">
+            <h4 class="text-blue-700 dark:text-blue-400 font-semibold mb-2">💡 Astuce importante</h4>
+            <p class="text-blue-600 dark:text-blue-300 text-sm">
+              Les accents (á, é, í, ó, ú) ne changent pas l'ordre alphabétique ! "Árbol" et "Arbol" se classent au même endroit, à la lettre A.
+            </p>
+          </div>
+        </section>
+
+        <section class="mb-6">
+          <h3 class="text-xl font-semibold mb-4">La séparation en syllabes (Separación de sílabas)</h3>
+          <p class="mb-4">Une syllabe est un groupe de sons prononcés ensemble. Savoir diviser les mots en syllabes t'aidera à mieux prononcer l'espagnol et à comprendre où placer l'accent tonique.</p>
+          
+          <div class="bg-purple-50 dark:bg-purple-900/20 p-4 rounded-lg mb-4">
+            <h4 class="font-semibold mb-3">Règle 1 : Une consonne entre deux voyelles</h4>
+            <p class="mb-2">La consonne se joint à la voyelle qui suit.</p>
+            <ul class="space-y-1 text-sm">
+              <li>• <strong>ca-sa</strong> (maison)</li>
+              <li>• <strong>pe-ro</strong> (mais)</li>
+              <li>• <strong>bo-ni-to</strong> (joli)</li>
+              <li>• <strong>a-mi-go</strong> (ami)</li>
+            </ul>
+          </div>
+
+          <div class="bg-green-50 dark:bg-green-900/20 p-4 rounded-lg mb-4">
+            <h4 class="font-semibold mb-3">Règle 2 : Deux consonnes entre voyelles</h4>
+            <p class="mb-2">On sépare les consonnes (une de chaque côté).</p>
+            <ul class="space-y-1 text-sm">
+              <li>• <strong>par-te</strong> (partie)</li>
+              <li>• <strong>lá-piz</strong> (crayon)</li>
+              <li>• <strong>car-ta</strong> (lettre)</li>
+              <li>• <strong>ven-ta-na</strong> (fenêtre)</li>
+            </ul>
+          </div>
+
+          <div class="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg mb-4">
+            <h4 class="font-semibold mb-3">Règle 3 : Trois consonnes entre voyelles</h4>
+            <p class="mb-2">Les deux premières consonnes restent avec la première voyelle.</p>
+            <ul class="space-y-1 text-sm">
+              <li>• <strong>ins-pi-rar</strong> (inspirer)</li>
+              <li>• <strong>cons-truir</strong> (construire)</li>
+              <li>• <strong>trans-por-te</strong> (transport)</li>
+            </ul>
+          </div>
+
+          <div class="bg-amber-50 dark:bg-amber-900/20 p-4 rounded-lg mb-4">
+            <h4 class="font-semibold mb-3">Règle 4 : Les groupes inséparables</h4>
+            <p class="mb-2">Certains groupes de lettres ne se séparent JAMAIS :</p>
+            <div class="grid md:grid-cols-2 gap-3 mt-3">
+              <div>
+                <p class="font-semibold text-sm mb-1">CH (comme "tch") :</p>
+                <ul class="text-sm">
+                  <li>• <strong>mu-cha-cho</strong> (garçon)</li>
+                  <li>• <strong>le-che</strong> (lait)</li>
+                  <li>• <strong>no-che</strong> (nuit)</li>
+                </ul>
+              </div>
+              <div>
+                <p class="font-semibold text-sm mb-1">LL (comme "y") :</p>
+                <ul class="text-sm">
+                  <li>• <strong>ca-lle</strong> (rue)</li>
+                  <li>• <strong>lla-ve</strong> (clé)</li>
+                  <li>• <strong>po-llo</strong> (poulet)</li>
+                </ul>
+              </div>
+              <div>
+                <p class="font-semibold text-sm mb-1">RR (r roulé fort) :</p>
+                <ul class="text-sm">
+                  <li>• <strong>pe-rro</strong> (chien)</li>
+                  <li>• <strong>ca-rro</strong> (voiture)</li>
+                  <li>• <strong>tie-rra</strong> (terre)</li>
+                </ul>
+              </div>
+              <div>
+                <p class="font-semibold text-sm mb-1">Consonnes + L ou R :</p>
+                <ul class="text-sm">
+                  <li>• <strong>li-bro</strong> (livre)</li>
+                  <li>• <strong>pla-to</strong> (assiette)</li>
+                  <li>• <strong>gru-po</strong> (groupe)</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="mb-6">
+          <h3 class="text-xl font-semibold mb-4">Vocabulaire à pratiquer</h3>
+          
+          <div class="grid md:grid-cols-2 gap-4 mb-4">
+            <div class="bg-purple-50 dark:bg-purple-900/20 p-4 rounded-lg">
+              <h4 class="font-semibold mb-3">Mots de la vie quotidienne :</h4>
+              <ul class="space-y-1 text-sm">
+                <li>• <strong>Á-rbol</strong> (ar-bre) - arbre</li>
+                <li>• <strong>Bo-lí-gra-fo</strong> (sty-lo) - stylo</li>
+                <li>• <strong>Ca-mi-se-ta</strong> (t-shirt) - t-shirt</li>
+                <li>• <strong>Gui-ta-rra</strong> (gui-tare) - guitare</li>
+                <li>• <strong>Ban-qui-to</strong> (ta-bou-ret) - tabouret</li>
+              </ul>
+            </div>
+
+            <div class="bg-green-50 dark:bg-green-900/20 p-4 rounded-lg">
+              <h4 class="font-semibold mb-3">Mots avec des accents :</h4>
+              <ul class="space-y-1 text-sm">
+                <li>• <strong>Má-ri-a</strong> - Maria</li>
+                <li>• <strong>Can-ción</strong> - chanson</li>
+                <li>• <strong>Sim-pa-tí-a</strong> - sympathie</li>
+                <li>• <strong>Dá-di-va</strong> - cadeau</li>
+                <li>• <strong>Sa-lón</strong> - salon</li>
+              </ul>
+            </div>
+          </div>
+        </section>
+
+        <div class="bg-blue-50 dark:bg-blue-900/20 border-l-4 border-blue-500 p-4 rounded-r-lg">
+          <h4 class="text-blue-700 dark:text-blue-400 font-semibold mb-2">💡 Suggestions de vidéos YouTube</h4>
+          <p class="text-blue-600 dark:text-blue-300">
+            Recherchez "separación de sílabas en español" ou "orden alfabético español" pour des exercices interactifs et des explications vidéo.
+          </p>
+        </div>
+      </div>
+    `,
     exemplesExercices: `## Ejercicios
 
 ### Ejercicio 1: Orden alfabético
@@ -3185,40 +3329,239 @@ Justifica el número de sílabas que tiene cada palabra.`,
     title: "Artículos y Género (articles et genre)",
     mois: "Mars",
     objectif: "Saber precisar el género de sustantivos",
-    introduction: "Aprenderás a usar correctamente los artículos definidos e indefinidos en español.",
-    contenu: `## Los artículos - Género
+    introduction: "Les articles en espagnol s'accordent en genre et en nombre avec le nom qu'ils accompagnent. Tu vas apprendre à reconnaître le genre des noms et à utiliser les bons articles.",
+    contenu: `
+      <div class="lesson-content space-y-6">
+        <section class="mb-6">
+          <h3 class="text-xl font-semibold mb-4">Les articles définis (Artículos definidos)</h3>
+          <p class="mb-4">Les articles définis désignent quelque chose de précis, de connu. Comme "le", "la", "les" en français.</p>
+          
+          <div class="bg-purple-50 dark:bg-purple-900/20 p-4 rounded-lg mb-4">
+            <h4 class="font-semibold mb-3">Les quatre formes :</h4>
+            <div class="grid md:grid-cols-2 gap-4">
+              <div class="bg-white dark:bg-gray-800 p-3 rounded">
+                <p class="font-semibold text-purple-600 dark:text-purple-400 mb-2">Singulier :</p>
+                <ul class="space-y-1">
+                  <li>• <strong>El</strong> (masculin) - Le<br/>
+                    <span class="text-sm italic">Exemple : <strong>El</strong> libro (le livre)</span>
+                  </li>
+                  <li>• <strong>La</strong> (féminin) - La<br/>
+                    <span class="text-sm italic">Exemple : <strong>La</strong> casa (la maison)</span>
+                  </li>
+                </ul>
+              </div>
+              <div class="bg-white dark:bg-gray-800 p-3 rounded">
+                <p class="font-semibold text-purple-600 dark:text-purple-400 mb-2">Pluriel :</p>
+                <ul class="space-y-1">
+                  <li>• <strong>Los</strong> (masculin) - Les<br/>
+                    <span class="text-sm italic">Exemple : <strong>Los</strong> libros (les livres)</span>
+                  </li>
+                  <li>• <strong>Las</strong> (féminin) - Les<br/>
+                    <span class="text-sm italic">Exemple : <strong>Las</strong> casas (les maisons)</span>
+                  </li>
+                </ul>
+              </div>
+            </div>
+          </div>
 
-### Artículos definidos
-- **El** (masculino singular) - Le
-- **La** (femenino singular) - La
-- **Los** (masculino plural) - Les
-- **Las** (femenino plural) - Les
+          <div class="bg-blue-50 dark:bg-blue-900/20 border-l-4 border-blue-500 p-4 rounded-r-lg mb-4">
+            <h4 class="text-blue-700 dark:text-blue-400 font-semibold mb-2">💬 Exemples dans des phrases</h4>
+            <ul class="text-blue-600 dark:text-blue-300 space-y-1 text-sm">
+              <li>• <strong>El</strong> profesor enseña español - Le professeur enseigne l'espagnol</li>
+              <li>• <strong>La</strong> alumna estudia mucho - L'élève (fille) étudie beaucoup</li>
+              <li>• <strong>Los</strong> niños juegan en el patio - Les enfants jouent dans la cour</li>
+              <li>• <strong>Las</strong> flores son bonitas - Les fleurs sont belles</li>
+            </ul>
+          </div>
+        </section>
 
-### Artículos indefinidos
-- **Un** (masculino singular) - Un
-- **Una** (femenino singular) - Une
-- **Unos** (masculino plural) - Des
-- **Unas** (femenino plural) - Des
+        <section class="mb-6">
+          <h3 class="text-xl font-semibold mb-4">Les articles indéfinis (Artículos indefinidos)</h3>
+          <p class="mb-4">Les articles indéfinis désignent quelque chose de non spécifique. Comme "un", "une", "des" en français.</p>
+          
+          <div class="bg-green-50 dark:bg-green-900/20 p-4 rounded-lg mb-4">
+            <h4 class="font-semibold mb-3">Les quatre formes :</h4>
+            <div class="grid md:grid-cols-2 gap-4">
+              <div class="bg-white dark:bg-gray-800 p-3 rounded">
+                <p class="font-semibold text-green-600 dark:text-green-400 mb-2">Singulier :</p>
+                <ul class="space-y-1">
+                  <li>• <strong>Un</strong> (masculin) - Un<br/>
+                    <span class="text-sm italic">Exemple : <strong>Un</strong> libro (un livre)</span>
+                  </li>
+                  <li>• <strong>Una</strong> (féminin) - Une<br/>
+                    <span class="text-sm italic">Exemple : <strong>Una</strong> casa (une maison)</span>
+                  </li>
+                </ul>
+              </div>
+              <div class="bg-white dark:bg-gray-800 p-3 rounded">
+                <p class="font-semibold text-green-600 dark:text-green-400 mb-2">Pluriel :</p>
+                <ul class="space-y-1">
+                  <li>• <strong>Unos</strong> (masculin) - Des<br/>
+                    <span class="text-sm italic">Exemple : <strong>Unos</strong> libros (des livres)</span>
+                  </li>
+                  <li>• <strong>Unas</strong> (féminin) - Des<br/>
+                    <span class="text-sm italic">Exemple : <strong>Unas</strong> casas (des maisons)</span>
+                  </li>
+                </ul>
+              </div>
+            </div>
+          </div>
 
-### Género de sustantivos
+          <div class="bg-amber-50 dark:bg-amber-900/20 border-l-4 border-amber-500 p-4 rounded-r-lg">
+            <h4 class="text-amber-700 dark:text-amber-400 font-semibold mb-2">💬 Exemples dans des phrases</h4>
+            <ul class="text-amber-600 dark:text-amber-300 space-y-1 text-sm">
+              <li>• Tengo <strong>un</strong> amigo haitiano - J'ai un ami haïtien</li>
+              <li>• Vi <strong>una</strong> película interesante - J'ai vu un film intéressant</li>
+              <li>• Hay <strong>unos</strong> libros en la mesa - Il y a des livres sur la table</li>
+              <li>• Compré <strong>unas</strong> manzanas - J'ai acheté des pommes</li>
+            </ul>
+          </div>
+        </section>
 
-**Común a dos (misma forma):**
-- El artista / La artista
-- El estudiante / La estudiante
+        <section class="mb-6">
+          <h3 class="text-xl font-semibold mb-4">Le genre des noms (Género de sustantivos)</h3>
+          <p class="mb-4">En espagnol, tous les noms ont un genre : masculin ou féminin. Voici comment les reconnaître !</p>
+          
+          <div class="grid md:grid-cols-2 gap-4 mb-4">
+            <div class="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg">
+              <h4 class="font-semibold mb-3">Généralement MASCULINS :</h4>
+              <ul class="space-y-2 text-sm">
+                <li>• Noms terminés en <strong>-o</strong><br/>
+                  <span class="text-xs italic">Exemple : el libro, el perro, el niño</span>
+                </li>
+                <li>• Noms terminés en <strong>-or</strong><br/>
+                  <span class="text-xs italic">Exemple : el profesor, el amor, el dolor</span>
+                </li>
+                <li>• Jours, mois, nombres<br/>
+                  <span class="text-xs italic">Exemple : el lunes, el marzo, el tres</span>
+                </li>
+                <li>• Couleurs, langues<br/>
+                  <span class="text-xs italic">Exemple : el azul, el español, el francés</span>
+                </li>
+              </ul>
+            </div>
 
-**Formas diferentes:**
-- El hombre / La mujer
-- El buey / La vaca
-- El rey / La reina
-- El profesor / La profesora
-- El alumno / La alumna
+            <div class="bg-pink-50 dark:bg-pink-900/20 p-4 rounded-lg">
+              <h4 class="font-semibold mb-3">Généralement FÉMININS :</h4>
+              <ul class="space-y-2 text-sm">
+                <li>• Noms terminés en <strong>-a</strong><br/>
+                  <span class="text-xs italic">Exemple : la casa, la mesa, la niña</span>
+                </li>
+                <li>• Noms terminés en <strong>-ión</strong><br/>
+                  <span class="text-xs italic">Exemple : la canción, la nación, la lección</span>
+                </li>
+                <li>• Noms terminés en <strong>-dad/-tad</strong><br/>
+                  <span class="text-xs italic">Exemple : la ciudad, la libertad, la verdad</span>
+                </li>
+                <li>• Lettres de l'alphabet<br/>
+                  <span class="text-xs italic">Exemple : la a, la be, la ce</span>
+                </li>
+              </ul>
+            </div>
+          </div>
 
-### Reglas importantes
-No se usa artículo delante de:
-- Otro: otro libro
-- Cierto: cierto profesor
-- Cualquier: cualquier muchacha
-- Medio(a): medio kilo`,
+          <div class="bg-amber-50 dark:bg-amber-900/20 p-4 rounded-lg mb-4">
+            <h4 class="font-semibold mb-3">⚠️ Exceptions importantes à connaître :</h4>
+            <div class="grid md:grid-cols-2 gap-3">
+              <div>
+                <p class="font-semibold text-sm mb-1">Masculins en -a :</p>
+                <ul class="text-sm">
+                  <li>• <strong>El</strong> día (le jour)</li>
+                  <li>• <strong>El</strong> mapa (la carte)</li>
+                  <li>• <strong>El</strong> problema (le problème)</li>
+                  <li>• <strong>El</strong> tema (le thème)</li>
+                </ul>
+              </div>
+              <div>
+                <p class="font-semibold text-sm mb-1">Féminins en -o :</p>
+                <ul class="text-sm">
+                  <li>• <strong>La</strong> mano (la main)</li>
+                  <li>• <strong>La</strong> radio (la radio)</li>
+                  <li>• <strong>La</strong> foto (la photo)</li>
+                  <li>• <strong>La</strong> moto (la moto)</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="mb-6">
+          <h3 class="text-xl font-semibold mb-4">Noms à genre commun (Común a dos)</h3>
+          <p class="mb-4">Certains noms ont la même forme au masculin et au féminin. Seul l'article change !</p>
+          
+          <div class="bg-purple-50 dark:bg-purple-900/20 p-4 rounded-lg mb-4">
+            <h4 class="font-semibold mb-3">Professions et métiers :</h4>
+            <div class="grid md:grid-cols-2 gap-4">
+              <div>
+                <ul class="space-y-2 text-sm">
+                  <li>• <strong>El/La artista</strong> - L'artiste</li>
+                  <li>• <strong>El/La estudiante</strong> - L'étudiant(e)</li>
+                  <li>• <strong>El/La cantante</strong> - Le/La chanteur/chanteuse</li>
+                  <li>• <strong>El/La dentista</strong> - Le/La dentiste</li>
+                </ul>
+              </div>
+              <div>
+                <ul class="space-y-2 text-sm">
+                  <li>• <strong>El/La guitarrista</strong> - Le/La guitariste</li>
+                  <li>• <strong>El/La pianista</strong> - Le/La pianiste</li>
+                  <li>• <strong>El/La periodista</strong> - Le/La journaliste</li>
+                  <li>• <strong>El/La turista</strong> - Le/La touriste</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+
+          <div class="bg-green-50 dark:bg-green-900/20 p-4 rounded-lg">
+            <h4 class="font-semibold mb-3">Formes complètement différentes :</h4>
+            <div class="grid md:grid-cols-2 gap-3">
+              <div>
+                <ul class="space-y-1 text-sm">
+                  <li>• <strong>El hombre</strong> / <strong>La mujer</strong> (l'homme / la femme)</li>
+                  <li>• <strong>El buey</strong> / <strong>La vaca</strong> (le bœuf / la vache)</li>
+                  <li>• <strong>El rey</strong> / <strong>La reina</strong> (le roi / la reine)</li>
+                </ul>
+              </div>
+              <div>
+                <ul class="space-y-1 text-sm">
+                  <li>• <strong>El padre</strong> / <strong>La madre</strong> (le père / la mère)</li>
+                  <li>• <strong>El yerno</strong> / <strong>La nuera</strong> (le gendre / la belle-fille)</li>
+                  <li>• <strong>El caballo</strong> / <strong>La yegua</strong> (le cheval / la jument)</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="mb-6">
+          <h3 class="text-xl font-semibold mb-4">Quand NE PAS utiliser l'article</h3>
+          <p class="mb-4">Attention ! Dans certains cas, on n'utilise PAS d'article en espagnol :</p>
+          
+          <div class="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg">
+            <ul class="space-y-2">
+              <li>• Devant <strong>otro/otra</strong> (autre)<br/>
+                <span class="text-sm italic">✅ <strong>Otro</strong> libro (un autre livre) - ❌ Un otro libro</span>
+              </li>
+              <li>• Devant <strong>cierto/cierta</strong> (certain)<br/>
+                <span class="text-sm italic">✅ <strong>Cierto</strong> profesor (un certain professeur)</span>
+              </li>
+              <li>• Devant <strong>cualquier</strong> (n'importe quel)<br/>
+                <span class="text-sm italic">✅ <strong>Cualquier</strong> día (n'importe quel jour)</span>
+              </li>
+              <li>• Devant <strong>medio/media</strong> (demi)<br/>
+                <span class="text-sm italic">✅ <strong>Medio</strong> kilo (un demi-kilo)</span>
+              </li>
+            </ul>
+          </div>
+        </section>
+
+        <div class="bg-blue-50 dark:bg-blue-900/20 border-l-4 border-blue-500 p-4 rounded-r-lg">
+          <h4 class="text-blue-700 dark:text-blue-400 font-semibold mb-2">💡 Suggestions de vidéos YouTube</h4>
+          <p class="text-blue-600 dark:text-blue-300">
+            Recherchez "género de sustantivos en español" ou "artículos definidos e indefinidos español" pour des explications visuelles et des astuces mnémotechniques.
+          </p>
+        </div>
+      </div>
+    `,
     exemplesExercices: `## Ejercicios
 
 ### Ejercicio 1: Artículos definidos
@@ -3246,40 +3589,199 @@ Cambia al femenino:
     title: "Artículos y Número (articles et nombre)",
     mois: "Mars",
     objectif: "Saber precisar el número (singular y plural)",
-    introduction: "Aprenderás las reglas de formación del plural en español.",
-    contenu: `## Los artículos - Número
+    introduction: "Former le pluriel en espagnol suit des règles précises ! Dans cette leçon, tu vas maîtriser la formation du pluriel et l'accord des articles avec les noms.",
+    contenu: `
+      <div class="lesson-content space-y-6">
+        <section class="mb-6">
+          <h3 class="text-xl font-semibold mb-4">Rappel des articles (Recordatorio de artículos)</h3>
+          <p class="mb-4">Avant de former le pluriel, rappelons-nous les articles au singulier et au pluriel :</p>
+          
+          <div class="grid md:grid-cols-2 gap-4 mb-4">
+            <div class="bg-purple-50 dark:bg-purple-900/20 p-4 rounded-lg">
+              <h4 class="font-semibold mb-3">Articles définis :</h4>
+              <ul class="space-y-2">
+                <li>• <strong>El</strong> → <strong>Los</strong> (masculin)</li>
+                <li>• <strong>La</strong> → <strong>Las</strong> (féminin)</li>
+              </ul>
+              <p class="text-sm mt-2 italic">Exemple : <strong>El</strong> libro → <strong>Los</strong> libros</p>
+            </div>
 
-### Formación del plural
+            <div class="bg-green-50 dark:bg-green-900/20 p-4 rounded-lg">
+              <h4 class="font-semibold mb-3">Articles indéfinis :</h4>
+              <ul class="space-y-2">
+                <li>• <strong>Un</strong> → <strong>Unos</strong> (masculin)</li>
+                <li>• <strong>Una</strong> → <strong>Unas</strong> (féminin)</li>
+              </ul>
+              <p class="text-sm mt-2 italic">Exemple : <strong>Una</strong> casa → <strong>Unas</strong> casas</p>
+            </div>
+          </div>
+        </section>
 
-**Regla 1:** Palabras terminadas en vocal → + s
-- El libro / Los libros
-- La casa / Las casas
-- El amigo / Los amigos
+        <section class="mb-6">
+          <h3 class="text-xl font-semibold mb-4">Les 4 règles principales du pluriel</h3>
+          
+          <div class="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg mb-4">
+            <h4 class="font-semibold mb-3">Règle 1 : Mots terminés par une VOYELLE → + S</h4>
+            <p class="mb-3 text-sm">C'est la règle la plus simple ! Si le mot se termine par a, e, i, o, u, on ajoute simplement <strong>-s</strong>.</p>
+            
+            <div class="grid md:grid-cols-2 gap-3">
+              <div>
+                <p class="font-semibold text-sm mb-2">Masculins :</p>
+                <ul class="space-y-1 text-sm">
+                  <li>• <strong>El libro</strong> → <strong>Los libros</strong> (le livre / les livres)</li>
+                  <li>• <strong>El amigo</strong> → <strong>Los amigos</strong> (l'ami / les amis)</li>
+                  <li>• <strong>El estudiante</strong> → <strong>Los estudiantes</strong> (l'étudiant / les étudiants)</li>
+                </ul>
+              </div>
+              <div>
+                <p class="font-semibold text-sm mb-2">Féminins :</p>
+                <ul class="space-y-1 text-sm">
+                  <li>• <strong>La casa</strong> → <strong>Las casas</strong> (la maison / les maisons)</li>
+                  <li>• <strong>La mesa</strong> → <strong>Las mesas</strong> (la table / les tables)</li>
+                  <li>• <strong>La clase</strong> → <strong>Las clases</strong> (la classe / les classes)</li>
+                </ul>
+              </div>
+            </div>
+          </div>
 
-**Regla 2:** Palabras terminadas en consonante → + es
-- El rey / Los reyes
-- La respuesta / Las respuestas
-- El profesor / Los profesores
+          <div class="bg-green-50 dark:bg-green-900/20 p-4 rounded-lg mb-4">
+            <h4 class="font-semibold mb-3">Règle 2 : Mots terminés par une CONSONNE → + ES</h4>
+            <p class="mb-3 text-sm">Si le mot se termine par une consonne (sauf z), on ajoute <strong>-es</strong>.</p>
+            
+            <div class="space-y-3">
+              <div>
+                <p class="font-semibold text-sm mb-2">Exemples variés :</p>
+                <ul class="space-y-1 text-sm">
+                  <li>• <strong>El profesor</strong> → <strong>Los profesores</strong> (le professeur / les professeurs)</li>
+                  <li>• <strong>El rey</strong> → <strong>Los reyes</strong> (le roi / les rois)</li>
+                  <li>• <strong>La pared</strong> → <strong>Las paredes</strong> (le mur / les murs)</li>
+                  <li>• <strong>El animal</strong> → <strong>Los animales</strong> (l'animal / les animaux)</li>
+                  <li>• <strong>La flor</strong> → <strong>Las flores</strong> (la fleur / les fleurs)</li>
+                </ul>
+              </div>
+            </div>
+          </div>
 
-**Regla 3:** Palabras terminadas en -z → -ces
-- El lápiz / Los lápices
-- La luz / Las luces
-- El pez / Los peces
+          <div class="bg-amber-50 dark:bg-amber-900/20 p-4 rounded-lg mb-4">
+            <h4 class="font-semibold mb-3">Règle 3 : Mots terminés en -Z → -CES</h4>
+            <p class="mb-3 text-sm">Attention ! Le <strong>z</strong> se transforme en <strong>c</strong> avant d'ajouter <strong>-es</strong>.</p>
+            
+            <div class="space-y-2">
+              <ul class="space-y-1 text-sm">
+                <li>• <strong>El lápiz</strong> → <strong>Los lápices</strong> (le crayon / les crayons)</li>
+                <li>• <strong>La luz</strong> → <strong>Las luces</strong> (la lumière / les lumières)</li>
+                <li>• <strong>El pez</strong> → <strong>Los peces</strong> (le poisson / les poissons)</li>
+                <li>• <strong>La voz</strong> → <strong>Las voces</strong> (la voix / les voix)</li>
+                <li>• <strong>El arroz</strong> → <strong>Los arroces</strong> (le riz / les riz - rarement au pluriel)</li>
+              </ul>
+              <p class="text-xs mt-2 italic bg-white dark:bg-gray-800 p-2 rounded">
+                💡 Astuce : Z devient toujours C devant E et I en espagnol !
+              </p>
+            </div>
+          </div>
 
-**Regla 4:** Palabras terminadas en -ón → + es
-- El limón / Los limones
-- La canción / Las canciones
+          <div class="bg-purple-50 dark:bg-purple-900/20 p-4 rounded-lg mb-4">
+            <h4 class="font-semibold mb-3">Règle 4 : Mots terminés en -ÓN → Perte de l'accent + ES</h4>
+            <p class="mb-3 text-sm">Les mots en <strong>-ón</strong> perdent leur accent au pluriel et ajoutent <strong>-es</strong>.</p>
+            
+            <div class="space-y-2">
+              <ul class="space-y-1 text-sm">
+                <li>• <strong>El limón</strong> → <strong>Los limones</strong> (le citron / les citrons)</li>
+                <li>• <strong>La canción</strong> → <strong>Las canciones</strong> (la chanson / les chansons)</li>
+                <li>• <strong>El corazón</strong> → <strong>Los corazones</strong> (le cœur / les cœurs)</li>
+                <li>• <strong>La ocasión</strong> → <strong>Las ocasiones</strong> (l'occasion / les occasions)</li>
+                <li>• <strong>El pantalón</strong> → <strong>Los pantalones</strong> (le pantalon / les pantalons)</li>
+              </ul>
+              <p class="text-xs mt-2 italic bg-white dark:bg-gray-800 p-2 rounded">
+                💡 Astuce : L'accent disparaît car la syllabe accentuée change de position !
+              </p>
+            </div>
+          </div>
+        </section>
 
-### Uso de unos/unas
-**Unos(as)** se usa con adjetivo + sustantivo en plural:
-- Unas casas bonitas
-- Unas mujeres inteligentes
-- Unos libros interesantes
+        <section class="mb-6">
+          <h3 class="text-xl font-semibold mb-4">Cas particuliers à connaître</h3>
+          
+          <div class="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg mb-4">
+            <h4 class="font-semibold mb-3">Mots invariables (même forme au singulier et pluriel) :</h4>
+            <ul class="space-y-2 text-sm">
+              <li>• Jours de la semaine terminés en -S :<br/>
+                <strong>El lunes</strong> → <strong>Los lunes</strong> (lundi / les lundis)<br/>
+                <strong>El martes</strong> → <strong>Los martes</strong> (mardi / les mardis)
+              </li>
+              <li>• Mots se terminant déjà par -S non accentués :<br/>
+                <strong>La crisis</strong> → <strong>Las crisis</strong> (la crise / les crises)<br/>
+                <strong>El análisis</strong> → <strong>Los análisis</strong> (l'analyse / les analyses)
+              </li>
+            </ul>
+          </div>
 
-### Ejemplos
-- El joven / Los jóvenes
-- La flor / Las flores
-- El animal / Los animales`,
+          <div class="bg-green-50 dark:bg-green-900/20 p-4 rounded-lg">
+            <h4 class="font-semibold mb-3">Mots composés :</h4>
+            <p class="text-sm mb-2">Seul le dernier mot prend la marque du pluriel :</p>
+            <ul class="space-y-1 text-sm">
+              <li>• <strong>El paraguas</strong> → <strong>Los paraguas</strong> (le parapluie / les parapluies)</li>
+              <li>• <strong>El abrelatas</strong> → <strong>Los abrelatas</strong> (l'ouvre-boîte / les ouvre-boîtes)</li>
+              <li>• <strong>El cumpleaños</strong> → <strong>Los cumpleaños</strong> (l'anniversaire / les anniversaires)</li>
+            </ul>
+          </div>
+        </section>
+
+        <section class="mb-6">
+          <h3 class="text-xl font-semibold mb-4">L'usage de UNOS/UNAS au pluriel</h3>
+          <p class="mb-4">En espagnol, <strong>unos</strong> et <strong>unas</strong> s'utilisent souvent avec un adjectif qualificatif au pluriel pour exprimer "quelques" ou "des".</p>
+          
+          <div class="bg-purple-50 dark:bg-purple-900/20 p-4 rounded-lg">
+            <h4 class="font-semibold mb-3">Exemples d'utilisation :</h4>
+            <ul class="space-y-2">
+              <li>• <strong>Unas casas bonitas</strong> - Quelques jolies maisons / De jolies maisons</li>
+              <li>• <strong>Unas mujeres inteligentes</strong> - Quelques femmes intelligentes / Des femmes intelligentes</li>
+              <li>• <strong>Unos libros interesantes</strong> - Quelques livres intéressants / Des livres intéressants</li>
+              <li>• <strong>Unos niños felices</strong> - Quelques enfants heureux / Des enfants heureux</li>
+              <li>• <strong>Unas películas emocionantes</strong> - Quelques films émouvants / Des films émouvants</li>
+            </ul>
+          </div>
+        </section>
+
+        <section class="mb-6">
+          <h3 class="text-xl font-semibold mb-4">Accords dans la phrase complète</h3>
+          <p class="mb-4">Attention ! Quand tu passes une phrase au pluriel, TOUT doit s'accorder : l'article, le nom, le verbe, et l'adjectif !</p>
+          
+          <div class="bg-amber-50 dark:bg-amber-900/20 p-4 rounded-lg">
+            <h4 class="font-semibold mb-3">Exemples de transformation complète :</h4>
+            <div class="space-y-3 text-sm">
+              <div class="bg-white dark:bg-gray-800 p-3 rounded">
+                <p class="font-semibold mb-1">Singulier :</p>
+                <p><strong>El rey habla bien</strong> - Le roi parle bien</p>
+                <p class="font-semibold mt-2 mb-1">Pluriel :</p>
+                <p><strong>Los reyes hablan bien</strong> - Les rois parlent bien</p>
+              </div>
+              
+              <div class="bg-white dark:bg-gray-800 p-3 rounded">
+                <p class="font-semibold mb-1">Singulier :</p>
+                <p><strong>La alumna estudia mucho</strong> - L'élève (fille) étudie beaucoup</p>
+                <p class="font-semibold mt-2 mb-1">Pluriel :</p>
+                <p><strong>Las alumnas estudian mucho</strong> - Les élèves (filles) étudient beaucoup</p>
+              </div>
+              
+              <div class="bg-white dark:bg-gray-800 p-3 rounded">
+                <p class="font-semibold mb-1">Singulier :</p>
+                <p><strong>El profesor enseña español</strong> - Le professeur enseigne l'espagnol</p>
+                <p class="font-semibold mt-2 mb-1">Pluriel :</p>
+                <p><strong>Los profesores enseñan español</strong> - Les professeurs enseignent l'espagnol</p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <div class="bg-blue-50 dark:bg-blue-900/20 border-l-4 border-blue-500 p-4 rounded-r-lg">
+          <h4 class="text-blue-700 dark:text-blue-400 font-semibold mb-2">💡 Suggestions de vidéos YouTube</h4>
+          <p class="text-blue-600 dark:text-blue-300">
+            Recherchez "formación del plural en español" ou "reglas del plural español" pour des exercices interactifs et des explications visuelles avec de nombreux exemples.
+          </p>
+        </div>
+      </div>
+    `,
     exemplesExercices: `## Ejercicios
 
 ### Ejercicio 1: Singular → Plural
