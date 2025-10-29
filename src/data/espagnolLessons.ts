@@ -1,168 +1,1290 @@
 export const espagnolLessons7AF = {
   "saludo-presentacion": {
     mois: "Décembre",
-    objectif: "Usar las fórmulas de cortesía en situaciones apropiadas",
-    introduction: "En esta primera lección, aprenderás a saludarte y presentarte en español usando las fórmulas de cortesía apropiadas.",
-    contenu: `## Saludos y Presentaciones
+    objectif: "Apprendre à saluer et se présenter en espagnol avec aisance dans des situations formelles et informelles.",
+    introduction: `
+      <div class="lesson-intro">
+        <h2>🌟 Bienvenue dans le monde hispanophone !</h2>
+        
+        <div class="reflection-box bg-primary/10 p-4 rounded-lg mb-4">
+          <h3 class="font-semibold mb-2">💭 Questions de réflexion</h3>
+          <ul class="list-disc ml-6 space-y-2">
+            <li>Comment te présentes-tu en créole ? En français ? Quels mots utilises-tu ?</li>
+            <li>Sais-tu que plus de 500 millions de personnes parlent espagnol dans le monde ?</li>
+            <li>Connais-tu des mots espagnols utilisés en créole haïtien ? (Ex: kompa vient de "compás")</li>
+          </ul>
+        </div>
 
-### Fórmulas de saludo
-- **Buenos días** - Bonjour (matin)
-- **Buenas tardes** - Bon après-midi
-- **¡Hola!** - Salut!
-- **¿Qué tal?** - Comment ça va?
-- **Bien, gracias** - Bien, merci
-- **Bastante bien** - Assez bien
-- **Así así** - Comme ci, comme ça
-- **Regular** - Moyen
-- **Requete bien** - Très bien
-- **Malo** - Mal
+        <p class="text-lg leading-relaxed mb-4">
+          Imagine que tu rencontres des touristes dominicains à Port-au-Prince, ou que tu voyages en République Dominicaine pendant les vacances. Comment vas-tu te présenter ? Les formules de salutation sont la première clé pour ouvrir les portes de la communication en espagnol !
+        </p>
 
-### Presentarse
-- **Presentarse** - Se présenter
-- **Presentar a los demás** - Présenter les autres
+        <p class="mb-4">
+          Dans cette leçon, nous allons découvrir comment les hispanophones se saluent, se présentent et font connaissance. Tu verras que l'espagnol partage beaucoup de similitudes avec le français, ce qui facilitera ton apprentissage. De plus, Haïti partage l'île d'Hispaniola avec la République Dominicaine, notre voisin hispanophone ! Connaître l'espagnol t'ouvrira des opportunités incroyables.
+        </p>
 
-### Verbos principales
-**SER (être - identité permanente)**
-- Yo soy
-- Tú eres
-- Él/Ella es
-- Nosotros somos
-- Vosotros sois
-- Ellos/Ellas son
+        <div class="info-box bg-accent/10 p-4 rounded-lg">
+          <h3 class="font-semibold mb-2">🎯 Objectifs d'apprentissage</h3>
+          <ul class="list-disc ml-6 space-y-1">
+            <li>Maîtriser les formules de salutation formelles et informelles en espagnol</li>
+            <li>Se présenter en donnant son nom, son âge et sa nationalité</li>
+            <li>Utiliser les verbes SER et ESTAR correctement</li>
+            <li>Demander et donner des informations personnelles basiques</li>
+            <li>Comprendre les différences culturelles dans les salutations</li>
+          </ul>
+        </div>
+      </div>
+    `,
+    contenu: `
+      <div class="lesson-content">
+        <section class="mb-6">
+          <h3 class="text-2xl font-bold mb-4">1️⃣ Les formules de salutation (Los saludos)</h3>
+          
+          <p class="mb-4">
+            En espagnol, comme en français et en créole, nous avons différentes façons de saluer selon le moment de la journée et le contexte social. Regardons les principales formules :
+          </p>
 
-**ESTAR (être - état temporaire)**
-- Yo estoy
-- Tú estás
-- Él/Ella está
-- Nosotros estamos
-- Vosotros estáis
-- Ellos/Ellas están
+          <div class="vocabulary-table mb-4">
+            <table class="w-full border-collapse">
+              <thead>
+                <tr class="bg-primary/20">
+                  <th class="border p-2">Espagnol</th>
+                  <th class="border p-2">Français</th>
+                  <th class="border p-2">Créole</th>
+                  <th class="border p-2">Contexte</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td class="border p-2"><strong>¡Hola!</strong></td>
+                  <td class="border p-2">Bonjour / Salut</td>
+                  <td class="border p-2">Bonjou / Alo</td>
+                  <td class="border p-2">Informel, tout moment</td>
+                </tr>
+                <tr>
+                  <td class="border p-2"><strong>Buenos días</strong></td>
+                  <td class="border p-2">Bonjour (matin)</td>
+                  <td class="border p-2">Bonjou</td>
+                  <td class="border p-2">Formel/Informel, matin</td>
+                </tr>
+                <tr>
+                  <td class="border p-2"><strong>Buenas tardes</strong></td>
+                  <td class="border p-2">Bonjour (après-midi)</td>
+                  <td class="border p-2">Bonswa</td>
+                  <td class="border p-2">Formel/Informel, après-midi</td>
+                </tr>
+                <tr>
+                  <td class="border p-2"><strong>Buenas noches</strong></td>
+                  <td class="border p-2">Bonsoir / Bonne nuit</td>
+                  <td class="border p-2">Bonswa / Bonnwit</td>
+                  <td class="border p-2">Formel/Informel, soir</td>
+                </tr>
+                <tr>
+                  <td class="border p-2"><strong>¿Qué tal?</strong></td>
+                  <td class="border p-2">Comment ça va ?</td>
+                  <td class="border p-2">Kijan ou ye?</td>
+                  <td class="border p-2">Informel</td>
+                </tr>
+                <tr>
+                  <td class="border p-2"><strong>¿Cómo está usted?</strong></td>
+                  <td class="border p-2">Comment allez-vous ?</td>
+                  <td class="border p-2">Kijan ou ye?</td>
+                  <td class="border p-2">Formel (vouvoiement)</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
 
-### Expresiones de cortesía
-- **De nada** - De rien
-- **No hay de qué** - Il n'y a pas de quoi
-- **Encantado(a)** - Enchanté(e)
-- **Fue un placer** - Ce fut un plaisir
-- **El placer es mío** - Le plaisir est pour moi
-- **Hasta luego** - À plus tard
-- **Hasta más ver** - À bientôt`,
-    exemplesExercices: `## Ejercicios prácticos
+          <div class="tip-box bg-secondary/10 p-4 rounded-lg mb-4">
+            <h4 class="font-semibold mb-2">💡 Astuce culturelle</h4>
+            <p>En République Dominicaine et dans les pays hispanophones, on se serre souvent la main lors des présentations formelles, et on fait la bise (un ou deux baisers sur la joue) entre amis et famille. C'est similaire à Haïti où on dit "pran nouvèl" (prendre des nouvelles) !</p>
+          </div>
+        </section>
 
-### Ejercicio 1: Diálogos de presentación
-Practica los siguientes diálogos con un compañero:
-1. Preséntate y pide a tu compañero su nombre y apellido
-2. Pregunta "¿Qué tal?" y responde apropiadamente
-3. Despídete usando diferentes expresiones
+        <section class="mb-6">
+          <h3 class="text-2xl font-bold mb-4">2️⃣ Se présenter (Presentarse)</h3>
+          
+          <p class="mb-4">
+            Pour se présenter en espagnol, on utilise principalement les expressions suivantes :
+          </p>
 
-### Ejercicio 2: Conjugación
-Completa las frases con SER o ESTAR:
-1. Yo _____ estudiante (je suis étudiant)
-2. Tú _____ bien (tu vas bien)
-3. Él _____ profesor (il est professeur)
-4. Nosotros _____ en la escuela (nous sommes à l'école)
+          <div class="examples-box bg-accent/10 p-4 rounded-lg mb-4">
+            <h4 class="font-semibold mb-3">🗣️ Formules de présentation</h4>
+            
+            <div class="space-y-3">
+              <div>
+                <p class="font-semibold text-primary">Me llamo Carlos.</p>
+                <p class="text-sm italic">Je m'appelle Carlos. (Mwen rele Carlos.)</p>
+              </div>
+              
+              <div>
+                <p class="font-semibold text-primary">Mi nombre es Marie.</p>
+                <p class="text-sm italic">Mon nom est Marie. (Non m se Marie.)</p>
+              </div>
+              
+              <div>
+                <p class="font-semibold text-primary">Soy Jean-Baptiste.</p>
+                <p class="text-sm italic">Je suis Jean-Baptiste. (Mwen se Jean-Baptiste.)</p>
+              </div>
+              
+              <div>
+                <p class="font-semibold text-primary">Tengo 13 años.</p>
+                <p class="text-sm italic">J'ai 13 ans. (Mwen gen 13 an.)</p>
+              </div>
+              
+              <div>
+                <p class="font-semibold text-primary">Soy de Puerto Príncipe, Haití.</p>
+                <p class="text-sm italic">Je suis de Port-au-Prince, Haïti. (Mwen soti Pòtoprens, Ayiti.)</p>
+              </div>
+            </div>
+          </div>
 
-### Ejercicio 3: Edad
-Responde: **¿Cuántos años tienes?**
-- Tengo 12 (doce) años
-- Tengo 13 (trece) años`,
-    references: ["MENFP - Programme 7e AF", "Gramática española básica"]
+          <div class="dialogue-example bg-primary/5 p-4 rounded-lg mb-4">
+            <h4 class="font-semibold mb-3">💬 Dialogue modèle : Première rencontre</h4>
+            <div class="space-y-2">
+              <p><strong>Pedro (dominicain):</strong> ¡Hola! ¿Cómo te llamas?</p>
+              <p><strong>Manouchka (haïtienne):</strong> ¡Hola! Me llamo Manouchka. ¿Y tú?</p>
+              <p><strong>Pedro:</strong> Soy Pedro. Mucho gusto.</p>
+              <p><strong>Manouchka:</strong> Encantada. ¿De dónde eres?</p>
+              <p><strong>Pedro:</strong> Soy de Santo Domingo. ¿Y tú?</p>
+              <p><strong>Manouchka:</strong> Yo soy de Puerto Príncipe.</p>
+            </div>
+            <p class="text-sm italic mt-3">
+              Traduction : Salut ! Comment t'appelles-tu ? / Salut ! Je m'appelle Manouchka. Et toi ? / Je suis Pedro. Enchanté. / Enchantée. D'où es-tu ? / Je suis de Saint-Domingue. Et toi ? / Je suis de Port-au-Prince.
+            </p>
+          </div>
+        </section>
+
+        <section class="mb-6">
+          <h3 class="text-2xl font-bold mb-4">3️⃣ Les verbes SER et ESTAR</h3>
+          
+          <p class="mb-4">
+            En espagnol, il existe DEUX verbes pour dire "être" : <strong>SER</strong> et <strong>ESTAR</strong>. C'est différent du français qui n'a qu'un seul verbe "être" ! Mais en créole, nous avons aussi cette nuance : "se" (identité permanente) et "ye" (état temporaire).
+          </p>
+
+          <div class="grammar-box bg-secondary/10 p-4 rounded-lg mb-4">
+            <h4 class="font-semibold mb-3">📖 Le verbe SER (identité, origine, caractéristiques permanentes)</h4>
+            <table class="w-full">
+              <thead>
+                <tr class="bg-primary/20">
+                  <th class="border p-2">Pronom</th>
+                  <th class="border p-2">Conjugaison</th>
+                  <th class="border p-2">Exemple</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td class="border p-2">Yo (Je)</td>
+                  <td class="border p-2"><strong>soy</strong></td>
+                  <td class="border p-2">Yo soy haitiano</td>
+                </tr>
+                <tr>
+                  <td class="border p-2">Tú (Tu)</td>
+                  <td class="border p-2"><strong>eres</strong></td>
+                  <td class="border p-2">Tú eres estudiante</td>
+                </tr>
+                <tr>
+                  <td class="border p-2">Él/Ella (Il/Elle)</td>
+                  <td class="border p-2"><strong>es</strong></td>
+                  <td class="border p-2">Ella es profesora</td>
+                </tr>
+                <tr>
+                  <td class="border p-2">Nosotros (Nous)</td>
+                  <td class="border p-2"><strong>somos</strong></td>
+                  <td class="border p-2">Nosotros somos amigos</td>
+                </tr>
+                <tr>
+                  <td class="border p-2">Vosotros (Vous)</td>
+                  <td class="border p-2"><strong>sois</strong></td>
+                  <td class="border p-2">Vosotros sois jóvenes</td>
+                </tr>
+                <tr>
+                  <td class="border p-2">Ellos/Ellas (Ils/Elles)</td>
+                  <td class="border p-2"><strong>son</strong></td>
+                  <td class="border p-2">Ellos son dominicanos</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="usage-note bg-accent/10 p-4 rounded-lg mb-4">
+            <h4 class="font-semibold mb-2">📝 Utilisation de SER</h4>
+            <ul class="list-disc ml-6 space-y-1">
+              <li><strong>Identité :</strong> Soy Claudette (Je suis Claudette)</li>
+              <li><strong>Origine :</strong> Somos de Jacmel (Nous sommes de Jacmel)</li>
+              <li><strong>Profession :</strong> Mi padre es médico (Mon père est médecin)</li>
+              <li><strong>Nationalité :</strong> Soy haitiano (Je suis haïtien)</li>
+              <li><strong>Caractéristiques permanentes :</strong> Ella es inteligente (Elle est intelligente)</li>
+            </ul>
+          </div>
+
+          <div class="comparison-box bg-primary/5 p-4 rounded-lg">
+            <h4 class="font-semibold mb-2">🔍 Comparaison Créole - Espagnol</h4>
+            <p class="mb-2"><strong>Créole :</strong> "Mwen <u>se</u> Ayisyen" = caractéristique permanente</p>
+            <p><strong>Espagnol :</strong> "Yo <u>soy</u> haitiano" = même idée avec SER</p>
+          </div>
+        </section>
+
+        <section class="mb-6">
+          <h3 class="text-2xl font-bold mb-4">4️⃣ Demander et donner des informations</h3>
+          
+          <p class="mb-4">
+            Voici les questions essentielles pour faire connaissance :
+          </p>
+
+          <div class="questions-box bg-secondary/10 p-4 rounded-lg mb-4">
+            <table class="w-full">
+              <thead>
+                <tr class="bg-primary/20">
+                  <th class="border p-2">Question (Espagnol)</th>
+                  <th class="border p-2">Traduction</th>
+                  <th class="border p-2">Réponse exemple</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td class="border p-2">¿Cómo te llamas?</td>
+                  <td class="border p-2">Comment t'appelles-tu ?</td>
+                  <td class="border p-2">Me llamo Wideline</td>
+                </tr>
+                <tr>
+                  <td class="border p-2">¿Cuántos años tienes?</td>
+                  <td class="border p-2">Quel âge as-tu ?</td>
+                  <td class="border p-2">Tengo 12 años</td>
+                </tr>
+                <tr>
+                  <td class="border p-2">¿De dónde eres?</td>
+                  <td class="border p-2">D'où es-tu ?</td>
+                  <td class="border p-2">Soy de Cabo Haitiano</td>
+                </tr>
+                <tr>
+                  <td class="border p-2">¿Dónde vives?</td>
+                  <td class="border p-2">Où habites-tu ?</td>
+                  <td class="border p-2">Vivo en Puerto Príncipe</td>
+                </tr>
+                <tr>
+                  <td class="border p-2">¿Cuál es tu nacionalidad?</td>
+                  <td class="border p-2">Quelle est ta nationalité ?</td>
+                  <td class="border p-2">Soy haitiano/haitiana</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="cultural-note bg-accent/10 p-4 rounded-lg">
+            <h4 class="font-semibold mb-2">🌍 Le savais-tu ?</h4>
+            <p>
+              La République Dominicaine et Haïti partagent l'île d'Hispaniola (en espagnol "La Española"). Les deux pays ont une histoire commune et de nombreux échanges culturels et commerciaux. Apprendre l'espagnol te permettra de mieux communiquer avec nos voisins dominicains et d'accéder à un monde de 500 millions de locuteurs !
+            </p>
+          </div>
+        </section>
+
+        <section class="mb-6">
+          <h3 class="text-2xl font-bold mb-4">5️⃣ Expressions de courtoisie essentielles</h3>
+          
+          <div class="courtesy-table mb-4">
+            <table class="w-full border-collapse">
+              <thead>
+                <tr class="bg-primary/20">
+                  <th class="border p-2">Espagnol</th>
+                  <th class="border p-2">Français</th>
+                  <th class="border p-2">Quand l'utiliser</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td class="border p-2"><strong>Mucho gusto</strong></td>
+                  <td class="border p-2">Enchanté(e)</td>
+                  <td class="border p-2">Lors d'une première rencontre</td>
+                </tr>
+                <tr>
+                  <td class="border p-2"><strong>Encantado/a</strong></td>
+                  <td class="border p-2">Enchanté(e)</td>
+                  <td class="border p-2">Alternative plus formelle</td>
+                </tr>
+                <tr>
+                  <td class="border p-2"><strong>Igualmente</strong></td>
+                  <td class="border p-2">De même / Moi aussi</td>
+                  <td class="border p-2">Réponse à "Mucho gusto"</td>
+                </tr>
+                <tr>
+                  <td class="border p-2"><strong>¿Cómo estás?</strong></td>
+                  <td class="border p-2">Comment vas-tu ?</td>
+                  <td class="border p-2">Informel, entre amis</td>
+                </tr>
+                <tr>
+                  <td class="border p-2"><strong>Bien, gracias. ¿Y tú?</strong></td>
+                  <td class="border p-2">Bien, merci. Et toi ?</td>
+                  <td class="border p-2">Réponse standard</td>
+                </tr>
+                <tr>
+                  <td class="border p-2"><strong>Hasta luego</strong></td>
+                  <td class="border p-2">À plus tard</td>
+                  <td class="border p-2">Pour se quitter</td>
+                </tr>
+                <tr>
+                  <td class="border p-2"><strong>Adiós</strong></td>
+                  <td class="border p-2">Au revoir</td>
+                  <td class="border p-2">Plus formel ou définitif</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+      </div>
+    `,
+    exemplesExercices: `
+      <div class="exercises-section">
+        <h3 class="text-2xl font-bold mb-4">📝 Exercices pratiques</h3>
+
+        <div class="exercise mb-6">
+          <h4 class="font-semibold text-lg mb-3">Exercice 1 : Complète le dialogue</h4>
+          <p class="mb-2">Remplis les blancs avec les mots appropriés :</p>
+          <div class="bg-accent/10 p-4 rounded-lg">
+            <p><strong>José:</strong> ¡Hola! _____ me llamo José. ¿Cómo te _____?</p>
+            <p><strong>Louisette:</strong> Me _____ Louisette. Mucho _____.</p>
+            <p><strong>José:</strong> _____. ¿De _____ eres?</p>
+            <p><strong>Louisette:</strong> _____ de Les Cayes. ¿Y tú?</p>
+            <p><strong>José:</strong> Yo _____ de Santiago de los Caballeros, en República Dominicana.</p>
+          </div>
+          <p class="text-sm mt-2 italic">Mots à utiliser : soy, llamo, gusto, igualmente, dónde, soy, llamas, Yo</p>
+        </div>
+
+        <div class="exercise mb-6">
+          <h4 class="font-semibold text-lg mb-3">Exercice 2 : Conjugue le verbe SER</h4>
+          <p class="mb-2">Complète avec la bonne forme du verbe SER :</p>
+          <div class="bg-primary/10 p-4 rounded-lg space-y-2">
+            <p>1. Yo _____ estudiante. (Je suis étudiant)</p>
+            <p>2. Tú _____ de Jacmel. (Tu es de Jacmel)</p>
+            <p>3. Ella _____ profesora. (Elle est professeure)</p>
+            <p>4. Nosotros _____ haitianos. (Nous sommes haïtiens)</p>
+            <p>5. Ellos _____ amigos. (Ils sont amis)</p>
+            <p>6. Mi hermano _____ médico. (Mon frère est médecin)</p>
+          </div>
+        </div>
+
+        <div class="exercise mb-6">
+          <h4 class="font-semibold text-lg mb-3">Exercice 3 : Présente-toi</h4>
+          <p class="mb-2">Écris un petit texte (5-6 phrases) où tu te présentes en espagnol. Inclus :</p>
+          <ul class="list-disc ml-6 mb-3">
+            <li>Ton nom</li>
+            <li>Ton âge</li>
+            <li>Ta ville/ton quartier</li>
+            <li>Ta nationalité</li>
+            <li>Une caractéristique sur toi</li>
+          </ul>
+          <div class="bg-secondary/10 p-4 rounded-lg">
+            <p class="font-semibold mb-2">Exemple :</p>
+            <p class="italic">
+              ¡Hola! Me llamo Wideline. Tengo 13 años. Soy de Puerto Príncipe, Haití. Soy haitiana. Soy estudiante y me gusta la música.
+            </p>
+          </div>
+        </div>
+
+        <div class="exercise mb-6">
+          <h4 class="font-semibold text-lg mb-3">Exercice 4 : Dialogue oral en groupe</h4>
+          <p class="mb-2">Par groupes de deux, créez un dialogue de première rencontre. Utilisez :</p>
+          <ul class="list-disc ml-6 mb-3">
+            <li>Les salutations</li>
+            <li>Les présentations (nom, âge, origine)</li>
+            <li>Les formules de courtoisie</li>
+            <li>Les expressions pour se quitter</li>
+          </ul>
+          <p class="text-sm italic">Pratiquez le dialogue plusieurs fois, puis présentez-le devant la classe !</p>
+        </div>
+
+        <div class="exercise mb-6">
+          <h4 class="font-semibold text-lg mb-3">Exercice 5 : Traduction créole → espagnol</h4>
+          <p class="mb-2">Traduis ces phrases du créole en espagnol :</p>
+          <div class="bg-accent/10 p-4 rounded-lg space-y-2">
+            <p>1. Mwen rele Jean-Baptiste. → _____</p>
+            <p>2. Mwen gen 12 an. → _____</p>
+            <p>3. Mwen soti Okay. → _____</p>
+            <p>4. Mwen se Ayisyen. → _____</p>
+            <p>5. Kijan ou rele? → _____</p>
+          </div>
+        </div>
+
+        <div class="video-resource bg-primary/10 p-4 rounded-lg">
+          <h4 class="font-semibold mb-2">🎥 Ressource vidéo recommandée</h4>
+          <p class="mb-2">Pour approfondir cette leçon, regarde cette vidéo :</p>
+          <p class="font-semibold">"Saludos y Presentaciones en Español - Basic Spanish Greetings"</p>
+          <p class="text-sm italic">Cherche sur YouTube : "Spanish greetings and introductions for beginners"</p>
+        </div>
+      </div>
+    `,
+    references: [
+      "Programme MENFP 7AF - Espagnol",
+      "Méthodologie de l'enseignement de l'espagnol langue étrangère",
+      "Real Academia Española - Gramática básica",
+      "Contexte caribéen haïtien et dominicain"
+    ],
   },
 
   "saludos-agradecimientos": {
     mois: "Décembre",
-    objectif: "Usar las fórmulas de cortesía y saber dar las gracias",
-    introduction: "Aprenderás a usar las expresiones de agradecimiento y cortesía en diferentes situaciones.",
-    contenu: `## Agradecimientos y Cortesía
+    objectif: "Maîtriser les formules de remerciement et de politesse en espagnol dans différents contextes sociaux.",
+    introduction: `
+      <div class="lesson-intro">
+        <h2>🌟 La politesse, clé de la communication interculturelle</h2>
+        
+        <div class="reflection-box bg-primary/10 p-4 rounded-lg mb-4">
+          <h3 class="font-semibold mb-2">💭 Questions de réflexion</h3>
+          <ul class="list-disc ml-6 space-y-2">
+            <li>En créole, nous disons "Mèsi" ou "Mèsi anpil". Comment penses-tu qu'on dit merci en espagnol ?</li>
+            <li>Pourquoi est-il important d'être poli dans toutes les langues et cultures ?</li>
+            <li>Connais-tu des situations où la politesse est particulièrement importante ? (avec les personnes âgées, les professeurs, en famille...)</li>
+          </ul>
+        </div>
 
-### Expresiones de agradecimiento
-- **Gracias** - Merci
-- **Muchas gracias** - Merci beaucoup
-- **Muy amable** - Très aimable
-- **De nada** - De rien
-- **No hay de qué** - Il n'y a pas de quoi
+        <p class="text-lg leading-relaxed mb-4">
+          Imagine que tu visites une famille dominicaine ou que tu achètes quelque chose dans un magasin à Saint-Domingue. Savoir remercier correctement et utiliser les formules de politesse appropriées te permettra de créer des liens positifs et de montrer ton respect pour la culture hispanophone.
+        </p>
 
-### Saber decir adiós
-- **Adiós** - Au revoir
-- **Hasta luego** - À plus tard
-- **Hasta pronto** - À bientôt
-- **Hasta mañana** - À demain
-- **Hasta más ver** - À la prochaine
-- **Nos vemos** - On se voit
+        <p class="mb-4">
+          En Haïti, nous accordons beaucoup d'importance au respect et à la politesse, surtout envers les aînés ("respè granmoun"). Dans les pays hispanophones, cette valeur est également centrale ! La courtoisie dans les échanges quotidiens renforce les relations sociales et facilite la communication. Dans cette leçon, tu vas découvrir toutes les nuances des remerciements et des formules de politesse en espagnol.
+        </p>
 
-### Vocabulario útil
-- **Edad** - Âge
-- **Años de edad** - Ans d'âge
-- **Placer** - Plaisir
-- **Encantado(a)** - Enchanté(e)`,
-    exemplesExercices: `## Ejercicios
+        <div class="info-box bg-accent/10 p-4 rounded-lg">
+          <h3 class="font-semibold mb-2">🎯 Objectifs d'apprentissage</h3>
+          <ul class="list-disc ml-6 space-y-1">
+            <li>Exprimer sa gratitude de différentes manières selon le contexte</li>
+            <li>Répondre appropriément aux remerciements</li>
+            <li>Utiliser les formules de politesse formelles et informelles</li>
+            <li>S'excuser et demander pardon en espagnol</li>
+            <li>Comprendre les codes sociaux de la politesse hispanophone</li>
+          </ul>
+        </div>
+      </div>
+    `,
+    contenu: `
+      <div class="lesson-content">
+        <section class="mb-6">
+          <h3 class="text-2xl font-bold mb-4">1️⃣ Dire merci (Agradecer / Dar las gracias)</h3>
+          
+          <p class="mb-4">
+            En espagnol, il existe plusieurs façons d'exprimer sa gratitude, selon le degré de formalité et l'intensité du remerciement. Voici les principales expressions :
+          </p>
 
-### Ejercicio 1: Situaciones
-Responde apropiadamente a estas situaciones:
-1. Alguien te ayuda → (Di gracias)
-2. Alguien te dice "gracias" → (Responde)
-3. Es hora de irte → (Despídete)
+          <div class="vocabulary-table mb-4">
+            <table class="w-full border-collapse">
+              <thead>
+                <tr class="bg-primary/20">
+                  <th class="border p-2">Espagnol</th>
+                  <th class="border p-2">Français</th>
+                  <th class="border p-2">Créole</th>
+                  <th class="border p-2">Contexte</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td class="border p-2"><strong>Gracias</strong></td>
+                  <td class="border p-2">Merci</td>
+                  <td class="border p-2">Mèsi</td>
+                  <td class="border p-2">Standard, universel</td>
+                </tr>
+                <tr>
+                  <td class="border p-2"><strong>Muchas gracias</strong></td>
+                  <td class="border p-2">Merci beaucoup</td>
+                  <td class="border p-2">Mèsi anpil</td>
+                  <td class="border p-2">Plus emphatique</td>
+                </tr>
+                <tr>
+                  <td class="border p-2"><strong>Muchísimas gracias</strong></td>
+                  <td class="border p-2">Merci infiniment</td>
+                  <td class="border p-2">Gran mèsi</td>
+                  <td class="border p-2">Très formel, intense</td>
+                </tr>
+                <tr>
+                  <td class="border p-2"><strong>Gracias por todo</strong></td>
+                  <td class="border p-2">Merci pour tout</td>
+                  <td class="border p-2">Mèsi pou tout</td>
+                  <td class="border p-2">Remerciement global</td>
+                </tr>
+                <tr>
+                  <td class="border p-2"><strong>Mil gracias</strong></td>
+                  <td class="border p-2">Mille mercis</td>
+                  <td class="border p-2">Mil fwa mèsi</td>
+                  <td class="border p-2">Très reconnaissant</td>
+                </tr>
+                <tr>
+                  <td class="border p-2"><strong>Te lo agradezco</strong></td>
+                  <td class="border p-2">Je t'en remercie</td>
+                  <td class="border p-2">Mwen apresye sa</td>
+                  <td class="border p-2">Informel, personnel</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
 
-### Ejercicio 2: Preguntas
-Contesta:
-- Profesor, ¿Cómo se dice AU REVOIR en español?
-- Profesor, ¿Qué significa REQUETE BIEN?
+          <div class="examples-box bg-accent/10 p-4 rounded-lg mb-4">
+            <h4 class="font-semibold mb-3">🗣️ Exemples en contexte</h4>
+            <div class="space-y-3">
+              <div>
+                <p class="font-semibold text-primary">Gracias por ayudarme con la tarea.</p>
+                <p class="text-sm italic">Merci de m'aider avec les devoirs. (Mèsi pou ede m ak devwa yo.)</p>
+              </div>
+              <div>
+                <p class="font-semibold text-primary">Muchas gracias por el regalo.</p>
+                <p class="text-sm italic">Merci beaucoup pour le cadeau. (Mèsi anpil pou kado a.)</p>
+              </div>
+              <div>
+                <p class="font-semibold text-primary">Te agradezco mucho tu tiempo.</p>
+                <p class="text-sm italic">Je te remercie beaucoup de ton temps. (Mwen apresye tan ou anpil.)</p>
+              </div>
+            </div>
+          </div>
 
-### Ejercicio 3: Diálogo completo
-Crea un diálogo usando: saludo, presentación, agradecimiento y despedida`,
-    references: ["MENFP - Programme 7e AF"]
+          <div class="tip-box bg-secondary/10 p-4 rounded-lg mb-4">
+            <h4 class="font-semibold mb-2">💡 Astuce linguistique</h4>
+            <p>
+              Le mot "gracias" vient du latin "gratias" et est toujours au pluriel en espagnol ! On ne dit jamais "gracia" (au singulier) pour dire merci. Compare avec le créole où "mèsi" ne change jamais, et le français où "merci" est aussi invariable.
+            </p>
+          </div>
+        </section>
+
+        <section class="mb-6">
+          <h3 class="text-2xl font-bold mb-4">2️⃣ Répondre aux remerciements</h3>
+          
+          <p class="mb-4">
+            Quand quelqu'un te dit "Gracias", il est important de répondre poliment. Voici les réponses les plus courantes :
+          </p>
+
+          <div class="responses-table mb-4">
+            <table class="w-full border-collapse">
+              <thead>
+                <tr class="bg-primary/20">
+                  <th class="border p-2">Espagnol</th>
+                  <th class="border p-2">Français</th>
+                  <th class="border p-2">Créole</th>
+                  <th class="border p-2">Niveau de formalité</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td class="border p-2"><strong>De nada</strong></td>
+                  <td class="border p-2">De rien</td>
+                  <td class="border p-2">Pa gen anyen</td>
+                  <td class="border p-2">Universel, standard</td>
+                </tr>
+                <tr>
+                  <td class="border p-2"><strong>No hay de qué</strong></td>
+                  <td class="border p-2">Il n'y a pas de quoi</td>
+                  <td class="border p-2">Pa gen pwoblèm</td>
+                  <td class="border p-2">Courant, poli</td>
+                </tr>
+                <tr>
+                  <td class="border p-2"><strong>Por nada</strong></td>
+                  <td class="border p-2">Pour rien</td>
+                  <td class="border p-2">Pa gen anyen</td>
+                  <td class="border p-2">Informel (Amérique Latine)</td>
+                </tr>
+                <tr>
+                  <td class="border p-2"><strong>Con mucho gusto</strong></td>
+                  <td class="border p-2">Avec plaisir</td>
+                  <td class="border p-2">Avèk plezi</td>
+                  <td class="border p-2">Chaleureux, enthousiaste</td>
+                </tr>
+                <tr>
+                  <td class="border p-2"><strong>A ti / A usted</strong></td>
+                  <td class="border p-2">À toi / À vous</td>
+                  <td class="border p-2">Pa ou / Pa ou menm</td>
+                  <td class="border p-2">Retourner le remerciement</td>
+                </tr>
+                <tr>
+                  <td class="border p-2"><strong>No te preocupes</strong></td>
+                  <td class="border p-2">Ne t'inquiète pas</td>
+                  <td class="border p-2">Pa enkyete w</td>
+                  <td class="border p-2">Informel, rassurant</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="dialogue-example bg-primary/5 p-4 rounded-lg mb-4">
+            <h4 class="font-semibold mb-3">💬 Dialogue : Au marché de Pétionville</h4>
+            <div class="space-y-2">
+              <p><strong>Cliente (Nadège):</strong> Buenos días. ¿Cuánto cuesta este mango?</p>
+              <p><strong>Vendedor (Carlos):</strong> Buenos días. Cuesta 20 pesos.</p>
+              <p><strong>Nadège:</strong> Perfecto. Me llevo tres. Gracias.</p>
+              <p><strong>Carlos:</strong> De nada, señorita. Gracias a usted. ¡Que tenga un buen día!</p>
+              <p><strong>Nadège:</strong> Igualmente. ¡Hasta luego!</p>
+            </div>
+            <p class="text-sm italic mt-3">
+              Traduction : Bonjour. Combien coûte cette mangue ? / Bonjour. Elle coûte 20 pesos. / Parfait. J'en prends trois. Merci. / De rien, mademoiselle. Merci à vous. Passez une bonne journée ! / De même. À plus tard !
+            </p>
+          </div>
+        </section>
+
+        <section class="mb-6">
+          <h3 class="text-2xl font-bold mb-4">3️⃣ Les formules de politesse essentielles</h3>
+          
+          <p class="mb-4">
+            La politesse en espagnol utilise plusieurs expressions importantes dans les interactions quotidiennes :
+          </p>
+
+          <div class="courtesy-box bg-accent/10 p-4 rounded-lg mb-4">
+            <h4 class="font-semibold mb-3">🎭 Formules de courtoisie</h4>
+            <table class="w-full">
+              <thead>
+                <tr class="bg-primary/20">
+                  <th class="border p-2">Espagnol</th>
+                  <th class="border p-2">Usage</th>
+                  <th class="border p-2">Exemple</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td class="border p-2"><strong>Por favor</strong></td>
+                  <td class="border p-2">S'il te/vous plaît</td>
+                  <td class="border p-2">¿Me pasas el libro, por favor?</td>
+                </tr>
+                <tr>
+                  <td class="border p-2"><strong>Con permiso</strong></td>
+                  <td class="border p-2">Avec votre permission / Pardon</td>
+                  <td class="border p-2">Con permiso, necesito salir.</td>
+                </tr>
+                <tr>
+                  <td class="border p-2"><strong>Disculpe / Perdón</strong></td>
+                  <td class="border p-2">Excusez-moi / Pardon</td>
+                  <td class="border p-2">Disculpe, ¿dónde está el baño?</td>
+                </tr>
+                <tr>
+                  <td class="border p-2"><strong>Lo siento</strong></td>
+                  <td class="border p-2">Je suis désolé(e)</td>
+                  <td class="border p-2">Lo siento, llegué tarde.</td>
+                </tr>
+                <tr>
+                  <td class="border p-2"><strong>Perdona / Perdone</strong></td>
+                  <td class="border p-2">Pardonne-moi / Pardonnez-moi</td>
+                  <td class="border p-2">Perdona, no te escuché bien.</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="comparison-box bg-secondary/10 p-4 rounded-lg mb-4">
+            <h4 class="font-semibold mb-2">🔍 Comparaison culturelle : Haïti - Pays hispanophones</h4>
+            <div class="space-y-2">
+              <p><strong>Haïti :</strong> En créole, on dit "Eskize m" ou "Padon" pour s'excuser, similaire au français.</p>
+              <p><strong>Espagnol :</strong> On utilise plusieurs nuances selon la gravité : "Perdón" (léger), "Disculpe" (formel), "Lo siento" (regret sincère).</p>
+              <p><strong>Point commun :</strong> Dans les deux cultures, le respect envers les aînés est fondamental. On utilise toujours "usted" (vous) avec les personnes âgées, comme nous utilisons "ou" avec respect en créole.</p>
+            </div>
+          </div>
+        </section>
+
+        <section class="mb-6">
+          <h3 class="text-2xl font-bold mb-4">4️⃣ Situations spécifiques de politesse</h3>
+          
+          <div class="situations-box bg-primary/5 p-4 rounded-lg mb-4">
+            <h4 class="font-semibold mb-3">🏠 À table (En la mesa)</h4>
+            <ul class="list-disc ml-6 space-y-2">
+              <li><strong>Buen provecho</strong> = Bon appétit (dit avant de manger)</li>
+              <li><strong>La comida está deliciosa, gracias</strong> = Le repas est délicieux, merci</li>
+              <li><strong>¿Me pasas la sal, por favor?</strong> = Tu me passes le sel, s'il te plaît ?</li>
+            </ul>
+          </div>
+
+          <div class="situations-box bg-accent/10 p-4 rounded-lg mb-4">
+            <h4 class="font-semibold mb-3">🏫 À l'école (En la escuela)</h4>
+            <ul class="list-disc ml-6 space-y-2">
+              <li><strong>Buenos días, profesor/profesora</strong> = Bonjour, professeur(e)</li>
+              <li><strong>Gracias por la explicación</strong> = Merci pour l'explication</li>
+              <li><strong>¿Puedo ir al baño, por favor?</strong> = Puis-je aller aux toilettes, s'il vous plaît ?</li>
+              <li><strong>Disculpe, no entendí</strong> = Excusez-moi, je n'ai pas compris</li>
+            </ul>
+          </div>
+
+          <div class="situations-box bg-secondary/10 p-4 rounded-lg">
+            <h4 class="font-semibold mb-3">🛒 Dans les commerces (En las tiendas)</h4>
+            <ul class="list-disc ml-6 space-y-2">
+              <li><strong>¿Me puede ayudar, por favor?</strong> = Pouvez-vous m'aider, s'il vous plaît ?</li>
+              <li><strong>Gracias, que tenga un buen día</strong> = Merci, passez une bonne journée</li>
+              <li><strong>Lo siento, no tengo cambio</strong> = Désolé, je n'ai pas de monnaie</li>
+            </ul>
+          </div>
+        </section>
+
+        <section class="mb-6">
+          <h3 class="text-2xl font-bold mb-4">5️⃣ Le vouvoiement et le tutoiement</h3>
+          
+          <p class="mb-4">
+            En espagnol, comme en français, on distingue le tutoiement (TÚ - informel) et le vouvoiement (USTED - formel). Cette distinction est très importante !
+          </p>
+
+          <div class="tuvouvoi-box bg-accent/10 p-4 rounded-lg">
+            <h4 class="font-semibold mb-3">📖 Règles d'usage</h4>
+            <table class="w-full">
+              <thead>
+                <tr class="bg-primary/20">
+                  <th class="border p-2">Contexte</th>
+                  <th class="border p-2">Utiliser</th>
+                  <th class="border p-2">Exemple</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td class="border p-2">Amis, famille proche, jeunes</td>
+                  <td class="border p-2"><strong>TÚ</strong></td>
+                  <td class="border p-2">¿Cómo estás?</td>
+                </tr>
+                <tr>
+                  <td class="border p-2">Personnes âgées, professeurs, autorités</td>
+                  <td class="border p-2"><strong>USTED</strong></td>
+                  <td class="border p-2">¿Cómo está usted?</td>
+                </tr>
+                <tr>
+                  <td class="border p-2">Contexte professionnel, inconnus</td>
+                  <td class="border p-2"><strong>USTED</strong></td>
+                  <td class="border p-2">¿Me puede ayudar?</td>
+                </tr>
+                <tr>
+                  <td class="border p-2">Camarades de classe</td>
+                  <td class="border p-2"><strong>TÚ</strong></td>
+                  <td class="border p-2">¿Me prestas tu lápiz?</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="cultural-note bg-primary/5 p-4 rounded-lg mt-4">
+            <h4 class="font-semibold mb-2">🌍 Note culturelle</h4>
+            <p>
+              En République Dominicaine, comme en Haïti, le respect des aînés est fondamental. On vouvoie toujours les personnes âgées, les parents de nos amis, et les figures d'autorité. C'est similaire au créole où on dit "Ou" avec respect et non "Ou" familier.
+            </p>
+          </div>
+        </section>
+      </div>
+    `,
+    exemplesExercices: `
+      <div class="exercises-section">
+        <h3 class="text-2xl font-bold mb-4">📝 Exercices pratiques</h3>
+
+        <div class="exercise mb-6">
+          <h4 class="font-semibold text-lg mb-3">Exercice 1 : Associe les situations aux formules</h4>
+          <p class="mb-2">Relie chaque situation à l'expression appropriée :</p>
+          <div class="bg-accent/10 p-4 rounded-lg">
+            <p class="mb-2"><strong>Situations :</strong></p>
+            <ol class="list-decimal ml-6 mb-3">
+              <li>Ton ami te prête son stylo</li>
+              <li>Le professeur t'explique une leçon</li>
+              <li>Tu demandes de passer dans un couloir bondé</li>
+              <li>Tu arrives en retard en classe</li>
+              <li>Quelqu'un te dit "Muchas gracias"</li>
+            </ol>
+            <p class="mb-2"><strong>Expressions :</strong></p>
+            <p>A) De nada | B) Con permiso | C) Lo siento, llegué tarde | D) Gracias por la explicación | E) Gracias</p>
+          </div>
+        </div>
+
+        <div class="exercise mb-6">
+          <h4 class="font-semibold text-lg mb-3">Exercice 2 : Complète les dialogues</h4>
+          <p class="mb-2">Remplis les blancs avec les formules de politesse appropriées :</p>
+          <div class="bg-primary/10 p-4 rounded-lg space-y-3">
+            <div>
+              <p><strong>Dialogue 1 - Au restaurant</strong></p>
+              <p>Cliente: _____ , ¿me trae la cuenta?</p>
+              <p>Mesero: Sí, claro. Aquí tiene.</p>
+              <p>Cliente: _____ .</p>
+              <p>Mesero: _____ , señora.</p>
+            </div>
+            <div>
+              <p><strong>Dialogue 2 - En classe</strong></p>
+              <p>Estudiante: Profesor, _____ , no entendí el ejercicio.</p>
+              <p>Profesor: No te preocupes. Te explico de nuevo.</p>
+              <p>Estudiante: _____ por su paciencia.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="exercise mb-6">
+          <h4 class="font-semibold text-lg mb-3">Exercice 3 : TÚ ou USTED ?</h4>
+          <p class="mb-2">Indique si tu utiliserais TÚ ou USTED dans ces situations :</p>
+          <div class="bg-secondary/10 p-4 rounded-lg space-y-2">
+            <p>1. Parler à ton meilleur ami → _____</p>
+            <p>2. Demander une information à un policier → _____</p>
+            <p>3. Parler à ta grand-mère → _____</p>
+            <p>4. Parler à ton professeur d'espagnol → _____</p>
+            <p>5. Inviter un camarade de classe → _____</p>
+            <p>6. Demander le chemin à un adulte inconnu → _____</p>
+          </div>
+        </div>
+
+        <div class="exercise mb-6">
+          <h4 class="font-semibold text-lg mb-3">Exercice 4 : Jeu de rôle en groupe</h4>
+          <p class="mb-2">Par groupes de trois, créez et jouez ces scénarios :</p>
+          <ul class="list-disc ml-6 mb-3">
+            <li><strong>Scénario 1 :</strong> Tu achètes du pain dans une boulangerie (utilise "por favor", "gracias", "cuánto cuesta")</li>
+            <li><strong>Scénario 2 :</strong> Tu arrives en retard à l'école et tu t'excuses auprès du professeur</li>
+            <li><strong>Scénario 3 :</strong> Un ami te rend un service important et tu le remercies chaleureusement</li>
+          </ul>
+          <p class="text-sm italic">Assurez-vous d'utiliser le bon niveau de formalité (tú/usted) !</p>
+        </div>
+
+        <div class="exercise mb-6">
+          <h4 class="font-semibold text-lg mb-3">Exercice 5 : Traduction contextuelle</h4>
+          <p class="mb-2">Traduis ces situations du créole/français vers l'espagnol :</p>
+          <div class="bg-accent/10 p-4 rounded-lg space-y-2">
+            <p>1. Mèsi anpil pou ede m. → _____</p>
+            <p>2. Pa gen anyen, se plezi m. → _____</p>
+            <p>3. Eskize m, kote twalèt la ye? → _____</p>
+            <p>4. Mwen regrete, mwen rive ta. → _____</p>
+            <p>5. Silvouplè, pase m liv la. → _____</p>
+          </div>
+        </div>
+
+        <div class="video-resource bg-primary/10 p-4 rounded-lg">
+          <h4 class="font-semibold mb-2">🎥 Ressource vidéo recommandée</h4>
+          <p class="mb-2">Pour approfondir cette leçon, regarde cette vidéo :</p>
+          <p class="font-semibold">"Frases de Cortesía en Español - Expresiones de Agradecimiento"</p>
+          <p class="text-sm italic">Cherche sur YouTube : "Spanish courtesy phrases thank you expressions"</p>
+        </div>
+      </div>
+    `,
+    references: [
+      "Programme MENFP 7AF - Espagnol",
+      "Pragmatique de la politesse en espagnol",
+      "Comparaison interculturelle Haïti-République Dominicaine",
+      "Protocoles de courtoisie dans le monde hispanophone"
+    ],
   },
 
   "gustos": {
     mois: "Décembre",
-    objectif: "Intercambiar ideas sobre gustos",
-    introduction: "Aprenderás a expresar tus gustos y preferencias usando el verbo GUSTAR.",
-    contenu: `## Expresar gustos
+    objectif: "Exprimer ses goûts, préférences et intérêts personnels en utilisant le verbe GUSTAR et des structures similaires.",
+    introduction: `
+      <div class="lesson-intro">
+        <h2>🌟 Parle de tes passions et de tes préférences !</h2>
+        
+        <div class="reflection-box bg-primary/10 p-4 rounded-lg mb-4">
+          <h3 class="font-semibold mb-2">💭 Questions de réflexion</h3>
+          <ul class="list-disc ml-6 space-y-2">
+            <li>Quelles sont tes activités préférées ? Le football ? La danse ? Le kompa ? La lecture ?</li>
+            <li>Comment dis-tu "J'aime la musique" en créole ? Et en français ?</li>
+            <li>Sais-tu que la structure pour exprimer les goûts en espagnol est différente du français ?</li>
+            <li>Connais-tu des artistes hispanophones ? (Romeo Santos, Daddy Yankee, Shakira...)</li>
+          </ul>
+        </div>
 
-### El verbo GUSTAR
-**Construcción especial:**
-- **Me gusta** - J'aime (singulier)
-- **Me gustan** - J'aime (pluriel)
-- **Te gusta** - Tu aimes (singulier)
-- **Te gustan** - Tu aimes (pluriel)
+        <p class="text-lg leading-relaxed mb-4">
+          Imagine que tu rencontres un nouvel ami dominicain et que vous discutez de vos passions communes. Peut-être que vous aimez tous les deux le football, ou que vous préférez la musique urbaine au merengue ? Savoir exprimer tes goûts et comprendre ceux des autres est essentiel pour créer des liens d'amitié !
+        </p>
 
-### Pronombres personales con GUSTAR
-- **A mí me** gusta/gustan
-- **A ti te** gusta/gustan
-- **A él/ella le** gusta/gustan
-- **A nosotros nos** gusta/gustan
-- **A vosotros os** gusta/gustan
-- **A ellos/ellas les** gusta/gustan
+        <p class="mb-4">
+          En Haïti, nous avons une culture riche : le kompa, le rara, le football (comme le célèbre match Haïti vs République Dominicaine !), le griot, les fritay... Dans les pays hispanophones aussi, la musique, la nourriture et le sport occupent une place centrale. Dans cette leçon, tu vas apprendre à parler de tout ce que tu aimes ou n'aimes pas, en utilisant une structure grammaticale unique à l'espagnol : le verbe <strong>GUSTAR</strong>.
+        </p>
 
-### Expresar preferencias
-- **Yo prefiero esta camisa** - Je préfère cette chemise
-- **Prefiero el fútbol** - Je préfère le football
+        <div class="info-box bg-accent/10 p-4 rounded-lg">
+          <h3 class="font-semibold mb-2">🎯 Objectifs d'apprentissage</h3>
+          <ul class="list-disc ml-6 space-y-1">
+            <li>Comprendre et utiliser le verbe GUSTAR (aimer, plaire)</li>
+            <li>Maîtriser la structure particulière avec les pronoms indirects</li>
+            <li>Exprimer différents degrés de préférence (aimer beaucoup, détester, préférer)</li>
+            <li>Parler de ses hobbies, sports, musiques et nourritures préférés</li>
+            <li>Utiliser d'autres verbes similaires (encantar, fascinar, interesar)</li>
+          </ul>
+        </div>
+      </div>
+    `,
+    contenu: `
+      <div class="lesson-content">
+        <section class="mb-6">
+          <h3 class="text-2xl font-bold mb-4">1️⃣ Le verbe GUSTAR : Une structure unique !</h3>
+          
+          <p class="mb-4">
+            En espagnol, dire "J'aime" ne se traduit pas littéralement ! Regarde cette différence importante :
+          </p>
 
-### Vocabulario de gustos
-- El fútbol - Le football
-- La música - La musique
-- Los deportes - Les sports
-- Las películas - Les films
-- La comida - La nourriture`,
-    exemplesExercices: `## Ejercicios
+          <div class="comparison-box bg-primary/10 p-4 rounded-lg mb-4">
+            <h4 class="font-semibold mb-3">🔍 Comparaison des structures</h4>
+            <div class="space-y-3">
+              <div>
+                <p class="font-semibold">Français / Créole :</p>
+                <p><strong>Je</strong> (sujet) + aime (verbe) + <strong>le football</strong> (objet)</p>
+                <p><strong>Mwen</strong> (sije) + renmen (vèb) + <strong>foutbòl</strong> (objè)</p>
+              </div>
+              <div>
+                <p class="font-semibold text-primary">Espagnol :</p>
+                <p><strong>Le football</strong> (sujet) + me gusta (verbe) + <strong>à moi</strong></p>
+                <p class="text-sm italic">Littéralement : "Le football plaît à moi" = "Le football me plaît"</p>
+                <p class="font-semibold text-primary">A mí ME GUSTA el fútbol</p>
+              </div>
+            </div>
+          </div>
 
-### Ejercicio 1: Completar
-1. A mí _____ gusta el fútbol
-2. A ti _____ gustan los deportes
-3. A ella _____ gusta la música
+          <div class="grammar-box bg-secondary/10 p-4 rounded-lg mb-4">
+            <h4 class="font-semibold mb-3">📖 Structure du verbe GUSTAR</h4>
+            <p class="mb-3">GUSTAR fonctionne avec des <strong>pronoms indirects</strong> (me, te, le, nos, os, les) et se conjugue selon CE QUI PLAÎT, pas selon la personne !</p>
+            
+            <table class="w-full border-collapse">
+              <thead>
+                <tr class="bg-primary/20">
+                  <th class="border p-2">Pronom indirect</th>
+                  <th class="border p-2">GUSTAR (une chose)</th>
+                  <th class="border p-2">GUSTAN (plusieurs choses)</th>
+                  <th class="border p-2">Français</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td class="border p-2"><strong>Me</strong></td>
+                  <td class="border p-2">Me gusta</td>
+                  <td class="border p-2">Me gustan</td>
+                  <td class="border p-2">J'aime / Mwen renmen</td>
+                </tr>
+                <tr>
+                  <td class="border p-2"><strong>Te</strong></td>
+                  <td class="border p-2">Te gusta</td>
+                  <td class="border p-2">Te gustan</td>
+                  <td class="border p-2">Tu aimes / Ou renmen</td>
+                </tr>
+                <tr>
+                  <td class="border p-2"><strong>Le</strong></td>
+                  <td class="border p-2">Le gusta</td>
+                  <td class="border p-2">Le gustan</td>
+                  <td class="border p-2">Il/Elle aime / Li renmen</td>
+                </tr>
+                <tr>
+                  <td class="border p-2"><strong>Nos</strong></td>
+                  <td class="border p-2">Nos gusta</td>
+                  <td class="border p-2">Nos gustan</td>
+                  <td class="border p-2">Nous aimons / Nou renmen</td>
+                </tr>
+                <tr>
+                  <td class="border p-2"><strong>Os</strong></td>
+                  <td class="border p-2">Os gusta</td>
+                  <td class="border p-2">Os gustan</td>
+                  <td class="border p-2">Vous aimez (pluriel)</td>
+                </tr>
+                <tr>
+                  <td class="border p-2"><strong>Les</strong></td>
+                  <td class="border p-2">Les gusta</td>
+                  <td class="border p-2">Les gustan</td>
+                  <td class="border p-2">Ils/Elles aiment / Yo renmen</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
 
-### Ejercicio 2: Diálogos
-Imagina diálogos usando el verbo GUSTAR:
-- ¿Te gusta el fútbol?
-  - Sí, me gusta / No, no me gusta
-- ¿Te gustan las películas?
-  - Sí, me gustan mucho / No me gustan
+          <div class="tip-box bg-accent/10 p-4 rounded-lg mb-4">
+            <h4 class="font-semibold mb-2">💡 Règle d'or</h4>
+            <p class="mb-2">GUSTAR s'accorde avec ce qui est aimé, PAS avec la personne !</p>
+            <ul class="list-disc ml-6 space-y-1">
+              <li><strong>Me gusta</strong> el kompa (une chose → gusta au singulier)</li>
+              <li><strong>Me gustan</strong> los deportes (plusieurs choses → gustan au pluriel)</li>
+            </ul>
+          </div>
 
-### Ejercicio 3: Preferencias
-Escribe 5 frases sobre tus gustos usando:
-- Me gusta...
-- Me gustan...
-- Yo prefiero...`,
-    references: ["MENFP - Programme 7e AF"]
+          <div class="examples-box bg-primary/5 p-4 rounded-lg">
+            <h4 class="font-semibold mb-3">🗣️ Exemples avec contexte haïtien</h4>
+            <div class="space-y-2">
+              <p>✅ <strong>Me gusta el kompa.</strong> (J'aime le kompa. / Mwen renmen konpa.)</p>
+              <p>✅ <strong>Me gustan las fritay.</strong> (J'aime les fritay. / Mwen renmen fritay yo.)</p>
+              <p>✅ <strong>¿Te gusta el fútbol?</strong> (Tu aimes le football ? / Èske ou renmen foutbòl?)</p>
+              <p>✅ <strong>A Jean le gusta jugar básquetbol.</strong> (Jean aime jouer au basket.)</p>
+              <p>✅ <strong>Nos gusta bailar.</strong> (Nous aimons danser. / Nou renmen danse.)</p>
+              <p>✅ <strong>Les gustan los mangos de Haití.</strong> (Ils aiment les mangues d'Haïti.)</p>
+            </div>
+          </div>
+        </section>
+
+        <section class="mb-6">
+          <h3 class="text-2xl font-bold mb-4">2️⃣ Préciser "À qui" avec A + Personne</h3>
+          
+          <p class="mb-4">
+            Pour clarifier ou insister sur la personne, on ajoute <strong>A + nom/pronom</strong> au début de la phrase :
+          </p>
+
+          <div class="clarification-box bg-secondary/10 p-4 rounded-lg mb-4">
+            <h4 class="font-semibold mb-3">📝 Structure complète</h4>
+            <p class="mb-3"><strong>A + personne + pronom indirect + GUSTA(N) + chose</strong></p>
+            <div class="space-y-2">
+              <p>✅ <strong>A mí</strong> me gusta el griot. (Moi, j'aime le griot.)</p>
+              <p>✅ <strong>A ti</strong> te gustan las playas. (Toi, tu aimes les plages.)</p>
+              <p>✅ <strong>A él</strong> le gusta el merengue. (Lui, il aime le merengue.)</p>
+              <p>✅ <strong>A nosotros</strong> nos gusta Puerto Príncipe. (Nous, nous aimons Port-au-Prince.)</p>
+              <p>✅ <strong>A Marie</strong> le gusta leer. (Marie aime lire.)</p>
+              <p>✅ <strong>A mis amigos</strong> les gusta el rara. (Mes amis aiment le rara.)</p>
+            </div>
+          </div>
+
+          <div class="dialogue-example bg-accent/10 p-4 rounded-lg">
+            <h4 class="font-semibold mb-3">💬 Dialogue : Amis qui discutent de leurs passions</h4>
+            <div class="space-y-2">
+              <p><strong>Wideline:</strong> Carlos, ¿te gusta la música haitiana?</p>
+              <p><strong>Carlos:</strong> Sí, me encanta el kompa. Y a ti, ¿te gusta el merengue?</p>
+              <p><strong>Wideline:</strong> Sí, me gusta mucho. También me gusta la bachata.</p>
+              <p><strong>Carlos:</strong> ¿Y a tus hermanos les gusta la música urbana?</p>
+              <p><strong>Wideline:</strong> A mi hermano sí, pero a mi hermana le gusta más el zouk.</p>
+            </div>
+            <p class="text-sm italic mt-3">
+              Traduction : Carlos, tu aimes la musique haïtienne ? / Oui, j'adore le kompa. Et toi, tu aimes le merengue ? / Oui, j'aime beaucoup. J'aime aussi la bachata. / Et tes frères et sœurs aiment la musique urbaine ? / Mon frère oui, mais ma sœur préfère le zouk.
+            </p>
+          </div>
+        </section>
+
+        <section class="mb-6">
+          <h3 class="text-2xl font-bold mb-4">3️⃣ Vocabulaire thématique : Parler de ce qu'on aime</h3>
+          
+          <div class="vocabulary-grid mb-4">
+            <div class="bg-primary/10 p-4 rounded-lg mb-3">
+              <h4 class="font-semibold mb-2">🎵 Musique et loisirs</h4>
+              <ul class="space-y-1">
+                <li><strong>La música</strong> - La musique</li>
+                <li><strong>Bailar</strong> - Danser</li>
+                <li><strong>Cantar</strong> - Chanter</li>
+                <li><strong>Tocar la guitarra</strong> - Jouer de la guitare</li>
+                <li><strong>El kompa / El konpa</strong> - Le kompa</li>
+                <li><strong>El merengue</strong> - Le merengue</li>
+                <li><strong>La bachata</strong> - La bachata</li>
+                <li><strong>El reggaetón</strong> - Le reggaeton</li>
+              </ul>
+            </div>
+
+            <div class="bg-secondary/10 p-4 rounded-lg mb-3">
+              <h4 class="font-semibold mb-2">⚽ Sports</h4>
+              <ul class="space-y-1">
+                <li><strong>El fútbol</strong> - Le football</li>
+                <li><strong>El básquetbol</strong> - Le basketball</li>
+                <li><strong>El voleibol</strong> - Le volleyball</li>
+                <li><strong>Correr</strong> - Courir</li>
+                <li><strong>Nadar</strong> - Nager</li>
+                <li><strong>Jugar</strong> - Jouer</li>
+              </ul>
+            </div>
+
+            <div class="bg-accent/10 p-4 rounded-lg mb-3">
+              <h4 class="font-semibold mb-2">🍽️ Nourriture haïtienne et caribéenne</h4>
+              <ul class="space-y-1">
+                <li><strong>El griot</strong> - Le griot</li>
+                <li><strong>El arroz con frijoles</strong> - Le riz aux haricots (diri kole)</li>
+                <li><strong>Las fritay</strong> - Les fritay</li>
+                <li><strong>El mangú</strong> - Le mangú (plat dominicain)</li>
+                <li><strong>Los plátanos fritos</strong> - Les bananes plantains frites</li>
+                <li><strong>El pescado</strong> - Le poisson</li>
+              </ul>
+            </div>
+
+            <div class="bg-primary/5 p-4 rounded-lg">
+              <h4 class="font-semibold mb-2">📚 Activités et hobbies</h4>
+              <ul class="space-y-1">
+                <li><strong>Leer</strong> - Lire</li>
+                <li><strong>Estudiar</strong> - Étudier</li>
+                <li><strong>Ver películas</strong> - Regarder des films</li>
+                <li><strong>Jugar videojuegos</strong> - Jouer aux jeux vidéo</li>
+                <li><strong>Dibujar</strong> - Dessiner</li>
+                <li><strong>Escribir</strong> - Écrire</li>
+              </ul>
+            </div>
+          </div>
+        </section>
+
+        <section class="mb-6">
+          <h3 class="text-2xl font-bold mb-4">4️⃣ Autres verbes similaires à GUSTAR</h3>
+          
+          <p class="mb-4">
+            Il existe d'autres verbes qui fonctionnent exactement comme GUSTAR pour exprimer différents niveaux d'appréciation :
+          </p>
+
+          <div class="similar-verbs-box bg-secondary/10 p-4 rounded-lg mb-4">
+            <table class="w-full border-collapse">
+              <thead>
+                <tr class="bg-primary/20">
+                  <th class="border p-2">Verbe</th>
+                  <th class="border p-2">Traduction</th>
+                  <th class="border p-2">Intensité</th>
+                  <th class="border p-2">Exemple</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td class="border p-2"><strong>Encantar</strong></td>
+                  <td class="border p-2">Adorer, enchanter</td>
+                  <td class="border p-2">+++</td>
+                  <td class="border p-2">Me encanta bailar</td>
+                </tr>
+                <tr>
+                  <td class="border p-2"><strong>Fascinar</strong></td>
+                  <td class="border p-2">Fasciner, passionner</td>
+                  <td class="border p-2">+++</td>
+                  <td class="border p-2">Me fascina la historia</td>
+                </tr>
+                <tr>
+                  <td class="border p-2"><strong>Gustar</strong></td>
+                  <td class="border p-2">Aimer, plaire</td>
+                  <td class="border p-2">++</td>
+                  <td class="border p-2">Me gusta el fútbol</td>
+                </tr>
+                <tr>
+                  <td class="border p-2"><strong>Interesar</strong></td>
+                  <td class="border p-2">Intéresser</td>
+                  <td class="border p-2">+</td>
+                  <td class="border p-2">Me interesa la ciencia</td>
+                </tr>
+                <tr>
+                  <td class="border p-2"><strong>Molestar</strong></td>
+                  <td class="border p-2">Déranger, ennuyer</td>
+                  <td class="border p-2">-</td>
+                  <td class="border p-2">Me molesta el ruido</td>
+                </tr>
+                <tr>
+                  <td class="border p-2"><strong>Disgustar</strong></td>
+                  <td class="border p-2">Déplaire</td>
+                  <td class="border p-2">--</td>
+                  <td class="border p-2">Me disgusta mentir</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="examples-box bg-accent/10 p-4 rounded-lg">
+            <h4 class="font-semibold mb-3">🗣️ Exemples variés</h4>
+            <div class="space-y-2">
+              <p>✅ <strong>Me encanta</strong> el kompa. (J'adore le kompa.) 💕</p>
+              <p>✅ <strong>Me fascina</strong> la cultura dominicana. (La culture dominicaine me fascine.) 🤩</p>
+              <p>✅ <strong>Me interesa</strong> aprender idiomas. (Apprendre les langues m'intéresse.) 🤔</p>
+              <p>✅ <strong>Me molesta</strong> el calor excesivo. (La chaleur excessive me dérange.) 😤</p>
+              <p>✅ <strong>No me gusta</strong> la injusticia. (Je n'aime pas l'injustice.) ❌</p>
+            </div>
+          </div>
+        </section>
+
+        <section class="mb-6">
+          <h3 class="text-2xl font-bold mb-4">5️⃣ Exprimer des préférences et des nuances</h3>
+          
+          <div class="nuances-box bg-primary/5 p-4 rounded-lg mb-4">
+            <h4 class="font-semibold mb-3">📊 Échelle de préférence</h4>
+            <ul class="space-y-2">
+              <li>😍 <strong>Me encanta / Me fascina</strong> = J'adore / Mwen renmen anpil anpil</li>
+              <li>😊 <strong>Me gusta mucho</strong> = J'aime beaucoup / Mwen renmen anpil</li>
+              <li>🙂 <strong>Me gusta</strong> = J'aime / Mwen renmen</li>
+              <li>😐 <strong>No me gusta mucho</strong> = Je n'aime pas trop / Mwen pa renmen l tèlman</li>
+              <li>😞 <strong>No me gusta</strong> = Je n'aime pas / Mwen pa renmen</li>
+              <li>😠 <strong>Odio / Detesto</strong> = Je déteste / Mwen rayi</li>
+            </ul>
+          </div>
+
+          <div class="preference-box bg-secondary/10 p-4 rounded-lg">
+            <h4 class="font-semibold mb-3">🔀 Comparer et préférer</h4>
+            <p class="mb-2">Pour dire que tu préfères une chose à une autre :</p>
+            <ul class="space-y-2">
+              <li><strong>Prefiero</strong> el kompa <strong>al</strong> merengue. (Je préfère le kompa au merengue.)</li>
+              <li><strong>Me gusta más</strong> el fútbol <strong>que</strong> el básquetbol. (J'aime plus le foot que le basket.)</li>
+              <li><strong>Me gusta tanto</strong> la comida haitiana <strong>como</strong> la dominicana. (J'aime autant la nourriture haïtienne que dominicaine.)</li>
+            </ul>
+          </div>
+
+          <div class="cultural-note bg-accent/10 p-4 rounded-lg mt-4">
+            <h4 class="font-semibold mb-2">🌍 Le savais-tu ?</h4>
+            <p>
+              Haïti et la République Dominicaine partagent beaucoup de passions communes : le baseball (très populaire en RD), la musique caribéenne (kompa, merengue, bachata), le football, et bien sûr les délicieuses nourritures à base de plantain, riz et haricots ! Parler de tes goûts en espagnol te permettra de découvrir ces points communs avec les Dominicains.
+            </p>
+          </div>
+        </section>
+      </div>
+    `,
+    exemplesExercices: `
+      <div class="exercises-section">
+        <h3 class="text-2xl font-bold mb-4">📝 Exercices pratiques</h3>
+
+        <div class="exercise mb-6">
+          <h4 class="font-semibold text-lg mb-3">Exercice 1 : GUSTA ou GUSTAN ?</h4>
+          <p class="mb-2">Complète avec la bonne forme (gusta/gustan) :</p>
+          <div class="bg-accent/10 p-4 rounded-lg space-y-2">
+            <p>1. Me _____ el kompa. (une chose)</p>
+            <p>2. Te _____ las playas de Jacmel. (plusieurs choses)</p>
+            <p>3. Le _____ bailar. (un verbe)</p>
+            <p>4. Nos _____ los mangos haitianos. (plusieurs choses)</p>
+            <p>5. Les _____ jugar fútbol. (un verbe)</p>
+            <p>6. Me _____ la comida dominicana. (une chose)</p>
+          </div>
+        </div>
+
+        <div class="exercise mb-6">
+          <h4 class="font-semibold text-lg mb-3">Exercice 2 : Traduis du créole à l'espagnol</h4>
+          <p class="mb-2">Utilise GUSTAR correctement :</p>
+          <div class="bg-primary/10 p-4 rounded-lg space-y-2">
+            <p>1. Mwen renmen danse. → _____</p>
+            <p>2. Ou renmen foutbòl? → _____</p>
+            <p>3. Li renmen konpa. → _____</p>
+            <p>4. Nou renmen fritay yo. → _____</p>
+            <p>5. Yo renmen mizik. → _____</p>
+            <p>6. Manman m renmen griyò. → _____</p>
+          </div>
+        </div>
+
+        <div class="exercise mb-6">
+          <h4 class="font-semibold text-lg mb-3">Exercice 3 : Réponds aux questions personnellement</h4>
+          <p class="mb-2">Réponds aux questions en espagnol selon tes vrais goûts :</p>
+          <div class="bg-secondary/10 p-4 rounded-lg space-y-3">
+            <p>1. ¿Te gusta el fútbol? → Sí, me gusta mucho / No, no me gusta</p>
+            <p>2. ¿Te gusta la música haitiana? → _____</p>
+            <p>3. ¿Te gustan las matemáticas? → _____</p>
+            <p>4. ¿Te gusta bailar? → _____</p>
+            <p>5. ¿Qué tipo de comida te gusta más? → _____</p>
+            <p>6. ¿Te gusta leer o prefieres ver películas? → _____</p>
+          </div>
+        </div>
+
+        <div class="exercise mb-6">
+          <h4 class="font-semibold text-lg mb-3">Exercice 4 : Complète le dialogue</h4>
+          <p class="mb-2">Remplis les blancs avec les verbes appropriés (gustar, encantar, interesar) :</p>
+          <div class="bg-accent/10 p-4 rounded-lg">
+            <p><strong>Pedro:</strong> Hola Manouchka, ¿qué te _____ hacer en tu tiempo libre?</p>
+            <p><strong>Manouchka:</strong> Me _____ bailar kompa. ¿Y a ti?</p>
+            <p><strong>Pedro:</strong> A mí me _____ el merengue. También me _____ jugar básquetbol.</p>
+            <p><strong>Manouchka:</strong> ¿Te _____ los deportes?</p>
+            <p><strong>Pedro:</strong> Sí, me _____ muchísimo. Especialmente el fútbol.</p>
+          </div>
+        </div>
+
+        <div class="exercise mb-6">
+          <h4 class="font-semibold text-lg mb-3">Exercice 5 : Présentation orale</h4>
+          <p class="mb-2">Prépare une présentation de 1-2 minutes sur tes goûts et préférences. Inclus :</p>
+          <ul class="list-disc ml-6 mb-3">
+            <li>3 choses que tu adores (Me encanta...)</li>
+            <li>3 choses que tu aimes (Me gusta...)</li>
+            <li>2 choses qui t'intéressent (Me interesa...)</li>
+            <li>2 choses que tu n'aimes pas (No me gusta...)</li>
+            <li>Une comparaison de préférences (Prefiero... / Me gusta más...)</li>
+          </ul>
+          <div class="bg-primary/10 p-4 rounded-lg">
+            <p class="font-semibold mb-2">Exemple de structure :</p>
+            <p class="italic">
+              "¡Hola! Me llamo _____. Me encanta el kompa y me gusta bailar. También me gustan los deportes, especialmente el fútbol. Me interesa mucho la historia de Haití. No me gusta levantarme temprano y tampoco me gusta el calor excesivo. Prefiero el kompa al merengue, pero me gustan los dos."
+            </p>
+          </div>
+        </div>
+
+        <div class="exercise mb-6">
+          <h4 class="font-semibold text-lg mb-3">Exercice 6 : Enquête en classe</h4>
+          <p class="mb-2">Interviewe 3 camarades et note leurs goûts :</p>
+          <div class="bg-secondary/10 p-4 rounded-lg">
+            <p class="font-semibold mb-2">Questions à poser :</p>
+            <ul class="list-disc ml-6 space-y-1">
+              <li>¿Te gusta la música? ¿Qué tipo?</li>
+              <li>¿Te gustan los deportes? ¿Cuál prefieres?</li>
+              <li>¿Qué comida te gusta más?</li>
+              <li>¿Te gusta estudiar español?</li>
+            </ul>
+            <p class="text-sm italic mt-3">Présente ensuite les résultats : "A Jean le gusta..., A Marie le encanta..., etc."</p>
+          </div>
+        </div>
+
+        <div class="video-resource bg-primary/10 p-4 rounded-lg">
+          <h4 class="font-semibold mb-2">🎥 Ressource vidéo recommandée</h4>
+          <p class="mb-2">Pour approfondir cette leçon, regarde cette vidéo :</p>
+          <p class="font-semibold">"El Verbo GUSTAR - Expresar Gustos y Preferencias en Español"</p>
+          <p class="text-sm italic">Cherche sur YouTube : "Spanish verb gustar explained likes dislikes"</p>
+        </div>
+      </div>
+    `,
+    references: [
+      "Programme MENFP 7AF - Espagnol",
+      "Grammaire espagnole - Le verbe GUSTAR et pronoms indirects",
+      "Vocabulaire thématique : loisirs, sports, musique caribéenne",
+      "Contexte culturel haïtien et dominicain"
+    ],
   },
 
   "aula-patio": {
