@@ -11129,71 +11129,369 @@ export const sciencesSocialesLessons7AF: SciencesSocialesLesson[] = [
     id: "societe-precolombienne",
     title: "La société précolombienne",
     mois: "Octobre",
-    objectif: "Approfondir la compréhension de l'organisation sociale des Taïnos.",
+    objectif: "Approfondir la compréhension de l'organisation sociale, culturelle et économique des Taïnos avant l'arrivée des Européens.",
     introduction: `
+      <p class="text-foreground leading-relaxed mb-4">
+        Avant l'arrivée de Christophe Colomb en 1492, Haïti (alors appelée Ayiti ou Quisqueya) était habitée par le peuple Taïno, une civilisation amérindienne développée et organisée.
+      </p>
       <p class="text-foreground leading-relaxed">
-        La société taïno d'avant 1492 était bien organisée avec une structure sociale hiérarchisée, des croyances religieuses complexes et un mode de vie adapté à l'environnement insulaire.
+        Loin d'être des "sauvages" comme les Européens les ont décrits, les Taïnos avaient une société structurée, une spiritualité riche, une agriculture avancée et un art raffiné. Découvrons ensemble cette civilisation fascinante qui est à la base de notre identité haïtienne ! 🏝️
       </p>
     `,
     contenu: `
-      <section class="space-y-6">
-        <div>
-          <h3 class="text-xl font-semibold mb-3 text-foreground">1. Organisation sociale</h3>
-          <ul class="list-disc ml-6 space-y-2 text-foreground">
-            <li><strong>Cacique :</strong> Chef suprême, héréditaire</li>
-            <li><strong>Nitaínos :</strong> Nobles, guerriers</li>
-            <li><strong>Behiques :</strong> Prêtres, guérisseurs</li>
-            <li><strong>Naborías :</strong> Peuple commun, agriculteurs</li>
-          </ul>
+      <section class="space-y-8">
+        <div class="bg-gradient-to-r from-amber-50 to-orange-50 dark:from-amber-950/30 dark:to-orange-950/30 p-6 rounded-lg">
+          <h3 class="text-2xl font-bold mb-4 text-primary">👥 Introduction : Qui étaient les Taïnos ?</h3>
+          <p class="text-foreground mb-3">
+            Les Taïnos appartiennent à la famille des peuples <strong>Arawaks</strong>, originaires d'Amérique du Sud (bassin de l'Orénoque, Venezuela/Guyana actuels). Par vagues migratoires successives, ils ont remonté les Petites Antilles puis colonisé les Grandes Antilles (Cuba, Jamaïque, Hispaniola, Porto Rico) entre 200 et 800 après J.-C.
+          </p>
+          <p class="text-foreground">
+            Le mot "Taïno" signifie "bon" ou "noble". Ils se sont donnés ce nom pour se distinguer des Caraïbes, peuple guerrier des Petites Antilles. Au moment de l'arrivée de Colomb, on estime qu'ils étaient environ 400 000 à 1 million sur l'île d'Hispaniola (Haïti et République Dominicaine actuelles).
+          </p>
         </div>
 
         <div>
-          <h3 class="text-xl font-semibold mb-3 text-foreground">2. Mode de vie</h3>
-          <h4 class="font-semibold mt-3 mb-2 text-foreground">Habitat</h4>
-          <ul class="list-disc ml-6 space-y-2 text-foreground">
-            <li><strong>Bohíos :</strong> Maisons rondes en paille</li>
-            <li><strong>Caney :</strong> Maison rectangulaire du cacique</li>
-            <li>Villages près des rivières et côtes</li>
-          </ul>
+          <h3 class="text-2xl font-bold mb-4 text-primary">I. Organisation sociale et politique 👑</h3>
+          
+          <div class="bg-purple-50 dark:bg-purple-950/30 p-6 rounded-lg mb-4">
+            <h4 class="text-xl font-semibold mb-3 text-foreground">A. Structure hiérarchique pyramidale</h4>
+            <p class="text-foreground mb-4">La société taïno était divisée en quatre classes sociales bien distinctes :</p>
+            
+            <div class="space-y-3">
+              <div class="bg-white dark:bg-gray-800 p-4 rounded">
+                <p class="font-bold text-lg mb-2 text-foreground">1️⃣ Le Cacique (Chef suprême)</p>
+                <ul class="list-disc ml-6 text-sm text-foreground space-y-1">
+                  <li><strong>Pouvoir :</strong> Politique, religieux, militaire et judiciaire</li>
+                  <li><strong>Hérédité :</strong> Succession matrilinéaire (par la lignée maternelle, généralement le fils de la sœur aînée)</li>
+                  <li><strong>Symboles :</strong> Couronne de plumes, ornements en or, guanin (alliage or-cuivre)</li>
+                  <li><strong>Résidence :</strong> Caney (grande maison rectangulaire richement décorée)</li>
+                  <li><strong>Privilèges :</strong> Polygamie autorisée (plusieurs épouses), terres les plus fertiles</li>
+                </ul>
+                <p class="text-sm text-foreground mt-2 italic">Exemple : Guacanagarix (cacique du royaume de Marien, nord d'Haïti, ami de Colomb), Caonabo (cacique de Maguana, centre, résistant farouche)</p>
+              </div>
 
-          <h4 class="font-semibold mt-3 mb-2 text-foreground">Alimentation</h4>
-          <ul class="list-disc ml-6 space-y-2 text-foreground">
-            <li><strong>Agriculture :</strong> Manioc (cassave), patate douce, maïs</li>
-            <li><strong>Pêche :</strong> Poissons, crustacés</li>
-            <li><strong>Chasse :</strong> Hutias (rongeurs), iguanes, oiseaux</li>
-          </ul>
+              <div class="bg-white dark:bg-gray-800 p-4 rounded">
+                <p class="font-bold text-lg mb-2 text-foreground">2️⃣ Les Nitaínos (Nobles/Guerriers)</p>
+                <ul class="list-disc ml-6 text-sm text-foreground space-y-1">
+                  <li><strong>Rôle :</strong> Conseillers du cacique, chefs militaires, administrateurs de villages</li>
+                  <li><strong>Privilèges :</strong> Exemption de travaux agricoles, terres attribuées, respect social</li>
+                  <li><strong>Responsabilités :</strong> Organiser la défense, collecter tributs, rendre justice au niveau local</li>
+                  <li><strong>Signes distinctifs :</strong> Parures spéciales, tatouages particuliers</li>
+                </ul>
+              </div>
+
+              <div class="bg-white dark:bg-gray-800 p-4 rounded">
+                <p class="font-bold text-lg mb-2 text-foreground">3️⃣ Les Behiques (Prêtres-guérisseurs)</p>
+                <ul class="list-disc ml-6 text-sm text-foreground space-y-1">
+                  <li><strong>Fonction spirituelle :</strong> Intermédiaires entre humains et zemis (esprits), présidents des cérémonies religieuses</li>
+                  <li><strong>Fonction médicale :</strong> Guérison par plantes médicinales, potions, rituels</li>
+                  <li><strong>Savoir :</strong> Gardiens de la tradition orale, mythes, généalogies</li>
+                  <li><strong>Influence :</strong> Très respectés, parfois plus influents que les nitaínos</li>
+                  <li><strong>Formation :</strong> Longue initiation, jeûnes, visions induites par cohoba (poudre hallucinogène)</li>
+                </ul>
+              </div>
+
+              <div class="bg-white dark:bg-gray-800 p-4 rounded">
+                <p class="font-bold text-lg mb-2 text-foreground">4️⃣ Les Naborías (Peuple commun)</p>
+                <ul class="list-disc ml-6 text-sm text-foreground space-y-1">
+                  <li><strong>Activités :</strong> Agriculture (conucos), pêche, chasse, artisanat</li>
+                  <li><strong>Obligations :</strong> Travail des terres du cacique, participation aux grands travaux collectifs (batey - terrain de jeu)</li>
+                  <li><strong>Vie quotidienne :</strong> Simple mais pas misérable, accès à la nourriture suffisant grâce agriculture productive</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+
+          <div class="bg-blue-50 dark:bg-blue-950/30 p-6 rounded-lg">
+            <h4 class="text-xl font-semibold mb-3 text-foreground">B. Organisation territoriale : Les cinq cacicazgos (royaumes)</h4>
+            <p class="text-foreground mb-3">Hispaniola était divisée en cinq grands territoires appelés <strong>cacicazgos</strong> :</p>
+            <div class="grid md:grid-cols-2 gap-3">
+              <div class="bg-white dark:bg-gray-800 p-3 rounded">
+                <p class="font-bold text-foreground">1. Marien (Nord-Ouest)</p>
+                <p class="text-xs text-foreground">Cacique : Guacanagarix. Capitale : Marien. Région côtière riche en pêche.</p>
+              </div>
+              <div class="bg-white dark:bg-gray-800 p-3 rounded">
+                <p class="font-bold text-foreground">2. Marién (Nord)</p>
+                <p class="text-xs text-foreground">Cacique : Guarionex. Capitale : Guarico. Plaine fertile de la Vega Real.</p>
+              </div>
+              <div class="bg-white dark:bg-gray-800 p-3 rounded">
+                <p class="font-bold text-foreground">3. Maguana (Centre)</p>
+                <p class="text-xs text-foreground">Cacique : Caonabo. Région montagneuse, mines d'or.</p>
+              </div>
+              <div class="bg-white dark:bg-gray-800 p-3 rounded">
+                <p class="font-bold text-foreground">4. Higüey (Est)</p>
+                <p class="text-xs text-foreground">Cacique : Cayacoa. Zone côtière orientale.</p>
+              </div>
+              <div class="bg-white dark:bg-gray-800 p-3 rounded">
+                <p class="font-bold text-foreground">5. Jaragua (Sud-Ouest)</p>
+                <p class="text-xs text-foreground">Cacique : Bohechío. Péninsule sud, région prospère.</p>
+              </div>
+            </div>
+            <p class="text-foreground mt-3 text-sm italic">Chaque cacicazgo était subdivisé en plusieurs villages (yucayeques) dirigés par des nitaínos sous l'autorité du cacique principal.</p>
+          </div>
         </div>
 
         <div>
-          <h3 class="text-xl font-semibold mb-3 text-foreground">3. Religion</h3>
-          <ul class="list-disc ml-6 space-y-2 text-foreground">
-            <li><strong>Zemis :</strong> Esprits des ancêtres et de la nature</li>
-            <li><strong>Yucahu :</strong> Dieu suprême du manioc</li>
-            <li><strong>Atabey :</strong> Déesse mère</li>
-            <li><strong>Cérémonies :</strong> Areito (danses et chants religieux)</li>
-          </ul>
+          <h3 class="text-2xl font-bold mb-4 text-primary">II. Mode de vie et habitat 🏡</h3>
+          
+          <div class="bg-green-50 dark:bg-green-950/30 p-6 rounded-lg mb-4">
+            <h4 class="text-xl font-semibold mb-3 text-foreground">A. L'habitat</h4>
+            <div class="space-y-3">
+              <div class="bg-white dark:bg-gray-800 p-4 rounded">
+                <p class="font-bold mb-2 text-foreground">🛖 Bohíos (maisons rondes)</p>
+                <ul class="list-disc ml-6 text-sm text-foreground space-y-1">
+                  <li><strong>Structure :</strong> Forme circulaire ou ovale, toit conique très haut</li>
+                  <li><strong>Matériaux :</strong> Poteaux en bois, murs en branchages entrelacés (bajareque), toit en feuilles de palmier (cana)</li>
+                  <li><strong>Intérieur :</strong> Une seule grande pièce, hamacs (hamaca) suspendus pour dormir, foyer central</li>
+                  <li><strong>Avantages :</strong> Résistance aux ouragans (forme aérodynamique), fraîcheur intérieure, construction rapide</li>
+                </ul>
+              </div>
+              <div class="bg-white dark:bg-gray-800 p-4 rounded">
+                <p class="font-bold mb-2 text-foreground">🏛️ Caney (maison du cacique)</p>
+                <ul class="list-disc ml-6 text-sm text-foreground space-y-1">
+                  <li><strong>Structure :</strong> Rectangulaire, beaucoup plus grande (jusqu'à 25m de long)</li>
+                  <li><strong>Décoration :</strong> Peintures, sculptures, ornements en or et coquillages</li>
+                  <li><strong>Usage :</strong> Résidence familiale du cacique + salle du conseil + lieu de cérémonies</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+
+          <div class="bg-amber-50 dark:bg-amber-950/30 p-6 rounded-lg">
+            <h4 class="text-xl font-semibold mb-3 text-foreground">B. L'alimentation : Agriculture et pêche</h4>
+            <div class="space-y-3">
+              <div class="bg-white dark:bg-gray-800 p-4 rounded">
+                <p class="font-bold mb-2 text-foreground">🌱 Agriculture sur conucos (buttes de terre)</p>
+                <ul class="list-disc ml-6 text-sm text-foreground space-y-1">
+                  <li><strong>Manioc (yuca) :</strong> Aliment de base. Transformé en cassave (pain plat) encore consommé aujourd'hui</li>
+                  <li><strong>Patate douce (batata)</strong></li>
+                  <li><strong>Maïs (maíz)</strong></li>
+                  <li><strong>Haricots, courges, piments, ananas, goyaves</strong></li>
+                  <li><strong>Technique :</strong> Agriculture sur brûlis + conucos (monticules de terre évitant érosion)</li>
+                </ul>
+              </div>
+              <div class="bg-white dark:bg-gray-800 p-4 rounded">
+                <p class="font-bold mb-2 text-foreground">🎣 Pêche et chasse</p>
+                <ul class="list-disc ml-6 text-sm text-foreground space-y-1">
+                  <li><strong>Pêche :</strong> Poissons, crabes, lambis (conques), tortues marines. Utilisation de filets, nasses, harpons</li>
+                  <li><strong>Chasse :</strong> Hutías (rongeurs aujourd'hui presque disparus), iguanes, oiseaux, lamantins</li>
+                  <li><strong>Technique originale :</strong> Pêche avec le rémora (poisson-ventouse attaché à une corde pour capturer tortues !)</li>
+                </ul>
+              </div>
+            </div>
+          </div>
         </div>
 
         <div>
-          <h3 class="text-xl font-semibold mb-3 text-foreground">4. Arts et artisanat</h3>
-          <ul class="list-disc ml-6 space-y-2 text-foreground">
-            <li>Poterie décorée</li>
-            <li>Sculptures de zemis en bois et pierre</li>
-            <li>Vannerie</li>
-            <li>Bijoux en coquillages et or</li>
+          <h3 class="text-2xl font-bold mb-4 text-primary">III. Religion et croyances spirituelles 🙏</h3>
+          
+          <div class="bg-indigo-50 dark:bg-indigo-950/30 p-6 rounded-lg mb-4">
+            <h4 class="text-xl font-semibold mb-3 text-foreground">A. Le panthéon taïno</h4>
+            <div class="space-y-3">
+              <div class="bg-white dark:bg-gray-800 p-4 rounded">
+                <p class="font-bold mb-2 text-foreground">🌟 Yocahu (ou Yúcahu Bagua Maorocoti)</p>
+                <p class="text-sm text-foreground">Dieu suprême créateur, dieu du manioc et de la mer. Invisible, sans forme humaine. Considéré comme bienveillant.</p>
+              </div>
+              <div class="bg-white dark:bg-gray-800 p-4 rounded">
+                <p class="font-bold mb-2 text-foreground">🌙 Atabey (ou Attabeira)</p>
+                <p class="text-sm text-foreground">Déesse mère de Yocahu, déesse de la fertilité, de l'eau douce, de la lune. Très vénérée car associée aux récoltes.</p>
+              </div>
+              <div class="bg-white dark:bg-gray-800 p-4 rounded">
+                <p class="font-bold mb-2 text-foreground">💀 Maquetaurie Guayaba</p>
+                <p class="text-sm text-foreground">Seigneur de Coaybay (terre des morts). Les morts deviennent des esprits nocturnes (ops) qui errent la nuit.</p>
+              </div>
+              <div class="bg-white dark:bg-gray-800 p-4 rounded">
+                <p class="font-bold mb-2 text-foreground">🌪️ Juracán (Hurakan)</p>
+                <p class="text-sm text-foreground">Dieu des tempêtes et des ouragans (d'où vient le mot "ouragan" !). Redouté et craint.</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="bg-teal-50 dark:bg-teal-950/30 p-6 rounded-lg mb-4">
+            <h4 class="text-xl font-semibold mb-3 text-foreground">B. Les Zemis : Esprits omniprésents</h4>
+            <p class="text-foreground mb-3">
+              Les <strong>zemis</strong> (ou cémis) sont des esprits ancestraux ou de la nature présents partout : dans les rochers, arbres, grottes, animaux. Les Taïnos fabriquaient des idoles en pierre, bois, coquillage ou coton représentant ces esprits.
+            </p>
+            <ul class="list-disc ml-6 text-sm text-foreground space-y-1">
+              <li><strong>Usage :</strong> Protection de la famille, du village, des récoltes. Consultés avant décisions importantes</li>
+              <li><strong>Rituel :</strong> Offrandes (nourriture, cassave), prières, cohoba (substance hallucinogène) pour communiquer</li>
+              <li><strong>Variété :</strong> Zemis personnels (petits, portables) et zemis communautaires (grands, dans temples)</li>
+            </ul>
+          </div>
+
+          <div class="bg-pink-50 dark:bg-pink-950/30 p-6 rounded-lg">
+            <h4 class="text-xl font-semibold mb-3 text-foreground">C. Cérémonies religieuses : Les Areitos</h4>
+            <p class="text-foreground mb-3">
+              <strong>Areito</strong> : Grande fête religieuse et sociale combinant chants, danses, musique et récits mythologiques.
+            </p>
+            <ul class="list-disc ml-6 text-sm text-foreground space-y-1">
+              <li><strong>Occasions :</strong> Récoltes, victoires militaires, mariages, funérailles, hommage aux zemis</li>
+              <li><strong>Déroulement :</strong> Danses en cercle, chants racontant l'histoire du peuple, battements de tambours (mayohuacan)</li>
+              <li><strong>Durée :</strong> Pouvait durer plusieurs jours avec consommation de cassave et boissons fermentées</li>
+              <li><strong>Importance :</strong> Transmission orale de la mémoire collective, renforcement de la cohésion sociale</li>
+            </ul>
+          </div>
+        </div>
+
+        <div>
+          <h3 class="text-2xl font-bold mb-4 text-primary">IV. Arts et artisanat 🎨</h3>
+          
+          <div class="bg-orange-50 dark:bg-orange-950/30 p-6 rounded-lg mb-4">
+            <h4 class="text-xl font-semibold mb-3 text-foreground">A. Production artistique diversifiée</h4>
+            <div class="grid md:grid-cols-2 gap-3">
+              <div class="bg-white dark:bg-gray-800 p-3 rounded">
+                <p class="font-bold mb-1 text-foreground">🏺 Poterie</p>
+                <p class="text-xs text-foreground">Vases, plats, casseroles décorés de motifs géométriques, représentations humaines ou animales stylisées</p>
+              </div>
+              <div class="bg-white dark:bg-gray-800 p-3 rounded">
+                <p class="font-bold mb-1 text-foreground">🗿 Sculpture</p>
+                <p class="text-xs text-foreground">Zemis en pierre (calcaire, marbre), bois (acajou, gaïac), os. Esthétique épurée et symbolique</p>
+              </div>
+              <div class="bg-white dark:bg-gray-800 p-3 rounded">
+                <p class="font-bold mb-1 text-foreground">🧺 Vannerie</p>
+                <p class="text-xs text-foreground">Paniers, nattes, chapeaux tressés avec feuilles de palmier et fibres végétales</p>
+              </div>
+              <div class="bg-white dark:bg-gray-800 p-3 rounded">
+                <p class="font-bold mb-1 text-foreground">💍 Bijoux</p>
+                <p class="text-xs text-foreground">Colliers, boucles d'oreilles, bracelets en coquillages, os, pierres semi-précieuses, or et guanin</p>
+              </div>
+              <div class="bg-white dark:bg-gray-800 p-3 rounded">
+                <p class="font-bold mb-1 text-foreground">🎨 Pétroglyphes</p>
+                <p class="text-xs text-foreground">Gravures rupestres dans grottes et sur rochers (encore visibles aujourd'hui !)</p>
+              </div>
+              <div class="bg-white dark:bg-gray-800 p-3 rounded">
+                <p class="font-bold mb-1 text-foreground">🎭 Parures corporelles</p>
+                <p class="text-xs text-foreground">Peintures corporelles (roucou rouge), tatouages, coiffes de plumes</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="bg-yellow-50 dark:bg-yellow-950/30 p-4 rounded-lg">
+            <h4 class="text-xl font-semibold mb-3 text-foreground">B. Le jeu de balle : Sport et rituel</h4>
+            <p class="text-foreground mb-2">
+              <strong>Batey</strong> : Jeu de balle joué sur un terrain aménagé (aussi appelé batey), entouré de pierres gravées.
+            </p>
+            <ul class="list-disc ml-6 text-sm text-foreground space-y-1">
+              <li><strong>Règles :</strong> Deux équipes, balle en caoutchouc, interdiction d'utiliser mains/pieds (uniquement épaules, coudes, hanches, genoux, tête)</li>
+              <li><strong>Fonction :</strong> Sport, mais aussi rituel religieux et moyen de résoudre conflits entre cacicazgos</li>
+              <li><strong>Symbolisme :</strong> Représentait la lutte cosmique entre forces du bien et du mal</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="bg-red-50 dark:bg-red-950/30 p-6 rounded-lg border-l-4 border-red-500">
+          <h3 class="text-2xl font-bold mb-4 text-primary">V. La chute de la civilisation taïno 💔</h3>
+          <p class="text-foreground mb-3">
+            L'arrivée des Espagnols en 1492 marque le début de la <strong>catastrophe démographique</strong> pour les Taïnos. En moins de 50 ans, la quasi-totalité de la population disparaît.
+          </p>
+          <div class="space-y-2">
+            <div class="bg-white dark:bg-gray-800 p-3 rounded">
+              <p class="font-bold mb-1 text-foreground">🦠 Maladies européennes</p>
+              <p class="text-xs text-foreground">Variole, grippe, rougeole : les Taïnos n'avaient aucune immunité. Épidémies dévastatrices.</p>
+            </div>
+            <div class="bg-white dark:bg-gray-800 p-3 rounded">
+              <p class="font-bold mb-1 text-foreground">⛏️ Travail forcé (encomienda et repartimiento)</p>
+              <p class="text-xs text-foreground">Esclavage dans mines d'or, plantations. Conditions inhumaines, sous-alimentation, épuisement.</p>
+            </div>
+            <div class="bg-white dark:bg-gray-800 p-3 rounded">
+              <p class="font-bold mb-1 text-foreground">⚔️ Guerres et répressions</p>
+              <p class="text-xs text-foreground">Résistances (Caonabo, Enriquillo) écrasées dans le sang. Massacres, tortures.</p>
+            </div>
+            <div class="bg-white dark:bg-gray-800 p-3 rounded">
+              <p class="font-bold mb-1 text-foreground">🧬 Métissage et assimilation culturelle</p>
+              <p class="text-xs text-foreground">Les survivants se sont métissés (avec Africains et Espagnols). Culture taïno absorbée/effacée.</p>
+            </div>
+          </div>
+          <p class="text-foreground mt-4 font-semibold">
+            Résultat : Vers 1550, il ne restait pratiquement plus de Taïnos "purs". C'est l'un des plus grands génocides de l'Histoire.
+          </p>
+        </div>
+
+        <div class="bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-950/30 dark:to-emerald-950/30 p-6 rounded-lg border-l-4 border-green-500">
+          <h3 class="text-2xl font-bold mb-3 text-primary">🌟 Héritage taïno dans l'Haïti d'aujourd'hui</h3>
+          <p class="text-foreground mb-3">Bien que décimés, les Taïnos ont laissé des traces indélébiles dans notre culture :</p>
+          <ul class="list-disc ml-6 text-foreground space-y-2">
+            <li><strong>Mots créoles :</strong> Hamac, canot, maïs, tabac, ouragan, barbecue (barbacoa), igname, caïman, savane</li>
+            <li><strong>Alimentation :</strong> Cassave (kasav), technique du conuco, certaines plantes cultivées</li>
+            <li><strong>Toponymie :</strong> Noms de lieux (Ayiti, Gonâve, Gonaïves, Yaguana/Léogâne, Artibonite, Jacmel...)</li>
+            <li><strong>Patrimoine génétique :</strong> Études ADN montrent que de nombreux Haïtiens ont des ancêtres taïnos (notamment via les femmes taïnos qui ont eu des enfants avec Africains/Européens)</li>
+            <li><strong>Symbolisme :</strong> Le nom "Haïti" (terre de montagnes) choisi en 1804 est un hommage aux premiers habitants</li>
           </ul>
+          <p class="text-foreground mt-4 font-semibold italic">
+            "Konnen se byen, sonje se pi bon" (Savoir c'est bien, se souvenir c'est mieux). Nous devons honorer la mémoire des Taïnos, premiers Haïtiens. 🙏
+          </p>
         </div>
       </section>
     `,
     exemplesExercices: `
-      <section class="space-y-4">
-        <div class="bg-accent/5 border-l-4 border-accent p-4 rounded">
-          <h4 class="font-semibold mb-2 text-foreground">📝 Projet</h4>
-          <p class="text-foreground">
-            Crée une maquette d'un village taïno avec bohíos, caney, et terrain de jeu de balle (batey).
-          </p>
+      <div class="space-y-6">
+        <h3 class="text-2xl font-bold mb-4 text-primary">📝 Exercices pratiques</h3>
+
+        <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md">
+          <p class="font-bold text-xl mb-4">1. Organigramme social</p>
+          <p class="mb-3">Dessine une pyramide représentant la hiérarchie sociale taïno. Pour chaque niveau, indique :</p>
+          <ul class="list-disc ml-6 space-y-1">
+            <li>Le nom de la classe sociale</li>
+            <li>Ses rôles et responsabilités</li>
+            <li>Ses privilèges ou obligations</li>
+          </ul>
         </div>
-      </section>
+
+        <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md">
+          <p class="font-bold text-xl mb-4">2. Carte des cacicazgos</p>
+          <p class="mb-3">Sur une carte d'Hispaniola (ou d'Haïti), localise et colorie les cinq cacicazgos. Pour chacun, indique le nom du cacique principal.</p>
+        </div>
+
+        <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md">
+          <p class="font-bold text-xl mb-4">3. Maquette de village taïno</p>
+          <p class="mb-3">En groupe, créer une maquette d'un yucayeque (village) taïno avec :</p>
+          <ul class="list-disc ml-6 space-y-1">
+            <li>Bohíos (maisons rondes du peuple)</li>
+            <li>Caney (maison rectangulaire du cacique)</li>
+            <li>Batey (terrain de jeu de balle)</li>
+            <li>Conucos (buttes agricoles)</li>
+            <li>Zone côtière avec canots</li>
+          </ul>
+        </div>
+
+        <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md">
+          <p class="font-bold text-xl mb-4">4. Recherche sur le panthéon</p>
+          <p class="mb-3">Choisir une divinité taïno (Yocahu, Atabey, Juracán, etc.) et créer une fiche détaillée :</p>
+          <ul class="list-disc ml-6 space-y-1">
+            <li>Nom et surnoms</li>
+            <li>Domaine (mer, agriculture, tempêtes...)</li>
+            <li>Symboles associés</li>
+            <li>Mythes la concernant</li>
+            <li>Comment les Taïnos la vénéraient</li>
+          </ul>
+        </div>
+
+        <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md">
+          <p class="font-bold text-xl mb-4">5. Liste de mots taïnos</p>
+          <p class="mb-3">Rechercher 10 mots d'origine taïno encore utilisés en créole haïtien ou en français. Pour chaque mot :</p>
+          <ul class="list-disc ml-6 space-y-1">
+            <li>Donner le mot taïno original</li>
+            <li>Sa signification</li>
+            <li>Son usage aujourd'hui</li>
+          </ul>
+          <p class="text-sm mt-2 italic">Exemples : hamac, barbecue, ouragan, caïman, igname, tabac, canot, savane...</p>
+        </div>
+
+        <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md">
+          <p class="font-bold text-xl mb-4">6. Questions de réflexion</p>
+          <ol class="list-decimal ml-6 space-y-3">
+            <li>Pourquoi peut-on dire que les Taïnos avaient une civilisation avancée et organisée ?</li>
+            <li>Quel rôle jouaient les behiques (prêtres) dans la société taïno ? Pourquoi étaient-ils si importants ?</li>
+            <li>Quelles sont les principales causes de la disparition rapide des Taïnos après 1492 ?</li>
+            <li>Comment les Taïnos sont-ils encore présents dans la culture haïtienne d'aujourd'hui ?</li>
+          </ol>
+        </div>
+
+        <div class="bg-primary/5 border-l-4 border-primary p-4 rounded">
+          <p class="font-bold mb-2">🎨 Projet créatif : Exposition Taïno</p>
+          <p class="text-sm">Organiser une mini-exposition dans ta classe avec : dessins de zemis, reproductions de pétroglyphes, maquettes de bohíos, affiches sur les caciques célèbres, présentation du jeu de balle batey.</p>
+        </div>
+      </div>
     `
   },
 
@@ -11202,65 +11500,390 @@ export const sciencesSocialesLessons7AF: SciencesSocialesLesson[] = [
     id: "formations-vegetales-caraibe",
     title: "Les formations végétales de la Caraïbe",
     mois: "Novembre",
-    objectif: "Découvrir la diversité des écosystèmes végétaux caribéens.",
+    objectif: "Découvrir la diversité des écosystèmes végétaux caribéens, comprendre leur importance écologique et les menaces qui pèsent sur eux.",
     introduction: `
+      <p class="text-foreground leading-relaxed mb-4">
+        La région caribéenne est un véritable paradis de biodiversité ! Avec son climat tropical, ses îles variées et ses reliefs diversifiés, la Caraïbe abrite une richesse végétale exceptionnelle.
+      </p>
       <p class="text-foreground leading-relaxed">
-        La Caraïbe possède une biodiversité végétale remarquable, avec des forêts tropicales, des mangroves, et des récifs coralliens. Malheureusement, ces écosystèmes sont menacés par la déforestation et le changement climatique.
+        Des forêts tropicales humides luxuriantes aux mangroves protectrices, en passant par les végétations xérophiles des zones sèches, chaque formation végétale joue un rôle crucial dans l'équilibre écologique. Malheureusement, ces trésors naturels sont gravement menacés. Découvrons ensemble cet univers fascinant et comprenons pourquoi il est vital de le protéger ! 🌴🌺
       </p>
     `,
     contenu: `
-      <section class="space-y-6">
-        <div>
-          <h3 class="text-xl font-semibold mb-3 text-foreground">1. Forêt tropicale humide</h3>
-          <p class="text-foreground">En altitude et zones bien arrosées</p>
-          <ul class="list-disc ml-6 space-y-2 text-foreground">
-            <li>Grande diversité d'espèces</li>
-            <li>Acajou, cèdre, bois de fer</li>
-            <li>Orchidées, fougères, lianes</li>
-            <li>Habitat de nombreux oiseaux endémiques</li>
+      <section class="space-y-8">
+        <div class="bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-950/30 dark:to-emerald-950/30 p-6 rounded-lg">
+          <h3 class="text-2xl font-bold mb-4 text-primary">🌍 Introduction : Un hotspot de biodiversité mondiale</h3>
+          <p class="text-foreground mb-3">
+            La Caraïbe est classée parmi les 34 <strong>hotspots de biodiversité</strong> reconnus mondialement par Conservation International. Cela signifie qu'elle abrite :
+          </p>
+          <ul class="list-disc ml-6 text-foreground space-y-1">
+            <li>Un nombre exceptionnellement élevé d'espèces endémiques (qui n'existent nulle part ailleurs)</li>
+            <li>Des écosystèmes uniques et fragiles</li>
+            <li>Une menace importante de perte d'habitat</li>
           </ul>
+          <p class="text-foreground mt-3">
+            Environ <strong>12 000 espèces de plantes</strong> peuplent les îles caribéennes, dont près de <strong>72% sont endémiques</strong> ! C'est un taux d'endémisme parmi les plus élevés au monde.
+          </p>
         </div>
 
         <div>
-          <h3 class="text-xl font-semibold mb-3 text-foreground">2. Mangroves</h3>
-          <p class="text-foreground">Forêts côtières aux racines immergées</p>
-          <ul class="list-disc ml-6 space-y-2 text-foreground">
-            <li><strong>Rôle :</strong> Protection contre érosion et tempêtes</li>
-            <li><strong>Nurserie :</strong> Pour poissons et crustacés</li>
-            <li>Palétuviers (arbres adaptés à l'eau salée)</li>
-          </ul>
+          <h3 class="text-2xl font-bold mb-4 text-primary">I. La forêt tropicale humide 🌳☔</h3>
+          
+          <div class="bg-green-50 dark:bg-green-950/30 p-6 rounded-lg mb-4">
+            <h4 class="text-xl font-semibold mb-3 text-foreground">A. Caractéristiques et localisation</h4>
+            <p class="text-foreground mb-3">
+              La forêt tropicale humide (ou forêt ombrophile) représente l'écosystème terrestre le plus riche et complexe de la planète.
+            </p>
+            <div class="bg-white dark:bg-gray-800 p-4 rounded mb-3">
+              <p class="font-bold mb-2 text-foreground">📍 Où la trouve-t-on dans la Caraïbe ?</p>
+              <ul class="list-disc ml-6 text-sm text-foreground space-y-1">
+                <li><strong>Zones d'altitude</strong> (montagnes exposées aux vents humides) : Massif de la Hotte (Haïti), Blue Mountains (Jamaïque), El Yunque (Porto Rico)</li>
+                <li><strong>Versants "au vent"</strong> (côtes est exposées aux alizés) : Dominique, Martinique, Guadeloupe</li>
+                <li><strong>Conditions :</strong> Précipitations abondantes (> 2000 mm/an), températures constantes (25-28°C), humidité très élevée (80-90%)</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="bg-emerald-50 dark:bg-emerald-950/30 p-6 rounded-lg mb-4">
+            <h4 class="text-xl font-semibold mb-3 text-foreground">B. Structure en étages verticaux</h4>
+            <p class="text-foreground mb-3">La forêt tropicale humide est organisée en plusieurs strates superposées :</p>
+            <div class="space-y-2">
+              <div class="bg-white dark:bg-gray-800 p-3 rounded">
+                <p class="font-bold text-foreground">🌳 Canopée émergente (30-40 m)</p>
+                <p class="text-xs text-foreground">Arbres géants dominant la forêt (acajou, cèdre, gommier). Exposés au soleil, au vent. Habitat des oiseaux et chauves-souris.</p>
+              </div>
+              <div class="bg-white dark:bg-gray-800 p-3 rounded">
+                <p class="font-bold text-foreground">🌿 Canopée principale (20-30 m)</p>
+                <p class="text-xs text-foreground">Couvert dense formant un "toit" vert. Capture la majorité de la lumière. Très riche en biodiversité (singes, oiseaux, insectes, épiphytes).</p>
+              </div>
+              <div class="bg-white dark:bg-gray-800 p-3 rounded">
+                <p class="font-bold text-foreground">🍃 Sous-étage (5-20 m)</p>
+                <p class="text-xs text-foreground">Arbres jeunes et arbustes adaptés à l'ombre. Faible luminosité (2-5% de la lumière solaire).</p>
+              </div>
+              <div class="bg-white dark:bg-gray-800 p-3 rounded">
+                <p class="font-bold text-foreground">🌱 Strate herbacée (0-5 m)</p>
+                <p class="text-xs text-foreground">Sol recouvert de fougères, mousses, champignons, jeunes pousses. Très sombre et humide.</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="bg-teal-50 dark:bg-teal-950/30 p-6 rounded-lg">
+            <h4 class="text-xl font-semibold mb-3 text-foreground">C. Espèces emblématiques</h4>
+            <div class="grid md:grid-cols-2 gap-3">
+              <div class="bg-white dark:bg-gray-800 p-3 rounded">
+                <p class="font-bold text-foreground">🌳 Acajou (Swietenia mahagoni)</p>
+                <p class="text-xs text-foreground">Bois précieux rouge-brun. Surexploité, aujourd'hui rare et protégé.</p>
+              </div>
+              <div class="bg-white dark:bg-gray-800 p-3 rounded">
+                <p class="font-bold text-foreground">🌲 Cèdre (Cedrela odorata)</p>
+                <p class="text-xs text-foreground">Bois aromatique utilisé en ébénisterie. Menacé par déforestation.</p>
+              </div>
+              <div class="bg-white dark:bg-gray-800 p-3 rounded">
+                <p class="font-bold text-foreground">🌳 Bois de fer / Gaïac (Guaiacum officinale)</p>
+                <p class="text-xs text-foreground">Le bois le plus dur et lourd du monde ! Fleurs bleues magnifiques. En danger critique d'extinction.</p>
+              </div>
+              <div class="bg-white dark:bg-gray-800 p-3 rounded">
+                <p class="font-bold text-foreground">🌺 Orchidées épiphytes</p>
+                <p class="text-xs text-foreground">Plus de 250 espèces dans la Caraïbe. Vivent accrochées aux arbres sans les parasiter.</p>
+              </div>
+              <div class="bg-white dark:bg-gray-800 p-3 rounded">
+                <p class="font-bold text-foreground">🍀 Fougères arborescentes</p>
+                <p class="text-xs text-foreground">Fougères géantes (jusqu'à 10 m) datant de l'ère des dinosaures.</p>
+              </div>
+              <div class="bg-white dark:bg-gray-800 p-3 rounded">
+                <p class="font-bold text-foreground">🌴 Palmiers royaux</p>
+                <p class="text-xs text-foreground">Symbole de Cuba. Jusqu'à 25 m de haut.</p>
+              </div>
+            </div>
+          </div>
         </div>
 
         <div>
-          <h3 class="text-xl font-semibold mb-3 text-foreground">3. Végétation xérophile</h3>
-          <p class="text-foreground">Zones sèches (côte sous le vent)</p>
-          <ul class="list-disc ml-6 space-y-2 text-foreground">
-            <li>Cactus, agaves</li>
-            <li>Arbustes épineux</li>
-            <li>Plantes adaptées à la sécheresse</li>
-          </ul>
+          <h3 class="text-2xl font-bold mb-4 text-primary">II. Les mangroves 🌊🌳</h3>
+          
+          <div class="bg-cyan-50 dark:bg-cyan-950/30 p-6 rounded-lg mb-4">
+            <h4 class="text-xl font-semibold mb-3 text-foreground">A. Une forêt entre terre et mer</h4>
+            <p class="text-foreground mb-3">
+              Les mangroves sont des forêts côtières exceptionnelles qui poussent dans la zone de rencontre entre eau douce (rivières) et eau salée (mer), appelée <strong>zone estuarienne</strong>.
+            </p>
+            <div class="bg-white dark:bg-gray-800 p-4 rounded">
+              <p class="font-bold mb-2 text-foreground">🌴 Les palétuviers : Arbres aux super-pouvoirs</p>
+              <p class="text-sm text-foreground mb-2">Les mangroves sont dominées par les <strong>palétuviers</strong> (4 espèces principales dans la Caraïbe), arbres exceptionnels capables de :</p>
+              <ul class="list-disc ml-6 text-xs text-foreground space-y-1">
+                <li><strong>Tolérer le sel</strong> : Filtrent l'eau salée via leurs racines ou l'excrètent par leurs feuilles</li>
+                <li><strong>Respirer dans la vase</strong> : Racines aériennes (pneumatophores) émergeant de l'eau pour capter l'oxygène</li>
+                <li><strong>Se stabiliser sur sol instable</strong> : Racines-échasses formant un enchevêtrement complexe</li>
+                <li><strong>Reproduction vivipar</strong> : Graines germant sur l'arbre avant de tomber (propagules)</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="bg-blue-50 dark:bg-blue-950/30 p-6 rounded-lg mb-4">
+            <h4 class="text-xl font-semibold mb-3 text-foreground">B. Rôles écologiques essentiels</h4>
+            <div class="space-y-3">
+              <div class="bg-white dark:bg-gray-800 p-4 rounded">
+                <p class="font-bold mb-2 text-foreground">🛡️ 1. Protection côtière</p>
+                <ul class="list-disc ml-6 text-sm text-foreground space-y-1">
+                  <li>Barrière naturelle contre vagues, tempêtes tropicales, ouragans et tsunamis</li>
+                  <li>Réduction de l'érosion côtière (racines fixent sédiments)</li>
+                  <li><strong>Importance stratégique</strong> : Zones avec mangroves subissent 40-60% moins de dégâts lors d'ouragans !</li>
+                </ul>
+              </div>
+              <div class="bg-white dark:bg-gray-800 p-4 rounded">
+                <p class="font-bold mb-2 text-foreground">🐟 2. Nurserie marine</p>
+                <ul class="list-disc ml-6 text-sm text-foreground space-y-1">
+                  <li>Lieu de reproduction et de croissance pour 75% des espèces de poissons commerciaux (mérous, vivaneaux, etc.)</li>
+                  <li>Refuge pour crevettes, crabes, langoustes juvéniles</li>
+                  <li>Habitat pour oiseaux marins (hérons, aigrettes, ibis)</li>
+                </ul>
+              </div>
+              <div class="bg-white dark:bg-gray-800 p-4 rounded">
+                <p class="font-bold mb-2 text-foreground">🌊 3. Épuration de l'eau</p>
+                <ul class="list-disc ml-6 text-sm text-foreground space-y-1">
+                  <li>Filtration naturelle : retiennent polluants, excès de nutriments, sédiments</li>
+                  <li>Amélioration de la qualité de l'eau côtière</li>
+                  <li>Protection des récifs coralliens (réduisent la turbidité)</li>
+                </ul>
+              </div>
+              <div class="bg-white dark:bg-gray-800 p-4 rounded">
+                <p class="font-bold mb-2 text-foreground">💨 4. Stockage de carbone</p>
+                <ul class="list-disc ml-6 text-sm text-foreground space-y-1">
+                  <li>Parmi les écosystèmes capturant le plus de CO2 par hectare (3-5 fois plus qu'une forêt terrestre !)</li>
+                  <li>Rôle crucial dans la lutte contre le changement climatique</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+
+          <div class="bg-indigo-50 dark:bg-indigo-950/30 p-4 rounded-lg">
+            <h4 class="text-xl font-semibold mb-3 text-foreground">C. Principales mangroves de la Caraïbe</h4>
+            <ul class="list-disc ml-6 text-sm text-foreground space-y-1">
+              <li><strong>Haïti :</strong> Baie des Gonaïves, Les Trois Baies (Sud), embouchure Artibonite</li>
+              <li><strong>Cuba :</strong> Plus vastes mangroves des Caraïbes (Ciénaga de Zapata, Jardines de la Reina)</li>
+              <li><strong>République Dominicaine :</strong> Parc National Los Haitises</li>
+              <li><strong>Jamaïque :</strong> Black River, Negril</li>
+            </ul>
+          </div>
         </div>
 
         <div>
-          <h3 class="text-xl font-semibold mb-3 text-foreground">4. Menaces</h3>
-          <ul class="list-disc ml-6 space-y-2 text-foreground">
-            <li>Déforestation massive</li>
-            <li>Urbanisation</li>
-            <li>Agriculture extensive</li>
-            <li>Changement climatique</li>
-          </ul>
+          <h3 class="text-2xl font-bold mb-4 text-primary">III. La végétation xérophile (zones sèches) 🌵☀️</h3>
+          
+          <div class="bg-amber-50 dark:bg-amber-950/30 p-6 rounded-lg mb-4">
+            <h4 class="text-xl font-semibold mb-3 text-foreground">A. Caractéristiques et localisation</h4>
+            <p class="text-foreground mb-3">
+              La végétation <strong>xérophile</strong> (du grec <em>xero</em> = sec, <em>phile</em> = qui aime) est adaptée aux régions arides recevant moins de 500-800 mm de pluie par an.
+            </p>
+            <div class="bg-white dark:bg-gray-800 p-4 rounded">
+              <p class="font-bold mb-2 text-foreground">📍 Où ?</p>
+              <ul class="list-disc ml-6 text-sm text-foreground space-y-1">
+                <li><strong>Côtes "sous le vent"</strong> (versants ouest protégés des alizés) : Nord-Ouest d'Haïti, sud de la Jamaïque, côte sud de Cuba</li>
+                <li><strong>Petites Antilles sèches</strong> : Antigua, Barbuda, îles Vierges</li>
+                <li><strong>Îles ABC</strong> : Aruba, Bonaire, Curaçao (très arides)</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="bg-yellow-50 dark:bg-yellow-950/30 p-6 rounded-lg mb-4">
+            <h4 class="text-xl font-semibold mb-3 text-foreground">B. Adaptations remarquables à la sécheresse</h4>
+            <div class="space-y-3">
+              <div class="bg-white dark:bg-gray-800 p-3 rounded">
+                <p class="font-bold text-foreground">🌵 Cactées (cactus)</p>
+                <p class="text-xs text-foreground"><strong>Stratégie :</strong> Tiges charnues stockant l'eau, feuilles transformées en épines (réduction évaporation), photosynthèse nocturne (CAM)</p>
+              </div>
+              <div class="bg-white dark:bg-gray-800 p-3 rounded">
+                <p class="font-bold text-foreground">🌿 Agaves et aloe</p>
+                <p class="text-xs text-foreground"><strong>Stratégie :</strong> Feuilles épaisses et cireuses, rosettes compactes</p>
+              </div>
+              <div class="bg-white dark:bg-gray-800 p-3 rounded">
+                <p class="font-bold text-foreground">🌳 Arbustes épineux</p>
+                <p class="text-xs text-foreground"><strong>Stratégie :</strong> Racines profondes, feuilles petites ou caduques (tombent en saison sèche), épines protectrices</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="bg-orange-50 dark:bg-orange-950/30 p-4 rounded-lg">
+            <h4 class="text-xl font-semibold mb-3 text-foreground">C. Espèces caractéristiques</h4>
+            <ul class="list-disc ml-6 text-sm text-foreground space-y-1">
+              <li><strong>Bayahonde</strong> (Prosopis juliflora) : Arbre épineux invasif, résistant extrême</li>
+              <li><strong>Campêche</strong> (Haematoxylum campechianum) : Bois dur, teinture historique</li>
+              <li><strong>Cactus candélabre</strong>, <strong>cactus raquette</strong> (Opuntia)</li>
+              <li><strong>Divi-divi</strong> (Caesalpinia coriaria) : Forme tordue caractéristique sculptée par les alizés</li>
+            </ul>
+          </div>
+        </div>
+
+        <div>
+          <h3 class="text-2xl font-bold mb-4 text-primary">IV. Les récifs coralliens : "Forêts" sous-marines 🐠🪸</h3>
+          
+          <div class="bg-blue-50 dark:bg-blue-950/30 p-6 rounded-lg mb-4">
+            <h4 class="text-xl font-semibold mb-3 text-foreground">A. Des écosystèmes sous-marins vitaux</h4>
+            <p class="text-foreground mb-3">
+              Bien que composés d'animaux (coraux = polypes), les récifs coralliens fonctionnent comme des "forêts sous-marines" créant un habitat pour une biodiversité incroyable.
+            </p>
+            <div class="bg-white dark:bg-gray-800 p-4 rounded">
+              <p class="font-bold mb-2 text-foreground">🌊 Chiffres clés</p>
+              <ul class="list-disc ml-6 text-sm text-foreground space-y-1">
+                <li>Abritent 25% de toute la vie marine mondiale (alors qu'ils ne couvrent que 0,1% des océans !)</li>
+                <li>Caraïbe : 2e plus grande barrière de corail au monde (Méso-Amérique : Mexique→Honduras, 1000 km)</li>
+                <li>Génèrent 375 millions de dollars/an en Caraïbe (tourisme, pêche)</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="bg-teal-50 dark:bg-teal-950/30 p-4 rounded-lg">
+            <h4 class="text-xl font-semibold mb-3 text-foreground">B. Rôles écologiques</h4>
+            <ul class="list-disc ml-6 text-sm text-foreground space-y-2">
+              <li><strong>Nurserie marine :</strong> Habitat essentiel pour jeunes poissons, crustacés</li>
+              <li><strong>Protection côtière :</strong> Brise-lames naturels réduisant l'impact des vagues de 97%</li>
+              <li><strong>Biodiversité :</strong> Hotspot de diversité (poissons tropicaux, tortues, raies, requins)</li>
+              <li><strong>Sécurité alimentaire :</strong> Pêche artisanale dépend des récifs pour millions de Caribéens</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="bg-red-50 dark:bg-red-950/30 p-6 rounded-lg border-l-4 border-red-500">
+          <h3 class="text-2xl font-bold mb-4 text-primary">V. Menaces sur les écosystèmes caribéens ⚠️🚨</h3>
+          <div class="space-y-4">
+            <div class="bg-white dark:bg-gray-800 p-4 rounded">
+              <p class="font-bold text-lg mb-2 text-foreground">1. Déforestation massive</p>
+              <ul class="list-disc ml-6 text-sm text-foreground space-y-1">
+                <li><strong>Ampleur :</strong> Haïti a perdu 98% de ses forêts, Jamaïque 90%, Cuba 70%</li>
+                <li><strong>Causes :</strong> Charbon de bois, agriculture, urbanisation, exploitation illégale</li>
+                <li><strong>Conséquences :</strong> Érosion, perte biodiversité, espèces endémiques disparaissent</li>
+              </ul>
+            </div>
+            <div class="bg-white dark:bg-gray-800 p-4 rounded">
+              <p class="font-bold text-lg mb-2 text-foreground">2. Destruction des mangroves</p>
+              <ul class="list-disc ml-6 text-sm text-foreground space-y-1">
+                <li><strong>Ampleur :</strong> 50% des mangroves caribéennes ont disparu depuis 1980</li>
+                <li><strong>Causes :</strong> Développement touristique (hôtels, marinas), aquaculture (fermes crevettes), urbanisation côtière</li>
+                <li><strong>Conséquences :</strong> Érosion côtière accélérée, effondrement pêcheries, côtes vulnérables aux ouragans</li>
+              </ul>
+            </div>
+            <div class="bg-white dark:bg-gray-800 p-4 rounded">
+              <p class="font-bold text-lg mb-2 text-foreground">3. Blanchiment des coraux</p>
+              <ul class="list-disc ml-6 text-sm text-foreground space-y-1">
+                <li><strong>Cause :</strong> Réchauffement climatique (eau trop chaude stresse les coraux qui expulsent leurs algues symbiotiques et "blanchissent")</li>
+                <li><strong>Ampleur :</strong> Caraïbe a perdu 50-80% de sa couverture corallienne depuis les années 1970</li>
+                <li><strong>Autres menaces :</strong> Pollution, surpêche, maladies, acidification des océans</li>
+              </ul>
+            </div>
+            <div class="bg-white dark:bg-gray-800 p-4 rounded">
+              <p class="font-bold text-lg mb-2 text-foreground">4. Espèces invasives</p>
+              <p class="text-sm text-foreground">Plantes introduites (bayahonde, leucaena) qui envahissent et remplacent végétation native, réduisant biodiversité.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-950/30 dark:to-emerald-950/30 p-6 rounded-lg border-l-4 border-green-500">
+          <h3 class="text-2xl font-bold mb-3 text-primary">VI. Protection et conservation : L'espoir 💚</h3>
+          <div class="space-y-3">
+            <div class="bg-white dark:bg-gray-800 p-4 rounded">
+              <p class="font-bold mb-2 text-foreground">🏞️ Aires protégées</p>
+              <ul class="list-disc ml-6 text-sm text-foreground space-y-1">
+                <li><strong>Parcs nationaux :</strong> Macaya (Haïti), Blue Mountains (Jamaïque), El Yunque (Porto Rico)</li>
+                <li><strong>Réserves marines :</strong> Jardines de la Reina (Cuba), Bonaire National Marine Park</li>
+              </ul>
+            </div>
+            <div class="bg-white dark:bg-gray-800 p-4 rounded">
+              <p class="font-bold mb-2 text-foreground">🌱 Programmes de restauration</p>
+              <ul class="list-disc ml-6 text-sm text-foreground space-y-1">
+                <li>Reboisement avec espèces natives</li>
+                <li>Restauration de mangroves (transplantation de propagules)</li>
+                <li>Jardinage corallien (culture et replantation de coraux)</li>
+              </ul>
+            </div>
+            <div class="bg-white dark:bg-gray-800 p-4 rounded">
+              <p class="font-bold mb-2 text-foreground">🎓 Éducation environnementale</p>
+              <p class="text-sm text-foreground">Sensibiliser les populations locales, surtout les jeunes, à l'importance de ces écosystèmes. Chaque geste compte !</p>
+            </div>
+          </div>
+          <p class="text-foreground mt-4 font-semibold italic">
+            "La nature ne nous appartient pas, nous lui appartenons. Protéger nos forêts, mangroves et récifs, c'est protéger notre avenir." 🌍💙
+          </p>
         </div>
       </section>
     `,
     exemplesExercices: `
-      <section class="space-y-4">
-        <div class="bg-primary/5 border-l-4 border-primary p-4 rounded">
-          <h4 class="font-semibold mb-2 text-foreground">💡 Action</h4>
-          <p class="text-foreground">
-            Participe à une activité de reboisement dans ton école ou communauté. Chaque arbre planté compte !
-          </p>
+      <div class="space-y-6">
+        <h3 class="text-2xl font-bold mb-4 text-primary">📝 Exercices pratiques</h3>
+
+        <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md">
+          <p class="font-bold text-xl mb-4">1. Tableau comparatif des écosystèmes</p>
+          <p class="mb-3">Créer un tableau comparant les 4 principaux écosystèmes végétaux caribéens :</p>
+          <table class="w-full border text-xs mt-2">
+            <thead>
+              <tr class="bg-primary/10">
+                <th class="border p-2">Écosystème</th>
+                <th class="border p-2">Climat/Localisation</th>
+                <th class="border p-2">Espèces typiques</th>
+                <th class="border p-2">Rôles écologiques</th>
+                <th class="border p-2">Menaces principales</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr><td class="border p-2">Forêt tropicale</td><td class="border p-2">...</td><td class="border p-2">...</td><td class="border p-2">...</td><td class="border p-2">...</td></tr>
+              <tr><td class="border p-2">Mangrove</td><td class="border p-2">...</td><td class="border p-2">...</td><td class="border p-2">...</td><td class="border p-2">...</td></tr>
+            </tbody>
+          </table>
         </div>
-      </section>
+
+        <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md">
+          <p class="font-bold text-xl mb-4">2. Carte des écosystèmes caribéens</p>
+          <p class="mb-3">Sur une carte de la Caraïbe :</p>
+          <ul class="list-disc ml-6 space-y-2">
+            <li>Colorier les zones de forêts tropicales humides (vert foncé)</li>
+            <li>Localiser les principales mangroves (bleu-vert)</li>
+            <li>Indiquer les zones xérophiles (jaune-orange)</li>
+            <li>Marquer les principaux récifs coralliens (bleu clair)</li>
+            <li>Identifier les aires protégées majeures (contour rouge)</li>
+          </ul>
+        </div>
+
+        <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md">
+          <p class="font-bold text-xl mb-4">3. Dossier sur une espèce endémique</p>
+          <p class="mb-3">Choisir une espèce végétale endémique de la Caraïbe et créer un dossier comprenant :</p>
+          <ul class="list-disc ml-6 space-y-1">
+            <li>Nom scientifique et noms vernaculaires</li>
+            <li>Description (taille, apparence, particularités)</li>
+            <li>Habitat et distribution géographique</li>
+            <li>Rôle écologique</li>
+            <li>Usages traditionnels (médicinaux, artisanaux, etc.)</li>
+            <li>Statut de conservation (menacé, en danger, etc.)</li>
+            <li>Actions de protection en cours</li>
+          </ul>
+          <p class="text-sm mt-2 italic">Exemples : Acajou, Bois de fer/Gaïac, Palmier royal, Orchidée endémique...</p>
+        </div>
+
+        <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md">
+          <p class="font-bold text-xl mb-4">4. Les super-pouvoirs des palétuviers</p>
+          <p class="mb-3">Dessiner un palétuvier en montrant ses adaptations :</p>
+          <ul class="list-disc ml-6 space-y-1">
+            <li>Racines-échasses (stabilité)</li>
+            <li>Pneumatophores (respiration)</li>
+            <li>Propagules (reproduction)</li>
+            <li>Mécanismes de filtration du sel</li>
+          </ul>
+          <p class="mt-2 text-sm">Légender chaque adaptation et expliquer son utilité.</p>
+        </div>
+
+        <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md">
+          <p class="font-bold text-xl mb-4">5. Questions de réflexion</p>
+          <ol class="list-decimal ml-6 space-y-3">
+            <li>Pourquoi la Caraïbe est-elle considérée comme un "hotspot de biodiversité" mondial ?</li>
+            <li>Explique comment les mangroves protègent les côtes lors des ouragans.</li>
+            <li>Quelles sont les adaptations des plantes xérophiles à la sécheresse ?</li>
+            <li>Pourquoi le blanchiment des coraux est-il une menace grave pour la Caraïbe ?</li>
+            <li>Que peux-tu faire personnellement pour aider à protéger les écosystèmes végétaux de ta région ?</li>
+          </ol>
+        </div>
+
+        <div class="bg-primary/5 border-l-4 border-primary p-4 rounded">
+          <p class="font-bold mb-2">🌳 Projet d'action : Reboisement communautaire</p>
+          <p class="text-sm">Organiser ou participer à une activité de plantation d'arbres dans ton école ou ta communauté. Privilégier les espèces natives. Créer une affiche de sensibilisation expliquant l'importance des arbres. Chaque arbre planté compte pour notre avenir ! 🌱💚</p>
+        </div>
+      </div>
     `
   },
 
