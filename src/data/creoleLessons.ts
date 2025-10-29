@@ -2096,9 +2096,303 @@ Pratik kouté epi rezime mesaj oral.`,
     title: "Mo ki gen plizyè sans",
     description: "Idantifye mo ki gen plizyè sans nan diferan kontèks",
     objectif: "Konprann mo polisemik",
-    introduction: `<p>Kèk mo gen diferan siyifikasyon.</p>`,
-    contenu: `<h2>Mo Polisemik</h2><p>Kontèks ede nou konprann bon sans la.</p>`,
-    exemplesExercices: `<p>Pratik: Itilize mo nan diferan kontèks.</p>`,
+    youtube_url: "https://www.youtube.com/watch?v=0bQ7m3ZyHyc",
+    introduction: `
+      <div class="bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-950 dark:to-pink-950 p-6 rounded-lg border-l-4 border-purple-500">
+        <h3 class="text-xl font-bold text-purple-700 dark:text-purple-300 mb-3">🎯 Objektif Leson an</h3>
+        <p class="text-gray-700 dark:text-gray-300 mb-3">
+          Èske w te janm tande yon mo ki gen plizyè siyifikasyon? Egzanp: mo "pye" ka vle di « pye moun » oswa « pye bwa ». 
+          Kijan w konnen ki sans ki kòrèk la?
+        </p>
+        <p class="text-gray-700 dark:text-gray-300">
+          Nan leson sa a, n ap aprann sou <strong>mo polisemik</strong> — mo ki gen plizyè sans diferan — 
+          epi n ap pratike kijan pou idantifye bon sans la selon kontèks la. Sa ap ede w konprann pi byen tèks yo 
+          epi itilize mo yo kòrèkteman lè w ap pale oswa ekri.
+        </p>
+      </div>
+      
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
+        <div class="bg-yellow-50 dark:bg-yellow-950 p-5 rounded-lg border border-yellow-300 dark:border-yellow-700">
+          <h4 class="font-semibold text-yellow-800 dark:text-yellow-200 mb-2">🤔 Reflechi</h4>
+          <ul class="list-disc list-inside text-gray-700 dark:text-gray-300 space-y-1">
+            <li>Ki mo ou konnen ki gen plizyè sans?</li>
+            <li>Kijan w ka konnen ki sans ki bon nan yon fraz?</li>
+            <li>Èske kontèks enpòtan lè w ap konprann yon mo?</li>
+          </ul>
+        </div>
+
+        <div class="bg-green-50 dark:bg-green-950 p-5 rounded-lg border border-green-300 dark:border-green-700">
+          <h4 class="font-semibold text-green-800 dark:text-green-200 mb-2">🎯 Objektif Aprantisaj</h4>
+          <ul class="list-disc list-inside text-gray-700 dark:text-gray-300 space-y-1">
+            <li>Konprann sa ki yon mo polisemik</li>
+            <li>Idantifye diferan sans yon mo ka genyen</li>
+            <li>Itilize kontèks pou chwazi bon sans la</li>
+            <li>Devlope richès vokabilè pa konprann mo yo pi byen</li>
+          </ul>
+        </div>
+      </div>
+    `,
+    contenu: `
+      <h2 class="text-2xl font-bold text-primary mb-4">📚 Konprann Mo ki Gen Plizyè Sans</h2>
+      
+      <div class="space-y-6">
+        <div class="bg-blue-50 dark:bg-blue-950 p-6 rounded-lg border-l-4 border-blue-500">
+          <h3 class="text-xl font-semibold text-blue-700 dark:text-blue-300 mb-3">1. Kisa ki Mo Polisemik?</h3>
+          <p class="text-gray-700 dark:text-gray-300 mb-3">
+            Yon <strong>mo polisemik</strong> se yon mo ki gen <em>plizyè sans diferan</em> men ki ekri menm fason. 
+            Sans la depann de <strong>kontèks</strong> — sa ki antoure mo a nan fraz la.
+          </p>
+          <div class="bg-white dark:bg-gray-800 p-4 rounded-lg">
+            <h4 class="text-blue-600 dark:text-blue-400 font-semibold mb-2">Egzanp: Mo "pye"</h4>
+            <ul class="text-gray-700 dark:text-gray-300 space-y-2">
+              <li>• « Pye m fè m mal. » → <em>pati kò a</em></li>
+              <li>• « Pye bwa a wo anpil. » → <em>plant, pye bwa</em></li>
+              <li>• « Li pye pou pye avèk mwen. » → <em>menm wotè, egal</em></li>
+            </ul>
+          </div>
+          <p class="mt-3 text-gray-700 dark:text-gray-300 text-sm">
+            <strong>Nòt:</strong> Mo ki ekri menm jan men ki gen sans diferan rele <em>omonim</em> si yo pa gen okenn lyen. 
+            Mo polisemik gen sans ki gen rapò (menm orijin).
+          </p>
+        </div>
+
+        <div class="bg-purple-50 dark:bg-purple-950 p-6 rounded-lg border-l-4 border-purple-500">
+          <h3 class="text-xl font-semibold text-purple-700 dark:text-purple-300 mb-3">2. Poukisa Mo Gen Plizyè Sans?</h3>
+          <p class="text-gray-700 dark:text-gray-300 mb-3">
+            Mo yo devlope sans nouvo ak tan paske moun sèvi ak yo nan diferan sitiyasyon. Kèk rezon:
+          </p>
+          <ul class="list-disc list-inside text-gray-700 dark:text-gray-300 space-y-2 ml-4">
+            <li><strong>Transfè sans:</strong> « Tèt » = pati kò → « tèt chodyè » = anwo a</li>
+            <li><strong>Metaphor:</strong> « Lapli tonbe » → « Pri yo tonbe » (bese)</li>
+            <li><strong>Espesyalizasyon:</strong> « Liv » = bagay pou li → « liv kont » nan komès</li>
+          </ul>
+        </div>
+
+        <div class="bg-green-50 dark:bg-green-950 p-6 rounded-lg border-l-4 border-green-500">
+          <h3 class="text-xl font-semibold text-green-700 dark:text-green-300 mb-3">3. Egzanp Mo Polisemik Komen nan Kreyòl</h3>
+          
+          <div class="space-y-4">
+            <div class="bg-white dark:bg-gray-800 p-4 rounded-lg">
+              <p class="font-semibold text-green-600 dark:text-green-400 mb-2">Mo: "Bouch"</p>
+              <ul class="text-gray-700 dark:text-gray-300 text-sm space-y-1">
+                <li>1. Pati kò: « Bouch li gran. »</li>
+                <li>2. Ouvèti: « Bouch boutèy la bloke. »</li>
+                <li>3. Pale twòp: « Li gen yon bouch! » (negatif)</li>
+              </ul>
+            </div>
+
+            <div class="bg-white dark:bg-gray-800 p-4 rounded-lg">
+              <p class="font-semibold text-green-600 dark:text-green-400 mb-2">Mo: "Kò"</p>
+              <ul class="text-gray-700 dark:text-gray-300 text-sm space-y-1">
+                <li>1. Kò moun: « Kò l cho. » (fyèv)</li>
+                <li>2. Gwoup: « Tout kò a te la. »</li>
+                <li>3. Pati prensipal: « Kò liv la long. »</li>
+              </ul>
+            </div>
+
+            <div class="bg-white dark:bg-gray-800 p-4 rounded-lg">
+              <p class="font-semibold text-green-600 dark:text-green-400 mb-2">Mo: "Tèt"</p>
+              <ul class="text-gray-700 dark:text-gray-300 text-sm space-y-1">
+                <li>1. Pati kò: « Tèt mwen fè m mal. »</li>
+                <li>2. Chèf: « Li se tèt gwoup la. »</li>
+                <li>3. Anwo: « Tèt mòn nan wo. »</li>
+                <li>4. Lespri: « Li gen yon bon tèt. » (entelijan)</li>
+              </ul>
+            </div>
+
+            <div class="bg-white dark:bg-gray-800 p-4 rounded-lg">
+              <p class="font-semibold text-green-600 dark:text-green-400 mb-2">Mo: "Men"</p>
+              <ul class="text-gray-700 dark:text-gray-300 text-sm space-y-1">
+                <li>1. Pati kò: « Men l pwòp. »</li>
+                <li>2. Èd: « Ban m yon men. »</li>
+                <li>3. Kontwòl: « Bagay la nan men li. »</li>
+              </ul>
+            </div>
+
+            <div class="bg-white dark:bg-gray-800 p-4 rounded-lg">
+              <p class="font-semibold text-green-600 dark:text-green-400 mb-2">Mo: "Pase"</p>
+              <ul class="text-gray-700 dark:text-gray-300 text-sm space-y-1">
+                <li>1. Deplase: « Machin nan pase vit. »</li>
+                <li>2. Reisi: « Li pase egzamen an. »</li>
+                <li>3. Bay: « Pase m dlo a. »</li>
+                <li>4. Tan: « Tan an pase vit. »</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+
+        <div class="bg-orange-50 dark:bg-orange-950 p-6 rounded-lg border-l-4 border-orange-500">
+          <h3 class="text-xl font-semibold text-orange-700 dark:text-orange-300 mb-3">4. Kijan Pou Idantifye Bon Sans la?</h3>
+          <p class="text-gray-700 dark:text-gray-300 mb-3">
+            Pou konprann ki sans ki bon, gade <strong>kontèks</strong> la:
+          </p>
+          
+          <ol class="list-decimal list-inside space-y-3 text-gray-700 dark:text-gray-300">
+            <li><strong>Li fraz la an antye:</strong> Gade mo ki antoure mo polisemik la</li>
+            <li><strong>Chèche endis:</strong> Vèb, adjektif, non ki bay klarifikasyon</li>
+            <li><strong>Konsidere sijè a:</strong> Èske se moun, bagay, lide?</li>
+            <li><strong>Gade sitiyasyon an jeneral:</strong> Ki sa tèks la ap pale?</li>
+            <li><strong>Eseye ranplase:</strong> Ki sinonim ka ranplase mo a?</li>
+          </ol>
+
+          <div class="bg-white dark:bg-gray-800 p-4 rounded-lg mt-4">
+            <p class="text-gray-700 dark:text-gray-300 font-semibold mb-2">Egzanp Analiz:</p>
+            <p class="text-gray-600 dark:text-gray-400 italic mb-2">
+              « Manman m ap brase yon gwo chodyè soup. Li mete anpil legim ladan l. »
+            </p>
+            <p class="text-sm text-gray-600 dark:text-gray-400">
+              <strong>Mo "chodyè":</strong> Kontèks di "brase", "soup", "mete ladan l" → Sa vle di <em>mamit pou kwit</em>, 
+              pa chodyè tankou aparay pou chofe kay.
+            </p>
+          </div>
+        </div>
+
+        <div class="bg-red-50 dark:bg-red-950 p-6 rounded-lg border-l-4 border-red-500">
+          <h3 class="text-xl font-semibold text-red-700 dark:text-red-300 mb-3">5. Avantaj Konnen Mo Polisemik</h3>
+          <ul class="list-disc list-inside text-gray-700 dark:text-gray-300 space-y-2">
+            <li>• <strong>Konpreyansyon pi bon:</strong> W ap konprann tèks yo pi vit</li>
+            <li>• <strong>Vokabilè pi rich:</strong> W ap itilize menm mo nan diferan fason</li>
+            <li>• <strong>Espresyon pi presiz:</strong> W ap chwazi bon mo a chak fwa</li>
+            <li>• <strong>Kreativite:</strong> W ap ka jwe ak mo yo lè w ap pale oswa ekri</li>
+          </ul>
+        </div>
+
+        <div class="bg-indigo-50 dark:bg-indigo-950 p-6 rounded-lg border-l-4 border-indigo-500">
+          <h3 class="text-xl font-semibold text-indigo-700 dark:text-indigo-300 mb-3">6. Erè Ki Souvan Fèt</h3>
+          
+          <div class="space-y-3">
+            <div class="bg-white dark:bg-gray-800 p-4 rounded-lg">
+              <p class="font-semibold text-red-600 dark:text-red-400 mb-1">❌ Erè 1: Pa gade kontèks la</p>
+              <p class="text-gray-700 dark:text-gray-300 text-sm">Konprann mo a izolèman san konsidere rès fraz la</p>
+            </div>
+
+            <div class="bg-white dark:bg-gray-800 p-4 rounded-lg">
+              <p class="font-semibold text-red-600 dark:text-red-400 mb-1">❌ Erè 2: Sèlman konnen youn nan sans yo</p>
+              <p class="text-gray-700 dark:text-gray-300 text-sm">Pa aprann lòt sans yo ki ka egziste</p>
+            </div>
+
+            <div class="bg-white dark:bg-gray-800 p-4 rounded-lg">
+              <p class="font-semibold text-red-600 dark:text-red-400 mb-1">❌ Erè 3: Konfonn mo polisemik ak omonim</p>
+              <p class="text-gray-700 dark:text-gray-300 text-sm">Mo polisemik gen sans ki gen rapò; omonim gen sans ki diferan nèt</p>
+            </div>
+          </div>
+
+          <div class="mt-4 bg-green-50 dark:bg-green-950 p-4 rounded-lg border border-green-300 dark:border-green-700">
+            <h4 class="text-green-800 dark:text-green-200 font-semibold mb-2">✅ Kijan Pou Ranje Yo</h4>
+            <ul class="text-gray-700 dark:text-gray-300 text-sm space-y-1">
+              <li>• Toujou li fraz la an antye anvan jije</li>
+              <li>• Kreye yon lis mo polisemik ou rankontre</li>
+              <li>• Pratik itilize mo yo nan diferan kontèks</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <div class="mt-8 bg-gradient-to-r from-purple-100 to-pink-100 dark:from-purple-900 dark:to-pink-900 p-6 rounded-lg">
+        <h3 class="text-xl font-semibold text-purple-800 dark:text-purple-200 mb-2">🌟 Sonje!</h3>
+        <p class="text-gray-700 dark:text-gray-300">
+          Mo yo se zouti nou itilize pou kominike. Pi w konnen diferan sans yo, pi w ka eksprime tèt ou byen. 
+          Kontèks se kle pou konprann ki sans ki kòrèk!
+        </p>
+      </div>
+    `,
+    exemplesExercices: `
+      <h2 class="text-2xl font-bold text-primary mb-4">✏️ Pratik ak Egzèsis</h2>
+      
+      <div class="space-y-6">
+        <div class="bg-blue-50 dark:bg-blue-950 p-6 rounded-lg">
+          <h3 class="text-lg font-semibold text-blue-700 dark:text-blue-300 mb-3">Egzèsis 1: Idantifye Sans Mo a</h3>
+          <p class="text-gray-700 dark:text-gray-300 mb-4">Li fraz yo epi di ki sans mo ki souliye a genyen:</p>
+          
+          <div class="space-y-4">
+            <div class="bg-white dark:bg-gray-800 p-4 rounded">
+              <p class="mb-2">a) « Li <strong>pase</strong> nan klas siperyè a. »</p>
+              <p class="text-sm text-gray-600 dark:text-gray-400">Sans: _______________</p>
+            </div>
+
+            <div class="bg-white dark:bg-gray-800 p-4 rounded">
+              <p class="mb-2">b) « <strong>Pase</strong> m sel la souple. »</p>
+              <p class="text-sm text-gray-600 dark:text-gray-400">Sans: _______________</p>
+            </div>
+
+            <div class="bg-white dark:bg-gray-800 p-4 rounded">
+              <p class="mb-2">c) « Machin nan <strong>pase</strong> nan ri a. »</p>
+              <p class="text-sm text-gray-600 dark:text-gray-400">Sans: _______________</p>
+            </div>
+
+            <div class="bg-white dark:bg-gray-800 p-4 rounded">
+              <p class="mb-2">d) « Tan an <strong>pase</strong> san m pa wè. »</p>
+              <p class="text-sm text-gray-600 dark:text-gray-400">Sans: _______________</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="bg-green-50 dark:bg-green-950 p-6 rounded-lg">
+          <h3 class="text-lg font-semibold text-green-700 dark:text-green-300 mb-3">Egzèsis 2: Kreye Fraz</h3>
+          <p class="text-gray-700 dark:text-gray-300 mb-3">
+            Itilize mo "tèt" pou ekri twa fraz ki montre twa sans diferan:
+          </p>
+          
+          <div class="space-y-3">
+            <div>
+              <p class="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1">Fraz 1 (pati kò):</p>
+              <textarea class="w-full border border-gray-300 dark:border-gray-600 rounded p-2 min-h-[60px]" placeholder="Ekri fraz ou la isit..."></textarea>
+            </div>
+            <div>
+              <p class="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1">Fraz 2 (chèf/lidè):</p>
+              <textarea class="w-full border border-gray-300 dark:border-gray-600 rounded p-2 min-h-[60px]" placeholder="Ekri fraz ou la isit..."></textarea>
+            </div>
+            <div>
+              <p class="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1">Fraz 3 (lespri/entèlijans):</p>
+              <textarea class="w-full border border-gray-300 dark:border-gray-600 rounded p-2 min-h-[60px]" placeholder="Ekri fraz ou la isit..."></textarea>
+            </div>
+          </div>
+        </div>
+
+        <div class="bg-purple-50 dark:bg-purple-950 p-6 rounded-lg">
+          <h3 class="text-lg font-semibold text-purple-700 dark:text-purple-300 mb-3">Egzèsis 3: Konprann Kontèks</h3>
+          <p class="text-gray-700 dark:text-gray-300 mb-3">
+            Li paragraf sa a epi eksplike ki sans mo "bouch" genyen:
+          </p>
+          <div class="bg-white dark:bg-gray-800 p-4 rounded mb-4">
+            <p class="text-gray-700 dark:text-gray-300">
+              "Yè swa, nou t ap ale lakay. Sou wout la, nou wè yon gwo <strong>bouch</strong> nan teren an. 
+              Li te fonde anba lapli. Nou te oblije kontoune li pou nou pa tonbe."
+            </p>
+          </div>
+          <p class="text-sm text-gray-600 dark:text-gray-400">Ki sans mo "bouch" genyen nan paragraf sa a?</p>
+          <textarea class="w-full border border-gray-300 dark:border-gray-600 rounded p-2 min-h-[80px] mt-2" placeholder="Eksplike repons ou..."></textarea>
+        </div>
+
+        <div class="bg-orange-50 dark:bg-orange-950 p-6 rounded-lg">
+          <h3 class="text-lg font-semibold text-orange-700 dark:text-orange-300 mb-3">Egzèsis 4: Lis Mo Polisemik</h3>
+          <p class="text-gray-700 dark:text-gray-300 mb-3">
+            Jwenn senk (5) mo polisemik ou konnen epi bay de (2) sans diferan pou chak youn:
+          </p>
+          <div class="bg-white dark:bg-gray-800 p-4 rounded">
+            <textarea class="w-full border border-gray-300 dark:border-gray-600 rounded p-2 min-h-[150px]" placeholder="Egzanp:\n1. Pye: a) pati kò, b) plant\n2. ..."></textarea>
+          </div>
+        </div>
+
+        <div class="bg-indigo-50 dark:bg-indigo-950 p-6 rounded-lg">
+          <h3 class="text-lg font-semibold text-indigo-700 dark:text-indigo-300 mb-3">📺 Videyo pou Ale Pi Lwen</h3>
+          <p class="text-gray-700 dark:text-gray-300 mb-3">
+            Gade videyo sa a ki eksplike mo polisemik nan kreyòl avèk plis egzanp. 
+            Note senk mo nouvo ou aprann.
+          </p>
+        </div>
+
+        <div class="bg-pink-50 dark:bg-pink-950 p-6 rounded-lg">
+          <h3 class="text-lg font-semibold text-pink-700 dark:text-pink-300 mb-3">📖 Konsèy pou Reyisi</h3>
+          <ul class="list-disc list-inside space-y-2 text-gray-700 dark:text-gray-300">
+            <li>Kreye yon kaye mo polisemik avèk diferan sans yo</li>
+            <li>Lè w li yon tèks, make mo ki gen plizyè sans</li>
+            <li>Eseye itilize mo polisemik lè w ap pale nan chak jou</li>
+            <li>Jwe jwèt mo avèk zanmi w pou pratik</li>
+          </ul>
+        </div>
+      </div>
+    `,
     duration: "45 minit",
     difficulty: "Intermediaire",
     category: "Vokabilè"
@@ -2122,9 +2416,414 @@ Pratik kouté epi rezime mesaj oral.`,
     title: "Mo otou yon tèm",
     description: "Regwoupe mo ki rapòte a yon tèm chwazi",
     objectif: "Devlope vokabilè tematik",
-    introduction: `<p>Mo yo ka gwoup pa tèm.</p>`,
-    contenu: `<h2>Rezo Mo</h2><p>Kreye rezo mo pou tèm ou chwazi a.</p>`,
-    exemplesExercices: `<p>Pratik: Fè lis mo otou yon tèm.</p>`,
+    youtube_url: "https://www.youtube.com/watch?v=0bQ7m3ZyHyc",
+    introduction: `
+      <div class="bg-gradient-to-r from-orange-50 to-red-50 dark:from-orange-950 dark:to-red-950 p-6 rounded-lg border-l-4 border-orange-500">
+        <h3 class="text-xl font-bold text-orange-700 dark:text-orange-300 mb-3">🎯 Objektif Leson an</h3>
+        <p class="text-gray-700 dark:text-gray-300 mb-3">
+          Lè w ap pale sou yon sijè, ki mo ki vin nan tèt ou? Si w ap pale sou lekòl, èske w panse: 
+          pwofesè, elèv, kaye, kreyon, devwa? Tout mo sa yo <strong>rapòte a tèm "lekòl"</strong>.
+        </p>
+        <p class="text-gray-700 dark:text-gray-300">
+          Nan leson sa a, n ap aprann kijan pou <strong>gwoup mo pa tèm</strong> — kreye <strong>rezo mo</strong> 
+          otou yon sijè. Sa ap ede w <em>anrichi vokabilè w</em>, <em>eksprime tèt ou pi byen</em>, 
+          epi <em>konprann tèks yo pi vit</em>.
+        </p>
+      </div>
+      
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
+        <div class="bg-yellow-50 dark:bg-yellow-950 p-5 rounded-lg border border-yellow-300 dark:border-yellow-700">
+          <h4 class="font-semibold text-yellow-800 dark:text-yellow-200 mb-2">🤔 Reflechi</h4>
+          <ul class="list-disc list-inside text-gray-700 dark:text-gray-300 space-y-1">
+            <li>Ki mo ou panse lè w tande "lamè"?</li>
+            <li>Kijan gwoup mo ka ede w aprann pi byen?</li>
+            <li>Èske w janm fè yon kat mantal oswa yon dyagram?</li>
+          </ul>
+        </div>
+
+        <div class="bg-green-50 dark:bg-green-950 p-5 rounded-lg border border-green-300 dark:border-green-700">
+          <h4 class="font-semibold text-green-800 dark:text-green-200 mb-2">🎯 Objektif Aprantisaj</h4>
+          <ul class="list-disc list-inside text-gray-700 dark:text-gray-300 space-y-1">
+            <li>Konprann sa ki yon rezo mo tematik</li>
+            <li>Kreye gwoup mo otou yon tèm</li>
+            <li>Itilize rezo mo pou devlope vokabilè</li>
+            <li>Amelyore espresyon oral ak ekri</li>
+          </ul>
+        </div>
+      </div>
+    `,
+    contenu: `
+      <h2 class="text-2xl font-bold text-primary mb-4">📚 Mo Otou yon Tèm</h2>
+      
+      <div class="space-y-6">
+        <div class="bg-blue-50 dark:bg-blue-950 p-6 rounded-lg border-l-4 border-blue-500">
+          <h3 class="text-xl font-semibold text-blue-700 dark:text-blue-300 mb-3">1. Kisa ki Rezo Mo Tematik?</h3>
+          <p class="text-gray-700 dark:text-gray-300 mb-3">
+            Yon <strong>rezo mo tematik</strong> (oswa <em>champ leksikal</em>) se yon <em>gwoup mo ki gen rapò ak yon tèm</em> 
+            oswa yon <em>sijè espesifik</em>. Mo yo ka gen relasyon diferan: yo ka sinonim, antonim, ka fè pati menm kategori, 
+            oswa asosye nan memwa.
+          </p>
+          <div class="bg-white dark:bg-gray-800 p-4 rounded-lg">
+            <h4 class="text-blue-600 dark:text-blue-400 font-semibold mb-2">Egzanp: Tèm "Lakou"</h4>
+            <p class="text-gray-700 dark:text-gray-300 text-sm mb-2">Mo ki rapòte:</p>
+            <div class="grid grid-cols-2 gap-2 text-gray-700 dark:text-gray-300 text-sm">
+              <div>• Timoun</div>
+              <div>• Jwe</div>
+              <div>• Ballon</div>
+              <div>• Gagann</div>
+              <div>• Kache-kache</div>
+              <div>• Ri</div>
+              <div>• Zanmi</div>
+              <div>• Plezi</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="bg-purple-50 dark:bg-purple-950 p-6 rounded-lg border-l-4 border-purple-500">
+          <h3 class="text-xl font-semibold text-purple-700 dark:text-purple-300 mb-3">2. Poukisa Rezo Mo Enpòtan?</h3>
+          <ul class="list-disc list-inside text-gray-700 dark:text-gray-300 space-y-2 ml-4">
+            <li><strong>Vokabilè pi rich:</strong> Aprann plizyè mo an menm tan sou yon sijè</li>
+            <li><strong>Memwa pi bon:</strong> Mo yo pi fasil pou sonje lè yo gwoup ansanm</li>
+            <li><strong>Konpreyansyon pi rapid:</strong> Rekonèt tèm nan tèks ak tande pale</li>
+            <li><strong>Espresyon pi klè:</strong> Chwazi bon mo a lè w ap ekri oswa pale</li>
+            <li><strong>Òganizasyon lide:</strong> Prepare ekspozisyon, konpozisyon, oswa prezantasyon</li>
+          </ul>
+        </div>
+
+        <div class="bg-green-50 dark:bg-green-950 p-6 rounded-lg border-l-4 border-green-500">
+          <h3 class="text-xl font-semibold text-green-700 dark:text-green-300 mb-3">3. Kijan Pou Kreye yon Rezo Mo?</h3>
+          <p class="text-gray-700 dark:text-gray-300 mb-3">Swiv etap sa yo:</p>
+          
+          <ol class="list-decimal list-inside space-y-3 text-gray-700 dark:text-gray-300">
+            <li><strong>Chwazi yon tèm santral:</strong> Egzanp: "Kay", "Manje", "Lamè", "Lekòl"</li>
+            <li><strong>Ekri tèm nan nan mitan:</strong> Mete li nan yon sèk oswa yon bwat</li>
+            <li><strong>Ajoute mo ki rapòte:</strong> Ekri mo ki asosye tout kote antoure tèm nan</li>
+            <li><strong>Kreye kategori:</strong> Gwoup mo yo pa tip (non, vèb, adjektif, kote, moun, etc.)</li>
+            <li><strong>Fè lyen:</strong> Konekte mo ki gen rapò espesyal avèk yon liy oswa flèch</li>
+          </ol>
+
+          <div class="bg-white dark:bg-gray-800 p-4 rounded-lg mt-4">
+            <h4 class="text-green-600 dark:text-green-400 font-semibold mb-3">Egzanp Rezo: Tèm "Manje"</h4>
+            <div class="grid grid-cols-2 md:grid-cols-3 gap-4 text-sm text-gray-700 dark:text-gray-300">
+              <div>
+                <p class="font-semibold text-green-600 dark:text-green-400 mb-1">Non (Manje):</p>
+                <ul class="space-y-1">
+                  <li>• Diri</li>
+                  <li>• Pwa</li>
+                  <li>• Vyann</li>
+                  <li>• Legim</li>
+                </ul>
+              </div>
+              <div>
+                <p class="font-semibold text-blue-600 dark:text-blue-400 mb-1">Vèb (Aksyon):</p>
+                <ul class="space-y-1">
+                  <li>• Kwit</li>
+                  <li>• Manje</li>
+                  <li>• Gou</li>
+                  <li>• Bwè</li>
+                </ul>
+              </div>
+              <div>
+                <p class="font-semibold text-purple-600 dark:text-purple-400 mb-1">Kote:</p>
+                <ul class="space-y-1">
+                  <li>• Lakizin</li>
+                  <li>• Tab</li>
+                  <li>• Mache</li>
+                  <li>• Restoran</li>
+                </ul>
+              </div>
+              <div>
+                <p class="font-semibold text-orange-600 dark:text-orange-400 mb-1">Adjektif (Gou):</p>
+                <ul class="space-y-1">
+                  <li>• Bon</li>
+                  <li>• Dous</li>
+                  <li>• Sale</li>
+                  <li>• Cho</li>
+                </ul>
+              </div>
+              <div>
+                <p class="font-semibold text-red-600 dark:text-red-400 mb-1">Zouti:</p>
+                <ul class="space-y-1">
+                  <li>• Chodyè</li>
+                  <li>• Fouchèt</li>
+                  <li>• Kiyè</li>
+                  <li>• Asyèt</li>
+                </ul>
+              </div>
+              <div>
+                <p class="font-semibold text-pink-600 dark:text-pink-400 mb-1">Moun:</p>
+                <ul class="space-y-1">
+                  <li>• Kizinyè</li>
+                  <li>• Chèf</li>
+                  <li>• Envite</li>
+                  <li>• Fanmi</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="bg-orange-50 dark:bg-orange-950 p-6 rounded-lg border-l-4 border-orange-500">
+          <h3 class="text-xl font-semibold text-orange-700 dark:text-orange-300 mb-3">4. Tip Kategori pou Gwoup Mo</h3>
+          <p class="text-gray-700 dark:text-gray-300 mb-3">
+            Lè w ap kreye rezo mo, ou ka gwoup mo yo nan diferan kategori:
+          </p>
+          
+          <div class="space-y-3">
+            <div class="bg-white dark:bg-gray-800 p-4 rounded-lg">
+              <p class="font-semibold text-orange-600 dark:text-orange-400 mb-1">1. Pa Nati Mo (Klas Gramatikal)</p>
+              <ul class="text-gray-700 dark:text-gray-300 text-sm space-y-1">
+                <li>• Non (moun, bagay, kote)</li>
+                <li>• Vèb (aksyon, eta)</li>
+                <li>• Adjektif (deskripsyon)</li>
+                <li>• Advèb (manyè, tan, kote)</li>
+              </ul>
+            </div>
+
+            <div class="bg-white dark:bg-gray-800 p-4 rounded-lg">
+              <p class="font-semibold text-orange-600 dark:text-orange-400 mb-1">2. Pa Kategori Semantik</p>
+              <ul class="text-gray-700 dark:text-gray-300 text-sm space-y-1">
+                <li>• Moun (aktè yo)</li>
+                <li>• Kote (espas yo)</li>
+                <li>• Tan (moman yo)</li>
+                <li>• Zouti/Objè</li>
+                <li>• Santiman/Emosyon</li>
+              </ul>
+            </div>
+
+            <div class="bg-white dark:bg-gray-800 p-4 rounded-lg">
+              <p class="font-semibold text-orange-600 dark:text-orange-400 mb-1">3. Pa Relasyon</p>
+              <ul class="text-gray-700 dark:text-gray-300 text-sm space-y-1">
+                <li>• Sinonim (mo ki sanble)</li>
+                <li>• Antonim (mo opoze)</li>
+                <li>• Sous-kategori (pi espesifik)</li>
+                <li>• Asosyasyon (mo ki ale ansanm)</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+
+        <div class="bg-red-50 dark:bg-red-950 p-6 rounded-lg border-l-4 border-red-500">
+          <h3 class="text-xl font-semibold text-red-700 dark:text-red-300 mb-3">5. Egzanp Rezo Detaye: Tèm "Lanmè"</h3>
+          
+          <div class="bg-white dark:bg-gray-800 p-4 rounded-lg">
+            <div class="text-center mb-4">
+              <div class="inline-block bg-blue-600 text-white px-6 py-3 rounded-full font-bold text-lg">
+                LANMÈ
+              </div>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-gray-700 dark:text-gray-300">
+              <div class="bg-blue-50 dark:bg-blue-950 p-3 rounded">
+                <p class="font-semibold text-blue-600 dark:text-blue-400 mb-2">🌊 Eleman Natirèl:</p>
+                <p>• Dlo, sab, wòch, vag, maré, kouran, sal</p>
+              </div>
+              
+              <div class="bg-green-50 dark:bg-green-950 p-3 rounded">
+                <p class="font-semibold text-green-600 dark:text-green-400 mb-2">🐟 Bèt Lanmè:</p>
+                <p>• Pwason, krabe, lanbi, tiburon, balèn, reken</p>
+              </div>
+              
+              <div class="bg-purple-50 dark:bg-purple-950 p-3 rounded">
+                <p class="font-semibold text-purple-600 dark:text-purple-400 mb-2">⛵ Transpò:</p>
+                <p>• Bato, kannòt, vwatye, navich, pechè</p>
+              </div>
+              
+              <div class="bg-orange-50 dark:bg-orange-950 p-3 rounded">
+                <p class="font-semibold text-orange-600 dark:text-orange-400 mb-2">🏖️ Aktivite:</p>
+                <p>• Benyen, naje, plonje, peche, sifing</p>
+              </div>
+              
+              <div class="bg-red-50 dark:bg-red-950 p-3 rounded">
+                <p class="font-semibold text-red-600 dark:text-red-400 mb-2">👥 Moun:</p>
+                <p>• Pechè, maren, kapitèn, touris, sovtè</p>
+              </div>
+              
+              <div class="bg-yellow-50 dark:bg-yellow-950 p-3 rounded">
+                <p class="font-semibold text-yellow-600 dark:text-yellow-400 mb-2">🎨 Adjektif:</p>
+                <p>• Ble, gwo, pwofon, kalm, move, klè, fwèt</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="bg-indigo-50 dark:bg-indigo-950 p-6 rounded-lg border-l-4 border-indigo-500">
+          <h3 class="text-xl font-semibold text-indigo-700 dark:text-indigo-300 mb-3">6. Kijan Itilize Rezo Mo?</h3>
+          
+          <ul class="list-disc list-inside text-gray-700 dark:text-gray-300 space-y-2 ml-4">
+            <li><strong>Anvan ekri:</strong> Prepare vokabilè w pou yon konpozisyon</li>
+            <li><strong>Pandan lekti:</strong> Gwoup mo nouvo ou aprann</li>
+            <li><strong>Pou revizyon:</strong> Apran mo pa tèm olye de youn pa youn</li>
+            <li><strong>Pou pale:</strong> Anrichi diskisyon ou ak mo varyete</li>
+            <li><strong>Pou konprann:</strong> Devine sans mo ou pa konnen pa kontèks</li>
+          </ul>
+
+          <div class="bg-white dark:bg-gray-800 p-4 rounded-lg mt-4">
+            <h4 class="text-indigo-600 dark:text-indigo-400 font-semibold mb-2">Egzanp Itilizasyon:</h4>
+            <p class="text-gray-700 dark:text-gray-300 text-sm">
+              Ou dwe ekri yon konpozisyon sou "Vakans nan plaj". Ou kreye yon rezo mo sou tèm "Plaj", 
+              epi ou itilize mo sa yo nan tèks ou: <em>sab blan, dlo klè, benyen, solèy, parasòl, glasi, 
+              jwèt, ri, fanmi, detann, foto, souvni...</em>
+            </p>
+          </div>
+        </div>
+
+        <div class="bg-pink-50 dark:bg-pink-950 p-6 rounded-lg border-l-4 border-pink-500">
+          <h3 class="text-xl font-semibold text-pink-700 dark:text-pink-300 mb-3">7. Konsèy pou Kreye Bon Rezo Mo</h3>
+          
+          <ul class="list-disc list-inside text-gray-700 dark:text-gray-300 space-y-2 ml-4">
+            <li>✅ Pa limite tèt ou — ekri tout mo ki vin nan tèt ou premye</li>
+            <li>✅ Itilize koulè ak desèn pou fè rezo a pi enteresan</li>
+            <li>✅ Revize rezo a ak lòt moun pou ajoute mo ou te bliye</li>
+            <li>✅ Gwoup mo yo nan kategori klè</li>
+            <li>✅ Revize rezo mo ou chak jou pou kenbe yo nan memwa</li>
+            <li>❌ Pa kopye — kreye pwòp rezo pa w</li>
+            <li>❌ Pa bliye mo senp — yo enpòtan tou!</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="mt-8 bg-gradient-to-r from-orange-100 to-red-100 dark:from-orange-900 dark:to-red-900 p-6 rounded-lg">
+        <h3 class="text-xl font-semibold text-orange-800 dark:text-orange-200 mb-2">🌟 Sonje!</h3>
+        <p class="text-gray-700 dark:text-gray-300">
+          Mo yo pa viv pou kont yo — yo travay ansanm! Kreye rezo mo se tankou kreye yon fanmi mo 
+          kote tout manm yo gen rapò. Pi w konnen mo, pi w ka pale ak ekri byen!
+        </p>
+      </div>
+    `,
+    exemplesExercices: `
+      <h2 class="text-2xl font-bold text-primary mb-4">✏️ Pratik ak Egzèsis</h2>
+      
+      <div class="space-y-6">
+        <div class="bg-blue-50 dark:bg-blue-950 p-6 rounded-lg">
+          <h3 class="text-lg font-semibold text-blue-700 dark:text-blue-300 mb-3">Egzèsis 1: Kreye Premye Rezo Mo Ou</h3>
+          <p class="text-gray-700 dark:text-gray-300 mb-4">
+            Chwazi yon tèm nan lis sa a epi kreye yon rezo mo ak omwen 15 mo ki rapòte:
+          </p>
+          
+          <div class="bg-white dark:bg-gray-800 p-4 rounded mb-4">
+            <p class="font-semibold mb-2">Chwazi youn:</p>
+            <ul class="grid grid-cols-2 md:grid-cols-3 gap-2 text-sm text-gray-700 dark:text-gray-300">
+              <li>• Lekòl</li>
+              <li>• Kay</li>
+              <li>• Mache</li>
+              <li>• Foutbòl</li>
+              <li>• Mizik</li>
+              <li>• Fanmi</li>
+            </ul>
+          </div>
+
+          <div class="bg-white dark:bg-gray-800 p-4 rounded">
+            <p class="text-sm text-gray-600 dark:text-gray-400 mb-2">Desine oswa ekri rezo mo ou isit:</p>
+            <textarea class="w-full border border-gray-300 dark:border-gray-600 rounded p-2 min-h-[200px]" placeholder="Ekri tèm nan nan mitan, epi ajoute mo ki rapòte..."></textarea>
+          </div>
+        </div>
+
+        <div class="bg-green-50 dark:bg-green-950 p-6 rounded-lg">
+          <h3 class="text-lg font-semibold text-green-700 dark:text-green-300 mb-3">Egzèsis 2: Gwoup Mo pa Kategori</h3>
+          <p class="text-gray-700 dark:text-gray-300 mb-3">
+            Pran mo sa yo ki rapòte ak "Lekòl" epi gwoup yo pa kategori:
+          </p>
+          
+          <div class="bg-white dark:bg-gray-800 p-4 rounded mb-4">
+            <p class="font-semibold mb-2">Mo yo:</p>
+            <p class="text-sm text-gray-700 dark:text-gray-300">
+              pwofesè, li, klas, devwa, elèv, etidye, kaye, enseyan, apran, Tab, direktè, egzamen, 
+              kreyon, sak, enseye, bibliotèk, lakou, zanmi
+            </p>
+          </div>
+
+          <div class="space-y-3">
+            <div>
+              <p class="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1">Moun:</p>
+              <textarea class="w-full border border-gray-300 dark:border-gray-600 rounded p-2 min-h-[60px]" placeholder="Ekri mo ki reprezante moun..."></textarea>
+            </div>
+            <div>
+              <p class="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1">Kote:</p>
+              <textarea class="w-full border border-gray-300 dark:border-gray-600 rounded p-2 min-h-[60px]" placeholder="Ekri mo ki reprezante kote..."></textarea>
+            </div>
+            <div>
+              <p class="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1">Aksyon (Vèb):</p>
+              <textarea class="w-full border border-gray-300 dark:border-gray-600 rounded p-2 min-h-[60px]" placeholder="Ekri vèb yo..."></textarea>
+            </div>
+            <div>
+              <p class="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1">Objè:</p>
+              <textarea class="w-full border border-gray-300 dark:border-gray-600 rounded p-2 min-h-[60px]" placeholder="Ekri objè yo..."></textarea>
+            </div>
+          </div>
+        </div>
+
+        <div class="bg-purple-50 dark:bg-purple-950 p-6 rounded-lg">
+          <h3 class="text-lg font-semibold text-purple-700 dark:text-purple-300 mb-3">Egzèsis 3: Konplete Rezo Mo</h3>
+          <p class="text-gray-700 dark:text-gray-300 mb-3">
+            Men yon rezo mo sou "Transport" ki pa konplè. Ajoute omwen 10 mo:
+          </p>
+          <div class="bg-white dark:bg-gray-800 p-4 rounded mb-4">
+            <div class="text-center mb-3">
+              <span class="font-bold text-lg">TRANSPÒ</span>
+            </div>
+            <p class="text-sm text-gray-700 dark:text-gray-300 mb-2">Mo ki deja la:</p>
+            <p class="text-sm text-gray-600 dark:text-gray-400">machin, moto, bis, avyon, bato</p>
+          </div>
+          <textarea class="w-full border border-gray-300 dark:border-gray-600 rounded p-2 min-h-[120px]" placeholder="Ajoute mo nouvo (vèb, kote, moun, adjektif, etc.)..."></textarea>
+        </div>
+
+        <div class="bg-orange-50 dark:bg-orange-950 p-6 rounded-lg">
+          <h3 class="text-lg font-semibold text-orange-700 dark:text-orange-300 mb-3">Egzèsis 4: Ekri yon Paragraf</h3>
+          <p class="text-gray-700 dark:text-gray-300 mb-3">
+            Itilize rezo mo ou te kreye nan Egzèsis 1 pou ekri yon ti paragraf (5-7 fraz) sou tèm nan:
+          </p>
+          <textarea class="w-full border border-gray-300 dark:border-gray-600 rounded p-2 min-h-[150px]" placeholder="Ekri paragraf ou isit..."></textarea>
+          <p class="text-sm text-gray-600 dark:text-gray-400 mt-2">
+            Konsèy: Eseye itilize omwen 10 mo diferan nan rezo mo ou!
+          </p>
+        </div>
+
+        <div class="bg-indigo-50 dark:bg-indigo-950 p-6 rounded-lg">
+          <h3 class="text-lg font-semibold text-indigo-700 dark:text-indigo-300 mb-3">📺 Videyo pou Ale Pi Lwen</h3>
+          <p class="text-gray-700 dark:text-gray-300 mb-3">
+            Gade videyo sa a ki montre diferan egzanp rezo mo ak teknik pou kreye yo. 
+            Pratik kreye yon rezo mo sou yon nouvo tèm apre videyo a.
+          </p>
+        </div>
+
+        <div class="bg-pink-50 dark:bg-pink-950 p-6 rounded-lg">
+          <h3 class="text-lg font-semibold text-pink-700 dark:text-pink-300 mb-3">📖 Pwojè: Kaye Rezo Mo</h3>
+          <div class="bg-white dark:bg-gray-800 p-4 rounded">
+            <p class="text-gray-700 dark:text-gray-300 mb-3">
+              Kreye yon kaye espesyal pou rezo mo ou yo. Chak semèn, ajoute de nouvo rezo sou tèm diferan:
+            </p>
+            <ul class="list-disc list-inside text-gray-700 dark:text-gray-300 space-y-1 text-sm">
+              <li>Itilize koulè diferan pou chak kategori</li>
+              <li>Desine imaj ki rapòte ak tèm nan</li>
+              <li>Pataje ak kamarad ou pou konpare rezo yo</li>
+              <li>Revize rezo yo anvan egzamen</li>
+              <li>Itilize yo lè w ap ekri konpozisyon</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="bg-red-50 dark:bg-red-950 p-6 rounded-lg">
+          <h3 class="text-lg font-semibold text-red-700 dark:text-red-300 mb-3">🎯 Defi: Rezo Mo Konplèks</h3>
+          <p class="text-gray-700 dark:text-gray-300 mb-3">
+            Chwazi yon tèm konplèks epi kreye yon rezo mo ki gen sous-kategori:
+          </p>
+          <div class="bg-white dark:bg-gray-800 p-4 rounded">
+            <p class="font-semibold mb-2">Egzanp:</p>
+            <p class="text-sm text-gray-700 dark:text-gray-300">
+              Tèm: <strong>KILTI AYISYEN</strong>
+            </p>
+            <p class="text-sm text-gray-600 dark:text-gray-400 mt-2">Sous-kategori:</p>
+            <ul class="text-sm text-gray-600 dark:text-gray-400 space-y-1 ml-4">
+              <li>• Mizik: konpa, rasin, troubadou...</li>
+              <li>• Manje: diri kole, griyo, bannann peze...</li>
+              <li>• Fèt: Kanaval, Fèt Sen...</li>
+              <li>• Atis: pentè, mizisyen, ekriven...</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    `,
     duration: "45 minit",
     difficulty: "Intermediaire",
     category: "Vokabilè"
@@ -2135,9 +2834,482 @@ Pratik kouté epi rezime mesaj oral.`,
     title: "Konbinezon son ak Y ak W",
     description: "Repwodui konbinezon son ou tande ak Y ak W",
     objectif: "Metrize son Y ak W",
-    introduction: `<p>Y ak W fè anpil son diferan.</p>`,
-    contenu: `<h2>Son ak Y ak W</h2><p>Pratik pou byen ekri yo.</p>`,
-    exemplesExercices: `<p>Pratik: Ekri mo ki gen Y ak W.</p>`,
+    youtube_url: "https://www.youtube.com/watch?v=0bQ7m3ZyHyc",
+    introduction: `
+      <div class="bg-gradient-to-r from-teal-50 to-cyan-50 dark:from-teal-950 dark:to-cyan-950 p-6 rounded-lg border-l-4 border-teal-500">
+        <h3 class="text-xl font-bold text-teal-700 dark:text-teal-300 mb-3">🎯 Objektif Leson an</h3>
+        <p class="text-gray-700 dark:text-gray-300 mb-3">
+          Èske w janm tande mo tankou "pyebwa", "kwit", "dway", "mwatye"? Èske w remake lèt <strong>Y</strong> ak <strong>W</strong>? 
+          Yo se lèt espesyal ki kreye son espesyal lè yo konbine ak lòt lèt.
+        </p>
+        <p class="text-gray-700 dark:text-gray-300">
+          Nan leson sa a, n ap aprann tout <strong>konbinezon son ak Y ak W</strong> nan kreyòl ayisyen. 
+          Sa ap ede w <em>ekri kòrèkteman</em>, <em>pwononse byen</em>, epi <em>li san erè</em>. 
+          Se de lèt sa yo ki bay kreyòl la richès fonelik li!
+        </p>
+      </div>
+      
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
+        <div class="bg-yellow-50 dark:bg-yellow-950 p-5 rounded-lg border border-yellow-300 dark:border-yellow-700">
+          <h4 class="font-semibold text-yellow-800 dark:text-yellow-200 mb-2">🤔 Reflechi</h4>
+          <ul class="list-disc list-inside text-gray-700 dark:text-gray-300 space-y-1">
+            <li>Èske w ka di diferans ant "pi" ak "pye"?</li>
+            <li>Ki mo ou konnen ki gen "wa", "we", oswa "wi"?</li>
+            <li>Poukisa li enpòtan pou ekri son yo kòrèkteman?</li>
+          </ul>
+        </div>
+
+        <div class="bg-green-50 dark:bg-green-950 p-5 rounded-lg border border-green-300 dark:border-green-700">
+          <h4 class="font-semibold text-green-800 dark:text-green-200 mb-2">🎯 Objektif Aprantisaj</h4>
+          <ul class="list-disc list-inside text-gray-700 dark:text-gray-300 space-y-1">
+            <li>Rekonèt epi pwononse son ak Y ak W</li>
+            <li>Ekri kòrèkteman konbinezon yo</li>
+            <li>Distenge ant son ki sanble</li>
+            <li>Aplike règ òtografik nan ekriti</li>
+          </ul>
+        </div>
+      </div>
+    `,
+    contenu: `
+      <h2 class="text-2xl font-bold text-primary mb-4">📚 Konbinezon Son ak Y ak W</h2>
+      
+      <div class="space-y-6">
+        <div class="bg-blue-50 dark:bg-blue-950 p-6 rounded-lg border-l-4 border-blue-500">
+          <h3 class="text-xl font-semibold text-blue-700 dark:text-blue-300 mb-3">1. Wòl Y ak W nan Kreyòl</h3>
+          <p class="text-gray-700 dark:text-gray-300 mb-3">
+            Nan kreyòl ayisyen, <strong>Y</strong> ak <strong>W</strong> pa itilize kòm lèt tout sèl. Yo toujou travay 
+            <em>ansanm ak lòt vwayèl</em> (a, e, i, o, u) pou kreye <strong>son konpoze</strong>. 
+            Yo rele yo <em>semi-vwayèl</em> oswa <em>glid</em>.
+          </p>
+          <div class="bg-white dark:bg-gray-800 p-4 rounded-lg">
+            <h4 class="text-blue-600 dark:text-blue-400 font-semibold mb-2">Prensip Debaz</h4>
+            <ul class="text-gray-700 dark:text-gray-300 space-y-2 text-sm">
+              <li>• <strong>Y + vwayèl</strong> = Son ki kòmanse ak son /y/ (tankou nan "youn")</li>
+              <li>• <strong>Konsòn + Y + vwayèl</strong> = Son ki gen /y/ nan mitan (egz: pye, fye)</li>
+              <li>• <strong>W + vwayèl</strong> = Son ki kòmanse ak /w/ (tankou nan "wi")</li>
+              <li>• <strong>Konsòn + W + vwayèl</strong> = Son ki gen /w/ nan mitan (egz: dwa, twa)</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="bg-purple-50 dark:bg-purple-950 p-6 rounded-lg border-l-4 border-purple-500">
+          <h3 class="text-xl font-semibold text-purple-700 dark:text-purple-300 mb-3">2. Konbinezon ak Y</h3>
+          
+          <div class="space-y-4">
+            <div class="bg-white dark:bg-gray-800 p-4 rounded-lg">
+              <h4 class="font-semibold text-purple-600 dark:text-purple-400 mb-2">a) Y + Vwayèl (Y an tèt)</h4>
+              <div class="grid grid-cols-2 md:grid-cols-3 gap-3 text-sm text-gray-700 dark:text-gray-300">
+                <div>
+                  <p class="font-semibold text-purple-600 dark:text-purple-400">YA:</p>
+                  <p>• ya (oui, wi)</p>
+                  <p>• yaya (granmoun respekte)</p>
+                </div>
+                <div>
+                  <p class="font-semibold text-purple-600 dark:text-purple-400">YE:</p>
+                  <p>• yè (hier)</p>
+                  <p>• ye (être)</p>
+                  <p>• yeye (grangou)</p>
+                </div>
+                <div>
+                  <p class="font-semibold text-purple-600 dark:text-purple-400">YI:</p>
+                  <p>• yich (oursin)</p>
+                </div>
+                <div>
+                  <p class="font-semibold text-purple-600 dark:text-purple-400">YO:</p>
+                  <p>• yo (eux/ils)</p>
+                  <p>• youn (un)</p>
+                  <p>• yokyo (fou)</p>
+                </div>
+                <div>
+                  <p class="font-semibold text-purple-600 dark:text-purple-400">YU:</p>
+                  <p>• yuca (manyòk)</p>
+                </div>
+              </div>
+            </div>
+
+            <div class="bg-white dark:bg-gray-800 p-4 rounded-lg">
+              <h4 class="font-semibold text-purple-600 dark:text-purple-400 mb-2">b) Konsòn + Y + Vwayèl</h4>
+              <div class="space-y-3 text-sm text-gray-700 dark:text-gray-300">
+                <div>
+                  <p class="font-semibold text-purple-600 dark:text-purple-400 mb-1">PY- (pye):</p>
+                  <p>• pye (pied), pyebwa (arbre), pyen (peigner), pyès (pièce)</p>
+                </div>
+                <div>
+                  <p class="font-semibold text-purple-600 dark:text-purple-400 mb-1">BY- (bye):</p>
+                  <p>• byennale (bien-aller), byennèt (bien-être)</p>
+                </div>
+                <div>
+                  <p class="font-semibold text-purple-600 dark:text-purple-400 mb-1">TY- (tye):</p>
+                  <p>• tya (thé), tyatyak (tchatcher)</p>
+                </div>
+                <div>
+                  <p class="font-semibold text-purple-600 dark:text-purple-400 mb-1">DY- (dye):</p>
+                  <p>• dyab (diable), dyanm (dynamite)</p>
+                </div>
+                <div>
+                  <p class="font-semibold text-purple-600 dark:text-purple-400 mb-1">KY- (kye):</p>
+                  <p>• kyè (cœur), kyòs (kiosque)</p>
+                </div>
+                <div>
+                  <p class="font-semibold text-purple-600 dark:text-purple-400 mb-1">FY- (fye):</p>
+                  <p>• fye (fier), fyèl (fiel)</p>
+                </div>
+                <div>
+                  <p class="font-semibold text-purple-600 dark:text-purple-400 mb-1">LY- (lye):</p>
+                  <p>• lya (lier), lyann (liane)</p>
+                </div>
+              </div>
+            </div>
+
+            <div class="bg-yellow-50 dark:bg-yellow-950 p-4 rounded-lg border border-yellow-300 dark:border-yellow-700">
+              <h4 class="text-yellow-800 dark:text-yellow-200 font-semibold mb-2">⚠️ Atansyon!</h4>
+              <p class="text-gray-700 dark:text-gray-300 text-sm">
+                Pa konfonn: "pi" (plus) ≠ "pye" (pied) | "fi" (fille) ≠ "fye" (fier)
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div class="bg-green-50 dark:bg-green-950 p-6 rounded-lg border-l-4 border-green-500">
+          <h3 class="text-xl font-semibold text-green-700 dark:text-green-300 mb-3">3. Konbinezon ak W</h3>
+          
+          <div class="space-y-4">
+            <div class="bg-white dark:bg-gray-800 p-4 rounded-lg">
+              <h4 class="font-semibold text-green-600 dark:text-green-400 mb-2">a) W + Vwayèl (W an tèt)</h4>
+              <div class="grid grid-cols-2 md:grid-cols-3 gap-3 text-sm text-gray-700 dark:text-gray-300">
+                <div>
+                  <p class="font-semibold text-green-600 dark:text-green-400">WA:</p>
+                  <p>• wa (roi)</p>
+                  <p>• wanga (charme)</p>
+                  <p>• waf (gaufre)</p>
+                </div>
+                <div>
+                  <p class="font-semibold text-green-600 dark:text-green-400">WE:</p>
+                  <p>• wè (voir)</p>
+                  <p>• wèl (filet de pêche)</p>
+                </div>
+                <div>
+                  <p class="font-semibold text-green-600 dark:text-green-400">WI:</p>
+                  <p>• wi (oui)</p>
+                  <p>• wit (huit)</p>
+                  <p>• wiki (rapide)</p>
+                </div>
+                <div>
+                  <p class="font-semibold text-green-600 dark:text-green-400">WO:</p>
+                  <p>• wòch (roche)</p>
+                  <p>• wòl (rôle)</p>
+                  <p>• wont (honte)</p>
+                </div>
+                <div>
+                  <p class="font-semibold text-green-600 dark:text-green-400">WU:</p>
+                  <p>• woulo (rouleau)</p>
+                </div>
+              </div>
+            </div>
+
+            <div class="bg-white dark:bg-gray-800 p-4 rounded-lg">
+              <h4 class="font-semibold text-green-600 dark:text-green-400 mb-2">b) Konsòn + W + Vwayèl</h4>
+              <div class="space-y-3 text-sm text-gray-700 dark:text-gray-300">
+                <div>
+                  <p class="font-semibold text-green-600 dark:text-green-400 mb-1">KW- (kwe):</p>
+                  <p>• kwit (cuit), kwe (croire), kwayans (croyance), kwi (cuir), kwak (quoi)</p>
+                </div>
+                <div>
+                  <p class="font-semibold text-green-600 dark:text-green-400 mb-1">DW- (dwe):</p>
+                  <p>• dwa (droit), dwe (devoir), dwèt (doigt), dwòl (drôle)</p>
+                </div>
+                <div>
+                  <p class="font-semibold text-green-600 dark:text-green-400 mb-1">TW- (twe):</p>
+                  <p>• twa (toi/trois), twalèt (toilette), twou (trou), twonpe (tromper)</p>
+                </div>
+                <div>
+                  <p class="font-semibold text-green-600 dark:text-green-400 mb-1">GW- (gwe):</p>
+                  <p>• gwo (gros), gwoup (groupe), gwan (grand)</p>
+                </div>
+                <div>
+                  <p class="font-semibold text-green-600 dark:text-green-400 mb-1">SW- (swe):</p>
+                  <p>• swa (soir), swaf (soif), swè (sœur), swen (soin)</p>
+                </div>
+                <div>
+                  <p class="font-semibold text-green-600 dark:text-green-400 mb-1">MW- (mwe):</p>
+                  <p>• mwa (mois), mwen (moi), mwatye (moitié), mwens (moins)</p>
+                </div>
+                <div>
+                  <p class="font-semibold text-green-600 dark:text-green-400 mb-1">LW- (lwe):</p>
+                  <p>• lwa (loi), lwe (louer), lwen (loin)</p>
+                </div>
+                <div>
+                  <p class="font-semibold text-green-600 dark:text-green-400 mb-1">BW- (bwe):</p>
+                  <p>• bwa (bois/boire), bwat (boîte), bwè (boire)</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="bg-orange-50 dark:bg-orange-950 p-6 rounded-lg border-l-4 border-orange-500">
+          <h3 class="text-xl font-semibold text-orange-700 dark:text-orange-300 mb-3">4. Règ Pratik pou Ekri</h3>
+          
+          <ol class="list-decimal list-inside space-y-3 text-gray-700 dark:text-gray-300">
+            <li>
+              <strong>Koute son an byen:</strong> Èske gen son /y/ oswa /w/?
+              <p class="text-sm ml-6 mt-1">Egzanp: "kwit" (tande /kw/) vs "kòd" (pa gen /w/)</p>
+            </li>
+            <li>
+              <strong>Idantifye pozisyon an:</strong> Èske Y/W nan kòmansman oswa nan mitan?
+              <p class="text-sm ml-6 mt-1">Egzanp: "yè" (kòmansman) vs "pye" (nan mitan)</p>
+            </li>
+            <li>
+              <strong>Verifye konsòn ki anvan:</strong> Ki konsòn ki la anvan Y/W la?
+              <p class="text-sm ml-6 mt-1">Egzanp: "p" + "ye" = "pye"; "k" + "wi" = "kwit"</p>
+            </li>
+            <li>
+              <strong>Respekte òtograf ofisyèl la:</strong> Tcheke nan diksyonè si ou pa sèten
+            </li>
+          </ol>
+        </div>
+
+        <div class="bg-red-50 dark:bg-red-950 p-6 rounded-lg border-l-4 border-red-500">
+          <h3 class="text-xl font-semibold text-red-700 dark:text-red-300 mb-3">5. Erè Ki Souvan Fèt</h3>
+          
+          <div class="space-y-3">
+            <div class="bg-white dark:bg-gray-800 p-4 rounded-lg">
+              <p class="font-semibold text-red-600 dark:text-red-400 mb-1">❌ Erè 1: Ekri "i" olye de "y"</p>
+              <p class="text-gray-700 dark:text-gray-300 text-sm">
+                Move: "pie" ✗ → Kòrèk: "pye" ✓ | Move: "fier" ✗ → Kòrèk: "fye" ✓
+              </p>
+            </div>
+
+            <div class="bg-white dark:bg-gray-800 p-4 rounded-lg">
+              <p class="font-semibold text-red-600 dark:text-red-400 mb-1">❌ Erè 2: Ekri "ou" olye de "w"</p>
+              <p class="text-gray-700 dark:text-gray-300 text-sm">
+                Move: "kouit" ✗ → Kòrèk: "kwit" ✓ | Move: "droit" ✗ → Kòrèk: "dwa" ✓
+              </p>
+            </div>
+
+            <div class="bg-white dark:bg-gray-800 p-4 rounded-lg">
+              <p class="font-semibold text-red-600 dark:text-red-400 mb-1">❌ Erè 3: Bliye Y/W nan mitan mo</p>
+              <p class="text-gray-700 dark:text-gray-300 text-sm">
+                Move: "pe" ✗ → Kòrèk: "pye" ✓ | Move: "da" ✗ → Kòrèk: "dwa" ✓
+              </p>
+            </div>
+
+            <div class="bg-white dark:bg-gray-800 p-4 rounded-lg">
+              <p class="font-semibold text-red-600 dark:text-red-400 mb-1">❌ Erè 4: Konfonn mo ki sanble</p>
+              <p class="text-gray-700 dark:text-gray-300 text-sm">
+                "twa" (toi/trois) ≠ "ta" (ton) | "mwa" (mois) ≠ "ma" (mon)
+              </p>
+            </div>
+          </div>
+
+          <div class="mt-4 bg-green-50 dark:bg-green-950 p-4 rounded-lg border border-green-300 dark:border-green-700">
+            <h4 class="text-green-800 dark:text-green-200 font-semibold mb-2">✅ Kijan Pou Evite Yo</h4>
+            <ul class="text-gray-700 dark:text-gray-300 text-sm space-y-1">
+              <li>• Li anwo vwa pou tande si gen son /y/ oswa /w/</li>
+              <li>• Pratik ekri mo yo souvan</li>
+              <li>• Kreye yon lis mo ak Y ak W pou revize</li>
+              <li>• Gade epi ekri mo yo plizyè fwa</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="bg-indigo-50 dark:bg-indigo-950 p-6 rounded-lg border-l-4 border-indigo-500">
+          <h3 class="text-xl font-semibold text-indigo-700 dark:text-indigo-300 mb-3">6. Konsèy pou Memorize</h3>
+          
+          <div class="space-y-3">
+            <div class="bg-white dark:bg-gray-800 p-4 rounded-lg">
+              <p class="font-semibold text-indigo-600 dark:text-indigo-400 mb-2">📝 Teknik Vizuèl</p>
+              <p class="text-gray-700 dark:text-gray-300 text-sm">
+                Souliye Y ak W nan koulè diferan lè w li pou w sonje yo
+              </p>
+            </div>
+
+            <div class="bg-white dark:bg-gray-800 p-4 rounded-lg">
+              <p class="font-semibold text-indigo-600 dark:text-indigo-400 mb-2">🎵 Teknik Oral</p>
+              <p class="text-gray-700 dark:text-gray-300 text-sm">
+                Li mo yo anwo vwa pou tande diferans nan son yo
+              </p>
+            </div>
+
+            <div class="bg-white dark:bg-gray-800 p-4 rounded-lg">
+              <p class="font-semibold text-indigo-600 dark:text-indigo-400 mb-2">✍️ Teknik Pratik</p>
+              <p class="text-gray-700 dark:text-gray-300 text-sm">
+                Ekri chak mo senk fwa pou metrize òtograf la
+              </p>
+            </div>
+
+            <div class="bg-white dark:bg-gray-800 p-4 rounded-lg">
+              <p class="font-semibold text-indigo-600 dark:text-indigo-400 mb-2">👥 Teknik Gwoup</p>
+              <p class="text-gray-700 dark:text-gray-300 text-sm">
+                Jwe jwèt dikte ak zanmi w pou pratik
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="mt-8 bg-gradient-to-r from-teal-100 to-cyan-100 dark:from-teal-900 dark:to-cyan-900 p-6 rounded-lg">
+        <h3 class="text-xl font-semibold text-teal-800 dark:text-teal-200 mb-2">🌟 Sonje!</h3>
+        <p class="text-gray-700 dark:text-gray-300">
+          Y ak W se de lèt ki bay kreyòl la son espesyal li. Metrize yo, se metrize yon gwo pati 
+          nan òtograf kreyòl! Pratik chak jou, epi w ap wè pwogrè w!
+        </p>
+      </div>
+    `,
+    exemplesExercices: `
+      <h2 class="text-2xl font-bold text-primary mb-4">✏️ Pratik ak Egzèsis</h2>
+      
+      <div class="space-y-6">
+        <div class="bg-blue-50 dark:bg-blue-950 p-6 rounded-lg">
+          <h3 class="text-lg font-semibold text-blue-700 dark:text-blue-300 mb-3">Egzèsis 1: Idantifye Son yo</h3>
+          <p class="text-gray-700 dark:text-gray-300 mb-4">Koute epi ekri si ou tande son "Y" oswa "W" nan mo sa yo:</p>
+          
+          <div class="space-y-3">
+            <div class="bg-white dark:bg-gray-800 p-4 rounded">
+              <p class="mb-2">a) pye (pied) → Lèt: _______</p>
+            </div>
+            <div class="bg-white dark:bg-gray-800 p-4 rounded">
+              <p class="mb-2">b) kwit (cuit) → Lèt: _______</p>
+            </div>
+            <div class="bg-white dark:bg-gray-800 p-4 rounded">
+              <p class="mb-2">c) yè (hier) → Lèt: _______</p>
+            </div>
+            <div class="bg-white dark:bg-gray-800 p-4 rounded">
+              <p class="mb-2">d) dwa (droit) → Lèt: _______</p>
+            </div>
+            <div class="bg-white dark:bg-gray-800 p-4 rounded">
+              <p class="mb-2">e) fye (fier) → Lèt: _______</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="bg-green-50 dark:bg-green-950 p-6 rounded-lg">
+          <h3 class="text-lg font-semibold text-green-700 dark:text-green-300 mb-3">Egzèsis 2: Konplète Mo yo</h3>
+          <p class="text-gray-700 dark:text-gray-300 mb-3">
+            Ranpli espas yo ak "y" oswa "w" pou konplète mo yo:
+          </p>
+          
+          <div class="space-y-3">
+            <div class="bg-white dark:bg-gray-800 p-4 rounded">
+              <p>a) p__e (pied)</p>
+            </div>
+            <div class="bg-white dark:bg-gray-800 p-4 rounded">
+              <p>b) k__it (cuit)</p>
+            </div>
+            <div class="bg-white dark:bg-gray-800 p-4 rounded">
+              <p>c) d__a (droit)</p>
+            </div>
+            <div class="bg-white dark:bg-gray-800 p-4 rounded">
+              <p>d) m__en (moi)</p>
+            </div>
+            <div class="bg-white dark:bg-gray-800 p-4 rounded">
+              <p>e) s__a (soir)</p>
+            </div>
+            <div class="bg-white dark:bg-gray-800 p-4 rounded">
+              <p>f) __oun (un)</p>
+            </div>
+            <div class="bg-white dark:bg-gray-800 p-4 rounded">
+              <p>g) g__o (gros)</p>
+            </div>
+            <div class="bg-white dark:bg-gray-800 p-4 rounded">
+              <p>h) k__è (cœur)</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="bg-purple-50 dark:bg-purple-950 p-6 rounded-lg">
+          <h3 class="text-lg font-semibold text-purple-700 dark:text-purple-300 mb-3">Egzèsis 3: Korije Erè yo</h3>
+          <p class="text-gray-700 dark:text-gray-300 mb-3">
+            Mo sa yo ekri ak erè. Korije yo:
+          </p>
+          <div class="space-y-3">
+            <div class="bg-white dark:bg-gray-800 p-4 rounded">
+              <p class="mb-1">a) pie (pied) → Kòrèk: __________</p>
+            </div>
+            <div class="bg-white dark:bg-gray-800 p-4 rounded">
+              <p class="mb-1">b) kouit (cuit) → Kòrèk: __________</p>
+            </div>
+            <div class="bg-white dark:bg-gray-800 p-4 rounded">
+              <p class="mb-1">c) droit (droit) → Kòrèk: __________</p>
+            </div>
+            <div class="bg-white dark:bg-gray-800 p-4 rounded">
+              <p class="mb-1">d) fier (fier) → Kòrèk: __________</p>
+            </div>
+            <div class="bg-white dark:bg-gray-800 p-4 rounded">
+              <p class="mb-1">e) moin (moi) → Kòrèk: __________</p>
+            </div>
+            <div class="bg-white dark:bg-gray-800 p-4 rounded">
+              <p class="mb-1">f) souè (sœur) → Kòrèk: __________</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="bg-orange-50 dark:bg-orange-950 p-6 rounded-lg">
+          <h3 class="text-lg font-semibold text-orange-700 dark:text-orange-300 mb-3">Egzèsis 4: Ekri Fraz</h3>
+          <p class="text-gray-700 dark:text-gray-300 mb-3">
+            Ekri senk fraz ki gen omwen yon mo ak "Y" ak yon mo ak "W":
+          </p>
+          <textarea class="w-full border border-gray-300 dark:border-gray-600 rounded p-2 min-h-[150px]" placeholder="Egzanp: Pye pyebwa a gwo, epi mwen kwit diri a byen."></textarea>
+        </div>
+
+        <div class="bg-indigo-50 dark:bg-indigo-950 p-6 rounded-lg">
+          <h3 class="text-lg font-semibold text-indigo-700 dark:text-indigo-300 mb-3">Egzèsis 5: Klasifye Mo yo</h3>
+          <p class="text-gray-700 dark:text-gray-300 mb-3">
+            Klasifye mo sa yo nan de gwoup: Mo ak "Y" ak Mo ak "W":
+          </p>
+          <div class="bg-white dark:bg-gray-800 p-4 rounded mb-4">
+            <p class="text-sm mb-2 font-semibold">Mo yo:</p>
+            <p class="text-sm text-gray-700 dark:text-gray-300">
+              pye, kwit, yè, dwa, fye, mwen, swa, youn, gwo, kyè, bwa, twa, dyab, lwa
+            </p>
+          </div>
+          <div class="space-y-3">
+            <div>
+              <p class="text-sm font-semibold mb-1">Mo ak Y:</p>
+              <textarea class="w-full border border-gray-300 dark:border-gray-600 rounded p-2 min-h-[60px]"></textarea>
+            </div>
+            <div>
+              <p class="text-sm font-semibold mb-1">Mo ak W:</p>
+              <textarea class="w-full border border-gray-300 dark:border-gray-600 rounded p-2 min-h-[60px]"></textarea>
+            </div>
+          </div>
+        </div>
+
+        <div class="bg-red-50 dark:bg-red-950 p-6 rounded-lg">
+          <h3 class="text-lg font-semibold text-red-700 dark:text-red-300 mb-3">📺 Videyo pou Ale Pi Lwen</h3>
+          <p class="text-gray-700 dark:text-gray-300 mb-3">
+            Gade videyo sa a ki montre kijan pwononse epi ekri son ak Y ak W. 
+            Pratik repete mo yo apre videyo a.
+          </p>
+        </div>
+
+        <div class="bg-pink-50 dark:bg-pink-950 p-6 rounded-lg">
+          <h3 class="text-lg font-semibold text-pink-700 dark:text-pink-300 mb-3">🎯 Defi Final</h3>
+          <p class="text-gray-700 dark:text-gray-300 mb-3">
+            Ekri yon ti istwa (7-10 fraz) ki gen omwen:
+          </p>
+          <ul class="list-disc list-inside text-gray-700 dark:text-gray-300 text-sm mb-3">
+            <li>5 mo diferan ak Y</li>
+            <li>5 mo diferan ak W</li>
+          </ul>
+          <textarea class="w-full border border-gray-300 dark:border-gray-600 rounded p-2 min-h-[150px]" placeholder="Kòmanse istwa ou isit..."></textarea>
+          <p class="text-sm text-gray-600 dark:text-gray-400 mt-2">
+            Konsèy: Souliye mo ak Y ak W apre w fini pou w verifye w te itilize yo!
+          </p>
+        </div>
+
+        <div class="bg-teal-50 dark:bg-teal-950 p-6 rounded-lg">
+          <h3 class="text-lg font-semibold text-teal-700 dark:text-teal-300 mb-3">📖 Konsèy pou Reyisi</h3>
+          <ul class="list-disc list-inside space-y-2 text-gray-700 dark:text-gray-300">
+            <li>Pratik ekri 10 mo nouvo chak jou ki gen Y oswa W</li>
+            <li>Li tèks kreyòl epi make mo ki gen Y ak W</li>
+            <li>Kreye yon kaye espesyal pou mo ak Y ak W</li>
+            <li>Jwe jwèt mo ak zanmi w pou pratik</li>
+            <li>Ekri mo yo plizyè fwa jiskaske w ka ekri yo san erè</li>
+          </ul>
+        </div>
+      </div>
+    `,
     duration: "45 minit",
     difficulty: "Intermediaire",
     category: "Òtograf"
