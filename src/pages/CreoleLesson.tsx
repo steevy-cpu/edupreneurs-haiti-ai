@@ -2,16 +2,26 @@ import { useParams, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Textarea } from "@/components/ui/textarea";
 import { 
   ChevronLeft, 
   ChevronRight, 
   BookOpen, 
   Clock,
   CheckCircle2,
-  Users
+  Users,
+  Lightbulb,
+  NotebookPen,
+  Save,
+  Trophy
 } from "lucide-react";
 import { creoleLessons7AF } from "@/data/creoleLessons";
-import ReactMarkdown from "react-markdown";
+import { YouTubeVideoSection } from "@/components/YouTubeVideoSection";
+import { useState, useEffect } from "react";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
+import { ThemeToggle } from "@/components/ThemeToggle";
 
 const categoryColors = {
   "Lekti": "from-pink-500 to-pink-600",
@@ -25,6 +35,11 @@ const categoryColors = {
 export default function CreoleLesson() {
   const { topicId } = useParams();
   const navigate = useNavigate();
+  const { toast } = useToast();
+  const [activeTab, setActiveTab] = useState("introduction");
+  const [personalNotes, setPersonalNotes] = useState("");
+  const [isSavingNotes, setIsSavingNotes] = useState(false);
+  const [youtubeUrl, setYoutubeUrl] = useState<string | null>(null);
   
   const lessonId = parseInt(topicId || "1");
   const lesson = creoleLessons7AF.find(l => l.id === lessonId);
@@ -32,6 +47,91 @@ export default function CreoleLesson() {
   
   const previousLesson = currentIndex > 0 ? creoleLessons7AF[currentIndex - 1] : null;
   const nextLesson = currentIndex < creoleLessons7AF.length - 1 ? creoleLessons7AF[currentIndex + 1] : null;
+
+  useEffect(() => {
+    window.scrollTo(0, 0);
+    loadPersonalNotes();
+    fetchYoutubeUrl();
+  }, [topicId, lessonId]);
+
+  const fetchYoutubeUrl = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('lessons')
+        .select('youtube_url')
+        .eq('subject', 'kreyol')
+        .eq('lesson_number', lessonId.toString())
+        .maybeSingle();
+
+      if (error) throw error;
+      if (data?.youtube_url) {
+        setYoutubeUrl(data.youtube_url);
+      }
+    } catch (error) {
+      console.error('Error fetching YouTube URL:', error);
+    }
+  };
+
+  const loadPersonalNotes = async () => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      const { data, error } = await supabase
+        .from('lesson_notes')
+        .select('notes')
+        .eq('user_id', user.id)
+        .eq('lesson_id', `kreyol-${lessonId}`)
+        .maybeSingle();
+
+      if (error) throw error;
+      if (data) {
+        setPersonalNotes(data.notes || "");
+      }
+    } catch (error) {
+      console.error('Error loading notes:', error);
+    }
+  };
+
+  const savePersonalNotes = async () => {
+    try {
+      setIsSavingNotes(true);
+      const { data: { user } } = await supabase.auth.getUser();
+      
+      if (!user) {
+        toast({
+          title: "Erè",
+          description: "Ou dwe konekte pou anrejistre nòt ou yo",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      const { error } = await supabase
+        .from('lesson_notes')
+        .upsert({
+          user_id: user.id,
+          lesson_id: `kreyol-${lessonId}`,
+          notes: personalNotes,
+        });
+
+      if (error) throw error;
+
+      toast({
+        title: "Nòt yo anrejistre!",
+        description: "Nòt pèsonèl ou yo byen anrejistre.",
+      });
+    } catch (error) {
+      console.error('Error saving notes:', error);
+      toast({
+        title: "Erè",
+        description: "Pa t kapab anrejistre nòt yo",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSavingNotes(false);
+    }
+  };
 
   if (!lesson) {
     return (
@@ -52,7 +152,7 @@ export default function CreoleLesson() {
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5">
       {/* Navigation */}
       <nav className="fixed top-0 left-0 right-0 z-40 bg-background/95 backdrop-blur-md border-b border-border">
-        <div className="container mx-auto px-4 py-4">
+        <div className="container mx-auto px-4 py-4 flex items-center justify-between">
           <Button
             variant="ghost"
             onClick={() => navigate("/creole-course")}
@@ -61,6 +161,7 @@ export default function CreoleLesson() {
             <ChevronLeft className="w-4 h-4" />
             <span>Retounen nan kou a</span>
           </Button>
+          <ThemeToggle />
         </div>
       </nav>
 
@@ -86,19 +187,115 @@ export default function CreoleLesson() {
             <p className="text-xl text-muted-foreground">{lesson.description}</p>
           </Card>
 
-          {/* Lesson Content */}
+          {/* Lesson Content with Tabs */}
           <Card className="p-8 mb-8">
-          <div className="prose prose-lg max-w-none dark:prose-invert">
-            {lesson.introduction && (
-              <div dangerouslySetInnerHTML={{ __html: lesson.introduction }} />
-            )}
-            {lesson.contenu && (
-              <div dangerouslySetInnerHTML={{ __html: lesson.contenu }} />
-            )}
-            {lesson.exemplesExercices && (
-              <div dangerouslySetInnerHTML={{ __html: lesson.exemplesExercices }} />
-            )}
-          </div>
+            <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+              <TabsList className="grid w-full grid-cols-5 mb-8">
+                <TabsTrigger value="introduction" className="gap-2">
+                  <Lightbulb className="w-4 h-4" />
+                  <span className="hidden sm:inline">Entwodiksyon</span>
+                </TabsTrigger>
+                <TabsTrigger value="contenu" className="gap-2">
+                  <BookOpen className="w-4 h-4" />
+                  <span className="hidden sm:inline">Kontni</span>
+                </TabsTrigger>
+                <TabsTrigger value="exemples" className="gap-2">
+                  <CheckCircle2 className="w-4 h-4" />
+                  <span className="hidden sm:inline">Egzanp</span>
+                </TabsTrigger>
+                <TabsTrigger value="notes" className="gap-2">
+                  <NotebookPen className="w-4 h-4" />
+                  <span className="hidden sm:inline">Nòt Mwen</span>
+                </TabsTrigger>
+                <TabsTrigger value="quiz" className="gap-2">
+                  <Trophy className="w-4 h-4" />
+                  <span className="hidden sm:inline">Quiz Final</span>
+                </TabsTrigger>
+              </TabsList>
+
+              <TabsContent value="introduction" className="space-y-6">
+                <div className="bg-primary/5 border-l-4 border-primary p-6 rounded-r-lg">
+                  <h3 className="text-lg font-semibold mb-2 flex items-center gap-2">
+                    <Lightbulb className="w-5 h-5 text-primary" />
+                    Objektif Leson an
+                  </h3>
+                  <p className="text-muted-foreground">{lesson.objectif}</p>
+                </div>
+                <div className="prose prose-lg max-w-none dark:prose-invert">
+                  {lesson.introduction && (
+                    <div dangerouslySetInnerHTML={{ __html: lesson.introduction }} />
+                  )}
+                </div>
+              </TabsContent>
+
+              <TabsContent value="contenu" className="space-y-6">
+                <div className="prose prose-lg max-w-none dark:prose-invert">
+                  {lesson.contenu && (
+                    <div dangerouslySetInnerHTML={{ __html: lesson.contenu }} />
+                  )}
+                </div>
+                {youtubeUrl && (
+                  <div className="mt-8">
+                    <YouTubeVideoSection 
+                      lessonTitle={lesson.title}
+                      objectives={lesson.objectif || lesson.description}
+                      customYoutubeUrl={youtubeUrl}
+                      subject="kreyol"
+                    />
+                  </div>
+                )}
+              </TabsContent>
+
+              <TabsContent value="exemples" className="space-y-6">
+                <div className="prose prose-lg max-w-none dark:prose-invert">
+                  {lesson.exemplesExercices && (
+                    <div dangerouslySetInnerHTML={{ __html: lesson.exemplesExercices }} />
+                  )}
+                </div>
+              </TabsContent>
+
+              <TabsContent value="notes" className="space-y-6">
+                <div className="bg-secondary/20 p-6 rounded-lg">
+                  <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
+                    <NotebookPen className="w-5 h-5" />
+                    Nòt Pèsonèl Mwen
+                  </h3>
+                  <Textarea
+                    value={personalNotes}
+                    onChange={(e) => setPersonalNotes(e.target.value)}
+                    placeholder="Ekri nòt ou yo isit la..."
+                    className="min-h-[300px] mb-4"
+                  />
+                  <Button 
+                    onClick={savePersonalNotes}
+                    disabled={isSavingNotes}
+                    className="gap-2"
+                  >
+                    <Save className="w-4 h-4" />
+                    {isSavingNotes ? "Ap anrejistre..." : "Anrejistre Nòt yo"}
+                  </Button>
+                </div>
+                <div className="bg-primary/5 p-6 rounded-lg">
+                  <h4 className="font-semibold mb-2">💡 Konsèy pou pran bon nòt:</h4>
+                  <ul className="space-y-2 text-sm text-muted-foreground">
+                    <li>• Rezime pwen prensipal yo nan mo pa ou</li>
+                    <li>• Ekri egzanp ki ede w konprann</li>
+                    <li>• Make kesyon ou genyen pou w poze</li>
+                    <li>• Konekte enfòmasyon yo ak sa w konnen deja</li>
+                  </ul>
+                </div>
+              </TabsContent>
+
+              <TabsContent value="quiz" className="space-y-6">
+                <div className="text-center py-8">
+                  <Trophy className="w-16 h-16 mx-auto mb-4 text-primary" />
+                  <h3 className="text-2xl font-bold mb-2">Quiz Final</h3>
+                  <p className="text-muted-foreground mb-6">
+                    Quiz la ap disponib byento pou leson sa a
+                  </p>
+                </div>
+              </TabsContent>
+            </Tabs>
           </Card>
 
           {/* Completion Button */}

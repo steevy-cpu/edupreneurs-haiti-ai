@@ -333,7 +333,7 @@ export const migrateContentToDatabase = async (): Promise<MigrationResult> => {
           slug: lesson.id.toString(),
           objectif: lesson.description,
           introduction: lesson.description,
-          contenu: lesson.content,
+          contenu: lesson.contenu,
           exemples_exercices: "",
           order_index: i,
           grade_level: "7AF",
