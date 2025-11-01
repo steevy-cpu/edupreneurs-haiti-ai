@@ -327,12 +327,19 @@ export default function Matieres() {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mb-8">
           {displaySubjects.map((subject, index) => {
             const IconComponent = subject.icon;
-            const hasContent = subject.id === 'mathematiques' || subject.id === 'sciences' || subject.id === 'anglais' || subject.id === 'espagnol' || subject.id === 'francais' || subject.id === 'sciences-sociales' || subject.id === 'creole';
+            // Only AF7 subjects have content for now
+            const hasContent = selectedGrade === "AF7" && 
+              (subject.id === 'mathematiques' || subject.id === 'sciences' || 
+               subject.id === 'anglais' || subject.id === 'espagnol' || 
+               subject.id === 'francais' || subject.id === 'sciences-sociales' || 
+               subject.id === 'creole');
             
             return (
               <Card
                 key={subject.id}
-                className="group hover:shadow-xl transition-all duration-300 hover:-translate-y-2 cursor-pointer overflow-hidden"
+                className={`group transition-all duration-300 overflow-hidden ${
+                  hasContent ? 'hover:shadow-xl hover:-translate-y-2 cursor-pointer' : ''
+                }`}
                 onClick={() => {
                   if (hasContent) {
                     const courseRoute = subject.id === 'mathematiques' 
@@ -369,10 +376,10 @@ export default function Matieres() {
 
                   <div className="flex gap-2 mb-4 flex-wrap">
                     <Badge variant="secondary" className="text-xs">
-                      {subject.lessons} leçons
+                      {subject.lessons} {subject.lessons === 1 ? 'leçon' : 'leçons'}
                     </Badge>
                     <Badge variant="secondary" className="text-xs">
-                      {subject.exercises} exercices
+                      {subject.exercises} {subject.exercises === 1 ? 'exercice' : 'exercices'}
                     </Badge>
                   </div>
 
