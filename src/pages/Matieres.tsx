@@ -415,8 +415,8 @@ export default function Matieres() {
                         courseRoute = selectedGrade === 'AF8' ? '/sciences-af8-course' : '/sciences-course';
                       } else if (isAnglais) {
                         courseRoute = selectedGrade === 'AF8' ? '/anglais-af8-course' : '/anglais-course';
-                      } else if (subject.id === 'espagnol') {
-                        courseRoute = '/espagnol-course';
+                      } else if (isEspagnol) {
+                        courseRoute = selectedGrade === 'AF8' ? '/espagnol-af8-course' : '/espagnol-course';
                       } else if (subject.id === 'francais') {
                         courseRoute = '/francais-course';
                       } else if (subject.id === 'sciences-sociales') {
