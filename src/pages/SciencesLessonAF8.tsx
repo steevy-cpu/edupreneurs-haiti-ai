@@ -218,9 +218,9 @@ const SciencesLessonAF8 = () => {
               </Badge>
               <h1 className="text-2xl md:text-3xl lg:text-4xl font-bold mb-4">{lesson.title}</h1>
               {lesson.objectif && (
-                <div className="flex flex-col md:flex-row items-start gap-2 bg-white/10 rounded-lg p-4 backdrop-blur">
-                  <Target className="h-5 w-5 flex-shrink-0 mt-0.5 mx-auto md:mx-0" />
-                  <div className="text-center md:text-left">
+                <div className="flex flex-col items-center gap-2 bg-white/10 rounded-lg p-4 backdrop-blur text-center">
+                  <Target className="h-5 w-5 flex-shrink-0" />
+                  <div>
                     <p className="font-semibold mb-1">Objectif de la leçon</p>
                     <p className="text-white/90">{lesson.objectif}</p>
                   </div>
