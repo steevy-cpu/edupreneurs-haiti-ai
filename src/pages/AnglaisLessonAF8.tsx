@@ -9,7 +9,7 @@ import { ThemeToggle } from "@/components/ThemeToggle";
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import ericTeaching from "@/assets/eric-teaching.png";
+import ericChairDesk from "@/assets/eric-chair-desk.png";
 
 interface Lesson {
   id: string;
@@ -171,7 +171,7 @@ const AnglaisLessonAF8 = () => {
             {/* Eric mascot - smaller on mobile */}
             <div className="flex-shrink-0">
               <img 
-                src={ericTeaching} 
+                src={ericChairDesk} 
                 alt="Eric enseignant" 
                 className="w-16 h-16 md:w-24 md:h-24 lg:w-32 lg:h-32 object-contain"
               />
