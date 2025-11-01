@@ -16,13 +16,17 @@ import {
   ChevronLeft,
   GraduationCap,
   Flag,
-  Award
+  Award,
+  FlaskConical,
+  MessageCircle,
+  Map
 } from "lucide-react";
 
 import ericPointingImage from "@/assets/eric-right-pointing.png";
 import ericTeaching from "@/assets/eric-teaching.png";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { MusicSelector } from "@/components/MusicSelector";
+import { useSubjects } from "@/hooks/useLessonsCache";
 
 type GradeLevel = "AF7" | "AF8" | "AF9" | "NS1" | "NS2" | "NS3" | "NS4";
 
@@ -130,13 +134,62 @@ const gradeLevels = [
   { id: "NS4" as GradeLevel, label: "NS4", fullName: "4ème secondaire" }
 ];
 
+// Icon mapping for database subjects
+const iconMap: Record<string, any> = {
+  'calculator': Calculator,
+  'book-open': BookOpen,
+  'flask-conical': FlaskConical,
+  'globe': Globe,
+  'flag': Flag,
+  'message-circle': MessageCircle,
+  'map': Map,
+  'beaker': Beaker,
+  'users': Users,
+  'palette': Palette,
+  'activity': Activity,
+  'languages': Languages
+};
+
+// Color mapping for database subjects
+const colorMap: Record<string, string> = {
+  'blue': 'from-blue-500 to-blue-600',
+  'purple': 'from-purple-500 to-purple-600',
+  'green': 'from-green-500 to-green-600',
+  'orange': 'from-orange-500 to-orange-600',
+  'indigo': 'from-indigo-500 to-indigo-600',
+  'red': 'from-red-500 to-red-600',
+  'teal': 'from-teal-500 to-teal-600',
+  'emerald': 'from-emerald-500 to-emerald-600',
+  'amber': 'from-amber-500 to-amber-600',
+  'cyan': 'from-cyan-500 to-cyan-600',
+  'rose': 'from-rose-500 to-rose-600',
+  'pink': 'from-pink-500 to-pink-600',
+  'slate': 'from-slate-500 to-slate-600'
+};
+
 export default function Matieres() {
   const navigate = useNavigate();
   const [selectedGrade, setSelectedGrade] = useState<GradeLevel>("AF7");
+  const { subjects: dbSubjects, isLoading } = useSubjects();
 
   const currentGrade = gradeLevels.find(g => g.id === selectedGrade);
-  const totalLessons = subjects.reduce((sum, s) => sum + s.lessons, 0);
-  const totalExercises = subjects.reduce((sum, s) => sum + s.exercises, 0);
+  
+  // Filter subjects by selected grade
+  const filteredSubjects = dbSubjects.filter(s => s.grade_level === selectedGrade);
+  
+  // Use hardcoded subjects for AF7, database subjects for other grades
+  const displaySubjects = selectedGrade === "AF7" ? subjects : filteredSubjects.map(s => ({
+    id: s.slug,
+    title: s.name,
+    description: s.description || '',
+    icon: iconMap[s.icon_name || 'book-open'] || BookOpen,
+    lessons: s.lesson_count || 0,
+    exercises: s.exercise_count || 0,
+    color: colorMap[s.color || 'blue'] || 'from-blue-500 to-blue-600'
+  }));
+
+  const totalLessons = displaySubjects.reduce((sum, s) => sum + s.lessons, 0);
+  const totalExercises = displaySubjects.reduce((sum, s) => sum + s.exercises, 0);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5">
@@ -230,14 +283,14 @@ export default function Matieres() {
           </p>
         </div>
 
-        {selectedGrade === "AF7" ? (
+        {(selectedGrade === "AF7" || selectedGrade === "AF8") && displaySubjects.length > 0 ? (
           <>
             {/* Stats Section */}
             <Card className="p-6 mb-8">
               <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
                 <div className="text-center">
                   <div className="text-4xl font-bold text-primary mb-2">
-                    {subjects.length}
+                    {displaySubjects.length}
                   </div>
                   <div className="text-sm text-muted-foreground font-semibold">
                     Matières
@@ -245,7 +298,7 @@ export default function Matieres() {
                 </div>
                 <div className="text-center">
                   <div className="text-4xl font-bold text-primary mb-2">
-                    {totalLessons}+
+                    {totalLessons > 0 ? `${totalLessons}+` : '0'}
                   </div>
                   <div className="text-sm text-muted-foreground font-semibold">
                     Leçons
@@ -253,7 +306,7 @@ export default function Matieres() {
                 </div>
                 <div className="text-center">
                   <div className="text-4xl font-bold text-primary mb-2">
-                    {totalExercises}+
+                    {totalExercises > 0 ? `${totalExercises}+` : '0'}
                   </div>
                   <div className="text-sm text-muted-foreground font-semibold">
                     Exercices
@@ -272,7 +325,7 @@ export default function Matieres() {
 
             {/* Subjects Grid */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mb-8">
-          {subjects.map((subject, index) => {
+          {displaySubjects.map((subject, index) => {
             const IconComponent = subject.icon;
             const hasContent = subject.id === 'mathematiques' || subject.id === 'sciences' || subject.id === 'anglais' || subject.id === 'espagnol' || subject.id === 'francais' || subject.id === 'sciences-sociales' || subject.id === 'creole';
             
