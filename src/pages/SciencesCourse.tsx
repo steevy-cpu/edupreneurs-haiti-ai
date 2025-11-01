@@ -26,6 +26,7 @@ import { MusicSelector } from "@/components/MusicSelector";
 
 type Category = "Propriété physique de la matière" | "La chaleur" | "Électricité" | "Les vertébrés" | "Les plantes à fleurs" | "Interaction dans le milieu" | "Activités internes du globe";
 
+// Sciences Expérimentales Course Page - AF7
 export default function SciencesCourse() {
   const navigate = useNavigate();
   const [selectedCategory, setSelectedCategory] = useState<Category | "all">("all");
