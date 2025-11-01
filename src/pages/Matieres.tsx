@@ -396,19 +396,25 @@ export default function Matieres() {
                     className="w-full"
                     onClick={(e) => {
                       e.stopPropagation();
-                      const courseRoute = subject.id === 'mathematiques' 
-                        ? '/math-course' 
-                        : subject.id === 'anglais'
-                        ? '/anglais-course'
-                        : subject.id === 'espagnol'
-                        ? '/espagnol-course'
-                        : subject.id === 'francais'
-                        ? '/francais-course'
-                        : subject.id === 'sciences-sociales'
-                        ? '/sciences-sociales-course'
-                        : subject.id === 'creole'
-                        ? '/creole-course'
-                        : '/sciences-course';
+                      const isMath = subject.id === 'mathematiques' || subject.id === 'matematik-8af';
+                      
+                      let courseRoute;
+                      if (isMath) {
+                        courseRoute = selectedGrade === 'AF8' ? '/math-af8-course' : '/math-course';
+                      } else if (subject.id === 'anglais') {
+                        courseRoute = '/anglais-course';
+                      } else if (subject.id === 'espagnol') {
+                        courseRoute = '/espagnol-course';
+                      } else if (subject.id === 'francais') {
+                        courseRoute = '/francais-course';
+                      } else if (subject.id === 'sciences-sociales') {
+                        courseRoute = '/sciences-sociales-course';
+                      } else if (subject.id === 'creole') {
+                        courseRoute = '/creole-course';
+                      } else {
+                        courseRoute = '/sciences-course';
+                      }
+                      
                       navigate(courseRoute);
                     }}
                   >
