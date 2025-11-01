@@ -241,36 +241,36 @@ const SciencesLessonAF8 = () => {
                   value="introduction" 
                   className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent"
                 >
-                  <BookOpen className="h-4 w-4 mr-2" />
-                  Introduction
+                  <BookOpen className="h-4 w-4 sm:mr-2" />
+                  <span className="hidden sm:inline">Introduction</span>
                 </TabsTrigger>
                 <TabsTrigger 
                   value="contenu"
                   className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent"
                 >
-                  <Lightbulb className="h-4 w-4 mr-2" />
-                  Contenu
+                  <Lightbulb className="h-4 w-4 sm:mr-2" />
+                  <span className="hidden sm:inline">Contenu</span>
                 </TabsTrigger>
                 <TabsTrigger 
                   value="exemples"
                   className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent"
                 >
-                  <FileText className="h-4 w-4 mr-2" />
-                  Exemples
+                  <FileText className="h-4 w-4 sm:mr-2" />
+                  <span className="hidden sm:inline">Exemples</span>
                 </TabsTrigger>
                 <TabsTrigger 
                   value="notes"
                   className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent"
                 >
-                  <FileText className="h-4 w-4 mr-2" />
-                  Mes Notes
+                  <FileText className="h-4 w-4 sm:mr-2" />
+                  <span className="hidden sm:inline">Mes Notes</span>
                 </TabsTrigger>
                 <TabsTrigger 
                   value="quiz"
                   className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent"
                 >
-                  <CheckCircle2 className="h-4 w-4 mr-2" />
-                  Quiz Final
+                  <CheckCircle2 className="h-4 w-4 sm:mr-2" />
+                  <span className="hidden sm:inline">Quiz Final</span>
                 </TabsTrigger>
               </TabsList>
             </div>
