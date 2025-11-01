@@ -22,6 +22,8 @@ const MathCourse = lazy(() => import("./pages/MathCourse"));
 const MathLesson = lazy(() => import("./pages/MathLesson"));
 const MathCourseAF8 = lazy(() => import("./pages/MathCourseAF8"));
 const MathLessonAF8 = lazy(() => import("./pages/MathLessonAF8"));
+const SciencesCourseAF8 = lazy(() => import("./pages/SciencesCourseAF8"));
+const SciencesLessonAF8 = lazy(() => import("./pages/SciencesLessonAF8"));
 const SciencesCourse = lazy(() => import("./pages/SciencesCourse"));
 const SciencesLesson = lazy(() => import("./pages/SciencesLesson"));
 const AnglaisCourse = lazy(() => import("./pages/AnglaisCourse"));
@@ -101,6 +103,8 @@ const App = () => (
               <Route path="/math-af8-lesson/:topicId" element={<Layout><MathLessonAF8 /></Layout>} />
               <Route path="/sciences-course" element={<SciencesCourse />} />
               <Route path="/sciences-lesson/:topicId" element={<Layout><SciencesLesson /></Layout>} />
+              <Route path="/sciences-af8-course" element={<SciencesCourseAF8 />} />
+              <Route path="/sciences-af8-lesson/:topicId" element={<Layout><SciencesLessonAF8 /></Layout>} />
               <Route path="/anglais-course" element={<AnglaisCourse />} />
               <Route path="/anglais-lesson/:topicId" element={<Layout><AnglaisLesson /></Layout>} />
               <Route path="/espagnol-course" element={<EspagnolCourse />} />
