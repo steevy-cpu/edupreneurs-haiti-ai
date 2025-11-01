@@ -327,12 +327,14 @@ export default function Matieres() {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mb-8">
           {displaySubjects.map((subject, index) => {
             const IconComponent = subject.icon;
-            // Only AF7 subjects have content for now
-            const hasContent = selectedGrade === "AF7" && 
+            // Check content availability based on grade and subject
+            const isMath = subject.id === 'mathematiques' || subject.id === 'matematik-8af';
+            const hasContent = (selectedGrade === "AF7" && 
               (subject.id === 'mathematiques' || subject.id === 'sciences' || 
                subject.id === 'anglais' || subject.id === 'espagnol' || 
                subject.id === 'francais' || subject.id === 'sciences-sociales' || 
-               subject.id === 'creole');
+               subject.id === 'creole')) ||
+              (selectedGrade === "AF8" && isMath);
             
             return (
               <Card
@@ -342,19 +344,25 @@ export default function Matieres() {
                 }`}
                 onClick={() => {
                   if (hasContent) {
-                    const courseRoute = subject.id === 'mathematiques' 
-                      ? '/math-course' 
-                      : subject.id === 'anglais'
-                      ? '/anglais-course'
-                      : subject.id === 'espagnol'
-                      ? '/espagnol-course'
-                      : subject.id === 'francais'
-                      ? '/francais-course'
-                      : subject.id === 'sciences-sociales'
-                      ? '/sciences-sociales-course'
-                      : subject.id === 'creole'
-                      ? '/creole-course'
-                      : '/sciences-course';
+                    let courseRoute;
+                    const isMath = subject.id === 'mathematiques' || subject.id === 'matematik-8af';
+                    
+                    if (isMath) {
+                      courseRoute = selectedGrade === 'AF8' ? '/math-af8-course' : '/math-course';
+                    } else if (subject.id === 'anglais') {
+                      courseRoute = '/anglais-course';
+                    } else if (subject.id === 'espagnol') {
+                      courseRoute = '/espagnol-course';
+                    } else if (subject.id === 'francais') {
+                      courseRoute = '/francais-course';
+                    } else if (subject.id === 'sciences-sociales') {
+                      courseRoute = '/sciences-sociales-course';
+                    } else if (subject.id === 'creole') {
+                      courseRoute = '/creole-course';
+                    } else {
+                      courseRoute = '/sciences-course';
+                    }
+                    
                     navigate(courseRoute);
                   }
                 }}

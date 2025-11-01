@@ -20,6 +20,8 @@ import Dashboard from "./pages/Dashboard";
 const Onboarding = lazy(() => import("./pages/Onboarding"));
 const MathCourse = lazy(() => import("./pages/MathCourse"));
 const MathLesson = lazy(() => import("./pages/MathLesson"));
+const MathCourseAF8 = lazy(() => import("./pages/MathCourseAF8"));
+const MathLessonAF8 = lazy(() => import("./pages/MathLessonAF8"));
 const SciencesCourse = lazy(() => import("./pages/SciencesCourse"));
 const SciencesLesson = lazy(() => import("./pages/SciencesLesson"));
 const AnglaisCourse = lazy(() => import("./pages/AnglaisCourse"));
@@ -95,6 +97,8 @@ const App = () => (
               <Route path="/notifications" element={<Layout><Notifications /></Layout>} />
               <Route path="/math-course" element={<MathCourse />} />
               <Route path="/math-lesson/:topicId" element={<Layout><MathLesson /></Layout>} />
+              <Route path="/math-af8-course" element={<MathCourseAF8 />} />
+              <Route path="/math-af8-lesson/:topicId" element={<Layout><MathLessonAF8 /></Layout>} />
               <Route path="/sciences-course" element={<SciencesCourse />} />
               <Route path="/sciences-lesson/:topicId" element={<Layout><SciencesLesson /></Layout>} />
               <Route path="/anglais-course" element={<AnglaisCourse />} />

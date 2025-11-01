@@ -1,0 +1,362 @@
+import { useParams, useNavigate } from "react-router-dom";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Textarea } from "@/components/ui/textarea";
+import { ArrowLeft, BookOpen, Lightbulb, CheckCircle2, Trophy, Bookmark } from "lucide-react";
+import { ThemeToggle } from "@/components/ThemeToggle";
+import { useState, useEffect } from "react";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
+import ericTeaching from "@/assets/eric-teaching.png";
+
+interface Lesson {
+  id: string;
+  title: string;
+  slug: string;
+  objectif: string;
+  introduction: string;
+  contenu: string;
+  exemples_exercices: string;
+  mois: string;
+  grade_level: string;
+  youtube_url: string | null;
+  references: string[];
+}
+
+const MathLessonAF8 = () => {
+  const { topicId } = useParams();
+  const navigate = useNavigate();
+  const { toast } = useToast();
+  const [activeTab, setActiveTab] = useState("introduction");
+  const [lesson, setLesson] = useState<Lesson | null>(null);
+  const [personalNotes, setPersonalNotes] = useState("");
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    window.scrollTo(0, 0);
+    if (topicId) {
+      fetchLesson();
+      loadPersonalNotes();
+    }
+  }, [topicId]);
+
+  const fetchLesson = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('lessons')
+        .select('*')
+        .eq('slug', topicId)
+        .eq('grade_level', 'AF8')
+        .single();
+
+      if (error) throw error;
+      setLesson(data);
+    } catch (error) {
+      console.error('Error fetching lesson:', error);
+      toast({
+        title: "Erreur",
+        description: "Impossible de charger la leçon",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const loadPersonalNotes = async () => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      const { data, error } = await supabase
+        .from('lesson_notes')
+        .select('notes')
+        .eq('user_id', user.id)
+        .eq('lesson_id', topicId || '')
+        .maybeSingle();
+
+      if (error && error.code !== 'PGRST116') throw error;
+      if (data) {
+        setPersonalNotes(data.notes || "");
+      }
+    } catch (error) {
+      console.error('Error loading notes:', error);
+    }
+  };
+
+  const savePersonalNotes = async () => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        toast({
+          title: "Non connecté",
+          description: "Vous devez être connecté pour sauvegarder vos notes",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      const { error } = await supabase
+        .from('lesson_notes')
+        .upsert({
+          user_id: user.id,
+          lesson_id: topicId || '',
+          notes: personalNotes,
+          updated_at: new Date().toISOString(),
+        });
+
+      if (error) throw error;
+
+      toast({
+        title: "Notes sauvegardées",
+        description: "Vos notes personnelles ont été enregistrées avec succès",
+      });
+    } catch (error) {
+      console.error('Error saving notes:', error);
+      toast({
+        title: "Erreur",
+        description: "Impossible de sauvegarder vos notes",
+        variant: "destructive",
+      });
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+      </div>
+    );
+  }
+
+  if (!lesson) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <Card className="max-w-md">
+          <CardContent className="p-8 text-center">
+            <BookOpen className="h-16 w-16 mx-auto mb-4 opacity-20" />
+            <p className="text-muted-foreground mb-4">Leçon non trouvée</p>
+            <Button onClick={() => navigate("/math-af8-course")}>
+              Retour au cours
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen bg-gradient-to-b from-background to-secondary/20">
+      {/* Navigation Bar */}
+      <nav className="sticky top-0 z-50 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b">
+        <div className="container mx-auto px-4 py-3 flex items-center justify-between">
+          <Button
+            variant="ghost"
+            onClick={() => navigate("/math-af8-course")}
+            className="gap-2"
+          >
+            <ArrowLeft className="h-4 w-4" />
+            Retour au cours
+          </Button>
+          <ThemeToggle />
+        </div>
+      </nav>
+
+      {/* Lesson Header */}
+      <div className="container mx-auto px-4 py-8">
+        <div className="bg-gradient-to-r from-orange-500/10 to-red-600/10 rounded-2xl p-8 mb-8 border border-orange-500/20">
+          <div className="flex items-start gap-6">
+            <div className="flex-shrink-0">
+              <img 
+                src={ericTeaching} 
+                alt="Eric enseignant" 
+                className="w-32 h-32 object-contain"
+              />
+            </div>
+            <div className="flex-1">
+              <div className="flex items-center gap-2 mb-3">
+                <Badge variant="outline" className="bg-orange-500/10 text-orange-700 dark:text-orange-300 border-orange-500/20">
+                  Propriété physique de la matière
+                </Badge>
+                <Badge variant="secondary">Débutant</Badge>
+              </div>
+              <h1 className="text-3xl md:text-4xl font-bold mb-3">{lesson.title}</h1>
+              {lesson.objectif && (
+                <p className="text-muted-foreground text-lg">{lesson.objectif}</p>
+              )}
+              <div className="flex items-center gap-4 mt-4 text-sm">
+                <div className="flex items-center gap-1">
+                  <BookOpen className="h-4 w-4" />
+                  <span>2 semaines</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Lesson Content Tabs */}
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+          <TabsList className="grid w-full grid-cols-5 mb-8">
+            <TabsTrigger value="introduction" className="gap-2">
+              <Lightbulb className="h-4 w-4" />
+              Introduction
+            </TabsTrigger>
+            <TabsTrigger value="contenu" className="gap-2">
+              <BookOpen className="h-4 w-4" />
+              Contenu
+            </TabsTrigger>
+            <TabsTrigger value="exemples" className="gap-2">
+              <CheckCircle2 className="h-4 w-4" />
+              Exemples
+            </TabsTrigger>
+            <TabsTrigger value="notes" className="gap-2">
+              <Bookmark className="h-4 w-4" />
+              Mes Notes
+            </TabsTrigger>
+            <TabsTrigger value="quiz" className="gap-2">
+              <Trophy className="h-4 w-4" />
+              Quiz Final
+            </TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="introduction">
+            <Card>
+              <CardContent className="p-6">
+                {lesson.introduction ? (
+                  <div 
+                    className="prose prose-sm lg:prose-base max-w-none dark:prose-invert"
+                    dangerouslySetInnerHTML={{ __html: lesson.introduction }}
+                  />
+                ) : (
+                  <div className="text-center py-8 text-muted-foreground">
+                    <BookOpen className="h-16 w-16 mx-auto mb-4 opacity-20" />
+                    <p>Le contenu de l'introduction sera bientôt disponible</p>
+                  </div>
+                )}
+
+                {lesson.objectif && (
+                  <div className="mt-6 p-4 bg-primary/5 rounded-lg border border-primary/20">
+                    <h3 className="text-lg font-semibold text-primary mb-2 flex items-center gap-2">
+                      <Lightbulb className="h-5 w-5" />
+                      Objectif de la leçon
+                    </h3>
+                    <p>{lesson.objectif}</p>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="contenu">
+            <Card>
+              <CardContent className="p-6">
+                {lesson.contenu ? (
+                  <div 
+                    className="prose prose-sm lg:prose-base max-w-none dark:prose-invert"
+                    dangerouslySetInnerHTML={{ __html: lesson.contenu }}
+                  />
+                ) : (
+                  <div className="text-center py-8 text-muted-foreground">
+                    <BookOpen className="h-16 w-16 mx-auto mb-4 opacity-20" />
+                    <p>Le contenu principal sera bientôt disponible</p>
+                  </div>
+                )}
+
+                {lesson.youtube_url && (
+                  <div className="mt-6">
+                    <h3 className="text-lg font-semibold mb-3">🎥 Vidéo explicative</h3>
+                    <div className="aspect-video">
+                      <iframe
+                        className="w-full h-full rounded-lg"
+                        src={lesson.youtube_url.replace('watch?v=', 'embed/')}
+                        title="YouTube video"
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                        allowFullScreen
+                      />
+                    </div>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="exemples">
+            <Card>
+              <CardContent className="p-6">
+                {lesson.exemples_exercices ? (
+                  <div 
+                    className="prose prose-sm lg:prose-base max-w-none dark:prose-invert"
+                    dangerouslySetInnerHTML={{ __html: lesson.exemples_exercices }}
+                  />
+                ) : (
+                  <div className="text-center py-8 text-muted-foreground">
+                    <CheckCircle2 className="h-16 w-16 mx-auto mb-4 opacity-20" />
+                    <p>Les exemples et exercices seront bientôt disponibles</p>
+                  </div>
+                )}
+
+                {lesson.references && lesson.references.length > 0 && (
+                  <div className="mt-6 p-4 bg-muted/30 rounded-lg">
+                    <h3 className="text-lg font-semibold mb-3">📚 Références</h3>
+                    <ul className="list-disc list-inside space-y-1">
+                      {lesson.references.map((ref, index) => (
+                        <li key={index}>{ref}</li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="notes">
+            <Card>
+              <CardHeader>
+                <CardTitle>Mes Notes Personnelles</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <Textarea
+                  placeholder="Écrivez vos notes ici..."
+                  value={personalNotes}
+                  onChange={(e) => setPersonalNotes(e.target.value)}
+                  className="min-h-[300px]"
+                />
+                <Button onClick={savePersonalNotes} className="w-full">
+                  <Bookmark className="h-4 w-4 mr-2" />
+                  Sauvegarder mes notes
+                </Button>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="quiz">
+            <Card>
+              <CardContent className="p-8 text-center">
+                <Trophy className="h-16 w-16 mx-auto mb-4 opacity-20" />
+                <p className="text-muted-foreground mb-4">
+                  Le quiz pour cette leçon sera bientôt disponible
+                </p>
+              </CardContent>
+            </Card>
+          </TabsContent>
+        </Tabs>
+
+        {/* Navigation Buttons */}
+        <div className="flex justify-between mt-8">
+          <Button
+            variant="outline"
+            onClick={() => navigate("/math-af8-course")}
+            className="gap-2"
+          >
+            <ArrowLeft className="h-4 w-4" />
+            Retour au cours
+          </Button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default MathLessonAF8;
