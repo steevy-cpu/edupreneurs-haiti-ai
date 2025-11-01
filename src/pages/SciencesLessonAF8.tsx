@@ -205,11 +205,11 @@ const SciencesLessonAF8 = () => {
       <div className="bg-gradient-to-r from-amber-500 to-orange-600 text-white py-8 md:py-12">
         <div className="container mx-auto px-4">
           <div className="flex flex-col md:flex-row items-center md:items-start gap-4 md:gap-6">
-            <div className="hidden md:block flex-shrink-0">
+            <div className="flex-shrink-0">
               <img 
                 src={ericChairDesk} 
                 alt="Eric enseignant" 
-                className="w-24 md:w-32 h-24 md:h-32 object-contain"
+                className="w-16 h-16 md:w-24 md:h-24 lg:w-32 lg:h-32 object-contain"
               />
             </div>
             <div className="flex-1 text-center md:text-left w-full">
