@@ -202,25 +202,25 @@ const SciencesLessonAF8 = () => {
       </nav>
 
       {/* Lesson Header */}
-      <div className="bg-gradient-to-r from-amber-500 to-orange-600 text-white py-12">
+      <div className="bg-gradient-to-r from-amber-500 to-orange-600 text-white py-8 md:py-12">
         <div className="container mx-auto px-4">
-          <div className="flex items-start gap-6">
-            <div className="flex-shrink-0">
+          <div className="flex flex-col md:flex-row items-center md:items-start gap-4 md:gap-6">
+            <div className="hidden md:block flex-shrink-0">
               <img 
                 src={ericChairDesk} 
                 alt="Eric enseignant" 
-                className="w-32 h-32 object-contain"
+                className="w-24 md:w-32 h-24 md:h-32 object-contain"
               />
             </div>
-            <div className="flex-1">
+            <div className="flex-1 text-center md:text-left w-full">
               <Badge variant="secondary" className="mb-3">
                 Leçon {lesson.order_index}
               </Badge>
-              <h1 className="text-3xl md:text-4xl font-bold mb-4">{lesson.title}</h1>
+              <h1 className="text-2xl md:text-3xl lg:text-4xl font-bold mb-4">{lesson.title}</h1>
               {lesson.objectif && (
-                <div className="flex items-start gap-2 bg-white/10 rounded-lg p-4 backdrop-blur">
-                  <Target className="h-5 w-5 flex-shrink-0 mt-0.5" />
-                  <div>
+                <div className="flex flex-col md:flex-row items-start gap-2 bg-white/10 rounded-lg p-4 backdrop-blur">
+                  <Target className="h-5 w-5 flex-shrink-0 mt-0.5 mx-auto md:mx-0" />
+                  <div className="text-center md:text-left">
                     <p className="font-semibold mb-1">Objectif de la leçon</p>
                     <p className="text-white/90">{lesson.objectif}</p>
                   </div>
