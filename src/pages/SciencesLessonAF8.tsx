@@ -236,38 +236,38 @@ const SciencesLessonAF8 = () => {
         <Card>
           <Tabs defaultValue="introduction" className="w-full">
             <div className="border-b">
-              <TabsList className="w-full justify-start h-auto flex-wrap rounded-none bg-transparent p-0">
+              <TabsList className="w-full h-auto rounded-none bg-transparent p-0 grid grid-cols-5">
                 <TabsTrigger 
                   value="introduction" 
-                  className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent"
+                  className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent flex items-center justify-center"
                 >
                   <BookOpen className="h-4 w-4 sm:mr-2" />
                   <span className="hidden sm:inline">Introduction</span>
                 </TabsTrigger>
                 <TabsTrigger 
                   value="contenu"
-                  className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent"
+                  className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent flex items-center justify-center"
                 >
                   <Lightbulb className="h-4 w-4 sm:mr-2" />
                   <span className="hidden sm:inline">Contenu</span>
                 </TabsTrigger>
                 <TabsTrigger 
                   value="exemples"
-                  className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent"
+                  className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent flex items-center justify-center"
                 >
                   <FileText className="h-4 w-4 sm:mr-2" />
                   <span className="hidden sm:inline">Exemples</span>
                 </TabsTrigger>
                 <TabsTrigger 
                   value="notes"
-                  className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent"
+                  className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent flex items-center justify-center"
                 >
                   <FileText className="h-4 w-4 sm:mr-2" />
                   <span className="hidden sm:inline">Mes Notes</span>
                 </TabsTrigger>
                 <TabsTrigger 
                   value="quiz"
-                  className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent"
+                  className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent flex items-center justify-center"
                 >
                   <CheckCircle2 className="h-4 w-4 sm:mr-2" />
                   <span className="hidden sm:inline">Quiz Final</span>
