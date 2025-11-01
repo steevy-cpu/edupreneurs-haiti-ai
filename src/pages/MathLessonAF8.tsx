@@ -9,7 +9,7 @@ import { ThemeToggle } from "@/components/ThemeToggle";
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import ericTeaching from "@/assets/eric-teaching.png";
+import ericChairDesk from "@/assets/eric-chair-desk.png";
 
 interface Lesson {
   id: string;
@@ -170,7 +170,7 @@ const MathLessonAF8 = () => {
           <div className="flex items-start gap-6">
             <div className="flex-shrink-0">
               <img 
-                src={ericTeaching} 
+                src={ericChairDesk} 
                 alt="Eric enseignant" 
                 className="w-32 h-32 object-contain"
               />
