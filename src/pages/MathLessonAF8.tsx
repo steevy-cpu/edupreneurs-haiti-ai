@@ -198,28 +198,45 @@ const MathLessonAF8 = () => {
 
         {/* Lesson Content Tabs */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-5 mb-8">
-            <TabsTrigger value="introduction" className="gap-2">
-              <Lightbulb className="h-4 w-4" />
-              Introduction
-            </TabsTrigger>
-            <TabsTrigger value="contenu" className="gap-2">
-              <BookOpen className="h-4 w-4" />
-              Contenu
-            </TabsTrigger>
-            <TabsTrigger value="exemples" className="gap-2">
-              <CheckCircle2 className="h-4 w-4" />
-              Exemples
-            </TabsTrigger>
-            <TabsTrigger value="notes" className="gap-2">
-              <Bookmark className="h-4 w-4" />
-              Mes Notes
-            </TabsTrigger>
-            <TabsTrigger value="quiz" className="gap-2">
-              <Trophy className="h-4 w-4" />
-              Quiz Final
-            </TabsTrigger>
-          </TabsList>
+          <div className="border-b mb-8">
+            <TabsList className="w-full justify-start h-auto flex-wrap rounded-none bg-transparent p-0">
+              <TabsTrigger 
+                value="introduction"
+                className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent"
+              >
+                <Lightbulb className="h-4 w-4 sm:mr-2" />
+                <span className="hidden sm:inline">Introduction</span>
+              </TabsTrigger>
+              <TabsTrigger 
+                value="contenu"
+                className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent"
+              >
+                <BookOpen className="h-4 w-4 sm:mr-2" />
+                <span className="hidden sm:inline">Contenu</span>
+              </TabsTrigger>
+              <TabsTrigger 
+                value="exemples"
+                className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent"
+              >
+                <CheckCircle2 className="h-4 w-4 sm:mr-2" />
+                <span className="hidden sm:inline">Exemples</span>
+              </TabsTrigger>
+              <TabsTrigger 
+                value="notes"
+                className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent"
+              >
+                <Bookmark className="h-4 w-4 sm:mr-2" />
+                <span className="hidden sm:inline">Mes Notes</span>
+              </TabsTrigger>
+              <TabsTrigger 
+                value="quiz"
+                className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent"
+              >
+                <Trophy className="h-4 w-4 sm:mr-2" />
+                <span className="hidden sm:inline">Quiz Final</span>
+              </TabsTrigger>
+            </TabsList>
+          </div>
 
           <TabsContent value="introduction">
             <Card>
