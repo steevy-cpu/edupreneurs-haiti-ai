@@ -323,6 +323,7 @@ export const BatchLessonGenerator = () => {
             .eq('id', lesson.id);
 
           // Log successful generation to analytics
+          const { data: { user } } = await supabase.auth.getUser();
           await supabase.from('ai_generation_logs').insert({
             lesson_id: lesson.id,
             section_name: sectionName,
@@ -332,6 +333,7 @@ export const BatchLessonGenerator = () => {
             word_count: data.wordCount || null,
             generation_time_ms: data.generationTimeMs || null,
             success: true,
+            generated_by: user?.id,
           });
         }
 
@@ -355,6 +357,7 @@ export const BatchLessonGenerator = () => {
 
         // Log failed generation to analytics
         if (retryCount === 1) {
+          const { data: { user } } = await supabase.auth.getUser();
           await supabase.from('ai_generation_logs').insert({
             lesson_id: lesson.id,
             section_name: selectedSections[0], // Log first section attempted
@@ -364,6 +367,7 @@ export const BatchLessonGenerator = () => {
             error_message: errorMessage,
             generation_time_ms: Date.now() - startTime,
             retry_count: retryCount,
+            generated_by: user?.id,
           });
         }
         

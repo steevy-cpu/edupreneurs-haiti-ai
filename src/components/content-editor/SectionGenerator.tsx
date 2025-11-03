@@ -104,6 +104,7 @@ export const SectionGenerator = ({
           success: false,
           error_message: error.message,
           generation_time_ms: Date.now() - startTime,
+          generated_by: (await supabase.auth.getUser()).data.user?.id,
         });
 
         if (error.message?.includes('429')) {
@@ -149,6 +150,7 @@ export const SectionGenerator = ({
         has_emojis: metrics.hasEmojis,
         mentions_haiti: metrics.mentionsHaiti,
         success: true,
+        generated_by: (await supabase.auth.getUser()).data.user?.id,
       });
 
       toast.success(`Section générée (${data.wordCount} mots, ${data.generationTimeMs}ms)`);

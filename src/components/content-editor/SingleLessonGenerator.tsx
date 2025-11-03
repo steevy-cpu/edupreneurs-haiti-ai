@@ -112,6 +112,7 @@ export const SingleLessonGenerator = ({ lesson, onComplete }: SingleLessonGenera
           word_count: data.wordCount,
           generation_time_ms: Date.now() - startTime,
           success: true,
+          generated_by: (await supabase.auth.getUser()).data.user?.id,
         });
 
         setProgress(prev => prev.map(p => 
@@ -135,6 +136,7 @@ export const SingleLessonGenerator = ({ lesson, onComplete }: SingleLessonGenera
           success: false,
           error_message: error.message,
           generation_time_ms: Date.now() - startTime,
+          generated_by: (await supabase.auth.getUser()).data.user?.id,
         });
 
         setProgress(prev => prev.map(p => 
