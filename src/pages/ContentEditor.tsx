@@ -11,6 +11,7 @@ import { LessonPreview } from "@/components/content-editor/LessonPreview";
 import { YouTubeManager } from "@/components/content-editor/YouTubeManager";
 import { LessonComments } from "@/components/content-editor/LessonComments";
 import { BatchLessonGenerator } from "@/components/content-editor/BatchLessonGenerator";
+import { SingleLessonGenerator } from "@/components/content-editor/SingleLessonGenerator";
 
 const ContentEditor = () => {
   const navigate = useNavigate();
@@ -160,6 +161,26 @@ const ContentEditor = () => {
 
                 {/* Content - Right Column */}
                 <div className="lg:col-span-8 space-y-6">
+                  {/* Single Lesson Generator */}
+                  {selectedLesson && (
+                    <Card>
+                      <CardContent className="p-6">
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <h3 className="font-semibold">Génération IA pour cette leçon</h3>
+                            <p className="text-sm text-muted-foreground">
+                              Générez automatiquement le contenu de toutes les sections
+                            </p>
+                          </div>
+                          <SingleLessonGenerator 
+                            lesson={selectedLesson}
+                            onComplete={refreshLesson}
+                          />
+                        </div>
+                      </CardContent>
+                    </Card>
+                  )}
+
                   {/* Lesson Preview - Student View */}
                   <LessonPreview 
                     key={selectedLesson?.id || 'no-lesson'} 
