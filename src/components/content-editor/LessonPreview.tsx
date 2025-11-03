@@ -58,7 +58,10 @@ export const LessonPreview = ({ lesson }: LessonPreviewProps) => {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-lg">{lesson.objectif}</p>
+            <div 
+              className="prose dark:prose-invert max-w-none"
+              dangerouslySetInnerHTML={{ __html: lesson.objectif }}
+            />
           </CardContent>
         </Card>
       )}
