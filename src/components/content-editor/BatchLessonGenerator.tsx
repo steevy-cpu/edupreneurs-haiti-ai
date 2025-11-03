@@ -56,18 +56,25 @@ export const BatchLessonGenerator = () => {
     { value: "NS4", label: "NS4" },
   ];
 
-  // Load subjects on component mount
+  // Load subjects when grade level changes
   useEffect(() => {
     loadSubjects();
-  }, []);
+  }, [gradeLevel]);
 
   const loadSubjects = async () => {
     setIsLoadingSubjects(true);
     try {
-      const { data, error } = await supabase
+      let query = supabase
         .from('subjects')
-        .select('id, name, slug')
+        .select('id, name, slug, grade_level')
         .order('name');
+
+      // Filter by grade level if not "all"
+      if (gradeLevel !== "all") {
+        query = query.eq('grade_level', gradeLevel);
+      }
+
+      const { data, error } = await query;
 
       if (error) throw error;
       setAvailableSubjects(data || []);
@@ -358,6 +365,7 @@ export const BatchLessonGenerator = () => {
               <Label>Niveau scolaire</Label>
               <Select value={gradeLevel} onValueChange={(value) => {
                 setGradeLevel(value);
+                setSubject("all");
                 setSelectedLessonId("all");
               }}>
                 <SelectTrigger>
