@@ -29,6 +29,7 @@ export const BatchLessonGenerator = () => {
   const [gradeLevel, setGradeLevel] = useState<string>("all");
   const [subject, setSubject] = useState<string>("all");
   const [availableLessons, setAvailableLessons] = useState<any[]>([]);
+  const [availableSubjects, setAvailableSubjects] = useState<any[]>([]);
   const [selectedLessonId, setSelectedLessonId] = useState<string>("all");
   const [selectedSections, setSelectedSections] = useState<SectionName[]>([
     'objectif', 'introduction', 'contenu', 'exemples_exercices'
@@ -42,6 +43,7 @@ export const BatchLessonGenerator = () => {
   const [totalLessons, setTotalLessons] = useState(0);
   const [completedCount, setCompletedCount] = useState(0);
   const [isLoadingLessons, setIsLoadingLessons] = useState(false);
+  const [isLoadingSubjects, setIsLoadingSubjects] = useState(true);
 
   const gradeLevels = [
     { value: "all", label: "Tous les niveaux" },
@@ -54,16 +56,28 @@ export const BatchLessonGenerator = () => {
     { value: "NS4", label: "NS4" },
   ];
 
-  const subjects = [
-    { value: "all", label: "Toutes les matières" },
-    { value: "mathematiques", label: "Mathématiques" },
-    { value: "sciences", label: "Sciences" },
-    { value: "francais", label: "Français" },
-    { value: "anglais", label: "Anglais" },
-    { value: "espagnol", label: "Espagnol" },
-    { value: "sciences-sociales", label: "Sciences Sociales" },
-    { value: "creole", label: "Créole" },
-  ];
+  // Load subjects on component mount
+  useEffect(() => {
+    loadSubjects();
+  }, []);
+
+  const loadSubjects = async () => {
+    setIsLoadingSubjects(true);
+    try {
+      const { data, error } = await supabase
+        .from('subjects')
+        .select('id, name, slug')
+        .order('name');
+
+      if (error) throw error;
+      setAvailableSubjects(data || []);
+    } catch (error) {
+      console.error('Error loading subjects:', error);
+      toast.error("Erreur lors du chargement des matières");
+    } finally {
+      setIsLoadingSubjects(false);
+    }
+  };
 
   const sections: { value: SectionName; label: string }[] = [
     { value: "objectif", label: "Objectif" },
@@ -361,17 +375,22 @@ export const BatchLessonGenerator = () => {
 
             <div className="space-y-2">
               <Label>Matière</Label>
-              <Select value={subject} onValueChange={(value) => {
-                setSubject(value);
-                setSelectedLessonId("all");
-              }}>
+              <Select 
+                value={subject} 
+                onValueChange={(value) => {
+                  setSubject(value);
+                  setSelectedLessonId("all");
+                }}
+                disabled={isLoadingSubjects}
+              >
                 <SelectTrigger>
-                  <SelectValue />
+                  <SelectValue placeholder={isLoadingSubjects ? "Chargement..." : "Toutes les matières"} />
                 </SelectTrigger>
                 <SelectContent>
-                  {subjects.map(subj => (
-                    <SelectItem key={subj.value} value={subj.value}>
-                      {subj.label}
+                  <SelectItem value="all">Toutes les matières</SelectItem>
+                  {availableSubjects.map(subj => (
+                    <SelectItem key={subj.id} value={subj.id}>
+                      {subj.name}
                     </SelectItem>
                   ))}
                 </SelectContent>
