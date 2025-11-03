@@ -321,6 +321,18 @@ export const BatchLessonGenerator = () => {
             .from('lessons')
             .update({ [sectionName]: data.content })
             .eq('id', lesson.id);
+
+          // Log successful generation to analytics
+          await supabase.from('ai_generation_logs').insert({
+            lesson_id: lesson.id,
+            section_name: sectionName,
+            target_words: wordCounts[sectionName],
+            additional_context: globalContext || null,
+            response_content: data.content,
+            word_count: data.wordCount || null,
+            generation_time_ms: data.generationTimeMs || null,
+            success: true,
+          });
         }
 
         success = true;
@@ -340,6 +352,20 @@ export const BatchLessonGenerator = () => {
           retryCount,
           lessonId: lesson.id
         });
+
+        // Log failed generation to analytics
+        if (retryCount === 1) {
+          await supabase.from('ai_generation_logs').insert({
+            lesson_id: lesson.id,
+            section_name: selectedSections[0], // Log first section attempted
+            target_words: wordCounts[selectedSections[0]],
+            additional_context: globalContext || null,
+            success: false,
+            error_message: errorMessage,
+            generation_time_ms: Date.now() - startTime,
+            retry_count: retryCount,
+          });
+        }
         
         if (error.message?.includes('429')) {
           console.log('⏱️ [Batch] Rate limited, waiting 10s...');
