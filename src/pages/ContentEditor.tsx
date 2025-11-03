@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -15,6 +15,7 @@ import { SingleLessonGenerator } from "@/components/content-editor/SingleLessonG
 
 const ContentEditor = () => {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const [isLoading, setIsLoading] = useState(true);
   const [hasAccess, setHasAccess] = useState(false);
   const [selectedLesson, setSelectedLesson] = useState<any>(null);
@@ -22,6 +23,32 @@ const ContentEditor = () => {
   useEffect(() => {
     checkAccess();
   }, []);
+
+  // Load lesson from URL parameter
+  useEffect(() => {
+    const lessonId = searchParams.get('lesson');
+    if (lessonId && hasAccess) {
+      loadLessonFromUrl(lessonId);
+    }
+  }, [searchParams, hasAccess]);
+
+  const loadLessonFromUrl = async (lessonId: string) => {
+    try {
+      const { data, error } = await supabase
+        .from('lessons')
+        .select('*, subjects(id, name)')
+        .eq('id', lessonId)
+        .single();
+
+      if (error) throw error;
+      if (data) {
+        setSelectedLesson(data);
+      }
+    } catch (error) {
+      console.error('Error loading lesson from URL:', error);
+      toast.error("Erreur lors du chargement de la leçon");
+    }
+  };
 
   const checkAccess = async () => {
     try {
@@ -76,7 +103,7 @@ const ContentEditor = () => {
     try {
       const { data, error } = await supabase
         .from('lessons')
-        .select('*')
+        .select('*, subjects(id, name)')
         .eq('id', selectedLesson.id)
         .single();
 

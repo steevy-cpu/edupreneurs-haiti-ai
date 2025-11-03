@@ -76,7 +76,7 @@ export const LessonBrowser = ({ onSelectLesson, selectedLesson }: LessonBrowserP
     try {
       const { data: lessonsData, error } = await supabase
         .from('lessons')
-        .select('*')
+        .select('*, subjects(id, name)')
         .in('subject_id', subjectIds)
         .order('title');
 

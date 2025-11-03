@@ -63,7 +63,12 @@ export const SectionGenerator = ({
       }
 
       const subjectName = fullLesson.subjects?.name || 'Général';
-      console.log('Generating with subject:', subjectName);
+      console.log('🔵 Generating with:', { 
+        lessonId: lesson.id, 
+        sectionName, 
+        subjectName, 
+        gradeLevel: lesson.grade_level 
+      });
 
       const { data, error } = await supabase.functions.invoke('generate-lesson-section', {
         body: {
