@@ -51,6 +51,9 @@ export const BatchLessonGenerator = () => {
   const [previewLesson, setPreviewLesson] = useState<LessonGenerationStatus | null>(null);
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
   const [isApplying, setIsApplying] = useState(false);
+  const [currentBatch, setCurrentBatch] = useState(0);
+  const [totalBatches, setTotalBatches] = useState(0);
+  const [allLessons, setAllLessons] = useState<any[]>([]);
 
   const gradeLevels = [
     { value: "all", label: "Tous les niveaux" },
@@ -229,18 +232,36 @@ export const BatchLessonGenerator = () => {
     console.log('📚 Fetched lessons:', lessons?.length || 0);
     
     if (!lessons || lessons.length === 0) {
-      toast.error("Aucune leçon trouvée avec ces critères. Vérifiez qu'il existe des leçons non publiées.");
+      toast.error("Aucune leçon trouvée avec ces critères. Vérifiez qu'il existe des leçons.");
       return;
     }
 
-    if (lessons.length > 50) {
-      toast.error(`${lessons.length} leçons trouvées. Limitez à 50 max pour éviter les erreurs.`);
-      return;
+    // Store all lessons and calculate batches
+    setAllLessons(lessons);
+    const batchSize = 50;
+    const numBatches = Math.ceil(lessons.length / batchSize);
+    setTotalBatches(numBatches);
+    setCurrentBatch(1);
+
+    if (numBatches > 1) {
+      toast.info(`${lessons.length} leçons trouvées. Génération par lots de ${batchSize} leçons.`);
     }
 
-    setTotalLessons(lessons.length);
+    // Process first batch
+    await processBatch(lessons, 1, batchSize, numBatches);
+  };
+
+  const processBatch = async (allLessonsData: any[], batchNumber: number, batchSize: number, totalBatchCount: number) => {
+    const startIdx = (batchNumber - 1) * batchSize;
+    const endIdx = Math.min(startIdx + batchSize, allLessonsData.length);
+    const batchLessons = allLessonsData.slice(startIdx, endIdx);
+
+    console.log(`📦 Processing batch ${batchNumber}/${totalBatchCount}: lessons ${startIdx + 1}-${endIdx}`);
+    toast.info(`Début du lot ${batchNumber}/${totalBatchCount}: ${batchLessons.length} leçons`);
+
+    setTotalLessons(batchLessons.length);
     setCompletedCount(0);
-    setLessonStatuses(lessons.map(l => ({
+    setLessonStatuses(batchLessons.map(l => ({
       lessonId: l.id,
       title: l.title,
       status: 'pending',
@@ -250,20 +271,40 @@ export const BatchLessonGenerator = () => {
     setIsGenerating(true);
     setIsPaused(false);
 
-    for (let i = 0; i < lessons.length; i++) {
+    for (let i = 0; i < batchLessons.length; i++) {
       if (isPaused) break;
 
-      const lesson = lessons[i];
+      const lesson = batchLessons[i];
       await generateLessonSections(lesson, i);
       
       // 3 second pause between lessons
-      if (i < lessons.length - 1 && !isPaused) {
+      if (i < batchLessons.length - 1 && !isPaused) {
         await new Promise(resolve => setTimeout(resolve, 3000));
       }
     }
 
     setIsGenerating(false);
-    toast.success(`Génération terminée: ${completedCount}/${totalLessons} leçons`);
+    
+    const hasMoreBatches = batchNumber < totalBatchCount;
+    if (hasMoreBatches) {
+      toast.success(`Lot ${batchNumber}/${totalBatchCount} terminé: ${completedCount}/${batchLessons.length} leçons. Prêt pour le lot suivant.`);
+    } else {
+      toast.success(`Génération terminée: ${completedCount}/${batchLessons.length} leçons du dernier lot.`);
+      setAllLessons([]);
+      setCurrentBatch(0);
+      setTotalBatches(0);
+    }
+  };
+
+  const continueNextBatch = async () => {
+    if (currentBatch >= totalBatches || allLessons.length === 0) {
+      toast.error("Aucun lot suivant à traiter");
+      return;
+    }
+
+    const nextBatch = currentBatch + 1;
+    setCurrentBatch(nextBatch);
+    await processBatch(allLessons, nextBatch, 50, totalBatches);
   };
 
   const generateLessonSections = async (lesson: any, index: number) => {
@@ -702,10 +743,18 @@ export const BatchLessonGenerator = () => {
           {/* Action Buttons */}
           <div className="flex gap-2">
             {!isGenerating ? (
-              <Button onClick={startGeneration} className="flex-1">
-                <PlayCircle className="mr-2 h-4 w-4" />
-                Démarrer la génération
-              </Button>
+              <>
+                <Button onClick={startGeneration} className="flex-1">
+                  <PlayCircle className="mr-2 h-4 w-4" />
+                  Démarrer la génération
+                </Button>
+                {currentBatch > 0 && currentBatch < totalBatches && (
+                  <Button onClick={continueNextBatch} variant="outline" className="flex-1">
+                    <PlayCircle className="mr-2 h-4 w-4" />
+                    Continuer le lot {currentBatch + 1}/{totalBatches}
+                  </Button>
+                )}
+              </>
             ) : (
               <Button onClick={() => setIsPaused(!isPaused)} variant="outline" className="flex-1">
                 {isPaused ? <PlayCircle className="mr-2 h-4 w-4" /> : <PauseCircle className="mr-2 h-4 w-4" />}
@@ -726,6 +775,18 @@ export const BatchLessonGenerator = () => {
               </>
             )}
           </div>
+          
+          {/* Batch Progress Info */}
+          {totalBatches > 1 && (
+            <div className="mt-2 p-3 bg-primary/10 border border-primary/20 rounded-lg">
+              <p className="text-sm font-medium">
+                Traitement par lots: Lot {currentBatch}/{totalBatches}
+              </p>
+              <p className="text-xs text-muted-foreground mt-1">
+                {allLessons.length} leçons au total seront traitées par lots de 50
+              </p>
+            </div>
+          )}
         </CardContent>
       </Card>
 
