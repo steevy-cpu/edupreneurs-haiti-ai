@@ -62,25 +62,92 @@ Le système génère 4 sections principales pour chaque leçon:
    - 👁️ **Aperçu**: Affiche/masque la prévisualisation
    - ❌ **Annuler**: Garde le contenu original
 
-### Générer toutes les sections d'une leçon
+### Générer toutes les sections d'une leçon (Leçon individuelle)
 
-1. **Accéder à l'éditeur de leçon**
-   - Sélectionnez une leçon dans le navigateur
+1. **Accéder à Content Editor**
+   - Naviguez vers "Révision des Leçons"
+   - Sélectionnez une leçon dans le navigateur de gauche
+   - Dans l'onglet "Révision"
 
-2. **Lancer la génération globale**
-   - Cliquez sur "✨ Générer toutes les sections avec IA" en haut de l'éditeur
-   - Confirmez l'action
+2. **Lancer la génération**
+   - Repérez la carte "Génération IA pour cette leçon" en haut à droite
+   - Cliquez sur "✨ Générer les sections de cette leçon"
 
-3. **Suivre la progression**
-   - Le système génère chaque section séquentiellement
+3. **Configurer la génération**
+   - **Sélection des sections**: Cochez les sections à générer
+     - ☑️ Objectif
+     - ☑️ Introduction
+     - ☑️ Contenu principal
+     - ☑️ Exemples & Exercices
+   - **Nombre de mots**: Ajustez avec les sliders pour chaque section
+     - Objectif: 100-1500 mots (défaut: 200)
+     - Introduction: 100-1500 mots (défaut: 300)
+     - Contenu: 100-1500 mots (défaut: 1000)
+     - Exemples & Exercices: 100-1500 mots (défaut: 500)
+   - **Contexte additionnel**: Instructions spécifiques pour toutes les sections
+     - Ex: "Ajouter plus d'exemples pratiques haïtiens"
+     - Ex: "Focus sur les applications quotidiennes en agriculture"
+
+4. **Suivre la progression en temps réel**
+   - Barre de progression globale (ex: 2/4 sections)
+   - État de chaque section:
+     - ⏳ En attente (gris)
+     - 🔄 En génération (bleu, animation)
+     - ✅ Terminé (vert)
+     - ❌ Erreur (rouge, avec message d'erreur)
    - Pause de 3 secondes entre chaque section (rate limiting)
-   - Notifications en temps réel pour chaque section
-   - Durée estimée: ~1 minute par leçon
+   - Durée estimée: ~50-60 secondes par leçon complète
 
-4. **Résultat**
-   - Message de succès avec nombre de sections générées
-   - Révision et ajustements si nécessaire
-   - Enregistrez avec le bouton "Enregistrer"
+5. **Résultat**
+   - Message de succès: "X section(s) générée(s), Y erreur(s)"
+   - Le contenu est automatiquement enregistré dans la base de données
+   - La leçon est actualisée automatiquement dans la prévisualisation
+   - Toutes les générations sont enregistrées dans les logs (Analytics)
+
+### Génération par lot (Multiple leçons)
+
+Pour générer le contenu de plusieurs leçons simultanément:
+
+1. **Accéder à l'onglet Génération par lot**
+   - Dans Content Editor, cliquez sur l'onglet "⚡ Génération par lot"
+
+2. **Configurer les critères de sélection**
+   - **Niveau scolaire**: Tous, 7AF, 8AF, 9AF, NS1, NS2, NS3, NS4
+   - **Matière**: Toutes, Mathématiques, Sciences, Français, Anglais, etc.
+   - **Sections à générer**: Cochez les sections souhaitées
+   - **Option**: "Générer uniquement les sections vides" (recommandé)
+
+3. **Personnaliser les paramètres**
+   - Ajustez le nombre de mots pour chaque section
+   - Ajoutez un contexte global qui s'appliquera à toutes les leçons
+   - Le système affiche le nombre de leçons trouvées
+
+4. **Lancer la génération**
+   - ⚠️ **Limite**: Maximum 50 leçons par lot (évite surcharge)
+   - Cliquez sur "Démarrer la génération"
+   - Suivi en temps réel:
+     - Progression globale: X/Y leçons terminées
+     - Tableau détaillé par leçon:
+       - Titre de la leçon
+       - Statut (En attente, En cours, Terminé, Erreur)
+       - Sections générées
+       - Temps de génération
+   - Possibilité de **Pause/Reprendre** en cours
+
+5. **Gestion des erreurs**
+   - Les erreurs sont affichées avec détails
+   - Bouton "Réessayer les erreurs" pour relancer uniquement les échecs
+   - Retry automatique (3 tentatives avec délai croissant)
+   - Gestion des erreurs 429 (rate limit) et 402 (crédits épuisés)
+
+6. **Export des résultats**
+   - Bouton "Exporter CSV" pour télécharger le rapport complet:
+     - Leçon, Statut, Sections générées, Temps, Erreurs
+
+7. **Durée estimée**
+   - 1 leçon (4 sections): ~50-60 secondes
+   - 50 leçons: ~45-50 minutes
+   - 100 leçons: ~1h30-2h (nécessite 2 lots de 50)
 
 ## Prompt Template Utilisé
 
@@ -253,6 +320,46 @@ Variables:
 5. Prévisualisez dans l'onglet "Aperçu"
 6. Enregistrez et publiez
 
+## Analytics de génération IA
+
+### Accéder aux analytics
+
+1. Dans Content Editor, cliquez sur "📊 Analytics IA" en haut à droite
+2. Tableau de bord avec métriques:
+   - Total de générations
+   - Taux de réussite (%)
+   - Temps moyen de génération
+   - Score de qualité moyen
+   - Nombre total de mots générés
+
+### Métriques disponibles
+
+**Cartes de statistiques:**
+- Total de générations (toutes les sections, tous niveaux)
+- Taux de réussite en pourcentage
+- Temps moyen de génération (en secondes)
+- Score de qualité moyen (/100)
+- Total de mots générés
+
+**Graphiques et analyses:**
+- Générations par section (objectif, introduction, contenu, exemples)
+- Erreurs récentes avec détails
+- Logs des 100 dernières générations avec:
+  - Titre de la leçon
+  - Section générée
+  - Niveau scolaire
+  - Score de qualité
+  - Temps de génération
+  - Statut (Succès/Erreur)
+
+### Utilité des analytics
+
+- **Identifier les problèmes**: Voir quelles sections échouent le plus
+- **Optimiser les prompts**: Analyser les scores de qualité par section
+- **Planifier la charge**: Suivre le nombre de générations quotidiennes
+- **Déboguer**: Consulter les messages d'erreur détaillés
+- **Mesurer l'efficacité**: Temps moyen, taux de réussite, qualité
+
 ## Support
 
 Pour toute question ou problème:
@@ -262,6 +369,12 @@ Pour toute question ou problème:
 
 ---
 
-**Version du guide**: 1.0  
+**Version du guide**: 2.0  
 **Dernière mise à jour**: 2025-01-03  
-**Modèle IA utilisé**: google/gemini-2.5-flash
+**Modèle IA utilisé**: google/gemini-2.5-flash  
+**Nouvelles fonctionnalités v2.0**:
+- ✨ Génération de leçon individuelle complète
+- ⚡ Génération par lot (jusqu'à 50 leçons)
+- 📊 Analytics et logs de génération
+- 🔄 Système de retry automatique
+- ⏸️ Pause/Reprise pour génération par lot
