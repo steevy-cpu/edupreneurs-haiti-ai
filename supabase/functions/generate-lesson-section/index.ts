@@ -23,16 +23,18 @@ const SECTION_CONFIGS = {
     instructions: `3-5 objectifs mesurables avec verbes d'action (comprendre, analyser, identifier, etc.)
 - Format: Liste numérotée avec émojis 🎯
 - Commencer par: "À la fin de cette leçon, tu seras capable de..."
-- Contextualiser pour les élèves haïtiens`,
+- Contextualiser pour les élèves haïtiens
+- ESPACEMENT: Ajouter <br/> entre chaque objectif pour meilleure lisibilité`,
   },
   introduction: {
     minWords: 250,
     maxWords: 350,
     instructions: `Accroche captivante (question ou situation du quotidien haïtien)
-- 2-3 paragraphes de mise en contexte
+- 2-3 paragraphes de mise en contexte avec <p> séparés
 - Pourquoi c'est important pour l'élève
 - Ce qu'on va apprendre
-- Encadrés colorés avec émojis`,
+- Encadrés colorés avec émojis
+- ESPACEMENT: Utiliser des paragraphes distincts, ne pas créer de gros blocs de texte`,
   },
   contenu: {
     minWords: 800,
@@ -42,7 +44,8 @@ const SECTION_CONFIGS = {
 - 2-3 encadrés "💡 Le savais-tu ?" avec anecdotes haïtiennes
 - Listes structurées, tableaux si pertinent
 - Vocabulaire clé avec définitions
-- Exemples concrets du contexte haïtien`,
+- Exemples concrets du contexte haïtien
+- ESPACEMENT: Ajouter <br/> ou des paragraphes entre les sections, éviter les blocs de texte denses`,
   },
   exemples_exercices: {
     minWords: 400,
@@ -55,7 +58,8 @@ const SECTION_CONFIGS = {
   * Questions de réflexion ouvertes (3-4)
   * Étude de cas haïtien
   * Activité pratique (observation, enquête, création)
-- Format structuré avec numérotation claire`,
+- Format structuré avec numérotation claire
+- ESPACEMENT CRITIQUE: Ajouter <br/><br/> entre CHAQUE exercice, utiliser des listes <ul> ou <ol>, séparer visuellement les sections d'exercices`,
   },
 };
 
@@ -118,6 +122,13 @@ PRINCIPES FONDAMENTAUX:
 - Format: HTML avec classes Tailwind (compatible dark/light mode)
 - Longueur cible: ${targetWords} mots (minimum: ${config.minWords}, maximum: ${config.maxWords})
 
+RÈGLES DE FORMATAGE STRICTES:
+- JAMAIS utiliser de blocs de code markdown (pas de \`\`\`)
+- TOUJOURS aérer le contenu avec des espaces, <br/>, et paragraphes séparés
+- ÉVITER les gros blocs de texte sans respiration
+- Utiliser des listes <ul> ou <ol> quand approprié
+- Séparer visuellement les différentes parties
+
 INSTRUCTIONS SPÉCIFIQUES POUR ${sectionName.toUpperCase()}:
 ${config.instructions}
 
@@ -130,8 +141,9 @@ IMPORTANT:
 - Utilise des émojis pertinents
 - Tous les textes en français
 - Maximum de références haïtiennes/caribéennes
-- Structure claire et progressive
-- Vocabulaire adapté au niveau ${gradeLevel}`;
+- Structure claire et progressive avec BEAUCOUP d'espacement
+- Vocabulaire adapté au niveau ${gradeLevel}
+- NE PAS utiliser de marqueurs de code comme \`\`\` dans le résultat`;
 
     const userPrompt = `Génère le contenu pour {{section_name}} selon {{lesson_topic}} pour {{student_grade}} avec au moins {{words_count}} mots.
 
@@ -144,7 +156,7 @@ Variables:
 ${context ? `Instructions additionnelles: ${context}` : ''}
 ${currentContent ? `\nContenu actuel à améliorer:\n${currentContent}\n\nGénère une VERSION AMÉLIORÉE en gardant les bonnes parties.` : ''}
 
-Réponds UNIQUEMENT avec le HTML généré, sans préambule ni explication.`;
+IMPORTANT: Réponds UNIQUEMENT avec le HTML généré, sans préambule, sans explication, et SANS blocs de code markdown (\`\`\`). Juste le HTML pur et aéré.`;
 
     const startTime = Date.now();
 
