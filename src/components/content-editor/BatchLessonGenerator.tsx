@@ -215,14 +215,11 @@ export const BatchLessonGenerator = () => {
     setIsGenerating(true);
     setIsPaused(false);
 
-    // In single lesson mode, always generate selected sections regardless of onlyEmpty setting
-    const isSingleLessonMode = selectedLessonId !== "all";
-
     for (let i = 0; i < lessons.length; i++) {
       if (isPaused) break;
 
       const lesson = lessons[i];
-      await generateLessonSections(lesson, i, isSingleLessonMode);
+      await generateLessonSections(lesson, i);
       
       // 3 second pause between lessons
       if (i < lessons.length - 1 && !isPaused) {
@@ -234,15 +231,14 @@ export const BatchLessonGenerator = () => {
     toast.success(`Génération terminée: ${completedCount}/${totalLessons} leçons`);
   };
 
-  const generateLessonSections = async (lesson: any, index: number, isSingleLessonMode: boolean = false) => {
+  const generateLessonSections = async (lesson: any, index: number) => {
     const startTime = Date.now();
     
     console.log('🟢 [Batch] Starting generation for lesson:', {
       id: lesson.id,
       title: lesson.title,
       gradeLevel: lesson.grade_level,
-      subjects: lesson.subjects,
-      isSingleLessonMode
+      subjects: lesson.subjects
     });
     
     setLessonStatuses(prev => prev.map((l, i) =>
@@ -258,8 +254,7 @@ export const BatchLessonGenerator = () => {
       try {
         // Generate each selected section
         for (const sectionName of selectedSections) {
-          // In single lesson mode, always generate. In batch mode, respect onlyEmpty setting
-          const shouldGenerate = isSingleLessonMode ? true : (onlyEmpty ? !lesson[sectionName] || lesson[sectionName].trim() === '' : true);
+          const shouldGenerate = onlyEmpty ? !lesson[sectionName] || lesson[sectionName].trim() === '' : true;
           
           if (!shouldGenerate) {
             console.log('🟡 [Batch] Skipping section (already has content):', sectionName);
@@ -345,7 +340,6 @@ export const BatchLessonGenerator = () => {
 
   const retryFailed = async () => {
     const failedLessons = lessonStatuses.filter(l => l.status === 'error');
-    const isSingleLessonMode = selectedLessonId !== "all";
     
     for (const lessonStatus of failedLessons) {
       if (isPaused) break;
@@ -358,7 +352,7 @@ export const BatchLessonGenerator = () => {
         
       if (lesson) {
         const index = lessonStatuses.findIndex(l => l.lessonId === lessonStatus.lessonId);
-        await generateLessonSections(lesson, index, isSingleLessonMode);
+        await generateLessonSections(lesson, index);
         await new Promise(resolve => setTimeout(resolve, 3000));
       }
     }
@@ -500,19 +494,17 @@ export const BatchLessonGenerator = () => {
             </div>
           </div>
 
-          {/* Only Empty Sections Option - Hidden when specific lesson selected */}
-          {selectedLessonId === "all" && (
-            <div className="flex items-center space-x-2">
-              <Checkbox
-                id="onlyEmpty"
-                checked={onlyEmpty}
-                onCheckedChange={(checked) => setOnlyEmpty(checked as boolean)}
-              />
-              <label htmlFor="onlyEmpty" className="text-sm cursor-pointer">
-                Générer uniquement les sections vides
-              </label>
-            </div>
-          )}
+          {/* Only Empty Sections Option */}
+          <div className="flex items-center space-x-2">
+            <Checkbox
+              id="onlyEmpty"
+              checked={onlyEmpty}
+              onCheckedChange={(checked) => setOnlyEmpty(checked as boolean)}
+            />
+            <label htmlFor="onlyEmpty" className="text-sm cursor-pointer">
+              Générer uniquement les sections vides
+            </label>
+          </div>
 
           {/* Info message for single lesson mode */}
           {selectedLessonId !== "all" && (
