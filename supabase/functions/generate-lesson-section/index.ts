@@ -155,7 +155,25 @@ Variables:
 ${context ? `Instructions additionnelles: ${context}` : ''}
 ${currentContent ? `\nContenu actuel à améliorer:\n${currentContent}\n\nGénère une VERSION AMÉLIORÉE en gardant les bonnes parties.` : ''}
 
-IMPORTANT: Réponds UNIQUEMENT avec le HTML généré, sans préambule, sans explication, et SANS blocs de code markdown (\`\`\`). Juste le HTML pur et aéré.`;
+CRITIQUES - RÈGLES DE FORMATAGE:
+1. Réponds UNIQUEMENT avec le HTML pur à afficher - PAS de texte explicatif avant ou après
+2. N'utilise JAMAIS de blocs de code markdown comme \`\`\`html ou \`\`\`
+3. Ne mets JAMAIS le HTML entre guillemets ou balises <code>
+4. Commence directement par les balises HTML (<div>, <h3>, <p>, etc.)
+5. Le HTML doit être directement insérable dans une page web
+
+EXEMPLE DE CE QU'ON VEUT:
+<div class="bg-blue-50 dark:bg-blue-950/30 border-l-4 border-blue-500 p-4 mb-4 rounded-lg">
+  <h4 class="font-semibold text-blue-700 dark:text-blue-300 mb-2">🎯 Objectif</h4>
+  <p class="text-gray-700 dark:text-gray-300">À la fin de cette leçon, tu seras capable de :</p>
+  <ol class="list-decimal list-inside mt-2 space-y-1">
+    <li>Objectif 1</li>
+    <li>Objectif 2</li>
+  </ol>
+</div>
+
+COMMENCE TON CONTENU ICI (directement par la première balise HTML):`;
+
 
     const startTime = Date.now();
 
@@ -200,10 +218,21 @@ IMPORTANT: Réponds UNIQUEMENT avec le HTML généré, sans préambule, sans exp
     }
 
     const data = await response.json();
-    const generatedContent = data.choices?.[0]?.message?.content || '';
+    let generatedContent = data.choices?.[0]?.message?.content || '';
 
     if (!generatedContent || generatedContent.trim().length < 50) {
       throw new Error('Contenu généré trop court ou vide');
+    }
+
+    // Clean up the generated content
+    // Remove markdown code blocks if present
+    generatedContent = generatedContent.replace(/```html\s*/g, '').replace(/```\s*/g, '');
+    // Remove leading/trailing whitespace
+    generatedContent = generatedContent.trim();
+    // Remove any text before the first HTML tag
+    const firstTagIndex = generatedContent.search(/<[a-zA-Z]/);
+    if (firstTagIndex > 0) {
+      generatedContent = generatedContent.substring(firstTagIndex);
     }
 
     // Validation: check for unreplaced placeholders
