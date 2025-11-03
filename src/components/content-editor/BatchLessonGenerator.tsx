@@ -234,6 +234,13 @@ export const BatchLessonGenerator = () => {
   const generateLessonSections = async (lesson: any, index: number) => {
     const startTime = Date.now();
     
+    console.log('🟢 [Batch] Starting generation for lesson:', {
+      id: lesson.id,
+      title: lesson.title,
+      gradeLevel: lesson.grade_level,
+      subjects: lesson.subjects
+    });
+    
     setLessonStatuses(prev => prev.map((l, i) =>
       i === index ? { ...l, status: 'in_progress' as GenerationStatus } : l
     ));
@@ -249,10 +256,22 @@ export const BatchLessonGenerator = () => {
         for (const sectionName of selectedSections) {
           const shouldGenerate = onlyEmpty ? !lesson[sectionName] || lesson[sectionName].trim() === '' : true;
           
-          if (!shouldGenerate) continue;
+          if (!shouldGenerate) {
+            console.log('🟡 [Batch] Skipping section (already has content):', sectionName);
+            continue;
+          }
 
           // Extract subject name from joined data
           const subjectName = lesson.subjects?.name || 'Général';
+
+          console.log('🔵 [Batch] Calling edge function with:', {
+            lessonId: lesson.id,
+            sectionName,
+            lessonTitle: lesson.title,
+            subject: subjectName,
+            gradeLevel: lesson.grade_level,
+            targetWords: wordCounts[sectionName]
+          });
 
           const { data, error } = await supabase.functions.invoke('generate-lesson-section', {
             body: {
@@ -266,7 +285,16 @@ export const BatchLessonGenerator = () => {
             }
           });
 
-          if (error) throw error;
+          if (error) {
+            console.error('❌ [Batch] Edge function error:', error);
+            throw error;
+          }
+
+          console.log('✅ [Batch] Section generated successfully:', {
+            sectionName,
+            wordCount: data?.wordCount,
+            generationTime: data?.generationTime
+          });
 
           // Update lesson in database
           await supabase
@@ -291,9 +319,17 @@ export const BatchLessonGenerator = () => {
         retryCount++;
         errorMessage = error.message;
         
+        console.error('❌ [Batch] Generation error:', {
+          error: errorMessage,
+          retryCount,
+          lessonId: lesson.id
+        });
+        
         if (error.message?.includes('429')) {
+          console.log('⏱️ [Batch] Rate limited, waiting 10s...');
           await new Promise(resolve => setTimeout(resolve, 10000));
         } else if (retryCount >= maxRetries) {
+          console.error('💥 [Batch] Max retries reached for lesson:', lesson.id);
           setLessonStatuses(prev => prev.map((l, i) =>
             i === index ? { ...l, status: 'error' as GenerationStatus, error: errorMessage } : l
           ));
