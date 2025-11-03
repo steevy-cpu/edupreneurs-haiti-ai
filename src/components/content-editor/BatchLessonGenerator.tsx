@@ -48,8 +48,6 @@ export const BatchLessonGenerator = () => {
   const gradeLevels = [
     { value: "all", label: "Tous les niveaux" },
     { value: "7AF", label: "7AF" },
-    { value: "7eme", label: "7ème" },
-    { value: "AF7", label: "AF7" },
     { value: "AF8", label: "AF8" },
   ];
 
