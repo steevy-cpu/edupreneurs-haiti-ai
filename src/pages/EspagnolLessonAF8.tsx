@@ -199,7 +199,10 @@ const EspagnolLessonAF8 = () => {
                   <Target className="h-5 w-5 text-purple-600 dark:text-purple-400 flex-shrink-0 mt-0.5" />
                   <div>
                     <h3 className="font-semibold text-purple-900 dark:text-purple-100 mb-1">Objectif</h3>
-                    <p className="text-sm text-purple-800 dark:text-purple-200">{lesson.objectif}</p>
+                    <div 
+                      className="text-sm text-purple-800 dark:text-purple-200 prose dark:prose-invert max-w-none prose-sm"
+                      dangerouslySetInnerHTML={{ __html: lesson.objectif }}
+                    />
                   </div>
                 </div>
               )}
