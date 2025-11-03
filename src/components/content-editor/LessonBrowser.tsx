@@ -4,6 +4,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Label } from "@/components/ui/label";
 import {
   Collapsible,
   CollapsibleContent,
@@ -18,33 +20,67 @@ interface LessonBrowserProps {
 }
 
 export const LessonBrowser = ({ onSelectLesson, selectedLesson }: LessonBrowserProps) => {
-  const [subjects, setSubjects] = useState<any[]>([]);
+  const [gradeLevel, setGradeLevel] = useState<string>("all");
+  const [availableSubjects, setAvailableSubjects] = useState<any[]>([]);
   const [lessonsBySubject, setLessonsBySubject] = useState<Record<string, any[]>>({});
   const [searchQuery, setSearchQuery] = useState("");
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
+  const [isLoadingSubjects, setIsLoadingSubjects] = useState(true);
   const [openSubjects, setOpenSubjects] = useState<Set<string>>(new Set());
 
-  useEffect(() => {
-    fetchData();
-  }, []);
+  const gradeLevels = [
+    { value: "all", label: "Tous les niveaux" },
+    { value: "7AF", label: "7AF" },
+    { value: "AF8", label: "AF8" },
+  ];
 
-  const fetchData = async () => {
+  // Load subjects when grade level changes
+  useEffect(() => {
+    loadSubjects();
+  }, [gradeLevel]);
+
+  const loadSubjects = async () => {
+    setIsLoadingSubjects(true);
     try {
-      // Fetch subjects
-      const { data: subjectsData, error: subjectsError } = await supabase
+      let query = supabase
         .from('subjects')
-        .select('*')
+        .select('id, name, slug, grade_level, icon_name')
         .order('name');
 
-      if (subjectsError) throw subjectsError;
+      // Filter by grade level if not "all"
+      if (gradeLevel !== "all") {
+        query = query.eq('grade_level', gradeLevel);
+      }
 
-      // Fetch all lessons
-      const { data: lessonsData, error: lessonsError } = await supabase
+      const { data, error } = await query;
+
+      if (error) throw error;
+      setAvailableSubjects(data || []);
+      
+      // Load lessons for these subjects
+      if (data && data.length > 0) {
+        loadLessons(data.map(s => s.id));
+      } else {
+        setLessonsBySubject({});
+      }
+    } catch (error) {
+      console.error('Error loading subjects:', error);
+      toast.error("Erreur lors du chargement des matières");
+    } finally {
+      setIsLoadingSubjects(false);
+    }
+  };
+
+  const loadLessons = async (subjectIds: string[]) => {
+    setIsLoading(true);
+    try {
+      const { data: lessonsData, error } = await supabase
         .from('lessons')
         .select('*')
-        .order('order_index');
+        .in('subject_id', subjectIds)
+        .order('title');
 
-      if (lessonsError) throw lessonsError;
+      if (error) throw error;
 
       // Group lessons by subject
       const grouped: Record<string, any[]> = {};
@@ -55,11 +91,10 @@ export const LessonBrowser = ({ onSelectLesson, selectedLesson }: LessonBrowserP
         grouped[lesson.subject_id].push(lesson);
       });
 
-      setSubjects(subjectsData || []);
       setLessonsBySubject(grouped);
     } catch (error) {
-      console.error('Error fetching data:', error);
-      toast.error("Erreur lors du chargement");
+      console.error('Error loading lessons:', error);
+      toast.error("Erreur lors du chargement des leçons");
     } finally {
       setIsLoading(false);
     }
@@ -75,7 +110,7 @@ export const LessonBrowser = ({ onSelectLesson, selectedLesson }: LessonBrowserP
     setOpenSubjects(newOpenSubjects);
   };
 
-  const filteredSubjects = subjects.map(subject => {
+  const filteredSubjects = availableSubjects.map(subject => {
     const subjectLessons = lessonsBySubject[subject.id] || [];
     const filteredLessons = subjectLessons.filter(lesson =>
       lesson.title.toLowerCase().includes(searchQuery.toLowerCase())
@@ -94,6 +129,25 @@ export const LessonBrowser = ({ onSelectLesson, selectedLesson }: LessonBrowserP
     <Card className="h-full flex flex-col">
       <CardHeader className="flex-shrink-0">
         <CardTitle className="text-lg">Parcourir les Leçons</CardTitle>
+        
+        {/* Grade Level Filter */}
+        <div className="mt-4 space-y-2">
+          <Label>Niveau scolaire</Label>
+          <Select value={gradeLevel} onValueChange={setGradeLevel}>
+            <SelectTrigger>
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {gradeLevels.map(level => (
+                <SelectItem key={level.value} value={level.value}>
+                  {level.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+
+        {/* Search */}
         <div className="relative mt-4">
           <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
           <Input
@@ -106,7 +160,7 @@ export const LessonBrowser = ({ onSelectLesson, selectedLesson }: LessonBrowserP
       </CardHeader>
       <CardContent className="flex-1 overflow-hidden p-0">
         <ScrollArea className="h-full px-6 pb-6">
-          {isLoading ? (
+          {isLoadingSubjects || isLoading ? (
             <div className="text-center text-muted-foreground py-8">Chargement...</div>
           ) : filteredSubjects.length === 0 ? (
             <div className="text-center text-muted-foreground py-8">
