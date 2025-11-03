@@ -6,6 +6,9 @@ verify_jwt = true
 [functions.generate-lesson-content]
 verify_jwt = false
 
+[functions.generate-lesson-section]
+verify_jwt = true
+
 [functions.send-push-notification]
 verify_jwt = false
 

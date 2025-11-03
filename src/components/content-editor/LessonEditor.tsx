@@ -11,8 +11,9 @@ import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { toast } from "sonner";
-import { Save, Eye, FileText, Users, AlertTriangle } from "lucide-react";
+import { Save, Eye, FileText, Users, AlertTriangle, Sparkles, Loader2 } from "lucide-react";
 import { useContentEditorRealtime } from "@/hooks/useContentEditorRealtime";
+import { SectionGenerator } from "./SectionGenerator";
 
 interface LessonEditorProps {
   selectedLesson: any;
@@ -34,6 +35,7 @@ export const LessonEditor = ({ selectedLesson, onLessonUpdate }: LessonEditorPro
   const [isSaving, setIsSaving] = useState(false);
   const [activeTab, setActiveTab] = useState("edit");
   const [currentUserId, setCurrentUserId] = useState<string>();
+  const [isGeneratingAll, setIsGeneratingAll] = useState(false);
 
   // Get realtime collaboration features
   const { activeEditors, hasConflict } = useContentEditorRealtime(
@@ -116,6 +118,58 @@ export const LessonEditor = ({ selectedLesson, onLessonUpdate }: LessonEditorPro
       toast.error("Erreur lors de l'enregistrement");
     } finally {
       setIsSaving(false);
+    }
+  };
+
+  const handleGenerateAllSections = async () => {
+    if (!selectedLesson) {
+      toast.error("Aucune leçon sélectionnée");
+      return;
+    }
+
+    setIsGeneratingAll(true);
+    const sections = ['objectif', 'introduction', 'contenu', 'exemples_exercices'] as const;
+    let successCount = 0;
+    let errorCount = 0;
+
+    for (const section of sections) {
+      try {
+        toast.info(`Génération de ${section}...`);
+        
+        const { data, error } = await supabase.functions.invoke('generate-lesson-section', {
+          body: {
+            lessonId: selectedLesson.id,
+            sectionName: section,
+            lessonTitle: selectedLesson.title,
+            subject: selectedLesson.subjects?.name || 'Matière',
+            gradeLevel: selectedLesson.grade_level || '7AF',
+            targetWords: section === 'contenu' ? 1000 : section === 'exemples_exercices' ? 500 : section === 'introduction' ? 300 : 200,
+          },
+        });
+
+        if (error) throw error;
+        if (!data?.content) throw new Error('Aucun contenu généré');
+
+        setLessonData(prev => ({ ...prev, [section]: data.content }));
+        successCount++;
+        
+        // Rate limiting: wait 3 seconds between requests
+        if (section !== sections[sections.length - 1]) {
+          await new Promise(resolve => setTimeout(resolve, 3000));
+        }
+      } catch (error) {
+        console.error(`Error generating ${section}:`, error);
+        errorCount++;
+        toast.error(`Erreur lors de la génération de ${section}`);
+      }
+    }
+
+    setIsGeneratingAll(false);
+    
+    if (successCount > 0) {
+      toast.success(`${successCount} sections générées avec succès${errorCount > 0 ? `, ${errorCount} erreurs` : ''}`);
+    } else {
+      toast.error("Aucune section n'a pu être générée");
     }
   };
 
@@ -210,6 +264,25 @@ export const LessonEditor = ({ selectedLesson, onLessonUpdate }: LessonEditorPro
           </TabsList>
 
           <TabsContent value="edit" className="space-y-3 md:space-y-4 mt-3 md:mt-4 flex-1 overflow-auto">
+            {/* Generate All Sections Button */}
+            <Button 
+              onClick={handleGenerateAllSections}
+              disabled={isGeneratingAll}
+              variant="outline"
+              className="w-full"
+            >
+              {isGeneratingAll ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Génération en cours...
+                </>
+              ) : (
+                <>
+                  <Sparkles className="mr-2 h-4 w-4" />
+                  Générer toutes les sections avec IA
+                </>
+              )}
+            </Button>
             <div className="space-y-2">
               <Label htmlFor="title" className="text-xs md:text-sm">Titre de la leçon</Label>
               <Input
@@ -223,7 +296,17 @@ export const LessonEditor = ({ selectedLesson, onLessonUpdate }: LessonEditorPro
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="objectif" className="text-xs md:text-sm">Objectif d'apprentissage</Label>
+              <div className="flex items-center justify-between">
+                <Label htmlFor="objectif" className="text-xs md:text-sm">Objectif d'apprentissage</Label>
+                <SectionGenerator
+                  lesson={selectedLesson}
+                  sectionName="objectif"
+                  currentContent={lessonData.objectif}
+                  onContentGenerated={(content) => 
+                    setLessonData({ ...lessonData, objectif: content })
+                  }
+                />
+              </div>
               <Textarea
                 id="objectif"
                 value={lessonData.objectif}
@@ -236,7 +319,17 @@ export const LessonEditor = ({ selectedLesson, onLessonUpdate }: LessonEditorPro
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="introduction" className="text-xs md:text-sm">Introduction</Label>
+              <div className="flex items-center justify-between">
+                <Label htmlFor="introduction" className="text-xs md:text-sm">Introduction</Label>
+                <SectionGenerator
+                  lesson={selectedLesson}
+                  sectionName="introduction"
+                  currentContent={lessonData.introduction}
+                  onContentGenerated={(content) => 
+                    setLessonData({ ...lessonData, introduction: content })
+                  }
+                />
+              </div>
               <Textarea
                 id="introduction"
                 value={lessonData.introduction}
@@ -249,7 +342,17 @@ export const LessonEditor = ({ selectedLesson, onLessonUpdate }: LessonEditorPro
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="contenu" className="text-xs md:text-sm">Contenu principal (HTML)</Label>
+              <div className="flex items-center justify-between">
+                <Label htmlFor="contenu" className="text-xs md:text-sm">Contenu principal (HTML)</Label>
+                <SectionGenerator
+                  lesson={selectedLesson}
+                  sectionName="contenu"
+                  currentContent={lessonData.contenu}
+                  onContentGenerated={(content) => 
+                    setLessonData({ ...lessonData, contenu: content })
+                  }
+                />
+              </div>
               <Textarea
                 id="contenu"
                 value={lessonData.contenu}
@@ -262,7 +365,17 @@ export const LessonEditor = ({ selectedLesson, onLessonUpdate }: LessonEditorPro
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="exemples" className="text-xs md:text-sm">Exemples et Exercices (HTML)</Label>
+              <div className="flex items-center justify-between">
+                <Label htmlFor="exemples" className="text-xs md:text-sm">Exemples et Exercices (HTML)</Label>
+                <SectionGenerator
+                  lesson={selectedLesson}
+                  sectionName="exemples_exercices"
+                  currentContent={lessonData.exemples_exercices}
+                  onContentGenerated={(content) => 
+                    setLessonData({ ...lessonData, exemples_exercices: content })
+                  }
+                />
+              </div>
               <Textarea
                 id="exemples"
                 value={lessonData.exemples_exercices}
