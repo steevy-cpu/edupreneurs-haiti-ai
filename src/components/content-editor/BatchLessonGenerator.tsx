@@ -142,52 +142,74 @@ export const BatchLessonGenerator = () => {
   };
 
   const fetchLessons = async () => {
-    // If a specific lesson is selected, return only that lesson
-    if (selectedLessonId !== "all") {
-      const selectedLesson = availableLessons.find(l => l.id === selectedLessonId);
-      if (selectedLesson) {
-        const { data: fullLesson, error } = await supabase
-          .from('lessons')
-          .select('id, title, grade_level, objectif, introduction, contenu, exemples_exercices, subjects(name)')
-          .eq('id', selectedLessonId)
-          .single();
+    try {
+      console.log('🔍 Fetching lessons with:', {
+        selectedLessonId,
+        gradeLevel,
+        subject,
+        onlyEmpty
+      });
 
-        if (error) {
-          toast.error("Erreur lors de la récupération de la leçon");
-          return [];
+      // If a specific lesson is selected, return only that lesson
+      if (selectedLessonId !== "all") {
+        const selectedLesson = availableLessons.find(l => l.id === selectedLessonId);
+        if (selectedLesson) {
+          const { data: fullLesson, error } = await supabase
+            .from('lessons')
+            .select('id, title, grade_level, objectif, introduction, contenu, exemples_exercices, subjects(name)')
+            .eq('id', selectedLessonId)
+            .single();
+
+          if (error) {
+            console.error('❌ Error fetching single lesson:', error);
+            toast.error("Erreur lors de la récupération de la leçon: " + error.message);
+            return [];
+          }
+          console.log('✅ Single lesson fetched:', fullLesson);
+          return [fullLesson];
         }
-        return [fullLesson];
+        console.warn('⚠️ Selected lesson not found in availableLessons');
+        return [];
       }
+
+      // Otherwise, fetch lessons based on filters
+      let query = supabase.from('lessons').select('id, title, grade_level, objectif, introduction, contenu, exemples_exercices, subjects(name)')
+        .eq('is_published', false);
+
+      if (gradeLevel !== "all") {
+        query = query.eq('grade_level', gradeLevel);
+      }
+
+      if (subject !== "all") {
+        query = query.eq('subject_id', subject);
+      }
+
+      console.log('📡 Executing query...');
+      const { data, error } = await query;
+
+      if (error) {
+        console.error('❌ Error fetching lessons:', error);
+        toast.error("Erreur lors de la récupération des leçons: " + error.message);
+        return [];
+      }
+
+      console.log('✅ Lessons fetched:', data?.length || 0);
+
+      // Filter for empty sections if needed
+      if (onlyEmpty && selectedLessonId === "all") {
+        const filtered = (data || []).filter(lesson =>
+          selectedSections.some(section => !lesson[section] || lesson[section].trim() === '')
+        );
+        console.log('🔎 Filtered for empty sections:', filtered.length);
+        return filtered;
+      }
+
+      return data || [];
+    } catch (error: any) {
+      console.error('💥 Unexpected error in fetchLessons:', error);
+      toast.error("Erreur inattendue: " + error.message);
       return [];
     }
-
-    // Otherwise, fetch lessons based on filters
-    let query = supabase.from('lessons').select('id, title, grade_level, objectif, introduction, contenu, exemples_exercices, subjects(name)')
-      .eq('is_published', false);
-
-    if (gradeLevel !== "all") {
-      query = query.eq('grade_level', gradeLevel);
-    }
-
-    if (subject !== "all") {
-      query = query.eq('subject_id', subject);
-    }
-
-    const { data, error } = await query;
-
-    if (error) {
-      toast.error("Erreur lors de la récupération des leçons");
-      return [];
-    }
-
-    // Filter for empty sections if needed
-    if (onlyEmpty && selectedLessonId === "all") {
-      return (data || []).filter(lesson =>
-        selectedSections.some(section => !lesson[section] || lesson[section].trim() === '')
-      );
-    }
-
-    return data || [];
   };
 
   const startGeneration = async () => {
@@ -196,10 +218,19 @@ export const BatchLessonGenerator = () => {
       return;
     }
 
+    console.log('🚀 Starting generation with filters:', {
+      gradeLevel,
+      subject,
+      selectedLessonId,
+      onlyEmpty
+    });
+
     const lessons = await fetchLessons();
     
-    if (lessons.length === 0) {
-      toast.error("Aucune leçon trouvée avec ces critères");
+    console.log('📚 Fetched lessons:', lessons?.length || 0);
+    
+    if (!lessons || lessons.length === 0) {
+      toast.error("Aucune leçon trouvée avec ces critères. Vérifiez qu'il existe des leçons non publiées.");
       return;
     }
 
