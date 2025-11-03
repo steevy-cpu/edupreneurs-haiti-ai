@@ -115,8 +115,9 @@ Deno.serve(async (req) => {
 SECTION À GÉNÉRER: ${sectionName}
 
 PRINCIPES FONDAMENTAUX:
-- Langue: Français adapté au niveau ${gradeLevel}
-- Contextualisation MAXIMALE avec exemples haïtiens et caribéens
+- Langue: FRANÇAIS PRINCIPALEMENT - Le contenu doit être écrit en français standard adapté au niveau ${gradeLevel}
+- Utilisation du créole: UNIQUEMENT pour des explications contextuelles ponctuelles, des expressions idiomatiques, ou des clarifications culturelles (entre parenthèses ou dans des encadrés spécifiques)
+- Contextualisation MAXIMALE avec exemples haïtiens et caribéens (décrits en français)
 - Format: HTML avec classes Tailwind (compatible dark/light mode)
 - Longueur cible: ${targetWords} mots (minimum: ${config.minWords}, maximum: ${config.maxWords})
 
