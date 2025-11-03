@@ -35,6 +35,15 @@ export const SectionGenerator = ({
 
   const hasExistingContent = currentContent && currentContent.trim().length > 0;
 
+  // Debug: Log lesson data when component mounts or lesson changes
+  console.log('🔍 SectionGenerator lesson data:', {
+    hasLesson: !!lesson,
+    lessonId: lesson?.id,
+    lessonTitle: lesson?.title,
+    subject: lesson?.subjects,
+    gradeLevel: lesson?.grade_level
+  });
+
   const handleGenerate = async () => {
     if (!lesson) {
       toast.error("Aucune leçon sélectionnée");

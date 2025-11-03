@@ -181,7 +181,10 @@ const ContentEditor = () => {
                 {/* Lesson Browser - Left Sidebar */}
                 <div className="lg:col-span-4 h-[calc(100vh-280px)] min-h-[600px] max-h-[800px]">
                   <LessonBrowser
-                    onSelectLesson={setSelectedLesson}
+                    onSelectLesson={(lesson) => {
+                      console.log('✅ Lesson selected:', lesson);
+                      setSelectedLesson(lesson);
+                    }}
                     selectedLesson={selectedLesson}
                   />
                 </div>
