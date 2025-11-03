@@ -4,10 +4,11 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
-import { ChevronLeft, Save, BookOpen, FileText, ListChecks, StickyNote } from "lucide-react";
+import { ChevronLeft, Save, BookOpen, FileText, ListChecks, StickyNote, CheckCircle2 } from "lucide-react";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
+import { InteractiveQuiz } from "@/components/InteractiveQuiz";
 
 interface Lesson {
   id: string;
@@ -157,7 +158,7 @@ const SciencesSocialesLessonAF8 = () => {
         </div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="grid w-full grid-cols-4">
+          <TabsList className="grid w-full grid-cols-5">
             <TabsTrigger value="introduction" className="gap-2">
               <BookOpen className="h-4 w-4" />
               <span className="hidden sm:inline">Introduction</span>
@@ -173,6 +174,10 @@ const SciencesSocialesLessonAF8 = () => {
             <TabsTrigger value="notes" className="gap-2">
               <StickyNote className="h-4 w-4" />
               <span className="hidden sm:inline">Mes Notes</span>
+            </TabsTrigger>
+            <TabsTrigger value="quiz" className="gap-2">
+              <CheckCircle2 className="h-4 w-4" />
+              <span className="hidden sm:inline">Quiz Final</span>
             </TabsTrigger>
           </TabsList>
 
@@ -243,6 +248,16 @@ const SciencesSocialesLessonAF8 = () => {
                   💡 <strong>Astuce:</strong> Vos notes sont automatiquement sauvegardées et accessibles à tout moment.
                 </p>
               </div>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="quiz" className="space-y-6">
+            <Card className="p-6">
+              <InteractiveQuiz
+                content=""
+                isLoading={false}
+                lessonGoldReward={50}
+              />
             </Card>
           </TabsContent>
         </Tabs>
