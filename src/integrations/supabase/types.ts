@@ -14,6 +14,83 @@ export type Database = {
   }
   public: {
     Tables: {
+      ai_generation_logs: {
+        Row: {
+          additional_context: string | null
+          created_at: string | null
+          error_message: string | null
+          generated_by: string | null
+          generation_time_ms: number | null
+          has_emojis: boolean | null
+          has_html_tags: boolean | null
+          has_tailwind_classes: boolean | null
+          id: string
+          lesson_id: string | null
+          mentions_haiti: boolean | null
+          model_used: string | null
+          prompt_used: string | null
+          quality_score: number | null
+          response_content: string | null
+          retry_count: number | null
+          section_name: string
+          success: boolean | null
+          target_words: number | null
+          word_count: number | null
+        }
+        Insert: {
+          additional_context?: string | null
+          created_at?: string | null
+          error_message?: string | null
+          generated_by?: string | null
+          generation_time_ms?: number | null
+          has_emojis?: boolean | null
+          has_html_tags?: boolean | null
+          has_tailwind_classes?: boolean | null
+          id?: string
+          lesson_id?: string | null
+          mentions_haiti?: boolean | null
+          model_used?: string | null
+          prompt_used?: string | null
+          quality_score?: number | null
+          response_content?: string | null
+          retry_count?: number | null
+          section_name: string
+          success?: boolean | null
+          target_words?: number | null
+          word_count?: number | null
+        }
+        Update: {
+          additional_context?: string | null
+          created_at?: string | null
+          error_message?: string | null
+          generated_by?: string | null
+          generation_time_ms?: number | null
+          has_emojis?: boolean | null
+          has_html_tags?: boolean | null
+          has_tailwind_classes?: boolean | null
+          id?: string
+          lesson_id?: string | null
+          mentions_haiti?: boolean | null
+          model_used?: string | null
+          prompt_used?: string | null
+          quality_score?: number | null
+          response_content?: string | null
+          retry_count?: number | null
+          section_name?: string
+          success?: boolean | null
+          target_words?: number | null
+          word_count?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ai_generation_logs_lesson_id_fkey"
+            columns: ["lesson_id"]
+            isOneToOne: false
+            referencedRelation: "lessons"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       banned_youtube_videos: {
         Row: {
           banned_at: string | null

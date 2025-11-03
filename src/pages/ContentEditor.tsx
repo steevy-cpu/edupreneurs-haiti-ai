@@ -3,12 +3,14 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
-import { ArrowLeft, BookOpen } from "lucide-react";
+import { ArrowLeft, BookOpen, Zap, BarChart3 } from "lucide-react";
 import { LessonBrowser } from "@/components/content-editor/LessonBrowser";
 import { LessonPreview } from "@/components/content-editor/LessonPreview";
 import { YouTubeManager } from "@/components/content-editor/YouTubeManager";
 import { LessonComments } from "@/components/content-editor/LessonComments";
+import { BatchLessonGenerator } from "@/components/content-editor/BatchLessonGenerator";
 
 const ContentEditor = () => {
   const navigate = useNavigate();
@@ -101,14 +103,23 @@ const ContentEditor = () => {
       <div className="max-w-[1920px] mx-auto space-y-6">
         {/* Header */}
         <div className="max-w-[1600px] mx-auto">
-          <Button
-            variant="ghost"
-            onClick={() => navigate("/dashboard")}
-            className="mb-4"
-          >
-            <ArrowLeft className="mr-2 h-4 w-4" />
-            Retour
-          </Button>
+          <div className="flex items-center justify-between mb-4">
+            <Button
+              variant="ghost"
+              onClick={() => navigate("/dashboard")}
+            >
+              <ArrowLeft className="mr-2 h-4 w-4" />
+              Retour
+            </Button>
+            
+            <Button
+              variant="outline"
+              onClick={() => navigate("/ai-analytics")}
+            >
+              <BarChart3 className="mr-2 h-4 w-4" />
+              Analytics IA
+            </Button>
+          </div>
           
           <Card className="bg-gradient-to-r from-primary/10 to-purple-500/10 border-none">
             <CardHeader className="p-6 md:p-8">
@@ -123,33 +134,54 @@ const ContentEditor = () => {
           </Card>
         </div>
 
-        {/* Main Content */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 max-w-[1600px] mx-auto">
-          {/* Lesson Browser - Left Sidebar */}
-          <div className="lg:col-span-4 h-[calc(100vh-280px)] min-h-[600px] max-h-[800px]">
-            <LessonBrowser
-              onSelectLesson={setSelectedLesson}
-              selectedLesson={selectedLesson}
-            />
-          </div>
+        {/* Main Content with Tabs */}
+        <div className="max-w-[1600px] mx-auto">
+          <Tabs defaultValue="review" className="space-y-6">
+            <TabsList className="grid w-full grid-cols-2 lg:w-[400px]">
+              <TabsTrigger value="review">
+                <BookOpen className="mr-2 h-4 w-4" />
+                Révision
+              </TabsTrigger>
+              <TabsTrigger value="batch">
+                <Zap className="mr-2 h-4 w-4" />
+                Génération par lot
+              </TabsTrigger>
+            </TabsList>
 
-          {/* Content - Right Column */}
-          <div className="lg:col-span-8 space-y-6">
-            {/* Lesson Preview - Student View */}
-            <LessonPreview 
-              key={selectedLesson?.id || 'no-lesson'} 
-              lesson={selectedLesson} 
-            />
+            <TabsContent value="review" className="space-y-6">
+              <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                {/* Lesson Browser - Left Sidebar */}
+                <div className="lg:col-span-4 h-[calc(100vh-280px)] min-h-[600px] max-h-[800px]">
+                  <LessonBrowser
+                    onSelectLesson={setSelectedLesson}
+                    selectedLesson={selectedLesson}
+                  />
+                </div>
 
-            {/* YouTube Manager and Comments */}
-            <div className="grid grid-cols-1 gap-6">
-              <YouTubeManager 
-                lesson={selectedLesson}
-                onUpdate={refreshLesson}
-              />
-              <LessonComments lesson={selectedLesson} />
-            </div>
-          </div>
+                {/* Content - Right Column */}
+                <div className="lg:col-span-8 space-y-6">
+                  {/* Lesson Preview - Student View */}
+                  <LessonPreview 
+                    key={selectedLesson?.id || 'no-lesson'} 
+                    lesson={selectedLesson} 
+                  />
+
+                  {/* YouTube Manager and Comments */}
+                  <div className="grid grid-cols-1 gap-6">
+                    <YouTubeManager 
+                      lesson={selectedLesson}
+                      onUpdate={refreshLesson}
+                    />
+                    <LessonComments lesson={selectedLesson} />
+                  </div>
+                </div>
+              </div>
+            </TabsContent>
+
+            <TabsContent value="batch">
+              <BatchLessonGenerator />
+            </TabsContent>
+          </Tabs>
         </div>
       </div>
     </div>

@@ -45,6 +45,8 @@ export const SectionGenerator = ({
     setGeneratedContent("");
     setQualityMetrics(null);
 
+    const startTime = Date.now();
+
     try {
       const { data, error } = await supabase.functions.invoke('generate-lesson-section', {
         body: {
@@ -61,6 +63,18 @@ export const SectionGenerator = ({
 
       if (error) {
         console.error('Generation error:', error);
+        
+        // Log failed generation
+        await supabase.from('ai_generation_logs').insert({
+          lesson_id: lesson.id,
+          section_name: sectionName,
+          target_words: targetWords,
+          additional_context: additionalContext,
+          success: false,
+          error_message: error.message,
+          generation_time_ms: Date.now() - startTime,
+        });
+
         if (error.message?.includes('429')) {
           toast.error("Trop de requêtes. Veuillez attendre quelques secondes.");
         } else if (error.message?.includes('402')) {
@@ -88,6 +102,23 @@ export const SectionGenerator = ({
         requireHaitianContext: true,
       });
       setQualityMetrics(metrics);
+
+      // Log successful generation
+      await supabase.from('ai_generation_logs').insert({
+        lesson_id: lesson.id,
+        section_name: sectionName,
+        target_words: targetWords,
+        additional_context: additionalContext,
+        response_content: data.content,
+        word_count: metrics.wordCount,
+        generation_time_ms: Date.now() - startTime,
+        quality_score: metrics.overallScore,
+        has_html_tags: metrics.hasHtmlTags,
+        has_tailwind_classes: metrics.hasTailwindClasses,
+        has_emojis: metrics.hasEmojis,
+        mentions_haiti: metrics.mentionsHaiti,
+        success: true,
+      });
 
       toast.success(`Section générée (${data.wordCount} mots, ${data.generationTimeMs}ms)`);
     } catch (error) {

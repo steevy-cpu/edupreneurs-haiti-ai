@@ -65,6 +65,7 @@ const PassionDiscovery = lazy(() => import("./pages/PassionDiscovery"));
 const PassionDiscoveryTest = lazy(() => import("./pages/PassionDiscoveryTest"));
 const ContentEditor = lazy(() => import("./pages/ContentEditor"));
 const DataMigration = lazy(() => import("./pages/DataMigration"));
+const AIGenerationAnalytics = lazy(() => import("./pages/AIGenerationAnalytics"));
 
 // Loading component for suspense fallback
 const PageLoader = () => (
@@ -137,6 +138,7 @@ const App = () => (
           <Route path="/passion-discovery" element={<PassionDiscovery />} />
           <Route path="/passion-test" element={<PassionDiscoveryTest />} />
           <Route path="/content-editor" element={<Layout><ContentEditor /></Layout>} />
+          <Route path="/ai-analytics" element={<Layout><AIGenerationAnalytics /></Layout>} />
           <Route path="/data-migration" element={<Layout><DataMigration /></Layout>} />
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />
