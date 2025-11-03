@@ -106,7 +106,7 @@ Deno.serve(async (req) => {
     console.log('📚 Generating section:', { lessonId, sectionName, lessonTitle, subject, gradeLevel });
 
     const config = SECTION_CONFIGS[sectionName];
-    const subjectAddition = SUBJECT_ADDITIONS[subject.toLowerCase()] || '';
+    const subjectAddition = subject ? (SUBJECT_ADDITIONS[subject.toLowerCase()] || '') : '';
 
     const systemPrompt = `Tu es un expert pédagogue haïtien créant du contenu éducatif pour ${subject} niveau ${gradeLevel}.
 

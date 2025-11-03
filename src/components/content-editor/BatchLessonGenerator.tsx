@@ -254,6 +254,7 @@ export const BatchLessonGenerator = () => {
               lessonId: lesson.id,
               sectionName,
               lessonTitle: lesson.title,
+              subject: lesson.subject,
               gradeLevel: lesson.grade_level,
               targetWords: wordCounts[sectionName],
               context: globalContext,
