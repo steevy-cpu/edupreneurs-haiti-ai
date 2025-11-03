@@ -10,8 +10,9 @@ import { Textarea } from "@/components/ui/textarea";
 import { Slider } from "@/components/ui/slider";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { toast } from "sonner";
-import { PlayCircle, PauseCircle, Download, RefreshCw, Loader2, CheckCircle2, XCircle, Clock } from "lucide-react";
+import { PlayCircle, PauseCircle, Download, RefreshCw, Loader2, CheckCircle2, XCircle, Clock, Eye, Check } from "lucide-react";
 import { DEFAULT_WORD_COUNTS, type SectionName } from "@/lib/lessonPrompts";
 
 type GenerationStatus = 'pending' | 'in_progress' | 'completed' | 'error';
@@ -24,6 +25,7 @@ interface LessonGenerationStatus {
   generationTime: number;
   qualityScore?: number;
   error?: string;
+  generatedContent?: Record<string, string>;
 }
 
 export const BatchLessonGenerator = () => {
@@ -46,6 +48,9 @@ export const BatchLessonGenerator = () => {
   const [completedCount, setCompletedCount] = useState(0);
   const [isLoadingLessons, setIsLoadingLessons] = useState(false);
   const [isLoadingSubjects, setIsLoadingSubjects] = useState(true);
+  const [previewLesson, setPreviewLesson] = useState<LessonGenerationStatus | null>(null);
+  const [isPreviewOpen, setIsPreviewOpen] = useState(false);
+  const [isApplying, setIsApplying] = useState(false);
 
   const gradeLevels = [
     { value: "all", label: "Tous les niveaux" },
@@ -296,15 +301,26 @@ export const BatchLessonGenerator = () => {
             generationTime: data?.generationTime
           });
 
+          // Store generated content in status
+          setLessonStatuses(prev => prev.map((l, i) => {
+            if (i === index) {
+              return {
+                ...l,
+                sectionsGenerated: [...l.sectionsGenerated, sectionName],
+                generatedContent: {
+                  ...l.generatedContent,
+                  [sectionName]: data.content
+                }
+              };
+            }
+            return l;
+          }));
+
           // Update lesson in database
           await supabase
             .from('lessons')
             .update({ [sectionName]: data.content })
             .eq('id', lesson.id);
-
-          setLessonStatuses(prev => prev.map((l, i) =>
-            i === index ? { ...l, sectionsGenerated: [...l.sectionsGenerated, sectionName] } : l
-          ));
         }
 
         success = true;
@@ -376,6 +392,50 @@ export const BatchLessonGenerator = () => {
     a.href = url;
     a.download = `batch-generation-${new Date().toISOString()}.csv`;
     a.click();
+  };
+
+  const handlePreviewLesson = (lesson: LessonGenerationStatus) => {
+    setPreviewLesson(lesson);
+    setIsPreviewOpen(true);
+  };
+
+  const handleApplyLesson = async (lessonId: string, shouldPublish: boolean = false) => {
+    setIsApplying(true);
+    try {
+      const updates: any = {};
+      
+      if (shouldPublish) {
+        updates.is_published = true;
+        updates.workflow_status = 'published';
+      }
+
+      if (Object.keys(updates).length > 0) {
+        const { error } = await supabase
+          .from('lessons')
+          .update(updates)
+          .eq('id', lessonId);
+
+        if (error) throw error;
+      }
+
+      toast.success(shouldPublish ? "Leçon publiée avec succès!" : "Contenu appliqué avec succès!");
+      setIsPreviewOpen(false);
+    } catch (error: any) {
+      console.error('Error applying lesson:', error);
+      toast.error("Erreur lors de l'application: " + error.message);
+    } finally {
+      setIsApplying(false);
+    }
+  };
+
+  const getSectionLabel = (sectionName: string) => {
+    const labels: Record<string, string> = {
+      objectif: "Objectif",
+      introduction: "Introduction",
+      contenu: "Contenu principal",
+      exemples_exercices: "Exemples & Exercices"
+    };
+    return labels[sectionName] || sectionName;
   };
 
   const getStatusIcon = (status: GenerationStatus) => {
@@ -625,7 +685,7 @@ export const BatchLessonGenerator = () => {
                       </button>
                       {lesson.sectionsGenerated.length > 0 && (
                         <p className="text-xs text-muted-foreground">
-                          {lesson.sectionsGenerated.join(', ')}
+                          {lesson.sectionsGenerated.map(s => getSectionLabel(s)).join(', ')}
                         </p>
                       )}
                       {lesson.error && (
@@ -633,17 +693,82 @@ export const BatchLessonGenerator = () => {
                       )}
                     </div>
                   </div>
-                  {lesson.generationTime > 0 && (
-                    <span className="text-xs text-muted-foreground">
-                      {(lesson.generationTime / 1000).toFixed(1)}s
-                    </span>
-                  )}
+                  <div className="flex items-center gap-2">
+                    {lesson.generationTime > 0 && (
+                      <span className="text-xs text-muted-foreground">
+                        {(lesson.generationTime / 1000).toFixed(1)}s
+                      </span>
+                    )}
+                    {lesson.status === 'completed' && lesson.generatedContent && (
+                      <>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => handlePreviewLesson(lesson)}
+                        >
+                          <Eye className="h-4 w-4 mr-1" />
+                          Aperçu
+                        </Button>
+                        <Button
+                          size="sm"
+                          onClick={() => handleApplyLesson(lesson.lessonId, false)}
+                        >
+                          <Check className="h-4 w-4 mr-1" />
+                          Appliquer
+                        </Button>
+                      </>
+                    )}
+                  </div>
                 </div>
               ))}
             </div>
           </CardContent>
         </Card>
       )}
+
+      {/* Preview Dialog */}
+      <Dialog open={isPreviewOpen} onOpenChange={setIsPreviewOpen}>
+        <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>{previewLesson?.title}</DialogTitle>
+          </DialogHeader>
+          
+          {previewLesson?.generatedContent && (
+            <div className="space-y-6">
+              {Object.entries(previewLesson.generatedContent).map(([sectionName, content]) => (
+                <div key={sectionName} className="space-y-2">
+                  <h3 className="text-lg font-semibold">{getSectionLabel(sectionName)}</h3>
+                  <div 
+                    className="prose prose-sm max-w-none p-4 bg-muted rounded-lg"
+                    dangerouslySetInnerHTML={{ __html: content }}
+                  />
+                </div>
+              ))}
+            </div>
+          )}
+
+          <DialogFooter className="gap-2">
+            <Button variant="outline" onClick={() => setIsPreviewOpen(false)}>
+              Annuler
+            </Button>
+            <Button
+              variant="outline"
+              onClick={() => handleApplyLesson(previewLesson!.lessonId, false)}
+              disabled={isApplying}
+            >
+              {isApplying ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Check className="h-4 w-4 mr-2" />}
+              Appliquer
+            </Button>
+            <Button
+              onClick={() => handleApplyLesson(previewLesson!.lessonId, true)}
+              disabled={isApplying}
+            >
+              {isApplying ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Check className="h-4 w-4 mr-2" />}
+              Appliquer et Publier
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
