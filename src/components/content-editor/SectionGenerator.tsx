@@ -48,12 +48,29 @@ export const SectionGenerator = ({
     const startTime = Date.now();
 
     try {
+      // Fetch complete lesson data with subject to ensure we have the subject name
+      const { data: fullLesson, error: fetchError } = await supabase
+        .from('lessons')
+        .select('*, subjects(name)')
+        .eq('id', lesson.id)
+        .single();
+
+      if (fetchError) {
+        console.error('Error fetching lesson:', fetchError);
+        toast.error("Erreur lors de la récupération de la leçon");
+        setIsGenerating(false);
+        return;
+      }
+
+      const subjectName = fullLesson.subjects?.name || 'Général';
+      console.log('Generating with subject:', subjectName);
+
       const { data, error } = await supabase.functions.invoke('generate-lesson-section', {
         body: {
           lessonId: lesson.id,
           sectionName,
           lessonTitle: lesson.title,
-          subject: lesson.subjects?.name || 'Matière',
+          subject: subjectName,
           gradeLevel: lesson.grade_level || '7AF',
           targetWords,
           context: additionalContext || undefined,
