@@ -173,8 +173,7 @@ export const BatchLessonGenerator = () => {
       }
 
       // Otherwise, fetch lessons based on filters
-      let query = supabase.from('lessons').select('id, title, grade_level, objectif, introduction, contenu, exemples_exercices, subjects(name)')
-        .eq('is_published', false);
+      let query = supabase.from('lessons').select('id, title, grade_level, objectif, introduction, contenu, exemples_exercices, subjects(name)');
 
       if (gradeLevel !== "all") {
         query = query.eq('grade_level', gradeLevel);
