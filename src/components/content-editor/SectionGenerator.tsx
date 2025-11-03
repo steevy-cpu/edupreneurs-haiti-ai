@@ -177,12 +177,28 @@ export const SectionGenerator = ({
   };
 
   return (
-    <Dialog open={isOpen} onOpenChange={setIsOpen}>
+    <Dialog open={isOpen} onOpenChange={(open) => {
+      console.log('🔵 Dialog state changing:', open);
+      setIsOpen(open);
+      if (!open) {
+        // Reset state when closing
+        setGeneratedContent("");
+        setQualityMetrics(null);
+        setShowPreview(false);
+      }
+    }}>
       <DialogTrigger asChild>
         <Button
           variant="outline"
           size="sm"
           className="gap-2"
+          onClick={() => {
+            console.log('🔵 Generate button clicked for lesson:', lesson?.id);
+            if (!lesson) {
+              toast.error("Aucune leçon sélectionnée - veuillez sélectionner une leçon dans la liste");
+              return;
+            }
+          }}
         >
           {hasExistingContent ? (
             <>
@@ -243,7 +259,10 @@ export const SectionGenerator = ({
             </div>
 
             <Button
-              onClick={handleGenerate}
+              onClick={() => {
+                console.log('🔵 Générer button clicked in dialog');
+                handleGenerate();
+              }}
               disabled={isGenerating}
               className="w-full"
             >
