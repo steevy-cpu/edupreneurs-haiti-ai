@@ -333,12 +333,13 @@ export default function Matieres() {
             const isAnglais = subject.id === 'anglais' || subject.id === 'anglais-8af';
             const isEspagnol = subject.id === 'espagnol' || subject.id === 'espagnol-8af';
             const isCreole = subject.id === 'creole' || subject.id === 'creole-8af';
+            const isSciencesSociales = subject.id === 'sciences-sociales' || subject.id === 'sciences-sociales-8af';
             const hasContent = (selectedGrade === "AF7" && 
               (subject.id === 'mathematiques' || subject.id === 'sciences' || 
                subject.id === 'anglais' || subject.id === 'espagnol' || 
                subject.id === 'francais' || subject.id === 'sciences-sociales' || 
                subject.id === 'creole')) ||
-              (selectedGrade === "AF8" && (isMath || isSciences || isAnglais || isEspagnol || isCreole));
+              (selectedGrade === "AF8" && (isMath || isSciences || isAnglais || isEspagnol || isCreole || isSciencesSociales));
             
             return (
               <Card
@@ -350,10 +351,11 @@ export default function Matieres() {
                   if (hasContent) {
                     let courseRoute;
                     const isMath = subject.id === 'mathematiques' || subject.id === 'matematik-8af';
-                    const isSciences = subject.id === 'sciences' || subject.id === 'sciences-experimentales-8af';
-                    const isAnglais = subject.id === 'anglais' || subject.id === 'anglais-8af';
-                    const isEspagnol = subject.id === 'espagnol' || subject.id === 'espagnol-8af';
-                    const isCreole = subject.id === 'creole' || subject.id === 'creole-8af';
+                      const isSciences = subject.id === 'sciences' || subject.id === 'sciences-experimentales-8af';
+                      const isAnglais = subject.id === 'anglais' || subject.id === 'anglais-8af';
+                      const isEspagnol = subject.id === 'espagnol' || subject.id === 'espagnol-8af';
+                      const isCreole = subject.id === 'creole' || subject.id === 'creole-8af';
+                      const isSciencesSociales = subject.id === 'sciences-sociales' || subject.id === 'sciences-sociales-8af';
                     
                     if (isMath) {
                       courseRoute = selectedGrade === 'AF8' ? '/math-af8-course' : '/math-course';
@@ -363,15 +365,15 @@ export default function Matieres() {
                       courseRoute = selectedGrade === 'AF8' ? '/anglais-af8-course' : '/anglais-course';
                     } else if (isEspagnol) {
                       courseRoute = selectedGrade === 'AF8' ? '/espagnol-af8-course' : '/espagnol-course';
-                    } else if (isCreole) {
-                      courseRoute = selectedGrade === 'AF8' ? '/creole-af8-course' : '/creole-course';
-                    } else if (subject.id === 'francais') {
-                      courseRoute = '/francais-course';
-                    } else if (subject.id === 'sciences-sociales') {
-                      courseRoute = '/sciences-sociales-course';
-                    } else {
-                      courseRoute = '/sciences-course';
-                    }
+                      } else if (isCreole) {
+                        courseRoute = selectedGrade === 'AF8' ? '/creole-af8-course' : '/creole-course';
+                      } else if (isSciencesSociales) {
+                        courseRoute = selectedGrade === 'AF8' ? '/sciences-sociales-af8-course' : '/sciences-sociales-course';
+                      } else if (subject.id === 'francais') {
+                        courseRoute = '/francais-course';
+                      } else {
+                        courseRoute = '/sciences-course';
+                      }
                     
                     navigate(courseRoute);
                   }
@@ -412,6 +414,7 @@ export default function Matieres() {
                       let courseRoute;
                       const isAnglais = subject.id === 'anglais' || subject.id === 'anglais-8af';
                       const isCreole = subject.id === 'creole' || subject.id === 'creole-8af';
+                      const isSciencesSociales = subject.id === 'sciences-sociales' || subject.id === 'sciences-sociales-8af';
                       if (isMath) {
                         courseRoute = selectedGrade === 'AF8' ? '/math-af8-course' : '/math-course';
                       } else if (isSciences) {
@@ -422,10 +425,10 @@ export default function Matieres() {
                         courseRoute = selectedGrade === 'AF8' ? '/espagnol-af8-course' : '/espagnol-course';
                       } else if (isCreole) {
                         courseRoute = selectedGrade === 'AF8' ? '/creole-af8-course' : '/creole-course';
+                      } else if (isSciencesSociales) {
+                        courseRoute = selectedGrade === 'AF8' ? '/sciences-sociales-af8-course' : '/sciences-sociales-course';
                       } else if (subject.id === 'francais') {
                         courseRoute = '/francais-course';
-                      } else if (subject.id === 'sciences-sociales') {
-                        courseRoute = '/sciences-sociales-course';
                       } else {
                         courseRoute = '/sciences-course';
                       }

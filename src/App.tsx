@@ -38,6 +38,8 @@ const FrancaisCourse = lazy(() => import("./pages/FrancaisCourse"));
 const FrancaisLesson = lazy(() => import("./pages/FrancaisLesson"));
 const SciencesSocialesCourse = lazy(() => import("./pages/SciencesSocialesCourse"));
 const SciencesSocialesLesson = lazy(() => import("./pages/SciencesSocialesLesson"));
+const SciencesSocialesCourseAF8 = lazy(() => import("./pages/SciencesSocialesCourseAF8"));
+const SciencesSocialesLessonAF8 = lazy(() => import("./pages/SciencesSocialesLessonAF8"));
 const CreoleCourse = lazy(() => import("./pages/CreoleCourse"));
 const CreoleLesson = lazy(() => import("./pages/CreoleLesson"));
 const CreoleCourseAF8 = lazy(() => import("./pages/CreoleCourseAF8"));
@@ -124,6 +126,8 @@ const App = () => (
               <Route path="/francais-lesson/:topicId" element={<Layout><FrancaisLesson /></Layout>} />
               <Route path="/sciences-sociales-course" element={<SciencesSocialesCourse />} />
               <Route path="/sciences-sociales-lesson/:topicId" element={<Layout><SciencesSocialesLesson /></Layout>} />
+              <Route path="/sciences-sociales-af8-course" element={<SciencesSocialesCourseAF8 />} />
+              <Route path="/sciences-sociales-af8-lesson/:topicId" element={<Layout><SciencesSocialesLessonAF8 /></Layout>} />
               <Route path="/creole-course" element={<CreoleCourse />} />
               <Route path="/creole-lesson/:topicId" element={<Layout><CreoleLesson /></Layout>} />
               <Route path="/creole-af8-course" element={<CreoleCourseAF8 />} />
