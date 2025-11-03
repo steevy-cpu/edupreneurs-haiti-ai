@@ -399,6 +399,38 @@ export const BatchLessonGenerator = () => {
     setIsPreviewOpen(true);
   };
 
+  const handleRegenerateLesson = async (lessonId: string) => {
+    try {
+      // Find the lesson in statuses
+      const lessonIndex = lessonStatuses.findIndex(l => l.lessonId === lessonId);
+      if (lessonIndex === -1) return;
+
+      // Fetch the full lesson data
+      const { data: lesson, error } = await supabase
+        .from('lessons')
+        .select('id, title, grade_level, objectif, introduction, contenu, exemples_exercices, subjects(name)')
+        .eq('id', lessonId)
+        .single();
+
+      if (error) throw error;
+
+      // Reset the lesson status
+      setLessonStatuses(prev => prev.map((l, i) =>
+        i === lessonIndex ? { ...l, status: 'pending', sectionsGenerated: [], generationTime: 0, error: undefined, generatedContent: {} } : l
+      ));
+
+      toast.info("Régénération en cours...");
+
+      // Regenerate the lesson
+      await generateLessonSections(lesson, lessonIndex);
+      
+      toast.success("Leçon régénérée avec succès!");
+    } catch (error: any) {
+      console.error('Error regenerating lesson:', error);
+      toast.error("Erreur lors de la régénération: " + error.message);
+    }
+  };
+
   const handleApplyLesson = async (lessonId: string, shouldPublish: boolean = false) => {
     setIsApplying(true);
     try {
@@ -701,6 +733,14 @@ export const BatchLessonGenerator = () => {
                     )}
                     {lesson.status === 'completed' && lesson.generatedContent && (
                       <>
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          onClick={() => handleRegenerateLesson(lesson.lessonId)}
+                          disabled={isGenerating}
+                        >
+                          <RefreshCw className="h-4 w-4" />
+                        </Button>
                         <Button
                           size="sm"
                           variant="outline"
