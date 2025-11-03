@@ -38,7 +38,7 @@ export const BatchLessonGenerator = () => {
   const [selectedSections, setSelectedSections] = useState<SectionName[]>([
     'objectif', 'introduction', 'contenu', 'exemples_exercices'
   ]);
-  const [onlyEmpty, setOnlyEmpty] = useState(true);
+  const [onlyEmpty, setOnlyEmpty] = useState(false);
   const [wordCounts, setWordCounts] = useState(DEFAULT_WORD_COUNTS);
   const [globalContext, setGlobalContext] = useState("");
   const [isGenerating, setIsGenerating] = useState(false);
