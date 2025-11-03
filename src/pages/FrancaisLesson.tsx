@@ -345,7 +345,10 @@ const FrancaisLesson = () => {
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <p>{lesson.objectif}</p>
+                    <div 
+                      className="prose dark:prose-invert max-w-none"
+                      dangerouslySetInnerHTML={{ __html: lesson.objectif }}
+                    />
                     {lesson.id === "comprehension-production-orale-1" && (
                       <Button onClick={() => handleTextToSpeech(lesson.objectif)} className="mt-4 gap-2">
                         <Volume2 className="w-4 h-4" />Écouter</Button>)}

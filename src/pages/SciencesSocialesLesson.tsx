@@ -351,9 +351,10 @@ export default function SciencesSocialesLesson() {
                   </div>
                   <div>
                     <h2 className="text-2xl font-bold text-orange-600 dark:text-orange-400 mb-2">Objectif de la leçon</h2>
-                    <p className="text-foreground leading-relaxed">
-                      {lesson.objectif}
-                    </p>
+                    <div 
+                      className="text-foreground leading-relaxed prose dark:prose-invert max-w-none"
+                      dangerouslySetInnerHTML={{ __html: lesson.objectif }}
+                    />
                   </div>
                 </div>
               </Card>

@@ -220,7 +220,10 @@ export default function CreoleLesson() {
                     <Lightbulb className="w-5 h-5 text-primary" />
                     Objektif Leson an
                   </h3>
-                  <p className="text-muted-foreground">{lesson.objectif}</p>
+                  <div 
+                    className="text-muted-foreground prose dark:prose-invert max-w-none prose-sm"
+                    dangerouslySetInnerHTML={{ __html: lesson.objectif }}
+                  />
                 </div>
                 <div className="prose prose-lg max-w-none dark:prose-invert">
                   {lesson.introduction && (

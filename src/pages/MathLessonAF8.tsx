@@ -184,7 +184,10 @@ const MathLessonAF8 = () => {
               </div>
               <h1 className="text-3xl md:text-4xl font-bold mb-3">{lesson.title}</h1>
               {lesson.objectif && (
-                <p className="text-muted-foreground text-lg">{lesson.objectif}</p>
+                <div 
+                  className="text-muted-foreground text-lg prose dark:prose-invert max-w-none"
+                  dangerouslySetInnerHTML={{ __html: lesson.objectif }}
+                />
               )}
               <div className="flex items-center gap-4 mt-4 text-sm">
                 <div className="flex items-center gap-1">
@@ -259,7 +262,10 @@ const MathLessonAF8 = () => {
                       <Lightbulb className="h-5 w-5" />
                       Objectif de la leçon
                     </h3>
-                    <p>{lesson.objectif}</p>
+                    <div 
+                      className="prose dark:prose-invert max-w-none"
+                      dangerouslySetInnerHTML={{ __html: lesson.objectif }}
+                    />
                   </div>
                 )}
               </CardContent>

@@ -222,7 +222,10 @@ const SciencesLessonAF8 = () => {
                   <Target className="h-5 w-5 flex-shrink-0" />
                   <div>
                     <p className="font-semibold mb-1">Objectif de la leçon</p>
-                    <p className="text-white/90">{lesson.objectif}</p>
+                    <div 
+                      className="text-white/90 prose dark:prose-invert max-w-none prose-sm"
+                      dangerouslySetInnerHTML={{ __html: lesson.objectif }}
+                    />
                   </div>
                 </div>
               )}

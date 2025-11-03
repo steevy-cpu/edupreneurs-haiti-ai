@@ -195,15 +195,8 @@ const EspagnolLessonAF8 = () => {
                 {lesson.title}
               </h1>
               {lesson.objectif && (
-                <div className="flex items-start gap-3 p-4 bg-purple-50 dark:bg-purple-950/20 rounded-lg border-l-4 border-purple-500">
-                  <Target className="h-5 w-5 text-purple-600 dark:text-purple-400 flex-shrink-0 mt-0.5" />
-                  <div>
-                    <h3 className="font-semibold text-purple-900 dark:text-purple-100 mb-1">Objectif</h3>
-                    <div 
-                      className="text-sm text-purple-800 dark:text-purple-200 prose dark:prose-invert max-w-none prose-sm"
-                      dangerouslySetInnerHTML={{ __html: lesson.objectif }}
-                    />
-                  </div>
+                <div className="prose dark:prose-invert max-w-none">
+                  <div dangerouslySetInnerHTML={{ __html: lesson.objectif }} />
                 </div>
               )}
             </div>
