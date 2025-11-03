@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -26,6 +27,7 @@ interface LessonGenerationStatus {
 }
 
 export const BatchLessonGenerator = () => {
+  const navigate = useNavigate();
   const [gradeLevel, setGradeLevel] = useState<string>("all");
   const [subject, setSubject] = useState<string>("all");
   const [availableLessons, setAvailableLessons] = useState<any[]>([]);
@@ -249,12 +251,15 @@ export const BatchLessonGenerator = () => {
           
           if (!shouldGenerate) continue;
 
+          // Extract subject name from joined data
+          const subjectName = lesson.subjects?.name || 'Général';
+
           const { data, error } = await supabase.functions.invoke('generate-lesson-section', {
             body: {
               lessonId: lesson.id,
               sectionName,
               lessonTitle: lesson.title,
-              subject: lesson.subject,
+              subject: subjectName,
               gradeLevel: lesson.grade_level,
               targetWords: wordCounts[sectionName],
               context: globalContext,
@@ -578,7 +583,12 @@ export const BatchLessonGenerator = () => {
                   <div className="flex items-center gap-3 flex-1 min-w-0">
                     {getStatusIcon(lesson.status)}
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium truncate">{lesson.title}</p>
+                      <button
+                        onClick={() => navigate(`/content-editor?lesson=${lesson.lessonId}`)}
+                        className="text-sm font-medium truncate hover:underline text-left"
+                      >
+                        {lesson.title}
+                      </button>
                       {lesson.sectionsGenerated.length > 0 && (
                         <p className="text-xs text-muted-foreground">
                           {lesson.sectionsGenerated.join(', ')}
