@@ -283,7 +283,7 @@ export default function Matieres() {
           </p>
         </div>
 
-        {(selectedGrade === "AF7" || selectedGrade === "AF8") && displaySubjects.length > 0 ? (
+        {(selectedGrade === "AF7" || selectedGrade === "AF8" || selectedGrade === "AF9") && displaySubjects.length > 0 ? (
           <>
             {/* Stats Section */}
             <Card className="p-6 mb-8">
@@ -328,7 +328,7 @@ export default function Matieres() {
           {displaySubjects.map((subject, index) => {
             const IconComponent = subject.icon;
             // Check content availability based on grade and subject
-            const isMath = subject.id === 'mathematiques' || subject.id === 'matematik-8af';
+            const isMath = subject.id === 'mathematiques' || subject.id === 'matematik-8af' || subject.id === 'mathematiques-af9';
             const isSciences = subject.id === 'sciences' || subject.id === 'sciences-experimentales-8af';
             const isAnglais = subject.id === 'anglais' || subject.id === 'anglais-8af';
             const isEspagnol = subject.id === 'espagnol' || subject.id === 'espagnol-8af';
@@ -339,7 +339,8 @@ export default function Matieres() {
                subject.id === 'anglais' || subject.id === 'espagnol' || 
                subject.id === 'francais' || subject.id === 'sciences-sociales' || 
                subject.id === 'creole')) ||
-              (selectedGrade === "AF8" && (isMath || isSciences || isAnglais || isEspagnol || isCreole || isSciencesSociales));
+              (selectedGrade === "AF8" && (isMath || isSciences || isAnglais || isEspagnol || isCreole || isSciencesSociales)) ||
+              (selectedGrade === "AF9" && isMath);
             
             return (
               <Card
@@ -350,7 +351,7 @@ export default function Matieres() {
                 onClick={() => {
                   if (hasContent) {
                     let courseRoute;
-                    const isMath = subject.id === 'mathematiques' || subject.id === 'matematik-8af';
+                    const isMath = subject.id === 'mathematiques' || subject.id === 'matematik-8af' || subject.id === 'mathematiques-af9';
                       const isSciences = subject.id === 'sciences' || subject.id === 'sciences-experimentales-8af';
                       const isAnglais = subject.id === 'anglais' || subject.id === 'anglais-8af';
                       const isEspagnol = subject.id === 'espagnol' || subject.id === 'espagnol-8af';
@@ -358,7 +359,7 @@ export default function Matieres() {
                       const isSciencesSociales = subject.id === 'sciences-sociales' || subject.id === 'sciences-sociales-8af';
                     
                     if (isMath) {
-                      courseRoute = selectedGrade === 'AF8' ? '/math-af8-course' : '/math-course';
+                      courseRoute = selectedGrade === 'AF9' ? '/mathematiques-af9' : (selectedGrade === 'AF8' ? '/math-af8-course' : '/math-course');
                     } else if (isSciences) {
                       courseRoute = selectedGrade === 'AF8' ? '/sciences-af8-course' : '/sciences-course';
                     } else if (isAnglais) {
@@ -408,7 +409,7 @@ export default function Matieres() {
                     className="w-full"
                     onClick={(e) => {
                       e.stopPropagation();
-                      const isMath = subject.id === 'mathematiques' || subject.id === 'matematik-8af';
+                      const isMath = subject.id === 'mathematiques' || subject.id === 'matematik-8af' || subject.id === 'mathematiques-af9';
                       const isSciences = subject.id === 'sciences' || subject.id === 'sciences-experimentales-8af';
                       
                       let courseRoute;
@@ -416,7 +417,7 @@ export default function Matieres() {
                       const isCreole = subject.id === 'creole' || subject.id === 'creole-8af';
                       const isSciencesSociales = subject.id === 'sciences-sociales' || subject.id === 'sciences-sociales-8af';
                       if (isMath) {
-                        courseRoute = selectedGrade === 'AF8' ? '/math-af8-course' : '/math-course';
+                        courseRoute = selectedGrade === 'AF9' ? '/mathematiques-af9' : (selectedGrade === 'AF8' ? '/math-af8-course' : '/math-course');
                       } else if (isSciences) {
                         courseRoute = selectedGrade === 'AF8' ? '/sciences-af8-course' : '/sciences-course';
                       } else if (isAnglais) {
