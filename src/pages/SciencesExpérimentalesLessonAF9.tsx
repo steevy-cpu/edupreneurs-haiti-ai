@@ -1,0 +1,238 @@
+import { useEffect, useState } from "react";
+import { useParams, useNavigate } from "react-router-dom";
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Textarea } from "@/components/ui/textarea";
+import { ChevronLeft, Loader2 } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
+import { ThemeToggle } from "@/components/ThemeToggle";
+import { InteractiveQuiz } from "@/components/InteractiveQuiz";
+
+interface Lesson {
+  id: string;
+  title: string;
+  objectif: string;
+  introduction: string;
+  contenu: string;
+  exemples_exercices: string;
+}
+
+export default function SciencesExpérimentalesLessonAF9() {
+  const { lessonSlug } = useParams();
+  const navigate = useNavigate();
+  const [lesson, setLesson] = useState<Lesson | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [notes, setNotes] = useState("");
+  const [isSaving, setIsSaving] = useState(false);
+  const [activeTab, setActiveTab] = useState("introduction");
+
+  useEffect(() => {
+    fetchLesson();
+    fetchNotes();
+  }, [lessonSlug]);
+
+  const fetchLesson = async () => {
+    try {
+      const { data: subjectData, error: subjectError } = await supabase
+        .from("subjects")
+        .select("id")
+        .eq("slug", "sciences-experimentales")
+        .eq("grade_level", "AF9")
+        .single();
+
+      if (subjectError) throw subjectError;
+
+      const { data, error } = await supabase
+        .from("lessons")
+        .select("id, title, objectif, introduction, contenu, exemples_exercices")
+        .eq("subject_id", subjectData.id)
+        .eq("slug", lessonSlug)
+        .single();
+
+      if (error) throw error;
+
+      if (!data) {
+        toast.error("Leçon non trouvée");
+        navigate("/sciences-experimentales-af9");
+        return;
+      }
+
+      setLesson(data);
+    } catch (error) {
+      console.error("Error fetching lesson:", error);
+      toast.error("Erreur lors du chargement de la leçon");
+      navigate("/sciences-experimentales-af9");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const fetchNotes = async () => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      const { data, error } = await supabase
+        .from("lesson_notes")
+        .select("notes")
+        .eq("user_id", user.id)
+        .eq("lesson_id", lessonSlug || "")
+        .maybeSingle();
+
+      if (error && error.code !== "PGRST116") throw error;
+
+      if (data) {
+        setNotes(data.notes || "");
+      }
+    } catch (error) {
+      console.error("Error fetching notes:", error);
+    }
+  };
+
+  const saveNotes = async () => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        toast.error("Vous devez être connecté pour sauvegarder des notes");
+        return;
+      }
+
+      setIsSaving(true);
+
+      const { error } = await supabase
+        .from("lesson_notes")
+        .upsert({
+          user_id: user.id,
+          lesson_id: lessonSlug || "",
+          notes: notes,
+          updated_at: new Date().toISOString(),
+        }, {
+          onConflict: "user_id,lesson_id"
+        });
+
+      if (error) throw error;
+
+      toast.success("Notes sauvegardées avec succès!");
+    } catch (error) {
+      console.error("Error saving notes:", error);
+      toast.error("Erreur lors de la sauvegarde des notes");
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <Loader2 className="w-8 h-8 animate-spin" />
+      </div>
+    );
+  }
+
+  if (!lesson) {
+    return null;
+  }
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5">
+      {/* Navigation Bar */}
+      <nav className="fixed top-0 left-0 right-0 z-40 bg-background/95 backdrop-blur-md border-b border-border">
+        <div className="container mx-auto px-4 py-4">
+          <div className="flex items-center justify-between">
+            <Button
+              variant="ghost"
+              onClick={() => navigate("/sciences-experimentales-af9")}
+              className="gap-2"
+            >
+              <ChevronLeft className="w-4 h-4" />
+              <span className="font-semibold">Retour aux leçons</span>
+            </Button>
+            <ThemeToggle />
+          </div>
+        </div>
+      </nav>
+
+      <div className="container mx-auto px-4 pt-24 pb-12">
+        {/* Lesson Header */}
+        <Card className="p-8 mb-8 bg-gradient-to-r from-emerald-500/10 to-emerald-600/10 border-emerald-500/20">
+          <h1 className="text-4xl font-bold mb-4">{lesson.title}</h1>
+          <p className="text-lg text-muted-foreground">
+            <strong>Objectif:</strong> {lesson.objectif}
+          </p>
+        </Card>
+
+        {/* Lesson Content */}
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
+          <TabsList className="grid w-full grid-cols-5">
+            <TabsTrigger value="introduction">Introduction</TabsTrigger>
+            <TabsTrigger value="contenu">Contenu</TabsTrigger>
+            <TabsTrigger value="exercices">Exercices</TabsTrigger>
+            <TabsTrigger value="notes">Mes Notes</TabsTrigger>
+            <TabsTrigger value="quiz">Quiz Final</TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="introduction" className="space-y-4">
+            <Card className="p-8">
+              <h2 className="text-2xl font-bold mb-4">📖 Introduction</h2>
+              <div 
+                className="prose prose-slate dark:prose-invert max-w-none"
+                dangerouslySetInnerHTML={{ __html: lesson.introduction || "<p>Introduction à venir...</p>" }}
+              />
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="contenu" className="space-y-4">
+            <Card className="p-8">
+              <h2 className="text-2xl font-bold mb-4">📚 Contenu du cours</h2>
+              <div 
+                className="prose prose-slate dark:prose-invert max-w-none"
+                dangerouslySetInnerHTML={{ __html: lesson.contenu || "<p>Contenu à venir...</p>" }}
+              />
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="exercices" className="space-y-4">
+            <Card className="p-8">
+              <h2 className="text-2xl font-bold mb-4">✏️ Exemples et Exercices</h2>
+              <div 
+                className="prose prose-slate dark:prose-invert max-w-none"
+                dangerouslySetInnerHTML={{ __html: lesson.exemples_exercices || "<p>Exercices à venir...</p>" }}
+              />
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="notes" className="space-y-4">
+            <Card className="p-8">
+              <h2 className="text-2xl font-bold mb-4">📝 Mes Notes Personnelles</h2>
+              <Textarea
+                placeholder="Écrivez vos notes ici..."
+                value={notes}
+                onChange={(e) => setNotes(e.target.value)}
+                className="min-h-[300px] mb-4"
+              />
+              <Button onClick={saveNotes} disabled={isSaving}>
+                {isSaving ? (
+                  <>
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    Sauvegarde...
+                  </>
+                ) : (
+                  "Sauvegarder mes notes"
+                )}
+              </Button>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="quiz" className="space-y-4">
+            <Card className="p-8">
+              <h2 className="text-2xl font-bold mb-4">🎯 Quiz Final</h2>
+              <p className="text-muted-foreground">Quiz interactif à venir pour tester vos connaissances...</p>
+            </Card>
+          </TabsContent>
+        </Tabs>
+      </div>
+    </div>
+  );
+}
