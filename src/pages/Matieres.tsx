@@ -410,7 +410,7 @@ export default function Matieres() {
                     onClick={(e) => {
                       e.stopPropagation();
                       const isMath = subject.id === 'mathematiques' || subject.id === 'matematik-8af' || subject.id === 'mathematiques-af9';
-                      const isSciences = subject.id === 'sciences' || subject.id === 'sciences-experimentales-8af';
+                      const isSciences = subject.id === 'sciences' || subject.id === 'sciences-experimentales-8af' || subject.id === 'sciences-experimentales';
                       
                       let courseRoute;
                       const isAnglais = subject.id === 'anglais' || subject.id === 'anglais-8af';
