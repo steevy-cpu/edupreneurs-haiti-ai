@@ -177,6 +177,8 @@ COMMENCE TON CONTENU ICI (directement par la première balise HTML):`;
 
     const startTime = Date.now();
 
+    console.log('🔵 Calling Lovable AI API...');
+    
     const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
       method: 'POST',
       headers: {
@@ -190,8 +192,11 @@ COMMENCE TON CONTENU ICI (directement par la première balise HTML):`;
           { role: 'user', content: userPrompt }
         ],
         temperature: 0.7,
+        max_tokens: 4000,
       }),
     });
+
+    console.log('🔵 AI API response status:', response.status);
 
     if (!response.ok) {
       if (response.status === 429) {
@@ -261,9 +266,12 @@ COMMENCE TON CONTENU ICI (directement par la première balise HTML):`;
 
   } catch (error) {
     console.error('❌ Generation error:', error);
+    console.error('❌ Error stack:', error instanceof Error ? error.stack : 'No stack trace');
+    
     return new Response(JSON.stringify({ 
       error: error instanceof Error ? error.message : 'Unknown error',
-      message: 'Erreur lors de la génération du contenu'
+      message: 'Erreur lors de la génération du contenu',
+      details: error instanceof Error ? error.stack : String(error)
     }), {
       status: 500,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
