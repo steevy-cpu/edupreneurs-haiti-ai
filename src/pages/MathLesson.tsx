@@ -24,6 +24,7 @@ import {
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import vennDiagram from "@/assets/venn-diagram-ensembles.avif";
 import { ThemeToggle } from "@/components/ThemeToggle";
 
 import { QuizGame } from "@/components/math-activities/QuizGame";
@@ -663,6 +664,24 @@ const MathLesson = () => {
                     </div>
                   </CardContent>
                 </Card>
+
+                {/* Venn Diagram for Ensembles */}
+                {topicId === "ensembles" && (
+                  <Card className="lesson-card border-none rounded-2xl sm:rounded-[20px] shadow-lg overflow-hidden">
+                    <CardHeader className="p-3 sm:p-4 md:p-6 bg-gradient-to-r from-primary/10 to-accent/10">
+                      <CardTitle className="flex items-center gap-2 text-base sm:text-lg md:text-xl">
+                        <span className="text-lg sm:text-xl">📊</span> Diagrammes de Venn
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="p-3 sm:p-4 md:p-6 pt-4 sm:pt-6 flex justify-center">
+                      <img 
+                        src={vennDiagram} 
+                        alt="Diagrammes de Venn - Ensembles E, A et B" 
+                        className="max-w-full h-auto rounded-lg shadow-md"
+                      />
+                    </CardContent>
+                  </Card>
+                )}
 
                 {/* Visual Schemas */}
                 {topicId && (
