@@ -3,15 +3,14 @@ import { useParams, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Progress } from "@/components/ui/progress";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   ChevronLeft,
   BookOpen,
-  CheckCircle,
-  Lightbulb,
+  Target,
   FileText,
-  Link as LinkIcon
+  Dumbbell,
+  HelpCircle
 } from "lucide-react";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { YouTubeVideoSection } from "@/components/YouTubeVideoSection";
@@ -21,12 +20,11 @@ import { toast } from "sonner";
 interface LessonData {
   id: string;
   title: string;
-  objective: string;
+  objectif: string;
   introduction: string;
-  content: any;
-  exercises: any;
-  references: string[];
-  month: string;
+  contenu: string;
+  exemples_exercices: string;
+  mois: string;
   youtubeUrl?: string;
 }
 
@@ -35,15 +33,15 @@ export default function AnglaisLesson() {
   const navigate = useNavigate();
   const [lesson, setLesson] = useState<LessonData | null>(null);
   const [loading, setLoading] = useState(true);
-  const [progress, setProgress] = useState(0);
 
   useEffect(() => {
     const fetchLesson = async () => {
       try {
         const { data, error } = await supabase
           .from('lessons')
-          .select('id, slug, title, objectif, introduction, contenu, exemples_exercices, references, mois, youtube_url')
+          .select('id, slug, title, objectif, introduction, contenu, exemples_exercices, mois, youtube_url')
           .eq('slug', topicId)
+          .eq('is_published', true)
           .single();
 
         if (error) throw error;
@@ -51,12 +49,11 @@ export default function AnglaisLesson() {
         setLesson({
           id: data.id,
           title: data.title,
-          objective: data.objectif,
+          objectif: data.objectif,
           introduction: data.introduction,
-          content: data.contenu,
-          exercises: data.exemples_exercices,
-          references: data.references,
-          month: data.mois,
+          contenu: data.contenu,
+          exemples_exercices: data.exemples_exercices,
+          mois: data.mois,
           youtubeUrl: data.youtube_url
         });
       } catch (error) {
@@ -86,7 +83,7 @@ export default function AnglaisLesson() {
   }
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-gradient-to-b from-background to-muted/20">
       {/* Header */}
       <header className="border-b border-border bg-card/30 backdrop-blur-sm sticky top-0 z-50">
         <div className="container mx-auto px-4 py-4">
@@ -101,7 +98,11 @@ export default function AnglaisLesson() {
               </Button>
               <div className="min-w-0">
                 <h1 className="text-xl font-bold truncate">{lesson.title}</h1>
-                <p className="text-sm text-muted-foreground">{lesson.month}</p>
+                {lesson.mois && (
+                  <Badge variant="secondary" className="mt-1">
+                    {lesson.mois}
+                  </Badge>
+                )}
               </div>
             </div>
             <ThemeToggle />
@@ -110,89 +111,74 @@ export default function AnglaisLesson() {
       </header>
 
       <div className="container mx-auto px-4 py-8 max-w-4xl">
-        {/* Progress */}
-        <Card className="p-6 mb-6">
-          <div className="flex items-center justify-between mb-3">
-            <span className="text-sm font-medium">Progression de la leçon</span>
-            <span className="text-sm font-bold">{progress}%</span>
-          </div>
-          <Progress value={progress} />
-        </Card>
-
-        {/* Objective */}
+        {/* Objective Card */}
         <Card className="p-6 mb-6 bg-gradient-to-r from-primary/10 to-secondary/10">
           <div className="flex items-start gap-3">
-            <Lightbulb className="w-6 h-6 text-primary shrink-0 mt-1" />
+            <Target className="w-6 h-6 text-primary shrink-0 mt-1" />
             <div>
               <h3 className="text-lg font-semibold mb-2">Objectif de la leçon</h3>
-              <p className="text-muted-foreground">{lesson.objective}</p>
+              <p className="text-muted-foreground">{lesson.objectif}</p>
             </div>
           </div>
         </Card>
 
-        {/* Introduction */}
-        {lesson.introduction && (
-          <Card className="p-6 mb-6">
-            <h3 className="text-xl font-bold mb-4 flex items-center gap-2">
-              <BookOpen className="w-5 h-5" />
-              Introduction
-            </h3>
-            <div 
-              className="prose prose-sm max-w-none dark:prose-invert"
-              dangerouslySetInnerHTML={{ __html: lesson.introduction }}
-            />
-          </Card>
-        )}
-
         {/* Main Content Tabs */}
-        <Tabs defaultValue="content" className="mb-6">
-          <TabsList className="grid w-full grid-cols-3">
-            <TabsTrigger value="content">
+        <Tabs defaultValue="introduction" className="mb-6">
+          <TabsList className="grid w-full grid-cols-4">
+            <TabsTrigger value="introduction">
+              <BookOpen className="w-4 h-4 mr-2" />
+              Introduction
+            </TabsTrigger>
+            <TabsTrigger value="contenu">
               <FileText className="w-4 h-4 mr-2" />
               Contenu
             </TabsTrigger>
-            <TabsTrigger value="exercises">
-              <CheckCircle className="w-4 h-4 mr-2" />
-              Exercices
+            <TabsTrigger value="exemples">
+              <Dumbbell className="w-4 h-4 mr-2" />
+              Exemples
             </TabsTrigger>
-            <TabsTrigger value="references">
-              <LinkIcon className="w-4 h-4 mr-2" />
-              Références
+            <TabsTrigger value="quiz">
+              <HelpCircle className="w-4 h-4 mr-2" />
+              Quiz Final
             </TabsTrigger>
           </TabsList>
 
-          <TabsContent value="content">
+          <TabsContent value="introduction">
             <Card className="p-6">
               <div 
                 className="prose prose-sm max-w-none dark:prose-invert"
-                dangerouslySetInnerHTML={{ __html: lesson.content }}
+                dangerouslySetInnerHTML={{ __html: lesson.introduction }}
               />
             </Card>
           </TabsContent>
 
-          <TabsContent value="exercises">
+          <TabsContent value="contenu">
             <Card className="p-6">
               <div 
                 className="prose prose-sm max-w-none dark:prose-invert"
-                dangerouslySetInnerHTML={{ __html: lesson.exercises }}
+                dangerouslySetInnerHTML={{ __html: lesson.contenu }}
               />
             </Card>
           </TabsContent>
 
-          <TabsContent value="references">
+          <TabsContent value="exemples">
             <Card className="p-6">
-              {lesson.references && lesson.references.length > 0 ? (
-                <ul className="space-y-2">
-                  {lesson.references.map((ref, index) => (
-                    <li key={index} className="flex items-start gap-2">
-                      <LinkIcon className="w-4 h-4 mt-1 text-primary shrink-0" />
-                      <span className="text-muted-foreground">{ref}</span>
-                    </li>
-                  ))}
-                </ul>
-              ) : (
-                <p className="text-muted-foreground">Aucune référence disponible</p>
-              )}
+              <div 
+                className="prose prose-sm max-w-none dark:prose-invert"
+                dangerouslySetInnerHTML={{ __html: lesson.exemples_exercices }}
+              />
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="quiz">
+            <Card className="p-6">
+              <div className="text-center py-12 space-y-4">
+                <HelpCircle className="w-16 h-16 mx-auto text-muted-foreground/50" />
+                <h3 className="text-xl font-semibold">Quiz Final</h3>
+                <p className="text-muted-foreground max-w-md mx-auto">
+                  Le quiz pour cette leçon sera bientôt disponible. Continuez à réviser le contenu et les exemples!
+                </p>
+              </div>
             </Card>
           </TabsContent>
         </Tabs>
@@ -202,7 +188,7 @@ export default function AnglaisLesson() {
           <div className="mb-6">
             <YouTubeVideoSection
               lessonTitle={lesson.title}
-              objectives={lesson.objective}
+              objectives={lesson.objectif}
               gradeLevel="AF7"
               customYoutubeUrl={lesson.youtubeUrl}
             />
@@ -210,22 +196,13 @@ export default function AnglaisLesson() {
         )}
 
         {/* Navigation Buttons */}
-        <div className="flex justify-between gap-4">
+        <div className="flex justify-center">
           <Button
             variant="outline"
             onClick={() => navigate('/anglais-course')}
           >
             <ChevronLeft className="w-4 h-4 mr-2" />
             Retour au cours
-          </Button>
-          <Button
-            onClick={() => {
-              setProgress(100);
-              toast.success('Leçon terminée !');
-            }}
-          >
-            Marquer comme terminé
-            <CheckCircle className="w-4 h-4 ml-2" />
           </Button>
         </div>
       </div>
