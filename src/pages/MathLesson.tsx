@@ -293,6 +293,20 @@ const MathLesson = () => {
     }
   }, [topicId]);
 
+  // Insert Venn diagram image into placeholder for Ensembles lesson
+  useEffect(() => {
+    if (topicId === "ensembles" && lessonData.contenu) {
+      const placeholder = document.getElementById("venn-diagram-placeholder");
+      if (placeholder && placeholder.children.length === 0) { // Only insert if empty
+        const img = document.createElement("img");
+        img.src = vennDiagram;
+        img.alt = "Diagrammes de Venn - Ensembles E, A et B";
+        img.className = "max-w-full h-auto rounded-lg shadow-md";
+        placeholder.appendChild(img);
+      }
+    }
+  }, [topicId, lessonData.contenu]);
+
   const loadLesson = async (forceRegenerate = false) => {
     if (!topicId || !topicInfo[topicId]) return;
 
@@ -671,24 +685,6 @@ const MathLesson = () => {
                     topicId={topicId}
                     topicTitle={currentTopic.title}
                   />
-                )}
-
-                {/* Venn Diagram for Ensembles */}
-                {topicId === "ensembles" && (
-                  <Card className="lesson-card border-none rounded-2xl sm:rounded-[20px] shadow-lg overflow-hidden">
-                    <CardHeader className="p-3 sm:p-4 md:p-6 bg-gradient-to-r from-primary/10 to-accent/10">
-                      <CardTitle className="flex items-center gap-2 text-base sm:text-lg md:text-xl">
-                        <span className="text-lg sm:text-xl">📊</span> Diagrammes de Venn
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent className="p-3 sm:p-4 md:p-6 pt-4 sm:pt-6 flex justify-center">
-                      <img 
-                        src={vennDiagram} 
-                        alt="Diagrammes de Venn - Ensembles E, A et B" 
-                        className="max-w-full h-auto rounded-lg shadow-md"
-                      />
-                    </CardContent>
-                  </Card>
                 )}
 
                 {/* YouTube Videos Section */}

@@ -252,6 +252,10 @@ export const mathLessons7AF: Record<string, StaticLessonContent> = {
           <li>Ni anglais ni espagnol = 30 - (10 + 8 + 7) = 5</li>
         </ul>
       </div>
+
+      <div id="venn-diagram-placeholder" class="mt-6 flex justify-center">
+        <!-- Image will be inserted here by React -->
+      </div>
     </div>
   </section>
 
