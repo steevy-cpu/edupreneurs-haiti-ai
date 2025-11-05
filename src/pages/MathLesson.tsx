@@ -665,6 +665,14 @@ const MathLesson = () => {
                   </CardContent>
                 </Card>
 
+                {/* Visual Schemas */}
+                {topicId && (
+                  <LessonSchemas 
+                    topicId={topicId}
+                    topicTitle={currentTopic.title}
+                  />
+                )}
+
                 {/* Venn Diagram for Ensembles */}
                 {topicId === "ensembles" && (
                   <Card className="lesson-card border-none rounded-2xl sm:rounded-[20px] shadow-lg overflow-hidden">
@@ -681,14 +689,6 @@ const MathLesson = () => {
                       />
                     </CardContent>
                   </Card>
-                )}
-
-                {/* Visual Schemas */}
-                {topicId && (
-                  <LessonSchemas 
-                    topicId={topicId}
-                    topicTitle={currentTopic.title}
-                  />
                 )}
 
                 {/* YouTube Videos Section */}
