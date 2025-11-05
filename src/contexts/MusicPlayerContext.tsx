@@ -78,10 +78,6 @@ export const MusicPlayerProvider = ({ children }: { children: ReactNode }) => {
       { id: "CvFH_6DNRCY", title: "Debussy - Clair de Lune et Œuvres", thumbnail: "https://i.ytimg.com/vi/CvFH_6DNRCY/hqdefault.jpg" },
       { id: "WNcsUNKlAKw", title: "Debussy - La Mer", thumbnail: "https://i.ytimg.com/vi/WNcsUNKlAKw/hqdefault.jpg" },
       
-      // Tchaikovsky - Emotional & Beautiful
-      { id: "7-OytHySsqQ", title: "Tchaikovsky - Casse-Noisette Suite", thumbnail: "https://i.ytimg.com/vi/7-OytHySsqQ/hqdefault.jpg" },
-      { id: "BbEPi0bGBCQ", title: "Tchaikovsky - Concerto Piano No. 1", thumbnail: "https://i.ytimg.com/vi/BbEPi0bGBCQ/hqdefault.jpg" },
-      
       // Liszt - Virtuoso Piano
       { id: "KpOtuoHL45Y", title: "Liszt - Rêve d'Amour", thumbnail: "https://i.ytimg.com/vi/KpOtuoHL45Y/hqdefault.jpg" },
       { id: "H1Dvg2MxQn8", title: "Liszt - Rhapsodies Hongroises", thumbnail: "https://i.ytimg.com/vi/H1Dvg2MxQn8/hqdefault.jpg" },
