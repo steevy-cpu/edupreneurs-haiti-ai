@@ -153,26 +153,26 @@ const AnglaisLessonAF9 = () => {
         </Card>
 
         <Tabs defaultValue="introduction" className="mb-6">
-          <TabsList className="grid w-full grid-cols-5">
-            <TabsTrigger value="introduction">
-              <BookOpen className="w-4 h-4 mr-2" />
-              Introduction
+          <TabsList className="grid w-full grid-cols-5 gap-1">
+            <TabsTrigger value="introduction" className="flex items-center justify-center gap-2">
+              <BookOpen className="h-4 w-4" />
+              <span className="hidden md:inline">Introduction</span>
             </TabsTrigger>
-            <TabsTrigger value="contenu">
-              <FileText className="w-4 h-4 mr-2" />
-              Contenu
+            <TabsTrigger value="contenu" className="flex items-center justify-center gap-2">
+              <FileText className="h-4 w-4" />
+              <span className="hidden md:inline">Contenu</span>
             </TabsTrigger>
-            <TabsTrigger value="exemples">
-              <Dumbbell className="w-4 h-4 mr-2" />
-              Exemples
+            <TabsTrigger value="exemples" className="flex items-center justify-center gap-2">
+              <Dumbbell className="h-4 w-4" />
+              <span className="hidden md:inline">Exemples</span>
             </TabsTrigger>
-            <TabsTrigger value="quiz">
-              <HelpCircle className="w-4 h-4 mr-2" />
-              Quiz Final
+            <TabsTrigger value="quiz" className="flex items-center justify-center gap-2">
+              <HelpCircle className="h-4 w-4" />
+              <span className="hidden md:inline">Quiz Final</span>
             </TabsTrigger>
-            <TabsTrigger value="notes">
-              <StickyNote className="w-4 h-4 mr-2" />
-              Mes Notes
+            <TabsTrigger value="notes" className="flex items-center justify-center gap-2">
+              <StickyNote className="h-4 w-4" />
+              <span className="hidden md:inline">Mes Notes</span>
             </TabsTrigger>
           </TabsList>
 

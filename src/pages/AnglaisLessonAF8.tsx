@@ -199,45 +199,28 @@ const AnglaisLessonAF8 = () => {
 
         {/* Lesson Content Tabs - Mobile Responsive */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <div className="border-b mb-6 md:mb-8 overflow-x-auto">
-            <TabsList className="w-full h-auto rounded-none bg-transparent p-0 grid grid-cols-5 min-w-full">
-              <TabsTrigger 
-                value="introduction"
-                className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent flex flex-col md:flex-row items-center justify-center gap-1 md:gap-2 py-3 px-2"
-              >
-                <BookOpen className="h-4 w-4" />
-                <span className="text-xs md:text-sm">Introduction</span>
-              </TabsTrigger>
-              <TabsTrigger 
-                value="contenu"
-                className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent flex flex-col md:flex-row items-center justify-center gap-1 md:gap-2 py-3 px-2"
-              >
-                <FileText className="h-4 w-4" />
-                <span className="text-xs md:text-sm">Contenu</span>
-              </TabsTrigger>
-              <TabsTrigger 
-                value="exemples"
-                className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent flex flex-col md:flex-row items-center justify-center gap-1 md:gap-2 py-3 px-2"
-              >
-                <Lightbulb className="h-4 w-4" />
-                <span className="text-xs md:text-sm">Exemples</span>
-              </TabsTrigger>
-              <TabsTrigger 
-                value="quiz"
-                className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent flex flex-col md:flex-row items-center justify-center gap-1 md:gap-2 py-3 px-2"
-              >
-                <Brain className="h-4 w-4" />
-                <span className="text-xs md:text-sm">Quiz</span>
-              </TabsTrigger>
-              <TabsTrigger 
-                value="notes"
-                className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent flex flex-col md:flex-row items-center justify-center gap-1 md:gap-2 py-3 px-2"
-              >
-                <StickyNote className="h-4 w-4" />
-                <span className="text-xs md:text-sm">Notes</span>
-              </TabsTrigger>
-            </TabsList>
-          </div>
+          <TabsList className="grid w-full grid-cols-5 gap-1">
+            <TabsTrigger value="introduction" className="flex items-center justify-center gap-2">
+              <BookOpen className="h-4 w-4" />
+              <span className="hidden md:inline">Introduction</span>
+            </TabsTrigger>
+            <TabsTrigger value="contenu" className="flex items-center justify-center gap-2">
+              <FileText className="h-4 w-4" />
+              <span className="hidden md:inline">Contenu</span>
+            </TabsTrigger>
+            <TabsTrigger value="exemples" className="flex items-center justify-center gap-2">
+              <Lightbulb className="h-4 w-4" />
+              <span className="hidden md:inline">Exemples</span>
+            </TabsTrigger>
+            <TabsTrigger value="quiz" className="flex items-center justify-center gap-2">
+              <Brain className="h-4 w-4" />
+              <span className="hidden md:inline">Quiz</span>
+            </TabsTrigger>
+            <TabsTrigger value="notes" className="flex items-center justify-center gap-2">
+              <StickyNote className="h-4 w-4" />
+              <span className="hidden md:inline">Notes</span>
+            </TabsTrigger>
+          </TabsList>
 
           <TabsContent value="introduction">
             <Card>
