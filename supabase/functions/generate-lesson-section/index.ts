@@ -31,7 +31,8 @@ const SECTION_CONFIGS = {
 - 2-3 paragraphes de mise en contexte avec <p> séparés
 - Pourquoi c'est important pour l'élève
 - Ce qu'on va apprendre
-- Encadrés colorés avec émojis
+- Encadrés colorés avec émojis (💡 Le savais-tu ?, 🇭🇹 Exemple Haïtien)
+- IMPORTANT: NE PAS répéter les objectifs - ils sont dans la section dédiée
 - ESPACEMENT: Utiliser des paragraphes distincts, ne pas créer de gros blocs de texte`,
   },
   contenu: {
@@ -42,7 +43,8 @@ const SECTION_CONFIGS = {
 - 2-3 encadrés "💡 Le savais-tu ?" avec anecdotes haïtiennes
 - Listes structurées, tableaux si pertinent
 - Vocabulaire clé avec définitions
-- Exemples concrets du contexte haïtien
+- Exemples concrets du contexte haïtien (décrits en français)
+- IMPORTANT: NE PAS créer de section objectifs - ils sont dans la section dédiée
 - ESPACEMENT: Ajouter <br/> ou des paragraphes entre les sections, éviter les blocs de texte denses`,
   },
   exemples_exercices: {
@@ -57,6 +59,9 @@ const SECTION_CONFIGS = {
   * Étude de cas haïtien
   * Activité pratique (observation, enquête, création)
 - Format structuré avec numérotation claire
+- CRITIQUE: NE PAS utiliser le créole/kreyòl dans les exemples et exercices - utiliser uniquement le FRANÇAIS
+- CRITIQUE: NE PAS créer de section objectifs - ils sont dans la section dédiée
+- Les contextes haïtiens doivent être décrits en français
 - ESPACEMENT CRITIQUE: Ajouter <br/><br/> entre CHAQUE exercice, utiliser des listes <ul> ou <ol>, séparer visuellement les sections d'exercices`,
   },
 };
@@ -76,7 +81,6 @@ const SUBJECT_ADDITIONS: Record<string, string> = {
 };
 
 const HTML_TEMPLATES = {
-  objectiveBox: '<div class="bg-blue-50 dark:bg-blue-950/30 border-l-4 border-blue-500 p-4 mb-4 rounded-lg"><h4 class="font-semibold text-blue-700 dark:text-blue-300 mb-2 flex items-center gap-2">🎯 Objectif</h4><p class="text-gray-700 dark:text-gray-300">{{content}}</p></div>',
   didYouKnowBox: '<div class="bg-yellow-50 dark:bg-yellow-950/30 border-l-4 border-yellow-500 p-4 mb-4 rounded-lg"><h4 class="font-semibold text-yellow-700 dark:text-yellow-300 mb-2 flex items-center gap-2">💡 Le savais-tu ?</h4><p class="text-gray-700 dark:text-gray-300">{{content}}</p></div>',
   haitianExampleBox: '<div class="bg-green-50 dark:bg-green-950/30 border-l-4 border-green-500 p-4 mb-4 rounded-lg"><h4 class="font-semibold text-green-700 dark:text-green-300 mb-2 flex items-center gap-2">🇭🇹 Exemple Haïtien</h4><p class="text-gray-700 dark:text-gray-300">{{content}}</p></div>',
   exerciseBox: '<div class="bg-purple-50 dark:bg-purple-950/30 border-l-4 border-purple-500 p-4 mb-4 rounded-lg"><h4 class="font-semibold text-purple-700 dark:text-purple-300 mb-2 flex items-center gap-2">✏️ Exercice</h4><div class="text-gray-700 dark:text-gray-300">{{content}}</div></div>',
@@ -115,11 +119,12 @@ Deno.serve(async (req) => {
 SECTION À GÉNÉRER: ${sectionName}
 
 PRINCIPES FONDAMENTAUX:
-- Langue: FRANÇAIS PRINCIPALEMENT - Le contenu doit être écrit en français standard adapté au niveau ${gradeLevel}
-- Utilisation du créole: UNIQUEMENT pour des explications contextuelles ponctuelles, des expressions idiomatiques, ou des clarifications culturelles (entre parenthèses ou dans des encadrés spécifiques)
+- Langue: FRANÇAIS UNIQUEMENT - Le contenu doit être écrit en français standard adapté au niveau ${gradeLevel}
+- Utilisation du créole: ${sectionName === 'exemples_exercices' ? 'INTERDITE dans cette section - utiliser uniquement le français' : 'UNIQUEMENT pour des explications contextuelles ponctuelles, des expressions idiomatiques, ou des clarifications culturelles (entre parenthèses ou dans des encadrés spécifiques)'}
 - Contextualisation MAXIMALE avec exemples haïtiens et caribéens (décrits en français)
 - Format: HTML avec classes Tailwind (compatible dark/light mode)
 - Longueur cible: ${targetWords} mots (minimum: ${config.minWords}, maximum: ${config.maxWords})
+- CRITIQUE: NE JAMAIS créer de section "Objectifs" dans ${sectionName} - les objectifs ont leur propre section dédiée
 
 RÈGLES DE FORMATAGE STRICTES:
 - JAMAIS utiliser de blocs de code markdown (pas de \`\`\`)
