@@ -1,16 +1,18 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Textarea } from "@/components/ui/textarea";
 import {
   ChevronLeft,
   BookOpen,
   Target,
   FileText,
   Dumbbell,
-  HelpCircle
+  HelpCircle,
+  StickyNote
 } from "lucide-react";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { YouTubeVideoSection } from "@/components/YouTubeVideoSection";
@@ -33,6 +35,7 @@ export default function AnglaisLesson() {
   const navigate = useNavigate();
   const [lesson, setLesson] = useState<LessonData | null>(null);
   const [loading, setLoading] = useState(true);
+  const [personalNotes, setPersonalNotes] = useState("");
 
   useEffect(() => {
     const fetchLesson = async () => {
@@ -67,8 +70,56 @@ export default function AnglaisLesson() {
 
     if (topicId) {
       fetchLesson();
+      loadPersonalNotes();
     }
   }, [topicId, navigate]);
+
+  const loadPersonalNotes = async () => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      const { data, error } = await supabase
+        .from('lesson_notes')
+        .select('notes')
+        .eq('user_id', user.id)
+        .eq('lesson_id', topicId || '')
+        .maybeSingle();
+
+      if (error && error.code !== 'PGRST116') throw error;
+      if (data) {
+        setPersonalNotes(data.notes || "");
+      }
+    } catch (error) {
+      console.error('Error loading notes:', error);
+    }
+  };
+
+  const savePersonalNotes = async () => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        toast.error("Vous devez être connecté pour sauvegarder vos notes");
+        return;
+      }
+
+      const { error } = await supabase
+        .from('lesson_notes')
+        .upsert({
+          user_id: user.id,
+          lesson_id: topicId || '',
+          notes: personalNotes,
+          updated_at: new Date().toISOString(),
+        });
+
+      if (error) throw error;
+
+      toast.success("Vos notes personnelles ont été enregistrées avec succès");
+    } catch (error) {
+      console.error('Error saving notes:', error);
+      toast.error("Impossible de sauvegarder vos notes");
+    }
+  };
 
   if (loading) {
     return (
@@ -124,7 +175,7 @@ export default function AnglaisLesson() {
 
         {/* Main Content Tabs */}
         <Tabs defaultValue="introduction" className="mb-6">
-          <TabsList className="grid w-full grid-cols-4">
+          <TabsList className="grid w-full grid-cols-5">
             <TabsTrigger value="introduction">
               <BookOpen className="w-4 h-4 mr-2" />
               Introduction
@@ -140,6 +191,10 @@ export default function AnglaisLesson() {
             <TabsTrigger value="quiz">
               <HelpCircle className="w-4 h-4 mr-2" />
               Quiz Final
+            </TabsTrigger>
+            <TabsTrigger value="notes">
+              <StickyNote className="w-4 h-4 mr-2" />
+              Mes Notes
             </TabsTrigger>
           </TabsList>
 
@@ -179,6 +234,26 @@ export default function AnglaisLesson() {
                   Le quiz pour cette leçon sera bientôt disponible. Continuez à réviser le contenu et les exemples!
                 </p>
               </div>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="notes">
+            <Card>
+              <CardHeader>
+                <CardTitle>Mes Notes Personnelles</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <Textarea
+                  placeholder="Écrivez vos notes ici..."
+                  value={personalNotes}
+                  onChange={(e) => setPersonalNotes(e.target.value)}
+                  className="min-h-[300px]"
+                />
+                <Button onClick={savePersonalNotes} className="w-full">
+                  <StickyNote className="w-4 h-4 mr-2" />
+                  Sauvegarder mes notes
+                </Button>
+              </CardContent>
             </Card>
           </TabsContent>
         </Tabs>
