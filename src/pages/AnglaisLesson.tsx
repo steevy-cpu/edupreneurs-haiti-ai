@@ -166,9 +166,12 @@ export default function AnglaisLesson() {
         <Card className="p-6 mb-6 bg-gradient-to-r from-primary/10 to-secondary/10">
           <div className="flex items-start gap-3">
             <Target className="w-6 h-6 text-primary shrink-0 mt-1" />
-            <div>
+            <div className="flex-1">
               <h3 className="text-lg font-semibold mb-2">Objectif de la leçon</h3>
-              <p className="text-muted-foreground">{lesson.objectif}</p>
+              <div 
+                className="prose prose-sm max-w-none dark:prose-invert"
+                dangerouslySetInnerHTML={{ __html: lesson.objectif }}
+              />
             </div>
           </div>
         </Card>

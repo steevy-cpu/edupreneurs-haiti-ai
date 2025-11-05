@@ -139,9 +139,12 @@ const AnglaisLessonAF9 = () => {
               <div className="flex-1">
                 <CardTitle className="text-3xl mb-2">{lesson.title}</CardTitle>
                 {lesson.objectif && (
-                  <div className="flex items-start gap-2 text-muted-foreground">
-                    <Target className="w-4 h-4 mt-1 flex-shrink-0" />
-                    <p>{lesson.objectif}</p>
+                  <div className="flex items-start gap-2">
+                    <Target className="w-4 h-4 mt-1 flex-shrink-0 text-primary" />
+                    <div 
+                      className="prose prose-sm max-w-none dark:prose-invert flex-1"
+                      dangerouslySetInnerHTML={{ __html: lesson.objectif }}
+                    />
                   </div>
                 )}
               </div>
