@@ -1022,4 +1022,46 @@ All colors MUST be HSL.
       -webkit-overflow-scrolling: touch;
     }
   }
+  
+  /* Lesson Content Styles */
+  .exercise-box {
+    @apply border-2 border-primary/20 rounded-xl p-6 mb-6 bg-gradient-to-br from-primary/5 to-secondary/5 backdrop-blur-sm;
+  }
+  
+  .exercise-box h4 {
+    @apply text-lg font-bold text-primary mb-4 flex items-center gap-2;
+  }
+  
+  .exercise-box ol, .exercise-box ul {
+    @apply space-y-2 ml-6;
+  }
+  
+  .exercise-box li {
+    @apply text-muted-foreground;
+  }
+  
+  /* Prose styles for lesson content */
+  .prose h3 {
+    @apply text-xl font-bold text-foreground mb-4 mt-6 flex items-center gap-2;
+  }
+  
+  .prose h4 {
+    @apply text-lg font-semibold text-foreground mb-3 mt-4;
+  }
+  
+  .prose ul, .prose ol {
+    @apply space-y-2 ml-6 my-4;
+  }
+  
+  .prose li {
+    @apply text-muted-foreground leading-relaxed;
+  }
+  
+  .prose strong {
+    @apply font-bold text-primary;
+  }
+  
+  .prose p {
+    @apply text-muted-foreground leading-relaxed mb-4;
+  }
 }

@@ -137,9 +137,10 @@ export default function AnglaisLesson() {
               <BookOpen className="w-5 h-5" />
               Introduction
             </h3>
-            <p className="text-muted-foreground whitespace-pre-wrap">
-              {lesson.introduction}
-            </p>
+            <div 
+              className="prose prose-sm max-w-none dark:prose-invert"
+              dangerouslySetInnerHTML={{ __html: lesson.introduction }}
+            />
           </Card>
         )}
 
@@ -162,47 +163,19 @@ export default function AnglaisLesson() {
 
           <TabsContent value="content">
             <Card className="p-6">
-              {typeof lesson.content === 'object' ? (
-                <div className="space-y-6">
-                  {Object.entries(lesson.content).map(([key, value]) => (
-                    <div key={key}>
-                      <h4 className="text-lg font-semibold mb-3 capitalize">
-                        {key.replace(/_/g, ' ')}
-                      </h4>
-                      <div className="text-muted-foreground whitespace-pre-wrap">
-                        {typeof value === 'string' ? value : JSON.stringify(value, null, 2)}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <div className="text-muted-foreground whitespace-pre-wrap">
-                  {lesson.content}
-                </div>
-              )}
+              <div 
+                className="prose prose-sm max-w-none dark:prose-invert"
+                dangerouslySetInnerHTML={{ __html: lesson.content }}
+              />
             </Card>
           </TabsContent>
 
           <TabsContent value="exercises">
             <Card className="p-6">
-              {typeof lesson.exercises === 'object' ? (
-                <div className="space-y-6">
-                  {Object.entries(lesson.exercises).map(([key, value], index) => (
-                    <div key={key} className="p-4 border rounded-lg">
-                      <h4 className="text-lg font-semibold mb-3">
-                        Exercice {index + 1}: {key.replace(/_/g, ' ')}
-                      </h4>
-                      <div className="text-muted-foreground whitespace-pre-wrap">
-                        {typeof value === 'string' ? value : JSON.stringify(value, null, 2)}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <div className="text-muted-foreground whitespace-pre-wrap">
-                  {lesson.exercises}
-                </div>
-              )}
+              <div 
+                className="prose prose-sm max-w-none dark:prose-invert"
+                dangerouslySetInnerHTML={{ __html: lesson.exercises }}
+              />
             </Card>
           </TabsContent>
 

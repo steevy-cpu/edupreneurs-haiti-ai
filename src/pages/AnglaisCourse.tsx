@@ -35,12 +35,12 @@ export default function AnglaisCourse() {
   useEffect(() => {
     const fetchLessons = async () => {
       try {
-        // First, get the Anglais subject for AF7
+        // First, get the Anglais subject for AF7 (stored as 7AF in database)
         const { data: subject, error: subjectError } = await supabase
           .from('subjects')
           .select('id')
           .eq('slug', 'anglais')
-          .eq('grade_level', 'AF7')
+          .eq('grade_level', '7AF')
           .single();
 
         if (subjectError) throw subjectError;
