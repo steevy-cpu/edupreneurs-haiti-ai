@@ -1,6 +1,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { BookOpen, Target, FileText, PenTool, GraduationCap, Video } from "lucide-react";
+import { BookOpen, Target, FileText, PenTool, GraduationCap, Video, Gamepad2 } from "lucide-react";
+import { InteractiveActivitiesEnhanced } from "@/components/InteractiveActivitiesEnhanced";
 
 interface LessonPreviewProps {
   lesson: any;
@@ -115,6 +116,24 @@ export const LessonPreview = ({ lesson }: LessonPreviewProps) => {
             <div 
               className="prose dark:prose-invert max-w-none"
               dangerouslySetInnerHTML={{ __html: lesson.exemples_exercices }}
+            />
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Activités Interactives */}
+      {lesson.activites_interactives && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-primary">
+              <Gamepad2 className="h-5 w-5" />
+              Activités Interactives
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <InteractiveActivitiesEnhanced 
+              content={lesson.activites_interactives}
+              isLoading={false}
             />
           </CardContent>
         </Card>

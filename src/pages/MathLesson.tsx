@@ -20,8 +20,10 @@ import {
   Loader2,
   Dumbbell,
   CheckCircle,
-  Coins
+  Coins,
+  FileText
 } from "lucide-react";
+import { InteractiveActivitiesEnhanced } from "@/components/InteractiveActivitiesEnhanced";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import vennDiagram from "@/assets/venn-diagram-ensembles.avif";

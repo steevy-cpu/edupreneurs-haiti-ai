@@ -498,6 +498,7 @@ export type Database = {
       }
       lessons: {
         Row: {
+          activites_interactives: string | null
           contenu: string | null
           created_at: string
           created_by: string | null
@@ -521,6 +522,7 @@ export type Database = {
           youtube_url: string | null
         }
         Insert: {
+          activites_interactives?: string | null
           contenu?: string | null
           created_at?: string
           created_by?: string | null
@@ -546,6 +548,7 @@ export type Database = {
           youtube_url?: string | null
         }
         Update: {
+          activites_interactives?: string | null
           contenu?: string | null
           created_at?: string
           created_by?: string | null

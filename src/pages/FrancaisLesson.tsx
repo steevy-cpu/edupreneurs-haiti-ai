@@ -13,7 +13,8 @@ import {
   Volume2,
   Play,
   Pause,
-  PenTool
+  PenTool,
+  Gamepad2
 } from "lucide-react";
 import { francaisLessons7AF } from "@/data/francaisLessons";
 import { YouTubeVideoSection } from "@/components/YouTubeVideoSection";

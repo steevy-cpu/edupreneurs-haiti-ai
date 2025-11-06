@@ -4,8 +4,9 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
-import { ArrowLeft, BookOpen, Lightbulb, FileText, Brain, StickyNote, Target } from "lucide-react";
+import { ArrowLeft, BookOpen, Lightbulb, FileText, Brain, StickyNote, Target, Gamepad2 } from "lucide-react";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import { InteractiveActivitiesEnhanced } from "@/components/InteractiveActivitiesEnhanced";
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -19,6 +20,7 @@ interface Lesson {
   introduction: string;
   contenu: string;
   exemples_exercices: string;
+  activites_interactives: string | null;
   mois: string;
   grade_level: string;
   youtube_url: string | null;
@@ -199,7 +201,7 @@ const AnglaisLessonAF8 = () => {
 
         {/* Lesson Content Tabs - Mobile Responsive */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-4 gap-1">
+          <TabsList className="grid w-full grid-cols-5 gap-1">
             <TabsTrigger value="introduction" className="flex items-center justify-center gap-2">
               <BookOpen className="h-4 w-4" />
               <span className="hidden md:inline">Introduction</span>
@@ -207,6 +209,10 @@ const AnglaisLessonAF8 = () => {
             <TabsTrigger value="contenu" className="flex items-center justify-center gap-2">
               <FileText className="h-4 w-4" />
               <span className="hidden md:inline">Contenu & Exemples</span>
+            </TabsTrigger>
+            <TabsTrigger value="activites" className="flex items-center justify-center gap-2">
+              <Gamepad2 className="h-4 w-4" />
+              <span className="hidden md:inline">Activités</span>
             </TabsTrigger>
             <TabsTrigger value="quiz" className="flex items-center justify-center gap-2">
               <Brain className="h-4 w-4" />
@@ -285,6 +291,24 @@ const AnglaisLessonAF8 = () => {
                         <li key={index}>{ref}</li>
                       ))}
                     </ul>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="activites">
+            <Card>
+              <CardContent className="p-4 md:p-6">
+                {lesson.activites_interactives ? (
+                  <InteractiveActivitiesEnhanced 
+                    content={lesson.activites_interactives}
+                    isLoading={false}
+                  />
+                ) : (
+                  <div className="text-center py-8 text-muted-foreground">
+                    <Gamepad2 className="h-16 w-16 mx-auto mb-4 opacity-20" />
+                    <p>Les activités interactives seront bientôt disponibles</p>
                   </div>
                 )}
               </CardContent>

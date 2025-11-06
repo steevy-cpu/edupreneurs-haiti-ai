@@ -29,7 +29,7 @@ export const SingleLessonGenerator = ({ lesson, onComplete }: SingleLessonGenera
   const [isOpen, setIsOpen] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
   const [selectedSections, setSelectedSections] = useState<SectionName[]>([
-    'objectif', 'introduction', 'contenu', 'exemples_exercices'
+    'objectif', 'introduction', 'contenu', 'exemples_exercices', 'activites_interactives'
   ]);
   const [wordCounts, setWordCounts] = useState(DEFAULT_WORD_COUNTS);
   const [globalContext, setGlobalContext] = useState("");
@@ -41,6 +41,7 @@ export const SingleLessonGenerator = ({ lesson, onComplete }: SingleLessonGenera
     { value: "introduction", label: "Introduction" },
     { value: "contenu", label: "Contenu principal" },
     { value: "exemples_exercices", label: "Exemples & Exercices" },
+    { value: "activites_interactives", label: "Activités Interactives" },
   ];
 
   const toggleSection = (section: SectionName) => {
@@ -81,25 +82,54 @@ export const SingleLessonGenerator = ({ lesson, onComplete }: SingleLessonGenera
       const startTime = Date.now();
 
       try {
-        const { data, error } = await supabase.functions.invoke('generate-lesson-section', {
-          body: {
-            lessonId: lesson.id,
-            sectionName,
-            lessonTitle: lesson.title,
-            subject: lesson.subjects?.name || 'Matière',
-            gradeLevel: lesson.grade_level || '7AF',
-            targetWords: wordCounts[sectionName],
-            context: globalContext || undefined,
-          }
-        });
+        let generatedContent: string;
+        let wordCount: number | undefined;
 
-        if (error) throw error;
-        if (!data?.content) throw new Error('Aucun contenu généré');
+        // Special handling for activites_interactives section
+        if (sectionName === 'activites_interactives') {
+          const { data: lessonData } = await supabase
+            .from('lessons')
+            .select('exemples_exercices, title, grade_level, subjects(name)')
+            .eq('id', lesson.id)
+            .single();
+
+          const { data, error } = await supabase.functions.invoke('generate-interactive-activities', {
+            body: {
+              exercisesContent: lessonData?.exemples_exercices || '',
+              lessonTitle: lessonData?.title || lesson.title,
+              gradeLevel: lessonData?.grade_level || lesson.grade_level,
+              subject: lessonData?.subjects?.name || lesson.subjects?.name || 'Matière',
+            }
+          });
+
+          if (error) throw error;
+          if (!data?.content) throw new Error('Aucun contenu généré');
+          generatedContent = data.content;
+          wordCount = data.content.split(/\s+/).length;
+        } else {
+          // Standard generation for other sections
+          const { data, error } = await supabase.functions.invoke('generate-lesson-section', {
+            body: {
+              lessonId: lesson.id,
+              sectionName,
+              lessonTitle: lesson.title,
+              subject: lesson.subjects?.name || 'Matière',
+              gradeLevel: lesson.grade_level || '7AF',
+              targetWords: wordCounts[sectionName],
+              context: globalContext || undefined,
+            }
+          });
+
+          if (error) throw error;
+          if (!data?.content) throw new Error('Aucun contenu généré');
+          generatedContent = data.content;
+          wordCount = data.wordCount;
+        }
 
         // Update lesson in database
         await supabase
           .from('lessons')
-          .update({ [sectionName]: data.content })
+          .update({ [sectionName]: generatedContent })
           .eq('id', lesson.id);
 
         // Log successful generation
@@ -108,8 +138,8 @@ export const SingleLessonGenerator = ({ lesson, onComplete }: SingleLessonGenera
           section_name: sectionName,
           target_words: wordCounts[sectionName],
           additional_context: globalContext,
-          response_content: data.content,
-          word_count: data.wordCount,
+          response_content: generatedContent,
+          word_count: wordCount,
           generation_time_ms: Date.now() - startTime,
           success: true,
           generated_by: (await supabase.auth.getUser()).data.user?.id,
