@@ -42,9 +42,10 @@ Ton rôle est de transformer des exercices traditionnels en activités interacti
 
 RÈGLES STRICTES:
 - Utilise UNIQUEMENT le français (PAS de Kreyòl)
-- Génère EXACTEMENT 5-7 activités variées
+- Génère AU MOINS 10-15 activités variées pour couvrir TOUS les exercices
 - PRÉSERVE LE CONTENU ORIGINAL des exercices autant que possible
 - Formate le contenu EXACTEMENT comme spécifié ci-dessous
+- TRANSFORME TOUS les exercices fournis (Exercice 1, 2, 3, 4, 5, 6, etc.)
 
 IMPORTANT: Le contenu des exercices peut être en HTML ou texte brut. Tu dois:
 1. Extraire le texte des exercices (ignorer toutes balises HTML)
@@ -118,11 +119,11 @@ Format:
 **Réponse correcte:** [Lettre]
 **Explication:** [Pourquoi c'est la bonne réponse]
 
-DISTRIBUTION RECOMMANDÉE:
-- 2-3 activités QUIZ
-- 1-2 activités MATCHING
-- 1-2 activités TRUEFALSE
-- 1-2 activités FILLIN
+DISTRIBUTION RECOMMANDÉE (pour 10-15 activités):
+- 4-5 activités QUIZ
+- 2-3 activités MATCHING
+- 2-3 activités TRUEFALSE
+- 2-4 activités FILLIN
 
 IMPORTANT: 
 - Sépare chaque activité par une ligne vide
@@ -148,12 +149,15 @@ Voici le contenu des exercices à transformer:
 ${cleanedContent}
 
 INSTRUCTIONS CRITIQUES:
-- TRANSFORME (ne réécris PAS) les exercices existants en format interactif
+- TRANSFORME (ne réécris PAS) TOUS les exercices existants en format interactif
+- Génère 10-15 activités pour couvrir TOUS les exercices (1, 2, 3, 4, 5, 6, etc.)
 - GARDE EXACTEMENT les mêmes phrases, questions, et exemples que dans le contenu source
 - Ton seul rôle est de REFORMATER en utilisant les types d'activités (QUIZ, MATCHING, etc.)
 - Si l'exercice dit "My sister _______ a beautiful voice", ton activité doit dire "My sister _______ a beautiful voice"
 - Si l'exercice dit "They _______ from Gonaïves", ton activité doit dire "They _______ from Gonaïves"
+- Si l'exercice dit "My uncle _______ a taxi", ton activité doit dire "My uncle _______ a taxi"
 - NE CHANGE PAS les noms, phrases, ou contextes - PRÉSERVE-LES FIDÈLEMENT
+- Assure-toi de transformer chaque exercice (pas seulement les 2 premiers)
 - Si les réponses ne sont pas indiquées, déduis-les logiquement basé sur la grammaire
 - Pour chaque activité, fournis une explication claire et pédagogique`;
 
