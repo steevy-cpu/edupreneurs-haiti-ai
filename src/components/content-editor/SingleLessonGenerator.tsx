@@ -360,8 +360,13 @@ export const SingleLessonGenerator = ({ lesson, onComplete }: SingleLessonGenera
       setProgress([]);
       setCurrentSection(0);
       
-      // Trigger parent refresh
-      onComplete();
+      // Close the dialog
+      setIsOpen(false);
+      
+      // Trigger parent refresh after a small delay to ensure dialog is closed
+      setTimeout(() => {
+        onComplete();
+      }, 100);
     } catch (error) {
       console.error('Error applying changes:', error);
       toast.error("Erreur lors de l'application des changements");
