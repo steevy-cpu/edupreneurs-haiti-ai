@@ -447,9 +447,9 @@ export const BatchLessonGenerator = () => {
             generated_by: user?.id,
           });
         }
-        }  // End of sections loop
+        }  // End of sections loop and if block
 
-        // Generate Quiz Final if selected
+        // Generate Quiz Final if selected (OUTSIDE the sections if block)
         if (generateQuiz) {
           try {
             console.log('📝 [Batch] Generating Quiz Final');
@@ -477,7 +477,7 @@ export const BatchLessonGenerator = () => {
           }
         }
 
-        // Suggest YouTube videos if selected
+        // Suggest YouTube videos if selected (OUTSIDE the sections if block)
         if (generateVideos) {
           try {
             console.log('🎥 [Batch] Suggesting YouTube videos');
