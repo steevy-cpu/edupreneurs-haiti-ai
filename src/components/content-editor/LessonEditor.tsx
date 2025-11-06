@@ -481,17 +481,38 @@ export const LessonEditor = ({ selectedLesson, onLessonUpdate }: LessonEditorPro
           <TabsContent value="preview" className="mt-3 md:mt-4 flex-1 overflow-auto">
             <div className="prose prose-sm md:prose dark:prose-invert max-w-none">
               <h1 className="text-xl md:text-3xl">{lessonData.title}</h1>
+              {lessonData.objectif && (
+                <div className="mb-4">
+                  <h2 className="text-lg md:text-xl font-semibold">Objectif</h2>
+                  <div dangerouslySetInnerHTML={{ __html: lessonData.objectif }} />
+                </div>
+              )}
               {lessonData.introduction && (
-                <div className="mb-4" dangerouslySetInnerHTML={{ __html: lessonData.introduction }} />
+                <div className="mb-4">
+                  <h2 className="text-lg md:text-xl font-semibold">Introduction</h2>
+                  <div dangerouslySetInnerHTML={{ __html: lessonData.introduction }} />
+                </div>
               )}
               {lessonData.contenu && (
-                <div
-                  className="mb-4"
-                  dangerouslySetInnerHTML={{ __html: lessonData.contenu }}
-                />
+                <div className="mb-4">
+                  <h2 className="text-lg md:text-xl font-semibold">Contenu</h2>
+                  <div dangerouslySetInnerHTML={{ __html: lessonData.contenu }} />
+                </div>
               )}
               {lessonData.exemples_exercices && (
-                <div dangerouslySetInnerHTML={{ __html: lessonData.exemples_exercices }} />
+                <div className="mb-4">
+                  <h2 className="text-lg md:text-xl font-semibold">Exemples & Exercices</h2>
+                  <div dangerouslySetInnerHTML={{ __html: lessonData.exemples_exercices }} />
+                </div>
+              )}
+              {lessonData.activites_interactives && (
+                <div className="mb-4">
+                  <h2 className="text-lg md:text-xl font-semibold">Activités Interactives</h2>
+                  <InteractiveActivitiesEnhanced 
+                    content={lessonData.activites_interactives}
+                    isLoading={false}
+                  />
+                </div>
               )}
             </div>
           </TabsContent>
