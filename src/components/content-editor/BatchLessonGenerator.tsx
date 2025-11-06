@@ -14,6 +14,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 import { toast } from "sonner";
 import { PlayCircle, PauseCircle, Download, RefreshCw, Loader2, CheckCircle2, XCircle, Clock, Eye, Check } from "lucide-react";
 import { DEFAULT_WORD_COUNTS, type SectionName } from "@/lib/lessonPrompts";
+import { InteractiveActivitiesEnhanced } from "@/components/InteractiveActivitiesEnhanced";
 
 type GenerationStatus = 'pending' | 'in_progress' | 'completed' | 'error';
 
@@ -929,10 +930,19 @@ export const BatchLessonGenerator = () => {
               {Object.entries(previewLesson.generatedContent).map(([sectionName, content]) => (
                 <div key={sectionName} className="space-y-2">
                   <h3 className="text-lg font-semibold">{getSectionLabel(sectionName)}</h3>
-                  <div 
-                    className="prose prose-sm max-w-none p-4 bg-muted rounded-lg"
-                    dangerouslySetInnerHTML={{ __html: content }}
-                  />
+                  {sectionName === 'activites_interactives' ? (
+                    <div className="p-4 bg-muted rounded-lg">
+                      <InteractiveActivitiesEnhanced 
+                        content={content}
+                        isLoading={false}
+                      />
+                    </div>
+                  ) : (
+                    <div 
+                      className="prose prose-sm max-w-none p-4 bg-muted rounded-lg"
+                      dangerouslySetInnerHTML={{ __html: content }}
+                    />
+                  )}
                 </div>
               ))}
             </div>
