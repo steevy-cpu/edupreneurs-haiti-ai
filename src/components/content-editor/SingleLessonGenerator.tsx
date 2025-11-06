@@ -343,8 +343,14 @@ export const SingleLessonGenerator = ({ lesson, onComplete }: SingleLessonGenera
       if (error) throw error;
 
       toast.success("Contenu appliqué avec succès");
+      
+      // Reset all states
       setShowPreview(false);
       setGeneratedContent({});
+      setProgress([]);
+      setCurrentSection(0);
+      
+      // Trigger parent refresh
       onComplete();
     } catch (error) {
       console.error('Error applying changes:', error);
