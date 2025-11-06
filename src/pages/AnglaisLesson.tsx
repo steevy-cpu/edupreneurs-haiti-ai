@@ -6,16 +6,18 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
 import {
-  ChevronLeft,
+  ArrowLeft,
   BookOpen,
   Target,
   FileText,
   Dumbbell,
   HelpCircle,
-  StickyNote
+  StickyNote,
+  Gamepad2
 } from "lucide-react";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { YouTubeVideoSection } from "@/components/YouTubeVideoSection";
+import { InteractiveActivitiesEnhanced } from "@/components/InteractiveActivitiesEnhanced";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
@@ -26,6 +28,7 @@ interface LessonData {
   introduction: string;
   contenu: string;
   exemples_exercices: string;
+  activites_interactives: string | null;
   mois: string;
   youtubeUrl?: string;
 }
@@ -42,7 +45,7 @@ export default function AnglaisLesson() {
       try {
         const { data, error } = await supabase
           .from('lessons')
-          .select('id, slug, title, objectif, introduction, contenu, exemples_exercices, mois, youtube_url')
+          .select('id, slug, title, objectif, introduction, contenu, exemples_exercices, activites_interactives, mois, youtube_url')
           .eq('slug', topicId)
           .eq('is_published', true)
           .single();
@@ -56,6 +59,7 @@ export default function AnglaisLesson() {
           introduction: data.introduction,
           contenu: data.contenu,
           exemples_exercices: data.exemples_exercices,
+          activites_interactives: data.activites_interactives,
           mois: data.mois,
           youtubeUrl: data.youtube_url
         });
@@ -145,7 +149,7 @@ export default function AnglaisLesson() {
                 size="icon"
                 onClick={() => navigate('/anglais-course')}
               >
-                <ChevronLeft className="w-5 h-5" />
+                <ArrowLeft className="w-5 h-5" />
               </Button>
               <div className="min-w-0">
                 <h1 className="text-xl font-bold truncate">{lesson.title}</h1>
@@ -178,7 +182,7 @@ export default function AnglaisLesson() {
 
         {/* Main Content Tabs */}
         <Tabs defaultValue="introduction" className="mb-6">
-          <TabsList className="grid w-full grid-cols-4 gap-1">
+          <TabsList className="grid w-full grid-cols-5 gap-1">
             <TabsTrigger value="introduction" className="flex items-center justify-center gap-2">
               <BookOpen className="h-4 w-4" />
               <span className="hidden md:inline">Introduction</span>
@@ -186,6 +190,10 @@ export default function AnglaisLesson() {
             <TabsTrigger value="contenu" className="flex items-center justify-center gap-2">
               <FileText className="h-4 w-4" />
               <span className="hidden md:inline">Contenu & Exemples</span>
+            </TabsTrigger>
+            <TabsTrigger value="activites" className="flex items-center justify-center gap-2">
+              <Gamepad2 className="h-4 w-4" />
+              <span className="hidden md:inline">Activités</span>
             </TabsTrigger>
             <TabsTrigger value="quiz" className="flex items-center justify-center gap-2">
               <HelpCircle className="h-4 w-4" />
@@ -222,6 +230,25 @@ export default function AnglaisLesson() {
                     dangerouslySetInnerHTML={{ __html: lesson.exemples_exercices }}
                   />
                 </>
+              )}
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="activites">
+            <Card className="p-6">
+              {lesson.activites_interactives ? (
+                <InteractiveActivitiesEnhanced 
+                  content={lesson.activites_interactives}
+                  isLoading={false}
+                />
+              ) : (
+                <div className="text-center py-12 space-y-4">
+                  <Gamepad2 className="w-16 h-16 mx-auto text-muted-foreground/50" />
+                  <h3 className="text-xl font-semibold">Activités Interactives</h3>
+                  <p className="text-muted-foreground max-w-md mx-auto">
+                    Les activités interactives pour cette leçon seront bientôt disponibles!
+                  </p>
+                </div>
               )}
             </Card>
           </TabsContent>
@@ -277,7 +304,7 @@ export default function AnglaisLesson() {
             variant="outline"
             onClick={() => navigate('/anglais-course')}
           >
-            <ChevronLeft className="w-4 h-4 mr-2" />
+            <ArrowLeft className="w-4 h-4 mr-2" />
             Retour au cours
           </Button>
         </div>

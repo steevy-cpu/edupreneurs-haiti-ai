@@ -60,7 +60,6 @@ import {
 } from "@/data/mathActivities";
 import { mathLessons } from "@/data/mathLessons";
 import { YouTubeVideoSection } from "@/components/YouTubeVideoSection";
-import { InteractiveActivitiesEnhanced } from "@/components/InteractiveActivitiesEnhanced";
 import { InteractiveQuiz } from "@/components/InteractiveQuiz";
 import { LessonSchemas } from "@/components/LessonSchemas";
 
