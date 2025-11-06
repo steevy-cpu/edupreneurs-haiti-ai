@@ -143,8 +143,8 @@ export const InteractiveActivitiesEnhanced = ({
       console.log(`\n🔍 Processing activity section ${idx}:`);
       console.log('First 300 chars:', section.substring(0, 300));
 
-      // Extract type from header line like: ### 🎯 Title **TYPE: QUIZ**
-      const headerMatch = section.match(/###\s*[^\n]*\*\*TYPE:\s*(QUIZ|MATCHING|TRUEFALSE|FILLIN)\*\*/i);
+      // Extract type - can be on same line or next line after ### header
+      const headerMatch = section.match(/###\s*[^\n]*[\n\s]*\*\*TYPE:\s*(QUIZ|MATCHING|TRUEFALSE|FILLIN)\*\*/i);
       if (!headerMatch) {
         console.warn(`⚠️ No type found in section ${idx}`);
         return;
