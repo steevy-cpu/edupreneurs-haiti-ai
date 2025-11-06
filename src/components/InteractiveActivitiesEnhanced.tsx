@@ -129,67 +129,75 @@ export const InteractiveActivitiesEnhanced = ({
   const parseActivities = (content: string): Activity[] => {
     console.log('🔍 Parsing activities content:', content.substring(0, 200));
     const activities: Activity[] = [];
-    const sections = content.split(/---+/);
+    
+    // Split by ### headers to separate activities
+    const sections = content.split(/(?=###\s)/);
     
     console.log('📊 Found activity sections:', sections.length);
 
     sections.forEach((section, idx) => {
       if (!section.trim()) return;
       
-      console.log(`🔍 Processing activity section ${idx}:`, section.substring(0, 100));
+      console.log(`🔍 Processing activity section ${idx}:`, section.substring(0, 150));
 
-      // Extract type - more flexible
-      let typeMatch = section.match(/TYPE:\s*(QUIZ|MATCHING|TRUEFALSE|FILLIN)/i);
-      if (!typeMatch) {
-        // Try alternate format
-        typeMatch = section.match(/(QUIZ|MATCHING|TRUEFALSE|FILLIN)/i);
-      }
-      if (!typeMatch) {
+      // Extract type from header line like: ### 🎯 Title **TYPE: QUIZ**
+      const headerMatch = section.match(/###\s*[^\n]*\*\*TYPE:\s*(QUIZ|MATCHING|TRUEFALSE|FILLIN)\*\*/i);
+      if (!headerMatch) {
         console.warn(`⚠️ No type found in section ${idx}`);
         return;
       }
       
-      const type = typeMatch[1].toUpperCase() as ActivityType;
+      const type = headerMatch[1].toUpperCase() as ActivityType;
       console.log(`📌 Activity type: ${type}`);
       
-      // Extract title and difficulty - more flexible
-      let titleMatch = section.match(/#{2,3}\s*[^\n]*Exercice\s*\d+\s*—\s*([^(]+)\(([^)]+)\)/i);
-      if (!titleMatch) {
-        titleMatch = section.match(/Exercice\s*\d+\s*[-—:]\s*([^\n(]+)/i);
-      }
+      // Extract title from header: ### 🎯 Title **TYPE: QUIZ**
+      const titleMatch = section.match(/###\s*(?:[^\s]+\s+)?(.+?)\s*\*\*TYPE:/i);
       if (!titleMatch) {
         console.warn(`⚠️ No title found in section ${idx}`);
         return;
       }
       
       const title = titleMatch[1].trim();
-      const difficulty = titleMatch[2]?.trim() || 'Moyen';
+      const difficulty = 'Moyen'; // Default difficulty since it's not in the new format
       
       console.log(`📝 Activity: ${title} (${difficulty})`);
 
       try {
         if (type === 'QUIZ' || type === 'FILLIN') {
-          const questionMatch = section.match(/TYPE:\s*(?:QUIZ|FILLIN)[^\n]*\n\s*(.+?)(?=\n\s*[A-D]\))/is);
-          if (!questionMatch) return;
+          // Match pattern: **Question:** followed by the question text
+          const questionMatch = section.match(/\*\*Question:\*\*\s*(.+?)(?=\n\s*-\s*[A-D]\))/is);
+          if (!questionMatch) {
+            console.warn(`⚠️ No question found in ${type} section ${idx}`);
+            return;
+          }
           
-          const question = questionMatch[1].trim().replace(/\*\*/g, '');
+          const question = questionMatch[1].trim().replace(/\*\*/g, '').replace(/\s+/g, ' ');
           
-          const optionMatches = section.matchAll(/([A-D])\)\s*(.+?)(?=\n\s*[A-D]\)|\n\s*#{2,3}|\n\n|$)/gis);
+          // Match options: - A) option text - B) option text etc.
+          const optionMatches = section.matchAll(/-\s*([A-D])\)\s*(.+?)(?=\n\s*-\s*[A-D]\)|\*\*Réponse|$)/gis);
           const options: string[] = [];
           Array.from(optionMatches).forEach(match => {
-            const optionText = match[2].trim().replace(/\*\*/g, '');
-            if (optionText) options.push(optionText);
+            const optionText = match[2].trim().replace(/\*\*/g, '').replace(/\s+/g, ' ');
+            if (optionText && !optionText.startsWith('Réponse')) options.push(optionText);
           });
           
-          if (options.length !== 4) return;
+          if (options.length !== 4) {
+            console.warn(`⚠️ Expected 4 options, found ${options.length} in section ${idx}`);
+            return;
+          }
           
-          const correctMatch = section.match(/Réponse\s+correcte\s*:\s*([A-D])/i);
-          if (!correctMatch) return;
+          // Match: **Réponse correcte:** C
+          const correctMatch = section.match(/\*\*Réponse\s+correcte:\*\*\s*([A-D])/i);
+          if (!correctMatch) {
+            console.warn(`⚠️ No correct answer found in section ${idx}`);
+            return;
+          }
           
           const correctIndex = correctMatch[1].toUpperCase().charCodeAt(0) - 'A'.charCodeAt(0);
           
-          const explanationMatch = section.match(/Explication\s*:\s*\n?\s*(.+?)(?=#{2,3}|$)/is);
-          const explanation = explanationMatch ? explanationMatch[1].trim().replace(/\*\*/g, '') : "";
+          // Match: **Explication:** explanation text
+          const explanationMatch = section.match(/\*\*Explication:\*\*\s*(.+?)(?=###|$)/is);
+          const explanation = explanationMatch ? explanationMatch[1].trim().replace(/\*\*/g, '').replace(/\s+/g, ' ') : "";
           
           if (type === 'QUIZ') {
             activities.push({
@@ -213,61 +221,80 @@ export const InteractiveActivitiesEnhanced = ({
             });
           }
         } else if (type === 'MATCHING') {
-          const instructionMatch = section.match(/TYPE:\s*MATCHING[^\n]*\n\s*(.+?)(?=COLONNE A:)/is);
-          const instruction = instructionMatch ? instructionMatch[1].trim() : "Associe les éléments";
+          // Match **Colonne A:** or **Associez chaque expression à son sens correct:**
+          const columnAMatches = section.matchAll(/\*\*Colonne\s+A:\*\*\s*((?:\d+\.\s*.+?\n?)+)/gis);
+          const columnBMatches = section.matchAll(/\*\*Colonne\s+B:\*\*\s*((?:[a-z]\)\s*.+?\n?)+)/gis);
           
-          const columnAMatch = section.match(/COLONNE A:\s*\n([\s\S]+?)(?=COLONNE B:)/i);
-          const columnBMatch = section.match(/COLONNE B:\s*\n([\s\S]+?)(?=#{2,3}\s*Réponse|$)/i);
+          const columnAArray = Array.from(columnAMatches);
+          const columnBArray = Array.from(columnBMatches);
           
-          if (!columnAMatch || !columnBMatch) return;
+          if (columnAArray.length === 0 || columnBArray.length === 0) {
+            console.warn(`⚠️ Columns not found in MATCHING section ${idx}`);
+            return;
+          }
           
-          const columnA: { id: number; text: string }[] = [];
-          const columnAItems = columnAMatch[1].matchAll(/(\d+)\.\s*(.+?)(?=\n\d+\.|\n*$)/gs);
-          Array.from(columnAItems).forEach(match => {
-            columnA.push({ id: parseInt(match[1]), text: match[2].trim() });
-          });
+          const columnAText = columnAArray[0][1];
+          const columnBText = columnBArray[0][1];
           
-          const columnB: { id: string; text: string }[] = [];
-          const columnBItems = columnBMatch[1].matchAll(/([A-D])\)\s*(.+?)(?=\n[A-D]\)|\n*$)/gs);
-          Array.from(columnBItems).forEach(match => {
-            columnB.push({ id: match[1], text: match[2].trim() });
-          });
+          const columnA = Array.from(columnAText.matchAll(/\d+\.\s*(.+?)(?=\n|$)/g))
+            .map((m, i) => ({ id: i + 1, text: m[1].trim().replace(/\*\*/g, '') }));
+          const columnB = Array.from(columnBText.matchAll(/([a-z])\)\s*(.+?)(?=\n|$)/gi))
+            .map(m => ({ id: m[1].toLowerCase(), text: m[2].trim().replace(/\*\*/g, '') }));
           
-          const correctMatch = section.match(/Réponse\s+correcte\s*:\s*(.+?)(?=\n#{2,3}|$)/is);
-          if (!correctMatch) return;
+          if (columnA.length === 0 || columnB.length === 0) {
+            console.warn(`⚠️ Empty columns in MATCHING section ${idx}`);
+            return;
+          }
+          
+          // Match: **Réponses:** 1-b, 2-a, 3-c
+          const answersMatch = section.match(/\*\*Réponses:\*\*\s*([\d\-a-z,\s]+)/i);
+          if (!answersMatch) {
+            console.warn(`⚠️ No answers found in MATCHING section ${idx}`);
+            return;
+          }
           
           const correctMatches: Record<number, string> = {};
-          const matches = correctMatch[1].matchAll(/(\d+)-([A-D])/g);
-          Array.from(matches).forEach(match => {
-            correctMatches[parseInt(match[1])] = match[2];
+          answersMatch[1].split(',').forEach(pair => {
+            const [num, letter] = pair.trim().split('-');
+            if (num && letter) {
+              correctMatches[parseInt(num)] = letter.trim().toLowerCase();
+            }
           });
           
-          const explanationMatch = section.match(/Explication\s*:\s*\n?\s*(.+?)(?=#{2,3}|$)/is);
-          const explanation = explanationMatch ? explanationMatch[1].trim() : "";
+          const explanationMatch = section.match(/\*\*Explication:\*\*\s*(.+?)(?=###|$)/is);
+          const explanation = explanationMatch ? explanationMatch[1].trim().replace(/\*\*/g, '').replace(/\s+/g, ' ') : "";
           
           activities.push({
             type: 'MATCHING',
             title,
             difficulty,
-            instruction,
+            instruction: "Associez les éléments suivants:",
             columnA,
             columnB,
             correctMatches,
             explanation
           });
         } else if (type === 'TRUEFALSE') {
-          const statementMatch = section.match(/TYPE:\s*TRUEFALSE[^\n]*\n\s*(.+?)(?=\n\s*A\))/is);
-          if (!statementMatch) return;
+          // Match the statement after the header until options
+          const statementMatch = section.match(/\*\*TYPE:\s*TRUEFALSE\*\*[^\n]*\n\s*\*\*(.+?)\*\*(?=\n\s*-\s*[A-B]\))/is);
+          if (!statementMatch) {
+            console.warn(`⚠️ No statement found in TRUEFALSE section ${idx}`);
+            return;
+          }
           
-          const statement = statementMatch[1].trim().replace(/\*\*/g, '');
+          const statement = statementMatch[1].trim().replace(/\*\*/g, '').replace(/\s+/g, ' ');
           
-          const correctMatch = section.match(/Réponse\s+correcte\s*:\s*([A-B])/i);
-          if (!correctMatch) return;
+          // Match: **Réponse correcte:** A or B
+          const correctMatch = section.match(/\*\*Réponse\s+correcte:\*\*\s*([A-B])/i);
+          if (!correctMatch) {
+            console.warn(`⚠️ No correct answer found in TRUEFALSE section ${idx}`);
+            return;
+          }
           
           const correctIndex = correctMatch[1].toUpperCase().charCodeAt(0) - 'A'.charCodeAt(0);
           
-          const explanationMatch = section.match(/Explication\s*:\s*\n?\s*(.+?)(?=#{2,3}|$)/is);
-          const explanation = explanationMatch ? explanationMatch[1].trim() : "";
+          const explanationMatch = section.match(/\*\*Explication:\*\*\s*(.+?)(?=###|$)/is);
+          const explanation = explanationMatch ? explanationMatch[1].trim().replace(/\*\*/g, '').replace(/\s+/g, ' ') : "";
           
           activities.push({
             type: 'TRUEFALSE',
