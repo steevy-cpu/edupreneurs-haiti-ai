@@ -1,5 +1,11 @@
 project_id = "xdyavylcmucjpueybdku"
 
+[functions.generate-quiz-final]
+verify_jwt = false
+
+[functions.suggest-youtube-videos]
+verify_jwt = false
+
 [functions.content-ai-assistant]
 verify_jwt = true
 

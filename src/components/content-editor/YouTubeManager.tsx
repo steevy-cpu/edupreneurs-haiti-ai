@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Youtube, Save, Trash2, Loader2 } from "lucide-react";
+import { Youtube, Save, Trash2, Loader2, Sparkles } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useContentEditorPermissions } from "@/hooks/useContentEditorPermissions";
 
@@ -29,6 +29,8 @@ export const YouTubeManager = ({ lesson, onUpdate }: YouTubeManagerProps) => {
   const [searchVideos, setSearchVideos] = useState<YouTubeVideo[]>([]);
   const [isLoadingVideos, setIsLoadingVideos] = useState(false);
   const [bannedVideoIds, setBannedVideoIds] = useState<Set<string>>(new Set());
+  const [aiSuggestedVideos, setAiSuggestedVideos] = useState<YouTubeVideo[]>([]);
+  const [isGeneratingAiSuggestions, setIsGeneratingAiSuggestions] = useState(false);
   
   const { canEdit, canDelete } = useContentEditorPermissions();
 
@@ -136,6 +138,74 @@ export const YouTubeManager = ({ lesson, onUpdate }: YouTubeManagerProps) => {
   };
 
   const videoId = extractVideoId(youtubeUrl);
+
+  const suggestWithAI = async () => {
+    if (!lesson?.title) {
+      toast.error("Impossible de suggérer des vidéos sans titre de leçon");
+      return;
+    }
+
+    setIsGeneratingAiSuggestions(true);
+    try {
+      const { data: lessonData } = await supabase
+        .from('lessons')
+        .select('contenu, exemples_exercices, title, grade_level, subjects(name)')
+        .eq('id', lesson.id)
+        .single();
+
+      const { data, error } = await supabase.functions.invoke('suggest-youtube-videos', {
+        body: {
+          lessonTitle: lessonData?.title || lesson.title,
+          contenu: lessonData?.contenu || '',
+          exemplesExercices: lessonData?.exemples_exercices || '',
+          gradeLevel: lessonData?.grade_level || lesson.grade_level,
+          subject: lessonData?.subjects?.name || 'Matière',
+        }
+      });
+
+      if (error) throw error;
+      
+      if (data?.videos && data.videos.length > 0) {
+        setAiSuggestedVideos(data.videos);
+        toast.success(`${data.videos.length} vidéo(s) suggérée(s) par IA`);
+      } else {
+        toast.info("Aucune vidéo trouvée pour cette leçon");
+      }
+    } catch (error: any) {
+      console.error('Error suggesting videos with AI:', error);
+      toast.error("Erreur lors de la suggestion de vidéos");
+    } finally {
+      setIsGeneratingAiSuggestions(false);
+    }
+  };
+
+  const applyAiVideo = async (videoId: string) => {
+    if (!canEdit) {
+      toast.error("Vous n'avez pas la permission de modifier cette vidéo");
+      return;
+    }
+
+    const videoUrl = `https://www.youtube.com/watch?v=${videoId}`;
+    setYoutubeUrl(videoUrl);
+    
+    try {
+      const { error } = await supabase
+        .from('lessons')
+        .update({
+          youtube_url: videoUrl,
+          updated_at: new Date().toISOString(),
+        })
+        .eq('id', lesson.id);
+
+      if (error) throw error;
+
+      toast.success("Vidéo appliquée avec succès");
+      onUpdate();
+    } catch (error) {
+      console.error('Error applying AI video:', error);
+      toast.error("Erreur lors de l'application de la vidéo");
+    }
+  };
 
   const banVideo = async (videoId: string) => {
     if (!canDelete) {
@@ -318,13 +388,95 @@ export const YouTubeManager = ({ lesson, onUpdate }: YouTubeManagerProps) => {
               </div>
             )}
 
+            {/* AI Suggested Videos */}
+            <div className="space-y-2 pt-4 border-t">
+              <div className="flex items-center justify-between">
+                <Label className="text-sm font-semibold">
+                  🤖 Vidéos suggérées par IA
+                </Label>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={suggestWithAI}
+                  disabled={isGeneratingAiSuggestions}
+                  className="h-7 text-xs"
+                >
+                  {isGeneratingAiSuggestions ? (
+                    <>
+                      <Loader2 className="mr-1 h-3 w-3 animate-spin" />
+                      Génération...
+                    </>
+                  ) : (
+                    <>
+                      <Sparkles className="mr-1 h-3 w-3" />
+                      Suggérer avec IA
+                    </>
+                  )}
+                </Button>
+              </div>
+              <p className="text-xs text-muted-foreground mb-3">
+                L'IA analyse le contenu de la leçon pour suggérer les meilleures vidéos
+              </p>
+              
+              {aiSuggestedVideos.length > 0 && (
+                <div className="space-y-3">
+                  {aiSuggestedVideos.map((video) => (
+                    <div
+                      key={video.id}
+                      className="rounded-lg overflow-hidden border bg-card"
+                    >
+                      <div className="aspect-video bg-muted relative group">
+                        <iframe
+                          src={`https://www.youtube.com/embed/${video.id}`}
+                          title={video.title}
+                          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                          allowFullScreen
+                          className="w-full h-full"
+                        />
+                      </div>
+                      <div className="p-3 bg-muted/30">
+                        <h4 className="font-medium text-xs line-clamp-2 mb-1">
+                          {video.title}
+                        </h4>
+                        <p className="text-xs text-muted-foreground line-clamp-2 mb-2">
+                          {video.description}
+                        </p>
+                        <div className="flex gap-2">
+                          <Button
+                            size="sm"
+                            onClick={() => applyAiVideo(video.id)}
+                            disabled={!canEdit}
+                            className="flex-1 h-7 text-xs"
+                          >
+                            <Save className="mr-1 h-3 w-3" />
+                            Appliquer
+                          </Button>
+                          {canDelete && (
+                            <Button
+                              size="sm"
+                              variant="destructive"
+                              onClick={() => banVideo(video.id)}
+                              className="h-7 w-7 p-0"
+                              title="Bannir cette vidéo"
+                            >
+                              <Trash2 className="h-3 w-3" />
+                            </Button>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
             {/* YouTube Search Results */}
             <div className="space-y-2 pt-4 border-t">
               <Label className="text-sm font-semibold">
-                📹 Vidéos suggérées (affichées aux étudiants)
+                📹 Vidéos de recherche automatique
               </Label>
               <p className="text-xs text-muted-foreground mb-3">
-                Ces vidéos sont automatiquement suggérées en fonction du titre de la leçon
+                Recherche basique basée sur le titre de la leçon
               </p>
               
               {isLoadingVideos ? (

@@ -39,6 +39,8 @@ export const BatchLessonGenerator = () => {
   const [selectedSections, setSelectedSections] = useState<SectionName[]>([
     'objectif', 'introduction', 'contenu', 'exemples_exercices', 'activites_interactives'
   ]);
+  const [generateQuiz, setGenerateQuiz] = useState(false);
+  const [generateVideos, setGenerateVideos] = useState(false);
   const [onlyEmpty, setOnlyEmpty] = useState(false);
   const [wordCounts, setWordCounts] = useState(DEFAULT_WORD_COUNTS);
   const [globalContext, setGlobalContext] = useState("");
@@ -445,6 +447,64 @@ export const BatchLessonGenerator = () => {
           });
         }
 
+        // Generate Quiz Final if selected
+        if (generateQuiz) {
+          try {
+            console.log('📝 [Batch] Generating Quiz Final');
+            
+            const { data: quizData, error: quizError } = await supabase.functions.invoke('generate-quiz-final', {
+              body: {
+                lessonTitle: lesson.title,
+                contenu: lesson.contenu || '',
+                exemplesExercices: lesson.exemples_exercices || '',
+                gradeLevel: lesson.grade_level,
+                subject: lesson.subjects?.name || 'Matière',
+              }
+            });
+
+            if (!quizError && quizData?.quizContent) {
+              await supabase
+                .from('lessons')
+                .update({ quiz_final: quizData.quizContent })
+                .eq('id', lesson.id);
+              
+              console.log('✅ [Batch] Quiz Final generated');
+            }
+          } catch (error) {
+            console.error('❌ [Batch] Error generating quiz:', error);
+          }
+        }
+
+        // Suggest YouTube videos if selected
+        if (generateVideos) {
+          try {
+            console.log('🎥 [Batch] Suggesting YouTube videos');
+            
+            const { data: videoData, error: videoError } = await supabase.functions.invoke('suggest-youtube-videos', {
+              body: {
+                lessonTitle: lesson.title,
+                contenu: lesson.contenu || '',
+                exemplesExercices: lesson.exemples_exercices || '',
+                gradeLevel: lesson.grade_level,
+                subject: lesson.subjects?.name || 'Matière',
+              }
+            });
+
+            if (!videoError && videoData?.videos && videoData.videos.length > 0) {
+              // Store the first suggested video as the lesson's youtube_url
+              const firstVideo = videoData.videos[0];
+              await supabase
+                .from('lessons')
+                .update({ youtube_url: `https://www.youtube.com/watch?v=${firstVideo.id}` })
+                .eq('id', lesson.id);
+              
+              console.log('✅ [Batch] Video suggested and applied');
+            }
+          } catch (error) {
+            console.error('❌ [Batch] Error suggesting videos:', error);
+          }
+        }
+
         success = true;
         const generationTime = Date.now() - startTime;
         
@@ -706,21 +766,49 @@ export const BatchLessonGenerator = () => {
           </div>
 
           {/* Section Selection */}
-          <div className="space-y-2">
-            <Label>Sections à générer</Label>
-            <div className="flex flex-wrap gap-2">
-              {sections.map(section => (
-                <div key={section.value} className="flex items-center space-x-2">
+          <div className="space-y-3">
+            <div>
+              <Label className="text-base">Sections de contenu</Label>
+              <div className="flex flex-wrap gap-2 mt-2">
+                {sections.map(section => (
+                  <div key={section.value} className="flex items-center space-x-2">
+                    <Checkbox
+                      id={section.value}
+                      checked={selectedSections.includes(section.value)}
+                      onCheckedChange={() => toggleSection(section.value)}
+                    />
+                    <label htmlFor={section.value} className="text-sm cursor-pointer">
+                      {section.label}
+                    </label>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div className="border-t pt-3">
+              <Label className="text-base">Fonctionnalités additionnelles</Label>
+              <div className="flex flex-wrap gap-2 mt-2">
+                <div className="flex items-center space-x-2">
                   <Checkbox
-                    id={section.value}
-                    checked={selectedSections.includes(section.value)}
-                    onCheckedChange={() => toggleSection(section.value)}
+                    id="batch-quiz-final"
+                    checked={generateQuiz}
+                    onCheckedChange={(checked) => setGenerateQuiz(checked as boolean)}
                   />
-                  <label htmlFor={section.value} className="text-sm cursor-pointer">
-                    {section.label}
+                  <label htmlFor="batch-quiz-final" className="text-sm cursor-pointer">
+                    📝 Quiz Final (10-15 questions)
                   </label>
                 </div>
-              ))}
+                <div className="flex items-center space-x-2">
+                  <Checkbox
+                    id="batch-video-suggest"
+                    checked={generateVideos}
+                    onCheckedChange={(checked) => setGenerateVideos(checked as boolean)}
+                  />
+                  <label htmlFor="batch-video-suggest" className="text-sm cursor-pointer">
+                    🎥 Appliquer vidéos YouTube automatiquement
+                  </label>
+                </div>
+              </div>
             </div>
           </div>
 

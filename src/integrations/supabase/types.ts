@@ -510,6 +510,7 @@ export type Database = {
           mois: string | null
           objectif: string | null
           order_index: number
+          quiz_final: string | null
           references: string[] | null
           review_notes: string | null
           reviewed_by: string | null
@@ -534,6 +535,7 @@ export type Database = {
           mois?: string | null
           objectif?: string | null
           order_index?: number
+          quiz_final?: string | null
           references?: string[] | null
           review_notes?: string | null
           reviewed_by?: string | null
@@ -560,6 +562,7 @@ export type Database = {
           mois?: string | null
           objectif?: string | null
           order_index?: number
+          quiz_final?: string | null
           references?: string[] | null
           review_notes?: string | null
           reviewed_by?: string | null

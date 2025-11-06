@@ -139,6 +139,24 @@ export const LessonPreview = ({ lesson }: LessonPreviewProps) => {
         </Card>
       )}
 
+      {/* Quiz Final */}
+      {lesson.quiz_final && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-primary">
+              <FileText className="h-5 w-5" />
+              Quiz Final
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div 
+              className="prose dark:prose-invert max-w-none"
+              dangerouslySetInnerHTML={{ __html: lesson.quiz_final }}
+            />
+          </CardContent>
+        </Card>
+      )}
+
       {/* YouTube Video */}
       {lesson.youtube_url && (
         <Card>

@@ -31,6 +31,8 @@ export const SingleLessonGenerator = ({ lesson, onComplete }: SingleLessonGenera
   const [selectedSections, setSelectedSections] = useState<SectionName[]>([
     'objectif', 'introduction', 'contenu', 'exemples_exercices', 'activites_interactives'
   ]);
+  const [generateQuiz, setGenerateQuiz] = useState(false);
+  const [generateVideos, setGenerateVideos] = useState(false);
   const [wordCounts, setWordCounts] = useState(DEFAULT_WORD_COUNTS);
   const [globalContext, setGlobalContext] = useState("");
   const [progress, setProgress] = useState<SectionProgress[]>([]);
@@ -42,6 +44,11 @@ export const SingleLessonGenerator = ({ lesson, onComplete }: SingleLessonGenera
     { value: "contenu", label: "Contenu principal" },
     { value: "exemples_exercices", label: "Exemples & Exercices" },
     { value: "activites_interactives", label: "Activités Interactives" },
+  ];
+
+  const additionalFeatures = [
+    { key: 'quiz', label: 'Quiz Final (10-15 questions)' },
+    { key: 'videos', label: 'Vidéos YouTube (suggestions IA)' },
   ];
 
   const toggleSection = (section: SectionName) => {
@@ -182,6 +189,71 @@ export const SingleLessonGenerator = ({ lesson, onComplete }: SingleLessonGenera
       }
     }
 
+    // Generate Quiz Final if selected
+    if (generateQuiz) {
+      try {
+        const { data: lessonData } = await supabase
+          .from('lessons')
+          .select('contenu, exemples_exercices, title, grade_level, subjects(name)')
+          .eq('id', lesson.id)
+          .single();
+
+        const { data, error } = await supabase.functions.invoke('generate-quiz-final', {
+          body: {
+            lessonTitle: lessonData?.title || lesson.title,
+            contenu: lessonData?.contenu || '',
+            exemplesExercices: lessonData?.exemples_exercices || '',
+            gradeLevel: lessonData?.grade_level || lesson.grade_level,
+            subject: lessonData?.subjects?.name || 'Matière',
+          }
+        });
+
+        if (error) throw error;
+        if (data?.quizContent) {
+          await supabase
+            .from('lessons')
+            .update({ quiz_final: data.quizContent })
+            .eq('id', lesson.id);
+          
+          toast.success("Quiz final généré avec succès");
+          successCount++;
+        }
+      } catch (error) {
+        console.error('Error generating quiz:', error);
+        toast.error("Erreur lors de la génération du quiz");
+      }
+    }
+
+    // Suggest YouTube videos if selected
+    if (generateVideos) {
+      try {
+        const { data: lessonData } = await supabase
+          .from('lessons')
+          .select('contenu, exemples_exercices, title, grade_level, subjects(name)')
+          .eq('id', lesson.id)
+          .single();
+
+        const { data, error } = await supabase.functions.invoke('suggest-youtube-videos', {
+          body: {
+            lessonTitle: lessonData?.title || lesson.title,
+            contenu: lessonData?.contenu || '',
+            exemplesExercices: lessonData?.exemples_exercices || '',
+            gradeLevel: lessonData?.grade_level || lesson.grade_level,
+            subject: lessonData?.subjects?.name || 'Matière',
+          }
+        });
+
+        if (error) throw error;
+        if (data?.videos && data.videos.length > 0) {
+          toast.success(`${data.videos.length} vidéo(s) suggérée(s) - Consultez l'onglet Vidéos`);
+          successCount++;
+        }
+      } catch (error) {
+        console.error('Error suggesting videos:', error);
+        toast.error("Erreur lors de la suggestion de vidéos");
+      }
+    }
+
     setIsGenerating(false);
     
     if (successCount > 0) {
@@ -227,22 +299,52 @@ export const SingleLessonGenerator = ({ lesson, onComplete }: SingleLessonGenera
 
         <div className="space-y-6">
           {/* Section Selection */}
-          <div className="space-y-2">
-            <Label>Sections à générer</Label>
-            <div className="flex flex-wrap gap-2">
-              {sections.map(section => (
-                <div key={section.value} className="flex items-center space-x-2">
+          <div className="space-y-3">
+            <div>
+              <Label className="text-base">Sections de contenu</Label>
+              <div className="flex flex-wrap gap-2 mt-2">
+                {sections.map(section => (
+                  <div key={section.value} className="flex items-center space-x-2">
+                    <Checkbox
+                      id={section.value}
+                      checked={selectedSections.includes(section.value)}
+                      onCheckedChange={() => toggleSection(section.value)}
+                      disabled={isGenerating}
+                    />
+                    <label htmlFor={section.value} className="text-sm cursor-pointer">
+                      {section.label}
+                    </label>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div className="border-t pt-3">
+              <Label className="text-base">Fonctionnalités additionnelles</Label>
+              <div className="flex flex-wrap gap-2 mt-2">
+                <div className="flex items-center space-x-2">
                   <Checkbox
-                    id={section.value}
-                    checked={selectedSections.includes(section.value)}
-                    onCheckedChange={() => toggleSection(section.value)}
+                    id="quiz-final"
+                    checked={generateQuiz}
+                    onCheckedChange={(checked) => setGenerateQuiz(checked as boolean)}
                     disabled={isGenerating}
                   />
-                  <label htmlFor={section.value} className="text-sm cursor-pointer">
-                    {section.label}
+                  <label htmlFor="quiz-final" className="text-sm cursor-pointer">
+                    📝 Quiz Final (10-15 questions)
                   </label>
                 </div>
-              ))}
+                <div className="flex items-center space-x-2">
+                  <Checkbox
+                    id="video-suggest"
+                    checked={generateVideos}
+                    onCheckedChange={(checked) => setGenerateVideos(checked as boolean)}
+                    disabled={isGenerating}
+                  />
+                  <label htmlFor="video-suggest" className="text-sm cursor-pointer">
+                    🎥 Suggérer vidéos YouTube
+                  </label>
+                </div>
+              </div>
             </div>
           </div>
 
