@@ -349,9 +349,15 @@ export const BatchLessonGenerator = () => {
           if (sectionName === 'activites_interactives') {
             console.log('🎮 [Batch] Generating interactive activities');
             
+            // Combine both contenu and exemples_exercices to get all exercises
+            const fullContent = [
+              lesson.contenu || '',
+              lesson.exemples_exercices || ''
+            ].filter(Boolean).join('\n\n');
+            
             const { data, error } = await supabase.functions.invoke('generate-interactive-activities', {
               body: {
-                exercisesContent: lesson.exemples_exercices || '',
+                exercisesContent: fullContent,
                 lessonTitle: lesson.title,
                 gradeLevel: lesson.grade_level,
                 subject: subjectName,
