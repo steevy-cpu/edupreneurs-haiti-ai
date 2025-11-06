@@ -300,6 +300,12 @@ export const SingleLessonGenerator = ({ lesson, onComplete }: SingleLessonGenera
             p.name === 'youtube_url' ? { ...p, status: 'completed' } : p
           ));
           successCount++;
+        } else {
+          // No videos found
+          setProgress(prev => prev.map(p => 
+            p.name === 'youtube_url' ? { ...p, status: 'error', error: 'Aucune vidéo trouvée' } : p
+          ));
+          errorCount++;
         }
       } catch (error: any) {
         console.error('Error suggesting videos:', error);
@@ -317,7 +323,11 @@ export const SingleLessonGenerator = ({ lesson, onComplete }: SingleLessonGenera
     
     if (successCount > 0) {
       setShowPreview(true);
-      toast.success(`${successCount} élément(s) généré(s) - Consultez l'aperçu`);
+      if (errorCount > 0) {
+        toast.warning(`${successCount} élément(s) généré(s), ${errorCount} erreur(s) - Consultez l'aperçu`);
+      } else {
+        toast.success(`${successCount} élément(s) généré(s) - Consultez l'aperçu`);
+      }
     } else {
       toast.error("Aucun contenu n'a pu être généré");
     }
@@ -496,25 +506,33 @@ export const SingleLessonGenerator = ({ lesson, onComplete }: SingleLessonGenera
               </div>
 
               <div className="space-y-2">
-                {progress.map((section) => (
-                  <div key={section.name} className="flex items-center justify-between p-3 border rounded-lg">
-                    <div className="flex items-center gap-3">
-                      {getStatusIcon(section.status)}
-                      <div>
-                        <p className="text-sm font-medium capitalize">{section.name}</p>
-                        {section.error && (
-                          <p className="text-xs text-destructive">{section.error}</p>
-                        )}
+                {progress.map((section) => {
+                  const displayName = section.name === 'quiz_final' ? 'Quiz Final' :
+                                     section.name === 'youtube_url' ? 'Vidéos YouTube' :
+                                     section.name;
+                  return (
+                    <div key={section.name} className="flex items-center justify-between p-3 border rounded-lg">
+                      <div className="flex items-center gap-3">
+                        {getStatusIcon(section.status)}
+                        <div>
+                          <p className="text-sm font-medium capitalize">{displayName}</p>
+                          {section.error && (
+                            <p className="text-xs text-destructive">{section.error}</p>
+                          )}
+                        </div>
                       </div>
+                      {section.status === 'completed' && (
+                        <Badge variant="default">Terminé</Badge>
+                      )}
+                      {section.status === 'generating' && (
+                        <Badge variant="secondary">En cours...</Badge>
+                      )}
+                      {section.status === 'error' && (
+                        <Badge variant="destructive">Erreur</Badge>
+                      )}
                     </div>
-                    {section.status === 'completed' && (
-                      <Badge variant="default">Terminé</Badge>
-                    )}
-                    {section.status === 'generating' && (
-                      <Badge variant="secondary">En cours...</Badge>
-                    )}
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             </div>
           )}
@@ -539,8 +557,15 @@ export const SingleLessonGenerator = ({ lesson, onComplete }: SingleLessonGenera
           </Button>
 
           {!isGenerating && progress.length > 0 && !showPreview && (
-            <div className="text-sm text-muted-foreground text-center">
-              {progress.filter(p => p.status === 'completed').length} section(s) générée(s) avec succès
+            <div className="space-y-2 text-center">
+              <div className="text-sm text-muted-foreground">
+                {progress.filter(p => p.status === 'completed').length} section(s) générée(s) avec succès
+              </div>
+              {progress.filter(p => p.status === 'error').length > 0 && (
+                <div className="text-sm text-destructive">
+                  {progress.filter(p => p.status === 'error').length} erreur(s)
+                </div>
+              )}
             </div>
           )}
 
