@@ -144,9 +144,15 @@ export const LessonEditor = ({ selectedLesson, onLessonUpdate }: LessonEditorPro
 
         if (section === 'activites_interactives') {
           // Special handling for interactive activities
+          // Combine both contenu and exemples_exercices to get all exercises
+          const fullContent = [
+            lessonData.contenu || selectedLesson.contenu || '',
+            lessonData.exemples_exercices || selectedLesson.exemples_exercices || ''
+          ].filter(Boolean).join('\n\n');
+          
           const { data, error } = await supabase.functions.invoke('generate-interactive-activities', {
             body: {
-              exercisesContent: lessonData.exemples_exercices || selectedLesson.exemples_exercices || '',
+              exercisesContent: fullContent,
               lessonTitle: selectedLesson.title,
               gradeLevel: selectedLesson.grade_level || '7AF',
               subject: selectedLesson.subjects?.name || 'Matière',

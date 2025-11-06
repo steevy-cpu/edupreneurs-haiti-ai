@@ -89,13 +89,19 @@ export const SingleLessonGenerator = ({ lesson, onComplete }: SingleLessonGenera
         if (sectionName === 'activites_interactives') {
           const { data: lessonData } = await supabase
             .from('lessons')
-            .select('exemples_exercices, title, grade_level, subjects(name)')
+            .select('contenu, exemples_exercices, title, grade_level, subjects(name)')
             .eq('id', lesson.id)
             .single();
 
+          // Combine both contenu and exemples_exercices to get all exercises
+          const fullContent = [
+            lessonData?.contenu || '',
+            lessonData?.exemples_exercices || ''
+          ].filter(Boolean).join('\n\n');
+
           const { data, error } = await supabase.functions.invoke('generate-interactive-activities', {
             body: {
-              exercisesContent: lessonData?.exemples_exercices || '',
+              exercisesContent: fullContent,
               lessonTitle: lessonData?.title || lesson.title,
               gradeLevel: lessonData?.grade_level || lesson.grade_level,
               subject: lessonData?.subjects?.name || lesson.subjects?.name || 'Matière',
