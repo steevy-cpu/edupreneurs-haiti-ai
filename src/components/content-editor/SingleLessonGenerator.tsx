@@ -72,14 +72,19 @@ export const SingleLessonGenerator = ({ lesson, onComplete }: SingleLessonGenera
 
     setIsGenerating(true);
     setCurrentSection(0);
+    
+    // Calculate total tasks (sections + quiz + videos)
+    const totalTasks = selectedSections.length + (generateQuiz ? 1 : 0) + (generateVideos ? 1 : 0);
     setProgress(selectedSections.map(name => ({ name, status: 'pending' })));
 
     let successCount = 0;
     let errorCount = 0;
+    let currentTask = 0;
 
     for (let i = 0; i < selectedSections.length; i++) {
       const sectionName = selectedSections[i];
-      setCurrentSection(i + 1);
+      currentTask++;
+      setCurrentSection(currentTask);
       
       // Update status to generating
       setProgress(prev => prev.map(p => 
@@ -191,7 +196,11 @@ export const SingleLessonGenerator = ({ lesson, onComplete }: SingleLessonGenera
 
     // Generate Quiz Final if selected
     if (generateQuiz) {
+      currentTask++;
+      setCurrentSection(currentTask);
+      
       try {
+        toast.info("Génération du Quiz Final...");
         const { data: lessonData } = await supabase
           .from('lessons')
           .select('contenu, exemples_exercices, title, grade_level, subjects(name)')
@@ -226,7 +235,11 @@ export const SingleLessonGenerator = ({ lesson, onComplete }: SingleLessonGenera
 
     // Suggest YouTube videos if selected
     if (generateVideos) {
+      currentTask++;
+      setCurrentSection(currentTask);
+      
       try {
+        toast.info("Suggestion de vidéos YouTube...");
         const { data: lessonData } = await supabase
           .from('lessons')
           .select('contenu, exemples_exercices, title, grade_level, subjects(name)')
@@ -256,11 +269,14 @@ export const SingleLessonGenerator = ({ lesson, onComplete }: SingleLessonGenera
 
     setIsGenerating(false);
     
+    const totalGenerated = successCount;
+    const totalAttempted = totalTasks;
+    
     if (successCount > 0) {
-      toast.success(`${successCount} section(s) générée(s)${errorCount > 0 ? `, ${errorCount} erreur(s)` : ''}`);
+      toast.success(`${successCount} élément(s) généré(s)${errorCount > 0 ? `, ${errorCount} erreur(s)` : ''}`);
       onComplete();
     } else {
-      toast.error("Aucune section n'a pu être générée");
+      toast.error("Aucun contenu n'a pu être généré");
     }
   };
 
@@ -273,8 +289,8 @@ export const SingleLessonGenerator = ({ lesson, onComplete }: SingleLessonGenera
     }
   };
 
-  const progressPercentage = selectedSections.length > 0 
-    ? (currentSection / selectedSections.length) * 100 
+  const progressPercentage = selectedSections.length + (generateQuiz ? 1 : 0) + (generateVideos ? 1 : 0) > 0 
+    ? (currentSection / (selectedSections.length + (generateQuiz ? 1 : 0) + (generateVideos ? 1 : 0))) * 100 
     : 0;
 
   return (
@@ -387,7 +403,7 @@ export const SingleLessonGenerator = ({ lesson, onComplete }: SingleLessonGenera
               <div className="space-y-2">
                 <div className="flex justify-between text-sm">
                   <span>Progression</span>
-                  <span>{currentSection}/{selectedSections.length} sections</span>
+                  <span>{currentSection}/{selectedSections.length + (generateQuiz ? 1 : 0) + (generateVideos ? 1 : 0)} éléments</span>
                 </div>
                 <Progress value={progressPercentage} />
               </div>
@@ -422,12 +438,12 @@ export const SingleLessonGenerator = ({ lesson, onComplete }: SingleLessonGenera
             disabled={isGenerating || (selectedSections.length === 0 && !generateQuiz && !generateVideos)}
             className="w-full"
           >
-            {isGenerating ? (
-              <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Génération en cours... ({currentSection}/{selectedSections.length})
-              </>
-            ) : (
+              {isGenerating ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Génération en cours... ({currentSection}/{selectedSections.length + (generateQuiz ? 1 : 0) + (generateVideos ? 1 : 0)})
+                </>
+              ) : (
               <>
                 <Sparkles className="mr-2 h-4 w-4" />
                 Démarrer la génération

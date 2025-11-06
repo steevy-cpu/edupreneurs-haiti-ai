@@ -332,8 +332,9 @@ export const BatchLessonGenerator = () => {
 
     while (retryCount < maxRetries && !success && !isPaused) {
       try {
-        // Generate each selected section
-        for (const sectionName of selectedSections) {
+        // Generate each selected section (only if sections are selected)
+        if (selectedSections.length > 0) {
+          for (const sectionName of selectedSections) {
           const shouldGenerate = onlyEmpty ? !lesson[sectionName] || lesson[sectionName].trim() === '' : true;
           
           if (!shouldGenerate) {
@@ -446,6 +447,7 @@ export const BatchLessonGenerator = () => {
             generated_by: user?.id,
           });
         }
+        }  // End of sections loop
 
         // Generate Quiz Final if selected
         if (generateQuiz) {
