@@ -5,6 +5,25 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
+// Utility function to strip HTML tags and convert to plain text
+function stripHtml(html: string): string {
+  return html
+    .replace(/<br\s*\/?>/gi, '\n')           // Convert <br> to newlines
+    .replace(/<\/p>/gi, '\n\n')              // Convert </p> to double newlines
+    .replace(/<\/li>/gi, '\n')               // Convert </li> to newlines
+    .replace(/<[^>]*>/g, '')                 // Remove all other HTML tags
+    .replace(/&nbsp;/gi, ' ')                // Replace &nbsp; with space
+    .replace(/&quot;/gi, '"')                // Replace &quot; with "
+    .replace(/&apos;/gi, "'")                // Replace &apos; with '
+    .replace(/&amp;/gi, '&')                 // Replace &amp; with &
+    .replace(/&lt;/gi, '<')                  // Replace &lt; with <
+    .replace(/&gt;/gi, '>')                  // Replace &gt; with >
+    .replace(/\s+/g, ' ')                    // Normalize whitespace
+    .split('\n').map(line => line.trim())    // Trim each line
+    .join('\n')
+    .trim();
+}
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
@@ -27,6 +46,12 @@ RÈGLES STRICTES:
 - Utilise le contexte haïtien dans les exemples
 - Formate le contenu EXACTEMENT comme spécifié ci-dessous
 
+IMPORTANT: Le contenu des exercices peut être en HTML ou texte brut. Tu dois:
+1. Extraire le texte des exercices (ignorer toutes balises HTML)
+2. Identifier les questions et leurs options (A, B, C, D ou a, b, c, d ou 1, 2, 3, 4)
+3. Si les réponses correctes ne sont pas explicites, déduis-les logiquement basé sur la grammaire/contexte
+4. Créer des explications claires pour chaque réponse
+
 FORMATS D'ACTIVITÉS DISPONIBLES:
 
 1. QUIZ - Questions à choix multiples
@@ -34,13 +59,14 @@ Format:
 ### 🎯 [Titre de l'activité]
 **TYPE: QUIZ**
 
-**Question:** [Question]
+**Question:** [Question claire et concise]
 - A) [Option 1]
 - B) [Option 2]
 - C) [Option 3]
 - D) [Option 4]
 
 **Réponse correcte:** [Lettre de la bonne réponse]
+**Explication:** [Explication pédagogique de pourquoi c'est la bonne réponse]
 
 2. MATCHING - Associer des éléments
 Format:
@@ -60,6 +86,7 @@ b) [Correspondance pour un élément]
 c) [Correspondance pour un élément]
 
 **Réponses:** 1-[lettre], 2-[lettre], 3-[lettre]
+**Explication:** [Brève explication des associations]
 
 3. TRUEFALSE - Vrai ou Faux
 Format:
@@ -68,7 +95,10 @@ Format:
 
 **[Affirmation à évaluer]**
 
-**Réponse:** [VRAI ou FAUX]
+- A) VRAI
+- B) FAUX
+
+**Réponse correcte:** [A ou B]
 **Explication:** [Courte explication]
 
 4. FILLIN - Remplir les blancs
@@ -77,9 +107,15 @@ Format:
 **TYPE: FILLIN**
 
 **Complétez la phrase:**
-[Phrase avec des _____ pour les blancs]
+[Phrase avec _______ pour les blancs]
 
-**Réponses:** [mot1], [mot2], [mot3]
+- A) [Option 1]
+- B) [Option 2]
+- C) [Option 3]
+- D) [Option 4]
+
+**Réponse correcte:** [Lettre]
+**Explication:** [Pourquoi c'est la bonne réponse]
 
 DISTRIBUTION RECOMMANDÉE:
 - 2-3 activités QUIZ
@@ -87,19 +123,34 @@ DISTRIBUTION RECOMMANDÉE:
 - 1-2 activités TRUEFALSE
 - 1-2 activités FILLIN
 
-IMPORTANT: Sépare chaque activité par une ligne vide et commence toujours par le titre avec ###.`;
+IMPORTANT: 
+- Sépare chaque activité par une ligne vide
+- Commence toujours par le titre avec ###
+- Utilise des noms haïtiens (Marie, Jean, Paul, Rose, etc.)
+- Utilise des villes haïtiennes (Port-au-Prince, Cap-Haïtien, Gonaïves, Jacmel, etc.)
+- Adapte les exemples au contexte haïtien`;
+
+    // Strip HTML and clean the content
+    const cleanedContent = stripHtml(exercisesContent);
+
+    console.log('Original exercises length:', exercisesContent.length);
+    console.log('Cleaned exercises length:', cleanedContent.length);
+    console.log('First 500 chars of cleaned:', cleanedContent.substring(0, 500));
 
     const userPrompt = `Leçon: "${lessonTitle}"
 Niveau: ${gradeLevel}
 Matière: ${subject}
 
-Voici le contenu des exercices à transformer en activités interactives:
+Voici le contenu des exercices à transformer:
 
-${exercisesContent}
+${cleanedContent}
 
-Génère 5-7 activités interactives variées en suivant EXACTEMENT les formats spécifiés.
-Assure-toi que les activités couvrent les concepts clés de la leçon.
-Utilise le contexte haïtien dans les exemples (villes, prénoms, situations locales).`;
+INSTRUCTIONS:
+- Génère 5-7 activités interactives variées en suivant EXACTEMENT les formats spécifiés
+- Si les réponses ne sont pas indiquées, déduis-les logiquement
+- Assure-toi que les activités couvrent les concepts clés de la leçon
+- Utilise le contexte haïtien dans les exemples (villes, prénoms, situations locales)
+- Pour chaque activité, fournis une explication claire et pédagogique`;
 
     console.log('Generating interactive activities with Lovable AI...');
 

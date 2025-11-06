@@ -11,9 +11,10 @@ import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { toast } from "sonner";
-import { Save, Eye, FileText, Users, AlertTriangle, Sparkles, Loader2 } from "lucide-react";
+import { Save, Eye, FileText, Users, AlertTriangle, Sparkles, Loader2, ToggleLeft } from "lucide-react";
 import { useContentEditorRealtime } from "@/hooks/useContentEditorRealtime";
 import { SectionGenerator } from "./SectionGenerator";
+import { InteractiveActivitiesEnhanced } from "@/components/InteractiveActivitiesEnhanced";
 
 interface LessonEditorProps {
   selectedLesson: any;
@@ -28,6 +29,7 @@ export const LessonEditor = ({ selectedLesson, onLessonUpdate }: LessonEditorPro
     introduction: "",
     contenu: "",
     exemples_exercices: "",
+    activites_interactives: "",
     grade_level: "",
     is_published: false,
     youtube_url: "",
@@ -36,6 +38,7 @@ export const LessonEditor = ({ selectedLesson, onLessonUpdate }: LessonEditorPro
   const [activeTab, setActiveTab] = useState("edit");
   const [currentUserId, setCurrentUserId] = useState<string>();
   const [isGeneratingAll, setIsGeneratingAll] = useState(false);
+  const [showActivitiesPreview, setShowActivitiesPreview] = useState(false);
 
   // Get realtime collaboration features
   const { activeEditors, hasConflict } = useContentEditorRealtime(
@@ -59,6 +62,7 @@ export const LessonEditor = ({ selectedLesson, onLessonUpdate }: LessonEditorPro
         introduction: selectedLesson.introduction || "",
         contenu: selectedLesson.contenu || "",
         exemples_exercices: selectedLesson.exemples_exercices || "",
+        activites_interactives: selectedLesson.activites_interactives || "",
         grade_level: selectedLesson.grade_level || "",
         is_published: selectedLesson.is_published || false,
         youtube_url: selectedLesson.youtube_url || "",
@@ -121,14 +125,14 @@ export const LessonEditor = ({ selectedLesson, onLessonUpdate }: LessonEditorPro
     }
   };
 
-  const handleGenerateAllSections = async () => {
+    const handleGenerateAllSections = async () => {
     if (!selectedLesson) {
       toast.error("Aucune leçon sélectionnée");
       return;
     }
 
     setIsGeneratingAll(true);
-    const sections = ['objectif', 'introduction', 'contenu', 'exemples_exercices'] as const;
+    const sections = ['objectif', 'introduction', 'contenu', 'exemples_exercices', 'activites_interactives'] as const;
     let successCount = 0;
     let errorCount = 0;
 
@@ -136,21 +140,41 @@ export const LessonEditor = ({ selectedLesson, onLessonUpdate }: LessonEditorPro
       try {
         toast.info(`Génération de ${section}...`);
         
-        const { data, error } = await supabase.functions.invoke('generate-lesson-section', {
-          body: {
-            lessonId: selectedLesson.id,
-            sectionName: section,
-            lessonTitle: selectedLesson.title,
-            subject: selectedLesson.subjects?.name || 'Matière',
-            gradeLevel: selectedLesson.grade_level || '7AF',
-            targetWords: section === 'contenu' ? 1000 : section === 'exemples_exercices' ? 500 : section === 'introduction' ? 300 : 200,
-          },
-        });
+        let generatedContent: string;
 
-        if (error) throw error;
-        if (!data?.content) throw new Error('Aucun contenu généré');
+        if (section === 'activites_interactives') {
+          // Special handling for interactive activities
+          const { data, error } = await supabase.functions.invoke('generate-interactive-activities', {
+            body: {
+              exercisesContent: lessonData.exemples_exercices || selectedLesson.exemples_exercices || '',
+              lessonTitle: selectedLesson.title,
+              gradeLevel: selectedLesson.grade_level || '7AF',
+              subject: selectedLesson.subjects?.name || 'Matière',
+            }
+          });
 
-        setLessonData(prev => ({ ...prev, [section]: data.content }));
+          if (error) throw error;
+          if (!data?.content) throw new Error('Aucun contenu généré');
+          generatedContent = data.content;
+        } else {
+          // Standard generation for other sections
+          const { data, error } = await supabase.functions.invoke('generate-lesson-section', {
+            body: {
+              lessonId: selectedLesson.id,
+              sectionName: section,
+              lessonTitle: selectedLesson.title,
+              subject: selectedLesson.subjects?.name || 'Matière',
+              gradeLevel: selectedLesson.grade_level || '7AF',
+              targetWords: section === 'contenu' ? 1000 : section === 'exemples_exercices' ? 500 : section === 'introduction' ? 300 : 200,
+            },
+          });
+
+          if (error) throw error;
+          if (!data?.content) throw new Error('Aucun contenu généré');
+          generatedContent = data.content;
+        }
+
+        setLessonData(prev => ({ ...prev, [section]: generatedContent }));
         successCount++;
         
         // Rate limiting: wait 3 seconds between requests
@@ -385,6 +409,56 @@ export const LessonEditor = ({ selectedLesson, onLessonUpdate }: LessonEditorPro
                 rows={8}
                 className="font-mono text-xs md:text-sm"
               />
+            </div>
+
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <Label htmlFor="activites" className="text-xs md:text-sm">Activités Interactives</Label>
+                <div className="flex items-center gap-2">
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setShowActivitiesPreview(!showActivitiesPreview)}
+                  >
+                    <ToggleLeft className="mr-1 h-4 w-4" />
+                    {showActivitiesPreview ? "Édition" : "Vue"}
+                  </Button>
+                  <SectionGenerator
+                    lesson={selectedLesson}
+                    sectionName="activites_interactives"
+                    currentContent={lessonData.activites_interactives}
+                    onContentGenerated={(content) => 
+                      setLessonData({ ...lessonData, activites_interactives: content })
+                    }
+                  />
+                </div>
+              </div>
+              {showActivitiesPreview ? (
+                <div className="border rounded-lg p-4 bg-muted/30">
+                  {lessonData.activites_interactives ? (
+                    <InteractiveActivitiesEnhanced 
+                      content={lessonData.activites_interactives}
+                      isLoading={false}
+                    />
+                  ) : (
+                    <p className="text-sm text-muted-foreground text-center py-8">
+                      Aucune activité interactive générée pour cette leçon
+                    </p>
+                  )}
+                </div>
+              ) : (
+                <Textarea
+                  id="activites"
+                  value={lessonData.activites_interactives}
+                  onChange={(e) =>
+                    setLessonData({ ...lessonData, activites_interactives: e.target.value })
+                  }
+                  rows={8}
+                  className="font-mono text-xs md:text-sm"
+                  placeholder="Génère des activités interactives à partir des exercices..."
+                />
+              )}
             </div>
 
             <div className="space-y-2">
