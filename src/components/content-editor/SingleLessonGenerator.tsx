@@ -20,7 +20,7 @@ interface SingleLessonGeneratorProps {
 type SectionStatus = 'pending' | 'generating' | 'completed' | 'error';
 
 interface SectionProgress {
-  name: SectionName;
+  name: SectionName | 'quiz_final' | 'youtube_url';
   status: SectionStatus;
   error?: string;
 }
@@ -75,10 +75,19 @@ export const SingleLessonGenerator = ({ lesson, onComplete }: SingleLessonGenera
 
     setIsGenerating(true);
     setCurrentSection(0);
+    setGeneratedContent({}); // Clear previous content
     
     // Calculate total tasks (sections + quiz + videos)
     const totalTasks = selectedSections.length + (generateQuiz ? 1 : 0) + (generateVideos ? 1 : 0);
-    setProgress(selectedSections.map(name => ({ name, status: 'pending' })));
+    
+    // Initialize progress for sections and optional features
+    const initialProgress: SectionProgress[] = [
+      ...selectedSections.map(name => ({ name, status: 'pending' as SectionStatus })),
+    ];
+    if (generateQuiz) initialProgress.push({ name: 'quiz_final' as SectionName, status: 'pending' });
+    if (generateVideos) initialProgress.push({ name: 'youtube_url' as SectionName, status: 'pending' });
+    
+    setProgress(initialProgress);
 
     let successCount = 0;
     let errorCount = 0;
@@ -207,8 +216,13 @@ export const SingleLessonGenerator = ({ lesson, onComplete }: SingleLessonGenera
       currentTask++;
       setCurrentSection(currentTask);
       
+      setProgress(prev => prev.map(p => 
+        p.name === 'quiz_final' ? { ...p, status: 'generating' } : p
+      ));
+
+      const startTime = Date.now();
+      
       try {
-        toast.info("Génération du Quiz Final...");
         const { data: lessonData } = await supabase
           .from('lessons')
           .select('contenu, exemples_exercices, title, grade_level, subjects(name)')
@@ -227,18 +241,22 @@ export const SingleLessonGenerator = ({ lesson, onComplete }: SingleLessonGenera
 
         if (error) throw error;
         if (data?.quizContent) {
-          // Store in state for preview
           setGeneratedContent(prev => ({
             ...prev,
             quiz_final: data.quizContent
           }));
           
-          toast.success("Quiz final généré avec succès");
+          setProgress(prev => prev.map(p => 
+            p.name === 'quiz_final' ? { ...p, status: 'completed' } : p
+          ));
           successCount++;
         }
-      } catch (error) {
+      } catch (error: any) {
         console.error('Error generating quiz:', error);
-        toast.error("Erreur lors de la génération du quiz");
+        setProgress(prev => prev.map(p => 
+          p.name === 'quiz_final' ? { ...p, status: 'error', error: error.message } : p
+        ));
+        errorCount++;
       }
     }
 
@@ -247,8 +265,13 @@ export const SingleLessonGenerator = ({ lesson, onComplete }: SingleLessonGenera
       currentTask++;
       setCurrentSection(currentTask);
       
+      setProgress(prev => prev.map(p => 
+        p.name === 'youtube_url' ? { ...p, status: 'generating' } : p
+      ));
+
+      const startTime = Date.now();
+      
       try {
-        toast.info("Suggestion de vidéos YouTube...");
         const { data: lessonData } = await supabase
           .from('lessons')
           .select('contenu, exemples_exercices, title, grade_level, subjects(name)')
@@ -267,19 +290,23 @@ export const SingleLessonGenerator = ({ lesson, onComplete }: SingleLessonGenera
 
         if (error) throw error;
         if (data?.videos && data.videos.length > 0) {
-          // Store the suggested videos in state
           setGeneratedContent(prev => ({
             ...prev,
             youtube_url: `https://www.youtube.com/watch?v=${data.videos[0].id}`,
             suggested_videos: JSON.stringify(data.videos)
           }));
           
-          toast.success(`${data.videos.length} vidéo(s) suggérée(s)`);
+          setProgress(prev => prev.map(p => 
+            p.name === 'youtube_url' ? { ...p, status: 'completed' } : p
+          ));
           successCount++;
         }
-      } catch (error) {
+      } catch (error: any) {
         console.error('Error suggesting videos:', error);
-        toast.error("Erreur lors de la suggestion de vidéos");
+        setProgress(prev => prev.map(p => 
+          p.name === 'youtube_url' ? { ...p, status: 'error', error: error.message } : p
+        ));
+        errorCount++;
       }
     }
 
