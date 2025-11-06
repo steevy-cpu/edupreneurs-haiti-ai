@@ -9,7 +9,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
-import { Sparkles, Loader2, CheckCircle2, XCircle, Clock } from "lucide-react";
+import { Sparkles, Loader2, CheckCircle2, XCircle, Clock, Check } from "lucide-react";
 import { DEFAULT_WORD_COUNTS, type SectionName } from "@/lib/lessonPrompts";
 
 interface SingleLessonGeneratorProps {
@@ -37,6 +37,9 @@ export const SingleLessonGenerator = ({ lesson, onComplete }: SingleLessonGenera
   const [globalContext, setGlobalContext] = useState("");
   const [progress, setProgress] = useState<SectionProgress[]>([]);
   const [currentSection, setCurrentSection] = useState(0);
+  const [generatedContent, setGeneratedContent] = useState<Record<string, string>>({});
+  const [showPreview, setShowPreview] = useState(false);
+  const [isApplying, setIsApplying] = useState(false);
 
   const sections: { value: SectionName; label: string }[] = [
     { value: "objectif", label: "Objectif" },
@@ -144,11 +147,16 @@ export const SingleLessonGenerator = ({ lesson, onComplete }: SingleLessonGenera
           wordCount = data.wordCount;
         }
 
-        // Update lesson in database
-        await supabase
-          .from('lessons')
-          .update({ [sectionName]: generatedContent })
-          .eq('id', lesson.id);
+        console.log('✅ [Single] Section generated successfully:', {
+          sectionName,
+          wordCount
+        });
+
+        // Store generated content in state for preview
+        setGeneratedContent(prev => ({
+          ...prev,
+          [sectionName]: generatedContent
+        }));
 
         // Log successful generation
         await supabase.from('ai_generation_logs').insert({
@@ -219,10 +227,11 @@ export const SingleLessonGenerator = ({ lesson, onComplete }: SingleLessonGenera
 
         if (error) throw error;
         if (data?.quizContent) {
-          await supabase
-            .from('lessons')
-            .update({ quiz_final: data.quizContent })
-            .eq('id', lesson.id);
+          // Store in state for preview
+          setGeneratedContent(prev => ({
+            ...prev,
+            quiz_final: data.quizContent
+          }));
           
           toast.success("Quiz final généré avec succès");
           successCount++;
@@ -258,7 +267,14 @@ export const SingleLessonGenerator = ({ lesson, onComplete }: SingleLessonGenera
 
         if (error) throw error;
         if (data?.videos && data.videos.length > 0) {
-          toast.success(`${data.videos.length} vidéo(s) suggérée(s) - Consultez l'onglet Vidéos`);
+          // Store the suggested videos in state
+          setGeneratedContent(prev => ({
+            ...prev,
+            youtube_url: `https://www.youtube.com/watch?v=${data.videos[0].id}`,
+            suggested_videos: JSON.stringify(data.videos)
+          }));
+          
+          toast.success(`${data.videos.length} vidéo(s) suggérée(s)`);
           successCount++;
         }
       } catch (error) {
@@ -273,11 +289,49 @@ export const SingleLessonGenerator = ({ lesson, onComplete }: SingleLessonGenera
     const totalAttempted = totalTasks;
     
     if (successCount > 0) {
-      toast.success(`${successCount} élément(s) généré(s)${errorCount > 0 ? `, ${errorCount} erreur(s)` : ''}`);
-      onComplete();
+      setShowPreview(true);
+      toast.success(`${successCount} élément(s) généré(s) - Consultez l'aperçu`);
     } else {
       toast.error("Aucun contenu n'a pu être généré");
     }
+  };
+
+  const handleApplyChanges = async () => {
+    setIsApplying(true);
+    try {
+      // Apply all generated content to the database
+      const updates: any = {};
+      
+      Object.keys(generatedContent).forEach(key => {
+        if (key !== 'suggested_videos') {
+          updates[key] = generatedContent[key];
+        }
+      });
+
+      const { error } = await supabase
+        .from('lessons')
+        .update(updates)
+        .eq('id', lesson.id);
+
+      if (error) throw error;
+
+      toast.success("Contenu appliqué avec succès");
+      setShowPreview(false);
+      setGeneratedContent({});
+      onComplete();
+    } catch (error) {
+      console.error('Error applying changes:', error);
+      toast.error("Erreur lors de l'application des changements");
+    } finally {
+      setIsApplying(false);
+    }
+  };
+
+  const handleDiscardChanges = () => {
+    setGeneratedContent({});
+    setShowPreview(false);
+    setProgress([]);
+    toast.info("Aperçu fermé");
   };
 
   const getStatusIcon = (status: SectionStatus) => {
@@ -451,9 +505,78 @@ export const SingleLessonGenerator = ({ lesson, onComplete }: SingleLessonGenera
             )}
           </Button>
 
-          {!isGenerating && progress.length > 0 && (
+          {!isGenerating && progress.length > 0 && !showPreview && (
             <div className="text-sm text-muted-foreground text-center">
               {progress.filter(p => p.status === 'completed').length} section(s) générée(s) avec succès
+            </div>
+          )}
+
+          {/* Preview Section */}
+          {showPreview && Object.keys(generatedContent).length > 0 && (
+            <div className="space-y-4 border-t pt-4">
+              <div className="flex items-center justify-between">
+                <h3 className="text-lg font-semibold">📋 Aperçu du contenu généré</h3>
+                <Badge variant="secondary">{Object.keys(generatedContent).length} élément(s)</Badge>
+              </div>
+              
+              <div className="space-y-3 max-h-96 overflow-y-auto border rounded-lg p-4 bg-muted/30">
+                {Object.entries(generatedContent).map(([key, value]) => {
+                  if (key === 'suggested_videos') return null;
+                  
+                  return (
+                    <div key={key} className="space-y-2">
+                      <Label className="text-sm font-semibold capitalize flex items-center gap-2">
+                        <CheckCircle2 className="h-4 w-4 text-green-500" />
+                        {key === 'quiz_final' ? 'Quiz Final' : 
+                         key === 'youtube_url' ? 'Vidéo YouTube' :
+                         key === 'activites_interactives' ? 'Activités Interactives' :
+                         key === 'exemples_exercices' ? 'Exemples & Exercices' :
+                         key}
+                      </Label>
+                      {key === 'youtube_url' ? (
+                        <div className="text-sm text-muted-foreground">
+                          <a href={value} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">
+                            {value}
+                          </a>
+                        </div>
+                      ) : (
+                        <div 
+                          className="prose prose-sm dark:prose-invert max-w-none text-xs max-h-32 overflow-y-auto bg-background/50 p-3 rounded border"
+                          dangerouslySetInnerHTML={{ __html: value.substring(0, 500) + (value.length > 500 ? '...' : '') }}
+                        />
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+
+              <div className="flex gap-2">
+                <Button 
+                  onClick={handleApplyChanges}
+                  disabled={isApplying}
+                  className="flex-1"
+                  variant="default"
+                >
+                  {isApplying ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Application en cours...
+                    </>
+                  ) : (
+                    <>
+                      <Check className="mr-2 h-4 w-4" />
+                      Appliquer les modifications
+                    </>
+                  )}
+                </Button>
+                <Button 
+                  onClick={handleDiscardChanges}
+                  disabled={isApplying}
+                  variant="outline"
+                >
+                  Annuler
+                </Button>
+              </div>
             </div>
           )}
         </div>
