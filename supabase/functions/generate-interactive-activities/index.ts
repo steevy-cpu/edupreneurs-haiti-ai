@@ -103,7 +103,7 @@ Format:
 **Réponse correcte:** [A ou B]
 **Explication:** [Courte explication]
 
-4. FILLIN - Remplir les blancs
+4. FILLIN - Remplir les blancs (TEXT INPUT)
 Format:
 ### ✏️ [Titre de l'activité]
 **TYPE: FILLIN**
@@ -111,13 +111,18 @@ Format:
 **Complétez la phrase:**
 [Phrase avec _______ pour les blancs]
 
-- A) [Option 1]
-- B) [Option 2]
-- C) [Option 3]
-- D) [Option 4]
-
-**Réponse correcte:** [Lettre]
+**Réponse:** [mot ou phrase correcte]
 **Explication:** [Pourquoi c'est la bonne réponse]
+
+Exemple:
+### ✏️ Exercice 3 - Phrase 1
+**TYPE: FILLIN**
+
+**Complétez la phrase:**
+My uncle _______ a taxi in Port-au-Prince.
+
+**Réponse:** has
+**Explication:** "Has" est correct car on parle de possession (avoir un taxi) et "uncle" est à la troisième personne du singulier.
 
 DISTRIBUTION RECOMMANDÉE (pour 10-15 activités):
 - 4-5 activités QUIZ

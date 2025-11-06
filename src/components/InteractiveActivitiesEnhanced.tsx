@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { Progress } from "@/components/ui/progress";
 import { CheckCircle, XCircle, ArrowRight, Loader2, RefreshCw, Shuffle } from "lucide-react";
 import { useSoundEffects } from "@/hooks/useSoundEffects";
@@ -42,8 +43,8 @@ interface TrueFalseActivity extends BaseActivity {
 interface FillInActivity extends BaseActivity {
   type: 'FILLIN';
   sentence: string;
-  options: string[];
-  correctAnswer: number;
+  correctAnswer: string; // The actual text answer (e.g., "has", "is")
+  acceptedAnswers?: string[]; // Alternative accepted answers
   explanation: string;
 }
 
@@ -64,6 +65,7 @@ export const InteractiveActivitiesEnhanced = ({
 }: InteractiveActivitiesEnhancedProps) => {
   const [currentActivityIndex, setCurrentActivityIndex] = useState(0);
   const [selectedAnswer, setSelectedAnswer] = useState<number | null>(null);
+  const [textAnswer, setTextAnswer] = useState<string>(''); // For FILLIN text input
   const [selectedMatches, setSelectedMatches] = useState<Record<number, string>>({});
   const [showFeedback, setShowFeedback] = useState(false);
   const [score, setScore] = useState(0);
@@ -166,17 +168,16 @@ export const InteractiveActivitiesEnhanced = ({
       console.log(`📝 Activity: ${title} (${difficulty})`);
 
       try {
-        if (type === 'QUIZ' || type === 'FILLIN') {
-          // Match pattern: **Question:** followed by the question text
+        if (type === 'QUIZ') {
+          // QUIZ always has multiple choice options
           const questionMatch = section.match(/\*\*Question:\*\*\s*(.+?)(?=\n\s*-\s*[A-D]\))/is);
           if (!questionMatch) {
-            console.warn(`⚠️ No question found in ${type} section ${idx}`);
+            console.warn(`⚠️ No question found in QUIZ section ${idx}`);
             return;
           }
           
           const question = questionMatch[1].trim().replace(/\*\*/g, '').replace(/\s+/g, ' ');
           
-          // Match options: - A) option text - B) option text etc.
           const optionMatches = section.matchAll(/-\s*([A-D])\)\s*(.+?)(?=\n\s*-\s*[A-D]\)|\*\*Réponse|$)/gis);
           const options: string[] = [];
           Array.from(optionMatches).forEach(match => {
@@ -185,44 +186,59 @@ export const InteractiveActivitiesEnhanced = ({
           });
           
           if (options.length !== 4) {
-            console.warn(`⚠️ Expected 4 options, found ${options.length} in section ${idx}`);
+            console.warn(`⚠️ Expected 4 options, found ${options.length} in QUIZ section ${idx}`);
             return;
           }
           
-          // Match: **Réponse correcte:** C
           const correctMatch = section.match(/\*\*Réponse\s+correcte:\*\*\s*([A-D])/i);
           if (!correctMatch) {
-            console.warn(`⚠️ No correct answer found in section ${idx}`);
+            console.warn(`⚠️ No correct answer found in QUIZ section ${idx}`);
             return;
           }
           
           const correctIndex = correctMatch[1].toUpperCase().charCodeAt(0) - 'A'.charCodeAt(0);
-          
-          // Match: **Explication:** explanation text
           const explanationMatch = section.match(/\*\*Explication:\*\*\s*(.+?)(?=###|$)/is);
           const explanation = explanationMatch ? explanationMatch[1].trim().replace(/\*\*/g, '').replace(/\s+/g, ' ') : "";
           
-          if (type === 'QUIZ') {
-            activities.push({
-              type: 'QUIZ',
-              title,
-              difficulty,
-              question,
-              options,
-              correctAnswer: correctIndex,
-              explanation
-            });
-          } else {
-            activities.push({
-              type: 'FILLIN',
-              title,
-              difficulty,
-              sentence: question,
-              options,
-              correctAnswer: correctIndex,
-              explanation
-            });
+          activities.push({
+            type: 'QUIZ',
+            title,
+            difficulty,
+            question,
+            options,
+            correctAnswer: correctIndex,
+            explanation
+          });
+        } else if (type === 'FILLIN') {
+          // FILLIN has text input - check for **Complétez la phrase:** pattern
+          const sentenceMatch = section.match(/\*\*Complétez la phrase:\*\*\s*(.+?)(?=\n\s*\*\*Réponse)/is);
+          if (!sentenceMatch) {
+            console.warn(`⚠️ No sentence found in FILLIN section ${idx}`);
+            return;
           }
+          
+          const sentence = sentenceMatch[1].trim().replace(/\*\*/g, '').replace(/\s+/g, ' ');
+          
+          // Extract the correct answer: **Réponse:** answer
+          const answerMatch = section.match(/\*\*Réponse:\*\*\s*([^\n*]+)/i);
+          if (!answerMatch) {
+            console.warn(`⚠️ No answer found in FILLIN section ${idx}`);
+            return;
+          }
+          
+          const correctAnswer = answerMatch[1].trim().toLowerCase();
+          const explanationMatch = section.match(/\*\*Explication:\*\*\s*(.+?)(?=###|$)/is);
+          const explanation = explanationMatch ? explanationMatch[1].trim().replace(/\*\*/g, '').replace(/\s+/g, ' ') : "";
+          
+          activities.push({
+            type: 'FILLIN',
+            title,
+            difficulty,
+            sentence,
+            correctAnswer,
+            acceptedAnswers: [correctAnswer], // Can add alternatives if needed
+            explanation
+          });
         } else if (type === 'MATCHING') {
           // Match **Colonne A:** or **Associez chaque expression à son sens correct:**
           const columnAMatches = section.matchAll(/\*\*Colonne\s+A:\*\*\s*((?:\d+\.\s*.+?\n?)+)/gis);
@@ -367,8 +383,14 @@ export const InteractiveActivitiesEnhanced = ({
       isCorrect = Object.keys(matchingActivity.correctMatches).every(
         key => selectedMatches[parseInt(key)] === matchingActivity.correctMatches[parseInt(key)]
       );
-    } else if (currentActivity.type === 'QUIZ' || currentActivity.type === 'FILLIN' || currentActivity.type === 'TRUEFALSE') {
-      isCorrect = selectedAnswer === currentActivity.correctAnswer;
+    } else if (currentActivity.type === 'FILLIN') {
+      const fillInActivity = currentActivity as FillInActivity;
+      const userAnswer = textAnswer.toLowerCase().trim();
+      isCorrect = fillInActivity.acceptedAnswers?.some(a => a.toLowerCase().trim() === userAnswer) 
+        || fillInActivity.correctAnswer.toLowerCase().trim() === userAnswer;
+    } else if (currentActivity.type === 'QUIZ' || currentActivity.type === 'TRUEFALSE') {
+      const quizActivity = currentActivity as QuizActivity | TrueFalseActivity;
+      isCorrect = selectedAnswer === quizActivity.correctAnswer;
     }
 
     setShowFeedback(true);
@@ -398,6 +420,7 @@ export const InteractiveActivitiesEnhanced = ({
     playSound("next");
     setShowFeedback(false);
     setSelectedAnswer(null);
+    setTextAnswer('');
     setSelectedMatches({});
     
     if (currentActivityIndex < activities.length - 1) {
@@ -411,6 +434,7 @@ export const InteractiveActivitiesEnhanced = ({
     playSound("next");
     setCurrentActivityIndex(0);
     setSelectedAnswer(null);
+    setTextAnswer('');
     setSelectedMatches({});
     setShowFeedback(false);
     setScore(0);
@@ -523,15 +547,12 @@ export const InteractiveActivitiesEnhanced = ({
   const renderActivity = () => {
     switch (currentActivity.type) {
       case 'QUIZ':
-      case 'FILLIN':
-        const quizActivity = currentActivity as QuizActivity | FillInActivity;
+        const quizActivity = currentActivity as QuizActivity;
         return (
           <>
             <div className="p-4 sm:p-6 bg-gradient-to-r from-primary/10 to-accent/10 rounded-lg border-2 border-primary/20">
               <p className="text-base sm:text-lg font-medium leading-relaxed break-words">
-                {currentActivity.type === 'QUIZ' 
-                  ? (quizActivity as QuizActivity).question 
-                  : (quizActivity as FillInActivity).sentence}
+                {quizActivity.question}
               </p>
             </div>
 
@@ -572,6 +593,60 @@ export const InteractiveActivitiesEnhanced = ({
                   </button>
                 );
               })}
+            </div>
+          </>
+        );
+
+      case 'FILLIN':
+        const fillInActivity = currentActivity as FillInActivity;
+        const isCorrectAnswer = showFeedback && (
+          fillInActivity.acceptedAnswers?.some(a => 
+            a.toLowerCase().trim() === textAnswer.toLowerCase().trim()
+          ) || fillInActivity.correctAnswer.toLowerCase().trim() === textAnswer.toLowerCase().trim()
+        );
+        
+        return (
+          <>
+            <div className="p-4 sm:p-6 bg-gradient-to-r from-primary/10 to-accent/10 rounded-lg border-2 border-primary/20">
+              <p className="text-base sm:text-lg font-medium leading-relaxed break-words">
+                {fillInActivity.sentence}
+              </p>
+            </div>
+
+            <div className="space-y-4">
+              <div className="relative">
+                <input
+                  type="text"
+                  value={textAnswer}
+                  onChange={(e) => !showFeedback && setTextAnswer(e.target.value)}
+                  disabled={showFeedback}
+                  placeholder="Tapez votre réponse ici..."
+                  className={`
+                    w-full p-4 rounded-xl border-2 text-base
+                    ${!showFeedback ? 'border-primary/30 focus:border-primary focus:ring-2 focus:ring-primary/20' : ''}
+                    ${showFeedback && isCorrectAnswer ? 'border-success bg-success/10' : ''}
+                    ${showFeedback && !isCorrectAnswer ? 'border-destructive bg-destructive/10' : ''}
+                    ${showFeedback ? 'cursor-not-allowed' : ''}
+                    transition-all duration-300
+                  `}
+                />
+                {showFeedback && (
+                  <div className="absolute right-4 top-1/2 -translate-y-1/2">
+                    {isCorrectAnswer ? (
+                      <CheckCircle className="w-6 h-6 text-success" />
+                    ) : (
+                      <XCircle className="w-6 h-6 text-destructive" />
+                    )}
+                  </div>
+                )}
+              </div>
+              {showFeedback && !isCorrectAnswer && (
+                <div className="p-3 bg-info/10 rounded-lg border border-info/30">
+                  <p className="text-sm font-medium">
+                    Réponse correcte: <span className="font-bold text-success">{fillInActivity.correctAnswer}</span>
+                  </p>
+                </div>
+              )}
             </div>
           </>
         );
@@ -690,6 +765,9 @@ export const InteractiveActivitiesEnhanced = ({
   const canSubmit = () => {
     if (currentActivity.type === 'MATCHING') {
       return Object.keys(selectedMatches).length === (currentActivity as MatchingActivity).columnA.length;
+    }
+    if (currentActivity.type === 'FILLIN') {
+      return textAnswer.trim().length > 0;
     }
     return selectedAnswer !== null;
   };
