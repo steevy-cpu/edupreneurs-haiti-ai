@@ -36,7 +36,7 @@ export const BatchLessonGenerator = () => {
   const [availableSubjects, setAvailableSubjects] = useState<any[]>([]);
   const [selectedLessonId, setSelectedLessonId] = useState<string>("all");
   const [selectedSections, setSelectedSections] = useState<SectionName[]>([
-    'objectif', 'introduction', 'contenu', 'exemples_exercices'
+    'objectif', 'introduction', 'contenu', 'exemples_exercices', 'activites_interactives'
   ]);
   const [onlyEmpty, setOnlyEmpty] = useState(false);
   const [wordCounts, setWordCounts] = useState(DEFAULT_WORD_COUNTS);
@@ -96,6 +96,7 @@ export const BatchLessonGenerator = () => {
     { value: "introduction", label: "Introduction" },
     { value: "contenu", label: "Contenu principal" },
     { value: "exemples_exercices", label: "Exemples & Exercices" },
+    { value: "activites_interactives", label: "Activités Interactives" },
   ];
 
   const toggleSection = (section: SectionName) => {
@@ -159,7 +160,7 @@ export const BatchLessonGenerator = () => {
         if (selectedLesson) {
           const { data: fullLesson, error } = await supabase
             .from('lessons')
-            .select('id, title, grade_level, objectif, introduction, contenu, exemples_exercices, subjects(name)')
+            .select('id, title, grade_level, objectif, introduction, contenu, exemples_exercices, activites_interactives, subjects(name)')
             .eq('id', selectedLessonId)
             .single();
 
@@ -176,7 +177,7 @@ export const BatchLessonGenerator = () => {
       }
 
       // Otherwise, fetch lessons based on filters
-      let query = supabase.from('lessons').select('id, title, grade_level, objectif, introduction, contenu, exemples_exercices, subjects(name)');
+      let query = supabase.from('lessons').select('id, title, grade_level, objectif, introduction, contenu, exemples_exercices, activites_interactives, subjects(name)');
 
       if (gradeLevel !== "all") {
         query = query.eq('grade_level', gradeLevel);
@@ -340,36 +341,65 @@ export const BatchLessonGenerator = () => {
           // Extract subject name from joined data
           const subjectName = lesson.subjects?.name || 'Général';
 
-          console.log('🔵 [Batch] Calling edge function with:', {
-            lessonId: lesson.id,
-            sectionName,
-            lessonTitle: lesson.title,
-            subject: subjectName,
-            gradeLevel: lesson.grade_level,
-            targetWords: wordCounts[sectionName]
-          });
+          let generatedContent: string;
+          let generationData: any;
 
-          const { data, error } = await supabase.functions.invoke('generate-lesson-section', {
-            body: {
+          // Special handling for activites_interactives section
+          if (sectionName === 'activites_interactives') {
+            console.log('🎮 [Batch] Generating interactive activities');
+            
+            const { data, error } = await supabase.functions.invoke('generate-interactive-activities', {
+              body: {
+                exercisesContent: lesson.exemples_exercices || '',
+                lessonTitle: lesson.title,
+                gradeLevel: lesson.grade_level,
+                subject: subjectName,
+              }
+            });
+
+            if (error) {
+              console.error('❌ [Batch] Edge function error:', error);
+              throw error;
+            }
+
+            generatedContent = data.content;
+            generationData = { content: data.content, wordCount: data.content.split(/\s+/).length };
+          } else {
+            // Standard generation for other sections
+            console.log('🔵 [Batch] Calling edge function with:', {
               lessonId: lesson.id,
               sectionName,
               lessonTitle: lesson.title,
               subject: subjectName,
               gradeLevel: lesson.grade_level,
-              targetWords: wordCounts[sectionName],
-              context: globalContext,
-            }
-          });
+              targetWords: wordCounts[sectionName]
+            });
 
-          if (error) {
-            console.error('❌ [Batch] Edge function error:', error);
-            throw error;
+            const { data, error } = await supabase.functions.invoke('generate-lesson-section', {
+              body: {
+                lessonId: lesson.id,
+                sectionName,
+                lessonTitle: lesson.title,
+                subject: subjectName,
+                gradeLevel: lesson.grade_level,
+                targetWords: wordCounts[sectionName],
+                context: globalContext,
+              }
+            });
+
+            if (error) {
+              console.error('❌ [Batch] Edge function error:', error);
+              throw error;
+            }
+
+            generatedContent = data.content;
+            generationData = data;
           }
 
           console.log('✅ [Batch] Section generated successfully:', {
             sectionName,
-            wordCount: data?.wordCount,
-            generationTime: data?.generationTime
+            wordCount: generationData?.wordCount,
+            generationTime: generationData?.generationTime
           });
 
           // Store generated content in status
@@ -380,7 +410,7 @@ export const BatchLessonGenerator = () => {
                 sectionsGenerated: [...l.sectionsGenerated, sectionName],
                 generatedContent: {
                   ...l.generatedContent,
-                  [sectionName]: data.content
+                  [sectionName]: generatedContent
                 }
               };
             }
@@ -390,7 +420,7 @@ export const BatchLessonGenerator = () => {
           // Update lesson in database
           await supabase
             .from('lessons')
-            .update({ [sectionName]: data.content })
+            .update({ [sectionName]: generatedContent })
             .eq('id', lesson.id);
 
           // Log successful generation to analytics
@@ -400,9 +430,9 @@ export const BatchLessonGenerator = () => {
             section_name: sectionName,
             target_words: wordCounts[sectionName],
             additional_context: globalContext || null,
-            response_content: data.content,
-            word_count: data.wordCount || null,
-            generation_time_ms: data.generationTimeMs || null,
+            response_content: generatedContent,
+            word_count: generationData.wordCount || null,
+            generation_time_ms: generationData.generationTimeMs || null,
             success: true,
             generated_by: user?.id,
           });
