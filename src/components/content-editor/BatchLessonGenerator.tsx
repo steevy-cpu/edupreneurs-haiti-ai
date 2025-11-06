@@ -219,8 +219,8 @@ export const BatchLessonGenerator = () => {
   };
 
   const startGeneration = async () => {
-    if (selectedSections.length === 0) {
-      toast.error("Sélectionnez au moins une section");
+    if (selectedSections.length === 0 && !generateQuiz && !generateVideos) {
+      toast.error("Sélectionnez au moins une section ou fonctionnalité");
       return;
     }
 

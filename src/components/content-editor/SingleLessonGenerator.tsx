@@ -65,8 +65,8 @@ export const SingleLessonGenerator = ({ lesson, onComplete }: SingleLessonGenera
       return;
     }
 
-    if (selectedSections.length === 0) {
-      toast.error("Sélectionnez au moins une section");
+    if (selectedSections.length === 0 && !generateQuiz && !generateVideos) {
+      toast.error("Sélectionnez au moins une section ou fonctionnalité");
       return;
     }
 
@@ -419,7 +419,7 @@ export const SingleLessonGenerator = ({ lesson, onComplete }: SingleLessonGenera
           {/* Action Button */}
           <Button
             onClick={handleGenerate}
-            disabled={isGenerating || selectedSections.length === 0}
+            disabled={isGenerating || (selectedSections.length === 0 && !generateQuiz && !generateVideos)}
             className="w-full"
           >
             {isGenerating ? (
