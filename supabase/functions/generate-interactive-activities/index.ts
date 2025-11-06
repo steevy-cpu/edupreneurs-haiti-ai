@@ -43,14 +43,15 @@ Ton rôle est de transformer des exercices traditionnels en activités interacti
 RÈGLES STRICTES:
 - Utilise UNIQUEMENT le français (PAS de Kreyòl)
 - Génère EXACTEMENT 5-7 activités variées
-- Utilise le contexte haïtien dans les exemples
+- PRÉSERVE LE CONTENU ORIGINAL des exercices autant que possible
 - Formate le contenu EXACTEMENT comme spécifié ci-dessous
 
 IMPORTANT: Le contenu des exercices peut être en HTML ou texte brut. Tu dois:
 1. Extraire le texte des exercices (ignorer toutes balises HTML)
 2. Identifier les questions et leurs options (A, B, C, D ou a, b, c, d ou 1, 2, 3, 4)
-3. Si les réponses correctes ne sont pas explicites, déduis-les logiquement basé sur la grammaire/contexte
-4. Créer des explications claires pour chaque réponse
+3. GARDER les questions et exemples TELS QUELS - ne les modifie PAS
+4. Si les réponses correctes ne sont pas explicites, déduis-les logiquement basé sur la grammaire/contexte
+5. Créer des explications claires pour chaque réponse
 
 FORMATS D'ACTIVITÉS DISPONIBLES:
 
@@ -126,9 +127,10 @@ DISTRIBUTION RECOMMANDÉE:
 IMPORTANT: 
 - Sépare chaque activité par une ligne vide
 - Commence toujours par le titre avec ###
-- Utilise des noms haïtiens (Marie, Jean, Paul, Rose, etc.)
-- Utilise des villes haïtiennes (Port-au-Prince, Cap-Haïtien, Gonaïves, Jacmel, etc.)
-- Adapte les exemples au contexte haïtien`;
+- GARDE LE CONTENU ORIGINAL DES EXERCICES - ne change PAS les phrases, noms, ou exemples
+- Ton seul rôle est de reformater en activités interactives, PAS de réécrire le contenu
+- Si un exercice utilise "My sister", garde "My sister" dans l'activité interactive
+- RESPECTE FIDÈLEMENT le contenu source`;
 
     // Strip HTML and clean the content
     const cleanedContent = stripHtml(exercisesContent);
@@ -145,11 +147,14 @@ Voici le contenu des exercices à transformer:
 
 ${cleanedContent}
 
-INSTRUCTIONS:
-- Génère 5-7 activités interactives variées en suivant EXACTEMENT les formats spécifiés
-- Si les réponses ne sont pas indiquées, déduis-les logiquement
-- Assure-toi que les activités couvrent les concepts clés de la leçon
-- Utilise le contexte haïtien dans les exemples (villes, prénoms, situations locales)
+INSTRUCTIONS CRITIQUES:
+- TRANSFORME (ne réécris PAS) les exercices existants en format interactif
+- GARDE EXACTEMENT les mêmes phrases, questions, et exemples que dans le contenu source
+- Ton seul rôle est de REFORMATER en utilisant les types d'activités (QUIZ, MATCHING, etc.)
+- Si l'exercice dit "My sister _______ a beautiful voice", ton activité doit dire "My sister _______ a beautiful voice"
+- Si l'exercice dit "They _______ from Gonaïves", ton activité doit dire "They _______ from Gonaïves"
+- NE CHANGE PAS les noms, phrases, ou contextes - PRÉSERVE-LES FIDÈLEMENT
+- Si les réponses ne sont pas indiquées, déduis-les logiquement basé sur la grammaire
 - Pour chaque activité, fournis une explication claire et pédagogique`;
 
     console.log('Generating interactive activities with Lovable AI...');
