@@ -238,45 +238,38 @@ const SciencesLessonAF8 = () => {
       <div className="container mx-auto px-4 py-8">
         <Card>
           <Tabs defaultValue="introduction" className="w-full">
-            <div className="border-b">
-              <TabsList className="w-full h-auto rounded-none bg-transparent p-0 grid grid-cols-5">
-                <TabsTrigger 
-                  value="introduction" 
-                  className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent flex items-center justify-center"
-                >
-                  <BookOpen className="h-4 w-4 sm:mr-2" />
-                  <span className="hidden sm:inline">Introduction</span>
-                </TabsTrigger>
-                <TabsTrigger 
-                  value="contenu"
-                  className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent flex items-center justify-center"
-                >
-                  <Lightbulb className="h-4 w-4 sm:mr-2" />
-                  <span className="hidden sm:inline">Contenu</span>
-                </TabsTrigger>
-                <TabsTrigger 
-                  value="exemples"
-                  className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent flex items-center justify-center"
-                >
-                  <FileText className="h-4 w-4 sm:mr-2" />
-                  <span className="hidden sm:inline">Exemples</span>
-                </TabsTrigger>
-                <TabsTrigger 
-                  value="notes"
-                  className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent flex items-center justify-center"
-                >
-                  <FileText className="h-4 w-4 sm:mr-2" />
-                  <span className="hidden sm:inline">Mes Notes</span>
-                </TabsTrigger>
-                <TabsTrigger 
-                  value="quiz"
-                  className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent flex items-center justify-center"
-                >
-                  <CheckCircle2 className="h-4 w-4 sm:mr-2" />
-                  <span className="hidden sm:inline">Quiz Final</span>
-                </TabsTrigger>
-              </TabsList>
-            </div>
+          <div className="border-b">
+            <TabsList className="w-full h-auto rounded-none bg-transparent p-0 grid grid-cols-4">
+              <TabsTrigger 
+                value="introduction" 
+                className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent flex items-center justify-center"
+              >
+                <BookOpen className="h-4 w-4 sm:mr-2" />
+                <span className="hidden sm:inline">Introduction</span>
+              </TabsTrigger>
+              <TabsTrigger 
+                value="contenu"
+                className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent flex items-center justify-center"
+              >
+                <Lightbulb className="h-4 w-4 sm:mr-2" />
+                <span className="hidden sm:inline">Contenu & Exemples</span>
+              </TabsTrigger>
+              <TabsTrigger 
+                value="notes"
+                className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent flex items-center justify-center"
+              >
+                <FileText className="h-4 w-4 sm:mr-2" />
+                <span className="hidden sm:inline">Mes Notes</span>
+              </TabsTrigger>
+              <TabsTrigger 
+                value="quiz"
+                className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent flex items-center justify-center"
+              >
+                <CheckCircle2 className="h-4 w-4 sm:mr-2" />
+                <span className="hidden sm:inline">Quiz Final</span>
+              </TabsTrigger>
+            </TabsList>
+          </div>
 
             <CardContent className="p-6">
               <TabsContent value="introduction" className="mt-0">
@@ -319,15 +312,15 @@ const SciencesLessonAF8 = () => {
                       </ul>
                     </div>
                   )}
-                </div>
-              </TabsContent>
-
-              <TabsContent value="exemples" className="mt-0">
-                <div className="prose prose-lg max-w-none dark:prose-invert">
-                  {lesson.exemples_exercices ? (
-                    <div dangerouslySetInnerHTML={{ __html: lesson.exemples_exercices }} />
-                  ) : (
-                    <p className="text-muted-foreground">Exemples et exercices à venir...</p>
+                  
+                  {lesson.exemples_exercices && (
+                    <>
+                      <div className="border-t my-8" />
+                      <h3 className="text-2xl font-bold mb-4">Exemples et Exercices</h3>
+                      <div className="prose prose-lg max-w-none dark:prose-invert">
+                        <div dangerouslySetInnerHTML={{ __html: lesson.exemples_exercices }} />
+                      </div>
+                    </>
                   )}
                 </div>
               </TabsContent>

@@ -158,18 +158,14 @@ const SciencesSocialesLessonAF8 = () => {
         </div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="grid w-full grid-cols-5">
+          <TabsList className="grid w-full grid-cols-4">
             <TabsTrigger value="introduction" className="gap-2">
               <BookOpen className="h-4 w-4" />
               <span className="hidden sm:inline">Introduction</span>
             </TabsTrigger>
             <TabsTrigger value="contenu" className="gap-2">
               <FileText className="h-4 w-4" />
-              <span className="hidden sm:inline">Contenu</span>
-            </TabsTrigger>
-            <TabsTrigger value="exemples" className="gap-2">
-              <ListChecks className="h-4 w-4" />
-              <span className="hidden sm:inline">Exemples</span>
+              <span className="hidden sm:inline">Contenu & Exemples</span>
             </TabsTrigger>
             <TabsTrigger value="notes" className="gap-2">
               <StickyNote className="h-4 w-4" />

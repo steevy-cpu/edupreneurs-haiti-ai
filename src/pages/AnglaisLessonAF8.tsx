@@ -199,18 +199,14 @@ const AnglaisLessonAF8 = () => {
 
         {/* Lesson Content Tabs - Mobile Responsive */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-5 gap-1">
+          <TabsList className="grid w-full grid-cols-4 gap-1">
             <TabsTrigger value="introduction" className="flex items-center justify-center gap-2">
               <BookOpen className="h-4 w-4" />
               <span className="hidden md:inline">Introduction</span>
             </TabsTrigger>
             <TabsTrigger value="contenu" className="flex items-center justify-center gap-2">
               <FileText className="h-4 w-4" />
-              <span className="hidden md:inline">Contenu</span>
-            </TabsTrigger>
-            <TabsTrigger value="exemples" className="flex items-center justify-center gap-2">
-              <Lightbulb className="h-4 w-4" />
-              <span className="hidden md:inline">Exemples</span>
+              <span className="hidden md:inline">Contenu & Exemples</span>
             </TabsTrigger>
             <TabsTrigger value="quiz" className="flex items-center justify-center gap-2">
               <Brain className="h-4 w-4" />
@@ -242,7 +238,7 @@ const AnglaisLessonAF8 = () => {
 
           <TabsContent value="contenu">
             <Card>
-              <CardContent className="p-4 md:p-6">
+              <CardContent className="p-4 md:p-6 space-y-6">
                 {lesson.contenu ? (
                   <div 
                     className="prose prose-sm lg:prose-base max-w-none dark:prose-invert"
@@ -256,7 +252,7 @@ const AnglaisLessonAF8 = () => {
                 )}
 
                 {lesson.youtube_url && (
-                  <div className="mt-6">
+                  <div>
                     <h3 className="text-lg font-semibold mb-3">🎥 Vidéo explicative</h3>
                     <div className="aspect-video">
                       <iframe
@@ -269,27 +265,20 @@ const AnglaisLessonAF8 = () => {
                     </div>
                   </div>
                 )}
-              </CardContent>
-            </Card>
-          </TabsContent>
 
-          <TabsContent value="exemples">
-            <Card>
-              <CardContent className="p-4 md:p-6">
-                {lesson.exemples_exercices ? (
-                  <div 
-                    className="prose prose-sm lg:prose-base max-w-none dark:prose-invert"
-                    dangerouslySetInnerHTML={{ __html: lesson.exemples_exercices }}
-                  />
-                ) : (
-                  <div className="text-center py-8 text-muted-foreground">
-                    <Lightbulb className="h-16 w-16 mx-auto mb-4 opacity-20" />
-                    <p>Les exemples et exercices seront bientôt disponibles</p>
-                  </div>
+                {lesson.exemples_exercices && (
+                  <>
+                    <div className="border-t my-8" />
+                    <h3 className="text-2xl font-bold mb-4">Exemples et Exercices</h3>
+                    <div 
+                      className="prose prose-sm lg:prose-base max-w-none dark:prose-invert"
+                      dangerouslySetInnerHTML={{ __html: lesson.exemples_exercices }}
+                    />
+                  </>
                 )}
 
                 {lesson.references && lesson.references.length > 0 && (
-                  <div className="mt-6 p-4 bg-muted/30 rounded-lg">
+                  <div className="p-4 bg-muted/30 rounded-lg">
                     <h3 className="text-lg font-semibold mb-3">📚 Références</h3>
                     <ul className="list-disc list-inside space-y-1">
                       {lesson.references.map((ref, index) => (

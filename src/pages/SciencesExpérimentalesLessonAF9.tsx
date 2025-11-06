@@ -165,10 +165,9 @@ export default function SciencesExpérimentalesLessonAF9() {
 
         {/* Lesson Content */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="grid w-full grid-cols-5">
+          <TabsList className="grid w-full grid-cols-4">
             <TabsTrigger value="introduction">Introduction</TabsTrigger>
-            <TabsTrigger value="contenu">Contenu</TabsTrigger>
-            <TabsTrigger value="exercices">Exercices</TabsTrigger>
+            <TabsTrigger value="contenu">Contenu & Exercices</TabsTrigger>
             <TabsTrigger value="notes">Mes Notes</TabsTrigger>
             <TabsTrigger value="quiz">Quiz Final</TabsTrigger>
           </TabsList>
@@ -184,22 +183,23 @@ export default function SciencesExpérimentalesLessonAF9() {
           </TabsContent>
 
           <TabsContent value="contenu" className="space-y-4">
-            <Card className="p-8">
+            <Card className="p-8 space-y-6">
               <h2 className="text-2xl font-bold mb-4">📚 Contenu du cours</h2>
               <div 
                 className="prose prose-slate dark:prose-invert max-w-none"
                 dangerouslySetInnerHTML={{ __html: lesson.contenu || "<p>Contenu à venir...</p>" }}
               />
-            </Card>
-          </TabsContent>
-
-          <TabsContent value="exercices" className="space-y-4">
-            <Card className="p-8">
-              <h2 className="text-2xl font-bold mb-4">✏️ Exemples et Exercices</h2>
-              <div 
-                className="prose prose-slate dark:prose-invert max-w-none"
-                dangerouslySetInnerHTML={{ __html: lesson.exemples_exercices || "<p>Exercices à venir...</p>" }}
-              />
+              
+              {lesson.exemples_exercices && (
+                <>
+                  <div className="border-t my-8" />
+                  <h2 className="text-2xl font-bold mb-4">✏️ Exemples et Exercices</h2>
+                  <div 
+                    className="prose prose-slate dark:prose-invert max-w-none"
+                    dangerouslySetInnerHTML={{ __html: lesson.exemples_exercices }}
+                  />
+                </>
+              )}
             </Card>
           </TabsContent>
 

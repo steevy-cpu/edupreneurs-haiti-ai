@@ -174,10 +174,9 @@ const CreoleLessonAF8 = () => {
 
         {/* Lesson Content Tabs */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="grid w-full grid-cols-5 lg:w-auto">
+          <TabsList className="grid w-full grid-cols-4 lg:w-auto">
             <TabsTrigger value="introduction">Introduction</TabsTrigger>
-            <TabsTrigger value="contenu">Contenu</TabsTrigger>
-            <TabsTrigger value="exemples">Exemples</TabsTrigger>
+            <TabsTrigger value="contenu">Contenu & Exemples</TabsTrigger>
             <TabsTrigger value="notes">Mes Notes</TabsTrigger>
             <TabsTrigger value="quiz">Quiz</TabsTrigger>
           </TabsList>
@@ -192,35 +191,35 @@ const CreoleLessonAF8 = () => {
 
           <TabsContent value="contenu" className="space-y-6">
             <Card>
-              <CardContent className="pt-6 prose prose-sm dark:prose-invert max-w-none">
+              <CardContent className="pt-6 prose prose-sm dark:prose-invert max-w-none space-y-6">
                 <div dangerouslySetInnerHTML={{ __html: lesson.contenu || '<p>Contenu à venir...</p>' }} />
-              </CardContent>
-            </Card>
 
-            {lesson.youtube_url && (
-              <Card>
-                <CardContent className="pt-6">
-                  <h3 className="text-lg font-semibold mb-4">Vidéo explicative</h3>
-                  <div className="aspect-video rounded-lg overflow-hidden">
-                    <iframe
-                      width="100%"
-                      height="100%"
-                      src={lesson.youtube_url}
-                      title="YouTube video player"
-                      frameBorder="0"
-                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                      allowFullScreen
-                    />
-                  </div>
-                </CardContent>
-              </Card>
-            )}
-          </TabsContent>
-
-          <TabsContent value="exemples" className="space-y-6">
-            <Card>
-              <CardContent className="pt-6 prose prose-sm dark:prose-invert max-w-none">
-                <div dangerouslySetInnerHTML={{ __html: lesson.exemples_exercices || '<p>Exemples et exercices à venir...</p>' }} />
+                {lesson.youtube_url && (
+                  <Card>
+                    <CardContent className="pt-6">
+                      <h3 className="text-lg font-semibold mb-4">Vidéo explicative</h3>
+                      <div className="aspect-video rounded-lg overflow-hidden">
+                        <iframe
+                          width="100%"
+                          height="100%"
+                          src={lesson.youtube_url}
+                          title="YouTube video player"
+                          frameBorder="0"
+                          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                          allowFullScreen
+                        />
+                      </div>
+                    </CardContent>
+                  </Card>
+                )}
+                
+                {lesson.exemples_exercices && (
+                  <>
+                    <div className="border-t my-8" />
+                    <h3 className="text-2xl font-bold mb-4">Exemples et Exercices</h3>
+                    <div dangerouslySetInnerHTML={{ __html: lesson.exemples_exercices }} />
+                  </>
+                )}
               </CardContent>
             </Card>
           </TabsContent>

@@ -178,18 +178,14 @@ export default function AnglaisLesson() {
 
         {/* Main Content Tabs */}
         <Tabs defaultValue="introduction" className="mb-6">
-          <TabsList className="grid w-full grid-cols-5 gap-1">
+          <TabsList className="grid w-full grid-cols-4 gap-1">
             <TabsTrigger value="introduction" className="flex items-center justify-center gap-2">
               <BookOpen className="h-4 w-4" />
               <span className="hidden md:inline">Introduction</span>
             </TabsTrigger>
             <TabsTrigger value="contenu" className="flex items-center justify-center gap-2">
               <FileText className="h-4 w-4" />
-              <span className="hidden md:inline">Contenu</span>
-            </TabsTrigger>
-            <TabsTrigger value="exemples" className="flex items-center justify-center gap-2">
-              <Dumbbell className="h-4 w-4" />
-              <span className="hidden md:inline">Exemples</span>
+              <span className="hidden md:inline">Contenu & Exemples</span>
             </TabsTrigger>
             <TabsTrigger value="quiz" className="flex items-center justify-center gap-2">
               <HelpCircle className="h-4 w-4" />
@@ -211,20 +207,22 @@ export default function AnglaisLesson() {
           </TabsContent>
 
           <TabsContent value="contenu">
-            <Card className="p-6">
+            <Card className="p-6 space-y-6">
               <div 
                 className="prose prose-sm max-w-none dark:prose-invert"
                 dangerouslySetInnerHTML={{ __html: lesson.contenu }}
               />
-            </Card>
-          </TabsContent>
-
-          <TabsContent value="exemples">
-            <Card className="p-6">
-              <div 
-                className="prose prose-sm max-w-none dark:prose-invert"
-                dangerouslySetInnerHTML={{ __html: lesson.exemples_exercices }}
-              />
+              
+              {lesson.exemples_exercices && (
+                <>
+                  <div className="border-t my-8" />
+                  <h3 className="text-2xl font-bold mb-4">Exemples et Exercices</h3>
+                  <div 
+                    className="prose prose-sm max-w-none dark:prose-invert"
+                    dangerouslySetInnerHTML={{ __html: lesson.exemples_exercices }}
+                  />
+                </>
+              )}
             </Card>
           </TabsContent>
 

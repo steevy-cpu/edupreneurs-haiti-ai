@@ -262,18 +262,14 @@ export default function EspagnolLesson() {
         {/* Lesson Content Tabs */}
         <Card className="p-4 md:p-6 mb-8 overflow-hidden">
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-            <TabsList className="grid w-full grid-cols-5 mb-6 h-auto">
+            <TabsList className="grid w-full grid-cols-4 mb-6 h-auto">
               <TabsTrigger value="introduction" className="gap-2 text-xs md:text-sm px-2 py-2">
                 <Lightbulb className="w-4 h-4 shrink-0" />
                 <span className="hidden sm:inline">Introduction</span>
               </TabsTrigger>
               <TabsTrigger value="contenu" className="gap-2 text-xs md:text-sm px-2 py-2">
                 <BookOpen className="w-4 h-4 shrink-0" />
-                <span className="hidden sm:inline">Contenu</span>
-              </TabsTrigger>
-              <TabsTrigger value="exemples" className="gap-2 text-xs md:text-sm px-2 py-2">
-                <ClipboardCheck className="w-4 h-4 shrink-0" />
-                <span className="hidden sm:inline">Exemples</span>
+                <span className="hidden sm:inline">Contenu & Exemples</span>
               </TabsTrigger>
               <TabsTrigger value="notes" className="gap-2 text-xs md:text-sm px-2 py-2">
                 <NotebookPen className="w-4 h-4 shrink-0" />
@@ -354,27 +350,30 @@ export default function EspagnolLesson() {
                   </div>
                 </div>
               </Card>
-            </TabsContent>
-
-            <TabsContent value="exemples" className="space-y-6">
-              <Card className="p-6 bg-gradient-to-br from-background to-purple-50/30 dark:to-purple-950/10">
-                <div className="flex items-center gap-3 mb-6">
-                  <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-purple-500 to-purple-600 flex items-center justify-center">
-                    <ClipboardCheck className="w-5 h-5 text-white" />
-                  </div>
-                  <h2 className="text-2xl font-bold text-purple-600 dark:text-purple-400">Exemples et Exercices</h2>
-                </div>
-                <div 
-                  className="prose prose-lg dark:prose-invert max-w-none
-                    [&_p]:text-foreground [&_p]:leading-relaxed [&_p]:mb-4
-                    [&_ul]:text-foreground [&_ul]:my-4
-                    [&_li]:text-foreground [&_li]:mb-2
-                    [&_strong]:text-purple-600 dark:[&_strong]:text-purple-400 [&_strong]:font-semibold
-                    [&_h3]:text-xl [&_h3]:font-bold [&_h3]:text-purple-600 dark:[&_h3]:text-purple-400 [&_h3]:mb-4 [&_h3]:mt-6
-                    [&_h4]:text-lg [&_h4]:font-semibold [&_h4]:text-purple-500 dark:[&_h4]:text-purple-300 [&_h4]:mb-3"
-                  dangerouslySetInnerHTML={{ __html: lesson.exemplesExercices }}
-                />
-              </Card>
+              
+              {lesson.exemplesExercices && (
+                <>
+                  <div className="border-t my-8" />
+                  <Card className="p-6 bg-gradient-to-br from-background to-purple-50/30 dark:to-purple-950/10">
+                    <div className="flex items-center gap-3 mb-6">
+                      <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-purple-500 to-purple-600 flex items-center justify-center">
+                        <ClipboardCheck className="w-5 h-5 text-white" />
+                      </div>
+                      <h2 className="text-2xl font-bold text-purple-600 dark:text-purple-400">Exemples et Exercices</h2>
+                    </div>
+                    <div 
+                      className="prose prose-lg dark:prose-invert max-w-none
+                        [&_p]:text-foreground [&_p]:leading-relaxed [&_p]:mb-4
+                        [&_ul]:text-foreground [&_ul]:my-4
+                        [&_li]:text-foreground [&_li]:mb-2
+                        [&_strong]:text-purple-600 dark:[&_strong]:text-purple-400 [&_strong]:font-semibold
+                        [&_h3]:text-xl [&_h3]:font-bold [&_h3]:text-purple-600 dark:[&_h3]:text-purple-400 [&_h3]:mb-4 [&_h3]:mt-6
+                        [&_h4]:text-lg [&_h4]:font-semibold [&_h4]:text-purple-500 dark:[&_h4]:text-purple-300 [&_h4]:mb-3"
+                      dangerouslySetInnerHTML={{ __html: lesson.exemplesExercices }}
+                    />
+                  </Card>
+                </>
+              )}
             </TabsContent>
 
             <TabsContent value="notes" className="space-y-6">

@@ -191,18 +191,14 @@ export default function CreoleLesson() {
           {/* Lesson Content with Tabs */}
           <Card className="p-8 mb-8">
             <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-              <TabsList className="grid w-full grid-cols-5 mb-8">
+              <TabsList className="grid w-full grid-cols-4 mb-8">
                 <TabsTrigger value="introduction" className="gap-2">
                   <Lightbulb className="w-4 h-4" />
                   <span className="hidden sm:inline">Entwodiksyon</span>
                 </TabsTrigger>
                 <TabsTrigger value="contenu" className="gap-2">
                   <BookOpen className="w-4 h-4" />
-                  <span className="hidden sm:inline">Kontni</span>
-                </TabsTrigger>
-                <TabsTrigger value="exemples" className="gap-2">
-                  <CheckCircle2 className="w-4 h-4" />
-                  <span className="hidden sm:inline">Egzanp</span>
+                  <span className="hidden sm:inline">Kontni & Egzanp</span>
                 </TabsTrigger>
                 <TabsTrigger value="notes" className="gap-2">
                   <NotebookPen className="w-4 h-4" />
@@ -248,14 +244,16 @@ export default function CreoleLesson() {
                     />
                   </div>
                 )}
-              </TabsContent>
-
-              <TabsContent value="exemples" className="space-y-6">
-                <div className="prose prose-lg max-w-none dark:prose-invert">
-                  {lesson.exemplesExercices && (
-                    <div dangerouslySetInnerHTML={{ __html: lesson.exemplesExercices }} />
-                  )}
-                </div>
+                
+                {lesson.exemplesExercices && (
+                  <>
+                    <div className="border-t my-8" />
+                    <h3 className="text-2xl font-bold mb-4">Egzanp ak Egzèsis</h3>
+                    <div className="prose prose-lg max-w-none dark:prose-invert">
+                      <div dangerouslySetInnerHTML={{ __html: lesson.exemplesExercices }} />
+                    </div>
+                  </>
+                )}
               </TabsContent>
 
               <TabsContent value="notes" className="space-y-6">
