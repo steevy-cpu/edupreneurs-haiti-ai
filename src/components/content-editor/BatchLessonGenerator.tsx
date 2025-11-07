@@ -525,13 +525,16 @@ export const BatchLessonGenerator = () => {
               setHasGeneratedOptionalContent(true);
               
               console.log('✅ [Batch] YouTube videos suggested:', videoData.videos.length);
+            } else if (!videoError) {
+              console.log('ℹ️ [Batch] No YouTube videos found');
             }
           } catch (error) {
             console.error('❌ [Batch] Error suggesting videos:', error);
           }
         }
 
-        success = true;
+        // Mark as success if any content was generated (sections or optional features)
+        success = selectedSections.length > 0 || generateQuiz || generateVideos;
         const generationTime = Date.now() - startTime;
         
         setLessonStatuses(prev => prev.map((l, i) =>
