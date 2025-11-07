@@ -37,38 +37,43 @@ interface LessonData {
 
 const parseQuizHTML = (html: string) => {
   const questions = [];
-  const questionBlocks = html.split(/Question\s+\d+/i).filter(block => block.trim());
   
-  for (const block of questionBlocks) {
-    const lines = block.split('\n').map(l => l.trim()).filter(l => l);
+  // Create a temporary DOM parser
+  const parser = new DOMParser();
+  const doc = parser.parseFromString(html, 'text/html');
+  
+  // Find all quiz question divs
+  const questionDivs = doc.querySelectorAll('.quiz-question');
+  
+  questionDivs.forEach((questionDiv) => {
+    // Extract question text from <p> tag
+    const questionP = questionDiv.querySelector('p');
+    const questionText = questionP?.textContent?.trim() || '';
     
-    // Extract question text (first non-empty line)
-    const questionText = lines[0]?.replace(/<[^>]*>/g, '').trim() || '';
-    
-    // Extract options (A), B), C), D))
+    // Extract options from .option divs
+    const optionDivs = questionDiv.querySelectorAll('.option');
     const options: string[] = [];
-    const optionRegex = /^[A-D]\)\s*(.+)/;
     
-    for (const line of lines) {
-      const cleanLine = line.replace(/<[^>]*>/g, '').trim();
-      const match = cleanLine.match(optionRegex);
-      if (match) {
-        options.push(match[1]);
+    optionDivs.forEach((optionDiv) => {
+      const optionText = optionDiv.textContent?.trim() || '';
+      // Remove the "A) ", "B) ", etc. prefix
+      const cleanOption = optionText.replace(/^[A-D]\)\s*/, '');
+      if (cleanOption) {
+        options.push(cleanOption);
       }
-    }
+    });
     
-    // Extract correct answer
-    let correctAnswer = 0;
-    const answerMatch = block.match(/Réponse correcte:\s*([A-D])/i);
-    if (answerMatch) {
-      correctAnswer = answerMatch[1].charCodeAt(0) - 65; // Convert A=0, B=1, etc.
-    }
+    // Extract correct answer from data-correct attribute
+    const correctAnswerDiv = questionDiv.querySelector('.correct-answer');
+    const correctLetter = correctAnswerDiv?.getAttribute('data-correct') || 'A';
+    const correctAnswer = correctLetter.charCodeAt(0) - 65; // Convert A=0, B=1, etc.
     
-    // Extract explanation (text after "Réponse correcte:")
+    // Extract explanation from correct-answer div
+    const explanationPs = correctAnswerDiv?.querySelectorAll('p');
     let explanation = '';
-    const explanationMatch = block.split(/Réponse correcte:\s*[A-D]/i)[1];
-    if (explanationMatch) {
-      explanation = explanationMatch.replace(/<[^>]*>/g, '').trim();
+    if (explanationPs && explanationPs.length > 1) {
+      // Second paragraph contains the explanation
+      explanation = explanationPs[1]?.textContent?.trim() || '';
     }
     
     if (questionText && options.length >= 2) {
@@ -79,7 +84,7 @@ const parseQuizHTML = (html: string) => {
         explanation: explanation || 'Bonne réponse!'
       });
     }
-  }
+  });
   
   return questions;
 };
