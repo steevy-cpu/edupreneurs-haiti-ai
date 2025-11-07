@@ -443,11 +443,8 @@ export const SingleLessonGenerator = ({ lesson, onComplete }: SingleLessonGenera
             
             console.log(`🔗 Public URL: ${publicUrl}`);
             
-            // Create HTML for the image with proper markdown integration
+            // Create HTML for the image without the heading
             const imageHtml = `
-
-### 🖼️ ${image.description}
-
 <div class="my-6 flex justify-center">
   <div class="max-w-2xl">
     <img 
@@ -461,7 +458,6 @@ export const SingleLessonGenerator = ({ lesson, onComplete }: SingleLessonGenera
     </p>
   </div>
 </div>
-
 `;
             
             // Insert image into appropriate section - in the middle, not at the end
