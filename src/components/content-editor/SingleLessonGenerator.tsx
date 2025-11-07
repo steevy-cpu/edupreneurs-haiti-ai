@@ -107,6 +107,20 @@ export const SingleLessonGenerator = ({ lesson, onComplete }: SingleLessonGenera
     }
   };
 
+  // Helper function to remove all image HTML from content
+  const removeAllImageHtml = (htmlContent: string): string => {
+    // Remove all <div class="my-6 flex justify-center">...</div> blocks containing images
+    let cleaned = htmlContent.replace(/<div class="my-6 flex justify-center">[\s\S]*?<\/div>\s*<\/div>/g, '');
+    
+    // Also remove standalone <img> tags
+    cleaned = cleaned.replace(/<img[^>]*>/g, '');
+    
+    // Clean up extra whitespace
+    cleaned = cleaned.replace(/\n{3,}/g, '\n\n').trim();
+    
+    return cleaned;
+  };
+
   const handleGenerate = async () => {
     if (!lesson) {
       toast.error("Aucune leçon sélectionnée");
@@ -451,6 +465,14 @@ export const SingleLessonGenerator = ({ lesson, onComplete }: SingleLessonGenera
       // Start with generated content or existing lesson content
       let updatedContenu = generatedContent.contenu || lesson.contenu || '';
       let updatedExemples = generatedContent.exemples_exercices || lesson.exemples_exercices || '';
+      
+      // CRITICAL: Remove all existing image HTML before processing new images
+      // This ensures old images are removed when regenerating
+      if (generatedContent.explanatory_images) {
+        console.log('🧹 Cleaning old images from content before inserting new ones...');
+        updatedContenu = removeAllImageHtml(updatedContenu);
+        updatedExemples = removeAllImageHtml(updatedExemples);
+      }
       
       // Process explanatory images if they exist
       if (generatedContent.explanatory_images) {

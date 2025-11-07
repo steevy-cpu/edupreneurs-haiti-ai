@@ -155,6 +155,20 @@ export const BatchLessonGenerator = () => {
     }
   };
 
+  // Helper function to remove all image HTML from content
+  const removeAllImageHtml = (htmlContent: string): string => {
+    // Remove all <div class="my-6 flex justify-center">...</div> blocks containing images
+    let cleaned = htmlContent.replace(/<div class="my-6 flex justify-center">[\s\S]*?<\/div>\s*<\/div>/g, '');
+    
+    // Also remove standalone <img> tags
+    cleaned = cleaned.replace(/<img[^>]*>/g, '');
+    
+    // Clean up extra whitespace
+    cleaned = cleaned.replace(/\n{3,}/g, '\n\n').trim();
+    
+    return cleaned;
+  };
+
   // Load lessons when grade level or subject changes
   useEffect(() => {
     if (gradeLevel !== "all" || subject !== "all") {
@@ -774,6 +788,14 @@ export const BatchLessonGenerator = () => {
       // Start with generated or existing content
       let updatedContenu = generatedContent.contenu || currentLesson?.contenu || '';
       let updatedExemples = generatedContent.exemples_exercices || currentLesson?.exemples_exercices || '';
+      
+      // CRITICAL: Remove all existing image HTML before processing new images
+      // This ensures old images are removed when regenerating
+      if (generatedContent.explanatory_images) {
+        console.log('🧹 Cleaning old images from content before inserting new ones...');
+        updatedContenu = removeAllImageHtml(updatedContenu);
+        updatedExemples = removeAllImageHtml(updatedExemples);
+      }
       
       // Process explanatory images if they exist
       if (generatedContent.explanatory_images) {
