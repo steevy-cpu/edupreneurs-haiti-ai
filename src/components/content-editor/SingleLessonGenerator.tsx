@@ -64,6 +64,49 @@ export const SingleLessonGenerator = ({ lesson, onComplete }: SingleLessonGenera
     );
   };
 
+  // Helper function to extract image URLs from HTML content
+  const extractImageUrls = (htmlContent: string): string[] => {
+    const regex = /<img[^>]+src="([^">]+)"/g;
+    const urls: string[] = [];
+    let match;
+    while ((match = regex.exec(htmlContent)) !== null) {
+      const url = match[1];
+      // Only extract URLs from lesson-images bucket
+      if (url.includes('/storage/v1/object/public/lesson-images/')) {
+        urls.push(url);
+      }
+    }
+    return urls;
+  };
+
+  // Helper function to delete old images from storage
+  const deleteOldImages = async (imageUrls: string[]) => {
+    if (imageUrls.length === 0) return;
+
+    console.log(`🗑️ Deleting ${imageUrls.length} old image(s)...`);
+    
+    for (const url of imageUrls) {
+      try {
+        // Extract the file path from the URL
+        const urlParts = url.split('/lesson-images/');
+        if (urlParts.length === 2) {
+          const filePath = urlParts[1];
+          const { error } = await supabase.storage
+            .from('lesson-images')
+            .remove([filePath]);
+          
+          if (error) {
+            console.error(`Failed to delete ${filePath}:`, error);
+          } else {
+            console.log(`✅ Deleted: ${filePath}`);
+          }
+        }
+      } catch (error) {
+        console.error('Error deleting image:', error);
+      }
+    }
+  };
+
   const handleGenerate = async () => {
     if (!lesson) {
       toast.error("Aucune leçon sélectionnée");
@@ -334,6 +377,17 @@ export const SingleLessonGenerator = ({ lesson, onComplete }: SingleLessonGenera
           .select('contenu, exemples_exercices, title, grade_level, subjects(name)')
           .eq('id', lesson.id)
           .single();
+
+        // Step 1: Clean up old images before generating new ones
+        const oldContenuImages = extractImageUrls(lessonData?.contenu || '');
+        const oldExemplesImages = extractImageUrls(lessonData?.exemples_exercices || '');
+        const allOldImages = [...oldContenuImages, ...oldExemplesImages];
+        
+        if (allOldImages.length > 0) {
+          console.log(`🗑️ Found ${allOldImages.length} old image(s) to clean up`);
+          toast.info(`Nettoyage de ${allOldImages.length} ancienne(s) image(s)...`);
+          await deleteOldImages(allOldImages);
+        }
 
         const { data, error } = await supabase.functions.invoke('generate-explanatory-images', {
           body: {
