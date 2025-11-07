@@ -18,7 +18,7 @@ serve(async (req) => {
     console.log('🎥 Generating YouTube video suggestions for:', lessonTitle);
 
     const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
-    const YOUTUBE_API_KEY = Deno.env.get('GEMINI_API_KEY'); // Using Gemini API key for YouTube
+    const YOUTUBE_API_KEY = Deno.env.get('YOUTUBE_API_KEY');
     
     if (!LOVABLE_API_KEY) {
       throw new Error('LOVABLE_API_KEY not configured');
