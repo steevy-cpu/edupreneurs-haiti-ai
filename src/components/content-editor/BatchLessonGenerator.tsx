@@ -657,7 +657,31 @@ export const BatchLessonGenerator = () => {
   const handleApplyLesson = async (lessonId: string, shouldPublish: boolean = false) => {
     setIsApplying(true);
     try {
+      // Find the lesson status to get generated content
+      const lessonStatus = lessonStatuses.find(l => l.lessonId === lessonId);
+      if (!lessonStatus || !lessonStatus.generatedContent) {
+        toast.error("Aucun contenu généré trouvé");
+        return;
+      }
+
       const updates: any = {};
+      const generatedContent = lessonStatus.generatedContent;
+      
+      // Apply generated sections
+      if (generatedContent.objectif) updates.objectif = generatedContent.objectif;
+      if (generatedContent.introduction) updates.introduction = generatedContent.introduction;
+      if (generatedContent.contenu) updates.contenu = generatedContent.contenu;
+      if (generatedContent.exemples_exercices) updates.exemples_exercices = generatedContent.exemples_exercices;
+      if (generatedContent.activites_interactives) updates.activites_interactives = generatedContent.activites_interactives;
+      if (generatedContent.quiz_final) updates.quiz_final = generatedContent.quiz_final;
+      
+      // Handle YouTube videos - pick the first one if multiple
+      if (generatedContent.youtube_videos && Array.isArray(generatedContent.youtube_videos)) {
+        const videos = generatedContent.youtube_videos;
+        if (videos.length > 0) {
+          updates.youtube_url = `https://www.youtube.com/watch?v=${videos[0].id}`;
+        }
+      }
       
       if (shouldPublish) {
         updates.is_published = true;
