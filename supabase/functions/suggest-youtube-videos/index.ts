@@ -117,6 +117,23 @@ ${combinedContent.substring(0, 1000)}...`
     const allVideos: any[] = [];
     const seenIds = new Set<string>();
 
+    // Helper function to calculate relevance score
+    const calculateRelevance = (videoTitle: string, lessonTitle: string): number => {
+      const videoLower = videoTitle.toLowerCase();
+      const lessonLower = lessonTitle.toLowerCase();
+      const lessonWords = lessonLower.split(/\s+/).filter(w => w.length > 2);
+      
+      let score = 0;
+      for (const word of lessonWords) {
+        if (videoLower.includes(word)) score += 1;
+      }
+      
+      // Bonus if exact lesson title is in video title
+      if (videoLower.includes(lessonLower)) score += 10;
+      
+      return score;
+    };
+
     for (const query of searchQueries.slice(0, 3)) {
       try {
         const youtubeUrl = `https://www.googleapis.com/youtube/v3/search?part=snippet&q=${encodeURIComponent(query)}&type=video&videoEmbeddable=true&maxResults=3&key=${YOUTUBE_API_KEY}&relevanceLanguage=fr&safeSearch=strict`;
@@ -144,6 +161,7 @@ ${combinedContent.substring(0, 1000)}...`
               description: item.snippet.description,
               thumbnail: item.snippet.thumbnails.medium.url,
               channelTitle: item.snippet.channelTitle,
+              relevanceScore: calculateRelevance(item.snippet.title, lessonTitle),
             });
           }
         }
@@ -152,10 +170,14 @@ ${combinedContent.substring(0, 1000)}...`
       }
     }
 
-    // Return top 2 unique videos
+    // Sort by relevance score and return top 2 unique videos
+    allVideos.sort((a, b) => b.relevanceScore - a.relevanceScore);
     const topVideos = allVideos.slice(0, 2);
 
-    console.log(`✅ Found ${topVideos.length} suggested videos`);
+    console.log(`✅ Found ${topVideos.length} suggested videos (sorted by relevance)`);
+    if (topVideos.length > 0) {
+      console.log(`Top video: "${topVideos[0].title}" (score: ${topVideos[0].relevanceScore})`);
+    }
 
     return new Response(
       JSON.stringify({ videos: topVideos }),

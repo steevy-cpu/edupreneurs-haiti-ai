@@ -673,13 +673,21 @@ export const BatchLessonGenerator = () => {
       if (generatedContent.contenu) updates.contenu = generatedContent.contenu;
       if (generatedContent.exemples_exercices) updates.exemples_exercices = generatedContent.exemples_exercices;
       if (generatedContent.activites_interactives) updates.activites_interactives = generatedContent.activites_interactives;
-      if (generatedContent.quiz_final) updates.quiz_final = generatedContent.quiz_final;
       
-      // Handle YouTube videos - pick the first one if multiple
+      // Apply Quiz Final
+      if (generatedContent.quiz_final) {
+        updates.quiz_final = generatedContent.quiz_final;
+        console.log('✅ Applying Quiz Final:', generatedContent.quiz_final.substring(0, 100) + '...');
+      }
+      
+      // Handle YouTube videos - pick the most relevant one (first in sorted list)
       if (generatedContent.youtube_videos && Array.isArray(generatedContent.youtube_videos)) {
         const videos = generatedContent.youtube_videos;
         if (videos.length > 0) {
-          updates.youtube_url = `https://www.youtube.com/watch?v=${videos[0].id}`;
+          // Videos are already sorted by relevance in the edge function
+          const bestVideo = videos[0];
+          updates.youtube_url = `https://www.youtube.com/watch?v=${bestVideo.id}`;
+          console.log('✅ Applying most relevant YouTube video:', bestVideo.title);
         }
       }
       
@@ -687,6 +695,8 @@ export const BatchLessonGenerator = () => {
         updates.is_published = true;
         updates.workflow_status = 'published';
       }
+
+      console.log('📝 Updating lesson with:', Object.keys(updates));
 
       if (Object.keys(updates).length > 0) {
         const { error } = await supabase
