@@ -403,28 +403,56 @@ export const SingleLessonGenerator = ({ lesson, onComplete }: SingleLessonGenera
         const images = generatedContent.explanatory_images;
         console.log(`📸 Processing ${images.length} images...`);
         
+        // Separate images by their target section
+        const contenuImages: any[] = [];
+        const exemplesImages: any[] = [];
+        
+        for (const image of images) {
+          if (image.insertAt === 'contenu') {
+            contenuImages.push(image);
+          } else if (image.insertAt === 'exemples_exercices') {
+            exemplesImages.push(image);
+          }
+        }
+        
+        console.log(`📊 Distribution: ${contenuImages.length} for contenu, ${exemplesImages.length} for exemples`);
+        
         for (const image of images) {
           try {
             console.log(`🖼️ Processing image: ${image.concept} (insertAt: ${image.insertAt})`);
             
-            // Convert base64 to blob
+            // Convert base64 to blob for WebP format
             const base64Data = image.base64Data;
             const binaryString = atob(base64Data);
             const bytes = new Uint8Array(binaryString.length);
             for (let i = 0; i < binaryString.length; i++) {
               bytes[i] = binaryString.charCodeAt(i);
             }
-            const blob = new Blob([bytes], { type: 'image/png' });
-            console.log(`✅ Blob created, size: ${blob.size} bytes`);
             
-            // Upload to Supabase Storage
-            const fileName = `${lesson.id}/${image.concept.replace(/\s+/g, '-').toLowerCase()}-${Date.now()}.png`;
+            // Create canvas to convert PNG to WebP
+            const blob = new Blob([bytes], { type: 'image/png' });
+            const imageBitmap = await createImageBitmap(blob);
+            const canvas = document.createElement('canvas');
+            canvas.width = imageBitmap.width;
+            canvas.height = imageBitmap.height;
+            const ctx = canvas.getContext('2d');
+            ctx?.drawImage(imageBitmap, 0, 0);
+            
+            // Convert to WebP with quality 85 for good compression
+            const webpBlob = await new Promise<Blob>((resolve) => {
+              canvas.toBlob((blob) => resolve(blob!), 'image/webp', 0.85);
+            });
+            
+            console.log(`✅ Converted to WebP, size: ${webpBlob.size} bytes (from ${blob.size} bytes)`);
+            
+            // Upload to Supabase Storage with WebP extension
+            const fileName = `${lesson.id}/${image.concept.replace(/\s+/g, '-').toLowerCase()}-${Date.now()}.webp`;
             console.log(`📤 Uploading to: ${fileName}`);
             
             const { data: uploadData, error: uploadError } = await supabase.storage
               .from('lesson-images')
-              .upload(fileName, blob, {
-                contentType: 'image/png',
+              .upload(fileName, webpBlob, {
+                contentType: 'image/webp',
                 upsert: true
               });
             
@@ -460,25 +488,19 @@ export const SingleLessonGenerator = ({ lesson, onComplete }: SingleLessonGenera
 </div>
 `;
             
-            // Insert image into appropriate section - in the middle, not at the end
+            // Add image to the appropriate section array for later insertion
             if (image.insertAt === 'contenu') {
-              console.log('➕ Adding image to middle of contenu section');
-              // Split content into paragraphs
               const paragraphs = updatedContenu.split('\n\n');
-              const middleIndex = Math.floor(paragraphs.length / 2);
-              
-              // Insert image in the middle
-              paragraphs.splice(middleIndex, 0, imageHtml);
+              const insertIndex = Math.floor(paragraphs.length / (contenuImages.length + 1)) * (contenuImages.indexOf(image) + 1);
+              paragraphs.splice(insertIndex, 0, imageHtml);
               updatedContenu = paragraphs.join('\n\n');
+              console.log(`➕ Added image ${contenuImages.indexOf(image) + 1}/${contenuImages.length} to contenu at position ${insertIndex}`);
             } else if (image.insertAt === 'exemples_exercices') {
-              console.log('➕ Adding image to middle of exemples_exercices section');
-              // Split content into paragraphs
               const paragraphs = updatedExemples.split('\n\n');
-              const middleIndex = Math.floor(paragraphs.length / 2);
-              
-              // Insert image in the middle
-              paragraphs.splice(middleIndex, 0, imageHtml);
+              const insertIndex = Math.floor(paragraphs.length / (exemplesImages.length + 1)) * (exemplesImages.indexOf(image) + 1);
+              paragraphs.splice(insertIndex, 0, imageHtml);
               updatedExemples = paragraphs.join('\n\n');
+              console.log(`➕ Added image ${exemplesImages.indexOf(image) + 1}/${exemplesImages.length} to exemples at position ${insertIndex}`);
             }
           } catch (imageError) {
             console.error('❌ Error processing image:', imageError);
@@ -486,7 +508,7 @@ export const SingleLessonGenerator = ({ lesson, onComplete }: SingleLessonGenera
           }
         }
         
-        console.log('✅ All images processed');
+        console.log('✅ All images processed and inserted');
       }
       
       // Apply all generated content to the database
