@@ -19,6 +19,7 @@ const ContentEditor = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [hasAccess, setHasAccess] = useState(false);
   const [selectedLesson, setSelectedLesson] = useState<any>(null);
+  const [refreshKey, setRefreshKey] = useState(0);
 
   useEffect(() => {
     checkAccess();
@@ -109,8 +110,9 @@ const ContentEditor = () => {
         .single();
 
       if (error) throw error;
-      console.log('✅ Lesson refreshed:', data);
+      console.log('✅ Lesson refreshed with quiz_final:', !!data.quiz_final, 'and youtube_url:', !!data.youtube_url);
       setSelectedLesson(data);
+      setRefreshKey(prev => prev + 1); // Force re-render
       toast.success("Leçon mise à jour");
     } catch (error) {
       console.error('❌ Error refreshing lesson:', error);
@@ -217,7 +219,7 @@ const ContentEditor = () => {
 
                   {/* Lesson Preview - Student View */}
                   <LessonPreview 
-                    key={`${selectedLesson?.id}-${selectedLesson?.quiz_final ? 'quiz' : 'no-quiz'}-${selectedLesson?.youtube_url ? 'video' : 'no-video'}`} 
+                    key={`lesson-${selectedLesson?.id}-refresh-${refreshKey}`} 
                     lesson={selectedLesson} 
                   />
 
