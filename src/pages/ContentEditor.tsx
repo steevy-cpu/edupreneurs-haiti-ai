@@ -101,6 +101,7 @@ const ContentEditor = () => {
     if (!selectedLesson) return;
     
     try {
+      console.log('🔄 Refreshing lesson data...');
       const { data, error } = await supabase
         .from('lessons')
         .select('*, subjects(id, name)')
@@ -108,9 +109,12 @@ const ContentEditor = () => {
         .single();
 
       if (error) throw error;
+      console.log('✅ Lesson refreshed:', data);
       setSelectedLesson(data);
+      toast.success("Leçon mise à jour");
     } catch (error) {
-      console.error('Error refreshing lesson:', error);
+      console.error('❌ Error refreshing lesson:', error);
+      toast.error("Erreur lors du rafraîchissement");
     }
   };
 
@@ -213,7 +217,7 @@ const ContentEditor = () => {
 
                   {/* Lesson Preview - Student View */}
                   <LessonPreview 
-                    key={selectedLesson?.id || 'no-lesson'} 
+                    key={`${selectedLesson?.id}-${selectedLesson?.quiz_final ? 'quiz' : 'no-quiz'}-${selectedLesson?.youtube_url ? 'video' : 'no-video'}`} 
                     lesson={selectedLesson} 
                   />
 
