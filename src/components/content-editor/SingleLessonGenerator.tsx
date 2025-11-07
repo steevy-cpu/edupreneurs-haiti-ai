@@ -579,30 +579,81 @@ export const SingleLessonGenerator = ({ lesson, onComplete }: SingleLessonGenera
             <div className="space-y-4 border-t pt-4">
               <div className="flex items-center justify-between">
                 <h3 className="text-lg font-semibold">📋 Aperçu du contenu généré</h3>
-                <Badge variant="secondary">{Object.keys(generatedContent).length} élément(s)</Badge>
+                <Badge variant="secondary">{Object.keys(generatedContent).filter(k => k !== 'suggested_videos').length} élément(s)</Badge>
               </div>
               
-              <div className="space-y-3 max-h-96 overflow-y-auto border rounded-lg p-4 bg-muted/30">
+              <div className="space-y-4 max-h-[600px] overflow-y-auto border rounded-lg p-4 bg-muted/30">
                 {Object.entries(generatedContent).map(([key, value]) => {
                   if (key === 'suggested_videos') return null;
                   
                   return (
-                    <div key={key} className="space-y-2">
+                    <div key={key} className="space-y-2 border-b pb-4 last:border-b-0 last:pb-0">
                       <Label className="text-sm font-semibold capitalize flex items-center gap-2">
                         <CheckCircle2 className="h-4 w-4 text-green-500" />
                         {key === 'quiz_final' ? 'Quiz Final' : 
-                         key === 'youtube_url' ? 'Vidéo YouTube' :
+                         key === 'youtube_url' ? 'Vidéos YouTube Suggérées' :
                          key === 'activites_interactives' ? 'Activités Interactives' :
                          key === 'exemples_exercices' ? 'Exemples & Exercices' :
                          key}
                       </Label>
+                      
+                      {/* Special handling for YouTube videos */}
                       {key === 'youtube_url' ? (
-                        <div className="text-sm text-muted-foreground">
-                          <a href={value} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">
-                            {value}
-                          </a>
+                        <div className="space-y-3">
+                          {/* Parse suggested_videos if available */}
+                          {generatedContent.suggested_videos ? (
+                            (() => {
+                              try {
+                                const videos = JSON.parse(generatedContent.suggested_videos);
+                                return videos.slice(0, 2).map((video: any, idx: number) => (
+                                  <div key={idx} className="border rounded-lg p-3 bg-background/50 space-y-2">
+                                    <div className="flex items-start gap-3">
+                                      <img 
+                                        src={video.thumbnail} 
+                                        alt={video.title}
+                                        className="w-24 h-18 object-cover rounded"
+                                      />
+                                      <div className="flex-1 min-w-0">
+                                        <p className="text-sm font-medium line-clamp-2">{video.title}</p>
+                                        <p className="text-xs text-muted-foreground mt-1">{video.channel}</p>
+                                        <a 
+                                          href={`https://www.youtube.com/watch?v=${video.id}`}
+                                          target="_blank" 
+                                          rel="noopener noreferrer" 
+                                          className="text-xs text-primary hover:underline mt-1 inline-block"
+                                        >
+                                          Voir la vidéo →
+                                        </a>
+                                      </div>
+                                    </div>
+                                  </div>
+                                ));
+                              } catch (e) {
+                                return (
+                                  <div className="text-sm text-muted-foreground">
+                                    <a href={value} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">
+                                      {value}
+                                    </a>
+                                  </div>
+                                );
+                              }
+                            })()
+                          ) : (
+                            <div className="text-sm text-muted-foreground">
+                              <a href={value} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">
+                                {value}
+                              </a>
+                            </div>
+                          )}
                         </div>
+                      ) : key === 'quiz_final' ? (
+                        /* Show full quiz for better preview */
+                        <div 
+                          className="prose prose-sm dark:prose-invert max-w-none bg-background/50 p-4 rounded border max-h-96 overflow-y-auto"
+                          dangerouslySetInnerHTML={{ __html: value }}
+                        />
                       ) : (
+                        /* Show truncated content for other sections */
                         <div 
                           className="prose prose-sm dark:prose-invert max-w-none text-xs max-h-32 overflow-y-auto bg-background/50 p-3 rounded border"
                           dangerouslySetInnerHTML={{ __html: value.substring(0, 500) + (value.length > 500 ? '...' : '') }}
