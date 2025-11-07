@@ -55,6 +55,7 @@ export const BatchLessonGenerator = () => {
     lessonId?: string;
     lessonTitle?: string;
   }>({});
+  const [hasGeneratedOptionalContent, setHasGeneratedOptionalContent] = useState(false);
   const [completedCount, setCompletedCount] = useState(0);
   const [isLoadingLessons, setIsLoadingLessons] = useState(false);
   const [isLoadingSubjects, setIsLoadingSubjects] = useState(true);
@@ -297,9 +298,12 @@ export const BatchLessonGenerator = () => {
     setIsGenerating(false);
     
     // Show preview if only quiz/videos were generated (no content sections)
-    if ((previewContent.quiz || previewContent.videos) && selectedSections.length === 0) {
-      setShowPreview(true);
-      toast.success('Contenu généré - Consultez l\'aperçu');
+    if (hasGeneratedOptionalContent && selectedSections.length === 0) {
+      console.log('🎯 [Batch] Showing preview for optional content');
+      setTimeout(() => {
+        setShowPreview(true);
+        toast.success('Contenu généré - Consultez l\'aperçu');
+      }, 500); // Small delay to ensure state has updated
       return;
     }
     
@@ -486,6 +490,7 @@ export const BatchLessonGenerator = () => {
                 lessonId: lesson.id,
                 lessonTitle: lesson.title
               }));
+              setHasGeneratedOptionalContent(true);
               
               console.log('✅ [Batch] Quiz Final generated');
             }
@@ -517,6 +522,7 @@ export const BatchLessonGenerator = () => {
                 lessonId: lesson.id,
                 lessonTitle: lesson.title
               }));
+              setHasGeneratedOptionalContent(true);
               
               console.log('✅ [Batch] YouTube videos suggested:', videoData.videos.length);
             }
@@ -617,6 +623,7 @@ export const BatchLessonGenerator = () => {
       toast.success("Contenu appliqué avec succès");
       setShowPreview(false);
       setPreviewContent({});
+      setHasGeneratedOptionalContent(false);
       
       // Redirect to content editor with the lesson
       navigate(`/content-editor?lesson=${previewContent.lessonId}`);
@@ -629,6 +636,7 @@ export const BatchLessonGenerator = () => {
   const handleDiscardPreview = () => {
     setShowPreview(false);
     setPreviewContent({});
+    setHasGeneratedOptionalContent(false);
     toast.info("Modifications annulées");
   };
 
