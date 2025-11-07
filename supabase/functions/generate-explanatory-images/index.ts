@@ -40,7 +40,7 @@ serve(async (req) => {
         messages: [
           {
             role: 'system',
-            content: `Tu es un expert en création de contenus éducatifs visuels. Analyse les leçons et identifie 2-3 concepts clés qui bénéficieraient d'une représentation visuelle.
+            content: `Tu es un expert en création de contenus éducatifs visuels. Analyse les leçons et identifie 2-4 concepts clés qui bénéficieraient d'une représentation visuelle.
             
 Pour chaque concept, génère un prompt détaillé en anglais pour créer un diagramme ou illustration éducative.
 
@@ -50,6 +50,8 @@ Concentre-toi sur:
 - Des images pouvant inclure des étiquettes et texte explicatif
 - Approprié pour le niveau scolaire: ${gradeLevel}
 - Style: educational illustration, digital art, clean, simple, colorful
+
+CRITIQUE: Tu dois générer AU MOINS 2 concepts, idéalement 3-4 pour enrichir le contenu.
 
 IMPORTANT: Retourne UNIQUEMENT un tableau JSON valide, sans texte avant ou après. Format exact:
 [
@@ -73,7 +75,7 @@ ${contenu?.substring(0, 1500) || 'Pas de contenu'}
 Exemples et exercices:
 ${exemplesExercices?.substring(0, 1500) || 'Pas d\'exemples'}
 
-Génère 2-3 concepts éducatifs avec des prompts détaillés en anglais pour créer des illustrations. Retourne uniquement le JSON.`
+Génère AU MOINS 2 concepts éducatifs (idéalement 3-4) avec des prompts détaillés en anglais pour créer des illustrations. Retourne uniquement le JSON.`
           }
         ],
         temperature: 0.7
@@ -107,6 +109,11 @@ Génère 2-3 concepts éducatifs avec des prompts détaillés en anglais pour cr
     
     if (!Array.isArray(concepts) || concepts.length === 0) {
       throw new Error('No concepts generated');
+    }
+    
+    if (concepts.length < 2) {
+      console.warn(`⚠️ Only ${concepts.length} concept(s) generated, expected at least 2`);
+      throw new Error('Insufficient concepts generated - need at least 2 images per lesson');
     }
     
     console.log(`📝 Generated ${concepts.length} concept(s):`, concepts.map(c => c.name));
@@ -170,6 +177,11 @@ Génère 2-3 concepts éducatifs avec des prompts détaillés en anglais pour cr
     
     if (images.length === 0) {
       throw new Error('No images were successfully generated');
+    }
+    
+    if (images.length < 2) {
+      console.warn(`⚠️ Only ${images.length} image(s) successfully generated, expected at least 2`);
+      throw new Error(`Only ${images.length} image(s) generated - need at least 2 images per lesson`);
     }
     
     console.log(`✅ Successfully generated ${images.length} image(s)`);
