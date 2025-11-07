@@ -26,12 +26,22 @@ export type DownloadFormat = "pdf" | "docx" | "txt";
 const COPYRIGHT_TEXT = "© 2025 Edupreneurs - Tous droits réservés. Ce document est protégé par les lois sur le droit d'auteur.";
 const MODIFICATION_WARNING = "AVERTISSEMENT: Toute modification, reproduction ou distribution non autorisée de ce document est strictement interdite.";
 
+// Helper to decode HTML entities properly
+const decodeHtmlEntities = (text: string): string => {
+  const textarea = document.createElement('textarea');
+  textarea.innerHTML = text;
+  return textarea.value;
+};
+
 // Helper to strip HTML tags and preserve text content properly
 const stripHtmlTags = (html: string): string => {
   if (!html) return "";
   
+  // First decode any HTML entities
+  let decodedHtml = decodeHtmlEntities(html);
+  
   const temp = document.createElement("div");
-  temp.innerHTML = html;
+  temp.innerHTML = decodedHtml;
   
   // Remove script and style elements
   temp.querySelectorAll("script, style").forEach(el => el.remove());
@@ -55,6 +65,10 @@ const stripHtmlTags = (html: string): string => {
   });
   
   temp.querySelectorAll("li").forEach(li => {
+    // Remove any existing bullet/marker characters first
+    const textContent = li.textContent || "";
+    li.textContent = textContent.replace(/^[•·∙◦▪▫○●◘◙☼♦♣♠•]/g, "").trim();
+    
     const bullet = document.createTextNode("• ");
     li.insertBefore(bullet, li.firstChild);
     li.appendChild(document.createTextNode("\n"));
@@ -64,49 +78,15 @@ const stripHtmlTags = (html: string): string => {
     heading.appendChild(document.createTextNode("\n\n"));
   });
   
-  // Get text content and clean up
+  // Get text content
   let text = temp.textContent || "";
   
-  // Fix common encoding issues - comprehensive list
-  text = text.replace(/â€™/g, "'");
-  text = text.replace(/â€˜/g, "'");
-  text = text.replace(/â€"/g, "—");
-  text = text.replace(/â€"/g, "–");
-  text = text.replace(/â€œ/g, '"');
-  text = text.replace(/â€/g, '"');
-  text = text.replace(/Ã©/g, "é");
-  text = text.replace(/Ã¨/g, "è");
-  text = text.replace(/Ã /g, "à");
-  text = text.replace(/Ã§/g, "ç");
-  text = text.replace(/Ã´/g, "ô");
-  text = text.replace(/Ã®/g, "î");
-  text = text.replace(/Ã»/g, "û");
-  text = text.replace(/Ã«/g, "ë");
-  text = text.replace(/Ã¢/g, "â");
-  text = text.replace(/Ã¯/g, "ï");
-  text = text.replace(/Ã¼/g, "ü");
-  text = text.replace(/Ã¶/g, "ö");
-  text = text.replace(/Ã¹/g, "ù");
-  text = text.replace(/Ã‰/g, "É");
-  text = text.replace(/Ã‡/g, "Ç");
-  text = text.replace(/Ã€/g, "À");
+  // Remove any weird encoding artifacts that might remain
+  text = text.replace(/[^\x00-\x7F\u00C0-\u017F\u0180-\u024F\u1E00-\u1EFF\n\r\t •]/g, "");
   
-  // Fix weird bullet point encodings
-  text = text.replace(/Ø<Â/g, "");
-  text = text.replace(/â€¢/g, "•");
-  text = text.replace(/Â·/g, "•");
-  text = text.replace(/âœ"/g, "•");
-  text = text.replace(/â—/g, "•");
-  
-  // Remove any remaining special characters that shouldn't be there
-  text = text.replace(/Ø/g, "");
-  text = text.replace(/Â/g, "");
-  text = text.replace(/<Â/g, "");
-  
-  // Clean up excessive newlines
+  // Clean up excessive whitespace
+  text = text.replace(/[ \t]+/g, " ");
   text = text.replace(/\n{3,}/g, "\n\n");
-  
-  // Trim whitespace
   text = text.trim();
   
   return text;
@@ -452,7 +432,7 @@ export const generateLessonPDF = async ({
     const maxWidth = pageWidth - 2 * margin;
     let yPosition = margin;
 
-    // Set document properties for protection
+    // Set document properties for protection and UTF-8 support
     pdf.setProperties({
       title: lessonData.title,
       subject: subjectName,
@@ -460,6 +440,9 @@ export const generateLessonPDF = async ({
       keywords: "education, lesson, protected, edupreneurs",
       creator: "Edupreneurs - Plateforme Éducative Haïtienne",
     });
+    
+    // Ensure UTF-8 encoding support
+    pdf.setLanguage("fr-FR");
 
     // Helper to add page break if needed
     const checkPageBreak = (neededSpace: number) => {
@@ -471,13 +454,15 @@ export const generateLessonPDF = async ({
       return false;
     };
 
-    // Helper to add text with word wrap and proper encoding
+    // Helper to add text with word wrap and proper UTF-8 encoding
     const addText = (text: string, fontSize: number, style: "normal" | "bold" = "normal", color: [number, number, number] = [0, 0, 0]) => {
       pdf.setFontSize(fontSize);
       pdf.setFont("helvetica", style);
       pdf.setTextColor(color[0], color[1], color[2]);
       
-      const lines = pdf.splitTextToSize(text, maxWidth);
+      // Ensure text is properly encoded
+      const cleanText = decodeURIComponent(encodeURIComponent(text));
+      const lines = pdf.splitTextToSize(cleanText, maxWidth);
       const lineHeight = fontSize * 0.52;
       
       for (const line of lines) {
