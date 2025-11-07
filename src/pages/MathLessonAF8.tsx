@@ -11,6 +11,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import ericChairDesk from "@/assets/eric-chair-desk.png";
 import { DownloadLessonButton } from "@/components/DownloadLessonButton";
+import { TextToSpeechButton } from "@/components/TextToSpeechButton";
+import { useTTS } from "@/hooks/useTTS";
 
 interface Lesson {
   id: string;
@@ -34,6 +36,7 @@ const MathLessonAF8 = () => {
   const [lesson, setLesson] = useState<Lesson | null>(null);
   const [personalNotes, setPersonalNotes] = useState("");
   const [loading, setLoading] = useState(true);
+  const { stop } = useTTS();
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -212,7 +215,7 @@ const MathLessonAF8 = () => {
         </div>
 
         {/* Lesson Content Tabs */}
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+        <Tabs value={activeTab} onValueChange={(val) => { setActiveTab(val); stop(); }} className="w-full">
           <div className="border-b mb-8">
             <TabsList className="w-full h-auto rounded-none bg-transparent p-0 grid grid-cols-5">
               <TabsTrigger 

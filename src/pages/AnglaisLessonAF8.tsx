@@ -7,6 +7,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { ArrowLeft, BookOpen, Lightbulb, FileText, Brain, StickyNote, Target, Gamepad2 } from "lucide-react";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { InteractiveActivitiesEnhanced } from "@/components/InteractiveActivitiesEnhanced";
+import { TextToSpeechButton } from "@/components/TextToSpeechButton";
+import { useTTS } from "@/hooks/useTTS";
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -36,6 +38,7 @@ const AnglaisLessonAF8 = () => {
   const [lesson, setLesson] = useState<Lesson | null>(null);
   const [personalNotes, setPersonalNotes] = useState("");
   const [loading, setLoading] = useState(true);
+  const { stop } = useTTS();
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -197,7 +200,10 @@ const AnglaisLessonAF8 = () => {
               <h1 className="text-2xl md:text-3xl lg:text-4xl font-bold mb-4">{lesson.title}</h1>
               {lesson.objectif && (
                 <div className="flex flex-col items-center gap-2 bg-white/10 rounded-lg p-4 backdrop-blur text-center">
-                  <Target className="h-5 w-5 flex-shrink-0" />
+                  <div className="flex items-center justify-between w-full mb-2">
+                    <Target className="h-5 w-5 flex-shrink-0" />
+                    <TextToSpeechButton text={lesson.objectif} sectionName="Objectif" size="sm" />
+                  </div>
                   <div>
                     <p className="font-semibold mb-1">Objectif de la leçon</p>
                     <div 
@@ -212,7 +218,7 @@ const AnglaisLessonAF8 = () => {
         </div>
 
         {/* Lesson Content Tabs - Mobile Responsive */}
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+        <Tabs value={activeTab} onValueChange={(val) => { setActiveTab(val); stop(); }} className="w-full">
           <TabsList className="grid w-full grid-cols-5 gap-1">
             <TabsTrigger value="introduction" className="flex items-center justify-center gap-2">
               <BookOpen className="h-4 w-4" />
@@ -240,10 +246,16 @@ const AnglaisLessonAF8 = () => {
             <Card>
               <CardContent className="p-4 md:p-6">
                 {lesson.introduction ? (
-                  <div 
-                    className="prose prose-sm lg:prose-base max-w-none dark:prose-invert"
-                    dangerouslySetInnerHTML={{ __html: lesson.introduction }}
-                  />
+                  <>
+                    <div className="flex items-center justify-between mb-4">
+                      <h3 className="text-xl font-semibold">Introduction</h3>
+                      <TextToSpeechButton text={lesson.introduction} sectionName="Introduction" />
+                    </div>
+                    <div 
+                      className="prose prose-sm lg:prose-base max-w-none dark:prose-invert"
+                      dangerouslySetInnerHTML={{ __html: lesson.introduction }}
+                    />
+                  </>
                 ) : (
                   <div className="text-center py-8 text-muted-foreground">
                     <BookOpen className="h-16 w-16 mx-auto mb-4 opacity-20" />
@@ -258,10 +270,16 @@ const AnglaisLessonAF8 = () => {
             <Card>
               <CardContent className="p-4 md:p-6 space-y-6">
                 {lesson.contenu ? (
-                  <div 
-                    className="prose prose-sm lg:prose-base max-w-none dark:prose-invert"
-                    dangerouslySetInnerHTML={{ __html: lesson.contenu }}
-                  />
+                  <>
+                    <div className="flex items-center justify-between mb-4">
+                      <h3 className="text-xl font-semibold">Contenu Principal</h3>
+                      <TextToSpeechButton text={lesson.contenu} sectionName="Contenu Principal" />
+                    </div>
+                    <div 
+                      className="prose prose-sm lg:prose-base max-w-none dark:prose-invert"
+                      dangerouslySetInnerHTML={{ __html: lesson.contenu }}
+                    />
+                  </>
                 ) : (
                   <div className="text-center py-8 text-muted-foreground">
                     <FileText className="h-16 w-16 mx-auto mb-4 opacity-20" />
@@ -287,7 +305,10 @@ const AnglaisLessonAF8 = () => {
                 {lesson.exemples_exercices && (
                   <>
                     <div className="border-t my-8" />
-                    <h3 className="text-2xl font-bold mb-4">Exemples et Exercices</h3>
+                    <div className="flex items-center justify-between mb-4">
+                      <h3 className="text-2xl font-bold">Exemples et Exercices</h3>
+                      <TextToSpeechButton text={lesson.exemples_exercices} sectionName="Exemples et Exercices" />
+                    </div>
                     <div 
                       className="prose prose-sm lg:prose-base max-w-none dark:prose-invert"
                       dangerouslySetInnerHTML={{ __html: lesson.exemples_exercices }}

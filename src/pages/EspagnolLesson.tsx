@@ -45,6 +45,8 @@ import { MatchingGame } from "@/components/math-activities/MatchingGame";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { YouTubeVideoSection } from "@/components/YouTubeVideoSection";
 import { DownloadLessonButton } from "@/components/DownloadLessonButton";
+import { TextToSpeechButton } from "@/components/TextToSpeechButton";
+import { useTTS } from "@/hooks/useTTS";
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -59,6 +61,7 @@ export default function EspagnolLesson() {
   const [personalNotes, setPersonalNotes] = useState("");
   const [isSavingNotes, setIsSavingNotes] = useState(false);
   const [youtubeUrl, setYoutubeUrl] = useState<string | null>(null);
+  const { stop } = useTTS();
 
   const lessonsArray = Object.entries(espagnolLessons7AF).map(([id, data]) => ({ id, ...data }));
   const currentIndex = lessonsArray.findIndex((lesson) => lesson.id === topicId);
@@ -281,7 +284,7 @@ export default function EspagnolLesson() {
 
         {/* Lesson Content Tabs */}
         <Card className="p-4 md:p-6 mb-8 overflow-hidden">
-          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+          <Tabs value={activeTab} onValueChange={(val) => { setActiveTab(val); stop(); }} className="w-full">
             <TabsList className="grid w-full grid-cols-4 mb-6 h-auto">
               <TabsTrigger value="introduction" className="gap-2 text-xs md:text-sm px-2 py-2">
                 <Lightbulb className="w-4 h-4 shrink-0" />
@@ -307,8 +310,11 @@ export default function EspagnolLesson() {
                   <div className="w-10 h-10 rounded-lg bg-purple-500 flex items-center justify-center flex-shrink-0">
                     <Lightbulb className="w-5 h-5 text-white" />
                   </div>
-                  <div>
-                    <h2 className="text-2xl font-bold text-purple-600 dark:text-purple-400 mb-2">Objectif de la leçon</h2>
+                  <div className="flex-1">
+                    <div className="flex items-center justify-between mb-2">
+                      <h2 className="text-2xl font-bold text-purple-600 dark:text-purple-400">Objectif de la leçon</h2>
+                      <TextToSpeechButton text={lesson.objectif} sectionName="Objectif" />
+                    </div>
                     <div 
                       className="text-foreground leading-relaxed prose dark:prose-invert max-w-none"
                       dangerouslySetInnerHTML={{ __html: lesson.objectif }}
@@ -318,11 +324,14 @@ export default function EspagnolLesson() {
               </Card>
               
               <Card className="p-6 bg-gradient-to-br from-background to-purple-50/30 dark:to-purple-950/10">
-                <div className="flex items-center gap-3 mb-6">
-                  <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-purple-500 to-purple-600 flex items-center justify-center">
-                    <BookOpen className="w-5 h-5 text-white" />
+                <div className="flex items-center justify-between mb-6">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-purple-500 to-purple-600 flex items-center justify-center">
+                      <BookOpen className="w-5 h-5 text-white" />
+                    </div>
+                    <h2 className="text-2xl font-bold text-purple-600 dark:text-purple-400">Introduction</h2>
                   </div>
-                  <h2 className="text-2xl font-bold text-purple-600 dark:text-purple-400">Introduction</h2>
+                  <TextToSpeechButton text={lesson.introduction} sectionName="Introduction" />
                 </div>
                 <div 
                   className="prose prose-lg dark:prose-invert max-w-none [&_p]:text-foreground [&_ul]:text-foreground [&_li]:text-foreground [&_strong]:text-purple-600 dark:[&_strong]:text-purple-400"
@@ -333,6 +342,10 @@ export default function EspagnolLesson() {
 
             <TabsContent value="contenu" className="space-y-6">
               <Card className="p-6 bg-gradient-to-br from-background to-purple-50/30 dark:to-purple-950/10">
+                <div className="flex items-center justify-between mb-6">
+                  <h3 className="text-2xl font-bold text-purple-600 dark:text-purple-400">Contenu Principal</h3>
+                  <TextToSpeechButton text={lesson.contenu} sectionName="Contenu Principal" />
+                </div>
                 <div 
                   className="prose prose-lg dark:prose-invert max-w-none
                     [&_p]:text-foreground [&_p]:leading-relaxed [&_p]:mb-4
@@ -375,11 +388,14 @@ export default function EspagnolLesson() {
                 <>
                   <div className="border-t my-8" />
                   <Card className="p-6 bg-gradient-to-br from-background to-purple-50/30 dark:to-purple-950/10">
-                    <div className="flex items-center gap-3 mb-6">
-                      <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-purple-500 to-purple-600 flex items-center justify-center">
-                        <ClipboardCheck className="w-5 h-5 text-white" />
+                    <div className="flex items-center justify-between mb-6">
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-purple-500 to-purple-600 flex items-center justify-center">
+                          <ClipboardCheck className="w-5 h-5 text-white" />
+                        </div>
+                        <h2 className="text-2xl font-bold text-purple-600 dark:text-purple-400">Exemples et Exercices</h2>
                       </div>
-                      <h2 className="text-2xl font-bold text-purple-600 dark:text-purple-400">Exemples et Exercices</h2>
+                      <TextToSpeechButton text={lesson.exemplesExercices} sectionName="Exemples et Exercices" />
                     </div>
                     <div 
                       className="prose prose-lg dark:prose-invert max-w-none

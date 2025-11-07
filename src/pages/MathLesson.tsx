@@ -28,6 +28,8 @@ import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import vennDiagram from "@/assets/venn-diagram-ensembles.avif";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import { TextToSpeechButton } from "@/components/TextToSpeechButton";
+import { useTTS } from "@/hooks/useTTS";
 
 import { QuizGame } from "@/components/math-activities/QuizGame";
 import { DragDropGame } from "@/components/math-activities/DragDropGame";
@@ -91,6 +93,7 @@ const MathLesson = () => {
   const [earnedGold, setEarnedGold] = useState(0);
   const [userGold, setUserGold] = useState(0);
   const [sessionStartGold, setSessionStartGold] = useState(0);
+  const { stop } = useTTS();
   
   // Check if we have static content for this topic
   const hasStaticContent = topicId ? topicId in mathLessons : false;
