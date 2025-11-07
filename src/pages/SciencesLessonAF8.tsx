@@ -12,6 +12,7 @@ import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import ericChairDesk from "@/assets/eric-chair-desk.png";
+import { DownloadLessonButton } from "@/components/DownloadLessonButton";
 
 interface Lesson {
   id: string;
@@ -197,10 +198,20 @@ const SciencesLessonAF8 = () => {
             <ArrowLeft className="h-4 w-4" />
             Retour au cours
           </Button>
-          <ThemeToggle />
+          <div className="flex items-center gap-2">
+            {lesson && (
+              <DownloadLessonButton
+                lessonData={lesson}
+                personalNotes={notes}
+                subjectName="Sciences AF8"
+                variant="outline"
+                size="sm"
+              />
+            )}
+            <ThemeToggle />
+          </div>
         </div>
       </nav>
-
       {/* Lesson Header */}
       <div className="bg-gradient-to-r from-amber-500 to-orange-600 text-white py-8 md:py-12">
         <div className="container mx-auto px-4">

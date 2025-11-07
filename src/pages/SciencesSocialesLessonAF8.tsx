@@ -9,6 +9,7 @@ import { ThemeToggle } from "@/components/ThemeToggle";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { InteractiveQuiz } from "@/components/InteractiveQuiz";
+import { DownloadLessonButton } from "@/components/DownloadLessonButton";
 
 interface Lesson {
   id: string;
@@ -140,7 +141,18 @@ const SciencesSocialesLessonAF8 = () => {
             <ChevronLeft className="h-4 w-4" />
             Retour au cours
           </Button>
-          <ThemeToggle />
+          <div className="flex items-center gap-2">
+            {lesson && (
+              <DownloadLessonButton
+                lessonData={lesson}
+                personalNotes={personalNotes}
+                subjectName="Sciences Sociales AF8"
+                variant="outline"
+                size="sm"
+              />
+            )}
+            <ThemeToggle />
+          </div>
         </div>
       </nav>
 

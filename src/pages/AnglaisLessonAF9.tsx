@@ -9,6 +9,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
+import { DownloadLessonButton } from "@/components/DownloadLessonButton";
 
 const AnglaisLessonAF9 = () => {
   const { lessonSlug } = useParams();
@@ -117,14 +118,24 @@ const AnglaisLessonAF9 = () => {
   return (
     <div className="min-h-screen bg-gradient-to-b from-background to-muted/20 py-8 px-4">
       <div className="max-w-4xl mx-auto">
-        <Button
-          variant="ghost"
-          onClick={() => navigate("/anglais-af9")}
-          className="mb-6"
-        >
-          <ArrowLeft className="w-4 h-4 mr-2" />
-          Retour aux leçons
-        </Button>
+        <div className="flex items-center justify-between mb-6">
+          <Button
+            variant="ghost"
+            onClick={() => navigate("/anglais-af9")}
+          >
+            <ArrowLeft className="w-4 h-4 mr-2" />
+            Retour aux leçons
+          </Button>
+          {lesson && (
+            <DownloadLessonButton
+              lessonData={lesson}
+              personalNotes={personalNotes}
+              subjectName="Anglais AF9"
+              variant="outline"
+              size="sm"
+            />
+          )}
+        </div>
 
         <Card className="mb-6">
           <CardHeader>

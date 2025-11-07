@@ -9,6 +9,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { InteractiveQuiz } from "@/components/InteractiveQuiz";
+import { DownloadLessonButton } from "@/components/DownloadLessonButton";
 
 interface Lesson {
   id: string;
@@ -149,7 +150,18 @@ export default function SciencesExpérimentalesLessonAF9() {
               <ChevronLeft className="w-4 h-4" />
               <span className="font-semibold">Retour aux leçons</span>
             </Button>
-            <ThemeToggle />
+            <div className="flex items-center gap-2">
+              {lesson && (
+                <DownloadLessonButton
+                  lessonData={lesson}
+                  personalNotes={notes}
+                  subjectName="Sciences Expérimentales AF9"
+                  variant="outline"
+                  size="sm"
+                />
+              )}
+              <ThemeToggle />
+            </div>
           </div>
         </div>
       </nav>

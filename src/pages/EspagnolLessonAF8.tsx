@@ -10,6 +10,7 @@ import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import ericChairDesk from "@/assets/eric-chair-desk.png";
+import { DownloadLessonButton } from "@/components/DownloadLessonButton";
 
 interface Lesson {
   id: string;
@@ -182,7 +183,18 @@ const EspagnolLessonAF8 = () => {
             <ArrowLeft className="h-4 w-4" />
             Retour au cours
           </Button>
-          <ThemeToggle />
+          <div className="flex items-center gap-2">
+            {lesson && (
+              <DownloadLessonButton
+                lessonData={lesson}
+                personalNotes={personalNotes}
+                subjectName="Espagnol AF8"
+                variant="outline"
+                size="sm"
+              />
+            )}
+            <ThemeToggle />
+          </div>
         </div>
       </nav>
 

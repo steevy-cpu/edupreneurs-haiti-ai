@@ -24,6 +24,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { Textarea } from "@/components/ui/textarea";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { DownloadLessonButton } from "@/components/DownloadLessonButton";
 
 interface LessonData {
   objectif: string;
@@ -303,9 +304,25 @@ const FrancaisLesson = () => {
             >
               <ArrowLeft className="w-5 h-5" />
             </Button>
-            <div className="flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-1.5 sm:py-2 rounded-full bg-accent/10 border border-accent/20 shrink-0">
-              <Trophy className="w-4 h-4 sm:w-5 sm:h-5 text-accent" />
-              <span className="font-bold gold-text text-sm sm:text-base">{userGold}</span>
+            <div className="flex items-center gap-2">
+              {lesson && (
+                <DownloadLessonButton
+                  lessonData={{
+                    title: lesson.title,
+                    objectif: lesson.objectif,
+                    introduction: lesson.introduction,
+                    contenu: lesson.contenu,
+                  }}
+                  personalNotes={notes}
+                  subjectName="Français AF7"
+                  variant="outline"
+                  size="sm"
+                />
+              )}
+              <div className="flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-1.5 sm:py-2 rounded-full bg-accent/10 border border-accent/20 shrink-0">
+                <Trophy className="w-4 h-4 sm:w-5 sm:h-5 text-accent" />
+                <span className="font-bold gold-text text-sm sm:text-base">{userGold}</span>
+              </div>
             </div>
           </div>
         </div>
