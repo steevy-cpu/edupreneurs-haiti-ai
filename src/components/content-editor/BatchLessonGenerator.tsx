@@ -41,6 +41,7 @@ export const BatchLessonGenerator = () => {
   ]);
   const [generateQuiz, setGenerateQuiz] = useState(false);
   const [generateVideos, setGenerateVideos] = useState(false);
+  const [generateImages, setGenerateImages] = useState(false);
   const [onlyEmpty, setOnlyEmpty] = useState(false);
   const [wordCounts, setWordCounts] = useState(DEFAULT_WORD_COUNTS);
   const [globalContext, setGlobalContext] = useState("");
@@ -220,7 +221,7 @@ export const BatchLessonGenerator = () => {
   };
 
   const startGeneration = async () => {
-    if (selectedSections.length === 0 && !generateQuiz && !generateVideos) {
+    if (selectedSections.length === 0 && !generateQuiz && !generateVideos && !generateImages) {
       toast.error("Sélectionnez au moins une section ou fonctionnalité");
       return;
     }
@@ -529,8 +530,46 @@ export const BatchLessonGenerator = () => {
           }
         }
 
+        // Generate explanatory images if selected
+        if (generateImages) {
+          try {
+            console.log('🎨 [Batch] Generating explanatory images');
+            
+            const { data: imagesData, error: imagesError } = await supabase.functions.invoke('generate-explanatory-images', {
+              body: {
+                lessonTitle: lesson.title,
+                contenu: lesson.contenu || '',
+                exemplesExercices: lesson.exemples_exercices || '',
+                gradeLevel: lesson.grade_level,
+                subject: lesson.subjects?.name || 'Matière',
+              }
+            });
+
+            if (!imagesError && imagesData?.images && imagesData.images.length > 0) {
+              // Store in lesson status for preview
+              setLessonStatuses(prev => prev.map((l, i) => {
+                if (i === index) {
+                  return {
+                    ...l,
+                    generatedContent: {
+                      ...l.generatedContent,
+                      explanatory_images: imagesData.images
+                    }
+                  };
+                }
+                return l;
+              }));
+              setHasGeneratedOptionalContent(true);
+              
+              console.log('✅ [Batch] Generated', imagesData.images.length, 'explanatory images');
+            }
+          } catch (error) {
+            console.error('❌ [Batch] Error generating images:', error);
+          }
+        }
+
         // Mark as success if any content was generated (sections or optional features)
-        success = selectedSections.length > 0 || generateQuiz || generateVideos;
+        success = selectedSections.length > 0 || generateQuiz || generateVideos || generateImages;
         const generationTime = Date.now() - startTime;
         
         setLessonStatuses(prev => prev.map((l, i) =>
@@ -868,6 +907,16 @@ export const BatchLessonGenerator = () => {
                   />
                   <label htmlFor="batch-video-suggest" className="text-sm cursor-pointer">
                     🎥 Appliquer vidéos YouTube automatiquement
+                  </label>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <Checkbox
+                    id="batch-generate-images"
+                    checked={generateImages}
+                    onCheckedChange={(checked) => setGenerateImages(checked as boolean)}
+                  />
+                  <label htmlFor="batch-generate-images" className="text-sm cursor-pointer">
+                    🖼️ Générer images explicatives (Recraft v3)
                   </label>
                 </div>
               </div>

@@ -18,6 +18,9 @@ verify_jwt = true
 [functions.generate-interactive-activities]
 verify_jwt = true
 
+[functions.generate-explanatory-images]
+verify_jwt = true
+
 [functions.send-push-notification]
 verify_jwt = false
 
@@ -52,4 +55,7 @@ verify_jwt = false
 verify_jwt = false
 
 [functions.passion-ai-tutor]
+verify_jwt = false
+
+[functions.francais-ai-tutor]
 verify_jwt = false

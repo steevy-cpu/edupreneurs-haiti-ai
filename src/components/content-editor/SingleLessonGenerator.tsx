@@ -20,7 +20,7 @@ interface SingleLessonGeneratorProps {
 type SectionStatus = 'pending' | 'generating' | 'completed' | 'error';
 
 interface SectionProgress {
-  name: SectionName | 'quiz_final' | 'youtube_url';
+  name: SectionName | 'quiz_final' | 'youtube_url' | 'explanatory_images';
   status: SectionStatus;
   error?: string;
 }
@@ -33,11 +33,12 @@ export const SingleLessonGenerator = ({ lesson, onComplete }: SingleLessonGenera
   ]);
   const [generateQuiz, setGenerateQuiz] = useState(false);
   const [generateVideos, setGenerateVideos] = useState(false);
+  const [generateImages, setGenerateImages] = useState(false);
   const [wordCounts, setWordCounts] = useState(DEFAULT_WORD_COUNTS);
   const [globalContext, setGlobalContext] = useState("");
   const [progress, setProgress] = useState<SectionProgress[]>([]);
   const [currentSection, setCurrentSection] = useState(0);
-  const [generatedContent, setGeneratedContent] = useState<Record<string, string>>({});
+  const [generatedContent, setGeneratedContent] = useState<Record<string, any>>({});
   const [showPreview, setShowPreview] = useState(false);
   const [isApplying, setIsApplying] = useState(false);
 
@@ -52,6 +53,7 @@ export const SingleLessonGenerator = ({ lesson, onComplete }: SingleLessonGenera
   const additionalFeatures = [
     { key: 'quiz', label: 'Quiz Final (10-15 questions)' },
     { key: 'videos', label: 'Vidéos YouTube (suggestions IA)' },
+    { key: 'images', label: 'Images explicatives (Recraft v3)' },
   ];
 
   const toggleSection = (section: SectionName) => {
@@ -68,7 +70,7 @@ export const SingleLessonGenerator = ({ lesson, onComplete }: SingleLessonGenera
       return;
     }
 
-    if (selectedSections.length === 0 && !generateQuiz && !generateVideos) {
+    if (selectedSections.length === 0 && !generateQuiz && !generateVideos && !generateImages) {
       toast.error("Sélectionnez au moins une section ou fonctionnalité");
       return;
     }
@@ -77,8 +79,8 @@ export const SingleLessonGenerator = ({ lesson, onComplete }: SingleLessonGenera
     setCurrentSection(0);
     setGeneratedContent({}); // Clear previous content
     
-    // Calculate total tasks (sections + quiz + videos)
-    const totalTasks = selectedSections.length + (generateQuiz ? 1 : 0) + (generateVideos ? 1 : 0);
+    // Calculate total tasks (sections + quiz + videos + images)
+    const totalTasks = selectedSections.length + (generateQuiz ? 1 : 0) + (generateVideos ? 1 : 0) + (generateImages ? 1 : 0);
     
     // Initialize progress for sections and optional features
     const initialProgress: SectionProgress[] = [
@@ -86,6 +88,7 @@ export const SingleLessonGenerator = ({ lesson, onComplete }: SingleLessonGenera
     ];
     if (generateQuiz) initialProgress.push({ name: 'quiz_final' as SectionName, status: 'pending' });
     if (generateVideos) initialProgress.push({ name: 'youtube_url' as SectionName, status: 'pending' });
+    if (generateImages) initialProgress.push({ name: 'explanatory_images' as any, status: 'pending' });
     
     setProgress(initialProgress);
 
@@ -316,6 +319,58 @@ export const SingleLessonGenerator = ({ lesson, onComplete }: SingleLessonGenera
       }
     }
 
+    // Generate explanatory images if selected
+    if (generateImages) {
+      currentTask++;
+      setCurrentSection(currentTask);
+      
+      setProgress(prev => prev.map(p => 
+        p.name === 'explanatory_images' ? { ...p, status: 'generating' } : p
+      ));
+
+      try {
+        const { data: lessonData } = await supabase
+          .from('lessons')
+          .select('contenu, exemples_exercices, title, grade_level, subjects(name)')
+          .eq('id', lesson.id)
+          .single();
+
+        const { data, error } = await supabase.functions.invoke('generate-explanatory-images', {
+          body: {
+            lessonTitle: lessonData?.title || lesson.title,
+            contenu: lessonData?.contenu || '',
+            exemplesExercices: lessonData?.exemples_exercices || '',
+            gradeLevel: lessonData?.grade_level || lesson.grade_level,
+            subject: lessonData?.subjects?.name || 'Matière',
+          }
+        });
+
+        if (error) throw error;
+        if (data?.images && data.images.length > 0) {
+          setGeneratedContent(prev => ({
+            ...prev,
+            explanatory_images: data.images
+          }));
+          
+          setProgress(prev => prev.map(p => 
+            p.name === 'explanatory_images' ? { ...p, status: 'completed' } : p
+          ));
+          successCount++;
+        } else {
+          setProgress(prev => prev.map(p => 
+            p.name === 'explanatory_images' ? { ...p, status: 'error', error: 'Aucune image générée' } : p
+          ));
+          errorCount++;
+        }
+      } catch (error: any) {
+        console.error('Error generating images:', error);
+        setProgress(prev => prev.map(p => 
+          p.name === 'explanatory_images' ? { ...p, status: 'error', error: error.message } : p
+        ));
+        errorCount++;
+      }
+    }
+
     setIsGenerating(false);
     
     const totalGenerated = successCount;
@@ -336,14 +391,87 @@ export const SingleLessonGenerator = ({ lesson, onComplete }: SingleLessonGenera
   const handleApplyChanges = async () => {
     setIsApplying(true);
     try {
+      // Process explanatory images if they exist
+      let updatedContenu = generatedContent.contenu || lesson.contenu || '';
+      let updatedExemples = generatedContent.exemples_exercices || lesson.exemples_exercices || '';
+      
+      if (generatedContent.explanatory_images) {
+        const images = generatedContent.explanatory_images;
+        
+        for (const image of images) {
+          try {
+            // Convert base64 to blob
+            const base64Data = image.base64Data;
+            const binaryString = atob(base64Data);
+            const bytes = new Uint8Array(binaryString.length);
+            for (let i = 0; i < binaryString.length; i++) {
+              bytes[i] = binaryString.charCodeAt(i);
+            }
+            const blob = new Blob([bytes], { type: 'image/png' });
+            
+            // Upload to Supabase Storage
+            const fileName = `${lesson.id}/${image.concept.replace(/\s+/g, '-').toLowerCase()}-${Date.now()}.png`;
+            const { data: uploadData, error: uploadError } = await supabase.storage
+              .from('lesson-images')
+              .upload(fileName, blob, {
+                contentType: 'image/png',
+                upsert: true
+              });
+            
+            if (uploadError) {
+              console.error('Error uploading image:', uploadError);
+              continue;
+            }
+            
+            // Get public URL
+            const { data: { publicUrl } } = supabase.storage
+              .from('lesson-images')
+              .getPublicUrl(fileName);
+            
+            // Create HTML for the image
+            const imageHtml = `
+<div class="my-6 flex justify-center">
+  <div class="max-w-2xl">
+    <img 
+      src="${publicUrl}" 
+      alt="${image.description}"
+      class="w-full rounded-lg shadow-lg border border-border"
+      loading="lazy"
+    />
+    <p class="text-sm text-center text-muted-foreground mt-2">
+      🖼️ ${image.description}
+    </p>
+  </div>
+</div>`;
+            
+            // Insert image into appropriate section
+            if (image.insertAt === 'contenu') {
+              updatedContenu += imageHtml;
+            } else if (image.insertAt === 'exemples_exercices') {
+              updatedExemples += imageHtml;
+            }
+          } catch (imageError) {
+            console.error('Error processing image:', imageError);
+          }
+        }
+      }
+      
       // Apply all generated content to the database
       const updates: any = {};
       
       Object.keys(generatedContent).forEach(key => {
-        if (key !== 'suggested_videos') {
+        if (key !== 'suggested_videos' && key !== 'explanatory_images') {
           updates[key] = generatedContent[key];
         }
       });
+      
+      // Add updated content with images
+      if (updatedContenu !== (lesson.contenu || '')) {
+        updates.contenu = updatedContenu;
+      }
+      if (updatedExemples !== (lesson.exemples_exercices || '')) {
+        updates.exemples_exercices = updatedExemples;
+      }
 
       const { error } = await supabase
         .from('lessons')
@@ -391,8 +519,8 @@ export const SingleLessonGenerator = ({ lesson, onComplete }: SingleLessonGenera
     }
   };
 
-  const progressPercentage = selectedSections.length + (generateQuiz ? 1 : 0) + (generateVideos ? 1 : 0) > 0 
-    ? (currentSection / (selectedSections.length + (generateQuiz ? 1 : 0) + (generateVideos ? 1 : 0))) * 100 
+  const progressPercentage = selectedSections.length + (generateQuiz ? 1 : 0) + (generateVideos ? 1 : 0) + (generateImages ? 1 : 0) > 0 
+    ? (currentSection / (selectedSections.length + (generateQuiz ? 1 : 0) + (generateVideos ? 1 : 0) + (generateImages ? 1 : 0))) * 100 
     : 0;
 
   return (
@@ -460,6 +588,17 @@ export const SingleLessonGenerator = ({ lesson, onComplete }: SingleLessonGenera
                   />
                   <label htmlFor="video-suggest" className="text-sm cursor-pointer">
                     🎥 Suggérer vidéos YouTube
+                  </label>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <Checkbox
+                    id="generate-images"
+                    checked={generateImages}
+                    onCheckedChange={(checked) => setGenerateImages(checked as boolean)}
+                    disabled={isGenerating}
+                  />
+                  <label htmlFor="generate-images" className="text-sm cursor-pointer">
+                    🖼️ Générer images explicatives (Recraft v3)
                   </label>
                 </div>
               </div>
