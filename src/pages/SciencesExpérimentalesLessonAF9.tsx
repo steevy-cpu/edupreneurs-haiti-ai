@@ -4,11 +4,13 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
-import { ChevronLeft, Loader2 } from "lucide-react";
+import { ChevronLeft, Loader2, Target } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { InteractiveQuiz } from "@/components/InteractiveQuiz";
+import { TextToSpeechButton } from "@/components/TextToSpeechButton";
+import { useTTS } from "@/hooks/useTTS";
 import { DownloadLessonButton } from "@/components/DownloadLessonButton";
 
 interface Lesson {
@@ -28,6 +30,7 @@ export default function SciencesExpérimentalesLessonAF9() {
   const [notes, setNotes] = useState("");
   const [isSaving, setIsSaving] = useState(false);
   const [activeTab, setActiveTab] = useState("introduction");
+  const { stop } = useTTS();
 
   useEffect(() => {
     fetchLesson();
@@ -170,13 +173,20 @@ export default function SciencesExpérimentalesLessonAF9() {
         {/* Lesson Header */}
         <Card className="p-8 mb-8 bg-gradient-to-r from-emerald-500/10 to-emerald-600/10 border-emerald-500/20">
           <h1 className="text-4xl font-bold mb-4">{lesson.title}</h1>
-          <p className="text-lg text-muted-foreground">
-            <strong>Objectif:</strong> {lesson.objectif}
-          </p>
+          <div className="flex items-start gap-3">
+            <Target className="w-6 h-6 text-primary shrink-0 mt-1" />
+            <div className="flex-1">
+              <div className="flex items-center justify-between mb-2">
+                <p className="text-lg font-semibold">Objectif de la leçon</p>
+                <TextToSpeechButton text={lesson.objectif} sectionName="Objectif" />
+              </div>
+              <p className="text-lg text-muted-foreground">{lesson.objectif}</p>
+            </div>
+          </div>
         </Card>
 
         {/* Lesson Content */}
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
+        <Tabs value={activeTab} onValueChange={(val) => { setActiveTab(val); stop(); }} className="space-y-6">
           <TabsList className="grid w-full grid-cols-4">
             <TabsTrigger value="introduction">Introduction</TabsTrigger>
             <TabsTrigger value="contenu">Contenu & Exercices</TabsTrigger>
@@ -186,7 +196,10 @@ export default function SciencesExpérimentalesLessonAF9() {
 
           <TabsContent value="introduction" className="space-y-4">
             <Card className="p-8">
-              <h2 className="text-2xl font-bold mb-4">📖 Introduction</h2>
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-2xl font-bold">📖 Introduction</h2>
+                <TextToSpeechButton text={lesson.introduction || ""} sectionName="Introduction" />
+              </div>
               <div 
                 className="prose prose-slate dark:prose-invert max-w-none"
                 dangerouslySetInnerHTML={{ __html: lesson.introduction || "<p>Introduction à venir...</p>" }}
@@ -196,7 +209,10 @@ export default function SciencesExpérimentalesLessonAF9() {
 
           <TabsContent value="contenu" className="space-y-4">
             <Card className="p-8 space-y-6">
-              <h2 className="text-2xl font-bold mb-4">📚 Contenu du cours</h2>
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-2xl font-bold">📚 Contenu du cours</h2>
+                <TextToSpeechButton text={lesson.contenu || ""} sectionName="Contenu Principal" />
+              </div>
               <div 
                 className="prose prose-slate dark:prose-invert max-w-none"
                 dangerouslySetInnerHTML={{ __html: lesson.contenu || "<p>Contenu à venir...</p>" }}
@@ -205,7 +221,10 @@ export default function SciencesExpérimentalesLessonAF9() {
               {lesson.exemples_exercices && (
                 <>
                   <div className="border-t my-8" />
-                  <h2 className="text-2xl font-bold mb-4">✏️ Exemples et Exercices</h2>
+                  <div className="flex items-center justify-between mb-4">
+                    <h2 className="text-2xl font-bold">✏️ Exemples et Exercices</h2>
+                    <TextToSpeechButton text={lesson.exemples_exercices} sectionName="Exemples et Exercices" />
+                  </div>
                   <div 
                     className="prose prose-slate dark:prose-invert max-w-none"
                     dangerouslySetInnerHTML={{ __html: lesson.exemples_exercices }}

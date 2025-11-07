@@ -4,9 +4,11 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
-import { ChevronLeft, Save, BookOpen, FileText, ListChecks, StickyNote, CheckCircle2 } from "lucide-react";
+import { ChevronLeft, Save, BookOpen, FileText, ListChecks, StickyNote, CheckCircle2, Target } from "lucide-react";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { toast } from "sonner";
+import { TextToSpeechButton } from "@/components/TextToSpeechButton";
+import { useTTS } from "@/hooks/useTTS";
 import { supabase } from "@/integrations/supabase/client";
 import { InteractiveQuiz } from "@/components/InteractiveQuiz";
 import { DownloadLessonButton } from "@/components/DownloadLessonButton";
@@ -28,6 +30,7 @@ const MathLessonAF9 = () => {
   const [notes, setNotes] = useState("");
   const [activeTab, setActiveTab] = useState("introduction");
   const [savingNotes, setSavingNotes] = useState(false);
+  const { stop } = useTTS();
 
   useEffect(() => {
     fetchLesson();
@@ -153,12 +156,21 @@ const MathLessonAF9 = () => {
           <h1 className="mb-4 text-3xl font-bold bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
             {lesson.title}
           </h1>
-          <p className="text-lg text-muted-foreground mb-4">
-            <strong>Objectif:</strong> {lesson.objectif}
-          </p>
+          <Card className="p-6 bg-gradient-to-r from-primary/10 to-secondary/10">
+            <div className="flex items-start gap-3">
+              <Target className="w-6 h-6 text-primary shrink-0 mt-1" />
+              <div className="flex-1">
+                <div className="flex items-center justify-between mb-2">
+                  <h3 className="text-lg font-semibold">Objectif de la leçon</h3>
+                  <TextToSpeechButton text={lesson.objectif} sectionName="Objectif" />
+                </div>
+                <div className="text-lg text-muted-foreground" dangerouslySetInnerHTML={{ __html: lesson.objectif }} />
+              </div>
+            </div>
+          </Card>
         </div>
 
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
+        <Tabs value={activeTab} onValueChange={(val) => { setActiveTab(val); stop(); }} className="space-y-6">
           <TabsList className="grid w-full grid-cols-4">
             <TabsTrigger value="introduction" className="gap-2">
               <BookOpen className="h-4 w-4" />
@@ -180,6 +192,10 @@ const MathLessonAF9 = () => {
 
           <TabsContent value="introduction" className="space-y-6">
             <Card className="p-6">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-xl font-semibold">Introduction</h3>
+                <TextToSpeechButton text={lesson.introduction} sectionName="Introduction" />
+              </div>
               <div 
                 className="prose prose-sm sm:prose lg:prose-lg dark:prose-invert max-w-none"
                 dangerouslySetInnerHTML={{ __html: lesson.introduction }}
@@ -189,6 +205,10 @@ const MathLessonAF9 = () => {
 
           <TabsContent value="contenu" className="space-y-6">
             <Card className="p-6 space-y-6">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-xl font-semibold">Contenu Principal</h3>
+                <TextToSpeechButton text={lesson.contenu} sectionName="Contenu Principal" />
+              </div>
               <div 
                 className="prose prose-sm sm:prose lg:prose-lg dark:prose-invert max-w-none"
                 dangerouslySetInnerHTML={{ __html: lesson.contenu }}
@@ -197,7 +217,10 @@ const MathLessonAF9 = () => {
               {lesson.exemples_exercices && (
                 <>
                   <div className="border-t my-8" />
-                  <h3 className="text-2xl font-bold mb-4">Exercices</h3>
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 className="text-2xl font-bold">Exercices</h3>
+                    <TextToSpeechButton text={lesson.exemples_exercices} sectionName="Exercices" />
+                  </div>
                   <div 
                     className="prose prose-sm sm:prose lg:prose-lg dark:prose-invert max-w-none"
                     dangerouslySetInnerHTML={{ __html: lesson.exemples_exercices }}

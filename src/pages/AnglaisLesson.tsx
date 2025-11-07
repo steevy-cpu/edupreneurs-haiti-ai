@@ -17,6 +17,8 @@ import {
 } from "lucide-react";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { YouTubeVideoSection } from "@/components/YouTubeVideoSection";
+import { TextToSpeechButton } from "@/components/TextToSpeechButton";
+import { useTTS } from "@/hooks/useTTS";
 import { InteractiveActivitiesEnhanced } from "@/components/InteractiveActivitiesEnhanced";
 import { QuizGame } from "@/components/math-activities/QuizGame";
 import { supabase } from "@/integrations/supabase/client";
@@ -96,6 +98,7 @@ export default function AnglaisLesson() {
   const [lesson, setLesson] = useState<LessonData | null>(null);
   const [loading, setLoading] = useState(true);
   const [personalNotes, setPersonalNotes] = useState("");
+  const { stop } = useTTS();
 
   useEffect(() => {
     const fetchLesson = async () => {
@@ -238,7 +241,10 @@ export default function AnglaisLesson() {
           <div className="flex items-start gap-3">
             <Target className="w-6 h-6 text-primary shrink-0 mt-1" />
             <div className="flex-1">
-              <h3 className="text-lg font-semibold mb-2">Objectif de la leçon</h3>
+              <div className="flex items-center justify-between mb-2">
+                <h3 className="text-lg font-semibold">Objectif de la leçon</h3>
+                <TextToSpeechButton text={lesson.objectif} sectionName="Objectif" />
+              </div>
               <div 
                 className="prose prose-sm max-w-none dark:prose-invert"
                 dangerouslySetInnerHTML={{ __html: lesson.objectif }}
@@ -248,7 +254,7 @@ export default function AnglaisLesson() {
         </Card>
 
         {/* Main Content Tabs */}
-        <Tabs defaultValue="introduction" className="mb-6">
+        <Tabs defaultValue="introduction" onValueChange={() => stop()} className="mb-6">
           <TabsList className="grid w-full grid-cols-5 gap-1">
             <TabsTrigger value="introduction" className="flex items-center justify-center gap-2">
               <BookOpen className="h-4 w-4" />
@@ -274,6 +280,10 @@ export default function AnglaisLesson() {
 
           <TabsContent value="introduction">
             <Card className="p-6">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-xl font-semibold">Introduction</h3>
+                <TextToSpeechButton text={lesson.introduction} sectionName="Introduction" />
+              </div>
               <div 
                 className="prose prose-sm max-w-none dark:prose-invert"
                 dangerouslySetInnerHTML={{ __html: lesson.introduction }}
@@ -283,6 +293,10 @@ export default function AnglaisLesson() {
 
           <TabsContent value="contenu">
             <Card className="p-6 space-y-6">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-xl font-semibold">Contenu Principal</h3>
+                <TextToSpeechButton text={lesson.contenu} sectionName="Contenu Principal" />
+              </div>
               <div 
                 className="prose prose-sm max-w-none dark:prose-invert"
                 dangerouslySetInnerHTML={{ __html: lesson.contenu }}
@@ -291,7 +305,10 @@ export default function AnglaisLesson() {
               {lesson.exemples_exercices && (
                 <>
                   <div className="border-t my-8" />
-                  <h3 className="text-2xl font-bold mb-4">Exemples et Exercices</h3>
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 className="text-2xl font-bold">Exemples et Exercices</h3>
+                    <TextToSpeechButton text={lesson.exemples_exercices} sectionName="Exemples et Exercices" />
+                  </div>
                   <div 
                     className="prose prose-sm max-w-none dark:prose-invert"
                     dangerouslySetInnerHTML={{ __html: lesson.exemples_exercices }}

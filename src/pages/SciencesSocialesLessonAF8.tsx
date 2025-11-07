@@ -7,6 +7,9 @@ import { Textarea } from "@/components/ui/textarea";
 import { ChevronLeft, Save, BookOpen, FileText, ListChecks, StickyNote, CheckCircle2 } from "lucide-react";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { toast } from "sonner";
+import { TextToSpeechButton } from "@/components/TextToSpeechButton";
+import { useTTS } from "@/hooks/useTTS";
+import { Target } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { InteractiveQuiz } from "@/components/InteractiveQuiz";
 import { DownloadLessonButton } from "@/components/DownloadLessonButton";
@@ -29,6 +32,7 @@ const SciencesSocialesLessonAF8 = () => {
   const [lesson, setLesson] = useState<Lesson | null>(null);
   const [personalNotes, setPersonalNotes] = useState("");
   const [loading, setLoading] = useState(true);
+  const { stop } = useTTS();
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -163,13 +167,21 @@ const SciencesSocialesLessonAF8 = () => {
           </h1>
           {lesson.objectif && (
             <Card className="p-4 bg-primary/5 border-primary/20">
-              <p className="text-sm font-medium text-primary">Objectif:</p>
-              <p className="text-sm">{lesson.objectif}</p>
+              <div className="flex items-start gap-3">
+                <Target className="w-5 h-5 text-primary shrink-0 mt-1" />
+                <div className="flex-1">
+                  <div className="flex items-center justify-between mb-2">
+                    <p className="text-sm font-medium text-primary">Objectif:</p>
+                    <TextToSpeechButton text={lesson.objectif} sectionName="Objectif" size="sm" />
+                  </div>
+                  <p className="text-sm">{lesson.objectif}</p>
+                </div>
+              </div>
             </Card>
           )}
         </div>
 
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
+        <Tabs value={activeTab} onValueChange={(val) => { setActiveTab(val); stop(); }} className="space-y-6">
           <TabsList className="grid w-full grid-cols-4">
             <TabsTrigger value="introduction" className="gap-2">
               <BookOpen className="h-4 w-4" />
@@ -191,6 +203,10 @@ const SciencesSocialesLessonAF8 = () => {
 
           <TabsContent value="introduction" className="space-y-6">
             <Card className="p-6">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-xl font-semibold">Introduction</h3>
+                <TextToSpeechButton text={lesson.introduction} sectionName="Introduction" />
+              </div>
               <div 
                 className="prose prose-sm max-w-none dark:prose-invert"
                 dangerouslySetInnerHTML={{ __html: lesson.introduction }}
@@ -199,11 +215,29 @@ const SciencesSocialesLessonAF8 = () => {
           </TabsContent>
 
           <TabsContent value="contenu" className="space-y-6">
-            <Card className="p-6">
+            <Card className="p-6 space-y-6">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-xl font-semibold">Contenu Principal</h3>
+                <TextToSpeechButton text={lesson.contenu} sectionName="Contenu Principal" />
+              </div>
               <div 
                 className="prose prose-sm max-w-none dark:prose-invert"
                 dangerouslySetInnerHTML={{ __html: lesson.contenu }}
               />
+              
+              {lesson.exemples_exercices && (
+                <>
+                  <div className="border-t my-8" />
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 className="text-2xl font-bold">Exemples et Exercices</h3>
+                    <TextToSpeechButton text={lesson.exemples_exercices} sectionName="Exemples et Exercices" />
+                  </div>
+                  <div 
+                    className="prose prose-sm max-w-none dark:prose-invert"
+                    dangerouslySetInnerHTML={{ __html: lesson.exemples_exercices }}
+                  />
+                </>
+              )}
             </Card>
 
             {lesson.youtube_url && (

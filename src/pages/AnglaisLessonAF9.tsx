@@ -10,11 +10,14 @@ import { Textarea } from "@/components/ui/textarea";
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
 import { DownloadLessonButton } from "@/components/DownloadLessonButton";
+import { TextToSpeechButton } from "@/components/TextToSpeechButton";
+import { useTTS } from "@/hooks/useTTS";
 
 const AnglaisLessonAF9 = () => {
   const { lessonSlug } = useParams();
   const navigate = useNavigate();
   const [personalNotes, setPersonalNotes] = useState("");
+  const { stop } = useTTS();
 
   useEffect(() => {
     if (lessonSlug) {
@@ -152,10 +155,16 @@ const AnglaisLessonAF9 = () => {
                 {lesson.objectif && (
                   <div className="flex items-start gap-2">
                     <Target className="w-4 h-4 mt-1 flex-shrink-0 text-primary" />
-                    <div 
-                      className="prose prose-sm max-w-none dark:prose-invert flex-1"
-                      dangerouslySetInnerHTML={{ __html: lesson.objectif }}
-                    />
+                    <div className="flex-1">
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="text-sm font-semibold">Objectif:</span>
+                        <TextToSpeechButton text={lesson.objectif} sectionName="Objectif" size="sm" />
+                      </div>
+                      <div 
+                        className="prose prose-sm max-w-none dark:prose-invert"
+                        dangerouslySetInnerHTML={{ __html: lesson.objectif }}
+                      />
+                    </div>
                   </div>
                 )}
               </div>
@@ -163,7 +172,7 @@ const AnglaisLessonAF9 = () => {
           </CardHeader>
         </Card>
 
-        <Tabs defaultValue="introduction" className="mb-6">
+        <Tabs defaultValue="introduction" onValueChange={() => stop()} className="mb-6">
           <TabsList className="grid w-full grid-cols-4 gap-1">
             <TabsTrigger value="introduction" className="flex items-center justify-center gap-2">
               <BookOpen className="h-4 w-4" />
@@ -186,6 +195,10 @@ const AnglaisLessonAF9 = () => {
           <TabsContent value="introduction">
             <Card>
               <CardContent className="p-6">
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="text-xl font-semibold">Introduction</h3>
+                  <TextToSpeechButton text={lesson.introduction || ""} sectionName="Introduction" />
+                </div>
                 {lesson.introduction ? (
                   <div 
                     className="prose prose-sm max-w-none dark:prose-invert"
@@ -201,6 +214,10 @@ const AnglaisLessonAF9 = () => {
           <TabsContent value="contenu">
             <Card>
               <CardContent className="p-6 space-y-6">
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="text-xl font-semibold">Contenu Principal</h3>
+                  <TextToSpeechButton text={lesson.contenu || ""} sectionName="Contenu Principal" />
+                </div>
                 {lesson.contenu ? (
                   <div 
                     className="prose prose-sm max-w-none dark:prose-invert"
@@ -213,7 +230,10 @@ const AnglaisLessonAF9 = () => {
                 {lesson.exemples_exercices && (
                   <>
                     <div className="border-t my-8" />
-                    <h3 className="text-2xl font-bold mb-4">Exemples et Exercices</h3>
+                    <div className="flex items-center justify-between mb-4">
+                      <h3 className="text-2xl font-bold">Exemples et Exercices</h3>
+                      <TextToSpeechButton text={lesson.exemples_exercices} sectionName="Exemples et Exercices" />
+                    </div>
                     <div 
                       className="prose prose-sm max-w-none dark:prose-invert"
                       dangerouslySetInnerHTML={{ __html: lesson.exemples_exercices }}
