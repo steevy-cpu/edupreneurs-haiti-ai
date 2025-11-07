@@ -768,8 +768,17 @@ export const BatchLessonGenerator = () => {
             
             console.log(`✅ Converted to WebP, size: ${webpBlob.size} bytes (from ${blob.size} bytes)`);
             
+            // Sanitize filename to remove special characters
+            const sanitizedConcept = image.concept
+              .normalize('NFD')
+              .replace(/[\u0300-\u036f]/g, '')
+              .replace(/[^a-z0-9\s-]/gi, '')
+              .replace(/\s+/g, '-')
+              .toLowerCase()
+              .substring(0, 100);
+            
             // Upload to Supabase Storage with WebP extension
-            const fileName = `${lessonId}/${image.concept.replace(/\s+/g, '-').toLowerCase()}-${Date.now()}.webp`;
+            const fileName = `${lessonId}/${sanitizedConcept}-${Date.now()}.webp`;
             console.log(`📤 Uploading to: ${fileName}`);
             
             const { data: uploadData, error: uploadError } = await supabase.storage
