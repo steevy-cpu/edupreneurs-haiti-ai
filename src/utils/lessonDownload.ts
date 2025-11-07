@@ -33,7 +33,88 @@ const decodeHtmlEntities = (text: string): string => {
   return textarea.value;
 };
 
-// Helper to strip HTML tags and preserve text content properly
+// Helper to clean content for text format - removes image references and unnecessary elements
+const cleanContentForText = (html: string): string => {
+  if (!html) return "";
+  
+  // First decode any HTML entities
+  let decodedHtml = decodeHtmlEntities(html);
+  
+  const temp = document.createElement("div");
+  temp.innerHTML = decodedHtml;
+  
+  // Remove script, style, and img elements
+  temp.querySelectorAll("script, style, img").forEach(el => el.remove());
+  
+  // Remove any paragraphs or divs that contain only image references or empty content
+  temp.querySelectorAll("p, div").forEach(el => {
+    const text = el.textContent?.trim() || "";
+    // Remove elements that reference illustrations or images
+    if (
+      text.startsWith("Cette illustration") ||
+      text.includes("illustration montrera") ||
+      text.includes("illustration montre") ||
+      text.includes("image illustrera") ||
+      text.includes("diagramme montrant") ||
+      text.length === 0
+    ) {
+      el.remove();
+    }
+  });
+  
+  // Replace HTML elements with proper line breaks
+  temp.querySelectorAll("br").forEach(br => {
+    br.replaceWith(document.createTextNode("\n"));
+  });
+  
+  temp.querySelectorAll("p").forEach(p => {
+    if (p.textContent?.trim()) {
+      p.appendChild(document.createTextNode("\n"));
+    }
+  });
+  
+  temp.querySelectorAll("div").forEach(div => {
+    if (div.textContent?.trim()) {
+      div.appendChild(document.createTextNode("\n"));
+    }
+  });
+  
+  temp.querySelectorAll("ul, ol").forEach(list => {
+    list.appendChild(document.createTextNode("\n"));
+  });
+  
+  temp.querySelectorAll("li").forEach(li => {
+    // Remove any existing bullet/marker characters first
+    const textContent = li.textContent || "";
+    li.textContent = textContent.replace(/^[•·∙◦▪▫○●◘◙☼♦♣♠•]/g, "").trim();
+    
+    const bullet = document.createTextNode("• ");
+    li.insertBefore(bullet, li.firstChild);
+    li.appendChild(document.createTextNode("\n"));
+  });
+  
+  temp.querySelectorAll("h1, h2, h3, h4, h5, h6").forEach(heading => {
+    if (heading.textContent?.trim()) {
+      heading.appendChild(document.createTextNode("\n"));
+    }
+  });
+  
+  // Get text content
+  let text = temp.textContent || "";
+  
+  // Remove any weird encoding artifacts that might remain
+  text = text.replace(/[^\x00-\x7F\u00C0-\u017F\u0180-\u024F\u1E00-\u1EFF\n\r\t •]/g, "");
+  
+  // Remove excessive empty lines (more than 2 consecutive newlines)
+  text = text.replace(/\n{4,}/g, "\n\n");
+  
+  // Remove lines that are just whitespace
+  text = text.split('\n').map(line => line.trim()).filter(line => line.length > 0).join('\n\n');
+  
+  return text.trim();
+};
+
+// Helper to strip HTML tags and preserve text content properly (for Word/PDF)
 const stripHtmlTags = (html: string): string => {
   if (!html) return "";
   
@@ -96,6 +177,12 @@ const stripHtmlTags = (html: string): string => {
 const formatContent = (html: string | undefined): string => {
   if (!html) return "Contenu non disponible";
   return stripHtmlTags(html);
+};
+
+// Format content for plain text with extra cleaning
+const formatContentForText = (html: string | undefined): string => {
+  if (!html) return "Contenu non disponible";
+  return cleanContentForText(html);
 };
 
 // Format content into multiple paragraphs for Word document
@@ -175,28 +262,28 @@ export const generatePlainText = async ({
     if (lessonData.objectif) {
       content += "OBJECTIF\n";
       content += "────────────────────────────────────────────────────────────────\n";
-      content += `${formatContent(lessonData.objectif)}\n\n`;
+      content += `${formatContentForText(lessonData.objectif)}\n\n`;
     }
     
     // Introduction
     if (lessonData.introduction) {
       content += "INTRODUCTION\n";
       content += "────────────────────────────────────────────────────────────────\n";
-      content += `${formatContent(lessonData.introduction)}\n\n`;
+      content += `${formatContentForText(lessonData.introduction)}\n\n`;
     }
     
     // Main Content
     if (lessonData.contenu) {
       content += "CONTENU PRINCIPAL\n";
       content += "────────────────────────────────────────────────────────────────\n";
-      content += `${formatContent(lessonData.contenu)}\n\n`;
+      content += `${formatContentForText(lessonData.contenu)}\n\n`;
     }
     
     // Examples and Exercises
     if (lessonData.exemples_exercices) {
       content += "EXEMPLES ET EXERCICES\n";
       content += "────────────────────────────────────────────────────────────────\n";
-      content += `${formatContent(lessonData.exemples_exercices)}\n\n`;
+      content += `${formatContentForText(lessonData.exemples_exercices)}\n\n`;
     }
     
     // Personal Notes
