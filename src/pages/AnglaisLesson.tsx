@@ -21,6 +21,7 @@ import { InteractiveActivitiesEnhanced } from "@/components/InteractiveActivitie
 import { QuizGame } from "@/components/math-activities/QuizGame";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { DownloadLessonButton } from "@/components/DownloadLessonButton";
 
 interface LessonData {
   id: string;
@@ -217,7 +218,16 @@ export default function AnglaisLesson() {
                 )}
               </div>
             </div>
-            <ThemeToggle />
+            <div className="flex items-center gap-2">
+              <DownloadLessonButton
+                lessonData={lesson}
+                personalNotes={personalNotes}
+                subjectName="Anglais AF7"
+                variant="outline"
+                size="sm"
+              />
+              <ThemeToggle />
+            </div>
           </div>
         </div>
       </header>

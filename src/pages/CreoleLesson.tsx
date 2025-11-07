@@ -22,6 +22,7 @@ import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import { DownloadLessonButton } from "@/components/DownloadLessonButton";
 
 const categoryColors = {
   "Lekti": "from-pink-500 to-pink-600",
@@ -162,7 +163,25 @@ export default function CreoleLesson() {
             <ChevronLeft className="w-4 h-4" />
             <span>Retounen nan kou a</span>
           </Button>
-          <ThemeToggle />
+          <div className="flex items-center gap-2">
+            {lesson && (
+              <DownloadLessonButton
+                lessonData={{
+                  title: lesson.title,
+                  objectif: lesson.objectif,
+                  introduction: lesson.introduction,
+                  contenu: lesson.contenu,
+                  exemples_exercices: lesson.exemplesExercices,
+                  youtube_url: youtubeUrl || undefined,
+                }}
+                personalNotes={personalNotes}
+                subjectName="Créole AF7"
+                variant="outline"
+                size="sm"
+              />
+            )}
+            <ThemeToggle />
+          </div>
         </div>
       </nav>
 

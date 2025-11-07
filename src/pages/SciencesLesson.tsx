@@ -83,6 +83,7 @@ import {
 import { QuizGame } from "@/components/math-activities/QuizGame";
 import { MatchingGame } from "@/components/math-activities/MatchingGame";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import { DownloadLessonButton } from "@/components/DownloadLessonButton";
 import { YouTubeVideoSection } from "@/components/YouTubeVideoSection";
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
@@ -302,7 +303,25 @@ export default function SciencesLesson() {
                 <span className="font-semibold">Retour au cours</span>
               </Button>
             </div>
-            <ThemeToggle />
+            <div className="flex items-center gap-2">
+              {lessonContent && topicInfo && (
+                <DownloadLessonButton
+                  lessonData={{
+                    title: topicInfo.title,
+                    introduction: lessonContent.introduction,
+                    contenu: lessonContent.contenu,
+                    exemples_exercices: lessonContent.exemplesExercices,
+                    youtube_url: youtubeUrl || undefined,
+                  }}
+                  personalNotes={personalNotes}
+                  subjectName="Sciences AF7"
+                  variant="ghost"
+                  size="sm"
+                  className="text-white hover:bg-white/20"
+                />
+              )}
+              <ThemeToggle />
+            </div>
           </div>
         </div>
       </nav>

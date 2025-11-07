@@ -82,6 +82,7 @@ import { QuizGame } from "@/components/math-activities/QuizGame";
 import { MatchingGame } from "@/components/math-activities/MatchingGame";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { YouTubeVideoSection } from "@/components/YouTubeVideoSection";
+import { DownloadLessonButton } from "@/components/DownloadLessonButton";
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -280,7 +281,26 @@ export default function SciencesSocialesLesson() {
                 <span className="font-semibold">Retour au cours</span>
               </Button>
             </div>
-            <ThemeToggle />
+            <div className="flex items-center gap-2">
+              {lesson && (
+                <DownloadLessonButton
+                  lessonData={{
+                    title: lesson.title,
+                    objectif: lesson.objectif,
+                    introduction: lesson.introduction,
+                    contenu: lesson.contenu,
+                    exemples_exercices: lesson.exemplesExercices,
+                    youtube_url: youtubeUrl || undefined,
+                  }}
+                  personalNotes={personalNotes}
+                  subjectName="Sciences Sociales AF7"
+                  variant="ghost"
+                  size="sm"
+                  className="text-white hover:bg-white/20"
+                />
+              )}
+              <ThemeToggle />
+            </div>
           </div>
         </div>
       </nav>
