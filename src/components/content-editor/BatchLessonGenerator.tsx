@@ -26,7 +26,7 @@ interface LessonGenerationStatus {
   generationTime: number;
   qualityScore?: number;
   error?: string;
-  generatedContent?: Record<string, string>;
+  generatedContent?: Record<string, any>; // Changed from Record<string, string> to allow arrays/objects
 }
 
 export const BatchLessonGenerator = () => {
@@ -696,6 +696,8 @@ export const BatchLessonGenerator = () => {
   const handleApplyLesson = async (lessonId: string, shouldPublish: boolean = false) => {
     setIsApplying(true);
     try {
+      console.log('🔄 Starting to apply lesson...');
+      
       // Find the lesson status to get generated content
       const lessonStatus = lessonStatuses.find(l => l.lessonId === lessonId);
       if (!lessonStatus || !lessonStatus.generatedContent) {
@@ -703,15 +705,119 @@ export const BatchLessonGenerator = () => {
         return;
       }
 
+      // Get current lesson data
+      const { data: currentLesson } = await supabase
+        .from('lessons')
+        .select('contenu, exemples_exercices')
+        .eq('id', lessonId)
+        .single();
+
       const updates: any = {};
       const generatedContent = lessonStatus.generatedContent;
+      
+      console.log('Generated content:', generatedContent);
+      
+      // Start with generated or existing content
+      let updatedContenu = generatedContent.contenu || currentLesson?.contenu || '';
+      let updatedExemples = generatedContent.exemples_exercices || currentLesson?.exemples_exercices || '';
+      
+      // Process explanatory images if they exist
+      if (generatedContent.explanatory_images) {
+        const images = generatedContent.explanatory_images;
+        console.log(`📸 Processing ${images.length} images...`);
+        
+        for (const image of images) {
+          try {
+            console.log(`🖼️ Processing image: ${image.concept} (insertAt: ${image.insertAt})`);
+            
+            // Convert base64 to blob
+            const base64Data = image.base64Data;
+            const binaryString = atob(base64Data);
+            const bytes = new Uint8Array(binaryString.length);
+            for (let i = 0; i < binaryString.length; i++) {
+              bytes[i] = binaryString.charCodeAt(i);
+            }
+            const blob = new Blob([bytes], { type: 'image/png' });
+            console.log(`✅ Blob created, size: ${blob.size} bytes`);
+            
+            // Upload to Supabase Storage
+            const fileName = `${lessonId}/${image.concept.replace(/\s+/g, '-').toLowerCase()}-${Date.now()}.png`;
+            console.log(`📤 Uploading to: ${fileName}`);
+            
+            const { data: uploadData, error: uploadError } = await supabase.storage
+              .from('lesson-images')
+              .upload(fileName, blob, {
+                contentType: 'image/png',
+                upsert: true
+              });
+            
+            if (uploadError) {
+              console.error('❌ Error uploading image:', uploadError);
+              toast.error(`Erreur lors de l'upload de l'image: ${image.concept}`);
+              continue;
+            }
+            
+            console.log('✅ Image uploaded successfully');
+            
+            // Get public URL
+            const { data: { publicUrl } } = supabase.storage
+              .from('lesson-images')
+              .getPublicUrl(fileName);
+            
+            console.log(`🔗 Public URL: ${publicUrl}`);
+            
+            // Create HTML for the image with proper markdown integration
+            const imageHtml = `
+
+### 🖼️ ${image.description}
+
+<div class="my-6 flex justify-center">
+  <div class="max-w-2xl">
+    <img 
+      src="${publicUrl}" 
+      alt="${image.description}"
+      class="w-full rounded-lg shadow-lg border border-border"
+      loading="lazy"
+    />
+    <p class="text-sm text-center text-muted-foreground mt-2 italic">
+      ${image.description}
+    </p>
+  </div>
+</div>
+
+`;
+            
+            // Insert image into appropriate section
+            if (image.insertAt === 'contenu') {
+              console.log('➕ Adding image to contenu section');
+              updatedContenu = updatedContenu + imageHtml;
+            } else if (image.insertAt === 'exemples_exercices') {
+              console.log('➕ Adding image to exemples_exercices section');
+              updatedExemples = updatedExemples + imageHtml;
+            }
+          } catch (imageError) {
+            console.error('❌ Error processing image:', imageError);
+            toast.error(`Erreur lors du traitement de l'image: ${image.concept}`);
+          }
+        }
+        
+        console.log('✅ All images processed');
+      }
       
       // Apply generated sections
       if (generatedContent.objectif) updates.objectif = generatedContent.objectif;
       if (generatedContent.introduction) updates.introduction = generatedContent.introduction;
-      if (generatedContent.contenu) updates.contenu = generatedContent.contenu;
-      if (generatedContent.exemples_exercices) updates.exemples_exercices = generatedContent.exemples_exercices;
       if (generatedContent.activites_interactives) updates.activites_interactives = generatedContent.activites_interactives;
+      
+      // Always update contenu and exemples if images were generated
+      if (generatedContent.explanatory_images) {
+        updates.contenu = updatedContenu;
+        updates.exemples_exercices = updatedExemples;
+        console.log('📝 Updating database with images included');
+      } else {
+        if (generatedContent.contenu) updates.contenu = generatedContent.contenu;
+        if (generatedContent.exemples_exercices) updates.exemples_exercices = generatedContent.exemples_exercices;
+      }
       
       // Apply Quiz Final
       if (generatedContent.quiz_final) {
@@ -735,7 +841,7 @@ export const BatchLessonGenerator = () => {
         updates.workflow_status = 'published';
       }
 
-      console.log('📝 Updating lesson with:', Object.keys(updates));
+      console.log('💾 Saving updates to database:', Object.keys(updates));
 
       if (Object.keys(updates).length > 0) {
         const { error } = await supabase
@@ -743,10 +849,14 @@ export const BatchLessonGenerator = () => {
           .update(updates)
           .eq('id', lessonId);
 
-        if (error) throw error;
+        if (error) {
+          console.error('❌ Database update error:', error);
+          throw error;
+        }
       }
 
-      toast.success(shouldPublish ? "Leçon publiée avec succès!" : "Contenu appliqué avec succès!");
+      console.log('✅ Database updated successfully');
+      toast.success(shouldPublish ? "Leçon publiée avec succès (images incluses)!" : "Contenu appliqué avec succès (images incluses)!");
       setIsPreviewOpen(false);
     } catch (error: any) {
       console.error('Error applying lesson:', error);
