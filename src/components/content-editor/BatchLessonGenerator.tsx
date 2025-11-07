@@ -843,6 +843,16 @@ export const BatchLessonGenerator = () => {
         console.log('✅ All images processed and inserted');
       }
       
+      // Function to remove AI-generated image description headings
+      const cleanImageDescriptions = (text: string): string => {
+        // Remove markdown headings that describe images (### followed by emoji and description)
+        return text.replace(/###\s*[\u{1F300}-\u{1F9FF}]\s*[^\n]+\n\n?/gu, '');
+      };
+      
+      // Clean the content before saving
+      updatedContenu = cleanImageDescriptions(updatedContenu);
+      updatedExemples = cleanImageDescriptions(updatedExemples);
+      
       // Apply generated sections
       if (generatedContent.objectif) updates.objectif = generatedContent.objectif;
       if (generatedContent.introduction) updates.introduction = generatedContent.introduction;
@@ -852,7 +862,7 @@ export const BatchLessonGenerator = () => {
       if (generatedContent.explanatory_images) {
         updates.contenu = updatedContenu;
         updates.exemples_exercices = updatedExemples;
-        console.log('📝 Updating database with images included');
+        console.log('📝 Updating database with images included (descriptions cleaned)');
       } else {
         if (generatedContent.contenu) updates.contenu = generatedContent.contenu;
         if (generatedContent.exemples_exercices) updates.exemples_exercices = generatedContent.exemples_exercices;

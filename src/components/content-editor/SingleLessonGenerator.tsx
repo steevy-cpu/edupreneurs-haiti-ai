@@ -520,6 +520,16 @@ export const SingleLessonGenerator = ({ lesson, onComplete }: SingleLessonGenera
         console.log('✅ All images processed and inserted');
       }
       
+      // Function to remove AI-generated image description headings
+      const cleanImageDescriptions = (text: string): string => {
+        // Remove markdown headings that describe images (### followed by emoji and description)
+        return text.replace(/###\s*[\u{1F300}-\u{1F9FF}]\s*[^\n]+\n\n?/gu, '');
+      };
+      
+      // Clean the content before saving
+      updatedContenu = cleanImageDescriptions(updatedContenu);
+      updatedExemples = cleanImageDescriptions(updatedExemples);
+      
       // Apply all generated content to the database
       const updates: any = {};
       
@@ -534,7 +544,7 @@ export const SingleLessonGenerator = ({ lesson, onComplete }: SingleLessonGenera
       if (generatedContent.explanatory_images) {
         updates.contenu = updatedContenu;
         updates.exemples_exercices = updatedExemples;
-        console.log('📝 Updating database with images included');
+        console.log('📝 Updating database with images included (descriptions cleaned)');
       } else {
         // Only update if content changed
         if (updatedContenu !== (lesson.contenu || '')) {
