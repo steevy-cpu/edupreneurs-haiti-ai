@@ -53,11 +53,19 @@ Concentre-toi sur:
 
 CRITIQUE: Tu dois générer AU MOINS 2 concepts, idéalement 3-4 pour enrichir le contenu.
 
+⚠️ RÈGLES STRICTES POUR LE TEXTE DANS LES IMAGES:
+- ÉVITE les bulles de dialogue (speech bubbles) sauf si absolument nécessaire
+- Si le texte anglais apparaît dans l'image, il DOIT être GRAMMATICALEMENT PARFAIT
+- JAMAIS de placeholders comme "Name", "other Name" - utilise des noms réels haïtiens (ex: "Jean", "Marie", "Toussaint")
+- Vérifie la grammaire anglaise : "I am Marie" PAS "I am, Name"
+- Si la leçon enseigne l'anglais et que des dialogues sont nécessaires, utilise des phrases COMPLÈTES et CORRECTES
+- Préfère les images sans texte ou avec des labels simples plutôt que des dialogues
+
 IMPORTANT: Retourne UNIQUEMENT un tableau JSON valide, sans texte avant ou après. Format exact:
 [
   {
     "name": "Nom du concept",
-    "prompt": "Prompt détaillé en anglais pour Recraft",
+    "prompt": "Prompt détaillé en anglais pour Recraft, avec instructions précises pour tout texte visible",
     "insertAt": "contenu" ou "exemples_exercices",
     "description": "Courte description en français"
   }
