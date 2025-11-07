@@ -704,6 +704,7 @@ export const SingleLessonGenerator = ({ lesson, onComplete }: SingleLessonGenera
                 {progress.map((section) => {
                   const displayName = section.name === 'quiz_final' ? 'Quiz Final' :
                                      section.name === 'youtube_url' ? 'Vidéos YouTube' :
+                                     section.name === 'explanatory_images' ? 'Images Explicatives' :
                                      section.name;
                   return (
                     <div key={section.name} className="flex items-center justify-between p-3 border rounded-lg">
@@ -769,7 +770,7 @@ export const SingleLessonGenerator = ({ lesson, onComplete }: SingleLessonGenera
             <div className="space-y-4 border-t pt-4">
               <div className="flex items-center justify-between">
                 <h3 className="text-lg font-semibold">📋 Aperçu du contenu généré</h3>
-                <Badge variant="secondary">{Object.keys(generatedContent).filter(k => k !== 'suggested_videos').length} élément(s)</Badge>
+                <Badge variant="secondary">{Object.keys(generatedContent).filter(k => k !== 'suggested_videos' && k !== 'explanatory_images').length + (generatedContent.explanatory_images ? 1 : 0)} élément(s)</Badge>
               </div>
               
               <div className="space-y-4 max-h-[600px] overflow-y-auto border rounded-lg p-4 bg-muted/30">
@@ -784,11 +785,41 @@ export const SingleLessonGenerator = ({ lesson, onComplete }: SingleLessonGenera
                          key === 'youtube_url' ? 'Vidéos YouTube Suggérées' :
                          key === 'activites_interactives' ? 'Activités Interactives' :
                          key === 'exemples_exercices' ? 'Exemples & Exercices' :
+                         key === 'explanatory_images' ? 'Images Explicatives Générées' :
                          key}
                       </Label>
                       
-                      {/* Special handling for YouTube videos */}
-                      {key === 'youtube_url' ? (
+                      {/* Special handling for explanatory images */}
+                      {key === 'explanatory_images' ? (
+                        <div className="space-y-3">
+                          {Array.isArray(value) && value.length > 0 ? (
+                            value.map((image: any, idx: number) => (
+                              <div key={idx} className="border rounded-lg p-3 bg-background/50 space-y-2">
+                                <div className="space-y-2">
+                                  <div className="flex justify-between items-start">
+                                    <div>
+                                      <p className="text-sm font-medium">{image.concept}</p>
+                                      <p className="text-xs text-muted-foreground">{image.description}</p>
+                                    </div>
+                                    <Badge variant="secondary" className="text-xs">
+                                      {image.insertAt === 'contenu' ? 'Contenu' : 'Exemples'}
+                                    </Badge>
+                                  </div>
+                                  <div className="flex justify-center bg-background/80 rounded-lg p-2">
+                                    <img 
+                                      src={`data:image/png;base64,${image.base64Data}`}
+                                      alt={image.description}
+                                      className="max-w-full h-auto max-h-64 rounded shadow-md border border-border"
+                                    />
+                                  </div>
+                                </div>
+                              </div>
+                            ))
+                          ) : (
+                            <p className="text-sm text-muted-foreground">Aucune image générée</p>
+                          )}
+                        </div>
+                      ) : key === 'youtube_url' ? (
                         <div className="space-y-3">
                           {/* Parse suggested_videos if available */}
                           {generatedContent.suggested_videos ? (

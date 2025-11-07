@@ -1299,6 +1299,49 @@ export const BatchLessonGenerator = () => {
                   );
                 }
                 
+                // Handle explanatory images
+                if (sectionName === 'explanatory_images' && Array.isArray(content)) {
+                  const imagesList: any[] = content;
+                  return (
+                    <div key={sectionName} className="space-y-2">
+                      <h3 className="text-lg font-semibold flex items-center gap-2">
+                        <CheckCircle2 className="h-5 w-5 text-green-500" />
+                        Images Explicatives ({imagesList.length})
+                      </h3>
+                      {imagesList.length > 0 ? (
+                        <div className="space-y-3">
+                          {imagesList.map((image: any, idx: number) => (
+                            <div key={idx} className="border rounded-lg p-3 bg-background/50 space-y-2">
+                              <div className="space-y-2">
+                                <div className="flex justify-between items-start">
+                                  <div>
+                                    <p className="text-sm font-medium">{image.concept}</p>
+                                    <p className="text-xs text-muted-foreground">{image.description}</p>
+                                  </div>
+                                  <Badge variant="secondary" className="text-xs">
+                                    {image.insertAt === 'contenu' ? 'Contenu' : 'Exemples'}
+                                  </Badge>
+                                </div>
+                                <div className="flex justify-center bg-background/80 rounded-lg p-2">
+                                  <img 
+                                    src={`data:image/png;base64,${image.base64Data}`}
+                                    alt={image.description}
+                                    className="max-w-full h-auto max-h-64 rounded shadow-md border border-border"
+                                  />
+                                </div>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      ) : (
+                        <div className="p-4 bg-muted rounded-lg text-center text-muted-foreground">
+                          Aucune image générée pour cette leçon
+                        </div>
+                      )}
+                    </div>
+                  );
+                }
+                
                 // Handle other sections (strings only)
                 if (typeof content === 'string') {
                   return (
