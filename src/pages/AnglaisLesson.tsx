@@ -18,6 +18,7 @@ import {
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { YouTubeVideoSection } from "@/components/YouTubeVideoSection";
 import { InteractiveActivitiesEnhanced } from "@/components/InteractiveActivitiesEnhanced";
+import { QuizGame } from "@/components/math-activities/QuizGame";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
@@ -33,6 +34,55 @@ interface LessonData {
   mois: string;
   youtubeUrl?: string;
 }
+
+const parseQuizHTML = (html: string) => {
+  const questions = [];
+  const questionBlocks = html.split(/Question\s+\d+/i).filter(block => block.trim());
+  
+  for (const block of questionBlocks) {
+    const lines = block.split('\n').map(l => l.trim()).filter(l => l);
+    
+    // Extract question text (first non-empty line)
+    const questionText = lines[0]?.replace(/<[^>]*>/g, '').trim() || '';
+    
+    // Extract options (A), B), C), D))
+    const options: string[] = [];
+    const optionRegex = /^[A-D]\)\s*(.+)/;
+    
+    for (const line of lines) {
+      const cleanLine = line.replace(/<[^>]*>/g, '').trim();
+      const match = cleanLine.match(optionRegex);
+      if (match) {
+        options.push(match[1]);
+      }
+    }
+    
+    // Extract correct answer
+    let correctAnswer = 0;
+    const answerMatch = block.match(/Réponse correcte:\s*([A-D])/i);
+    if (answerMatch) {
+      correctAnswer = answerMatch[1].charCodeAt(0) - 65; // Convert A=0, B=1, etc.
+    }
+    
+    // Extract explanation (text after "Réponse correcte:")
+    let explanation = '';
+    const explanationMatch = block.split(/Réponse correcte:\s*[A-D]/i)[1];
+    if (explanationMatch) {
+      explanation = explanationMatch.replace(/<[^>]*>/g, '').trim();
+    }
+    
+    if (questionText && options.length >= 2) {
+      questions.push({
+        question: questionText,
+        options,
+        correctAnswer,
+        explanation: explanation || 'Bonne réponse!'
+      });
+    }
+  }
+  
+  return questions;
+};
 
 export default function AnglaisLesson() {
   const { topicId } = useParams<{ topicId: string }>();
@@ -258,9 +308,12 @@ export default function AnglaisLesson() {
           <TabsContent value="quiz">
             <Card className="p-6">
               {lesson.quiz_final ? (
-                <div 
-                  className="prose prose-sm max-w-none dark:prose-invert"
-                  dangerouslySetInnerHTML={{ __html: lesson.quiz_final }}
+                <QuizGame 
+                  topic={lesson.title}
+                  questions={parseQuizHTML(lesson.quiz_final)}
+                  onComplete={(score, goldEarned) => {
+                    toast.success(`Quiz terminé! Vous avez obtenu ${score} points et gagné ${goldEarned} gold!`);
+                  }}
                 />
               ) : (
                 <div className="text-center py-12 space-y-4">
