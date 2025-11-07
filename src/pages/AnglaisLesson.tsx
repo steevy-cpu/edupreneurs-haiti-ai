@@ -29,6 +29,7 @@ interface LessonData {
   contenu: string;
   exemples_exercices: string;
   activites_interactives: string | null;
+  quiz_final: string | null;
   mois: string;
   youtubeUrl?: string;
 }
@@ -45,7 +46,7 @@ export default function AnglaisLesson() {
       try {
         const { data, error } = await supabase
           .from('lessons')
-          .select('id, slug, title, objectif, introduction, contenu, exemples_exercices, activites_interactives, mois, youtube_url')
+          .select('id, slug, title, objectif, introduction, contenu, exemples_exercices, activites_interactives, quiz_final, mois, youtube_url')
           .eq('slug', topicId)
           .eq('is_published', true)
           .single();
@@ -60,6 +61,7 @@ export default function AnglaisLesson() {
           contenu: data.contenu,
           exemples_exercices: data.exemples_exercices,
           activites_interactives: data.activites_interactives,
+          quiz_final: data.quiz_final,
           mois: data.mois,
           youtubeUrl: data.youtube_url
         });
@@ -255,13 +257,20 @@ export default function AnglaisLesson() {
 
           <TabsContent value="quiz">
             <Card className="p-6">
-              <div className="text-center py-12 space-y-4">
-                <HelpCircle className="w-16 h-16 mx-auto text-muted-foreground/50" />
-                <h3 className="text-xl font-semibold">Quiz Final</h3>
-                <p className="text-muted-foreground max-w-md mx-auto">
-                  Le quiz pour cette leçon sera bientôt disponible. Continuez à réviser le contenu et les exemples!
-                </p>
-              </div>
+              {lesson.quiz_final ? (
+                <div 
+                  className="prose prose-sm max-w-none dark:prose-invert"
+                  dangerouslySetInnerHTML={{ __html: lesson.quiz_final }}
+                />
+              ) : (
+                <div className="text-center py-12 space-y-4">
+                  <HelpCircle className="w-16 h-16 mx-auto text-muted-foreground/50" />
+                  <h3 className="text-xl font-semibold">Quiz Final</h3>
+                  <p className="text-muted-foreground max-w-md mx-auto">
+                    Le quiz pour cette leçon sera bientôt disponible. Continuez à réviser le contenu et les exemples!
+                  </p>
+                </div>
+              )}
             </Card>
           </TabsContent>
 
