@@ -67,8 +67,9 @@ const stripHtmlTags = (html: string): string => {
   // Get text content and clean up
   let text = temp.textContent || "";
   
-  // Fix common encoding issues
+  // Fix common encoding issues - comprehensive list
   text = text.replace(/â€™/g, "'");
+  text = text.replace(/â€˜/g, "'");
   text = text.replace(/â€"/g, "—");
   text = text.replace(/â€"/g, "–");
   text = text.replace(/â€œ/g, '"');
@@ -81,6 +82,26 @@ const stripHtmlTags = (html: string): string => {
   text = text.replace(/Ã®/g, "î");
   text = text.replace(/Ã»/g, "û");
   text = text.replace(/Ã«/g, "ë");
+  text = text.replace(/Ã¢/g, "â");
+  text = text.replace(/Ã¯/g, "ï");
+  text = text.replace(/Ã¼/g, "ü");
+  text = text.replace(/Ã¶/g, "ö");
+  text = text.replace(/Ã¹/g, "ù");
+  text = text.replace(/Ã‰/g, "É");
+  text = text.replace(/Ã‡/g, "Ç");
+  text = text.replace(/Ã€/g, "À");
+  
+  // Fix weird bullet point encodings
+  text = text.replace(/Ø<Â/g, "");
+  text = text.replace(/â€¢/g, "•");
+  text = text.replace(/Â·/g, "•");
+  text = text.replace(/âœ"/g, "•");
+  text = text.replace(/â—/g, "•");
+  
+  // Remove any remaining special characters that shouldn't be there
+  text = text.replace(/Ø/g, "");
+  text = text.replace(/Â/g, "");
+  text = text.replace(/<Â/g, "");
   
   // Clean up excessive newlines
   text = text.replace(/\n{3,}/g, "\n\n");
@@ -440,18 +461,6 @@ export const generateLessonPDF = async ({
       creator: "Edupreneurs - Plateforme Éducative Haïtienne",
     });
 
-    // Load and add logo (centered, larger)
-    try {
-      const logoBase64 = await loadLogoAsBase64();
-      if (logoBase64) {
-        pdf.addImage(logoBase64, "PNG", (pageWidth - 50) / 2, yPosition, 50, 50);
-        yPosition += 60;
-      }
-    } catch (error) {
-      console.error("Error adding logo to PDF:", error);
-      yPosition += 10;
-    }
-
     // Helper to add page break if needed
     const checkPageBreak = (neededSpace: number) => {
       if (yPosition + neededSpace > pageHeight - margin - 20) {
@@ -478,21 +487,32 @@ export const generateLessonPDF = async ({
       }
     };
 
-    // Header - Title with gradient-like effect
-    const headerHeight = 35;
+    // Header - Title with gradient-like effect and logo
+    const headerHeight = 50;
     pdf.setFillColor(59, 130, 246);
     pdf.rect(0, yPosition, pageWidth, headerHeight, "F");
     
-    pdf.setTextColor(255, 255, 255);
-    pdf.setFontSize(22);
-    pdf.setFont("helvetica", "bold");
-    const titleLines = pdf.splitTextToSize(lessonData.title, maxWidth - 10);
-    pdf.text(titleLines, margin, yPosition + 12);
+    // Add logo in top left of header
+    try {
+      const logoBase64 = await loadLogoAsBase64();
+      if (logoBase64) {
+        pdf.addImage(logoBase64, "PNG", margin, yPosition + 5, 40, 40);
+      }
+    } catch (error) {
+      console.error("Error adding logo to PDF:", error);
+    }
     
-    pdf.setFontSize(12);
+    // Title and subtitle offset to the right to accommodate logo
+    pdf.setTextColor(255, 255, 255);
+    pdf.setFontSize(20);
+    pdf.setFont("helvetica", "bold");
+    const titleLines = pdf.splitTextToSize(lessonData.title, maxWidth - 50);
+    pdf.text(titleLines, margin + 50, yPosition + 18);
+    
+    pdf.setFontSize(11);
     pdf.setFont("helvetica", "normal");
     const subtitle = `${subjectName}${lessonData.grade_level ? ` - ${lessonData.grade_level}` : ""}`;
-    pdf.text(subtitle, margin, yPosition + 25);
+    pdf.text(subtitle, margin + 50, yPosition + 35);
     
     yPosition += headerHeight + 10;
 
