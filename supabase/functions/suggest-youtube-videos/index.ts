@@ -30,21 +30,20 @@ serve(async (req) => {
     const combinedContent = `${contenu || ''}\n\n${exemplesExercices || ''}`.trim();
 
     // Step 1: Use Lovable AI to generate optimal search queries
-    const systemPrompt = `Tu es un expert en recherche de vidéos éducatives YouTube. Tu dois générer 2-3 requêtes de recherche optimales en français/créole pour trouver des vidéos éducatives pertinentes.
+    const systemPrompt = `Tu es un expert en recherche de vidéos éducatives YouTube. Tu dois générer 2-3 requêtes de recherche optimales pour trouver des vidéos éducatives pertinentes.
 
-RÈGLES:
-1. Générer 2-3 requêtes de recherche différentes
-2. Les requêtes doivent être en français ou créole haïtien
-3. Cibler des vidéos éducatives, cours, leçons
-4. Inclure le niveau scolaire si pertinent
-5. Varier les termes pour maximiser les résultats
+RÈGLES STRICTES:
+1. Générer 2-3 requêtes de recherche en FRANÇAIS uniquement
+2. Les requêtes doivent cibler des vidéos éducatives: "cours", "leçon", "tutoriel"
+3. Utiliser le titre de la leçon comme base principale
+4. NE PAS inclure de termes en créole haïtien
+5. Privilégier les termes éducatifs standards
 
 FORMAT DE RÉPONSE (JSON uniquement):
 {
   "queries": [
-    "première requête de recherche",
-    "deuxième requête de recherche",
-    "troisième requête de recherche"
+    "première requête de recherche en français",
+    "deuxième requête de recherche en français"
   ]
 }
 
@@ -118,25 +117,53 @@ ${combinedContent.substring(0, 1000)}...`
     const seenIds = new Set<string>();
 
     // Helper function to calculate relevance score
-    const calculateRelevance = (videoTitle: string, lessonTitle: string): number => {
-      const videoLower = videoTitle.toLowerCase();
+    const calculateRelevance = (videoTitle: string, videoDescription: string, lessonTitle: string): number => {
+      const videoTitleLower = videoTitle.toLowerCase();
+      const videoDescLower = videoDescription.toLowerCase();
       const lessonLower = lessonTitle.toLowerCase();
-      const lessonWords = lessonLower.split(/\s+/).filter(w => w.length > 2);
+      
+      // Extract key words from lesson title (ignore common words)
+      const commonWords = ['le', 'la', 'les', 'et', 'de', 'des', 'un', 'une', 'à', 'en'];
+      const lessonWords = lessonLower.split(/\s+/).filter(w => w.length > 2 && !commonWords.includes(w));
       
       let score = 0;
+      
+      // Check each lesson word in video title (higher weight)
       for (const word of lessonWords) {
-        if (videoLower.includes(word)) score += 1;
+        if (videoTitleLower.includes(word)) score += 3;
+        if (videoDescLower.includes(word)) score += 1;
       }
       
-      // Bonus if exact lesson title is in video title
-      if (videoLower.includes(lessonLower)) score += 10;
+      // Bonus for educational keywords
+      const eduKeywords = ['cours', 'leçon', 'tutoriel', 'apprendre', 'learning', 'lesson', 'tutorial'];
+      for (const keyword of eduKeywords) {
+        if (videoTitleLower.includes(keyword)) score += 2;
+      }
+      
+      // Big bonus if exact lesson title is in video title
+      if (videoTitleLower.includes(lessonLower)) score += 15;
+      
+      // Penalty for non-educational content indicators
+      const badKeywords = ['music', 'song', 'animation', 'film', 'movie', 'serie', 'fiction'];
+      for (const keyword of badKeywords) {
+        if (videoTitleLower.includes(keyword) || videoDescLower.includes(keyword)) score -= 10;
+      }
       
       return score;
     };
+    
+    // Helper function to check if video is educational
+    const isEducational = (title: string, description: string): boolean => {
+      const titleLower = title.toLowerCase();
+      const descLower = description.toLowerCase();
+      const eduKeywords = ['cours', 'leçon', 'tutoriel', 'apprendre', 'learning', 'lesson', 'tutorial', 'education', 'teaching', 'study'];
+      
+      return eduKeywords.some(keyword => titleLower.includes(keyword) || descLower.includes(keyword));
+    };
 
-    for (const query of searchQueries.slice(0, 3)) {
+    for (const query of searchQueries.slice(0, 2)) {
       try {
-        const youtubeUrl = `https://www.googleapis.com/youtube/v3/search?part=snippet&q=${encodeURIComponent(query)}&type=video&videoEmbeddable=true&maxResults=3&key=${YOUTUBE_API_KEY}&relevanceLanguage=fr&safeSearch=strict`;
+        const youtubeUrl = `https://www.googleapis.com/youtube/v3/search?part=snippet&q=${encodeURIComponent(query)}&type=video&videoEmbeddable=true&maxResults=5&key=${YOUTUBE_API_KEY}&relevanceLanguage=fr&safeSearch=strict&videoDefinition=any`;
         
         const ytResponse = await fetch(youtubeUrl);
         if (!ytResponse.ok) {
@@ -150,19 +177,37 @@ ${combinedContent.substring(0, 1000)}...`
         if (ytData.items) {
           for (const item of ytData.items) {
             const videoId = item.id.videoId;
+            const title = item.snippet.title;
+            const description = item.snippet.description || '';
             
             // Skip if already seen or banned
             if (seenIds.has(videoId) || bannedIds.has(videoId)) continue;
             
+            // Filter: Must be educational content
+            if (!isEducational(title, description)) {
+              console.log(`❌ Skipping non-educational video: "${title}"`);
+              continue;
+            }
+            
+            const relevanceScore = calculateRelevance(title, description, lessonTitle);
+            
+            // Only include videos with positive relevance score
+            if (relevanceScore <= 0) {
+              console.log(`❌ Skipping low-relevance video: "${title}" (score: ${relevanceScore})`);
+              continue;
+            }
+            
             seenIds.add(videoId);
             allVideos.push({
               id: videoId,
-              title: item.snippet.title,
-              description: item.snippet.description,
+              title: title,
+              description: description,
               thumbnail: item.snippet.thumbnails.medium.url,
               channelTitle: item.snippet.channelTitle,
-              relevanceScore: calculateRelevance(item.snippet.title, lessonTitle),
+              relevanceScore: relevanceScore,
             });
+            
+            console.log(`✅ Added video: "${title}" (score: ${relevanceScore})`);
           }
         }
       } catch (error) {
@@ -170,13 +215,21 @@ ${combinedContent.substring(0, 1000)}...`
       }
     }
 
-    // Sort by relevance score and return top 2 unique videos
+    // Sort by relevance score and return top 2 unique videos with minimum score
     allVideos.sort((a, b) => b.relevanceScore - a.relevanceScore);
-    const topVideos = allVideos.slice(0, 2);
+    
+    // Filter out videos with very low scores (below 3)
+    const qualityVideos = allVideos.filter(v => v.relevanceScore >= 3);
+    const topVideos = qualityVideos.slice(0, 2);
 
-    console.log(`✅ Found ${topVideos.length} suggested videos (sorted by relevance)`);
+    console.log(`✅ Found ${topVideos.length} quality suggested videos (sorted by relevance)`);
     if (topVideos.length > 0) {
-      console.log(`Top video: "${topVideos[0].title}" (score: ${topVideos[0].relevanceScore})`);
+      console.log(`📹 Top video: "${topVideos[0].title}" (score: ${topVideos[0].relevanceScore})`);
+      if (topVideos.length > 1) {
+        console.log(`📹 Second video: "${topVideos[1].title}" (score: ${topVideos[1].relevanceScore})`);
+      }
+    } else {
+      console.log('⚠️ No quality videos found with sufficient relevance score');
     }
 
     return new Response(
