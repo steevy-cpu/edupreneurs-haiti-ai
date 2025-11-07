@@ -48,13 +48,6 @@ export const BatchLessonGenerator = () => {
   const [isPaused, setIsPaused] = useState(false);
   const [lessonStatuses, setLessonStatuses] = useState<LessonGenerationStatus[]>([]);
   const [totalLessons, setTotalLessons] = useState(0);
-  const [showPreview, setShowPreview] = useState(false);
-  const [previewContent, setPreviewContent] = useState<{
-    quiz?: string;
-    videos?: any[];
-    lessonId?: string;
-    lessonTitle?: string;
-  }>({});
   const [hasGeneratedOptionalContent, setHasGeneratedOptionalContent] = useState(false);
   const [completedCount, setCompletedCount] = useState(0);
   const [isLoadingLessons, setIsLoadingLessons] = useState(false);
@@ -297,16 +290,6 @@ export const BatchLessonGenerator = () => {
 
     setIsGenerating(false);
     
-    // Show preview if only quiz/videos were generated (no content sections)
-    if (hasGeneratedOptionalContent && selectedSections.length === 0) {
-      console.log('🎯 [Batch] Showing preview for optional content');
-      setTimeout(() => {
-        setShowPreview(true);
-        toast.success('Contenu généré - Consultez l\'aperçu');
-      }, 500); // Small delay to ensure state has updated
-      return;
-    }
-    
     const hasMoreBatches = batchNumber < totalBatchCount;
     if (hasMoreBatches) {
       toast.success(`Lot ${batchNumber}/${totalBatchCount} terminé: ${completedCount}/${batchLessons.length} leçons. Prêt pour le lot suivant.`);
@@ -483,12 +466,18 @@ export const BatchLessonGenerator = () => {
             });
 
             if (!quizError && quizData?.quizContent) {
-              // Store for preview instead of immediately applying
-              setPreviewContent(prev => ({
-                ...prev,
-                quiz: quizData.quizContent,
-                lessonId: lesson.id,
-                lessonTitle: lesson.title
+              // Store in lesson status for preview buttons to show
+              setLessonStatuses(prev => prev.map((l, i) => {
+                if (i === index) {
+                  return {
+                    ...l,
+                    generatedContent: {
+                      ...l.generatedContent,
+                      quiz_final: quizData.quizContent
+                    }
+                  };
+                }
+                return l;
               }));
               setHasGeneratedOptionalContent(true);
               
@@ -514,18 +503,25 @@ export const BatchLessonGenerator = () => {
               }
             });
 
-            if (!videoError && videoData?.videos && videoData.videos.length > 0) {
-              // Store for preview instead of immediately applying
-              setPreviewContent(prev => ({
-                ...prev,
-                videos: videoData.videos,
-                lessonId: lesson.id,
-                lessonTitle: lesson.title
-              }));
-              setHasGeneratedOptionalContent(true);
-              
-              console.log('✅ [Batch] YouTube videos suggested:', videoData.videos.length);
-            } else if (!videoError) {
+            // Store videos in lesson status (even if empty array) to show preview buttons
+            const videos = videoData?.videos || [];
+            setLessonStatuses(prev => prev.map((l, i) => {
+              if (i === index) {
+                return {
+                  ...l,
+                  generatedContent: {
+                    ...l.generatedContent,
+                    youtube_videos: videos
+                  }
+                };
+              }
+              return l;
+            }));
+            setHasGeneratedOptionalContent(true);
+            
+            if (videos.length > 0) {
+              console.log('✅ [Batch] YouTube videos suggested:', videos.length);
+            } else {
               console.log('ℹ️ [Batch] No YouTube videos found');
             }
           } catch (error) {
@@ -599,48 +595,6 @@ export const BatchLessonGenerator = () => {
         await new Promise(resolve => setTimeout(resolve, 3000));
       }
     }
-  };
-
-  const handleApplyPreview = async () => {
-    if (!previewContent.lessonId) {
-      toast.error("Aucune leçon sélectionnée");
-      return;
-    }
-
-    try {
-      const updates: any = {};
-      if (previewContent.quiz) {
-        updates.quiz_final = previewContent.quiz;
-      }
-      if (previewContent.videos && previewContent.videos.length > 0) {
-        updates.youtube_url = `https://www.youtube.com/watch?v=${previewContent.videos[0].id}`;
-      }
-
-      const { error } = await supabase
-        .from('lessons')
-        .update(updates)
-        .eq('id', previewContent.lessonId);
-
-      if (error) throw error;
-
-      toast.success("Contenu appliqué avec succès");
-      setShowPreview(false);
-      setPreviewContent({});
-      setHasGeneratedOptionalContent(false);
-      
-      // Redirect to content editor with the lesson
-      navigate(`/content-editor?lesson=${previewContent.lessonId}`);
-    } catch (error) {
-      console.error('Error applying preview:', error);
-      toast.error("Erreur lors de l'application");
-    }
-  };
-
-  const handleDiscardPreview = () => {
-    setShowPreview(false);
-    setPreviewContent({});
-    setHasGeneratedOptionalContent(false);
-    toast.info("Modifications annulées");
   };
 
   const exportResults = () => {
@@ -734,7 +688,10 @@ export const BatchLessonGenerator = () => {
       objectif: "Objectif",
       introduction: "Introduction",
       contenu: "Contenu principal",
-      exemples_exercices: "Exemples & Exercices"
+      exemples_exercices: "Exemples & Exercices",
+      activites_interactives: "Activités Interactives",
+      quiz_final: "Quiz Final",
+      youtube_videos: "Vidéos YouTube"
     };
     return labels[sectionName] || sectionName;
   };
@@ -1092,24 +1049,75 @@ export const BatchLessonGenerator = () => {
           
           {previewLesson?.generatedContent && (
             <div className="space-y-6">
-              {Object.entries(previewLesson.generatedContent).map(([sectionName, content]) => (
-                <div key={sectionName} className="space-y-2">
-                  <h3 className="text-lg font-semibold">{getSectionLabel(sectionName)}</h3>
-                  {sectionName === 'activites_interactives' ? (
-                    <div className="p-4 bg-muted rounded-lg">
-                      <InteractiveActivitiesEnhanced 
-                        content={content}
-                        isLoading={false}
-                      />
+              {Object.entries(previewLesson.generatedContent).map(([sectionName, content]) => {
+                // Handle YouTube videos specially
+                if (sectionName === 'youtube_videos' && Array.isArray(content)) {
+                  const videosList: any[] = content;
+                  return (
+                    <div key={sectionName} className="space-y-2">
+                      <h3 className="text-lg font-semibold flex items-center gap-2">
+                        <CheckCircle2 className="h-5 w-5 text-green-500" />
+                        {getSectionLabel(sectionName)} ({videosList.length})
+                      </h3>
+                      {videosList.length > 0 ? (
+                        <div className="space-y-3">
+                          {videosList.slice(0, 2).map((video: any, idx: number) => (
+                            <div key={idx} className="border rounded-lg p-3 bg-background/50 space-y-2">
+                              <div className="flex items-start gap-3">
+                                <img 
+                                  src={video.thumbnail} 
+                                  alt={video.title}
+                                  className="w-32 h-24 object-cover rounded"
+                                />
+                                <div className="flex-1 min-w-0">
+                                  <p className="text-sm font-medium line-clamp-2">{video.title}</p>
+                                  <p className="text-xs text-muted-foreground mt-1">{video.channel}</p>
+                                  <a 
+                                    href={`https://www.youtube.com/watch?v=${video.id}`}
+                                    target="_blank" 
+                                    rel="noopener noreferrer" 
+                                    className="text-xs text-primary hover:underline mt-1 inline-block"
+                                  >
+                                    Voir la vidéo →
+                                  </a>
+                                </div>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      ) : (
+                        <div className="p-4 bg-muted rounded-lg text-center text-muted-foreground">
+                          Aucune vidéo YouTube trouvée pour cette leçon
+                        </div>
+                      )}
                     </div>
-                  ) : (
-                    <div 
-                      className="prose prose-sm max-w-none p-4 bg-muted rounded-lg"
-                      dangerouslySetInnerHTML={{ __html: content }}
-                    />
-                  )}
-                </div>
-              ))}
+                  );
+                }
+                
+                // Handle other sections (strings only)
+                if (typeof content === 'string') {
+                  return (
+                    <div key={sectionName} className="space-y-2">
+                      <h3 className="text-lg font-semibold">{getSectionLabel(sectionName)}</h3>
+                      {sectionName === 'activites_interactives' ? (
+                        <div className="p-4 bg-muted rounded-lg">
+                          <InteractiveActivitiesEnhanced 
+                            content={content}
+                            isLoading={false}
+                          />
+                        </div>
+                      ) : (
+                        <div 
+                          className="prose prose-sm max-w-none p-4 bg-muted rounded-lg"
+                          dangerouslySetInnerHTML={{ __html: content }}
+                        />
+                      )}
+                    </div>
+                  );
+                }
+                
+                return null;
+              })}
             </div>
           )}
 
@@ -1131,82 +1139,6 @@ export const BatchLessonGenerator = () => {
             >
               {isApplying ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Check className="h-4 w-4 mr-2" />}
               Appliquer et Publier
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
-      {/* Additional Features Preview Dialog */}
-      <Dialog open={showPreview} onOpenChange={setShowPreview}>
-        <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle>Aperçu - {previewContent.lessonTitle}</DialogTitle>
-          </DialogHeader>
-          
-          <div className="space-y-6">
-            {/* Quiz Preview */}
-            {previewContent.quiz && (
-              <div className="space-y-2">
-                <h3 className="text-lg font-semibold flex items-center gap-2">
-                  <CheckCircle2 className="h-5 w-5 text-green-500" />
-                  Quiz Final
-                </h3>
-                <div 
-                  className="prose prose-sm dark:prose-invert max-w-none bg-muted/30 p-4 rounded border max-h-96 overflow-y-auto"
-                  dangerouslySetInnerHTML={{ __html: previewContent.quiz }}
-                />
-              </div>
-            )}
-
-            {/* Videos Preview */}
-            {previewContent.videos && previewContent.videos.length > 0 && (
-              <div className="space-y-2">
-                <h3 className="text-lg font-semibold flex items-center gap-2">
-                  <CheckCircle2 className="h-5 w-5 text-green-500" />
-                  Vidéos YouTube Suggérées ({previewContent.videos.length})
-                </h3>
-                <div className="space-y-3">
-                  {previewContent.videos.slice(0, 2).map((video: any, idx: number) => (
-                    <div key={idx} className="border rounded-lg p-3 bg-background/50 space-y-2">
-                      <div className="flex items-start gap-3">
-                        <img 
-                          src={video.thumbnail} 
-                          alt={video.title}
-                          className="w-32 h-24 object-cover rounded"
-                        />
-                        <div className="flex-1 min-w-0">
-                          <p className="text-sm font-medium line-clamp-2">{video.title}</p>
-                          <p className="text-xs text-muted-foreground mt-1">{video.channel}</p>
-                          <a 
-                            href={`https://www.youtube.com/watch?v=${video.id}`}
-                            target="_blank" 
-                            rel="noopener noreferrer" 
-                            className="text-xs text-primary hover:underline mt-1 inline-block"
-                          >
-                            Voir la vidéo →
-                          </a>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-          </div>
-
-          <DialogFooter className="flex gap-2">
-            <Button
-              onClick={handleDiscardPreview}
-              variant="outline"
-            >
-              Annuler
-            </Button>
-            <Button
-              onClick={handleApplyPreview}
-              variant="default"
-            >
-              <Check className="h-4 w-4 mr-2" />
-              Appliquer les modifications
             </Button>
           </DialogFooter>
         </DialogContent>
