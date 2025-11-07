@@ -255,14 +255,14 @@ export const generateWordDocument = async ({
             new Paragraph({
               text: "EDUPRENEURS",
               alignment: AlignmentType.CENTER,
-              spacing: { after: 100 },
+              spacing: { after: 150 },
               style: "Strong",
             }),
             
             new Paragraph({
               text: "Plateforme Éducative Haïtienne",
               alignment: AlignmentType.CENTER,
-              spacing: { after: 400 },
+              spacing: { after: 600 },
             }),
             
             // Header
@@ -270,19 +270,19 @@ export const generateWordDocument = async ({
               text: lessonData.title.toUpperCase(),
               heading: HeadingLevel.HEADING_1,
               alignment: AlignmentType.CENTER,
-              spacing: { after: 200 },
+              spacing: { after: 300 },
             }),
             new Paragraph({
               text: `${subjectName}${lessonData.grade_level ? ` - ${lessonData.grade_level}` : ""}`,
               alignment: AlignmentType.CENTER,
-              spacing: { after: 400 },
+              spacing: { after: 600 },
             }),
             
             // Metadata
             ...(lessonData.month || lessonData.lesson_number ? [
               new Paragraph({
                 text: `${lessonData.month ? `Mois: ${lessonData.month}` : ""}${lessonData.lesson_number ? ` | Leçon #${lessonData.lesson_number}` : ""}`,
-                spacing: { after: 300 },
+                spacing: { after: 500 },
               }),
             ] : []),
             
@@ -291,11 +291,11 @@ export const generateWordDocument = async ({
               new Paragraph({
                 text: "Objectif",
                 heading: HeadingLevel.HEADING_2,
-                spacing: { before: 300, after: 200 },
+                spacing: { before: 600, after: 300 },
               }),
               new Paragraph({
                 text: formatContent(lessonData.objectif),
-                spacing: { after: 300 },
+                spacing: { after: 500, line: 360 },
               }),
             ] : []),
             
@@ -304,11 +304,11 @@ export const generateWordDocument = async ({
               new Paragraph({
                 text: "Introduction",
                 heading: HeadingLevel.HEADING_2,
-                spacing: { before: 300, after: 200 },
+                spacing: { before: 600, after: 300 },
               }),
               new Paragraph({
                 text: formatContent(lessonData.introduction),
-                spacing: { after: 300 },
+                spacing: { after: 500, line: 360 },
               }),
             ] : []),
             
@@ -317,11 +317,11 @@ export const generateWordDocument = async ({
               new Paragraph({
                 text: "Contenu Principal",
                 heading: HeadingLevel.HEADING_2,
-                spacing: { before: 300, after: 200 },
+                spacing: { before: 600, after: 300 },
               }),
               new Paragraph({
                 text: formatContent(lessonData.contenu),
-                spacing: { after: 300 },
+                spacing: { after: 500, line: 360 },
               }),
             ] : []),
             
@@ -330,11 +330,11 @@ export const generateWordDocument = async ({
               new Paragraph({
                 text: "Exemples et Exercices",
                 heading: HeadingLevel.HEADING_2,
-                spacing: { before: 300, after: 200 },
+                spacing: { before: 600, after: 300 },
               }),
               new Paragraph({
                 text: formatContent(lessonData.exemples_exercices),
-                spacing: { after: 300 },
+                spacing: { after: 500, line: 360 },
               }),
             ] : []),
             
@@ -343,11 +343,11 @@ export const generateWordDocument = async ({
               new Paragraph({
                 text: "Mes Notes Personnelles",
                 heading: HeadingLevel.HEADING_2,
-                spacing: { before: 300, after: 200 },
+                spacing: { before: 600, after: 300 },
               }),
               new Paragraph({
                 text: personalNotes,
-                spacing: { after: 300 },
+                spacing: { after: 500, line: 360 },
               }),
             ] : []),
             
@@ -356,7 +356,7 @@ export const generateWordDocument = async ({
               new Paragraph({
                 text: "Vidéo YouTube",
                 heading: HeadingLevel.HEADING_2,
-                spacing: { before: 300, after: 200 },
+                spacing: { before: 600, after: 300 },
               }),
               new Paragraph({
                 children: [
@@ -366,7 +366,7 @@ export const generateWordDocument = async ({
                     underline: {},
                   }),
                 ],
-                spacing: { after: 300 },
+                spacing: { after: 500 },
               }),
             ] : []),
             
@@ -375,13 +375,13 @@ export const generateWordDocument = async ({
               new Paragraph({
                 text: "Références",
                 heading: HeadingLevel.HEADING_2,
-                spacing: { before: 300, after: 200 },
+                spacing: { before: 600, after: 300 },
               }),
               ...lessonData.references.map(
                 (ref) =>
                   new Paragraph({
                     text: `• ${ref}`,
-                    spacing: { after: 100 },
+                    spacing: { after: 150, line: 300 },
                   })
               ),
             ] : []),
@@ -389,17 +389,17 @@ export const generateWordDocument = async ({
             // Footer with copyright
             new Paragraph({
               text: "",
-              spacing: { before: 600 },
+              spacing: { before: 800 },
             }),
             new Paragraph({
               text: COPYRIGHT_TEXT,
               alignment: AlignmentType.CENTER,
-              spacing: { before: 400, after: 100 },
+              spacing: { before: 600, after: 200 },
             }),
             new Paragraph({
               text: MODIFICATION_WARNING,
               alignment: AlignmentType.CENTER,
-              spacing: { after: 100 },
+              spacing: { after: 200 },
             }),
             new Paragraph({
               text: `Généré le ${new Date().toLocaleDateString("fr-FR")} à ${new Date().toLocaleTimeString("fr-FR")}`,
