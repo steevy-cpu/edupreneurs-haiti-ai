@@ -98,6 +98,30 @@ const formatContent = (html: string | undefined): string => {
   return stripHtmlTags(html);
 };
 
+// Format content into multiple paragraphs for Word document
+const formatContentToParagraphs = (html: string | undefined): Paragraph[] => {
+  if (!html) return [
+    new Paragraph({
+      text: "Contenu non disponible",
+      spacing: { after: 300 },
+    })
+  ];
+  
+  const content = stripHtmlTags(html);
+  // Split by double line breaks or bullet points
+  const sections = content.split(/\n\n+/);
+  
+  return sections
+    .filter(section => section.trim())
+    .map(section => {
+      const trimmedSection = section.trim();
+      return new Paragraph({
+        text: trimmedSection,
+        spacing: { after: 250, line: 360 },
+      });
+    });
+};
+
 // Generate filename
 const generateFilename = (lessonData: LessonData, subjectName: string, extension: string): string => {
   const cleanTitle = lessonData.title.replace(/[^a-z0-9]/gi, "-").substring(0, 50);
@@ -293,10 +317,7 @@ export const generateWordDocument = async ({
                 heading: HeadingLevel.HEADING_2,
                 spacing: { before: 600, after: 300 },
               }),
-              new Paragraph({
-                text: formatContent(lessonData.objectif),
-                spacing: { after: 500, line: 360 },
-              }),
+              ...formatContentToParagraphs(lessonData.objectif),
             ] : []),
             
             // Introduction
@@ -306,10 +327,7 @@ export const generateWordDocument = async ({
                 heading: HeadingLevel.HEADING_2,
                 spacing: { before: 600, after: 300 },
               }),
-              new Paragraph({
-                text: formatContent(lessonData.introduction),
-                spacing: { after: 500, line: 360 },
-              }),
+              ...formatContentToParagraphs(lessonData.introduction),
             ] : []),
             
             // Main Content
@@ -319,10 +337,7 @@ export const generateWordDocument = async ({
                 heading: HeadingLevel.HEADING_2,
                 spacing: { before: 600, after: 300 },
               }),
-              new Paragraph({
-                text: formatContent(lessonData.contenu),
-                spacing: { after: 500, line: 360 },
-              }),
+              ...formatContentToParagraphs(lessonData.contenu),
             ] : []),
             
             // Examples and Exercises
@@ -332,10 +347,7 @@ export const generateWordDocument = async ({
                 heading: HeadingLevel.HEADING_2,
                 spacing: { before: 600, after: 300 },
               }),
-              new Paragraph({
-                text: formatContent(lessonData.exemples_exercices),
-                spacing: { after: 500, line: 360 },
-              }),
+              ...formatContentToParagraphs(lessonData.exemples_exercices),
             ] : []),
             
             // Personal Notes
