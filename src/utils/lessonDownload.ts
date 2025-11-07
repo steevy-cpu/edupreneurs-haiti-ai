@@ -67,6 +67,21 @@ const stripHtmlTags = (html: string): string => {
   // Get text content and clean up
   let text = temp.textContent || "";
   
+  // Fix common encoding issues
+  text = text.replace(/â€™/g, "'");
+  text = text.replace(/â€"/g, "—");
+  text = text.replace(/â€"/g, "–");
+  text = text.replace(/â€œ/g, '"');
+  text = text.replace(/â€/g, '"');
+  text = text.replace(/Ã©/g, "é");
+  text = text.replace(/Ã¨/g, "è");
+  text = text.replace(/Ã /g, "à");
+  text = text.replace(/Ã§/g, "ç");
+  text = text.replace(/Ã´/g, "ô");
+  text = text.replace(/Ã®/g, "î");
+  text = text.replace(/Ã»/g, "û");
+  text = text.replace(/Ã«/g, "ë");
+  
   // Clean up excessive newlines
   text = text.replace(/\n{3,}/g, "\n\n");
   
@@ -425,29 +440,17 @@ export const generateLessonPDF = async ({
       creator: "Edupreneurs - Plateforme Éducative Haïtienne",
     });
 
-    // Load and add logo
+    // Load and add logo (centered, larger)
     try {
       const logoBase64 = await loadLogoAsBase64();
       if (logoBase64) {
-        pdf.addImage(logoBase64, "PNG", (pageWidth - 40) / 2, yPosition, 40, 40);
-        yPosition += 45;
+        pdf.addImage(logoBase64, "PNG", (pageWidth - 50) / 2, yPosition, 50, 50);
+        yPosition += 60;
       }
     } catch (error) {
       console.error("Error adding logo to PDF:", error);
+      yPosition += 10;
     }
-
-    // Company name
-    pdf.setFontSize(14);
-    pdf.setFont("helvetica", "bold");
-    pdf.setTextColor(59, 130, 246);
-    pdf.text("EDUPRENEURS", pageWidth / 2, yPosition, { align: "center" });
-    yPosition += 6;
-    
-    pdf.setFontSize(10);
-    pdf.setFont("helvetica", "normal");
-    pdf.setTextColor(100, 100, 100);
-    pdf.text("Plateforme Éducative Haïtienne", pageWidth / 2, yPosition, { align: "center" });
-    yPosition += 15;
 
     // Helper to add page break if needed
     const checkPageBreak = (neededSpace: number) => {
@@ -459,88 +462,107 @@ export const generateLessonPDF = async ({
       return false;
     };
 
-    // Helper to add text with word wrap
+    // Helper to add text with word wrap and proper encoding
     const addText = (text: string, fontSize: number, style: "normal" | "bold" = "normal", color: [number, number, number] = [0, 0, 0]) => {
       pdf.setFontSize(fontSize);
       pdf.setFont("helvetica", style);
       pdf.setTextColor(color[0], color[1], color[2]);
       
       const lines = pdf.splitTextToSize(text, maxWidth);
-      const lineHeight = fontSize * 0.5;
+      const lineHeight = fontSize * 0.52;
       
       for (const line of lines) {
-        checkPageBreak(lineHeight);
+        checkPageBreak(lineHeight + 2);
         pdf.text(line, margin, yPosition);
         yPosition += lineHeight;
       }
     };
 
-    // Header - Title
+    // Header - Title with gradient-like effect
+    const headerHeight = 35;
     pdf.setFillColor(59, 130, 246);
-    pdf.rect(0, yPosition, pageWidth, 30, "F");
-    pdf.setTextColor(255, 255, 255);
-    pdf.setFontSize(20);
-    pdf.setFont("helvetica", "bold");
-    const titleLines = pdf.splitTextToSize(lessonData.title, maxWidth);
-    pdf.text(titleLines, margin, yPosition + 10);
+    pdf.rect(0, yPosition, pageWidth, headerHeight, "F");
     
-    pdf.setFontSize(11);
+    pdf.setTextColor(255, 255, 255);
+    pdf.setFontSize(22);
+    pdf.setFont("helvetica", "bold");
+    const titleLines = pdf.splitTextToSize(lessonData.title, maxWidth - 10);
+    pdf.text(titleLines, margin, yPosition + 12);
+    
+    pdf.setFontSize(12);
     pdf.setFont("helvetica", "normal");
     const subtitle = `${subjectName}${lessonData.grade_level ? ` - ${lessonData.grade_level}` : ""}`;
-    pdf.text(subtitle, margin, yPosition + 22);
+    pdf.text(subtitle, margin, yPosition + 25);
     
-    yPosition += 40;
+    yPosition += headerHeight + 10;
 
-    // Metadata
+    // Metadata with styled box
     if (lessonData.month || lessonData.lesson_number) {
-      pdf.setTextColor(100, 100, 100);
-      pdf.setFontSize(10);
+      pdf.setFillColor(245, 247, 250);
+      pdf.roundedRect(margin, yPosition, maxWidth, 10, 2, 2, "F");
+      pdf.setTextColor(80, 80, 80);
+      pdf.setFontSize(9);
+      pdf.setFont("helvetica", "italic");
       const metadata = `${lessonData.month ? `Mois: ${lessonData.month}` : ""}${lessonData.lesson_number ? ` | Leçon #${lessonData.lesson_number}` : ""}`;
-      pdf.text(metadata, margin, yPosition);
-      yPosition += 10;
+      pdf.text(metadata, margin + 3, yPosition + 7);
+      yPosition += 18;
     }
+
+    // Helper to add section with styled header
+    const addSection = (title: string, content: string) => {
+      checkPageBreak(25);
+      
+      // Section header with underline
+      pdf.setFillColor(59, 130, 246);
+      pdf.rect(margin, yPosition, 3, 8, "F");
+      pdf.setFontSize(15);
+      pdf.setFont("helvetica", "bold");
+      pdf.setTextColor(59, 130, 246);
+      pdf.text(title, margin + 6, yPosition + 6);
+      yPosition += 12;
+      
+      // Content
+      pdf.setTextColor(50, 50, 50);
+      addText(content, 11, "normal");
+      yPosition += 10;
+    };
 
     // Objective
     if (lessonData.objectif) {
-      checkPageBreak(20);
-      addText("Objectif", 14, "bold", [59, 130, 246]);
-      yPosition += 5;
-      addText(formatContent(lessonData.objectif), 11, "normal");
-      yPosition += 8;
+      addSection("Objectif", formatContent(lessonData.objectif));
     }
 
     // Introduction
     if (lessonData.introduction) {
-      checkPageBreak(20);
-      addText("Introduction", 14, "bold", [59, 130, 246]);
-      yPosition += 5;
-      addText(formatContent(lessonData.introduction), 11, "normal");
-      yPosition += 8;
+      addSection("Introduction", formatContent(lessonData.introduction));
     }
 
     // Main Content
     if (lessonData.contenu) {
-      checkPageBreak(20);
-      addText("Contenu Principal", 14, "bold", [59, 130, 246]);
-      yPosition += 5;
-      addText(formatContent(lessonData.contenu), 11, "normal");
-      yPosition += 8;
+      addSection("Contenu Principal", formatContent(lessonData.contenu));
     }
 
     // Examples and Exercises
     if (lessonData.exemples_exercices) {
-      checkPageBreak(20);
-      addText("Exemples et Exercices", 14, "bold", [59, 130, 246]);
-      yPosition += 5;
-      addText(formatContent(lessonData.exemples_exercices), 11, "normal");
-      yPosition += 8;
+      addSection("Exemples et Exercices", formatContent(lessonData.exemples_exercices));
     }
 
     // Personal Notes
     if (personalNotes && personalNotes.trim()) {
-      checkPageBreak(20);
-      addText("Mes Notes Personnelles", 14, "bold", [59, 130, 246]);
-      yPosition += 5;
+      checkPageBreak(25);
+      pdf.setFillColor(255, 248, 220);
+      const notesHeight = pdf.splitTextToSize(personalNotes, maxWidth - 8).length * 6 + 15;
+      pdf.roundedRect(margin, yPosition, maxWidth, notesHeight, 3, 3, "F");
+      
+      pdf.setFillColor(218, 165, 32);
+      pdf.rect(margin, yPosition, 3, 8, "F");
+      pdf.setFontSize(15);
+      pdf.setFont("helvetica", "bold");
+      pdf.setTextColor(218, 165, 32);
+      pdf.text("Mes Notes Personnelles", margin + 6, yPosition + 6);
+      yPosition += 12;
+      
+      pdf.setTextColor(70, 70, 70);
       addText(personalNotes, 11, "normal");
       yPosition += 8;
     }
@@ -548,19 +570,33 @@ export const generateLessonPDF = async ({
     // YouTube Video
     if (lessonData.youtube_url) {
       checkPageBreak(20);
-      addText("Vidéo YouTube", 14, "bold", [59, 130, 246]);
-      yPosition += 5;
+      pdf.setFillColor(255, 59, 48);
+      pdf.rect(margin, yPosition, 3, 8, "F");
+      pdf.setFontSize(15);
+      pdf.setFont("helvetica", "bold");
+      pdf.setTextColor(255, 59, 48);
+      pdf.text("Vidéo YouTube", margin + 6, yPosition + 6);
+      yPosition += 12;
+      
       pdf.setTextColor(59, 130, 246);
+      pdf.setFont("helvetica", "normal");
       pdf.textWithLink("Cliquer ici pour voir la vidéo", margin, yPosition, { url: lessonData.youtube_url });
       pdf.setTextColor(0, 0, 0);
-      yPosition += 8;
+      yPosition += 12;
     }
 
     // References
     if (lessonData.references && lessonData.references.length > 0) {
-      checkPageBreak(20);
-      addText("Références", 14, "bold", [59, 130, 246]);
-      yPosition += 5;
+      checkPageBreak(25);
+      pdf.setFillColor(34, 197, 94);
+      pdf.rect(margin, yPosition, 3, 8, "F");
+      pdf.setFontSize(15);
+      pdf.setFont("helvetica", "bold");
+      pdf.setTextColor(34, 197, 94);
+      pdf.text("Références", margin + 6, yPosition + 6);
+      yPosition += 12;
+      
+      pdf.setTextColor(50, 50, 50);
       lessonData.references.forEach((ref) => {
         checkPageBreak(8);
         addText(`• ${ref}`, 10, "normal");
