@@ -787,13 +787,25 @@ export const BatchLessonGenerator = () => {
 
 `;
             
-            // Insert image into appropriate section
+            // Insert image into appropriate section - in the middle, not at the end
             if (image.insertAt === 'contenu') {
-              console.log('➕ Adding image to contenu section');
-              updatedContenu = updatedContenu + imageHtml;
+              console.log('➕ Adding image to middle of contenu section');
+              // Split content into paragraphs
+              const paragraphs = updatedContenu.split('\n\n');
+              const middleIndex = Math.floor(paragraphs.length / 2);
+              
+              // Insert image in the middle
+              paragraphs.splice(middleIndex, 0, imageHtml);
+              updatedContenu = paragraphs.join('\n\n');
             } else if (image.insertAt === 'exemples_exercices') {
-              console.log('➕ Adding image to exemples_exercices section');
-              updatedExemples = updatedExemples + imageHtml;
+              console.log('➕ Adding image to middle of exemples_exercices section');
+              // Split content into paragraphs
+              const paragraphs = updatedExemples.split('\n\n');
+              const middleIndex = Math.floor(paragraphs.length / 2);
+              
+              // Insert image in the middle
+              paragraphs.splice(middleIndex, 0, imageHtml);
+              updatedExemples = paragraphs.join('\n\n');
             }
           } catch (imageError) {
             console.error('❌ Error processing image:', imageError);
