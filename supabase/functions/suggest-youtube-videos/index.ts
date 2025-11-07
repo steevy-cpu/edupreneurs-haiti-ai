@@ -122,7 +122,11 @@ ${combinedContent.substring(0, 1000)}...`
         const youtubeUrl = `https://www.googleapis.com/youtube/v3/search?part=snippet&q=${encodeURIComponent(query)}&type=video&videoEmbeddable=true&maxResults=3&key=${YOUTUBE_API_KEY}&relevanceLanguage=fr&safeSearch=strict`;
         
         const ytResponse = await fetch(youtubeUrl);
-        if (!ytResponse.ok) continue;
+        if (!ytResponse.ok) {
+          const errorText = await ytResponse.text();
+          console.error('YouTube API error:', ytResponse.status, errorText);
+          continue;
+        }
 
         const ytData = await ytResponse.json();
         
