@@ -14,7 +14,9 @@ import {
   Play,
   Pause,
   PenTool,
-  Gamepad2
+  Gamepad2,
+  HelpCircle,
+  StickyNote
 } from "lucide-react";
 import { francaisLessons7AF } from "@/data/francaisLessons";
 import { YouTubeVideoSection } from "@/components/YouTubeVideoSection";
@@ -368,14 +370,31 @@ const FrancaisLesson = () => {
             </Card>
 
             {/* Tabs */}
-            <Tabs defaultValue="lecon" className="w-full">
-              <TabsList className="grid w-full grid-cols-3">
-                <TabsTrigger value="lecon"><BookOpen className="w-4 h-4 mr-2" />Leçon</TabsTrigger>
-                <TabsTrigger value="activites"><FileText className="w-4 h-4 mr-2" />Activités</TabsTrigger>
-                <TabsTrigger value="quiz"><Target className="w-4 h-4 mr-2" />Quiz</TabsTrigger>
+            <Tabs defaultValue="introduction" className="w-full">
+              <TabsList className="grid w-full grid-cols-5 gap-1">
+                <TabsTrigger value="introduction" className="flex items-center justify-center gap-2">
+                  <BookOpen className="h-4 w-4" />
+                  <span className="hidden md:inline">Introduction</span>
+                </TabsTrigger>
+                <TabsTrigger value="contenu" className="flex items-center justify-center gap-2">
+                  <FileText className="h-4 w-4" />
+                  <span className="hidden md:inline">Contenu & Exemples</span>
+                </TabsTrigger>
+                <TabsTrigger value="activites" className="flex items-center justify-center gap-2">
+                  <Gamepad2 className="h-4 w-4" />
+                  <span className="hidden md:inline">Activités</span>
+                </TabsTrigger>
+                <TabsTrigger value="quiz" className="flex items-center justify-center gap-2">
+                  <HelpCircle className="h-4 w-4" />
+                  <span className="hidden md:inline">Quiz Final</span>
+                </TabsTrigger>
+                <TabsTrigger value="notes" className="flex items-center justify-center gap-2">
+                  <StickyNote className="h-4 w-4" />
+                  <span className="hidden md:inline">Mes Notes</span>
+                </TabsTrigger>
               </TabsList>
 
-              <TabsContent value="lecon" className="space-y-6">
+              <TabsContent value="introduction">
                 <Card className="border border-border bg-card">
                   <CardHeader className="bg-muted/50">
                     <CardTitle className="flex items-center gap-2 text-foreground">
@@ -392,6 +411,24 @@ const FrancaisLesson = () => {
                         <Volume2 className="w-4 h-4" />Écouter</Button>)}
                   </CardContent>
                 </Card>
+                {lessonData.introduction && (
+                  <Card className="border border-border bg-card mt-6">
+                    <CardHeader className="bg-muted/50">
+                      <CardTitle className="flex items-center gap-2 text-foreground">
+                        <BookOpen className="text-purple-600" />📖 Introduction
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div 
+                        className="prose dark:prose-invert max-w-none text-foreground"
+                        dangerouslySetInnerHTML={{ __html: lessonData.introduction }}
+                      />
+                    </CardContent>
+                  </Card>
+                )}
+              </TabsContent>
+
+              <TabsContent value="contenu" className="space-y-6">
                 {lessonData.contenu !== "Contenu à venir..." && (
                   <div className="space-y-6">
                     {/* Parse and display content in beautiful sections */}
@@ -463,6 +500,43 @@ const FrancaisLesson = () => {
 
               <TabsContent value="quiz">
                 <InteractiveQuiz content={lessonData.quiz} isLoading={isLoadingQuiz} onRegenerate={handleRegenerateActivities} onGoldUpdate={handleGoldUpdate} lessonGoldReward={goldReward} />
+              </TabsContent>
+
+              <TabsContent value="notes">
+                <Card className="border border-border bg-card">
+                  <CardHeader className="bg-muted/50">
+                    <CardTitle className="flex items-center gap-2 text-foreground">
+                      <PenTool className="w-5 h-5" />
+                      Notes Personnelles
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-3">
+                    <Textarea
+                      placeholder="Écris tes notes ici..."
+                      value={notes}
+                      onChange={(e) => handleNotesChange(e.target.value)}
+                      className="min-h-[300px] resize-none bg-background text-foreground border-input"
+                    />
+                    <div className="flex gap-2">
+                      <Button 
+                        onClick={saveNotesToDatabase}
+                        disabled={notesSaved}
+                        className="flex-1"
+                        size="sm"
+                      >
+                        <Save className="w-4 h-4 mr-2" />
+                        {notesSaved ? 'Sauvegardé' : 'Sauvegarder'}
+                      </Button>
+                      <Button 
+                        onClick={clearNotes}
+                        variant="outline"
+                        size="sm"
+                      >
+                        Effacer
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
               </TabsContent>
             </Tabs>
 
