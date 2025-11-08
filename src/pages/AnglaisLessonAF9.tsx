@@ -173,7 +173,7 @@ const AnglaisLessonAF9 = () => {
         </Card>
 
         <Tabs defaultValue="introduction" onValueChange={() => stop()} className="mb-6">
-          <TabsList className="grid w-full grid-cols-4 gap-1">
+          <TabsList className="grid w-full grid-cols-5 gap-1">
             <TabsTrigger value="introduction" className="flex items-center justify-center gap-2">
               <BookOpen className="h-4 w-4" />
               <span className="hidden md:inline">Introduction</span>
@@ -181,6 +181,10 @@ const AnglaisLessonAF9 = () => {
             <TabsTrigger value="contenu" className="flex items-center justify-center gap-2">
               <FileText className="h-4 w-4" />
               <span className="hidden md:inline">Contenu & Exemples</span>
+            </TabsTrigger>
+            <TabsTrigger value="activites" className="flex items-center justify-center gap-2">
+              <Dumbbell className="h-4 w-4" />
+              <span className="hidden md:inline">Activités</span>
             </TabsTrigger>
             <TabsTrigger value="quiz" className="flex items-center justify-center gap-2">
               <HelpCircle className="h-4 w-4" />
@@ -240,6 +244,20 @@ const AnglaisLessonAF9 = () => {
                     />
                   </>
                 )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="activites">
+            <Card>
+              <CardContent className="p-6">
+                <div className="text-center py-12 space-y-4">
+                  <Dumbbell className="w-16 h-16 mx-auto text-muted-foreground/50" />
+                  <h3 className="text-xl font-semibold">Activités Interactives</h3>
+                  <p className="text-muted-foreground max-w-md mx-auto">
+                    Les activités interactives pour cette leçon seront bientôt disponibles!
+                  </p>
+                </div>
               </CardContent>
             </Card>
           </TabsContent>
