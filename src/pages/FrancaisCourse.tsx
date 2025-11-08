@@ -1,90 +1,158 @@
 import { useState, useEffect } from "react";
-import { Card } from "@/components/ui/card";
+import { useNavigate } from "react-router-dom";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
-import { 
-  BookOpen, 
-  ArrowLeft, 
-  Trophy, 
-  Gamepad2, 
-  Star,
-  CheckCircle,
-  BookA,
-  Feather
-} from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { BookOpen, Target, CheckCircle2, Coins, ArrowLeft } from "lucide-react";
 import { francaisLessons7AF } from "@/data/francaisLessons";
 import { supabase } from "@/integrations/supabase/client";
-import ericTeaching from "@/assets/eric-chair-desk.avif";
+import ericTeaching from "@/assets/eric-teaching.png";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { MusicSelector } from "@/components/MusicSelector";
+
+interface Lesson {
+  id: string;
+  title: string;
+  slug: string;
+  objectif: string;
+  mois: string;
+  order_index: number;
+}
 
 const FrancaisCourse = () => {
   const navigate = useNavigate();
   const [userGold, setUserGold] = useState(0);
-  const [completedLessons, setCompletedLessons] = useState<Set<string>>(new Set());
+  const [completedLessons, setCompletedLessons] = useState<string[]>([]);
+  const [lessons, setLessons] = useState<Lesson[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    const fetchUserData = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (user) {
-        // Fetch user gold
-        const { data: profile } = await supabase
+    const loadData = async () => {
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) return;
+
+        // Load user gold
+        const { data: profileData } = await supabase
           .from('profiles')
           .select('gold_earned')
           .eq('user_id', user.id)
           .single();
-        
-        if (profile) {
-          setUserGold(profile.gold_earned || 0);
+
+        if (profileData) {
+          setUserGold(profileData.gold_earned || 0);
         }
 
-        // Fetch completed lessons
-        const { data: completions } = await supabase
+        // Load completed lessons
+        const { data: completionsData } = await supabase
           .from('lesson_completions')
           .select('lesson_slug')
           .eq('user_id', user.id)
           .eq('subject', 'francais');
 
-        if (completions) {
-          setCompletedLessons(new Set(completions.map(c => c.lesson_slug)));
+        if (completionsData) {
+          setCompletedLessons(completionsData.map(c => c.lesson_slug));
         }
+
+        // Try to load lessons from database
+        const { data: subjectData } = await supabase
+          .from('subjects')
+          .select('id')
+          .eq('slug', 'francais')
+          .eq('grade_level', '7AF')
+          .maybeSingle();
+
+        if (subjectData) {
+          const { data: lessonsData } = await supabase
+            .from('lessons')
+            .select('id, title, slug, objectif, mois, order_index')
+            .eq('subject_id', subjectData.id)
+            .eq('is_published', true)
+            .order('order_index');
+
+          if (lessonsData && lessonsData.length > 0) {
+            setLessons(lessonsData);
+          } else {
+            // Fallback to static data
+            setLessons(francaisLessons7AF.map((lesson, index) => ({
+              id: lesson.id,
+              title: lesson.title,
+              slug: lesson.id,
+              objectif: lesson.objectif,
+              mois: lesson.mois,
+              order_index: index
+            })));
+          }
+        } else {
+          // Fallback to static data
+          setLessons(francaisLessons7AF.map((lesson, index) => ({
+            id: lesson.id,
+            title: lesson.title,
+            slug: lesson.id,
+            objectif: lesson.objectif,
+            mois: lesson.mois,
+            order_index: index
+          })));
+        }
+      } catch (error) {
+        console.error('Error loading data:', error);
+        // Fallback to static data on error
+        setLessons(francaisLessons7AF.map((lesson, index) => ({
+          id: lesson.id,
+          title: lesson.title,
+          slug: lesson.id,
+          objectif: lesson.objectif,
+          mois: lesson.mois,
+          order_index: index
+        })));
+      } finally {
+        setIsLoading(false);
       }
     };
 
-    fetchUserData();
+    loadData();
   }, []);
 
+  const completedCount = completedLessons.length;
+  const totalLessons = lessons.length;
+  const progressPercentage = totalLessons > 0 ? (completedCount / totalLessons) * 100 : 0;
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+          <p className="text-muted-foreground">Chargement du cours...</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className="min-h-screen bg-background pb-20">
+    <div className="min-h-screen bg-background">
       {/* Header */}
-      <header className="border-b border-border bg-card/30 backdrop-blur-sm sticky top-0 z-50">
-        <div className="container mx-auto px-3 sm:px-4 py-3 sm:py-4">
-          <div className="flex items-center justify-between gap-2">
-            <div className="flex items-center gap-2 sm:gap-4 min-w-0">
-              <Button
-                variant="ghost"
+      <header className="border-b border-border bg-primary text-primary-foreground shadow-sm sticky top-0 z-50">
+        <div className="container mx-auto px-4 py-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-4">
+              <Button 
+                variant="ghost" 
                 size="icon"
                 onClick={() => navigate('/matieres')}
-                className="shrink-0"
+                className="shrink-0 text-primary-foreground hover:bg-primary-foreground/20"
               >
-                <ArrowLeft className="w-4 h-4 sm:w-5 sm:h-5" />
+                <ArrowLeft className="h-5 w-5" />
               </Button>
-              <div className="flex items-center gap-2 sm:gap-3 min-w-0">
-                <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center shrink-0">
-                  <Feather className="w-4 h-4 sm:w-6 sm:h-6 text-white" />
-                </div>
-                <div className="min-w-0">
-                  <h1 className="text-base sm:text-xl font-bold truncate">Français 📚</h1>
-                  <p className="text-xs sm:text-sm text-muted-foreground">Niveau AF7</p>
-                </div>
+              <div>
+                <h1 className="text-2xl font-bold">Français AF7</h1>
+                <p className="text-sm text-primary-foreground/80">Cours de français - Niveau 7ème année</p>
               </div>
             </div>
-            <div className="flex items-center gap-2 sm:gap-3 shrink-0">
-              <div className="flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-4 py-1.5 sm:py-2 rounded-full bg-accent/10 border border-accent/20">
-                <Trophy className="w-4 h-4 sm:w-5 sm:h-5 text-accent" />
-                <span className="font-bold gold-text text-sm sm:text-base">{userGold}</span>
+            <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-primary-foreground/10 border border-primary-foreground/20">
+                <Coins className="w-5 h-5 text-primary-foreground" />
+                <span className="font-bold text-primary-foreground">{userGold}</span>
               </div>
               <ThemeToggle />
             </div>
@@ -92,146 +160,128 @@ const FrancaisCourse = () => {
         </div>
       </header>
 
-      <div className="container mx-auto px-3 sm:px-4 py-6 sm:py-8 max-w-6xl">
+      <main className="container mx-auto px-4 py-8">
         {/* Course Overview */}
-        <div className="mb-6 sm:mb-8 flex flex-col md:flex-row items-center gap-6 bg-gradient-to-br from-purple-50 to-pink-50 dark:from-purple-950/30 dark:to-pink-950/30 rounded-3xl p-6 border-2 border-purple-200 dark:border-purple-800">
-          <div className="flex-1">
-            <div className="flex items-center gap-2 mb-3">
-              <BookA className="w-8 h-8 text-purple-600 dark:text-purple-400" />
-              <h2 className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
-                Programme MENFP - AF7
-              </h2>
+        <Card className="mb-8 overflow-hidden border border-border bg-card">
+          <div className="md:flex">
+            <div className="md:w-1/3 bg-gradient-to-br from-purple-500 to-pink-500 p-8 text-white flex items-center justify-center">
+              <img src={ericTeaching} alt="Eric enseignant" className="w-48 h-48 object-contain" />
             </div>
-            <p className="text-base sm:text-lg text-muted-foreground mb-2">
-              Maîtrise la langue française avec des leçons interactives et captivantes! ✨
-            </p>
-            <p className="text-xs sm:text-sm text-muted-foreground">
-              {francaisLessons7AF.length} leçons couvrant grammaire, conjugaison, orthographe et expression 📝
-            </p>
+            <CardContent className="md:w-2/3 p-6">
+              <h2 className="text-2xl font-bold mb-4 text-foreground">Aperçu du Cours</h2>
+              <p className="text-muted-foreground mb-4">
+                Bienvenue dans le cours de Français pour la 7ème année fondamentale ! 
+                Ce cours couvre tous les aspects essentiels de la langue française : 
+                compréhension orale et écrite, grammaire, conjugaison, et expression.
+              </p>
+              <div className="space-y-2">
+                <div className="flex items-center gap-2">
+                  <BookOpen className="w-5 h-5 text-purple-600" />
+                  <span className="font-semibold text-foreground">{totalLessons} leçons complètes</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Target className="w-5 h-5 text-purple-600" />
+                  <span className="font-semibold text-foreground">Activités interactives et quiz</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <CheckCircle2 className="w-5 h-5 text-purple-600" />
+                  <span className="font-semibold text-foreground">{completedCount} leçons complétées</span>
+                </div>
+              </div>
+            </CardContent>
           </div>
-          <div className="flex-shrink-0">
-            <img 
-              src={ericTeaching} 
-              alt="Eric - Professeur de Français" 
-              className="w-40 h-40 sm:w-48 sm:h-48 object-contain animate-[float_4s_ease-in-out_infinite]"
-              loading="lazy"
-              decoding="async"
-            />
-          </div>
-        </div>
+        </Card>
 
-        {/* Music Selector */}
-        <div className="mb-6 sm:mb-8">
-          <MusicSelector />
-        </div>
+        <MusicSelector />
 
         {/* Lessons Grid */}
-        <div className="grid sm:grid-cols-2 gap-4 sm:gap-6">
-          {francaisLessons7AF.map((lesson, index) => {
-            const isCompleted = completedLessons.has(lesson.id);
-            const goldReward = 100 + (index * 10); // Progressive rewards
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+          {lessons.map((lesson, index) => {
+            const isCompleted = completedLessons.includes(lesson.slug);
+            const goldReward = 100 + (index * 10);
             
             return (
               <Card 
-                key={lesson.id}
-                className={`p-4 sm:p-6 transition-all hover:shadow-xl cursor-pointer hover:-translate-y-1 bg-gradient-to-br from-card to-purple-50/20 dark:to-purple-950/10 border-2 ${
-                  isCompleted 
-                    ? 'border-success/40 bg-success/5 shadow-success/20' 
-                    : 'border-purple-200 dark:border-purple-800 hover:border-purple-400 dark:hover:border-purple-600'
+                key={lesson.id} 
+                className={`transition-all duration-300 hover:shadow-xl border border-border bg-card ${
+                  isCompleted ? 'border-2 border-green-500' : 'hover:scale-105'
                 }`}
-                onClick={() => navigate(`/francais-lesson/${lesson.id}`)}
               >
-                <div className="flex items-start gap-3 sm:gap-4">
-                  <div className="relative shrink-0">
-                    <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center text-white font-bold text-lg sm:text-xl shadow-lg">
-                      {index + 1}
+                <CardHeader className="bg-muted/50">
+                  <div className="flex items-start justify-between">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center text-white font-bold">
+                        {index + 1}
+                      </div>
+                      <div>
+                        <CardTitle className="text-lg text-foreground">{lesson.title}</CardTitle>
+                        <p className="text-sm text-muted-foreground">{lesson.mois}</p>
+                      </div>
                     </div>
                     {isCompleted && (
-                      <div className="absolute -top-1 -right-1 w-6 h-6 bg-success rounded-full flex items-center justify-center">
-                        <CheckCircle className="w-4 h-4 text-white" />
-                      </div>
+                      <CheckCircle2 className="w-6 h-6 text-green-500 shrink-0" />
                     )}
                   </div>
-                  
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-start justify-between gap-2 mb-2">
-                      <h3 className="text-lg sm:text-xl font-bold">{lesson.title}</h3>
-                    </div>
+                </CardHeader>
+                <CardContent className="pt-6">
+                  <div className="space-y-4">
+                    <p className="text-sm text-muted-foreground line-clamp-2">{lesson.objectif}</p>
                     
-                    <p className="text-xs sm:text-sm text-purple-600 dark:text-purple-400 font-medium mb-2">
-                      📅 {lesson.mois}
-                    </p>
-                    
-                    <p className="text-xs sm:text-sm text-muted-foreground mb-4 line-clamp-2">
-                      {lesson.objectif}
-                    </p>
-
-                    {/* Features */}
-                    <div className="flex flex-wrap gap-2 mb-4">
-                      <Badge variant="secondary" className="gap-1 bg-purple-100 dark:bg-purple-900 text-purple-700 dark:text-purple-300">
-                        <BookOpen className="w-3 h-3" />
+                    <div className="flex flex-wrap gap-2">
+                      <Badge variant="secondary" className="text-xs">
+                        <BookOpen className="w-3 h-3 mr-1" />
                         Leçon
                       </Badge>
-                      <Badge variant="secondary" className="gap-1 bg-pink-100 dark:bg-pink-900 text-pink-700 dark:text-pink-300">
-                        <Gamepad2 className="w-3 h-3" />
+                      <Badge variant="secondary" className="text-xs">
+                        <Target className="w-3 h-3 mr-1" />
                         Activités
                       </Badge>
-                      <Badge variant="secondary" className="gap-1 bg-purple-100 dark:bg-purple-900 text-purple-700 dark:text-purple-300">
-                        <Star className="w-3 h-3" />
+                      <Badge variant="secondary" className="text-xs">
+                        <CheckCircle2 className="w-3 h-3 mr-1" />
                         Quiz
                       </Badge>
                     </div>
 
-                    {/* Gold Reward */}
-                    <div className="flex items-center justify-between pt-3 border-t border-border">
-                      <div className="flex items-center gap-2">
-                        <Trophy className="w-4 h-4 text-accent" />
-                        <span className="text-sm font-bold gold-text">
-                          {isCompleted ? '✓ Complété' : `+${goldReward} gold`}
-                        </span>
+                    <div className="flex items-center justify-between pt-4 border-t border-border">
+                      <div className="flex items-center gap-1 text-accent">
+                        <Coins className="w-4 h-4" />
+                        <span className="font-bold">{goldReward}</span>
                       </div>
                       <Button 
-                        size="sm"
+                        onClick={() => navigate(`/francais-lesson/${lesson.slug}`)}
                         className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600"
                       >
                         {isCompleted ? 'Revoir' : 'Commencer'}
                       </Button>
                     </div>
                   </div>
-                </div>
+                </CardContent>
               </Card>
             );
           })}
         </div>
 
         {/* Progress Summary */}
-        <Card className="mt-8 p-6 bg-gradient-to-br from-purple-500/10 to-pink-500/10 border-2 border-purple-200 dark:border-purple-800">
-          <div className="flex items-center justify-between flex-wrap gap-4">
-            <div>
-              <h3 className="text-xl font-bold mb-2 flex items-center gap-2">
-                <Star className="w-6 h-6 text-purple-600 dark:text-purple-400" />
-                Ton Progrès en Français
-              </h3>
-              <p className="text-muted-foreground">Continue à apprendre pour maîtriser la langue française!</p>
-            </div>
-            <div className="text-center">
-              <div className="text-4xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent mb-1">
-                {Math.round((completedLessons.size / francaisLessons7AF.length) * 100)}%
+        <Card className="bg-gradient-to-r from-purple-500 to-pink-500 text-white border-0">
+          <CardHeader>
+            <CardTitle className="text-2xl">Ton Progrès</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              <div>
+                <div className="flex justify-between mb-2">
+                  <span className="font-semibold">Leçons complétées</span>
+                  <span className="font-bold">{completedCount}/{totalLessons}</span>
+                </div>
+                <Progress value={progressPercentage} className="h-3 bg-white/30" />
               </div>
-              <p className="text-sm text-muted-foreground">
-                {completedLessons.size}/{francaisLessons7AF.length} leçons complétées
+              <p className="text-sm opacity-90">
+                Continue comme ça ! Chaque leçon complétée te rapproche de la maîtrise du français.
               </p>
             </div>
-          </div>
-          
-          <div className="mt-4">
-            <Progress 
-              value={(completedLessons.size / francaisLessons7AF.length) * 100} 
-              className="h-3"
-            />
-          </div>
+          </CardContent>
         </Card>
-      </div>
+      </main>
     </div>
   );
 };

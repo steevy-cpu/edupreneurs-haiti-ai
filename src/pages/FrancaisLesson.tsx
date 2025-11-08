@@ -25,6 +25,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Textarea } from "@/components/ui/textarea";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { DownloadLessonButton } from "@/components/DownloadLessonButton";
+import { ThemeToggle } from "@/components/ThemeToggle";
 
 interface LessonData {
   objectif: string;
@@ -292,14 +293,14 @@ const FrancaisLesson = () => {
   return (
     <div className="min-h-screen bg-background pb-20">
       {/* Header */}
-      <header className="border-b border-border bg-card/30 backdrop-blur-sm sticky top-0 z-50">
+      <header className="border-b border-border bg-primary text-primary-foreground sticky top-0 z-50">
         <div className="w-full px-2 sm:px-4 py-2 sm:py-3">
           <div className="flex items-center justify-between gap-2 max-w-7xl mx-auto">
             <Button 
               variant="ghost" 
               size="icon" 
               onClick={() => navigate('/francais-course')} 
-              className="shrink-0 h-9 w-9 sm:h-10 sm:w-10"
+              className="shrink-0 h-9 w-9 sm:h-10 sm:w-10 text-primary-foreground hover:bg-primary-foreground/20"
               aria-label="Retour au cours"
             >
               <ArrowLeft className="w-5 h-5" />
@@ -315,14 +316,16 @@ const FrancaisLesson = () => {
                   }}
                   personalNotes={notes}
                   subjectName="Français AF7"
-                  variant="outline"
+                  variant="ghost"
                   size="sm"
+                  className="text-primary-foreground hover:bg-primary-foreground/20 border border-primary-foreground/20"
                 />
               )}
-              <div className="flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-1.5 sm:py-2 rounded-full bg-accent/10 border border-accent/20 shrink-0">
-                <Trophy className="w-4 h-4 sm:w-5 sm:h-5 text-accent" />
-                <span className="font-bold gold-text text-sm sm:text-base">{userGold}</span>
+              <div className="flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-1.5 sm:py-2 rounded-full bg-primary-foreground/10 border border-primary-foreground/20 shrink-0">
+                <Trophy className="w-4 h-4 sm:w-5 sm:h-5 text-primary-foreground" />
+                <span className="font-bold text-primary-foreground text-sm sm:text-base">{userGold}</span>
               </div>
+              <ThemeToggle />
             </div>
           </div>
         </div>
@@ -333,14 +336,14 @@ const FrancaisLesson = () => {
           {/* Main Content */}
           <div className="space-y-6">
             {/* Lesson Header */}
-            <Card className="border-l-4 border-l-purple-500">
-              <CardHeader>
+            <Card className="border-l-4 border-l-purple-500 border border-border bg-card">
+              <CardHeader className="bg-muted/50">
                 <div className="flex items-start gap-4">
                   <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center text-white font-bold text-xl">
                     {currentIndex + 1}
                   </div>
                   <div className="flex-1">
-                    <CardTitle className="text-xl sm:text-2xl mb-2">{lesson.title}</CardTitle>
+                    <CardTitle className="text-xl sm:text-2xl mb-2 text-foreground">{lesson.title}</CardTitle>
                     <p className="text-sm text-purple-600 dark:text-purple-400">📅 {lesson.mois}</p>
                   </div>
                 </div>
@@ -356,15 +359,15 @@ const FrancaisLesson = () => {
               </TabsList>
 
               <TabsContent value="lecon" className="space-y-6">
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
+                <Card className="border border-border bg-card">
+                  <CardHeader className="bg-muted/50">
+                    <CardTitle className="flex items-center gap-2 text-foreground">
                       <Target className="text-purple-600" />🎯 Objectif
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
                     <div 
-                      className="prose dark:prose-invert max-w-none"
+                      className="prose dark:prose-invert max-w-none text-foreground"
                       dangerouslySetInnerHTML={{ __html: lesson.objectif }}
                     />
                     {lesson.id === "comprehension-production-orale-1" && (
@@ -411,11 +414,11 @@ const FrancaisLesson = () => {
                       if (!section.trim()) return null;
 
                       return (
-                        <Card key={index} className={`border-l-8 ${colorClasses} shadow-lg hover:shadow-xl transition-all duration-300`}>
+                        <Card key={index} className={`border-l-8 ${colorClasses} shadow-lg hover:shadow-xl transition-all duration-300 border border-border bg-card`}>
                           <CardContent className="pt-6 pb-6 px-6">
                             <div className="prose prose-lg max-w-none dark:prose-invert">
                               <div 
-                                className="space-y-4 leading-relaxed"
+                                className="space-y-4 leading-relaxed text-foreground"
                                 style={{ fontSize: '1.05rem', lineHeight: '1.9' }}
                                 dangerouslySetInnerHTML={{ 
                                   __html: section
@@ -455,22 +458,54 @@ const FrancaisLesson = () => {
 
           {/* Sidebar */}
           <div className="space-y-6">
-            <Card className="bg-gradient-to-br from-accent/10 to-accent/5 border-accent/20">
-              <CardHeader><CardTitle className="flex items-center gap-2 text-lg"><Trophy className="w-5 h-5 text-accent" />Gold</CardTitle></CardHeader>
-              <CardContent className="text-center space-y-2">
-                <p className="text-3xl font-bold gold-text">{userGold}</p>
-                {earnedGold > 0 && (<p className="text-sm font-semibold text-success">+{earnedGold} cette session</p>)}
-                <p className="text-xs text-muted-foreground">Complète pour +{goldReward} gold!</p>
+            <Card className="bg-gradient-to-br from-accent/20 to-accent/10 border-accent/20 border border-border">
+              <CardHeader className="bg-muted/50">
+                <CardTitle className="flex items-center justify-center gap-2 text-foreground">
+                  <Trophy className="w-6 h-6 text-accent" />
+                  <span className="text-accent font-bold">Or Total</span>
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-center">
+                  <div className="text-4xl font-bold text-accent mb-2">{userGold}</div>
+                  <p className="text-sm text-muted-foreground">
+                    +{userGold - sessionStartGold} dans cette session
+                  </p>
+                </div>
               </CardContent>
             </Card>
 
-            <Card>
-              <CardHeader><CardTitle className="text-lg">📝 Notes</CardTitle></CardHeader>
+            <Card className="border border-border bg-card">
+              <CardHeader className="bg-muted/50">
+                <CardTitle className="flex items-center gap-2 text-foreground">
+                  <PenTool className="w-5 h-5" />
+                  Notes Personnelles
+                </CardTitle>
+              </CardHeader>
               <CardContent className="space-y-3">
-                <Textarea placeholder="Prends des notes..." value={notes} onChange={(e) => handleNotesChange(e.target.value)} className="min-h-[200px]" />
+                <Textarea
+                  placeholder="Écris tes notes ici..."
+                  value={notes}
+                  onChange={(e) => handleNotesChange(e.target.value)}
+                  className="min-h-[200px] resize-none bg-background text-foreground border-input"
+                />
                 <div className="flex gap-2">
-                  <Button onClick={saveNotesToDatabase} disabled={notesSaved} size="sm" className="flex-1"><Save className="w-4 h-4 mr-2" />{notesSaved ? "Sauvegardé" : "Sauvegarder"}</Button>
-                  <Button onClick={clearNotes} variant="outline" size="sm">Effacer</Button>
+                  <Button 
+                    onClick={saveNotesToDatabase}
+                    disabled={notesSaved}
+                    className="flex-1"
+                    size="sm"
+                  >
+                    <Save className="w-4 h-4 mr-2" />
+                    {notesSaved ? 'Sauvegardé' : 'Sauvegarder'}
+                  </Button>
+                  <Button 
+                    onClick={clearNotes}
+                    variant="outline"
+                    size="sm"
+                  >
+                    Effacer
+                  </Button>
                 </div>
               </CardContent>
             </Card>
