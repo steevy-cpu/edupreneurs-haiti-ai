@@ -4,6 +4,7 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
+import DOMPurify from "dompurify";
 import {
   ChevronLeft,
   BookOpen,
@@ -314,7 +315,7 @@ export default function SciencesLesson() {
                     youtube_url: youtubeUrl || undefined,
                   }}
                   personalNotes={personalNotes}
-                  subjectName="Sciences AF7"
+                  subjectName="Sciences 7AF"
                   variant="ghost"
                   size="sm"
                   className="text-white hover:bg-white/20"
@@ -380,14 +381,14 @@ export default function SciencesLesson() {
             <TabsContent value="introduction" className="space-y-6">
               <div 
                 className="prose prose-lg dark:prose-invert max-w-none"
-                dangerouslySetInnerHTML={{ __html: lessonContent.introduction }}
+                dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(lessonContent.introduction) }}
               />
             </TabsContent>
 
             <TabsContent value="contenu" className="space-y-6">
               <div 
                 className="prose prose-lg dark:prose-invert max-w-none"
-                dangerouslySetInnerHTML={{ __html: lessonContent.contenu }}
+                dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(lessonContent.contenu) }}
               />
               
               {/* YouTube Video Section */}
@@ -395,7 +396,7 @@ export default function SciencesLesson() {
                 <YouTubeVideoSection 
                   lessonTitle={topicInfo.title}
                   objectives={lessonContent.objectif || ""}
-                  gradeLevel="AF7"
+                  gradeLevel="7AF"
                   customYoutubeUrl={youtubeUrl || undefined}
                 />
               </div>
@@ -406,7 +407,7 @@ export default function SciencesLesson() {
                   <h3 className="text-2xl font-bold mb-4">Exemples et Exercices</h3>
                   <div 
                     className="prose prose-lg dark:prose-invert max-w-none"
-                    dangerouslySetInnerHTML={{ __html: lessonContent.exemplesExercices }}
+                    dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(lessonContent.exemplesExercices) }}
                   />
                 </>
               )}
