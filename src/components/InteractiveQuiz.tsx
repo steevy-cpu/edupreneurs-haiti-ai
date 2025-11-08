@@ -23,6 +23,46 @@ interface InteractiveQuizProps {
   onGoldUpdate?: () => void;
 }
 
+const parseHTMLQuestions = (htmlContent: string): QuizQuestion[] => {
+  const questions: QuizQuestion[] = [];
+  const parser = new DOMParser();
+  const doc = parser.parseFromString(htmlContent, 'text/html');
+  const questionDivs = doc.querySelectorAll('.quiz-question');
+  
+  questionDivs.forEach((questionDiv) => {
+    const questionText = questionDiv.querySelector('p')?.textContent?.trim() || '';
+    const options: string[] = [];
+    const optionDivs = questionDiv.querySelectorAll('.option');
+    
+    optionDivs.forEach((optionDiv) => {
+      const text = optionDiv.textContent?.trim() || '';
+      // Remove the letter prefix (A), B), etc.)
+      const cleanText = text.replace(/^[A-D]\)\s*/, '').trim();
+      if (cleanText) {
+        options.push(cleanText);
+      }
+    });
+    
+    const correctAnswerText = questionDiv.querySelector('.correct-answer')?.textContent?.trim() || '';
+    const correctMatch = correctAnswerText.match(/Réponse\s+correcte\s*:\s*([A-D])/i);
+    const correctLetter = correctMatch ? correctMatch[1].toUpperCase() : 'A';
+    const correctIndex = correctLetter.charCodeAt(0) - 'A'.charCodeAt(0);
+    
+    const explanation = questionDiv.querySelector('.explanation')?.textContent?.trim() || '';
+    
+    if (questionText && options.length === 4 && explanation) {
+      questions.push({
+        question: questionText,
+        options,
+        correctAnswer: correctIndex,
+        explanation
+      });
+    }
+  });
+  
+  return questions;
+};
+
 export const InteractiveQuiz = ({ content, isLoading, onRegenerate, lessonGoldReward = 100, onGoldUpdate }: InteractiveQuizProps) => {
   const { topicId } = useParams();
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
@@ -92,7 +132,12 @@ export const InteractiveQuiz = ({ content, isLoading, onRegenerate, lessonGoldRe
     console.log('🔍 Parsing quiz content:', content.substring(0, 200));
     const questions: QuizQuestion[] = [];
     
-    // Try multiple splitting patterns
+    // Check if content is HTML format
+    if (content.includes('<div class="quiz-question"')) {
+      return parseHTMLQuestions(content);
+    }
+    
+    // Try multiple splitting patterns for markdown format
     let sections = content.split(/#{2,3}\s*✅?\s*Question\s+\d+/i);
     
     // If that doesn't work, try simpler patterns
