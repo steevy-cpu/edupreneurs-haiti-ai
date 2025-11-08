@@ -21,6 +21,7 @@ import { ThemeToggle } from "@/components/ThemeToggle";
 import { TextToSpeechButton } from "@/components/TextToSpeechButton";
 import { InteractiveQuiz } from "@/components/InteractiveQuiz";
 import { DownloadLessonButton } from "@/components/DownloadLessonButton";
+import DOMPurify from "dompurify";
 
 interface Lesson {
   id: string;
@@ -378,7 +379,7 @@ const MathLesson = () => {
               <CardContent className="pt-6">
                 <div 
                   className="prose dark:prose-invert max-w-none"
-                  dangerouslySetInnerHTML={{ __html: lesson.introduction }}
+                  dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(lesson.introduction) }}
                 />
               </CardContent>
             </Card>
@@ -397,7 +398,7 @@ const MathLesson = () => {
               <CardContent className="pt-6">
                 <div 
                   className="prose dark:prose-invert max-w-none"
-                  dangerouslySetInnerHTML={{ __html: lesson.contenu }}
+                  dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(lesson.contenu) }}
                 />
               </CardContent>
             </Card>
@@ -414,7 +415,7 @@ const MathLesson = () => {
                 <CardContent className="pt-6">
                   <div 
                     className="prose dark:prose-invert max-w-none"
-                    dangerouslySetInnerHTML={{ __html: lesson.exemples_exercices }}
+                    dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(lesson.exemples_exercices) }}
                   />
                 </CardContent>
               </Card>
