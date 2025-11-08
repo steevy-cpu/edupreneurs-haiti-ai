@@ -43,12 +43,22 @@ const parseHTMLQuestions = (htmlContent: string): QuizQuestion[] => {
       }
     });
     
-    const correctAnswerText = questionDiv.querySelector('.correct-answer')?.textContent?.trim() || '';
+    const correctAnswerDiv = questionDiv.querySelector('.correct-answer');
+    const correctAnswerText = correctAnswerDiv?.querySelector('strong')?.textContent?.trim() || '';
     const correctMatch = correctAnswerText.match(/Réponse\s+correcte\s*:\s*([A-D])/i);
     const correctLetter = correctMatch ? correctMatch[1].toUpperCase() : 'A';
     const correctIndex = correctLetter.charCodeAt(0) - 'A'.charCodeAt(0);
     
-    const explanation = questionDiv.querySelector('.explanation')?.textContent?.trim() || '';
+    // Get explanation from all <p> tags except the first one (which has the correct answer)
+    const explanationParagraphs = correctAnswerDiv?.querySelectorAll('p');
+    let explanation = '';
+    if (explanationParagraphs && explanationParagraphs.length > 1) {
+      // Skip first paragraph (it has the "Réponse correcte"), get the rest
+      explanation = Array.from(explanationParagraphs)
+        .slice(1)
+        .map(p => p.textContent?.trim() || '')
+        .join(' ');
+    }
     
     if (questionText && options.length === 4 && explanation) {
       questions.push({
