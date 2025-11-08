@@ -362,9 +362,10 @@ const MathLesson = () => {
                 </CardTitle>
               </CardHeader>
               <CardContent className="pt-6">
-                <div className="prose dark:prose-invert max-w-none">
-                  <p className="whitespace-pre-wrap text-foreground">{lesson.objectif}</p>
-                </div>
+                <div 
+                  className="prose dark:prose-invert max-w-none"
+                  dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(lesson.objectif) }}
+                />
               </CardContent>
             </Card>
 
