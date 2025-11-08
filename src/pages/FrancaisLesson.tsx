@@ -60,29 +60,125 @@ const FrancaisLesson = () => {
   const goldReward = lesson ? 100 + (francaisLessons7AF.findIndex(l => l.id === topicId) * 10) : 100;
 
   useEffect(() => {
-    if (topicId && lesson) {
+    if (topicId) {
       loadNotesFromDatabase();
       loadUserGold(true);
-      fetchYoutubeUrl();
-      loadLesson();
+      loadLessonFromDatabase();
     }
   }, [topicId]);
 
-  const fetchYoutubeUrl = async () => {
+  const loadLessonFromDatabase = async () => {
     if (!topicId) return;
-    
+
     try {
-      const { data, error } = await supabase
+      // Try to fetch from database first
+      const { data: dbLesson, error } = await supabase
         .from('lessons')
-        .select('youtube_url')
+        .select('*')
         .eq('slug', topicId)
+        .eq('grade_level', '7AF')
         .maybeSingle();
 
-      if (data && !error) {
-        setYoutubeUrl(data.youtube_url);
+      if (dbLesson && !error) {
+        // Use database content
+        setLessonData({
+          objectif: dbLesson.objectif || "",
+          introduction: dbLesson.introduction || "",
+          contenu: dbLesson.contenu || "",
+          activites: dbLesson.activites_interactives || "",
+          quiz: dbLesson.quiz_final || "",
+        });
+        setYoutubeUrl(dbLesson.youtube_url);
+      } else if (lesson) {
+        // Fallback to static data and generate activities/quiz
+        setLessonData({
+          objectif: lesson.objectif,
+          introduction: lesson.introduction,
+          contenu: lesson.contenu,
+          activites: "",
+          quiz: ""
+        });
+        
+        // Load activities and quiz from cache or generate
+        loadActivitiesAndQuiz();
       }
     } catch (error) {
-      console.error('Error fetching YouTube URL:', error);
+      console.error('Error loading lesson:', error);
+      if (lesson) {
+        // Fallback to static data
+        setLessonData({
+          objectif: lesson.objectif,
+          introduction: lesson.introduction,
+          contenu: lesson.contenu,
+          activites: "",
+          quiz: ""
+        });
+        loadActivitiesAndQuiz();
+      }
+    }
+  };
+
+  const loadActivitiesAndQuiz = async () => {
+    if (!topicId || !lesson) return;
+
+    const activitiesCacheKey = `lesson_activites_francais_${topicId}`;
+    const quizCacheKey = `lesson_quiz_francais_${topicId}`;
+
+    try {
+      let activitiesContent = "";
+      let quizContent = "";
+      
+      const cachedActivities = localStorage.getItem(activitiesCacheKey);
+      const cachedQuiz = localStorage.getItem(quizCacheKey);
+      
+      if (cachedActivities) activitiesContent = cachedActivities;
+      if (cachedQuiz) quizContent = cachedQuiz;
+
+      // Load activities if not cached
+      if (!activitiesContent) {
+        setIsLoadingActivites(true);
+        const { data: activitesResponse, error: activitesError } = await supabase.functions.invoke('francais-ai-tutor', {
+          body: { 
+            message: `Génère des exercices pratiques variés pour le sujet "${lesson.title}" niveau AF7.`,
+            lessonType: 'activites',
+            lessonTopic: lesson.title
+          }
+        });
+
+        if (!activitesError) {
+          activitiesContent = activitesResponse?.response || activitesResponse || "";
+          localStorage.setItem(activitiesCacheKey, activitiesContent);
+        }
+        setIsLoadingActivites(false);
+      }
+
+      // Load quiz if not cached
+      if (!quizContent) {
+        setIsLoadingQuiz(true);
+        const { data: quizResponse, error: quizError } = await supabase.functions.invoke('francais-ai-tutor', {
+          body: { 
+            message: `Génère un quiz d'évaluation de 5 questions pour le sujet "${lesson.title}" niveau AF7.`,
+            lessonType: 'quiz',
+            lessonTopic: lesson.title
+          }
+        });
+
+        if (!quizError) {
+          quizContent = quizResponse?.response || quizResponse || "";
+          localStorage.setItem(quizCacheKey, quizContent);
+        }
+        setIsLoadingQuiz(false);
+      }
+
+      setLessonData(prev => ({
+        ...prev,
+        activites: activitiesContent,
+        quiz: quizContent
+      }));
+    } catch (error) {
+      console.error('Error loading activities and quiz:', error);
+      setIsLoadingActivites(false);
+      setIsLoadingQuiz(false);
     }
   };
 
@@ -129,84 +225,8 @@ const FrancaisLesson = () => {
     }
   };
 
-  const loadLesson = async (forceRegenerate = false) => {
-    if (!topicId || !lesson) return;
-
-    const activitiesCacheKey = `lesson_activites_francais_${topicId}`;
-    const quizCacheKey = `lesson_quiz_francais_${topicId}`;
-
-    try {
-      let activitiesContent = "";
-      let quizContent = "";
-      
-      if (!forceRegenerate) {
-        const cachedActivities = localStorage.getItem(activitiesCacheKey);
-        const cachedQuiz = localStorage.getItem(quizCacheKey);
-        
-        if (cachedActivities) activitiesContent = cachedActivities;
-        if (cachedQuiz) quizContent = cachedQuiz;
-      }
-
-      // Set static content from data file
-      setLessonData({
-        objectif: lesson.objectif,
-        introduction: lesson.introduction,
-        contenu: lesson.contenu,
-        activites: "",
-        quiz: ""
-      });
-
-      // Load activities if not cached or regenerating
-      if (!activitiesContent || forceRegenerate) {
-        setIsLoadingActivites(true);
-        const { data: activitesResponse, error: activitesError } = await supabase.functions.invoke('francais-ai-tutor', {
-          body: { 
-            message: `Génère des exercices pratiques variés pour le sujet "${lesson.title}" niveau AF7.`,
-            lessonType: 'activites',
-            lessonTopic: lesson.title
-          }
-        });
-
-        if (activitesError) throw activitesError;
-
-        activitiesContent = activitesResponse?.response || activitesResponse || "";
-        localStorage.setItem(activitiesCacheKey, activitiesContent);
-        setIsLoadingActivites(false);
-      }
-
-      // Load quiz if not cached or regenerating
-      if (!quizContent || forceRegenerate) {
-        setIsLoadingQuiz(true);
-        const { data: quizResponse, error: quizError } = await supabase.functions.invoke('francais-ai-tutor', {
-          body: { 
-            message: `Génère un quiz d'évaluation de 5 questions pour le sujet "${lesson.title}" niveau AF7.`,
-            lessonType: 'quiz',
-            lessonTopic: lesson.title
-          }
-        });
-
-        if (quizError) throw quizError;
-
-        quizContent = quizResponse?.response || quizResponse || "";
-        localStorage.setItem(quizCacheKey, quizContent);
-        setIsLoadingQuiz(false);
-      }
-
-      setLessonData(prev => ({
-        ...prev,
-        activites: activitiesContent,
-        quiz: quizContent
-      }));
-    } catch (error) {
-      console.error('Error loading lesson:', error);
-      toast({
-        title: "Erreur",
-        description: "Impossible de charger la leçon",
-        variant: "destructive",
-      });
-      setIsLoadingActivites(false);
-      setIsLoadingQuiz(false);
-    }
+  const handleRegenerateActivities = () => {
+    loadActivitiesAndQuiz();
   };
 
   const saveNotesToDatabase = async () => {
@@ -253,9 +273,6 @@ const FrancaisLesson = () => {
     loadUserGold();
   };
 
-  const handleRegenerateActivities = () => {
-    loadLesson(true);
-  };
 
   const handleTextToSpeech = async (text: string) => {
     // Simplified version - just show a message for now
