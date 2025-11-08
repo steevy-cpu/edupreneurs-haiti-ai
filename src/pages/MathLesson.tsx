@@ -61,25 +61,109 @@ const MathLesson = () => {
     
     setIsLoading(true);
     try {
+      // Try to fetch from database first
       const { data, error } = await supabase
         .from('lessons')
         .select('*')
         .eq('slug', topicId)
         .eq('grade_level', 'AF7')
-        .single();
+        .maybeSingle();
 
-      if (error) throw error;
-      
       if (data) {
         setLesson(data);
+      } else {
+        // Fallback to static data if not in database
+        const mathLessons = await import('@/data/mathLessons');
+        const staticLesson = mathLessons.mathLessons7AF[topicId];
+        
+        if (staticLesson) {
+          // Get proper title from topicId
+          const titleMap: Record<string, string> = {
+            "ensembles": "Ensembles",
+            "plans-droites": "Plans et Droites",
+            "nombres-naturels": "Nombres Naturels",
+            "numeration-binaire": "Numération Binaire",
+            "polygones": "Les Polygones",
+            "unites-mesures": "Unités de Mesures",
+            "divisibilite": "Divisibilité",
+            "decimaux": "Décimaux",
+            "cercle-disque": "Cercle et Disque",
+            "triangles": "Les Triangles",
+            "aires-perimetres": "Aires et Périmètres",
+            "proportionnalite": "Proportionnalité",
+            "entiers-relatifs": "Entiers Relatifs",
+            "volumes-solides": "Volumes de Solides",
+            "fractions": "Les Fractions",
+            "parallelogrammes": "Les Parallélogrammes",
+            "reperage-quadrillage": "Repérage sur Quadrillage",
+            "transformations": "Les Transformations",
+            "statistiques": "Statistiques Élémentaires"
+          };
+          
+          // Convert static lesson format to Lesson interface
+          setLesson({
+            id: topicId,
+            title: titleMap[topicId] || topicId.charAt(0).toUpperCase() + topicId.slice(1),
+            objectif: staticLesson.objectif,
+            introduction: staticLesson.introduction,
+            contenu: staticLesson.contenu,
+            exemples_exercices: staticLesson.exemplesExercices || "",
+            activites_interactives: "",
+            quiz_final: "",
+            youtube_url: ""
+          });
+        }
       }
     } catch (error) {
       console.error('Error fetching lesson:', error);
-      toast({
-        title: "Erreur",
-        description: "Impossible de charger la leçon",
-        variant: "destructive"
-      });
+      // Try static data as final fallback
+      try {
+        const mathLessons = await import('@/data/mathLessons');
+        const staticLesson = mathLessons.mathLessons7AF[topicId];
+        
+        if (staticLesson) {
+          const titleMap: Record<string, string> = {
+            "ensembles": "Ensembles",
+            "plans-droites": "Plans et Droites",
+            "nombres-naturels": "Nombres Naturels",
+            "numeration-binaire": "Numération Binaire",
+            "polygones": "Les Polygones",
+            "unites-mesures": "Unités de Mesures",
+            "divisibilite": "Divisibilité",
+            "decimaux": "Décimaux",
+            "cercle-disque": "Cercle et Disque",
+            "triangles": "Les Triangles",
+            "aires-perimetres": "Aires et Périmètres",
+            "proportionnalite": "Proportionnalité",
+            "entiers-relatifs": "Entiers Relatifs",
+            "volumes-solides": "Volumes de Solides",
+            "fractions": "Les Fractions",
+            "parallelogrammes": "Les Parallélogrammes",
+            "reperage-quadrillage": "Repérage sur Quadrillage",
+            "transformations": "Les Transformations",
+            "statistiques": "Statistiques Élémentaires"
+          };
+          
+          setLesson({
+            id: topicId,
+            title: titleMap[topicId] || topicId.charAt(0).toUpperCase() + topicId.slice(1),
+            objectif: staticLesson.objectif,
+            introduction: staticLesson.introduction,
+            contenu: staticLesson.contenu,
+            exemples_exercices: staticLesson.exemplesExercices || "",
+            activites_interactives: "",
+            quiz_final: "",
+            youtube_url: ""
+          });
+        }
+      } catch (fallbackError) {
+        console.error('Error loading static lesson:', fallbackError);
+        toast({
+          title: "Erreur",
+          description: "Impossible de charger la leçon",
+          variant: "destructive"
+        });
+      }
     } finally {
       setIsLoading(false);
     }
@@ -95,13 +179,12 @@ const MathLesson = () => {
         .select('activites_interactives')
         .eq('slug', topicId)
         .eq('grade_level', 'AF7')
-        .single();
+        .maybeSingle();
 
-      if (error) throw error;
-      
       if (data?.activites_interactives) {
         setActivitiesContent(data.activites_interactives);
       }
+      // If no activities in database, leave empty (will show "no activities available" message)
     } catch (error) {
       console.error('Error fetching activities:', error);
     } finally {
@@ -116,21 +199,13 @@ const MathLesson = () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
 
-      const { data: lessonData } = await supabase
-        .from('lessons')
-        .select('id')
-        .eq('slug', topicId)
-        .eq('grade_level', 'AF7')
-        .single();
-
-      if (!lessonData) return;
-
+      // For static lessons, use the slug as the lesson_id
       const { data, error } = await supabase
         .from('lesson_notes')
         .select('notes')
         .eq('user_id', user.id)
-        .eq('lesson_id', lessonData.id)
-        .single();
+        .eq('lesson_id', topicId)
+        .maybeSingle();
 
       if (data && !error) {
         setPersonalNotes(data.notes || "");
@@ -141,7 +216,7 @@ const MathLesson = () => {
   };
 
   const savePersonalNotes = async () => {
-    if (!lesson) return;
+    if (!topicId) return;
     
     setIsSavingNotes(true);
     try {
@@ -155,11 +230,12 @@ const MathLesson = () => {
         return;
       }
 
+      // Use topicId as lesson_id for static lessons
       const { error } = await supabase
         .from('lesson_notes')
         .upsert({
           user_id: user.id,
-          lesson_id: lesson.id,
+          lesson_id: topicId,
           notes: personalNotes
         }, {
           onConflict: 'user_id,lesson_id'
