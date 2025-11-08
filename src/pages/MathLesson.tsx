@@ -48,6 +48,7 @@ const MathLesson = () => {
 
   useEffect(() => {
     window.scrollTo(0, 0);
+    setActiveTab("introduction");
     if (topicId) {
       fetchLesson();
       loadPersonalNotes();
