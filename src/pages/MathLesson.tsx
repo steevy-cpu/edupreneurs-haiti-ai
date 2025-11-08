@@ -276,20 +276,20 @@ const MathLesson = () => {
   }
 
   return (
-    <div className="min-h-screen lesson-bg">
+    <div className="min-h-screen bg-background">
       {/* Fixed Header */}
-      <div className="lesson-topbar fixed top-0 left-0 right-0 z-50">
+      <div className="lesson-topbar fixed top-0 left-0 right-0 z-50 bg-primary">
         <div className="container mx-auto px-4 py-3 flex items-center justify-between">
           <div className="flex items-center gap-2">
             <Button
               variant="ghost"
               size="icon"
-              className="text-white hover:bg-white/20"
+              className="text-primary-foreground hover:bg-primary-foreground/20"
               onClick={() => navigate('/math-course')}
             >
               <ArrowLeft className="w-5 h-5" />
             </Button>
-            <h1 className="text-white font-semibold text-lg hidden sm:block truncate">
+            <h1 className="text-primary-foreground font-semibold text-lg hidden sm:block truncate">
               {lesson.title}
             </h1>
           </div>
@@ -310,12 +310,12 @@ const MathLesson = () => {
         <div className="mb-6">
           <div className="flex items-start gap-4">
             <div className="flex-1">
-              <h1 className="text-3xl font-bold mb-2">{lesson.title}</h1>
+              <h1 className="text-3xl font-bold mb-2 text-foreground">{lesson.title}</h1>
               <div className="flex items-center gap-2">
                 <span className="px-3 py-1 bg-primary/10 text-primary rounded-full text-sm font-medium">
                   Mathématiques
                 </span>
-                <span className="px-3 py-1 bg-accent/10 text-accent-foreground rounded-full text-sm">
+                <span className="px-3 py-1 bg-muted text-muted-foreground rounded-full text-sm font-medium">
                   AF7
                 </span>
               </div>
@@ -350,30 +350,30 @@ const MathLesson = () => {
 
           {/* Introduction Tab */}
           <TabsContent value="introduction" className="space-y-4">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
+            <Card className="border-border bg-card">
+              <CardHeader className="bg-muted/50">
+                <CardTitle className="flex items-center gap-2 text-foreground">
                   <Target className="w-5 h-5 text-primary" />
                   Objectif de la leçon
                   <TextToSpeechButton text={lesson.objectif} sectionName="objectif" />
                 </CardTitle>
               </CardHeader>
-              <CardContent>
+              <CardContent className="pt-6">
                 <div className="prose dark:prose-invert max-w-none">
-                  <p className="whitespace-pre-wrap">{lesson.objectif}</p>
+                  <p className="whitespace-pre-wrap text-foreground">{lesson.objectif}</p>
                 </div>
               </CardContent>
             </Card>
 
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
+            <Card className="border-border bg-card">
+              <CardHeader className="bg-muted/50">
+                <CardTitle className="flex items-center gap-2 text-foreground">
                   <Lightbulb className="w-5 h-5 text-primary" />
                   Introduction
                   <TextToSpeechButton text={lesson.introduction} sectionName="introduction" />
                 </CardTitle>
               </CardHeader>
-              <CardContent>
+              <CardContent className="pt-6">
                 <div 
                   className="prose dark:prose-invert max-w-none"
                   dangerouslySetInnerHTML={{ __html: lesson.introduction }}
@@ -384,15 +384,15 @@ const MathLesson = () => {
 
           {/* Contenu Tab */}
           <TabsContent value="contenu" className="space-y-4">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
+            <Card className="border-border bg-card">
+              <CardHeader className="bg-muted/50">
+                <CardTitle className="flex items-center gap-2 text-foreground">
                   <BookOpen className="w-5 h-5 text-primary" />
                   Contenu de la leçon
                   <TextToSpeechButton text={lesson.contenu} sectionName="contenu" />
                 </CardTitle>
               </CardHeader>
-              <CardContent>
+              <CardContent className="pt-6">
                 <div 
                   className="prose dark:prose-invert max-w-none"
                   dangerouslySetInnerHTML={{ __html: lesson.contenu }}
@@ -401,15 +401,15 @@ const MathLesson = () => {
             </Card>
 
             {lesson.exemples_exercices && (
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
+              <Card className="border-border bg-card">
+                <CardHeader className="bg-muted/50">
+                  <CardTitle className="flex items-center gap-2 text-foreground">
                     <BookOpen className="w-5 h-5 text-primary" />
                     Exemples et Exercices
                     <TextToSpeechButton text={lesson.exemples_exercices} sectionName="exemples" />
                   </CardTitle>
                 </CardHeader>
-                <CardContent>
+                <CardContent className="pt-6">
                   <div 
                     className="prose dark:prose-invert max-w-none"
                     dangerouslySetInnerHTML={{ __html: lesson.exemples_exercices }}
@@ -427,7 +427,7 @@ const MathLesson = () => {
                 isLoading={isLoadingActivities}
               />
             ) : (
-              <Card>
+              <Card className="border-border bg-card">
                 <CardContent className="p-8 text-center">
                   <Gamepad2 className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
                   <p className="text-muted-foreground">
@@ -440,19 +440,19 @@ const MathLesson = () => {
 
           {/* Notes Tab */}
           <TabsContent value="notes">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
+            <Card className="border-border bg-card">
+              <CardHeader className="bg-muted/50">
+                <CardTitle className="flex items-center gap-2 text-foreground">
                   <StickyNote className="w-5 h-5 text-primary" />
                   Mes Notes Personnelles
                 </CardTitle>
               </CardHeader>
-              <CardContent className="space-y-4">
+              <CardContent className="space-y-4 pt-6">
                 <Textarea
                   placeholder="Écris tes notes ici..."
                   value={personalNotes}
                   onChange={(e) => setPersonalNotes(e.target.value)}
-                  className="min-h-[300px]"
+                  className="min-h-[300px] bg-background text-foreground border-input"
                 />
                 <Button 
                   onClick={savePersonalNotes} 
@@ -473,7 +473,7 @@ const MathLesson = () => {
                 isLoading={false}
               />
             ) : (
-              <Card>
+              <Card className="border-border bg-card">
                 <CardContent className="p-8 text-center">
                   <Trophy className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
                   <p className="text-muted-foreground">
