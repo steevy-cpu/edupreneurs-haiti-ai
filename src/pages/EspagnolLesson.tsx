@@ -13,7 +13,8 @@ import {
   Trophy,
   NotebookPen,
   Save,
-  Award
+  Award,
+  Gamepad2
 } from "lucide-react";
 import { espagnolLessons7AF } from "@/data/espagnolLessons";
 import {
@@ -42,6 +43,7 @@ import {
 } from "@/data/espagnolActivities";
 import { QuizGame } from "@/components/math-activities/QuizGame";
 import { MatchingGame } from "@/components/math-activities/MatchingGame";
+import { InteractiveActivitiesEnhanced } from "@/components/InteractiveActivitiesEnhanced";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { YouTubeVideoSection } from "@/components/YouTubeVideoSection";
 import { DownloadLessonButton } from "@/components/DownloadLessonButton";
@@ -61,6 +63,8 @@ export default function EspagnolLesson() {
   const [personalNotes, setPersonalNotes] = useState("");
   const [isSavingNotes, setIsSavingNotes] = useState(false);
   const [youtubeUrl, setYoutubeUrl] = useState<string | null>(null);
+  const [activitiesContent, setActivitiesContent] = useState<string>("");
+  const [isLoadingActivities, setIsLoadingActivities] = useState(true);
   const { stop } = useTTS();
 
   const lessonsArray = Object.entries(espagnolLessons7AF).map(([id, data]) => ({ id, ...data }));
@@ -71,6 +75,7 @@ export default function EspagnolLesson() {
     window.scrollTo(0, 0);
     loadPersonalNotes();
     fetchYoutubeUrl();
+    fetchActivitiesContent();
   }, [topicId]);
 
   const fetchYoutubeUrl = async () => {
@@ -88,6 +93,27 @@ export default function EspagnolLesson() {
       }
     } catch (error) {
       console.error('Error fetching YouTube URL:', error);
+    }
+  };
+
+  const fetchActivitiesContent = async () => {
+    if (!topicId) return;
+    
+    setIsLoadingActivities(true);
+    try {
+      const { data, error } = await supabase
+        .from('lessons')
+        .select('activites_interactives')
+        .eq('slug', topicId)
+        .maybeSingle();
+
+      if (data && !error && data.activites_interactives) {
+        setActivitiesContent(data.activites_interactives);
+      }
+    } catch (error) {
+      console.error('Error fetching activities:', error);
+    } finally {
+      setIsLoadingActivities(false);
     }
   };
 
@@ -285,7 +311,7 @@ export default function EspagnolLesson() {
         {/* Lesson Content Tabs */}
         <Card className="p-4 md:p-6 mb-8 overflow-hidden">
           <Tabs value={activeTab} onValueChange={(val) => { setActiveTab(val); stop(); }} className="w-full">
-            <TabsList className="grid w-full grid-cols-4 mb-6 h-auto">
+            <TabsList className="grid w-full grid-cols-5 mb-6 h-auto">
               <TabsTrigger value="introduction" className="gap-2 text-xs md:text-sm px-2 py-2">
                 <Lightbulb className="w-4 h-4 shrink-0" />
                 <span className="hidden sm:inline">Introduction</span>
@@ -293,6 +319,10 @@ export default function EspagnolLesson() {
               <TabsTrigger value="contenu" className="gap-2 text-xs md:text-sm px-2 py-2">
                 <BookOpen className="w-4 h-4 shrink-0" />
                 <span className="hidden sm:inline">Contenu & Exemples</span>
+              </TabsTrigger>
+              <TabsTrigger value="activites" className="gap-2 text-xs md:text-sm px-2 py-2">
+                <Gamepad2 className="w-4 h-4 shrink-0" />
+                <span className="hidden sm:inline">Activités</span>
               </TabsTrigger>
               <TabsTrigger value="notes" className="gap-2 text-xs md:text-sm px-2 py-2">
                 <NotebookPen className="w-4 h-4 shrink-0" />
@@ -410,6 +440,33 @@ export default function EspagnolLesson() {
                   </Card>
                 </>
               )}
+            </TabsContent>
+
+            <TabsContent value="activites" className="space-y-6">
+              <Card className="p-6 bg-gradient-to-br from-background to-purple-50/30 dark:to-purple-950/10">
+                <div className="flex items-center gap-3 mb-6">
+                  <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-purple-500 to-purple-600 flex items-center justify-center">
+                    <Gamepad2 className="w-5 h-5 text-white" />
+                  </div>
+                  <h2 className="text-2xl font-bold text-purple-600 dark:text-purple-400">Activités Interactives</h2>
+                </div>
+                {activitiesContent ? (
+                  <InteractiveActivitiesEnhanced 
+                    content={activitiesContent}
+                    isLoading={isLoadingActivities}
+                    onGoldUpdate={() => {
+                      toast({
+                        title: "🎉 Points gagnés !",
+                        description: "Continue comme ça, tu es excellent !",
+                      });
+                    }}
+                  />
+                ) : (
+                  <div className="text-center py-8 text-muted-foreground">
+                    <p>Les activités interactives pour cette leçon ne sont pas encore disponibles.</p>
+                  </div>
+                )}
+              </Card>
             </TabsContent>
 
             <TabsContent value="notes" className="space-y-6">
