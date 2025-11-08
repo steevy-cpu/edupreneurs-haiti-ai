@@ -13,8 +13,10 @@ import {
   Trophy,
   NotebookPen,
   Save,
-  Award
+  Award,
+  Gamepad2
 } from "lucide-react";
+import DOMPurify from 'dompurify';
 import { sciencesSocialesLessons7AF } from "@/data/sciencesSocialesLessons";
 import {
   evolutionSocietesQuiz,
@@ -83,6 +85,7 @@ import { MatchingGame } from "@/components/math-activities/MatchingGame";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { YouTubeVideoSection } from "@/components/YouTubeVideoSection";
 import { DownloadLessonButton } from "@/components/DownloadLessonButton";
+import { InteractiveActivitiesEnhanced } from "@/components/InteractiveActivitiesEnhanced";
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -293,7 +296,7 @@ export default function SciencesSocialesLesson() {
                     youtube_url: youtubeUrl || undefined,
                   }}
                   personalNotes={personalNotes}
-                  subjectName="Sciences Sociales AF7"
+                  subjectName="Sciences Sociales 7AF"
                   variant="ghost"
                   size="sm"
                   className="text-white hover:bg-white/20"
@@ -340,7 +343,7 @@ export default function SciencesSocialesLesson() {
         {/* Lesson Content Tabs */}
         <Card className="p-4 md:p-6 mb-8 overflow-hidden">
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-            <TabsList className="grid w-full grid-cols-4 mb-6 h-auto">
+            <TabsList className="grid w-full grid-cols-5 mb-6 h-auto">
               <TabsTrigger value="introduction" className="gap-2 text-xs md:text-sm px-2 py-2">
                 <Lightbulb className="w-4 h-4 shrink-0" />
                 <span className="hidden sm:inline">Introduction</span>
@@ -348,6 +351,10 @@ export default function SciencesSocialesLesson() {
               <TabsTrigger value="contenu" className="gap-2 text-xs md:text-sm px-2 py-2">
                 <BookOpen className="w-4 h-4 shrink-0" />
                 <span className="hidden sm:inline">Contenu & Exemples</span>
+              </TabsTrigger>
+              <TabsTrigger value="activites" className="gap-2 text-xs md:text-sm px-2 py-2">
+                <Gamepad2 className="w-4 h-4 shrink-0" />
+                <span className="hidden sm:inline">Activités</span>
               </TabsTrigger>
               <TabsTrigger value="notes" className="gap-2 text-xs md:text-sm px-2 py-2">
                 <NotebookPen className="w-4 h-4 shrink-0" />
@@ -369,7 +376,7 @@ export default function SciencesSocialesLesson() {
                     <h2 className="text-2xl font-bold text-orange-600 dark:text-orange-400 mb-2">Objectif de la leçon</h2>
                     <div 
                       className="text-foreground leading-relaxed prose dark:prose-invert max-w-none"
-                      dangerouslySetInnerHTML={{ __html: lesson.objectif }}
+                      dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(lesson.objectif) }}
                     />
                   </div>
                 </div>
@@ -384,7 +391,7 @@ export default function SciencesSocialesLesson() {
                 </div>
                 <div 
                   className="prose prose-lg dark:prose-invert max-w-none [&_p]:text-foreground [&_ul]:text-foreground [&_li]:text-foreground [&_strong]:text-orange-600 dark:[&_strong]:text-orange-400"
-                  dangerouslySetInnerHTML={{ __html: lesson.introduction }}
+                  dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(lesson.introduction) }}
                 />
               </Card>
             </TabsContent>
@@ -399,7 +406,7 @@ export default function SciencesSocialesLesson() {
                     [&_strong]:text-orange-600 dark:[&_strong]:text-orange-400 [&_strong]:font-semibold
                     [&_h3]:text-xl [&_h3]:font-bold [&_h3]:text-orange-600 dark:[&_h3]:text-orange-400 [&_h3]:mb-4 [&_h3]:mt-6
                     [&_section]:p-4 [&_section]:rounded-lg [&_section]:bg-card [&_section]:border [&_section]:border-orange-200/50 dark:[&_section]:border-orange-800/30 [&_section]:mb-6"
-                  dangerouslySetInnerHTML={{ __html: lesson.contenu }}
+                  dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(lesson.contenu) }}
                 />
               </Card>
               
@@ -408,7 +415,7 @@ export default function SciencesSocialesLesson() {
                 <YouTubeVideoSection 
                   lessonTitle={lesson.title}
                   objectives={lesson.objectif || ""}
-                  gradeLevel="AF7"
+                  gradeLevel="7AF"
                   customYoutubeUrl={youtubeUrl || undefined}
                   subject="Sciences Sociales"
                 />
@@ -430,6 +437,21 @@ export default function SciencesSocialesLesson() {
               </Card>
             </TabsContent>
 
+            <TabsContent value="activites" className="space-y-6">
+              <Card className="p-8 text-center">
+                <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-purple-500 to-pink-600 flex items-center justify-center mx-auto mb-4">
+                  <Gamepad2 className="w-10 h-10 text-white" />
+                </div>
+                <h3 className="text-xl font-bold mb-2">Activités interactives</h3>
+                <p className="text-muted-foreground mb-4">
+                  Les activités interactives pour cette leçon seront bientôt disponibles !
+                </p>
+                <p className="text-sm text-muted-foreground">
+                  En attendant, tu peux consulter le Quiz Final pour tester tes connaissances.
+                </p>
+              </Card>
+            </TabsContent>
+
             <TabsContent value="exemples" className="space-y-6">
               <Card className="p-6 bg-gradient-to-br from-background to-orange-50/30 dark:to-orange-950/10">
                 <div className="flex items-center gap-3 mb-6">
@@ -447,7 +469,7 @@ export default function SciencesSocialesLesson() {
                     [&_strong]:text-orange-600 dark:[&_strong]:text-orange-400 [&_strong]:font-semibold
                     [&_h3]:text-xl [&_h3]:font-bold [&_h3]:text-orange-600 dark:[&_h3]:text-orange-400 [&_h3]:mb-4 [&_h3]:mt-6
                     [&_h4]:text-lg [&_h4]:font-semibold [&_h4]:text-orange-600 dark:[&_h4]:text-orange-400 [&_h4]:mb-3 [&_h4]:mt-4"
-                  dangerouslySetInnerHTML={{ __html: lesson.exemplesExercices }}
+                  dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(lesson.exemplesExercices) }}
                 />
               </Card>
 
