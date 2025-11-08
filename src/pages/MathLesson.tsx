@@ -21,6 +21,7 @@ import { ThemeToggle } from "@/components/ThemeToggle";
 import { TextToSpeechButton } from "@/components/TextToSpeechButton";
 import { InteractiveQuiz } from "@/components/InteractiveQuiz";
 import { DownloadLessonButton } from "@/components/DownloadLessonButton";
+import { YouTubeVideoSection } from "@/components/YouTubeVideoSection";
 import DOMPurify from "dompurify";
 
 interface Lesson {
@@ -421,6 +422,14 @@ const MathLesson = () => {
                 </CardContent>
               </Card>
             )}
+
+            <YouTubeVideoSection
+              lessonTitle={lesson.title}
+              objectives={lesson.objectif}
+              gradeLevel="7AF"
+              customYoutubeUrl={lesson.youtube_url}
+              subject="Mathématiques"
+            />
           </TabsContent>
 
           {/* Activités Tab */}
