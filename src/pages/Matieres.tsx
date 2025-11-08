@@ -338,7 +338,7 @@ export default function Matieres() {
               (subject.id === 'mathematiques' || subject.id === 'sciences' || 
                subject.id === 'anglais' || subject.id === 'espagnol' || 
                subject.id === 'francais' || subject.id === 'sciences-sociales' || 
-               subject.id === 'creole')) ||
+               subject.id === 'creole' || subject.id === 'arts')) ||
               (selectedGrade === "AF8" && (isMath || isSciences || isAnglais || isEspagnol || isCreole || isSciencesSociales)) ||
               (selectedGrade === "AF9" && (isMath || isSciences));
             
@@ -372,6 +372,8 @@ export default function Matieres() {
                         courseRoute = selectedGrade === 'AF8' ? '/sciences-sociales-af8-course' : '/sciences-sociales-course';
                       } else if (subject.id === 'francais') {
                         courseRoute = '/francais-course';
+                      } else if (subject.id === 'arts') {
+                        courseRoute = '/arts-course';
                       } else {
                         courseRoute = '/sciences-course';
                       }
@@ -430,6 +432,8 @@ export default function Matieres() {
                         courseRoute = selectedGrade === 'AF8' ? '/sciences-sociales-af8-course' : '/sciences-sociales-course';
                       } else if (subject.id === 'francais') {
                         courseRoute = '/francais-course';
+                      } else if (subject.id === 'arts') {
+                        courseRoute = '/arts-course';
                       } else {
                         courseRoute = '/sciences-course';
                       }
