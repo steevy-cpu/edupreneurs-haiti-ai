@@ -14,7 +14,8 @@ import {
   Award,
   Trophy,
   NotebookPen,
-  Save
+  Save,
+  Gamepad2
 } from "lucide-react";
 import { sciencesLessons7AF, sciencesTopics } from "@/data/sciencesLessons";
 import { 
@@ -86,6 +87,7 @@ import { MatchingGame } from "@/components/math-activities/MatchingGame";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { DownloadLessonButton } from "@/components/DownloadLessonButton";
 import { YouTubeVideoSection } from "@/components/YouTubeVideoSection";
+import { InteractiveActivitiesEnhanced } from "@/components/InteractiveActivitiesEnhanced";
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -359,7 +361,7 @@ export default function SciencesLesson() {
         {/* Lesson Content Tabs */}
         <Card className="p-4 md:p-6 mb-8 overflow-hidden">
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-            <TabsList className="grid w-full grid-cols-4 mb-6 h-auto">
+            <TabsList className="grid w-full grid-cols-5 mb-6 h-auto">
               <TabsTrigger value="introduction" className="gap-2 text-xs md:text-sm px-2 py-2">
                 <Lightbulb className="w-4 h-4 shrink-0" />
                 <span className="hidden sm:inline">Introduction</span>
@@ -367,6 +369,10 @@ export default function SciencesLesson() {
               <TabsTrigger value="contenu" className="gap-2 text-xs md:text-sm px-2 py-2">
                 <BookOpen className="w-4 h-4 shrink-0" />
                 <span className="hidden sm:inline">Contenu & Exemples</span>
+              </TabsTrigger>
+              <TabsTrigger value="activites" className="gap-2 text-xs md:text-sm px-2 py-2">
+                <Gamepad2 className="w-4 h-4 shrink-0" />
+                <span className="hidden sm:inline">Activités</span>
               </TabsTrigger>
               <TabsTrigger value="notes" className="gap-2 text-xs md:text-sm px-2 py-2">
                 <NotebookPen className="w-4 h-4 shrink-0" />
@@ -411,6 +417,21 @@ export default function SciencesLesson() {
                   />
                 </>
               )}
+            </TabsContent>
+
+            <TabsContent value="activites" className="space-y-6">
+              <Card className="p-8 text-center">
+                <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-purple-500 to-pink-600 flex items-center justify-center mx-auto mb-4">
+                  <Gamepad2 className="w-10 h-10 text-white" />
+                </div>
+                <h3 className="text-xl font-bold mb-2">Activités interactives</h3>
+                <p className="text-muted-foreground mb-4">
+                  Les activités interactives pour cette leçon seront bientôt disponibles !
+                </p>
+                <p className="text-sm text-muted-foreground">
+                  En attendant, tu peux consulter le Quiz Final pour tester tes connaissances.
+                </p>
+              </Card>
             </TabsContent>
 
             <TabsContent value="notes" className="space-y-6">
