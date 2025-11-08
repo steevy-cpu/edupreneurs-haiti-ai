@@ -10,8 +10,8 @@ import {
   BookOpen,
   MessageCircle,
   Headphones,
-  Lock,
-  CheckCircle2
+  CheckCircle2,
+  TrendingUp
 } from "lucide-react";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { supabase } from "@/integrations/supabase/client";
@@ -27,14 +27,25 @@ interface Lesson {
   month: string;
 }
 
+// Helper function to strip HTML tags from text
+const stripHtml = (html: string) => {
+  const tmp = document.createElement("DIV");
+  tmp.innerHTML = html;
+  return tmp.textContent || tmp.innerText || "";
+};
+
 export default function AnglaisCourse() {
   const navigate = useNavigate();
   const [lessons, setLessons] = useState<Lesson[]>([]);
   const [loading, setLoading] = useState(true);
+  const [completedLessonSlugs, setCompletedLessonSlugs] = useState<Set<string>>(new Set());
 
   useEffect(() => {
-    const fetchLessons = async () => {
+    const fetchData = async () => {
       try {
+        // Get current user
+        const { data: { user } } = await supabase.auth.getUser();
+        
         // First, get the Anglais subject for AF7 (stored as 7AF in database)
         const { data: subject, error: subjectError } = await supabase
           .from('subjects')
@@ -63,6 +74,21 @@ export default function AnglaisCourse() {
             month: l.mois
           }));
           setLessons(mapped);
+
+          // Fetch user's completed lessons if authenticated
+          if (user) {
+            const { data: completions, error: completionsError } = await supabase
+              .from('lesson_completions')
+              .select('lesson_slug')
+              .eq('user_id', user.id)
+              .eq('subject', 'anglais');
+
+            if (completionsError) {
+              console.error('Error fetching completions:', completionsError);
+            } else if (completions) {
+              setCompletedLessonSlugs(new Set(completions.map(c => c.lesson_slug)));
+            }
+          }
         }
       } catch (error) {
         console.error('Error fetching lessons:', error);
@@ -72,12 +98,12 @@ export default function AnglaisCourse() {
       }
     };
 
-    fetchLessons();
+    fetchData();
   }, []);
 
   const totalLessons = lessons.length;
-  const completedLessons = 0; // Will be dynamic with user progress
-  const progress = (completedLessons / totalLessons) * 100;
+  const completedLessons = completedLessonSlugs.size;
+  const progress = totalLessons > 0 ? (completedLessons / totalLessons) * 100 : 0;
 
   const getMonthColor = (month: string) => {
     const monthMap: Record<string, string> = {
@@ -176,81 +202,90 @@ export default function AnglaisCourse() {
         </div>
 
         {/* Progress Card */}
-        <Card className="p-4 sm:p-6 mb-6 sm:mb-8 bg-gradient-to-r from-primary/10 to-secondary/10">
-          <div className="flex items-center justify-between mb-3 sm:mb-4 gap-4">
-            <div className="min-w-0">
-              <h3 className="text-lg sm:text-xl font-semibold mb-1">Votre Progression</h3>
+        <Card className="p-4 sm:p-6 mb-6 sm:mb-8 bg-gradient-to-br from-cyan-500/10 via-blue-500/10 to-purple-500/10 border-2 border-cyan-500/20">
+          <div className="flex items-center gap-3 mb-4">
+            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-cyan-500 to-blue-600 flex items-center justify-center">
+              <TrendingUp className="w-6 h-6 text-white" />
+            </div>
+            <div className="flex-1">
+              <h3 className="text-lg sm:text-xl font-bold mb-1">Votre Progression</h3>
               <p className="text-xs sm:text-sm text-muted-foreground">
-                {completedLessons} sur {totalLessons} leçons complétées
+                Continuez votre apprentissage de l'anglais !
               </p>
             </div>
-            <div className="text-2xl sm:text-3xl font-bold text-primary shrink-0">
-              {Math.round(progress)}%
+            <div className="text-right">
+              <div className="text-3xl sm:text-4xl font-bold bg-gradient-to-r from-cyan-600 to-blue-600 bg-clip-text text-transparent">
+                {Math.round(progress)}%
+              </div>
+              <p className="text-xs text-muted-foreground mt-1">
+                {completedLessons}/{totalLessons}
+              </p>
             </div>
           </div>
-          <Progress value={progress} className="h-2 sm:h-3" />
+          <Progress value={progress} className="h-3" />
+          {completedLessons > 0 && (
+            <div className="mt-4 flex items-center gap-2 text-sm text-muted-foreground">
+              <CheckCircle2 className="w-4 h-4 text-green-600" />
+              <span>Excellent travail ! Continue comme ça !</span>
+            </div>
+          )}
         </Card>
 
         {/* Lessons Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 mb-6 sm:mb-8">
           {lessons.map((lesson, index) => {
-            const isLocked = false; // Will be dynamic with user progress
-            const isCompleted = false; // Will be dynamic with user progress
+            const isCompleted = completedLessonSlugs.has(lesson.slug);
             
             return (
               <Card
                 key={lesson.id}
-                className={`group hover:shadow-xl transition-all duration-300 ${!isLocked ? 'hover:-translate-y-2 cursor-pointer' : 'opacity-60'}`}
-                onClick={() => !isLocked && navigate(`/anglais-lesson/${lesson.slug}`)}
+                className="group hover:shadow-xl transition-all duration-300 hover:-translate-y-1 cursor-pointer border-2 hover:border-cyan-500/50"
+                onClick={() => navigate(`/anglais-lesson/${lesson.slug}`)}
               >
-                <div className="p-4 sm:p-6">
+                <div className="p-5 sm:p-6">
                   <div className="flex items-start justify-between mb-4">
-                    <div className={`w-14 h-14 rounded-xl bg-gradient-to-br ${getMonthColor(lesson.month)} flex items-center justify-center`}>
-                      {isLocked ? (
-                        <Lock className="w-7 h-7 text-primary-foreground" />
-                      ) : isCompleted ? (
-                        <CheckCircle2 className="w-7 h-7 text-primary-foreground" />
+                    <div className={`w-14 h-14 rounded-xl bg-gradient-to-br ${getMonthColor(lesson.month)} flex items-center justify-center shadow-lg ${isCompleted ? 'ring-2 ring-green-500 ring-offset-2' : ''}`}>
+                      {isCompleted ? (
+                        <CheckCircle2 className="w-7 h-7 text-white" />
                       ) : (
-                        <Languages className="w-7 h-7 text-primary-foreground" />
+                        <Languages className="w-7 h-7 text-white" />
                       )}
                     </div>
-                    <Badge variant="secondary" className="text-xs">
+                    <Badge variant="secondary" className="text-xs font-semibold">
                       {lesson.month}
                     </Badge>
                   </div>
 
-                  <h3 className="text-lg font-bold mb-2 group-hover:text-primary transition-colors line-clamp-2">
+                  <h3 className="text-lg font-bold mb-3 group-hover:text-cyan-600 transition-colors line-clamp-2 min-h-[3.5rem]">
                     {lesson.title}
                   </h3>
 
-                  <p className="text-sm text-muted-foreground mb-4 line-clamp-2">
-                    {lesson.objective}
+                  <p className="text-sm text-muted-foreground mb-4 line-clamp-3 min-h-[4rem]">
+                    {stripHtml(lesson.objective || '')}
                   </p>
 
-                  <div className="flex items-center justify-between text-sm text-muted-foreground mb-4">
-                    <span className="flex items-center gap-1">
+                  <div className="flex items-center justify-between text-sm mb-4 pt-4 border-t">
+                    <span className="flex items-center gap-2 text-muted-foreground">
                       <BookOpen className="w-4 h-4" />
-                      Leçon {index + 1}
+                      <span className="font-medium">Leçon {index + 1}</span>
                     </span>
                     {isCompleted && (
-                      <span className="text-green-600 font-semibold flex items-center gap-1">
+                      <span className="text-green-600 font-semibold flex items-center gap-1.5 bg-green-50 dark:bg-green-950 px-2 py-1 rounded-full">
                         <CheckCircle2 className="w-4 h-4" />
-                        Terminé
+                        Complété
                       </span>
                     )}
                   </div>
 
-                  {!isLocked && (
-                    <Button
-                      className="w-full"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        navigate(`/anglais-lesson/${lesson.slug}`);
-                      }}
-                    >
-                      {isCompleted ? "Revoir" : "Commencer"}
-                    </Button>
-                  )}
+                  <Button
+                    className="w-full bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-700 hover:to-blue-700"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      navigate(`/anglais-lesson/${lesson.slug}`);
+                    }}
+                  >
+                    {isCompleted ? "Revoir la leçon" : "Commencer"}
+                  </Button>
                 </div>
               </Card>
             );
