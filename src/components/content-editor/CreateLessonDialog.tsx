@@ -153,15 +153,13 @@ export const CreateLessonDialog = ({
                 <SelectValue placeholder="Sélectionnez un niveau" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="7eme">7ème</SelectItem>
-                <SelectItem value="6eme">6ème</SelectItem>
-                <SelectItem value="5eme">5ème</SelectItem>
-                <SelectItem value="4eme">4ème</SelectItem>
-                <SelectItem value="3eme">3ème</SelectItem>
-                <SelectItem value="ns1">NS1</SelectItem>
-                <SelectItem value="ns2">NS2</SelectItem>
-                <SelectItem value="ns3">NS3</SelectItem>
-                <SelectItem value="ns4">NS4</SelectItem>
+                <SelectItem value="7AF">7AF</SelectItem>
+                <SelectItem value="8AF">8AF</SelectItem>
+                <SelectItem value="9AF">9AF</SelectItem>
+                <SelectItem value="NS1">NS1</SelectItem>
+                <SelectItem value="NS2">NS2</SelectItem>
+                <SelectItem value="NS3">NS3</SelectItem>
+                <SelectItem value="NS4">NS4</SelectItem>
               </SelectContent>
             </Select>
           </div>

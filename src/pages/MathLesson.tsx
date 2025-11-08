@@ -66,7 +66,7 @@ const MathLesson = () => {
         .from('lessons')
         .select('*')
         .eq('slug', topicId)
-        .eq('grade_level', 'AF7')
+        .eq('grade_level', '7AF')
         .maybeSingle();
 
       if (data) {
@@ -178,7 +178,7 @@ const MathLesson = () => {
         .from('lessons')
         .select('activites_interactives')
         .eq('slug', topicId)
-        .eq('grade_level', 'AF7')
+        .eq('grade_level', '7AF')
         .maybeSingle();
 
       if (data?.activites_interactives) {
