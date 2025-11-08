@@ -298,6 +298,8 @@ const MathLesson = () => {
               lessonData={lesson}
               personalNotes={personalNotes}
               subjectName="Mathématiques"
+              variant="ghost"
+              className="text-primary-foreground hover:bg-primary-foreground/20 border border-primary-foreground/20"
             />
             <ThemeToggle />
           </div>
