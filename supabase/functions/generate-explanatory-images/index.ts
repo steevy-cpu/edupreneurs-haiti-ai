@@ -53,19 +53,27 @@ Concentre-toi sur:
 
 CRITIQUE: Tu dois générer AU MOINS 2 concepts, idéalement 3-4 pour enrichir le contenu.
 
-⚠️ RÈGLES STRICTES POUR LE TEXTE DANS LES IMAGES:
-- ÉVITE les bulles de dialogue (speech bubbles) sauf si absolument nécessaire
-- Si le texte anglais apparaît dans l'image, il DOIT être GRAMMATICALEMENT PARFAIT
-- JAMAIS de placeholders comme "Name", "other Name" - utilise des noms réels haïtiens (ex: "Jean", "Marie", "Toussaint")
-- Vérifie la grammaire anglaise : "I am Marie" PAS "I am, Name"
-- Si la leçon enseigne l'anglais et que des dialogues sont nécessaires, utilise des phrases COMPLÈTES et CORRECTES
-- Préfère les images sans texte ou avec des labels simples plutôt que des dialogues
+🎯 RÈGLES CRITIQUES POUR LE TEXTE DANS LES IMAGES (PRIORITÉ ABSOLUE):
+
+1. TEXT ACCURACY IS THE #1 PRIORITY - The text must be 100% grammatically correct and properly spelled
+2. In your prompt, you MUST specify the EXACT TEXT that should appear in the image
+3. Use this format in your prompt: "The image must show these exact words: '[EXACT TEXT HERE]'"
+4. For English lessons, every word must be grammatically perfect - NO ERRORS ALLOWED
+5. Prefer simple labels and captions over complex dialogue bubbles
+6. If dialogue is needed, write out the COMPLETE, CORRECT sentences explicitly
+7. Use real Haitian names (Jean, Marie, Toussaint, Claude, Rose) instead of placeholders
+8. Double-check grammar: "Hello! My name is Marie" NOT "Hello! my name is Tean"
+9. Verify time formats: "6:00 AM" or "12:00 PM" NOT "6 AM 1.2 PM"
+10. For greetings: "Good morning" NOT "Morning" alone in text
+
+PROMPT STRUCTURE EXAMPLE:
+"Educational illustration showing [concept]. The image must display these exact words in speech bubbles: 'Hello! My name is Marie.' and 'Nice to meet you, Marie. I am Jean.' The text must be clearly visible, properly capitalized, and grammatically perfect. Use clean, readable fonts. Style: colorful, friendly, educational illustration for Haitian students."
 
 IMPORTANT: Retourne UNIQUEMENT un tableau JSON valide, sans texte avant ou après. Format exact:
 [
   {
     "name": "Nom du concept",
-    "prompt": "Prompt détaillé en anglais pour Recraft, avec instructions précises pour tout texte visible",
+    "prompt": "Prompt détaillé en anglais pour Recraft avec le texte EXACT à afficher spécifié clairement",
     "insertAt": "contenu" ou "exemples_exercices",
     "description": "Courte description en français"
   }
