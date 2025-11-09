@@ -13,6 +13,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import ericChairDesk from "@/assets/eric-chair-desk.png";
 import { DownloadLessonButton } from "@/components/DownloadLessonButton";
+import { YouTubeVideoSection } from "@/components/YouTubeVideoSection";
 
 interface Lesson {
   id: string;
@@ -291,6 +292,32 @@ const EspagnolLessonAF8 = () => {
                   />
                 </>
               )}
+
+              {/* Additional Resources Card */}
+              <Card className="p-6 bg-gradient-to-br from-blue-50 to-transparent dark:from-blue-950/20 border-l-4 border-l-blue-500 mt-6">
+                <div className="flex items-start gap-3">
+                  <div className="w-10 h-10 rounded-lg bg-blue-500 flex items-center justify-center flex-shrink-0">
+                    <Lightbulb className="w-5 h-5 text-white" />
+                  </div>
+                  <div>
+                    <h3 className="text-xl font-bold text-blue-600 dark:text-blue-400 mb-2">💡 Le savais-tu ?</h3>
+                    <p className="text-foreground">
+                      L'espagnol est parlé par plus de 500 millions de personnes dans le monde ! C'est la langue officielle de 21 pays, dont notre voisin la République Dominicaine. Apprendre l'espagnol ouvre des portes pour voyager, étudier et travailler dans toute l'Amérique latine et l'Espagne.
+                    </p>
+                  </div>
+                </div>
+              </Card>
+
+              {/* YouTube Video Section */}
+              <div className="mt-6">
+                <YouTubeVideoSection 
+                  lessonTitle={lesson.title}
+                  objectives={lesson.objectif || ""}
+                  gradeLevel="AF8"
+                  customYoutubeUrl={lesson.youtube_url}
+                  subject="Espagnol"
+                />
+              </div>
             </Card>
           </TabsContent>
 
