@@ -16,33 +16,6 @@ import {
   Award,
   Gamepad2
 } from "lucide-react";
-import { espagnolLessons7AF } from "@/data/espagnolLessons";
-import {
-  saludoPresentacionQuiz,
-  saludoPresentacionMatching,
-  saludosAgradecimientosQuiz,
-  saludosAgradecimientosMatching,
-  gustosQuiz,
-  gustosMatching,
-  aulaPatioQuiz,
-  aulaPatioMatching,
-  diasFechasQuiz,
-  diasFechasMatching,
-  laCasaQuiz,
-  laCasaMatching,
-  laFamiliaQuiz,
-  laFamiliaMatching,
-  losAlimentosQuiz,
-  losAlimentosMatching,
-  lasActividadesCotidianasQuiz,
-  lasActividadesCotidianasMatching,
-  invitacionQuiz,
-  invitacionMatching,
-  obligacionQuiz,
-  obligacionMatching,
-} from "@/data/espagnolActivities";
-import { QuizGame } from "@/components/math-activities/QuizGame";
-import { MatchingGame } from "@/components/math-activities/MatchingGame";
 import { InteractiveActivitiesEnhanced } from "@/components/InteractiveActivitiesEnhanced";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { YouTubeVideoSection } from "@/components/YouTubeVideoSection";
@@ -53,6 +26,19 @@ import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 
+interface Lesson {
+  id: string;
+  title: string;
+  slug: string;
+  objectif: string;
+  introduction: string;
+  contenu: string;
+  exemples_exercices: string;
+  youtube_url: string | null;
+  activites_interactives: string | null;
+  mois: string | null;
+}
+
 export default function EspagnolLesson() {
   const { topicId } = useParams<{ topicId: string }>();
   const navigate = useNavigate();
@@ -62,58 +48,49 @@ export default function EspagnolLesson() {
   const [lessonCompleted, setLessonCompleted] = useState(false);
   const [personalNotes, setPersonalNotes] = useState("");
   const [isSavingNotes, setIsSavingNotes] = useState(false);
-  const [youtubeUrl, setYoutubeUrl] = useState<string | null>(null);
-  const [activitiesContent, setActivitiesContent] = useState<string>("");
-  const [isLoadingActivities, setIsLoadingActivities] = useState(true);
+  const [lesson, setLesson] = useState<Lesson | null>(null);
+  const [loading, setLoading] = useState(true);
   const { stop } = useTTS();
-
-  const lessonsArray = Object.entries(espagnolLessons7AF).map(([id, data]) => ({ id, ...data }));
-  const currentIndex = lessonsArray.findIndex((lesson) => lesson.id === topicId);
-  const lesson = lessonsArray[currentIndex];
 
   useEffect(() => {
     window.scrollTo(0, 0);
-    loadPersonalNotes();
-    fetchYoutubeUrl();
-    fetchActivitiesContent();
+    fetchLesson();
   }, [topicId]);
 
-  const fetchYoutubeUrl = async () => {
+  const fetchLesson = async () => {
     if (!topicId) return;
     
+    setLoading(true);
     try {
       const { data, error } = await supabase
         .from('lessons')
-        .select('youtube_url')
+        .select('*')
         .eq('slug', topicId)
+        .eq('subject_id', '188811d2-c1e8-47a5-954c-7f2187824b1f') // Espagnol subject
+        .eq('grade_level', '7AF')
         .maybeSingle();
 
-      if (data && !error) {
-        setYoutubeUrl(data.youtube_url);
+      if (error) throw error;
+      
+      if (data) {
+        setLesson(data as Lesson);
+        loadPersonalNotes();
+      } else {
+        toast({
+          title: "Leçon non trouvée",
+          description: "Cette leçon n'existe pas ou n'est pas encore disponible.",
+          variant: "destructive"
+        });
       }
     } catch (error) {
-      console.error('Error fetching YouTube URL:', error);
-    }
-  };
-
-  const fetchActivitiesContent = async () => {
-    if (!topicId) return;
-    
-    setIsLoadingActivities(true);
-    try {
-      const { data, error } = await supabase
-        .from('lessons')
-        .select('activites_interactives')
-        .eq('slug', topicId)
-        .maybeSingle();
-
-      if (data && !error && data.activites_interactives) {
-        setActivitiesContent(data.activites_interactives);
-      }
-    } catch (error) {
-      console.error('Error fetching activities:', error);
+      console.error('Error fetching lesson:', error);
+      toast({
+        title: "Erreur",
+        description: "Impossible de charger la leçon",
+        variant: "destructive"
+      });
     } finally {
-      setIsLoadingActivities(false);
+      setLoading(false);
     }
   };
 
@@ -179,24 +156,6 @@ export default function EspagnolLesson() {
     }
   };
 
-  const getQuizData = () => {
-  const quizMap: Record<string, { quiz: any; matching: any }> = {
-    "saludo-presentacion": { quiz: saludoPresentacionQuiz, matching: saludoPresentacionMatching },
-    "saludos-agradecimientos": { quiz: saludosAgradecimientosQuiz, matching: saludosAgradecimientosMatching },
-    "gustos": { quiz: gustosQuiz, matching: gustosMatching },
-    "aula-patio": { quiz: aulaPatioQuiz, matching: aulaPatioMatching },
-    "dias-fechas": { quiz: diasFechasQuiz, matching: diasFechasMatching },
-    "la-casa": { quiz: laCasaQuiz, matching: laCasaMatching },
-    "la-familia": { quiz: laFamiliaQuiz, matching: laFamiliaMatching },
-    "los-alimentos": { quiz: losAlimentosQuiz, matching: losAlimentosMatching },
-    "las-actividades-cotidianas": { quiz: lasActividadesCotidianasQuiz, matching: lasActividadesCotidianasMatching },
-    "invitacion": { quiz: invitacionQuiz, matching: invitacionMatching },
-    "obligacion": { quiz: obligacionQuiz, matching: obligacionMatching },
-  };
-    return topicId ? quizMap[topicId] || null : null;
-  };
-
-  const quizData = getQuizData();
 
   const handleQuizComplete = (goldEarned: number) => {
     setEarnedPoints(prev => prev + goldEarned);
@@ -207,6 +166,17 @@ export default function EspagnolLesson() {
       description: `Tu as gagné ${goldEarned} points !`,
     });
   };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <Languages className="w-12 h-12 mx-auto mb-4 animate-pulse text-purple-600" />
+          <p className="text-lg text-muted-foreground">Chargement de la leçon...</p>
+        </div>
+      </div>
+    );
+  }
 
   if (!lesson) {
     return (
@@ -220,21 +190,6 @@ export default function EspagnolLesson() {
       </div>
     );
   }
-
-  const hasPrevious = currentIndex > 0;
-  const hasNext = currentIndex < lessonsArray.length - 1;
-
-  const goToPrevious = () => {
-    if (hasPrevious) {
-      navigate(`/espagnol-lesson/${lessonsArray[currentIndex - 1].id}`);
-    }
-  };
-
-  const goToNext = () => {
-    if (hasNext) {
-      navigate(`/espagnol-lesson/${lessonsArray[currentIndex + 1].id}`);
-    }
-  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5">
@@ -260,8 +215,8 @@ export default function EspagnolLesson() {
                     objectif: lesson.objectif,
                     introduction: lesson.introduction,
                     contenu: lesson.contenu,
-                    exemples_exercices: lesson.exemplesExercices,
-                    youtube_url: youtubeUrl || undefined,
+                    exemples_exercices: lesson.exemples_exercices,
+                    youtube_url: lesson.youtube_url || undefined,
                   }}
                   personalNotes={personalNotes}
                   subjectName="Espagnol AF7"
@@ -390,11 +345,11 @@ export default function EspagnolLesson() {
               
               {/* YouTube Video Section */}
               <div className="mt-8">
-                <YouTubeVideoSection 
+              <YouTubeVideoSection 
                   lessonTitle={lesson.title}
                   objectives={lesson.objectif || ""}
                   gradeLevel="7AF"
-                  customYoutubeUrl={youtubeUrl || "https://www.youtube.com/watch?v=2z2G7y5s8n8"}
+                  customYoutubeUrl={lesson.youtube_url || undefined}
                   subject="Espagnol"
                 />
               </div>
@@ -414,7 +369,7 @@ export default function EspagnolLesson() {
                 </div>
               </Card>
               
-              {lesson.exemplesExercices && (
+              {lesson.exemples_exercices && (
                 <>
                   <div className="border-t my-8" />
                   <Card className="p-6 bg-gradient-to-br from-background to-purple-50/30 dark:to-purple-950/10">
@@ -425,7 +380,7 @@ export default function EspagnolLesson() {
                         </div>
                         <h2 className="text-2xl font-bold text-purple-600 dark:text-purple-400">Exemples et Exercices</h2>
                       </div>
-                      <TextToSpeechButton text={lesson.exemplesExercices} sectionName="Exemples et Exercices" />
+                      <TextToSpeechButton text={lesson.exemples_exercices} sectionName="Exemples et Exercices" />
                     </div>
                     <div 
                       className="prose prose-lg dark:prose-invert max-w-none
@@ -435,7 +390,7 @@ export default function EspagnolLesson() {
                         [&_strong]:text-purple-600 dark:[&_strong]:text-purple-400 [&_strong]:font-semibold
                         [&_h3]:text-xl [&_h3]:font-bold [&_h3]:text-purple-600 dark:[&_h3]:text-purple-400 [&_h3]:mb-4 [&_h3]:mt-6
                         [&_h4]:text-lg [&_h4]:font-semibold [&_h4]:text-purple-500 dark:[&_h4]:text-purple-300 [&_h4]:mb-3"
-                      dangerouslySetInnerHTML={{ __html: lesson.exemplesExercices }}
+                      dangerouslySetInnerHTML={{ __html: lesson.exemples_exercices }}
                     />
                   </Card>
                 </>
@@ -443,30 +398,18 @@ export default function EspagnolLesson() {
             </TabsContent>
 
             <TabsContent value="activites" className="space-y-6">
-              <Card className="p-6 bg-gradient-to-br from-background to-purple-50/30 dark:to-purple-950/10">
-                <div className="flex items-center gap-3 mb-6">
-                  <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-purple-500 to-purple-600 flex items-center justify-center">
-                    <Gamepad2 className="w-5 h-5 text-white" />
-                  </div>
-                  <h2 className="text-2xl font-bold text-purple-600 dark:text-purple-400">Activités Interactives</h2>
-                </div>
-                {activitiesContent ? (
-                  <InteractiveActivitiesEnhanced 
-                    content={activitiesContent}
-                    isLoading={isLoadingActivities}
-                    onGoldUpdate={() => {
-                      toast({
-                        title: "🎉 Points gagnés !",
-                        description: "Continue comme ça, tu es excellent !",
-                      });
-                    }}
-                  />
-                ) : (
-                  <div className="text-center py-8 text-muted-foreground">
-                    <p>Les activités interactives pour cette leçon ne sont pas encore disponibles.</p>
-                  </div>
-                )}
-              </Card>
+              {/* Interactive Activities */}
+              {lesson.activites_interactives ? (
+                <InteractiveActivitiesEnhanced 
+                  content={lesson.activites_interactives}
+                  isLoading={false}
+                />
+              ) : (
+                <Card className="p-8 text-center border-dashed border-2">
+                  <Gamepad2 className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
+                  <p className="text-muted-foreground">Aucune activité interactive disponible pour cette leçon.</p>
+                </Card>
+              )}
             </TabsContent>
 
             <TabsContent value="notes" className="space-y-6">
@@ -511,88 +454,14 @@ export default function EspagnolLesson() {
             </TabsContent>
 
             <TabsContent value="quiz" className="space-y-6">
-              {quizData ? (
-                <>
-                  <Card className="p-6 bg-gradient-to-br from-background to-purple-50/30 dark:to-purple-950/10 border-l-4 border-l-purple-500">
-                    <div className="flex items-center gap-3 mb-6">
-                      <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-purple-500 to-purple-600 flex items-center justify-center">
-                        <Trophy className="w-5 h-5 text-white" />
-                      </div>
-                      <div>
-                        <h2 className="text-2xl font-bold text-purple-600 dark:text-purple-400">Quiz de validation</h2>
-                        <p className="text-sm text-muted-foreground">Teste tes connaissances et gagne des points !</p>
-                      </div>
-                    </div>
-                    <QuizGame
-                      topic={lesson.title}
-                      questions={quizData.quiz.questions}
-                      onComplete={handleQuizComplete}
-                    />
-                  </Card>
-
-                  <Card className="p-6 bg-gradient-to-br from-background to-blue-50/30 dark:to-blue-950/10 border-l-4 border-l-blue-500">
-                    <div className="flex items-center gap-3 mb-6">
-                      <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center">
-                        <Award className="w-5 h-5 text-white" />
-                      </div>
-                      <div>
-                        <h2 className="text-2xl font-bold text-blue-600 dark:text-blue-400">Jeu d'association</h2>
-                        <p className="text-sm text-muted-foreground">Associe les mots espagnols à leur traduction</p>
-                      </div>
-                    </div>
-                    <MatchingGame
-                      pairs={quizData.matching.pairs}
-                      onComplete={handleQuizComplete}
-                    />
-                  </Card>
-
-                  {lessonCompleted && (
-                    <Card className="p-6 bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-950/20 dark:to-emerald-950/20 border-2 border-green-500">
-                      <div className="flex items-center gap-4">
-                        <div className="w-16 h-16 rounded-full bg-gradient-to-br from-green-500 to-emerald-500 flex items-center justify-center">
-                          <Trophy className="w-8 h-8 text-white" />
-                        </div>
-                        <div>
-                          <h3 className="text-xl font-bold text-green-700 dark:text-green-300">🎉 Félicitations !</h3>
-                          <p className="text-green-600 dark:text-green-400">Tu as complété cette leçon et gagné <strong>{earnedPoints} points d'or</strong> !</p>
-                        </div>
-                      </div>
-                    </Card>
-                  )}
-                </>
-              ) : (
-                <Card className="p-12 text-center border-dashed border-2">
-                  <Trophy className="w-16 h-16 mx-auto mb-4 text-muted-foreground opacity-50" />
-                  <h3 className="text-xl font-semibold mb-2">Quiz bientôt disponible</h3>
-                  <p className="text-muted-foreground">
-                    Le quiz interactif pour cette leçon sera ajouté prochainement !
-                  </p>
-                </Card>
-              )}
+              <Card className="p-8 text-center border-dashed border-2">
+                <Trophy className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
+                <p className="text-muted-foreground">Quiz final bientôt disponible pour cette leçon !</p>
+              </Card>
             </TabsContent>
           </Tabs>
         </Card>
 
-        {/* Navigation Buttons */}
-        <div className="flex gap-4 justify-between flex-wrap">
-          <Button
-            variant="outline"
-            onClick={goToPrevious}
-            disabled={!hasPrevious}
-            className="gap-2"
-          >
-            <ChevronLeft className="w-4 h-4" />
-            Leçon précédente
-          </Button>
-          <Button
-            onClick={goToNext}
-            disabled={!hasNext}
-            className="gap-2"
-          >
-            Leçon suivante
-            <ChevronLeft className="w-4 h-4 rotate-180" />
-          </Button>
-        </div>
       </div>
     </div>
   );
