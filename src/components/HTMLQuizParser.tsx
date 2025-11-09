@@ -106,45 +106,56 @@ export const HTMLQuizParser = ({ htmlContent, lessonSlug, subject }: HTMLQuizPar
     setCompleted(true);
     
     const percentage = Math.round((score / questions.length) * 100);
-    const goldEarned = Math.max(10, Math.round(percentage / 10) * 5);
+    const passed = percentage >= 80;
+    const goldEarned = passed ? Math.max(10, Math.round(percentage / 10) * 5) : 0;
     
-    playSound('correct');
-    
-    toast({
-      title: "🎉 Quiz terminé !",
-      description: `Tu as obtenu ${score}/${questions.length} (${percentage}%) et gagné ${goldEarned} points d'or !`,
-    });
-
-    // Save completion
-    try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
-
-      await supabase.from('lesson_completions').upsert({
-        user_id: user.id,
-        lesson_slug: lessonSlug,
-        subject: subject,
-        score: percentage,
-        completed_at: new Date().toISOString()
-      }, {
-        onConflict: 'user_id,lesson_slug,subject'
+    if (passed) {
+      playSound('correct');
+      toast({
+        title: "🎉 Quiz réussi !",
+        description: `Tu as obtenu ${score}/${questions.length} (${percentage}%) et gagné ${goldEarned} points d'or !`,
       });
+    } else {
+      playSound('incorrect');
+      toast({
+        title: "📚 Continue à t'entraîner !",
+        description: `Tu as obtenu ${score}/${questions.length} (${percentage}%). Il te faut au moins 80% pour réussir. Réessaye !`,
+        variant: "destructive"
+      });
+    }
 
-      // Award gold
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('gold_earned')
-        .eq('user_id', user.id)
-        .single();
+    // Only save completion and award gold if passed (80% or higher)
+    if (passed) {
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) return;
 
-      if (profile) {
-        await supabase
+        await supabase.from('lesson_completions').upsert({
+          user_id: user.id,
+          lesson_slug: lessonSlug,
+          subject: subject,
+          score: percentage,
+          completed_at: new Date().toISOString()
+        }, {
+          onConflict: 'user_id,lesson_slug,subject'
+        });
+
+        // Award gold
+        const { data: profile } = await supabase
           .from('profiles')
-          .update({ gold_earned: (profile.gold_earned || 0) + goldEarned })
-          .eq('user_id', user.id);
+          .select('gold_earned')
+          .eq('user_id', user.id)
+          .single();
+
+        if (profile) {
+          await supabase
+            .from('profiles')
+            .update({ gold_earned: (profile.gold_earned || 0) + goldEarned })
+            .eq('user_id', user.id);
+        }
+      } catch (error) {
+        console.error('Error saving quiz completion:', error);
       }
-    } catch (error) {
-      console.error('Error saving quiz completion:', error);
     }
   };
 
@@ -158,22 +169,31 @@ export const HTMLQuizParser = ({ htmlContent, lessonSlug, subject }: HTMLQuizPar
 
   if (completed) {
     const percentage = Math.round((score / questions.length) * 100);
+    const passed = percentage >= 80;
     
     return (
-      <Card className="p-8 bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-950/20 dark:to-emerald-950/20 border-2 border-green-500">
+      <Card className={`p-8 ${passed ? 'bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-950/20 dark:to-emerald-950/20 border-2 border-green-500' : 'bg-gradient-to-br from-amber-50 to-orange-50 dark:from-amber-950/20 dark:to-orange-950/20 border-2 border-amber-500'}`}>
         <div className="text-center space-y-6">
-          <div className="w-20 h-20 mx-auto rounded-full bg-gradient-to-br from-green-500 to-emerald-500 flex items-center justify-center">
+          <div className={`w-20 h-20 mx-auto rounded-full flex items-center justify-center ${passed ? 'bg-gradient-to-br from-green-500 to-emerald-500' : 'bg-gradient-to-br from-amber-500 to-orange-500'}`}>
             <Trophy className="w-10 h-10 text-white" />
           </div>
           <div>
-            <h3 className="text-2xl font-bold text-green-700 dark:text-green-300 mb-2">
-              🎉 Quiz terminé !
+            <h3 className={`text-2xl font-bold mb-2 ${passed ? 'text-green-700 dark:text-green-300' : 'text-amber-700 dark:text-amber-300'}`}>
+              {passed ? '🎉 Quiz réussi !' : '📚 Continue à t\'entraîner !'}
             </h3>
-            <p className="text-lg text-green-600 dark:text-green-400">
+            <p className={`text-lg ${passed ? 'text-green-600 dark:text-green-400' : 'text-amber-600 dark:text-amber-400'}`}>
               Score: {score}/{questions.length} ({percentage}%)
             </p>
+            {!passed && (
+              <p className="text-sm text-muted-foreground mt-2">
+                Il te faut au moins 80% pour réussir la leçon
+              </p>
+            )}
           </div>
-          <Button onClick={() => window.location.reload()} variant="outline">
+          <Button 
+            onClick={() => window.location.reload()} 
+            className={passed ? 'bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700' : 'bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-700 hover:to-orange-700'}
+          >
             Refaire le quiz
           </Button>
         </div>
