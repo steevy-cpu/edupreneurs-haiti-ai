@@ -215,10 +215,6 @@ export const YouTubeVideoSection = ({ lessonTitle, objectives, gradeLevel = "AF7
     );
   }
 
-  if (videos.length === 0 && !customVideoId) {
-    return null;
-  }
-
   return (
     <Card className="lesson-card border-none rounded-[20px] shadow-md bg-gradient-to-br from-purple-50 to-pink-50 dark:from-purple-950/30 dark:to-pink-950/30 border-2 border-purple-200 dark:border-purple-800">
       <CardHeader className="p-4 sm:p-6 bg-gradient-to-r from-purple-100 to-pink-100 dark:from-purple-900/30 dark:to-pink-900/30 rounded-t-[20px]">
@@ -231,7 +227,14 @@ export const YouTubeVideoSection = ({ lessonTitle, objectives, gradeLevel = "AF7
         </p>
       </CardHeader>
       <CardContent className="p-4 sm:p-6 pt-6">
-        <div className="space-y-6">
+        {videos.length === 0 && !customVideoId ? (
+          <div className="p-8 text-center bg-background/50 rounded-lg border border-dashed border-muted">
+            <Video className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
+            <p className="text-muted-foreground mb-2">Aucune vidéo disponible pour le moment</p>
+            <p className="text-xs text-muted-foreground">Recherchez "{lessonTitle}" sur YouTube pour trouver des ressources vidéo</p>
+          </div>
+        ) : (
+          <div className="space-y-6">
           {/* Custom Video (if provided) */}
           {customVideoId && (
             <div className="rounded-xl overflow-hidden shadow-lg bg-background/50 backdrop-blur-sm border-2 border-primary">
@@ -282,14 +285,17 @@ export const YouTubeVideoSection = ({ lessonTitle, objectives, gradeLevel = "AF7
               </div>
             </div>
           ))}
-        </div>
+          </div>
+        )}
 
-        <div className="mt-6 p-4 bg-gradient-to-r from-purple-100/50 to-pink-100/50 dark:from-purple-900/20 dark:to-pink-900/20 rounded-lg border border-purple-200 dark:border-purple-800">
-          <p className="text-sm text-center">
-            <span className="font-semibold">💡 Konsèy:</span> Gade videyo yo pou w wè eksplikasyon an aksyon! 
-            <span className="italic"> (Regardez les vidéos pour voir les explications en action!)</span>
-          </p>
-        </div>
+        {(videos.length > 0 || customVideoId) && (
+          <div className="mt-6 p-4 bg-gradient-to-r from-purple-100/50 to-pink-100/50 dark:from-purple-900/20 dark:to-pink-900/20 rounded-lg border border-purple-200 dark:border-purple-800">
+            <p className="text-sm text-center">
+              <span className="font-semibold">💡 Konsèy:</span> Gade videyo yo pou w wè eksplikasyon an aksyon! 
+              <span className="italic"> (Regardez les vidéos pour voir les explications en action!)</span>
+            </p>
+          </div>
+        )}
       </CardContent>
     </Card>
   );
