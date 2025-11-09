@@ -25,6 +25,7 @@ import { useTTS } from "@/hooks/useTTS";
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { HTMLQuizParser } from "@/components/HTMLQuizParser";
 
 interface Lesson {
   id: string;
@@ -456,50 +457,29 @@ export default function EspagnolLesson() {
 
             <TabsContent value="quiz" className="space-y-6">
               {lesson.quiz_final ? (
-                <Card className="p-6 bg-gradient-to-br from-background to-purple-50/30 dark:to-purple-950/10">
-                  <div className="flex items-center gap-3 mb-6">
-                    <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-purple-500 to-purple-600 flex items-center justify-center">
-                      <Trophy className="w-5 h-5 text-white" />
-                    </div>
-                    <h2 className="text-2xl font-bold text-purple-600 dark:text-purple-400">Quiz Final</h2>
-                  </div>
+                <div>
                   {/* Check if content is in markdown format or HTML */}
                   {lesson.quiz_final.includes('###') && lesson.quiz_final.includes('**TYPE:') ? (
-                    <InteractiveActivitiesEnhanced 
-                      content={lesson.quiz_final}
-                      isLoading={false}
-                    />
-                  ) : (
-                    <div className="prose prose-lg dark:prose-invert max-w-none">
-                      <div 
-                        dangerouslySetInnerHTML={{ __html: lesson.quiz_final }}
-                        className="[&_.quiz-container]:space-y-6 
-                          [&_.quiz-question]:p-6 [&_.quiz-question]:bg-white [&_.quiz-question]:dark:bg-gray-800 
-                          [&_.quiz-question]:rounded-lg [&_.quiz-question]:border-2 [&_.quiz-question]:border-purple-200 
-                          [&_.quiz-question]:dark:border-purple-800
-                          [&_.quiz-question_h3]:text-xl [&_.quiz-question_h3]:font-bold 
-                          [&_.quiz-question_h3]:text-purple-600 [&_.quiz-question_h3]:dark:text-purple-400 
-                          [&_.quiz-question_h3]:mb-4
-                          [&_.quiz-question_p]:text-foreground [&_.quiz-question_p]:mb-4
-                          [&_.quiz-options]:space-y-2 [&_.quiz-options]:mb-4
-                          [&_.option]:p-3 [&_.option]:bg-purple-50 [&_.option]:dark:bg-purple-950/30 
-                          [&_.option]:rounded-lg [&_.option]:border [&_.option]:border-purple-200 
-                          [&_.option]:dark:border-purple-700 [&_.option]:cursor-pointer 
-                          [&_.option]:hover:bg-purple-100 [&_.option]:dark:hover:bg-purple-900/40
-                          [&_.correct-answer]:mt-4 [&_.correct-answer]:p-4 [&_.correct-answer]:bg-green-50 
-                          [&_.correct-answer]:dark:bg-green-950/20 [&_.correct-answer]:rounded-lg 
-                          [&_.correct-answer]:border-l-4 [&_.correct-answer]:border-l-green-500
-                          [&_.correct-answer_p]:text-sm [&_.correct-answer_p]:text-foreground
-                          [&_.correct-answer_strong]:text-green-600 [&_.correct-answer_strong]:dark:text-green-400"
-                      />
-                      <div className="mt-6 p-4 bg-amber-50 dark:bg-amber-950/20 rounded-lg border-l-4 border-l-amber-500">
-                        <p className="text-sm text-muted-foreground">
-                          📝 <strong>Note:</strong> Ce quiz est en format de référence. Les quiz interactifs avec notation automatique seront bientôt disponibles !
-                        </p>
+                    <Card className="p-6 bg-gradient-to-br from-background to-purple-50/30 dark:to-purple-950/10">
+                      <div className="flex items-center gap-3 mb-6">
+                        <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-purple-500 to-purple-600 flex items-center justify-center">
+                          <Trophy className="w-5 h-5 text-white" />
+                        </div>
+                        <h2 className="text-2xl font-bold text-purple-600 dark:text-purple-400">Quiz Final</h2>
                       </div>
-                    </div>
+                      <InteractiveActivitiesEnhanced 
+                        content={lesson.quiz_final}
+                        isLoading={false}
+                      />
+                    </Card>
+                  ) : (
+                    <HTMLQuizParser 
+                      htmlContent={lesson.quiz_final}
+                      lessonSlug={lesson.slug}
+                      subject="espagnol"
+                    />
                   )}
-                </Card>
+                </div>
               ) : (
                 <Card className="p-8 text-center border-dashed border-2">
                   <Trophy className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
