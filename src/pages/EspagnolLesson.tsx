@@ -36,6 +36,7 @@ interface Lesson {
   exemples_exercices: string;
   youtube_url: string | null;
   activites_interactives: string | null;
+  quiz_final: string | null;
   mois: string | null;
 }
 
@@ -343,32 +344,6 @@ export default function EspagnolLesson() {
                 />
               </Card>
               
-              {/* YouTube Video Section */}
-              <div className="mt-8">
-              <YouTubeVideoSection 
-                  lessonTitle={lesson.title}
-                  objectives={lesson.objectif || ""}
-                  gradeLevel="7AF"
-                  customYoutubeUrl={lesson.youtube_url || undefined}
-                  subject="Espagnol"
-                />
-              </div>
-
-              {/* Additional Resources Card */}
-              <Card className="p-6 bg-gradient-to-br from-blue-50 to-transparent dark:from-blue-950/20 border-l-4 border-l-blue-500">
-                <div className="flex items-start gap-3">
-                  <div className="w-10 h-10 rounded-lg bg-blue-500 flex items-center justify-center flex-shrink-0">
-                    <Lightbulb className="w-5 h-5 text-white" />
-                  </div>
-                  <div>
-                    <h3 className="text-xl font-bold text-blue-600 dark:text-blue-400 mb-2">💡 Le savais-tu ?</h3>
-                    <p className="text-foreground">
-                      L'espagnol est parlé par plus de 500 millions de personnes dans le monde ! C'est la langue officielle de 21 pays, dont notre voisin la République Dominicaine. Apprendre l'espagnol ouvre des portes pour voyager, étudier et travailler dans toute l'Amérique latine et l'Espagne.
-                    </p>
-                  </div>
-                </div>
-              </Card>
-              
               {lesson.exemples_exercices && (
                 <>
                   <div className="border-t my-8" />
@@ -395,6 +370,32 @@ export default function EspagnolLesson() {
                   </Card>
                 </>
               )}
+
+              {/* Additional Resources Card */}
+              <Card className="p-6 bg-gradient-to-br from-blue-50 to-transparent dark:from-blue-950/20 border-l-4 border-l-blue-500">
+                <div className="flex items-start gap-3">
+                  <div className="w-10 h-10 rounded-lg bg-blue-500 flex items-center justify-center flex-shrink-0">
+                    <Lightbulb className="w-5 h-5 text-white" />
+                  </div>
+                  <div>
+                    <h3 className="text-xl font-bold text-blue-600 dark:text-blue-400 mb-2">💡 Le savais-tu ?</h3>
+                    <p className="text-foreground">
+                      L'espagnol est parlé par plus de 500 millions de personnes dans le monde ! C'est la langue officielle de 21 pays, dont notre voisin la République Dominicaine. Apprendre l'espagnol ouvre des portes pour voyager, étudier et travailler dans toute l'Amérique latine et l'Espagne.
+                    </p>
+                  </div>
+                </div>
+              </Card>
+
+              {/* YouTube Video Section */}
+              <div className="mt-6">
+                <YouTubeVideoSection 
+                  lessonTitle={lesson.title}
+                  objectives={lesson.objectif || ""}
+                  gradeLevel="7AF"
+                  customYoutubeUrl={lesson.youtube_url || undefined}
+                  subject="Espagnol"
+                />
+              </div>
             </TabsContent>
 
             <TabsContent value="activites" className="space-y-6">
@@ -454,10 +455,25 @@ export default function EspagnolLesson() {
             </TabsContent>
 
             <TabsContent value="quiz" className="space-y-6">
-              <Card className="p-8 text-center border-dashed border-2">
-                <Trophy className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
-                <p className="text-muted-foreground">Quiz final bientôt disponible pour cette leçon !</p>
-              </Card>
+              {lesson.quiz_final ? (
+                <Card className="p-6 bg-gradient-to-br from-background to-purple-50/30 dark:to-purple-950/10">
+                  <div className="flex items-center gap-3 mb-6">
+                    <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-purple-500 to-purple-600 flex items-center justify-center">
+                      <Trophy className="w-5 h-5 text-white" />
+                    </div>
+                    <h2 className="text-2xl font-bold text-purple-600 dark:text-purple-400">Quiz Final</h2>
+                  </div>
+                  <InteractiveActivitiesEnhanced 
+                    content={lesson.quiz_final}
+                    isLoading={false}
+                  />
+                </Card>
+              ) : (
+                <Card className="p-8 text-center border-dashed border-2">
+                  <Trophy className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
+                  <p className="text-muted-foreground">Quiz final bientôt disponible pour cette leçon !</p>
+                </Card>
+              )}
             </TabsContent>
           </Tabs>
         </Card>
