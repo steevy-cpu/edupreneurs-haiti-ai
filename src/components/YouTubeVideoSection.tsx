@@ -92,6 +92,7 @@ export const YouTubeVideoSection = ({ lessonTitle, objectives, gradeLevel = "AF7
     const subjectTerm = subject === "mathematiques" ? "mathématiques" : 
                         subject === "sciences" ? "sciences" : 
                         subject === "francais" ? "français" : 
+                        subject === "espagnol" ? "espagnol español spanish" :
                         subject;
     
     // Extract key words from title (remove articles)
@@ -99,11 +100,11 @@ export const YouTubeVideoSection = ({ lessonTitle, objectives, gradeLevel = "AF7
     const keywords = cleanTitle
       .split(' ')
       .filter(word => !stopWords.includes(word) && word.length > 2)
-      .slice(0, 4)
+      .slice(0, 3)
       .join(' ');
     
-    // Build query: topic keywords + cours + subject + français + grade level
-    return `${keywords} cours ${subjectTerm} français ${gradeLevel}`;
+    // Build simpler, more flexible query without grade level for better results
+    return `${keywords} ${subjectTerm} cours leçon`;
   };
 
   const searchVideos = async () => {
@@ -118,13 +119,12 @@ export const YouTubeVideoSection = ({ lessonTitle, objectives, gradeLevel = "AF7
       const response = await fetch(
         `https://www.googleapis.com/youtube/v3/search?` +
         `part=snippet&` +
-        `maxResults=3&` +
+        `maxResults=4&` +
         `q=${encodeURIComponent(searchQuery)}&` +
         `type=video&` +
         `videoEmbeddable=true&` +
         `videoDuration=medium&` + // Prefer 4-20 min videos
         `relevanceLanguage=fr&` +
-        `regionCode=HT&` + // Prioritize Haiti region for French/Creole content
         `videoDefinition=any&` +
         `safeSearch=strict&` +
         `order=relevance&` +
@@ -249,8 +249,18 @@ export const YouTubeVideoSection = ({ lessonTitle, objectives, gradeLevel = "AF7
                 />
               </div>
               <div className="p-4 bg-gradient-to-r from-primary/10 to-primary/5">
-                <p className="text-sm font-semibold text-primary">
+                <p className="text-sm font-semibold text-primary mb-2">
                   ⭐ Vidéo sélectionnée spécialement pour cette leçon
+                </p>
+                <p className="text-xs text-muted-foreground">
+                  Si la vidéo ne s'affiche pas, <a 
+                    href={`https://www.youtube.com/watch?v=${customVideoId}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-primary hover:underline font-medium"
+                  >
+                    regardez-la sur YouTube
+                  </a>
                 </p>
               </div>
             </div>
