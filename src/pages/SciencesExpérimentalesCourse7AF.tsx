@@ -162,6 +162,7 @@ export default function SciencesExpérimentalesCourse7AF() {
           </div>
         ) : (
           <div className="space-y-8">
+            {/* Show months with lessons */}
             {monthOrder.map((month) => {
               const monthLessons = groupedByMonth[month];
               if (!monthLessons || monthLessons.length === 0) return null;
@@ -209,6 +210,50 @@ export default function SciencesExpérimentalesCourse7AF() {
                 </div>
               );
             })}
+
+            {/* Show unassigned lessons */}
+            {groupedByMonth["Non classé"] && groupedByMonth["Non classé"].length > 0 && (
+              <div>
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="h-1 flex-grow bg-gradient-to-r from-gray-500 to-gray-600" />
+                  <h2 className="text-2xl font-bold">Toutes les leçons</h2>
+                  <div className="h-1 flex-grow bg-gradient-to-r from-gray-500 to-gray-600" />
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {groupedByMonth["Non classé"].map((lesson) => (
+                    <Card
+                      key={lesson.id}
+                      className="group hover:shadow-lg transition-all duration-300 cursor-pointer"
+                      onClick={() => {
+                        if (lesson.is_published) {
+                          navigate(`/sciences-experimentales-7af/${lesson.slug}`);
+                        } else {
+                          toast.info("Cette leçon sera bientôt disponible");
+                        }
+                      }}
+                    >
+                      <div className="h-1 bg-gradient-to-r from-cyan-500 to-cyan-600" />
+                      <div className="p-6">
+                        <div className="flex items-start justify-between mb-3">
+                          <h3 className="text-lg font-semibold group-hover:text-primary transition-colors">
+                            {lesson.title}
+                          </h3>
+                          {lesson.is_published ? (
+                            <Badge variant="default">Publié</Badge>
+                          ) : (
+                            <Badge variant="secondary">Bientôt</Badge>
+                          )}
+                        </div>
+                        <p className="text-sm text-muted-foreground">
+                          <strong>Objectif:</strong> {lesson.objectif}
+                        </p>
+                      </div>
+                    </Card>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         )}
       </div>
