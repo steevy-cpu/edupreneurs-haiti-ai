@@ -185,7 +185,10 @@ export default function SciencesExpérimentalesLesson7AF() {
                 <p className="text-lg font-semibold">Objectif de la leçon</p>
                 <TextToSpeechButton text={lesson.objectif} sectionName="Objectif" />
               </div>
-              <p className="text-lg text-muted-foreground">{lesson.objectif}</p>
+              <div 
+                className="lesson-content prose prose-slate dark:prose-invert max-w-none"
+                dangerouslySetInnerHTML={{ __html: lesson.objectif }}
+              />
             </div>
           </div>
         </Card>
@@ -207,7 +210,7 @@ export default function SciencesExpérimentalesLesson7AF() {
                 <TextToSpeechButton text={lesson.introduction || ""} sectionName="Introduction" />
               </div>
               <div 
-                className="prose prose-slate dark:prose-invert max-w-none"
+                className="lesson-content prose prose-slate dark:prose-invert max-w-none"
                 dangerouslySetInnerHTML={{ __html: lesson.introduction || "<p>Introduction à venir...</p>" }}
               />
             </Card>
@@ -220,7 +223,7 @@ export default function SciencesExpérimentalesLesson7AF() {
                 <TextToSpeechButton text={lesson.contenu || ""} sectionName="Contenu Principal" />
               </div>
               <div 
-                className="prose prose-slate dark:prose-invert max-w-none"
+                className="lesson-content prose prose-slate dark:prose-invert max-w-none"
                 dangerouslySetInnerHTML={{ __html: lesson.contenu || "<p>Contenu à venir...</p>" }}
               />
               
@@ -232,7 +235,7 @@ export default function SciencesExpérimentalesLesson7AF() {
                     <TextToSpeechButton text={lesson.exemples_exercices} sectionName="Exemples et Exercices" />
                   </div>
                   <div 
-                    className="prose prose-slate dark:prose-invert max-w-none"
+                    className="lesson-content prose prose-slate dark:prose-invert max-w-none"
                     dangerouslySetInnerHTML={{ __html: lesson.exemples_exercices }}
                   />
                 </>
