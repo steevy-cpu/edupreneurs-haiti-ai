@@ -403,7 +403,7 @@ const FrancaisLesson = () => {
                   </CardHeader>
                   <CardContent>
                     <div 
-                      className="prose dark:prose-invert max-w-none text-foreground"
+                      className="prose dark:prose-invert max-w-none text-foreground lesson-content"
                       dangerouslySetInnerHTML={{ __html: lesson.objectif }}
                     />
                     {lesson.id === "comprehension-production-orale-1" && (
@@ -420,7 +420,7 @@ const FrancaisLesson = () => {
                     </CardHeader>
                     <CardContent>
                       <div 
-                        className="prose dark:prose-invert max-w-none text-foreground"
+                        className="prose dark:prose-invert max-w-none text-foreground lesson-content"
                         dangerouslySetInnerHTML={{ __html: lessonData.introduction }}
                       />
                     </CardContent>
@@ -472,7 +472,7 @@ const FrancaisLesson = () => {
                           <CardContent className="pt-6 pb-6 px-6">
                             <div className="prose prose-lg max-w-none dark:prose-invert">
                               <div 
-                                className="space-y-4 leading-relaxed text-foreground"
+                                className="space-y-4 leading-relaxed text-foreground lesson-content"
                                 style={{ fontSize: '1.05rem', lineHeight: '1.9' }}
                                 dangerouslySetInnerHTML={{ 
                                   __html: section
