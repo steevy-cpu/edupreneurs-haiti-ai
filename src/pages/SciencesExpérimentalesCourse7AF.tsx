@@ -1,12 +1,16 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { ChevronLeft, FlaskConical, BookOpen, Calendar } from "lucide-react";
+import { Progress } from "@/components/ui/progress";
+import { ArrowLeft, FlaskConical, BookOpen, Target, CheckCircle2, Coins } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import { MusicSelector } from "@/components/MusicSelector";
 import { toast } from "sonner";
+import ericTeaching from "@/assets/eric-teaching.png";
+import DOMPurify from "dompurify";
 
 interface Lesson {
   id: string;
@@ -22,6 +26,8 @@ export default function SciencesExpérimentalesCourse7AF() {
   const navigate = useNavigate();
   const [lessons, setLessons] = useState<Lesson[]>([]);
   const [loading, setLoading] = useState(true);
+  const [userGold, setUserGold] = useState(0);
+  const [completedLessons, setCompletedLessons] = useState<string[]>([]);
 
   useEffect(() => {
     fetchLessons();
@@ -29,6 +35,32 @@ export default function SciencesExpérimentalesCourse7AF() {
 
   const fetchLessons = async () => {
     try {
+      const { data: { user } } = await supabase.auth.getUser();
+      
+      if (user) {
+        // Load user gold
+        const { data: profileData } = await supabase
+          .from('profiles')
+          .select('gold_earned')
+          .eq('user_id', user.id)
+          .single();
+
+        if (profileData) {
+          setUserGold(profileData.gold_earned || 0);
+        }
+
+        // Load completed lessons
+        const { data: completionsData } = await supabase
+          .from('lesson_completions')
+          .select('lesson_slug')
+          .eq('user_id', user.id)
+          .eq('subject', 'sciences-experimentales');
+
+        if (completionsData) {
+          setCompletedLessons(completionsData.map(c => c.lesson_slug));
+        }
+      }
+
       const { data: subjectData, error: subjectError } = await supabase
         .from("subjects")
         .select("id")
@@ -90,173 +122,191 @@ export default function SciencesExpérimentalesCourse7AF() {
     "Juin": "from-emerald-500 to-emerald-600"
   };
 
+  const completedCount = completedLessons.length;
+  const totalLessons = lessons.length;
+  const progressPercentage = totalLessons > 0 ? (completedCount / totalLessons) * 100 : 0;
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5">
-      {/* Navigation Bar */}
-      <nav className="fixed top-0 left-0 right-0 z-40 bg-background/95 backdrop-blur-md border-b border-border">
+    <div className="min-h-screen bg-background">
+      {/* Header */}
+      <header className="border-b border-border bg-gradient-to-r from-purple-600 to-purple-700 text-primary-foreground shadow-sm sticky top-0 z-50">
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
-            <Button
-              variant="ghost"
-              onClick={() => navigate("/matieres")}
-              className="gap-2"
-            >
-              <ChevronLeft className="w-4 h-4" />
-              <span className="font-semibold">Matières</span>
-            </Button>
-            <ThemeToggle />
+            <div className="flex items-center gap-4">
+              <Button 
+                variant="ghost" 
+                size="icon"
+                onClick={() => navigate('/matieres')}
+                className="shrink-0 text-primary-foreground hover:bg-primary-foreground/20"
+              >
+                <ArrowLeft className="h-5 w-5" />
+              </Button>
+              <div className="flex items-center gap-3">
+                <div className="w-12 h-12 rounded-xl bg-white/20 backdrop-blur-sm flex items-center justify-center">
+                  <FlaskConical className="w-6 h-6" />
+                </div>
+                <div>
+                  <h1 className="text-2xl font-bold">Sciences Expérimentales</h1>
+                  <p className="text-sm text-primary-foreground/80">7ème Année Fondamentale</p>
+                </div>
+              </div>
+            </div>
+            <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-primary-foreground/10 border border-primary-foreground/20">
+                <Coins className="w-5 h-5 text-primary-foreground" />
+                <span className="font-bold text-primary-foreground">{userGold}</span>
+              </div>
+              <ThemeToggle />
+            </div>
           </div>
         </div>
-      </nav>
+      </header>
 
-      {/* Hero Header */}
-      <div className="relative bg-gradient-to-r from-cyan-500 to-cyan-600 text-primary-foreground pt-32 pb-16 overflow-hidden">
-        <div className="container mx-auto px-4 relative z-10">
-          <div className="flex items-center gap-4 mb-4">
-            <div className="w-16 h-16 rounded-xl bg-white/20 backdrop-blur-sm flex items-center justify-center">
-              <FlaskConical className="w-8 h-8" />
-            </div>
-            <div>
-              <h1 className="text-4xl font-bold">Sciences Expérimentales</h1>
-              <p className="text-lg opacity-90">7ème Année Fondamentale</p>
-            </div>
-          </div>
-          <p className="text-xl opacity-90 max-w-2xl">
-            Découvrez le vivant, la terre, l'environnement et les sciences naturelles
-          </p>
-        </div>
-      </div>
-
-      <div className="container mx-auto px-4 py-8">
+      <main className="container mx-auto px-4 py-8">
         {/* Course Overview */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-          <Card className="p-6">
-            <div className="flex items-center gap-3 mb-2">
-              <BookOpen className="w-5 h-5 text-primary" />
-              <h3 className="font-semibold">Total de leçons</h3>
+        <Card className="mb-8 overflow-hidden border border-border bg-card">
+          <div className="md:flex">
+            <div className="md:w-1/3 bg-gradient-to-br from-purple-600 to-purple-700 p-8 flex items-center justify-center">
+              <img src={ericTeaching} alt="Eric enseignant" className="w-full h-auto object-contain" />
             </div>
-            <p className="text-3xl font-bold text-primary">{lessons.length}</p>
-          </Card>
+            <CardContent className="md:w-2/3 p-6">
+              <h2 className="text-2xl font-bold mb-4 text-foreground">Aperçu du Cours</h2>
+              <p className="text-muted-foreground mb-4">
+                Bienvenue dans le cours de Sciences Expérimentales pour la 7ème année fondamentale ! 
+                Découvrez le vivant, la terre, l'environnement et les sciences naturelles à travers 
+                des leçons interactives et des expériences fascinantes.
+              </p>
+              <div className="space-y-2">
+                <div className="flex items-center gap-2">
+                  <BookOpen className="w-5 h-5 text-primary" />
+                  <span className="font-semibold text-foreground">{totalLessons} leçons complètes</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Target className="w-5 h-5 text-primary" />
+                  <span className="font-semibold text-foreground">Expériences et activités interactives</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <CheckCircle2 className="w-5 h-5 text-primary" />
+                  <span className="font-semibold text-foreground">{completedCount} leçons complétées</span>
+                </div>
+              </div>
+            </CardContent>
+          </div>
+        </Card>
 
-          <Card className="p-6">
-            <div className="flex items-center gap-3 mb-2">
-              <Calendar className="w-5 h-5 text-primary" />
-              <h3 className="font-semibold">Mois couverts</h3>
-            </div>
-            <p className="text-3xl font-bold text-primary">{Object.keys(groupedByMonth).length}</p>
-          </Card>
+        <MusicSelector />
 
-          <Card className="p-6">
-            <div className="flex items-center gap-3 mb-2">
-              <FlaskConical className="w-5 h-5 text-primary" />
-              <h3 className="font-semibold">Année scolaire</h3>
-            </div>
-            <p className="text-3xl font-bold text-primary">2024-2025</p>
-          </Card>
-        </div>
-
-        {/* Lessons by Month */}
+        {/* Lessons Grid */}
         {loading ? (
           <div className="text-center py-12">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
+            <p className="text-muted-foreground mt-4">Chargement des leçons...</p>
           </div>
         ) : (
-          <div className="space-y-8">
-            {/* Show months with lessons */}
-            {monthOrder.map((month) => {
-              const monthLessons = groupedByMonth[month];
-              if (!monthLessons || monthLessons.length === 0) return null;
-
-              return (
-                <div key={month}>
-                  <div className="flex items-center gap-3 mb-4">
-                    <div className={`h-1 flex-grow bg-gradient-to-r ${monthColors[month] || "from-gray-500 to-gray-600"}`} />
-                    <h2 className="text-2xl font-bold">{month}</h2>
-                    <div className={`h-1 flex-grow bg-gradient-to-r ${monthColors[month] || "from-gray-500 to-gray-600"}`} />
-                  </div>
-
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {monthLessons.map((lesson) => (
-                      <Card
-                        key={lesson.id}
-                        className="group hover:shadow-lg transition-all duration-300 cursor-pointer"
-                        onClick={() => {
-                          if (lesson.is_published) {
-                            navigate(`/sciences-experimentales-7af/${lesson.slug}`);
-                          } else {
-                            toast.info("Cette leçon sera bientôt disponible");
-                          }
-                        }}
-                      >
-                        <div className={`h-1 bg-gradient-to-r ${monthColors[month] || "from-gray-500 to-gray-600"}`} />
-                        <div className="p-6">
-                          <div className="flex items-start justify-between mb-3">
-                            <h3 className="text-lg font-semibold group-hover:text-primary transition-colors">
-                              {lesson.title}
-                            </h3>
-                            {lesson.is_published ? (
-                              <Badge variant="default">Publié</Badge>
-                            ) : (
-                              <Badge variant="secondary">Bientôt</Badge>
-                            )}
+          <>
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+              {lessons.map((lesson, index) => {
+                const isCompleted = completedLessons.includes(lesson.slug);
+                const goldReward = 100 + (index * 10);
+                
+                return (
+                  <Card 
+                    key={lesson.id} 
+                    className={`transition-all duration-300 hover:shadow-xl border border-border bg-card ${
+                      isCompleted ? 'border-2 border-green-500' : 'hover:scale-105'
+                    }`}
+                  >
+                    <CardHeader className="bg-muted/50">
+                      <div className="flex items-start justify-between">
+                        <div className="flex items-center gap-3">
+                          <div className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-600 to-purple-700 flex items-center justify-center text-primary-foreground font-bold">
+                            {index + 1}
                           </div>
-                          <p className="text-sm text-muted-foreground">
-                            <strong>Objectif:</strong> {lesson.objectif}
-                          </p>
+                          <div>
+                            <CardTitle className="text-lg text-foreground">{lesson.title}</CardTitle>
+                            <p className="text-sm text-muted-foreground">{lesson.mois || 'Non classé'}</p>
+                          </div>
                         </div>
-                      </Card>
-                    ))}
-                  </div>
-                </div>
-              );
-            })}
-
-            {/* Show unassigned lessons */}
-            {groupedByMonth["Non classé"] && groupedByMonth["Non classé"].length > 0 && (
-              <div>
-                <div className="flex items-center gap-3 mb-4">
-                  <div className="h-1 flex-grow bg-gradient-to-r from-gray-500 to-gray-600" />
-                  <h2 className="text-2xl font-bold">Toutes les leçons</h2>
-                  <div className="h-1 flex-grow bg-gradient-to-r from-gray-500 to-gray-600" />
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {groupedByMonth["Non classé"].map((lesson) => (
-                    <Card
-                      key={lesson.id}
-                      className="group hover:shadow-lg transition-all duration-300 cursor-pointer"
-                      onClick={() => {
-                        if (lesson.is_published) {
-                          navigate(`/sciences-experimentales-7af/${lesson.slug}`);
-                        } else {
-                          toast.info("Cette leçon sera bientôt disponible");
-                        }
-                      }}
-                    >
-                      <div className="h-1 bg-gradient-to-r from-cyan-500 to-cyan-600" />
-                      <div className="p-6">
-                        <div className="flex items-start justify-between mb-3">
-                          <h3 className="text-lg font-semibold group-hover:text-primary transition-colors">
-                            {lesson.title}
-                          </h3>
-                          {lesson.is_published ? (
-                            <Badge variant="default">Publié</Badge>
-                          ) : (
-                            <Badge variant="secondary">Bientôt</Badge>
-                          )}
-                        </div>
-                        <p className="text-sm text-muted-foreground">
-                          <strong>Objectif:</strong> {lesson.objectif}
-                        </p>
+                        {isCompleted && (
+                          <CheckCircle2 className="w-6 h-6 text-green-500 shrink-0" />
+                        )}
                       </div>
-                    </Card>
-                  ))}
+                    </CardHeader>
+                    <CardContent className="pt-6">
+                      <div className="space-y-4">
+                        <div 
+                          className="text-sm text-muted-foreground line-clamp-2"
+                          dangerouslySetInnerHTML={{ 
+                            __html: DOMPurify.sanitize(lesson.objectif, { 
+                              ALLOWED_TAGS: [], 
+                              ALLOWED_ATTR: [] 
+                            }) 
+                          }}
+                        />
+                        
+                        <div className="flex flex-wrap gap-2">
+                          <Badge variant="secondary" className="text-xs">
+                            <BookOpen className="w-3 h-3 mr-1" />
+                            Leçon
+                          </Badge>
+                          <Badge variant="secondary" className="text-xs">
+                            <Target className="w-3 h-3 mr-1" />
+                            Expériences
+                          </Badge>
+                          <Badge variant="secondary" className="text-xs">
+                            <CheckCircle2 className="w-3 h-3 mr-1" />
+                            Quiz
+                          </Badge>
+                        </div>
+
+                        <div className="flex items-center justify-between pt-4 border-t border-border">
+                          <div className="flex items-center gap-1 text-accent">
+                            <Coins className="w-4 h-4" />
+                            <span className="font-bold">{goldReward}</span>
+                          </div>
+                          <Button 
+                            onClick={() => {
+                              if (lesson.is_published) {
+                                navigate(`/sciences-experimentales-7af/${lesson.slug}`);
+                              } else {
+                                toast.info("Cette leçon sera bientôt disponible");
+                              }
+                            }}
+                            disabled={!lesson.is_published}
+                          >
+                            {isCompleted ? 'Revoir' : lesson.is_published ? 'Commencer' : 'Bientôt'}
+                          </Button>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                );
+              })}
+            </div>
+
+            {/* Progress Summary */}
+            <Card className="bg-gradient-to-r from-purple-600 to-purple-700 text-primary-foreground border-0">
+              <CardHeader>
+                <CardTitle className="text-2xl">Ton Progrès</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  <div>
+                    <div className="flex justify-between mb-2">
+                      <span className="font-semibold">Leçons complétées</span>
+                      <span className="font-bold">{completedCount}/{totalLessons}</span>
+                    </div>
+                    <Progress value={progressPercentage} className="h-3 bg-primary-foreground/30" />
+                  </div>
+                  <p className="text-sm opacity-90">
+                    Continue comme ça ! Chaque leçon complétée te rapproche de la maîtrise des sciences expérimentales.
+                  </p>
                 </div>
-              </div>
-            )}
-          </div>
+              </CardContent>
+            </Card>
+          </>
         )}
-      </div>
+      </main>
     </div>
   );
 }
