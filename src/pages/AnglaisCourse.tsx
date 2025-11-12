@@ -15,7 +15,7 @@ import {
 } from "lucide-react";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { supabase } from "@/integrations/supabase/client";
-import ericTeaching from "@/assets/eric-teaching.png";
+import ericChairDesk from "@/assets/eric-chair-desk.png";
 import { MusicSelector } from "@/components/MusicSelector";
 import { toast } from "sonner";
 
@@ -184,7 +184,7 @@ export default function AnglaisCourse() {
             </div>
             <div className="flex-shrink-0">
               <img 
-                src={ericTeaching} 
+                src={ericChairDesk} 
                 alt="Eric - Professeur d'Anglais" 
                 className="w-40 h-40 sm:w-48 sm:h-48 md:w-56 md:h-56 lg:w-64 lg:h-64 object-contain drop-shadow-2xl"
                 loading="lazy"
@@ -297,7 +297,7 @@ export default function AnglaisCourse() {
           <div className="flex flex-col md:flex-row items-center gap-4 sm:gap-6">
             <div className="flex-shrink-0">
               <img 
-                src={ericTeaching} 
+                src={ericChairDesk} 
                 alt="Eric - Assistant IA" 
                 className="w-32 h-32 sm:w-40 sm:h-40 md:w-48 md:h-48 object-contain"
                 loading="lazy"
