@@ -9,7 +9,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { MusicSelector } from "@/components/MusicSelector";
 import { toast } from "sonner";
-import ericTeaching from "@/assets/eric-teaching.png";
+import ericProfile from "@/assets/eric-new-profile.png";
 import DOMPurify from "dompurify";
 
 interface Lesson {
@@ -167,7 +167,7 @@ export default function SciencesExpérimentalesCourse7AF() {
         <Card className="mb-8 overflow-hidden border border-border bg-card">
           <div className="md:flex">
             <div className="md:w-1/3 bg-gradient-to-br from-purple-600 to-purple-700 p-8 flex items-center justify-center">
-              <img src={ericTeaching} alt="Eric enseignant" className="w-full h-auto object-contain" />
+              <img src={ericProfile} alt="Eric enseignant" className="w-full h-auto object-contain rounded-lg" />
             </div>
             <CardContent className="md:w-2/3 p-6">
               <h2 className="text-2xl font-bold mb-4 text-foreground">Aperçu du Cours</h2>
