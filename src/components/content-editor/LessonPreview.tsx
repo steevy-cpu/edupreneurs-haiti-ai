@@ -50,7 +50,7 @@ export const LessonPreview = ({ lesson }: LessonPreviewProps) => {
       </Card>
 
       {/* Objectif */}
-      {lesson.objectif && (
+      {lesson.objectif && lesson.objectif.trim() && (
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-primary">
@@ -60,7 +60,7 @@ export const LessonPreview = ({ lesson }: LessonPreviewProps) => {
           </CardHeader>
           <CardContent>
             <div 
-              className="prose dark:prose-invert max-w-none"
+              className="prose dark:prose-invert max-w-none lesson-content"
               dangerouslySetInnerHTML={{ __html: lesson.objectif }}
             />
           </CardContent>
@@ -68,7 +68,7 @@ export const LessonPreview = ({ lesson }: LessonPreviewProps) => {
       )}
 
       {/* Introduction */}
-      {lesson.introduction && (
+      {lesson.introduction && lesson.introduction.trim() && (
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-primary">
@@ -78,7 +78,7 @@ export const LessonPreview = ({ lesson }: LessonPreviewProps) => {
           </CardHeader>
           <CardContent>
             <div 
-              className="prose dark:prose-invert max-w-none"
+              className="prose dark:prose-invert max-w-none lesson-content"
               dangerouslySetInnerHTML={{ __html: lesson.introduction }}
             />
           </CardContent>
@@ -86,7 +86,7 @@ export const LessonPreview = ({ lesson }: LessonPreviewProps) => {
       )}
 
       {/* Contenu */}
-      {lesson.contenu && (
+      {lesson.contenu && lesson.contenu.trim() && (
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-primary">
@@ -96,7 +96,7 @@ export const LessonPreview = ({ lesson }: LessonPreviewProps) => {
           </CardHeader>
           <CardContent>
             <div 
-              className="prose dark:prose-invert max-w-none"
+              className="prose dark:prose-invert max-w-none lesson-content"
               dangerouslySetInnerHTML={{ __html: lesson.contenu }}
             />
           </CardContent>
@@ -104,7 +104,7 @@ export const LessonPreview = ({ lesson }: LessonPreviewProps) => {
       )}
 
       {/* Exemples et Exercices */}
-      {lesson.exemples_exercices && (
+      {lesson.exemples_exercices && lesson.exemples_exercices.trim() && (
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-primary">
@@ -114,7 +114,7 @@ export const LessonPreview = ({ lesson }: LessonPreviewProps) => {
           </CardHeader>
           <CardContent>
             <div 
-              className="prose dark:prose-invert max-w-none"
+              className="prose dark:prose-invert max-w-none lesson-content"
               dangerouslySetInnerHTML={{ __html: lesson.exemples_exercices }}
             />
           </CardContent>
@@ -140,7 +140,7 @@ export const LessonPreview = ({ lesson }: LessonPreviewProps) => {
       )}
 
       {/* Quiz Final */}
-      {lesson.quiz_final && (
+      {lesson.quiz_final && lesson.quiz_final.trim() && (
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-primary">
@@ -150,7 +150,7 @@ export const LessonPreview = ({ lesson }: LessonPreviewProps) => {
           </CardHeader>
           <CardContent>
             <div 
-              className="prose dark:prose-invert max-w-none"
+              className="prose dark:prose-invert max-w-none lesson-content"
               dangerouslySetInnerHTML={{ __html: lesson.quiz_final }}
             />
           </CardContent>

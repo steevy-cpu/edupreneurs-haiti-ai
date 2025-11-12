@@ -138,6 +138,20 @@ All colors MUST be HSL.
     @apply w-full overflow-x-hidden;
   }
 
+  /* Ensure images in lesson content render properly */
+  .lesson-content img {
+    @apply w-full rounded-lg shadow-lg border border-border my-4;
+    max-width: 100%;
+    height: auto;
+    display: block;
+  }
+
+  /* Hide empty paragraphs and divs */
+  .lesson-content p:empty,
+  .lesson-content div:empty {
+    display: none;
+  }
+
   /* Responsive card adjustments */
   .lesson-card {
     @apply transition-all duration-300;
