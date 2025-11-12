@@ -133,8 +133,12 @@ export const InteractiveActivitiesEnhanced = ({
     console.log('🔍 Full content length:', content.length);
     const activities: Activity[] = [];
     
+    // Strip any leading text before the first ### (the AI sometimes includes the prompt)
+    const firstActivityIndex = content.indexOf('###');
+    const cleanedContent = firstActivityIndex >= 0 ? content.substring(firstActivityIndex) : content;
+    
     // Split by ### headers to separate activities
-    const sections = content.split(/(?=###\s)/);
+    const sections = cleanedContent.split(/(?=###\s)/);
     
     console.log('📊 Found activity sections:', sections.length);
     console.log('📊 Section lengths:', sections.map(s => s.length));
