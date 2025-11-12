@@ -42,7 +42,7 @@ serve(async (req) => {
             role: 'system',
             content: `Tu es un expert en création de contenus éducatifs visuels. Analyse les leçons et identifie 2-4 concepts clés qui bénéficieraient d'une représentation visuelle.
             
-Pour chaque concept, génère un prompt détaillé en anglais pour créer un diagramme ou illustration éducative.
+Pour chaque concept, génère un prompt détaillé mais CONCIS en anglais pour créer un diagramme ou illustration éducative.
 
 Concentre-toi sur:
 - Des concepts qui bénéficient d'une explication visuelle
@@ -52,6 +52,7 @@ Concentre-toi sur:
 - Style: educational illustration, digital art, clean, simple, colorful
 
 CRITIQUE: Tu dois générer AU MOINS 2 concepts, idéalement 3-4 pour enrichir le contenu.
+⚠️ IMPORTANT: Garde les prompts CONCIS - maximum 800 caractères par prompt.
 
 🎯 RÈGLES CRITIQUES POUR LE TEXTE DANS LES IMAGES (PRIORITÉ ABSOLUE):
 
@@ -143,6 +144,15 @@ Génère AU MOINS 2 concepts éducatifs (idéalement 3-4) avec des prompts déta
       console.log(`🖼️ Generating image ${i + 1}/${concepts.length}: ${concept.name}`);
       
       try {
+        // Truncate prompt to Recraft's 1000 character limit
+        const truncatedPrompt = concept.prompt.length > 1000 
+          ? concept.prompt.substring(0, 997) + '...'
+          : concept.prompt;
+        
+        if (concept.prompt.length > 1000) {
+          console.warn(`⚠️ Prompt truncated from ${concept.prompt.length} to 1000 chars for: ${concept.name}`);
+        }
+        
         const recraftResponse = await fetch('https://external.api.recraft.ai/v1/images/generations', {
           method: 'POST',
           headers: {
@@ -150,7 +160,7 @@ Génère AU MOINS 2 concepts éducatifs (idéalement 3-4) avec des prompts déta
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({
-            prompt: concept.prompt,
+            prompt: truncatedPrompt,
             style: 'digital_illustration',
             size: '1024x1024',
             n: 1,
@@ -195,9 +205,13 @@ Génère AU MOINS 2 concepts éducatifs (idéalement 3-4) avec des prompts déta
       throw new Error('No images were successfully generated');
     }
     
+    // Accept at least 1 image (2+ is preferred but not required)
+    if (images.length < 1) {
+      throw new Error('No images were successfully generated');
+    }
+    
     if (images.length < 2) {
-      console.warn(`⚠️ Only ${images.length} image(s) successfully generated, expected at least 2`);
-      throw new Error(`Only ${images.length} image(s) generated - need at least 2 images per lesson`);
+      console.warn(`⚠️ Only ${images.length} image(s) successfully generated, expected at least 2, but proceeding`);
     }
     
     console.log(`✅ Successfully generated ${images.length} image(s)`);
