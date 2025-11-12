@@ -9,6 +9,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { InteractiveQuiz } from "@/components/InteractiveQuiz";
+import { InteractiveActivitiesEnhanced } from "@/components/InteractiveActivitiesEnhanced";
 import { TextToSpeechButton } from "@/components/TextToSpeechButton";
 import { useTTS } from "@/hooks/useTTS";
 import { DownloadLessonButton } from "@/components/DownloadLessonButton";
@@ -191,9 +192,10 @@ export default function SciencesExpérimentalesLesson7AF() {
 
         {/* Lesson Content */}
         <Tabs value={activeTab} onValueChange={(val) => { setActiveTab(val); stop(); }} className="space-y-6">
-          <TabsList className="grid w-full grid-cols-4">
+          <TabsList className="grid w-full grid-cols-5">
             <TabsTrigger value="introduction">Introduction</TabsTrigger>
             <TabsTrigger value="contenu">Contenu & Exercices</TabsTrigger>
+            <TabsTrigger value="activites">Activités</TabsTrigger>
             <TabsTrigger value="notes">Mes Notes</TabsTrigger>
             <TabsTrigger value="quiz">Quiz Final</TabsTrigger>
           </TabsList>
@@ -245,6 +247,25 @@ export default function SciencesExpérimentalesLesson7AF() {
               customYoutubeUrl={lesson.youtube_url || undefined}
               subject="sciences"
             />
+          </TabsContent>
+
+          <TabsContent value="activites" className="space-y-4">
+            <Card className="p-8">
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-2xl font-bold">🎮 Activités Interactives</h2>
+                {lesson.activites_interactives && (
+                  <TextToSpeechButton text={lesson.activites_interactives} sectionName="Activités" />
+                )}
+              </div>
+              {lesson.activites_interactives ? (
+                <div 
+                  className="lesson-content prose prose-slate dark:prose-invert max-w-none"
+                  dangerouslySetInnerHTML={{ __html: lesson.activites_interactives }}
+                />
+              ) : (
+                <p className="text-muted-foreground">Activités interactives à venir pour pratiquer vos connaissances...</p>
+              )}
+            </Card>
           </TabsContent>
 
           <TabsContent value="notes" className="space-y-4">
