@@ -11,8 +11,9 @@ import { TextToSpeechButton } from "@/components/TextToSpeechButton";
 import { useTTS } from "@/hooks/useTTS";
 import { Target } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
-import { InteractiveQuiz } from "@/components/InteractiveQuiz";
 import { DownloadLessonButton } from "@/components/DownloadLessonButton";
+import { InteractiveActivitiesEnhanced } from "@/components/InteractiveActivitiesEnhanced";
+import { HTMLQuizParser } from "@/components/HTMLQuizParser";
 
 interface Lesson {
   id: string;
@@ -22,6 +23,8 @@ interface Lesson {
   introduction: string;
   contenu: string;
   exemples_exercices: string;
+  activites_interactives?: string;
+  quiz_final?: string;
   youtube_url?: string;
 }
 
@@ -182,7 +185,7 @@ const SciencesSocialesLessonAF8 = () => {
         </div>
 
         <Tabs value={activeTab} onValueChange={(val) => { setActiveTab(val); stop(); }} className="space-y-6">
-          <TabsList className="grid w-full grid-cols-4">
+          <TabsList className="grid w-full grid-cols-5">
             <TabsTrigger value="introduction" className="gap-2">
               <BookOpen className="h-4 w-4" />
               <span className="hidden sm:inline">Introduction</span>
@@ -190,6 +193,10 @@ const SciencesSocialesLessonAF8 = () => {
             <TabsTrigger value="contenu" className="gap-2">
               <FileText className="h-4 w-4" />
               <span className="hidden sm:inline">Contenu & Exemples</span>
+            </TabsTrigger>
+            <TabsTrigger value="activites" className="gap-2">
+              <ListChecks className="h-4 w-4" />
+              <span className="hidden sm:inline">Activités</span>
             </TabsTrigger>
             <TabsTrigger value="notes" className="gap-2">
               <StickyNote className="h-4 w-4" />
@@ -255,12 +262,17 @@ const SciencesSocialesLessonAF8 = () => {
             )}
           </TabsContent>
 
-          <TabsContent value="exemples" className="space-y-6">
+          <TabsContent value="activites" className="space-y-6">
             <Card className="p-6">
-              <div 
-                className="prose prose-sm max-w-none dark:prose-invert lesson-content"
-                dangerouslySetInnerHTML={{ __html: lesson.exemples_exercices }}
-              />
+              <h3 className="text-xl font-semibold mb-4">Activités Interactives</h3>
+              {lesson.activites_interactives ? (
+                <InteractiveActivitiesEnhanced 
+                  content={lesson.activites_interactives}
+                  isLoading={false}
+                />
+              ) : (
+                <p className="text-muted-foreground">Aucune activité disponible pour le moment.</p>
+              )}
             </Card>
           </TabsContent>
 
@@ -295,11 +307,16 @@ const SciencesSocialesLessonAF8 = () => {
 
           <TabsContent value="quiz" className="space-y-6">
             <Card className="p-6">
-              <InteractiveQuiz
-                content=""
-                isLoading={false}
-                lessonGoldReward={50}
-              />
+              <h3 className="text-xl font-semibold mb-4">Quiz Final</h3>
+              {lesson.quiz_final ? (
+                <HTMLQuizParser 
+                  htmlContent={lesson.quiz_final}
+                  lessonSlug={topicId || ''}
+                  subject="sciences-sociales"
+                />
+              ) : (
+                <p className="text-muted-foreground">Aucun quiz disponible pour le moment.</p>
+              )}
             </Card>
           </TabsContent>
         </Tabs>

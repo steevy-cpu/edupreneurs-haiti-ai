@@ -86,9 +86,23 @@ import { ThemeToggle } from "@/components/ThemeToggle";
 import { YouTubeVideoSection } from "@/components/YouTubeVideoSection";
 import { DownloadLessonButton } from "@/components/DownloadLessonButton";
 import { InteractiveActivitiesEnhanced } from "@/components/InteractiveActivitiesEnhanced";
+import { HTMLQuizParser } from "@/components/HTMLQuizParser";
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+
+interface DBLesson {
+  id: string;
+  title: string;
+  slug: string;
+  objectif: string;
+  introduction: string;
+  contenu: string;
+  exemples_exercices: string;
+  activites_interactives?: string;
+  quiz_final?: string;
+  youtube_url?: string;
+}
 
 export default function SciencesSocialesLesson() {
   const { topicId } = useParams<{ topicId: string }>();
@@ -99,34 +113,48 @@ export default function SciencesSocialesLesson() {
   const [lessonCompleted, setLessonCompleted] = useState(false);
   const [personalNotes, setPersonalNotes] = useState("");
   const [isSavingNotes, setIsSavingNotes] = useState(false);
-  const [youtubeUrl, setYoutubeUrl] = useState<string | null>(null);
+  const [dbLesson, setDbLesson] = useState<DBLesson | null>(null);
+  const [loadingLesson, setLoadingLesson] = useState(true);
 
+  // Fallback to static data if no DB lesson found
   const currentIndex = sciencesSocialesLessons7AF.findIndex(
     (lesson) => lesson.id === topicId
   );
-  const lesson = sciencesSocialesLessons7AF[currentIndex];
+  const staticLesson = sciencesSocialesLessons7AF[currentIndex];
+  
+  // Use DB lesson if available, otherwise use static lesson
+  const lesson = dbLesson || staticLesson;
+  
+  // Get the correct property based on source
+  const lessonExercises = dbLesson?.exemples_exercices || staticLesson?.exemplesExercices || '';
+  const lessonMonth = dbLesson ? '' : staticLesson?.mois || '';
+  const lessonYoutubeUrl = dbLesson?.youtube_url;
 
   useEffect(() => {
     window.scrollTo(0, 0);
+    fetchLessonFromDB();
     loadPersonalNotes();
-    fetchYoutubeUrl();
   }, [topicId]);
 
-  const fetchYoutubeUrl = async () => {
+  const fetchLessonFromDB = async () => {
     if (!topicId) return;
     
     try {
+      setLoadingLesson(true);
       const { data, error } = await supabase
         .from('lessons')
-        .select('youtube_url')
+        .select('*')
         .eq('slug', topicId)
+        .eq('grade_level', '7AF')
         .maybeSingle();
 
       if (data && !error) {
-        setYoutubeUrl(data.youtube_url);
+        setDbLesson(data as DBLesson);
       }
     } catch (error) {
-      console.error('Error fetching YouTube URL:', error);
+      console.error('Error fetching lesson from DB:', error);
+    } finally {
+      setLoadingLesson(false);
     }
   };
 
@@ -292,8 +320,8 @@ export default function SciencesSocialesLesson() {
                     objectif: lesson.objectif,
                     introduction: lesson.introduction,
                     contenu: lesson.contenu,
-                    exemples_exercices: lesson.exemplesExercices,
-                    youtube_url: youtubeUrl || undefined,
+                    exemples_exercices: lessonExercises,
+                    youtube_url: lessonYoutubeUrl,
                   }}
                   personalNotes={personalNotes}
                   subjectName="Sciences Sociales 7AF"
@@ -327,7 +355,7 @@ export default function SciencesSocialesLesson() {
                   45 min
                 </span>
                 <span className="flex items-center gap-1">
-                  📅 {lesson.mois}
+                  📅 {lessonMonth || 'Année scolaire'}
                 </span>
                 {lessonCompleted && (
                   <span className="flex items-center gap-1 text-green-600 font-semibold">
@@ -410,13 +438,12 @@ export default function SciencesSocialesLesson() {
                 />
               </Card>
               
-              {/* YouTube Video Section */}
               <div className="mt-8">
                 <YouTubeVideoSection 
                   lessonTitle={lesson.title}
                   objectives={lesson.objectif || ""}
                   gradeLevel="7AF"
-                  customYoutubeUrl={youtubeUrl || undefined}
+                  customYoutubeUrl={lessonYoutubeUrl}
                   subject="Sciences Sociales"
                 />
               </div>
@@ -438,18 +465,28 @@ export default function SciencesSocialesLesson() {
             </TabsContent>
 
             <TabsContent value="activites" className="space-y-6">
-              <Card className="p-8 text-center">
-                <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-purple-500 to-pink-600 flex items-center justify-center mx-auto mb-4">
-                  <Gamepad2 className="w-10 h-10 text-white" />
-                </div>
-                <h3 className="text-xl font-bold mb-2">Activités interactives</h3>
-                <p className="text-muted-foreground mb-4">
-                  Les activités interactives pour cette leçon seront bientôt disponibles !
-                </p>
-                <p className="text-sm text-muted-foreground">
-                  En attendant, tu peux consulter le Quiz Final pour tester tes connaissances.
-                </p>
-              </Card>
+              {dbLesson?.activites_interactives ? (
+                <Card className="p-6">
+                  <h3 className="text-xl font-semibold mb-4">Activités Interactives</h3>
+                  <InteractiveActivitiesEnhanced 
+                    content={dbLesson.activites_interactives}
+                    isLoading={false}
+                  />
+                </Card>
+              ) : (
+                <Card className="p-8 text-center">
+                  <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-purple-500 to-pink-600 flex items-center justify-center mx-auto mb-4">
+                    <Gamepad2 className="w-10 h-10 text-white" />
+                  </div>
+                  <h3 className="text-xl font-bold mb-2">Activités interactives</h3>
+                  <p className="text-muted-foreground mb-4">
+                    Les activités interactives pour cette leçon seront bientôt disponibles !
+                  </p>
+                  <p className="text-sm text-muted-foreground">
+                    En attendant, tu peux consulter le Quiz Final pour tester tes connaissances.
+                  </p>
+                </Card>
+              )}
             </TabsContent>
 
             <TabsContent value="exemples" className="space-y-6">
@@ -469,7 +506,7 @@ export default function SciencesSocialesLesson() {
                     [&_strong]:text-orange-600 dark:[&_strong]:text-orange-400 [&_strong]:font-semibold
                     [&_h3]:text-xl [&_h3]:font-bold [&_h3]:text-orange-600 dark:[&_h3]:text-orange-400 [&_h3]:mb-4 [&_h3]:mt-6
                     [&_h4]:text-lg [&_h4]:font-semibold [&_h4]:text-orange-600 dark:[&_h4]:text-orange-400 [&_h4]:mb-3 [&_h4]:mt-4"
-                  dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(lesson.exemplesExercices) }}
+                  dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(lessonExercises) }}
                 />
               </Card>
 
@@ -540,7 +577,24 @@ export default function SciencesSocialesLesson() {
             </TabsContent>
 
             <TabsContent value="quiz" className="space-y-6">
-              {quizData ? (
+              {dbLesson?.quiz_final ? (
+                <Card className="p-6">
+                  <div className="flex items-center gap-3 mb-6">
+                    <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-orange-500 to-orange-700 flex items-center justify-center">
+                      <Trophy className="w-6 h-6 text-white" />
+                    </div>
+                    <div>
+                      <h2 className="text-2xl font-bold">Quiz Final</h2>
+                      <p className="text-muted-foreground">Teste tes connaissances sur cette leçon</p>
+                    </div>
+                  </div>
+                  <HTMLQuizParser 
+                    htmlContent={dbLesson.quiz_final}
+                    lessonSlug={topicId || ''}
+                    subject="sciences-sociales"
+                  />
+                </Card>
+              ) : quizData ? (
                 <>
                   <div className="flex items-center gap-3 mb-6">
                     <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-orange-500 to-orange-700 flex items-center justify-center">
