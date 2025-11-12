@@ -261,9 +261,9 @@ export default function SciencesExpérimentalesLesson7AF() {
                 )}
               </div>
               {lesson.activites_interactives ? (
-                <div 
-                  className="lesson-content prose prose-slate dark:prose-invert max-w-none"
-                  dangerouslySetInnerHTML={{ __html: lesson.activites_interactives }}
+                <InteractiveActivitiesEnhanced 
+                  content={lesson.activites_interactives}
+                  isLoading={false}
                 />
               ) : (
                 <p className="text-muted-foreground">Activités interactives à venir pour pratiquer vos connaissances...</p>
