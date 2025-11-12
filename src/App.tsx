@@ -15,6 +15,7 @@ import { lazy, Suspense } from "react";
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
 import Dashboard from "./pages/Dashboard";
+import SciencesExpérimentalesCourse7AF from "./pages/SciencesExpérimentalesCourse7AF";
 
 // Lazy load non-critical pages for better performance
 const Onboarding = lazy(() => import("./pages/Onboarding"));
@@ -26,7 +27,6 @@ const MathCourseAF9 = lazy(() => import("./pages/MathCourseAF9"));
 const MathLessonAF9 = lazy(() => import("./pages/MathLessonAF9"));
 const SciencesExpérimentalesCourseAF9 = lazy(() => import("./pages/SciencesExpérimentalesCourseAF9"));
 const SciencesExpérimentalesLessonAF9 = lazy(() => import("./pages/SciencesExpérimentalesLessonAF9"));
-const SciencesExpérimentalesCourse7AF = lazy(() => import("./pages/SciencesExpérimentalesCourse7AF"));
 const SciencesExpérimentalesLesson7AF = lazy(() => import("./pages/SciencesExpérimentalesLesson7AF"));
 const AnglaisCourseAF9 = lazy(() => import("./pages/AnglaisCourseAF9"));
 const AnglaisLessonAF9 = lazy(() => import("./pages/AnglaisLessonAF9"));

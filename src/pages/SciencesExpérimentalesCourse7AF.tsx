@@ -35,6 +35,8 @@ export default function SciencesExpérimentalesCourse7AF() {
 
   const fetchLessons = async () => {
     try {
+      console.log("Fetching Sciences Expérimentales 7AF lessons...");
+      
       const { data: { user } } = await supabase.auth.getUser();
       
       if (user) {
@@ -68,7 +70,19 @@ export default function SciencesExpérimentalesCourse7AF() {
         .eq("grade_level", "7AF")
         .single();
 
-      if (subjectError) throw subjectError;
+      if (subjectError) {
+        console.error("Subject error:", subjectError);
+        throw subjectError;
+      }
+
+      if (!subjectData) {
+        console.error("No subject found for sciences-experimentales-7af");
+        toast.error("Matière non trouvée");
+        setLoading(false);
+        return;
+      }
+
+      console.log("Subject found:", subjectData.id);
 
       const { data: lessonsData, error: lessonsError } = await supabase
         .from("lessons")
@@ -76,8 +90,12 @@ export default function SciencesExpérimentalesCourse7AF() {
         .eq("subject_id", subjectData.id)
         .order("order_index", { ascending: true });
 
-      if (lessonsError) throw lessonsError;
+      if (lessonsError) {
+        console.error("Lessons error:", lessonsError);
+        throw lessonsError;
+      }
 
+      console.log(`Found ${lessonsData?.length || 0} lessons`);
       setLessons(lessonsData || []);
     } catch (error) {
       console.error("Error fetching lessons:", error);
