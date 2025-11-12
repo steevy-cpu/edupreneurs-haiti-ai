@@ -31,6 +31,7 @@ export const EnglishPracticeChat = ({
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [isInitialized, setIsInitialized] = useState(false);
+  const [displayName, setDisplayName] = useState(userNickname);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const scrollToBottom = () => {
@@ -42,11 +43,34 @@ export const EnglishPracticeChat = ({
   }, [messages]);
 
   useEffect(() => {
-    if (!isInitialized) {
+    const fetchUserNickname = async () => {
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (user) {
+          const { data: profile } = await supabase
+            .from('profiles')
+            .select('nickname')
+            .eq('id', user.id)
+            .single();
+          
+          if (profile?.nickname) {
+            setDisplayName(profile.nickname);
+          }
+        }
+      } catch (error) {
+        console.error('Error fetching nickname:', error);
+      }
+    };
+
+    fetchUserNickname();
+  }, []);
+
+  useEffect(() => {
+    if (!isInitialized && displayName) {
       initializeChat();
       setIsInitialized(true);
     }
-  }, [isInitialized]);
+  }, [isInitialized, displayName]);
 
   const initializeChat = async () => {
     setIsLoading(true);
@@ -61,7 +85,7 @@ export const EnglishPracticeChat = ({
             gradeLevel: gradeLevel,
           },
           chatHistory: [],
-          userNickname: userNickname,
+          userNickname: displayName,
           isInitialGreeting: true,
         },
       });
@@ -98,7 +122,7 @@ export const EnglishPracticeChat = ({
             gradeLevel: gradeLevel,
           },
           chatHistory: messages,
-          userNickname: userNickname,
+          userNickname: displayName,
           isInitialGreeting: false,
         },
       });
