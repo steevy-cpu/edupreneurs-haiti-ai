@@ -364,7 +364,7 @@ const MathLesson = () => {
               </CardHeader>
               <CardContent className="pt-6">
                 <div 
-                  className="prose dark:prose-invert max-w-none"
+                  className="prose dark:prose-invert max-w-none lesson-content"
                   dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(lesson.objectif) }}
                 />
               </CardContent>
@@ -380,7 +380,7 @@ const MathLesson = () => {
               </CardHeader>
               <CardContent className="pt-6">
                 <div 
-                  className="prose dark:prose-invert max-w-none"
+                  className="prose dark:prose-invert max-w-none lesson-content"
                   dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(lesson.introduction) }}
                 />
               </CardContent>
@@ -399,7 +399,7 @@ const MathLesson = () => {
               </CardHeader>
               <CardContent className="pt-6">
                 <div 
-                  className="prose dark:prose-invert max-w-none"
+                  className="prose dark:prose-invert max-w-none lesson-content"
                   dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(lesson.contenu) }}
                 />
               </CardContent>
@@ -416,7 +416,7 @@ const MathLesson = () => {
                 </CardHeader>
                 <CardContent className="pt-6">
                   <div 
-                    className="prose dark:prose-invert max-w-none"
+                    className="prose dark:prose-invert max-w-none lesson-content"
                     dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(lesson.exemples_exercices) }}
                   />
                 </CardContent>

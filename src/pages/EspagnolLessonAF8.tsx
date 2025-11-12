@@ -216,7 +216,7 @@ const EspagnolLessonAF8 = () => {
                     <p className="text-sm font-medium text-primary">Objectif:</p>
                     <TextToSpeechButton text={lesson.objectif} sectionName="Objectif" size="sm" />
                   </div>
-                  <div className="prose dark:prose-invert max-w-none">
+                  <div className="prose dark:prose-invert max-w-none lesson-content">
                     <div dangerouslySetInnerHTML={{ __html: lesson.objectif }} />
                   </div>
                 </Card>
@@ -262,7 +262,7 @@ const EspagnolLessonAF8 = () => {
                 <TextToSpeechButton text={lesson.introduction} sectionName="Introduction" />
               </div>
               <div 
-                className="prose dark:prose-invert max-w-none"
+                className="prose dark:prose-invert max-w-none lesson-content"
                 dangerouslySetInnerHTML={{ __html: lesson.introduction }}
               />
             </Card>
@@ -275,7 +275,7 @@ const EspagnolLessonAF8 = () => {
                 <TextToSpeechButton text={lesson.contenu} sectionName="Contenu Principal" />
               </div>
               <div 
-                className="prose dark:prose-invert max-w-none"
+                className="prose dark:prose-invert max-w-none lesson-content"
                 dangerouslySetInnerHTML={{ __html: lesson.contenu }}
               />
               
@@ -287,7 +287,7 @@ const EspagnolLessonAF8 = () => {
                     <TextToSpeechButton text={lesson.exemples_exercices} sectionName="Exemples et Exercices" />
                   </div>
                   <div 
-                    className="prose dark:prose-invert max-w-none"
+                    className="prose dark:prose-invert max-w-none lesson-content"
                     dangerouslySetInnerHTML={{ __html: lesson.exemples_exercices }}
                   />
                 </>

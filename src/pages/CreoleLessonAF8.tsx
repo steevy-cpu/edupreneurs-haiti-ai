@@ -195,7 +195,7 @@ const CreoleLessonAF8 = () => {
 
           <TabsContent value="introduction" className="space-y-6">
             <Card>
-              <CardContent className="pt-6 prose prose-sm dark:prose-invert max-w-none">
+              <CardContent className="pt-6 prose prose-sm dark:prose-invert max-w-none lesson-content">
                 <div dangerouslySetInnerHTML={{ __html: lesson.introduction || '<p>Introduction à venir...</p>' }} />
               </CardContent>
             </Card>
@@ -203,7 +203,7 @@ const CreoleLessonAF8 = () => {
 
           <TabsContent value="contenu" className="space-y-6">
             <Card>
-              <CardContent className="pt-6 prose prose-sm dark:prose-invert max-w-none space-y-6">
+              <CardContent className="pt-6 prose prose-sm dark:prose-invert max-w-none lesson-content space-y-6">
                 <div dangerouslySetInnerHTML={{ __html: lesson.contenu || '<p>Contenu à venir...</p>' }} />
 
                 {lesson.youtube_url && (
@@ -229,7 +229,7 @@ const CreoleLessonAF8 = () => {
                   <>
                     <div className="border-t my-8" />
                     <h3 className="text-2xl font-bold mb-4">Exemples et Exercices</h3>
-                    <div dangerouslySetInnerHTML={{ __html: lesson.exemples_exercices }} />
+                    <div className="lesson-content" dangerouslySetInnerHTML={{ __html: lesson.exemples_exercices }} />
                   </>
                 )}
               </CardContent>

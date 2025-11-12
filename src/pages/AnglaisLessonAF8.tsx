@@ -207,7 +207,7 @@ const AnglaisLessonAF8 = () => {
                   <div>
                     <p className="font-semibold mb-1">Objectif de la leçon</p>
                     <div 
-                      className="text-white/90 prose dark:prose-invert max-w-none prose-sm"
+                      className="text-white/90 prose dark:prose-invert max-w-none prose-sm lesson-content"
                       dangerouslySetInnerHTML={{ __html: lesson.objectif }}
                     />
                   </div>
@@ -252,7 +252,7 @@ const AnglaisLessonAF8 = () => {
                       <TextToSpeechButton text={lesson.introduction} sectionName="Introduction" />
                     </div>
                     <div 
-                      className="prose prose-sm lg:prose-base max-w-none dark:prose-invert"
+                      className="prose prose-sm lg:prose-base max-w-none dark:prose-invert lesson-content"
                       dangerouslySetInnerHTML={{ __html: lesson.introduction }}
                     />
                   </>
@@ -276,7 +276,7 @@ const AnglaisLessonAF8 = () => {
                       <TextToSpeechButton text={lesson.contenu} sectionName="Contenu Principal" />
                     </div>
                     <div 
-                      className="prose prose-sm lg:prose-base max-w-none dark:prose-invert"
+                      className="prose prose-sm lg:prose-base max-w-none dark:prose-invert lesson-content"
                       dangerouslySetInnerHTML={{ __html: lesson.contenu }}
                     />
                   </>
@@ -310,7 +310,7 @@ const AnglaisLessonAF8 = () => {
                       <TextToSpeechButton text={lesson.exemples_exercices} sectionName="Exemples et Exercices" />
                     </div>
                     <div 
-                      className="prose prose-sm lg:prose-base max-w-none dark:prose-invert"
+                      className="prose prose-sm lg:prose-base max-w-none dark:prose-invert lesson-content"
                       dangerouslySetInnerHTML={{ __html: lesson.exemples_exercices }}
                     />
                   </>

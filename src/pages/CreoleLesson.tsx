@@ -236,11 +236,11 @@ export default function CreoleLesson() {
                     Objektif Leson an
                   </h3>
                   <div 
-                    className="text-muted-foreground prose dark:prose-invert max-w-none prose-sm"
+                    className="text-muted-foreground prose dark:prose-invert max-w-none prose-sm lesson-content"
                     dangerouslySetInnerHTML={{ __html: lesson.objectif }}
                   />
                 </div>
-                <div className="prose prose-lg max-w-none dark:prose-invert">
+                <div className="prose prose-lg max-w-none dark:prose-invert lesson-content">
                   {lesson.introduction && (
                     <div dangerouslySetInnerHTML={{ __html: lesson.introduction }} />
                   )}
@@ -248,7 +248,7 @@ export default function CreoleLesson() {
               </TabsContent>
 
               <TabsContent value="contenu" className="space-y-6">
-                <div className="prose prose-lg max-w-none dark:prose-invert">
+                <div className="prose prose-lg max-w-none dark:prose-invert lesson-content">
                   {lesson.contenu && (
                     <div dangerouslySetInnerHTML={{ __html: lesson.contenu }} />
                   )}
@@ -268,7 +268,7 @@ export default function CreoleLesson() {
                   <>
                     <div className="border-t my-8" />
                     <h3 className="text-2xl font-bold mb-4">Egzanp ak Egzèsis</h3>
-                    <div className="prose prose-lg max-w-none dark:prose-invert">
+                    <div className="prose prose-lg max-w-none dark:prose-invert lesson-content">
                       <div dangerouslySetInnerHTML={{ __html: lesson.exemplesExercices }} />
                     </div>
                   </>

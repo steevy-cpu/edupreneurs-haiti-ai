@@ -303,7 +303,7 @@ export default function EspagnolLesson() {
                       <TextToSpeechButton text={lesson.objectif} sectionName="Objectif" />
                     </div>
                     <div 
-                      className="text-foreground leading-relaxed prose dark:prose-invert max-w-none"
+                      className="text-foreground leading-relaxed prose dark:prose-invert max-w-none lesson-content"
                       dangerouslySetInnerHTML={{ __html: lesson.objectif }}
                     />
                   </div>
@@ -321,7 +321,7 @@ export default function EspagnolLesson() {
                   <TextToSpeechButton text={lesson.introduction} sectionName="Introduction" />
                 </div>
                 <div 
-                  className="prose prose-lg dark:prose-invert max-w-none [&_p]:text-foreground [&_ul]:text-foreground [&_li]:text-foreground [&_strong]:text-purple-600 dark:[&_strong]:text-purple-400"
+                  className="prose prose-lg dark:prose-invert max-w-none lesson-content [&_p]:text-foreground [&_ul]:text-foreground [&_li]:text-foreground [&_strong]:text-purple-600 dark:[&_strong]:text-purple-400"
                   dangerouslySetInnerHTML={{ __html: lesson.introduction }}
                 />
               </Card>
@@ -334,7 +334,7 @@ export default function EspagnolLesson() {
                   <TextToSpeechButton text={lesson.contenu} sectionName="Contenu Principal" />
                 </div>
                 <div 
-                  className="prose prose-lg dark:prose-invert max-w-none
+                  className="prose prose-lg dark:prose-invert max-w-none lesson-content
                     [&_p]:text-foreground [&_p]:leading-relaxed [&_p]:mb-4
                     [&_ul]:text-foreground [&_ul]:my-4
                     [&_li]:text-foreground [&_li]:mb-2
@@ -359,7 +359,7 @@ export default function EspagnolLesson() {
                       <TextToSpeechButton text={lesson.exemples_exercices} sectionName="Exemples et Exercices" />
                     </div>
                     <div 
-                      className="prose prose-lg dark:prose-invert max-w-none
+                      className="prose prose-lg dark:prose-invert max-w-none lesson-content
                         [&_p]:text-foreground [&_p]:leading-relaxed [&_p]:mb-4
                         [&_ul]:text-foreground [&_ul]:my-4
                         [&_li]:text-foreground [&_li]:mb-2

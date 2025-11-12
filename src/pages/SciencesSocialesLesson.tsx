@@ -375,7 +375,7 @@ export default function SciencesSocialesLesson() {
                   <div>
                     <h2 className="text-2xl font-bold text-orange-600 dark:text-orange-400 mb-2">Objectif de la leçon</h2>
                     <div 
-                      className="text-foreground leading-relaxed prose dark:prose-invert max-w-none"
+                      className="text-foreground leading-relaxed prose dark:prose-invert max-w-none lesson-content"
                       dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(lesson.objectif) }}
                     />
                   </div>
@@ -390,7 +390,7 @@ export default function SciencesSocialesLesson() {
                   <h2 className="text-2xl font-bold text-orange-600 dark:text-orange-400">Introduction</h2>
                 </div>
                 <div 
-                  className="prose prose-lg dark:prose-invert max-w-none [&_p]:text-foreground [&_ul]:text-foreground [&_li]:text-foreground [&_strong]:text-orange-600 dark:[&_strong]:text-orange-400"
+                  className="prose prose-lg dark:prose-invert max-w-none lesson-content [&_p]:text-foreground [&_ul]:text-foreground [&_li]:text-foreground [&_strong]:text-orange-600 dark:[&_strong]:text-orange-400"
                   dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(lesson.introduction) }}
                 />
               </Card>
@@ -399,7 +399,7 @@ export default function SciencesSocialesLesson() {
             <TabsContent value="contenu" className="space-y-6">
               <Card className="p-6 bg-gradient-to-br from-background to-orange-50/30 dark:to-orange-950/10">
                 <div 
-                  className="prose prose-lg dark:prose-invert max-w-none
+                  className="prose prose-lg dark:prose-invert max-w-none lesson-content
                     [&_p]:text-foreground [&_p]:leading-relaxed [&_p]:mb-4
                     [&_ul]:text-foreground [&_ul]:my-4
                     [&_li]:text-foreground [&_li]:mb-2

@@ -234,7 +234,7 @@ const SciencesLessonAF8 = () => {
                   <div>
                     <p className="font-semibold mb-1">Objectif de la leçon</p>
                     <div 
-                      className="text-white/90 prose dark:prose-invert max-w-none prose-sm"
+                      className="text-white/90 prose dark:prose-invert max-w-none prose-sm lesson-content"
                       dangerouslySetInnerHTML={{ __html: lesson.objectif }}
                     />
                   </div>
@@ -286,7 +286,7 @@ const SciencesLessonAF8 = () => {
               <TabsContent value="introduction" className="mt-0">
                 <div className="prose prose-lg max-w-none dark:prose-invert">
                   {lesson.introduction ? (
-                    <div dangerouslySetInnerHTML={{ __html: lesson.introduction }} />
+                    <div className="lesson-content" dangerouslySetInnerHTML={{ __html: lesson.introduction }} />
                   ) : (
                     <p className="text-muted-foreground">Introduction à venir...</p>
                   )}
@@ -306,7 +306,7 @@ const SciencesLessonAF8 = () => {
                   )}
                   <div className="prose prose-lg max-w-none dark:prose-invert">
                     {lesson.contenu ? (
-                      <div dangerouslySetInnerHTML={{ __html: lesson.contenu }} />
+                      <div className="lesson-content" dangerouslySetInnerHTML={{ __html: lesson.contenu }} />
                     ) : (
                       <p className="text-muted-foreground">Contenu à venir...</p>
                     )}
@@ -328,7 +328,7 @@ const SciencesLessonAF8 = () => {
                     <>
                       <div className="border-t my-8" />
                       <h3 className="text-2xl font-bold mb-4">Exemples et Exercices</h3>
-                      <div className="prose prose-lg max-w-none dark:prose-invert">
+                      <div className="prose prose-lg max-w-none dark:prose-invert lesson-content">
                         <div dangerouslySetInnerHTML={{ __html: lesson.exemples_exercices }} />
                       </div>
                     </>

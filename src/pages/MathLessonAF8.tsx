@@ -200,7 +200,7 @@ const MathLessonAF8 = () => {
               <h1 className="text-3xl md:text-4xl font-bold mb-3">{lesson.title}</h1>
               {lesson.objectif && (
                 <div 
-                  className="text-muted-foreground text-lg prose dark:prose-invert max-w-none"
+                  className="text-muted-foreground text-lg prose dark:prose-invert max-w-none lesson-content"
                   dangerouslySetInnerHTML={{ __html: lesson.objectif }}
                 />
               )}
@@ -261,7 +261,7 @@ const MathLessonAF8 = () => {
               <CardContent className="p-6">
                 {lesson.introduction ? (
                   <div 
-                    className="prose prose-sm lg:prose-base max-w-none dark:prose-invert"
+                    className="prose prose-sm lg:prose-base max-w-none dark:prose-invert lesson-content"
                     dangerouslySetInnerHTML={{ __html: lesson.introduction }}
                   />
                 ) : (
@@ -278,7 +278,7 @@ const MathLessonAF8 = () => {
                       Objectif de la leçon
                     </h3>
                     <div 
-                      className="prose dark:prose-invert max-w-none"
+                      className="prose dark:prose-invert max-w-none lesson-content"
                       dangerouslySetInnerHTML={{ __html: lesson.objectif }}
                     />
                   </div>
@@ -292,7 +292,7 @@ const MathLessonAF8 = () => {
               <CardContent className="p-6 space-y-6">
                 {lesson.contenu ? (
                   <div 
-                    className="prose prose-sm lg:prose-base max-w-none dark:prose-invert"
+                    className="prose prose-sm lg:prose-base max-w-none dark:prose-invert lesson-content"
                     dangerouslySetInnerHTML={{ __html: lesson.contenu }}
                   />
                 ) : (
@@ -322,7 +322,7 @@ const MathLessonAF8 = () => {
                     <div className="border-t my-8" />
                     <h3 className="text-2xl font-bold mb-4">Exemples et Exercices</h3>
                     <div 
-                      className="prose prose-sm lg:prose-base max-w-none dark:prose-invert"
+                      className="prose prose-sm lg:prose-base max-w-none dark:prose-invert lesson-content"
                       dangerouslySetInnerHTML={{ __html: lesson.exemples_exercices }}
                     />
                   </>

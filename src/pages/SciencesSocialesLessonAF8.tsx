@@ -208,7 +208,7 @@ const SciencesSocialesLessonAF8 = () => {
                 <TextToSpeechButton text={lesson.introduction} sectionName="Introduction" />
               </div>
               <div 
-                className="prose prose-sm max-w-none dark:prose-invert"
+                className="prose prose-sm max-w-none dark:prose-invert lesson-content"
                 dangerouslySetInnerHTML={{ __html: lesson.introduction }}
               />
             </Card>
@@ -221,7 +221,7 @@ const SciencesSocialesLessonAF8 = () => {
                 <TextToSpeechButton text={lesson.contenu} sectionName="Contenu Principal" />
               </div>
               <div 
-                className="prose prose-sm max-w-none dark:prose-invert"
+                className="prose prose-sm max-w-none dark:prose-invert lesson-content"
                 dangerouslySetInnerHTML={{ __html: lesson.contenu }}
               />
               
@@ -233,7 +233,7 @@ const SciencesSocialesLessonAF8 = () => {
                     <TextToSpeechButton text={lesson.exemples_exercices} sectionName="Exemples et Exercices" />
                   </div>
                   <div 
-                    className="prose prose-sm max-w-none dark:prose-invert"
+                    className="prose prose-sm max-w-none dark:prose-invert lesson-content"
                     dangerouslySetInnerHTML={{ __html: lesson.exemples_exercices }}
                   />
                 </>
@@ -258,7 +258,7 @@ const SciencesSocialesLessonAF8 = () => {
           <TabsContent value="exemples" className="space-y-6">
             <Card className="p-6">
               <div 
-                className="prose prose-sm max-w-none dark:prose-invert"
+                className="prose prose-sm max-w-none dark:prose-invert lesson-content"
                 dangerouslySetInnerHTML={{ __html: lesson.exemples_exercices }}
               />
             </Card>
