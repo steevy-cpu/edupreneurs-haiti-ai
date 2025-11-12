@@ -23,6 +23,8 @@ interface Lesson {
 }
 
 export default function SciencesExpérimentalesCourse7AF() {
+  console.log("🔍 SciencesExpérimentalesCourse7AF component mounting...");
+  
   const navigate = useNavigate();
   const [lessons, setLessons] = useState<Lesson[]>([]);
   const [loading, setLoading] = useState(true);
@@ -45,7 +47,7 @@ export default function SciencesExpérimentalesCourse7AF() {
           .from('profiles')
           .select('gold_earned')
           .eq('user_id', user.id)
-          .single();
+          .maybeSingle();
 
         if (profileData) {
           setUserGold(profileData.gold_earned || 0);
@@ -68,16 +70,18 @@ export default function SciencesExpérimentalesCourse7AF() {
         .select("id")
         .eq("slug", "sciences-experimentales-7af")
         .eq("grade_level", "7AF")
-        .single();
+        .maybeSingle();
 
       if (subjectError) {
         console.error("Subject error:", subjectError);
-        throw subjectError;
+        toast.error("Erreur de chargement de la matière");
+        setLoading(false);
+        return;
       }
 
       if (!subjectData) {
         console.error("No subject found for sciences-experimentales-7af");
-        toast.error("Matière non trouvée");
+        toast.error("Matière non trouvée - veuillez contacter l'administrateur");
         setLoading(false);
         return;
       }
@@ -143,6 +147,8 @@ export default function SciencesExpérimentalesCourse7AF() {
   const completedCount = completedLessons.length;
   const totalLessons = lessons.length;
   const progressPercentage = totalLessons > 0 ? (completedCount / totalLessons) * 100 : 0;
+
+  console.log("🎨 Rendering with:", { totalLessons, completedCount, loading });
 
   return (
     <div className="min-h-screen bg-background">
