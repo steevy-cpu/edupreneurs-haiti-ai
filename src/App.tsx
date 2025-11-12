@@ -15,7 +15,7 @@ import { lazy, Suspense } from "react";
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
 import Dashboard from "./pages/Dashboard";
-import SciencesExpérimentalesCourse7AF from "./pages/SciencesExpérimentalesCourse7AF";
+import SciencesExperimentalesCourse7AF from "./pages/SciencesExperimentalesCourse7AF";
 
 // Lazy load non-critical pages for better performance
 const Onboarding = lazy(() => import("./pages/Onboarding"));
@@ -25,9 +25,9 @@ const MathCourseAF8 = lazy(() => import("./pages/MathCourseAF8"));
 const MathLessonAF8 = lazy(() => import("./pages/MathLessonAF8"));
 const MathCourseAF9 = lazy(() => import("./pages/MathCourseAF9"));
 const MathLessonAF9 = lazy(() => import("./pages/MathLessonAF9"));
-const SciencesExpérimentalesCourseAF9 = lazy(() => import("./pages/SciencesExpérimentalesCourseAF9"));
-const SciencesExpérimentalesLessonAF9 = lazy(() => import("./pages/SciencesExpérimentalesLessonAF9"));
-const SciencesExpérimentalesLesson7AF = lazy(() => import("./pages/SciencesExpérimentalesLesson7AF"));
+const SciencesExperimentalesCourseAF9 = lazy(() => import("./pages/SciencesExperimentalesCourseAF9"));
+const SciencesExperimentalesLessonAF9 = lazy(() => import("./pages/SciencesExperimentalesLessonAF9"));
+const SciencesExperimentalesLesson7AF = lazy(() => import("./pages/SciencesExperimentalesLesson7AF"));
 const AnglaisCourseAF9 = lazy(() => import("./pages/AnglaisCourseAF9"));
 const AnglaisLessonAF9 = lazy(() => import("./pages/AnglaisLessonAF9"));
 const SciencesCourseAF8 = lazy(() => import("./pages/SciencesCourseAF8"));
@@ -122,10 +122,10 @@ const App = () => (
               <Route path="/math-af8-lesson/:topicId" element={<Layout><MathLessonAF8 /></Layout>} />
               <Route path="/mathematiques-af9" element={<MathCourseAF9 />} />
               <Route path="/mathematiques-af9/:lessonSlug" element={<MathLessonAF9 />} />
-              <Route path="/sciences-experimentales-af9" element={<SciencesExpérimentalesCourseAF9 />} />
-              <Route path="/sciences-experimentales-af9/:lessonSlug" element={<SciencesExpérimentalesLessonAF9 />} />
-              <Route path="/sciences-experimentales-7af" element={<SciencesExpérimentalesCourse7AF />} />
-              <Route path="/sciences-experimentales-7af/:lessonSlug" element={<SciencesExpérimentalesLesson7AF />} />
+              <Route path="/sciences-experimentales-af9" element={<SciencesExperimentalesCourseAF9 />} />
+              <Route path="/sciences-experimentales-af9/:lessonSlug" element={<SciencesExperimentalesLessonAF9 />} />
+              <Route path="/sciences-experimentales-7af" element={<SciencesExperimentalesCourse7AF />} />
+              <Route path="/sciences-experimentales-7af/:lessonSlug" element={<SciencesExperimentalesLesson7AF />} />
               <Route path="/anglais-af9" element={<AnglaisCourseAF9 />} />
               <Route path="/anglais-af9/:lessonSlug" element={<AnglaisLessonAF9 />} />
               <Route path="/sciences-course" element={<SciencesCourse />} />
