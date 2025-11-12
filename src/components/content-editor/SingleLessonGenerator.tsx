@@ -644,6 +644,10 @@ export const SingleLessonGenerator = ({ lesson, onComplete }: SingleLessonGenera
       }
 
       console.log('✅ Database updated successfully');
+      
+      // Trigger parent refresh FIRST to update the preview
+      await onComplete();
+      
       toast.success("Contenu appliqué avec succès (images incluses)");
       
       // Reset all states
@@ -654,11 +658,6 @@ export const SingleLessonGenerator = ({ lesson, onComplete }: SingleLessonGenera
       
       // Close the dialog
       setIsOpen(false);
-      
-      // Trigger parent refresh after a small delay to ensure dialog is closed
-      setTimeout(() => {
-        onComplete();
-      }, 100);
     } catch (error) {
       console.error('Error applying changes:', error);
       toast.error("Erreur lors de l'application des changements");

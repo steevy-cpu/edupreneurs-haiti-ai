@@ -100,10 +100,13 @@ const ContentEditor = () => {
   };
 
   const refreshLesson = async () => {
-    if (!selectedLesson) return;
+    if (!selectedLesson) {
+      console.warn('⚠️ No lesson selected, cannot refresh');
+      return;
+    }
     
     try {
-      console.log('🔄 Refreshing lesson data...');
+      console.log('🔄 Refreshing lesson data for:', selectedLesson.id);
       const { data, error } = await supabase
         .from('lessons')
         .select('*, subjects(id, name)')
@@ -111,10 +114,21 @@ const ContentEditor = () => {
         .single();
 
       if (error) throw error;
-      console.log('✅ Lesson refreshed with quiz_final:', !!data.quiz_final, 'and youtube_url:', !!data.youtube_url);
+      
+      console.log('✅ Lesson refreshed successfully:', {
+        id: data.id,
+        title: data.title,
+        hasQuiz: !!data.quiz_final,
+        hasYouTube: !!data.youtube_url,
+        hasActivities: !!data.activites_interactives,
+        hasObjectif: !!data.objectif,
+        hasIntroduction: !!data.introduction,
+        hasContenu: !!data.contenu,
+        hasExemples: !!data.exemples_exercices
+      });
+      
       setSelectedLesson(data);
       setRefreshKey(prev => prev + 1); // Force re-render
-      toast.success("Leçon mise à jour");
     } catch (error) {
       console.error('❌ Error refreshing lesson:', error);
       toast.error("Erreur lors du rafraîchissement");
