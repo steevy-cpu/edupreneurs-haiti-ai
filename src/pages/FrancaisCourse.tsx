@@ -7,9 +7,10 @@ import { Progress } from "@/components/ui/progress";
 import { BookOpen, Target, CheckCircle2, Coins, ArrowLeft } from "lucide-react";
 import { francaisLessons7AF } from "@/data/francaisLessons";
 import { supabase } from "@/integrations/supabase/client";
-import ericTeaching from "@/assets/eric-teaching.png";
+import ericChairDesk from "@/assets/eric-chair-desk.png";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { MusicSelector } from "@/components/MusicSelector";
+import DOMPurify from "dompurify";
 
 interface Lesson {
   id: string;
@@ -164,8 +165,8 @@ const FrancaisCourse = () => {
         {/* Course Overview */}
         <Card className="mb-8 overflow-hidden border border-border bg-card">
           <div className="md:flex">
-            <div className="md:w-1/3 bg-gradient-to-br from-purple-500 to-pink-500 p-8 text-white flex items-center justify-center">
-              <img src={ericTeaching} alt="Eric enseignant" className="w-48 h-48 object-contain" />
+            <div className="md:w-1/3 bg-gradient-to-br from-primary to-primary/70 p-8 flex items-center justify-center">
+              <img src={ericChairDesk} alt="Eric enseignant" className="w-full h-auto object-contain" />
             </div>
             <CardContent className="md:w-2/3 p-6">
               <h2 className="text-2xl font-bold mb-4 text-foreground">Aperçu du Cours</h2>
@@ -176,15 +177,15 @@ const FrancaisCourse = () => {
               </p>
               <div className="space-y-2">
                 <div className="flex items-center gap-2">
-                  <BookOpen className="w-5 h-5 text-purple-600" />
+                  <BookOpen className="w-5 h-5 text-primary" />
                   <span className="font-semibold text-foreground">{totalLessons} leçons complètes</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <Target className="w-5 h-5 text-purple-600" />
+                  <Target className="w-5 h-5 text-primary" />
                   <span className="font-semibold text-foreground">Activités interactives et quiz</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <CheckCircle2 className="w-5 h-5 text-purple-600" />
+                  <CheckCircle2 className="w-5 h-5 text-primary" />
                   <span className="font-semibold text-foreground">{completedCount} leçons complétées</span>
                 </div>
               </div>
@@ -210,7 +211,7 @@ const FrancaisCourse = () => {
                 <CardHeader className="bg-muted/50">
                   <div className="flex items-start justify-between">
                     <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center text-white font-bold">
+                      <div className="w-10 h-10 rounded-full bg-primary flex items-center justify-center text-primary-foreground font-bold">
                         {index + 1}
                       </div>
                       <div>
@@ -225,7 +226,15 @@ const FrancaisCourse = () => {
                 </CardHeader>
                 <CardContent className="pt-6">
                   <div className="space-y-4">
-                    <p className="text-sm text-muted-foreground line-clamp-2">{lesson.objectif}</p>
+                    <div 
+                      className="text-sm text-muted-foreground line-clamp-2"
+                      dangerouslySetInnerHTML={{ 
+                        __html: DOMPurify.sanitize(lesson.objectif, { 
+                          ALLOWED_TAGS: [], 
+                          ALLOWED_ATTR: [] 
+                        }) 
+                      }}
+                    />
                     
                     <div className="flex flex-wrap gap-2">
                       <Badge variant="secondary" className="text-xs">
@@ -249,7 +258,6 @@ const FrancaisCourse = () => {
                       </div>
                       <Button 
                         onClick={() => navigate(`/francais-lesson/${lesson.slug}`)}
-                        className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600"
                       >
                         {isCompleted ? 'Revoir' : 'Commencer'}
                       </Button>
@@ -262,7 +270,7 @@ const FrancaisCourse = () => {
         </div>
 
         {/* Progress Summary */}
-        <Card className="bg-gradient-to-r from-purple-500 to-pink-500 text-white border-0">
+        <Card className="bg-primary text-primary-foreground border-0">
           <CardHeader>
             <CardTitle className="text-2xl">Ton Progrès</CardTitle>
           </CardHeader>
@@ -273,7 +281,7 @@ const FrancaisCourse = () => {
                   <span className="font-semibold">Leçons complétées</span>
                   <span className="font-bold">{completedCount}/{totalLessons}</span>
                 </div>
-                <Progress value={progressPercentage} className="h-3 bg-white/30" />
+                <Progress value={progressPercentage} className="h-3 bg-primary-foreground/30" />
               </div>
               <p className="text-sm opacity-90">
                 Continue comme ça ! Chaque leçon complétée te rapproche de la maîtrise du français.
