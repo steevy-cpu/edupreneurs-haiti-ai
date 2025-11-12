@@ -1,5 +1,8 @@
 project_id = "xdyavylcmucjpueybdku"
 
+[functions.anglais-practice-tutor]
+verify_jwt = false
+
 [functions.generate-quiz-final]
 verify_jwt = false
 

@@ -12,12 +12,21 @@ import { toast } from "sonner";
 import { DownloadLessonButton } from "@/components/DownloadLessonButton";
 import { TextToSpeechButton } from "@/components/TextToSpeechButton";
 import { useTTS } from "@/hooks/useTTS";
+import { EnglishPracticeChat } from "@/components/EnglishPracticeChat";
+import { InteractiveActivitiesEnhanced } from "@/components/InteractiveActivitiesEnhanced";
 
 const AnglaisLessonAF9 = () => {
   const { lessonSlug } = useParams();
   const navigate = useNavigate();
   const [personalNotes, setPersonalNotes] = useState("");
+  const [session, setSession] = useState<any>(null);
   const { stop } = useTTS();
+
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setSession(session);
+    });
+  }, []);
 
   useEffect(() => {
     if (lessonSlug) {
@@ -250,14 +259,23 @@ const AnglaisLessonAF9 = () => {
 
           <TabsContent value="activites">
             <Card>
-              <CardContent className="p-6">
-                <div className="text-center py-12 space-y-4">
-                  <Dumbbell className="w-16 h-16 mx-auto text-muted-foreground/50" />
-                  <h3 className="text-xl font-semibold">Activités Interactives</h3>
-                  <p className="text-muted-foreground max-w-md mx-auto">
-                    Les activités interactives pour cette leçon seront bientôt disponibles!
-                  </p>
-                </div>
+              <CardContent className="p-6 space-y-6">
+                {lesson.activites_interactives && (
+                  <div className="mb-6">
+                    <InteractiveActivitiesEnhanced 
+                      content={lesson.activites_interactives}
+                      isLoading={false}
+                    />
+                  </div>
+                )}
+                
+                <EnglishPracticeChat
+                  lessonTitle={lesson.title}
+                  lessonObjective={lesson.objectif || ""}
+                  lessonSlug={lessonSlug || ""}
+                  gradeLevel="AF9"
+                  userNickname={session?.user?.user_metadata?.nickname || session?.user?.email?.split('@')[0] || "Student"}
+                />
               </CardContent>
             </Card>
           </TabsContent>

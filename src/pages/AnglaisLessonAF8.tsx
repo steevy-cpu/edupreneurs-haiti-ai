@@ -14,6 +14,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import ericChairDesk from "@/assets/eric-chair-desk.png";
 import { DownloadLessonButton } from "@/components/DownloadLessonButton";
+import { EnglishPracticeChat } from "@/components/EnglishPracticeChat";
 
 interface Lesson {
   id: string;
@@ -38,7 +39,14 @@ const AnglaisLessonAF8 = () => {
   const [lesson, setLesson] = useState<Lesson | null>(null);
   const [personalNotes, setPersonalNotes] = useState("");
   const [loading, setLoading] = useState(true);
+  const [session, setSession] = useState<any>(null);
   const { stop } = useTTS();
+
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setSession(session);
+    });
+  }, []);
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -332,18 +340,23 @@ const AnglaisLessonAF8 = () => {
 
           <TabsContent value="activites">
             <Card>
-              <CardContent className="p-4 md:p-6">
-                {lesson.activites_interactives ? (
-                  <InteractiveActivitiesEnhanced 
-                    content={lesson.activites_interactives}
-                    isLoading={false}
-                  />
-                ) : (
-                  <div className="text-center py-8 text-muted-foreground">
-                    <Gamepad2 className="h-16 w-16 mx-auto mb-4 opacity-20" />
-                    <p>Les activités interactives seront bientôt disponibles</p>
+              <CardContent className="p-4 md:p-6 space-y-6">
+                {lesson.activites_interactives && (
+                  <div className="mb-6">
+                    <InteractiveActivitiesEnhanced 
+                      content={lesson.activites_interactives}
+                      isLoading={false}
+                    />
                   </div>
                 )}
+                
+                <EnglishPracticeChat
+                  lessonTitle={lesson.title}
+                  lessonObjective={lesson.objectif || ""}
+                  lessonSlug={topicId || ""}
+                  gradeLevel="AF8"
+                  userNickname={session?.user?.user_metadata?.nickname || session?.user?.email?.split('@')[0] || "Student"}
+                />
               </CardContent>
             </Card>
           </TabsContent>

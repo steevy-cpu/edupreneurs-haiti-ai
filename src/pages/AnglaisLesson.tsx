@@ -24,6 +24,7 @@ import { QuizGame } from "@/components/math-activities/QuizGame";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { DownloadLessonButton } from "@/components/DownloadLessonButton";
+import { EnglishPracticeChat } from "@/components/EnglishPracticeChat";
 
 interface LessonData {
   id: string;
@@ -98,7 +99,14 @@ export default function AnglaisLesson() {
   const [lesson, setLesson] = useState<LessonData | null>(null);
   const [loading, setLoading] = useState(true);
   const [personalNotes, setPersonalNotes] = useState("");
+  const [session, setSession] = useState<any>(null);
   const { stop } = useTTS();
+
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setSession(session);
+    });
+  }, []);
 
   useEffect(() => {
     const fetchLesson = async () => {
@@ -319,21 +327,23 @@ export default function AnglaisLesson() {
           </TabsContent>
 
           <TabsContent value="activites">
-            <Card className="p-6">
-              {lesson.activites_interactives ? (
-                <InteractiveActivitiesEnhanced 
-                  content={lesson.activites_interactives}
-                  isLoading={false}
-                />
-              ) : (
-                <div className="text-center py-12 space-y-4">
-                  <Gamepad2 className="w-16 h-16 mx-auto text-muted-foreground/50" />
-                  <h3 className="text-xl font-semibold">Activités Interactives</h3>
-                  <p className="text-muted-foreground max-w-md mx-auto">
-                    Les activités interactives pour cette leçon seront bientôt disponibles!
-                  </p>
+            <Card className="p-6 space-y-6">
+              {lesson.activites_interactives && (
+                <div className="mb-6">
+                  <InteractiveActivitiesEnhanced 
+                    content={lesson.activites_interactives}
+                    isLoading={false}
+                  />
                 </div>
               )}
+              
+              <EnglishPracticeChat
+                lessonTitle={lesson.title}
+                lessonObjective={lesson.objectif || ""}
+                lessonSlug={topicId || ""}
+                gradeLevel="7AF"
+                userNickname={session?.user?.user_metadata?.nickname || session?.user?.email?.split('@')[0] || "Student"}
+              />
             </Card>
           </TabsContent>
 
