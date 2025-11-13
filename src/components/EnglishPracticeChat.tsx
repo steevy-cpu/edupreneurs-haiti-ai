@@ -50,7 +50,7 @@ export const EnglishPracticeChat = ({
           const { data: profile } = await supabase
             .from('profiles')
             .select('nickname')
-            .eq('id', user.id)
+            .eq('user_id', user.id)
             .single();
           
           if (profile?.nickname) {
