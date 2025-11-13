@@ -265,6 +265,54 @@ export type Database = {
           },
         ]
       }
+      english_practice_conversations: {
+        Row: {
+          created_at: string | null
+          grade_level: string
+          id: string
+          lesson_slug: string
+          message_content: string
+          message_role: string
+          session_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          grade_level: string
+          id?: string
+          lesson_slug: string
+          message_content: string
+          message_role: string
+          session_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          grade_level?: string
+          id?: string
+          lesson_slug?: string
+          message_content?: string
+          message_role?: string
+          session_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fk_user"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "fk_user"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "public_profiles"
+            referencedColumns: ["user_id"]
+          },
+        ]
+      }
       follows: {
         Row: {
           created_at: string

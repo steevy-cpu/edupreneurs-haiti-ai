@@ -32,6 +32,9 @@ export const EnglishPracticeChat = ({
   const [isLoading, setIsLoading] = useState(false);
   const [isInitialized, setIsInitialized] = useState(false);
   const [displayName, setDisplayName] = useState(userNickname);
+  const [sessionId, setSessionId] = useState<string | null>(null);
+  const [hasPreviousConversation, setHasPreviousConversation] = useState(false);
+  const [isLoadingHistory, setIsLoadingHistory] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const scrollToBottom = () => {
@@ -42,37 +45,145 @@ export const EnglishPracticeChat = ({
     scrollToBottom();
   }, [messages]);
 
+  const loadPreviousConversation = async (userId: string) => {
+    setIsLoadingHistory(true);
+    try {
+      const { data: sessions, error: sessionError } = await supabase
+        .from('english_practice_conversations')
+        .select('session_id, created_at')
+        .eq('user_id', userId)
+        .eq('lesson_slug', lessonSlug)
+        .eq('grade_level', gradeLevel)
+        .order('created_at', { ascending: false })
+        .limit(1);
+
+      if (sessionError) throw sessionError;
+
+      if (sessions && sessions.length > 0) {
+        const lastSessionId = sessions[0].session_id;
+        
+        const { data: history, error: historyError } = await supabase
+          .from('english_practice_conversations')
+          .select('message_role, message_content, created_at')
+          .eq('session_id', lastSessionId)
+          .order('created_at', { ascending: true });
+
+        if (historyError) throw historyError;
+
+        if (history && history.length > 0) {
+          const loadedMessages = history.map(msg => ({
+            role: msg.message_role as 'user' | 'assistant',
+            content: msg.message_content
+          }));
+          
+          setMessages(loadedMessages);
+          setSessionId(lastSessionId);
+          setHasPreviousConversation(true);
+          return true;
+        }
+      }
+      
+      return false;
+    } catch (error) {
+      console.error('Error loading conversation history:', error);
+      return false;
+    } finally {
+      setIsLoadingHistory(false);
+    }
+  };
+
+  const saveMessageToDatabase = async (
+    role: 'user' | 'assistant',
+    content: string,
+    currentSessionId: string
+  ) => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      const { error } = await supabase
+        .from('english_practice_conversations')
+        .insert({
+          user_id: user.id,
+          lesson_slug: lessonSlug,
+          grade_level: gradeLevel,
+          session_id: currentSessionId,
+          message_role: role,
+          message_content: content
+        });
+
+      if (error) throw error;
+    } catch (error) {
+      console.error('Error saving message:', error);
+    }
+  };
+
+  const startNewConversation = () => {
+    const newSessionId = crypto.randomUUID();
+    setSessionId(newSessionId);
+    setMessages([]);
+    setHasPreviousConversation(false);
+    setIsInitialized(false);
+  };
+
+  const deleteConversationHistory = async () => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      const { error } = await supabase
+        .from('english_practice_conversations')
+        .delete()
+        .eq('user_id', user.id)
+        .eq('lesson_slug', lessonSlug)
+        .eq('grade_level', gradeLevel);
+
+      if (error) throw error;
+
+      toast.success("Conversation history cleared!");
+      startNewConversation();
+    } catch (error) {
+      console.error('Error deleting history:', error);
+      toast.error("Failed to clear conversation history");
+    }
+  };
+
   useEffect(() => {
-    const fetchUserNickname = async () => {
+    const initialize = async () => {
       try {
         const { data: { user } } = await supabase.auth.getUser();
-        if (user) {
-          const { data: profile } = await supabase
-            .from('profiles')
-            .select('nickname')
-            .eq('user_id', user.id)
-            .maybeSingle();
-          
-          if (profile?.nickname) {
-            setDisplayName(profile.nickname);
-          }
+        if (!user) return;
+
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('nickname')
+          .eq('user_id', user.id)
+          .maybeSingle();
+        
+        if (profile?.nickname) {
+          setDisplayName(profile.nickname);
         }
+
+        const hasHistory = await loadPreviousConversation(user.id);
+        
+        if (!hasHistory) {
+          const newSessionId = crypto.randomUUID();
+          setSessionId(newSessionId);
+          await initializeChat(newSessionId);
+        }
+        
+        setIsInitialized(true);
       } catch (error) {
-        console.error('Error fetching nickname:', error);
+        console.error('Error initializing chat:', error);
       }
     };
 
-    fetchUserNickname();
-  }, []);
-
-  useEffect(() => {
-    if (!isInitialized && displayName) {
-      initializeChat();
-      setIsInitialized(true);
+    if (!isInitialized) {
+      initialize();
     }
-  }, [isInitialized, displayName]);
+  }, [isInitialized, lessonSlug, gradeLevel]);
 
-  const initializeChat = async () => {
+  const initializeChat = async (currentSessionId: string) => {
     setIsLoading(true);
     try {
       const { data, error } = await supabase.functions.invoke("anglais-practice-tutor", {
@@ -94,6 +205,7 @@ export const EnglishPracticeChat = ({
 
       if (data?.response) {
         setMessages([{ role: "assistant", content: data.response }]);
+        await saveMessageToDatabase('assistant', data.response, currentSessionId);
       }
     } catch (error) {
       console.error("Error initializing chat:", error);
@@ -104,11 +216,14 @@ export const EnglishPracticeChat = ({
   };
 
   const handleSendMessage = async () => {
-    if (!input.trim() || isLoading) return;
+    if (!input.trim() || isLoading || !sessionId) return;
 
     const userMessage = input.trim();
     setInput("");
     setMessages((prev) => [...prev, { role: "user", content: userMessage }]);
+    
+    await saveMessageToDatabase('user', userMessage, sessionId);
+    
     setIsLoading(true);
 
     try {
@@ -140,6 +255,7 @@ export const EnglishPracticeChat = ({
 
       if (data?.response) {
         setMessages((prev) => [...prev, { role: "assistant", content: data.response }]);
+        await saveMessageToDatabase('assistant', data.response, sessionId);
       }
     } catch (error) {
       console.error("Error sending message:", error);
@@ -172,21 +288,56 @@ export const EnglishPracticeChat = ({
 
   return (
     <Card className="p-4 sm:p-6 space-y-4">
-      <div className="flex items-center gap-3 pb-4 border-b">
-        <img
-          src={ericChairDesk}
-          alt="Eric"
-          className="w-12 h-12 sm:w-16 sm:h-16 object-contain"
-        />
-        <div>
-          <h3 className="text-lg sm:text-xl font-semibold text-foreground">
-            🗣️ Practice Your English with Eric
-          </h3>
-          <p className="text-sm text-muted-foreground">
-            Practice Mode - Not Graded
-          </p>
+      {isLoadingHistory ? (
+        <div className="flex items-center justify-center p-8">
+          <Loader2 className="w-6 h-6 animate-spin mr-2" />
+          <span className="text-sm text-muted-foreground">Loading previous conversation...</span>
         </div>
-      </div>
+      ) : (
+        <>
+          <div className="flex items-center justify-between gap-3 pb-4 border-b">
+            <div className="flex items-center gap-3">
+              <img
+                src={ericChairDesk}
+                alt="Eric"
+                className="w-12 h-12 sm:w-16 sm:h-16 object-contain"
+              />
+              <div>
+                <h3 className="text-lg sm:text-xl font-semibold text-foreground">
+                  🗣️ Practice Your English with Eric
+                </h3>
+                <p className="text-sm text-muted-foreground">
+                  {hasPreviousConversation ? "Continuing previous conversation" : "Practice Mode - Not Graded"}
+                </p>
+              </div>
+            </div>
+            
+            <div className="flex gap-2">
+              {hasPreviousConversation && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={startNewConversation}
+                  title="Start a fresh conversation"
+                  disabled={isLoading}
+                >
+                  🔄 New Chat
+                </Button>
+              )}
+              
+              {messages.length > 0 && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={deleteConversationHistory}
+                  title="Clear all conversation history"
+                  disabled={isLoading}
+                >
+                  🗑️ Clear History
+                </Button>
+              )}
+            </div>
+          </div>
 
       <div className="space-y-3 min-h-[300px] max-h-[500px] overflow-y-auto p-4 bg-muted/30 rounded-lg">
         {messages.map((message, index) => (
@@ -239,28 +390,30 @@ export const EnglishPracticeChat = ({
         </div>
       )}
 
-      <div className="flex gap-2">
-        <Textarea
-          value={input}
-          onChange={(e) => setInput(e.target.value)}
-          onKeyDown={handleKeyPress}
-          placeholder="Type your message in English..."
-          className="min-h-[80px] resize-none"
-          disabled={isLoading}
-        />
-        <Button
-          onClick={handleSendMessage}
-          disabled={!input.trim() || isLoading}
-          size="icon"
-          className="h-[80px] w-[80px]"
-        >
-          {isLoading ? (
-            <Loader2 className="w-5 h-5 animate-spin" />
-          ) : (
-            <Send className="w-5 h-5" />
-          )}
-        </Button>
-      </div>
+          <div className="flex gap-2">
+            <Textarea
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              onKeyDown={handleKeyPress}
+              placeholder="Type your message in English..."
+              className="min-h-[80px] resize-none"
+              disabled={isLoading}
+            />
+            <Button
+              onClick={handleSendMessage}
+              disabled={!input.trim() || isLoading || !sessionId}
+              size="icon"
+              className="h-[80px] w-[80px]"
+            >
+              {isLoading ? (
+                <Loader2 className="w-5 h-5 animate-spin" />
+              ) : (
+                <Send className="w-5 h-5" />
+              )}
+            </Button>
+          </div>
+        </>
+      )}
     </Card>
   );
 };
