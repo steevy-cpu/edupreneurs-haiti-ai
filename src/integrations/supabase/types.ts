@@ -1200,6 +1200,39 @@ export type Database = {
           },
         ]
       }
+      spanish_practice_conversations: {
+        Row: {
+          created_at: string | null
+          grade_level: string
+          id: string
+          lesson_slug: string
+          message_content: string
+          message_role: string
+          session_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          grade_level: string
+          id?: string
+          lesson_slug: string
+          message_content: string
+          message_role: string
+          session_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          grade_level?: string
+          id?: string
+          lesson_slug?: string
+          message_content?: string
+          message_role?: string
+          session_id?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       subjects: {
         Row: {
           color: string | null

@@ -26,6 +26,7 @@ import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { HTMLQuizParser } from "@/components/HTMLQuizParser";
+import { SpanishPracticeChat } from "@/components/SpanishPracticeChat";
 
 interface Lesson {
   id: string;
@@ -39,6 +40,7 @@ interface Lesson {
   activites_interactives: string | null;
   quiz_final: string | null;
   mois: string | null;
+  grade_level: string;
 }
 
 export default function EspagnolLesson() {
@@ -52,12 +54,33 @@ export default function EspagnolLesson() {
   const [isSavingNotes, setIsSavingNotes] = useState(false);
   const [lesson, setLesson] = useState<Lesson | null>(null);
   const [loading, setLoading] = useState(true);
+  const [userNickname, setUserNickname] = useState("");
   const { stop } = useTTS();
 
   useEffect(() => {
     window.scrollTo(0, 0);
     fetchLesson();
+    fetchUserProfile();
   }, [topicId]);
+
+  const fetchUserProfile = async () => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('nickname')
+        .eq('user_id', user.id)
+        .maybeSingle();
+
+      if (profile?.nickname) {
+        setUserNickname(profile.nickname);
+      }
+    } catch (error) {
+      console.error('Error fetching user profile:', error);
+    }
+  };
 
   const fetchLesson = async () => {
     if (!topicId) return;
@@ -400,6 +423,15 @@ export default function EspagnolLesson() {
             </TabsContent>
 
             <TabsContent value="activites" className="space-y-6">
+              {/* Spanish Practice Chat */}
+              <SpanishPracticeChat
+                lessonTitle={lesson.title}
+                lessonObjective={lesson.objectif}
+                lessonSlug={lesson.slug}
+                gradeLevel={lesson.grade_level || "7AF"}
+                userNickname={userNickname}
+              />
+
               {/* Interactive Activities */}
               {lesson.activites_interactives ? (
                 <InteractiveActivitiesEnhanced 

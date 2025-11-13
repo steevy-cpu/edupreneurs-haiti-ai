@@ -14,6 +14,7 @@ import { useToast } from "@/hooks/use-toast";
 import ericChairDesk from "@/assets/eric-chair-desk.png";
 import { DownloadLessonButton } from "@/components/DownloadLessonButton";
 import { YouTubeVideoSection } from "@/components/YouTubeVideoSection";
+import { SpanishPracticeChat } from "@/components/SpanishPracticeChat";
 
 interface Lesson {
   id: string;
@@ -24,6 +25,7 @@ interface Lesson {
   contenu: string;
   exemples_exercices: string;
   youtube_url?: string;
+  grade_level: string;
 }
 
 const EspagnolLessonAF8 = () => {
@@ -34,14 +36,35 @@ const EspagnolLessonAF8 = () => {
   const [lesson, setLesson] = useState<Lesson | null>(null);
   const [personalNotes, setPersonalNotes] = useState("");
   const [loading, setLoading] = useState(true);
+  const [userNickname, setUserNickname] = useState("");
   const { stop } = useTTS();
 
   useEffect(() => {
     if (topicId) {
       fetchLesson();
       loadPersonalNotes();
+      fetchUserProfile();
     }
   }, [topicId]);
+
+  const fetchUserProfile = async () => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('nickname')
+        .eq('user_id', user.id)
+        .maybeSingle();
+
+      if (profile?.nickname) {
+        setUserNickname(profile.nickname);
+      }
+    } catch (error) {
+      console.error('Error fetching user profile:', error);
+    }
+  };
 
   const fetchLesson = async () => {
     try {
@@ -79,7 +102,8 @@ const EspagnolLessonAF8 = () => {
           introduction: data.introduction || '',
           contenu: data.contenu || '',
           exemples_exercices: data.exemples_exercices || '',
-          youtube_url: data.youtube_url
+          youtube_url: data.youtube_url,
+          grade_level: data.grade_level || 'AF8'
         });
       }
     } catch (error) {
@@ -339,7 +363,15 @@ const EspagnolLessonAF8 = () => {
             </Card>
           </TabsContent>
 
-          <TabsContent value="quiz" className="mt-6">
+          <TabsContent value="quiz" className="mt-6 space-y-6">
+            <SpanishPracticeChat
+              lessonTitle={lesson.title}
+              lessonObjective={lesson.objectif}
+              lessonSlug={lesson.slug}
+              gradeLevel={lesson.grade_level}
+              userNickname={userNickname}
+            />
+            
             <InteractiveActivitiesEnhanced
               content={`Leçon: ${lesson.title}`}
               isLoading={false}
