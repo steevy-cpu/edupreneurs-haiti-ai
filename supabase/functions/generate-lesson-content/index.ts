@@ -26,12 +26,19 @@ serve(async (req) => {
     if (!LOVABLE_API_KEY) {
       throw new Error("LOVABLE_API_KEY is not configured");
     }
+    
+    // Detect if this is a Creole lesson
+    const isCreoleLesson = subject && (subject.toLowerCase().includes('kreyol') || subject.toLowerCase().includes('créole'));
+    const contentLanguage = isCreoleLesson ? 'KREYÒL AYISYEN (créole haïtien)' : 'Français';
+    const languageInstruction = isCreoleLesson 
+      ? 'accessible avec vocabulaire adapté au niveau, écrit en KREYÒL AYISYEN (créole haïtien). Tout le contenu, les explications, les exemples et les exercices doivent être en créole haïtien.'
+      : 'accessible avec vocabulaire adapté';
 
-    const systemPrompt = `Tu es un expert pédagogue haïtien créant des leçons de Sciences Sociales pour le niveau ${grade} (7AF - 12-13 ans) selon le programme du MENFP d'Haïti.
+    const systemPrompt = `Tu es un expert pédagogue haïtien créant des leçons de ${subject} pour le niveau ${grade} (7AF - 12-13 ans) selon le programme du MENFP d'Haïti.
 
 CONTEXTE CRITIQUE:
 - Public: Élèves haïtiens de 7AF (12-13 ans)
-- Langue: Français accessible avec vocabulaire adapté
+- Langue: ${contentLanguage} ${languageInstruction}
 - Contextualisation: MAXIMUM d'exemples, références et situations haïtiennes/caribéennes
 - Ton: Captivant, stimulant, encourageant la curiosité
 

@@ -113,14 +113,21 @@ Deno.serve(async (req) => {
 
     const config = SECTION_CONFIGS[sectionName];
     const subjectAddition = subject ? (SUBJECT_ADDITIONS[subject.toLowerCase()] || '') : '';
+    
+    // Detect if this is a Creole lesson
+    const isCreoleLesson = subject && (subject.toLowerCase().includes('kreyol') || subject.toLowerCase().includes('créole'));
+    const contentLanguage = isCreoleLesson ? 'KREYÒL AYISYEN (créole haïtien)' : 'FRANÇAIS';
+    const languageInstruction = isCreoleLesson 
+      ? 'Le contenu DOIT être écrit en KREYÒL AYISYEN (créole haïtien) standard. Utilise la langue créole naturellement et de manière fluide.'
+      : 'Le contenu doit être écrit en français standard adapté au niveau';
 
     const systemPrompt = `Tu es un expert pédagogue haïtien créant du contenu éducatif pour ${subject} niveau ${gradeLevel}.
 
 SECTION À GÉNÉRER: ${sectionName}
 
 PRINCIPES FONDAMENTAUX:
-- Langue: FRANÇAIS UNIQUEMENT - Le contenu doit être écrit en français standard adapté au niveau ${gradeLevel}
-- Utilisation du créole: ${sectionName === 'exemples_exercices' ? 'INTERDITE dans cette section - utiliser uniquement le français' : 'UNIQUEMENT pour des explications contextuelles ponctuelles, des expressions idiomatiques, ou des clarifications culturelles (entre parenthèses ou dans des encadrés spécifiques)'}
+- Langue: ${contentLanguage} - ${languageInstruction} ${gradeLevel}
+- ${isCreoleLesson ? 'Tout le contenu, les explications, les exemples et les exercices doivent être en créole haïtien' : `Utilisation du créole: ${sectionName === 'exemples_exercices' ? 'INTERDITE dans cette section - utiliser uniquement le français' : 'UNIQUEMENT pour des explications contextuelles ponctuelles, des expressions idiomatiques, ou des clarifications culturelles (entre parenthèses ou dans des encadrés spécifiques)'}`}
 - Contextualisation MAXIMALE avec exemples haïtiens et caribéens (décrits en français)
 - Format: HTML avec classes Tailwind (compatible dark/light mode)
 - Longueur cible: ${targetWords} mots (minimum: ${config.minWords}, maximum: ${config.maxWords})
@@ -143,7 +150,7 @@ ${Object.entries(HTML_TEMPLATES).map(([key, template]) => `${key}: ${template}`)
 
 IMPORTANT:
 - Utilise des émojis pertinents
-- Tous les textes en français
+- Tous les textes en ${isCreoleLesson ? 'KREYÒL AYISYEN (créole haïtien)' : 'français'}
 - Maximum de références haïtiennes/caribéennes
 - Structure claire et progressive avec BEAUCOUP d'espacement
 - Vocabulaire adapté au niveau ${gradeLevel}
