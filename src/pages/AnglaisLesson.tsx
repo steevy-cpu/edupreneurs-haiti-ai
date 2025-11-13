@@ -342,7 +342,7 @@ export default function AnglaisLesson() {
                 lessonObjective={lesson.objectif || ""}
                 lessonSlug={topicId || ""}
                 gradeLevel="7AF"
-                userNickname={session?.user?.user_metadata?.nickname || session?.user?.email?.split('@')[0] || "Student"}
+                userNickname=""
               />
             </Card>
           </TabsContent>

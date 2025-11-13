@@ -51,7 +51,7 @@ export const EnglishPracticeChat = ({
             .from('profiles')
             .select('nickname')
             .eq('user_id', user.id)
-            .single();
+            .maybeSingle();
           
           if (profile?.nickname) {
             setDisplayName(profile.nickname);

@@ -274,7 +274,7 @@ const AnglaisLessonAF9 = () => {
                   lessonObjective={lesson.objectif || ""}
                   lessonSlug={lessonSlug || ""}
                   gradeLevel="AF9"
-                  userNickname={session?.user?.user_metadata?.nickname || session?.user?.email?.split('@')[0] || "Student"}
+                  userNickname=""
                 />
               </CardContent>
             </Card>
