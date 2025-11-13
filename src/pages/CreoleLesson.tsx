@@ -16,22 +16,27 @@ import {
   Save,
   Trophy
 } from "lucide-react";
-import { creoleLessons7AF } from "@/data/creoleLessons";
 import { YouTubeVideoSection } from "@/components/YouTubeVideoSection";
+import { InteractiveActivitiesEnhanced } from "@/components/InteractiveActivitiesEnhanced";
+import { HTMLQuizParser } from "@/components/HTMLQuizParser";
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { DownloadLessonButton } from "@/components/DownloadLessonButton";
 
-const categoryColors = {
-  "Lekti": "from-pink-500 to-pink-600",
-  "Kominikasyon Oral": "from-purple-500 to-purple-600",
-  "Gramè": "from-blue-500 to-blue-600",
-  "Vokabilè": "from-green-500 to-green-600",
-  "Òtograf": "from-orange-500 to-orange-600",
-  "Pwodiksyon Ekri": "from-red-500 to-red-600"
-};
+interface Lesson {
+  id: string;
+  title: string;
+  slug: string;
+  objectif: string;
+  introduction: string;
+  contenu: string;
+  exemples_exercices: string;
+  activites_interactives: string;
+  quiz_final: string;
+  youtube_url?: string;
+}
 
 export default function CreoleLesson() {
   const { topicId } = useParams();
@@ -40,37 +45,38 @@ export default function CreoleLesson() {
   const [activeTab, setActiveTab] = useState("introduction");
   const [personalNotes, setPersonalNotes] = useState("");
   const [isSavingNotes, setIsSavingNotes] = useState(false);
-  const [youtubeUrl, setYoutubeUrl] = useState<string | null>(null);
-  
-  const lessonId = parseInt(topicId || "1");
-  const lesson = creoleLessons7AF.find(l => l.id === lessonId);
-  const currentIndex = creoleLessons7AF.findIndex(l => l.id === lessonId);
-  
-  const previousLesson = currentIndex > 0 ? creoleLessons7AF[currentIndex - 1] : null;
-  const nextLesson = currentIndex < creoleLessons7AF.length - 1 ? creoleLessons7AF[currentIndex + 1] : null;
+  const [lesson, setLesson] = useState<Lesson | null>(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     window.scrollTo(0, 0);
-    loadPersonalNotes();
-    fetchYoutubeUrl();
+    if (topicId) {
+      fetchLesson();
+      loadPersonalNotes();
+    }
   }, [topicId]);
 
-  const fetchYoutubeUrl = async () => {
+  const fetchLesson = async () => {
     try {
-      // @ts-ignore - Avoiding deep type instantiation error
+      setLoading(true);
       const { data, error } = await supabase
         .from('lessons')
-        .select('youtube_url')
-        .eq('subject_id', 'kreyol')
-        .eq('lesson_number', lessonId.toString())
-        .maybeSingle();
+        .select('*')
+        .eq('slug', topicId)
+        .eq('grade_level', '7AF')
+        .single();
 
       if (error) throw error;
-      if (data?.youtube_url) {
-        setYoutubeUrl(data.youtube_url);
-      }
+      setLesson(data);
     } catch (error) {
-      console.error('Error fetching YouTube URL:', error);
+      console.error('Error fetching lesson:', error);
+      toast({
+        title: "Erè",
+        description: "Pa t kapab chaje leson an",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -83,10 +89,10 @@ export default function CreoleLesson() {
         .from('lesson_notes')
         .select('notes')
         .eq('user_id', user.id)
-        .eq('lesson_id', `kreyol-${lessonId}`)
+        .eq('lesson_id', topicId || '')
         .maybeSingle();
 
-      if (error) throw error;
+      if (error && error.code !== 'PGRST116') throw error;
       if (data) {
         setPersonalNotes(data.notes || "");
       }
@@ -113,8 +119,11 @@ export default function CreoleLesson() {
         .from('lesson_notes')
         .upsert({
           user_id: user.id,
-          lesson_id: `kreyol-${lessonId}`,
+          lesson_id: topicId || '',
           notes: personalNotes,
+          updated_at: new Date().toISOString(),
+        }, {
+          onConflict: 'user_id,lesson_id'
         });
 
       if (error) throw error;
@@ -135,6 +144,14 @@ export default function CreoleLesson() {
     }
   };
 
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+      </div>
+    );
+  }
+
   if (!lesson) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -147,8 +164,6 @@ export default function CreoleLesson() {
       </div>
     );
   }
-
-  const colorClass = categoryColors[lesson.category];
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5">
@@ -164,22 +179,13 @@ export default function CreoleLesson() {
             <span>Retounen nan kou a</span>
           </Button>
           <div className="flex items-center gap-2">
-            {lesson && (
-              <DownloadLessonButton
-                lessonData={{
-                  title: lesson.title,
-                  objectif: lesson.objectif,
-                  introduction: lesson.introduction,
-                  contenu: lesson.contenu,
-                  exemples_exercices: lesson.exemplesExercices,
-                  youtube_url: youtubeUrl || undefined,
-                }}
-                personalNotes={personalNotes}
-                subjectName="Créole AF7"
-                variant="outline"
-                size="sm"
-              />
-            )}
+            <DownloadLessonButton
+              lessonData={lesson}
+              personalNotes={personalNotes}
+              subjectName="Créole AF7"
+              variant="outline"
+              size="sm"
+            />
             <ThemeToggle />
           </div>
         </div>
@@ -189,43 +195,42 @@ export default function CreoleLesson() {
         <div className="max-w-4xl mx-auto">
           {/* Lesson Header */}
           <Card className="p-8 mb-8">
-            <div className={`h-2 bg-gradient-to-r ${colorClass} rounded-full mb-6`} />
+            <div className="h-2 bg-gradient-to-r from-teal-500 to-emerald-500 rounded-full mb-6" />
             
             <div className="flex flex-wrap gap-3 mb-4">
               <Badge variant="secondary" className="gap-2">
-                <Users className="w-4 h-4" />
-                {lesson.category}
+                <BookOpen className="w-4 h-4" />
+                Kreyòl Ayisyen
               </Badge>
-              <Badge variant="outline">{lesson.difficulty}</Badge>
-              <Badge variant="outline" className="gap-1">
-                <Clock className="w-4 h-4" />
-                {lesson.duration}
-              </Badge>
+              <Badge variant="outline">7AF</Badge>
             </div>
 
             <h1 className="text-4xl font-bold mb-4">{lesson.title}</h1>
-            <p className="text-xl text-muted-foreground">{lesson.description}</p>
           </Card>
 
           {/* Lesson Content with Tabs */}
           <Card className="p-8 mb-8">
             <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-              <TabsList className="grid w-full grid-cols-4 mb-8">
+              <TabsList className="grid w-full grid-cols-5 mb-8">
                 <TabsTrigger value="introduction" className="gap-2">
                   <Lightbulb className="w-4 h-4" />
                   <span className="hidden sm:inline">Entwodiksyon</span>
                 </TabsTrigger>
                 <TabsTrigger value="contenu" className="gap-2">
                   <BookOpen className="w-4 h-4" />
-                  <span className="hidden sm:inline">Kontni & Egzanp</span>
+                  <span className="hidden sm:inline">Kontni</span>
+                </TabsTrigger>
+                <TabsTrigger value="activites" className="gap-2">
+                  <Users className="w-4 h-4" />
+                  <span className="hidden sm:inline">Aktivite</span>
                 </TabsTrigger>
                 <TabsTrigger value="notes" className="gap-2">
                   <NotebookPen className="w-4 h-4" />
-                  <span className="hidden sm:inline">Nòt Mwen</span>
+                  <span className="hidden sm:inline">Nòt</span>
                 </TabsTrigger>
                 <TabsTrigger value="quiz" className="gap-2">
                   <Trophy className="w-4 h-4" />
-                  <span className="hidden sm:inline">Quiz Final</span>
+                  <span className="hidden sm:inline">Quiz</span>
                 </TabsTrigger>
               </TabsList>
 
@@ -249,29 +254,48 @@ export default function CreoleLesson() {
 
               <TabsContent value="contenu" className="space-y-6">
                 <div className="prose prose-lg max-w-none dark:prose-invert lesson-content">
-                  {lesson.contenu && (
+                  {lesson.contenu ? (
                     <div dangerouslySetInnerHTML={{ __html: lesson.contenu }} />
+                  ) : (
+                    <p>Kontni ap vini byento...</p>
                   )}
                 </div>
-                {youtubeUrl && (
-                  <div className="mt-8">
-                    <YouTubeVideoSection 
-                      lessonTitle={lesson.title}
-                      objectives={lesson.objectif || lesson.description}
-                      customYoutubeUrl={youtubeUrl}
-                      subject="kreyol"
-                    />
-                  </div>
-                )}
+
+                <YouTubeVideoSection 
+                  lessonTitle={lesson.title}
+                  objectives={lesson.objectif || ''}
+                  customYoutubeUrl={lesson.youtube_url}
+                  subject="kreyol"
+                  gradeLevel="7AF"
+                />
                 
-                {lesson.exemplesExercices && (
+                {lesson.exemples_exercices && (
                   <>
                     <div className="border-t my-8" />
                     <h3 className="text-2xl font-bold mb-4">Egzanp ak Egzèsis</h3>
                     <div className="prose prose-lg max-w-none dark:prose-invert lesson-content">
-                      <div dangerouslySetInnerHTML={{ __html: lesson.exemplesExercices }} />
+                      <div dangerouslySetInnerHTML={{ __html: lesson.exemples_exercices }} />
                     </div>
                   </>
+                )}
+              </TabsContent>
+
+              <TabsContent value="activites" className="space-y-6">
+                {lesson.activites_interactives ? (
+                  <InteractiveActivitiesEnhanced
+                    content={lesson.activites_interactives}
+                    isLoading={false}
+                    onRegenerate={() => fetchLesson()}
+                    onGoldUpdate={() => {}}
+                  />
+                ) : (
+                  <div className="text-center py-8">
+                    <Users className="w-16 h-16 mx-auto mb-4 text-muted-foreground" />
+                    <h3 className="text-2xl font-bold mb-2">Aktivite Entèaktif</h3>
+                    <p className="text-muted-foreground">
+                      Aktivite yo ap disponib byento pou leson sa a
+                    </p>
+                  </div>
                 )}
               </TabsContent>
 
@@ -308,13 +332,21 @@ export default function CreoleLesson() {
               </TabsContent>
 
               <TabsContent value="quiz" className="space-y-6">
-                <div className="text-center py-8">
-                  <Trophy className="w-16 h-16 mx-auto mb-4 text-primary" />
-                  <h3 className="text-2xl font-bold mb-2">Quiz Final</h3>
-                  <p className="text-muted-foreground mb-6">
-                    Quiz la ap disponib byento pou leson sa a
-                  </p>
-                </div>
+                {lesson.quiz_final ? (
+                  <HTMLQuizParser 
+                    htmlContent={lesson.quiz_final}
+                    lessonSlug={lesson.slug}
+                    subject="kreyol"
+                  />
+                ) : (
+                  <div className="text-center py-8">
+                    <Trophy className="w-16 h-16 mx-auto mb-4 text-primary" />
+                    <h3 className="text-2xl font-bold mb-2">Quiz Final</h3>
+                    <p className="text-muted-foreground mb-6">
+                      Quiz la ap disponib byento pou leson sa a
+                    </p>
+                  </div>
+                )}
               </TabsContent>
             </Tabs>
           </Card>
@@ -335,38 +367,17 @@ export default function CreoleLesson() {
             </div>
           </Card>
 
-          {/* Navigation Buttons */}
-          <div className="flex gap-4 justify-between">
-            {previousLesson ? (
-              <Button
-                variant="outline"
-                onClick={() => navigate(`/creole-lesson/${previousLesson.id}`)}
-                className="gap-2"
-              >
-                <ChevronLeft className="w-4 h-4" />
-                Leson anvan an
-              </Button>
-            ) : (
-              <div />
-            )}
-            
-            {nextLesson ? (
-              <Button
-                onClick={() => navigate(`/creole-lesson/${nextLesson.id}`)}
-                className="gap-2 ml-auto"
-              >
-                Pwochen leson
-                <ChevronRight className="w-4 h-4" />
-              </Button>
-            ) : (
-              <Button
-                onClick={() => navigate("/creole-course")}
-                className="gap-2 ml-auto"
-              >
-                Retounen nan kou a
-                <BookOpen className="w-4 h-4" />
-              </Button>
-            )}
+          {/* Navigation Button */}
+          <div className="mt-8 text-center">
+            <Button
+              onClick={() => navigate("/creole-course")}
+              variant="outline"
+              size="lg"
+              className="gap-2"
+            >
+              <ChevronLeft className="w-4 h-4" />
+              Retounen nan kou a
+            </Button>
           </div>
         </div>
       </div>
