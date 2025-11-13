@@ -423,15 +423,6 @@ export default function EspagnolLesson() {
             </TabsContent>
 
             <TabsContent value="activites" className="space-y-6">
-              {/* Spanish Practice Chat */}
-              <SpanishPracticeChat
-                lessonTitle={lesson.title}
-                lessonObjective={lesson.objectif}
-                lessonSlug={lesson.slug}
-                gradeLevel={lesson.grade_level || "7AF"}
-                userNickname={userNickname}
-              />
-
               {/* Interactive Activities */}
               {lesson.activites_interactives ? (
                 <InteractiveActivitiesEnhanced 
@@ -444,6 +435,15 @@ export default function EspagnolLesson() {
                   <p className="text-muted-foreground">Aucune activité interactive disponible pour cette leçon.</p>
                 </Card>
               )}
+
+              {/* Spanish Practice Chat */}
+              <SpanishPracticeChat
+                lessonTitle={lesson.title}
+                lessonObjective={lesson.objectif}
+                lessonSlug={lesson.slug}
+                gradeLevel={lesson.grade_level || "7AF"}
+                userNickname={userNickname}
+              />
             </TabsContent>
 
             <TabsContent value="notes" className="space-y-6">

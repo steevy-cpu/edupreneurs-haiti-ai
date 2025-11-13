@@ -364,19 +364,19 @@ const EspagnolLessonAF8 = () => {
           </TabsContent>
 
           <TabsContent value="quiz" className="mt-6 space-y-6">
+            <InteractiveActivitiesEnhanced
+              content={`Leçon: ${lesson.title}`}
+              isLoading={false}
+              onRegenerate={() => {}}
+              onGoldUpdate={() => {}}
+            />
+            
             <SpanishPracticeChat
               lessonTitle={lesson.title}
               lessonObjective={lesson.objectif}
               lessonSlug={lesson.slug}
               gradeLevel={lesson.grade_level}
               userNickname={userNickname}
-            />
-            
-            <InteractiveActivitiesEnhanced
-              content={`Leçon: ${lesson.title}`}
-              isLoading={false}
-              onRegenerate={() => {}}
-              onGoldUpdate={() => {}}
             />
           </TabsContent>
         </Tabs>
