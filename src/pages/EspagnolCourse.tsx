@@ -10,7 +10,7 @@ import { MusicSelector } from "@/components/MusicSelector";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import ericTeaching from "@/assets/eric-teaching.png";
+import ericStudentDesk from "@/assets/eric-student-desk.png";
 
 interface Lesson {
   id: string;
@@ -104,15 +104,15 @@ const EspagnolCourse = () => {
   const progressPercentage = totalCount > 0 ? Math.round((completedCount / totalCount) * 100) : 0;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-50 via-background to-blue-50 dark:from-purple-950/20 dark:via-background dark:to-blue-950/20">
+    <div className="min-h-screen bg-gradient-to-br from-orange-50 via-background to-amber-50 dark:from-orange-950/20 dark:via-background dark:to-amber-950/20">
       {/* Navigation Bar with gradient */}
-      <nav className="sticky top-0 z-50 backdrop-blur-xl bg-white/70 dark:bg-gray-900/70 border-b border-purple-200/50 dark:border-purple-800/50 shadow-sm">
+      <nav className="sticky top-0 z-50 backdrop-blur-xl bg-white/70 dark:bg-gray-900/70 border-b border-orange-200/50 dark:border-orange-800/50 shadow-sm">
         <div className="container mx-auto px-4 py-4 flex items-center justify-between">
           <Button
             variant="ghost"
             size="sm"
             onClick={() => navigate('/matieres')}
-            className="gap-2 hover:bg-purple-100 dark:hover:bg-purple-900/30"
+            className="gap-2 hover:bg-orange-100 dark:hover:bg-orange-900/30"
           >
             <ArrowLeft className="h-4 w-4" />
             <span className="font-medium">Retour aux matières</span>
@@ -125,10 +125,10 @@ const EspagnolCourse = () => {
         {/* Enhanced Hero Section with Eric */}
         <div className="grid md:grid-cols-2 gap-8 mb-12 items-center">
           <div className="space-y-6 animate-fade-in">
-            <Badge variant="secondary" className="text-sm font-medium px-4 py-1.5 bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300">
+            <Badge variant="secondary" className="text-sm font-medium px-4 py-1.5 bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-300">
               Programme MENFP - 7ème Année Fondamentale
             </Badge>
-            <h1 className="text-4xl md:text-6xl font-bold bg-gradient-to-r from-purple-600 via-pink-600 to-blue-600 bg-clip-text text-transparent">
+            <h1 className="text-4xl md:text-6xl font-bold bg-gradient-to-r from-orange-600 via-amber-600 to-red-600 bg-clip-text text-transparent">
               Cours d'Espagnol
             </h1>
             <p className="text-lg md:text-xl text-muted-foreground leading-relaxed">
@@ -136,29 +136,29 @@ const EspagnolCourse = () => {
             </p>
             
             <div className="flex flex-wrap gap-3">
-              <Badge variant="outline" className="px-4 py-2 border-purple-300 dark:border-purple-700">
+              <Badge variant="outline" className="px-4 py-2 border-orange-300 dark:border-orange-700">
                 <GraduationCap className="w-4 h-4 mr-2" />
                 Débutant
               </Badge>
-              <Badge variant="outline" className="px-4 py-2 border-pink-300 dark:border-pink-700">
+              <Badge variant="outline" className="px-4 py-2 border-amber-300 dark:border-amber-700">
                 <Sparkles className="w-4 h-4 mr-2" />
                 Interactif
               </Badge>
-              <Badge variant="outline" className="px-4 py-2 border-blue-300 dark:border-blue-700">
+              <Badge variant="outline" className="px-4 py-2 border-red-300 dark:border-red-700">
                 <Award className="w-4 h-4 mr-2" />
                 Certifié MENFP
               </Badge>
             </div>
 
             {/* Progress Card */}
-            <Card className="bg-gradient-to-br from-purple-50 to-pink-50 dark:from-purple-950/30 dark:to-pink-950/30 border-2 border-purple-200 dark:border-purple-800">
+            <Card className="bg-gradient-to-br from-orange-50 to-amber-50 dark:from-orange-950/30 dark:to-amber-950/30 border-2 border-orange-200 dark:border-orange-800">
               <CardHeader>
                 <div className="flex items-center justify-between">
                   <CardTitle className="flex items-center gap-2">
-                    <TrendingUp className="w-5 h-5 text-purple-600 dark:text-purple-400" />
+                    <TrendingUp className="w-5 h-5 text-orange-600 dark:text-orange-400" />
                     Votre Progression
                   </CardTitle>
-                  <Badge variant="secondary" className="bg-purple-100 dark:bg-purple-900/50">
+                  <Badge variant="secondary" className="bg-orange-100 dark:bg-orange-900/50">
                     {progressPercentage}%
                   </Badge>
                 </div>
@@ -169,7 +169,7 @@ const EspagnolCourse = () => {
                   <span className="text-muted-foreground">
                     {completedCount} sur {totalCount} leçons complétées
                   </span>
-                  <span className="font-semibold text-purple-600 dark:text-purple-400">
+                  <span className="font-semibold text-orange-600 dark:text-orange-400">
                     {totalCount - completedCount} restantes
                   </span>
                 </div>
@@ -179,12 +179,12 @@ const EspagnolCourse = () => {
 
           {/* Eric Image */}
           <div className="relative animate-fade-in">
-            <div className="absolute inset-0 bg-gradient-to-br from-purple-400/20 to-pink-400/20 rounded-3xl blur-3xl"></div>
-            <div className="relative bg-gradient-to-br from-purple-100 to-pink-100 dark:from-purple-950/50 dark:to-pink-950/50 rounded-3xl p-8 border-2 border-purple-200 dark:border-purple-800 shadow-2xl">
+            <div className="absolute inset-0 bg-gradient-to-br from-orange-400/20 to-amber-400/20 rounded-3xl blur-3xl"></div>
+            <div className="relative bg-gradient-to-br from-orange-100 to-amber-100 dark:from-orange-950/50 dark:to-amber-950/50 rounded-3xl p-8 border-2 border-orange-200 dark:border-orange-800 shadow-2xl">
               <img 
-                src={ericTeaching} 
+                src={ericStudentDesk} 
                 alt="Eric enseigne l'espagnol" 
-                className="w-full h-auto rounded-2xl"
+                className="w-full h-auto rounded-2xl object-cover"
               />
             </div>
           </div>
@@ -194,36 +194,36 @@ const EspagnolCourse = () => {
 
         {/* Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-12 animate-fade-in">
-          <Card className="relative overflow-hidden hover:shadow-xl transition-all duration-300 border-purple-200 dark:border-purple-800">
-            <div className="absolute inset-0 bg-gradient-to-br from-purple-500/10 to-transparent"></div>
+          <Card className="relative overflow-hidden hover:shadow-xl transition-all duration-300 border-orange-200 dark:border-orange-800">
+            <div className="absolute inset-0 bg-gradient-to-br from-orange-500/10 to-transparent"></div>
             <CardHeader className="pb-3">
               <div className="flex items-center justify-between">
                 <CardTitle className="text-sm font-medium text-muted-foreground">
                   Total Leçons
                 </CardTitle>
-                <BookOpen className="w-5 h-5 text-purple-500" />
+                <BookOpen className="w-5 h-5 text-orange-500" />
               </div>
             </CardHeader>
             <CardContent>
-              <div className="text-4xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
+              <div className="text-4xl font-bold bg-gradient-to-r from-orange-600 to-amber-600 bg-clip-text text-transparent">
                 {lessons.length}
               </div>
               <p className="text-sm text-muted-foreground mt-1">Disponibles maintenant</p>
             </CardContent>
           </Card>
 
-          <Card className="relative overflow-hidden hover:shadow-xl transition-all duration-300 border-pink-200 dark:border-pink-800">
-            <div className="absolute inset-0 bg-gradient-to-br from-pink-500/10 to-transparent"></div>
+          <Card className="relative overflow-hidden hover:shadow-xl transition-all duration-300 border-amber-200 dark:border-amber-800">
+            <div className="absolute inset-0 bg-gradient-to-br from-amber-500/10 to-transparent"></div>
             <CardHeader className="pb-3">
               <div className="flex items-center justify-between">
                 <CardTitle className="text-sm font-medium text-muted-foreground">
                   Mois Couverts
                 </CardTitle>
-                <Calendar className="w-5 h-5 text-pink-500" />
+                <Calendar className="w-5 h-5 text-amber-500" />
               </div>
             </CardHeader>
             <CardContent>
-              <div className="text-4xl font-bold bg-gradient-to-r from-pink-600 to-purple-600 bg-clip-text text-transparent">
+              <div className="text-4xl font-bold bg-gradient-to-r from-amber-600 to-orange-600 bg-clip-text text-transparent">
                 {Object.keys(lessonsByMonth).length}
               </div>
               <p className="text-sm text-muted-foreground mt-1">Progression structurée</p>
@@ -233,15 +233,15 @@ const EspagnolCourse = () => {
 
         {loading ? (
           <div className="text-center py-20">
-            <div className="inline-block p-4 bg-purple-100 dark:bg-purple-900/30 rounded-full mb-4 animate-pulse">
-              <Languages className="w-12 h-12 text-purple-600 dark:text-purple-400" />
+            <div className="inline-block p-4 bg-orange-100 dark:bg-orange-900/30 rounded-full mb-4 animate-pulse">
+              <Languages className="w-12 h-12 text-orange-600 dark:text-orange-400" />
             </div>
             <p className="text-lg text-muted-foreground">Chargement des leçons...</p>
           </div>
         ) : lessons.length === 0 ? (
-          <Card className="border-dashed border-2 border-purple-300 dark:border-purple-700">
+          <Card className="border-dashed border-2 border-orange-300 dark:border-orange-700">
             <CardContent className="py-16 text-center">
-              <Languages className="w-16 h-16 mx-auto mb-4 text-purple-400" />
+              <Languages className="w-16 h-16 mx-auto mb-4 text-orange-400" />
               <p className="text-lg text-muted-foreground">
                 Aucune leçon disponible pour le moment.
               </p>
@@ -254,7 +254,7 @@ const EspagnolCourse = () => {
           <div className="space-y-6 animate-fade-in">
             <div className="flex items-center justify-between mb-8">
               <h2 className="text-3xl font-bold flex items-center gap-3">
-                <Calendar className="w-8 h-8 text-purple-600 dark:text-purple-400" />
+                <Calendar className="w-8 h-8 text-orange-600 dark:text-orange-400" />
                 Programme de l'année
               </h2>
               <Badge variant="secondary" className="text-sm px-4 py-2">
@@ -267,16 +267,16 @@ const EspagnolCourse = () => {
                 <AccordionItem 
                   key={month} 
                   value={month}
-                  className="border-2 rounded-xl overflow-hidden bg-gradient-to-br from-white to-purple-50/30 dark:from-gray-900 dark:to-purple-950/20 shadow-lg hover:shadow-xl transition-all duration-300"
+                  className="border-2 rounded-xl overflow-hidden bg-gradient-to-br from-white to-orange-50/30 dark:from-gray-900 dark:to-orange-950/20 shadow-lg hover:shadow-xl transition-all duration-300"
                 >
                   <AccordionTrigger className="px-6 py-5 hover:no-underline group">
                     <div className="flex items-center justify-between w-full pr-4">
                       <div className="flex items-center gap-4">
-                        <div className="w-12 h-12 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center text-white font-bold shadow-lg group-hover:scale-110 transition-transform">
+                        <div className="w-12 h-12 rounded-full bg-gradient-to-br from-orange-500 to-amber-500 flex items-center justify-center text-white font-bold shadow-lg group-hover:scale-110 transition-transform">
                           {index + 1}
                         </div>
                         <div className="text-left">
-                          <h3 className="text-xl font-bold text-foreground group-hover:text-purple-600 dark:group-hover:text-purple-400 transition-colors">
+                          <h3 className="text-xl font-bold text-foreground group-hover:text-orange-600 dark:group-hover:text-orange-400 transition-colors">
                             {month}
                           </h3>
                           <p className="text-sm text-muted-foreground">
@@ -284,7 +284,7 @@ const EspagnolCourse = () => {
                           </p>
                         </div>
                       </div>
-                      <Badge variant="outline" className="border-purple-300 dark:border-purple-700 bg-purple-50 dark:bg-purple-900/30">
+                      <Badge variant="outline" className="border-orange-300 dark:border-orange-700 bg-orange-50 dark:bg-orange-900/30">
                         Mois {index + 1}
                       </Badge>
                     </div>
@@ -297,10 +297,10 @@ const EspagnolCourse = () => {
                         return (
                           <Card
                             key={lesson.id}
-                            className={`group cursor-pointer overflow-hidden border-2 transition-all duration-300 hover:shadow-xl hover:-translate-y-1 bg-gradient-to-br from-white to-purple-50/50 dark:from-gray-900 dark:to-purple-950/30 ${
+                            className={`group cursor-pointer overflow-hidden border-2 transition-all duration-300 hover:shadow-xl hover:-translate-y-1 bg-gradient-to-br from-white to-orange-50/50 dark:from-gray-900 dark:to-orange-950/30 ${
                               isCompleted 
                                 ? 'border-green-400 dark:border-green-600 ring-2 ring-green-200 dark:ring-green-900' 
-                                : 'border-purple-200 dark:border-purple-800 hover:border-purple-400 dark:hover:border-purple-600'
+                                : 'border-orange-200 dark:border-orange-800 hover:border-orange-400 dark:hover:border-orange-600'
                             }`}
                             onClick={() => handleLessonClick(lesson.slug)}
                           >
@@ -312,14 +312,14 @@ const EspagnolCourse = () => {
                                     Complété
                                   </Badge>
                                 )}
-                                <Badge variant="secondary" className="bg-purple-100 dark:bg-purple-900/50 text-purple-700 dark:text-purple-300">
+                                <Badge variant="secondary" className="bg-orange-100 dark:bg-orange-900/50 text-orange-700 dark:text-orange-300">
                                   #{lessonIndex + 1}
                                 </Badge>
                               </div>
                               <div className={`w-14 h-14 rounded-xl flex items-center justify-center mb-3 shadow-lg group-hover:scale-110 transition-transform ${
                                 isCompleted 
                                   ? 'bg-gradient-to-br from-green-500 to-emerald-500' 
-                                  : 'bg-gradient-to-br from-purple-500 to-pink-500'
+                                  : 'bg-gradient-to-br from-orange-500 to-amber-500'
                               }`}>
                                 {isCompleted ? (
                                   <CheckCircle2 className="w-7 h-7 text-white" />
@@ -327,7 +327,7 @@ const EspagnolCourse = () => {
                                   <BookOpen className="w-7 h-7 text-white" />
                                 )}
                               </div>
-                              <CardTitle className="text-lg group-hover:text-purple-600 dark:group-hover:text-purple-400 transition-colors line-clamp-2">
+                              <CardTitle className="text-lg group-hover:text-orange-600 dark:group-hover:text-orange-400 transition-colors line-clamp-2">
                                 {lesson.title}
                               </CardTitle>
                               <CardDescription className="mt-2 line-clamp-3 text-sm">
@@ -339,7 +339,7 @@ const EspagnolCourse = () => {
                                 className={`w-full text-white shadow-lg group-hover:shadow-xl transition-all duration-300 ${
                                   isCompleted
                                     ? 'bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700'
-                                    : 'bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700'
+                                    : 'bg-gradient-to-r from-orange-600 to-amber-600 hover:from-orange-700 hover:to-amber-700'
                                 }`}
                               >
                                 <span>{isCompleted ? 'Réviser' : 'Commencer'}</span>
@@ -359,11 +359,11 @@ const EspagnolCourse = () => {
 
         {/* Motivational CTA at bottom */}
         {lessons.length > 0 && (
-          <Card className="mt-12 border-2 border-purple-300 dark:border-purple-700 bg-gradient-to-br from-purple-50 to-pink-50 dark:from-purple-950/30 dark:to-pink-950/30 overflow-hidden">
+          <Card className="mt-12 border-2 border-orange-300 dark:border-orange-700 bg-gradient-to-br from-orange-50 to-amber-50 dark:from-orange-950/30 dark:to-amber-950/30 overflow-hidden">
             <CardContent className="py-12 text-center relative">
-              <div className="absolute inset-0 bg-gradient-to-r from-purple-500/10 via-pink-500/10 to-blue-500/10"></div>
+              <div className="absolute inset-0 bg-gradient-to-r from-orange-500/10 via-amber-500/10 to-red-500/10"></div>
               <div className="relative z-10 space-y-4">
-                <Sparkles className="w-12 h-12 mx-auto text-purple-600 dark:text-purple-400 mb-4" />
+                <Sparkles className="w-12 h-12 mx-auto text-orange-600 dark:text-orange-400 mb-4" />
                 <h3 className="text-2xl font-bold">Prêt à commencer ton voyage en espagnol ? 🚀</h3>
                 <p className="text-muted-foreground max-w-2xl mx-auto">
                   Chaque leçon t'apprend du nouveau vocabulaire, de la grammaire et te rapproche de la maîtrise de l'espagnol !
