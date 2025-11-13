@@ -37,13 +37,20 @@ export const EnglishPracticeChat = ({
   const [isLoadingHistory, setIsLoadingHistory] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  const scrollToBottom = (smooth = true) => {
+    if (messagesEndRef.current) {
+      messagesEndRef.current.scrollIntoView({ 
+        behavior: smooth ? "smooth" : "auto",
+        block: "end"
+      });
+    }
   };
 
   useEffect(() => {
-    scrollToBottom();
-  }, [messages]);
+    // Use smooth scroll for loading messages, instant for new messages
+    const shouldSmooth = isLoadingHistory || isLoading;
+    scrollToBottom(shouldSmooth);
+  }, [messages, isLoadingHistory, isLoading]);
 
   const loadPreviousConversation = async (userId: string) => {
     setIsLoadingHistory(true);
@@ -312,7 +319,7 @@ export const EnglishPracticeChat = ({
               </div>
             </div>
             
-            <div className="flex gap-2">
+            <div className="flex gap-1.5 sm:gap-2">
               {hasPreviousConversation && (
                 <Button
                   variant="outline"
@@ -320,8 +327,10 @@ export const EnglishPracticeChat = ({
                   onClick={startNewConversation}
                   title="Start a fresh conversation"
                   disabled={isLoading}
+                  className="text-xs sm:text-sm px-2 sm:px-3"
                 >
-                  🔄 New Chat
+                  <span className="hidden sm:inline">🔄 New Chat</span>
+                  <span className="sm:hidden">🔄</span>
                 </Button>
               )}
               
@@ -332,83 +341,86 @@ export const EnglishPracticeChat = ({
                   onClick={deleteConversationHistory}
                   title="Clear all conversation history"
                   disabled={isLoading}
+                  className="text-xs sm:text-sm px-2 sm:px-3"
                 >
-                  🗑️ Clear History
+                  <span className="hidden sm:inline">🗑️ Clear History</span>
+                  <span className="sm:hidden">🗑️</span>
                 </Button>
               )}
             </div>
           </div>
 
-      <div className="space-y-3 min-h-[300px] max-h-[500px] overflow-y-auto p-4 bg-muted/30 rounded-lg">
-        {messages.map((message, index) => (
-          <div
-            key={index}
-            className={`flex ${
-              message.role === "user" ? "justify-end" : "justify-start"
-            }`}
-          >
-            <div
-              className={`max-w-[80%] p-3 rounded-lg ${
-                message.role === "user"
-                  ? "bg-primary text-primary-foreground ml-auto"
-                  : "bg-card text-card-foreground border"
-              }`}
-            >
-              <p className="text-sm sm:text-base whitespace-pre-wrap">
-                {message.content}
-              </p>
-            </div>
+          <div className="space-y-3 min-h-[300px] max-h-[400px] sm:max-h-[500px] overflow-y-auto p-3 sm:p-4 bg-muted/30 rounded-lg scroll-smooth">
+            {messages.map((message, index) => (
+              <div
+                key={index}
+                className={`flex ${
+                  message.role === "user" ? "justify-end" : "justify-start"
+                } animate-in fade-in slide-in-from-bottom-2 duration-300`}
+              >
+                <div
+                  className={`max-w-[85%] sm:max-w-[80%] p-2.5 sm:p-3 rounded-lg break-words ${
+                    message.role === "user"
+                      ? "bg-primary text-primary-foreground ml-auto"
+                      : "bg-card text-card-foreground border"
+                  }`}
+                >
+                  <p className="text-sm sm:text-base whitespace-pre-wrap leading-relaxed">
+                    {message.content}
+                  </p>
+                </div>
+              </div>
+            ))}
+            {isLoading && (
+              <div className="flex justify-start animate-in fade-in slide-in-from-bottom-2 duration-300">
+                <div className="bg-card text-card-foreground border p-2.5 sm:p-3 rounded-lg flex items-center gap-2">
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  <span className="text-sm">Eric is typing...</span>
+                </div>
+              </div>
+            )}
+            <div ref={messagesEndRef} className="h-1" />
           </div>
-        ))}
-        {isLoading && (
-          <div className="flex justify-start">
-            <div className="bg-card text-card-foreground border p-3 rounded-lg flex items-center gap-2">
-              <Loader2 className="w-4 h-4 animate-spin" />
-              <span className="text-sm">Eric is typing...</span>
+
+          {messages.length === 1 && !hasPreviousConversation && (
+            <div className="flex flex-wrap gap-2">
+              <p className="text-xs sm:text-sm text-muted-foreground w-full">💡 Try these:</p>
+              {quickReplies.map((reply, index) => (
+                <Button
+                  key={index}
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    setInput(reply);
+                  }}
+                  disabled={isLoading}
+                  className="text-xs sm:text-sm"
+                >
+                  {reply}
+                </Button>
+              ))}
             </div>
-          </div>
-        )}
-        <div ref={messagesEndRef} />
-      </div>
+          )}
 
-      {messages.length === 1 && (
-        <div className="flex flex-wrap gap-2">
-          <p className="text-sm text-muted-foreground w-full">💡 Try these:</p>
-          {quickReplies.map((reply, index) => (
-            <Button
-              key={index}
-              variant="outline"
-              size="sm"
-              onClick={() => {
-                setInput(reply);
-              }}
-              disabled={isLoading}
-            >
-              {reply}
-            </Button>
-          ))}
-        </div>
-      )}
-
-          <div className="flex gap-2">
+          <div className="flex gap-2 items-end">
             <Textarea
               value={input}
               onChange={(e) => setInput(e.target.value)}
               onKeyDown={handleKeyPress}
               placeholder="Type your message in English..."
-              className="min-h-[80px] resize-none"
+              className="min-h-[60px] sm:min-h-[80px] resize-none text-sm sm:text-base flex-1"
               disabled={isLoading}
             />
             <Button
               onClick={handleSendMessage}
               disabled={!input.trim() || isLoading || !sessionId}
               size="icon"
-              className="h-[80px] w-[80px]"
+              className="h-[60px] w-[60px] sm:h-[80px] sm:w-[80px] shrink-0"
             >
               {isLoading ? (
-                <Loader2 className="w-5 h-5 animate-spin" />
+                <Loader2 className="w-4 h-4 sm:w-5 sm:h-5 animate-spin" />
               ) : (
-                <Send className="w-5 h-5" />
+                <Send className="w-4 h-4 sm:w-5 sm:h-5" />
               )}
             </Button>
           </div>
