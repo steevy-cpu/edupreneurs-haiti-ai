@@ -2,6 +2,16 @@ import { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Card } from "@/components/ui/card";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { Send, Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -35,6 +45,7 @@ export const EnglishPracticeChat = ({
   const [sessionId, setSessionId] = useState<string | null>(null);
   const [hasPreviousConversation, setHasPreviousConversation] = useState(false);
   const [isLoadingHistory, setIsLoadingHistory] = useState(false);
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const scrollToBottom = (smooth = true) => {
@@ -133,7 +144,7 @@ export const EnglishPracticeChat = ({
     setIsInitialized(false);
   };
 
-  const deleteConversationHistory = async () => {
+  const confirmDeleteHistory = async () => {
     try {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
@@ -149,6 +160,7 @@ export const EnglishPracticeChat = ({
 
       toast.success("Conversation history cleared!");
       startNewConversation();
+      setShowDeleteDialog(false);
     } catch (error) {
       console.error('Error deleting history:', error);
       toast.error("Failed to clear conversation history");
@@ -338,7 +350,7 @@ export const EnglishPracticeChat = ({
                 <Button
                   variant="ghost"
                   size="sm"
-                  onClick={deleteConversationHistory}
+                  onClick={() => setShowDeleteDialog(true)}
                   title="Clear all conversation history"
                   disabled={isLoading}
                   className="text-xs sm:text-sm px-2 sm:px-3"
@@ -426,6 +438,27 @@ export const EnglishPracticeChat = ({
           </div>
         </>
       )}
+
+      <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Clear Conversation History?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This will permanently delete all your practice conversations for this lesson. 
+              You won't be able to review your previous messages with Eric. This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction 
+              onClick={confirmDeleteHistory}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              Clear History
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </Card>
   );
 };
