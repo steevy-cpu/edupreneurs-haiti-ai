@@ -127,8 +127,8 @@ SECTION À GÉNÉRER: ${sectionName}
 
 PRINCIPES FONDAMENTAUX:
 - Langue: ${contentLanguage} - ${languageInstruction} ${gradeLevel}
-- ${isCreoleLesson ? 'Tout le contenu, les explications, les exemples et les exercices doivent être en créole haïtien' : `Utilisation du créole: ${sectionName === 'exemples_exercices' ? 'INTERDITE dans cette section - utiliser uniquement le français' : 'UNIQUEMENT pour des explications contextuelles ponctuelles, des expressions idiomatiques, ou des clarifications culturelles (entre parenthèses ou dans des encadrés spécifiques)'}`}
-- Contextualisation MAXIMALE avec exemples haïtiens et caribéens (décrits en français)
+- ${isCreoleLesson ? '🚨 CRITIQUE: TOUT LE CONTENU DOIT ÊTRE EN KREYÒL AYISYEN - titres, explications, exemples, exercices, instructions. PAS UN SEUL MOT EN FRANÇAIS dans le contenu principal.' : `Utilisation du créole: ${sectionName === 'exemples_exercices' ? 'INTERDITE dans cette section - utiliser uniquement le français' : 'UNIQUEMENT pour des explications contextuelles ponctuelles, des expressions idiomatiques, ou des clarifications culturelles (entre parenthèses ou dans des encadrés spécifiques)'}`}
+- Contextualisation MAXIMALE avec exemples haïtiens et caribéens ${isCreoleLesson ? '(décrits en créole haïtien)' : '(décrits en français)'}
 - Format: HTML avec classes Tailwind (compatible dark/light mode)
 - Longueur cible: ${targetWords} mots (minimum: ${config.minWords}, maximum: ${config.maxWords})
 - CRITIQUE: NE JAMAIS créer de section "Objectifs" dans ${sectionName} - les objectifs ont leur propre section dédiée
@@ -150,11 +150,12 @@ ${Object.entries(HTML_TEMPLATES).map(([key, template]) => `${key}: ${template}`)
 
 IMPORTANT:
 - Utilise des émojis pertinents
-- Tous les textes en ${isCreoleLesson ? 'KREYÒL AYISYEN (créole haïtien)' : 'français'}
+- ${isCreoleLesson ? '🚨 ABSOLUMENT TOUT EN KREYÒL AYISYEN - "Objectif" devient "Objektif", "Introduction" devient "Entwodiksyon", etc.' : 'Tous les textes en français'}
 - Maximum de références haïtiennes/caribéennes
 - Structure claire et progressive avec BEAUCOUP d'espacement
 - Vocabulaire adapté au niveau ${gradeLevel}
-- NE PAS utiliser de marqueurs de code comme \`\`\` dans le résultat`;
+- NE PAS utiliser de marqueurs de code comme \`\`\` dans le résultat
+${isCreoleLesson ? '- 🚨 RAPPEL FINAL: Écris TOUT en créole haïtien, même les titres de sections et les instructions' : ''}`;
 
     const userPrompt = `Génère le contenu pour {{section_name}} selon {{lesson_topic}} pour {{student_grade}} avec au moins {{words_count}} mots.
 

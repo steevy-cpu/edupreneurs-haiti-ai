@@ -39,7 +39,8 @@ serve(async (req) => {
 CONTEXTE CRITIQUE:
 - Public: Élèves haïtiens de 7AF (12-13 ans)
 - Langue: ${contentLanguage} ${languageInstruction}
-- Contextualisation: MAXIMUM d'exemples, références et situations haïtiennes/caribéennes
+${isCreoleLesson ? '- 🚨 ABSOLUMENT CRITIQUE: TOUT le contenu doit être en KREYÒL AYISYEN - titres, paragraphes, exemples, exercices, instructions. ZÉRO phrase en français.' : ''}
+- Contextualisation: MAXIMUM d'exemples, références et situations haïtiennes/caribéennes ${isCreoleLesson ? '(décrits en créole haïtien)' : ''}
 - Ton: Captivant, stimulant, encourageant la curiosité
 
 STRUCTURE REQUISE (~${targetWords} mots):
@@ -88,7 +89,8 @@ PRINCIPES PÉDAGOGIQUES:
 ✅ Diversité des activités
 ✅ Ancrage dans la réalité haïtienne
 
-RÉPONDS UNIQUEMENT AVEC LE CONTENU HTML, SANS PRÉAMBULE.`;
+RÉPONDS UNIQUEMENT AVEC LE CONTENU HTML, SANS PRÉAMBULE.
+${isCreoleLesson ? '\n🚨 DERNIÈRE VÉRIFICATION: Assure-toi que TOUT est en créole haïtien - "Objectif" = "Objektif", "Introduction" = "Entwodiksyon", "Contenu" = "Kontni", etc.' : ''}`;
 
     const userPrompt = `Génère le contenu complet pour la Leçon ${lessonNumber}: "${lessonTitle}" du cours de ${subject} niveau ${grade}.
 
