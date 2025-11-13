@@ -17,7 +17,7 @@ import {
   CheckCircle2
 } from "lucide-react";
 import { creoleLessons7AF } from "@/data/creoleLessons";
-import ericTeaching from "@/assets/eric-teaching.png";
+import ericEdupreneurs from "@/assets/eric-edupreneurs.png";
 
 const categoryIcons = {
   "Lekti": BookOpen,
@@ -69,7 +69,7 @@ export default function CreoleCourse() {
       </nav>
 
       {/* Hero Header */}
-      <div className="relative bg-gradient-to-r from-pink-600 to-purple-600 text-primary-foreground pt-32 pb-16">
+      <div className="relative bg-gradient-to-r from-teal-600 to-emerald-600 text-primary-foreground pt-32 pb-16">
         <div className="container mx-auto px-4">
           <div className="flex flex-col md:flex-row items-center gap-8">
             <div className="flex-1 text-center md:text-left">
@@ -97,7 +97,7 @@ export default function CreoleCourse() {
             </div>
             <div className="flex-shrink-0">
               <img 
-                src={ericTeaching} 
+                src={ericEdupreneurs} 
                 alt="Eric - Gid Pedagojik"
                 className="w-64 h-64 object-contain"
               />
@@ -214,7 +214,7 @@ export default function CreoleCourse() {
           <div className="flex flex-col md:flex-row items-center gap-6">
             <div className="flex-shrink-0">
               <img 
-                src={ericTeaching} 
+                src={ericEdupreneurs} 
                 alt="Eric - Asistan IA"
                 className="w-48 h-48 object-contain"
               />
