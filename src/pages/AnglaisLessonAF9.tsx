@@ -17,6 +17,7 @@ import { EnglishPracticeChat } from "@/components/EnglishPracticeChat";
 import { InteractiveActivitiesEnhanced } from "@/components/InteractiveActivitiesEnhanced";
 import { HTMLQuizParser } from "@/components/HTMLQuizParser";
 import { EricChatbot } from "@/components/EricChatbot";
+import { ThemeToggle } from "@/components/ThemeToggle";
 
 const AnglaisLessonAF9 = () => {
   const { lessonSlug } = useParams();
@@ -163,15 +164,18 @@ const AnglaisLessonAF9 = () => {
             <ArrowLeft className="w-4 h-4 mr-2" />
             Retour aux leçons
           </Button>
-          {lesson && (
-            <DownloadLessonButton
-              lessonData={lesson}
-              personalNotes={personalNotes}
-              subjectName="Anglais AF9"
-              variant="outline"
-              size="sm"
-            />
-          )}
+          <div className="flex items-center gap-2">
+            {lesson && (
+              <DownloadLessonButton
+                lessonData={lesson}
+                personalNotes={personalNotes}
+                subjectName="Anglais AF9"
+                variant="outline"
+                size="sm"
+              />
+            )}
+            <ThemeToggle />
+          </div>
         </div>
 
         <Card className="mb-6">

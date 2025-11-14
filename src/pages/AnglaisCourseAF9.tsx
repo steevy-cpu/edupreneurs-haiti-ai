@@ -9,6 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import ericWelcome from "@/assets/eric-welcome.png";
 import DOMPurify from 'dompurify';
 import { EricChatbot } from "@/components/EricChatbot";
+import { ThemeToggle } from "@/components/ThemeToggle";
 
 interface Lesson {
   id: string;
@@ -88,14 +89,17 @@ const AnglaisCourseAF9 = () => {
         </div>
         
         <div className="container mx-auto px-4 py-16 relative z-10">
-          <Button
-            variant="ghost"
-            onClick={() => navigate("/matieres")}
-            className="mb-8 text-white hover:bg-white/10 border border-white/20"
-          >
-            <ArrowLeft className="w-4 h-4 mr-2" />
-            Back to Subjects
-          </Button>
+          <div className="flex items-center justify-between mb-8">
+            <Button
+              variant="ghost"
+              onClick={() => navigate("/matieres")}
+              className="text-white hover:bg-white/10 border border-white/20"
+            >
+              <ArrowLeft className="w-4 h-4 mr-2" />
+              Back to Subjects
+            </Button>
+            <ThemeToggle />
+          </div>
 
           <div className="flex flex-col lg:flex-row items-center justify-between gap-12">
             {/* Left side - Text content */}
