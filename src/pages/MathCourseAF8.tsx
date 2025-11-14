@@ -7,6 +7,8 @@ import { ThemeToggle } from "@/components/ThemeToggle";
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { OptimizedImage } from "@/components/OptimizedImage";
+import ericEdupreneurs from "@/assets/eric-edupreneurs.png";
 
 interface Lesson {
   id: string;
@@ -78,6 +80,13 @@ const MathCourseAF8 = () => {
 
   const monthOrder = ['Décembre', 'Janvier', 'Février', 'Mars', 'Avril', 'Mai', 'Juin'];
 
+  // Strip HTML tags from text
+  const stripHtml = (html: string) => {
+    const tmp = document.createElement('DIV');
+    tmp.innerHTML = html;
+    return tmp.textContent || tmp.innerText || '';
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-background to-secondary/20">
       {/* Navigation Bar */}
@@ -97,16 +106,25 @@ const MathCourseAF8 = () => {
 
       {/* Header */}
       <div className="container mx-auto px-4 py-12">
-        <div className="text-center mb-12">
-          <div className="inline-flex items-center justify-center w-20 h-20 rounded-2xl bg-gradient-to-br from-orange-500 to-red-600 mb-6 shadow-lg">
-            <BookOpen className="h-10 w-10 text-white" />
+        <div className="flex flex-col md:flex-row items-center justify-between gap-8 mb-12 max-w-6xl mx-auto">
+          <div className="flex-1 text-center md:text-left">
+            <div className="inline-flex items-center justify-center w-20 h-20 rounded-2xl bg-gradient-to-br from-orange-500 to-red-600 mb-6 shadow-lg">
+              <BookOpen className="h-10 w-10 text-white" />
+            </div>
+            <h1 className="text-4xl md:text-5xl font-bold mb-4 bg-gradient-to-r from-orange-600 to-red-600 bg-clip-text text-transparent">
+              Mathématiques AF8
+            </h1>
+            <p className="text-xl text-muted-foreground max-w-2xl">
+              Programme complet de mathématiques pour la 8ème année fondamentale
+            </p>
           </div>
-          <h1 className="text-4xl md:text-5xl font-bold mb-4 bg-gradient-to-r from-orange-600 to-red-600 bg-clip-text text-transparent">
-            Mathématiques AF8
-          </h1>
-          <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-            Programme complet de mathématiques pour la 8ème année fondamentale
-          </p>
+          <div className="flex-shrink-0">
+            <OptimizedImage 
+              src={ericEdupreneurs} 
+              alt="Eric, votre professeur de mathématiques"
+              className="w-64 h-64 object-contain"
+            />
+          </div>
         </div>
 
         {loading ? (
@@ -156,7 +174,7 @@ const MathCourseAF8 = () => {
                           </CardTitle>
                           {lesson.objectif && (
                             <CardDescription className="line-clamp-2">
-                              {lesson.objectif}
+                              {stripHtml(lesson.objectif)}
                             </CardDescription>
                           )}
                         </CardHeader>
