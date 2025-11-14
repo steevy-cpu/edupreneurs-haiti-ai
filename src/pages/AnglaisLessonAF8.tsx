@@ -298,26 +298,6 @@ const AnglaisLessonAF8 = () => {
                   </div>
                 )}
 
-                {lesson.youtube_url && (
-                  <div className="my-8">
-                    <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
-                      🎥 Vidéo explicative
-                    </h3>
-                    <div className="aspect-video rounded-lg overflow-hidden border border-border shadow-lg">
-                      <iframe
-                        className="w-full h-full"
-                        src={lesson.youtube_url.includes('embed') 
-                          ? lesson.youtube_url 
-                          : lesson.youtube_url.replace('watch?v=', 'embed/').replace('youtu.be/', 'youtube.com/embed/')
-                        }
-                        title="YouTube video"
-                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-                        allowFullScreen
-                      />
-                    </div>
-                  </div>
-                )}
-
                 {lesson.exemples_exercices && (
                   <>
                     <div className="border-t my-8" />
@@ -329,6 +309,29 @@ const AnglaisLessonAF8 = () => {
                       className="prose prose-sm lg:prose-base max-w-none dark:prose-invert lesson-content"
                       dangerouslySetInnerHTML={{ __html: lesson.exemples_exercices }}
                     />
+                  </>
+                )}
+
+                {lesson.youtube_url && (
+                  <>
+                    <div className="border-t my-8" />
+                    <div className="my-8">
+                      <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
+                        🎥 Vidéo explicative
+                      </h3>
+                      <div className="aspect-video rounded-lg overflow-hidden border border-border shadow-lg">
+                        <iframe
+                          className="w-full h-full"
+                          src={lesson.youtube_url.includes('embed') 
+                            ? lesson.youtube_url 
+                            : lesson.youtube_url.replace('watch?v=', 'embed/').replace('youtu.be/', 'youtube.com/embed/')
+                          }
+                          title="YouTube video"
+                          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                          allowFullScreen
+                        />
+                      </div>
+                    </div>
                   </>
                 )}
 
