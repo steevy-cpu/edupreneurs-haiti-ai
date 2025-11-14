@@ -6,7 +6,7 @@ import { BookOpen, Clock, Target, GraduationCap, ArrowLeft, Trophy, Calendar } f
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
 import { Badge } from "@/components/ui/badge";
-import ericTeaching from "@/assets/eric-teaching.png";
+import ericWelcome from "@/assets/eric-welcome.png";
 
 interface Lesson {
   id: string;
@@ -76,86 +76,69 @@ const AnglaisCourseAF9 = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-cyan-50 via-blue-50 to-indigo-50 dark:from-gray-900 dark:via-cyan-950 dark:to-blue-950">
+    <div className="min-h-screen bg-gradient-to-br from-purple-50 via-violet-50 to-fuchsia-50 dark:from-gray-900 dark:via-purple-950 dark:to-violet-950">
       {/* Hero Header with Eric */}
-      <div className="relative bg-gradient-to-r from-cyan-600 via-blue-600 to-indigo-600 text-white overflow-hidden">
+      <div className="relative bg-gradient-to-r from-purple-600 via-violet-600 to-fuchsia-600 text-white overflow-hidden">
         <div className="absolute inset-0 opacity-10">
           <div className="absolute inset-0" style={{
-            backgroundImage: 'url("data:image/svg+xml,%3Csvg width=\'60\' height=\'60\' viewBox=\'0 0 60 60\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cg fill=\'none\' fill-rule=\'evenodd\'%3E%3Cg fill=\'%23ffffff\' fill-opacity=\'1\'%3E%3Cpath d=\'M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z\'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")'
+            backgroundImage: 'url("data:image/svg+xml,%3Csvg width=\'40\' height=\'40\' viewBox=\'0 0 40 40\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cg fill=\'%23ffffff\' fill-opacity=\'1\' fill-rule=\'evenodd\'%3E%3Cpath d=\'M0 40L40 0H20L0 20M40 40V20L20 40\'/%3E%3C/g%3E%3C/svg%3E")'
           }} />
         </div>
         
-        <div className="container mx-auto px-4 py-12 relative z-10">
+        <div className="container mx-auto px-4 py-16 relative z-10">
           <Button
             variant="ghost"
             onClick={() => navigate("/matieres")}
-            className="mb-6 text-white hover:bg-white/10"
+            className="mb-8 text-white hover:bg-white/10 border border-white/20"
           >
             <ArrowLeft className="w-4 h-4 mr-2" />
-            Retour aux matières
+            Back to Subjects
           </Button>
 
-          <div className="flex flex-col lg:flex-row items-center gap-8">
+          <div className="flex flex-col lg:flex-row items-center justify-between gap-12">
             {/* Left side - Text content */}
-            <div className="flex-1 text-center lg:text-left">
-              <div className="flex items-center gap-3 mb-4 justify-center lg:justify-start">
-                <div className="p-3 bg-white/20 backdrop-blur-sm rounded-xl">
-                  <BookOpen className="w-10 h-10 text-white" />
-                </div>
-                <Badge variant="secondary" className="text-lg px-4 py-2">
-                  <GraduationCap className="w-5 h-5 mr-2" />
-                  9ème Année Fondamentale
-                </Badge>
+            <div className="flex-1 space-y-6">
+              <Badge variant="secondary" className="text-base px-5 py-2 bg-white/20 border-white/30">
+                <GraduationCap className="w-5 h-5 mr-2" />
+                9ème Année Fondamentale
+              </Badge>
+              
+              <div>
+                <h1 className="text-6xl lg:text-7xl font-bold mb-4 drop-shadow-lg tracking-tight">
+                  English Language
+                </h1>
+                <p className="text-2xl lg:text-3xl opacity-95 font-light leading-relaxed">
+                  Master Grammar, Communication & Comprehension Skills
+                </p>
               </div>
               
-              <h1 className="text-5xl lg:text-6xl font-bold mb-4 drop-shadow-lg">
-                English Language
-              </h1>
-              <p className="text-xl lg:text-2xl opacity-90 mb-6 font-light">
-                Master Grammar, Communication & Comprehension Skills
-              </p>
-              
-              <div className="flex flex-wrap gap-4 justify-center lg:justify-start">
-                <div className="bg-white/10 backdrop-blur-sm rounded-xl px-6 py-3 border border-white/20">
-                  <div className="flex items-center gap-2">
-                    <BookOpen className="w-5 h-5" />
-                    <div className="text-left">
-                      <div className="text-2xl font-bold">{lessons?.length || 0}</div>
-                      <div className="text-sm opacity-80">Lessons</div>
-                    </div>
-                  </div>
+              <div className="grid grid-cols-3 gap-4 pt-4">
+                <div className="bg-white/15 backdrop-blur-md rounded-2xl p-5 border border-white/20 hover:bg-white/20 transition-all">
+                  <BookOpen className="w-6 h-6 mb-2" />
+                  <div className="text-3xl font-bold">{lessons?.length || 0}</div>
+                  <div className="text-sm opacity-90">Lessons</div>
                 </div>
-                <div className="bg-white/10 backdrop-blur-sm rounded-xl px-6 py-3 border border-white/20">
-                  <div className="flex items-center gap-2">
-                    <Calendar className="w-5 h-5" />
-                    <div className="text-left">
-                      <div className="text-2xl font-bold">7</div>
-                      <div className="text-sm opacity-80">Months</div>
-                    </div>
-                  </div>
+                <div className="bg-white/15 backdrop-blur-md rounded-2xl p-5 border border-white/20 hover:bg-white/20 transition-all">
+                  <Calendar className="w-6 h-6 mb-2" />
+                  <div className="text-3xl font-bold">7</div>
+                  <div className="text-sm opacity-90">Months</div>
                 </div>
-                <div className="bg-white/10 backdrop-blur-sm rounded-xl px-6 py-3 border border-white/20">
-                  <div className="flex items-center gap-2">
-                    <Trophy className="w-5 h-5" />
-                    <div className="text-left">
-                      <div className="text-2xl font-bold">MENFP</div>
-                      <div className="text-sm opacity-80">Certified</div>
-                    </div>
-                  </div>
+                <div className="bg-white/15 backdrop-blur-md rounded-2xl p-5 border border-white/20 hover:bg-white/20 transition-all">
+                  <Trophy className="w-6 h-6 mb-2" />
+                  <div className="text-3xl font-bold">A+</div>
+                  <div className="text-sm opacity-90">MENFP</div>
                 </div>
               </div>
             </div>
 
             {/* Right side - Eric image */}
-            <div className="flex-shrink-0">
-              <div className="relative">
-                <div className="absolute inset-0 bg-gradient-to-br from-cyan-400 to-blue-500 rounded-full blur-3xl opacity-30 animate-pulse" />
-                <img 
-                  src={ericTeaching} 
-                  alt="Eric - Your English Teacher" 
-                  className="relative w-64 h-64 lg:w-80 lg:h-80 object-contain drop-shadow-2xl"
-                />
-              </div>
+            <div className="flex-shrink-0 relative">
+              <div className="absolute inset-0 bg-gradient-to-br from-fuchsia-400 to-purple-500 rounded-full blur-3xl opacity-40 animate-pulse" />
+              <img 
+                src={ericWelcome} 
+                alt="Eric - Your English Teacher" 
+                className="relative w-80 h-80 lg:w-96 lg:h-96 object-contain drop-shadow-2xl"
+              />
             </div>
           </div>
         </div>
@@ -163,30 +146,30 @@ const AnglaisCourseAF9 = () => {
 
       <div className="max-w-7xl mx-auto px-4 py-12">
         {/* Learning objectives banner */}
-        <Card className="mb-8 bg-gradient-to-r from-cyan-500/10 via-blue-500/10 to-indigo-500/10 border-cyan-200 dark:border-cyan-800">
-          <CardContent className="p-6">
-            <div className="flex items-start gap-4">
-              <div className="p-3 bg-cyan-500 rounded-xl text-white">
-                <Target className="w-6 h-6" />
+        <Card className="mb-10 bg-gradient-to-r from-purple-500/10 via-violet-500/10 to-fuchsia-500/10 border-purple-200 dark:border-purple-800 shadow-lg">
+          <CardContent className="p-8">
+            <div className="flex items-start gap-6">
+              <div className="p-4 bg-gradient-to-br from-purple-500 to-violet-600 rounded-2xl text-white shadow-lg">
+                <Target className="w-7 h-7" />
               </div>
               <div className="flex-1">
-                <h3 className="text-xl font-bold mb-2 text-cyan-900 dark:text-cyan-100">What You'll Master This Year</h3>
-                <div className="grid md:grid-cols-2 gap-4 text-sm">
-                  <div className="flex items-center gap-2">
-                    <div className="w-2 h-2 bg-cyan-500 rounded-full" />
-                    <span>Advanced Grammar & Tenses</span>
+                <h3 className="text-2xl font-bold mb-4 text-purple-900 dark:text-purple-100">What You'll Master This Year</h3>
+                <div className="grid md:grid-cols-2 gap-4">
+                  <div className="flex items-center gap-3 text-base">
+                    <div className="w-2.5 h-2.5 bg-purple-500 rounded-full flex-shrink-0" />
+                    <span className="text-foreground">Advanced Grammar & Tenses</span>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <div className="w-2 h-2 bg-blue-500 rounded-full" />
-                    <span>Pronouns & Adjectives</span>
+                  <div className="flex items-center gap-3 text-base">
+                    <div className="w-2.5 h-2.5 bg-violet-500 rounded-full flex-shrink-0" />
+                    <span className="text-foreground">Pronouns & Adjectives</span>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <div className="w-2 h-2 bg-indigo-500 rounded-full" />
-                    <span>Conditional Sentences</span>
+                  <div className="flex items-center gap-3 text-base">
+                    <div className="w-2.5 h-2.5 bg-fuchsia-500 rounded-full flex-shrink-0" />
+                    <span className="text-foreground">Conditional Sentences</span>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <div className="w-2 h-2 bg-cyan-600 rounded-full" />
-                    <span>Idiomatic Expressions</span>
+                  <div className="flex items-center gap-3 text-base">
+                    <div className="w-2.5 h-2.5 bg-purple-600 rounded-full flex-shrink-0" />
+                    <span className="text-foreground">Idiomatic Expressions</span>
                   </div>
                 </div>
               </div>
@@ -195,15 +178,17 @@ const AnglaisCourseAF9 = () => {
         </Card>
 
         {/* Month Filter */}
-        <div className="mb-8">
-          <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
-            <Calendar className="w-5 h-5 text-cyan-600" />
+        <div className="mb-10">
+          <h3 className="text-xl font-bold mb-5 flex items-center gap-3">
+            <div className="p-2 bg-purple-100 dark:bg-purple-900 rounded-lg">
+              <Calendar className="w-5 h-5 text-purple-600 dark:text-purple-400" />
+            </div>
             Filter by Month
           </h3>
           <div className="flex flex-wrap gap-3">
             <Badge
               variant={selectedMonth === null ? "default" : "outline"}
-              className="cursor-pointer px-4 py-2 text-sm transition-all hover:scale-105 bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600"
+              className="cursor-pointer px-5 py-2.5 text-sm transition-all hover:scale-105 bg-gradient-to-r from-purple-500 to-violet-500 hover:from-purple-600 hover:to-violet-600 shadow-md"
               onClick={() => setSelectedMonth(null)}
             >
               All Months
@@ -212,14 +197,14 @@ const AnglaisCourseAF9 = () => {
               <Badge
                 key={month}
                 variant={selectedMonth === month ? "default" : "outline"}
-                className={`cursor-pointer px-4 py-2 text-sm transition-all hover:scale-105 ${
+                className={`cursor-pointer px-5 py-2.5 text-sm transition-all hover:scale-105 ${
                   selectedMonth === month 
-                    ? 'bg-gradient-to-r from-cyan-500 to-blue-500' 
-                    : 'hover:bg-cyan-50 dark:hover:bg-cyan-950'
+                    ? 'bg-gradient-to-r from-purple-500 to-violet-500 shadow-md' 
+                    : 'hover:bg-purple-50 dark:hover:bg-purple-950 border-purple-200 dark:border-purple-800'
                 }`}
                 onClick={() => setSelectedMonth(month)}
               >
-                {month} <span className="ml-1 opacity-60">({groupedLessons![month].length})</span>
+                {month} <span className="ml-1 opacity-70">({groupedLessons![month].length})</span>
               </Badge>
             ))}
           </div>
@@ -229,30 +214,28 @@ const AnglaisCourseAF9 = () => {
           {filteredLessons?.map((lesson, index) => (
             <Card
               key={lesson.id}
-              className="group hover:shadow-2xl hover:shadow-cyan-500/20 transition-all duration-300 cursor-pointer border-2 hover:border-cyan-500 overflow-hidden bg-gradient-to-br from-white to-cyan-50/30 dark:from-gray-900 dark:to-cyan-950/30"
+              className="group hover:shadow-2xl hover:shadow-purple-500/20 transition-all duration-300 cursor-pointer border-2 hover:border-purple-500 overflow-hidden bg-card hover:-translate-y-1"
               onClick={() => navigate(`/anglais-af9/${lesson.slug}`)}
             >
-              <div className="h-2 bg-gradient-to-r from-cyan-500 via-blue-500 to-indigo-500" />
+              <div className="h-1.5 bg-gradient-to-r from-purple-500 via-violet-500 to-fuchsia-500" />
               
               <CardHeader className="pb-4">
                 <div className="flex items-start justify-between mb-3">
-                  <Badge className="bg-gradient-to-r from-cyan-500 to-blue-500">
+                  <Badge className="bg-gradient-to-r from-purple-500 to-violet-500 shadow-sm">
                     {lesson.mois || "N/A"}
                   </Badge>
-                  <div className="flex items-center gap-2">
-                    <div className="w-8 h-8 rounded-full bg-gradient-to-br from-cyan-500 to-blue-500 flex items-center justify-center text-white text-sm font-bold">
-                      {lesson.order_index}
-                    </div>
+                  <div className="w-9 h-9 rounded-full bg-gradient-to-br from-purple-500 to-violet-600 flex items-center justify-center text-white text-sm font-bold shadow-md">
+                    {lesson.order_index}
                   </div>
                 </div>
                 
-                <CardTitle className="text-xl group-hover:text-cyan-600 dark:group-hover:text-cyan-400 transition-colors leading-tight">
+                <CardTitle className="text-xl group-hover:text-purple-600 dark:group-hover:text-purple-400 transition-colors leading-tight">
                   {lesson.title}
                 </CardTitle>
                 
                 {lesson.objectif && (
                   <CardDescription className="flex items-start gap-2 mt-3 text-sm">
-                    <Target className="w-4 h-4 mt-1 flex-shrink-0 text-cyan-600" />
+                    <Target className="w-4 h-4 mt-1 flex-shrink-0 text-purple-600 dark:text-purple-400" />
                     <span className="line-clamp-2">{lesson.objectif}</span>
                   </CardDescription>
                 )}
@@ -260,7 +243,7 @@ const AnglaisCourseAF9 = () => {
               
               <CardContent>
                 <Button 
-                  className="w-full bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white font-semibold group-hover:shadow-lg transition-all"
+                  className="w-full bg-gradient-to-r from-purple-500 to-violet-500 hover:from-purple-600 hover:to-violet-600 text-white font-semibold group-hover:shadow-lg transition-all"
                 >
                   Start Lesson
                   <BookOpen className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
@@ -271,15 +254,15 @@ const AnglaisCourseAF9 = () => {
         </div>
 
         {(!filteredLessons || filteredLessons.length === 0) && (
-          <Card className="p-12 text-center bg-gradient-to-br from-cyan-50 to-blue-50 dark:from-cyan-950 dark:to-blue-950">
-            <BookOpen className="w-16 h-16 mx-auto mb-4 text-cyan-500 opacity-50" />
+          <Card className="p-12 text-center bg-gradient-to-br from-purple-50 to-violet-50 dark:from-purple-950 dark:to-violet-950 border-purple-200 dark:border-purple-800">
+            <BookOpen className="w-16 h-16 mx-auto mb-4 text-purple-500 opacity-50" />
             <p className="text-lg text-muted-foreground">
               No lessons available for this filter.
             </p>
             <Button 
               variant="outline" 
               onClick={() => setSelectedMonth(null)}
-              className="mt-4"
+              className="mt-4 border-purple-300 dark:border-purple-700"
             >
               Show All Lessons
             </Button>
