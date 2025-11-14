@@ -416,15 +416,13 @@ export default function ArtsLesson() {
               )}
             </Card>
 
-            {youtubeUrl && (
-              <YouTubeVideoSection 
-                lessonTitle={lessonData.title}
-                objectives={lessonData.objectif || ''}
-                gradeLevel="7AF"
-                customYoutubeUrl={youtubeUrl}
-                subject="arts"
-              />
-            )}
+            <YouTubeVideoSection 
+              lessonTitle={lessonData.title}
+              objectives={lessonData.objectif || ''}
+              gradeLevel="7AF"
+              customYoutubeUrl={youtubeUrl || undefined}
+              subject="arts"
+            />
           </TabsContent>
 
           <TabsContent value="exercices" className="space-y-6">
