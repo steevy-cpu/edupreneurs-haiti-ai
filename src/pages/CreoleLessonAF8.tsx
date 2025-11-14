@@ -162,14 +162,24 @@ const CreoleLessonAF8 = () => {
       </nav>
 
       <div className="container mx-auto px-4 py-8 max-w-4xl">
-        {/* Lesson Header */}
-        <div className="mb-8">
-          <div className="flex items-center gap-3 mb-4">
-            <div className="p-3 rounded-xl bg-gradient-to-br from-teal-500 to-emerald-500">
-              <BookOpen className="w-6 h-6 text-white" />
-            </div>
-            <div>
-              <h1 className="text-3xl font-bold">{lesson.title}</h1>
+        {loading ? (
+          <div className="flex items-center justify-center min-h-[400px]">
+            <p className="text-muted-foreground">Chargement de la leçon...</p>
+          </div>
+        ) : !lesson ? (
+          <div className="flex items-center justify-center min-h-[400px]">
+            <p className="text-muted-foreground">Leçon non trouvée</p>
+          </div>
+        ) : (
+          <>
+            {/* Lesson Header */}
+            <div className="mb-8">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="p-3 rounded-xl bg-gradient-to-br from-teal-500 to-emerald-500">
+                  <BookOpen className="w-6 h-6 text-white" />
+                </div>
+                <div>
+                  <h1 className="text-3xl font-bold">{lesson.title}</h1>
               <p className="text-sm text-muted-foreground">Kreyòl Ayisyen - AF8</p>
             </div>
           </div>
@@ -311,6 +321,8 @@ const CreoleLessonAF8 = () => {
             Retour au cours
           </Button>
         </div>
+          </>
+        )}
       </div>
     </div>
   );

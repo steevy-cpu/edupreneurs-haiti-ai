@@ -179,25 +179,35 @@ const MathLessonAF8 = () => {
         </div>
       </nav>
 
-      {/* Lesson Header */}
       <div className="container mx-auto px-4 py-8">
-        <div className="bg-gradient-to-r from-orange-500/10 to-red-600/10 rounded-2xl p-8 mb-8 border border-orange-500/20">
-          <div className="flex items-start gap-6">
-            <div className="flex-shrink-0">
-              <img 
-                src={ericChairDesk} 
-                alt="Eric enseignant" 
-                className="w-32 h-32 object-contain"
-              />
-            </div>
-            <div className="flex-1">
-              <div className="flex items-center gap-2 mb-3">
-                <Badge variant="outline" className="bg-orange-500/10 text-orange-700 dark:text-orange-300 border-orange-500/20">
-                  Propriété physique de la matière
-                </Badge>
-                <Badge variant="secondary">Débutant</Badge>
-              </div>
-              <h1 className="text-3xl md:text-4xl font-bold mb-3">{lesson.title}</h1>
+        {loading ? (
+          <div className="flex items-center justify-center min-h-[400px]">
+            <p className="text-muted-foreground">Chargement de la leçon...</p>
+          </div>
+        ) : !lesson ? (
+          <div className="flex items-center justify-center min-h-[400px]">
+            <p className="text-muted-foreground">Leçon non trouvée</p>
+          </div>
+        ) : (
+          <>
+            {/* Lesson Header */}
+            <div className="bg-gradient-to-r from-orange-500/10 to-red-600/10 rounded-2xl p-8 mb-8 border border-orange-500/20">
+              <div className="flex items-start gap-6">
+                <div className="flex-shrink-0">
+                  <img 
+                    src={ericChairDesk} 
+                    alt="Eric enseignant" 
+                    className="w-32 h-32 object-contain"
+                  />
+                </div>
+                <div className="flex-1">
+                  <div className="flex items-center gap-2 mb-3">
+                    <Badge variant="outline" className="bg-orange-500/10 text-orange-700 dark:text-orange-300 border-orange-500/20">
+                      Propriété physique de la matière
+                    </Badge>
+                    <Badge variant="secondary">Débutant</Badge>
+                  </div>
+                  <h1 className="text-3xl md:text-4xl font-bold mb-3">{lesson.title}</h1>
               {lesson.objectif && (
                 <div 
                   className="text-muted-foreground text-lg prose dark:prose-invert max-w-none lesson-content"
@@ -385,6 +395,8 @@ const MathLessonAF8 = () => {
             Retour au cours
           </Button>
         </div>
+          </>
+        )}
       </div>
     </div>
   );
