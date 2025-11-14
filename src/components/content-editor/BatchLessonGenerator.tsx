@@ -64,6 +64,7 @@ export const BatchLessonGenerator = () => {
     { value: "all", label: "Tous les niveaux" },
     { value: "7AF", label: "7AF" },
     { value: "AF8", label: "AF8" },
+    { value: "AF9", label: "AF9" },
   ];
 
   // Load subjects when grade level changes
