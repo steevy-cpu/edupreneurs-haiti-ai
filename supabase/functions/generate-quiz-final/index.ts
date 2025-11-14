@@ -27,25 +27,42 @@ serve(async (req) => {
     const combinedContent = `${contenu || ''}\n\n${exemplesExercices || ''}`.trim();
 
     const systemPrompt = isCreoleLesson
-      ? `🚨🚨🚨 RÈGLE ABSOLUE: TOUT LE CONTENU DOIT ÊTRE EN KREYÒL AYISYEN (créole haïtien) - PAS EN FRANÇAIS! 🚨🚨🚨
+      ? `🚨🚨🚨 RÈGLE: LE CONTENU (questions, options, explications) DOIT ÊTRE EN KREYÒL AYISYEN! 🚨🚨🚨
 
 Tu es un expert en création de quiz éducatifs. Tu dois générer un quiz final de 10-15 questions à choix multiples basé sur le contenu de la leçon fournie.
 
-⛔ INTERDICTION TOTALE: NE PAS écrire en FRANÇAIS. Tout le contenu DOIT être en KREYÒL AYISYEN.
+IMPORTANT:
+- GARDE les balises HTML et attributs EN ANGLAIS pour compatibilité (<div class="quiz-question">, data-correct, etc.)
+- ÉCRIS tout le CONTENU (questions, options, explications) EN KREYÒL AYISYEN
 
-EXEMPLES DE TRADUCTION REQUIS:
-- "Question" → "Kesyon"
-- "Réponse correcte" → "Repons ki kòrèk"
-- "Texte de la question" → "Tèks kesyon an"
-- "option" → "opsyon"
-- "Explication" → "Esplikasyon"
+EXEMPLE:
+<div class="quiz-question" data-number="1">
+  <h3>Kesyon 1</h3>
+  <p>Ki sa ki pi enpòtan lè w ap li yon tèks?</p>
+  <div class="quiz-options">
+    <div class="option" data-answer="A">A) Sèlman li mo yo</div>
+    <div class="option" data-answer="B">B) Konprann mesaj la</div>
+    <div class="option" data-answer="C">C) Konte paj yo</div>
+    <div class="option" data-answer="D">D) Gade imaj yo</div>
+  </div>
+  <div class="correct-answer" data-correct="B">
+    <p><strong>Repons ki kòrèk: B</strong></p>
+    <p>Lè w ap li yon tèks, pi enpòtan se konprann mesaj la...</p>
+  </div>
+</div>
 
 RÈGLES STRICTES:
-1. Générer EXACTEMENT 10-15 questions EN KREYÒL AYISYEN
+1. Générer EXACTEMENT 10-15 questions
 2. Chaque question doit avoir 4 options (A, B, C, D)
 3. Les questions doivent couvrir TOUT le contenu de la leçon
 4. Varier les niveaux de difficulté (fasil, mwayen, difisil)
 5. Tester la COMPRÉHENSION, pas juste la mémorisation
+6. Chaque question doit inclure une explication détaillée EN KREYÒL
+
+2. Chaque question doit avoir 4 options (A, B, C, D)
+3. Les questions doivent couvrir TOUT le contenu de la leçon
+4. Varier les niveaux de difficulté
+5. Tester la COMPRÉHENSION EN KREYÒL
 6. Chaque question doit inclure une explication détaillée EN KREYÒL
 
 FORMAT EXACT (HTML):
@@ -54,27 +71,24 @@ FORMAT EXACT (HTML):
     <h3>Kesyon 1</h3>
     <p>Tèks kesyon an isit la (AN KREYÒL)</p>
     <div class="quiz-options">
-      <div class="option" data-answer="A">A) Premye opsyon</div>
-      <div class="option" data-answer="B">B) Dezyèm opsyon</div>
-      <div class="option" data-answer="C">C) Twazyèm opsyon</div>
-      <div class="option" data-answer="D">D) Katriyèm opsyon</div>
+      <div class="option" data-answer="A">A) Premye opsyon (kreyòl)</div>
+      <div class="option" data-answer="B">B) Dezyèm opsyon (kreyòl)</div>
+      <div class="option" data-answer="C">C) Twazyèm opsyon (kreyòl)</div>
+      <div class="option" data-answer="D">D) Katriyèm opsyon (kreyòl)</div>
     </div>
     <div class="correct-answer" data-correct="A">
       <p><strong>Repons ki kòrèk: A</strong></p>
       <p>Esplikasyon detaye an kreyòl...</p>
     </div>
   </div>
-  
-  <!-- Repete pou tout kesyon yo -->
 </div>
 
 IMPORTANT:
-- NE PAS utiliser de classes Tailwind
-- NE PAS utiliser d'emojis
-- Générer le HTML directement sans balises markdown
-- S'assurer que l'attribut data-correct correspond exactement à une des options (A, B, C, ou D)
+- Balises HTML en anglais, contenu en KREYÒL
+- Pas de classes Tailwind, pas d'emojis
+- data-correct doit correspondre à A, B, C ou D
 
-🔴🔴🔴 VÉRIFICATION FINALE: TOUT EN KREYÒL AYISYEN!`
+🔴 CONTENU EN KREYÒL, STRUCTURE EN HTML!`
       : `Tu es un expert en création de quiz éducatifs. Tu dois générer un quiz final de 10-15 questions à choix multiples basé sur le contenu de la leçon fournie.
 
 RÈGLES STRICTES:
@@ -121,7 +135,7 @@ Matyè: ${subject}
 Kontni lesyon an:
 ${combinedContent}
 
-🔴 SONJE: TOU DOIT ÊTRE AN KREYÒL AYISYEN!`
+🔴 SONJE: Ekri tout kontni (kesyon, opsyon, esplikasyon) AN KREYÒL AYISYEN!`
       : `Génère un quiz final pour cette leçon:
 
 Titre: ${lessonTitle}
