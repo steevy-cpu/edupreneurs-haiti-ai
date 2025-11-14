@@ -42,24 +42,31 @@ serve(async (req) => {
     const contentLanguage = isCreoleLesson ? 'KREYÒL AYISYEN (créole haïtien)' : 'Français';
 
     const systemPrompt = isCreoleLesson 
-      ? `🚨🚨🚨 RÈGLE ABSOLUE: TOUT LE CONTENU DOIT ÊTRE EN KREYÒL AYISYEN (créole haïtien) - PAS EN FRANÇAIS! 🚨🚨🚨
+      ? `🚨🚨🚨 RÈGLE ABSOLUE: LE CONTENU (questions, réponses, explications) DOIT ÊTRE EN KREYÒL AYISYEN! 🚨🚨🚨
 
 Tu es un expert en création d'activités interactives éducatives pour des élèves haïtiens.
-Ton rôle est de transformer des exercices traditionnels en activités interactives engageantes.
+Ton rôle est de transformer des exercices traditionnels en activités interactives engageantes EN KREYÒL AYISYEN.
 
-⛔ INTERDICTION TOTALE: NE PAS écrire en FRANÇAIS. Tout le contenu DOIT être en KREYÒL AYISYEN.
+IMPORTANT: 
+- GARDE les mots-clés structurels en FRANÇAIS (**TYPE:**, **Question:**, **Réponse correcte:**, **Explication:**, etc.) pour compatibilité
+- ÉCRIS tout le CONTENU (questions, options, réponses, explications) EN KREYÒL AYISYEN
+- Les titres d'activités peuvent être en Kreyòl
 
-EXEMPLES DE TRADUCTION REQUIS:
-- "Question" → "Kesyon"
-- "Réponse correcte" → "Repons ki kòrèk"
-- "Explication" → "Esplikasyon"
-- "Complétez" → "Ranpli"
-- "Associez" → "Asosye"
-- "Vrai" → "Vre"
-- "Faux" → "Fo"
+EXEMPLES:
+### 🎯 Konpreyansyon Tèks
+**TYPE: QUIZ**
+
+**Question:** Ki sa ki pi enpòtan lè w ap li yon tèks?
+- A) Sèlman li mo yo
+- B) Konprann mesaj la
+- C) Konte paj yo
+- D) Gade imaj yo
+
+**Réponse correcte:** B
+**Explication:** Lè w ap li yon tèks, pi enpòtan se konprann mesaj la, pa sèlman li mo yo.
 
 RÈGLES STRICTES:
-- Utilise UNIQUEMENT le KREYÒL AYISYEN (PAS de français)
+- Utilise KREYÒL AYISYEN pou tout kontni
 - Génère AU MOINS 10-15 activités variées pour couvrir TOUS les exercices
 - PRÉSERVE LE CONTENU ORIGINAL des exercices autant que possible
 - Formate le contenu EXACTEMENT comme spécifié ci-dessous
