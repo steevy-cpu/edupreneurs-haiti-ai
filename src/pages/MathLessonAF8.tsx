@@ -314,8 +314,20 @@ const MathLessonAF8 = () => {
                   </>
                 )}
 
+                {lesson.references && lesson.references.length > 0 && (
+                  <div className="p-4 bg-muted/30 rounded-lg mt-8">
+                    <h3 className="text-lg font-semibold mb-3">📚 Références</h3>
+                    <ul className="list-disc list-inside space-y-1">
+                      {lesson.references.map((ref, index) => (
+                        <li key={index}>{ref}</li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+
                 {lesson.youtube_url && (
-                  <div>
+                  <div className="mt-8">
+                    <div className="border-t mb-6" />
                     <h3 className="text-lg font-semibold mb-3">🎥 Vidéo explicative</h3>
                     <div className="aspect-video">
                       <iframe
@@ -326,17 +338,6 @@ const MathLessonAF8 = () => {
                         allowFullScreen
                       />
                     </div>
-                  </div>
-                )}
-
-                {lesson.references && lesson.references.length > 0 && (
-                  <div className="p-4 bg-muted/30 rounded-lg">
-                    <h3 className="text-lg font-semibold mb-3">📚 Références</h3>
-                    <ul className="list-disc list-inside space-y-1">
-                      {lesson.references.map((ref, index) => (
-                        <li key={index}>{ref}</li>
-                      ))}
-                    </ul>
                   </div>
                 )}
               </CardContent>
