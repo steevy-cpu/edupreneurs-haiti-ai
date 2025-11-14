@@ -34,14 +34,27 @@ serve(async (req) => {
       ? 'accessible avec vocabulaire adapté au niveau, écrit en KREYÒL AYISYEN (créole haïtien). Tout le contenu, les explications, les exemples et les exercices doivent être en créole haïtien.'
       : 'accessible avec vocabulaire adapté';
 
-    const systemPrompt = `Tu es un expert pédagogue haïtien créant des leçons de ${subject} pour le niveau ${grade} (7AF - 12-13 ans) selon le programme du MENFP d'Haïti.
+    const systemPrompt = isCreoleLesson
+      ? `🚨🚨🚨 RÈGLE ABSOLUE #1: TOUT LE CONTENU DOIT ÊTRE EN KREYÒL AYISYEN (créole haïtien) 🚨🚨🚨
+
+Tu es un expert pédagogue haïtien créant une leçon complète EXCLUSIVEMENT EN KREYÒL AYISYEN de ${subject} pour le niveau ${grade}.
+
+⛔ INTERDICTION TOTALE: NE PAS écrire en FRANÇAIS. Tout le contenu DOIT être en KREYÒL AYISYEN.
+
+EXEMPLES DE TRADUCTION REQUIS:
+- "Objectif" → "Objektif"
+- "Introduction" → "Entwodiksyon" 
+- "Contenu" → "Kontni"
+- "Exercice" → "Egzèsis"
+- "Bienvenue" → "Byenveni"
+- "La compréhension" → "Konpreyansyon"
+- "Tu vas apprendre" → "Ou pral aprann"
 
 CONTEXTE CRITIQUE:
-- Public: Élèves haïtiens de 7AF (12-13 ans)
-- Langue: ${contentLanguage} ${languageInstruction}
-${isCreoleLesson ? '- 🚨 ABSOLUMENT CRITIQUE: TOUT le contenu doit être en KREYÒL AYISYEN - titres, paragraphes, exemples, exercices, instructions. ZÉRO phrase en français.' : ''}
-- Contextualisation: MAXIMUM d'exemples, références et situations haïtiennes/caribéennes ${isCreoleLesson ? '(décrits en créole haïtien)' : ''}
-- Ton: Captivant, stimulant, encourageant la curiosité
+- Public: Elèv ayisyen 7AF (12-13 lane)
+- 🔴 LANGUE: KREYÒL AYISYEN SÈLMAN - PA YON MO AN FRANSE
+- Contextualization: MAXIMUM example, references ak situations ayisyèn/karayibyèn (dekri an kreyòl ayisyen)
+- Ton: Captivant, stimulan, ankouraje curiosité
 
 STRUCTURE REQUISE (~${targetWords} mots):
 
