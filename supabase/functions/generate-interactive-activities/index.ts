@@ -37,11 +37,40 @@ serve(async (req) => {
       throw new Error('LOVABLE_API_KEY is not configured');
     }
 
-    const systemPrompt = `Tu es un expert en création d'activités interactives éducatives pour des élèves haïtiens.
+    // Detect if this is a Creole lesson
+    const isCreoleLesson = subject && (subject.toLowerCase().includes('kreyol') || subject.toLowerCase().includes('créole'));
+    const contentLanguage = isCreoleLesson ? 'KREYÒL AYISYEN (créole haïtien)' : 'Français';
+
+    const systemPrompt = isCreoleLesson 
+      ? `🚨🚨🚨 RÈGLE ABSOLUE: TOUT LE CONTENU DOIT ÊTRE EN KREYÒL AYISYEN (créole haïtien) - PAS EN FRANÇAIS! 🚨🚨🚨
+
+Tu es un expert en création d'activités interactives éducatives pour des élèves haïtiens.
+Ton rôle est de transformer des exercices traditionnels en activités interactives engageantes.
+
+⛔ INTERDICTION TOTALE: NE PAS écrire en FRANÇAIS. Tout le contenu DOIT être en KREYÒL AYISYEN.
+
+EXEMPLES DE TRADUCTION REQUIS:
+- "Question" → "Kesyon"
+- "Réponse correcte" → "Repons ki kòrèk"
+- "Explication" → "Esplikasyon"
+- "Complétez" → "Ranpli"
+- "Associez" → "Asosye"
+- "Vrai" → "Vre"
+- "Faux" → "Fo"
+
+RÈGLES STRICTES:
+- Utilise UNIQUEMENT le KREYÒL AYISYEN (PAS de français)
+- Génère AU MOINS 10-15 activités variées pour couvrir TOUS les exercices
+- PRÉSERVE LE CONTENU ORIGINAL des exercices autant que possible
+- Formate le contenu EXACTEMENT comme spécifié ci-dessous
+- TRANSFORME TOUS les exercices fournis (Exercice 1, 2, 3, 4, 5, 6, etc.)
+
+🔴🔴🔴 RAPPEL: TOUT DOIT ÊTRE EN KREYÒL AYISYEN!`
+      : `Tu es un expert en création d'activités interactives éducatives pour des élèves haïtiens.
 Ton rôle est de transformer des exercices traditionnels en activités interactives engageantes.
 
 RÈGLES STRICTES:
-- Utilise UNIQUEMENT le français (PAS de Kreyòl)
+- Utilise UNIQUEMENT le français
 - Génère AU MOINS 10-15 activités variées pour couvrir TOUS les exercices
 - PRÉSERVE LE CONTENU ORIGINAL des exercices autant que possible
 - Formate le contenu EXACTEMENT comme spécifié ci-dessous
@@ -57,72 +86,9 @@ IMPORTANT: Le contenu des exercices peut être en HTML ou texte brut. Tu dois:
 FORMATS D'ACTIVITÉS DISPONIBLES:
 
 1. QUIZ - Questions à choix multiples
-Format:
-### 🎯 [Titre de l'activité]
-**TYPE: QUIZ**
-
-**Question:** [Question claire et concise]
-- A) [Option 1]
-- B) [Option 2]
-- C) [Option 3]
-- D) [Option 4]
-
-**Réponse correcte:** [Lettre de la bonne réponse]
-**Explication:** [Explication pédagogique de pourquoi c'est la bonne réponse]
-
 2. MATCHING - Associer des éléments
-Format:
-### 🔗 [Titre de l'activité]
-**TYPE: MATCHING**
-
-**Associez les éléments suivants:**
-
-**Colonne A:**
-1. [Élément 1]
-2. [Élément 2]
-3. [Élément 3]
-
-**Colonne B:**
-a) [Correspondance pour un élément]
-b) [Correspondance pour un élément]
-c) [Correspondance pour un élément]
-
-**Réponses:** 1-[lettre], 2-[lettre], 3-[lettre]
-**Explication:** [Brève explication des associations]
-
 3. TRUEFALSE - Vrai ou Faux
-Format:
-### ✓✗ [Titre de l'activité]
-**TYPE: TRUEFALSE**
-
-**[Affirmation à évaluer]**
-
-- A) VRAI
-- B) FAUX
-
-**Réponse correcte:** [A ou B]
-**Explication:** [Courte explication]
-
-4. FILLIN - Remplir les blancs (TEXT INPUT)
-Format:
-### ✏️ [Titre de l'activité]
-**TYPE: FILLIN**
-
-**Complétez la phrase:**
-[Phrase avec _______ pour les blancs]
-
-**Réponse:** [mot ou phrase correcte]
-**Explication:** [Pourquoi c'est la bonne réponse]
-
-Exemple:
-### ✏️ Exercice 3 - Phrase 1
-**TYPE: FILLIN**
-
-**Complétez la phrase:**
-My uncle _______ a taxi in Port-au-Prince.
-
-**Réponse:** has
-**Explication:** "Has" est correct car on parle de possession (avoir un taxi) et "uncle" est à la troisième personne du singulier.
+4. FILLIN - Remplir les blancs
 
 DISTRIBUTION RECOMMANDÉE (pour 10-15 activités):
 - 4-5 activités QUIZ
@@ -135,7 +101,6 @@ IMPORTANT:
 - Commence toujours par le titre avec ###
 - GARDE LE CONTENU ORIGINAL DES EXERCICES - ne change PAS les phrases, noms, ou exemples
 - Ton seul rôle est de reformater en activités interactives, PAS de réécrire le contenu
-- Si un exercice utilise "My sister", garde "My sister" dans l'activité interactive
 - RESPECTE FIDÈLEMENT le contenu source`;
 
     // Strip HTML and clean the content
@@ -145,7 +110,28 @@ IMPORTANT:
     console.log('Cleaned exercises length:', cleanedContent.length);
     console.log('First 500 chars of cleaned:', cleanedContent.substring(0, 500));
 
-    const userPrompt = `Leçon: "${lessonTitle}"
+    const userPrompt = isCreoleLesson
+      ? `Lesyon: "${lessonTitle}"
+Nivo: ${gradeLevel}
+Matyè: ${subject}
+
+Men kontni egzèsis yo pou transfòme:
+
+${cleanedContent}
+
+ENSTRIKSYON KRITIK:
+- TRANSFÒME (pa reekri) TOU egzèsis ki egziste yo an fòma entèaktif
+- Jenere 10-15 aktivite pou kouvri TOU egzèsis yo (1, 2, 3, 4, 5, 6, elatriye)
+- KENBE EGZAKTEMAN menm fraz, kesyon, ak egzanp ki nan kontni sous la
+- Sèl wòl ou se pou REFÒMATE lè w ap itilize tip aktivite yo (QUIZ, MATCHING, elatriye)
+- Si egzèsis la di yon bagay, aktivite ou a dwe di menm bagay la
+- PA CHANJE non, fraz, oswa kontèks yo - KONSÈVE YO FIDÈLMAN
+- Asire w transfòme chak egzèsis (pa sèlman 2 premye yo)
+- Si repons yo pa endike, dedwi yo lojikman baze sou gramè
+- Pou chak aktivite, bay yon esplikasyon klè ak pedagojik
+
+🔴🔴🔴 SONJE: TOU DOIT ÊTRE AN KREYÒL AYISYEN!`
+      : `Leçon: "${lessonTitle}"
 Niveau: ${gradeLevel}
 Matière: ${subject}
 

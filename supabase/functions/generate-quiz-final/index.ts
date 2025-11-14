@@ -21,9 +21,61 @@ serve(async (req) => {
       throw new Error('LOVABLE_API_KEY not configured');
     }
 
+    // Detect if this is a Creole lesson
+    const isCreoleLesson = subject && (subject.toLowerCase().includes('kreyol') || subject.toLowerCase().includes('créole'));
+
     const combinedContent = `${contenu || ''}\n\n${exemplesExercices || ''}`.trim();
 
-    const systemPrompt = `Tu es un expert en création de quiz éducatifs. Tu dois générer un quiz final de 10-15 questions à choix multiples basé sur le contenu de la leçon fournie.
+    const systemPrompt = isCreoleLesson
+      ? `🚨🚨🚨 RÈGLE ABSOLUE: TOUT LE CONTENU DOIT ÊTRE EN KREYÒL AYISYEN (créole haïtien) - PAS EN FRANÇAIS! 🚨🚨🚨
+
+Tu es un expert en création de quiz éducatifs. Tu dois générer un quiz final de 10-15 questions à choix multiples basé sur le contenu de la leçon fournie.
+
+⛔ INTERDICTION TOTALE: NE PAS écrire en FRANÇAIS. Tout le contenu DOIT être en KREYÒL AYISYEN.
+
+EXEMPLES DE TRADUCTION REQUIS:
+- "Question" → "Kesyon"
+- "Réponse correcte" → "Repons ki kòrèk"
+- "Texte de la question" → "Tèks kesyon an"
+- "option" → "opsyon"
+- "Explication" → "Esplikasyon"
+
+RÈGLES STRICTES:
+1. Générer EXACTEMENT 10-15 questions EN KREYÒL AYISYEN
+2. Chaque question doit avoir 4 options (A, B, C, D)
+3. Les questions doivent couvrir TOUT le contenu de la leçon
+4. Varier les niveaux de difficulté (fasil, mwayen, difisil)
+5. Tester la COMPRÉHENSION, pas juste la mémorisation
+6. Chaque question doit inclure une explication détaillée EN KREYÒL
+
+FORMAT EXACT (HTML):
+<div class="quiz-container">
+  <div class="quiz-question" data-number="1">
+    <h3>Kesyon 1</h3>
+    <p>Tèks kesyon an isit la (AN KREYÒL)</p>
+    <div class="quiz-options">
+      <div class="option" data-answer="A">A) Premye opsyon</div>
+      <div class="option" data-answer="B">B) Dezyèm opsyon</div>
+      <div class="option" data-answer="C">C) Twazyèm opsyon</div>
+      <div class="option" data-answer="D">D) Katriyèm opsyon</div>
+    </div>
+    <div class="correct-answer" data-correct="A">
+      <p><strong>Repons ki kòrèk: A</strong></p>
+      <p>Esplikasyon detaye an kreyòl...</p>
+    </div>
+  </div>
+  
+  <!-- Repete pou tout kesyon yo -->
+</div>
+
+IMPORTANT:
+- NE PAS utiliser de classes Tailwind
+- NE PAS utiliser d'emojis
+- Générer le HTML directement sans balises markdown
+- S'assurer que l'attribut data-correct correspond exactement à une des options (A, B, C, ou D)
+
+🔴🔴🔴 VÉRIFICATION FINALE: TOUT EN KREYÒL AYISYEN!`
+      : `Tu es un expert en création de quiz éducatifs. Tu dois générer un quiz final de 10-15 questions à choix multiples basé sur le contenu de la leçon fournie.
 
 RÈGLES STRICTES:
 1. Générer EXACTEMENT 10-15 questions
@@ -58,6 +110,26 @@ IMPORTANT:
 - NE PAS utiliser d'emojis
 - Générer le HTML directement sans balises markdown
 - S'assurer que l'attribut data-correct correspond exactement à une des options (A, B, C, ou D)`;
+
+    const userPrompt = isCreoleLesson
+      ? `Jenere yon quiz final pou lesyon sa a:
+
+Tit: ${lessonTitle}
+Nivo: ${gradeLevel}
+Matyè: ${subject}
+
+Kontni lesyon an:
+${combinedContent}
+
+🔴 SONJE: TOU DOIT ÊTRE AN KREYÒL AYISYEN!`
+      : `Génère un quiz final pour cette leçon:
+
+Titre: ${lessonTitle}
+Niveau: ${gradeLevel}
+Matière: ${subject}
+
+Contenu de la leçon:
+${combinedContent}`;
 
     const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
       method: 'POST',
