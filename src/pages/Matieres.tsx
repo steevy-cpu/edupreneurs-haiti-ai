@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -27,6 +27,7 @@ import ericTeaching from "@/assets/eric-teaching.png";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { MusicSelector } from "@/components/MusicSelector";
 import { useSubjects } from "@/hooks/useLessonsCache";
+import { supabase } from "@/integrations/supabase/client";
 
 type GradeLevel = "AF7" | "AF8" | "AF9" | "NS1" | "NS2" | "NS3" | "NS4";
 
@@ -171,19 +172,49 @@ export default function Matieres() {
   const navigate = useNavigate();
   const [selectedGrade, setSelectedGrade] = useState<GradeLevel>("AF7");
   const { subjects: dbSubjects, isLoading } = useSubjects();
+  const [lessonCounts, setLessonCounts] = useState<Record<string, number>>({});
 
   const currentGrade = gradeLevels.find(g => g.id === selectedGrade);
+  
+  // Fetch actual lesson counts from database
+  useEffect(() => {
+    const fetchLessonCounts = async () => {
+      if (selectedGrade === "AF7") return; // Use hardcoded for AF7
+      
+      try {
+        const { data: lessons, error } = await supabase
+          .from('lessons')
+          .select('subject_id, id')
+          .eq('grade_level', selectedGrade)
+          .eq('is_published', true);
+
+        if (error) throw error;
+
+        // Count lessons per subject
+        const counts: Record<string, number> = {};
+        lessons?.forEach(lesson => {
+          counts[lesson.subject_id] = (counts[lesson.subject_id] || 0) + 1;
+        });
+        
+        setLessonCounts(counts);
+      } catch (error) {
+        console.error('Error fetching lesson counts:', error);
+      }
+    };
+
+    fetchLessonCounts();
+  }, [selectedGrade]);
   
   // Filter subjects by selected grade
   const filteredSubjects = dbSubjects.filter(s => s.grade_level === selectedGrade);
   
-  // Use hardcoded subjects for AF7, database subjects for other grades
+  // Use hardcoded subjects for AF7, database subjects with actual counts for other grades
   const displaySubjects = selectedGrade === "AF7" ? subjects : filteredSubjects.map(s => ({
     id: s.slug,
     title: s.name,
     description: s.description || '',
     icon: iconMap[s.icon_name || 'book-open'] || BookOpen,
-    lessons: s.lesson_count || 0,
+    lessons: lessonCounts[s.id] || 0,
     exercises: s.exercise_count || 0,
     color: colorMap[s.color || 'blue'] || 'from-blue-500 to-blue-600'
   }));
