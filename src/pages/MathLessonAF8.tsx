@@ -195,23 +195,23 @@ const MathLessonAF8 = () => {
         ) : (
           <>
             {/* Lesson Header */}
-            <div className="bg-gradient-to-r from-orange-500/10 to-red-600/10 rounded-2xl p-8 mb-8 border border-orange-500/20">
-              <div className="flex items-start gap-6">
-                <div className="flex-shrink-0">
+            <div className="bg-gradient-to-r from-orange-500/10 to-red-600/10 rounded-2xl p-4 md:p-8 mb-8 border border-orange-500/20">
+              <div className="flex flex-col md:flex-row items-start gap-4 md:gap-6">
+                <div className="flex-shrink-0 hidden md:block">
                   <img 
                     src={ericChairDesk} 
                     alt="Eric enseignant" 
-                    className="w-32 h-32 object-contain"
+                    className="w-24 h-24 md:w-32 md:h-32 object-contain"
                   />
                 </div>
-                <div className="flex-1">
-                  <div className="flex items-center gap-2 mb-3">
-                    <Badge variant="outline" className="bg-orange-500/10 text-orange-700 dark:text-orange-300 border-orange-500/20">
+                <div className="flex-1 w-full">
+                  <div className="flex flex-wrap items-center gap-2 mb-3">
+                    <Badge variant="outline" className="bg-orange-500/10 text-orange-700 dark:text-orange-300 border-orange-500/20 text-xs md:text-sm">
                       Propriété physique de la matière
                     </Badge>
-                    <Badge variant="secondary">Débutant</Badge>
+                    <Badge variant="secondary" className="text-xs md:text-sm">Débutant</Badge>
                   </div>
-                  <h1 className="text-3xl md:text-4xl font-bold mb-3">{lesson.title}</h1>
+                  <h1 className="text-2xl md:text-3xl lg:text-4xl font-bold mb-3">{lesson.title}</h1>
               {lesson.objectif && (
                 <div 
                   className="text-muted-foreground text-lg prose dark:prose-invert max-w-none lesson-content"
