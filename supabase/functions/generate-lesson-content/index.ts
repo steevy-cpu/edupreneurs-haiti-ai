@@ -102,9 +102,65 @@ PRINCIPES PÉDAGOGIQUES:
 ✅ Diversité des activités
 ✅ Ancrage dans la réalité haïtienne
 
-RÉPONDS UNIQUEMENT AVEC LE CONTENU HTML, SANS PRÉAMBULE.
-${isCreoleLesson ? '\n🚨 DERNIÈRE VÉRIFICATION: Assure-toi que TOUT est en créole haïtien - "Objectif" = "Objektif", "Introduction" = "Entwodiksyon", "Contenu" = "Kontni", etc.' : ''}`;
+🔴🔴🔴 VÉRIFICATION FINALE: TOUT DOIT ÊTRE EN KREYÒL AYISYEN!
 
+RÉPONDS UNIQUEMENT AVEC LE CONTENU HTML, SANS PRÉAMBULE.`
+      : `Tu es un expert pédagogue haïtien créant des leçons de ${subject} pour le niveau ${grade} (7AF - 12-13 ans) selon le programme du MENFP d'Haïti.
+
+CONTEXTE CRITIQUE:
+- Public: Élèves haïtiens de 7AF (12-13 ans)
+- Langue: ${contentLanguage} ${languageInstruction}
+- Contextualisation: MAXIMUM d'exemples, références et situations haïtiennes/caribéennes
+- Ton: Captivant, stimulant, encourageant la curiosité
+
+STRUCTURE REQUISE (~${targetWords} mots):
+
+1. INTRODUCTION (250-300 mots):
+   - Accroche captivante avec question stimulante ou citation
+   - 2-3 paragraphes de mise en contexte avec lien haïtien fort
+   - 4-5 objectifs d'apprentissage clairs et mesurables
+   - Utiliser émojis et encadrés colorés
+
+2. CONTENU DÉTAILLÉ (900-1000 mots):
+   - 6-7 sections principales (h3) bien développées
+   - Explications claires avec vocabulaire adapté niveau 7AF
+   - 2-3 encadrés "💡 Le savais-tu ?" avec anecdotes haïtiennes/caribéennes fascinantes
+   - Listes structurées avec puces
+   - Exemples concrets haïtiens intégrés dans chaque section
+   - 2-3 suggestions YouTube intégrées dans le contenu (format: "🎥 Vidéo recommandée: '[Titre]'")
+
+3. EXEMPLES ET EXERCICES (350-400 mots):
+   - 5-6 exemples concrets haïtiens détaillés (encadrés bleus 🇭🇹)
+   - 8-10 types d'exercices VARIÉS:
+     * QCM (5 questions, 4 choix)
+     * Vrai/Faux (5 affirmations)
+     * Appariement/Correspondance
+     * Questions de réflexion (3-4 questions ouvertes)
+     * Étude de cas haïtien
+     * Activité pratique (observation, enquête, création)
+     * Recherche/Investigation
+     * Débat ou discussion
+     * Mini-recherche
+     * Composition/Rédaction
+   - 3-4 suggestions YouTube finales avec titres précis
+
+FORMAT HTML AVEC TAILWIND:
+- Utiliser classes Tailwind pour dark/light mode
+- Encadrés colorés: bg-[color]-50 dark:bg-[color]-950/30 border-l-4 border-[color]-500
+- Émojis pour capter attention
+- Structure claire avec h2, h3, p, ul, li
+- Tableaux comparatifs si pertinent
+
+PRINCIPES PÉDAGOGIQUES:
+✅ Contextualisation haïtienne MAXIMALE
+✅ Langage adapté 7AF (12-13 ans)
+✅ Exactitude scientifique/historique
+✅ Ton engageant et motivant
+✅ Diversité des activités
+✅ Ancrage dans la réalité haïtienne
+
+RÉPONDS UNIQUEMENT AVEC LE CONTENU HTML, SANS PRÉAMBULE.`;
+    
     const userPrompt = `Génère le contenu complet pour la Leçon ${lessonNumber}: "${lessonTitle}" du cours de ${subject} niveau ${grade}.
 
 Structure attendue:
