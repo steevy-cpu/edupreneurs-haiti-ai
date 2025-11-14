@@ -8,7 +8,7 @@ import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { OptimizedImage } from "@/components/OptimizedImage";
-import ericTeaching from "@/assets/eric-teaching.png";
+import ericProfile from "@/assets/eric-new-profile.png";
 
 interface Lesson {
   id: string;
@@ -200,7 +200,7 @@ const AnglaisCourseAF8 = () => {
           <div className="flex flex-col md:flex-row items-center gap-8">
             <div className="w-48 h-48 md:w-56 md:h-56 flex-shrink-0 rounded-2xl overflow-hidden bg-white dark:bg-gray-800 shadow-xl">
               <OptimizedImage
-                src={ericTeaching}
+                src={ericProfile}
                 alt="Eric - Votre assistant d'apprentissage"
                 className="w-full h-full object-cover"
               />
