@@ -131,6 +131,29 @@ const MathLessonAF8 = () => {
     }
   };
 
+  const getYouTubeEmbedUrl = (url: string): string | null => {
+    try {
+      // Extract video ID from various YouTube URL formats
+      const patterns = [
+        /(?:https?:\/\/)?(?:www\.)?youtube\.com\/watch\?v=([^&]+)/,
+        /(?:https?:\/\/)?(?:www\.)?youtube\.com\/embed\/([^?]+)/,
+        /(?:https?:\/\/)?youtu\.be\/([^?]+)/,
+        /(?:https?:\/\/)?(?:www\.)?youtube\.com\/v\/([^?]+)/,
+      ];
+
+      for (const pattern of patterns) {
+        const match = url.match(pattern);
+        if (match && match[1]) {
+          return `https://www.youtube.com/embed/${match[1]}`;
+        }
+      }
+      
+      return null;
+    } catch {
+      return null;
+    }
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -325,14 +348,14 @@ const MathLessonAF8 = () => {
                   </div>
                 )}
 
-                {lesson.youtube_url && (
+                {lesson.youtube_url && getYouTubeEmbedUrl(lesson.youtube_url) && (
                   <div className="mt-8">
                     <div className="border-t mb-6" />
                     <h3 className="text-lg font-semibold mb-3">🎥 Vidéo explicative</h3>
                     <div className="aspect-video">
                       <iframe
                         className="w-full h-full rounded-lg"
-                        src={lesson.youtube_url.replace('watch?v=', 'embed/')}
+                        src={getYouTubeEmbedUrl(lesson.youtube_url) || ''}
                         title="YouTube video"
                         allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                         allowFullScreen
