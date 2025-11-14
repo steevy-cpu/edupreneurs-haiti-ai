@@ -7,6 +7,7 @@ import { useNavigate } from "react-router-dom";
 import { useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import ericWelcome from "@/assets/eric-welcome.png";
+import DOMPurify from 'dompurify';
 
 interface Lesson {
   id: string;
@@ -236,7 +237,10 @@ const AnglaisCourseAF9 = () => {
                 {lesson.objectif && (
                   <CardDescription className="flex items-start gap-2 mt-3 text-sm">
                     <Target className="w-4 h-4 mt-1 flex-shrink-0 text-purple-600 dark:text-purple-400" />
-                    <span className="line-clamp-2">{lesson.objectif}</span>
+                    <div 
+                      className="line-clamp-2 prose prose-sm max-w-none dark:prose-invert" 
+                      dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(lesson.objectif) }}
+                    />
                   </CardDescription>
                 )}
               </CardHeader>
