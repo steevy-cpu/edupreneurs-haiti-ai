@@ -14,6 +14,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { DownloadLessonButton } from "@/components/DownloadLessonButton";
 import { InteractiveActivitiesEnhanced } from "@/components/InteractiveActivitiesEnhanced";
 import { HTMLQuizParser } from "@/components/HTMLQuizParser";
+import DOMPurify from "dompurify";
 
 interface Lesson {
   id: string;
@@ -187,7 +188,10 @@ const SciencesSocialesLessonAF8 = () => {
                     <p className="text-sm font-medium text-primary">Objectif:</p>
                     <TextToSpeechButton text={lesson.objectif} sectionName="Objectif" size="sm" />
                   </div>
-                  <p className="text-sm">{lesson.objectif}</p>
+                  <div 
+                    className="text-sm prose prose-sm max-w-none dark:prose-invert"
+                    dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(lesson.objectif) }}
+                  />
                 </div>
               </div>
             </Card>
