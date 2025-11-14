@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
-import { ArrowLeft, BookOpen, Target, FileText, Lightbulb } from "lucide-react";
+import { ArrowLeft, BookOpen, Target, FileText, Lightbulb, Gamepad2 } from "lucide-react";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { InteractiveActivitiesEnhanced } from "@/components/InteractiveActivitiesEnhanced";
 import { TextToSpeechButton } from "@/components/TextToSpeechButton";
@@ -15,6 +15,7 @@ import ericChairDesk from "@/assets/eric-chair-desk.png";
 import { DownloadLessonButton } from "@/components/DownloadLessonButton";
 import { YouTubeVideoSection } from "@/components/YouTubeVideoSection";
 import { SpanishPracticeChat } from "@/components/SpanishPracticeChat";
+import { HTMLQuizParser } from "@/components/HTMLQuizParser";
 
 interface Lesson {
   id: string;
@@ -26,6 +27,8 @@ interface Lesson {
   exemples_exercices: string;
   youtube_url?: string;
   grade_level: string;
+  activites_interactives?: string;
+  quiz_final?: string;
 }
 
 const EspagnolLessonAF8 = () => {
@@ -103,7 +106,9 @@ const EspagnolLessonAF8 = () => {
           contenu: data.contenu || '',
           exemples_exercices: data.exemples_exercices || '',
           youtube_url: data.youtube_url,
-          grade_level: data.grade_level || 'AF8'
+          grade_level: data.grade_level || 'AF8',
+          activites_interactives: data.activites_interactives || undefined,
+          quiz_final: data.quiz_final || undefined
         });
       }
     } catch (error) {
@@ -270,7 +275,7 @@ const EspagnolLessonAF8 = () => {
 
         {/* Tabs */}
         <Tabs value={activeTab} onValueChange={(val) => { setActiveTab(val); stop(); }} className="w-full">
-          <TabsList className="grid w-full grid-cols-4 mb-8">
+          <TabsList className="grid w-full grid-cols-5 mb-8">
             <TabsTrigger value="introduction" className="gap-2">
               <Lightbulb className="h-4 h-4" />
               <span className="hidden sm:inline">Introduction</span>
@@ -278,6 +283,10 @@ const EspagnolLessonAF8 = () => {
             <TabsTrigger value="contenu" className="gap-2">
               <BookOpen className="h-4 w-4" />
               <span className="hidden sm:inline">Contenu & Exemples</span>
+            </TabsTrigger>
+            <TabsTrigger value="activites" className="gap-2">
+              <Gamepad2 className="h-4 w-4" />
+              <span className="hidden sm:inline">Activités</span>
             </TabsTrigger>
             <TabsTrigger value="notes" className="gap-2">
               <FileText className="h-4 w-4" />
@@ -355,6 +364,25 @@ const EspagnolLessonAF8 = () => {
             </Card>
           </TabsContent>
 
+          <TabsContent value="activites" className="mt-6 space-y-6">
+            {lesson.activites_interactives && (
+              <InteractiveActivitiesEnhanced
+                content={lesson.activites_interactives}
+                isLoading={false}
+                onRegenerate={() => {}}
+                onGoldUpdate={() => {}}
+              />
+            )}
+            
+            <SpanishPracticeChat
+              lessonTitle={lesson.title}
+              lessonObjective={lesson.objectif}
+              lessonSlug={lesson.slug}
+              gradeLevel={lesson.grade_level}
+              userNickname={userNickname}
+            />
+          </TabsContent>
+
           <TabsContent value="notes" className="mt-6">
             <Card className="p-6">
               <h3 className="text-xl font-semibold mb-4">Mes notes personnelles</h3>
@@ -373,21 +401,19 @@ const EspagnolLessonAF8 = () => {
             </Card>
           </TabsContent>
 
-          <TabsContent value="quiz" className="mt-6 space-y-6">
-            <InteractiveActivitiesEnhanced
-              content={`Leçon: ${lesson.title}`}
-              isLoading={false}
-              onRegenerate={() => {}}
-              onGoldUpdate={() => {}}
-            />
-            
-            <SpanishPracticeChat
-              lessonTitle={lesson.title}
-              lessonObjective={lesson.objectif}
-              lessonSlug={lesson.slug}
-              gradeLevel={lesson.grade_level}
-              userNickname={userNickname}
-            />
+          <TabsContent value="quiz" className="mt-6">
+            <Card className="p-6">
+              <h3 className="text-xl font-semibold mb-4">Quiz Final</h3>
+              {lesson.quiz_final ? (
+                <HTMLQuizParser 
+                  htmlContent={lesson.quiz_final}
+                  lessonSlug={lesson.slug}
+                  subject="Espagnol"
+                />
+              ) : (
+                <p className="text-muted-foreground">Le quiz pour cette leçon sera bientôt disponible.</p>
+              )}
+            </Card>
           </TabsContent>
         </Tabs>
 
