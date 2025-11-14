@@ -227,13 +227,23 @@ const EspagnolLessonAF8 = () => {
       </nav>
 
       <div className="container mx-auto px-4 py-8 max-w-5xl">
-        {/* Header with Eric */}
-        <div className="mb-8">
-          <div className="flex flex-col md:flex-row items-start md:items-center gap-6 mb-6">
-            <div className="flex-1">
-              <h1 className="text-3xl md:text-4xl font-bold mb-4 bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
-                {lesson.title}
-              </h1>
+        {loading ? (
+          <div className="flex items-center justify-center min-h-[400px]">
+            <p className="text-muted-foreground">Chargement de la leçon...</p>
+          </div>
+        ) : !lesson ? (
+          <div className="flex items-center justify-center min-h-[400px]">
+            <p className="text-muted-foreground">Leçon non trouvée</p>
+          </div>
+        ) : (
+          <>
+            {/* Header with Eric */}
+            <div className="mb-8">
+              <div className="flex flex-col md:flex-row items-start md:items-center gap-6 mb-6">
+                <div className="flex-1">
+                  <h1 className="text-3xl md:text-4xl font-bold mb-4 bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
+                    {lesson.title}
+                  </h1>
               {lesson.objectif && (
                 <Card className="p-4 bg-primary/5 border-primary/20">
                   <div className="flex items-center justify-between mb-2">
@@ -391,6 +401,8 @@ const EspagnolLessonAF8 = () => {
             Retour au cours
           </Button>
         </div>
+          </>
+        )}
       </div>
     </div>
   );
