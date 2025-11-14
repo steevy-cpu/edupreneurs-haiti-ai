@@ -8,7 +8,7 @@ import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { OptimizedImage } from "@/components/OptimizedImage";
-import ericTeaching from "@/assets/eric-teaching.png";
+import ericPhoto from "@/assets/eric-edupreneurs.png";
 
 interface Lesson {
   id: string;
@@ -113,9 +113,9 @@ const SciencesCourseAF8 = () => {
           </div>
           <div className="hidden md:block">
             <OptimizedImage 
-              src={ericTeaching}
-              alt="Eric enseignant"
-              className="w-64 h-64 object-contain"
+              src={ericPhoto}
+              alt="Eric - Professeur"
+              className="w-64 h-64 object-cover rounded-2xl shadow-lg"
             />
           </div>
         </div>
