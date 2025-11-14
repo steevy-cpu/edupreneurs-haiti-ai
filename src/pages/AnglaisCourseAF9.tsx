@@ -230,17 +230,16 @@ const AnglaisCourseAF9 = () => {
                   </div>
                 </div>
                 
-                <CardTitle className="text-xl group-hover:text-purple-600 dark:group-hover:text-purple-400 transition-colors leading-tight">
+                <CardTitle className="text-xl group-hover:text-purple-600 dark:group-hover:text-purple-400 transition-colors leading-tight mb-3">
                   {lesson.title}
                 </CardTitle>
                 
                 {lesson.objectif && (
-                  <CardDescription className="flex items-start gap-2 mt-3 text-sm">
-                    <Target className="w-4 h-4 mt-1 flex-shrink-0 text-purple-600 dark:text-purple-400" />
-                    <div 
-                      className="line-clamp-2 prose prose-sm max-w-none dark:prose-invert" 
-                      dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(lesson.objectif) }}
-                    />
+                  <CardDescription className="flex items-start gap-2 text-sm text-muted-foreground">
+                    <Target className="w-4 h-4 mt-0.5 flex-shrink-0" />
+                    <span className="line-clamp-2">
+                      {lesson.objectif.replace(/<[^>]*>/g, '').replace(/&nbsp;/g, ' ').trim()}
+                    </span>
                   </CardDescription>
                 )}
               </CardHeader>
