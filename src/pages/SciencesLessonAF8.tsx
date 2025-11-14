@@ -7,7 +7,6 @@ import { ArrowLeft, BookOpen, Target, Lightbulb, FileText, CheckCircle2, Chevron
 import { useParams, useNavigate } from "react-router-dom";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { InteractiveQuiz } from "@/components/InteractiveQuiz";
-import { YouTubeVideoSection } from "@/components/YouTubeVideoSection";
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -155,6 +154,29 @@ const SciencesLessonAF8 = () => {
     }
   };
 
+  const getYouTubeEmbedUrl = (url: string): string | null => {
+    try {
+      // Extract video ID from various YouTube URL formats
+      const patterns = [
+        /(?:https?:\/\/)?(?:www\.)?youtube\.com\/watch\?v=([^&]+)/,
+        /(?:https?:\/\/)?(?:www\.)?youtube\.com\/embed\/([^?]+)/,
+        /(?:https?:\/\/)?youtu\.be\/([^?]+)/,
+        /(?:https?:\/\/)?(?:www\.)?youtube\.com\/v\/([^?]+)/,
+      ];
+
+      for (const pattern of patterns) {
+        const match = url.match(pattern);
+        if (match && match[1]) {
+          return `https://www.youtube.com/embed/${match[1]}`;
+        }
+      }
+      
+      return null;
+    } catch {
+      return null;
+    }
+  };
+
   const navigateToLesson = (direction: 'prev' | 'next') => {
     if (!lesson || allLessons.length === 0) return;
 
@@ -213,32 +235,26 @@ const SciencesLessonAF8 = () => {
         </div>
       </nav>
       {/* Lesson Header */}
-      <div className="bg-gradient-to-r from-amber-500 to-orange-600 text-white py-8 md:py-12">
+      <div className="bg-gradient-to-r from-amber-500 to-orange-600 text-white p-4 md:p-8">
         <div className="container mx-auto px-4">
-          <div className="flex flex-col md:flex-row items-center md:items-start gap-4 md:gap-6">
-            <div className="flex-shrink-0">
+          <div className="flex flex-col md:flex-row items-start gap-4 md:gap-6">
+            <div className="flex-shrink-0 hidden md:block">
               <img 
                 src={ericChairDesk} 
                 alt="Eric enseignant" 
-                className="w-16 h-16 md:w-24 md:h-24 lg:w-32 lg:h-32 object-contain"
+                className="w-24 h-24 md:w-32 md:h-32 object-contain"
               />
             </div>
-            <div className="flex-1 text-center md:text-left w-full">
-              <Badge variant="secondary" className="mb-3">
+            <div className="flex-1 w-full">
+              <Badge variant="secondary" className="mb-3 text-xs md:text-sm">
                 Leçon {lesson.order_index}
               </Badge>
               <h1 className="text-2xl md:text-3xl lg:text-4xl font-bold mb-4">{lesson.title}</h1>
               {lesson.objectif && (
-                <div className="flex flex-col items-center gap-2 bg-white/10 rounded-lg p-4 backdrop-blur text-center">
-                  <Target className="h-5 w-5 flex-shrink-0" />
-                  <div>
-                    <p className="font-semibold mb-1">Objectif de la leçon</p>
-                    <div 
-                      className="text-white/90 prose dark:prose-invert max-w-none prose-sm lesson-content"
-                      dangerouslySetInnerHTML={{ __html: lesson.objectif }}
-                    />
-                  </div>
-                </div>
+                <div 
+                  className="text-white/90 prose dark:prose-invert max-w-none prose-sm lesson-content"
+                  dangerouslySetInnerHTML={{ __html: lesson.objectif }}
+                />
               )}
             </div>
           </div>
@@ -295,15 +311,6 @@ const SciencesLessonAF8 = () => {
 
               <TabsContent value="contenu" className="mt-0">
                 <div className="space-y-6">
-                  {lesson.youtube_url && (
-                    <YouTubeVideoSection
-                      lessonTitle={lesson.title}
-                      objectives={lesson.objectif || ""}
-                      gradeLevel="AF8"
-                      customYoutubeUrl={lesson.youtube_url}
-                      subject="sciences"
-                    />
-                  )}
                   <div className="prose prose-lg max-w-none dark:prose-invert">
                     {lesson.contenu ? (
                       <div className="lesson-content" dangerouslySetInnerHTML={{ __html: lesson.contenu }} />
@@ -311,18 +318,6 @@ const SciencesLessonAF8 = () => {
                       <p className="text-muted-foreground">Contenu à venir...</p>
                     )}
                   </div>
-                  {lesson.references && lesson.references.length > 0 && (
-                    <div className="mt-6 p-4 bg-muted rounded-lg">
-                      <h3 className="font-semibold mb-2">Références</h3>
-                      <ul className="space-y-1">
-                        {lesson.references.map((ref, index) => (
-                          <li key={index} className="text-sm text-muted-foreground">
-                            {ref}
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-                  )}
                   
                   {lesson.exemples_exercices && (
                     <>
@@ -332,6 +327,33 @@ const SciencesLessonAF8 = () => {
                         <div dangerouslySetInnerHTML={{ __html: lesson.exemples_exercices }} />
                       </div>
                     </>
+                  )}
+
+                  {lesson.references && lesson.references.length > 0 && (
+                    <div className="mt-8 p-4 bg-muted/30 rounded-lg">
+                      <h3 className="text-lg font-semibold mb-3">📚 Références</h3>
+                      <ul className="list-disc list-inside space-y-1">
+                        {lesson.references.map((ref, index) => (
+                          <li key={index}>{ref}</li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+
+                  {lesson.youtube_url && getYouTubeEmbedUrl(lesson.youtube_url) && (
+                    <div className="mt-8">
+                      <div className="border-t mb-6" />
+                      <h3 className="text-lg font-semibold mb-3">🎥 Vidéo explicative</h3>
+                      <div className="aspect-video">
+                        <iframe
+                          className="w-full h-full rounded-lg"
+                          src={getYouTubeEmbedUrl(lesson.youtube_url) || ''}
+                          title="YouTube video"
+                          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                          allowFullScreen
+                        />
+                      </div>
+                    </div>
                   )}
                 </div>
               </TabsContent>
