@@ -51,11 +51,33 @@ export default function ArtsLesson() {
     
     setLoading(true);
     try {
+      // First get the Arts subject ID
+      const { data: subjectData, error: subjectError } = await supabase
+        .from('subjects')
+        .select('id')
+        .eq('slug', 'arts')
+        .eq('grade_level', '7AF')
+        .single();
+
+      if (subjectError || !subjectData) {
+        console.error('Error fetching subject:', subjectError);
+        toast({
+          title: "Erreur",
+          description: "Impossible de charger le sujet",
+          variant: "destructive",
+        });
+        setLoading(false);
+        return;
+      }
+
+      // Then get the lesson with subject filter
       const { data, error } = await supabase
         .from('lessons')
         .select('*')
         .eq('slug', topicId)
         .eq('grade_level', '7AF')
+        .eq('subject_id', subjectData.id)
+        .eq('is_published', true)
         .maybeSingle();
 
       if (error) {
@@ -189,7 +211,7 @@ export default function ArtsLesson() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-background via-background to-secondary/20 flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-background via-background to-violet-500/10 flex items-center justify-center">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
       </div>
     );
@@ -197,7 +219,7 @@ export default function ArtsLesson() {
 
   if (!lessonData) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-background via-background to-secondary/20 flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-background via-background to-violet-500/10 flex items-center justify-center">
         <Card className="p-8 text-center">
           <h2 className="text-2xl font-bold mb-4">Leçon non trouvée</h2>
           <Button onClick={() => navigate("/arts-course")}>
@@ -213,7 +235,7 @@ export default function ArtsLesson() {
                      topicId === 'musique-traditionnelle-haitienne' ? '🎵' : '🇭🇹';
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-background to-secondary/20">
+    <div className="min-h-screen bg-gradient-to-br from-background via-background to-violet-500/10">
       {/* Header */}
       <div className="sticky top-0 z-40 bg-background/80 backdrop-blur-lg border-b border-border/40">
         <div className="container mx-auto px-4 py-3">
@@ -230,7 +252,7 @@ export default function ArtsLesson() {
               </Button>
               
               <div className="hidden sm:flex items-center gap-2">
-                <div className="w-2 h-2 bg-orange-500 rounded-full animate-pulse" />
+                <div className="w-2 h-2 bg-violet-500 rounded-full animate-pulse" />
                 <span className="text-sm text-muted-foreground">7AF</span>
               </div>
             </div>
@@ -280,7 +302,7 @@ export default function ArtsLesson() {
           </div>
 
           {lessonData.objectif && (
-            <Card className="p-6 bg-gradient-to-br from-orange-500/10 to-pink-500/10 border-orange-500/20">
+            <Card className="p-6 bg-gradient-to-br from-violet-500/10 to-fuchsia-500/10 border-violet-500/20">
               <div 
                 className="prose prose-sm max-w-none dark:prose-invert"
                 dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(lessonData.objectif) }}
@@ -367,7 +389,7 @@ export default function ArtsLesson() {
                 <Button 
                   onClick={handleCompleteLesson}
                   size="lg"
-                  className="gap-2 bg-gradient-to-r from-orange-500 to-pink-500 hover:from-orange-600 hover:to-pink-600"
+                  className="gap-2 bg-gradient-to-r from-violet-500 to-fuchsia-500 hover:from-violet-600 hover:to-fuchsia-600"
                 >
                   <Trophy className="w-5 h-5" />
                   Terminer la leçon
