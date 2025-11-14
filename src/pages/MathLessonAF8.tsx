@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
-import { ArrowLeft, BookOpen, Lightbulb, CheckCircle2, Trophy, Bookmark, Gamepad2 } from "lucide-react";
+import { ArrowLeft, BookOpen, Lightbulb, Trophy, Bookmark, Gamepad2 } from "lucide-react";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
@@ -231,7 +231,7 @@ const MathLessonAF8 = () => {
         {/* Lesson Content Tabs */}
         <Tabs value={activeTab} onValueChange={(val) => { setActiveTab(val); stop(); }} className="w-full">
           <div className="border-b mb-8 overflow-x-auto">
-            <TabsList className="w-full h-auto rounded-none bg-transparent p-0 grid grid-cols-6 min-w-[600px] md:min-w-0">
+            <TabsList className="w-full h-auto rounded-none bg-transparent p-0 grid grid-cols-5 min-w-[500px] md:min-w-0">
               <TabsTrigger 
                 value="introduction"
                 className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent flex flex-col md:flex-row items-center justify-center gap-1 py-3"
@@ -245,13 +245,6 @@ const MathLessonAF8 = () => {
               >
                 <BookOpen className="h-4 w-4" />
                 <span className="text-xs md:text-sm">Contenu</span>
-              </TabsTrigger>
-              <TabsTrigger 
-                value="exemples"
-                className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent flex flex-col md:flex-row items-center justify-center gap-1 py-3"
-              >
-                <CheckCircle2 className="h-4 w-4" />
-                <span className="text-xs md:text-sm">Exemples</span>
               </TabsTrigger>
               <TabsTrigger 
                 value="activites"
@@ -291,19 +284,6 @@ const MathLessonAF8 = () => {
                     <p>Le contenu de l'introduction sera bientôt disponible</p>
                   </div>
                 )}
-
-                {lesson.objectif && (
-                  <div className="mt-6 p-4 bg-primary/5 rounded-lg border border-primary/20">
-                    <h3 className="text-lg font-semibold text-primary mb-2 flex items-center gap-2">
-                      <Lightbulb className="h-5 w-5" />
-                      Objectif de la leçon
-                    </h3>
-                    <div 
-                      className="prose dark:prose-invert max-w-none lesson-content"
-                      dangerouslySetInnerHTML={{ __html: lesson.objectif }}
-                    />
-                  </div>
-                )}
               </CardContent>
             </Card>
           </TabsContent>
@@ -323,6 +303,17 @@ const MathLessonAF8 = () => {
                   </div>
                 )}
 
+                {lesson.exemples_exercices && (
+                  <>
+                    <div className="border-t my-8" />
+                    <h3 className="text-2xl font-bold mb-4">Exemples et Exercices</h3>
+                    <div 
+                      className="prose prose-sm lg:prose-base max-w-none dark:prose-invert lesson-content"
+                      dangerouslySetInnerHTML={{ __html: lesson.exemples_exercices }}
+                    />
+                  </>
+                )}
+
                 {lesson.youtube_url && (
                   <div>
                     <h3 className="text-lg font-semibold mb-3">🎥 Vidéo explicative</h3>
@@ -336,17 +327,6 @@ const MathLessonAF8 = () => {
                       />
                     </div>
                   </div>
-                )}
-
-                {lesson.exemples_exercices && (
-                  <>
-                    <div className="border-t my-8" />
-                    <h3 className="text-2xl font-bold mb-4">Exemples et Exercices</h3>
-                    <div 
-                      className="prose prose-sm lg:prose-base max-w-none dark:prose-invert lesson-content"
-                      dangerouslySetInnerHTML={{ __html: lesson.exemples_exercices }}
-                    />
-                  </>
                 )}
 
                 {lesson.references && lesson.references.length > 0 && (
