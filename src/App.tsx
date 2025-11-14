@@ -54,6 +54,8 @@ const CreoleCourseAF8 = lazy(() => import("./pages/CreoleCourseAF8"));
 const CreoleLessonAF8 = lazy(() => import("./pages/CreoleLessonAF8"));
 const ArtsCourse = lazy(() => import("./pages/ArtsCourse"));
 const ArtsLesson = lazy(() => import("./pages/ArtsLesson"));
+const EducationPhysiqueCourse = lazy(() => import("./pages/EducationPhysiqueCourse"));
+const EducationPhysiqueLesson = lazy(() => import("./pages/EducationPhysiqueLesson"));
 const Matieres = lazy(() => import("./pages/Matieres"));
 const Resources = lazy(() => import("./pages/Resources"));
 const Affiliations = lazy(() => import("./pages/Affiliations"));
@@ -152,6 +154,8 @@ const App = () => (
               <Route path="/creole-af8-lesson/:topicId" element={<Layout><CreoleLessonAF8 /></Layout>} />
               <Route path="/arts-course" element={<ArtsCourse />} />
               <Route path="/arts-lesson/:topicId" element={<Layout><ArtsLesson /></Layout>} />
+              <Route path="/education-physique-course" element={<EducationPhysiqueCourse />} />
+              <Route path="/education-physique-lesson/:topicId" element={<Layout><EducationPhysiqueLesson /></Layout>} />
               <Route path="/affiliations" element={<Layout><Affiliations /></Layout>} />
               <Route path="/leaderboard" element={<Layout><Leaderboard /></Layout>} />
               <Route path="/settings" element={<Layout><Settings /></Layout>} />
