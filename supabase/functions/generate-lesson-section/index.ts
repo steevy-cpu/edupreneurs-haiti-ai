@@ -114,8 +114,9 @@ Deno.serve(async (req) => {
     const config = SECTION_CONFIGS[sectionName];
     const subjectAddition = subject ? (SUBJECT_ADDITIONS[subject.toLowerCase()] || '') : '';
     
-    // Detect if this is a Creole lesson
-    const isCreoleLesson = subject && (subject.toLowerCase().includes('kreyol') || subject.toLowerCase().includes('créole'));
+    // Detect if this is a Creole lesson - ONLY for "Kreyòl Ayisyen" subject
+    const subjectNormalized = (subject || '').toLowerCase().trim().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+    const isCreoleLesson = subjectNormalized === 'kreyol ayisyen' || subjectNormalized === 'creole haitien' || subjectNormalized === 'kreyol';
     const contentLanguage = isCreoleLesson ? 'KREYÒL AYISYEN (créole haïtien)' : 'FRANÇAIS';
     const languageInstruction = isCreoleLesson 
       ? 'Le contenu DOIT être écrit en KREYÒL AYISYEN (créole haïtien) standard. Utilise la langue créole naturellement et de manière fluide.'

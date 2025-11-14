@@ -27,8 +27,9 @@ serve(async (req) => {
       throw new Error("LOVABLE_API_KEY is not configured");
     }
     
-    // Detect if this is a Creole lesson
-    const isCreoleLesson = subject && (subject.toLowerCase().includes('kreyol') || subject.toLowerCase().includes('créole'));
+    // Detect if this is a Creole lesson - ONLY for "Kreyòl Ayisyen" subject
+    const subjectNormalized = (subject || '').toLowerCase().trim().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+    const isCreoleLesson = subjectNormalized === 'kreyol ayisyen' || subjectNormalized === 'creole haitien' || subjectNormalized === 'kreyol';
     const contentLanguage = isCreoleLesson ? 'KREYÒL AYISYEN (créole haïtien)' : 'Français';
     const languageInstruction = isCreoleLesson 
       ? 'accessible avec vocabulaire adapté au niveau, écrit en KREYÒL AYISYEN (créole haïtien). Tout le contenu, les explications, les exemples et les exercices doivent être en créole haïtien.'
