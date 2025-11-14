@@ -8,6 +8,7 @@ import { useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import ericWelcome from "@/assets/eric-welcome.png";
 import DOMPurify from 'dompurify';
+import { EricChatbot } from "@/components/EricChatbot";
 
 interface Lesson {
   id: string;
@@ -272,6 +273,8 @@ const AnglaisCourseAF9 = () => {
           </Card>
         )}
       </div>
+      
+      <EricChatbot />
     </div>
   );
 };
