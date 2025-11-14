@@ -114,13 +114,13 @@ const subjects: Subject[] = [
     color: "from-orange-500 to-orange-600"
   },
   {
-    id: "sport",
+    id: "education-physique",
     title: "Éducation Physique",
     description: "Activités sportives, santé et bien-être",
     icon: Activity,
     lessons: 12,
     exercises: 30,
-    color: "from-slate-500 to-slate-600"
+    color: "from-orange-500 to-red-600"
   }
 ];
 
