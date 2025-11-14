@@ -384,17 +384,17 @@ export default function Matieres() {
                     let courseRoute;
                     const isMath = subject.id === 'mathematiques' || subject.id === 'matematik-8af' || subject.id === 'mathematiques-af9';
                       const isSciences = subject.id === 'sciences' || subject.id === 'sciences-experimentales-8af' || subject.id === 'sciences-experimentales' || subject.id === 'sciences-experimentales-7af';
-                      const isAnglais = subject.id === 'anglais' || subject.id === 'anglais-8af';
-                      const isEspagnol = subject.id === 'espagnol' || subject.id === 'espagnol-8af';
-                      const isCreole = subject.id === 'creole' || subject.id === 'creole-8af';
-                      const isSciencesSociales = subject.id === 'sciences-sociales' || subject.id === 'sciences-sociales-8af';
-                    
-                    if (isMath) {
-                      courseRoute = selectedGrade === 'AF9' ? '/mathematiques-af9' : (selectedGrade === 'AF8' ? '/math-af8-course' : '/math-course');
-                    } else if (isSciences) {
-                      courseRoute = selectedGrade === 'AF9' ? '/sciences-experimentales-af9' : (selectedGrade === 'AF8' ? '/sciences-af8-course' : '/sciences-experimentales-7af');
-                    } else if (isAnglais) {
-                      courseRoute = selectedGrade === 'AF8' ? '/anglais-af8-course' : '/anglais-course';
+                    const isAnglais = subject.id === 'anglais' || subject.id === 'anglais-8af' || subject.id === 'anglais-af9';
+                    const isEspagnol = subject.id === 'espagnol' || subject.id === 'espagnol-8af';
+                    const isCreole = subject.id === 'creole' || subject.id === 'creole-8af';
+                    const isSciencesSociales = subject.id === 'sciences-sociales' || subject.id === 'sciences-sociales-8af';
+                  
+                  if (isMath) {
+                    courseRoute = selectedGrade === 'AF9' ? '/mathematiques-af9' : (selectedGrade === 'AF8' ? '/math-af8-course' : '/math-course');
+                  } else if (isSciences) {
+                    courseRoute = selectedGrade === 'AF9' ? '/sciences-experimentales-af9' : (selectedGrade === 'AF8' ? '/sciences-af8-course' : '/sciences-experimentales-7af');
+                  } else if (isAnglais) {
+                    courseRoute = selectedGrade === 'AF9' ? '/anglais-af9' : (selectedGrade === 'AF8' ? '/anglais-af8-course' : '/anglais-course');
                     } else if (isEspagnol) {
                       courseRoute = selectedGrade === 'AF8' ? '/espagnol-af8-course' : '/espagnol-course';
                       } else if (isCreole) {

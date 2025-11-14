@@ -9,11 +9,13 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
+import DOMPurify from 'dompurify';
 import { DownloadLessonButton } from "@/components/DownloadLessonButton";
 import { TextToSpeechButton } from "@/components/TextToSpeechButton";
 import { useTTS } from "@/hooks/useTTS";
 import { EnglishPracticeChat } from "@/components/EnglishPracticeChat";
 import { InteractiveActivitiesEnhanced } from "@/components/InteractiveActivitiesEnhanced";
+import { HTMLQuizParser } from "@/components/HTMLQuizParser";
 
 const AnglaisLessonAF9 = () => {
   const { lessonSlug } = useParams();
@@ -79,6 +81,28 @@ const AnglaisLessonAF9 = () => {
       console.error('Error saving notes:', error);
       toast.error("Impossible de sauvegarder vos notes");
     }
+  };
+
+  const getYouTubeEmbedUrl = (url: string) => {
+    if (!url) return null;
+    
+    // Extract video ID from various YouTube URL formats
+    let videoId = null;
+    
+    // Handle youtu.be short links
+    if (url.includes('youtu.be/')) {
+      videoId = url.split('youtu.be/')[1]?.split('?')[0];
+    }
+    // Handle youtube.com/watch?v= links
+    else if (url.includes('youtube.com/watch?v=')) {
+      videoId = url.split('v=')[1]?.split('&')[0];
+    }
+    // Handle youtube.com/embed/ links (already in correct format)
+    else if (url.includes('youtube.com/embed/')) {
+      return url;
+    }
+    
+    return videoId ? `https://www.youtube.com/embed/${videoId}` : null;
   };
 
   const { data: lesson, isLoading } = useQuery({
@@ -171,7 +195,7 @@ const AnglaisLessonAF9 = () => {
                       </div>
                       <div 
                         className="prose prose-sm max-w-none dark:prose-invert"
-                        dangerouslySetInnerHTML={{ __html: lesson.objectif }}
+                        dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(lesson.objectif) }}
                       />
                     </div>
                   </div>
@@ -215,7 +239,7 @@ const AnglaisLessonAF9 = () => {
                 {lesson.introduction ? (
                   <div 
                     className="prose prose-sm max-w-none dark:prose-invert"
-                    dangerouslySetInnerHTML={{ __html: lesson.introduction }}
+                    dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(lesson.introduction) }}
                   />
                 ) : (
                   <p className="text-muted-foreground">Introduction non disponible</p>
@@ -234,7 +258,7 @@ const AnglaisLessonAF9 = () => {
                 {lesson.contenu ? (
                   <div 
                     className="prose prose-sm max-w-none dark:prose-invert"
-                    dangerouslySetInnerHTML={{ __html: lesson.contenu }}
+                    dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(lesson.contenu) }}
                   />
                 ) : (
                   <p className="text-muted-foreground">Contenu non disponible</p>
@@ -249,8 +273,26 @@ const AnglaisLessonAF9 = () => {
                     </div>
                     <div 
                       className="prose prose-sm max-w-none dark:prose-invert"
-                      dangerouslySetInnerHTML={{ __html: lesson.exemples_exercices }}
+                      dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(lesson.exemples_exercices) }}
                     />
+                  </>
+                )}
+
+                {lesson.youtube_url && getYouTubeEmbedUrl(lesson.youtube_url) && (
+                  <>
+                    <div className="border-t my-8" />
+                    <div className="mb-4">
+                      <h3 className="text-2xl font-bold mb-4">Vidéo éducative</h3>
+                      <div className="aspect-video">
+                        <iframe
+                          src={getYouTubeEmbedUrl(lesson.youtube_url)}
+                          className="w-full h-full rounded-lg"
+                          allowFullScreen
+                          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                          title="Vidéo de la leçon"
+                        />
+                      </div>
+                    </div>
                   </>
                 )}
               </CardContent>
@@ -282,13 +324,21 @@ const AnglaisLessonAF9 = () => {
 
           <TabsContent value="quiz">
             <Card className="p-6">
-              <div className="text-center py-12 space-y-4">
-                <HelpCircle className="w-16 h-16 mx-auto text-muted-foreground/50" />
-                <h3 className="text-xl font-semibold">Quiz Final</h3>
-                <p className="text-muted-foreground max-w-md mx-auto">
-                  Le quiz pour cette leçon sera bientôt disponible.
-                </p>
-              </div>
+              {lesson.quiz_final ? (
+                <HTMLQuizParser 
+                  htmlContent={lesson.quiz_final}
+                  lessonSlug={lessonSlug || ''}
+                  subject="anglais-af9"
+                />
+              ) : (
+                <div className="text-center py-12 space-y-4">
+                  <HelpCircle className="w-16 h-16 mx-auto text-muted-foreground/50" />
+                  <h3 className="text-xl font-semibold">Quiz Final</h3>
+                  <p className="text-muted-foreground max-w-md mx-auto">
+                    Le quiz pour cette leçon sera bientôt disponible.
+                  </p>
+                </div>
+              )}
             </Card>
           </TabsContent>
 
