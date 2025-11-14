@@ -151,8 +151,8 @@ PRINCIPES FONDAMENTAUX:
 SECTION À GÉNÉRER: ${sectionName}
 
 PRINCIPES FONDAMENTAUX:
-- 🔴 LANGUE: KREYÒL AYISYEN SEULEMENT - PAS UN MOT EN FRANÇAIS
-- Contextualisation MAXIMALE avec exemples haïtiens (décrits en créole haïtien)
+- 🔴 LANGUE: FRANÇAIS SEULEMENT - Tout le contenu DOIT être en FRANÇAIS
+- Contextualisation MAXIMALE avec exemples haïtiens (décrits en français)
 - Format: HTML avec classes Tailwind (compatible dark/light mode)  
 - Longueur cible: ${targetWords} mots (minimum: ${config.minWords}, maximum: ${config.maxWords})
 - CRITIQUE: NE JAMAIS créer de section "Objectifs" dans ${sectionName} - les objectifs ont leur propre section dédiée
