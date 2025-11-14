@@ -115,6 +115,28 @@ const SciencesSocialesLessonAF8 = () => {
     }
   };
 
+  const getYouTubeEmbedUrl = (url: string) => {
+    if (!url) return null;
+    
+    // Extract video ID from various YouTube URL formats
+    let videoId = null;
+    
+    // Handle youtu.be short links
+    if (url.includes('youtu.be/')) {
+      videoId = url.split('youtu.be/')[1]?.split('?')[0];
+    }
+    // Handle youtube.com/watch?v= links
+    else if (url.includes('youtube.com/watch?v=')) {
+      videoId = url.split('v=')[1]?.split('&')[0];
+    }
+    // Handle youtube.com/embed/ links (already in correct format)
+    else if (url.includes('youtube.com/embed/')) {
+      return url;
+    }
+    
+    return videoId ? `https://www.youtube.com/embed/${videoId}` : null;
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -261,14 +283,15 @@ const SciencesSocialesLessonAF8 = () => {
               )}
             </Card>
 
-            {lesson.youtube_url && (
+            {lesson.youtube_url && getYouTubeEmbedUrl(lesson.youtube_url) && (
               <Card className="p-6">
                 <h3 className="text-lg font-semibold mb-4">Vidéo éducative</h3>
                 <div className="aspect-video">
                   <iframe
-                    src={lesson.youtube_url}
+                    src={getYouTubeEmbedUrl(lesson.youtube_url)}
                     className="w-full h-full rounded-lg"
                     allowFullScreen
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                     title="Vidéo de la leçon"
                   />
                 </div>
