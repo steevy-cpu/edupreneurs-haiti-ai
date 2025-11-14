@@ -35,7 +35,7 @@ export const BatchLessonGenerator = () => {
   const [subject, setSubject] = useState<string>("all");
   const [availableLessons, setAvailableLessons] = useState<any[]>([]);
   const [availableSubjects, setAvailableSubjects] = useState<any[]>([]);
-  const [selectedLessonId, setSelectedLessonId] = useState<string>("all");
+  const [selectedLessonIds, setSelectedLessonIds] = useState<string[]>([]);
   const [selectedSections, setSelectedSections] = useState<SectionName[]>([
     'objectif', 'introduction', 'contenu', 'exemples_exercices', 'activites_interactives'
   ]);
@@ -176,7 +176,7 @@ export const BatchLessonGenerator = () => {
       loadLessonsForSelection();
     } else {
       setAvailableLessons([]);
-      setSelectedLessonId("all");
+      setSelectedLessonIds([]);
     }
   }, [gradeLevel, subject]);
 
@@ -211,32 +211,26 @@ export const BatchLessonGenerator = () => {
   const fetchLessons = async () => {
     try {
       console.log('🔍 Fetching lessons with:', {
-        selectedLessonId,
+        selectedLessonIds,
         gradeLevel,
         subject,
         onlyEmpty
       });
 
-      // If a specific lesson is selected, return only that lesson
-      if (selectedLessonId !== "all") {
-        const selectedLesson = availableLessons.find(l => l.id === selectedLessonId);
-        if (selectedLesson) {
-          const { data: fullLesson, error } = await supabase
-            .from('lessons')
-            .select('id, title, grade_level, objectif, introduction, contenu, exemples_exercices, activites_interactives, subjects(name)')
-            .eq('id', selectedLessonId)
-            .single();
+      // If specific lessons are selected, return only those lessons
+      if (selectedLessonIds.length > 0) {
+        const { data: selectedLessons, error } = await supabase
+          .from('lessons')
+          .select('id, title, grade_level, objectif, introduction, contenu, exemples_exercices, activites_interactives, subjects(name)')
+          .in('id', selectedLessonIds);
 
-          if (error) {
-            console.error('❌ Error fetching single lesson:', error);
-            toast.error("Erreur lors de la récupération de la leçon: " + error.message);
-            return [];
-          }
-          console.log('✅ Single lesson fetched:', fullLesson);
-          return [fullLesson];
+        if (error) {
+          console.error('❌ Error fetching selected lessons:', error);
+          toast.error("Erreur lors de la récupération des leçons: " + error.message);
+          return [];
         }
-        console.warn('⚠️ Selected lesson not found in availableLessons');
-        return [];
+        console.log('✅ Selected lessons fetched:', selectedLessons?.length);
+        return selectedLessons || [];
       }
 
       // Otherwise, fetch lessons based on filters
@@ -262,7 +256,7 @@ export const BatchLessonGenerator = () => {
       console.log('✅ Lessons fetched:', data?.length || 0);
 
       // Filter for empty sections if needed
-      if (onlyEmpty && selectedLessonId === "all") {
+      if (onlyEmpty && selectedLessonIds.length === 0) {
         const filtered = (data || []).filter(lesson =>
           selectedSections.some(section => !lesson[section] || lesson[section].trim() === '')
         );
@@ -287,7 +281,7 @@ export const BatchLessonGenerator = () => {
     console.log('🚀 Starting generation with filters:', {
       gradeLevel,
       subject,
-      selectedLessonId,
+      selectedLessonIds,
       onlyEmpty
     });
 
@@ -1030,7 +1024,7 @@ export const BatchLessonGenerator = () => {
               <Select value={gradeLevel} onValueChange={(value) => {
                 setGradeLevel(value);
                 setSubject("all");
-                setSelectedLessonId("all");
+                setSelectedLessonIds([]);
               }}>
                 <SelectTrigger>
                   <SelectValue />
@@ -1051,7 +1045,7 @@ export const BatchLessonGenerator = () => {
                 value={subject} 
                 onValueChange={(value) => {
                   setSubject(value);
-                  setSelectedLessonId("all");
+                  setSelectedLessonIds([]);
                 }}
                 disabled={isLoadingSubjects}
               >
@@ -1071,33 +1065,61 @@ export const BatchLessonGenerator = () => {
 
             <div className="space-y-2">
               <Label>Leçon spécifique (optionnel)</Label>
-              <Select 
-                value={selectedLessonId} 
-                onValueChange={setSelectedLessonId}
-                disabled={isLoadingLessons || availableLessons.length === 0}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder={
-                    isLoadingLessons 
-                      ? "Chargement..." 
-                      : availableLessons.length === 0 
-                        ? "Sélectionnez niveau/matière" 
-                        : "Toutes les leçons"
-                  } />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">Toutes les leçons</SelectItem>
-                  {availableLessons.map(lesson => (
-                    <SelectItem key={lesson.id} value={lesson.id}>
-                      {lesson.title}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              {selectedLessonId !== "all" && (
-                <p className="text-xs text-muted-foreground">
-                  Mode: Génération d'une seule leçon
-                </p>
+              {isLoadingLessons ? (
+                <div className="text-sm text-muted-foreground">Chargement...</div>
+              ) : availableLessons.length === 0 ? (
+                <div className="text-sm text-muted-foreground">Sélectionnez niveau/matière d'abord</div>
+              ) : (
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2 mb-2">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setSelectedLessonIds(availableLessons.map(l => l.id))}
+                      disabled={selectedLessonIds.length === availableLessons.length}
+                    >
+                      Tout sélectionner
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setSelectedLessonIds([])}
+                      disabled={selectedLessonIds.length === 0}
+                    >
+                      Tout désélectionner
+                    </Button>
+                  </div>
+                  <div className="max-h-48 overflow-y-auto border rounded-md p-3 space-y-2">
+                    {availableLessons.map(lesson => (
+                      <div key={lesson.id} className="flex items-center space-x-2">
+                        <Checkbox
+                          id={`lesson-${lesson.id}`}
+                          checked={selectedLessonIds.includes(lesson.id)}
+                          onCheckedChange={(checked) => {
+                            if (checked) {
+                              setSelectedLessonIds(prev => [...prev, lesson.id]);
+                            } else {
+                              setSelectedLessonIds(prev => prev.filter(id => id !== lesson.id));
+                            }
+                          }}
+                        />
+                        <label 
+                          htmlFor={`lesson-${lesson.id}`} 
+                          className="text-sm cursor-pointer flex-1"
+                        >
+                          {lesson.title}
+                        </label>
+                      </div>
+                    ))}
+                  </div>
+                  {selectedLessonIds.length > 0 && (
+                    <p className="text-xs text-muted-foreground">
+                      {selectedLessonIds.length} leçon(s) sélectionnée(s)
+                    </p>
+                  )}
+                </div>
               )}
             </div>
           </div>
@@ -1171,11 +1193,11 @@ export const BatchLessonGenerator = () => {
             </label>
           </div>
 
-          {/* Info message for single lesson mode */}
-          {selectedLessonId !== "all" && (
+          {/* Info message for selected lessons mode */}
+          {selectedLessonIds.length > 0 && (
             <div className="bg-primary/10 border border-primary/20 rounded-lg p-4">
               <p className="text-sm">
-                <strong>Mode leçon unique:</strong> Vous allez générer le contenu pour "{availableLessons.find(l => l.id === selectedLessonId)?.title}". 
+                <strong>Mode leçons sélectionnées:</strong> Vous allez générer le contenu pour {selectedLessonIds.length} leçon(s) sélectionnée(s). 
                 Toutes les sections sélectionnées seront générées avec vos paramètres personnalisés.
               </p>
             </div>
