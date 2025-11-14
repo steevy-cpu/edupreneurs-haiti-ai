@@ -15,6 +15,7 @@ import { useToast } from "@/hooks/use-toast";
 import ericChairDesk from "@/assets/eric-chair-desk.png";
 import { DownloadLessonButton } from "@/components/DownloadLessonButton";
 import { EnglishPracticeChat } from "@/components/EnglishPracticeChat";
+import { HTMLQuizParser } from "@/components/HTMLQuizParser";
 
 interface Lesson {
   id: string;
@@ -25,6 +26,7 @@ interface Lesson {
   contenu: string;
   exemples_exercices: string;
   activites_interactives: string | null;
+  quiz_final: string | null;
   mois: string;
   grade_level: string;
   youtube_url: string | null;
@@ -205,22 +207,7 @@ const AnglaisLessonAF8 = () => {
               <Badge variant="outline" className="bg-cyan-500/10 text-cyan-700 dark:text-cyan-300 border-cyan-500/20 mb-3">
                 {lesson.mois}
               </Badge>
-              <h1 className="text-2xl md:text-3xl lg:text-4xl font-bold mb-4">{lesson.title}</h1>
-              {lesson.objectif && (
-                <div className="flex flex-col items-center gap-2 bg-white/10 rounded-lg p-4 backdrop-blur text-center">
-                  <div className="flex items-center justify-between w-full mb-2">
-                    <Target className="h-5 w-5 flex-shrink-0" />
-                    <TextToSpeechButton text={lesson.objectif} sectionName="Objectif" size="sm" />
-                  </div>
-                  <div>
-                    <p className="font-semibold mb-1">Objectif de la leçon</p>
-                    <div 
-                      className="text-white/90 prose dark:prose-invert max-w-none prose-sm lesson-content"
-                      dangerouslySetInnerHTML={{ __html: lesson.objectif }}
-                    />
-                  </div>
-                </div>
-              )}
+              <h1 className="text-2xl md:text-3xl lg:text-4xl font-bold">{lesson.title}</h1>
             </div>
           </div>
         </div>
@@ -252,7 +239,23 @@ const AnglaisLessonAF8 = () => {
 
           <TabsContent value="introduction">
             <Card>
-              <CardContent className="p-4 md:p-6">
+              <CardContent className="p-4 md:p-6 space-y-6">
+                {lesson.objectif && (
+                  <div className="bg-gradient-to-r from-cyan-500/5 to-blue-600/5 rounded-lg p-4 md:p-6 border border-cyan-500/20">
+                    <div className="flex items-center justify-between mb-3">
+                      <div className="flex items-center gap-2">
+                        <Target className="h-5 w-5 text-cyan-600 dark:text-cyan-400" />
+                        <h3 className="text-lg font-semibold">🎯 Objectif de la leçon</h3>
+                      </div>
+                      <TextToSpeechButton text={lesson.objectif} sectionName="Objectif" size="sm" />
+                    </div>
+                    <div 
+                      className="prose prose-sm lg:prose-base max-w-none dark:prose-invert lesson-content"
+                      dangerouslySetInnerHTML={{ __html: lesson.objectif }}
+                    />
+                  </div>
+                )}
+                
                 {lesson.introduction ? (
                   <>
                     <div className="flex items-center justify-between mb-4">
@@ -296,14 +299,19 @@ const AnglaisLessonAF8 = () => {
                 )}
 
                 {lesson.youtube_url && (
-                  <div>
-                    <h3 className="text-lg font-semibold mb-3">🎥 Vidéo explicative</h3>
-                    <div className="aspect-video">
+                  <div className="my-8">
+                    <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
+                      🎥 Vidéo explicative
+                    </h3>
+                    <div className="aspect-video rounded-lg overflow-hidden border border-border shadow-lg">
                       <iframe
-                        className="w-full h-full rounded-lg"
-                        src={lesson.youtube_url.replace('watch?v=', 'embed/')}
+                        className="w-full h-full"
+                        src={lesson.youtube_url.includes('embed') 
+                          ? lesson.youtube_url 
+                          : lesson.youtube_url.replace('watch?v=', 'embed/').replace('youtu.be/', 'youtube.com/embed/')
+                        }
                         title="YouTube video"
-                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
                         allowFullScreen
                       />
                     </div>
@@ -363,11 +371,21 @@ const AnglaisLessonAF8 = () => {
 
           <TabsContent value="quiz">
             <Card>
-              <CardContent className="p-8 text-center">
-                <Brain className="h-16 w-16 mx-auto mb-4 opacity-20" />
-                <p className="text-muted-foreground mb-4">
-                  Le quiz pour cette leçon sera bientôt disponible
-                </p>
+              <CardContent className="p-4 md:p-6">
+                {lesson.quiz_final ? (
+                  <HTMLQuizParser 
+                    htmlContent={lesson.quiz_final}
+                    lessonSlug={topicId || ""}
+                    subject="anglais"
+                  />
+                ) : (
+                  <div className="text-center py-8">
+                    <Brain className="h-16 w-16 mx-auto mb-4 opacity-20" />
+                    <p className="text-muted-foreground">
+                      Le quiz pour cette leçon sera bientôt disponible
+                    </p>
+                  </div>
+                )}
               </CardContent>
             </Card>
           </TabsContent>
