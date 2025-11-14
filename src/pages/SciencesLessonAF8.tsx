@@ -3,10 +3,12 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
-import { ArrowLeft, BookOpen, Target, Lightbulb, FileText, CheckCircle2, ChevronRight, ChevronLeft } from "lucide-react";
+import { ArrowLeft, BookOpen, Target, Lightbulb, FileText, CheckCircle2, ChevronRight, ChevronLeft, Gamepad2, Trophy, Bookmark } from "lucide-react";
 import { useParams, useNavigate } from "react-router-dom";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { InteractiveQuiz } from "@/components/InteractiveQuiz";
+import { InteractiveActivitiesEnhanced } from "@/components/InteractiveActivitiesEnhanced";
+import { HTMLQuizParser } from "@/components/HTMLQuizParser";
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -26,6 +28,8 @@ interface Lesson {
   order_index: number;
   subject_id: string;
   grade_level: string;
+  activites_interactives: string | null;
+  quiz_final: string | null;
 }
 
 const SciencesLessonAF8 = () => {
@@ -265,35 +269,42 @@ const SciencesLessonAF8 = () => {
       <div className="container mx-auto px-4 py-8">
         <Card>
           <Tabs defaultValue="introduction" className="w-full">
-          <div className="border-b">
-            <TabsList className="w-full h-auto rounded-none bg-transparent p-0 grid grid-cols-4">
+          <div className="border-b mb-8 overflow-x-auto">
+            <TabsList className="w-full h-auto rounded-none bg-transparent p-0 grid grid-cols-5 min-w-[500px] md:min-w-0">
               <TabsTrigger 
-                value="introduction" 
-                className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent flex items-center justify-center"
+                value="introduction"
+                className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent flex flex-col md:flex-row items-center justify-center gap-1 py-3"
               >
-                <BookOpen className="h-4 w-4 sm:mr-2" />
-                <span className="hidden sm:inline">Introduction</span>
+                <BookOpen className="h-4 w-4" />
+                <span className="text-xs md:text-sm">Introduction</span>
               </TabsTrigger>
               <TabsTrigger 
                 value="contenu"
-                className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent flex items-center justify-center"
+                className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent flex flex-col md:flex-row items-center justify-center gap-1 py-3"
               >
-                <Lightbulb className="h-4 w-4 sm:mr-2" />
-                <span className="hidden sm:inline">Contenu & Exemples</span>
+                <Lightbulb className="h-4 w-4" />
+                <span className="text-xs md:text-sm">Contenu</span>
+              </TabsTrigger>
+              <TabsTrigger 
+                value="activites"
+                className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent flex flex-col md:flex-row items-center justify-center gap-1 py-3"
+              >
+                <Gamepad2 className="h-4 w-4" />
+                <span className="text-xs md:text-sm">Activités</span>
               </TabsTrigger>
               <TabsTrigger 
                 value="notes"
-                className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent flex items-center justify-center"
+                className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent flex flex-col md:flex-row items-center justify-center gap-1 py-3"
               >
-                <FileText className="h-4 w-4 sm:mr-2" />
-                <span className="hidden sm:inline">Mes Notes</span>
+                <Bookmark className="h-4 w-4" />
+                <span className="text-xs md:text-sm">Notes</span>
               </TabsTrigger>
               <TabsTrigger 
                 value="quiz"
-                className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent flex items-center justify-center"
+                className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent flex flex-col md:flex-row items-center justify-center gap-1 py-3"
               >
-                <CheckCircle2 className="h-4 w-4 sm:mr-2" />
-                <span className="hidden sm:inline">Quiz Final</span>
+                <Trophy className="h-4 w-4" />
+                <span className="text-xs md:text-sm">Quiz</span>
               </TabsTrigger>
             </TabsList>
           </div>
@@ -358,6 +369,17 @@ const SciencesLessonAF8 = () => {
                 </div>
               </TabsContent>
 
+              <TabsContent value="activites" className="space-y-6">
+                {lesson.activites_interactives && (
+                  <InteractiveActivitiesEnhanced
+                    content={lesson.activites_interactives}
+                    isLoading={false}
+                    onRegenerate={() => {}}
+                    onGoldUpdate={() => {}}
+                  />
+                )}
+              </TabsContent>
+
               <TabsContent value="notes" className="mt-0">
                 <div className="space-y-4">
                   <div>
@@ -379,11 +401,20 @@ const SciencesLessonAF8 = () => {
               </TabsContent>
 
               <TabsContent value="quiz" className="mt-0">
-                <InteractiveQuiz
-                  content=""
-                  isLoading={false}
-                  lessonGoldReward={50}
-                />
+                {lesson.quiz_final ? (
+                  <HTMLQuizParser 
+                    htmlContent={lesson.quiz_final}
+                    lessonSlug={lesson.slug}
+                    subject="Sciences"
+                  />
+                ) : (
+                  <div className="text-center py-8">
+                    <Trophy className="h-16 w-16 mx-auto mb-4 opacity-20" />
+                    <p className="text-muted-foreground">
+                      Le quiz pour cette leçon sera bientôt disponible
+                    </p>
+                  </div>
+                )}
               </TabsContent>
             </CardContent>
           </Tabs>
