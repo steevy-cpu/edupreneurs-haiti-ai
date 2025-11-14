@@ -164,10 +164,20 @@ const SciencesSocialesLessonAF8 = () => {
       </nav>
 
       <div className="container py-8 max-w-4xl space-y-8">
-        <div className="space-y-4">
-          <h1 className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
-            {lesson.title}
-          </h1>
+        {loading ? (
+          <div className="flex items-center justify-center min-h-[400px]">
+            <p className="text-muted-foreground">Chargement de la leçon...</p>
+          </div>
+        ) : !lesson ? (
+          <div className="flex items-center justify-center min-h-[400px]">
+            <p className="text-muted-foreground">Leçon non trouvée</p>
+          </div>
+        ) : (
+          <>
+            <div className="space-y-4">
+              <h1 className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
+                {lesson.title}
+              </h1>
           {lesson.objectif && (
             <Card className="p-4 bg-primary/5 border-primary/20">
               <div className="flex items-start gap-3">
@@ -332,6 +342,8 @@ const SciencesSocialesLessonAF8 = () => {
             Retour au cours
           </Button>
         </div>
+          </>
+        )}
       </div>
     </div>
   );
