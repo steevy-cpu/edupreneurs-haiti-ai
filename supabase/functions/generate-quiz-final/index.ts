@@ -28,13 +28,13 @@ serve(async (req) => {
       throw new Error('LOVABLE_API_KEY not configured');
     }
 
-    // Detect if this is a Creole lesson - check for multiple variations and normalize
-    const subjectLower = (subject || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
-    const isCreoleLesson = subjectLower.includes('kreyol') || subjectLower.includes('creole');
+    // Detect if this is a Creole lesson - ONLY for "Kreyòl Ayisyen" subject
+    const subjectNormalized = (subject || '').toLowerCase().trim().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+    const isCreoleLesson = subjectNormalized === 'kreyol ayisyen' || subjectNormalized === 'creole haitien' || subjectNormalized === 'kreyol';
     
     console.log('🔍 Creole detection:', { 
       subject, 
-      subjectLower, 
+      subjectNormalized, 
       isCreoleLesson 
     });
 
