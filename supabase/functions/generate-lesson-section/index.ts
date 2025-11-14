@@ -121,15 +121,39 @@ Deno.serve(async (req) => {
       ? 'Le contenu DOIT être écrit en KREYÒL AYISYEN (créole haïtien) standard. Utilise la langue créole naturellement et de manière fluide.'
       : 'Le contenu doit être écrit en français standard adapté au niveau';
 
-    const systemPrompt = `Tu es un expert pédagogue haïtien créant du contenu éducatif pour ${subject} niveau ${gradeLevel}.
+    const systemPrompt = isCreoleLesson 
+      ? `🚨🚨🚨 RÈGLE ABSOLUE #1: TOUT LE CONTENU DOIT ÊTRE EN KREYÒL AYISYEN (créole haïtien) 🚨🚨🚨
+
+Tu es un expert pédagogue haïtien créant du contenu éducatif EXCLUSIVEMENT EN KREYÒL AYISYEN pour ${subject} niveau ${gradeLevel}.
+
+⛔ INTERDICTION TOTALE: NE PAS écrire en FRANÇAIS. Tout le contenu DOIT être en KREYÒL AYISYEN.
+
+EXEMPLES DE CE QUI EST ATTENDU:
+- "Objectif" → "Objektif" 
+- "Introduction" → "Entwodiksyon"
+- "Contenu" → "Kontni"
+- "Exercice" → "Egzèsis"
+- "Bienvenue" → "Byenveni"
+- "Aujourd'hui" → "Jodi a"
+- "La lecture est importante" → "Lekti enpòtan"
+- "Tu vas apprendre" → "Ou pral aprann"
 
 SECTION À GÉNÉRER: ${sectionName}
 
 PRINCIPES FONDAMENTAUX:
-- Langue: ${contentLanguage} - ${languageInstruction} ${gradeLevel}
-- ${isCreoleLesson ? '🚨 CRITIQUE: TOUT LE CONTENU DOIT ÊTRE EN KREYÒL AYISYEN - titres, explications, exemples, exercices, instructions. PAS UN SEUL MOT EN FRANÇAIS dans le contenu principal.' : `Utilisation du créole: ${sectionName === 'exemples_exercices' ? 'INTERDITE dans cette section - utiliser uniquement le français' : 'UNIQUEMENT pour des explications contextuelles ponctuelles, des expressions idiomatiques, ou des clarifications culturelles (entre parenthèses ou dans des encadrés spécifiques)'}`}
-- Contextualisation MAXIMALE avec exemples haïtiens et caribéens ${isCreoleLesson ? '(décrits en créole haïtien)' : '(décrits en français)'}
-- Format: HTML avec classes Tailwind (compatible dark/light mode)
+- 🔴 LANGUE: KREYÒL AYISYEN SEULEMENT - PAS UN MOT EN FRANÇAIS
+- Contextualisation MAXIMALE avec exemples haïtiens (décrits en créole haïtien)
+- Format: HTML avec classes Tailwind (compatible dark/light mode)  
+- Longueur cible: ${targetWords} mots (minimum: ${config.minWords}, maximum: ${config.maxWords})
+- CRITIQUE: NE JAMAIS créer de section "Objectifs" dans ${sectionName} - les objectifs ont leur propre section dédiée`
+      : `Tu es un expert pédagogue haïtien créant du contenu éducatif pour ${subject} niveau ${gradeLevel}.
+
+SECTION À GÉNÉRER: ${sectionName}
+
+PRINCIPES FONDAMENTAUX:
+- 🔴 LANGUE: KREYÒL AYISYEN SEULEMENT - PAS UN MOT EN FRANÇAIS
+- Contextualisation MAXIMALE avec exemples haïtiens (décrits en créole haïtien)
+- Format: HTML avec classes Tailwind (compatible dark/light mode)  
 - Longueur cible: ${targetWords} mots (minimum: ${config.minWords}, maximum: ${config.maxWords})
 - CRITIQUE: NE JAMAIS créer de section "Objectifs" dans ${sectionName} - les objectifs ont leur propre section dédiée
 
@@ -150,14 +174,48 @@ ${Object.entries(HTML_TEMPLATES).map(([key, template]) => `${key}: ${template}`)
 
 IMPORTANT:
 - Utilise des émojis pertinents
-- ${isCreoleLesson ? '🚨 ABSOLUMENT TOUT EN KREYÒL AYISYEN - "Objectif" devient "Objektif", "Introduction" devient "Entwodiksyon", etc.' : 'Tous les textes en français'}
+- ${isCreoleLesson ? '🔴 TOUT EN KREYÒL AYISYEN - chaque mot, chaque phrase, chaque titre' : 'Tous les textes en français'}
 - Maximum de références haïtiennes/caribéennes
 - Structure claire et progressive avec BEAUCOUP d'espacement
 - Vocabulaire adapté au niveau ${gradeLevel}
 - NE PAS utiliser de marqueurs de code comme \`\`\` dans le résultat
-${isCreoleLesson ? '- 🚨 RAPPEL FINAL: Écris TOUT en créole haïtien, même les titres de sections et les instructions' : ''}`;
+${isCreoleLesson ? '\n🔴🔴🔴 VÉRIFICATION FINALE OBLIGATOIRE: Relis ton contenu et assure-toi que TOUT est en KREYÒL AYISYEN, pas en français' : ''}`;
 
-    const userPrompt = `Génère le contenu pour {{section_name}} selon {{lesson_topic}} pour {{student_grade}} avec au moins {{words_count}} mots.
+    const userPrompt = isCreoleLesson 
+      ? `🚨 RAPPEL: Tout le contenu doit être en KREYÒL AYISYEN (créole haïtien), PAS en français.
+
+Jenere kontni pou {{section_name}} selon {{lesson_topic}} pou {{student_grade}} avèk omwen {{words_count}} mo.
+
+Variables:
+- {{section_name}}: ${sectionName}
+- {{lesson_topic}}: "${lessonTitle}"
+- {{student_grade}}: ${gradeLevel}
+- {{words_count}}: ${targetWords}
+
+${context ? `Instructions additionnelles: ${context}` : ''}
+${currentContent ? `\nKontni aktyèl pou amelyore:\n${currentContent}\n\nJenere yon VÈSYON AMELYORE ki kenbe bon pati yo.` : ''}
+
+KRITIK - RÈG DE FORMATAGE:
+1. Reponn SÈLMAN avèk HTML pur pou afiche - PA gen tèks eksplikatif avan oswa apre
+2. Pa janm itilize blok kòd markdown tankou \`\`\`html oswa \`\`\`
+3. Pa janm mete HTML ant gimet oswa baliz <code>
+4. Kòmanse dirèkteman avèk baliz HTML (<div>, <h3>, <p>, etc.)
+5. HTML la dwe ka mete dirèkteman nan yon paj wèb
+
+EGZANP SA NOU VLE:
+<div class="bg-blue-50 dark:bg-blue-950/30 border-l-4 border-blue-500 p-4 mb-4 rounded-lg">
+  <h4 class="font-semibold text-blue-700 dark:text-blue-300 mb-2">🎯 Objektif</h4>
+  <p class="text-gray-700 dark:text-gray-300">Nan fen leson sa a, ou pral kapab:</p>
+  <ol class="list-decimal list-inside mt-2 space-y-1">
+    <li>Objektif 1</li>
+    <li>Objektif 2</li>
+  </ol>
+</div>
+
+🔴🔴🔴 DERNIÈRE VÉRIFICATION: Écris TOUT en KREYÒL AYISYEN (créole haïtien) - pa gen okenn mo an franse!
+
+KÒMANSE KONTNI OU LA (dirèkteman avèk premye baliz HTML):` 
+      : `Génère le contenu pour {{section_name}} selon {{lesson_topic}} pour {{student_grade}} avec au moins {{words_count}} mots.
 
 Variables:
 - {{section_name}}: ${sectionName}
