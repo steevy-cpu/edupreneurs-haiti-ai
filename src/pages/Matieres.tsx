@@ -109,8 +109,8 @@ const subjects: Subject[] = [
     title: "Arts & Culture",
     description: "Arts plastiques, musique et expression créative",
     icon: Palette,
-    lessons: 14,
-    exercises: 40,
+    lessons: 3,
+    exercises: 0,
     color: "from-orange-500 to-orange-600"
   },
   {
