@@ -244,59 +244,61 @@ const EspagnolLessonAF8 = () => {
           <>
             {/* Header with Eric */}
             <div className="mb-8">
-              <div className="flex flex-col md:flex-row items-start md:items-center gap-6 mb-6">
-                <div className="flex-1">
-                  <h1 className="text-3xl md:text-4xl font-bold mb-4 bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
+              <div className="flex flex-col md:flex-row items-center gap-4 md:gap-6 mb-6">
+                <div className="flex-1 text-center md:text-left">
+                  <h1 className="text-2xl md:text-3xl lg:text-4xl font-bold mb-4 bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
                     {lesson.title}
                   </h1>
-              {lesson.objectif && (
-                <Card className="p-4 bg-primary/5 border-primary/20">
-                  <div className="flex items-center justify-between mb-2">
-                    <p className="text-sm font-medium text-primary">Objectif:</p>
-                    <TextToSpeechButton text={lesson.objectif} sectionName="Objectif" size="sm" />
-                  </div>
-                  <div className="prose dark:prose-invert max-w-none lesson-content">
-                    <div dangerouslySetInnerHTML={{ __html: lesson.objectif }} />
-                  </div>
-                </Card>
-              )}
+                  {lesson.objectif && (
+                    <Card className="p-4 bg-primary/5 border-primary/20">
+                      <div className="flex items-center justify-between mb-2">
+                        <p className="text-sm font-medium text-primary">Objectif:</p>
+                        <TextToSpeechButton text={lesson.objectif} sectionName="Objectif" size="sm" />
+                      </div>
+                      <div className="prose dark:prose-invert max-w-none lesson-content text-left">
+                        <div dangerouslySetInnerHTML={{ __html: lesson.objectif }} />
+                      </div>
+                    </Card>
+                  )}
+                </div>
+                
+                {/* Eric mascot - responsive sizing */}
+                <div className="flex-shrink-0">
+                  <img 
+                    src={ericChairDesk} 
+                    alt="Eric enseignant" 
+                    className="w-24 h-24 md:w-32 md:h-32 object-contain"
+                  />
+                </div>
+              </div>
             </div>
-            
-            {/* Eric mascot - smaller on mobile */}
-            <div className="flex-shrink-0">
-              <img 
-                src={ericChairDesk} 
-                alt="Eric enseignant" 
-                className="w-16 h-16 md:w-24 md:h-24 lg:w-32 lg:h-32 object-contain"
-              />
-            </div>
-          </div>
-        </div>
 
         {/* Tabs */}
         <Tabs value={activeTab} onValueChange={(val) => { setActiveTab(val); stop(); }} className="w-full">
-          <TabsList className="grid w-full grid-cols-5 mb-8">
-            <TabsTrigger value="introduction" className="gap-2">
-              <Lightbulb className="h-4 h-4" />
-              <span className="hidden sm:inline">Introduction</span>
-            </TabsTrigger>
-            <TabsTrigger value="contenu" className="gap-2">
-              <BookOpen className="h-4 w-4" />
-              <span className="hidden sm:inline">Contenu & Exemples</span>
-            </TabsTrigger>
-            <TabsTrigger value="activites" className="gap-2">
-              <Gamepad2 className="h-4 w-4" />
-              <span className="hidden sm:inline">Activités</span>
-            </TabsTrigger>
-            <TabsTrigger value="notes" className="gap-2">
-              <FileText className="h-4 w-4" />
-              <span className="hidden sm:inline">Mes Notes</span>
-            </TabsTrigger>
-            <TabsTrigger value="quiz" className="gap-2">
-              <Target className="h-4 w-4" />
-              <span className="hidden sm:inline">Quiz</span>
-            </TabsTrigger>
-          </TabsList>
+          <div className="border-b mb-8 overflow-x-auto">
+            <TabsList className="w-full h-auto rounded-none bg-transparent p-0 grid grid-cols-5 min-w-[500px] md:min-w-0">
+              <TabsTrigger value="introduction" className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent flex flex-col md:flex-row items-center justify-center gap-1 py-3">
+                <Lightbulb className="h-4 w-4" />
+                <span className="text-xs md:text-sm">Introduction</span>
+              </TabsTrigger>
+              <TabsTrigger value="contenu" className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent flex flex-col md:flex-row items-center justify-center gap-1 py-3">
+                <BookOpen className="h-4 w-4" />
+                <span className="text-xs md:text-sm">Contenu</span>
+              </TabsTrigger>
+              <TabsTrigger value="activites" className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent flex flex-col md:flex-row items-center justify-center gap-1 py-3">
+                <Gamepad2 className="h-4 w-4" />
+                <span className="text-xs md:text-sm">Activités</span>
+              </TabsTrigger>
+              <TabsTrigger value="notes" className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent flex flex-col md:flex-row items-center justify-center gap-1 py-3">
+                <FileText className="h-4 w-4" />
+                <span className="text-xs md:text-sm">Notes</span>
+              </TabsTrigger>
+              <TabsTrigger value="quiz" className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent flex flex-col md:flex-row items-center justify-center gap-1 py-3">
+                <Target className="h-4 w-4" />
+                <span className="text-xs md:text-sm">Quiz</span>
+              </TabsTrigger>
+            </TabsList>
+          </div>
 
           <TabsContent value="introduction" className="mt-6">
             <Card className="p-6">
