@@ -361,7 +361,7 @@ export default function Matieres() {
             // Check content availability based on grade and subject
             const isMath = subject.id === 'mathematiques' || subject.id === 'matematik-8af' || subject.id === 'mathematiques-af9';
             const isSciences = subject.id === 'sciences' || subject.id === 'sciences-experimentales-8af' || subject.id === 'sciences-experimentales';
-            const isAnglais = subject.id === 'anglais' || subject.id === 'anglais-8af';
+            const isAnglais = subject.id === 'anglais' || subject.id === 'anglais-8af' || subject.id === 'anglais-af9';
             const isEspagnol = subject.id === 'espagnol' || subject.id === 'espagnol-8af';
             const isCreole = subject.id === 'creole' || subject.id === 'creole-8af';
             const isSciencesSociales = subject.id === 'sciences-sociales' || subject.id === 'sciences-sociales-8af';
@@ -371,7 +371,7 @@ export default function Matieres() {
                subject.id === 'francais' || subject.id === 'sciences-sociales' || 
                subject.id === 'creole' || subject.id === 'arts' || subject.id === 'education-physique')) ||
               (selectedGrade === "AF8" && (isMath || isSciences || isAnglais || isEspagnol || isCreole || isSciencesSociales)) ||
-              (selectedGrade === "AF9" && (isMath || isSciences));
+              (selectedGrade === "AF9" && (isMath || isSciences || isAnglais));
             
             return (
               <Card
