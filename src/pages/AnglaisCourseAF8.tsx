@@ -8,7 +8,7 @@ import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { OptimizedImage } from "@/components/OptimizedImage";
-import ericWelcome from "@/assets/eric-welcome.png";
+import ericTeaching from "@/assets/eric-teaching.png";
 
 interface Lesson {
   id: string;
@@ -168,12 +168,10 @@ const AnglaisCourseAF8 = () => {
                             {lesson.title}
                           </CardTitle>
                           {lesson.objectif && (
-                            <CardDescription 
-                              className="line-clamp-3 text-sm"
-                              dangerouslySetInnerHTML={{ 
-                                __html: lesson.objectif.replace(/<[^>]*>/g, '').substring(0, 150) + '...'
-                              }}
-                            />
+                            <CardDescription className="line-clamp-3 text-sm leading-relaxed">
+                              {lesson.objectif.replace(/<[^>]*>/g, '').replace(/&nbsp;/g, ' ').trim().substring(0, 150)}
+                              {lesson.objectif.length > 150 ? '...' : ''}
+                            </CardDescription>
                           )}
                         </CardHeader>
                         <CardContent>
@@ -198,24 +196,24 @@ const AnglaisCourseAF8 = () => {
         )}
 
         {/* Eric Assistant Section */}
-        <div className="mt-12 bg-gradient-to-br from-primary/10 to-secondary/10 rounded-2xl p-6 md:p-8">
-          <div className="flex flex-col md:flex-row items-center gap-6">
-            <div className="w-32 h-32 md:w-40 md:h-40 flex-shrink-0">
+        <div className="mt-12 bg-gradient-to-br from-cyan-50 to-blue-50 dark:from-cyan-950/30 dark:to-blue-950/30 rounded-3xl p-8 md:p-12 shadow-lg border border-cyan-100 dark:border-cyan-900">
+          <div className="flex flex-col md:flex-row items-center gap-8">
+            <div className="w-48 h-48 md:w-56 md:h-56 flex-shrink-0 rounded-2xl overflow-hidden bg-white dark:bg-gray-800 shadow-xl">
               <OptimizedImage
-                src={ericWelcome}
+                src={ericTeaching}
                 alt="Eric - Votre assistant d'apprentissage"
-                className="w-full h-full object-contain"
+                className="w-full h-full object-cover"
               />
             </div>
             <div className="flex-1 text-center md:text-left">
-              <h3 className="text-2xl md:text-3xl font-bold mb-3">
+              <h3 className="text-3xl md:text-4xl font-bold mb-4 bg-gradient-to-r from-cyan-600 to-blue-600 bg-clip-text text-transparent">
                 Besoin d'aide avec l'anglais ?
               </h3>
-              <p className="text-muted-foreground mb-4">
+              <p className="text-lg text-muted-foreground mb-6 leading-relaxed">
                 Eric est là pour t'accompagner dans ton apprentissage de l'anglais ! 
-                Pose-lui tes questions, pratique la conversation, et améliore tes compétences.
+                Pose-lui tes questions, pratique la conversation, et améliore tes compétences linguistiques.
               </p>
-              <Button size="lg" className="gap-2">
+              <Button size="lg" className="gap-2 shadow-lg hover:shadow-xl transition-all">
                 <Languages className="h-5 w-5" />
                 Parler avec Eric
               </Button>
