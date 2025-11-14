@@ -37,8 +37,23 @@ serve(async (req) => {
       throw new Error('LOVABLE_API_KEY is not configured');
     }
 
-    // Detect if this is a Creole lesson
-    const isCreoleLesson = subject && (subject.toLowerCase().includes('kreyol') || subject.toLowerCase().includes('créole'));
+    console.log('📋 Request params:', { 
+      lessonTitle, 
+      gradeLevel, 
+      subject,
+      exercisesLength: exercisesContent?.length 
+    });
+
+    // Detect if this is a Creole lesson - check for multiple variations
+    const subjectLower = (subject || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+    const isCreoleLesson = subjectLower.includes('kreyol') || subjectLower.includes('creole');
+    
+    console.log('🔍 Creole detection:', { 
+      subject, 
+      subjectLower, 
+      isCreoleLesson 
+    });
+    
     const contentLanguage = isCreoleLesson ? 'KREYÒL AYISYEN (créole haïtien)' : 'Français';
 
     const systemPrompt = isCreoleLesson 

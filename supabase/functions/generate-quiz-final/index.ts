@@ -15,14 +15,28 @@ serve(async (req) => {
     const { lessonTitle, contenu, exemplesExercices, gradeLevel, subject } = await req.json();
 
     console.log('📝 Generating Quiz Final for:', lessonTitle);
+    console.log('📋 Request params:', { 
+      lessonTitle, 
+      gradeLevel, 
+      subject,
+      contenuLength: contenu?.length,
+      exercicesLength: exemplesExercices?.length
+    });
 
     const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
     if (!LOVABLE_API_KEY) {
       throw new Error('LOVABLE_API_KEY not configured');
     }
 
-    // Detect if this is a Creole lesson
-    const isCreoleLesson = subject && (subject.toLowerCase().includes('kreyol') || subject.toLowerCase().includes('créole'));
+    // Detect if this is a Creole lesson - check for multiple variations and normalize
+    const subjectLower = (subject || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+    const isCreoleLesson = subjectLower.includes('kreyol') || subjectLower.includes('creole');
+    
+    console.log('🔍 Creole detection:', { 
+      subject, 
+      subjectLower, 
+      isCreoleLesson 
+    });
 
     const combinedContent = `${contenu || ''}\n\n${exemplesExercices || ''}`.trim();
 
