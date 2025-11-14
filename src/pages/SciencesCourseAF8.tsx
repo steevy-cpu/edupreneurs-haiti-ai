@@ -7,6 +7,8 @@ import { ThemeToggle } from "@/components/ThemeToggle";
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { OptimizedImage } from "@/components/OptimizedImage";
+import ericTeaching from "@/assets/eric-teaching.png";
 
 interface Lesson {
   id: string;
@@ -97,16 +99,25 @@ const SciencesCourseAF8 = () => {
 
       {/* Header */}
       <div className="container mx-auto px-4 py-12">
-        <div className="text-center mb-12">
-          <div className="inline-flex items-center justify-center w-20 h-20 rounded-2xl bg-gradient-to-br from-amber-500 to-orange-600 mb-6 shadow-lg">
-            <Beaker className="h-10 w-10 text-white" />
+        <div className="flex flex-col md:flex-row items-center justify-between gap-8 mb-12">
+          <div className="flex-1 text-center md:text-left">
+            <div className="inline-flex items-center justify-center w-20 h-20 rounded-2xl bg-gradient-to-br from-amber-500 to-orange-600 mb-6 shadow-lg">
+              <Beaker className="h-10 w-10 text-white" />
+            </div>
+            <h1 className="text-4xl md:text-5xl font-bold mb-4 bg-gradient-to-r from-amber-600 to-orange-600 bg-clip-text text-transparent">
+              Sciences Expérimentales AF8
+            </h1>
+            <p className="text-xl text-muted-foreground max-w-2xl">
+              Programme complet de sciences expérimentales pour la 8ème année fondamentale
+            </p>
           </div>
-          <h1 className="text-4xl md:text-5xl font-bold mb-4 bg-gradient-to-r from-amber-600 to-orange-600 bg-clip-text text-transparent">
-            Sciences Expérimentales AF8
-          </h1>
-          <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-            Programme complet de sciences expérimentales pour la 8ème année fondamentale
-          </p>
+          <div className="hidden md:block">
+            <OptimizedImage 
+              src={ericTeaching}
+              alt="Eric enseignant"
+              className="w-64 h-64 object-contain"
+            />
+          </div>
         </div>
 
         {loading ? (
@@ -151,13 +162,16 @@ const SciencesCourseAF8 = () => {
                               </Badge>
                             )}
                           </div>
-                          <CardTitle className="text-lg group-hover:text-primary transition-colors">
+                          <CardTitle className="text-lg group-hover:text-primary transition-colors line-clamp-2">
                             {lesson.title}
                           </CardTitle>
                           {lesson.objectif && (
-                            <CardDescription className="line-clamp-2">
-                              {lesson.objectif}
-                            </CardDescription>
+                            <CardDescription 
+                              className="line-clamp-2"
+                              dangerouslySetInnerHTML={{ 
+                                __html: lesson.objectif.replace(/<[^>]*>/g, '').substring(0, 100) + '...'
+                              }}
+                            />
                           )}
                         </CardHeader>
                         <CardContent>
