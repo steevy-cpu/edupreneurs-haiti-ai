@@ -7,6 +7,8 @@ import { ThemeToggle } from "@/components/ThemeToggle";
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { OptimizedImage } from "@/components/OptimizedImage";
+import ericTeaching from "@/assets/eric-teaching.png";
 
 interface Lesson {
   id: string;
@@ -78,13 +80,20 @@ const EspagnolCourseAF8 = () => {
 
   const monthOrder = ['Décembre', 'Janvier', 'Février', 'Mars', 'Avril', 'Mai', 'Juin'];
   const monthColors: Record<string, string> = {
-    'Décembre': 'from-purple-500 to-pink-600',
-    'Janvier': 'from-pink-500 to-rose-600',
-    'Février': 'from-rose-500 to-red-600',
-    'Mars': 'from-orange-500 to-amber-600',
-    'Avril': 'from-amber-500 to-yellow-600',
-    'Mai': 'from-green-500 to-emerald-600',
-    'Juin': 'from-teal-500 to-cyan-600'
+    'Décembre': 'from-orange-500 to-amber-600',
+    'Janvier': 'from-amber-500 to-yellow-600',
+    'Février': 'from-yellow-500 to-orange-600',
+    'Mars': 'from-orange-600 to-red-600',
+    'Avril': 'from-red-500 to-orange-500',
+    'Mai': 'from-amber-600 to-orange-700',
+    'Juin': 'from-yellow-600 to-amber-700'
+  };
+
+  // Strip HTML tags from text
+  const stripHtml = (html: string) => {
+    const tmp = document.createElement('DIV');
+    tmp.innerHTML = html;
+    return tmp.textContent || tmp.innerText || '';
   };
 
   return (
@@ -106,16 +115,25 @@ const EspagnolCourseAF8 = () => {
 
       {/* Header */}
       <div className="container mx-auto px-4 py-12">
-        <div className="text-center mb-12">
-          <div className="inline-flex items-center justify-center w-20 h-20 rounded-2xl bg-gradient-to-br from-purple-500 to-pink-600 mb-6 shadow-lg">
-            <Languages className="h-10 w-10 text-white" />
+        <div className="flex flex-col md:flex-row items-center justify-between gap-8 mb-12 max-w-6xl mx-auto">
+          <div className="flex-1 text-center md:text-left">
+            <div className="inline-flex items-center justify-center w-20 h-20 rounded-2xl bg-gradient-to-br from-orange-500 to-amber-600 mb-6 shadow-lg">
+              <Languages className="h-10 w-10 text-white" />
+            </div>
+            <h1 className="text-4xl md:text-5xl font-bold mb-4 bg-gradient-to-r from-orange-600 to-amber-600 bg-clip-text text-transparent">
+              Espagnol AF8
+            </h1>
+            <p className="text-xl text-muted-foreground max-w-2xl">
+              Programme complet d'espagnol pour la 8ème année fondamentale
+            </p>
           </div>
-          <h1 className="text-4xl md:text-5xl font-bold mb-4 bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
-            Espagnol AF8
-          </h1>
-          <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-            Programme complet d'espagnol pour la 8ème année fondamentale
-          </p>
+          <div className="flex-shrink-0">
+            <OptimizedImage 
+              src={ericTeaching} 
+              alt="Eric, votre professeur d'espagnol"
+              className="w-64 h-64 object-contain"
+            />
+          </div>
         </div>
 
         {loading ? (
@@ -167,7 +185,7 @@ const EspagnolCourseAF8 = () => {
                           </CardTitle>
                           {lesson.objectif && (
                             <CardDescription className="line-clamp-2">
-                              {lesson.objectif}
+                              {stripHtml(lesson.objectif)}
                             </CardDescription>
                           )}
                         </CardHeader>
