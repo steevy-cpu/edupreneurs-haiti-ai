@@ -66,8 +66,11 @@ IMPORTANT:
 - GARDE les mots-clés structurels en FRANÇAIS (**TYPE:**, **Question:**, **Réponse correcte:**, **Explication:**, etc.) pour compatibilité
 - ÉCRIS tout le CONTENU (questions, options, réponses, explications) EN KREYÒL AYISYEN
 - Les titres d'activités peuvent être en Kreyòl
+- 🚨 CRITIQUE: Le mot "TYPE:" DOIT toujours être présent! Écris **TYPE: QUIZ**, pas juste **QUIZ**!
 
-EXEMPLES:
+FORMAT EXACT REQUIS:
+
+1. QUIZ:
 ### 🎯 Konpreyansyon Tèks
 **TYPE: QUIZ**
 
@@ -79,6 +82,45 @@ EXEMPLES:
 
 **Réponse correcte:** B
 **Explication:** Lè w ap li yon tèks, pi enpòtan se konprann mesaj la, pa sèlman li mo yo.
+
+2. MATCHING:
+### 🔗 Asosye Mo yo
+**TYPE: MATCHING**
+
+**Associez les éléments suivants:**
+
+**Colonne A:**
+1. Premye eleman
+2. Dezyèm eleman
+
+**Colonne B:**
+a) Korespondans 1
+b) Korespondans 2
+
+**Réponses:** 1-a, 2-b
+**Explication:** Esplikasyon an kreyòl
+
+3. TRUEFALSE:
+### ✓✗ Vre oswa Fo
+**TYPE: TRUEFALSE**
+
+**Lakay sitiye nan sid Ayiti.**
+
+- A) VRE
+- B) FO
+
+**Réponse correcte:** A
+**Explication:** Esplikasyon an kreyòl
+
+4. FILLIN:
+### ✏️ Ranpli Blan yo
+**TYPE: FILLIN**
+
+**Complétez la phrase:**
+Moun nan Lakay yo _______ agrikiltè.
+
+**Réponse:** se
+**Explication:** Esplikasyon an kreyòl
 
 RÈGLES STRICTES:
 - Utilise KREYÒL AYISYEN pou tout kontni
@@ -97,35 +139,62 @@ RÈGLES STRICTES:
 - PRÉSERVE LE CONTENU ORIGINAL des exercices autant que possible
 - Formate le contenu EXACTEMENT comme spécifié ci-dessous
 - TRANSFORME TOUS les exercices fournis (Exercice 1, 2, 3, 4, 5, 6, etc.)
+- 🚨 CRITIQUE: Le mot "TYPE:" DOIT toujours être présent! Écris **TYPE: QUIZ**, pas juste **QUIZ**!
 
-IMPORTANT: Le contenu des exercices peut être en HTML ou texte brut. Tu dois:
-1. Extraire le texte des exercices (ignorer toutes balises HTML)
-2. Identifier les questions et leurs options (A, B, C, D ou a, b, c, d ou 1, 2, 3, 4)
-3. GARDER les questions et exemples TELS QUELS - ne les modifie PAS
-4. Si les réponses correctes ne sont pas explicites, déduis-les logiquement basé sur la grammaire/contexte
-5. Créer des explications claires pour chaque réponse
+FORMAT EXACT REQUIS:
 
-FORMATS D'ACTIVITÉS DISPONIBLES:
+1. QUIZ:
+### 🎯 Titre de l'activité
+**TYPE: QUIZ**
 
-1. QUIZ - Questions à choix multiples
-2. MATCHING - Associer des éléments
-3. TRUEFALSE - Vrai ou Faux
-4. FILLIN - Remplir les blancs
+**Question:** Quelle est la question?
+- A) Option 1
+- B) Option 2
+- C) Option 3
+- D) Option 4
 
-DISTRIBUTION RECOMMANDÉE (pour 10-15 activités):
-- 4-5 activités QUIZ
-- 2-3 activités MATCHING
-- 2-3 activités TRUEFALSE
-- 2-4 activités FILLIN
+**Réponse correcte:** B
+**Explication:** Explication pédagogique
 
-IMPORTANT: 
-- Sépare chaque activité par une ligne vide
-- Commence toujours par le titre avec ###
-- GARDE LE CONTENU ORIGINAL DES EXERCICES - ne change PAS les phrases, noms, ou exemples
-- Ton seul rôle est de reformater en activités interactives, PAS de réécrire le contenu
-- RESPECTE FIDÈLEMENT le contenu source`;
+2. MATCHING:
+### 🔗 Titre
+**TYPE: MATCHING**
 
-    // Strip HTML and clean the content
+**Associez les éléments suivants:**
+
+**Colonne A:**
+1. Élément 1
+2. Élément 2
+
+**Colonne B:**
+a) Correspondance 1
+b) Correspondance 2
+
+**Réponses:** 1-a, 2-b
+**Explication:** Explication
+
+3. TRUEFALSE:
+### ✓✗ Titre
+**TYPE: TRUEFALSE**
+
+**Affirmation à évaluer**
+
+- A) VRAI
+- B) FAUX
+
+**Réponse correcte:** A
+**Explication:** Explication
+
+4. FILLIN:
+### ✏️ Titre
+**TYPE: FILLIN**
+
+**Complétez la phrase:**
+Ma sœur _______ une belle voix.
+
+**Réponse:** a
+**Explication:** Explication`;
+
     const cleanedContent = stripHtml(exercisesContent);
 
     console.log('Original exercises length:', exercisesContent.length);
