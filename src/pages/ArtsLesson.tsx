@@ -23,6 +23,7 @@ import { ThemeToggle } from "@/components/ThemeToggle";
 import { DownloadLessonButton } from "@/components/DownloadLessonButton";
 import { YouTubeVideoSection } from "@/components/YouTubeVideoSection";
 import { InteractiveActivitiesEnhanced } from "@/components/InteractiveActivitiesEnhanced";
+import { InteractiveQuiz } from "@/components/InteractiveQuiz";
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -39,11 +40,17 @@ export default function ArtsLesson() {
   const [youtubeUrl, setYoutubeUrl] = useState<string | null>(null);
   const [lessonData, setLessonData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [activitiesContent, setActivitiesContent] = useState("");
+  const [isLoadingActivities, setIsLoadingActivities] = useState(false);
+  const [quizContent, setQuizContent] = useState("");
+  const [isLoadingQuiz, setIsLoadingQuiz] = useState(false);
 
   useEffect(() => {
     window.scrollTo(0, 0);
     fetchLessonData();
     loadPersonalNotes();
+    fetchActivitiesContent();
+    fetchQuizContent();
   }, [topicId]);
 
   const fetchLessonData = async () => {
@@ -98,6 +105,50 @@ export default function ArtsLesson() {
       console.error('Error fetching lesson:', error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchActivitiesContent = async () => {
+    if (!topicId) return;
+    
+    setIsLoadingActivities(true);
+    try {
+      const { data, error } = await supabase
+        .from('lessons')
+        .select('activites_interactives')
+        .eq('slug', topicId)
+        .eq('grade_level', '7AF')
+        .maybeSingle();
+
+      if (data?.activites_interactives) {
+        setActivitiesContent(data.activites_interactives);
+      }
+    } catch (error) {
+      console.error('Error fetching activities:', error);
+    } finally {
+      setIsLoadingActivities(false);
+    }
+  };
+
+  const fetchQuizContent = async () => {
+    if (!topicId) return;
+    
+    setIsLoadingQuiz(true);
+    try {
+      const { data, error } = await supabase
+        .from('lessons')
+        .select('quiz_final')
+        .eq('slug', topicId)
+        .eq('grade_level', '7AF')
+        .maybeSingle();
+
+      if (data?.quiz_final) {
+        setQuizContent(data.quiz_final);
+      }
+    } catch (error) {
+      console.error('Error fetching quiz:', error);
+    } finally {
+      setIsLoadingQuiz(false);
     }
   };
 
@@ -313,7 +364,7 @@ export default function ArtsLesson() {
 
         {/* Tabs */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="grid w-full grid-cols-5 lg:grid-cols-5">
+          <TabsList className="grid w-full grid-cols-6 lg:grid-cols-6">
             <TabsTrigger value="introduction" className="gap-2">
               <Lightbulb className="w-4 h-4" />
               <span className="hidden sm:inline">Introduction</span>
@@ -329,6 +380,10 @@ export default function ArtsLesson() {
             <TabsTrigger value="activites" className="gap-2">
               <Gamepad2 className="w-4 h-4" />
               <span className="hidden sm:inline">Activités</span>
+            </TabsTrigger>
+            <TabsTrigger value="quiz" className="gap-2">
+              <Award className="w-4 h-4" />
+              <span className="hidden sm:inline">Quiz</span>
             </TabsTrigger>
             <TabsTrigger value="notes" className="gap-2">
               <NotebookPen className="w-4 h-4" />
@@ -419,15 +474,53 @@ export default function ArtsLesson() {
           </TabsContent>
 
           <TabsContent value="activites" className="space-y-6">
-            <Card className="p-6">
-              <div className="text-center py-8">
-                <Gamepad2 className="w-16 h-16 mx-auto mb-4 text-muted-foreground" />
-                <h3 className="text-lg font-semibold mb-2">Activités interactives en développement</h3>
-                <p className="text-muted-foreground">
-                  Les activités interactives pour les arts seront bientôt disponibles !
-                </p>
-              </div>
-            </Card>
+            {isLoadingActivities ? (
+              <Card className="p-6">
+                <div className="flex items-center justify-center py-8">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-violet-500"></div>
+                </div>
+              </Card>
+            ) : activitiesContent ? (
+              <InteractiveActivitiesEnhanced 
+                content={activitiesContent}
+                isLoading={isLoadingActivities}
+              />
+            ) : (
+              <Card className="p-6">
+                <div className="text-center py-8">
+                  <Gamepad2 className="w-16 h-16 mx-auto mb-4 text-muted-foreground" />
+                  <h3 className="text-lg font-semibold mb-2">Aucune activité disponible</h3>
+                  <p className="text-muted-foreground">
+                    Les activités interactives n'ont pas encore été générées pour cette leçon.
+                  </p>
+                </div>
+              </Card>
+            )}
+          </TabsContent>
+
+          <TabsContent value="quiz" className="space-y-6">
+            {isLoadingQuiz ? (
+              <Card className="p-6">
+                <div className="flex items-center justify-center py-8">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-violet-500"></div>
+                </div>
+              </Card>
+            ) : quizContent ? (
+              <InteractiveQuiz 
+                content={quizContent}
+                isLoading={isLoadingQuiz}
+              />
+            ) : (
+              <Card className="p-6">
+                <div className="text-center py-8">
+                  <Award className="w-16 h-16 mx-auto mb-4 text-muted-foreground" />
+                  <h3 className="text-lg font-semibold mb-2">Aucun quiz disponible</h3>
+                  <p className="text-muted-foreground">
+                    Le quiz final n'a pas encore été généré pour cette leçon.
+                  </p>
+                </div>
+              </Card>
+            )}
           </TabsContent>
 
           <TabsContent value="notes" className="space-y-6">
