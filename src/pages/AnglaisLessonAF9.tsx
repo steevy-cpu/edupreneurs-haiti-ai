@@ -16,6 +16,7 @@ import { useTTS } from "@/hooks/useTTS";
 import { EnglishPracticeChat } from "@/components/EnglishPracticeChat";
 import { InteractiveActivitiesEnhanced } from "@/components/InteractiveActivitiesEnhanced";
 import { HTMLQuizParser } from "@/components/HTMLQuizParser";
+import { EricChatbot } from "@/components/EricChatbot";
 
 const AnglaisLessonAF9 = () => {
   const { lessonSlug } = useParams();
@@ -383,6 +384,8 @@ const AnglaisLessonAF9 = () => {
           </Button>
         </div>
       </div>
+      
+      <EricChatbot />
     </div>
   );
 };
