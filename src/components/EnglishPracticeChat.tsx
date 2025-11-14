@@ -47,21 +47,28 @@ export const EnglishPracticeChat = ({
   const [isLoadingHistory, setIsLoadingHistory] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const messagesContainerRef = useRef<HTMLDivElement>(null);
 
   const scrollToBottom = (smooth = true) => {
-    if (messagesEndRef.current) {
-      messagesEndRef.current.scrollIntoView({ 
-        behavior: smooth ? "smooth" : "auto",
-        block: "end"
+    if (messagesContainerRef.current) {
+      const scrollHeight = messagesContainerRef.current.scrollHeight;
+      messagesContainerRef.current.scrollTo({
+        top: scrollHeight,
+        behavior: smooth ? "smooth" : "auto"
       });
     }
   };
 
   useEffect(() => {
-    // Use smooth scroll for loading messages, instant for new messages
-    const shouldSmooth = isLoadingHistory || isLoading;
-    scrollToBottom(shouldSmooth);
-  }, [messages, isLoadingHistory, isLoading]);
+    // Only scroll when messages change, not when loading states change
+    if (messages.length > 0) {
+      // Use a small timeout to ensure DOM has updated
+      const timer = setTimeout(() => {
+        scrollToBottom(!isLoadingHistory);
+      }, 100);
+      return () => clearTimeout(timer);
+    }
+  }, [messages.length]);
 
   const loadPreviousConversation = async (userId: string) => {
     setIsLoadingHistory(true);
@@ -306,7 +313,7 @@ export const EnglishPracticeChat = ({
   ];
 
   return (
-    <Card className="p-4 sm:p-6 space-y-4">
+    <Card className="p-3 sm:p-4 md:p-6 space-y-3 sm:space-y-4">
       {isLoadingHistory ? (
         <div className="flex items-center justify-center p-8">
           <Loader2 className="w-6 h-6 animate-spin mr-2" />
@@ -314,24 +321,24 @@ export const EnglishPracticeChat = ({
         </div>
       ) : (
         <>
-          <div className="flex items-center justify-between gap-3 pb-4 border-b">
-            <div className="flex items-center gap-3">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 sm:pb-4 border-b">
+            <div className="flex items-center gap-2 sm:gap-3">
               <img
                 src={ericChairDesk}
                 alt="Eric"
-                className="w-12 h-12 sm:w-16 sm:h-16 object-contain"
+                className="w-10 h-10 sm:w-12 sm:h-12 md:w-16 md:h-16 object-contain flex-shrink-0"
               />
-              <div>
-                <h3 className="text-lg sm:text-xl font-semibold text-foreground">
+              <div className="min-w-0 flex-1">
+                <h3 className="text-base sm:text-lg md:text-xl font-semibold text-foreground truncate">
                   🗣️ Practice Your English with Eric
                 </h3>
-                <p className="text-sm text-muted-foreground">
+                <p className="text-xs sm:text-sm text-muted-foreground">
                   {hasPreviousConversation ? "Continuing previous conversation" : "Practice Mode - Not Graded"}
                 </p>
               </div>
             </div>
             
-            <div className="flex gap-1.5 sm:gap-2">
+            <div className="flex gap-1.5 sm:gap-2 self-end sm:self-auto">
               {hasPreviousConversation && (
                 <Button
                   variant="outline"
@@ -339,7 +346,7 @@ export const EnglishPracticeChat = ({
                   onClick={startNewConversation}
                   title="Start a fresh conversation"
                   disabled={isLoading}
-                  className="text-xs sm:text-sm px-2 sm:px-3"
+                  className="text-xs sm:text-sm px-2 py-1 sm:px-3 h-8 sm:h-9"
                 >
                   <span className="hidden sm:inline">🔄 New Chat</span>
                   <span className="sm:hidden">🔄</span>
@@ -353,7 +360,7 @@ export const EnglishPracticeChat = ({
                   onClick={() => setShowDeleteDialog(true)}
                   title="Clear all conversation history"
                   disabled={isLoading}
-                  className="text-xs sm:text-sm px-2 sm:px-3"
+                  className="text-xs sm:text-sm px-2 py-1 sm:px-3 h-8 sm:h-9"
                 >
                   <span className="hidden sm:inline">🗑️ Clear History</span>
                   <span className="sm:hidden">🗑️</span>
@@ -362,7 +369,10 @@ export const EnglishPracticeChat = ({
             </div>
           </div>
 
-          <div className="space-y-3 min-h-[300px] max-h-[400px] sm:max-h-[500px] overflow-y-auto p-3 sm:p-4 bg-muted/30 rounded-lg scroll-smooth">
+          <div 
+            ref={messagesContainerRef}
+            className="space-y-2 sm:space-y-3 min-h-[280px] max-h-[350px] sm:min-h-[300px] sm:max-h-[400px] md:max-h-[500px] overflow-y-auto p-2 sm:p-3 md:p-4 bg-muted/30 rounded-lg"
+          >
             {messages.map((message, index) => (
               <div
                 key={index}
@@ -371,13 +381,13 @@ export const EnglishPracticeChat = ({
                 } animate-in fade-in slide-in-from-bottom-2 duration-300`}
               >
                 <div
-                  className={`max-w-[85%] sm:max-w-[80%] p-2.5 sm:p-3 rounded-lg break-words ${
+                  className={`max-w-[90%] sm:max-w-[85%] md:max-w-[80%] p-2 sm:p-2.5 md:p-3 rounded-lg break-words ${
                     message.role === "user"
                       ? "bg-primary text-primary-foreground ml-auto"
                       : "bg-card text-card-foreground border"
                   }`}
                 >
-                  <p className="text-sm sm:text-base whitespace-pre-wrap leading-relaxed">
+                  <p className="text-xs sm:text-sm md:text-base whitespace-pre-wrap leading-relaxed">
                     {message.content}
                   </p>
                 </div>
@@ -385,9 +395,9 @@ export const EnglishPracticeChat = ({
             ))}
             {isLoading && (
               <div className="flex justify-start animate-in fade-in slide-in-from-bottom-2 duration-300">
-                <div className="bg-card text-card-foreground border p-2.5 sm:p-3 rounded-lg flex items-center gap-2">
-                  <Loader2 className="w-4 h-4 animate-spin" />
-                  <span className="text-sm">Eric is typing...</span>
+                <div className="bg-card text-card-foreground border p-2 sm:p-2.5 md:p-3 rounded-lg flex items-center gap-2">
+                  <Loader2 className="w-3 h-3 sm:w-4 sm:h-4 animate-spin" />
+                  <span className="text-xs sm:text-sm">Eric is typing...</span>
                 </div>
               </div>
             )}
@@ -395,8 +405,8 @@ export const EnglishPracticeChat = ({
           </div>
 
           {messages.length === 1 && !hasPreviousConversation && (
-            <div className="flex flex-wrap gap-2">
-              <p className="text-xs sm:text-sm text-muted-foreground w-full">💡 Try these:</p>
+            <div className="flex flex-wrap gap-1.5 sm:gap-2">
+              <p className="text-xs sm:text-sm text-muted-foreground w-full mb-1">💡 Try these:</p>
               {quickReplies.map((reply, index) => (
                 <Button
                   key={index}
@@ -406,7 +416,7 @@ export const EnglishPracticeChat = ({
                     setInput(reply);
                   }}
                   disabled={isLoading}
-                  className="text-xs sm:text-sm"
+                  className="text-xs sm:text-sm px-2 py-1 h-7 sm:h-8"
                 >
                   {reply}
                 </Button>
@@ -420,19 +430,19 @@ export const EnglishPracticeChat = ({
               onChange={(e) => setInput(e.target.value)}
               onKeyDown={handleKeyPress}
               placeholder="Type your message in English..."
-              className="min-h-[60px] sm:min-h-[80px] resize-none text-sm sm:text-base flex-1"
+              className="min-h-[50px] sm:min-h-[60px] md:min-h-[80px] resize-none text-xs sm:text-sm md:text-base flex-1"
               disabled={isLoading}
             />
             <Button
               onClick={handleSendMessage}
               disabled={!input.trim() || isLoading || !sessionId}
               size="icon"
-              className="h-[60px] w-[60px] sm:h-[80px] sm:w-[80px] shrink-0"
+              className="h-[50px] w-[50px] sm:h-[60px] sm:w-[60px] md:h-[80px] md:w-[80px] shrink-0"
             >
               {isLoading ? (
-                <Loader2 className="w-4 h-4 sm:w-5 sm:h-5 animate-spin" />
+                <Loader2 className="w-3 h-3 sm:w-4 sm:h-4 md:w-5 md:h-5 animate-spin" />
               ) : (
-                <Send className="w-4 h-4 sm:w-5 sm:h-5" />
+                <Send className="w-3 h-3 sm:w-4 sm:h-4 md:w-5 md:h-5" />
               )}
             </Button>
           </div>
