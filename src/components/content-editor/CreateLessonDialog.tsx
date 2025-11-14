@@ -154,8 +154,8 @@ export const CreateLessonDialog = ({
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="7AF">7AF</SelectItem>
-                <SelectItem value="8AF">8AF</SelectItem>
-                <SelectItem value="9AF">9AF</SelectItem>
+                <SelectItem value="AF8">AF8</SelectItem>
+                <SelectItem value="AF9">AF9</SelectItem>
                 <SelectItem value="NS1">NS1</SelectItem>
                 <SelectItem value="NS2">NS2</SelectItem>
                 <SelectItem value="NS3">NS3</SelectItem>
