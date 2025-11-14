@@ -111,7 +111,7 @@ const ArtsCourse = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-background to-secondary/20">
+    <div className="min-h-screen bg-gradient-to-br from-background via-background to-violet-500/10">
       {/* Header */}
       <div className="sticky top-0 z-40 bg-background/80 backdrop-blur-lg border-b border-border/40">
         <div className="container mx-auto px-4 py-3">
@@ -143,11 +143,11 @@ const ArtsCourse = () => {
         <div className="flex flex-col lg:flex-row items-center gap-8 mb-12">
           <div className="flex-1 space-y-6">
             <div className="flex items-center gap-3">
-              <div className="p-3 rounded-2xl bg-gradient-to-br from-orange-500/20 to-pink-500/20">
-                <Palette className="w-8 h-8 text-orange-500" />
+              <div className="p-3 rounded-2xl bg-gradient-to-br from-violet-500/20 to-fuchsia-500/20">
+                <Palette className="w-8 h-8 text-violet-500" />
               </div>
               <div>
-                <h1 className="text-4xl sm:text-5xl font-bold bg-gradient-to-r from-orange-500 via-pink-500 to-purple-500 bg-clip-text text-transparent">
+                <h1 className="text-4xl sm:text-5xl font-bold bg-gradient-to-r from-violet-500 via-fuchsia-500 to-indigo-500 bg-clip-text text-transparent">
                   Arts & Culture
                 </h1>
                 <p className="text-muted-foreground mt-1">7ème Année Fondamentale (7AF)</p>
@@ -195,7 +195,7 @@ const ArtsCourse = () => {
         {/* Topics Grid */}
         <div className="space-y-4">
           <h2 className="text-2xl font-bold text-foreground mb-6 flex items-center gap-3">
-            <div className="w-2 h-8 bg-gradient-to-b from-orange-500 to-pink-500 rounded-full" />
+            <div className="w-2 h-8 bg-gradient-to-b from-violet-500 to-fuchsia-500 rounded-full" />
             Les Leçons du Cours
           </h2>
 
@@ -214,7 +214,7 @@ const ArtsCourse = () => {
                 }`}
                 onClick={() => handleTopicClick(topic.id, topic.isLocked)}
               >
-                <div className="absolute inset-0 bg-gradient-to-r from-orange-500/5 to-pink-500/5 opacity-0 group-hover:opacity-100 transition-opacity" />
+                <div className="absolute inset-0 bg-gradient-to-r from-violet-500/5 to-fuchsia-500/5 opacity-0 group-hover:opacity-100 transition-opacity" />
                 
                 <div className="relative p-6">
                   <div className="flex items-start gap-4">
@@ -222,7 +222,7 @@ const ArtsCourse = () => {
                       <div className={`w-16 h-16 rounded-2xl flex items-center justify-center text-3xl ${
                         topic.isCompleted 
                           ? 'bg-green-500/20 ring-2 ring-green-500/50' 
-                          : 'bg-gradient-to-br from-orange-500/20 to-pink-500/20'
+                          : 'bg-gradient-to-br from-violet-500/20 to-fuchsia-500/20'
                       }`}>
                         {topic.isCompleted ? (
                           <CheckCircle className="w-8 h-8 text-green-500" />
@@ -235,7 +235,7 @@ const ArtsCourse = () => {
                     <div className="flex-1 min-w-0">
                       <div className="flex items-start justify-between gap-4 mb-2">
                         <div className="flex-1">
-                          <h3 className="text-xl font-bold text-foreground mb-1 group-hover:text-orange-500 transition-colors">
+                          <h3 className="text-xl font-bold text-foreground mb-1 group-hover:text-violet-500 transition-colors">
                             {topic.title}
                           </h3>
                           <p className="text-sm text-muted-foreground leading-relaxed">
@@ -271,10 +271,10 @@ const ArtsCourse = () => {
         </div>
 
         {/* Course Info */}
-        <Card className="mt-8 p-6 bg-gradient-to-br from-orange-500/10 to-pink-500/10 border-orange-500/20">
+        <Card className="mt-8 p-6 bg-gradient-to-br from-violet-500/10 to-fuchsia-500/10 border-violet-500/20">
           <div className="flex items-start gap-4">
-            <div className="p-3 rounded-xl bg-orange-500/20">
-              <Music className="w-6 h-6 text-orange-500" />
+            <div className="p-3 rounded-xl bg-violet-500/20">
+              <Music className="w-6 h-6 text-violet-500" />
             </div>
             <div className="flex-1">
               <h3 className="text-lg font-semibold text-foreground mb-2">
