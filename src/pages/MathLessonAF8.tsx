@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
-import { ArrowLeft, BookOpen, Lightbulb, CheckCircle2, Trophy, Bookmark } from "lucide-react";
+import { ArrowLeft, BookOpen, Lightbulb, CheckCircle2, Trophy, Bookmark, Gamepad2 } from "lucide-react";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
@@ -13,6 +13,8 @@ import ericChairDesk from "@/assets/eric-chair-desk.png";
 import { DownloadLessonButton } from "@/components/DownloadLessonButton";
 import { TextToSpeechButton } from "@/components/TextToSpeechButton";
 import { useTTS } from "@/hooks/useTTS";
+import { InteractiveActivitiesEnhanced } from "@/components/InteractiveActivitiesEnhanced";
+import { HTMLQuizParser } from "@/components/HTMLQuizParser";
 
 interface Lesson {
   id: string;
@@ -26,6 +28,8 @@ interface Lesson {
   grade_level: string;
   youtube_url: string | null;
   references: string[];
+  activites_interactives?: string;
+  quiz_final?: string;
 }
 
 const MathLessonAF8 = () => {
@@ -227,7 +231,7 @@ const MathLessonAF8 = () => {
         {/* Lesson Content Tabs */}
         <Tabs value={activeTab} onValueChange={(val) => { setActiveTab(val); stop(); }} className="w-full">
           <div className="border-b mb-8">
-            <TabsList className="w-full h-auto rounded-none bg-transparent p-0 grid grid-cols-5">
+            <TabsList className="w-full h-auto rounded-none bg-transparent p-0 grid grid-cols-6">
               <TabsTrigger 
                 value="introduction"
                 className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent flex items-center justify-center"
@@ -248,6 +252,13 @@ const MathLessonAF8 = () => {
               >
                 <CheckCircle2 className="h-4 w-4 sm:mr-2" />
                 <span className="hidden sm:inline">Exemples</span>
+              </TabsTrigger>
+              <TabsTrigger 
+                value="activites"
+                className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent flex items-center justify-center"
+              >
+                <Gamepad2 className="h-4 w-4 sm:mr-2" />
+                <span className="hidden sm:inline">Activités</span>
               </TabsTrigger>
               <TabsTrigger 
                 value="notes"
@@ -352,6 +363,17 @@ const MathLessonAF8 = () => {
             </Card>
           </TabsContent>
 
+          <TabsContent value="activites" className="space-y-6">
+            {lesson.activites_interactives && (
+              <InteractiveActivitiesEnhanced
+                content={lesson.activites_interactives}
+                isLoading={false}
+                onRegenerate={() => {}}
+                onGoldUpdate={() => {}}
+              />
+            )}
+          </TabsContent>
+
           <TabsContent value="notes">
             <Card>
               <CardHeader>
@@ -374,11 +396,24 @@ const MathLessonAF8 = () => {
 
           <TabsContent value="quiz">
             <Card>
-              <CardContent className="p-8 text-center">
-                <Trophy className="h-16 w-16 mx-auto mb-4 opacity-20" />
-                <p className="text-muted-foreground mb-4">
-                  Le quiz pour cette leçon sera bientôt disponible
-                </p>
+              <CardHeader>
+                <CardTitle>Quiz Final</CardTitle>
+              </CardHeader>
+              <CardContent>
+                {lesson.quiz_final ? (
+                  <HTMLQuizParser 
+                    htmlContent={lesson.quiz_final}
+                    lessonSlug={lesson.slug}
+                    subject="Mathématiques"
+                  />
+                ) : (
+                  <div className="text-center py-8">
+                    <Trophy className="h-16 w-16 mx-auto mb-4 opacity-20" />
+                    <p className="text-muted-foreground">
+                      Le quiz pour cette leçon sera bientôt disponible
+                    </p>
+                  </div>
+                )}
               </CardContent>
             </Card>
           </TabsContent>
