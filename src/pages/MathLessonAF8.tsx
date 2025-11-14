@@ -230,49 +230,49 @@ const MathLessonAF8 = () => {
 
         {/* Lesson Content Tabs */}
         <Tabs value={activeTab} onValueChange={(val) => { setActiveTab(val); stop(); }} className="w-full">
-          <div className="border-b mb-8">
-            <TabsList className="w-full h-auto rounded-none bg-transparent p-0 grid grid-cols-6">
+          <div className="border-b mb-8 overflow-x-auto">
+            <TabsList className="w-full h-auto rounded-none bg-transparent p-0 grid grid-cols-6 min-w-[600px] md:min-w-0">
               <TabsTrigger 
                 value="introduction"
-                className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent flex items-center justify-center"
+                className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent flex flex-col md:flex-row items-center justify-center gap-1 py-3"
               >
-                <Lightbulb className="h-4 w-4 sm:mr-2" />
-                <span className="hidden sm:inline">Introduction</span>
+                <Lightbulb className="h-4 w-4" />
+                <span className="text-xs md:text-sm">Introduction</span>
               </TabsTrigger>
               <TabsTrigger 
                 value="contenu"
-                className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent flex items-center justify-center"
+                className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent flex flex-col md:flex-row items-center justify-center gap-1 py-3"
               >
-                <BookOpen className="h-4 w-4 sm:mr-2" />
-                <span className="hidden sm:inline">Contenu</span>
+                <BookOpen className="h-4 w-4" />
+                <span className="text-xs md:text-sm">Contenu</span>
               </TabsTrigger>
               <TabsTrigger 
                 value="exemples"
-                className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent flex items-center justify-center"
+                className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent flex flex-col md:flex-row items-center justify-center gap-1 py-3"
               >
-                <CheckCircle2 className="h-4 w-4 sm:mr-2" />
-                <span className="hidden sm:inline">Exemples</span>
+                <CheckCircle2 className="h-4 w-4" />
+                <span className="text-xs md:text-sm">Exemples</span>
               </TabsTrigger>
               <TabsTrigger 
                 value="activites"
-                className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent flex items-center justify-center"
+                className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent flex flex-col md:flex-row items-center justify-center gap-1 py-3"
               >
-                <Gamepad2 className="h-4 w-4 sm:mr-2" />
-                <span className="hidden sm:inline">Activités</span>
+                <Gamepad2 className="h-4 w-4" />
+                <span className="text-xs md:text-sm">Activités</span>
               </TabsTrigger>
               <TabsTrigger 
                 value="notes"
-                className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent flex items-center justify-center"
+                className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent flex flex-col md:flex-row items-center justify-center gap-1 py-3"
               >
-                <Bookmark className="h-4 w-4 sm:mr-2" />
-                <span className="hidden sm:inline">Mes Notes</span>
+                <Bookmark className="h-4 w-4" />
+                <span className="text-xs md:text-sm">Notes</span>
               </TabsTrigger>
               <TabsTrigger 
                 value="quiz"
-                className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent flex items-center justify-center"
+                className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent flex flex-col md:flex-row items-center justify-center gap-1 py-3"
               >
-                <Trophy className="h-4 w-4 sm:mr-2" />
-                <span className="hidden sm:inline">Quiz Final</span>
+                <Trophy className="h-4 w-4" />
+                <span className="text-xs md:text-sm">Quiz</span>
               </TabsTrigger>
             </TabsList>
           </div>
