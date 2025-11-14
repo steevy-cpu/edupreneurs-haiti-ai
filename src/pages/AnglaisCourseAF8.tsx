@@ -7,6 +7,8 @@ import { ThemeToggle } from "@/components/ThemeToggle";
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { OptimizedImage } from "@/components/OptimizedImage";
+import ericWelcome from "@/assets/eric-welcome.png";
 
 interface Lesson {
   id: string;
@@ -166,9 +168,12 @@ const AnglaisCourseAF8 = () => {
                             {lesson.title}
                           </CardTitle>
                           {lesson.objectif && (
-                            <CardDescription className="line-clamp-2">
-                              {lesson.objectif}
-                            </CardDescription>
+                            <CardDescription 
+                              className="line-clamp-3 text-sm"
+                              dangerouslySetInnerHTML={{ 
+                                __html: lesson.objectif.replace(/<[^>]*>/g, '').substring(0, 150) + '...'
+                              }}
+                            />
                           )}
                         </CardHeader>
                         <CardContent>
@@ -191,6 +196,32 @@ const AnglaisCourseAF8 = () => {
             })}
           </div>
         )}
+
+        {/* Eric Assistant Section */}
+        <div className="mt-12 bg-gradient-to-br from-primary/10 to-secondary/10 rounded-2xl p-6 md:p-8">
+          <div className="flex flex-col md:flex-row items-center gap-6">
+            <div className="w-32 h-32 md:w-40 md:h-40 flex-shrink-0">
+              <OptimizedImage
+                src={ericWelcome}
+                alt="Eric - Votre assistant d'apprentissage"
+                className="w-full h-full object-contain"
+              />
+            </div>
+            <div className="flex-1 text-center md:text-left">
+              <h3 className="text-2xl md:text-3xl font-bold mb-3">
+                Besoin d'aide avec l'anglais ?
+              </h3>
+              <p className="text-muted-foreground mb-4">
+                Eric est là pour t'accompagner dans ton apprentissage de l'anglais ! 
+                Pose-lui tes questions, pratique la conversation, et améliore tes compétences.
+              </p>
+              <Button size="lg" className="gap-2">
+                <Languages className="h-5 w-5" />
+                Parler avec Eric
+              </Button>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   );
