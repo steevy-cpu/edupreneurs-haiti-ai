@@ -7,6 +7,7 @@ import { ChevronLeft, FlaskConical, BookOpen, Calendar } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { toast } from "sonner";
+import ericTeaching from "@/assets/eric-teaching.png";
 
 interface Lesson {
   id: string;
@@ -106,18 +107,29 @@ export default function SciencesExpérimentalesCourseAF9() {
       {/* Hero Header */}
       <div className="relative bg-gradient-to-r from-emerald-500 to-emerald-600 text-primary-foreground pt-28 md:pt-32 pb-12 md:pb-16 overflow-hidden">
         <div className="container mx-auto px-4 relative z-10">
-          <div className="flex items-center gap-3 md:gap-4 mb-3 md:mb-4">
-            <div className="w-12 h-12 md:w-16 md:h-16 rounded-xl bg-white/20 backdrop-blur-sm flex items-center justify-center">
-              <FlaskConical className="w-6 h-6 md:w-8 md:h-8" />
+          <div className="flex items-center justify-between gap-4">
+            <div className="flex-1">
+              <div className="flex items-center gap-3 md:gap-4 mb-3 md:mb-4">
+                <div className="w-12 h-12 md:w-16 md:h-16 rounded-xl bg-white/20 backdrop-blur-sm flex items-center justify-center">
+                  <FlaskConical className="w-6 h-6 md:w-8 md:h-8" />
+                </div>
+                <div>
+                  <h1 className="text-2xl md:text-4xl font-bold">Sciences Expérimentales</h1>
+                  <p className="text-sm md:text-lg opacity-90">9ème Année Fondamentale</p>
+                </div>
+              </div>
+              <p className="text-base md:text-xl opacity-90 max-w-2xl">
+                Explorez la physique, la biologie, la géologie et l'environnement selon le programme MENFP
+              </p>
             </div>
-            <div>
-              <h1 className="text-2xl md:text-4xl font-bold">Sciences Expérimentales</h1>
-              <p className="text-sm md:text-lg opacity-90">9ème Année Fondamentale</p>
+            <div className="hidden md:block">
+              <img 
+                src={ericTeaching} 
+                alt="Eric - Votre assistant d'apprentissage" 
+                className="w-32 h-32 lg:w-40 lg:h-40 object-contain drop-shadow-2xl"
+              />
             </div>
           </div>
-          <p className="text-base md:text-xl opacity-90 max-w-2xl">
-            Explorez la physique, la biologie, la géologie et l'environnement selon le programme MENFP
-          </p>
         </div>
       </div>
 
