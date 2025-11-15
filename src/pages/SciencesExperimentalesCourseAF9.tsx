@@ -205,10 +205,12 @@ export default function SciencesExpérimentalesCourseAF9() {
                               <Badge variant="secondary">Bientôt</Badge>
                             )}
                           </div>
-                          <div className="text-sm text-muted-foreground line-clamp-2">
-                            <strong>Objectif:</strong>{" "}
-                            <span dangerouslySetInnerHTML={{ __html: lesson.objectif }} />
-                          </div>
+                          {lesson.objectif && (
+                            <p className="text-sm text-muted-foreground line-clamp-2">
+                              <strong>Objectif:</strong>{" "}
+                              {lesson.objectif.replace(/<[^>]*>/g, '').replace(/🎯\s*Objectifs\.{3}/gi, '').trim()}
+                            </p>
+                          )}
                         </div>
                       </Card>
                     ))}
