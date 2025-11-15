@@ -15,6 +15,7 @@ import { DownloadLessonButton } from "@/components/DownloadLessonButton";
 import { EricChatbot } from "@/components/EricChatbot";
 import { InteractiveActivitiesEnhanced } from "@/components/InteractiveActivitiesEnhanced";
 import { HTMLQuizParser } from "@/components/HTMLQuizParser";
+import { YouTubeVideoSection } from "@/components/YouTubeVideoSection";
 import ericChairDesk from "@/assets/eric-chair-desk.png";
 
 interface Lesson {
@@ -348,6 +349,19 @@ const MathLessonAF9 = () => {
             </Card>
           </TabsContent>
         </Tabs>
+
+        {/* YouTube Video Section */}
+        {lesson.youtube_url && (
+          <div className="mt-6 md:mt-8">
+            <YouTubeVideoSection
+              lessonTitle={lesson.title}
+              subject="Mathématiques"
+              gradeLevel="AF9"
+              objectives={lesson.objectif}
+              customYoutubeUrl={lesson.youtube_url}
+            />
+          </div>
+        )}
       </div>
 
       {/* Eric Chatbot */}
