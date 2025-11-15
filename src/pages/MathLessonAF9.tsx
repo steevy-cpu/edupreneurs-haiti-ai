@@ -161,15 +161,15 @@ const MathLessonAF9 = () => {
       </nav>
 
       {/* Hero Section */}
-      <div className="bg-gradient-to-r from-orange-500 to-red-600 text-white py-12">
+      <div className="bg-gradient-to-r from-orange-500 to-red-600 text-white py-6 md:py-12">
         <div className="container mx-auto px-4">
-          <div className="flex flex-col md:flex-row items-center justify-between gap-8 max-w-6xl mx-auto">
-            <div className="flex-1">
-              <h1 className="text-3xl md:text-4xl font-bold mb-4">
+          <div className="flex flex-col md:flex-row items-center justify-between gap-4 md:gap-8 max-w-6xl mx-auto">
+            <div className="flex-1 text-center md:text-left">
+              <h1 className="text-2xl md:text-3xl lg:text-4xl font-bold mb-3 md:mb-4">
                 {lesson.title}
               </h1>
               <div 
-                className="text-lg opacity-90 prose prose-invert max-w-none"
+                className="text-sm md:text-base lg:text-lg opacity-90 prose prose-invert prose-sm md:prose-base max-w-none"
                 dangerouslySetInnerHTML={{ __html: lesson.objectif }}
               />
             </div>
@@ -177,7 +177,7 @@ const MathLessonAF9 = () => {
               <img
                 src={ericChairDesk}
                 alt="Eric au bureau"
-                className="w-48 h-auto"
+                className="w-32 md:w-40 lg:w-48 h-auto"
               />
             </div>
           </div>
@@ -185,47 +185,51 @@ const MathLessonAF9 = () => {
       </div>
 
       {/* Main Content */}
-      <div className="container mx-auto px-4 py-8 max-w-6xl">
+      <div className="container mx-auto px-4 py-4 md:py-8 max-w-6xl">
         <Tabs value={activeTab} onValueChange={(value) => { setActiveTab(value); stop(); }} className="w-full">
-          <TabsList className="grid w-full grid-cols-2 md:grid-cols-6 mb-8">
-            <TabsTrigger value="introduction" className="gap-2">
-              <Lightbulb className="h-4 w-4" />
+          <TabsList className="grid w-full grid-cols-3 md:grid-cols-6 mb-4 md:mb-8 h-auto">
+            <TabsTrigger value="introduction" className="gap-1 md:gap-2 py-2 md:py-2.5 text-xs md:text-sm">
+              <Lightbulb className="h-3 w-3 md:h-4 md:w-4" />
               <span className="hidden sm:inline">Introduction</span>
+              <span className="sm:hidden">Intro</span>
             </TabsTrigger>
-            <TabsTrigger value="contenu" className="gap-2">
-              <BookOpen className="h-4 w-4" />
+            <TabsTrigger value="contenu" className="gap-1 md:gap-2 py-2 md:py-2.5 text-xs md:text-sm">
+              <BookOpen className="h-3 w-3 md:h-4 md:w-4" />
               <span className="hidden sm:inline">Contenu</span>
+              <span className="sm:hidden">Cours</span>
             </TabsTrigger>
-            <TabsTrigger value="exercices" className="gap-2">
-              <FileText className="h-4 w-4" />
+            <TabsTrigger value="exercices" className="gap-1 md:gap-2 py-2 md:py-2.5 text-xs md:text-sm">
+              <FileText className="h-3 w-3 md:h-4 md:w-4" />
               <span className="hidden sm:inline">Exercices</span>
+              <span className="sm:hidden">Exos</span>
             </TabsTrigger>
-            <TabsTrigger value="activities" className="gap-2">
-              <Gamepad2 className="h-4 w-4" />
+            <TabsTrigger value="activities" className="gap-1 md:gap-2 py-2 md:py-2.5 text-xs md:text-sm">
+              <Gamepad2 className="h-3 w-3 md:h-4 md:w-4" />
               <span className="hidden sm:inline">Activités</span>
+              <span className="sm:hidden">Jeux</span>
             </TabsTrigger>
-            <TabsTrigger value="quiz" className="gap-2">
-              <CheckCircle2 className="h-4 w-4" />
-              <span className="hidden sm:inline">Quiz</span>
+            <TabsTrigger value="quiz" className="gap-1 md:gap-2 py-2 md:py-2.5 text-xs md:text-sm">
+              <CheckCircle2 className="h-3 w-3 md:h-4 md:w-4" />
+              <span>Quiz</span>
             </TabsTrigger>
-            <TabsTrigger value="notes" className="gap-2">
-              <StickyNote className="h-4 w-4" />
-              <span className="hidden sm:inline">Notes</span>
+            <TabsTrigger value="notes" className="gap-1 md:gap-2 py-2 md:py-2.5 text-xs md:text-sm">
+              <StickyNote className="h-3 w-3 md:h-4 md:w-4" />
+              <span>Notes</span>
             </TabsTrigger>
           </TabsList>
 
           <TabsContent value="introduction" className="mt-0">
             <Card className="border-orange-200 dark:border-orange-900">
-              <div className="p-6">
-                <div className="flex items-center justify-between mb-6">
-                  <h3 className="text-2xl font-bold flex items-center gap-2">
-                    <Lightbulb className="h-6 w-6 text-orange-600" />
+              <div className="p-4 md:p-6">
+                <div className="flex items-center justify-between mb-4 md:mb-6">
+                  <h3 className="text-lg md:text-2xl font-bold flex items-center gap-2">
+                    <Lightbulb className="h-5 w-5 md:h-6 md:w-6 text-orange-600" />
                     Introduction
                   </h3>
-                  <TextToSpeechButton text={lesson.introduction} sectionName="Introduction" />
+                  <TextToSpeechButton text={lesson.introduction} sectionName="Introduction" size="sm" />
                 </div>
                 <div 
-                  className="prose prose-orange dark:prose-invert max-w-none"
+                  className="prose prose-sm md:prose prose-orange dark:prose-invert max-w-none"
                   dangerouslySetInnerHTML={{ __html: lesson.introduction }}
                 />
               </div>
@@ -234,16 +238,16 @@ const MathLessonAF9 = () => {
 
           <TabsContent value="contenu" className="mt-0">
             <Card className="border-orange-200 dark:border-orange-900">
-              <div className="p-6">
-                <div className="flex items-center justify-between mb-6">
-                  <h3 className="text-2xl font-bold flex items-center gap-2">
-                    <BookOpen className="h-6 w-6 text-orange-600" />
+              <div className="p-4 md:p-6">
+                <div className="flex items-center justify-between mb-4 md:mb-6">
+                  <h3 className="text-lg md:text-2xl font-bold flex items-center gap-2">
+                    <BookOpen className="h-5 w-5 md:h-6 md:w-6 text-orange-600" />
                     Contenu Principal
                   </h3>
-                  <TextToSpeechButton text={lesson.contenu} sectionName="Contenu" />
+                  <TextToSpeechButton text={lesson.contenu} sectionName="Contenu" size="sm" />
                 </div>
                 <div 
-                  className="prose prose-orange dark:prose-invert max-w-none"
+                  className="prose prose-sm md:prose prose-orange dark:prose-invert max-w-none"
                   dangerouslySetInnerHTML={{ __html: lesson.contenu }}
                 />
               </div>
@@ -252,16 +256,16 @@ const MathLessonAF9 = () => {
 
           <TabsContent value="exercices" className="mt-0">
             <Card className="border-orange-200 dark:border-orange-900">
-              <div className="p-6">
-                <div className="flex items-center justify-between mb-6">
-                  <h3 className="text-2xl font-bold flex items-center gap-2">
-                    <FileText className="h-6 w-6 text-orange-600" />
+              <div className="p-4 md:p-6">
+                <div className="flex items-center justify-between mb-4 md:mb-6">
+                  <h3 className="text-lg md:text-2xl font-bold flex items-center gap-2">
+                    <FileText className="h-5 w-5 md:h-6 md:w-6 text-orange-600" />
                     Exemples et Exercices
                   </h3>
-                  <TextToSpeechButton text={lesson.exemples_exercices} sectionName="Exercices" />
+                  <TextToSpeechButton text={lesson.exemples_exercices} sectionName="Exercices" size="sm" />
                 </div>
                 <div 
-                  className="prose prose-orange dark:prose-invert max-w-none"
+                  className="prose prose-sm md:prose prose-orange dark:prose-invert max-w-none"
                   dangerouslySetInnerHTML={{ __html: lesson.exemples_exercices }}
                 />
               </div>
@@ -270,10 +274,10 @@ const MathLessonAF9 = () => {
 
           <TabsContent value="activities" className="mt-0">
             <Card className="border-orange-200 dark:border-orange-900">
-              <div className="p-6">
-                <div className="flex items-center gap-2 mb-6">
-                  <Gamepad2 className="h-6 w-6 text-orange-600" />
-                  <h3 className="text-2xl font-bold">Activités Interactives</h3>
+              <div className="p-4 md:p-6">
+                <div className="flex items-center gap-2 mb-4 md:mb-6">
+                  <Gamepad2 className="h-5 w-5 md:h-6 md:w-6 text-orange-600" />
+                  <h3 className="text-lg md:text-2xl font-bold">Activités Interactives</h3>
                 </div>
                 {lesson.activites_interactives ? (
                   <InteractiveActivitiesEnhanced 
@@ -281,7 +285,7 @@ const MathLessonAF9 = () => {
                     isLoading={false}
                   />
                 ) : (
-                  <p className="text-muted-foreground">Aucune activité interactive disponible pour cette leçon.</p>
+                  <p className="text-sm md:text-base text-muted-foreground">Aucune activité interactive disponible pour cette leçon.</p>
                 )}
               </div>
             </Card>
@@ -289,10 +293,10 @@ const MathLessonAF9 = () => {
 
           <TabsContent value="quiz" className="mt-0">
             <Card className="border-orange-200 dark:border-orange-900">
-              <div className="p-6">
-                <div className="flex items-center gap-2 mb-6">
-                  <CheckCircle2 className="h-6 w-6 text-orange-600" />
-                  <h3 className="text-2xl font-bold">Quiz Final</h3>
+              <div className="p-4 md:p-6">
+                <div className="flex items-center gap-2 mb-4 md:mb-6">
+                  <CheckCircle2 className="h-5 w-5 md:h-6 md:w-6 text-orange-600" />
+                  <h3 className="text-lg md:text-2xl font-bold">Quiz Final</h3>
                 </div>
                 {lesson.quiz_final ? (
                   <HTMLQuizParser 
@@ -301,7 +305,7 @@ const MathLessonAF9 = () => {
                     subject="Mathématiques AF9"
                   />
                 ) : (
-                  <p className="text-muted-foreground">Aucun quiz disponible pour cette leçon.</p>
+                  <p className="text-sm md:text-base text-muted-foreground">Aucun quiz disponible pour cette leçon.</p>
                 )}
               </div>
             </Card>
@@ -309,17 +313,17 @@ const MathLessonAF9 = () => {
 
           <TabsContent value="notes" className="mt-0">
             <Card className="border-orange-200 dark:border-orange-900">
-              <div className="p-6">
-                <div className="flex items-center justify-between mb-6">
-                  <h3 className="text-2xl font-bold flex items-center gap-2">
-                    <StickyNote className="h-6 w-6 text-orange-600" />
-                    Mes Notes Personnelles
+              <div className="p-4 md:p-6">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4 md:mb-6">
+                  <h3 className="text-lg md:text-2xl font-bold flex items-center gap-2">
+                    <StickyNote className="h-5 w-5 md:h-6 md:w-6 text-orange-600" />
+                    Mes Notes
                   </h3>
                   <Button
                     onClick={saveNotes}
                     disabled={savingNotes}
                     size="sm"
-                    className="gap-2"
+                    className="gap-2 w-full sm:w-auto"
                   >
                     {savingNotes ? (
                       <>
@@ -338,7 +342,7 @@ const MathLessonAF9 = () => {
                   value={notes}
                   onChange={(e) => setNotes(e.target.value)}
                   placeholder="Écrivez vos notes personnelles ici..."
-                  className="min-h-[300px]"
+                  className="min-h-[250px] md:min-h-[300px] text-sm md:text-base"
                 />
               </div>
             </Card>
