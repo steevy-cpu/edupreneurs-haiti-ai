@@ -362,7 +362,7 @@ export default function Matieres() {
             const isMath = subject.id === 'mathematiques' || subject.id === 'matematik-8af' || subject.id === 'mathematiques-af9';
             const isSciences = subject.id === 'sciences' || subject.id === 'sciences-experimentales-8af' || subject.id === 'sciences-experimentales';
             const isAnglais = subject.id === 'anglais' || subject.id === 'anglais-8af' || subject.id === 'anglais-af9';
-            const isEspagnol = subject.id === 'espagnol' || subject.id === 'espagnol-8af';
+            const isEspagnol = subject.id === 'espagnol' || subject.id === 'espagnol-8af' || subject.id === 'espagnol-af9';
             const isCreole = subject.id === 'creole' || subject.id === 'creole-8af';
             const isSciencesSociales = subject.id === 'sciences-sociales' || subject.id === 'sciences-sociales-8af';
             const hasContent = (selectedGrade === "AF7" && 
@@ -371,7 +371,7 @@ export default function Matieres() {
                subject.id === 'francais' || subject.id === 'sciences-sociales' || 
                subject.id === 'creole' || subject.id === 'arts' || subject.id === 'education-physique')) ||
               (selectedGrade === "AF8" && (isMath || isSciences || isAnglais || isEspagnol || isCreole || isSciencesSociales)) ||
-              (selectedGrade === "AF9" && (isMath || isSciences || isAnglais));
+              (selectedGrade === "AF9" && (isMath || isSciences || isAnglais || isEspagnol));
             
             return (
               <Card
@@ -385,7 +385,7 @@ export default function Matieres() {
                     const isMath = subject.id === 'mathematiques' || subject.id === 'matematik-8af' || subject.id === 'mathematiques-af9';
                       const isSciences = subject.id === 'sciences' || subject.id === 'sciences-experimentales-8af' || subject.id === 'sciences-experimentales' || subject.id === 'sciences-experimentales-7af';
                     const isAnglais = subject.id === 'anglais' || subject.id === 'anglais-8af' || subject.id === 'anglais-af9';
-                    const isEspagnol = subject.id === 'espagnol' || subject.id === 'espagnol-8af';
+                    const isEspagnol = subject.id === 'espagnol' || subject.id === 'espagnol-8af' || subject.id === 'espagnol-af9';
                     const isCreole = subject.id === 'creole' || subject.id === 'creole-8af';
                     const isSciencesSociales = subject.id === 'sciences-sociales' || subject.id === 'sciences-sociales-8af';
                   
@@ -396,7 +396,7 @@ export default function Matieres() {
                   } else if (isAnglais) {
                     courseRoute = selectedGrade === 'AF9' ? '/anglais-af9' : (selectedGrade === 'AF8' ? '/anglais-af8-course' : '/anglais-course');
                     } else if (isEspagnol) {
-                      courseRoute = selectedGrade === 'AF8' ? '/espagnol-af8-course' : '/espagnol-course';
+                      courseRoute = selectedGrade === 'AF9' ? '/espagnol-af9' : (selectedGrade === 'AF8' ? '/espagnol-af8-course' : '/espagnol-course');
                       } else if (isCreole) {
                         courseRoute = selectedGrade === 'AF8' ? '/creole-af8-course' : '/creole-course';
                       } else if (isSciencesSociales) {
