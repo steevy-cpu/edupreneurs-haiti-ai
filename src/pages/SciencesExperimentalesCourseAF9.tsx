@@ -104,26 +104,26 @@ export default function SciencesExpérimentalesCourseAF9() {
       </nav>
 
       {/* Hero Header */}
-      <div className="relative bg-gradient-to-r from-emerald-500 to-emerald-600 text-primary-foreground pt-32 pb-16 overflow-hidden">
+      <div className="relative bg-gradient-to-r from-emerald-500 to-emerald-600 text-primary-foreground pt-28 md:pt-32 pb-12 md:pb-16 overflow-hidden">
         <div className="container mx-auto px-4 relative z-10">
-          <div className="flex items-center gap-4 mb-4">
-            <div className="w-16 h-16 rounded-xl bg-white/20 backdrop-blur-sm flex items-center justify-center">
-              <FlaskConical className="w-8 h-8" />
+          <div className="flex items-center gap-3 md:gap-4 mb-3 md:mb-4">
+            <div className="w-12 h-12 md:w-16 md:h-16 rounded-xl bg-white/20 backdrop-blur-sm flex items-center justify-center">
+              <FlaskConical className="w-6 h-6 md:w-8 md:h-8" />
             </div>
             <div>
-              <h1 className="text-4xl font-bold">Sciences Expérimentales</h1>
-              <p className="text-lg opacity-90">9ème Année Fondamentale</p>
+              <h1 className="text-2xl md:text-4xl font-bold">Sciences Expérimentales</h1>
+              <p className="text-sm md:text-lg opacity-90">9ème Année Fondamentale</p>
             </div>
           </div>
-          <p className="text-xl opacity-90 max-w-2xl">
+          <p className="text-base md:text-xl opacity-90 max-w-2xl">
             Explorez la physique, la biologie, la géologie et l'environnement selon le programme MENFP
           </p>
         </div>
       </div>
 
-      <div className="container mx-auto px-4 py-8">
+      <div className="container mx-auto px-4 py-6 md:py-8">
         {/* Course Overview */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 md:gap-6 mb-6 md:mb-8">
           <Card className="p-6">
             <div className="flex items-center gap-3 mb-2">
               <BookOpen className="w-5 h-5 text-primary" />
