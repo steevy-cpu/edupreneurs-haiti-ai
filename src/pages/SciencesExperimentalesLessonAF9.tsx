@@ -16,6 +16,7 @@ import { YouTubeVideoSection } from "@/components/YouTubeVideoSection";
 import { EricChatbot } from "@/components/EricChatbot";
 import { InteractiveActivitiesEnhanced } from "@/components/InteractiveActivitiesEnhanced";
 import { HTMLQuizParser } from "@/components/HTMLQuizParser";
+import ericTeaching from "@/assets/eric-teaching.png";
 
 interface Lesson {
   id: string;
@@ -254,7 +255,14 @@ export default function SciencesExpérimentalesLessonAF9() {
 
             {lesson.activites_interactives && (
               <Card className="p-4 md:p-8">
-                <h2 className="text-xl md:text-2xl font-bold mb-4">🎮 Activités Interactives</h2>
+                <div className="flex items-center justify-between mb-4 gap-4">
+                  <h2 className="text-xl md:text-2xl font-bold">🎮 Activités Interactives</h2>
+                  <img 
+                    src={ericTeaching} 
+                    alt="Eric" 
+                    className="w-16 h-16 md:w-20 md:h-20 object-contain"
+                  />
+                </div>
                 <InteractiveActivitiesEnhanced 
                   content={lesson.activites_interactives} 
                   isLoading={false}
