@@ -12,7 +12,7 @@ import {
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
 import { toast } from "sonner";
-import { Search, ChevronDown, ChevronRight } from "lucide-react";
+import { Search, ChevronDown, ChevronRight, BookOpen, Calculator, FlaskConical, Book } from "lucide-react";
 
 interface LessonBrowserProps {
   onSelectLesson: (lesson: any) => void;
@@ -40,6 +40,13 @@ export const LessonBrowser = ({ onSelectLesson, selectedLesson }: LessonBrowserP
     loadSubjects();
   }, [gradeLevel]);
 
+  // Auto-expand subjects when lessons are loaded
+  useEffect(() => {
+    if (Object.keys(lessonsBySubject).length > 0) {
+      setOpenSubjects(new Set(Object.keys(lessonsBySubject)));
+    }
+  }, [lessonsBySubject]);
+
   const loadSubjects = async () => {
     setIsLoadingSubjects(true);
     try {
@@ -60,9 +67,10 @@ export const LessonBrowser = ({ onSelectLesson, selectedLesson }: LessonBrowserP
       
       // Load lessons for these subjects
       if (data && data.length > 0) {
-        loadLessons(data.map(s => s.id));
+        await loadLessons(data.map(s => s.id));
       } else {
         setLessonsBySubject({});
+        setOpenSubjects(new Set());
       }
     } catch (error) {
       console.error('Error loading subjects:', error);
@@ -109,6 +117,19 @@ export const LessonBrowser = ({ onSelectLesson, selectedLesson }: LessonBrowserP
       newOpenSubjects.add(subjectId);
     }
     setOpenSubjects(newOpenSubjects);
+  };
+
+  const getSubjectIcon = (iconName: string | null) => {
+    switch (iconName) {
+      case 'BookOpen':
+        return <BookOpen className="h-4 w-4" />;
+      case 'Calculator':
+        return <Calculator className="h-4 w-4" />;
+      case 'flask-conical':
+        return <FlaskConical className="h-4 w-4" />;
+      default:
+        return <Book className="h-4 w-4" />;
+    }
   };
 
   const filteredSubjects = availableSubjects.map(subject => {
@@ -181,7 +202,7 @@ export const LessonBrowser = ({ onSelectLesson, selectedLesson }: LessonBrowserP
                     ) : (
                       <ChevronRight className="h-4 w-4 flex-shrink-0" />
                     )}
-                    <span className="flex-shrink-0">{subject.icon_name || "📚"}</span>
+                    <span className="flex-shrink-0">{getSubjectIcon(subject.icon_name)}</span>
                     <span className="flex-1 text-left font-medium text-sm leading-tight">
                       {subject.name}
                     </span>
