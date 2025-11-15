@@ -3,10 +3,14 @@ import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { ChevronLeft, BookOpen, Calendar, GraduationCap } from "lucide-react";
+import { ChevronLeft, BookOpen, Calendar, GraduationCap, ArrowLeft } from "lucide-react";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
+import { OptimizedImage } from "@/components/OptimizedImage";
+import { EricChatbot } from "@/components/EricChatbot";
+import ericEdupreneurs from "@/assets/eric-edupreneurs.png";
+import { CardDescription } from "@/components/ui/card";
 
 interface Lesson {
   id: string;
@@ -90,57 +94,93 @@ const MathCourseAF9 = () => {
     "Juin": "from-red-500/20 to-red-600/20",
   };
 
+  // Strip HTML tags from text
+  const stripHtml = (html: string) => {
+    const tmp = document.createElement('DIV');
+    tmp.innerHTML = html;
+    return tmp.textContent || tmp.innerText || '';
+  };
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5">
-      <nav className="sticky top-0 z-10 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-        <div className="container flex h-16 items-center justify-between px-4">
+    <div className="min-h-screen bg-gradient-to-b from-background to-secondary/20">
+      {/* Navigation Bar */}
+      <nav className="sticky top-0 z-50 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b">
+        <div className="container mx-auto px-4 py-3 flex items-center justify-between">
           <Button
             variant="ghost"
-            size="icon"
             onClick={() => navigate("/matieres")}
+            className="gap-2"
           >
-            <ChevronLeft className="h-5 w-5" />
+            <ArrowLeft className="h-4 w-4" />
+            Retour aux matières
           </Button>
           <ThemeToggle />
         </div>
       </nav>
 
-      <div className="container mx-auto px-4 py-8">
-        <div className="mb-8 text-center">
-          <h1 className="mb-4 text-4xl font-bold bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
-            Mathématiques - 9ème AF
-          </h1>
-          <p className="text-lg text-muted-foreground mb-6">
-            Maîtriser les techniques opératoires, la géométrie et les transformations
-          </p>
-          
-          <div className="flex flex-wrap gap-4 justify-center mb-8">
-            <Card className="flex items-center gap-3 px-6 py-3 border-primary/20">
-              <BookOpen className="h-5 w-5 text-primary" />
-              <div className="text-left">
-                <p className="text-sm text-muted-foreground">Total Leçons</p>
-                <p className="text-2xl font-bold">{lessons.length}</p>
-              </div>
-            </Card>
-            
-            <Card className="flex items-center gap-3 px-6 py-3 border-primary/20">
-              <Calendar className="h-5 w-5 text-primary" />
-              <div className="text-left">
-                <p className="text-sm text-muted-foreground">Mois couverts</p>
-                <p className="text-2xl font-bold">{Object.keys(groupedByMonth).length}</p>
-              </div>
-            </Card>
-
-            <Card className="flex items-center gap-3 px-6 py-3 border-primary/20">
-              <GraduationCap className="h-5 w-5 text-primary" />
-              <div className="text-left">
-                <p className="text-sm text-muted-foreground">Année</p>
-                <p className="text-2xl font-bold">2024-2025</p>
-              </div>
-            </Card>
+      {/* Header */}
+      <div className="container mx-auto px-4 py-12">
+        <div className="flex flex-col md:flex-row items-center justify-between gap-8 mb-12 max-w-6xl mx-auto">
+          <div className="flex-1 text-center md:text-left">
+            <div className="inline-flex items-center justify-center w-20 h-20 rounded-2xl bg-gradient-to-br from-orange-500 to-red-600 mb-6 shadow-lg">
+              <BookOpen className="h-10 w-10 text-white" />
+            </div>
+            <h1 className="text-4xl md:text-5xl font-bold mb-4 bg-gradient-to-r from-orange-600 to-red-600 bg-clip-text text-transparent">
+              Mathématiques AF9
+            </h1>
+            <p className="text-xl text-muted-foreground mb-6">
+              Maîtriser les techniques opératoires, la géométrie et les transformations
+            </p>
+          </div>
+          <div className="flex-shrink-0">
+            <OptimizedImage
+              src={ericEdupreneurs}
+              alt="Eric - Votre assistant d'apprentissage"
+              className="w-48 md:w-64 h-auto"
+            />
           </div>
         </div>
 
+        {/* Stats Cards */}
+        <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
+          <Card className="text-center p-6 border-orange-200 dark:border-orange-900 bg-gradient-to-br from-orange-50 to-white dark:from-orange-950/20 dark:to-background">
+            <div className="flex justify-center mb-3">
+              <div className="p-3 bg-gradient-to-br from-orange-500 to-red-600 rounded-xl shadow-md">
+                <BookOpen className="h-6 w-6 text-white" />
+              </div>
+            </div>
+            <p className="text-3xl font-bold text-orange-600 dark:text-orange-400 mb-2">
+              {lessons.length}
+            </p>
+            <p className="text-sm text-muted-foreground">Leçons disponibles</p>
+          </Card>
+          <Card className="text-center p-6 border-orange-200 dark:border-orange-900 bg-gradient-to-br from-orange-50 to-white dark:from-orange-950/20 dark:to-background">
+            <div className="flex justify-center mb-3">
+              <div className="p-3 bg-gradient-to-br from-orange-500 to-red-600 rounded-xl shadow-md">
+                <Calendar className="h-6 w-6 text-white" />
+              </div>
+            </div>
+            <p className="text-3xl font-bold text-orange-600 dark:text-orange-400 mb-2">
+              {Object.keys(groupedByMonth).length}
+            </p>
+            <p className="text-sm text-muted-foreground">Mois de cours</p>
+          </Card>
+          <Card className="text-center p-6 border-orange-200 dark:border-orange-900 bg-gradient-to-br from-orange-50 to-white dark:from-orange-950/20 dark:to-background">
+            <div className="flex justify-center mb-3">
+              <div className="p-3 bg-gradient-to-br from-orange-500 to-red-600 rounded-xl shadow-md">
+                <GraduationCap className="h-6 w-6 text-white" />
+              </div>
+            </div>
+            <p className="text-3xl font-bold text-orange-600 dark:text-orange-400 mb-2">
+              9ème AF
+            </p>
+            <p className="text-sm text-muted-foreground">Année Fondamentale</p>
+          </Card>
+        </div>
+      </div>
+
+      {/* Main Content */}
+      <div className="container mx-auto px-4 pb-12">
         {loading ? (
           <div className="flex justify-center items-center h-64">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
@@ -202,6 +242,9 @@ const MathCourseAF9 = () => {
           </div>
         )}
       </div>
+
+      {/* Eric Chatbot */}
+      <EricChatbot />
     </div>
   );
 };
