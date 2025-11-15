@@ -45,8 +45,12 @@ serve(async (req) => {
     });
 
     // Detect if this is a Creole lesson - ONLY for "Kreyòl Ayisyen" subject
+    // NOT if it's just mentioned in context (like Sciences Expérimentales teaching in Haiti)
     const subjectNormalized = (subject || '').toLowerCase().trim().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
-    const isCreoleLesson = subjectNormalized === 'kreyol ayisyen' || subjectNormalized === 'creole haitien' || subjectNormalized === 'kreyol';
+    const isCreoleLesson = subjectNormalized === 'kreyol ayisyen' || 
+                           subjectNormalized === 'creole haitien' || 
+                           subjectNormalized === 'kreyol' ||
+                           subjectNormalized === 'creole';
     
     console.log('🔍 Creole detection:', { 
       subject, 

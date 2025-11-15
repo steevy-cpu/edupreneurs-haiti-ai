@@ -115,14 +115,19 @@ Deno.serve(async (req) => {
     const subjectAddition = subject ? (SUBJECT_ADDITIONS[subject.toLowerCase()] || '') : '';
     
     // Detect if this is a Creole lesson - ONLY for "Kreyòl Ayisyen" subject
+    // NOT if it's just mentioned in context (like Sciences Expérimentales teaching in Haiti)
     const subjectNormalized = (subject || '').toLowerCase().trim().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
-    const isCreoleLesson = subjectNormalized === 'kreyol ayisyen' || subjectNormalized === 'creole haitien' || subjectNormalized === 'kreyol';
+    const isCreoleLesson = subjectNormalized === 'kreyol ayisyen' || 
+                           subjectNormalized === 'creole haitien' || 
+                           subjectNormalized === 'kreyol' ||
+                           subjectNormalized === 'creole';
+    
     const contentLanguage = isCreoleLesson ? 'KREYÒL AYISYEN (créole haïtien)' : 'FRANÇAIS';
     const languageInstruction = isCreoleLesson 
       ? 'Le contenu DOIT être écrit en KREYÒL AYISYEN (créole haïtien) standard. Utilise la langue créole naturellement et de manière fluide.'
       : 'Le contenu doit être écrit en français standard adapté au niveau';
 
-    const systemPrompt = isCreoleLesson 
+    const systemPrompt = isCreoleLesson
       ? `🚨🚨🚨 RÈGLE ABSOLUE #1: TOUT LE CONTENU DOIT ÊTRE EN KREYÒL AYISYEN (créole haïtien) 🚨🚨🚨
 
 Tu es un expert pédagogue haïtien créant du contenu éducatif EXCLUSIVEMENT EN KREYÒL AYISYEN pour ${subject} niveau ${gradeLevel}.
