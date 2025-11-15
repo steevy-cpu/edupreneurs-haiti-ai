@@ -186,9 +186,15 @@ export default function SciencesExpérimentalesLessonAF9() {
             <div className="flex-1">
               <div className="flex items-center justify-between mb-2 gap-2">
                 <p className="text-base md:text-lg font-semibold">Objectif de la leçon</p>
-                <TextToSpeechButton text={lesson.objectif} sectionName="Objectif" size="sm" />
+                <TextToSpeechButton 
+                  text={lesson.objectif.replace(/<[^>]*>/g, '').replace(/🎯\s*Objectifs\.{3}/gi, '').trim()} 
+                  sectionName="Objectif" 
+                  size="sm" 
+                />
               </div>
-              <p className="text-sm md:text-lg text-muted-foreground">{lesson.objectif}</p>
+              <p className="text-sm md:text-lg text-muted-foreground">
+                {lesson.objectif.replace(/<[^>]*>/g, '').replace(/🎯\s*Objectifs\.{3}/gi, '').trim()}
+              </p>
             </div>
           </div>
         </Card>
