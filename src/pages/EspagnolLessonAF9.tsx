@@ -74,7 +74,7 @@ const EspagnolLessonAF9 = () => {
       const { data: subject } = await supabase
         .from('subjects')
         .select('id')
-        .eq('slug', 'espagnol')
+        .eq('slug', 'espagnol-af9')
         .eq('grade_level', 'AF9')
         .maybeSingle();
 
