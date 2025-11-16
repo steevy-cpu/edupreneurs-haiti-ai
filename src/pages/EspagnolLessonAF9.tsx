@@ -32,7 +32,7 @@ interface Lesson {
 }
 
 const EspagnolLessonAF9 = () => {
-  const { topicId } = useParams();
+  const { lessonSlug } = useParams();
   const navigate = useNavigate();
   const { toast } = useToast();
   const [activeTab, setActiveTab] = useState("introduction");
@@ -43,12 +43,12 @@ const EspagnolLessonAF9 = () => {
   const { stop } = useTTS();
 
   useEffect(() => {
-    if (topicId) {
+    if (lessonSlug) {
       fetchLesson();
       loadPersonalNotes();
       fetchUserProfile();
     }
-  }, [topicId]);
+  }, [lessonSlug]);
 
   const fetchUserProfile = async () => {
     try {
@@ -90,7 +90,7 @@ const EspagnolLessonAF9 = () => {
         .from('lessons')
         .select('*')
         .eq('subject_id', subject.id)
-        .eq('slug', topicId)
+        .eq('slug', lessonSlug)
         .eq('grade_level', 'AF9')
         .maybeSingle();
 
@@ -132,7 +132,7 @@ const EspagnolLessonAF9 = () => {
         .from('lesson_notes')
         .select('notes')
         .eq('user_id', user.id)
-        .eq('lesson_id', topicId || '')
+        .eq('lesson_id', lessonSlug || '')
         .maybeSingle();
 
       if (error && error.code !== 'PGRST116') throw error;
@@ -151,7 +151,7 @@ const EspagnolLessonAF9 = () => {
         .from('lesson_notes')
         .upsert({
           user_id: user.id,
-          lesson_id: topicId || '',
+          lesson_id: lessonSlug || '',
           notes: personalNotes,
         });
 
@@ -190,7 +190,7 @@ const EspagnolLessonAF9 = () => {
 
       await supabase.from('lesson_completions').upsert({
         user_id: user.id,
-        lesson_slug: topicId || '',
+        lesson_slug: lessonSlug || '',
         subject: 'espagnol-af9',
         score: score
       });

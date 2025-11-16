@@ -145,7 +145,7 @@ const App = () => (
               <Route path="/espagnol-af8-course" element={<EspagnolCourseAF8 />} />
               <Route path="/espagnol-af8-lesson/:topicId" element={<Layout><EspagnolLessonAF8 /></Layout>} />
               <Route path="/espagnol-af9" element={<EspagnolCourseAF9 />} />
-              <Route path="/espagnol-af9/:lessonSlug" element={<EspagnolLessonAF9 />} />
+              <Route path="/espagnol-af9/:lessonSlug" element={<Layout><EspagnolLessonAF9 /></Layout>} />
               <Route path="/francais-course" element={<FrancaisCourse />} />
               <Route path="/francais-lesson/:topicId" element={<Layout><FrancaisLesson /></Layout>} />
               <Route path="/sciences-sociales-course" element={<SciencesSocialesCourse />} />
