@@ -6,13 +6,14 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
-import { ArrowLeft, BookOpen, Zap, BarChart3 } from "lucide-react";
+import { ArrowLeft, BookOpen, Zap, BarChart3, Sparkles } from "lucide-react";
 import { LessonBrowser } from "@/components/content-editor/LessonBrowser";
 import { LessonPreview } from "@/components/content-editor/LessonPreview";
 import { YouTubeManager } from "@/components/content-editor/YouTubeManager";
 import { LessonComments } from "@/components/content-editor/LessonComments";
 import { BatchLessonGenerator } from "@/components/content-editor/BatchLessonGenerator";
 import { SingleLessonGenerator } from "@/components/content-editor/SingleLessonGenerator";
+import { CreateMatiereDialog } from "@/components/content-editor/CreateMatiereDialog";
 
 const ContentEditor = () => {
   const navigate = useNavigate();
@@ -21,6 +22,7 @@ const ContentEditor = () => {
   const [hasAccess, setHasAccess] = useState(false);
   const [selectedLesson, setSelectedLesson] = useState<any>(null);
   const [refreshKey, setRefreshKey] = useState(0);
+  const [showCreateMatiere, setShowCreateMatiere] = useState(false);
 
   useEffect(() => {
     checkAccess();
@@ -161,13 +163,21 @@ const ContentEditor = () => {
               Retour
             </Button>
             
-            <Button
-              variant="outline"
-              onClick={() => navigate("/ai-analytics")}
-            >
-              <BarChart3 className="mr-2 h-4 w-4" />
-              Analytics IA
-            </Button>
+            <div className="flex items-center gap-2">
+              <Button
+                onClick={() => setShowCreateMatiere(true)}
+              >
+                <Sparkles className="mr-2 h-4 w-4" />
+                Créer une matière (IA)
+              </Button>
+              <Button
+                variant="outline"
+                onClick={() => navigate("/ai-analytics")}
+              >
+                <BarChart3 className="mr-2 h-4 w-4" />
+                Analytics IA
+              </Button>
+            </div>
           </div>
           
           <Card className="bg-gradient-to-r from-primary/10 to-purple-500/10 border-none">
@@ -256,6 +266,12 @@ const ContentEditor = () => {
           </Tabs>
         </div>
       </div>
+
+      <CreateMatiereDialog 
+        open={showCreateMatiere} 
+        onOpenChange={setShowCreateMatiere}
+        onMatiereCreated={() => setRefreshKey(prev => prev + 1)}
+      />
     </div>
   );
 };

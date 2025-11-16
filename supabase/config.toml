@@ -1,5 +1,8 @@
 project_id = "xdyavylcmucjpueybdku"
 
+[functions.generate-matiere-structure]
+verify_jwt = true
+
 [functions.anglais-practice-tutor]
 verify_jwt = false
 
