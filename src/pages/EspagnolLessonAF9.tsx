@@ -1,21 +1,22 @@
+import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
-import { ArrowLeft, BookOpen, Target, FileText, Lightbulb, Gamepad2 } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
 import { ThemeToggle } from "@/components/ThemeToggle";
-import { InteractiveActivitiesEnhanced } from "@/components/InteractiveActivitiesEnhanced";
-import { TextToSpeechButton } from "@/components/TextToSpeechButton";
-import { useTTS } from "@/hooks/useTTS";
-import { useState, useEffect } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import { BookOpen, FileText, Gamepad2, Target, Lightbulb, ArrowLeft, Sparkles, Trophy, GraduationCap } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import ericChairDesk from "@/assets/eric-chair-desk.png";
+import { TextToSpeechButton } from "@/components/TextToSpeechButton";
 import { DownloadLessonButton } from "@/components/DownloadLessonButton";
 import { YouTubeVideoSection } from "@/components/YouTubeVideoSection";
-import { SpanishPracticeChat } from "@/components/SpanishPracticeChat";
+import { InteractiveActivitiesEnhanced } from "@/components/InteractiveActivitiesEnhanced";
 import { HTMLQuizParser } from "@/components/HTMLQuizParser";
+import { SpanishPracticeChat } from "@/components/SpanishPracticeChat";
+import { useTTS } from "@/hooks/useTTS";
+import ericTeaching from "@/assets/eric-teaching.png";
 
 interface Lesson {
   id: string;
@@ -162,10 +163,10 @@ const EspagnolLessonAF9 = () => {
         description: "Vos notes personnelles ont été sauvegardées.",
       });
     } catch (error) {
-      console.error('Error saving personal notes:', error);
+      console.error('Error saving notes:', error);
       toast({
         title: "Erreur",
-        description: "Impossible de sauvegarder vos notes.",
+        description: "Impossible de sauvegarder vos notes",
         variant: "destructive",
       });
     }
@@ -200,12 +201,12 @@ const EspagnolLessonAF9 = () => {
         description: `Score: ${score}%. Vous avez gagné 10 pièces d'or !`,
       });
     } catch (error) {
-      console.error('Error updating completion:', error);
+      console.error('Error completing quiz:', error);
     }
   };
 
   const stripHtml = (html: string) => {
-    const tmp = document.createElement('DIV');
+    const tmp = document.createElement("DIV");
     tmp.innerHTML = html;
     let text = tmp.textContent || tmp.innerText || '';
     text = text.replace(/🎯\s*Objectifs\s*:?\s*/gi, '').trim();
@@ -214,19 +215,25 @@ const EspagnolLessonAF9 = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-orange-50 via-amber-50 to-yellow-50 dark:from-background dark:via-background dark:to-secondary/20">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-16 w-16 border-b-4 border-orange-500 mx-auto mb-4"></div>
+          <p className="text-muted-foreground">Chargement de la leçon...</p>
+        </div>
       </div>
     );
   }
 
   if (!lesson) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center gap-4">
-        <img src={ericChairDesk} alt="Eric" className="w-64 h-64 object-contain" />
-        <h2 className="text-2xl font-bold">Leçon non trouvée</h2>
-        <Button onClick={() => navigate("/espagnol-af9")}>
-          <ArrowLeft className="mr-2 h-4 w-4" />
+      <div className="min-h-screen flex flex-col items-center justify-center gap-6 bg-gradient-to-br from-orange-50 via-amber-50 to-yellow-50 dark:from-background dark:via-background dark:to-secondary/20 p-4">
+        <img src={ericTeaching} alt="Eric" className="w-72 h-72 object-contain animate-fade-in" />
+        <div className="text-center space-y-2">
+          <h2 className="text-3xl font-bold">Leçon non trouvée</h2>
+          <p className="text-muted-foreground">Cette leçon n'existe pas ou n'est pas encore disponible.</p>
+        </div>
+        <Button onClick={() => navigate("/espagnol-af9")} size="lg" className="gap-2">
+          <ArrowLeft className="h-4 w-4" />
           Retour au cours
         </Button>
       </div>
@@ -234,166 +241,240 @@ const EspagnolLessonAF9 = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-background to-secondary/20">
-      <nav className="sticky top-0 z-50 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b">
+    <div className="min-h-screen bg-gradient-to-br from-orange-50 via-amber-50 to-yellow-50 dark:from-background dark:via-background dark:to-secondary/20">
+      {/* Navigation Bar */}
+      <nav className="sticky top-0 z-50 bg-background/95 backdrop-blur-lg supports-[backdrop-filter]:bg-background/60 border-b shadow-sm">
         <div className="container mx-auto px-4 py-3 flex items-center justify-between">
           <Button
             variant="ghost"
             onClick={() => { stop(); navigate("/espagnol-af9"); }}
-            className="gap-2"
+            className="gap-2 hover:bg-orange-100 dark:hover:bg-orange-950"
           >
             <ArrowLeft className="h-4 w-4" />
             Retour au cours
           </Button>
-          <ThemeToggle />
+          <div className="flex items-center gap-2">
+            <Badge variant="secondary" className="gap-1">
+              <GraduationCap className="h-3 w-3" />
+              AF9
+            </Badge>
+            <ThemeToggle />
+          </div>
         </div>
       </nav>
 
-      <div className="container mx-auto px-4 py-8 max-w-5xl">
-        <div className="mb-8 text-center">
-          <h1 className="text-3xl md:text-4xl font-bold mb-4 bg-gradient-to-r from-orange-500 to-amber-600 bg-clip-text text-transparent">
-            {lesson.title}
-          </h1>
-          {lesson.objectif && (
-            <div className="flex items-start gap-3 bg-primary/5 p-4 rounded-lg mb-4 max-w-3xl mx-auto">
-              <Target className="h-5 w-5 text-primary mt-0.5 flex-shrink-0" />
-              <div className="text-left flex-1">
-                <p className="font-semibold text-primary mb-1">Objectifs d'apprentissage</p>
-                <p className="text-sm text-muted-foreground">{stripHtml(lesson.objectif)}</p>
+      <div className="container mx-auto px-4 py-8 max-w-7xl">
+        {/* Hero Section with Eric */}
+        <Card className="mb-8 overflow-hidden border-2 border-orange-200 dark:border-orange-900 bg-gradient-to-r from-orange-100 to-amber-100 dark:from-orange-950/50 dark:to-amber-950/50 animate-fade-in">
+          <CardContent className="p-0">
+            <div className="grid md:grid-cols-[300px_1fr] gap-6 items-center">
+              {/* Eric Image */}
+              <div className="relative bg-gradient-to-br from-orange-200 to-amber-200 dark:from-orange-900 dark:to-amber-900 p-6 flex items-center justify-center">
+                <img 
+                  src={ericTeaching} 
+                  alt="Eric - Assistant d'apprentissage" 
+                  className="w-full h-64 object-contain drop-shadow-2xl hover:scale-105 transition-transform duration-300"
+                />
+                <div className="absolute top-4 right-4">
+                  <Badge className="bg-orange-500 text-white gap-1 shadow-lg">
+                    <Sparkles className="h-3 w-3" />
+                    Espagnol
+                  </Badge>
+                </div>
               </div>
-              <TextToSpeechButton text={stripHtml(lesson.objectif)} sectionName="objectif" />
+
+              {/* Lesson Title and Info */}
+              <div className="p-6 space-y-4">
+                <div>
+                  <h1 className="text-4xl md:text-5xl font-bold mb-3 bg-gradient-to-r from-orange-600 to-amber-600 bg-clip-text text-transparent leading-tight">
+                    {lesson.title}
+                  </h1>
+                  {lesson.objectif && (
+                    <div className="flex items-start gap-3 bg-white/50 dark:bg-black/20 backdrop-blur-sm p-4 rounded-lg border border-orange-200 dark:border-orange-800">
+                      <Target className="h-5 w-5 text-orange-600 dark:text-orange-400 mt-0.5 flex-shrink-0" />
+                      <div className="flex-1 space-y-1">
+                        <p className="font-semibold text-orange-600 dark:text-orange-400 flex items-center gap-2">
+                          <Trophy className="h-4 w-4" />
+                          Objectifs d'apprentissage
+                        </p>
+                        <p className="text-sm text-foreground/80">{stripHtml(lesson.objectif)}</p>
+                      </div>
+                      <TextToSpeechButton text={stripHtml(lesson.objectif)} sectionName="objectif" />
+                    </div>
+                  )}
+                </div>
+
+                <div className="flex flex-wrap gap-2">
+                  <DownloadLessonButton
+                    lessonData={{
+                      title: lesson.title,
+                      objectif: lesson.objectif,
+                      introduction: lesson.introduction,
+                      contenu: lesson.contenu,
+                      exemples_exercices: lesson.exemples_exercices,
+                      youtube_url: lesson.youtube_url,
+                      grade_level: lesson.grade_level,
+                    }}
+                    personalNotes={personalNotes}
+                    subjectName="Espagnol AF9"
+                  />
+                </div>
+              </div>
             </div>
-          )}
-          <DownloadLessonButton
-            lessonData={{
-              title: lesson.title,
-              objectif: lesson.objectif,
-              introduction: lesson.introduction,
-              contenu: lesson.contenu,
-              exemples_exercices: lesson.exemples_exercices,
-              youtube_url: lesson.youtube_url,
-              grade_level: lesson.grade_level,
-            }}
-            personalNotes={personalNotes}
-            subjectName="Espagnol AF9"
-          />
-        </div>
+          </CardContent>
+        </Card>
 
-        <Card className="p-6">
-          <Tabs value={activeTab} onValueChange={setActiveTab}>
-            <TabsList className="grid w-full grid-cols-5 mb-6">
-              <TabsTrigger value="introduction" className="gap-2">
-                <BookOpen className="h-4 w-4" />
-                <span className="hidden sm:inline">Introduction</span>
-              </TabsTrigger>
-              <TabsTrigger value="contenu" className="gap-2">
-                <FileText className="h-4 w-4" />
-                <span className="hidden sm:inline">Contenu</span>
-              </TabsTrigger>
-              <TabsTrigger value="activites" className="gap-2">
-                <Gamepad2 className="h-4 w-4" />
-                <span className="hidden sm:inline">Activités</span>
-              </TabsTrigger>
-              <TabsTrigger value="notes" className="gap-2">
-                <Lightbulb className="h-4 w-4" />
-                <span className="hidden sm:inline">Mes Notes</span>
-              </TabsTrigger>
-              <TabsTrigger value="quiz" className="gap-2">
-                <Target className="h-4 w-4" />
-                <span className="hidden sm:inline">Quiz</span>
-              </TabsTrigger>
-            </TabsList>
+        {/* Main Content Tabs */}
+        <Card className="shadow-xl border-2 border-orange-100 dark:border-orange-900/50">
+          <CardContent className="p-6">
+            <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+              <TabsList className="grid w-full grid-cols-5 mb-8 h-auto p-2 bg-orange-50 dark:bg-orange-950/50">
+                <TabsTrigger 
+                  value="introduction" 
+                  className="gap-2 data-[state=active]:bg-orange-500 data-[state=active]:text-white flex-col sm:flex-row py-3"
+                >
+                  <BookOpen className="h-4 w-4" />
+                  <span className="text-xs sm:text-sm">Introduction</span>
+                </TabsTrigger>
+                <TabsTrigger 
+                  value="contenu" 
+                  className="gap-2 data-[state=active]:bg-orange-500 data-[state=active]:text-white flex-col sm:flex-row py-3"
+                >
+                  <FileText className="h-4 w-4" />
+                  <span className="text-xs sm:text-sm">Contenu</span>
+                </TabsTrigger>
+                <TabsTrigger 
+                  value="activites" 
+                  className="gap-2 data-[state=active]:bg-orange-500 data-[state=active]:text-white flex-col sm:flex-row py-3"
+                >
+                  <Gamepad2 className="h-4 w-4" />
+                  <span className="text-xs sm:text-sm">Activités</span>
+                </TabsTrigger>
+                <TabsTrigger 
+                  value="notes" 
+                  className="gap-2 data-[state=active]:bg-orange-500 data-[state=active]:text-white flex-col sm:flex-row py-3"
+                >
+                  <Lightbulb className="h-4 w-4" />
+                  <span className="text-xs sm:text-sm">Mes Notes</span>
+                </TabsTrigger>
+                <TabsTrigger 
+                  value="quiz" 
+                  className="gap-2 data-[state=active]:bg-orange-500 data-[state=active]:text-white flex-col sm:flex-row py-3"
+                >
+                  <Trophy className="h-4 w-4" />
+                  <span className="text-xs sm:text-sm">Quiz</span>
+                </TabsTrigger>
+              </TabsList>
 
-            <TabsContent value="introduction" className="space-y-6">
-              {lesson.youtube_url && (
-                <YouTubeVideoSection
-                  lessonTitle={lesson.title}
-                  objectives={stripHtml(lesson.objectif)}
-                  gradeLevel="AF9"
-                  customYoutubeUrl={lesson.youtube_url}
-                  subject="espagnol"
-                />
-              )}
-              <div className="prose prose-slate dark:prose-invert max-w-none">
-                <div dangerouslySetInnerHTML={{ __html: lesson.introduction }} />
-              </div>
-            </TabsContent>
-
-            <TabsContent value="contenu" className="space-y-6">
-              <div className="prose prose-slate dark:prose-invert max-w-none">
-                <div dangerouslySetInnerHTML={{ __html: lesson.contenu }} />
-              </div>
-              {lesson.exemples_exercices && (
-                <div className="mt-8 p-6 bg-secondary/20 rounded-lg">
-                  <h3 className="text-xl font-semibold mb-4 flex items-center gap-2">
-                    <Lightbulb className="h-5 w-5 text-primary" />
-                    Exemples et Exercices
-                  </h3>
-                  <div className="prose prose-slate dark:prose-invert max-w-none">
-                    <div dangerouslySetInnerHTML={{ __html: lesson.exemples_exercices }} />
-                  </div>
+              <TabsContent value="introduction" className="space-y-6 animate-fade-in">
+                {lesson.youtube_url && (
+                  <YouTubeVideoSection
+                    lessonTitle={lesson.title}
+                    objectives={stripHtml(lesson.objectif)}
+                    gradeLevel="AF9"
+                    customYoutubeUrl={lesson.youtube_url}
+                    subject="espagnol"
+                  />
+                )}
+                <div className="prose prose-lg prose-slate dark:prose-invert max-w-none prose-headings:text-orange-600 dark:prose-headings:text-orange-400 prose-a:text-orange-600 dark:prose-a:text-orange-400">
+                  <div dangerouslySetInnerHTML={{ __html: lesson.introduction }} />
                 </div>
-              )}
-            </TabsContent>
+              </TabsContent>
 
-            <TabsContent value="activites" className="space-y-6">
-              {lesson.activites_interactives ? (
-                <InteractiveActivitiesEnhanced content={lesson.activites_interactives} isLoading={false} />
-              ) : (
-                <div className="text-center py-12">
-                  <Gamepad2 className="h-16 w-16 mx-auto text-muted-foreground mb-4" />
-                  <p className="text-muted-foreground">
-                    Les activités interactives pour cette leçon sont en cours de préparation.
-                  </p>
+              <TabsContent value="contenu" className="space-y-6 animate-fade-in">
+                <div className="prose prose-lg prose-slate dark:prose-invert max-w-none prose-headings:text-orange-600 dark:prose-headings:text-orange-400 prose-a:text-orange-600 dark:prose-a:text-orange-400">
+                  <div dangerouslySetInnerHTML={{ __html: lesson.contenu }} />
                 </div>
-              )}
-              <SpanishPracticeChat
-                lessonSlug={lesson.slug}
-                lessonTitle={lesson.title}
-                lessonObjective={stripHtml(lesson.objectif)}
-                userNickname={userNickname}
-                gradeLevel="AF9"
-              />
-            </TabsContent>
+                {lesson.exemples_exercices && (
+                  <Card className="mt-8 border-2 border-orange-200 dark:border-orange-900 bg-gradient-to-br from-orange-50 to-amber-50 dark:from-orange-950/30 dark:to-amber-950/30">
+                    <CardContent className="p-6">
+                      <h3 className="text-2xl font-bold mb-4 flex items-center gap-2 text-orange-600 dark:text-orange-400">
+                        <Lightbulb className="h-6 w-6" />
+                        Exemples et Exercices
+                      </h3>
+                      <div className="prose prose-slate dark:prose-invert max-w-none">
+                        <div dangerouslySetInnerHTML={{ __html: lesson.exemples_exercices }} />
+                      </div>
+                    </CardContent>
+                  </Card>
+                )}
+              </TabsContent>
 
-            <TabsContent value="notes" className="space-y-4">
-              <div className="bg-secondary/20 p-4 rounded-lg">
-                <h3 className="text-lg font-semibold mb-2 flex items-center gap-2">
-                  <Lightbulb className="h-5 w-5 text-primary" />
-                  Mes notes personnelles
-                </h3>
-                <p className="text-sm text-muted-foreground mb-4">
-                  Prenez des notes pendant votre apprentissage. Elles seront sauvegardées automatiquement.
-                </p>
-                <Textarea
-                  value={personalNotes}
-                  onChange={(e) => setPersonalNotes(e.target.value)}
-                  placeholder="Écrivez vos notes ici..."
-                  className="min-h-[300px]"
-                />
-                <Button onClick={savePersonalNotes} className="mt-4">
-                  Sauvegarder mes notes
-                </Button>
-              </div>
-            </TabsContent>
-
-            <TabsContent value="quiz" className="space-y-4">
-              {lesson.quiz_final ? (
-                <HTMLQuizParser
-                  htmlContent={lesson.quiz_final}
+              <TabsContent value="activites" className="space-y-6 animate-fade-in">
+                {lesson.activites_interactives ? (
+                  <InteractiveActivitiesEnhanced content={lesson.activites_interactives} isLoading={false} />
+                ) : (
+                  <Card className="text-center py-16 border-2 border-dashed border-orange-300 dark:border-orange-800">
+                    <CardContent>
+                      <Gamepad2 className="h-20 w-20 mx-auto text-orange-400 mb-6 opacity-50" />
+                      <h3 className="text-xl font-semibold mb-2">Activités en préparation</h3>
+                      <p className="text-muted-foreground max-w-md mx-auto">
+                        Les activités interactives pour cette leçon sont en cours de préparation et seront bientôt disponibles.
+                      </p>
+                    </CardContent>
+                  </Card>
+                )}
+                <SpanishPracticeChat
                   lessonSlug={lesson.slug}
-                  subject="espagnol-af9"
+                  lessonTitle={lesson.title}
+                  lessonObjective={stripHtml(lesson.objectif)}
+                  userNickname={userNickname}
+                  gradeLevel="AF9"
                 />
-              ) : (
-                <div className="text-center py-12">
-                  <Target className="h-16 w-16 mx-auto text-muted-foreground mb-4" />
-                  <p className="text-muted-foreground">
-                    Le quiz final pour cette leçon est en cours de préparation.
-                  </p>
-                </div>
-              )}
-            </TabsContent>
-          </Tabs>
+              </TabsContent>
+
+              <TabsContent value="notes" className="space-y-4 animate-fade-in">
+                <Card className="border-2 border-orange-200 dark:border-orange-900 bg-gradient-to-br from-orange-50/50 to-amber-50/50 dark:from-orange-950/20 dark:to-amber-950/20">
+                  <CardContent className="p-6">
+                    <div className="flex items-center gap-3 mb-4">
+                      <div className="p-3 bg-orange-500 text-white rounded-lg">
+                        <Lightbulb className="h-6 w-6" />
+                      </div>
+                      <div>
+                        <h3 className="text-xl font-bold">Mes notes personnelles</h3>
+                        <p className="text-sm text-muted-foreground">
+                          Prenez des notes pendant votre apprentissage
+                        </p>
+                      </div>
+                    </div>
+                    <Textarea
+                      value={personalNotes}
+                      onChange={(e) => setPersonalNotes(e.target.value)}
+                      placeholder="Écrivez vos notes ici... 📝"
+                      className="min-h-[350px] text-base border-2 border-orange-200 dark:border-orange-900 focus:border-orange-500"
+                    />
+                    <Button 
+                      onClick={savePersonalNotes} 
+                      className="mt-4 w-full sm:w-auto bg-orange-500 hover:bg-orange-600 text-white"
+                      size="lg"
+                    >
+                      💾 Sauvegarder mes notes
+                    </Button>
+                  </CardContent>
+                </Card>
+              </TabsContent>
+
+              <TabsContent value="quiz" className="space-y-4 animate-fade-in">
+                {lesson.quiz_final ? (
+                  <HTMLQuizParser
+                    htmlContent={lesson.quiz_final}
+                    lessonSlug={lesson.slug}
+                    subject="espagnol-af9"
+                  />
+                ) : (
+                  <Card className="text-center py-16 border-2 border-dashed border-orange-300 dark:border-orange-800">
+                    <CardContent>
+                      <Trophy className="h-20 w-20 mx-auto text-orange-400 mb-6 opacity-50" />
+                      <h3 className="text-xl font-semibold mb-2">Quiz en préparation</h3>
+                      <p className="text-muted-foreground max-w-md mx-auto">
+                        Le quiz final pour cette leçon sera bientôt disponible. Continuez votre apprentissage !
+                      </p>
+                    </CardContent>
+                  </Card>
+                )}
+              </TabsContent>
+            </Tabs>
+          </CardContent>
         </Card>
       </div>
     </div>
