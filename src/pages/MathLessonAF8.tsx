@@ -56,7 +56,7 @@ const MathLessonAF8 = () => {
         .from('lessons')
         .select('*')
         .eq('slug', topicId)
-        .eq('grade_level', 'AF8')
+        .eq('grade_level', '8AF')
         .single();
 
       if (error) throw error;

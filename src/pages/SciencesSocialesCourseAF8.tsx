@@ -39,7 +39,7 @@ const SciencesSocialesCourseAF8 = () => {
             .from('subjects')
             .select('id')
             .eq('slug', 'sciences-sociales-8af')
-            .eq('grade_level', 'AF8')
+            .eq('grade_level', '8AF')
             .single()
         ).data?.id)
         .order('order_index');

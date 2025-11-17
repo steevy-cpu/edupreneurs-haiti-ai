@@ -34,7 +34,7 @@ const CreoleCourseAF8 = () => {
         .from('subjects')
         .select('id')
         .eq('slug', 'creole-8af')
-        .eq('grade_level', 'AF8')
+        .eq('grade_level', '8AF')
         .single();
 
       if (subjectError) throw subjectError;
@@ -44,7 +44,7 @@ const CreoleCourseAF8 = () => {
         .from('lessons')
         .select('*')
         .eq('subject_id', subject.id)
-        .eq('grade_level', 'AF8')
+        .eq('grade_level', '8AF')
         .order('order_index', { ascending: true });
 
       if (error) throw error;

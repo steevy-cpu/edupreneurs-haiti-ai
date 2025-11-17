@@ -51,7 +51,7 @@ const MathLessonAF9 = () => {
         .from("lessons")
         .select("*")
         .eq("slug", lessonSlug)
-        .eq("grade_level", "AF9")
+        .eq("grade_level", "9AF")
         .maybeSingle();
 
       if (error) throw error;

@@ -114,7 +114,7 @@ const AnglaisLessonAF9 = () => {
         .from("subjects")
         .select("id")
         .eq("slug", "anglais-af9")
-        .eq("grade_level", "AF9")
+        .eq("grade_level", "9AF")
         .single();
 
       if (!subjectData) throw new Error("Subject not found");

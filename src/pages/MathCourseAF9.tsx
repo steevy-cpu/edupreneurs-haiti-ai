@@ -38,7 +38,7 @@ const MathCourseAF9 = () => {
         .from("subjects")
         .select("id")
         .eq("slug", "mathematiques-af9")
-        .eq("grade_level", "AF9")
+        .eq("grade_level", "9AF")
         .maybeSingle();
 
       if (subjectError) throw subjectError;
@@ -49,7 +49,7 @@ const MathCourseAF9 = () => {
           .from("lessons")
           .select("*")
           .eq("subject_id", subjectData.id)
-          .eq("grade_level", "AF9")
+          .eq("grade_level", "9AF")
           .order("order_index", { ascending: true });
 
         if (error) throw error;
