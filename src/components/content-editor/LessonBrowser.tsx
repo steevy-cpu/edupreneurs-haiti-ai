@@ -96,7 +96,7 @@ export const LessonBrowser = ({ onSelectLesson, selectedLesson, refreshKey }: Le
         const batch = subjectIds.slice(i, i + batchSize);
         const { data: lessonsData, error } = await supabase
           .from('lessons')
-          .select('id, title, slug, subject_id, order_index, workflow_status, subjects(id, name)')
+          .select('id, title, slug, subject_id, order_index, workflow_status, grade_level, subjects(id, name)')
           .in('subject_id', batch)
           .order('order_index');
 
@@ -240,10 +240,13 @@ export const LessonBrowser = ({ onSelectLesson, selectedLesson, refreshKey }: Le
                               {lesson.title}
                             </span>
                             <Badge 
-                              variant={lesson.is_published ? "default" : "secondary"}
+                              variant={lesson.workflow_status === 'published' ? "default" : lesson.workflow_status === 'approved' ? "secondary" : "outline"}
                               className="flex-shrink-0 text-xs"
                             >
-                              {lesson.is_published ? "Publié" : "Brouillon"}
+                              {lesson.workflow_status === 'published' ? 'Publié' : 
+                               lesson.workflow_status === 'approved' ? 'Approuvé' :
+                               lesson.workflow_status === 'in_review' ? 'En révision' :
+                               lesson.workflow_status === 'rejected' ? 'Rejeté' : 'Brouillon'}
                             </Badge>
                           </div>
                           <div className="mt-1">
