@@ -16,6 +16,7 @@ import { InteractiveActivitiesEnhanced } from "@/components/InteractiveActivitie
 import { HTMLQuizParser } from "@/components/HTMLQuizParser";
 import { SpanishPracticeChat } from "@/components/SpanishPracticeChat";
 import { useTTS } from "@/hooks/useTTS";
+import { normalizeToSlug } from "@/lib/slugNormalization";
 import ericTeaching from "@/assets/eric-teaching.png";
 
 interface Lesson {
@@ -71,6 +72,7 @@ const EspagnolLessonAF9 = () => {
   };
 
   const fetchLesson = async () => {
+    const normalizedSlug = normalizeToSlug(lessonSlug || "");
     try {
       const { data: subject } = await supabase
         .from('subjects')
@@ -91,7 +93,7 @@ const EspagnolLessonAF9 = () => {
         .from('lessons')
         .select('*')
         .eq('subject_id', subject.id)
-        .eq('slug', lessonSlug)
+        .eq('slug', normalizedSlug)
         .eq('grade_level', '9AF')
         .maybeSingle();
 

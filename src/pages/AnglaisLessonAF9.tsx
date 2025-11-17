@@ -3,7 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { ArrowLeft, BookOpen, Target, FileText, Dumbbell, HelpCircle, StickyNote } from "lucide-react";
+import { ArrowLeft, BookOpen, Target, FileText, Gamepad2, Lightbulb, Sparkles, Trophy, GraduationCap, Dumbbell, HelpCircle, StickyNote } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
@@ -18,6 +18,9 @@ import { InteractiveActivitiesEnhanced } from "@/components/InteractiveActivitie
 import { HTMLQuizParser } from "@/components/HTMLQuizParser";
 import { EricChatbot } from "@/components/EricChatbot";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import { YouTubeVideoSection } from "@/components/YouTubeVideoSection";
+import { normalizeToSlug } from "@/lib/slugNormalization";
+import ericTeaching from "@/assets/eric-teaching.png";
 
 const AnglaisLessonAF9 = () => {
   const { lessonSlug } = useParams();
@@ -110,6 +113,7 @@ const AnglaisLessonAF9 = () => {
   const { data: lesson, isLoading } = useQuery({
     queryKey: ["anglais-af9-lesson", lessonSlug],
     queryFn: async () => {
+      const normalizedSlug = normalizeToSlug(lessonSlug || "");
       const { data: subjectData } = await supabase
         .from("subjects")
         .select("id")
