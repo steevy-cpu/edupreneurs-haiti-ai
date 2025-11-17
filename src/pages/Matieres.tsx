@@ -413,7 +413,8 @@ export default function Matieres() {
                     } else if (subject.id === 'education-physique') {
                       courseRoute = '/education-physique-course';
                     } else {
-                      courseRoute = '/sciences-course';
+                      // For dynamically created subjects, use the slug to build route
+                      courseRoute = `/${subject.id}-course`;
                     }
                     
                     navigate(courseRoute);
@@ -476,7 +477,8 @@ export default function Matieres() {
                       } else if (subject.id === 'education-physique') {
                         courseRoute = '/education-physique-course';
                       } else {
-                        courseRoute = '/sciences-course';
+                        // For dynamically created subjects, use the slug to build route
+                        courseRoute = `/${subject.id}-course`;
                       }
                       
                       navigate(courseRoute);
