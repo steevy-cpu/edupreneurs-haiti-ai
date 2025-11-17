@@ -15,6 +15,7 @@ import { YouTubeVideoSection } from "@/components/YouTubeVideoSection";
 import { InteractiveActivitiesEnhanced } from "@/components/InteractiveActivitiesEnhanced";
 import { HTMLQuizParser } from "@/components/HTMLQuizParser";
 import { useTTS } from "@/hooks/useTTS";
+import { normalizeToSlug } from "@/lib/slugNormalization";
 import ericTeaching from "@/assets/eric-teaching.png";
 
 interface Lesson {
@@ -49,6 +50,8 @@ const FrancaisLessonAF9 = () => {
   }, [lessonSlug]);
 
   const fetchLesson = async () => {
+    // Normalize the slug to handle URL-encoded characters
+    const normalizedSlug = normalizeToSlug(lessonSlug || "");
     try {
       const { data: subject } = await supabase
         .from('subjects')
@@ -78,7 +81,7 @@ const FrancaisLessonAF9 = () => {
           .from('lessons')
           .select('*')
           .eq('subject_id', altSubject.id)
-          .eq('slug', lessonSlug)
+          .eq('slug', normalizedSlug)
           .eq('grade_level', '9AF')
           .maybeSingle();
 
@@ -94,7 +97,7 @@ const FrancaisLessonAF9 = () => {
         .from('lessons')
         .select('*')
         .eq('subject_id', subject.id)
-        .eq('slug', lessonSlug)
+        .eq('slug', normalizedSlug)
         .eq('grade_level', '9AF')
         .maybeSingle();
 
