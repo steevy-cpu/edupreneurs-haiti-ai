@@ -181,6 +181,13 @@ export default function Matieres() {
   useEffect(() => {
     const fetchLessonCounts = async () => {
       try {
+        const { data: subjectsData, error: subjectsError } = await supabase
+          .from('subjects')
+          .select('id, slug')
+          .eq('grade_level', selectedGrade);
+
+        if (subjectsError) throw subjectsError;
+
         const { data: lessons, error } = await supabase
           .from('lessons')
           .select('subject_id, id')
@@ -189,10 +196,13 @@ export default function Matieres() {
 
         if (error) throw error;
 
-        // Count lessons per subject
+        // Count lessons per subject and map by slug
         const counts: Record<string, number> = {};
         lessons?.forEach(lesson => {
-          counts[lesson.subject_id] = (counts[lesson.subject_id] || 0) + 1;
+          const subject = subjectsData?.find(s => s.id === lesson.subject_id);
+          if (subject) {
+            counts[subject.slug] = (counts[subject.slug] || 0) + 1;
+          }
         });
         
         setLessonCounts(counts);
@@ -212,7 +222,7 @@ export default function Matieres() {
     ? [
         ...subjects.map(s => ({
           ...s,
-          lessons: lessonCounts[filteredSubjects.find(db => db.slug === s.id)?.id || ''] || s.lessons,
+          lessons: lessonCounts[s.id] || s.lessons,
         })),
         ...filteredSubjects
           .filter(dbSubject => !subjects.some(s => s.id === dbSubject.slug))
@@ -221,7 +231,7 @@ export default function Matieres() {
             title: s.name,
             description: s.description || '',
             icon: iconMap[s.icon_name || 'book-open'] || BookOpen,
-            lessons: lessonCounts[s.id] || 0,
+            lessons: lessonCounts[s.slug] || 0,
             exercises: s.exercise_count || 0,
             color: colorMap[s.color || 'blue'] || 'from-blue-500 to-blue-600'
           }))
@@ -231,7 +241,7 @@ export default function Matieres() {
         title: s.name,
         description: s.description || '',
         icon: iconMap[s.icon_name || 'book-open'] || BookOpen,
-        lessons: lessonCounts[s.id] || 0,
+        lessons: lessonCounts[s.slug] || 0,
         exercises: s.exercise_count || 0,
         color: colorMap[s.color || 'blue'] || 'from-blue-500 to-blue-600'
       }));
