@@ -412,9 +412,12 @@ export default function Matieres() {
                       courseRoute = '/arts-course';
                     } else if (subject.id === 'education-physique') {
                       courseRoute = '/education-physique-course';
+                    } else if (subject.id === 'francais-9af' || subject.id === 'français-9af') {
+                      courseRoute = '/francais-af9';
                     } else {
-                      // For dynamically created subjects, use the slug to build route
-                      courseRoute = `/${subject.id}-course`;
+                      // For dynamically created subjects, normalize slug (remove special chars)
+                      const normalizedSlug = subject.id.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+                      courseRoute = `/${normalizedSlug}-course`;
                     }
                     
                     navigate(courseRoute);
@@ -476,9 +479,12 @@ export default function Matieres() {
                         courseRoute = '/arts-course';
                       } else if (subject.id === 'education-physique') {
                         courseRoute = '/education-physique-course';
+                      } else if (subject.id === 'francais-9af' || subject.id === 'français-9af') {
+                        courseRoute = '/francais-af9';
                       } else {
-                        // For dynamically created subjects, use the slug to build route
-                        courseRoute = `/${subject.id}-course`;
+                        // For dynamically created subjects, normalize slug (remove special chars)
+                        const normalizedSlug = subject.id.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+                        courseRoute = `/${normalizedSlug}-course`;
                       }
                       
                       navigate(courseRoute);
