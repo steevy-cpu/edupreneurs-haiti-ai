@@ -397,7 +397,7 @@ export default function Matieres() {
                 onClick={() => {
                   if (hasContent) {
                     // Use dynamic route for all subjects
-                    navigate(`/${subject.id}-course`);
+                    navigate(`/course/${subject.id}`);
                   }
                 }}
               >

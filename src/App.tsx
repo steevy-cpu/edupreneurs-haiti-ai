@@ -183,8 +183,8 @@ const App = () => (
           <Route path="/ai-analytics" element={<Layout><AIGenerationAnalytics /></Layout>} />
           <Route path="/data-migration" element={<Layout><DataMigration /></Layout>} />
               {/* Dynamic routes for content editor generated subjects - MUST be before catch-all */}
-              <Route path="/:fullSlug-course" element={<DynamicCoursePage />} />
-              <Route path="/:fullSlug/:lessonSlug" element={<DynamicLessonPage />} />
+              <Route path="/course/:slug" element={<DynamicCoursePage />} />
+              <Route path="/course/:slug/:lessonSlug" element={<DynamicLessonPage />} />
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />
               </Routes>

@@ -5,7 +5,7 @@ import { LessonPageTemplate } from "@/components/LessonPageTemplate";
 import ericTeaching from "@/assets/eric-teaching.png";
 
 export default function DynamicLessonPage() {
-  const { fullSlug, lessonSlug } = useParams();
+  const { slug, lessonSlug } = useParams();
   const navigate = useNavigate();
   const [lesson, setLesson] = useState<any>(null);
   const [subject, setSubject] = useState<any>(null);
@@ -13,14 +13,14 @@ export default function DynamicLessonPage() {
 
   useEffect(() => {
     loadLessonData();
-  }, [lessonSlug, fullSlug]);
+  }, [lessonSlug, slug]);
 
   const loadLessonData = async () => {
     try {
       setIsLoading(true);
 
       // Decode URL-encoded slugs
-      const decodedSubjectSlug = fullSlug ? decodeURIComponent(fullSlug) : '';
+      const decodedSubjectSlug = slug ? decodeURIComponent(slug) : '';
       const decodedLessonSlug = lessonSlug ? decodeURIComponent(lessonSlug) : '';
 
       // Load subject using the slug
@@ -95,7 +95,7 @@ export default function DynamicLessonPage() {
       lesson={lesson}
       lessonSlug={lessonSlug || ''}
       subjectName={subject.name}
-      subjectSlug={fullSlug || ''}
+      subjectSlug={slug || ''}
       gradeLevel={subject.grade_level}
       ericImage={ericTeaching}
     />
