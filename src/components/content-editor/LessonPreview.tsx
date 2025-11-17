@@ -54,123 +54,135 @@ export const LessonPreview = ({ lesson }: LessonPreviewProps) => {
       </Card>
 
       {/* Objectif */}
-      {lesson.objectif && lesson.objectif.trim() && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-primary">
-              <Target className="h-5 w-5" />
-              Objectif
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2 text-primary">
+            <Target className="h-5 w-5" />
+            Objectif
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          {lesson.objectif && lesson.objectif.trim() ? (
             <div 
               className="prose dark:prose-invert max-w-none lesson-content"
               dangerouslySetInnerHTML={{ __html: lesson.objectif }}
             />
-          </CardContent>
-        </Card>
-      )}
+          ) : (
+            <p className="text-muted-foreground italic">Contenu pas encore généré</p>
+          )}
+        </CardContent>
+      </Card>
 
       {/* Introduction */}
-      {lesson.introduction && lesson.introduction.trim() && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-primary">
-              <FileText className="h-5 w-5" />
-              Introduction
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2 text-primary">
+            <FileText className="h-5 w-5" />
+            Introduction
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          {lesson.introduction && lesson.introduction.trim() ? (
             <div 
               className="prose dark:prose-invert max-w-none lesson-content"
               dangerouslySetInnerHTML={{ __html: lesson.introduction }}
             />
-          </CardContent>
-        </Card>
-      )}
+          ) : (
+            <p className="text-muted-foreground italic">Contenu pas encore généré</p>
+          )}
+        </CardContent>
+      </Card>
 
       {/* Contenu */}
-      {lesson.contenu && lesson.contenu.trim() && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-primary">
-              <BookOpen className="h-5 w-5" />
-              Contenu
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2 text-primary">
+            <BookOpen className="h-5 w-5" />
+            Contenu
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          {lesson.contenu && lesson.contenu.trim() ? (
             <div 
               className="prose dark:prose-invert max-w-none lesson-content"
               dangerouslySetInnerHTML={{ __html: lesson.contenu }}
             />
-          </CardContent>
-        </Card>
-      )}
+          ) : (
+            <p className="text-muted-foreground italic">Contenu pas encore généré</p>
+          )}
+        </CardContent>
+      </Card>
 
       {/* Exemples et Exercices */}
-      {lesson.exemples_exercices && lesson.exemples_exercices.trim() && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-primary">
-              <PenTool className="h-5 w-5" />
-              Exemples et Exercices
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2 text-primary">
+            <PenTool className="h-5 w-5" />
+            Exemples et Exercices
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          {lesson.exemples_exercices && lesson.exemples_exercices.trim() ? (
             <div 
               className="prose dark:prose-invert max-w-none lesson-content"
               dangerouslySetInnerHTML={{ __html: lesson.exemples_exercices }}
             />
-          </CardContent>
-        </Card>
-      )}
+          ) : (
+            <p className="text-muted-foreground italic">Contenu pas encore généré</p>
+          )}
+        </CardContent>
+      </Card>
 
       {/* Activités Interactives */}
-      {lesson.activites_interactives && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-primary">
-              <Gamepad2 className="h-5 w-5" />
-              Activités Interactives
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2 text-primary">
+            <Gamepad2 className="h-5 w-5" />
+            Activités Interactives
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          {lesson.activites_interactives ? (
             <InteractiveActivitiesEnhanced 
               content={lesson.activites_interactives}
               isLoading={false}
             />
-          </CardContent>
-        </Card>
-      )}
+          ) : (
+            <p className="text-muted-foreground italic">Contenu pas encore généré</p>
+          )}
+        </CardContent>
+      </Card>
 
       {/* Quiz Final */}
-      {lesson.quiz_final && lesson.quiz_final.trim() && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-primary">
-              <FileText className="h-5 w-5" />
-              Quiz Final
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2 text-primary">
+            <FileText className="h-5 w-5" />
+            Quiz Final
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          {lesson.quiz_final && lesson.quiz_final.trim() ? (
             <div 
               className="prose dark:prose-invert max-w-none lesson-content"
               dangerouslySetInnerHTML={{ __html: lesson.quiz_final }}
             />
-          </CardContent>
-        </Card>
-      )}
+          ) : (
+            <p className="text-muted-foreground italic">Contenu pas encore généré</p>
+          )}
+        </CardContent>
+      </Card>
 
       {/* YouTube Video */}
-      {lesson.youtube_url && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-primary">
-              <Video className="h-5 w-5" />
-              Vidéo YouTube
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2 text-primary">
+            <Video className="h-5 w-5" />
+            Vidéo YouTube
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          {lesson.youtube_url ? (
             <div className="space-y-4">
               {lesson.youtube_url.includes('youtube.com') || lesson.youtube_url.includes('youtu.be') ? (
                 <div className="aspect-video w-full">
@@ -194,28 +206,32 @@ export const LessonPreview = ({ lesson }: LessonPreviewProps) => {
                 </a>
               )}
             </div>
-          </CardContent>
-        </Card>
-      )}
+          ) : (
+            <p className="text-muted-foreground italic">Aucune vidéo ajoutée</p>
+          )}
+        </CardContent>
+      </Card>
 
       {/* References */}
-      {lesson.references && lesson.references.length > 0 && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-primary">
-              <BookOpen className="h-5 w-5" />
-              Références
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2 text-primary">
+            <BookOpen className="h-5 w-5" />
+            Références
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          {lesson.references && lesson.references.length > 0 ? (
             <ul className="list-disc list-inside space-y-1">
               {lesson.references.map((ref: string, index: number) => (
                 <li key={index}>{ref}</li>
               ))}
             </ul>
-          </CardContent>
-        </Card>
-      )}
+          ) : (
+            <p className="text-muted-foreground italic">Aucune référence ajoutée</p>
+          )}
+        </CardContent>
+      </Card>
 
       {/* Review Notes (admin only section) */}
       {lesson.review_notes && (
