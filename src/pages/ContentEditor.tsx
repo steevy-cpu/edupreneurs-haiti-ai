@@ -217,6 +217,7 @@ const ContentEditor = () => {
                       setSelectedLesson(lesson);
                     }}
                     selectedLesson={selectedLesson}
+                    refreshKey={refreshKey}
                   />
                 </div>
 
