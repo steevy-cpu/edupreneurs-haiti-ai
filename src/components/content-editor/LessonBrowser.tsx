@@ -84,17 +84,25 @@ export const LessonBrowser = ({ onSelectLesson, selectedLesson, refreshKey }: Le
   const loadLessons = async (subjectIds: string[]) => {
     setIsLoading(true);
     try {
-      const { data: lessonsData, error } = await supabase
-        .from('lessons')
-        .select('*, subjects(id, name)')
-        .in('subject_id', subjectIds)
-        .order('title');
+      // Load lessons in smaller batches to prevent timeout
+      const batchSize = 5;
+      const allLessons: any[] = [];
+      
+      for (let i = 0; i < subjectIds.length; i += batchSize) {
+        const batch = subjectIds.slice(i, i + batchSize);
+        const { data: lessonsData, error } = await supabase
+          .from('lessons')
+          .select('id, title, slug, subject_id, order_index, workflow_status, subjects(id, name)')
+          .in('subject_id', batch)
+          .order('order_index');
 
-      if (error) throw error;
+        if (error) throw error;
+        if (lessonsData) allLessons.push(...lessonsData);
+      }
 
       // Group lessons by subject
       const grouped: Record<string, any[]> = {};
-      lessonsData?.forEach(lesson => {
+      allLessons.forEach(lesson => {
         if (!grouped[lesson.subject_id]) {
           grouped[lesson.subject_id] = [];
         }

@@ -177,6 +177,24 @@ export function CreateMatiereDialog({ open, onOpenChange, onMatiereCreated }: Cr
       // Create slug
       const slug = `${subjectName.toLowerCase().replace(/\s+/g, '-')}-${gradeLevel.toLowerCase()}`;
 
+      // Check if subject already exists
+      const { data: existingSubject } = await supabase
+        .from('subjects')
+        .select('id, name')
+        .eq('slug', slug)
+        .eq('grade_level', gradeLevel)
+        .maybeSingle();
+
+      if (existingSubject) {
+        toast({
+          variant: "destructive",
+          title: "Matière déjà existante",
+          description: `La matière "${existingSubject.name}" existe déjà pour le niveau ${gradeLevel}. Veuillez choisir un nom différent ou modifier la matière existante.`,
+        });
+        setIsLoading(false);
+        return;
+      }
+
       // Insert subject
       const { data: subject, error: subjectError } = await supabase
         .from('subjects')
