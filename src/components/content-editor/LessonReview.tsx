@@ -29,11 +29,15 @@ export const LessonReview = ({ lesson }: LessonReviewProps) => {
                 <GraduationCap className="h-3 w-3" />
                 {lesson.grade_level}
               </Badge>
-              {lesson.is_published ? (
-                <Badge className="bg-green-500">Publié</Badge>
-              ) : (
-                <Badge variant="secondary">Brouillon</Badge>
-              )}
+              <Badge 
+                variant={lesson.workflow_status === 'published' ? "default" : lesson.workflow_status === 'approved' ? "secondary" : "outline"}
+                className={lesson.workflow_status === 'published' ? "bg-green-500" : ""}
+              >
+                {lesson.workflow_status === 'published' ? 'Publié' : 
+                 lesson.workflow_status === 'approved' ? 'Approuvé' :
+                 lesson.workflow_status === 'in_review' ? 'En révision' :
+                 lesson.workflow_status === 'rejected' ? 'Rejeté' : 'Brouillon'}
+              </Badge>
             </div>
           </div>
         </div>
