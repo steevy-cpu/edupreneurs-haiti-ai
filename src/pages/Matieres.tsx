@@ -180,8 +180,6 @@ export default function Matieres() {
   // Fetch actual lesson counts from database
   useEffect(() => {
     const fetchLessonCounts = async () => {
-      if (selectedGrade === "7AF") return; // Use hardcoded for 7AF
-      
       try {
         const { data: lessons, error } = await supabase
           .from('lessons')
@@ -204,21 +202,39 @@ export default function Matieres() {
     };
 
     fetchLessonCounts();
-  }, [selectedGrade]);
+  }, [selectedGrade, refreshTrigger]);
   
   // Filter subjects by selected grade
   const filteredSubjects = dbSubjects.filter(s => s.grade_level === selectedGrade);
   
-  // Use hardcoded subjects for 7AF, database subjects with actual counts for other grades
-  const displaySubjects = selectedGrade === "7AF" ? subjects : filteredSubjects.map(s => ({
-    id: s.slug,
-    title: s.name,
-    description: s.description || '',
-    icon: iconMap[s.icon_name || 'book-open'] || BookOpen,
-    lessons: lessonCounts[s.id] || 0,
-    exercises: s.exercise_count || 0,
-    color: colorMap[s.color || 'blue'] || 'from-blue-500 to-blue-600'
-  }));
+  // Merge database subjects with hardcoded subjects for 7AF
+  const displaySubjects = selectedGrade === "7AF" 
+    ? [
+        ...subjects.map(s => ({
+          ...s,
+          lessons: lessonCounts[filteredSubjects.find(db => db.slug === s.id)?.id || ''] || s.lessons,
+        })),
+        ...filteredSubjects
+          .filter(dbSubject => !subjects.some(s => s.id === dbSubject.slug))
+          .map(s => ({
+            id: s.slug,
+            title: s.name,
+            description: s.description || '',
+            icon: iconMap[s.icon_name || 'book-open'] || BookOpen,
+            lessons: lessonCounts[s.id] || 0,
+            exercises: s.exercise_count || 0,
+            color: colorMap[s.color || 'blue'] || 'from-blue-500 to-blue-600'
+          }))
+      ]
+    : filteredSubjects.map(s => ({
+        id: s.slug,
+        title: s.name,
+        description: s.description || '',
+        icon: iconMap[s.icon_name || 'book-open'] || BookOpen,
+        lessons: lessonCounts[s.id] || 0,
+        exercises: s.exercise_count || 0,
+        color: colorMap[s.color || 'blue'] || 'from-blue-500 to-blue-600'
+      }));
 
   const totalLessons = displaySubjects.reduce((sum, s) => sum + s.lessons, 0);
   const totalExercises = displaySubjects.reduce((sum, s) => sum + s.exercises, 0);
@@ -359,20 +375,8 @@ export default function Matieres() {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mb-8">
           {displaySubjects.map((subject, index) => {
             const IconComponent = subject.icon;
-            // Check content availability based on grade and subject
-            const isMath = subject.id === 'mathematiques' || subject.id === 'matematik-8af' || subject.id === 'mathematiques-af9';
-            const isSciences = subject.id === 'sciences' || subject.id === 'sciences-experimentales-8af' || subject.id === 'sciences-experimentales';
-            const isAnglais = subject.id === 'anglais' || subject.id === 'anglais-8af' || subject.id === 'anglais-af9';
-            const isEspagnol = subject.id === 'espagnol' || subject.id === 'espagnol-8af' || subject.id === 'espagnol-af9';
-            const isCreole = subject.id === 'creole' || subject.id === 'creole-8af';
-            const isSciencesSociales = subject.id === 'sciences-sociales' || subject.id === 'sciences-sociales-8af';
-            const hasContent = (selectedGrade === "7AF" && 
-              (subject.id === 'mathematiques' || subject.id === 'sciences' || 
-               subject.id === 'anglais' || subject.id === 'espagnol' || 
-               subject.id === 'francais' || subject.id === 'sciences-sociales' || 
-               subject.id === 'creole' || subject.id === 'arts' || subject.id === 'education-physique')) ||
-              (selectedGrade === "8AF" && (isMath || isSciences || isAnglais || isEspagnol || isCreole || isSciencesSociales)) ||
-              (selectedGrade === "9AF" && (isMath || isSciences || isAnglais || isEspagnol));
+            // Check if subject has published lessons
+            const hasContent = subject.lessons > 0;
             
             return (
               <Card
@@ -448,6 +452,7 @@ export default function Matieres() {
                       const isMath = subject.id === 'mathematiques' || subject.id === 'matematik-8af' || subject.id === 'mathematiques-af9';
                       const isSciences = subject.id === 'sciences' || subject.id === 'sciences-experimentales-8af' || subject.id === 'sciences-experimentales' || subject.id === 'sciences-experimentales-7af';
                       const isAnglais = subject.id === 'anglais' || subject.id === 'anglais-8af' || subject.id === 'anglais-af9';
+                      const isEspagnol = subject.id === 'espagnol' || subject.id === 'espagnol-8af' || subject.id === 'espagnol-af9';
                       
                       let courseRoute;
                       const isCreole = subject.id === 'creole' || subject.id === 'creole-8af';
