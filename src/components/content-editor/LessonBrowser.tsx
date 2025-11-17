@@ -32,8 +32,12 @@ export const LessonBrowser = ({ onSelectLesson, selectedLesson, refreshKey }: Le
   const gradeLevels = [
     { value: "all", label: "Tous les niveaux" },
     { value: "7AF", label: "7AF" },
-    { value: "AF8", label: "AF8" },
-    { value: "AF9", label: "AF9" },
+    { value: "8AF", label: "8AF" },
+    { value: "9AF", label: "9AF" },
+    { value: "NS1", label: "NS1" },
+    { value: "NS2", label: "NS2" },
+    { value: "NS3", label: "NS3" },
+    { value: "NS4", label: "NS4" },
   ];
 
   // Load subjects when grade level changes or refreshKey updates
