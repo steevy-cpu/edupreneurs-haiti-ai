@@ -76,7 +76,7 @@ const EspagnolLessonAF9 = () => {
         .from('subjects')
         .select('id')
         .eq('slug', 'espagnol-af9')
-        .eq('grade_level', 'AF9')
+        .eq('grade_level', '9AF')
         .maybeSingle();
 
       if (!subject) {
@@ -92,7 +92,7 @@ const EspagnolLessonAF9 = () => {
         .select('*')
         .eq('subject_id', subject.id)
         .eq('slug', lessonSlug)
-        .eq('grade_level', 'AF9')
+        .eq('grade_level', '9AF')
         .maybeSingle();
 
       if (error) throw error;
@@ -107,7 +107,7 @@ const EspagnolLessonAF9 = () => {
           contenu: data.contenu || '',
           exemples_exercices: data.exemples_exercices || '',
           youtube_url: data.youtube_url,
-          grade_level: data.grade_level || 'AF9',
+          grade_level: data.grade_level || '9AF',
           activites_interactives: data.activites_interactives || undefined,
           quiz_final: data.quiz_final || undefined
         });

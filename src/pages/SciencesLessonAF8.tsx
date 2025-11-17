@@ -54,7 +54,7 @@ const SciencesLessonAF8 = () => {
         .from('lessons')
         .select('*')
         .eq('slug', topicId)
-        .eq('grade_level', 'AF8')
+        .eq('grade_level', '8AF')
         .maybeSingle();
 
       if (error) throw error;
@@ -100,7 +100,7 @@ const SciencesLessonAF8 = () => {
         .from('subjects')
         .select('id')
         .eq('slug', 'sciences-experimentales-8af')
-        .eq('grade_level', 'AF8')
+        .eq('grade_level', '8AF')
         .maybeSingle();
 
       if (!subject) return;
@@ -109,7 +109,7 @@ const SciencesLessonAF8 = () => {
         .from('lessons')
         .select('*')
         .eq('subject_id', subject.id)
-        .eq('grade_level', 'AF8')
+        .eq('grade_level', '8AF')
         .eq('is_published', true)
         .order('order_index', { ascending: true });
 

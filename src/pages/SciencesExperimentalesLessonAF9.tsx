@@ -51,7 +51,7 @@ export default function SciencesExpérimentalesLessonAF9() {
         .from("subjects")
         .select("id")
         .eq("slug", "sciences-experimentales")
-        .eq("grade_level", "AF9")
+        .eq("grade_level", "9AF")
         .single();
 
       if (subjectError) throw subjectError;

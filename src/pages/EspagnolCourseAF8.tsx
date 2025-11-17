@@ -36,7 +36,7 @@ const EspagnolCourseAF8 = () => {
         .from('subjects')
         .select('id')
         .eq('slug', 'espagnol-8af')
-        .eq('grade_level', 'AF8')
+        .eq('grade_level', '8AF')
         .single();
 
       if (!subject) {
@@ -52,7 +52,7 @@ const EspagnolCourseAF8 = () => {
         .from('lessons')
         .select('*')
         .eq('subject_id', subject.id)
-        .eq('grade_level', 'AF8')
+        .eq('grade_level', '8AF')
         .order('order_index', { ascending: true });
 
       if (error) throw error;

@@ -30,19 +30,19 @@ const AnglaisCourseAF9 = () => {
       const { data, error } = await supabase
         .from("lessons")
         .select("id, title, slug, mois, order_index, objectif")
-        .eq("grade_level", "AF9")
+        .eq("grade_level", "9AF")
         .eq("is_published", true)
         .in("subject_id", (await supabase
           .from("subjects")
           .select("id")
           .eq("slug", "anglais-af9")
-          .eq("grade_level", "AF9")
+          .eq("grade_level", "9AF")
           .single()
         ).data?.id ? [(await supabase
           .from("subjects")
           .select("id")
           .eq("slug", "anglais-af9")
-          .eq("grade_level", "AF9")
+          .eq("grade_level", "9AF")
           .single()
         ).data!.id] : [])
         .order("order_index");
