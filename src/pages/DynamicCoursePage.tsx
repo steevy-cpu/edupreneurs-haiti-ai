@@ -34,7 +34,7 @@ export default function DynamicCoursePage() {
         .from('subjects')
         .select('*')
         .eq('slug', subjectSlug)
-        .single();
+        .maybeSingle();
 
       if (subjectError) throw subjectError;
       setSubject(subjectData);
