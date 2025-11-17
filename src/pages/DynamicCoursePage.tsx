@@ -29,12 +29,16 @@ export default function DynamicCoursePage() {
     try {
       setIsLoading(true);
       
+      console.log('DynamicCoursePage - Loading subject with slug:', subjectSlug);
+      
       // Load subject using the slug
       const { data: subjectData, error: subjectError } = await supabase
         .from('subjects')
         .select('*')
         .eq('slug', subjectSlug)
         .maybeSingle();
+      
+      console.log('DynamicCoursePage - Subject found:', subjectData, 'Error:', subjectError);
 
       if (subjectError) throw subjectError;
       
