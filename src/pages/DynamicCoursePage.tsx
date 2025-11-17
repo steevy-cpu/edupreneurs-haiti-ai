@@ -29,6 +29,9 @@ export default function DynamicCoursePage() {
     try {
       setIsLoading(true);
       
+      console.log('DynamicCoursePage - fullSlug:', fullSlug);
+      console.log('DynamicCoursePage - subjectSlug:', subjectSlug);
+      
       // Load subject using the slug
       const { data: subjectData, error: subjectError } = await supabase
         .from('subjects')
@@ -36,7 +39,19 @@ export default function DynamicCoursePage() {
         .eq('slug', subjectSlug)
         .maybeSingle();
 
+      console.log('DynamicCoursePage - subjectData:', subjectData);
+      console.log('DynamicCoursePage - subjectError:', subjectError);
+
       if (subjectError) throw subjectError;
+      
+      // Check if subject was found
+      if (!subjectData) {
+        console.error('Subject not found for slug:', subjectSlug);
+        setSubject(null);
+        setIsLoading(false);
+        return;
+      }
+      
       setSubject(subjectData);
 
       // Load published lessons for this subject
