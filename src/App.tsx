@@ -75,6 +75,8 @@ const Community = lazy(() => import("./pages/Community"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 const PrivacyPolicy = lazy(() => import("./pages/PrivacyPolicy"));
 const DevPush = lazy(() => import("./pages/DevPush"));
+const DynamicCoursePage = lazy(() => import("./pages/DynamicCoursePage"));
+const DynamicLessonPage = lazy(() => import("./pages/DynamicLessonPage"));
 const NotificationSettings = lazy(() => import("./pages/NotificationSettings"));
 const EmailTest = lazy(() => import("./pages/EmailTest"));
 const TestEmail = lazy(() => import("./pages/TestEmail"));
@@ -180,6 +182,9 @@ const App = () => (
           <Route path="/content-editor" element={<Layout><ContentEditor /></Layout>} />
           <Route path="/ai-analytics" element={<Layout><AIGenerationAnalytics /></Layout>} />
           <Route path="/data-migration" element={<Layout><DataMigration /></Layout>} />
+              {/* Dynamic routes for content editor generated subjects - MUST be before catch-all */}
+              <Route path="/:fullSlug-course" element={<DynamicCoursePage />} />
+              <Route path="/:fullSlug/:lessonSlug" element={<DynamicLessonPage />} />
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />
               </Routes>
