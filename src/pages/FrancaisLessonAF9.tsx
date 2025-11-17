@@ -274,26 +274,26 @@ const FrancaisLessonAF9 = () => {
         <Card className="max-w-6xl mx-auto bg-card/50 backdrop-blur-sm border-border/50">
           <CardContent className="p-6">
             <Tabs value={activeTab} onValueChange={setActiveTab}>
-              <TabsList className="grid w-full grid-cols-2 lg:grid-cols-5 mb-6">
-                <TabsTrigger value="introduction" className="flex items-center gap-2 py-3">
-                  <Target className="h-4 w-4" />
+              <TabsList className="grid w-full grid-cols-5 mb-6 bg-muted/30">
+                <TabsTrigger value="introduction" className="flex items-center gap-2 py-3 data-[state=active]:bg-background">
+                  <BookOpen className="h-4 w-4" />
                   <span className="hidden sm:inline">Introduction</span>
                 </TabsTrigger>
-                <TabsTrigger value="contenu" className="flex items-center gap-2 py-3">
-                  <BookOpen className="h-4 w-4" />
-                  <span className="hidden sm:inline">Contenu</span>
+                <TabsTrigger value="contenu" className="flex items-center gap-2 py-3 data-[state=active]:bg-background">
+                  <FileText className="h-4 w-4" />
+                  <span className="hidden sm:inline">Contenu & Exemples</span>
                 </TabsTrigger>
-                <TabsTrigger value="exemples" className="flex items-center gap-2 py-3">
-                  <Lightbulb className="h-4 w-4" />
-                  <span className="hidden sm:inline">Exemples</span>
-                </TabsTrigger>
-                <TabsTrigger value="activites" className="flex items-center gap-2 py-3">
+                <TabsTrigger value="activites" className="flex items-center gap-2 py-3 data-[state=active]:bg-background">
                   <Gamepad2 className="h-4 w-4" />
                   <span className="hidden sm:inline">Activités</span>
                 </TabsTrigger>
-                <TabsTrigger value="notes" className="flex items-center gap-2 py-3">
+                <TabsTrigger value="quiz" className="flex items-center gap-2 py-3 data-[state=active]:bg-background">
+                  <Trophy className="h-4 w-4" />
+                  <span className="hidden sm:inline">Quiz Final</span>
+                </TabsTrigger>
+                <TabsTrigger value="notes" className="flex items-center gap-2 py-3 data-[state=active]:bg-background">
                   <FileText className="h-4 w-4" />
-                  <span className="hidden sm:inline">Mes notes</span>
+                  <span className="hidden sm:inline">Mes Notes</span>
                 </TabsTrigger>
               </TabsList>
 
@@ -311,18 +311,27 @@ const FrancaisLessonAF9 = () => {
                 />
               </TabsContent>
 
-              <TabsContent value="contenu" className="space-y-6 mt-6">
-                <div 
-                  className="prose prose-sm sm:prose lg:prose-lg max-w-none dark:prose-invert lesson-content"
-                  dangerouslySetInnerHTML={{ __html: lesson.contenu }}
-                />
-              </TabsContent>
-
-              <TabsContent value="exemples" className="space-y-6 mt-6">
-                <div 
-                  className="prose prose-sm sm:prose lg:prose-lg max-w-none dark:prose-invert lesson-content"
-                  dangerouslySetInnerHTML={{ __html: lesson.exemples_exercices }}
-                />
+              <TabsContent value="contenu" className="space-y-8 mt-6">
+                <div>
+                  <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
+                    <BookOpen className="h-5 w-5" />
+                    Contenu de la leçon
+                  </h3>
+                  <div 
+                    className="prose prose-sm sm:prose lg:prose-lg max-w-none dark:prose-invert lesson-content"
+                    dangerouslySetInnerHTML={{ __html: lesson.contenu }}
+                  />
+                </div>
+                <div>
+                  <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
+                    <Lightbulb className="h-5 w-5" />
+                    Exemples et Exercices
+                  </h3>
+                  <div 
+                    className="prose prose-sm sm:prose lg:prose-lg max-w-none dark:prose-invert lesson-content"
+                    dangerouslySetInnerHTML={{ __html: lesson.exemples_exercices }}
+                  />
+                </div>
               </TabsContent>
 
               <TabsContent value="activites" className="space-y-6 mt-6">
@@ -339,29 +348,23 @@ const FrancaisLessonAF9 = () => {
                     </CardContent>
                   </Card>
                 )}
+              </TabsContent>
 
-                <div className="mt-8">
-                  <div className="flex items-center gap-3 mb-6">
-                    <div className="p-3 rounded-xl bg-yellow-500/10">
-                      <Trophy className="h-6 w-6 text-yellow-500" />
-                    </div>
-                    <h3 className="text-2xl font-bold">Quiz Final</h3>
-                  </div>
-                  {lesson.quiz_final ? (
-                    <HTMLQuizParser
-                      htmlContent={lesson.quiz_final}
-                      lessonSlug={lesson.slug}
-                      subject="francais"
-                    />
-                  ) : (
-                    <Card className="border-dashed">
-                      <CardContent className="pt-6 text-center">
-                        <GraduationCap className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
-                        <p className="text-muted-foreground">Aucun quiz disponible pour cette leçon</p>
-                      </CardContent>
-                    </Card>
-                  )}
-                </div>
+              <TabsContent value="quiz" className="space-y-6 mt-6">
+                {lesson.quiz_final ? (
+                  <HTMLQuizParser
+                    htmlContent={lesson.quiz_final}
+                    lessonSlug={lesson.slug}
+                    subject="francais"
+                  />
+                ) : (
+                  <Card className="border-dashed">
+                    <CardContent className="pt-6 text-center">
+                      <GraduationCap className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
+                      <p className="text-muted-foreground">Aucun quiz disponible pour cette leçon</p>
+                    </CardContent>
+                  </Card>
+                )}
               </TabsContent>
 
               <TabsContent value="notes" className="space-y-6 mt-6">
