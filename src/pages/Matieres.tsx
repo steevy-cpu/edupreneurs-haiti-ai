@@ -459,9 +459,8 @@ export default function Matieres() {
                       } else if (subject.id === 'francais-9af' || subject.id === 'français-9af') {
                         courseRoute = '/francais-af9';
                       } else {
-                        // For dynamically created subjects, normalize slug (remove special chars)
-                        const normalizedSlug = subject.id.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
-                        courseRoute = `/${normalizedSlug}-course`;
+                        // For dynamically created subjects, use new route format
+                        courseRoute = `/course/${subject.id}`;
                       }
                       
                       navigate(courseRoute);
