@@ -212,9 +212,31 @@ const ContentEditor = () => {
                 {/* Lesson Browser - Left Sidebar */}
                 <div className="lg:col-span-4 h-[calc(100vh-280px)] min-h-[600px] max-h-[800px]">
                   <LessonBrowser
-                    onSelectLesson={(lesson) => {
+                    onSelectLesson={async (lesson) => {
                       console.log('✅ Lesson selected:', lesson);
-                      setSelectedLesson(lesson);
+                      // Fetch full lesson data with all content fields
+                      try {
+                        const { data, error } = await supabase
+                          .from('lessons')
+                          .select('*, subjects(id, name)')
+                          .eq('id', lesson.id)
+                          .single();
+                        
+                        if (error) throw error;
+                        if (data) {
+                          console.log('📄 Full lesson data loaded:', {
+                            id: data.id,
+                            title: data.title,
+                            hasContent: !!data.contenu,
+                            hasObjectif: !!data.objectif,
+                            hasIntroduction: !!data.introduction
+                          });
+                          setSelectedLesson(data);
+                        }
+                      } catch (error) {
+                        console.error('Error loading full lesson:', error);
+                        toast.error("Erreur lors du chargement de la leçon");
+                      }
                     }}
                     selectedLesson={selectedLesson}
                     refreshKey={refreshKey}
