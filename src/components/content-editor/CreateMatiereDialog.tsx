@@ -175,8 +175,13 @@ export function CreateMatiereDialog({ open, onOpenChange, onMatiereCreated }: Cr
   const handleGenerate = async () => {
     setIsLoading(true);
     try {
-      // Create slug
-      const slug = `${subjectName.toLowerCase().replace(/\s+/g, '-')}-${gradeLevel.toLowerCase()}`;
+      // Create slug - normalize to remove special characters (accents, etc.)
+      const normalizedName = subjectName
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .toLowerCase()
+        .replace(/\s+/g, '-');
+      const slug = `${normalizedName}-${gradeLevel.toLowerCase()}`;
 
       // Check if subject already exists
       const { data: existingSubject } = await supabase
