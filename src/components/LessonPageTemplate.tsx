@@ -283,7 +283,8 @@ export const LessonPageTemplate = ({
                 </CardHeader>
                 <CardContent className="p-3 sm:p-6">
                   <InteractiveActivitiesEnhanced 
-                    activities={lesson.activites_interactives}
+                    content={lesson.activites_interactives}
+                    isLoading={false}
                   />
                 </CardContent>
               </Card>
