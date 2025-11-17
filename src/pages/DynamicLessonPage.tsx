@@ -19,11 +19,15 @@ export default function DynamicLessonPage() {
     try {
       setIsLoading(true);
 
+      // Decode URL-encoded slugs
+      const decodedSubjectSlug = fullSlug ? decodeURIComponent(fullSlug) : '';
+      const decodedLessonSlug = lessonSlug ? decodeURIComponent(lessonSlug) : '';
+
       // Load subject using the slug
       const { data: subjectData, error: subjectError } = await supabase
         .from('subjects')
         .select('*')
-        .eq('slug', fullSlug)
+        .eq('slug', decodedSubjectSlug)
         .single();
 
       if (subjectError) throw subjectError;
@@ -33,7 +37,7 @@ export default function DynamicLessonPage() {
       const { data: lessonData, error: lessonError } = await supabase
         .from('lessons')
         .select('*')
-        .eq('slug', lessonSlug)
+        .eq('slug', decodedLessonSlug)
         .eq('subject_id', subjectData.id)
         .single();
 
