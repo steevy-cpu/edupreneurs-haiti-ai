@@ -302,13 +302,6 @@ const FrancaisLessonAF9 = () => {
                   className="prose prose-sm sm:prose lg:prose-lg max-w-none dark:prose-invert lesson-content"
                   dangerouslySetInnerHTML={{ __html: lesson.introduction }}
                 />
-                <YouTubeVideoSection
-                  lessonTitle={lesson.title}
-                  objectives={lesson.objectif}
-                  gradeLevel={lesson.grade_level}
-                  customYoutubeUrl={lesson.youtube_url}
-                  subject="francais"
-                />
               </TabsContent>
 
               <TabsContent value="contenu" className="space-y-8 mt-6">
@@ -332,6 +325,14 @@ const FrancaisLessonAF9 = () => {
                     dangerouslySetInnerHTML={{ __html: lesson.exemples_exercices }}
                   />
                 </div>
+                
+                <YouTubeVideoSection
+                  lessonTitle={lesson.title}
+                  objectives={lesson.objectif}
+                  gradeLevel={lesson.grade_level}
+                  customYoutubeUrl={lesson.youtube_url}
+                  subject="francais"
+                />
               </TabsContent>
 
               <TabsContent value="activites" className="space-y-6 mt-6">
