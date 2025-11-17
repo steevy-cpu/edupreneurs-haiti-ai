@@ -386,41 +386,8 @@ export default function Matieres() {
                 }`}
                 onClick={() => {
                   if (hasContent) {
-                    let courseRoute;
-                    const isMath = subject.id === 'mathematiques' || subject.id === 'matematik-8af' || subject.id === 'mathematiques-af9';
-                      const isSciences = subject.id === 'sciences' || subject.id === 'sciences-experimentales-8af' || subject.id === 'sciences-experimentales' || subject.id === 'sciences-experimentales-7af';
-                    const isAnglais = subject.id === 'anglais' || subject.id === 'anglais-8af' || subject.id === 'anglais-af9';
-                    const isEspagnol = subject.id === 'espagnol' || subject.id === 'espagnol-8af' || subject.id === 'espagnol-af9';
-                    const isCreole = subject.id === 'creole' || subject.id === 'creole-8af';
-                    const isSciencesSociales = subject.id === 'sciences-sociales' || subject.id === 'sciences-sociales-8af';
-                  
-                  if (isMath) {
-                    courseRoute = selectedGrade === '9AF' ? '/mathematiques-af9' : (selectedGrade === '8AF' ? '/math-af8-course' : '/math-course');
-                  } else if (isSciences) {
-                    courseRoute = selectedGrade === '9AF' ? '/sciences-experimentales-af9' : (selectedGrade === '8AF' ? '/sciences-af8-course' : '/sciences-experimentales-7af');
-                  } else if (isAnglais) {
-                    courseRoute = selectedGrade === '9AF' ? '/anglais-af9' : (selectedGrade === '8AF' ? '/anglais-af8-course' : '/anglais-course');
-                    } else if (isEspagnol) {
-                      courseRoute = selectedGrade === '9AF' ? '/espagnol-af9' : (selectedGrade === '8AF' ? '/espagnol-af8-course' : '/espagnol-course');
-                      } else if (isCreole) {
-                        courseRoute = selectedGrade === '8AF' ? '/creole-af8-course' : '/creole-course';
-                      } else if (isSciencesSociales) {
-                        courseRoute = selectedGrade === '8AF' ? '/sciences-sociales-af8-course' : '/sciences-sociales-course';
-                    } else if (subject.id === 'francais') {
-                      courseRoute = '/francais-course';
-                    } else if (subject.id === 'arts') {
-                      courseRoute = '/arts-course';
-                    } else if (subject.id === 'education-physique') {
-                      courseRoute = '/education-physique-course';
-                    } else if (subject.id === 'francais-9af' || subject.id === 'français-9af') {
-                      courseRoute = '/francais-af9';
-                    } else {
-                      // For dynamically created subjects, normalize slug (remove special chars)
-                      const normalizedSlug = subject.id.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
-                      courseRoute = `/${normalizedSlug}-course`;
-                    }
-                    
-                    navigate(courseRoute);
+                    // Use dynamic route for all subjects
+                    navigate(`/${subject.id}-course`);
                   }
                 }}
               >

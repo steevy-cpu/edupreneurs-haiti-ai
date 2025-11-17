@@ -18,8 +18,8 @@ export default function DynamicCoursePage() {
   const [completedLessons, setCompletedLessons] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
-  // Remove '-course' suffix if present
-  const subjectSlug = fullSlug?.replace(/-course$/, '') || '';
+  // Remove '-course' suffix if present and decode URL-encoded characters
+  const subjectSlug = fullSlug ? decodeURIComponent(fullSlug.replace(/-course$/, '')) : '';
 
   useEffect(() => {
     loadSubjectAndLessons();
