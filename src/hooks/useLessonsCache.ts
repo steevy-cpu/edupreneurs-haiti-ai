@@ -158,7 +158,7 @@ export const useLesson = (subjectSlug: string, lessonSlug: string) => {
   return { lesson, isLoading, error };
 };
 
-export const useSubjects = () => {
+export const useSubjects = (refreshTrigger?: number) => {
   const [subjects, setSubjects] = useState<CachedSubject[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -168,8 +168,8 @@ export const useSubjects = () => {
       const cacheKey = 'all-subjects';
       const cached = lessonsListCache.get(cacheKey);
 
-      // Check cache first
-      if (cached && Date.now() - cached.timestamp < CACHE_DURATION) {
+      // Check cache first (skip cache if refreshTrigger is provided)
+      if (!refreshTrigger && cached && Date.now() - cached.timestamp < CACHE_DURATION) {
         setSubjects(cached.data as any);
         setIsLoading(false);
         return;
@@ -194,7 +194,7 @@ export const useSubjects = () => {
     };
 
     fetchSubjects();
-  }, []);
+  }, [refreshTrigger]);
 
   return { subjects, isLoading, error };
 };
