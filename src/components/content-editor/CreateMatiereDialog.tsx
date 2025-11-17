@@ -222,7 +222,7 @@ export function CreateMatiereDialog({ open, onOpenChange, onMatiereCreated }: Cr
         mois: lesson.mois,
         order_index: lesson.order_index,
         grade_level: gradeLevel,
-        is_published: false,
+        is_published: true, // Auto-publish lessons on creation
         // Empty sections ready for AI generation via content editor
         introduction: null,
         contenu: null,
