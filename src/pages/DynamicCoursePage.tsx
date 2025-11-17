@@ -11,15 +11,15 @@ import { MusicSelector } from "@/components/MusicSelector";
 import ericTeaching from "@/assets/eric-teaching.png";
 
 export default function DynamicCoursePage() {
-  const { fullSlug } = useParams();
+  const { slug } = useParams();
   const navigate = useNavigate();
   const [subject, setSubject] = useState<any>(null);
   const [lessons, setLessons] = useState<any[]>([]);
   const [completedLessons, setCompletedLessons] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
-  // Remove '-course' suffix if present and decode URL-encoded characters
-  const subjectSlug = fullSlug ? decodeURIComponent(fullSlug.replace(/-course$/, '')) : '';
+  // Decode URL-encoded characters
+  const subjectSlug = slug ? decodeURIComponent(slug) : '';
 
   useEffect(() => {
     loadSubjectAndLessons();
@@ -29,18 +29,12 @@ export default function DynamicCoursePage() {
     try {
       setIsLoading(true);
       
-      console.log('DynamicCoursePage - fullSlug:', fullSlug);
-      console.log('DynamicCoursePage - subjectSlug:', subjectSlug);
-      
       // Load subject using the slug
       const { data: subjectData, error: subjectError } = await supabase
         .from('subjects')
         .select('*')
         .eq('slug', subjectSlug)
         .maybeSingle();
-
-      console.log('DynamicCoursePage - subjectData:', subjectData);
-      console.log('DynamicCoursePage - subjectError:', subjectError);
 
       if (subjectError) throw subjectError;
       
@@ -182,7 +176,7 @@ export default function DynamicCoursePage() {
                 }`}
                 onClick={() => {
                   if (!isLocked) {
-                    navigate(`/${subjectSlug}/${lesson.slug}`);
+                    navigate(`/course/${subjectSlug}/${lesson.slug}`);
                   }
                 }}
               >
