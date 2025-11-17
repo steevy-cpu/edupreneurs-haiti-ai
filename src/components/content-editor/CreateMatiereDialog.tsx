@@ -8,8 +8,74 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { Loader2, Sparkles, Check, ArrowRight } from "lucide-react";
+import * as LucideIcons from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+
+const SUBJECT_ICONS = [
+  // Languages
+  { value: "Languages", label: "Languages (Langues)", category: "Langues" },
+  { value: "Globe", label: "Globe (Géographie/Langues)", category: "Langues" },
+  { value: "BookOpen", label: "BookOpen (Lecture générale)", category: "Langues" },
+  { value: "MessageSquare", label: "MessageSquare (Communication)", category: "Langues" },
+  { value: "BookA", label: "BookA (Kreyòl/Français)", category: "Langues" },
+  
+  // Mathematics
+  { value: "Calculator", label: "Calculator (Mathématiques)", category: "Mathématiques" },
+  { value: "PieChart", label: "PieChart (Statistiques)", category: "Mathématiques" },
+  { value: "Binary", label: "Binary (Logique)", category: "Mathématiques" },
+  { value: "Sigma", label: "Sigma (Algèbre)", category: "Mathématiques" },
+  
+  // Sciences
+  { value: "FlaskConical", label: "FlaskConical (Chimie)", category: "Sciences" },
+  { value: "Atom", label: "Atom (Physique)", category: "Sciences" },
+  { value: "Microscope", label: "Microscope (Biologie)", category: "Sciences" },
+  { value: "Dna", label: "Dna (Sciences de la vie)", category: "Sciences" },
+  { value: "Leaf", label: "Leaf (Sciences naturelles)", category: "Sciences" },
+  { value: "Beaker", label: "Beaker (Expériences)", category: "Sciences" },
+  
+  // Sciences Sociales & History
+  { value: "Landmark", label: "Landmark (Histoire)", category: "Sciences Sociales" },
+  { value: "Users", label: "Users (Sciences Sociales)", category: "Sciences Sociales" },
+  { value: "Globe2", label: "Globe2 (Géographie)", category: "Sciences Sociales" },
+  { value: "BookText", label: "BookText (Histoire/Textes)", category: "Sciences Sociales" },
+  { value: "Map", label: "Map (Géographie)", category: "Sciences Sociales" },
+  { value: "Scale", label: "Scale (Justice/Civisme)", category: "Sciences Sociales" },
+  
+  // Arts
+  { value: "Palette", label: "Palette (Arts plastiques)", category: "Arts" },
+  { value: "Music", label: "Music (Musique)", category: "Arts" },
+  { value: "Drama", label: "Drama (Théâtre)", category: "Arts" },
+  { value: "Paintbrush", label: "Paintbrush (Peinture)", category: "Arts" },
+  
+  // Education Physique
+  { value: "Dumbbell", label: "Dumbbell (Sport/Fitness)", category: "Éducation Physique" },
+  { value: "Trophy", label: "Trophy (Compétition)", category: "Éducation Physique" },
+  { value: "Activity", label: "Activity (Activité physique)", category: "Éducation Physique" },
+  { value: "Heart", label: "Heart (Santé)", category: "Éducation Physique" },
+  
+  // Informatique/Technology
+  { value: "Laptop", label: "Laptop (Informatique)", category: "Informatique" },
+  { value: "Code", label: "Code (Programmation)", category: "Informatique" },
+  { value: "Database", label: "Database (Bases de données)", category: "Informatique" },
+  { value: "Monitor", label: "Monitor (Technologie)", category: "Informatique" },
+  { value: "Cpu", label: "Cpu (Systèmes)", category: "Informatique" },
+  
+  // Philosophy & General
+  { value: "Brain", label: "Brain (Philosophie/Psychologie)", category: "Philosophie" },
+  { value: "Lightbulb", label: "Lightbulb (Idées/Innovation)", category: "Général" },
+  { value: "GraduationCap", label: "GraduationCap (Éducation)", category: "Général" },
+  { value: "Book", label: "Book (Livres/Études)", category: "Général" },
+] as const;
+
+// Helper function to safely get icon component
+const getIconComponent = (iconName: string) => {
+  const icon = (LucideIcons as any)[iconName];
+  if (icon && typeof icon === 'function' && icon.$$typeof) {
+    return icon as React.ComponentType<{ className?: string }>;
+  }
+  return null;
+};
 
 interface CreateMatiereDialogProps {
   open: boolean;
@@ -263,12 +329,54 @@ export function CreateMatiereDialog({ open, onOpenChange, onMatiereCreated }: Cr
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="icon">Icône</Label>
-                <Input
-                  id="icon"
-                  placeholder="Ex: BookOpen, Globe"
-                  value={icon}
-                  onChange={(e) => setIcon(e.target.value)}
-                />
+                <div className="flex gap-2">
+                  <Select value={icon} onValueChange={setIcon}>
+                    <SelectTrigger id="icon" className="flex-1">
+                      <SelectValue>
+                        <div className="flex items-center gap-2">
+                          {icon && (() => {
+                            const IconComponent = getIconComponent(icon);
+                            return IconComponent ? <IconComponent className="h-4 w-4" /> : null;
+                          })()}
+                          <span>{icon}</span>
+                        </div>
+                      </SelectValue>
+                    </SelectTrigger>
+                    <SelectContent className="max-h-[300px]">
+                      {Object.entries(
+                        SUBJECT_ICONS.reduce((acc, iconOption) => {
+                          if (!acc[iconOption.category]) acc[iconOption.category] = [];
+                          acc[iconOption.category].push(iconOption);
+                          return acc;
+                        }, {} as Record<string, typeof SUBJECT_ICONS[number][]>)
+                      ).map(([category, icons]) => (
+                        <div key={category}>
+                          <div className="px-2 py-1.5 text-xs font-semibold text-muted-foreground">
+                            {category}
+                          </div>
+                          {icons.map((iconOption) => {
+                            const IconComponent = getIconComponent(iconOption.value);
+                            return (
+                              <SelectItem key={iconOption.value} value={iconOption.value}>
+                                <div className="flex items-center gap-2">
+                                  {IconComponent && <IconComponent className="h-4 w-4" />}
+                                  <span>{iconOption.label}</span>
+                                </div>
+                              </SelectItem>
+                            );
+                          })}
+                        </div>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  
+                  <div className="w-12 h-10 flex items-center justify-center border rounded-md bg-muted/30">
+                    {(() => {
+                      const IconComponent = getIconComponent(icon);
+                      return IconComponent ? <IconComponent className="h-6 w-6" /> : null;
+                    })()}
+                  </div>
+                </div>
               </div>
               <div className="space-y-2">
                 <Label htmlFor="color">Couleur</Label>
