@@ -331,7 +331,7 @@ export default function Matieres() {
           </p>
         </div>
 
-        {(selectedGrade === "7AF" || selectedGrade === "8AF" || selectedGrade === "9AF") && displaySubjects.length > 0 ? (
+        {(selectedGrade === "7AF" || selectedGrade === "8AF" || selectedGrade === "9AF" || selectedGrade === "NS1" || selectedGrade === "NS2") && displaySubjects.length > 0 ? (
           <>
             {/* Stats Section */}
             <Card className="p-6 mb-8">
