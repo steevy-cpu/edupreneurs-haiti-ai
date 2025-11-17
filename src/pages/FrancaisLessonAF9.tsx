@@ -271,35 +271,35 @@ const FrancaisLessonAF9 = () => {
         <Card className="max-w-6xl mx-auto bg-card/50 backdrop-blur-sm border-border/50">
           <CardContent className="p-6">
             <Tabs value={activeTab} onValueChange={setActiveTab}>
-              <TabsList className="grid w-full grid-cols-2 lg:grid-cols-5 mb-8">
-                <TabsTrigger value="introduction" className="flex items-center gap-2">
+              <TabsList className="grid w-full grid-cols-2 lg:grid-cols-5 mb-6">
+                <TabsTrigger value="introduction" className="flex items-center gap-2 py-3">
                   <Target className="h-4 w-4" />
                   <span className="hidden sm:inline">Introduction</span>
                 </TabsTrigger>
-                <TabsTrigger value="contenu" className="flex items-center gap-2">
+                <TabsTrigger value="contenu" className="flex items-center gap-2 py-3">
                   <BookOpen className="h-4 w-4" />
                   <span className="hidden sm:inline">Contenu</span>
                 </TabsTrigger>
-                <TabsTrigger value="exemples" className="flex items-center gap-2">
+                <TabsTrigger value="exemples" className="flex items-center gap-2 py-3">
                   <Lightbulb className="h-4 w-4" />
                   <span className="hidden sm:inline">Exemples</span>
                 </TabsTrigger>
-                <TabsTrigger value="activites" className="flex items-center gap-2">
+                <TabsTrigger value="activites" className="flex items-center gap-2 py-3">
                   <Gamepad2 className="h-4 w-4" />
                   <span className="hidden sm:inline">Activités</span>
                 </TabsTrigger>
-                <TabsTrigger value="notes" className="flex items-center gap-2">
+                <TabsTrigger value="notes" className="flex items-center gap-2 py-3">
                   <FileText className="h-4 w-4" />
                   <span className="hidden sm:inline">Mes notes</span>
                 </TabsTrigger>
               </TabsList>
 
-              <TabsContent value="introduction" className="space-y-6">
-                <div className="flex items-center gap-3 mb-6">
-                  <div className="p-3 rounded-xl bg-primary/10">
-                    <Target className="h-6 w-6 text-primary" />
+              <TabsContent value="introduction" className="space-y-6 mt-6">
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="p-2 rounded-lg bg-primary/10">
+                    <Target className="h-5 w-5 text-primary" />
                   </div>
-                  <h2 className="text-2xl font-bold">Introduction</h2>
+                  <h2 className="text-xl font-semibold">Introduction</h2>
                 </div>
                 <div 
                   className="prose prose-sm sm:prose lg:prose-lg max-w-none dark:prose-invert lesson-content"
@@ -314,12 +314,12 @@ const FrancaisLessonAF9 = () => {
                 />
               </TabsContent>
 
-              <TabsContent value="contenu" className="space-y-6">
-                <div className="flex items-center gap-3 mb-6">
-                  <div className="p-3 rounded-xl bg-primary/10">
-                    <BookOpen className="h-6 w-6 text-primary" />
+              <TabsContent value="contenu" className="space-y-6 mt-6">
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="p-2 rounded-lg bg-primary/10">
+                    <BookOpen className="h-5 w-5 text-primary" />
                   </div>
-                  <h2 className="text-2xl font-bold">Contenu de la leçon</h2>
+                  <h2 className="text-xl font-semibold">Contenu de la leçon</h2>
                 </div>
                 <div 
                   className="prose prose-sm sm:prose lg:prose-lg max-w-none dark:prose-invert lesson-content"
@@ -327,12 +327,12 @@ const FrancaisLessonAF9 = () => {
                 />
               </TabsContent>
 
-              <TabsContent value="exemples" className="space-y-6">
-                <div className="flex items-center gap-3 mb-6">
-                  <div className="p-3 rounded-xl bg-primary/10">
-                    <Lightbulb className="h-6 w-6 text-primary" />
+              <TabsContent value="exemples" className="space-y-6 mt-6">
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="p-2 rounded-lg bg-primary/10">
+                    <Lightbulb className="h-5 w-5 text-primary" />
                   </div>
-                  <h2 className="text-2xl font-bold">Exemples et Exercices</h2>
+                  <h2 className="text-xl font-semibold">Exemples et Exercices</h2>
                 </div>
                 <div 
                   className="prose prose-sm sm:prose lg:prose-lg max-w-none dark:prose-invert lesson-content"
@@ -340,12 +340,12 @@ const FrancaisLessonAF9 = () => {
                 />
               </TabsContent>
 
-              <TabsContent value="activites" className="space-y-6">
-                <div className="flex items-center gap-3 mb-6">
-                  <div className="p-3 rounded-xl bg-primary/10">
-                    <Gamepad2 className="h-6 w-6 text-primary" />
+              <TabsContent value="activites" className="space-y-6 mt-6">
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="p-2 rounded-lg bg-primary/10">
+                    <Gamepad2 className="h-5 w-5 text-primary" />
                   </div>
-                  <h2 className="text-2xl font-bold">Activités Interactives</h2>
+                  <h2 className="text-xl font-semibold">Activités Interactives</h2>
                 </div>
                 
                 {lesson.activites_interactives ? (
@@ -386,12 +386,12 @@ const FrancaisLessonAF9 = () => {
                 </div>
               </TabsContent>
 
-              <TabsContent value="notes" className="space-y-6">
-                <div className="flex items-center gap-3 mb-6">
-                  <div className="p-3 rounded-xl bg-primary/10">
-                    <FileText className="h-6 w-6 text-primary" />
+              <TabsContent value="notes" className="space-y-6 mt-6">
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="p-2 rounded-lg bg-primary/10">
+                    <FileText className="h-5 w-5 text-primary" />
                   </div>
-                  <h2 className="text-2xl font-bold">Mes notes personnelles</h2>
+                  <h2 className="text-xl font-semibold">Mes notes personnelles</h2>
                 </div>
                 <div className="space-y-4">
                   <Textarea
