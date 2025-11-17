@@ -29,7 +29,7 @@ import { MusicSelector } from "@/components/MusicSelector";
 import { useSubjects } from "@/hooks/useLessonsCache";
 import { supabase } from "@/integrations/supabase/client";
 
-type GradeLevel = "AF7" | "AF8" | "AF9" | "NS1" | "NS2" | "NS3" | "NS4";
+type GradeLevel = "7AF" | "8AF" | "9AF" | "NS1" | "NS2" | "NS3" | "NS4";
 
 interface Subject {
   id: string;
@@ -126,9 +126,9 @@ const subjects: Subject[] = [
 ];
 
 const gradeLevels = [
-  { id: "AF7" as GradeLevel, label: "AF7", fullName: "7ème année fondamentale" },
-  { id: "AF8" as GradeLevel, label: "AF8", fullName: "8ème année fondamentale" },
-  { id: "AF9" as GradeLevel, label: "AF9", fullName: "9ème année fondamentale" },
+  { id: "7AF" as GradeLevel, label: "7AF", fullName: "7ème année fondamentale" },
+  { id: "8AF" as GradeLevel, label: "8AF", fullName: "8ème année fondamentale" },
+  { id: "9AF" as GradeLevel, label: "9AF", fullName: "9ème année fondamentale" },
   { id: "NS1" as GradeLevel, label: "NS1", fullName: "1ère secondaire" },
   { id: "NS2" as GradeLevel, label: "NS2", fullName: "2ème secondaire" },
   { id: "NS3" as GradeLevel, label: "NS3", fullName: "3ème secondaire" },
@@ -170,7 +170,7 @@ const colorMap: Record<string, string> = {
 
 export default function Matieres() {
   const navigate = useNavigate();
-  const [selectedGrade, setSelectedGrade] = useState<GradeLevel>("AF7");
+  const [selectedGrade, setSelectedGrade] = useState<GradeLevel>("7AF");
   const { subjects: dbSubjects, isLoading } = useSubjects();
   const [lessonCounts, setLessonCounts] = useState<Record<string, number>>({});
 
@@ -179,7 +179,7 @@ export default function Matieres() {
   // Fetch actual lesson counts from database
   useEffect(() => {
     const fetchLessonCounts = async () => {
-      if (selectedGrade === "AF7") return; // Use hardcoded for AF7
+      if (selectedGrade === "7AF") return; // Use hardcoded for 7AF
       
       try {
         const { data: lessons, error } = await supabase
@@ -208,8 +208,8 @@ export default function Matieres() {
   // Filter subjects by selected grade
   const filteredSubjects = dbSubjects.filter(s => s.grade_level === selectedGrade);
   
-  // Use hardcoded subjects for AF7, database subjects with actual counts for other grades
-  const displaySubjects = selectedGrade === "AF7" ? subjects : filteredSubjects.map(s => ({
+  // Use hardcoded subjects for 7AF, database subjects with actual counts for other grades
+  const displaySubjects = selectedGrade === "7AF" ? subjects : filteredSubjects.map(s => ({
     id: s.slug,
     title: s.name,
     description: s.description || '',
@@ -314,7 +314,7 @@ export default function Matieres() {
           </p>
         </div>
 
-        {(selectedGrade === "AF7" || selectedGrade === "AF8" || selectedGrade === "AF9") && displaySubjects.length > 0 ? (
+        {(selectedGrade === "7AF" || selectedGrade === "8AF" || selectedGrade === "9AF") && displaySubjects.length > 0 ? (
           <>
             {/* Stats Section */}
             <Card className="p-6 mb-8">
@@ -365,13 +365,13 @@ export default function Matieres() {
             const isEspagnol = subject.id === 'espagnol' || subject.id === 'espagnol-8af' || subject.id === 'espagnol-af9';
             const isCreole = subject.id === 'creole' || subject.id === 'creole-8af';
             const isSciencesSociales = subject.id === 'sciences-sociales' || subject.id === 'sciences-sociales-8af';
-            const hasContent = (selectedGrade === "AF7" && 
+            const hasContent = (selectedGrade === "7AF" && 
               (subject.id === 'mathematiques' || subject.id === 'sciences' || 
                subject.id === 'anglais' || subject.id === 'espagnol' || 
                subject.id === 'francais' || subject.id === 'sciences-sociales' || 
                subject.id === 'creole' || subject.id === 'arts' || subject.id === 'education-physique')) ||
-              (selectedGrade === "AF8" && (isMath || isSciences || isAnglais || isEspagnol || isCreole || isSciencesSociales)) ||
-              (selectedGrade === "AF9" && (isMath || isSciences || isAnglais || isEspagnol));
+              (selectedGrade === "8AF" && (isMath || isSciences || isAnglais || isEspagnol || isCreole || isSciencesSociales)) ||
+              (selectedGrade === "9AF" && (isMath || isSciences || isAnglais || isEspagnol));
             
             return (
               <Card
@@ -390,17 +390,17 @@ export default function Matieres() {
                     const isSciencesSociales = subject.id === 'sciences-sociales' || subject.id === 'sciences-sociales-8af';
                   
                   if (isMath) {
-                    courseRoute = selectedGrade === 'AF9' ? '/mathematiques-af9' : (selectedGrade === 'AF8' ? '/math-af8-course' : '/math-course');
+                    courseRoute = selectedGrade === '9AF' ? '/mathematiques-af9' : (selectedGrade === '8AF' ? '/math-af8-course' : '/math-course');
                   } else if (isSciences) {
-                    courseRoute = selectedGrade === 'AF9' ? '/sciences-experimentales-af9' : (selectedGrade === 'AF8' ? '/sciences-af8-course' : '/sciences-experimentales-7af');
+                    courseRoute = selectedGrade === '9AF' ? '/sciences-experimentales-af9' : (selectedGrade === '8AF' ? '/sciences-af8-course' : '/sciences-experimentales-7af');
                   } else if (isAnglais) {
-                    courseRoute = selectedGrade === 'AF9' ? '/anglais-af9' : (selectedGrade === 'AF8' ? '/anglais-af8-course' : '/anglais-course');
+                    courseRoute = selectedGrade === '9AF' ? '/anglais-af9' : (selectedGrade === '8AF' ? '/anglais-af8-course' : '/anglais-course');
                     } else if (isEspagnol) {
-                      courseRoute = selectedGrade === 'AF9' ? '/espagnol-af9' : (selectedGrade === 'AF8' ? '/espagnol-af8-course' : '/espagnol-course');
+                      courseRoute = selectedGrade === '9AF' ? '/espagnol-af9' : (selectedGrade === '8AF' ? '/espagnol-af8-course' : '/espagnol-course');
                       } else if (isCreole) {
-                        courseRoute = selectedGrade === 'AF8' ? '/creole-af8-course' : '/creole-course';
+                        courseRoute = selectedGrade === '8AF' ? '/creole-af8-course' : '/creole-course';
                       } else if (isSciencesSociales) {
-                        courseRoute = selectedGrade === 'AF8' ? '/sciences-sociales-af8-course' : '/sciences-sociales-course';
+                        courseRoute = selectedGrade === '8AF' ? '/sciences-sociales-af8-course' : '/sciences-sociales-course';
                     } else if (subject.id === 'francais') {
                       courseRoute = '/francais-course';
                     } else if (subject.id === 'arts') {
@@ -452,17 +452,17 @@ export default function Matieres() {
                       const isCreole = subject.id === 'creole' || subject.id === 'creole-8af';
                       const isSciencesSociales = subject.id === 'sciences-sociales' || subject.id === 'sciences-sociales-8af';
                       if (isMath) {
-                        courseRoute = selectedGrade === 'AF9' ? '/mathematiques-af9' : (selectedGrade === 'AF8' ? '/math-af8-course' : '/math-course');
+                        courseRoute = selectedGrade === '9AF' ? '/mathematiques-af9' : (selectedGrade === '8AF' ? '/math-af8-course' : '/math-course');
                       } else if (isSciences) {
-                        courseRoute = selectedGrade === 'AF9' ? '/sciences-experimentales-af9' : (selectedGrade === 'AF8' ? '/sciences-af8-course' : '/sciences-experimentales-7af');
+                        courseRoute = selectedGrade === '9AF' ? '/sciences-experimentales-af9' : (selectedGrade === '8AF' ? '/sciences-af8-course' : '/sciences-experimentales-7af');
                       } else if (isAnglais) {
-                        courseRoute = selectedGrade === 'AF9' ? '/anglais-af9' : (selectedGrade === 'AF8' ? '/anglais-af8-course' : '/anglais-course');
+                        courseRoute = selectedGrade === '9AF' ? '/anglais-af9' : (selectedGrade === '8AF' ? '/anglais-af8-course' : '/anglais-course');
                       } else if (isEspagnol) {
-                        courseRoute = selectedGrade === 'AF9' ? '/espagnol-af9' : (selectedGrade === 'AF8' ? '/espagnol-af8-course' : '/espagnol-course');
+                        courseRoute = selectedGrade === '9AF' ? '/espagnol-af9' : (selectedGrade === '8AF' ? '/espagnol-af8-course' : '/espagnol-course');
                       } else if (isCreole) {
-                        courseRoute = selectedGrade === 'AF8' ? '/creole-af8-course' : '/creole-course';
+                        courseRoute = selectedGrade === '8AF' ? '/creole-af8-course' : '/creole-course';
                       } else if (isSciencesSociales) {
-                        courseRoute = selectedGrade === 'AF8' ? '/sciences-sociales-af8-course' : '/sciences-sociales-course';
+                        courseRoute = selectedGrade === '8AF' ? '/sciences-sociales-af8-course' : '/sciences-sociales-course';
                       } else if (subject.id === 'francais') {
                         courseRoute = '/francais-course';
                       } else if (subject.id === 'arts') {
@@ -505,10 +505,10 @@ export default function Matieres() {
                 Pour l'instant, explorez notre programme complet pour AF7 👆
               </p>
               <Button 
-                onClick={() => setSelectedGrade("AF7")}
+                onClick={() => setSelectedGrade("7AF")}
                 className="mt-6"
               >
-                Voir le programme AF7
+                Voir le programme 7AF
               </Button>
             </div>
           </Card>
