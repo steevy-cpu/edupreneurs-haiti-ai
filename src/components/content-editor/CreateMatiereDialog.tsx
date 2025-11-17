@@ -176,11 +176,8 @@ export function CreateMatiereDialog({ open, onOpenChange, onMatiereCreated }: Cr
     setIsLoading(true);
     try {
       // Create slug - normalize to remove special characters (accents, etc.)
-      const normalizedName = subjectName
-        .normalize('NFD')
-        .replace(/[\u0300-\u036f]/g, '')
-        .toLowerCase()
-        .replace(/\s+/g, '-');
+      const { normalizeToSlug } = await import('@/lib/slugNormalization');
+      const normalizedName = normalizeToSlug(subjectName);
       const slug = `${normalizedName}-${gradeLevel.toLowerCase()}`;
 
       // Check if subject already exists
