@@ -760,6 +760,36 @@ export const BatchLessonGenerator = () => {
     }
   };
 
+  const handlePublishAllCompleted = async () => {
+    const completedLessons = lessonStatuses.filter(l => l.status === 'completed');
+    if (completedLessons.length === 0) {
+      toast.error("Aucune leçon complétée à publier");
+      return;
+    }
+
+    setIsApplying(true);
+    let successCount = 0;
+    let errorCount = 0;
+
+    for (const lesson of completedLessons) {
+      try {
+        await handleApplyLesson(lesson.lessonId, true);
+        successCount++;
+      } catch (error) {
+        console.error(`Error publishing lesson ${lesson.title}:`, error);
+        errorCount++;
+      }
+    }
+
+    setIsApplying(false);
+    
+    if (successCount > 0) {
+      toast.success(`${successCount} leçon(s) publiée(s) avec succès${errorCount > 0 ? `, ${errorCount} erreur(s)` : ''}`);
+    } else {
+      toast.error("Erreur lors de la publication des leçons");
+    }
+  };
+
   const handleApplyLesson = async (lessonId: string, shouldPublish: boolean = false) => {
     setIsApplying(true);
     try {
@@ -1270,6 +1300,16 @@ export const BatchLessonGenerator = () => {
                   <Download className="mr-2 h-4 w-4" />
                   Exporter CSV
                 </Button>
+                {lessonStatuses.filter(l => l.status === 'completed').length > 0 && (
+                  <Button 
+                    onClick={handlePublishAllCompleted} 
+                    variant="default"
+                    disabled={isApplying}
+                  >
+                    {isApplying ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <CheckCircle2 className="mr-2 h-4 w-4" />}
+                    Publier toutes ({lessonStatuses.filter(l => l.status === 'completed').length})
+                  </Button>
+                )}
               </>
             )}
           </div>
