@@ -128,7 +128,8 @@ Moun nan Lakay yo _______ agrikiltè.
 
 RÈGLES STRICTES:
 - Utilise KREYÒL AYISYEN pou tout kontni
-- Génère AU MOINS 10-15 activités variées pour couvrir TOUS les exercices
+- 🚨 OBLIGATOIRE: Génère AU MINIMUM 10 activités différentes, idéalement 12-15 activités pour une couverture complète
+- Varie les types d'activités (QUIZ, MATCHING, TRUEFALSE, FILLIN) pour maintenir l'engagement
 - PRÉSERVE LE CONTENU ORIGINAL des exercices autant que possible
 - Formate le contenu EXACTEMENT comme spécifié ci-dessous
 - TRANSFORME TOUS les exercices fournis (Exercice 1, 2, 3, 4, 5, 6, etc.)
@@ -139,7 +140,8 @@ Ton rôle est de transformer des exercices traditionnels en activités interacti
 
 RÈGLES STRICTES:
 - Utilise UNIQUEMENT le français
-- Génère AU MOINS 10-15 activités variées pour couvrir TOUS les exercices
+- 🚨 OBLIGATOIRE: Génère AU MINIMUM 10 activités différentes, idéalement 12-15 activités pour une couverture complète
+- Varie les types d'activités (QUIZ, MATCHING, TRUEFALSE, FILLIN) pour maintenir l'engagement
 - PRÉSERVE LE CONTENU ORIGINAL des exercices autant que possible
 - Formate le contenu EXACTEMENT comme spécifié ci-dessous
 - TRANSFORME TOUS les exercices fournis (Exercice 1, 2, 3, 4, 5, 6, etc.)
@@ -216,7 +218,8 @@ ${cleanedContent}
 
 ENSTRIKSYON KRITIK:
 - TRANSFÒME (pa reekri) TOU egzèsis ki egziste yo an fòma entèaktif
-- Jenere 10-15 aktivite pou kouvri TOU egzèsis yo (1, 2, 3, 4, 5, 6, elatriye)
+- 🚨 OBLIJE: Jenere OMWEN 10 aktivite diferan, idealmam 12-15 aktivite pou kouvri TOU egzèsis yo (1, 2, 3, 4, 5, 6, elatriye)
+- Varye tip aktivite yo (QUIZ, MATCHING, TRUEFALSE, FILLIN) pou kreye angajman
 - KENBE EGZAKTEMAN menm fraz, kesyon, ak egzanp ki nan kontni sous la
 - Sèl wòl ou se pou REFÒMATE lè w ap itilize tip aktivite yo (QUIZ, MATCHING, elatriye)
 - Si egzèsis la di yon bagay, aktivite ou a dwe di menm bagay la
@@ -236,7 +239,8 @@ ${cleanedContent}
 
 INSTRUCTIONS CRITIQUES:
 - TRANSFORME (ne réécris PAS) TOUS les exercices existants en format interactif
-- Génère 10-15 activités pour couvrir TOUS les exercices (1, 2, 3, 4, 5, 6, etc.)
+- 🚨 OBLIGATOIRE: Génère AU MINIMUM 10 activités différentes, idéalement 12-15 activités pour couvrir TOUS les exercices (1, 2, 3, 4, 5, 6, etc.)
+- Varie les types d'activités (QUIZ, MATCHING, TRUEFALSE, FILLIN) pour maintenir l'engagement des élèves
 - GARDE EXACTEMENT les mêmes phrases, questions, et exemples que dans le contenu source
 - Ton seul rôle est de REFORMATER en utilisant les types d'activités (QUIZ, MATCHING, etc.)
 - Si l'exercice dit "My sister _______ a beautiful voice", ton activité doit dire "My sister _______ a beautiful voice"
