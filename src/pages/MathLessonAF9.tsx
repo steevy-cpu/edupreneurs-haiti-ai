@@ -1,22 +1,23 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
-import { ChevronLeft, Save, BookOpen, FileText, ListChecks, StickyNote, CheckCircle2, Target, Gamepad2, ArrowLeft, Lightbulb } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import { BookOpen, FileText, Gamepad2, Target, Lightbulb, ArrowLeft, Sparkles, Trophy, GraduationCap, CheckCircle2, StickyNote, Save } from "lucide-react";
 import { toast } from "sonner";
 import { TextToSpeechButton } from "@/components/TextToSpeechButton";
 import { useTTS } from "@/hooks/useTTS";
 import { supabase } from "@/integrations/supabase/client";
-import { InteractiveQuiz } from "@/components/InteractiveQuiz";
 import { DownloadLessonButton } from "@/components/DownloadLessonButton";
 import { EricChatbot } from "@/components/EricChatbot";
 import { InteractiveActivitiesEnhanced } from "@/components/InteractiveActivitiesEnhanced";
 import { HTMLQuizParser } from "@/components/HTMLQuizParser";
 import { YouTubeVideoSection } from "@/components/YouTubeVideoSection";
-import ericChairDesk from "@/assets/eric-chair-desk.png";
+import { normalizeToSlug } from "@/lib/slugNormalization";
+import ericTeaching from "@/assets/eric-teaching.png";
 
 interface Lesson {
   id: string;
@@ -46,11 +47,12 @@ const MathLessonAF9 = () => {
   }, [lessonSlug]);
 
   const fetchLesson = async () => {
+    const normalizedSlug = normalizeToSlug(lessonSlug || "");
     try {
       const { data, error } = await supabase
         .from("lessons")
         .select("*")
-        .eq("slug", lessonSlug)
+        .eq("slug", normalizedSlug)
         .eq("grade_level", "9AF")
         .maybeSingle();
 
@@ -176,7 +178,7 @@ const MathLessonAF9 = () => {
             </div>
             <div className="flex-shrink-0">
               <img
-                src={ericChairDesk}
+                src={ericTeaching}
                 alt="Eric au bureau"
                 className="w-32 md:w-40 lg:w-48 h-auto"
               />
