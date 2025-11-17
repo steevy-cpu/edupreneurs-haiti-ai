@@ -11,6 +11,7 @@ import { Loader2, Sparkles, Check, ArrowRight } from "lucide-react";
 import * as LucideIcons from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { clearLessonsCache } from "@/hooks/useLessonsCache";
 
 const SUBJECT_ICONS = [
   // Languages
@@ -246,6 +247,8 @@ export function CreateMatiereDialog({ open, onOpenChange, onMatiereCreated }: Cr
         description: `${parsedLessons.length} leçons créées. Vous pouvez maintenant générer le contenu via le Content Editor.`,
       });
 
+      // Clear cache to force refresh in all components
+      clearLessonsCache();
       onMatiereCreated();
     } catch (error) {
       console.error("Error creating matiere:", error);

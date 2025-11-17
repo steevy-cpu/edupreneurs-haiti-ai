@@ -171,7 +171,8 @@ const colorMap: Record<string, string> = {
 export default function Matieres() {
   const navigate = useNavigate();
   const [selectedGrade, setSelectedGrade] = useState<GradeLevel>("7AF");
-  const { subjects: dbSubjects, isLoading } = useSubjects();
+  const [refreshTrigger, setRefreshTrigger] = useState(0);
+  const { subjects: dbSubjects, isLoading } = useSubjects(refreshTrigger);
   const [lessonCounts, setLessonCounts] = useState<Record<string, number>>({});
 
   const currentGrade = gradeLevels.find(g => g.id === selectedGrade);
