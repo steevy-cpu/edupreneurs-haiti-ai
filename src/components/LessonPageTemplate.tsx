@@ -252,6 +252,16 @@ export const LessonPageTemplate = ({
                 )}
               </CardContent>
             </Card>
+
+            {lesson.youtube_url && (
+              <YouTubeVideoSection 
+                customYoutubeUrl={lesson.youtube_url}
+                lessonTitle={lesson.title}
+                objectives={lesson.objectif}
+                gradeLevel={gradeLevel}
+                subject={subjectName.toLowerCase()}
+              />
+            )}
           </TabsContent>
 
           <TabsContent value="exemples" className="space-y-4 sm:space-y-6 mt-4">
@@ -270,6 +280,16 @@ export const LessonPageTemplate = ({
                 )}
               </CardContent>
             </Card>
+
+            {lesson.youtube_url && (
+              <YouTubeVideoSection 
+                customYoutubeUrl={lesson.youtube_url}
+                lessonTitle={lesson.title}
+                objectives={lesson.objectif}
+                gradeLevel={gradeLevel}
+                subject={subjectName.toLowerCase()}
+              />
+            )}
           </TabsContent>
 
           <TabsContent value="activites" className="space-y-4 sm:space-y-6 mt-4">
@@ -288,16 +308,6 @@ export const LessonPageTemplate = ({
                   />
                 </CardContent>
               </Card>
-            )}
-
-            {lesson.youtube_url && (
-              <YouTubeVideoSection 
-                customYoutubeUrl={lesson.youtube_url}
-                lessonTitle={lesson.title}
-                objectives={lesson.objectif}
-                gradeLevel={gradeLevel}
-                subject={subjectName.toLowerCase()}
-              />
             )}
 
             {lesson.quiz_final && (
