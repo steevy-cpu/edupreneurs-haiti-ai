@@ -17,9 +17,10 @@ import { Search, ChevronDown, ChevronRight, BookOpen, Calculator, FlaskConical, 
 interface LessonBrowserProps {
   onSelectLesson: (lesson: any) => void;
   selectedLesson: any;
+  refreshKey?: number;
 }
 
-export const LessonBrowser = ({ onSelectLesson, selectedLesson }: LessonBrowserProps) => {
+export const LessonBrowser = ({ onSelectLesson, selectedLesson, refreshKey }: LessonBrowserProps) => {
   const [gradeLevel, setGradeLevel] = useState<string>("all");
   const [availableSubjects, setAvailableSubjects] = useState<any[]>([]);
   const [lessonsBySubject, setLessonsBySubject] = useState<Record<string, any[]>>({});
@@ -35,10 +36,10 @@ export const LessonBrowser = ({ onSelectLesson, selectedLesson }: LessonBrowserP
     { value: "AF9", label: "AF9" },
   ];
 
-  // Load subjects when grade level changes
+  // Load subjects when grade level changes or refreshKey updates
   useEffect(() => {
     loadSubjects();
-  }, [gradeLevel]);
+  }, [gradeLevel, refreshKey]);
 
   // Auto-expand subjects when lessons are loaded
   useEffect(() => {
