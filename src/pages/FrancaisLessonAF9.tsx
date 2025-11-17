@@ -298,12 +298,6 @@ const FrancaisLessonAF9 = () => {
               </TabsList>
 
               <TabsContent value="introduction" className="space-y-6 mt-6">
-                <div className="flex items-center gap-3 mb-4">
-                  <div className="p-2 rounded-lg bg-primary/10">
-                    <Target className="h-5 w-5 text-primary" />
-                  </div>
-                  <h2 className="text-xl font-semibold">Introduction</h2>
-                </div>
                 <div 
                   className="prose prose-sm sm:prose lg:prose-lg max-w-none dark:prose-invert lesson-content"
                   dangerouslySetInnerHTML={{ __html: lesson.introduction }}
@@ -318,12 +312,6 @@ const FrancaisLessonAF9 = () => {
               </TabsContent>
 
               <TabsContent value="contenu" className="space-y-6 mt-6">
-                <div className="flex items-center gap-3 mb-4">
-                  <div className="p-2 rounded-lg bg-primary/10">
-                    <BookOpen className="h-5 w-5 text-primary" />
-                  </div>
-                  <h2 className="text-xl font-semibold">Contenu de la leçon</h2>
-                </div>
                 <div 
                   className="prose prose-sm sm:prose lg:prose-lg max-w-none dark:prose-invert lesson-content"
                   dangerouslySetInnerHTML={{ __html: lesson.contenu }}
@@ -331,12 +319,6 @@ const FrancaisLessonAF9 = () => {
               </TabsContent>
 
               <TabsContent value="exemples" className="space-y-6 mt-6">
-                <div className="flex items-center gap-3 mb-4">
-                  <div className="p-2 rounded-lg bg-primary/10">
-                    <Lightbulb className="h-5 w-5 text-primary" />
-                  </div>
-                  <h2 className="text-xl font-semibold">Exemples et Exercices</h2>
-                </div>
                 <div 
                   className="prose prose-sm sm:prose lg:prose-lg max-w-none dark:prose-invert lesson-content"
                   dangerouslySetInnerHTML={{ __html: lesson.exemples_exercices }}
@@ -344,13 +326,6 @@ const FrancaisLessonAF9 = () => {
               </TabsContent>
 
               <TabsContent value="activites" className="space-y-6 mt-6">
-                <div className="flex items-center gap-3 mb-4">
-                  <div className="p-2 rounded-lg bg-primary/10">
-                    <Gamepad2 className="h-5 w-5 text-primary" />
-                  </div>
-                  <h2 className="text-xl font-semibold">Activités Interactives</h2>
-                </div>
-                
                 {lesson.activites_interactives ? (
                   <InteractiveActivitiesEnhanced 
                     content={lesson.activites_interactives}
@@ -390,12 +365,6 @@ const FrancaisLessonAF9 = () => {
               </TabsContent>
 
               <TabsContent value="notes" className="space-y-6 mt-6">
-                <div className="flex items-center gap-3 mb-4">
-                  <div className="p-2 rounded-lg bg-primary/10">
-                    <FileText className="h-5 w-5 text-primary" />
-                  </div>
-                  <h2 className="text-xl font-semibold">Mes notes personnelles</h2>
-                </div>
                 <div className="space-y-4">
                   <Textarea
                     placeholder="Écrivez vos notes ici..."
