@@ -396,7 +396,6 @@ export default function Matieres() {
                 }`}
                 onClick={() => {
                   if (hasContent) {
-                    console.log('Navigating to:', `/course/${subject.id}`, 'Subject:', subject);
                     navigate(`/course/${subject.id}`);
                   }
                 }}

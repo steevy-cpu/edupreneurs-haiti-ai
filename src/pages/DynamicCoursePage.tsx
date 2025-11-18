@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
-import { ChevronLeft, BookOpen, CheckCircle2, Lock } from "lucide-react";
+import { ChevronLeft, BookOpen, CheckCircle2 } from "lucide-react";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { MusicSelector } from "@/components/MusicSelector";
 import ericTeaching from "@/assets/eric-teaching.png";
@@ -29,16 +29,12 @@ export default function DynamicCoursePage() {
     try {
       setIsLoading(true);
       
-      console.log('DynamicCoursePage - Loading subject with slug:', subjectSlug);
-      
       // Load subject using the slug
       const { data: subjectData, error: subjectError } = await supabase
         .from('subjects')
         .select('*')
         .eq('slug', subjectSlug)
         .maybeSingle();
-      
-      console.log('DynamicCoursePage - Subject found:', subjectData, 'Error:', subjectError);
 
       if (subjectError) throw subjectError;
       
@@ -168,34 +164,21 @@ export default function DynamicCoursePage() {
         <div className="grid gap-4">
           {lessons.map((lesson, index) => {
             const isCompleted = completedLessons.includes(lesson.slug);
-            const isLocked = index > 0 && !completedLessons.includes(lessons[index - 1].slug);
             
             return (
               <Card
                 key={lesson.id}
-                className={`p-6 transition-all ${
-                  isLocked 
-                    ? 'opacity-60' 
-                    : 'hover:shadow-lg hover:-translate-y-1 cursor-pointer'
-                }`}
-                onClick={() => {
-                  if (!isLocked) {
-                    navigate(`/course/${subjectSlug}/${lesson.slug}`);
-                  }
-                }}
+                className="p-6 transition-all hover:shadow-lg hover:-translate-y-1 cursor-pointer"
+                onClick={() => navigate(`/course/${subjectSlug}/${lesson.slug}`)}
               >
                 <div className="flex items-start gap-4">
                   <div className={`w-12 h-12 rounded-full flex items-center justify-center flex-shrink-0 ${
                     isCompleted 
                       ? 'bg-green-500/20 text-green-600' 
-                      : isLocked
-                      ? 'bg-muted text-muted-foreground'
                       : 'bg-primary/20 text-primary'
                   }`}>
                     {isCompleted ? (
                       <CheckCircle2 className="h-6 w-6" />
-                    ) : isLocked ? (
-                      <Lock className="h-6 w-6" />
                     ) : (
                       <BookOpen className="h-6 w-6" />
                     )}
@@ -208,11 +191,6 @@ export default function DynamicCoursePage() {
                     {lesson.objectif && (
                       <p className="text-sm text-muted-foreground line-clamp-2">
                         {lesson.objectif.replace(/<[^>]*>/g, '')}
-                      </p>
-                    )}
-                    {isLocked && (
-                      <p className="text-sm text-amber-600 mt-2">
-                        Complétez la leçon précédente pour débloquer
                       </p>
                     )}
                   </div>
