@@ -133,7 +133,7 @@ export const LessonPageTemplate = ({
             variant="ghost"
             onClick={() => {
               stop();
-              navigate(`/${subjectSlug}`);
+              navigate(`/course/${subjectSlug}`);
             }}
             className="mb-4 sm:mb-6 hover:bg-primary/10"
           >
