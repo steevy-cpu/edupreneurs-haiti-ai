@@ -190,7 +190,7 @@ export const LessonPageTemplate = ({
       {/* Content Tabs */}
       <div className="container mx-auto px-2 sm:px-4 py-4 sm:py-8">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-2 sm:grid-cols-3 md:grid-cols-5 h-auto p-1 gap-1">
+          <TabsList className="grid w-full grid-cols-3 sm:grid-cols-3 md:grid-cols-6 h-auto p-1 gap-1">
             <TabsTrigger value="introduction" className="flex-col sm:flex-row py-2 sm:py-3 text-xs sm:text-sm gap-1">
               <Target className="h-3 w-3 sm:h-4 sm:w-4" />
               <span className="hidden sm:inline">Introduction</span>
@@ -211,7 +211,12 @@ export const LessonPageTemplate = ({
               <span className="hidden sm:inline">Activités</span>
               <span className="sm:hidden text-[10px]">Act</span>
             </TabsTrigger>
-            <TabsTrigger value="notes" className="flex-col sm:flex-row py-2 sm:py-3 text-xs sm:text-sm col-span-2 sm:col-span-1 gap-1">
+            <TabsTrigger value="quiz" className="flex-col sm:flex-row py-2 sm:py-3 text-xs sm:text-sm gap-1">
+              <GraduationCap className="h-3 w-3 sm:h-4 sm:w-4" />
+              <span className="hidden sm:inline">Quiz</span>
+              <span className="sm:hidden text-[10px]">Quiz</span>
+            </TabsTrigger>
+            <TabsTrigger value="notes" className="flex-col sm:flex-row py-2 sm:py-3 text-xs sm:text-sm gap-1">
               <FileText className="h-3 w-3 sm:h-4 sm:w-4" />
               <span className="hidden sm:inline">Mes notes</span>
               <span className="sm:hidden text-[10px]">Notes</span>
@@ -293,7 +298,7 @@ export const LessonPageTemplate = ({
           </TabsContent>
 
           <TabsContent value="activites" className="space-y-4 sm:space-y-6 mt-4">
-            {lesson.activites_interactives && (
+            {lesson.activites_interactives ? (
               <Card>
                 <CardHeader className="p-3 sm:p-6">
                   <CardTitle className="flex items-center gap-2 text-base sm:text-xl">
@@ -308,9 +313,17 @@ export const LessonPageTemplate = ({
                   />
                 </CardContent>
               </Card>
+            ) : (
+              <Card>
+                <CardContent className="p-3 sm:p-6">
+                  <p className="text-muted-foreground text-sm sm:text-base">Aucune activité interactive disponible</p>
+                </CardContent>
+              </Card>
             )}
+          </TabsContent>
 
-            {lesson.quiz_final && (
+          <TabsContent value="quiz" className="space-y-4 sm:space-y-6 mt-4">
+            {lesson.quiz_final ? (
               <Card>
                 <CardHeader className="p-3 sm:p-6">
                   <CardTitle className="flex items-center gap-2 text-base sm:text-xl">
@@ -324,6 +337,12 @@ export const LessonPageTemplate = ({
                     lessonSlug={lessonSlug}
                     subject={subjectName.toLowerCase()}
                   />
+                </CardContent>
+              </Card>
+            ) : (
+              <Card>
+                <CardContent className="p-3 sm:p-6">
+                  <p className="text-muted-foreground text-sm sm:text-base">Aucun quiz disponible pour le moment</p>
                 </CardContent>
               </Card>
             )}
