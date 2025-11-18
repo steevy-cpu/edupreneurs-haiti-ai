@@ -190,7 +190,7 @@ export const LessonPageTemplate = ({
       {/* Content Tabs */}
       <div className="container mx-auto px-2 sm:px-4 py-4 sm:py-8">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-3 sm:grid-cols-3 md:grid-cols-6 h-auto p-1 gap-1">
+          <TabsList className="grid w-full grid-cols-3 sm:grid-cols-3 md:grid-cols-5 h-auto p-1 gap-1">
             <TabsTrigger value="introduction" className="flex-col sm:flex-row py-2 sm:py-3 text-xs sm:text-sm gap-1">
               <Target className="h-3 w-3 sm:h-4 sm:w-4" />
               <span className="hidden sm:inline">Introduction</span>
@@ -198,13 +198,8 @@ export const LessonPageTemplate = ({
             </TabsTrigger>
             <TabsTrigger value="contenu" className="flex-col sm:flex-row py-2 sm:py-3 text-xs sm:text-sm gap-1">
               <BookOpen className="h-3 w-3 sm:h-4 sm:w-4" />
-              <span className="hidden sm:inline">Contenu</span>
+              <span className="hidden sm:inline">Contenu & Exemples</span>
               <span className="sm:hidden text-[10px]">Cours</span>
-            </TabsTrigger>
-            <TabsTrigger value="exemples" className="flex-col sm:flex-row py-2 sm:py-3 text-xs sm:text-sm gap-1">
-              <Lightbulb className="h-3 w-3 sm:h-4 sm:w-4" />
-              <span className="hidden sm:inline">Exemples</span>
-              <span className="sm:hidden text-[10px]">Ex</span>
             </TabsTrigger>
             <TabsTrigger value="activites" className="flex-col sm:flex-row py-2 sm:py-3 text-xs sm:text-sm gap-1">
               <Gamepad2 className="h-3 w-3 sm:h-4 sm:w-4" />
@@ -258,18 +253,6 @@ export const LessonPageTemplate = ({
               </CardContent>
             </Card>
 
-            {lesson.youtube_url && (
-              <YouTubeVideoSection 
-                customYoutubeUrl={lesson.youtube_url}
-                lessonTitle={lesson.title}
-                objectives={lesson.objectif}
-                gradeLevel={gradeLevel}
-                subject={subjectName.toLowerCase()}
-              />
-            )}
-          </TabsContent>
-
-          <TabsContent value="exemples" className="space-y-4 sm:space-y-6 mt-4">
             <Card>
               <CardHeader className="p-3 sm:p-6">
                 <CardTitle className="flex items-center gap-2 text-base sm:text-xl">
