@@ -29,6 +29,24 @@ serve(async (req) => {
     // Step 1: Use Lovable AI to analyze content and generate image prompts
     console.log('📊 Analyzing lesson content with AI...');
     
+    // Determine the language for text in images based on subject
+    const subjectLower = subject.toLowerCase();
+    let imageTextLanguage = 'French';
+    let languageInstruction = 'ALL text, labels, and captions in the images MUST be in French (français).';
+    
+    if (subjectLower.includes('kreyòl') || subjectLower.includes('creole')) {
+      imageTextLanguage = 'Haitian Creole';
+      languageInstruction = 'ALL text, labels, and captions in the images MUST be in Haitian Creole (Kreyòl Ayisyen).';
+    } else if (subjectLower.includes('anglais') || subjectLower.includes('english')) {
+      imageTextLanguage = 'English';
+      languageInstruction = 'ALL text, labels, and captions in the images MUST be in English.';
+    } else if (subjectLower.includes('espagnol') || subjectLower.includes('spanish')) {
+      imageTextLanguage = 'Spanish';
+      languageInstruction = 'ALL text, labels, and captions in the images MUST be in Spanish (Español).';
+    }
+    
+    console.log(`🌐 Image text language set to: ${imageTextLanguage}`);
+    
     const analysisResponse = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
       method: 'POST',
       headers: {
@@ -53,27 +71,31 @@ Concentre-toi sur:
 
 CRITIQUE: Tu dois générer AU MOINS 2 concepts, idéalement 3-4 pour enrichir le contenu.
 
+🌐 LANGUE DU TEXTE DANS LES IMAGES (RÈGLE ABSOLUE #1):
+${languageInstruction}
+This is NON-NEGOTIABLE. Every single word, label, caption, or text element in the image MUST be in ${imageTextLanguage}.
+
 🎯 RÈGLES CRITIQUES POUR LE TEXTE DANS LES IMAGES (PRIORITÉ ABSOLUE):
 
-1. TEXT ACCURACY IS THE #1 PRIORITY - The text must be 100% grammatically correct and properly spelled
-2. In your prompt, you MUST specify the EXACT TEXT that should appear in the image
-3. Use this format in your prompt: "The image must show these exact words: '[EXACT TEXT HERE]'"
-4. For English lessons, every word must be grammatically perfect - NO ERRORS ALLOWED
+1. TEXT ACCURACY IS THE #1 PRIORITY - The text must be 100% grammatically correct and properly spelled in ${imageTextLanguage}
+2. In your prompt, you MUST specify the EXACT TEXT that should appear in the image IN ${imageTextLanguage.toUpperCase()}
+3. Use this format in your prompt: "The image must show these exact words IN ${imageTextLanguage.toUpperCase()}: '[EXACT TEXT IN ${imageTextLanguage.toUpperCase()} HERE]'"
+4. Every word must be grammatically perfect in ${imageTextLanguage} - NO ERRORS ALLOWED
 5. Prefer simple labels and captions over complex dialogue bubbles
-6. If dialogue is needed, write out the COMPLETE, CORRECT sentences explicitly
-7. Use real Haitian names (Jean, Marie, Toussaint, Claude, Rose) instead of placeholders
-8. Double-check grammar: "Hello! My name is Marie" NOT "Hello! my name is Tean"
-9. Verify time formats: "6:00 AM" or "12:00 PM" NOT "6 AM 1.2 PM"
-10. For greetings: "Good morning" NOT "Morning" alone in text
+6. If dialogue is needed, write out the COMPLETE, CORRECT sentences explicitly in ${imageTextLanguage}
+7. Use real Haitian names (Jean, Marie, Toussaint, Claude, Rose) for characters
+8. Double-check grammar and spelling in ${imageTextLanguage}
+9. For scientific terms, use the correct terminology in ${imageTextLanguage}
+10. Make sure all text is clearly visible and readable
 
 PROMPT STRUCTURE EXAMPLE:
-"Educational illustration showing [concept]. The image must display these exact words in speech bubbles: 'Hello! My name is Marie.' and 'Nice to meet you, Marie. I am Jean.' The text must be clearly visible, properly capitalized, and grammatically perfect. Use clean, readable fonts. Style: colorful, friendly, educational illustration for Haitian students."
+"Educational illustration showing [concept]. The image must display these exact words in ${imageTextLanguage}: '[EXACT TEXT IN ${imageTextLanguage}]'. The text must be clearly visible, properly capitalized, and grammatically perfect in ${imageTextLanguage}. Use clean, readable fonts. Style: colorful, friendly, educational illustration for Haitian students."
 
 IMPORTANT: Retourne UNIQUEMENT un tableau JSON valide, sans texte avant ou après. Format exact:
 [
   {
     "name": "Nom du concept",
-    "prompt": "Prompt détaillé en anglais pour OpenAI avec le texte EXACT à afficher spécifié clairement",
+    "prompt": "Prompt détaillé en anglais pour OpenAI avec le texte EXACT en ${imageTextLanguage} à afficher spécifié clairement",
     "insertAt": "contenu" ou "exemples_exercices",
     "description": "Courte description en français"
   }
