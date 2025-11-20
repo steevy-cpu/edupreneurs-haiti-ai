@@ -1245,6 +1245,7 @@ export type Database = {
           id: string
           lesson_count: number | null
           name: string
+          series: string | null
           slug: string
           updated_at: string
         }
@@ -1259,6 +1260,7 @@ export type Database = {
           id?: string
           lesson_count?: number | null
           name: string
+          series?: string | null
           slug: string
           updated_at?: string
         }
@@ -1273,6 +1275,7 @@ export type Database = {
           id?: string
           lesson_count?: number | null
           name?: string
+          series?: string | null
           slug?: string
           updated_at?: string
         }
