@@ -179,21 +179,20 @@ export function CreateMatiereDialog({ open, onOpenChange, onMatiereCreated }: Cr
       // Create slug - normalize to remove special characters (accents, etc.)
       const { normalizeToSlug } = await import('@/lib/slugNormalization');
       const normalizedName = normalizeToSlug(subjectName);
-      const slug = `${normalizedName}-${gradeLevel.toLowerCase()}`;
+      
+      // Include series in slug for NS3/NS4 to allow same subject in different series
+      const isNS3OrNS4 = gradeLevel === "NS3" || gradeLevel === "NS4";
+      const slug = isNS3OrNS4 
+        ? `${normalizedName}-${gradeLevel.toLowerCase()}-${series.toLowerCase()}`
+        : `${normalizedName}-${gradeLevel.toLowerCase()}`;
 
-      // Check if subject already exists (include series for NS3/NS4)
-      let duplicateQuery = supabase
+      // Check if subject already exists
+      const { data: existingSubject } = await supabase
         .from('subjects')
         .select('id, name, series')
         .eq('slug', slug)
-        .eq('grade_level', gradeLevel);
-
-      // For NS3/NS4, also check series to allow same subject in different series
-      if (gradeLevel === "NS3" || gradeLevel === "NS4") {
-        duplicateQuery = duplicateQuery.eq('series', series);
-      }
-
-      const { data: existingSubject } = await duplicateQuery.maybeSingle();
+        .eq('grade_level', gradeLevel)
+        .maybeSingle();
 
       if (existingSubject) {
         const seriesInfo = existingSubject.series ? ` (série ${existingSubject.series})` : '';
