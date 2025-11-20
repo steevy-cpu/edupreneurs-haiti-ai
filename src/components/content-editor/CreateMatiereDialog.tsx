@@ -181,19 +181,26 @@ export function CreateMatiereDialog({ open, onOpenChange, onMatiereCreated }: Cr
       const normalizedName = normalizeToSlug(subjectName);
       const slug = `${normalizedName}-${gradeLevel.toLowerCase()}`;
 
-      // Check if subject already exists
-      const { data: existingSubject } = await supabase
+      // Check if subject already exists (include series for NS3/NS4)
+      let duplicateQuery = supabase
         .from('subjects')
-        .select('id, name')
+        .select('id, name, series')
         .eq('slug', slug)
-        .eq('grade_level', gradeLevel)
-        .maybeSingle();
+        .eq('grade_level', gradeLevel);
+
+      // For NS3/NS4, also check series to allow same subject in different series
+      if (gradeLevel === "NS3" || gradeLevel === "NS4") {
+        duplicateQuery = duplicateQuery.eq('series', series);
+      }
+
+      const { data: existingSubject } = await duplicateQuery.maybeSingle();
 
       if (existingSubject) {
+        const seriesInfo = existingSubject.series ? ` (série ${existingSubject.series})` : '';
         toast({
           variant: "destructive",
           title: "Matière déjà existante",
-          description: `La matière "${existingSubject.name}" existe déjà pour le niveau ${gradeLevel}. Veuillez choisir un nom différent ou modifier la matière existante.`,
+          description: `La matière "${existingSubject.name}"${seriesInfo} existe déjà pour le niveau ${gradeLevel}. Veuillez choisir un nom différent ou modifier la matière existante.`,
         });
         setIsLoading(false);
         return;

@@ -29,6 +29,11 @@ export const LessonReview = ({ lesson }: LessonReviewProps) => {
                 <GraduationCap className="h-3 w-3" />
                 {lesson.grade_level}
               </Badge>
+              {lesson.series && (
+                <Badge variant="secondary">
+                  {lesson.series}
+                </Badge>
+              )}
               <Badge 
                 variant={lesson.workflow_status === 'published' ? "default" : lesson.workflow_status === 'approved' ? "secondary" : "outline"}
                 className={lesson.workflow_status === 'published' ? "bg-green-500" : ""}
