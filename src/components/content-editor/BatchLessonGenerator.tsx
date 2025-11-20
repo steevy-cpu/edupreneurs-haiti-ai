@@ -33,6 +33,7 @@ export const BatchLessonGenerator = () => {
   const navigate = useNavigate();
   const [gradeLevel, setGradeLevel] = useState<string>("all");
   const [subject, setSubject] = useState<string>("all");
+  const [series, setSeries] = useState<string>("all");
   const [availableLessons, setAvailableLessons] = useState<any[]>([]);
   const [availableSubjects, setAvailableSubjects] = useState<any[]>([]);
   const [selectedLessonIds, setSelectedLessonIds] = useState<string[]>([]);
@@ -60,6 +61,8 @@ export const BatchLessonGenerator = () => {
   const [totalBatches, setTotalBatches] = useState(0);
   const [allLessons, setAllLessons] = useState<any[]>([]);
 
+  const isNS3OrNS4 = gradeLevel === "NS3" || gradeLevel === "NS4";
+
   const gradeLevels = [
     { value: "all", label: "Tous les niveaux" },
     { value: "7AF", label: "7AF" },
@@ -71,22 +74,35 @@ export const BatchLessonGenerator = () => {
     { value: "NS4", label: "NS4" },
   ];
 
-  // Load subjects when grade level changes
+  const seriesOptions = [
+    { value: "all", label: "Toutes les séries" },
+    { value: "LLA", label: "LLA - Lettres, Langues et Arts" },
+    { value: "SES", label: "SES - Sciences Économiques et Sociales" },
+    { value: "SMP", label: "SMP - Sciences Mathématiques et Physiques" },
+    { value: "SVT", label: "SVT - Sciences de la Vie et de la Terre" },
+  ];
+
+  // Load subjects when grade level or series changes
   useEffect(() => {
     loadSubjects();
-  }, [gradeLevel]);
+  }, [gradeLevel, series]);
 
   const loadSubjects = async () => {
     setIsLoadingSubjects(true);
     try {
       let query = supabase
         .from('subjects')
-        .select('id, name, slug, grade_level')
+        .select('id, name, slug, grade_level, series')
         .order('name');
 
       // Filter by grade level if not "all"
       if (gradeLevel !== "all") {
         query = query.eq('grade_level', gradeLevel);
+      }
+
+      // Filter by series for NS3/NS4
+      if (isNS3OrNS4 && series !== "all") {
+        query = query.eq('series', series);
       }
 
       const { data, error } = await query;
@@ -1052,12 +1068,13 @@ export const BatchLessonGenerator = () => {
         </CardHeader>
         <CardContent className="space-y-6">
           {/* Grade, Subject, and Lesson Selection */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className={`grid grid-cols-1 gap-4 ${isNS3OrNS4 ? 'md:grid-cols-4' : 'md:grid-cols-3'}`}>
             <div className="space-y-2">
               <Label>Niveau scolaire</Label>
               <Select value={gradeLevel} onValueChange={(value) => {
                 setGradeLevel(value);
                 setSubject("all");
+                setSeries("all");
                 setSelectedLessonIds([]);
               }}>
                 <SelectTrigger>
@@ -1072,6 +1089,31 @@ export const BatchLessonGenerator = () => {
                 </SelectContent>
               </Select>
             </div>
+
+            {isNS3OrNS4 && (
+              <div className="space-y-2">
+                <Label>Série</Label>
+                <Select 
+                  value={series} 
+                  onValueChange={(value) => {
+                    setSeries(value);
+                    setSubject("all");
+                    setSelectedLessonIds([]);
+                  }}
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {seriesOptions.map(s => (
+                      <SelectItem key={s.value} value={s.value}>
+                        {s.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
 
             <div className="space-y-2">
               <Label>Matière</Label>
@@ -1090,7 +1132,7 @@ export const BatchLessonGenerator = () => {
                   <SelectItem value="all">Toutes les matières</SelectItem>
                   {availableSubjects.map(subj => (
                     <SelectItem key={subj.id} value={subj.id}>
-                      {subj.name}
+                      {subj.name} {subj.series ? `(${subj.series})` : ''}
                     </SelectItem>
                   ))}
                 </SelectContent>
