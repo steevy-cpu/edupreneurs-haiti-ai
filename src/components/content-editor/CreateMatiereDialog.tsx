@@ -107,6 +107,7 @@ export function CreateMatiereDialog({ open, onOpenChange, onMatiereCreated }: Cr
   // Step 1: Basic Info & Text
   const [subjectName, setSubjectName] = useState("");
   const [gradeLevel, setGradeLevel] = useState("");
+  const [series, setSeries] = useState("");
   const [icon, setIcon] = useState("BookOpen");
   const [color, setColor] = useState("blue");
   const [description, setDescription] = useState("");
@@ -199,17 +200,24 @@ export function CreateMatiereDialog({ open, onOpenChange, onMatiereCreated }: Cr
       }
 
       // Insert subject
+      const subjectInsertData: any = {
+        name: subjectName,
+        slug,
+        description,
+        grade_level: gradeLevel,
+        icon_name: icon,
+        color,
+        lesson_count: parsedLessons.length,
+      };
+
+      // Add series for NS3/NS4
+      if (gradeLevel === "NS3" || gradeLevel === "NS4") {
+        subjectInsertData.series = series;
+      }
+
       const { data: subject, error: subjectError } = await supabase
         .from('subjects')
-        .insert({
-          name: subjectName,
-          slug,
-          description,
-          grade_level: gradeLevel,
-          icon_name: icon,
-          color,
-          lesson_count: parsedLessons.length,
-        })
+        .insert(subjectInsertData)
         .select()
         .single();
 
@@ -268,6 +276,7 @@ export function CreateMatiereDialog({ open, onOpenChange, onMatiereCreated }: Cr
     setCurrentStep(1);
     setSubjectName("");
     setGradeLevel("");
+    setSeries("");
     setIcon("BookOpen");
     setColor("blue");
     setDescription("");
@@ -332,7 +341,13 @@ export function CreateMatiereDialog({ open, onOpenChange, onMatiereCreated }: Cr
               </div>
               <div className="space-y-2">
                 <Label htmlFor="grade-level">Niveau</Label>
-                <Select value={gradeLevel} onValueChange={setGradeLevel}>
+                <Select value={gradeLevel} onValueChange={(value) => {
+                  setGradeLevel(value);
+                  // Reset series when changing grade level
+                  if (value !== "NS3" && value !== "NS4") {
+                    setSeries("");
+                  }
+                }}>
                   <SelectTrigger id="grade-level">
                     <SelectValue placeholder="Sélectionner un niveau" />
                   </SelectTrigger>
@@ -348,6 +363,27 @@ export function CreateMatiereDialog({ open, onOpenChange, onMatiereCreated }: Cr
                 </Select>
               </div>
             </div>
+
+            {/* Series selection for NS3/NS4 */}
+            {(gradeLevel === "NS3" || gradeLevel === "NS4") && (
+              <div className="space-y-2">
+                <Label htmlFor="series">Série *</Label>
+                <Select value={series} onValueChange={setSeries}>
+                  <SelectTrigger id="series">
+                    <SelectValue placeholder="Sélectionner une série" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="LLA">LLA - Lettres, Langues et Arts</SelectItem>
+                    <SelectItem value="SES">SES - Sciences Économiques et Sociales</SelectItem>
+                    <SelectItem value="SMP">SMP - Sciences Mathématiques et Physiques</SelectItem>
+                    <SelectItem value="SVT">SVT - Sciences de la Vie et de la Terre</SelectItem>
+                  </SelectContent>
+                </Select>
+                <p className="text-xs text-muted-foreground">
+                  Obligatoire pour les niveaux NS3 et NS4
+                </p>
+              </div>
+            )}
 
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">

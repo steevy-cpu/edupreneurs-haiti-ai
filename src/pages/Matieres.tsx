@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { 
@@ -30,6 +30,7 @@ import { useSubjects } from "@/hooks/useLessonsCache";
 import { supabase } from "@/integrations/supabase/client";
 
 type GradeLevel = "7AF" | "8AF" | "9AF" | "NS1" | "NS2" | "NS3" | "NS4";
+type Series = "LLA" | "SES" | "SMP" | "SVT";
 
 interface Subject {
   id: string;
@@ -38,6 +39,16 @@ interface Subject {
   icon: any;
   lessons: number;
   exercises: number;
+  color: string;
+  series?: string | null;
+}
+
+interface SeriesOption {
+  id: Series;
+  name: string;
+  fullName: string;
+  description: string;
+  icon: any;
   color: string;
 }
 
@@ -125,6 +136,41 @@ const subjects: Subject[] = [
   }
 ];
 
+const seriesOptions: SeriesOption[] = [
+  {
+    id: "LLA",
+    name: "LLA",
+    fullName: "Lettres, Langues et Arts",
+    description: "Pour les passionnés de littérature, langues et expression artistique",
+    icon: BookOpen,
+    color: "from-purple-500 to-purple-600"
+  },
+  {
+    id: "SES",
+    name: "SES",
+    fullName: "Sciences Économiques et Sociales",
+    description: "Pour comprendre l'économie, la société et les enjeux mondiaux",
+    icon: Users,
+    color: "from-blue-500 to-blue-600"
+  },
+  {
+    id: "SMP",
+    name: "SMP",
+    fullName: "Sciences Mathématiques et Physiques",
+    description: "Pour les esprits analytiques et scientifiques",
+    icon: Calculator,
+    color: "from-emerald-500 to-emerald-600"
+  },
+  {
+    id: "SVT",
+    name: "SVT",
+    fullName: "Sciences de la Vie et de la Terre",
+    description: "Pour explorer le vivant et notre planète",
+    icon: FlaskConical,
+    color: "from-amber-500 to-amber-600"
+  }
+];
+
 const gradeLevels = [
   { id: "7AF" as GradeLevel, label: "7AF", fullName: "7ème année fondamentale" },
   { id: "8AF" as GradeLevel, label: "8AF", fullName: "8ème année fondamentale" },
@@ -171,11 +217,13 @@ const colorMap: Record<string, string> = {
 export default function Matieres() {
   const navigate = useNavigate();
   const [selectedGrade, setSelectedGrade] = useState<GradeLevel>("7AF");
+  const [selectedSeries, setSelectedSeries] = useState<Series | null>(null);
   const [refreshTrigger, setRefreshTrigger] = useState(0);
   const { subjects: dbSubjects, isLoading } = useSubjects(refreshTrigger);
   const [lessonCounts, setLessonCounts] = useState<Record<string, number>>({});
 
   const currentGrade = gradeLevels.find(g => g.id === selectedGrade);
+  const isNS3OrNS4 = selectedGrade === "NS3" || selectedGrade === "NS4";
   
   // Fetch actual lesson counts from database
   useEffect(() => {
@@ -214,8 +262,14 @@ export default function Matieres() {
     fetchLessonCounts();
   }, [selectedGrade, refreshTrigger]);
   
-  // Filter subjects by selected grade
-  const filteredSubjects = dbSubjects.filter(s => s.grade_level === selectedGrade);
+  // Filter subjects by selected grade and series (for NS3/NS4)
+  const filteredSubjects = dbSubjects.filter(s => {
+    if (s.grade_level !== selectedGrade) return false;
+    if (isNS3OrNS4 && selectedSeries) {
+      return s.series === selectedSeries;
+    }
+    return true;
+  });
   
   // Merge database subjects with hardcoded subjects for 7AF
   const displaySubjects = selectedGrade === "7AF" 
@@ -322,7 +376,10 @@ export default function Matieres() {
               <Button
                 key={grade.id}
                 variant={selectedGrade === grade.id ? "default" : "outline"}
-                onClick={() => setSelectedGrade(grade.id)}
+                onClick={() => {
+                  setSelectedGrade(grade.id);
+                  setSelectedSeries(null); // Reset series when grade changes
+                }}
                 className="min-w-[80px]"
               >
                 {grade.label}
@@ -331,17 +388,69 @@ export default function Matieres() {
           </div>
         </Card>
 
-        {/* Current Grade Display */}
-        <div className="text-center mb-8">
-          <h2 className="text-3xl font-bold mb-2">
-            {currentGrade?.fullName} ({currentGrade?.label})
-          </h2>
-          <p className="text-muted-foreground">
-            Découvrez les matières fondamentales qui préparent à l'excellence académique
-          </p>
-        </div>
+        {/* Series Selection for NS3/NS4 */}
+        {isNS3OrNS4 && !selectedSeries && (
+          <div className="mb-8">
+            <h3 className="text-2xl font-semibold text-center mb-6">
+              Choisissez votre série
+            </h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+              {seriesOptions.map((series) => {
+                const IconComponent = series.icon;
+                return (
+                  <Card
+                    key={series.id}
+                    className="group cursor-pointer transition-all duration-300 hover:scale-105 hover:shadow-xl overflow-hidden"
+                    onClick={() => setSelectedSeries(series.id)}
+                  >
+                    <div className={`h-2 bg-gradient-to-r ${series.color}`} />
+                    <CardContent className="p-6">
+                      <div className={`w-16 h-16 mx-auto mb-4 rounded-full bg-gradient-to-r ${series.color} flex items-center justify-center`}>
+                        <IconComponent className="w-8 h-8 text-white" />
+                      </div>
+                      <h4 className="text-xl font-bold text-center mb-2">{series.name}</h4>
+                      <p className="text-sm font-semibold text-center mb-3 text-muted-foreground">
+                        {series.fullName}
+                      </p>
+                      <p className="text-sm text-center text-muted-foreground">
+                        {series.description}
+                      </p>
+                    </CardContent>
+                  </Card>
+                );
+              })}
+            </div>
+          </div>
+        )}
 
-        {(selectedGrade === "7AF" || selectedGrade === "8AF" || selectedGrade === "9AF" || selectedGrade === "NS1" || selectedGrade === "NS2") && displaySubjects.length > 0 ? (
+        {/* Back to series button for NS3/NS4 when a series is selected */}
+        {isNS3OrNS4 && selectedSeries && (
+          <div className="mb-6">
+            <Button
+              variant="outline"
+              onClick={() => setSelectedSeries(null)}
+              className="gap-2"
+            >
+              <ChevronLeft className="w-4 h-4" />
+              Retour aux séries
+            </Button>
+          </div>
+        )}
+
+        {/* Current Grade Display - Only show if not waiting for series selection */}
+        {(!isNS3OrNS4 || selectedSeries) && (
+          <div className="text-center mb-8">
+            <h2 className="text-3xl font-bold mb-2">
+              {currentGrade?.fullName} ({currentGrade?.label})
+              {selectedSeries && ` - ${seriesOptions.find(s => s.id === selectedSeries)?.fullName}`}
+            </h2>
+            <p className="text-muted-foreground">
+              Découvrez les matières fondamentales qui préparent à l'excellence académique
+            </p>
+          </div>
+        )}
+
+        {((!isNS3OrNS4 && displaySubjects.length > 0) || (isNS3OrNS4 && selectedSeries && displaySubjects.length > 0)) ? (
           <>
             {/* Stats Section */}
             <Card className="p-6 mb-8">

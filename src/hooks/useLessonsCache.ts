@@ -25,6 +25,7 @@ interface CachedSubject {
   grade_level: string;
   lesson_count: number;
   exercise_count: number;
+  series?: string | null;
 }
 
 const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes

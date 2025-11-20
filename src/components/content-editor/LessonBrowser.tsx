@@ -22,6 +22,7 @@ interface LessonBrowserProps {
 
 export const LessonBrowser = ({ onSelectLesson, selectedLesson, refreshKey }: LessonBrowserProps) => {
   const [gradeLevel, setGradeLevel] = useState<string>("all");
+  const [series, setSeries] = useState<string>("all");
   const [availableSubjects, setAvailableSubjects] = useState<any[]>([]);
   const [lessonsBySubject, setLessonsBySubject] = useState<Record<string, any[]>>({});
   const [searchQuery, setSearchQuery] = useState("");
@@ -40,10 +41,20 @@ export const LessonBrowser = ({ onSelectLesson, selectedLesson, refreshKey }: Le
     { value: "NS4", label: "NS4" },
   ];
 
-  // Load subjects when grade level changes or refreshKey updates
+  const seriesOptions = [
+    { value: "all", label: "Toutes les séries" },
+    { value: "LLA", label: "LLA" },
+    { value: "SES", label: "SES" },
+    { value: "SMP", label: "SMP" },
+    { value: "SVT", label: "SVT" },
+  ];
+
+  const isNS3OrNS4 = gradeLevel === "NS3" || gradeLevel === "NS4";
+
+  // Load subjects when grade level, series, or refreshKey changes
   useEffect(() => {
     loadSubjects();
-  }, [gradeLevel, refreshKey]);
+  }, [gradeLevel, series, refreshKey]);
 
   // Auto-expand subjects when lessons are loaded
   useEffect(() => {
@@ -57,12 +68,17 @@ export const LessonBrowser = ({ onSelectLesson, selectedLesson, refreshKey }: Le
     try {
       let query = supabase
         .from('subjects')
-        .select('id, name, slug, grade_level, icon_name')
+        .select('id, name, slug, grade_level, icon_name, series')
         .order('name');
 
       // Filter by grade level if not "all"
       if (gradeLevel !== "all") {
         query = query.eq('grade_level', gradeLevel);
+      }
+
+      // Filter by series for NS3/NS4
+      if ((gradeLevel === "NS3" || gradeLevel === "NS4") && series !== "all") {
+        query = query.eq('series', series);
       }
 
       const { data, error } = await query;
@@ -168,7 +184,13 @@ export const LessonBrowser = ({ onSelectLesson, selectedLesson, refreshKey }: Le
         {/* Grade Level Filter */}
         <div className="mt-4 space-y-2">
           <Label>Niveau scolaire</Label>
-          <Select value={gradeLevel} onValueChange={setGradeLevel}>
+          <Select value={gradeLevel} onValueChange={(value) => {
+            setGradeLevel(value);
+            // Reset series when changing grade
+            if (value !== "NS3" && value !== "NS4") {
+              setSeries("all");
+            }
+          }}>
             <SelectTrigger>
               <SelectValue />
             </SelectTrigger>
@@ -181,6 +203,25 @@ export const LessonBrowser = ({ onSelectLesson, selectedLesson, refreshKey }: Le
             </SelectContent>
           </Select>
         </div>
+
+        {/* Series Filter for NS3/NS4 */}
+        {isNS3OrNS4 && (
+          <div className="mt-4 space-y-2">
+            <Label>Série</Label>
+            <Select value={series} onValueChange={setSeries}>
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {seriesOptions.map((s) => (
+                  <SelectItem key={s.value} value={s.value}>
+                    {s.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+        )}
 
         {/* Search */}
         <div className="relative mt-4">
