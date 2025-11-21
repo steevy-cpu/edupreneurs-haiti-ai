@@ -591,25 +591,6 @@ export default function Matieres() {
           })}
             </div>
           </>
-        ) : (
-          <Card className="p-12 mb-8 text-center">
-            <div className="max-w-md mx-auto">
-              <div className="text-6xl mb-4">🚧</div>
-              <h3 className="text-2xl font-bold mb-3">Bientôt Disponible!</h3>
-              <p className="text-muted-foreground mb-4">
-                Le contenu pour {currentGrade?.fullName} ({currentGrade?.label}) sera disponible très prochainement.
-              </p>
-              <p className="text-sm text-muted-foreground">
-                Pour l'instant, explorez notre programme complet pour AF7 👆
-              </p>
-              <Button 
-                onClick={() => setSelectedGrade("7AF")}
-                className="mt-6"
-              >
-                Voir le programme 7AF
-              </Button>
-            </div>
-          </Card>
         )}
 
         {/* Eric Mascot Section */}
