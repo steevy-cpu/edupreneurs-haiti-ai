@@ -11,19 +11,21 @@ serve(async (req) => {
   }
 
   try {
-    const { lessonTitle, contenu, exemplesExercices, gradeLevel, subject } = await req.json();
+    const { lessonTitle, contenu, exemplesExercices, gradeLevel, subject, model } = await req.json();
     
     console.log('🎨 Starting image generation for:', lessonTitle);
     
+    // Get API keys
     const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
     const OPENAI_API_KEY = Deno.env.get('OPENAI_API_KEY');
-    
+
     if (!LOVABLE_API_KEY) {
-      throw new Error('LOVABLE_API_KEY not configured');
+      throw new Error('LOVABLE_API_KEY is not configured');
     }
-    
-    if (!OPENAI_API_KEY) {
-      throw new Error('OPENAI_API_KEY not configured');
+
+    // Only require OPENAI_API_KEY if using OpenAI model
+    if (model === 'openai' && !OPENAI_API_KEY) {
+      throw new Error('OPENAI_API_KEY is not configured');
     }
     
     // Step 1: Use Lovable AI to analyze content and generate image prompts
@@ -157,68 +159,101 @@ Génère AU MOINS 2 concepts éducatifs (idéalement 3-4) avec des prompts déta
     console.log(`📝 Generated ${concepts.length} concept(s):`, concepts.map(c => c.name));
     
     // Step 2: Generate images using OpenAI gpt-image-1
-    console.log('🎨 Generating images with OpenAI gpt-image-1...');
+    console.log(`🖼️ Generating images with ${model === 'openai' ? 'OpenAI' : 'Lovable AI'}...`);
     const images = [];
     
     for (let i = 0; i < concepts.length; i++) {
       const concept = concepts[i];
-      console.log(`🖼️ Generating image ${i + 1}/${concepts.length}: ${concept.name}`);
+      console.log(`Generating image ${i + 1}/${concepts.length}: ${concept.name}`);
       
       try {
-        const openaiResponse = await fetch('https://api.openai.com/v1/images/generations', {
-          method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${OPENAI_API_KEY}`,
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            model: 'gpt-image-1',
-            prompt: concept.prompt,
-            n: 1,
-            size: '1024x1024',
-            quality: 'high',
-            output_format: 'png'
-          })
-        });
+        let base64Data: string;
         
-        if (!openaiResponse.ok) {
-          const errorText = await openaiResponse.text();
-          console.error(`❌ OpenAI API error for "${concept.name}":`, openaiResponse.status, errorText);
-          
-          // Continue to next image instead of failing completely
-          continue;
-        }
-        
-        const openaiData = await openaiResponse.json();
-        
-        if (openaiData.data && openaiData.data[0] && openaiData.data[0].b64_json) {
-          images.push({
-            concept: concept.name,
-            description: concept.description,
-            prompt: concept.prompt,
-            base64Data: openaiData.data[0].b64_json,
-            insertAt: concept.insertAt
+        if (model === 'openai') {
+          // Generate image using OpenAI
+          const openaiResponse = await fetch('https://api.openai.com/v1/images/generations', {
+            method: 'POST',
+            headers: {
+              'Authorization': `Bearer ${OPENAI_API_KEY}`,
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              model: 'gpt-image-1',
+              prompt: concept.prompt,
+              n: 1,
+              size: '1024x1024',
+              quality: 'high',
+              output_format: 'png'
+            })
           });
-          console.log(`✅ Image generated for: ${concept.name}`);
-        } else if (openaiData.data && openaiData.data[0] && openaiData.data[0].url) {
-          // If OpenAI returns a URL instead, fetch and convert to base64
-          const imageResponse = await fetch(openaiData.data[0].url);
-          const imageBuffer = await imageResponse.arrayBuffer();
-          const base64 = btoa(String.fromCharCode(...new Uint8Array(imageBuffer)));
           
-          images.push({
-            concept: concept.name,
-            description: concept.description,
-            prompt: concept.prompt,
-            base64Data: base64,
-            insertAt: concept.insertAt
-          });
-          console.log(`✅ Image generated for: ${concept.name}`);
+          if (!openaiResponse.ok) {
+            const errorText = await openaiResponse.text();
+            console.error(`❌ OpenAI API error for "${concept.name}":`, openaiResponse.status, errorText);
+            continue;
+          }
+          
+          const openaiData = await openaiResponse.json();
+          
+          if (openaiData.data && openaiData.data[0] && openaiData.data[0].b64_json) {
+            base64Data = openaiData.data[0].b64_json;
+          } else if (openaiData.data && openaiData.data[0] && openaiData.data[0].url) {
+            // If OpenAI returns a URL instead, fetch and convert to base64
+            const imageResponse = await fetch(openaiData.data[0].url);
+            const imageBuffer = await imageResponse.arrayBuffer();
+            base64Data = btoa(String.fromCharCode(...new Uint8Array(imageBuffer)));
+          } else {
+            console.warn(`⚠️ No image data in OpenAI response for: ${concept.name}`);
+            continue;
+          }
         } else {
-          console.warn(`⚠️ No image data in response for: ${concept.name}`);
+          // Generate image using Lovable AI (Nano banana)
+          const lovableResponse = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
+            method: 'POST',
+            headers: {
+              'Authorization': `Bearer ${LOVABLE_API_KEY}`,
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              model: 'google/gemini-2.5-flash-image-preview',
+              messages: [
+                {
+                  role: 'user',
+                  content: concept.prompt
+                }
+              ],
+              modalities: ['image', 'text']
+            })
+          });
+
+          if (!lovableResponse.ok) {
+            const errorText = await lovableResponse.text();
+            console.error(`❌ Lovable AI error for "${concept.name}":`, lovableResponse.status, errorText);
+            continue;
+          }
+
+          const lovableData = await lovableResponse.json();
+          const imageUrl = lovableData.choices?.[0]?.message?.images?.[0]?.image_url?.url;
+          
+          if (!imageUrl) {
+            console.error(`⚠️ No image data in Lovable AI response for: ${concept.name}`);
+            continue;
+          }
+
+          // Extract base64 from data URL format (data:image/png;base64,...)
+          base64Data = imageUrl.includes(',') ? imageUrl.split(',')[1] : imageUrl;
         }
         
-        // Rate limiting: wait 1 second between OpenAI API calls
+        images.push({
+          concept: concept.name,
+          description: concept.description,
+          prompt: concept.prompt,
+          base64Data: base64Data,
+          insertAt: concept.insertAt
+        });
+        console.log(`✅ Image generated for: ${concept.name}`);
+        
+        // Rate limiting: wait 1 second between API calls
         if (i < concepts.length - 1) {
           await new Promise(resolve => setTimeout(resolve, 1000));
         }

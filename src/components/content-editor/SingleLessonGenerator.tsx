@@ -6,6 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Slider } from "@/components/ui/slider";
 import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
@@ -33,7 +34,7 @@ export const SingleLessonGenerator = ({ lesson, onComplete }: SingleLessonGenera
   ]);
   const [generateQuiz, setGenerateQuiz] = useState(false);
   const [generateVideos, setGenerateVideos] = useState(false);
-  const [generateImages, setGenerateImages] = useState(false);
+  const [imageGenerationModel, setImageGenerationModel] = useState<'none' | 'openai' | 'lovable'>('none');
   const [wordCounts, setWordCounts] = useState(DEFAULT_WORD_COUNTS);
   const [globalContext, setGlobalContext] = useState("");
   const [progress, setProgress] = useState<SectionProgress[]>([]);
@@ -127,7 +128,7 @@ export const SingleLessonGenerator = ({ lesson, onComplete }: SingleLessonGenera
       return;
     }
 
-    if (selectedSections.length === 0 && !generateQuiz && !generateVideos && !generateImages) {
+    if (selectedSections.length === 0 && !generateQuiz && !generateVideos && imageGenerationModel === 'none') {
       toast.error("Sélectionnez au moins une section ou fonctionnalité");
       return;
     }
@@ -137,7 +138,7 @@ export const SingleLessonGenerator = ({ lesson, onComplete }: SingleLessonGenera
     setGeneratedContent({}); // Clear previous content
     
     // Calculate total tasks (sections + quiz + videos + images)
-    const totalTasks = selectedSections.length + (generateQuiz ? 1 : 0) + (generateVideos ? 1 : 0) + (generateImages ? 1 : 0);
+    const totalTasks = selectedSections.length + (generateQuiz ? 1 : 0) + (generateVideos ? 1 : 0) + (imageGenerationModel !== 'none' ? 1 : 0);
     
     // Initialize progress for sections and optional features
     const initialProgress: SectionProgress[] = [
@@ -145,7 +146,7 @@ export const SingleLessonGenerator = ({ lesson, onComplete }: SingleLessonGenera
     ];
     if (generateQuiz) initialProgress.push({ name: 'quiz_final' as SectionName, status: 'pending' });
     if (generateVideos) initialProgress.push({ name: 'youtube_url' as SectionName, status: 'pending' });
-    if (generateImages) initialProgress.push({ name: 'explanatory_images' as any, status: 'pending' });
+    if (imageGenerationModel !== 'none') initialProgress.push({ name: 'explanatory_images' as any, status: 'pending' });
     
     setProgress(initialProgress);
 
@@ -377,7 +378,7 @@ export const SingleLessonGenerator = ({ lesson, onComplete }: SingleLessonGenera
     }
 
     // Generate explanatory images if selected
-    if (generateImages) {
+    if (imageGenerationModel !== 'none') {
       currentTask++;
       setCurrentSection(currentTask);
       
@@ -410,6 +411,7 @@ export const SingleLessonGenerator = ({ lesson, onComplete }: SingleLessonGenera
             exemplesExercices: lessonData?.exemples_exercices || '',
             gradeLevel: lessonData?.grade_level || lesson.grade_level,
             subject: lessonData?.subjects?.name || 'Matière',
+            model: imageGenerationModel
           }
         });
 
@@ -685,8 +687,8 @@ export const SingleLessonGenerator = ({ lesson, onComplete }: SingleLessonGenera
     }
   };
 
-  const progressPercentage = selectedSections.length + (generateQuiz ? 1 : 0) + (generateVideos ? 1 : 0) + (generateImages ? 1 : 0) > 0 
-    ? (currentSection / (selectedSections.length + (generateQuiz ? 1 : 0) + (generateVideos ? 1 : 0) + (generateImages ? 1 : 0))) * 100 
+  const progressPercentage = selectedSections.length + (generateQuiz ? 1 : 0) + (generateVideos ? 1 : 0) + (imageGenerationModel !== 'none' ? 1 : 0) > 0 
+    ? (currentSection / (selectedSections.length + (generateQuiz ? 1 : 0) + (generateVideos ? 1 : 0) + (imageGenerationModel !== 'none' ? 1 : 0))) * 100 
     : 0;
 
   return (
@@ -756,16 +758,20 @@ export const SingleLessonGenerator = ({ lesson, onComplete }: SingleLessonGenera
                     🎥 Suggérer vidéos YouTube
                   </label>
                 </div>
-                <div className="flex items-center space-x-2">
-                  <Checkbox
-                    id="generate-images"
-                    checked={generateImages}
-                    onCheckedChange={(checked) => setGenerateImages(checked as boolean)}
-                    disabled={isGenerating}
-                  />
-                  <label htmlFor="generate-images" className="text-sm cursor-pointer">
-                    🖼️ Générer images explicatives (Recraft v3)
+                <div className="space-y-2">
+                  <label htmlFor="image-model-single" className="text-sm font-medium">
+                    🖼️ Générer images explicatives
                   </label>
+                  <Select value={imageGenerationModel} onValueChange={(value: 'none' | 'openai' | 'lovable') => setImageGenerationModel(value)} disabled={isGenerating}>
+                    <SelectTrigger id="image-model-single">
+                      <SelectValue placeholder="Sélectionner un modèle" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="none">Aucun</SelectItem>
+                      <SelectItem value="openai">OpenAI (gpt-image-1)</SelectItem>
+                      <SelectItem value="lovable">Lovable AI (Nano banana)</SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
               </div>
             </div>
