@@ -17,6 +17,7 @@ import { HTMLQuizParser } from "@/components/HTMLQuizParser";
 import { SpanishPracticeChat } from "@/components/SpanishPracticeChat";
 import { useTTS } from "@/hooks/useTTS";
 import { normalizeToSlug } from "@/lib/slugNormalization";
+import { EricChatbot } from "@/components/EricChatbot";
 import ericTeaching from "@/assets/eric-teaching.png";
 
 interface Lesson {
@@ -482,6 +483,9 @@ const EspagnolLessonAF9 = () => {
           </CardContent>
         </Card>
       </div>
+
+      {/* Eric Chatbot */}
+      <EricChatbot />
     </div>
   );
 };
