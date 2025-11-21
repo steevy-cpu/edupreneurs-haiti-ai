@@ -10,6 +10,7 @@ import { ThemeToggle } from "@/components/ThemeToggle";
 import { MusicSelector } from "@/components/MusicSelector";
 import ericTeaching from "@/assets/eric-teaching.png";
 import ericScientist from "@/assets/eric-scientist.png";
+import ericBiologist from "@/assets/eric-biologist.png";
 
 export default function DynamicCoursePage() {
   const { slug } = useParams();
@@ -144,7 +145,13 @@ export default function DynamicCoursePage() {
           </div>
           <div className="md:w-64">
             <img 
-              src={subject.name.toLowerCase().includes('chimie') ? ericScientist : ericTeaching} 
+              src={
+                subject.name.toLowerCase().includes('chimie') 
+                  ? ericScientist 
+                  : subject.name.toLowerCase().includes('biologie') || subject.name.toLowerCase().includes('géologie')
+                  ? ericBiologist
+                  : ericTeaching
+              } 
               alt="Eric" 
               className="w-full h-auto rounded-lg"
             />
