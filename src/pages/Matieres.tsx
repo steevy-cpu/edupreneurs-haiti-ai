@@ -181,8 +181,9 @@ const gradeLevels = [
   { id: "NS4" as GradeLevel, label: "NS4", fullName: "4ème secondaire" }
 ];
 
-// Icon mapping for database subjects
+// Icon mapping for database subjects (PascalCase keys to match database)
 const iconMap: Record<string, any> = {
+  // Legacy kebab-case support
   'calculator': Calculator,
   'book-open': BookOpen,
   'flask-conical': FlaskConical,
@@ -194,7 +195,47 @@ const iconMap: Record<string, any> = {
   'users': Users,
   'palette': Palette,
   'activity': Activity,
-  'languages': Languages
+  'languages': Languages,
+  
+  // PascalCase naming (matches CreateMatiereDialog)
+  'Languages': Languages,
+  'Globe': Globe,
+  'BookOpen': BookOpen,
+  'MessageSquare': MessageCircle,
+  'BookA': BookOpen,
+  'Calculator': Calculator,
+  'PieChart': Calculator,
+  'Binary': Calculator,
+  'Sigma': Calculator,
+  'FlaskConical': FlaskConical,
+  'Atom': Beaker,
+  'Microscope': Beaker,
+  'Dna': Beaker,
+  'Leaf': Beaker,
+  'Beaker': Beaker,
+  'Landmark': Map,
+  'Users': Users,
+  'Globe2': Globe,
+  'BookText': BookOpen,
+  'Map': Map,
+  'Scale': Users,
+  'Palette': Palette,
+  'Music': Palette,
+  'Drama': Palette,
+  'Paintbrush': Palette,
+  'Dumbbell': Activity,
+  'Trophy': Award,
+  'Activity': Activity,
+  'Heart': Activity,
+  'Laptop': Calculator,
+  'Code': Calculator,
+  'Database': Calculator,
+  'Monitor': Calculator,
+  'Cpu': Calculator,
+  'Brain': BookOpen,
+  'Lightbulb': BookOpen,
+  'GraduationCap': GraduationCap,
+  'Book': BookOpen
 };
 
 // Color mapping for database subjects
