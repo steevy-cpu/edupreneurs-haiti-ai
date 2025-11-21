@@ -42,7 +42,7 @@ export const BatchLessonGenerator = () => {
   ]);
   const [generateQuiz, setGenerateQuiz] = useState(false);
   const [generateVideos, setGenerateVideos] = useState(false);
-  const [generateImages, setGenerateImages] = useState(false);
+  const [imageGenerationModel, setImageGenerationModel] = useState<'none' | 'openai' | 'lovable'>('none');
   const [onlyEmpty, setOnlyEmpty] = useState(false);
   const [wordCounts, setWordCounts] = useState(DEFAULT_WORD_COUNTS);
   const [globalContext, setGlobalContext] = useState("");
@@ -293,7 +293,7 @@ export const BatchLessonGenerator = () => {
   };
 
   const startGeneration = async () => {
-    if (selectedSections.length === 0 && !generateQuiz && !generateVideos && !generateImages) {
+    if (selectedSections.length === 0 && !generateQuiz && !generateVideos && imageGenerationModel === 'none') {
       toast.error("Sélectionnez au moins une section ou fonctionnalité");
       return;
     }
@@ -603,7 +603,7 @@ export const BatchLessonGenerator = () => {
         }
 
         // Generate explanatory images if selected
-        if (generateImages) {
+        if (imageGenerationModel !== 'none') {
           try {
             console.log('🎨 [Batch] Generating explanatory images');
             
@@ -652,7 +652,7 @@ export const BatchLessonGenerator = () => {
         }
 
         // Mark as success if any content was generated (sections or optional features)
-        success = selectedSections.length > 0 || generateQuiz || generateVideos || generateImages;
+        success = selectedSections.length > 0 || generateQuiz || generateVideos || imageGenerationModel !== 'none';
         const generationTime = Date.now() - startTime;
         
         setLessonStatuses(prev => prev.map((l, i) =>
@@ -1252,15 +1252,20 @@ export const BatchLessonGenerator = () => {
                     🎥 Appliquer vidéos YouTube automatiquement
                   </label>
                 </div>
-                <div className="flex items-center space-x-2">
-                  <Checkbox
-                    id="batch-generate-images"
-                    checked={generateImages}
-                    onCheckedChange={(checked) => setGenerateImages(checked as boolean)}
-                  />
-                  <label htmlFor="batch-generate-images" className="text-sm cursor-pointer">
-                    🖼️ Générer images explicatives (Recraft v3)
+                <div className="space-y-2">
+                  <label htmlFor="batch-image-model" className="text-sm font-medium">
+                    🖼️ Générer images explicatives
                   </label>
+                  <Select value={imageGenerationModel} onValueChange={(value: 'none' | 'openai' | 'lovable') => setImageGenerationModel(value)}>
+                    <SelectTrigger id="batch-image-model">
+                      <SelectValue placeholder="Sélectionner un modèle" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="none">Aucun</SelectItem>
+                      <SelectItem value="openai">OpenAI (gpt-image-1)</SelectItem>
+                      <SelectItem value="lovable">Lovable AI (Nano banana)</SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
               </div>
             </div>
