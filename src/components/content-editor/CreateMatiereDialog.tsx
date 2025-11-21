@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { Loader2, Sparkles, Check, ArrowRight } from "lucide-react";
@@ -107,7 +108,7 @@ export function CreateMatiereDialog({ open, onOpenChange, onMatiereCreated }: Cr
   // Step 1: Basic Info & Text
   const [subjectName, setSubjectName] = useState("");
   const [gradeLevel, setGradeLevel] = useState("");
-  const [series, setSeries] = useState("");
+  const [series, setSeries] = useState<string[]>([]);
   const [icon, setIcon] = useState("BookOpen");
   const [color, setColor] = useState("blue");
   const [description, setDescription] = useState("");
@@ -174,93 +175,111 @@ export function CreateMatiereDialog({ open, onOpenChange, onMatiereCreated }: Cr
   };
 
   const handleGenerate = async () => {
+    // Validate series for NS3/NS4
+    const isNS3OrNS4 = gradeLevel === "NS3" || gradeLevel === "NS4";
+    if (isNS3OrNS4 && series.length === 0) {
+      toast({
+        variant: "destructive",
+        title: "Série manquante",
+        description: "Veuillez sélectionner au moins une série pour NS3/NS4",
+      });
+      return;
+    }
+
     setIsLoading(true);
     try {
       // Create slug - normalize to remove special characters (accents, etc.)
       const { normalizeToSlug } = await import('@/lib/slugNormalization');
       const normalizedName = normalizeToSlug(subjectName);
       
-      // Include series in slug for NS3/NS4 to allow same subject in different series
-      const isNS3OrNS4 = gradeLevel === "NS3" || gradeLevel === "NS4";
-      const slug = isNS3OrNS4 
-        ? `${normalizedName}-${gradeLevel.toLowerCase()}-${series.toLowerCase()}`
-        : `${normalizedName}-${gradeLevel.toLowerCase()}`;
+      // For NS3/NS4, we create one subject per selected series
+      const seriesToCreate = isNS3OrNS4 ? series : [""];
+      let createdCount = 0;
 
-      // Check if subject already exists
-      const { data: existingSubject } = await supabase
-        .from('subjects')
-        .select('id, name, series')
-        .eq('slug', slug)
-        .eq('grade_level', gradeLevel)
-        .maybeSingle();
+      for (const currentSeries of seriesToCreate) {
+        // Include series in slug for NS3/NS4 to allow same subject in different series
+        const slug = isNS3OrNS4 
+          ? `${normalizedName}-${gradeLevel.toLowerCase()}-${currentSeries.toLowerCase()}`
+          : `${normalizedName}-${gradeLevel.toLowerCase()}`;
 
-      if (existingSubject) {
-        const seriesInfo = existingSubject.series ? ` (série ${existingSubject.series})` : '';
-        toast({
-          variant: "destructive",
-          title: "Matière déjà existante",
-          description: `La matière "${existingSubject.name}"${seriesInfo} existe déjà pour le niveau ${gradeLevel}. Veuillez choisir un nom différent ou modifier la matière existante.`,
-        });
-        setIsLoading(false);
-        return;
+        // Check if subject already exists
+        const { data: existingSubject } = await supabase
+          .from('subjects')
+          .select('id, name, series')
+          .eq('slug', slug)
+          .eq('grade_level', gradeLevel)
+          .maybeSingle();
+
+        if (existingSubject) {
+          const seriesInfo = existingSubject.series ? ` (série ${existingSubject.series})` : '';
+          toast({
+            variant: "destructive",
+            title: "Matière déjà existante",
+            description: `La matière "${existingSubject.name}"${seriesInfo} existe déjà pour le niveau ${gradeLevel}. Ignorée.`,
+          });
+          continue;
+        }
+
+        // Insert subject
+        const subjectInsertData: any = {
+          name: subjectName,
+          slug,
+          description,
+          grade_level: gradeLevel,
+          icon_name: icon,
+          color,
+          lesson_count: parsedLessons.length,
+        };
+
+        // Add series for NS3/NS4
+        if (isNS3OrNS4) {
+          subjectInsertData.series = currentSeries;
+        }
+
+        const { data: subject, error: subjectError } = await supabase
+          .from('subjects')
+          .insert(subjectInsertData)
+          .select()
+          .single();
+
+        if (subjectError) throw subjectError;
+
+        // Insert lessons with all required sections (empty for now, will be filled by content editor)
+        const lessonsToInsert = parsedLessons.map((lesson, index) => ({
+          subject_id: subject.id,
+          title: lesson.title,
+          slug: `${slug}-lecon-${index + 1}`,
+          objectif: lesson.objectif,
+          mois: lesson.mois,
+          order_index: lesson.order_index,
+          grade_level: gradeLevel,
+          is_published: true, // Auto-publish lessons on creation
+          // Empty sections ready for AI generation via content editor
+          introduction: null,
+          contenu: null,
+          exemples_exercices: null,
+          activites_interactives: null,
+          quiz_final: null,
+          youtube_url: null,
+        }));
+
+        const { error: lessonsError } = await supabase
+          .from('lessons')
+          .insert(lessonsToInsert);
+
+        if (lessonsError) throw lessonsError;
+
+        setCreatedSubjectId(subject.id);
+        createdCount++;
       }
 
-      // Insert subject
-      const subjectInsertData: any = {
-        name: subjectName,
-        slug,
-        description,
-        grade_level: gradeLevel,
-        icon_name: icon,
-        color,
-        lesson_count: parsedLessons.length,
-      };
-
-      // Add series for NS3/NS4
-      if (gradeLevel === "NS3" || gradeLevel === "NS4") {
-        subjectInsertData.series = series;
-      }
-
-      const { data: subject, error: subjectError } = await supabase
-        .from('subjects')
-        .insert(subjectInsertData)
-        .select()
-        .single();
-
-      if (subjectError) throw subjectError;
-
-      // Insert lessons with all required sections (empty for now, will be filled by content editor)
-      const lessonsToInsert = parsedLessons.map((lesson, index) => ({
-        subject_id: subject.id,
-        title: lesson.title,
-        slug: `${slug}-lecon-${index + 1}`,
-        objectif: lesson.objectif,
-        mois: lesson.mois,
-        order_index: lesson.order_index,
-        grade_level: gradeLevel,
-        is_published: true, // Auto-publish lessons on creation
-        // Empty sections ready for AI generation via content editor
-        introduction: null,
-        contenu: null,
-        exemples_exercices: null,
-        activites_interactives: null,
-        quiz_final: null,
-        youtube_url: null,
-      }));
-
-      const { error: lessonsError } = await supabase
-        .from('lessons')
-        .insert(lessonsToInsert);
-
-      if (lessonsError) throw lessonsError;
-
-      setCreatedSubjectId(subject.id);
       setCreatedLessonCount(parsedLessons.length);
       setCurrentStep(3);
 
+      const seriesText = isNS3OrNS4 ? ` pour ${createdCount} série(s)` : '';
       toast({
         title: "Matière créée avec succès",
-        description: `${parsedLessons.length} leçons créées. Vous pouvez maintenant générer le contenu via le Content Editor.`,
+        description: `${parsedLessons.length} leçons créées${seriesText}. Vous pouvez maintenant générer le contenu via le Content Editor.`,
       });
 
       // Clear cache to force refresh in all components
@@ -282,7 +301,7 @@ export function CreateMatiereDialog({ open, onOpenChange, onMatiereCreated }: Cr
     setCurrentStep(1);
     setSubjectName("");
     setGradeLevel("");
-    setSeries("");
+    setSeries([]);
     setIcon("BookOpen");
     setColor("blue");
     setDescription("");
@@ -351,7 +370,7 @@ export function CreateMatiereDialog({ open, onOpenChange, onMatiereCreated }: Cr
                   setGradeLevel(value);
                   // Reset series when changing grade level
                   if (value !== "NS3" && value !== "NS4") {
-                    setSeries("");
+                    setSeries([]);
                   }
                 }}>
                   <SelectTrigger id="grade-level">
@@ -373,20 +392,87 @@ export function CreateMatiereDialog({ open, onOpenChange, onMatiereCreated }: Cr
             {/* Series selection for NS3/NS4 */}
             {(gradeLevel === "NS3" || gradeLevel === "NS4") && (
               <div className="space-y-2">
-                <Label htmlFor="series">Série *</Label>
-                <Select value={series} onValueChange={setSeries}>
-                  <SelectTrigger id="series">
-                    <SelectValue placeholder="Sélectionner une série" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="LLA">LLA - Lettres, Langues et Arts</SelectItem>
-                    <SelectItem value="SES">SES - Sciences Économiques et Sociales</SelectItem>
-                    <SelectItem value="SMP">SMP - Sciences Mathématiques et Physiques</SelectItem>
-                    <SelectItem value="SVT">SVT - Sciences de la Vie et de la Terre</SelectItem>
-                  </SelectContent>
-                </Select>
+                <Label>Série(s) *</Label>
+                <div className="border rounded-md p-3 space-y-2 bg-background">
+                  <div className="flex items-center space-x-2">
+                    <Checkbox
+                      id="series-lla"
+                      checked={series.includes("LLA")}
+                      onCheckedChange={(checked) => {
+                        if (checked) {
+                          setSeries([...series, "LLA"]);
+                        } else {
+                          setSeries(series.filter(s => s !== "LLA"));
+                        }
+                      }}
+                    />
+                    <label
+                      htmlFor="series-lla"
+                      className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
+                    >
+                      LLA - Lettres, Langues et Arts
+                    </label>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <Checkbox
+                      id="series-ses"
+                      checked={series.includes("SES")}
+                      onCheckedChange={(checked) => {
+                        if (checked) {
+                          setSeries([...series, "SES"]);
+                        } else {
+                          setSeries(series.filter(s => s !== "SES"));
+                        }
+                      }}
+                    />
+                    <label
+                      htmlFor="series-ses"
+                      className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
+                    >
+                      SES - Sciences Économiques et Sociales
+                    </label>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <Checkbox
+                      id="series-smp"
+                      checked={series.includes("SMP")}
+                      onCheckedChange={(checked) => {
+                        if (checked) {
+                          setSeries([...series, "SMP"]);
+                        } else {
+                          setSeries(series.filter(s => s !== "SMP"));
+                        }
+                      }}
+                    />
+                    <label
+                      htmlFor="series-smp"
+                      className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
+                    >
+                      SMP - Sciences Mathématiques et Physiques
+                    </label>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <Checkbox
+                      id="series-svt"
+                      checked={series.includes("SVT")}
+                      onCheckedChange={(checked) => {
+                        if (checked) {
+                          setSeries([...series, "SVT"]);
+                        } else {
+                          setSeries(series.filter(s => s !== "SVT"));
+                        }
+                      }}
+                    />
+                    <label
+                      htmlFor="series-svt"
+                      className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
+                    >
+                      SVT - Sciences de la Vie et de la Terre
+                    </label>
+                  </div>
+                </div>
                 <p className="text-xs text-muted-foreground">
-                  Obligatoire pour les niveaux NS3 et NS4
+                  Sélectionnez une ou plusieurs séries (obligatoire pour NS3/NS4)
                 </p>
               </div>
             )}
