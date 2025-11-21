@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { LessonPageTemplate } from "@/components/LessonPageTemplate";
 import ericTeaching from "@/assets/eric-teaching.png";
 import ericScientist from "@/assets/eric-scientist.png";
+import ericBiologist from "@/assets/eric-biologist.png";
 
 export default function DynamicLessonPage() {
   const { slug, lessonSlug } = useParams();
@@ -91,9 +92,12 @@ export default function DynamicLessonPage() {
     );
   }
 
-  // Use Eric scientist image for Chimie subjects
-  const ericImage = subject.name.toLowerCase().includes('chimie') 
-    ? ericScientist 
+  // Use appropriate Eric image based on subject
+  const subjectLower = subject.name.toLowerCase();
+  const ericImage = subjectLower.includes('chimie')
+    ? ericScientist
+    : subjectLower.includes('biologie') || subjectLower.includes('géologie')
+    ? ericBiologist
     : ericTeaching;
 
   return (
