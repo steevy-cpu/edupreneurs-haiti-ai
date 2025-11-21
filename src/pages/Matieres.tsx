@@ -591,7 +591,7 @@ export default function Matieres() {
           })}
             </div>
           </>
-        )}
+        ) : null}
 
         {/* Eric Mascot Section */}
         <Card className="p-8 mb-8 bg-gradient-to-r from-primary/10 to-secondary/10">
