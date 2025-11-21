@@ -3,6 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { LessonPageTemplate } from "@/components/LessonPageTemplate";
 import ericTeaching from "@/assets/eric-teaching.png";
+import ericScientist from "@/assets/eric-scientist.png";
 
 export default function DynamicLessonPage() {
   const { slug, lessonSlug } = useParams();
@@ -90,6 +91,11 @@ export default function DynamicLessonPage() {
     );
   }
 
+  // Use Eric scientist image for Chimie subjects
+  const ericImage = subject.name.toLowerCase().includes('chimie') 
+    ? ericScientist 
+    : ericTeaching;
+
   return (
     <LessonPageTemplate
       lesson={lesson}
@@ -97,7 +103,7 @@ export default function DynamicLessonPage() {
       subjectName={subject.name}
       subjectSlug={slug || ''}
       gradeLevel={subject.grade_level}
-      ericImage={ericTeaching}
+      ericImage={ericImage}
     />
   );
 }
