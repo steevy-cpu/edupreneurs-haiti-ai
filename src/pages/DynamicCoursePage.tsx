@@ -9,6 +9,7 @@ import { ChevronLeft, BookOpen, CheckCircle2 } from "lucide-react";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { MusicSelector } from "@/components/MusicSelector";
 import ericTeaching from "@/assets/eric-teaching.png";
+import ericScientist from "@/assets/eric-scientist.png";
 
 export default function DynamicCoursePage() {
   const { slug } = useParams();
@@ -143,7 +144,7 @@ export default function DynamicCoursePage() {
           </div>
           <div className="md:w-64">
             <img 
-              src={ericTeaching} 
+              src={subject.name.toLowerCase().includes('chimie') ? ericScientist : ericTeaching} 
               alt="Eric" 
               className="w-full h-auto rounded-lg"
             />
