@@ -15,6 +15,7 @@ import { YouTubeVideoSection } from "@/components/YouTubeVideoSection";
 import { InteractiveActivitiesEnhanced } from "@/components/InteractiveActivitiesEnhanced";
 import { HTMLQuizParser } from "@/components/HTMLQuizParser";
 import { useTTS } from "@/hooks/useTTS";
+import { EricChatbot } from "@/components/EricChatbot";
 
 interface LessonData {
   id: string;
@@ -355,6 +356,9 @@ export const LessonPageTemplate = ({
           </TabsContent>
         </Tabs>
       </div>
+
+      {/* Eric Chatbot */}
+      <EricChatbot />
     </div>
   );
 };
