@@ -33,7 +33,7 @@ export const BatchLessonGenerator = () => {
   const navigate = useNavigate();
   const [gradeLevel, setGradeLevel] = useState<string>("all");
   const [subject, setSubject] = useState<string>("all");
-  const [series, setSeries] = useState<string>("all");
+  const [series, setSeries] = useState<string[]>([]);
   const [availableLessons, setAvailableLessons] = useState<any[]>([]);
   const [availableSubjects, setAvailableSubjects] = useState<any[]>([]);
   const [selectedLessonIds, setSelectedLessonIds] = useState<string[]>([]);
@@ -101,8 +101,8 @@ export const BatchLessonGenerator = () => {
       }
 
       // Filter by series for NS3/NS4
-      if (isNS3OrNS4 && series !== "all") {
-        query = query.eq('series', series);
+      if (isNS3OrNS4 && series.length > 0) {
+        query = query.in('series', series);
       }
 
       const { data, error } = await query;
@@ -1074,7 +1074,7 @@ export const BatchLessonGenerator = () => {
               <Select value={gradeLevel} onValueChange={(value) => {
                 setGradeLevel(value);
                 setSubject("all");
-                setSeries("all");
+                setSeries([]);
                 setSelectedLessonIds([]);
               }}>
                 <SelectTrigger>
@@ -1092,26 +1092,35 @@ export const BatchLessonGenerator = () => {
 
             {isNS3OrNS4 && (
               <div className="space-y-2">
-                <Label>Série</Label>
-                <Select 
-                  value={series} 
-                  onValueChange={(value) => {
-                    setSeries(value);
-                    setSubject("all");
-                    setSelectedLessonIds([]);
-                  }}
-                >
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {seriesOptions.map(s => (
-                      <SelectItem key={s.value} value={s.value}>
+                <Label>Série(s)</Label>
+                <div className="border rounded-md p-3 space-y-2 bg-background">
+                  {seriesOptions.filter(s => s.value !== "all").map((s) => (
+                    <div key={s.value} className="flex items-center space-x-2">
+                      <Checkbox
+                        id={`series-${s.value}`}
+                        checked={series.includes(s.value)}
+                        onCheckedChange={(checked) => {
+                          if (checked) {
+                            setSeries([...series, s.value]);
+                          } else {
+                            setSeries(series.filter(v => v !== s.value));
+                          }
+                          setSubject("all");
+                          setSelectedLessonIds([]);
+                        }}
+                      />
+                      <label
+                        htmlFor={`series-${s.value}`}
+                        className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
+                      >
                         {s.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                      </label>
+                    </div>
+                  ))}
+                  {series.length === 0 && (
+                    <p className="text-sm text-muted-foreground">Sélectionnez une ou plusieurs séries</p>
+                  )}
+                </div>
               </div>
             )}
 
