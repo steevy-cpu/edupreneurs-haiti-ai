@@ -1,215 +1,214 @@
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, BookOpen, Globe, Calendar, Target, TrendingUp, CheckCircle2 } from "lucide-react";
+import { Progress } from "@/components/ui/progress";
+import { ArrowLeft, BookOpen, Globe, CheckCircle2, Target, Coins } from "lucide-react";
 import { sciencesSocialesLessons7AF } from "@/data/sciencesSocialesLessons";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import { MusicSelector } from "@/components/MusicSelector";
+import { supabase } from "@/integrations/supabase/client";
+import ericEdupreneurs from "@/assets/eric-edupreneurs.png";
 
 const SciencesSocialesCourse = () => {
   const navigate = useNavigate();
+  const [userGold, setUserGold] = useState(0);
+  const [completedLessons, setCompletedLessons] = useState<string[]>([]);
 
-  // Group lessons by month for better organization
-  const lessonsByMonth = sciencesSocialesLessons7AF.reduce((acc, lesson) => {
-    if (!acc[lesson.mois]) {
-      acc[lesson.mois] = [];
-    }
-    acc[lesson.mois].push(lesson);
-    return acc;
-  }, {} as Record<string, typeof sciencesSocialesLessons7AF>);
+  useEffect(() => {
+    const fetchUserData = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        // Fetch user gold
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('gold_earned')
+          .eq('user_id', user.id)
+          .single();
+        
+        if (profile) {
+          setUserGold(profile.gold_earned || 0);
+        }
+
+        // Fetch completed lessons
+        const { data: completions } = await supabase
+          .from('lesson_completions')
+          .select('lesson_slug')
+          .eq('user_id', user.id)
+          .eq('subject', 'sciences-sociales');
+
+        if (completions) {
+          setCompletedLessons(completions.map(c => c.lesson_slug));
+        }
+      }
+    };
+
+    fetchUserData();
+  }, []);
+
+  const completedCount = completedLessons.length;
+  const totalLessons = sciencesSocialesLessons7AF.length;
+  const progressPercentage = totalLessons > 0 ? (completedCount / totalLessons) * 100 : 0;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-orange-50/30 dark:via-orange-950/10 to-background">
-      {/* Hero Section */}
-      <div className="bg-gradient-to-r from-orange-600 via-orange-500 to-orange-600 text-white">
-        <div className="container max-w-6xl mx-auto px-4 py-12">
-          <div className="flex items-center justify-between mb-6">
-            <Button
-              variant="ghost"
-              onClick={() => navigate("/matieres")}
-              className="text-white hover:bg-white/20"
-            >
-              <ArrowLeft className="mr-2 h-4 w-4" />
-              Retour aux matières
-            </Button>
-            <ThemeToggle />
+    <div className="min-h-screen bg-background">
+      {/* Header */}
+      <header className="border-b border-border bg-gradient-to-r from-green-600 to-lime-600 text-primary-foreground shadow-sm sticky top-0 z-50">
+        <div className="container mx-auto px-4 py-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-4">
+              <Button 
+                variant="ghost" 
+                size="icon"
+                onClick={() => navigate('/matieres')}
+                className="shrink-0 text-primary-foreground hover:bg-primary-foreground/20"
+              >
+                <ArrowLeft className="h-5 w-5" />
+              </Button>
+              <div className="flex items-center gap-3">
+                <div className="w-12 h-12 rounded-xl bg-white/20 backdrop-blur-sm flex items-center justify-center">
+                  <Globe className="w-6 h-6" />
+                </div>
+                <div>
+                  <h1 className="text-2xl font-bold">Sciences Sociales</h1>
+                  <p className="text-sm text-primary-foreground/80">7ème Année Fondamentale</p>
+                </div>
+              </div>
+            </div>
+            <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-primary-foreground/10 border border-primary-foreground/20">
+                <Coins className="w-5 h-5 text-primary-foreground" />
+                <span className="font-bold text-primary-foreground">{userGold}</span>
+              </div>
+              <ThemeToggle />
+            </div>
           </div>
+        </div>
+      </header>
 
-          <div className="flex items-start gap-6 animate-fade-in">
-            <div className="hidden md:flex w-24 h-24 rounded-2xl bg-white/20 backdrop-blur-sm items-center justify-center flex-shrink-0">
-              <Globe className="w-14 h-14 text-white" />
+      <main className="container mx-auto px-4 py-8">
+        {/* Course Overview */}
+        <Card className="mb-8 overflow-hidden border border-border bg-card">
+          <div className="md:flex">
+            <div className="md:w-1/3 bg-gradient-to-br from-green-600 to-lime-600 p-8 flex items-center justify-center">
+              <img src={ericEdupreneurs} alt="Eric enseignant" className="w-full h-auto object-contain rounded-lg" />
             </div>
-            <div className="flex-1">
-              <h1 className="text-4xl md:text-5xl font-bold mb-3">
-                Sciences Sociales
-              </h1>
-              <p className="text-orange-100 text-lg mb-4">
-                Niveau 7ème Année Fondamentale • Programme MENFP
+            <CardContent className="md:w-2/3 p-6">
+              <h2 className="text-2xl font-bold mb-4 text-foreground">Aperçu du Cours</h2>
+              <p className="text-muted-foreground mb-4">
+                Bienvenue dans le cours de Sciences Sociales pour la 7ème année fondamentale ! 
+                Explore l'histoire, la géographie et les sociétés humaines. 
+                Comprends comment les civilisations évoluent et comment notre monde s'organise.
               </p>
-              <p className="text-white/90 max-w-2xl">
-                Explore l'histoire, la géographie et les sociétés humaines. Comprends comment les civilisations évoluent et comment notre monde s'organise.
-              </p>
-            </div>
+              <div className="space-y-2">
+                <div className="flex items-center gap-2">
+                  <BookOpen className="w-5 h-5 text-primary" />
+                  <span className="font-semibold text-foreground">{totalLessons} leçons complètes</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Target className="w-5 h-5 text-primary" />
+                  <span className="font-semibold text-foreground">Activités interactives et quiz</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <CheckCircle2 className="w-5 h-5 text-primary" />
+                  <span className="font-semibold text-foreground">{completedCount} leçons complétées</span>
+                </div>
+              </div>
+            </CardContent>
           </div>
+        </Card>
+
+        <MusicSelector />
+
+        {/* Lessons Grid */}
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+          {sciencesSocialesLessons7AF.map((lesson, index) => {
+            const isCompleted = completedLessons.includes(lesson.id);
+            const goldReward = 100 + (index * 10);
+            
+            return (
+              <Card 
+                key={lesson.id} 
+                className={`transition-all duration-300 hover:shadow-xl border border-border bg-card cursor-pointer ${
+                  isCompleted ? 'border-2 border-green-500' : 'hover:scale-105'
+                }`}
+                onClick={() => navigate(`/sciences-sociales-lesson/${lesson.id}`)}
+              >
+                <CardHeader className="bg-muted/50">
+                  <div className="flex items-start justify-between">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-full bg-gradient-to-br from-green-600 to-lime-600 flex items-center justify-center text-primary-foreground font-bold">
+                        {index + 1}
+                      </div>
+                      <div>
+                        <CardTitle className="text-lg text-foreground">{lesson.title}</CardTitle>
+                        <p className="text-sm text-muted-foreground">{lesson.mois}</p>
+                      </div>
+                    </div>
+                    {isCompleted && (
+                      <CheckCircle2 className="w-6 h-6 text-green-500 shrink-0" />
+                    )}
+                  </div>
+                </CardHeader>
+                <CardContent className="pt-6">
+                  <div className="space-y-4">
+                    <p className="text-sm text-muted-foreground line-clamp-2">
+                      {lesson.objectif}
+                    </p>
+                    
+                    <div className="flex flex-wrap gap-2">
+                      <Badge variant="secondary" className="text-xs">
+                        <BookOpen className="w-3 h-3 mr-1" />
+                        Leçon
+                      </Badge>
+                      <Badge variant="secondary" className="text-xs">
+                        <Target className="w-3 h-3 mr-1" />
+                        Objectif
+                      </Badge>
+                      <Badge variant="secondary" className="text-xs">
+                        <CheckCircle2 className="w-3 h-3 mr-1" />
+                        Quiz
+                      </Badge>
+                    </div>
+
+                    <div className="flex items-center justify-between pt-4 border-t border-border">
+                      <div className="flex items-center gap-1 text-accent">
+                        <Coins className="w-4 h-4" />
+                        <span className="font-bold">{goldReward}</span>
+                      </div>
+                      <Button>
+                        {isCompleted ? 'Revoir' : 'Commencer'}
+                      </Button>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            );
+          })}
         </div>
-      </div>
 
-      {/* Stats Cards */}
-      <div className="container max-w-6xl mx-auto px-4 -mt-8 mb-12">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <Card className="border-2 hover:shadow-lg transition-all hover-scale">
-            <CardContent className="p-6">
-              <div className="flex items-center gap-4">
-                <div className="w-12 h-12 rounded-xl bg-orange-100 dark:bg-orange-950 flex items-center justify-center">
-                  <BookOpen className="w-6 h-6 text-orange-600 dark:text-orange-400" />
+        {/* Progress Summary */}
+        <Card className="bg-gradient-to-r from-green-600 to-lime-600 text-primary-foreground border-0">
+          <CardHeader>
+            <CardTitle className="text-2xl">Ton Progrès</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              <div>
+                <div className="flex justify-between mb-2">
+                  <span className="font-semibold">Leçons complétées</span>
+                  <span className="font-bold">{completedCount}/{totalLessons}</span>
                 </div>
-                <div>
-                  <p className="text-3xl font-bold text-orange-600 dark:text-orange-400">{sciencesSocialesLessons7AF.length}</p>
-                  <p className="text-sm text-muted-foreground">Leçons au total</p>
-                </div>
+                <Progress value={progressPercentage} className="h-3 bg-primary-foreground/30" />
               </div>
-            </CardContent>
-          </Card>
-
-          <Card className="border-2 hover:shadow-lg transition-all hover-scale">
-            <CardContent className="p-6">
-              <div className="flex items-center gap-4">
-                <div className="w-12 h-12 rounded-xl bg-blue-100 dark:bg-blue-950 flex items-center justify-center">
-                  <Calendar className="w-6 h-6 text-blue-600 dark:text-blue-400" />
-                </div>
-                <div>
-                  <p className="text-3xl font-bold text-blue-600 dark:text-blue-400">{Object.keys(lessonsByMonth).length}</p>
-                  <p className="text-sm text-muted-foreground">Mois de cours</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="border-2 hover:shadow-lg transition-all hover-scale">
-            <CardContent className="p-6">
-              <div className="flex items-center gap-4">
-                <div className="w-12 h-12 rounded-xl bg-green-100 dark:bg-green-950 flex items-center justify-center">
-                  <Target className="w-6 h-6 text-green-600 dark:text-green-400" />
-                </div>
-                <div>
-                  <p className="text-3xl font-bold text-green-600 dark:text-green-400">AF7</p>
-                  <p className="text-sm text-muted-foreground">Année fondamentale</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-      </div>
-
-      {/* Lessons Grid */}
-      <div className="container max-w-6xl mx-auto px-4 pb-12">
-        <div className="mb-8">
-          <h2 className="text-3xl font-bold mb-2 flex items-center gap-2">
-            <TrendingUp className="w-8 h-8 text-orange-600 dark:text-orange-400" />
-            Programme des leçons
-          </h2>
-          <p className="text-muted-foreground">
-            Parcours les 30 leçons de Sciences Sociales organisées par mois
-          </p>
-        </div>
-
-        <div className="space-y-8">
-          {Object.entries(lessonsByMonth).map(([mois, lessons]) => (
-            <div key={mois} className="space-y-4">
-              <div className="flex items-center gap-3 mb-4">
-                <div className="flex items-center gap-2 px-4 py-2 bg-orange-100 dark:bg-orange-950 rounded-full">
-                  <Calendar className="w-4 h-4 text-orange-600 dark:text-orange-400" />
-                  <span className="font-semibold text-orange-600 dark:text-orange-400">{mois}</span>
-                </div>
-                <div className="flex-1 h-px bg-gradient-to-r from-orange-200 dark:from-orange-800 to-transparent" />
-                <Badge variant="outline" className="text-xs">
-                  {lessons.length} leçon{lessons.length > 1 ? 's' : ''}
-                </Badge>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {lessons.map((lesson, index) => {
-                  const globalIndex = sciencesSocialesLessons7AF.findIndex(l => l.id === lesson.id);
-                  return (
-                    <Card
-                      key={lesson.id}
-                      className="group hover:shadow-xl transition-all duration-300 cursor-pointer border-2 hover:border-orange-500 animate-fade-in hover-scale"
-                      onClick={() => navigate(`/sciences-sociales-lesson/${lesson.id}`)}
-                      style={{ animationDelay: `${index * 0.05}s` }}
-                    >
-                      <CardHeader>
-                        <div className="flex items-start gap-4">
-                          <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-orange-500 to-orange-600 flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform">
-                            <span className="text-white font-bold text-lg">{globalIndex + 1}</span>
-                          </div>
-                          <div className="flex-1 min-w-0">
-                            <CardTitle className="text-lg mb-2 group-hover:text-orange-600 dark:group-hover:text-orange-400 transition-colors">
-                              {lesson.title}
-                            </CardTitle>
-                            <div className="flex items-center gap-2 flex-wrap">
-                              <Badge variant="secondary" className="text-xs">
-                                <Globe className="w-3 h-3 mr-1" />
-                                Sciences Sociales
-                              </Badge>
-                              <Badge variant="outline" className="text-xs">
-                                45 min
-                              </Badge>
-                            </div>
-                          </div>
-                        </div>
-                      </CardHeader>
-                      <CardContent>
-                        <p className="text-sm text-muted-foreground line-clamp-2 mb-3">
-                          {lesson.objectif}
-                        </p>
-                        <div className="flex items-center justify-between">
-                          <span className="text-xs text-muted-foreground flex items-center gap-1">
-                            <Target className="w-3 h-3" />
-                            Objectif pédagogique
-                          </span>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            className="text-orange-600 dark:text-orange-400 hover:bg-orange-50 dark:hover:bg-orange-950"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              navigate(`/sciences-sociales-lesson/${lesson.id}`);
-                            }}
-                          >
-                            Commencer
-                            <ArrowLeft className="w-4 h-4 ml-2 rotate-180" />
-                          </Button>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  );
-                })}
-              </div>
+              <p className="text-sm opacity-90">
+                Continue comme ça ! Chaque leçon complétée te rapproche de la maîtrise des sciences sociales.
+              </p>
             </div>
-          ))}
-        </div>
-
-        {/* Call to Action */}
-        <Card className="mt-12 bg-gradient-to-r from-orange-50 to-orange-100/50 dark:from-orange-950/30 dark:to-orange-900/20 border-2 border-orange-200 dark:border-orange-800">
-          <CardContent className="p-8 text-center">
-            <div className="w-16 h-16 rounded-full bg-orange-500 flex items-center justify-center mx-auto mb-4">
-              <CheckCircle2 className="w-8 h-8 text-white" />
-            </div>
-            <h3 className="text-2xl font-bold mb-2">Prêt à commencer ?</h3>
-            <p className="text-muted-foreground mb-6 max-w-2xl mx-auto">
-              Commence par la première leçon et progresse à ton rythme. Chaque leçon contient des quiz interactifs pour tester tes connaissances !
-            </p>
-            <Button
-              size="lg"
-              onClick={() => navigate(`/sciences-sociales-lesson/${sciencesSocialesLessons7AF[0].id}`)}
-              className="bg-orange-600 hover:bg-orange-700 text-white"
-            >
-              <BookOpen className="w-5 h-5 mr-2" />
-              Commencer la première leçon
-            </Button>
           </CardContent>
         </Card>
-      </div>
+      </main>
     </div>
   );
 };

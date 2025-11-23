@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
 import { useNavigate } from "react-router-dom";
@@ -14,7 +14,7 @@ import {
   Star,
   GraduationCap
 } from "lucide-react";
-import ericTeaching from "@/assets/eric-chair-desk.avif";
+import ericMath from "@/assets/eric-math.png";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { supabase } from "@/integrations/supabase/client";
 import { MusicSelector } from "@/components/MusicSelector";
@@ -271,34 +271,34 @@ const MathCourse = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-background pb-20">
+    <div className="min-h-screen bg-background">
       {/* Header */}
-      <header className="border-b border-border bg-card/30 backdrop-blur-sm sticky top-0 z-50">
-        <div className="container mx-auto px-3 sm:px-4 py-3 sm:py-4">
-          <div className="flex items-center justify-between gap-2">
-            <div className="flex items-center gap-2 sm:gap-4 min-w-0">
-              <Button
-                variant="ghost"
+      <header className="border-b border-border bg-gradient-to-r from-blue-600 to-indigo-700 text-primary-foreground shadow-sm sticky top-0 z-50">
+        <div className="container mx-auto px-4 py-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-4">
+              <Button 
+                variant="ghost" 
                 size="icon"
                 onClick={() => navigate('/matieres')}
-                className="shrink-0"
+                className="shrink-0 text-primary-foreground hover:bg-primary-foreground/20"
               >
-                <ArrowLeft className="w-4 h-4 sm:w-5 sm:h-5" />
+                <ArrowLeft className="h-5 w-5" />
               </Button>
-              <div className="flex items-center gap-2 sm:gap-3 min-w-0">
-                <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-gradient-to-br from-primary to-secondary flex items-center justify-center shrink-0">
-                  <GraduationCap className="w-4 h-4 sm:w-6 sm:h-6 text-white" />
+              <div className="flex items-center gap-3">
+                <div className="w-12 h-12 rounded-xl bg-white/20 backdrop-blur-sm flex items-center justify-center">
+                  <GraduationCap className="w-6 h-6" />
                 </div>
-                <div className="min-w-0">
-                  <h1 className="text-base sm:text-xl font-bold truncate">Mathématiques 📐</h1>
-                  <p className="text-xs sm:text-sm text-muted-foreground">Niveau AF7</p>
+                <div>
+                  <h1 className="text-2xl font-bold">Mathématiques</h1>
+                  <p className="text-sm text-primary-foreground/80">7ème Année Fondamentale</p>
                 </div>
               </div>
             </div>
-            <div className="flex items-center gap-2 sm:gap-3 shrink-0">
-              <div className="flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-4 py-1.5 sm:py-2 rounded-full bg-accent/10 border border-accent/20">
-                <Trophy className="w-4 h-4 sm:w-5 sm:h-5 text-accent" />
-                <span className="font-bold gold-text text-sm sm:text-base">{userGold}</span>
+            <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-primary-foreground/10 border border-primary-foreground/20">
+                <Trophy className="w-5 h-5 text-primary-foreground" />
+                <span className="font-bold text-primary-foreground">{userGold}</span>
               </div>
               <ThemeToggle />
             </div>
@@ -306,124 +306,132 @@ const MathCourse = () => {
         </div>
       </header>
 
-      <div className="container mx-auto px-3 sm:px-4 py-6 sm:py-8 max-w-6xl">
+      <main className="container mx-auto px-4 py-8">
         {/* Course Overview */}
-        <div className="mb-6 sm:mb-8 flex flex-col md:flex-row items-center gap-6">
-          <div className="flex-1">
-            <h2 className="text-2xl sm:text-3xl font-bold mb-2">Programme MENFP - AF7</h2>
-            <p className="text-base sm:text-lg text-muted-foreground">
-              Suis le programme officiel du MENFP avec des leçons interactives, des jeux et des quiz! 🎮
-            </p>
-            <p className="text-xs sm:text-sm text-muted-foreground mt-2">
-              16 chapitres couvrant l'algèbre, la géométrie, les mesures et les applications 📚
-            </p>
-          </div>
-          <div className="flex-shrink-0">
-            <img 
-              src={ericTeaching} 
-              alt="Eric - Professeur de Mathématiques" 
-              className="w-40 h-40 sm:w-48 sm:h-48 object-contain animate-[float_4s_ease-in-out_infinite]"
-              loading="lazy"
-              decoding="async"
-            />
-          </div>
-        </div>
-
-        {/* Music Selector */}
-        <div className="mb-6 sm:mb-8">
-          <MusicSelector />
-        </div>
-
-        {/* Topics Grid */}
-        <div className="grid sm:grid-cols-2 gap-4 sm:gap-6">
-          {topics.map((topic) => {
-            const isCompleted = completedLessons.has(topic.id);
-            
-            return (
-            <Card 
-              key={topic.id}
-              className={`p-4 sm:p-6 transition-all ${
-                topic.isLocked 
-                  ? 'opacity-60 cursor-not-allowed' 
-                  : 'hover:shadow-lg cursor-pointer hover:-translate-y-1'
-              } ${isCompleted ? 'border-2 border-success/40 bg-success/5' : ''}`}
-              onClick={() => !topic.isLocked && navigate(`/math-lesson/${topic.id}`)}
-            >
-              <div className="flex items-start gap-3 sm:gap-4">
-                <div className="text-3xl sm:text-5xl shrink-0">{topic.icon}</div>
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2 mb-2 flex-wrap">
-                    <h3 className="text-lg sm:text-xl font-bold">{topic.title}</h3>
-                    {topic.isLocked && <Lock className="w-3 h-3 sm:w-4 sm:h-4 text-muted-foreground shrink-0" />}
-                    {isCompleted && <CheckCircle className="w-4 h-4 sm:w-5 sm:h-5 text-success shrink-0" />}
-                  </div>
-                  <p className="text-xs sm:text-sm text-muted-foreground mb-3 sm:mb-4">
-                    {topic.description}
-                  </p>
-
-                  {/* Progress Bar */}
-                  {!topic.isLocked && topic.progress > 0 && (
-                    <div className="mb-4">
-                      <div className="flex items-center justify-between mb-2">
-                        <span className="text-sm font-medium">Progression</span>
-                        <span className="text-sm font-bold">{topic.progress}%</span>
-                      </div>
-                      <Progress value={topic.progress} />
-                    </div>
-                  )}
-
-                  {/* Features */}
-                  <div className="flex flex-wrap gap-2 mb-4">
-                    <Badge variant="secondary" className="gap-1">
-                      <BookOpen className="w-3 h-3" />
-                      Leçon
-                    </Badge>
-                    <Badge variant="secondary" className="gap-1">
-                      <Gamepad2 className="w-3 h-3" />
-                      Jeux
-                    </Badge>
-                    <Badge variant="secondary" className="gap-1">
-                      <Star className="w-3 h-3" />
-                      Quiz
-                    </Badge>
-                  </div>
-
-                  {/* Gold Reward */}
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <Trophy className="w-4 h-4 text-accent" />
-                      <span className="text-sm font-bold gold-text">
-                        {isCompleted ? '✓ Complété' : `+${topic.goldReward} gold`}
-                      </span>
-                    </div>
-                    {!topic.isLocked && (
-                      <Button size="sm">
-                        {isCompleted ? 'Revoir' : topic.progress > 0 ? 'Continuer' : 'Commencer'}
-                      </Button>
-                    )}
-                  </div>
+        <Card className="mb-8 overflow-hidden border border-border bg-card">
+          <div className="md:flex">
+            <div className="md:w-1/3 bg-gradient-to-br from-blue-600 to-indigo-700 p-8 flex items-center justify-center">
+              <img src={ericMath} alt="Eric enseignant" className="w-full h-auto object-contain rounded-lg" />
+            </div>
+            <CardContent className="md:w-2/3 p-6">
+              <h2 className="text-2xl font-bold mb-4 text-foreground">Aperçu du Cours</h2>
+              <p className="text-muted-foreground mb-4">
+                Bienvenue dans le cours de Mathématiques pour la 7ème année fondamentale ! 
+                Explore l'algèbre, la géométrie, les mesures et bien plus à travers 
+                des leçons interactives et des activités ludiques.
+              </p>
+              <div className="space-y-2">
+                <div className="flex items-center gap-2">
+                  <BookOpen className="w-5 h-5 text-primary" />
+                  <span className="font-semibold text-foreground">{topics.length} chapitres complets</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Gamepad2 className="w-5 h-5 text-primary" />
+                  <span className="font-semibold text-foreground">Jeux et activités interactives</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <CheckCircle className="w-5 h-5 text-primary" />
+                  <span className="font-semibold text-foreground">{completedLessons.size} chapitres complétés</span>
                 </div>
               </div>
-            </Card>
-          )})}
+            </CardContent>
+          </div>
+        </Card>
+
+        <MusicSelector />
+
+        {/* Topics Grid */}
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+          {topics.map((topic, index) => {
+            const isCompleted = completedLessons.has(topic.id);
+            const goldReward = topic.goldReward;
+            
+            return (
+              <Card 
+                key={topic.id} 
+                className={`transition-all duration-300 hover:shadow-xl border border-border bg-card ${
+                  topic.isLocked 
+                    ? 'opacity-60 cursor-not-allowed' 
+                    : isCompleted ? 'border-2 border-green-500' : 'hover:scale-105'
+                }`}
+                onClick={() => !topic.isLocked && navigate(`/math-lesson/${topic.id}`)}
+              >
+                <CardHeader className="bg-muted/50">
+                  <div className="flex items-start justify-between">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-600 to-indigo-700 flex items-center justify-center text-primary-foreground font-bold">
+                        {index + 1}
+                      </div>
+                      <div>
+                        <CardTitle className="text-lg text-foreground">{topic.title}</CardTitle>
+                        <p className="text-sm text-muted-foreground">{topic.icon}</p>
+                      </div>
+                    </div>
+                    {isCompleted && (
+                      <CheckCircle className="w-6 h-6 text-green-500 shrink-0" />
+                    )}
+                  </div>
+                </CardHeader>
+                <CardContent className="pt-6">
+                  <div className="space-y-4">
+                    <p className="text-sm text-muted-foreground line-clamp-2">
+                      {topic.description}
+                    </p>
+                    
+                    <div className="flex flex-wrap gap-2">
+                      <Badge variant="secondary" className="text-xs">
+                        <BookOpen className="w-3 h-3 mr-1" />
+                        Leçon
+                      </Badge>
+                      <Badge variant="secondary" className="text-xs">
+                        <Gamepad2 className="w-3 h-3 mr-1" />
+                        Jeux
+                      </Badge>
+                      <Badge variant="secondary" className="text-xs">
+                        <Star className="w-3 h-3 mr-1" />
+                        Quiz
+                      </Badge>
+                    </div>
+
+                    <div className="flex items-center justify-between pt-4 border-t border-border">
+                      <div className="flex items-center gap-1 text-accent">
+                        <Trophy className="w-4 h-4" />
+                        <span className="font-bold">{goldReward}</span>
+                      </div>
+                      {!topic.isLocked && (
+                        <Button>
+                          {isCompleted ? 'Revoir' : 'Commencer'}
+                        </Button>
+                      )}
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            );
+          })}
         </div>
 
         {/* Progress Summary */}
-        <Card className="mt-8 p-6 bg-gradient-to-br from-primary/10 to-secondary/10 border-primary/20">
-          <div className="flex items-center justify-between">
-            <div>
-              <h3 className="text-xl font-bold mb-2">Ton Progrès Global</h3>
-              <p className="text-muted-foreground">Continue à travailler pour débloquer tous les chapitres!</p>
-            </div>
-            <div className="text-center">
-              <div className="text-4xl font-bold gradient-text mb-1">
-                {Math.round((completedLessons.size / topics.length) * 100)}%
+        <Card className="bg-gradient-to-r from-blue-600 to-indigo-700 text-primary-foreground border-0">
+          <CardHeader>
+            <CardTitle className="text-2xl">Ton Progrès</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              <div>
+                <div className="flex justify-between mb-2">
+                  <span className="font-semibold">Chapitres complétés</span>
+                  <span className="font-bold">{completedLessons.size}/{topics.length}</span>
+                </div>
+                <Progress value={Math.round((completedLessons.size / topics.length) * 100)} className="h-3 bg-primary-foreground/30" />
               </div>
-              <p className="text-sm text-muted-foreground">{completedLessons.size}/{topics.length} complétées</p>
+              <p className="text-sm opacity-90">
+                Continue comme ça ! Chaque chapitre complété te rapproche de la maîtrise des mathématiques.
+              </p>
             </div>
-          </div>
+          </CardContent>
         </Card>
-      </div>
+      </main>
     </div>
   );
 };
