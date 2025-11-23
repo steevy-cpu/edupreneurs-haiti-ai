@@ -14,7 +14,7 @@ import {
   TrendingUp,
   Target
 } from "lucide-react";
-import ericTeaching from "@/assets/eric-teaching.png";
+import ericThumbUp from "@/assets/eric-thumb-up.png";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { supabase } from "@/integrations/supabase/client";
 import { MusicSelector } from "@/components/MusicSelector";
@@ -191,7 +191,7 @@ const ArtsCourse = () => {
             <div className="absolute inset-0 bg-gradient-to-br from-purple-400/20 to-fuchsia-400/20 rounded-3xl blur-3xl"></div>
             <div className="relative bg-gradient-to-br from-purple-100 to-fuchsia-100 dark:from-purple-950/50 dark:to-fuchsia-950/50 rounded-3xl p-8 border-2 border-purple-200 dark:border-purple-800 shadow-2xl">
               <img 
-                src={ericTeaching}
+                src={ericThumbUp}
                 alt="Eric enseignant les arts" 
                 className="w-full h-auto rounded-2xl object-cover"
               />
