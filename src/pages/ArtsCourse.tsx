@@ -1,20 +1,20 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
 import { useNavigate } from "react-router-dom";
 import { 
   ArrowLeft, 
   BookOpen, 
-  CheckCircle,
-  Star,
-  GraduationCap,
+  CheckCircle2,
+  Sparkles,
   Palette,
   Music,
-  Heart
+  TrendingUp,
+  Target
 } from "lucide-react";
-import ericTeaching from "@/assets/eric-chair-desk.avif";
+import ericTeaching from "@/assets/eric-teaching.png";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { supabase } from "@/integrations/supabase/client";
 import { MusicSelector } from "@/components/MusicSelector";
@@ -39,7 +39,6 @@ const ArtsCourse = () => {
     const fetchUserData = async () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (user) {
-        // Fetch user gold
         const { data: profile } = await supabase
           .from('profiles')
           .select('gold_earned')
@@ -50,7 +49,6 @@ const ArtsCourse = () => {
           setUserGold(profile.gold_earned || 0);
         }
 
-        // Fetch completed lessons
         const { data: completions } = await supabase
           .from('lesson_completions')
           .select('lesson_slug')
@@ -66,7 +64,6 @@ const ArtsCourse = () => {
     fetchUserData();
   }, []);
 
-  // Arts & Culture Topics for 7AF
   const topics: Topic[] = [
     {
       id: "introduction-arts-plastiques-haitiens",
@@ -111,133 +108,178 @@ const ArtsCourse = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-background to-violet-500/10">
-      {/* Header */}
-      <div className="sticky top-0 z-40 bg-background/80 backdrop-blur-lg border-b border-border/40">
+    <div className="min-h-screen bg-gradient-to-br from-background via-background to-purple-500/5">
+      {/* Navigation Bar */}
+      <nav className="sticky top-0 z-40 bg-background/80 backdrop-blur-lg border-b border-border/40">
         <div className="container mx-auto px-4 py-3">
           <div className="flex items-center justify-between">
             <Button 
               onClick={() => navigate("/matieres")} 
-              variant="ghost" 
-              size="sm"
+              variant="ghost"
               className="gap-2"
             >
               <ArrowLeft className="w-4 h-4" />
-              <span className="hidden sm:inline">Retour</span>
+              <span className="font-semibold">Retour</span>
             </Button>
             
             <div className="flex items-center gap-4">
               <div className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-yellow-500/20 to-amber-500/20 rounded-full border border-yellow-500/30">
-                <Star className="w-5 h-5 text-yellow-400 fill-yellow-400" />
+                <Sparkles className="w-5 h-5 text-yellow-400 fill-yellow-400" />
                 <span className="font-bold text-foreground">{userGold}</span>
               </div>
-              <MusicSelector />
               <ThemeToggle />
             </div>
           </div>
         </div>
-      </div>
+      </nav>
 
-      {/* Hero Section */}
-      <div className="container mx-auto px-4 py-8 sm:py-12">
-        <div className="flex flex-col lg:flex-row items-center gap-8 mb-12">
-          <div className="flex-1 space-y-6">
-            <div className="flex items-center gap-3">
-              <div className="p-3 rounded-2xl bg-gradient-to-br from-violet-500/20 to-fuchsia-500/20">
-                <Palette className="w-8 h-8 text-violet-500" />
-              </div>
-              <div>
-                <h1 className="text-4xl sm:text-5xl font-bold bg-gradient-to-r from-violet-500 via-fuchsia-500 to-indigo-500 bg-clip-text text-transparent">
-                  Arts & Culture
-                </h1>
-                <p className="text-muted-foreground mt-1">7ème Année Fondamentale (7AF)</p>
-              </div>
-            </div>
-            
-            <p className="text-lg text-muted-foreground leading-relaxed">
+      <div className="container mx-auto px-4 py-8 sm:py-12 max-w-7xl">
+        {/* Hero Section with Eric */}
+        <div className="grid md:grid-cols-2 gap-8 mb-12 items-center">
+          <div className="space-y-6 animate-fade-in">
+            <Badge variant="secondary" className="text-sm font-medium px-4 py-1.5 bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300">
+              Programme MENFP - 7ème Année Fondamentale
+            </Badge>
+            <h1 className="text-5xl md:text-6xl font-bold bg-gradient-to-r from-purple-600 via-fuchsia-600 to-pink-600 bg-clip-text text-transparent">
+              Arts & Culture
+            </h1>
+            <p className="text-lg md:text-xl text-muted-foreground leading-relaxed">
               Découvre la richesse des arts et de la culture haïtienne ! 🎨 Explore l'art plastique, 
-              la musique traditionnelle et le patrimoine culturel immatériel d'Haïti reconnu par l'UNESCO.
+              la musique traditionnelle et le patrimoine culturel immatériel d'Haïti.
             </p>
 
-            <div className="space-y-3">
-              <div className="flex items-center justify-between text-sm">
-                <span className="text-muted-foreground">Progression du cours</span>
-                <span className="font-semibold text-foreground">{Math.round(totalProgress)}%</span>
-              </div>
-              <Progress value={totalProgress} className="h-3" />
-            </div>
+            {/* Progress Card */}
+            <Card className="bg-gradient-to-br from-purple-50 to-fuchsia-50 dark:from-purple-950/30 dark:to-fuchsia-950/30 border-2 border-purple-200 dark:border-purple-800">
+              <CardHeader>
+                <div className="flex items-center justify-between">
+                  <CardTitle className="flex items-center gap-2">
+                    <TrendingUp className="w-5 h-5 text-purple-600 dark:text-purple-400" />
+                    Votre Progression
+                  </CardTitle>
+                  <Badge variant="secondary" className="bg-purple-100 dark:bg-purple-900/50">
+                    {Math.round(totalProgress)}%
+                  </Badge>
+                </div>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <Progress value={totalProgress} className="h-3" />
+                <div className="flex justify-between text-sm">
+                  <span className="text-muted-foreground">
+                    {topics.filter(t => t.isCompleted).length} sur {topics.length} leçons complétées
+                  </span>
+                  <span className="font-semibold text-purple-600 dark:text-purple-400">
+                    {topics.length - topics.filter(t => t.isCompleted).length} restantes
+                  </span>
+                </div>
+              </CardContent>
+            </Card>
 
-            <div className="flex flex-wrap gap-4">
-              <Badge variant="secondary" className="px-4 py-2 text-sm">
-                <BookOpen className="w-4 h-4 mr-2" />
+            <div className="flex flex-wrap gap-3">
+              <Badge variant="outline" className="px-4 py-2 border-purple-300 dark:border-purple-700">
+                <Palette className="w-4 h-4 mr-2" />
                 {topics.length} Leçons
               </Badge>
-              <Badge variant="secondary" className="px-4 py-2 text-sm">
-                <GraduationCap className="w-4 h-4 mr-2" />
-                Niveau 7AF
-              </Badge>
-              <Badge variant="secondary" className="px-4 py-2 text-sm">
-                <Heart className="w-4 h-4 mr-2" />
-                Culture Haïtienne
+              <Badge variant="outline" className="px-4 py-2 border-fuchsia-300 dark:border-fuchsia-700">
+                <Target className="w-4 h-4 mr-2" />
+                Programme 7AF
               </Badge>
             </div>
           </div>
 
-          <div className="flex-shrink-0 lg:w-96">
-            <img 
-              src={ericTeaching}
-              alt="Eric enseignant les arts" 
-              className="w-full h-auto rounded-3xl shadow-2xl border-4 border-border/50"
-            />
+          {/* Eric Image */}
+          <div className="relative animate-fade-in">
+            <div className="absolute inset-0 bg-gradient-to-br from-purple-400/20 to-fuchsia-400/20 rounded-3xl blur-3xl"></div>
+            <div className="relative bg-gradient-to-br from-purple-100 to-fuchsia-100 dark:from-purple-950/50 dark:to-fuchsia-950/50 rounded-3xl p-8 border-2 border-purple-200 dark:border-purple-800 shadow-2xl">
+              <img 
+                src={ericTeaching}
+                alt="Eric enseignant les arts" 
+                className="w-full h-auto rounded-2xl object-cover"
+              />
+            </div>
           </div>
         </div>
 
+        <MusicSelector />
+
+        {/* Stats Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-12 animate-fade-in">
+          <Card className="relative overflow-hidden hover:shadow-xl transition-all duration-300 border-purple-200 dark:border-purple-800">
+            <div className="absolute inset-0 bg-gradient-to-br from-purple-500/10 to-transparent"></div>
+            <CardHeader className="pb-3">
+              <div className="flex items-center justify-between">
+                <CardTitle className="text-sm font-medium text-muted-foreground">
+                  Total Leçons
+                </CardTitle>
+                <BookOpen className="w-5 h-5 text-purple-500" />
+              </div>
+            </CardHeader>
+            <CardContent>
+              <div className="text-4xl font-bold bg-gradient-to-r from-purple-600 to-fuchsia-600 bg-clip-text text-transparent">
+                {topics.length}
+              </div>
+              <p className="text-sm text-muted-foreground mt-1">Culture haïtienne</p>
+            </CardContent>
+          </Card>
+
+          <Card className="relative overflow-hidden hover:shadow-xl transition-all duration-300 border-fuchsia-200 dark:border-fuchsia-800">
+            <div className="absolute inset-0 bg-gradient-to-br from-fuchsia-500/10 to-transparent"></div>
+            <CardHeader className="pb-3">
+              <div className="flex items-center justify-between">
+                <CardTitle className="text-sm font-medium text-muted-foreground">
+                  Leçons Complétées
+                </CardTitle>
+                <CheckCircle2 className="w-5 h-5 text-fuchsia-500" />
+              </div>
+            </CardHeader>
+            <CardContent>
+              <div className="text-4xl font-bold bg-gradient-to-r from-fuchsia-600 to-pink-600 bg-clip-text text-transparent">
+                {topics.filter(t => t.isCompleted).length}
+              </div>
+              <p className="text-sm text-muted-foreground mt-1">Continue comme ça !</p>
+            </CardContent>
+          </Card>
+        </div>
+
         {/* Topics Grid */}
-        <div className="space-y-4">
-          <h2 className="text-2xl font-bold text-foreground mb-6 flex items-center gap-3">
-            <div className="w-2 h-8 bg-gradient-to-b from-violet-500 to-fuchsia-500 rounded-full" />
+        <div className="space-y-8 animate-fade-in">
+          <h2 className="text-3xl font-bold flex items-center gap-3">
+            <Music className="w-8 h-8 text-purple-600 dark:text-purple-400" />
             Les Leçons du Cours
           </h2>
 
-          <div className="grid gap-4">
+          <div className="grid gap-6">
             {topics.map((topic, index) => (
               <Card 
                 key={topic.id}
-                className={`group relative overflow-hidden transition-all duration-300 ${
+                className={`group cursor-pointer overflow-hidden border-2 transition-all duration-300 hover:shadow-xl hover:-translate-y-1 ${
                   topic.isLocked 
-                    ? 'opacity-60 cursor-not-allowed' 
-                    : 'hover:shadow-xl hover:scale-[1.02] cursor-pointer'
-                } ${
-                  topic.isCompleted 
-                    ? 'border-green-500/50 bg-green-500/5' 
-                    : 'border-border/50'
+                    ? 'opacity-60 cursor-not-allowed border-border/30' 
+                    : topic.isCompleted 
+                      ? 'border-green-400 dark:border-green-600 bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-950/30 dark:to-emerald-950/30'
+                      : 'border-purple-200 dark:border-purple-800 hover:border-purple-400 dark:hover:border-purple-600 bg-gradient-to-br from-white to-purple-50/50 dark:from-gray-900 dark:to-purple-950/30'
                 }`}
                 onClick={() => handleTopicClick(topic.id, topic.isLocked)}
               >
-                <div className="absolute inset-0 bg-gradient-to-r from-violet-500/5 to-fuchsia-500/5 opacity-0 group-hover:opacity-100 transition-opacity" />
-                
-                <div className="relative p-6">
+                <CardHeader>
                   <div className="flex items-start gap-4">
-                    <div className="flex-shrink-0">
-                      <div className={`w-16 h-16 rounded-2xl flex items-center justify-center text-3xl ${
-                        topic.isCompleted 
-                          ? 'bg-green-500/20 ring-2 ring-green-500/50' 
-                          : 'bg-gradient-to-br from-violet-500/20 to-fuchsia-500/20'
-                      }`}>
-                        {topic.isCompleted ? (
-                          <CheckCircle className="w-8 h-8 text-green-500" />
-                        ) : (
-                          topic.icon
-                        )}
-                      </div>
+                    <div className={`w-16 h-16 rounded-2xl flex items-center justify-center text-3xl shadow-lg group-hover:scale-110 transition-transform ${
+                      topic.isCompleted 
+                        ? 'bg-gradient-to-br from-green-500 to-emerald-500' 
+                        : 'bg-gradient-to-br from-purple-500 to-fuchsia-500'
+                    }`}>
+                      {topic.isCompleted ? (
+                        <CheckCircle2 className="w-8 h-8 text-white" />
+                      ) : (
+                        topic.icon
+                      )}
                     </div>
 
-                    <div className="flex-1 min-w-0">
+                    <div className="flex-1">
                       <div className="flex items-start justify-between gap-4 mb-2">
                         <div className="flex-1">
-                          <h3 className="text-xl font-bold text-foreground mb-1 group-hover:text-violet-500 transition-colors">
+                          <CardTitle className="text-xl mb-1 group-hover:text-purple-600 dark:group-hover:text-purple-400 transition-colors">
                             {topic.title}
-                          </h3>
+                          </CardTitle>
                           <p className="text-sm text-muted-foreground leading-relaxed">
                             {topic.description}
                           </p>
@@ -245,7 +287,7 @@ const ArtsCourse = () => {
 
                         <div className="flex items-center gap-2 flex-shrink-0">
                           <div className="flex items-center gap-1.5 px-3 py-1.5 bg-yellow-500/20 rounded-full border border-yellow-500/30">
-                            <Star className="w-4 h-4 text-yellow-400 fill-yellow-400" />
+                            <Sparkles className="w-4 h-4 text-yellow-400 fill-yellow-400" />
                             <span className="text-sm font-semibold text-yellow-400">+{topic.goldReward}</span>
                           </div>
                         </div>
@@ -257,37 +299,30 @@ const ArtsCourse = () => {
                         </Badge>
                         {topic.isCompleted && (
                           <Badge variant="outline" className="text-xs border-green-500/50 text-green-500">
-                            <CheckCircle className="w-3 h-3 mr-1" />
+                            <CheckCircle2 className="w-3 h-3 mr-1" />
                             Terminé
                           </Badge>
                         )}
                       </div>
                     </div>
                   </div>
-                </div>
+                </CardHeader>
+                <CardContent>
+                  <Button
+                    className={`w-full text-white shadow-lg group-hover:shadow-xl transition-all duration-300 ${
+                      topic.isCompleted
+                        ? 'bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700'
+                        : 'bg-gradient-to-r from-purple-600 to-fuchsia-600 hover:from-purple-700 hover:to-fuchsia-700'
+                    }`}
+                    disabled={topic.isLocked}
+                  >
+                    {topic.isCompleted ? 'Réviser' : 'Commencer'}
+                  </Button>
+                </CardContent>
               </Card>
             ))}
           </div>
         </div>
-
-        {/* Course Info */}
-        <Card className="mt-8 p-6 bg-gradient-to-br from-violet-500/10 to-fuchsia-500/10 border-violet-500/20">
-          <div className="flex items-start gap-4">
-            <div className="p-3 rounded-xl bg-violet-500/20">
-              <Music className="w-6 h-6 text-violet-500" />
-            </div>
-            <div className="flex-1">
-              <h3 className="text-lg font-semibold text-foreground mb-2">
-                À propos du cours Arts & Culture
-              </h3>
-              <p className="text-muted-foreground leading-relaxed">
-                Ce cours explore la richesse artistique et culturelle d'Haïti, première République noire indépendante. 
-                Tu découvriras l'art plastique haïtien mondialement reconnu, la musique traditionnelle et ses rythmes 
-                uniques, ainsi que le patrimoine culturel immatériel inscrit à l'UNESCO comme la Soupe Joumou.
-              </p>
-            </div>
-          </div>
-        </Card>
       </div>
     </div>
   );
