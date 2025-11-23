@@ -374,33 +374,33 @@ export default function Matieres() {
       </nav>
 
       {/* Hero Header with Eric */}
-      <div className="relative text-primary-foreground pt-32 pb-16 overflow-hidden">
+      <div className="relative pt-32 pb-16 overflow-hidden">
         <div 
           className="absolute inset-0 bg-cover bg-center"
           style={{ backgroundImage: `url(${edupreneursBg})` }}
         />
-        <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-transparent to-black/20" />
+        <div className="absolute inset-0 bg-black/60" />
         
         <div className="container mx-auto px-4 relative z-10">
           <div className="flex flex-col md:flex-row items-center gap-8">
             <div className="flex-1 text-center md:text-left">
-              <h1 className="text-5xl font-bold mb-4 flex items-center justify-center md:justify-start gap-3">
+              <h1 className="text-5xl font-bold mb-4 flex items-center justify-center md:justify-start gap-3 text-white">
                 <GraduationCap className="w-12 h-12" />
                 Programmes Académiques
               </h1>
-              <p className="text-xl opacity-90 mb-6">
+              <p className="text-xl mb-6 text-white">
                 Explorez nos matières du programme haïtien - De la 7ème année fondamentale à la 4ème secondaire
               </p>
               <div className="flex gap-3 justify-center md:justify-start flex-wrap">
-                <Badge variant="secondary" className="px-4 py-2 text-sm">
+                <Badge variant="secondary" className="px-4 py-2 text-sm bg-white/90 text-purple-700 hover:bg-white">
                   <Flag className="w-4 h-4 mr-2" />
                   Aligné MENFP
                 </Badge>
-                <Badge variant="secondary" className="px-4 py-2 text-sm">
+                <Badge variant="secondary" className="px-4 py-2 text-sm bg-white/90 text-purple-700 hover:bg-white">
                   <Globe className="w-4 h-4 mr-2" />
                   FR / HT
                 </Badge>
-                <Badge variant="secondary" className="px-4 py-2 text-sm">
+                <Badge variant="secondary" className="px-4 py-2 text-sm bg-white/90 text-purple-700 hover:bg-white">
                   <Award className="w-4 h-4 mr-2" />
                   Certifié
                 </Badge>
