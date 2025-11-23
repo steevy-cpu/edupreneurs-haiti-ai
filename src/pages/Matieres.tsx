@@ -320,7 +320,15 @@ export default function Matieres() {
           lessons: lessonCounts[s.id] || s.lessons,
         })),
         ...filteredSubjects
-          .filter(dbSubject => !subjects.some(s => s.id === dbSubject.slug))
+          .filter(dbSubject => {
+            // Check if this database subject matches any hardcoded subject
+            // Match by exact slug or by partial slug (e.g., "sciences" matches "sciences-experimentales-7af")
+            return !subjects.some(s => 
+              s.id === dbSubject.slug || 
+              dbSubject.slug.startsWith(s.id + '-') ||
+              s.id === dbSubject.slug.replace('-7af', '')
+            );
+          })
           .map(s => ({
             id: s.slug,
             title: s.name,
