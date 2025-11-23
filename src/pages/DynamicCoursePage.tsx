@@ -11,6 +11,7 @@ import { MusicSelector } from "@/components/MusicSelector";
 import ericTeaching from "@/assets/eric-teaching.png";
 import ericScientist from "@/assets/eric-scientist.png";
 import ericBiologist from "@/assets/eric-biologist.png";
+import ericComputer from "@/assets/eric-computer.png";
 
 export default function DynamicCoursePage() {
   const { slug } = useParams();
@@ -146,7 +147,9 @@ export default function DynamicCoursePage() {
           <div className="md:w-64">
             <img 
               src={
-                subject.name.toLowerCase().includes('chimie') 
+                subject.name.toLowerCase().includes('informatique')
+                  ? ericComputer
+                  : subject.name.toLowerCase().includes('chimie') 
                   ? ericScientist 
                   : subject.name.toLowerCase().includes('biologie') || subject.name.toLowerCase().includes('géologie')
                   ? ericBiologist
