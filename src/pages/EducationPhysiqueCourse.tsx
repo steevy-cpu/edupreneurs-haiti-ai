@@ -1,20 +1,19 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
 import { useNavigate } from "react-router-dom";
 import { 
   ArrowLeft, 
   BookOpen, 
-  CheckCircle,
-  Star,
-  GraduationCap,
+  CheckCircle2,
+  Sparkles,
   Dumbbell,
-  Heart,
-  Trophy
+  TrendingUp,
+  Target
 } from "lucide-react";
-import ericTeaching from "@/assets/eric-chair-desk.avif";
+import ericTeaching from "@/assets/eric-teaching.png";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { supabase } from "@/integrations/supabase/client";
 import { MusicSelector } from "@/components/MusicSelector";
@@ -46,7 +45,6 @@ const EducationPhysiqueCourse = () => {
   const fetchUserData = async () => {
     const { data: { user } } = await supabase.auth.getUser();
     if (user) {
-      // Fetch user gold
       const { data: profile } = await supabase
         .from('profiles')
         .select('gold_earned')
@@ -57,7 +55,6 @@ const EducationPhysiqueCourse = () => {
         setUserGold(profile.gold_earned || 0);
       }
 
-      // Fetch completed lessons
       const { data: completions } = await supabase
         .from('lesson_completions')
         .select('lesson_slug')
@@ -73,7 +70,6 @@ const EducationPhysiqueCourse = () => {
   const fetchLessons = async () => {
     setLoading(true);
     try {
-      // Get subject ID first
       const { data: subjectData, error: subjectError } = await supabase
         .from('subjects')
         .select('id')
@@ -87,7 +83,6 @@ const EducationPhysiqueCourse = () => {
         return;
       }
 
-      // Fetch lessons from database
       const { data, error } = await supabase
         .from('lessons')
         .select('*')
@@ -137,174 +132,221 @@ const EducationPhysiqueCourse = () => {
     }
   };
 
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-background via-background to-red-500/5">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-red-600"></div>
+      </div>
+    );
+  }
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-background to-orange-500/10">
-      {/* Header */}
-      <div className="sticky top-0 z-40 bg-background/80 backdrop-blur-lg border-b border-border/40">
-        <div className="container mx-auto px-3 sm:px-4 py-2 sm:py-3">
+    <div className="min-h-screen bg-gradient-to-br from-background via-background to-red-500/5">
+      {/* Navigation Bar */}
+      <nav className="sticky top-0 z-40 bg-background/80 backdrop-blur-lg border-b border-border/40">
+        <div className="container mx-auto px-4 py-3">
           <div className="flex items-center justify-between">
             <Button 
               variant="ghost" 
               onClick={() => navigate('/matieres')}
-              className="gap-1 sm:gap-2 hover:bg-primary/10 text-sm sm:text-base px-2 sm:px-4"
-              size="sm"
+              className="gap-2"
             >
-              <ArrowLeft className="w-3 h-3 sm:w-4 sm:h-4" />
-              <span className="hidden xs:inline">Retour</span>
+              <ArrowLeft className="w-4 h-4" />
+              <span className="font-semibold">Retour</span>
             </Button>
-            <div className="flex items-center gap-1 sm:gap-2 md:gap-3">
-              <MusicSelector />
-              <div className="flex items-center gap-1 sm:gap-2 bg-gradient-to-r from-yellow-500/20 to-amber-600/20 px-2 sm:px-3 md:px-4 py-1 sm:py-2 rounded-full border border-yellow-500/30">
-                <Trophy className="w-3 h-3 sm:w-4 sm:h-4 md:w-5 md:h-5 text-yellow-500" />
-                <span className="font-bold text-yellow-600 dark:text-yellow-400 text-xs sm:text-sm md:text-base">{userGold}</span>
+            <div className="flex items-center gap-4">
+              <div className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-yellow-500/20 to-amber-500/20 rounded-full border border-yellow-500/30">
+                <Sparkles className="w-5 h-5 text-yellow-400 fill-yellow-400" />
+                <span className="font-bold text-foreground">{userGold}</span>
               </div>
               <ThemeToggle />
             </div>
           </div>
         </div>
-      </div>
+      </nav>
 
-      {/* Hero Section */}
-      <div className="container mx-auto px-4 sm:px-6 py-6 sm:py-8 md:py-12">
-        <div className="text-center mb-8 sm:mb-10 md:mb-12 space-y-3 sm:space-y-4">
-          <div className="inline-block">
-            <Badge variant="secondary" className="mb-3 sm:mb-4 text-sm sm:text-base md:text-lg px-4 sm:px-6 py-1.5 sm:py-2">
-              <Dumbbell className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
-              Éducation Physique - 7AF
+      <div className="container mx-auto px-4 py-8 sm:py-12 max-w-7xl">
+        {/* Hero Section with Eric */}
+        <div className="grid md:grid-cols-2 gap-8 mb-12 items-center">
+          <div className="space-y-6 animate-fade-in">
+            <Badge variant="secondary" className="text-sm font-medium px-4 py-1.5 bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300">
+              Programme MENFP - 7ème Année Fondamentale
             </Badge>
-          </div>
-          <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold bg-gradient-to-r from-orange-600 via-red-600 to-pink-600 bg-clip-text text-transparent leading-tight px-2">
-            Éducation Physique et Sportive
-          </h1>
-          <p className="text-base sm:text-lg md:text-xl text-muted-foreground max-w-3xl mx-auto px-4">
-            Développez vos compétences physiques, sportives et votre santé à travers une pratique régulière
-          </p>
-        </div>
+            <h1 className="text-5xl md:text-6xl font-bold bg-gradient-to-r from-red-600 via-orange-600 to-pink-600 bg-clip-text text-transparent">
+              Éducation Physique
+            </h1>
+            <p className="text-lg md:text-xl text-muted-foreground leading-relaxed">
+              Développez vos compétences physiques, sportives et votre santé à travers une pratique régulière 💪
+            </p>
 
-        {/* Progress Overview */}
-        <Card className="p-4 sm:p-6 mb-8 sm:mb-10 md:mb-12 bg-gradient-to-br from-orange-500/5 to-red-500/5 border-orange-500/20">
-          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-0 mb-4">
-            <div className="flex items-center gap-2 sm:gap-3">
-              <div className="p-2 sm:p-3 bg-orange-500/10 rounded-xl flex-shrink-0">
-                <BookOpen className="w-5 h-5 sm:w-6 sm:h-6 text-orange-600" />
-              </div>
-              <div>
-                <h3 className="font-semibold text-base sm:text-lg">Votre Progression</h3>
-                <p className="text-xs sm:text-sm text-muted-foreground">
-                  {lessons.filter(l => l.isCompleted).length} sur {lessons.length} leçons complétées
-                </p>
-              </div>
-            </div>
-            <div className="text-right self-end sm:self-auto">
-              <div className="text-2xl sm:text-3xl font-bold text-orange-600">
-                {Math.round(totalProgress)}%
-              </div>
-            </div>
-          </div>
-          <Progress value={totalProgress} className="h-2 sm:h-3" />
-        </Card>
-
-        {/* Lessons Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 mb-8 sm:mb-10 md:mb-12">
-          {loading ? (
-            <div className="col-span-full text-center py-8 sm:py-12">
-              <div className="animate-spin rounded-full h-10 w-10 sm:h-12 sm:w-12 border-b-2 border-orange-600 mx-auto"></div>
-              <p className="mt-4 text-sm sm:text-base text-muted-foreground">Chargement des leçons...</p>
-            </div>
-          ) : lessons.length === 0 ? (
-            <div className="col-span-full text-center py-8 sm:py-12">
-              <Dumbbell className="w-12 h-12 sm:w-16 sm:h-16 mx-auto mb-3 sm:mb-4 text-muted-foreground/50" />
-              <p className="text-base sm:text-lg md:text-xl text-muted-foreground px-4">Aucune leçon disponible pour le moment</p>
-            </div>
-          ) : (
-            lessons.map((lesson) => (
-              <Card
-                key={lesson.id}
-                className={`group relative overflow-hidden transition-all duration-300 hover:shadow-xl hover:-translate-y-1 border-2 ${
-                  lesson.isCompleted
-                    ? "bg-gradient-to-br from-green-500/10 to-emerald-500/10 border-green-500/30"
-                    : lesson.isLocked
-                    ? "opacity-60 cursor-not-allowed border-border/30"
-                    : "hover:border-orange-500/40 border-border/30"
-                }`}
-                onClick={() => handleLessonClick(lesson.slug, lesson.isLocked)}
-              >
-                <div className="p-4 sm:p-6 space-y-3 sm:space-y-4">
-                  {/* Icon and Status */}
-                  <div className="flex items-start justify-between">
-                    <div className="text-3xl sm:text-4xl mb-2">{lesson.icon}</div>
-                    {lesson.isCompleted && (
-                      <CheckCircle className="w-5 h-5 sm:w-6 sm:h-6 text-green-500" />
-                    )}
-                    {lesson.isLocked && (
-                      <div className="text-muted-foreground text-xs sm:text-sm">🔒</div>
-                    )}
-                  </div>
-
-                  {/* Content */}
-                  <div className="space-y-1.5 sm:space-y-2">
-                    <h3 className="font-bold text-base sm:text-lg leading-tight group-hover:text-orange-600 transition-colors line-clamp-2">
-                      {lesson.title}
-                    </h3>
-                    <p className="text-xs sm:text-sm text-muted-foreground line-clamp-2">
-                      {lesson.description}
-                    </p>
-                  </div>
-
-                  {/* Footer */}
-                  <div className="flex items-center justify-between pt-3 sm:pt-4 border-t border-border/30">
-                    <div className="flex items-center gap-1 text-xs sm:text-sm text-yellow-600 dark:text-yellow-400">
-                      <Star className="w-3 h-3 sm:w-4 sm:h-4 fill-current" />
-                      <span className="font-semibold">+{lesson.goldReward}</span>
-                    </div>
-                    <Button
-                      variant={lesson.isCompleted ? "outline" : "default"}
-                      size="sm"
-                      className={`text-xs sm:text-sm ${lesson.isCompleted ? "border-green-500/30" : ""}`}
-                      disabled={lesson.isLocked}
-                    >
-                      {lesson.isCompleted ? "Revoir" : "Commencer"}
-                    </Button>
-                  </div>
+            {/* Progress Card */}
+            <Card className="bg-gradient-to-br from-red-50 to-orange-50 dark:from-red-950/30 dark:to-orange-950/30 border-2 border-red-200 dark:border-red-800">
+              <CardHeader>
+                <div className="flex items-center justify-between">
+                  <CardTitle className="flex items-center gap-2">
+                    <TrendingUp className="w-5 h-5 text-red-600 dark:text-red-400" />
+                    Votre Progression
+                  </CardTitle>
+                  <Badge variant="secondary" className="bg-red-100 dark:bg-red-900/50">
+                    {Math.round(totalProgress)}%
+                  </Badge>
                 </div>
-              </Card>
-            ))
-          )}
-        </div>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <Progress value={totalProgress} className="h-3" />
+                <div className="flex justify-between text-sm">
+                  <span className="text-muted-foreground">
+                    {lessons.filter(l => l.isCompleted).length} sur {lessons.length} leçons complétées
+                  </span>
+                  <span className="font-semibold text-red-600 dark:text-red-400">
+                    {lessons.length - lessons.filter(l => l.isCompleted).length} restantes
+                  </span>
+                </div>
+              </CardContent>
+            </Card>
 
-        {/* Eric Mascot Section */}
-        <Card className="overflow-hidden bg-gradient-to-br from-orange-500/5 to-red-500/5 border-orange-500/20">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6 p-4 sm:p-6">
-            <div className="space-y-3 sm:space-y-4 order-2 md:order-1">
-              <div className="inline-block">
-                <Badge variant="secondary" className="mb-1 sm:mb-2 text-xs sm:text-sm">
-                  <Heart className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
-                  Votre Assistant IA
-                </Badge>
-              </div>
-              <h3 className="text-xl sm:text-2xl font-bold">Besoin d'aide avec l'Éducation Physique ?</h3>
-              <p className="text-sm sm:text-base text-muted-foreground">
-                Eric, votre assistant IA, peut vous aider à comprendre les techniques sportives, 
-                la nutrition et la santé. Posez-lui vos questions !
-              </p>
-              <Button 
-                onClick={() => navigate('/dashboard')}
-                className="gap-2 bg-gradient-to-r from-orange-600 to-red-600 hover:from-orange-700 hover:to-red-700 w-full sm:w-auto text-sm sm:text-base"
-                size="sm"
-              >
-                <GraduationCap className="w-3 h-3 sm:w-4 sm:h-4" />
-                Parler avec Eric
-              </Button>
+            <div className="flex flex-wrap gap-3">
+              <Badge variant="outline" className="px-4 py-2 border-red-300 dark:border-red-700">
+                <Dumbbell className="w-4 h-4 mr-2" />
+                {lessons.length} Leçons
+              </Badge>
+              <Badge variant="outline" className="px-4 py-2 border-orange-300 dark:border-orange-700">
+                <Target className="w-4 h-4 mr-2" />
+                Programme 7AF
+              </Badge>
             </div>
-            <div className="flex items-center justify-center order-1 md:order-2">
+          </div>
+
+          {/* Eric Image */}
+          <div className="relative animate-fade-in">
+            <div className="absolute inset-0 bg-gradient-to-br from-red-400/20 to-orange-400/20 rounded-3xl blur-3xl"></div>
+            <div className="relative bg-gradient-to-br from-red-100 to-orange-100 dark:from-red-950/50 dark:to-orange-950/50 rounded-3xl p-8 border-2 border-red-200 dark:border-red-800 shadow-2xl">
               <img
                 src={ericTeaching}
-                alt="Eric - Assistant IA"
-                className="w-full max-w-[200px] sm:max-w-xs rounded-lg shadow-lg"
+                alt="Eric - Coach sportif"
+                className="w-full h-auto rounded-2xl object-cover"
               />
             </div>
           </div>
-        </Card>
+        </div>
+
+        <MusicSelector />
+
+        {/* Stats Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-12 animate-fade-in">
+          <Card className="relative overflow-hidden hover:shadow-xl transition-all duration-300 border-red-200 dark:border-red-800">
+            <div className="absolute inset-0 bg-gradient-to-br from-red-500/10 to-transparent"></div>
+            <CardHeader className="pb-3">
+              <div className="flex items-center justify-between">
+                <CardTitle className="text-sm font-medium text-muted-foreground">
+                  Total Leçons
+                </CardTitle>
+                <BookOpen className="w-5 h-5 text-red-500" />
+              </div>
+            </CardHeader>
+            <CardContent>
+              <div className="text-4xl font-bold bg-gradient-to-r from-red-600 to-orange-600 bg-clip-text text-transparent">
+                {lessons.length}
+              </div>
+              <p className="text-sm text-muted-foreground mt-1">Disponibles maintenant</p>
+            </CardContent>
+          </Card>
+
+          <Card className="relative overflow-hidden hover:shadow-xl transition-all duration-300 border-orange-200 dark:border-orange-800">
+            <div className="absolute inset-0 bg-gradient-to-br from-orange-500/10 to-transparent"></div>
+            <CardHeader className="pb-3">
+              <div className="flex items-center justify-between">
+                <CardTitle className="text-sm font-medium text-muted-foreground">
+                  Leçons Complétées
+                </CardTitle>
+                <CheckCircle2 className="w-5 h-5 text-orange-500" />
+              </div>
+            </CardHeader>
+            <CardContent>
+              <div className="text-4xl font-bold bg-gradient-to-r from-orange-600 to-red-600 bg-clip-text text-transparent">
+                {lessons.filter(l => l.isCompleted).length}
+              </div>
+              <p className="text-sm text-muted-foreground mt-1">Excellent travail !</p>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Lessons Grid */}
+        <div className="space-y-8 animate-fade-in">
+          <h2 className="text-3xl font-bold flex items-center gap-3">
+            <Dumbbell className="w-8 h-8 text-red-600 dark:text-red-400" />
+            Programme de l'année
+          </h2>
+
+          {lessons.length === 0 ? (
+            <Card className="border-dashed border-2 border-red-300 dark:border-red-700">
+              <CardContent className="py-16 text-center">
+                <Dumbbell className="w-16 h-16 mx-auto mb-4 text-red-400" />
+                <p className="text-lg text-muted-foreground">
+                  Aucune leçon disponible pour le moment.
+                </p>
+              </CardContent>
+            </Card>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {lessons.map((lesson) => {
+                const isCompleted = lesson.isCompleted;
+                
+                return (
+                  <Card
+                    key={lesson.id}
+                    className={`group cursor-pointer overflow-hidden border-2 transition-all duration-300 hover:shadow-xl hover:-translate-y-1 ${
+                      lesson.isLocked
+                        ? 'opacity-60 cursor-not-allowed border-border/30'
+                        : isCompleted
+                          ? 'border-green-400 dark:border-green-600 bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-950/30 dark:to-emerald-950/30'
+                          : 'border-red-200 dark:border-red-800 hover:border-red-400 dark:hover:border-red-600 bg-gradient-to-br from-white to-red-50/50 dark:from-gray-900 dark:to-red-950/30'
+                    }`}
+                    onClick={() => handleLessonClick(lesson.slug, lesson.isLocked)}
+                  >
+                    <CardHeader>
+                      <div className="flex items-start justify-between mb-4">
+                        <div className="text-4xl">{lesson.icon}</div>
+                        {isCompleted && (
+                          <CheckCircle2 className="w-6 h-6 text-green-500" />
+                        )}
+                      </div>
+                      <CardTitle className="text-lg group-hover:text-red-600 dark:group-hover:text-red-400 transition-colors line-clamp-2 mb-2">
+                        {lesson.title}
+                      </CardTitle>
+                      <p className="text-sm text-muted-foreground line-clamp-2">
+                        {lesson.description}
+                      </p>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      <div className="flex items-center justify-between pt-4 border-t border-border/30">
+                        <div className="flex items-center gap-1 text-sm text-yellow-600 dark:text-yellow-400">
+                          <Sparkles className="w-4 h-4 fill-current" />
+                          <span className="font-semibold">+{lesson.goldReward}</span>
+                        </div>
+                        {isCompleted && (
+                          <Badge variant="outline" className="border-green-500/50 text-green-500">
+                            Complété
+                          </Badge>
+                        )}
+                      </div>
+                      <Button
+                        className={`w-full text-white shadow-lg group-hover:shadow-xl transition-all duration-300 ${
+                          isCompleted
+                            ? 'bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700'
+                            : 'bg-gradient-to-r from-red-600 to-orange-600 hover:from-red-700 hover:to-orange-700'
+                        }`}
+                        disabled={lesson.isLocked}
+                      >
+                        {isCompleted ? 'Revoir' : 'Commencer'}
+                      </Button>
+                    </CardContent>
+                  </Card>
+                );
+              })}
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );

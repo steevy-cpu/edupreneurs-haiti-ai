@@ -1,21 +1,21 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import {
   ChevronLeft,
   Languages,
   BookOpen,
-  MessageCircle,
-  Headphones,
   CheckCircle2,
-  TrendingUp
+  TrendingUp,
+  Sparkles,
+  Target
 } from "lucide-react";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { supabase } from "@/integrations/supabase/client";
-import ericChairDesk from "@/assets/eric-chair-desk.png";
+import ericRightPointing from "@/assets/eric-right-pointing.png";
 import { MusicSelector } from "@/components/MusicSelector";
 import { toast } from "sonner";
 
@@ -27,7 +27,6 @@ interface Lesson {
   month: string;
 }
 
-// Helper function to strip HTML tags from text
 const stripHtml = (html: string) => {
   const tmp = document.createElement("DIV");
   tmp.innerHTML = html;
@@ -39,14 +38,13 @@ export default function AnglaisCourse() {
   const [lessons, setLessons] = useState<Lesson[]>([]);
   const [loading, setLoading] = useState(true);
   const [completedLessonSlugs, setCompletedLessonSlugs] = useState<Set<string>>(new Set());
+  const [userGold, setUserGold] = useState(0);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        // Get current user
         const { data: { user } } = await supabase.auth.getUser();
         
-        // First, get the Anglais subject for AF7 (stored as 7AF in database)
         const { data: subject, error: subjectError } = await supabase
           .from('subjects')
           .select('id')
@@ -57,7 +55,6 @@ export default function AnglaisCourse() {
         if (subjectError) throw subjectError;
 
         if (subject) {
-          // Fetch lessons for this subject
           const { data: lessonsData, error: lessonsError } = await supabase
             .from('lessons')
             .select('id, slug, title, objectif, mois')
@@ -75,8 +72,17 @@ export default function AnglaisCourse() {
           }));
           setLessons(mapped);
 
-          // Fetch user's completed lessons if authenticated
           if (user) {
+            const { data: profile } = await supabase
+              .from('profiles')
+              .select('gold_earned')
+              .eq('user_id', user.id)
+              .single();
+
+            if (profile) {
+              setUserGold(profile.gold_earned || 0);
+            }
+
             const { data: completions, error: completionsError } = await supabase
               .from('lesson_completions')
               .select('lesson_slug')
@@ -105,32 +111,38 @@ export default function AnglaisCourse() {
   const completedLessons = completedLessonSlugs.size;
   const progress = totalLessons > 0 ? (completedLessons / totalLessons) * 100 : 0;
 
-  const getMonthColor = (month: string) => {
-    const monthMap: Record<string, string> = {
-      'Décembre': 'from-blue-500 to-blue-600',
-      'Janvier': 'from-cyan-500 to-cyan-600',
-      'Février': 'from-purple-500 to-purple-600',
-      'Mars': 'from-pink-500 to-pink-600',
-      'Avril': 'from-green-500 to-green-600',
-      'Mai': 'from-emerald-500 to-emerald-600',
-      'Juin': 'from-amber-500 to-amber-600'
-    };
-    return monthMap[month] || 'from-cyan-500 to-cyan-600';
-  };
+  const groupedByMonth = lessons.reduce((acc, lesson) => {
+    const month = lesson.month || 'Sans mois';
+    if (!acc[month]) {
+      acc[month] = [];
+    }
+    acc[month].push(lesson);
+    return acc;
+  }, {} as Record<string, Lesson[]>);
+
+  const monthColors = [
+    'from-sky-500 to-cyan-600',
+    'from-cyan-500 to-blue-600',
+    'from-blue-500 to-indigo-600',
+    'from-indigo-500 to-purple-600',
+    'from-purple-500 to-fuchsia-600',
+    'from-fuchsia-500 to-pink-600',
+    'from-pink-500 to-rose-600'
+  ];
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+      <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-background via-background to-sky-500/5">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-sky-600"></div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5">
+    <div className="min-h-screen bg-gradient-to-br from-background via-background to-sky-500/5">
       {/* Navigation Bar */}
-      <nav className="fixed top-0 left-0 right-0 z-40 bg-background/95 backdrop-blur-md border-b border-border">
-        <div className="container mx-auto px-4 py-4">
+      <nav className="sticky top-0 z-40 bg-background/80 backdrop-blur-lg border-b border-border/40">
+        <div className="container mx-auto px-4 py-3">
           <div className="flex items-center justify-between">
             <Button
               variant="ghost"
@@ -138,188 +150,208 @@ export default function AnglaisCourse() {
               className="gap-2"
             >
               <ChevronLeft className="w-4 h-4" />
-              <span className="font-semibold">Retour aux Matières</span>
+              <span className="font-semibold">Retour</span>
             </Button>
-            <ThemeToggle />
+            <div className="flex items-center gap-4">
+              <div className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-yellow-500/20 to-amber-500/20 rounded-full border border-yellow-500/30">
+                <Sparkles className="w-5 h-5 text-yellow-400 fill-yellow-400" />
+                <span className="font-bold text-foreground">{userGold}</span>
+              </div>
+              <ThemeToggle />
+            </div>
           </div>
         </div>
       </nav>
 
-      {/* Hero Header */}
-      <div className="relative bg-gradient-to-r from-cyan-600 to-blue-600 text-primary-foreground pt-20 sm:pt-24 md:pt-32 pb-8 sm:pb-12 md:pb-16 overflow-hidden">
-        <div className="absolute inset-0 opacity-10">
-          <div className="absolute inset-0" style={{
-            backgroundImage: 'url("data:image/svg+xml,%3Csvg width=\'60\' height=\'60\' viewBox=\'0 0 60 60\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cg fill=\'none\' fill-rule=\'evenodd\'%3E%3Cg fill=\'%23ffffff\' fill-opacity=\'1\'%3E%3Cpath d=\'M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z\'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")'
-          }} />
-        </div>
-        
-        <div className="container mx-auto px-4 relative z-10">
-          <div className="flex flex-col md:flex-row items-center justify-between gap-6">
-            <div className="flex-1 text-center md:text-left">
-              <div className="flex flex-col sm:flex-row items-center justify-center md:justify-start gap-3 mb-3 sm:mb-4">
-                <div className="w-12 h-12 sm:w-14 sm:h-14 md:w-16 md:h-16 rounded-2xl bg-primary/20 backdrop-blur-sm flex items-center justify-center">
-                  <Languages className="w-7 h-7 sm:w-8 sm:h-8 md:w-10 md:h-10 text-primary-foreground" />
+      <div className="container mx-auto px-4 py-8 sm:py-12 max-w-7xl">
+        {/* Hero Section with Eric */}
+        <div className="grid md:grid-cols-2 gap-8 mb-12 items-center">
+          <div className="space-y-6 animate-fade-in">
+            <Badge variant="secondary" className="text-sm font-medium px-4 py-1.5 bg-sky-100 dark:bg-sky-900/30 text-sky-700 dark:text-sky-300">
+              Programme MENFP - 7ème Année Fondamentale
+            </Badge>
+            <h1 className="text-5xl md:text-6xl font-bold bg-gradient-to-r from-sky-600 via-cyan-600 to-blue-700 bg-clip-text text-transparent">
+              Anglais
+            </h1>
+            <p className="text-lg md:text-xl text-muted-foreground leading-relaxed">
+              Master English language skills through interactive lessons, vocabulary, grammar, and conversation practice 🇺🇸
+            </p>
+
+            {/* Progress Card */}
+            <Card className="bg-gradient-to-br from-sky-50 to-cyan-50 dark:from-sky-950/30 dark:to-cyan-950/30 border-2 border-sky-200 dark:border-sky-800">
+              <CardHeader>
+                <div className="flex items-center justify-between">
+                  <CardTitle className="flex items-center gap-2">
+                    <TrendingUp className="w-5 h-5 text-sky-600 dark:text-sky-400" />
+                    Votre Progression
+                  </CardTitle>
+                  <Badge variant="secondary" className="bg-sky-100 dark:bg-sky-900/50">
+                    {Math.round(progress)}%
+                  </Badge>
                 </div>
-                <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold">
-                  Anglais
-                </h1>
-              </div>
-              <p className="text-base sm:text-lg md:text-xl opacity-90 mb-4 sm:mb-6">
-                Vocabulaire, grammaire et conversation en anglais - Programme AF7
-              </p>
-              <div className="flex gap-2 sm:gap-3 justify-center md:justify-start flex-wrap">
-                <Badge variant="secondary" className="px-3 py-1.5 sm:px-4 sm:py-2 text-xs sm:text-sm">
-                  <BookOpen className="w-3 h-3 sm:w-4 sm:h-4 mr-1.5 sm:mr-2" />
-                  {totalLessons} leçons
-                </Badge>
-                <Badge variant="secondary" className="px-3 py-1.5 sm:px-4 sm:py-2 text-xs sm:text-sm">
-                  <MessageCircle className="w-3 h-3 sm:w-4 sm:h-4 mr-1.5 sm:mr-2" />
-                  Conversation
-                </Badge>
-                <Badge variant="secondary" className="px-3 py-1.5 sm:px-4 sm:py-2 text-xs sm:text-sm">
-                  <Headphones className="w-3 h-3 sm:w-4 sm:h-4 mr-1.5 sm:mr-2" />
-                  Écoute active
-                </Badge>
-              </div>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <Progress value={progress} className="h-3" />
+                <div className="flex justify-between text-sm">
+                  <span className="text-muted-foreground">
+                    {completedLessons} sur {totalLessons} leçons complétées
+                  </span>
+                  <span className="font-semibold text-sky-600 dark:text-sky-400">
+                    {totalLessons - completedLessons} restantes
+                  </span>
+                </div>
+              </CardContent>
+            </Card>
+
+            <div className="flex flex-wrap gap-3">
+              <Badge variant="outline" className="px-4 py-2 border-sky-300 dark:border-sky-700">
+                <Languages className="w-4 h-4 mr-2" />
+                {totalLessons} Leçons
+              </Badge>
+              <Badge variant="outline" className="px-4 py-2 border-cyan-300 dark:border-cyan-700">
+                <Target className="w-4 h-4 mr-2" />
+                Programme 7AF
+              </Badge>
             </div>
-            <div className="flex-shrink-0">
+          </div>
+
+          {/* Eric Image */}
+          <div className="relative animate-fade-in">
+            <div className="absolute inset-0 bg-gradient-to-br from-sky-400/20 to-cyan-400/20 rounded-3xl blur-3xl"></div>
+            <div className="relative bg-gradient-to-br from-sky-100 to-cyan-100 dark:from-sky-950/50 dark:to-cyan-950/50 rounded-3xl p-8 border-2 border-sky-200 dark:border-sky-800 shadow-2xl">
               <img 
-                src={ericChairDesk} 
-                alt="Eric - Professeur d'Anglais" 
-                className="w-40 h-40 sm:w-48 sm:h-48 md:w-56 md:h-56 lg:w-64 lg:h-64 object-contain drop-shadow-2xl"
-                loading="lazy"
-                decoding="async"
+                src={ericRightPointing} 
+                alt="Eric enseigne l'anglais" 
+                className="w-full h-auto rounded-2xl object-cover"
               />
             </div>
           </div>
         </div>
-      </div>
 
-      <div className="container mx-auto px-3 sm:px-4 py-6 sm:py-8 max-w-7xl">
-        {/* Music Selector */}
-        <div className="mb-6 sm:mb-8">
-          <MusicSelector />
-        </div>
+        <MusicSelector />
 
-        {/* Progress Card */}
-        <Card className="p-4 sm:p-6 mb-6 sm:mb-8 bg-gradient-to-br from-cyan-500/10 via-blue-500/10 to-purple-500/10 border-2 border-cyan-500/20">
-          <div className="flex items-center gap-3 mb-4">
-            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-cyan-500 to-blue-600 flex items-center justify-center">
-              <TrendingUp className="w-6 h-6 text-white" />
-            </div>
-            <div className="flex-1">
-              <h3 className="text-lg sm:text-xl font-bold mb-1">Votre Progression</h3>
-              <p className="text-xs sm:text-sm text-muted-foreground">
-                Continuez votre apprentissage de l'anglais !
-              </p>
-            </div>
-            <div className="text-right">
-              <div className="text-3xl sm:text-4xl font-bold bg-gradient-to-r from-cyan-600 to-blue-600 bg-clip-text text-transparent">
-                {Math.round(progress)}%
+        {/* Stats Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-12 animate-fade-in">
+          <Card className="relative overflow-hidden hover:shadow-xl transition-all duration-300 border-sky-200 dark:border-sky-800">
+            <div className="absolute inset-0 bg-gradient-to-br from-sky-500/10 to-transparent"></div>
+            <CardHeader className="pb-3">
+              <div className="flex items-center justify-between">
+                <CardTitle className="text-sm font-medium text-muted-foreground">
+                  Total Leçons
+                </CardTitle>
+                <BookOpen className="w-5 h-5 text-sky-500" />
               </div>
-              <p className="text-xs text-muted-foreground mt-1">
-                {completedLessons}/{totalLessons}
-              </p>
-            </div>
-          </div>
-          <Progress value={progress} className="h-3" />
-          {completedLessons > 0 && (
-            <div className="mt-4 flex items-center gap-2 text-sm text-muted-foreground">
-              <CheckCircle2 className="w-4 h-4 text-green-600" />
-              <span>Excellent travail ! Continue comme ça !</span>
-            </div>
-          )}
-        </Card>
+            </CardHeader>
+            <CardContent>
+              <div className="text-4xl font-bold bg-gradient-to-r from-sky-600 to-cyan-600 bg-clip-text text-transparent">
+                {totalLessons}
+              </div>
+              <p className="text-sm text-muted-foreground mt-1">Disponibles maintenant</p>
+            </CardContent>
+          </Card>
+
+          <Card className="relative overflow-hidden hover:shadow-xl transition-all duration-300 border-cyan-200 dark:border-cyan-800">
+            <div className="absolute inset-0 bg-gradient-to-br from-cyan-500/10 to-transparent"></div>
+            <CardHeader className="pb-3">
+              <div className="flex items-center justify-between">
+                <CardTitle className="text-sm font-medium text-muted-foreground">
+                  Leçons Complétées
+                </CardTitle>
+                <CheckCircle2 className="w-5 h-5 text-cyan-500" />
+              </div>
+            </CardHeader>
+            <CardContent>
+              <div className="text-4xl font-bold bg-gradient-to-r from-cyan-600 to-blue-600 bg-clip-text text-transparent">
+                {completedLessons}
+              </div>
+              <p className="text-sm text-muted-foreground mt-1">Bien joué !</p>
+            </CardContent>
+          </Card>
+        </div>
 
         {/* Lessons Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 mb-6 sm:mb-8">
-          {lessons.map((lesson, index) => {
-            const isCompleted = completedLessonSlugs.has(lesson.slug);
-            
-            return (
-              <Card
-                key={lesson.id}
-                className="group hover:shadow-xl transition-all duration-300 hover:-translate-y-1 cursor-pointer border-2 hover:border-cyan-500/50"
-                onClick={() => navigate(`/anglais-lesson/${lesson.slug}`)}
-              >
-                <div className="p-5 sm:p-6">
-                  <div className="flex items-start justify-between mb-4">
-                    <div className={`w-14 h-14 rounded-xl bg-gradient-to-br ${getMonthColor(lesson.month)} flex items-center justify-center shadow-lg ${isCompleted ? 'ring-2 ring-green-500 ring-offset-2' : ''}`}>
-                      {isCompleted ? (
-                        <CheckCircle2 className="w-7 h-7 text-white" />
-                      ) : (
-                        <Languages className="w-7 h-7 text-white" />
-                      )}
-                    </div>
-                    <Badge variant="secondary" className="text-xs font-semibold">
-                      {lesson.month}
-                    </Badge>
-                  </div>
+        <div className="space-y-8 animate-fade-in">
+          <h2 className="text-3xl font-bold flex items-center gap-3">
+            <BookOpen className="w-8 h-8 text-sky-600 dark:text-sky-400" />
+            Programme de l'année
+          </h2>
 
-                  <h3 className="text-lg font-bold mb-3 group-hover:text-cyan-600 transition-colors line-clamp-2 min-h-[3.5rem]">
-                    {lesson.title}
-                  </h3>
-
-                  <p className="text-sm text-muted-foreground mb-4 line-clamp-3 min-h-[4rem]">
-                    {stripHtml(lesson.objective || '')}
-                  </p>
-
-                  <div className="flex items-center justify-between text-sm mb-4 pt-4 border-t">
-                    <span className="flex items-center gap-2 text-muted-foreground">
-                      <BookOpen className="w-4 h-4" />
-                      <span className="font-medium">Leçon {index + 1}</span>
-                    </span>
-                    {isCompleted && (
-                      <span className="text-green-600 font-semibold flex items-center gap-1.5 bg-green-50 dark:bg-green-950 px-2 py-1 rounded-full">
-                        <CheckCircle2 className="w-4 h-4" />
-                        Complété
-                      </span>
-                    )}
-                  </div>
-
-                  <Button
-                    className="w-full bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-700 hover:to-blue-700"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      navigate(`/anglais-lesson/${lesson.slug}`);
-                    }}
-                  >
-                    {isCompleted ? "Revoir la leçon" : "Commencer"}
-                  </Button>
+          {Object.entries(groupedByMonth).map(([month, monthLessons], monthIndex) => (
+            <div key={month} className="space-y-4">
+              <div className="flex items-center gap-3 mb-6">
+                <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${monthColors[monthIndex % monthColors.length]} flex items-center justify-center text-white font-bold shadow-lg`}>
+                  {monthIndex + 1}
                 </div>
-              </Card>
-            );
-          })}
-        </div>
+                <div>
+                  <h3 className="text-2xl font-bold text-foreground">{month}</h3>
+                  <p className="text-sm text-muted-foreground">
+                    {monthLessons.length} {monthLessons.length === 1 ? 'leçon' : 'leçons'}
+                  </p>
+                </div>
+              </div>
 
-        {/* Eric Help Section */}
-        <Card className="p-4 sm:p-6 md:p-8 bg-gradient-to-r from-primary/10 to-secondary/10 mb-20 sm:mb-8">
-          <div className="flex flex-col md:flex-row items-center gap-4 sm:gap-6">
-            <div className="flex-shrink-0">
-              <img 
-                src={ericChairDesk} 
-                alt="Eric - Assistant IA" 
-                className="w-32 h-32 sm:w-40 sm:h-40 md:w-48 md:h-48 object-contain"
-                loading="lazy"
-                decoding="async"
-              />
-            </div>
-            <div className="flex-1 text-center md:text-left">
-              <h3 className="text-xl sm:text-2xl font-bold mb-2 sm:mb-3">
-                Need help with English?
-              </h3>
-              <p className="text-sm sm:text-base text-muted-foreground mb-3 sm:mb-4">
-                Eric est là pour t'aider à améliorer ton anglais, pratiquer la conversation 
-                et répondre à toutes tes questions sur la grammaire et le vocabulaire !
-              </p>
-              <div className="flex flex-wrap gap-2 justify-center md:justify-start">
-                <Badge variant="outline" className="text-xs sm:text-sm">Practice conversation</Badge>
-                <Badge variant="outline" className="text-xs sm:text-sm">Grammar help</Badge>
-                <Badge variant="outline" className="text-xs sm:text-sm">Support 24/7</Badge>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {monthLessons.map((lesson, lessonIndex) => {
+                  const isCompleted = completedLessonSlugs.has(lesson.slug);
+                  
+                  return (
+                    <Card
+                      key={lesson.id}
+                      className={`group cursor-pointer overflow-hidden border-2 transition-all duration-300 hover:shadow-xl hover:-translate-y-1 ${
+                        isCompleted 
+                          ? 'border-green-400 dark:border-green-600 bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-950/30 dark:to-emerald-950/30' 
+                          : 'border-sky-200 dark:border-sky-800 hover:border-sky-400 dark:hover:border-sky-600 bg-gradient-to-br from-white to-sky-50/50 dark:from-gray-900 dark:to-sky-950/30'
+                      }`}
+                      onClick={() => navigate(`/anglais-lesson/${lesson.slug}`)}
+                    >
+                      <CardHeader className="relative">
+                        <div className="absolute top-4 right-4 flex gap-2">
+                          {isCompleted && (
+                            <Badge className="bg-green-500 hover:bg-green-600">
+                              <CheckCircle2 className="w-3 h-3 mr-1" />
+                              Complété
+                            </Badge>
+                          )}
+                          <Badge variant="secondary" className="bg-sky-100 dark:bg-sky-900/50 text-sky-700 dark:text-sky-300">
+                            #{lessonIndex + 1}
+                          </Badge>
+                        </div>
+                        <div className={`w-14 h-14 rounded-xl flex items-center justify-center mb-3 shadow-lg group-hover:scale-110 transition-transform ${
+                          isCompleted 
+                            ? 'bg-gradient-to-br from-green-500 to-emerald-500' 
+                            : `bg-gradient-to-br ${monthColors[monthIndex % monthColors.length]}`
+                        }`}>
+                          {isCompleted ? (
+                            <CheckCircle2 className="w-7 h-7 text-white" />
+                          ) : (
+                            <Languages className="w-7 h-7 text-white" />
+                          )}
+                        </div>
+                        <CardTitle className="text-lg group-hover:text-sky-600 dark:group-hover:text-sky-400 transition-colors line-clamp-2">
+                          {lesson.title}
+                        </CardTitle>
+                        <p className="text-sm text-muted-foreground mt-2 line-clamp-3">
+                          {stripHtml(lesson.objective)}
+                        </p>
+                      </CardHeader>
+                      <CardContent>
+                        <Button
+                          className={`w-full text-white shadow-lg group-hover:shadow-xl transition-all duration-300 ${
+                            isCompleted
+                              ? 'bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700'
+                              : 'bg-gradient-to-r from-sky-600 to-cyan-600 hover:from-sky-700 hover:to-cyan-700'
+                          }`}
+                        >
+                          {isCompleted ? 'Réviser' : 'Commencer'}
+                        </Button>
+                      </CardContent>
+                    </Card>
+                  );
+                })}
               </div>
             </div>
-          </div>
-        </Card>
+          ))}
+        </div>
       </div>
     </div>
   );
