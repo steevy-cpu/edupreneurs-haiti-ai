@@ -1,23 +1,24 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { 
   BookOpen, 
   Users, 
-  ChevronLeft, 
-  Clock, 
-  Trophy,
+  ArrowLeft, 
+  CheckCircle2,
+  Coins,
   MessageCircle,
   PenTool,
-  Volume2,
-  FileText,
-  CheckCircle2
+  FileText
 } from "lucide-react";
 import { creoleLessons7AF } from "@/data/creoleLessons";
 import ericEdupreneurs from "@/assets/eric-edupreneurs.png";
+import { ThemeToggle } from "@/components/ThemeToggle";
+import { MusicSelector } from "@/components/MusicSelector";
+import { supabase } from "@/integrations/supabase/client";
 
 const categoryIcons = {
   "Lekti": BookOpen,
@@ -28,215 +29,199 @@ const categoryIcons = {
   "Pwodiksyon Ekri": FileText
 };
 
-const categoryColors = {
-  "Lekti": "from-pink-500 to-pink-600",
-  "Kominikasyon Oral": "from-purple-500 to-purple-600",
-  "Gramè": "from-blue-500 to-blue-600",
-  "Vokabilè": "from-green-500 to-green-600",
-  "Òtograf": "from-orange-500 to-orange-600",
-  "Pwodiksyon Ekri": "from-red-500 to-red-600"
-};
-
 export default function CreoleCourse() {
   const navigate = useNavigate();
-  const [selectedCategory, setSelectedCategory] = useState<string>("all");
+  const [userGold, setUserGold] = useState(0);
+  const [completedLessons, setCompletedLessons] = useState<string[]>([]);
   
-  const categories = Array.from(new Set(creoleLessons7AF.map(l => l.category)));
-  
-  const filteredLessons = selectedCategory === "all" 
-    ? creoleLessons7AF 
-    : creoleLessons7AF.filter(l => l.category === selectedCategory);
+  useEffect(() => {
+    const fetchUserData = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        // Fetch user gold
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('gold_earned')
+          .eq('user_id', user.id)
+          .single();
+        
+        if (profile) {
+          setUserGold(profile.gold_earned || 0);
+        }
 
-  const completedLessons = 0; // This would come from user progress
-  const progress = (completedLessons / creoleLessons7AF.length) * 100;
+        // Fetch completed lessons
+        const { data: completions } = await supabase
+          .from('lesson_completions')
+          .select('lesson_slug')
+          .eq('user_id', user.id)
+          .eq('subject', 'creole');
+
+        if (completions) {
+          setCompletedLessons(completions.map(c => c.lesson_slug));
+        }
+      }
+    };
+
+    fetchUserData();
+  }, []);
+
+  const completedCount = completedLessons.length;
+  const totalLessons = creoleLessons7AF.length;
+  const progressPercentage = totalLessons > 0 ? (completedCount / totalLessons) * 100 : 0;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5">
-      {/* Navigation */}
-      <nav className="fixed top-0 left-0 right-0 z-40 bg-background/95 backdrop-blur-md border-b border-border">
+    <div className="min-h-screen bg-background">
+      {/* Header */}
+      <header className="border-b border-border bg-gradient-to-r from-emerald-600 to-teal-700 text-primary-foreground shadow-sm sticky top-0 z-50">
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
-            <Button
-              variant="ghost"
-              onClick={() => navigate("/matieres")}
-              className="gap-2"
-            >
-              <ChevronLeft className="w-4 h-4" />
-              <span>Retounen nan matye yo</span>
-            </Button>
-          </div>
-        </div>
-      </nav>
-
-      {/* Hero Header */}
-      <div className="relative bg-gradient-to-r from-teal-600 to-emerald-600 text-primary-foreground pt-32 pb-16">
-        <div className="container mx-auto px-4">
-          <div className="flex flex-col md:flex-row items-center gap-8">
-            <div className="flex-1 text-center md:text-left">
-              <div className="flex items-center gap-3 justify-center md:justify-start mb-4">
-                <Users className="w-12 h-12" />
-                <h1 className="text-5xl font-bold">Kreyòl Ayisyen</h1>
+            <div className="flex items-center gap-4">
+              <Button 
+                variant="ghost" 
+                size="icon"
+                onClick={() => navigate('/matieres')}
+                className="shrink-0 text-primary-foreground hover:bg-primary-foreground/20"
+              >
+                <ArrowLeft className="h-5 w-5" />
+              </Button>
+              <div className="flex items-center gap-3">
+                <div className="w-12 h-12 rounded-xl bg-white/20 backdrop-blur-sm flex items-center justify-center">
+                  <Users className="w-6 h-6" />
+                </div>
+                <div>
+                  <h1 className="text-2xl font-bold">Kreyòl Ayisyen</h1>
+                  <p className="text-sm text-primary-foreground/80">7ème Année Fondamentale</p>
+                </div>
               </div>
-              <p className="text-xl opacity-90 mb-6">
-                Lang, literati ak kilti ayisyèn - 7ème AF
-              </p>
-              <div className="flex gap-3 justify-center md:justify-start flex-wrap">
-                <Badge variant="secondary" className="px-4 py-2">
-                  <BookOpen className="w-4 h-4 mr-2" />
-                  {creoleLessons7AF.length} Leson
-                </Badge>
-                <Badge variant="secondary" className="px-4 py-2">
-                  <Trophy className="w-4 h-4 mr-2" />
-                  Nivo AF7
-                </Badge>
-                <Badge variant="secondary" className="px-4 py-2">
-                  <Volume2 className="w-4 h-4 mr-2" />
-                  Kreyòl & Fransè
-                </Badge>
-              </div>
-            </div>
-            <div className="flex-shrink-0">
-              <img 
-                src={ericEdupreneurs} 
-                alt="Eric - Gid Pedagojik"
-                className="w-64 h-64 object-contain"
-              />
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div className="container mx-auto px-4 py-8">
-        {/* Progress Card */}
-        <Card className="p-6 mb-8">
-          <div className="flex items-center justify-between mb-4">
-            <div>
-              <h3 className="text-lg font-semibold">Pwogrè ou</h3>
-              <p className="text-sm text-muted-foreground">
-                {completedLessons} sou {creoleLessons7AF.length} leson konplete
-              </p>
             </div>
             <div className="flex items-center gap-2">
-              <Trophy className="w-6 h-6 text-primary" />
-              <span className="text-2xl font-bold">{Math.round(progress)}%</span>
+              <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-primary-foreground/10 border border-primary-foreground/20">
+                <Coins className="w-5 h-5 text-primary-foreground" />
+                <span className="font-bold text-primary-foreground">{userGold}</span>
+              </div>
+              <ThemeToggle />
             </div>
           </div>
-          <Progress value={progress} className="h-3" />
-        </Card>
+        </div>
+      </header>
 
-        {/* Category Filter */}
-        <Card className="p-6 mb-8">
-          <h3 className="text-lg font-semibold mb-4">Kategori</h3>
-          <div className="flex gap-2 flex-wrap">
-            <Button
-              variant={selectedCategory === "all" ? "default" : "outline"}
-              onClick={() => setSelectedCategory("all")}
-              size="sm"
-            >
-              Tout leson yo
-            </Button>
-            {categories.map((category) => {
-              const Icon = categoryIcons[category as keyof typeof categoryIcons];
-              return (
-                <Button
-                  key={category}
-                  variant={selectedCategory === category ? "default" : "outline"}
-                  onClick={() => setSelectedCategory(category)}
-                  size="sm"
-                  className="gap-2"
-                >
-                  <Icon className="w-4 h-4" />
-                  {category}
-                </Button>
-              );
-            })}
+      <main className="container mx-auto px-4 py-8">
+        {/* Course Overview */}
+        <Card className="mb-8 overflow-hidden border border-border bg-card">
+          <div className="md:flex">
+            <div className="md:w-1/3 bg-gradient-to-br from-emerald-600 to-teal-700 p-8 flex items-center justify-center">
+              <img src={ericEdupreneurs} alt="Eric enseignant" className="w-full h-auto object-contain rounded-lg" />
+            </div>
+            <CardContent className="md:w-2/3 p-6">
+              <h2 className="text-2xl font-bold mb-4 text-foreground">Aperçu du Cours</h2>
+              <p className="text-muted-foreground mb-4">
+                Byenveni nan kou Kreyòl Ayisyen pou 7èm ane fondamantal ! 
+                Devlope konpetans ou nan lang manman nou an ak aprann gramè, vokabilè, 
+                kominikasyon oral ak pwodiksyon ekri an kreyòl.
+              </p>
+              <div className="space-y-2">
+                <div className="flex items-center gap-2">
+                  <BookOpen className="w-5 h-5 text-primary" />
+                  <span className="font-semibold text-foreground">{totalLessons} leson konplè</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <MessageCircle className="w-5 h-5 text-primary" />
+                  <span className="font-semibold text-foreground">Aktivite entèaktif</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <CheckCircle2 className="w-5 h-5 text-primary" />
+                  <span className="font-semibold text-foreground">{completedCount} leson konplete</span>
+                </div>
+              </div>
+            </CardContent>
           </div>
         </Card>
 
+        <MusicSelector />
+
         {/* Lessons Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredLessons.map((lesson) => {
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+          {creoleLessons7AF.map((lesson, index) => {
+            const isCompleted = completedLessons.includes(lesson.id.toString());
             const Icon = categoryIcons[lesson.category];
-            const colorClass = categoryColors[lesson.category];
-            const isCompleted = false; // This would come from user progress
+            const goldReward = 100 + (index * 10);
 
             return (
               <Card
                 key={lesson.id}
-                className="group hover:shadow-xl transition-all duration-300 hover:-translate-y-2 cursor-pointer overflow-hidden"
+                className={`transition-all duration-300 hover:shadow-xl border border-border bg-card cursor-pointer ${
+                  isCompleted ? 'border-2 border-green-500' : 'hover:scale-105'
+                }`}
                 onClick={() => navigate(`/creole-lesson/${lesson.id}`)}
               >
-                <div className={`h-1 bg-gradient-to-r ${colorClass}`} />
-                
-                <div className="p-6">
-                  <div className="flex items-start justify-between mb-4">
-                    <div className={`w-12 h-12 rounded-lg bg-gradient-to-br ${colorClass} flex items-center justify-center flex-shrink-0`}>
-                      <Icon className="w-6 h-6 text-white" />
+                <CardHeader className="bg-muted/50">
+                  <div className="flex items-start justify-between">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-full bg-gradient-to-br from-emerald-600 to-teal-700 flex items-center justify-center text-primary-foreground">
+                        <Icon className="w-5 h-5" />
+                      </div>
+                      <div>
+                        <CardTitle className="text-lg text-foreground">{lesson.title}</CardTitle>
+                        <p className="text-sm text-muted-foreground">{lesson.category}</p>
+                      </div>
                     </div>
                     {isCompleted && (
-                      <CheckCircle2 className="w-6 h-6 text-green-500" />
+                      <CheckCircle2 className="w-6 h-6 text-green-500 shrink-0" />
                     )}
                   </div>
+                </CardHeader>
+                <CardContent className="pt-6">
+                  <div className="space-y-4">
+                    <p className="text-sm text-muted-foreground line-clamp-2">
+                      {lesson.description}
+                    </p>
 
-                  <Badge variant="secondary" className="mb-3">
-                    {lesson.category}
-                  </Badge>
-
-                  <h3 className="text-lg font-bold mb-2 group-hover:text-primary transition-colors line-clamp-2">
-                    {lesson.title}
-                  </h3>
-
-                  <p className="text-sm text-muted-foreground mb-4 line-clamp-2">
-                    {lesson.description}
-                  </p>
-
-                  <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                    <div className="flex items-center gap-1">
-                      <Clock className="w-4 h-4" />
-                      <span>{lesson.duration}</span>
+                    <div className="flex flex-wrap gap-2">
+                      <Badge variant="secondary" className="text-xs">
+                        {lesson.difficulty}
+                      </Badge>
+                      <Badge variant="secondary" className="text-xs">
+                        {lesson.duration}
+                      </Badge>
                     </div>
-                    <Badge variant="outline" className="text-xs">
-                      {lesson.difficulty}
-                    </Badge>
-                  </div>
 
-                  <Button className="w-full mt-4">
-                    {isCompleted ? "Revize" : "Kòmanse"}
-                  </Button>
-                </div>
+                    <div className="flex items-center justify-between pt-4 border-t border-border">
+                      <div className="flex items-center gap-1 text-accent">
+                        <Coins className="w-4 h-4" />
+                        <span className="font-bold">{goldReward}</span>
+                      </div>
+                      <Button>
+                        {isCompleted ? 'Revize' : 'Kòmanse'}
+                      </Button>
+                    </div>
+                  </div>
+                </CardContent>
               </Card>
             );
           })}
         </div>
 
-        {/* Info Card */}
-        <Card className="p-8 mt-8 bg-gradient-to-r from-primary/10 to-secondary/10">
-          <div className="flex flex-col md:flex-row items-center gap-6">
-            <div className="flex-shrink-0">
-              <img 
-                src={ericEdupreneurs} 
-                alt="Eric - Asistan IA"
-                className="w-48 h-48 object-contain"
-              />
-            </div>
-            <div className="flex-1 text-center md:text-left">
-              <h3 className="text-2xl font-bold mb-3">
-                Aprann Kreyòl Ayisyen!
-              </h3>
-              <p className="text-muted-foreground mb-4">
-                Devlope konpetans ou nan lang manman nou an. Aprann gramè, vokabilè, 
-                kominikasyon oral ak pwodiksyon ekri an kreyòl. Eric la pou ede w nan chak etap!
-              </p>
-              <div className="flex flex-wrap gap-2 justify-center md:justify-start">
-                <Badge variant="outline">Gramè kreyòl</Badge>
-                <Badge variant="outline">Kominikasyon oral</Badge>
-                <Badge variant="outline">Literati kreyòl</Badge>
-                <Badge variant="outline">Kilti ayisyèn</Badge>
+        {/* Progress Summary */}
+        <Card className="bg-gradient-to-r from-emerald-600 to-teal-700 text-primary-foreground border-0">
+          <CardHeader>
+            <CardTitle className="text-2xl">Pwogrè Ou</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              <div>
+                <div className="flex justify-between mb-2">
+                  <span className="font-semibold">Leson konplete</span>
+                  <span className="font-bold">{completedCount}/{totalLessons}</span>
+                </div>
+                <Progress value={progressPercentage} className="h-3 bg-primary-foreground/30" />
               </div>
+              <p className="text-sm opacity-90">
+                Kontinye konsa ! Chak leson konplete ap ede w mètrize kreyòl ayisyen.
+              </p>
             </div>
-          </div>
+          </CardContent>
         </Card>
-      </div>
+      </main>
     </div>
   );
 }

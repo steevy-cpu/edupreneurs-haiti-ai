@@ -133,7 +133,7 @@ const FrancaisCourse = () => {
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
-      <header className="border-b border-border bg-primary text-primary-foreground shadow-sm sticky top-0 z-50">
+      <header className="border-b border-border bg-gradient-to-r from-rose-600 to-pink-600 text-primary-foreground shadow-sm sticky top-0 z-50">
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
@@ -145,9 +145,14 @@ const FrancaisCourse = () => {
               >
                 <ArrowLeft className="h-5 w-5" />
               </Button>
-              <div>
-                <h1 className="text-2xl font-bold">Français AF7</h1>
-                <p className="text-sm text-primary-foreground/80">Cours de français - Niveau 7ème année</p>
+              <div className="flex items-center gap-3">
+                <div className="w-12 h-12 rounded-xl bg-white/20 backdrop-blur-sm flex items-center justify-center">
+                  <BookOpen className="w-6 h-6" />
+                </div>
+                <div>
+                  <h1 className="text-2xl font-bold">Français</h1>
+                  <p className="text-sm text-primary-foreground/80">7ème Année Fondamentale</p>
+                </div>
               </div>
             </div>
             <div className="flex items-center gap-2">
@@ -165,8 +170,8 @@ const FrancaisCourse = () => {
         {/* Course Overview */}
         <Card className="mb-8 overflow-hidden border border-border bg-card">
           <div className="md:flex">
-            <div className="md:w-1/3 bg-gradient-to-br from-primary to-primary/70 p-8 flex items-center justify-center">
-              <img src={ericChairDesk} alt="Eric enseignant" className="w-full h-auto object-contain" />
+            <div className="md:w-1/3 bg-gradient-to-br from-rose-600 to-pink-600 p-8 flex items-center justify-center">
+              <img src={ericChairDesk} alt="Eric enseignant" className="w-full h-auto object-contain rounded-lg" />
             </div>
             <CardContent className="md:w-2/3 p-6">
               <h2 className="text-2xl font-bold mb-4 text-foreground">Aperçu du Cours</h2>
@@ -211,7 +216,7 @@ const FrancaisCourse = () => {
                 <CardHeader className="bg-muted/50">
                   <div className="flex items-start justify-between">
                     <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-full bg-primary flex items-center justify-center text-primary-foreground font-bold">
+                      <div className="w-10 h-10 rounded-full bg-gradient-to-br from-rose-600 to-pink-600 flex items-center justify-center text-primary-foreground font-bold">
                         {index + 1}
                       </div>
                       <div>
@@ -270,7 +275,7 @@ const FrancaisCourse = () => {
         </div>
 
         {/* Progress Summary */}
-        <Card className="bg-primary text-primary-foreground border-0">
+        <Card className="bg-gradient-to-r from-rose-600 to-pink-600 text-primary-foreground border-0">
           <CardHeader>
             <CardTitle className="text-2xl">Ton Progrès</CardTitle>
           </CardHeader>
