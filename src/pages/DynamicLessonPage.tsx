@@ -5,6 +5,7 @@ import { LessonPageTemplate } from "@/components/LessonPageTemplate";
 import ericTeaching from "@/assets/eric-teaching.png";
 import ericScientist from "@/assets/eric-scientist.png";
 import ericBiologist from "@/assets/eric-biologist.png";
+import ericComputer from "@/assets/eric-computer.png";
 
 export default function DynamicLessonPage() {
   const { slug, lessonSlug } = useParams();
@@ -94,7 +95,9 @@ export default function DynamicLessonPage() {
 
   // Use appropriate Eric image based on subject
   const subjectLower = subject.name.toLowerCase();
-  const ericImage = subjectLower.includes('chimie')
+  const ericImage = subjectLower.includes('informatique')
+    ? ericComputer
+    : subjectLower.includes('chimie')
     ? ericScientist
     : subjectLower.includes('biologie') || subjectLower.includes('géologie')
     ? ericBiologist
