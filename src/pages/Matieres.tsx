@@ -595,6 +595,7 @@ export default function Matieres() {
                       let courseRoute;
                       const isCreole = subject.id === 'creole' || subject.id === 'creole-8af';
                       const isSciencesSociales = subject.id === 'sciences-sociales' || subject.id === 'sciences-sociales-8af';
+                      const isHistoireGeo = subject.id === 'histoire-geographie-7af';
                       if (isMath) {
                         courseRoute = selectedGrade === '9AF' ? '/mathematiques-af9' : (selectedGrade === '8AF' ? '/math-af8-course' : '/math-course');
                       } else if (isSciences) {
@@ -607,6 +608,8 @@ export default function Matieres() {
                         courseRoute = selectedGrade === '8AF' ? '/creole-af8-course' : '/creole-course';
                       } else if (isSciencesSociales) {
                         courseRoute = selectedGrade === '8AF' ? '/sciences-sociales-af8-course' : '/sciences-sociales-course';
+                      } else if (isHistoireGeo) {
+                        courseRoute = '/histoire-geographie-7af-course';
                       } else if (subject.id === 'francais') {
                         courseRoute = '/francais-course';
                       } else if (subject.id === 'arts') {
