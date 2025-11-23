@@ -13,7 +13,7 @@ import {
   TrendingUp,
   Target
 } from "lucide-react";
-import ericTeaching from "@/assets/eric-teaching.png";
+import ericCelebrating from "@/assets/eric-celebrating.png";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { supabase } from "@/integrations/supabase/client";
 import { MusicSelector } from "@/components/MusicSelector";
@@ -222,7 +222,7 @@ const EducationPhysiqueCourse = () => {
             <div className="absolute inset-0 bg-gradient-to-br from-red-400/20 to-orange-400/20 rounded-3xl blur-3xl"></div>
             <div className="relative bg-gradient-to-br from-red-100 to-orange-100 dark:from-red-950/50 dark:to-orange-950/50 rounded-3xl p-8 border-2 border-red-200 dark:border-red-800 shadow-2xl">
               <img
-                src={ericTeaching}
+                src={ericCelebrating}
                 alt="Eric - Coach sportif"
                 className="w-full h-auto rounded-2xl object-cover"
               />
