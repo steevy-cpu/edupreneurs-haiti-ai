@@ -12,7 +12,8 @@ import {
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
 import { toast } from "sonner";
-import { Search, ChevronDown, ChevronRight, BookOpen, Calculator, FlaskConical, Book } from "lucide-react";
+import { Search, ChevronDown, ChevronRight, BookOpen, Calculator, FlaskConical, Book, RefreshCw } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 interface LessonBrowserProps {
   onSelectLesson: (lesson: any) => void;
@@ -179,7 +180,18 @@ export const LessonBrowser = ({ onSelectLesson, selectedLesson, refreshKey }: Le
   return (
     <Card className="h-full flex flex-col">
       <CardHeader className="flex-shrink-0">
-        <CardTitle className="text-lg">Parcourir les Leçons</CardTitle>
+        <div className="flex items-center justify-between">
+          <CardTitle className="text-lg">Parcourir les Leçons</CardTitle>
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={loadSubjects}
+            disabled={isLoadingSubjects || isLoading}
+            className="h-8 w-8"
+          >
+            <RefreshCw className={`h-4 w-4 ${(isLoadingSubjects || isLoading) ? 'animate-spin' : ''}`} />
+          </Button>
+        </div>
         
         {/* Grade Level Filter */}
         <div className="mt-4 space-y-2">
