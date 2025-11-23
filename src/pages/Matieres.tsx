@@ -374,12 +374,12 @@ export default function Matieres() {
       </nav>
 
       {/* Hero Header with Eric */}
-      <div className="relative bg-gradient-to-r from-blue-600 to-purple-600 text-primary-foreground pt-32 pb-16 overflow-hidden">
+      <div className="relative text-primary-foreground pt-32 pb-16 overflow-hidden">
         <div 
-          className="absolute inset-0 bg-cover bg-center opacity-20"
+          className="absolute inset-0 bg-cover bg-center"
           style={{ backgroundImage: `url(${edupreneursBg})` }}
         />
-        <div className="absolute inset-0 bg-gradient-to-r from-blue-600/80 to-purple-600/80" />
+        <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-transparent to-black/20" />
         
         <div className="container mx-auto px-4 relative z-10">
           <div className="flex flex-col md:flex-row items-center gap-8">
