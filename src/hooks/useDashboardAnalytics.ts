@@ -53,11 +53,15 @@ export const useDashboardAnalytics = (userId: string | null) => {
       const monthStart = startOfMonth(now);
 
       // Fetch lesson completions
-      const { data: completions } = await supabase
+      const { data: completions, error: completionsError } = await supabase
         .from("lesson_completions")
         .select("*")
         .eq("user_id", userId)
         .order("completed_at", { ascending: false });
+
+      if (completionsError) {
+        console.error("Error fetching lesson completions:", completionsError);
+      }
 
       // Calculate basic stats
       const totalLessonsCompleted = completions?.length || 0;
@@ -94,10 +98,11 @@ export const useDashboardAnalytics = (userId: string | null) => {
         };
       });
 
-      // Subject progress
+      // Subject progress - only show subjects with some progress
       const { data: subjects } = await supabase
         .from("subjects")
-        .select("name, slug, lesson_count");
+        .select("name, slug, lesson_count")
+        .order("name", { ascending: true });
 
       const subjectProgress = subjects?.map((subject) => {
         const lessonsCompleted = completions?.filter(
@@ -112,21 +117,31 @@ export const useDashboardAnalytics = (userId: string | null) => {
           lessonsCompleted,
           totalLessons,
         };
-      }).slice(0, 6) || [];
+      }).filter(s => s.lessonsCompleted > 0 || s.totalLessons > 0) // Only show subjects with activity
+        .slice(0, 6) || [];
 
-      // Study time (mock data for now)
+      // Study time - estimate based on lesson completions if no study sessions
       const { data: studySessions } = await supabase
         .from("study_sessions")
         .select("duration_minutes, started_at")
         .eq("user_id", userId);
 
-      const studyTimeThisWeek = studySessions?.filter(
-        (s) => new Date(s.started_at) >= weekStart
-      ).reduce((sum, s) => sum + s.duration_minutes, 0) || 0;
+      let studyTimeThisWeek = 0;
+      let studyTimeThisMonth = 0;
 
-      const studyTimeThisMonth = studySessions?.filter(
-        (s) => new Date(s.started_at) >= monthStart
-      ).reduce((sum, s) => sum + s.duration_minutes, 0) || 0;
+      if (studySessions && studySessions.length > 0) {
+        studyTimeThisWeek = studySessions.filter(
+          (s) => new Date(s.started_at) >= weekStart
+        ).reduce((sum, s) => sum + s.duration_minutes, 0);
+
+        studyTimeThisMonth = studySessions.filter(
+          (s) => new Date(s.started_at) >= monthStart
+        ).reduce((sum, s) => sum + s.duration_minutes, 0);
+      } else {
+        // Estimate: average 15 minutes per lesson
+        studyTimeThisWeek = weeklyLessons * 15;
+        studyTimeThisMonth = monthlyLessons * 15;
+      }
 
       // Achievements
       const { data: achievements } = await supabase
@@ -136,20 +151,50 @@ export const useDashboardAnalytics = (userId: string | null) => {
         .order("earned_at", { ascending: false })
         .limit(5);
 
-      // Weekly goal
+      // Weekly goal - create default if doesn't exist
       const { data: goals } = await supabase
         .from("user_goals")
         .select("*")
         .eq("user_id", userId)
         .eq("goal_type", "weekly_lessons")
         .gte("end_date", now.toISOString())
+        .order("created_at", { ascending: false })
         .limit(1)
-        .single();
+        .maybeSingle();
+
+      // If no active goal, create a default one
+      if (!goals) {
+        const nextWeek = new Date(weekEnd);
+        nextWeek.setDate(nextWeek.getDate() + 7);
+        
+        await supabase
+          .from("user_goals")
+          .insert({
+            user_id: userId,
+            goal_type: "weekly_lessons",
+            target_value: 10,
+            current_value: weeklyLessons,
+            start_date: weekStart.toISOString(),
+            end_date: nextWeek.toISOString(),
+          });
+      }
 
       const weeklyGoal = {
         target: goals?.target_value || 10,
-        current: goals?.current_value || weeklyLessons,
+        current: weeklyLessons, // Always use actual weekly lessons as current value
       };
+
+      console.log("📊 Dashboard Analytics Loaded:", {
+        totalLessonsCompleted,
+        averageScore: Math.round(averageScore),
+        weeklyLessons,
+        monthlyLessons,
+        streak,
+        studyTimeThisWeek,
+        weeklyGoal,
+        subjectProgressCount: subjectProgress.length,
+        hasCompletions: completions && completions.length > 0,
+      });
 
       setAnalytics({
         totalLessonsCompleted,
@@ -166,7 +211,8 @@ export const useDashboardAnalytics = (userId: string | null) => {
         weeklyGoal,
       });
     } catch (error) {
-      console.error("Error loading analytics:", error);
+      console.error("❌ Error loading analytics:", error);
+      // Set loading to false even on error to show default state
     } finally {
       setIsLoading(false);
     }
