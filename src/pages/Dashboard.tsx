@@ -403,42 +403,93 @@ const Dashboard = () => {
 
         {/* Recent Notes Section */}
         {recentNotes.length > 0 && (
-          <Card className="border-none rounded-[20px] shadow-md mb-8">
-            <CardHeader>
-              <CardTitle className="text-xl flex items-center gap-2">
-                <BookOpen className="text-primary" size={20} />
-                Mes notes récentes
-              </CardTitle>
+          <Card className="border-none rounded-[20px] shadow-md mb-8 overflow-hidden bg-gradient-to-br from-blue-50/50 via-purple-50/30 to-pink-50/50 dark:from-blue-950/20 dark:via-purple-950/10 dark:to-pink-950/20">
+            <CardHeader className="pb-4">
+              <div className="flex items-center justify-between">
+                <CardTitle className="text-xl font-bold flex items-center gap-3">
+                  <div className="p-2 bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl">
+                    <BookOpen className="text-white" size={24} />
+                  </div>
+                  <span>Mes notes récentes</span>
+                </CardTitle>
+                <Button 
+                  variant="ghost" 
+                  size="sm"
+                  onClick={() => navigate("/resources")}
+                  className="text-primary hover:bg-primary/10"
+                >
+                  Voir tout →
+                </Button>
+              </div>
+              <p className="text-sm text-muted-foreground mt-2">
+                Tes dernières prises de notes pendant tes leçons
+              </p>
             </CardHeader>
-            <CardContent className="space-y-3">
-              {recentNotes.map((note) => {
-                const topic = topicInfo[note.lesson_topic];
-                return (
-                  <div
-                    key={note.id}
-                    className="border border-border rounded-2xl p-4 bg-gradient-to-br from-muted/30 to-card hover:-translate-y-1 hover:shadow-md transition-all duration-300 cursor-pointer"
-                    onClick={() => navigate(`/math-lesson/${note.lesson_topic}`)}
-                  >
-                    <div className="flex items-start justify-between gap-3">
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2 mb-1">
-                          <span className="text-xl">{topic?.icon || "📝"}</span>
-                          <h5 className="text-sm font-bold truncate">
-                            {topic?.title || note.lesson_topic}
-                          </h5>
+            <CardContent>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {recentNotes.map((note, index) => {
+                  const topic = topicInfo[note.lesson_topic];
+                  const gradients = [
+                    "from-blue-500/10 to-blue-600/5",
+                    "from-purple-500/10 to-purple-600/5",
+                    "from-pink-500/10 to-pink-600/5",
+                    "from-green-500/10 to-green-600/5",
+                    "from-orange-500/10 to-orange-600/5",
+                  ];
+                  const borderColors = [
+                    "border-blue-500/20",
+                    "border-purple-500/20",
+                    "border-pink-500/20",
+                    "border-green-500/20",
+                    "border-orange-500/20",
+                  ];
+                  
+                  return (
+                    <div
+                      key={note.id}
+                      className={`group relative border ${borderColors[index % borderColors.length]} rounded-2xl p-5 bg-gradient-to-br ${gradients[index % gradients.length]} hover:shadow-xl hover:-translate-y-2 transition-all duration-300 cursor-pointer animate-fade-in overflow-hidden`}
+                      style={{ animationDelay: `${index * 100}ms` }}
+                      onClick={() => navigate(`/math-lesson/${note.lesson_topic}`)}
+                    >
+                      {/* Decorative element */}
+                      <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-white/10 to-transparent rounded-full -mr-16 -mt-16 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                      
+                      <div className="relative">
+                        {/* Icon and Title */}
+                        <div className="flex items-start gap-3 mb-3">
+                          <div className="flex-shrink-0 w-12 h-12 rounded-xl bg-gradient-to-br from-primary/20 to-primary/10 flex items-center justify-center text-2xl group-hover:scale-110 transition-transform duration-300">
+                            {topic?.icon || "📝"}
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <h5 className="text-base font-bold text-foreground mb-1 group-hover:text-primary transition-colors line-clamp-1">
+                              {topic?.title || note.lesson_topic}
+                            </h5>
+                            <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                              <Calendar size={12} />
+                              <span>{formatDate(note.updated_at)}</span>
+                            </div>
+                          </div>
                         </div>
-                        <p className="text-xs text-muted-foreground line-clamp-2">
-                          {note.content.substring(0, 100)}...
+
+                        {/* Note Content */}
+                        <p className="text-sm text-muted-foreground line-clamp-3 leading-relaxed mb-3">
+                          {note.content.substring(0, 120)}...
                         </p>
-                      </div>
-                      <div className="flex items-center gap-1 text-xs text-muted-foreground shrink-0">
-                        <Calendar size={12} />
-                        {formatDate(note.updated_at)}
+
+                        {/* Action Button */}
+                        <div className="flex items-center justify-between">
+                          <div className="px-3 py-1 rounded-full bg-primary/10 text-primary text-xs font-medium">
+                            Mathématiques
+                          </div>
+                          <div className="text-primary text-sm font-medium group-hover:translate-x-1 transition-transform">
+                            Lire →
+                          </div>
+                        </div>
                       </div>
                     </div>
-                  </div>
-                );
-              })}
+                  );
+                })}
+              </div>
             </CardContent>
           </Card>
         )}
