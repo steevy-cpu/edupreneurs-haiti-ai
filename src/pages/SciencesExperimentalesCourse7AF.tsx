@@ -154,31 +154,31 @@ export default function SciencesExpérimentalesCourse7AF() {
     <div className="min-h-screen bg-background">
       {/* Header */}
       <header className="border-b border-border bg-gradient-to-r from-purple-600 to-purple-700 text-primary-foreground shadow-sm sticky top-0 z-50">
-        <div className="container mx-auto px-4 py-4">
+        <div className="container mx-auto px-4 py-3 sm:py-4">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-2 sm:gap-4">
               <Button 
                 variant="ghost" 
                 size="icon"
                 onClick={() => navigate('/matieres')}
                 className="shrink-0 text-primary-foreground hover:bg-primary-foreground/20"
               >
-                <ArrowLeft className="h-5 w-5" />
+                <ArrowLeft className="h-4 w-4 sm:h-5 sm:w-5" />
               </Button>
-              <div className="flex items-center gap-3">
-                <div className="w-12 h-12 rounded-xl bg-white/20 backdrop-blur-sm flex items-center justify-center">
-                  <FlaskConical className="w-6 h-6" />
+              <div className="flex items-center gap-2 sm:gap-3">
+                <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-white/20 backdrop-blur-sm flex items-center justify-center">
+                  <FlaskConical className="w-5 h-5 sm:w-6 sm:h-6" />
                 </div>
                 <div>
-                  <h1 className="text-2xl font-bold">Sciences Expérimentales</h1>
-                  <p className="text-sm text-primary-foreground/80">7ème Année Fondamentale</p>
+                  <h1 className="text-lg sm:text-2xl font-bold">Sciences Expérimentales</h1>
+                  <p className="text-xs sm:text-sm text-primary-foreground/80">7ème Année Fondamentale</p>
                 </div>
               </div>
             </div>
-            <div className="flex items-center gap-2">
-              <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-primary-foreground/10 border border-primary-foreground/20">
-                <Coins className="w-5 h-5 text-primary-foreground" />
-                <span className="font-bold text-primary-foreground">{userGold}</span>
+            <div className="flex items-center gap-1 sm:gap-2">
+              <div className="flex items-center gap-1 sm:gap-2 px-2 sm:px-4 py-1 sm:py-2 rounded-full bg-primary-foreground/10 border border-primary-foreground/20">
+                <Coins className="w-4 h-4 sm:w-5 sm:h-5 text-primary-foreground" />
+                <span className="font-bold text-primary-foreground text-sm sm:text-base">{userGold}</span>
               </div>
               <ThemeToggle />
             </div>
@@ -186,32 +186,32 @@ export default function SciencesExpérimentalesCourse7AF() {
         </div>
       </header>
 
-      <main className="container mx-auto px-4 py-8">
+      <main className="container mx-auto px-4 py-6 sm:py-8">
         {/* Course Overview */}
-        <Card className="mb-8 overflow-hidden border border-border bg-card">
-          <div className="md:flex">
-            <div className="md:w-1/3 bg-gradient-to-br from-purple-600 to-purple-700 p-8 flex items-center justify-center">
-              <img src={ericProfile} alt="Eric enseignant" className="w-full h-auto object-contain rounded-lg" />
+        <Card className="mb-6 sm:mb-8 overflow-hidden border border-border bg-card">
+          <div className="flex flex-col md:flex-row">
+            <div className="md:w-1/3 bg-gradient-to-br from-purple-600 to-purple-700 p-6 sm:p-8 flex items-center justify-center">
+              <img src={ericProfile} alt="Eric enseignant" className="w-full h-auto object-contain rounded-lg max-w-xs" />
             </div>
-            <CardContent className="md:w-2/3 p-6">
-              <h2 className="text-2xl font-bold mb-4 text-foreground">Aperçu du Cours</h2>
-              <p className="text-muted-foreground mb-4">
+            <CardContent className="md:w-2/3 p-4 sm:p-6">
+              <h2 className="text-xl sm:text-2xl font-bold mb-3 sm:mb-4 text-foreground">Aperçu du Cours</h2>
+              <p className="text-sm sm:text-base text-muted-foreground mb-3 sm:mb-4">
                 Bienvenue dans le cours de Sciences Expérimentales pour la 7ème année fondamentale ! 
                 Découvrez le vivant, la terre, l'environnement et les sciences naturelles à travers 
                 des leçons interactives et des expériences fascinantes.
               </p>
               <div className="space-y-2">
                 <div className="flex items-center gap-2">
-                  <BookOpen className="w-5 h-5 text-primary" />
-                  <span className="font-semibold text-foreground">{totalLessons} leçons complètes</span>
+                  <BookOpen className="w-4 h-4 sm:w-5 sm:h-5 text-primary" />
+                  <span className="text-sm sm:text-base font-semibold text-foreground">{totalLessons} leçons complètes</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <Target className="w-5 h-5 text-primary" />
-                  <span className="font-semibold text-foreground">Expériences et activités interactives</span>
+                  <Target className="w-4 h-4 sm:w-5 sm:h-5 text-primary" />
+                  <span className="text-sm sm:text-base font-semibold text-foreground">Expériences et activités interactives</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <CheckCircle2 className="w-5 h-5 text-primary" />
-                  <span className="font-semibold text-foreground">{completedCount} leçons complétées</span>
+                  <CheckCircle2 className="w-4 h-4 sm:w-5 sm:h-5 text-primary" />
+                  <span className="text-sm sm:text-base font-semibold text-foreground">{completedCount} leçons complétées</span>
                 </div>
               </div>
             </CardContent>
@@ -228,7 +228,7 @@ export default function SciencesExpérimentalesCourse7AF() {
           </div>
         ) : (
           <>
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+            <div className="grid gap-4 sm:gap-6 sm:grid-cols-2 lg:grid-cols-3 mb-6 sm:mb-8">
               {lessons.map((lesson, index) => {
                 const isCompleted = completedLessons.includes(lesson.slug);
                 const goldReward = 100 + (index * 10);
@@ -240,26 +240,26 @@ export default function SciencesExpérimentalesCourse7AF() {
                       isCompleted ? 'border-2 border-green-500' : 'hover:scale-105'
                     }`}
                   >
-                    <CardHeader className="bg-muted/50">
+                    <CardHeader className="bg-muted/50 p-4 sm:p-6">
                       <div className="flex items-start justify-between">
-                        <div className="flex items-center gap-3">
-                          <div className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-600 to-purple-700 flex items-center justify-center text-primary-foreground font-bold">
+                        <div className="flex items-center gap-2 sm:gap-3">
+                          <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-gradient-to-br from-purple-600 to-purple-700 flex items-center justify-center text-primary-foreground font-bold text-sm sm:text-base">
                             {index + 1}
                           </div>
                           <div>
-                            <CardTitle className="text-lg text-foreground">{lesson.title}</CardTitle>
-                            <p className="text-sm text-muted-foreground">{lesson.mois || 'Non classé'}</p>
+                            <CardTitle className="text-base sm:text-lg text-foreground line-clamp-2">{lesson.title}</CardTitle>
+                            <p className="text-xs sm:text-sm text-muted-foreground">{lesson.mois || 'Non classé'}</p>
                           </div>
                         </div>
                         {isCompleted && (
-                          <CheckCircle2 className="w-6 h-6 text-green-500 shrink-0" />
+                          <CheckCircle2 className="w-5 h-5 sm:w-6 sm:h-6 text-green-500 shrink-0" />
                         )}
                       </div>
                     </CardHeader>
-                    <CardContent className="pt-6">
-                      <div className="space-y-4">
+                    <CardContent className="pt-4 sm:pt-6 p-4 sm:p-6">
+                      <div className="space-y-3 sm:space-y-4">
                         <div 
-                          className="text-sm text-muted-foreground line-clamp-2"
+                          className="text-xs sm:text-sm text-muted-foreground line-clamp-2"
                           dangerouslySetInnerHTML={{ 
                             __html: DOMPurify.sanitize(lesson.objectif, { 
                               ALLOWED_TAGS: [], 
@@ -283,10 +283,10 @@ export default function SciencesExpérimentalesCourse7AF() {
                           </Badge>
                         </div>
 
-                        <div className="flex items-center justify-between pt-4 border-t border-border">
+                        <div className="flex items-center justify-between pt-3 sm:pt-4 border-t border-border">
                           <div className="flex items-center gap-1 text-accent">
                             <Coins className="w-4 h-4" />
-                            <span className="font-bold">{goldReward}</span>
+                            <span className="font-bold text-sm sm:text-base">{goldReward}</span>
                           </div>
                           <Button 
                             onClick={() => {
@@ -297,6 +297,8 @@ export default function SciencesExpérimentalesCourse7AF() {
                               }
                             }}
                             disabled={!lesson.is_published}
+                            className="text-sm"
+                            size="sm"
                           >
                             {isCompleted ? 'Revoir' : lesson.is_published ? 'Commencer' : 'Bientôt'}
                           </Button>
@@ -310,19 +312,19 @@ export default function SciencesExpérimentalesCourse7AF() {
 
             {/* Progress Summary */}
             <Card className="bg-gradient-to-r from-purple-600 to-purple-700 text-primary-foreground border-0">
-              <CardHeader>
-                <CardTitle className="text-2xl">Ton Progrès</CardTitle>
+              <CardHeader className="p-4 sm:p-6">
+                <CardTitle className="text-xl sm:text-2xl">Ton Progrès</CardTitle>
               </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
+              <CardContent className="p-4 sm:p-6 pt-0">
+                <div className="space-y-3 sm:space-y-4">
                   <div>
-                    <div className="flex justify-between mb-2">
+                    <div className="flex justify-between mb-2 text-sm sm:text-base">
                       <span className="font-semibold">Leçons complétées</span>
                       <span className="font-bold">{completedCount}/{totalLessons}</span>
                     </div>
-                    <Progress value={progressPercentage} className="h-3 bg-primary-foreground/30" />
+                    <Progress value={progressPercentage} className="h-2 sm:h-3 bg-primary-foreground/30" />
                   </div>
-                  <p className="text-sm opacity-90">
+                  <p className="text-xs sm:text-sm opacity-90">
                     Continue comme ça ! Chaque leçon complétée te rapproche de la maîtrise des sciences expérimentales.
                   </p>
                 </div>

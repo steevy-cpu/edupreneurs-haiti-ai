@@ -97,22 +97,23 @@ const CreoleCourseAF8 = () => {
             className="gap-2"
           >
             <ArrowLeft className="h-4 w-4" />
-            Retour aux matières
+            <span className="hidden sm:inline">Retour aux matières</span>
+            <span className="sm:hidden">Retour</span>
           </Button>
           <ThemeToggle />
         </div>
       </nav>
 
       {/* Header */}
-      <div className="container mx-auto px-4 py-8">
-        <div className="text-center mb-12">
-          <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-gradient-to-br from-green-500 to-teal-500 mb-4">
-            <BookOpen className="w-10 h-10 text-white" />
+      <div className="container mx-auto px-4 py-6 sm:py-8">
+        <div className="text-center mb-8 sm:mb-12">
+          <div className="inline-flex items-center justify-center w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-gradient-to-br from-green-500 to-teal-500 mb-4">
+            <BookOpen className="w-8 h-8 sm:w-10 sm:h-10 text-white" />
           </div>
-          <h1 className="text-4xl font-bold mb-4 bg-gradient-to-r from-green-500 to-teal-500 bg-clip-text text-transparent">
+          <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold mb-4 bg-gradient-to-r from-green-500 to-teal-500 bg-clip-text text-transparent px-4">
             Créole - AF8
           </h1>
-          <p className="text-muted-foreground max-w-2xl mx-auto">
+          <p className="text-muted-foreground max-w-2xl mx-auto px-4 text-sm sm:text-base">
             Programme complet de créole haïtien pour la classe de AF8
           </p>
         </div>
@@ -122,22 +123,22 @@ const CreoleCourseAF8 = () => {
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
           </div>
         ) : (
-          <div className="space-y-8">
+          <div className="space-y-6 sm:space-y-8">
             {monthOrder.map((month) => {
               const monthLessons = groupedByMonth[month];
               if (!monthLessons || monthLessons.length === 0) return null;
 
               return (
                 <div key={month} className="space-y-4">
-                  <div className="flex items-center gap-3">
-                    <Calendar className="w-6 h-6 text-primary" />
-                    <h2 className="text-2xl font-bold">{month}</h2>
-                    <span className="text-sm text-muted-foreground">
+                  <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
+                    <Calendar className="w-5 h-5 sm:w-6 sm:h-6 text-primary" />
+                    <h2 className="text-xl sm:text-2xl font-bold">{month}</h2>
+                    <span className="text-xs sm:text-sm text-muted-foreground">
                       {monthLessons.length} leçon{monthLessons.length > 1 ? 's' : ''}
                     </span>
                   </div>
 
-                  <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                  <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
                     {monthLessons.map((lesson) => (
                       <Card
                         key={lesson.id}
@@ -181,12 +182,12 @@ const CreoleCourseAF8 = () => {
         )}
 
         {/* Back Button */}
-        <div className="mt-12 text-center">
+        <div className="mt-8 sm:mt-12 text-center px-4">
           <Button
             onClick={() => navigate("/matieres")}
             variant="outline"
             size="lg"
-            className="gap-2"
+            className="gap-2 w-full sm:w-auto"
           >
             <ArrowLeft className="w-4 h-4" />
             Retour aux matières
