@@ -174,7 +174,7 @@ const HistoireGeographieCourse = () => {
                 className={`transition-all duration-300 hover:shadow-xl border border-border bg-card cursor-pointer ${
                   isCompleted ? 'border-2 border-green-500' : 'hover:scale-105'
                 }`}
-                onClick={() => navigate(`/histoire-geographie-7af-lesson/${lesson.slug}`)}
+                onClick={() => navigate(`/course/histoire-geographie-7af/${lesson.slug}`)}
               >
                 <CardHeader className="bg-muted/50">
                   <div className="flex items-start justify-between">
