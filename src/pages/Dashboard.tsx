@@ -226,7 +226,7 @@ const Dashboard = () => {
   return (
     <Layout>
       <OnboardingTour />
-      <div className="min-h-screen bg-background">
+      <div className="min-h-screen bg-gray-950">
         <div className="container mx-auto px-4 py-6 space-y-8 pb-24">
           {/* Welcome Header */}
           <div data-tour="welcome-header" className="relative bg-gradient-to-r from-teal-500 to-cyan-500 rounded-2xl p-8 overflow-hidden">
@@ -259,18 +259,18 @@ const Dashboard = () => {
 
           {/* Passion Discovery Banner */}
           <Link to="/passion-discovery">
-            <Card className="border-2 border-purple-500/30 hover:border-purple-500/50 transition-all cursor-pointer bg-gradient-to-br from-background to-purple-500/5">
+            <Card className="border-2 border-purple-500/50 hover:border-purple-500/70 transition-all cursor-pointer bg-gray-900/50 backdrop-blur-sm">
               <CardContent className="p-6">
                 <div className="flex items-start gap-4">
                   <div className="text-4xl">🎨</div>
                   <div className="flex-1">
                     <div className="flex items-center gap-2 mb-2">
-                      <h3 className="text-xl font-bold text-foreground">
+                      <h3 className="text-xl font-bold text-white">
                         NOUVEAU: Découvre ta passion & Développement personnel
                       </h3>
                       <span className="px-2 py-1 bg-purple-500 text-white text-xs font-bold rounded">TEST</span>
                     </div>
-                    <p className="text-muted-foreground mb-4">
+                    <p className="text-gray-300 mb-4">
                       Explore la musique, les arts, les échecs, l'éducation civique et le développement personnel avec Eric en IA
                     </p>
                     <button className="px-6 py-2 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-full font-medium hover:opacity-90 transition-opacity">
@@ -323,15 +323,15 @@ const Dashboard = () => {
           {/* Analytics Widgets */}
           <div data-tour="analytics-widgets" className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {/* Learning Streak */}
-            <Card className="bg-gradient-to-br from-orange-50 to-orange-100 dark:from-orange-950/30 dark:to-orange-900/20 border-orange-200 dark:border-orange-800/50">
+            <Card className="bg-gray-800/50 border-gray-700/50 backdrop-blur-sm">
               <CardContent className="p-6">
                 <div className="flex items-center gap-4 mb-3">
                   <div className="p-3 bg-orange-500/20 rounded-full">
                     <Flame className="w-8 h-8 text-orange-500" />
                   </div>
                   <div>
-                    <p className="text-sm text-muted-foreground">Série d'apprentissage</p>
-                    <p className="text-3xl font-bold text-foreground">
+                    <p className="text-sm text-gray-400">Série d'apprentissage</p>
+                    <p className="text-3xl font-bold text-white">
                       {analytics.streak} {analytics.streak === 1 ? "jour" : "jours"}
                     </p>
                   </div>
@@ -340,39 +340,39 @@ const Dashboard = () => {
             </Card>
 
             {/* Weekly Goal */}
-            <Card className="bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-950/30 dark:to-blue-900/20 border-blue-200 dark:border-blue-800/50">
+            <Card className="bg-gray-800/50 border-gray-700/50 backdrop-blur-sm">
               <CardContent className="p-6">
                 <div className="flex items-center gap-4 mb-3">
                   <div className="p-3 bg-blue-500/20 rounded-full">
                     <Target className="w-8 h-8 text-blue-500" />
                   </div>
                   <div className="flex-1">
-                    <p className="text-sm text-muted-foreground">Objectif Hebdomadaire</p>
-                    <p className="text-2xl font-bold text-foreground">
+                    <p className="text-sm text-gray-400">Objectif Hebdomadaire</p>
+                    <p className="text-2xl font-bold text-white">
                       {analytics.weeklyGoal.current} / {analytics.weeklyGoal.target} leçons
                     </p>
                   </div>
                 </div>
                 <Progress 
                   value={Math.min((analytics.weeklyGoal.current / analytics.weeklyGoal.target) * 100, 100)} 
-                  className="h-2" 
+                  className="h-2 bg-gray-700" 
                 />
               </CardContent>
             </Card>
 
             {/* Study Time */}
-            <Card className="bg-gradient-to-br from-purple-50 to-purple-100 dark:from-purple-950/30 dark:to-purple-900/20 border-purple-200 dark:border-purple-800/50">
+            <Card className="bg-gray-800/50 border-gray-700/50 backdrop-blur-sm">
               <CardContent className="p-6">
                 <div className="flex items-center gap-4">
                   <div className="p-3 bg-purple-500/20 rounded-full">
                     <Clock className="w-8 h-8 text-purple-500" />
                   </div>
                   <div>
-                    <p className="text-sm text-muted-foreground">Temps d'étude</p>
-                    <p className="text-3xl font-bold text-foreground">
+                    <p className="text-sm text-gray-400">Temps d'étude</p>
+                    <p className="text-3xl font-bold text-white">
                       {Math.floor(analytics.studyTimeThisWeek / 60)}h {analytics.studyTimeThisWeek % 60}min
                     </p>
-                    <p className="text-xs text-muted-foreground">Cette semaine</p>
+                    <p className="text-xs text-gray-400">Cette semaine</p>
                   </div>
                 </div>
               </CardContent>
@@ -381,47 +381,47 @@ const Dashboard = () => {
 
           {/* KPI Cards */}
           <div data-tour="kpi-cards" className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            <Card className="bg-card border-border hover:shadow-lg transition-shadow">
+            <Card className="bg-gray-900/50 border-gray-800/50 hover:bg-gray-900/70 transition-all backdrop-blur-sm">
               <CardContent className="p-6 text-center">
                 <div className="w-16 h-16 mx-auto mb-4 bg-orange-500 rounded-2xl flex items-center justify-center">
                   <Trophy className="w-8 h-8 text-white" />
                 </div>
-                <p className="text-4xl font-bold text-foreground mb-1">{goldEarned}</p>
-                <p className="text-sm text-muted-foreground">Golds gagnés</p>
-                <p className="text-xs text-muted-foreground">+0 cette semaine</p>
+                <p className="text-4xl font-bold text-white mb-1">{goldEarned}</p>
+                <p className="text-sm text-gray-400">Golds gagnés</p>
+                <p className="text-xs text-gray-500">+0 cette semaine</p>
               </CardContent>
             </Card>
 
-            <Card className="bg-card border-border hover:shadow-lg transition-shadow">
+            <Card className="bg-gray-900/50 border-gray-800/50 hover:bg-gray-900/70 transition-all backdrop-blur-sm">
               <CardContent className="p-6 text-center">
                 <div className="w-16 h-16 mx-auto mb-4 bg-blue-500 rounded-2xl flex items-center justify-center">
                   <BookOpen className="w-8 h-8 text-white" />
                 </div>
-                <p className="text-4xl font-bold text-foreground mb-1">{analytics.totalLessonsCompleted}</p>
-                <p className="text-sm text-muted-foreground">Leçons complétées</p>
-                <p className="text-xs text-muted-foreground">0 cette semaine</p>
+                <p className="text-4xl font-bold text-white mb-1">{analytics.totalLessonsCompleted}</p>
+                <p className="text-sm text-gray-400">Leçons complétées</p>
+                <p className="text-xs text-gray-500">0 cette semaine</p>
               </CardContent>
             </Card>
 
-            <Card className="bg-card border-border hover:shadow-lg transition-shadow">
+            <Card className="bg-gray-900/50 border-gray-800/50 hover:bg-gray-900/70 transition-all backdrop-blur-sm">
               <CardContent className="p-6 text-center">
                 <div className="w-16 h-16 mx-auto mb-4 bg-green-500 rounded-2xl flex items-center justify-center">
                   <Award className="w-8 h-8 text-white" />
                 </div>
-                <p className="text-4xl font-bold text-foreground mb-1">{analytics.averageScore}%</p>
-                <p className="text-sm text-muted-foreground">Score moyen</p>
-                <p className="text-xs text-muted-foreground">Continue! 💪</p>
+                <p className="text-4xl font-bold text-white mb-1">{analytics.averageScore}%</p>
+                <p className="text-sm text-gray-400">Score moyen</p>
+                <p className="text-xs text-gray-500">Continue! 💪</p>
               </CardContent>
             </Card>
 
-            <Card className="bg-card border-border hover:shadow-lg transition-shadow">
+            <Card className="bg-gray-900/50 border-gray-800/50 hover:bg-gray-900/70 transition-all backdrop-blur-sm">
               <CardContent className="p-6 text-center">
                 <div className="w-16 h-16 mx-auto mb-4 bg-purple-500 rounded-2xl flex items-center justify-center">
                   <Clock className="w-8 h-8 text-white" />
                 </div>
-                <p className="text-4xl font-bold text-foreground mb-1">{Math.round(analytics.studyTimeThisWeek / 60)}h</p>
-                <p className="text-sm text-muted-foreground">Temps d'étude</p>
-                <p className="text-xs text-muted-foreground">Cette semaine</p>
+                <p className="text-4xl font-bold text-white mb-1">{Math.round(analytics.studyTimeThisWeek / 60)}h</p>
+                <p className="text-sm text-gray-400">Temps d'étude</p>
+                <p className="text-xs text-gray-500">Cette semaine</p>
               </CardContent>
             </Card>
           </div>
@@ -433,9 +433,9 @@ const Dashboard = () => {
           </div>
 
           {/* Leaderboard Section */}
-          <Card data-tour="leaderboard-section" className="bg-gradient-to-br from-yellow-500/5 to-orange-500/5 border-yellow-500/20">
+          <Card data-tour="leaderboard-section" className="bg-gray-900/50 border-gray-800/50 backdrop-blur-sm">
             <CardHeader>
-              <CardTitle className="flex items-center gap-2">
+              <CardTitle className="flex items-center gap-2 text-white">
                 <Trophy className="w-6 h-6 text-yellow-500" />
                 Classement
               </CardTitle>
@@ -481,33 +481,33 @@ const Dashboard = () => {
           </Card>
 
           {/* Choose Your Path Section */}
-          <Card data-tour="parcours-section" className="bg-gradient-to-br from-primary/5 to-secondary/5">
+          <Card data-tour="parcours-section" className="bg-gray-900/50 border-gray-800/50 backdrop-blur-sm">
             <CardHeader>
-              <CardTitle className="flex items-center gap-2">
+              <CardTitle className="flex items-center gap-2 text-white">
                 <GraduationCap className="w-6 h-6" />
                 Choisissez votre parcours
               </CardTitle>
             </CardHeader>
             <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <Card className="border-2 border-primary/20 hover:border-primary/40 transition-all cursor-pointer" onClick={() => navigate("/matieres")}>
+              <Card className="border-2 border-primary/20 hover:border-primary/40 transition-all cursor-pointer bg-gray-800/50" onClick={() => navigate("/matieres")}>
                 <CardContent className="p-6 text-center">
                   <div className="w-16 h-16 mx-auto mb-4 bg-gradient-to-br from-primary to-secondary rounded-full flex items-center justify-center">
                     <BookOpen className="w-8 h-8 text-white" />
                   </div>
-                  <h3 className="text-xl font-bold text-foreground mb-2">Programme complet</h3>
-                  <p className="text-sm text-muted-foreground">
+                  <h3 className="text-xl font-bold text-white mb-2">Programme complet</h3>
+                  <p className="text-sm text-gray-400">
                     Explorez toutes les matières et leçons disponibles
                   </p>
                 </CardContent>
               </Card>
 
-              <Card className="border-2 border-secondary/20 hover:border-secondary/40 transition-all cursor-pointer" onClick={() => navigate("/resources")}>
+              <Card className="border-2 border-secondary/20 hover:border-secondary/40 transition-all cursor-pointer bg-gray-800/50" onClick={() => navigate("/resources")}>
                 <CardContent className="p-6 text-center">
                   <div className="w-16 h-16 mx-auto mb-4 bg-gradient-to-br from-secondary to-accent rounded-full flex items-center justify-center">
                     <Brain className="w-8 h-8 text-white" />
                   </div>
-                  <h3 className="text-xl font-bold text-foreground mb-2">Révisions</h3>
-                  <p className="text-sm text-muted-foreground">
+                  <h3 className="text-xl font-bold text-white mb-2">Révisions</h3>
+                  <p className="text-sm text-gray-400">
                     Révisez vos leçons et préparez vos examens
                   </p>
                 </CardContent>
@@ -517,9 +517,9 @@ const Dashboard = () => {
 
           {/* Recent Notes */}
           {recentNotes.length > 0 && (
-            <Card>
+            <Card className="bg-gray-900/50 border-gray-800/50 backdrop-blur-sm">
               <CardHeader>
-                <CardTitle className="flex items-center gap-2">
+                <CardTitle className="flex items-center gap-2 text-white">
                   <FileText className="w-6 h-6" />
                   Notes récentes
                 </CardTitle>
@@ -549,9 +549,9 @@ const Dashboard = () => {
           )}
 
           {/* Subjects */}
-          <Card>
+          <Card className="bg-gray-900/50 border-gray-800/50 backdrop-blur-sm">
             <CardHeader>
-              <CardTitle className="flex items-center gap-2">
+              <CardTitle className="flex items-center gap-2 text-white">
                 <Star className="w-6 h-6" />
                 Matières
               </CardTitle>
