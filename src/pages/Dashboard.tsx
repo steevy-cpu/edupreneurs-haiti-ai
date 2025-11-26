@@ -5,18 +5,30 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
   Coins,
   ChartLine,
   CreditCard,
   UserCheck,
   BookOpen,
-  Calendar
+  Calendar,
+  Trophy,
+  Award,
+  Target
 } from "lucide-react";
 import ericThumbsUp from "@/assets/eric-main01.png";
 import { NotificationPermissionBanner } from "@/components/NotificationPermissionBanner";
 import { PWAInstallPrompt } from "@/components/PWAInstallPrompt";
 import { usePWAInstall } from "@/hooks/usePWAInstall";
+import { useDashboardAnalytics } from "@/hooks/useDashboardAnalytics";
+import { LearningStreakWidget } from "@/components/dashboard/LearningStreakWidget";
+import { WeeklyGoalWidget } from "@/components/dashboard/WeeklyGoalWidget";
+import { StudyTimeWidget } from "@/components/dashboard/StudyTimeWidget";
+import { WeeklyActivityChart } from "@/components/dashboard/WeeklyActivityChart";
+import { SubjectProgressChart } from "@/components/dashboard/SubjectProgressChart";
+import { LearningInsightsPanel } from "@/components/dashboard/LearningInsightsPanel";
+import { AchievementsBadges } from "@/components/dashboard/AchievementsBadges";
 
 interface Note {
   id: string;
@@ -43,6 +55,9 @@ const Dashboard = () => {
   
   // PWA Install hook
   const { showPrompt, isIOS, installApp, dismissPrompt } = usePWAInstall();
+  
+  // Analytics hook
+  const { analytics, isLoading: analyticsLoading } = useDashboardAnalytics(currentUserId || null);
 
   useEffect(() => {
     fetchUserData();
@@ -231,56 +246,116 @@ const Dashboard = () => {
           </CardContent>
         </Card>
 
-        {/* KPI Cards */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-1.5 xs:gap-2 sm:gap-3 lg:gap-5 mb-3 xs:mb-4 sm:mb-6 lg:mb-8" data-tour="stats-section">
-          <Card className="border-none rounded-lg xs:rounded-xl sm:rounded-2xl lg:rounded-[20px] shadow-md hover:shadow-lg hover:-translate-y-0.5 sm:hover:-translate-y-1 lg:hover:-translate-y-2 transition-all duration-300 relative overflow-hidden group">
-            <CardContent className="p-2 xs:p-3 sm:p-5 lg:p-7 text-center">
-              <div className="w-7 h-7 xs:w-8 xs:h-8 sm:w-10 sm:h-10 lg:w-14 lg:h-14 rounded-md xs:rounded-lg sm:rounded-xl lg:rounded-2xl bg-gradient-to-br from-[hsl(var(--accent))] to-[hsl(25_100%_50%)] flex items-center justify-center text-white text-sm xs:text-base sm:text-xl lg:text-2xl mx-auto mb-1 xs:mb-1.5 sm:mb-2 lg:mb-4">
-                <Coins className="w-3.5 h-3.5 xs:w-4 xs:h-4 sm:w-5 sm:h-5 lg:w-6 lg:h-6" />
-              </div>
-              <div className="text-base xs:text-xl sm:text-2xl lg:text-3xl font-extrabold bg-gradient-to-br from-[hsl(var(--primary))] to-[hsl(var(--success))] bg-clip-text text-transparent mb-0.5 xs:mb-0.5 sm:mb-1 lg:mb-2 truncate">
-                {goldEarned}
-              </div>
-              <div className="text-[9px] xs:text-[10px] sm:text-xs lg:text-sm font-semibold text-muted-foreground leading-tight">Golds gagnés</div>
-            </CardContent>
-          </Card>
+        {/* Analytics Header Section */}
+        {analyticsLoading ? (
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+            <Skeleton className="h-32 rounded-xl" />
+            <Skeleton className="h-32 rounded-xl" />
+            <Skeleton className="h-32 rounded-xl" />
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+            <LearningStreakWidget streak={analytics.streak} />
+            <WeeklyGoalWidget current={analytics.weeklyGoal.current} target={analytics.weeklyGoal.target} />
+            <StudyTimeWidget weeklyMinutes={analytics.studyTimeThisWeek} monthlyMinutes={analytics.studyTimeThisMonth} />
+          </div>
+        )}
 
-          <Card className="border-none rounded-xl sm:rounded-2xl lg:rounded-[20px] shadow-md hover:shadow-lg hover:-translate-y-1 sm:hover:-translate-y-2 transition-all duration-300 relative overflow-hidden group">
-            <CardContent className="p-3 sm:p-5 lg:p-7 text-center">
-              <div className="w-8 h-8 sm:w-10 sm:h-10 lg:w-14 lg:h-14 rounded-lg sm:rounded-xl lg:rounded-2xl bg-gradient-to-br from-[hsl(var(--primary))] to-[hsl(var(--success))] flex items-center justify-center text-white text-base sm:text-xl lg:text-2xl mx-auto mb-1.5 sm:mb-2 lg:mb-4">
-                <UserCheck className="w-4 h-4 sm:w-5 sm:h-5 lg:w-6 lg:h-6" />
-              </div>
-              <div className="text-xl sm:text-2xl lg:text-3xl font-extrabold bg-gradient-to-br from-[hsl(var(--primary))] to-[hsl(var(--success))] bg-clip-text text-transparent mb-0.5 sm:mb-1 lg:mb-2">
-                {userData.affiliations}
-              </div>
-              <div className="text-[10px] sm:text-xs lg:text-sm font-semibold text-muted-foreground">Affiliations</div>
-            </CardContent>
-          </Card>
+        {/* Enhanced KPI Cards */}
+        {analyticsLoading ? (
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+            <Skeleton className="h-32 rounded-xl" />
+            <Skeleton className="h-32 rounded-xl" />
+            <Skeleton className="h-32 rounded-xl" />
+            <Skeleton className="h-32 rounded-xl" />
+          </div>
+        ) : (
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6" data-tour="stats-section">
+            <Card className="border-none rounded-xl shadow-md hover:shadow-lg hover:-translate-y-1 transition-all duration-300">
+              <CardContent className="p-4 sm:p-6 text-center">
+                <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-yellow-400 to-orange-500 flex items-center justify-center text-white mx-auto mb-3">
+                  <Trophy className="w-6 h-6" />
+                </div>
+                <div className="text-2xl sm:text-3xl font-extrabold bg-gradient-to-br from-yellow-500 to-orange-600 bg-clip-text text-transparent mb-1">
+                  {goldEarned}
+                </div>
+                <div className="text-xs font-semibold text-muted-foreground mb-1">Golds gagnés</div>
+                <p className="text-xs text-muted-foreground">
+                  +{analytics.weeklyLessons * 10} cette semaine
+                </p>
+              </CardContent>
+            </Card>
 
-          <Card className="border-none rounded-xl sm:rounded-2xl lg:rounded-[20px] shadow-md hover:shadow-lg hover:-translate-y-1 sm:hover:-translate-y-2 transition-all duration-300 relative overflow-hidden group">
-            <CardContent className="p-3 sm:p-5 lg:p-7 text-center">
-              <div className="w-8 h-8 sm:w-10 sm:h-10 lg:w-14 lg:h-14 rounded-lg sm:rounded-xl lg:rounded-2xl bg-gradient-to-br from-[hsl(var(--success))] to-[hsl(160_84%_32%)] flex items-center justify-center text-white text-base sm:text-xl lg:text-2xl mx-auto mb-1.5 sm:mb-2 lg:mb-4">
-                <ChartLine className="w-4 h-4 sm:w-5 sm:h-5 lg:w-6 lg:h-6" />
-              </div>
-              <div className="text-xl sm:text-2xl lg:text-3xl font-extrabold bg-gradient-to-br from-[hsl(var(--primary))] to-[hsl(var(--success))] bg-clip-text text-transparent mb-0.5 sm:mb-1 lg:mb-2">
-                {userData.progress}%
-              </div>
-              <div className="text-[10px] sm:text-xs lg:text-sm font-semibold text-muted-foreground">Progression</div>
-            </CardContent>
-          </Card>
+            <Card className="border-none rounded-xl shadow-md hover:shadow-lg hover:-translate-y-1 transition-all duration-300">
+              <CardContent className="p-4 sm:p-6 text-center">
+                <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center text-white mx-auto mb-3">
+                  <BookOpen className="w-6 h-6" />
+                </div>
+                <div className="text-2xl sm:text-3xl font-extrabold bg-gradient-to-br from-blue-500 to-blue-700 bg-clip-text text-transparent mb-1">
+                  {analytics.totalLessonsCompleted}
+                </div>
+                <div className="text-xs font-semibold text-muted-foreground mb-1">Leçons complétées</div>
+                <p className="text-xs text-muted-foreground">
+                  {analytics.weeklyLessons} cette semaine
+                </p>
+              </CardContent>
+            </Card>
 
-          <Card className="border-none rounded-xl sm:rounded-2xl lg:rounded-[20px] shadow-md hover:shadow-lg hover:-translate-y-1 sm:hover:-translate-y-2 transition-all duration-300 relative overflow-hidden group">
-            <CardContent className="p-3 sm:p-5 lg:p-7 text-center">
-              <div className="w-8 h-8 sm:w-10 sm:h-10 lg:w-14 lg:h-14 rounded-lg sm:rounded-xl lg:rounded-2xl bg-gradient-to-br from-[hsl(262_83%_58%)] to-[hsl(262_83%_50%)] flex items-center justify-center text-white text-base sm:text-xl lg:text-2xl mx-auto mb-1.5 sm:mb-2 lg:mb-4">
-                <CreditCard className="w-4 h-4 sm:w-5 sm:h-5 lg:w-6 lg:h-6" />
-              </div>
-              <div className="text-base sm:text-xl lg:text-2xl xl:text-3xl font-extrabold bg-gradient-to-br from-[hsl(var(--primary))] to-[hsl(var(--success))] bg-clip-text text-transparent mb-0.5 sm:mb-1 lg:mb-2">
-                200 HTG
-              </div>
-              <div className="text-[10px] sm:text-xs lg:text-sm font-semibold text-muted-foreground">Abonnement / mois</div>
-            </CardContent>
-          </Card>
-        </div>
+            <Card className="border-none rounded-xl shadow-md hover:shadow-lg hover:-translate-y-1 transition-all duration-300">
+              <CardContent className="p-4 sm:p-6 text-center">
+                <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-green-400 to-green-600 flex items-center justify-center text-white mx-auto mb-3">
+                  <Award className="w-6 h-6" />
+                </div>
+                <div className="text-2xl sm:text-3xl font-extrabold bg-gradient-to-br from-green-500 to-green-700 bg-clip-text text-transparent mb-1">
+                  {analytics.averageScore}%
+                </div>
+                <div className="text-xs font-semibold text-muted-foreground mb-1">Score moyen</div>
+                <p className="text-xs text-muted-foreground">
+                  {analytics.averageScore >= 80 ? "Excellent! 🎯" : "Continue! 💪"}
+                </p>
+              </CardContent>
+            </Card>
+
+            <Card className="border-none rounded-xl shadow-md hover:shadow-lg hover:-translate-y-1 transition-all duration-300">
+              <CardContent className="p-4 sm:p-6 text-center">
+                <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-purple-400 to-purple-600 flex items-center justify-center text-white mx-auto mb-3">
+                  <Target className="w-6 h-6" />
+                </div>
+                <div className="text-2xl sm:text-3xl font-extrabold bg-gradient-to-br from-purple-500 to-purple-700 bg-clip-text text-transparent mb-1">
+                  {Math.floor(analytics.studyTimeThisWeek / 60)}h
+                </div>
+                <div className="text-xs font-semibold text-muted-foreground mb-1">Temps d'étude</div>
+                <p className="text-xs text-muted-foreground">
+                  Cette semaine
+                </p>
+              </CardContent>
+            </Card>
+          </div>
+        )}
+
+        {/* Charts Section */}
+        {analyticsLoading ? (
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+            <Skeleton className="h-80 rounded-xl" />
+            <Skeleton className="h-80 rounded-xl" />
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+            <WeeklyActivityChart data={analytics.weeklyActivity} />
+            <SubjectProgressChart data={analytics.subjectProgress} />
+          </div>
+        )}
+
+        {/* Learning Insights & Achievements */}
+        {!analyticsLoading && (
+          <div className="space-y-6 mb-8">
+            <LearningInsightsPanel analytics={analytics} />
+            <AchievementsBadges 
+              achievements={analytics.achievements} 
+              totalLessons={analytics.totalLessonsCompleted}
+            />
+          </div>
+        )}
 
         {/* Parcours */}
         <Card className="border-none rounded-[20px] shadow-md mb-8">
