@@ -6,9 +6,10 @@ import { Card } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Skeleton } from '@/components/ui/skeleton';
 import { toast } from 'sonner';
-import { User, UserPlus, UserCheck, Clock, ArrowLeft, BadgeCheck, MessageCircle } from 'lucide-react';
+import { User, UserPlus, UserCheck, Clock, ArrowLeft, BadgeCheck, MessageCircle, Flame, Trophy } from 'lucide-react';
 import { getAvatarUrl } from '@/lib/avatarMap';
 import { ThemeToggle } from '@/components/ThemeToggle';
+import { useProfileAnalytics } from '@/hooks/useProfileAnalytics';
 
 interface Profile {
   id: string;
@@ -43,6 +44,9 @@ export default function Profile() {
   const [loading, setLoading] = useState(true);
   const [followersCount, setFollowersCount] = useState(0);
   const [followingCount, setFollowingCount] = useState(0);
+  
+  // Fetch profile analytics for streak and achievements
+  const { analytics, isLoading: analyticsLoading } = useProfileAnalytics(userId || null);
 
   useEffect(() => {
     checkAuth();
@@ -413,6 +417,93 @@ export default function Profile() {
               </Button>
             )}
           </div>
+
+          {/* Learning Streak Section */}
+          {!profile.is_system_account && !analyticsLoading && (
+            <div className="mt-6 pt-6 border-t">
+              <h3 className="font-semibold mb-4 flex items-center gap-2">
+                <Flame className="w-5 h-5 text-orange-500" />
+                Série d'apprentissage
+              </h3>
+              <div className="bg-gradient-to-br from-orange-500/10 to-red-500/10 border border-orange-500/20 rounded-xl p-4">
+                <div className="flex items-center gap-4">
+                  <div className="p-3 bg-orange-500/20 rounded-full">
+                    <Flame className="w-8 h-8 text-orange-500" />
+                  </div>
+                  <div>
+                    <p className="text-3xl font-bold text-foreground">
+                      {analytics.streak} {analytics.streak === 1 ? "jour" : "jours"}
+                    </p>
+                    <p className="text-sm text-muted-foreground">
+                      {analytics.streak === 0 
+                        ? "Commence une leçon pour démarrer ta série!" 
+                        : analytics.streak >= 7 
+                        ? "Incroyable série! Continue comme ça! 🔥" 
+                        : "Continue ta série d'apprentissage!"}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Achievements/Badges Section */}
+          {!profile.is_system_account && !analyticsLoading && (
+            <div className="mt-6 pt-6 border-t">
+              <h3 className="font-semibold mb-4 flex items-center gap-2">
+                <Trophy className="w-5 h-5 text-yellow-500" />
+                Badges & Réalisations
+              </h3>
+              <div className="grid grid-cols-2 gap-3">
+                {[
+                  { 
+                    name: "Première Leçon", 
+                    icon: "⭐", 
+                    earned: analytics.totalLessonsCompleted >= 1,
+                    description: "Complète ta première leçon"
+                  },
+                  { 
+                    name: "Apprenant Assidu", 
+                    icon: "🎯", 
+                    earned: analytics.totalLessonsCompleted >= 10,
+                    description: "Complète 10 leçons"
+                  },
+                  { 
+                    name: "Maître", 
+                    icon: "🏆", 
+                    earned: analytics.totalLessonsCompleted >= 50,
+                    description: "Complète 50 leçons"
+                  },
+                  { 
+                    name: "Éclair", 
+                    icon: "⚡", 
+                    earned: analytics.totalLessonsCompleted >= 100,
+                    description: "Complète 100 leçons"
+                  },
+                ].map((achievement, index) => (
+                  <div 
+                    key={index}
+                    className={`flex flex-col items-center p-3 rounded-lg border transition-all ${
+                      achievement.earned 
+                        ? "bg-primary/10 border-primary/20 shadow-sm" 
+                        : "bg-muted/50 border-muted opacity-50"
+                    }`}
+                  >
+                    <div className="text-3xl mb-2">{achievement.icon}</div>
+                    <p className="text-xs font-medium text-center mb-1">{achievement.name}</p>
+                    <p className="text-xs text-muted-foreground text-center">
+                      {achievement.description}
+                    </p>
+                    {achievement.earned && (
+                      <div className="mt-2 px-2 py-1 bg-primary/20 text-primary text-xs rounded-full">
+                        ✓ Débloqué
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
 
           <div className="mt-8 space-y-4">
             {profile.bio && (
