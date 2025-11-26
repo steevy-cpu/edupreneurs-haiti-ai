@@ -14,6 +14,39 @@ export type Database = {
   }
   public: {
     Tables: {
+      achievements: {
+        Row: {
+          achievement_name: string
+          achievement_type: string
+          description: string | null
+          earned_at: string
+          icon: string | null
+          id: string
+          points_awarded: number
+          user_id: string
+        }
+        Insert: {
+          achievement_name: string
+          achievement_type: string
+          description?: string | null
+          earned_at?: string
+          icon?: string | null
+          id?: string
+          points_awarded?: number
+          user_id: string
+        }
+        Update: {
+          achievement_name?: string
+          achievement_type?: string
+          description?: string | null
+          earned_at?: string
+          icon?: string | null
+          id?: string
+          points_awarded?: number
+          user_id?: string
+        }
+        Relationships: []
+      }
       ai_generation_logs: {
         Row: {
           additional_context: string | null
@@ -1233,6 +1266,39 @@ export type Database = {
         }
         Relationships: []
       }
+      study_sessions: {
+        Row: {
+          created_at: string
+          duration_minutes: number
+          ended_at: string | null
+          id: string
+          lesson_slug: string | null
+          started_at: string
+          subject_slug: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          duration_minutes?: number
+          ended_at?: string | null
+          id?: string
+          lesson_slug?: string | null
+          started_at?: string
+          subject_slug: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          duration_minutes?: number
+          ended_at?: string | null
+          id?: string
+          lesson_slug?: string | null
+          started_at?: string
+          subject_slug?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       subjects: {
         Row: {
           color: string | null
@@ -1278,6 +1344,45 @@ export type Database = {
           series?: string | null
           slug?: string
           updated_at?: string
+        }
+        Relationships: []
+      }
+      user_goals: {
+        Row: {
+          completed: boolean
+          created_at: string
+          current_value: number
+          end_date: string | null
+          goal_type: string
+          id: string
+          start_date: string
+          target_value: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          completed?: boolean
+          created_at?: string
+          current_value?: number
+          end_date?: string | null
+          goal_type: string
+          id?: string
+          start_date?: string
+          target_value: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          completed?: boolean
+          created_at?: string
+          current_value?: number
+          end_date?: string | null
+          goal_type?: string
+          id?: string
+          start_date?: string
+          target_value?: number
+          updated_at?: string
+          user_id?: string
         }
         Relationships: []
       }
