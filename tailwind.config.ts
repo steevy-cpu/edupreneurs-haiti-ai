@@ -149,7 +149,7 @@ export default {
         "accordion-up": "accordion-up 0.2s ease-out",
         "slide-in-right": "slide-in-right 0.3s ease-out",
         "slide-in-up": "slide-in-up 0.4s ease-out",
-        float: "float 6s ease-in-out infinite",
+        float: "float 15s ease-in-out infinite",
         "fade-in": "fade-in 0.5s ease-out",
         shimmer: "shimmer 2s linear infinite",
       },
