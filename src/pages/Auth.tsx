@@ -709,7 +709,7 @@ export default function Auth() {
                   <h1 className="text-3xl md:text-4xl font-bold mb-3 bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
                     Bienvenue sur EDUPRENEURS
                   </h1>
-                  <p className="text-muted-foreground text-base leading-relaxed">
+                  <p className="text-foreground/80 text-base leading-relaxed font-medium">
                     Plateforme d'apprentissage personnalisé alignée au programme du MENFP, avec assistance IA et suivi de progression.
                   </p>
                 </div>
@@ -733,7 +733,7 @@ export default function Auth() {
                     </div>
                     <div>
                       <h3 className="font-semibold text-foreground mb-1">Contenu riche et interactif</h3>
-                      <p className="text-sm text-muted-foreground">Leçons détaillées, schémas explicatifs et exercices pratiques</p>
+                      <p className="text-sm text-foreground/70 font-medium">Leçons détaillées, schémas explicatifs et exercices pratiques</p>
                     </div>
                   </div>
                   
@@ -743,7 +743,7 @@ export default function Auth() {
                     </div>
                     <div>
                       <h3 className="font-semibold text-foreground mb-1">Quiz et récompenses</h3>
-                      <p className="text-sm text-muted-foreground">Testez vos connaissances et gagnez des golds à chaque réussite</p>
+                      <p className="text-sm text-foreground/70 font-medium">Testez vos connaissances et gagnez des golds à chaque réussite</p>
                     </div>
                   </div>
                   
@@ -753,7 +753,7 @@ export default function Auth() {
                     </div>
                     <div>
                       <h3 className="font-semibold text-foreground mb-1">Paiement flexible</h3>
-                      <p className="text-sm text-muted-foreground">MonCash, NatCash - Environ 200 HTG/mois après l'essai</p>
+                      <p className="text-sm text-foreground/70 font-medium">MonCash, NatCash - Environ 200 HTG/mois après l'essai</p>
                     </div>
                   </div>
                 </div>
