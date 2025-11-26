@@ -116,36 +116,36 @@ export default function DynamicCoursePage() {
       <div className="sticky top-0 z-50 bg-background/80 backdrop-blur-sm border-b">
         <div className="container mx-auto px-4 py-3 flex items-center justify-between">
           <Button variant="ghost" onClick={() => navigate('/matieres')} className="gap-2">
-            <ChevronLeft className="h-5 w-5" />
-            Retour
+            <ChevronLeft className="h-4 w-4 sm:h-5 sm:w-5" />
+            <span className="hidden sm:inline">Retour</span>
           </Button>
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 sm:gap-3">
             <MusicSelector />
             <ThemeToggle />
           </div>
         </div>
       </div>
 
-      <div className="container mx-auto px-4 py-8 max-w-6xl">
+      <div className="container mx-auto px-4 py-6 sm:py-8 max-w-6xl">
         {/* Header */}
-        <div className="flex flex-col md:flex-row gap-8 mb-12">
+        <div className="flex flex-col md:flex-row gap-6 sm:gap-8 mb-8 sm:mb-12">
           <div className="flex-1">
-            <h1 className="text-4xl md:text-5xl font-bold mb-4">
+            <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold mb-3 sm:mb-4">
               {subject.name}
             </h1>
-            <p className="text-lg text-muted-foreground mb-6">
+            <p className="text-base sm:text-lg text-muted-foreground mb-4 sm:mb-6">
               {subject.description || `Cours de ${subject.name}`}
             </p>
-            <div className="flex gap-3 flex-wrap">
-              <Badge variant="secondary" className="text-sm px-4 py-2">
+            <div className="flex gap-2 sm:gap-3 flex-wrap">
+              <Badge variant="secondary" className="text-xs sm:text-sm px-3 sm:px-4 py-1 sm:py-2">
                 {subject.grade_level}
               </Badge>
-              <Badge variant="secondary" className="text-sm px-4 py-2">
+              <Badge variant="secondary" className="text-xs sm:text-sm px-3 sm:px-4 py-1 sm:py-2">
                 {lessons.length} {lessons.length === 1 ? 'leçon' : 'leçons'}
               </Badge>
             </div>
           </div>
-          <div className="md:w-64">
+          <div className="w-full md:w-64 flex justify-center">
             <img 
               src={
                 subject.name.toLowerCase().includes('mathématique')
@@ -159,58 +159,58 @@ export default function DynamicCoursePage() {
                   : ericTeaching
               } 
               alt="Eric" 
-              className="w-full h-auto rounded-lg"
+              className="w-48 sm:w-56 md:w-full h-auto rounded-lg"
             />
           </div>
         </div>
 
         {/* Progress Section */}
-        <Card className="p-6 mb-8">
-          <h3 className="text-lg font-semibold mb-4">Votre progression</h3>
+        <Card className="p-4 sm:p-6 mb-6 sm:mb-8">
+          <h3 className="text-base sm:text-lg font-semibold mb-3 sm:mb-4">Votre progression</h3>
           <Progress value={progress} className="mb-2" />
-          <p className="text-sm text-muted-foreground">
+          <p className="text-xs sm:text-sm text-muted-foreground">
             {completedLessons.length} sur {lessons.length} leçons complétées ({progress}%)
           </p>
         </Card>
 
         {/* Lessons List */}
-        <h2 className="text-2xl font-bold mb-6">Leçons</h2>
-        <div className="grid gap-4">
+        <h2 className="text-xl sm:text-2xl font-bold mb-4 sm:mb-6">Leçons</h2>
+        <div className="grid gap-3 sm:gap-4">
           {lessons.map((lesson, index) => {
             const isCompleted = completedLessons.includes(lesson.slug);
             
             return (
               <Card
                 key={lesson.id}
-                className="p-6 transition-all hover:shadow-lg hover:-translate-y-1 cursor-pointer"
+                className="p-4 sm:p-6 transition-all hover:shadow-lg hover:-translate-y-1 cursor-pointer"
                 onClick={() => navigate(`/course/${subjectSlug}/${lesson.slug}`)}
               >
-                <div className="flex items-start gap-4">
-                  <div className={`w-12 h-12 rounded-full flex items-center justify-center flex-shrink-0 ${
+                <div className="flex items-start gap-3 sm:gap-4">
+                  <div className={`w-10 h-10 sm:w-12 sm:h-12 rounded-full flex items-center justify-center flex-shrink-0 ${
                     isCompleted 
                       ? 'bg-green-500/20 text-green-600' 
                       : 'bg-primary/20 text-primary'
                   }`}>
                     {isCompleted ? (
-                      <CheckCircle2 className="h-6 w-6" />
+                      <CheckCircle2 className="h-5 w-5 sm:h-6 sm:w-6" />
                     ) : (
-                      <BookOpen className="h-6 w-6" />
+                      <BookOpen className="h-5 w-5 sm:h-6 sm:w-6" />
                     )}
                   </div>
                   
-                  <div className="flex-1">
-                    <h3 className="text-lg font-semibold mb-2">
+                  <div className="flex-1 min-w-0">
+                    <h3 className="text-base sm:text-lg font-semibold mb-1 sm:mb-2 line-clamp-2">
                       Leçon {index + 1}: {lesson.title}
                     </h3>
                     {lesson.objectif && (
-                      <p className="text-sm text-muted-foreground line-clamp-2">
+                      <p className="text-xs sm:text-sm text-muted-foreground line-clamp-2">
                         {lesson.objectif.replace(/<[^>]*>/g, '')}
                       </p>
                     )}
                   </div>
 
                   {isCompleted && (
-                    <Badge variant="secondary" className="bg-green-500/20 text-green-700">
+                    <Badge variant="secondary" className="bg-green-500/20 text-green-700 text-xs shrink-0">
                       Complété
                     </Badge>
                   )}

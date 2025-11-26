@@ -98,23 +98,24 @@ const MathCourseAF8 = () => {
             className="gap-2"
           >
             <ArrowLeft className="h-4 w-4" />
-            Retour aux matières
+            <span className="hidden sm:inline">Retour aux matières</span>
+            <span className="sm:hidden">Retour</span>
           </Button>
           <ThemeToggle />
         </div>
       </nav>
 
       {/* Header */}
-      <div className="container mx-auto px-4 py-12">
-        <div className="flex flex-col md:flex-row items-center justify-between gap-8 mb-12 max-w-6xl mx-auto">
+      <div className="container mx-auto px-4 py-6 sm:py-12">
+        <div className="flex flex-col md:flex-row items-center justify-between gap-6 sm:gap-8 mb-8 sm:mb-12 max-w-6xl mx-auto">
           <div className="flex-1 text-center md:text-left">
-            <div className="inline-flex items-center justify-center w-20 h-20 rounded-2xl bg-gradient-to-br from-orange-500 to-red-600 mb-6 shadow-lg">
-              <BookOpen className="h-10 w-10 text-white" />
+            <div className="inline-flex items-center justify-center w-16 h-16 sm:w-20 sm:h-20 rounded-2xl bg-gradient-to-br from-orange-500 to-red-600 mb-4 sm:mb-6 shadow-lg">
+              <BookOpen className="h-8 w-8 sm:h-10 sm:w-10 text-white" />
             </div>
-            <h1 className="text-4xl md:text-5xl font-bold mb-4 bg-gradient-to-r from-orange-600 to-red-600 bg-clip-text text-transparent">
+            <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold mb-3 sm:mb-4 bg-gradient-to-r from-orange-600 to-red-600 bg-clip-text text-transparent">
               Mathématiques AF8
             </h1>
-            <p className="text-xl text-muted-foreground max-w-2xl">
+            <p className="text-base sm:text-xl text-muted-foreground max-w-2xl">
               Programme complet de mathématiques pour la 8ème année fondamentale
             </p>
           </div>
@@ -122,7 +123,7 @@ const MathCourseAF8 = () => {
             <OptimizedImage 
               src={ericEdupreneurs} 
               alt="Eric, votre professeur de mathématiques"
-              className="w-64 h-64 object-contain"
+              className="w-48 sm:w-56 md:w-64 h-auto object-contain"
             />
           </div>
         </div>
@@ -132,15 +133,15 @@ const MathCourseAF8 = () => {
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
           </div>
         ) : (
-          <div className="space-y-8">
+          <div className="space-y-6 sm:space-y-8">
             {monthOrder.map((month) => {
               const monthLessons = groupedByMonth[month];
               if (!monthLessons || monthLessons.length === 0) return null;
 
               return (
                 <div key={month}>
-                  <h2 className="text-2xl font-bold mb-4 text-primary">{month}</h2>
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  <h2 className="text-xl sm:text-2xl font-bold mb-3 sm:mb-4 text-primary">{month}</h2>
+                  <div className="grid gap-4 sm:gap-6 sm:grid-cols-2 lg:grid-cols-3">
                     {monthLessons.map((lesson) => (
                       <Card
                         key={lesson.id}
@@ -158,7 +159,7 @@ const MathCourseAF8 = () => {
                           }
                         }}
                       >
-                        <CardHeader>
+                        <CardHeader className="p-4 sm:p-6">
                           <div className="flex items-start justify-between gap-2 mb-2">
                             <Badge variant="outline" className="text-xs">
                               Leçon {lesson.order_index}
@@ -169,23 +170,23 @@ const MathCourseAF8 = () => {
                               </Badge>
                             )}
                           </div>
-                          <CardTitle className="text-lg group-hover:text-primary transition-colors">
+                          <CardTitle className="text-base sm:text-lg group-hover:text-primary transition-colors line-clamp-2">
                             {lesson.title}
                           </CardTitle>
                           {lesson.objectif && (
-                            <CardDescription className="line-clamp-2">
+                            <CardDescription className="line-clamp-2 text-xs sm:text-sm">
                               {stripHtml(lesson.objectif)}
                             </CardDescription>
                           )}
                         </CardHeader>
-                        <CardContent>
-                          <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                        <CardContent className="p-4 pt-0 sm:p-6 sm:pt-0">
+                          <div className="flex items-center gap-3 sm:gap-4 text-xs sm:text-sm text-muted-foreground flex-wrap">
                             <div className="flex items-center gap-1">
-                              <Clock className="h-4 w-4" />
+                              <Clock className="h-3 w-3 sm:h-4 sm:w-4" />
                               <span>2 semaines</span>
                             </div>
                             <div className="flex items-center gap-1">
-                              <Award className="h-4 w-4" />
+                              <Award className="h-3 w-3 sm:h-4 sm:w-4" />
                               <span>50 points</span>
                             </div>
                           </div>
