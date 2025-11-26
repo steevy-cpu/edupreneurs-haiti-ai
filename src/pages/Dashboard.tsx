@@ -1,29 +1,28 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
+import { Layout } from "@/components/Layout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Progress } from "@/components/ui/progress";
-import { ThemeToggle } from "@/components/ThemeToggle";
-import { Skeleton } from "@/components/ui/skeleton";
-import {
-  Coins,
-  ChartLine,
-  CreditCard,
-  UserCheck,
-  BookOpen,
-  Calendar,
-  Trophy,
-  Award,
-  Target,
-  Crown,
-  Medal
-} from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { getAvatarUrl } from "@/lib/avatarMap";
-import ericThumbsUp from "@/assets/eric-main01.png";
-import { NotificationPermissionBanner } from "@/components/NotificationPermissionBanner";
-import { PWAInstallPrompt } from "@/components/PWAInstallPrompt";
+import { Skeleton } from "@/components/ui/skeleton";
+import { OnboardingTour } from "@/components/OnboardingTour";
+import {
+  Award,
+  BookOpen,
+  Clock,
+  Flame,
+  Target,
+  TrendingUp,
+  Trophy,
+  Edit3,
+  Brain,
+  GraduationCap,
+  FileText,
+  Medal,
+  Crown,
+  Star,
+  Sparkles,
+} from "lucide-react";
 import { usePWAInstall } from "@/hooks/usePWAInstall";
 import { useDashboardAnalytics } from "@/hooks/useDashboardAnalytics";
 import { LearningStreakWidget } from "@/components/dashboard/LearningStreakWidget";
@@ -33,6 +32,9 @@ import { WeeklyActivityChart } from "@/components/dashboard/WeeklyActivityChart"
 import { SubjectProgressChart } from "@/components/dashboard/SubjectProgressChart";
 import { LearningInsightsPanel } from "@/components/dashboard/LearningInsightsPanel";
 import { AchievementsBadges } from "@/components/dashboard/AchievementsBadges";
+import { NotificationPermissionBanner } from "@/components/NotificationPermissionBanner";
+import { PWAInstallPrompt } from "@/components/PWAInstallPrompt";
+import { getAvatarUrl } from "@/lib/avatarMap";
 
 interface Note {
   id: string;
@@ -52,56 +54,57 @@ interface LeaderboardUser {
   rank: number;
 }
 
+const checkContentEditorAccess = async () => {
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return false;
+  
+  const { data } = await supabase
+    .from("content_editor_roles")
+    .select("role")
+    .eq("user_id", user.id)
+    .single();
+  
+  return !!data;
+};
+
+const restartOnboardingTour = () => {
+  localStorage.removeItem("onboarding_completed");
+  sessionStorage.setItem("restart_onboarding", "true");
+  window.location.reload();
+};
+
 const Dashboard = () => {
   const navigate = useNavigate();
   const [userData, setUserData] = useState({
     name: "Utilisateur",
-    gold: 0,
-    level: 1,
-    progress: 0,
-    affiliations: 0,
   });
   const [recentNotes, setRecentNotes] = useState<Note[]>([]);
-
   const [goldEarned, setGoldEarned] = useState<number>(0);
-
-  const [currentUserId, setCurrentUserId] = useState<string>('');
+  const [userId, setUserId] = useState<string>("");
   const [isContentEditor, setIsContentEditor] = useState(false);
   const [leaderboard, setLeaderboard] = useState<LeaderboardUser[]>([]);
   const [leaderboardLoading, setLeaderboardLoading] = useState(true);
   
-  // PWA Install hook
   const { showPrompt, isIOS, installApp, dismissPrompt } = usePWAInstall();
-  
-  // Analytics hook
-  const { analytics, isLoading: analyticsLoading } = useDashboardAnalytics(currentUserId || null);
+  const { analytics, isLoading: analyticsLoading } = useDashboardAnalytics(userId || null);
 
   useEffect(() => {
     fetchUserData();
     fetchRecentNotes();
     fetchGoldEarned();
-    checkContentEditorAccess();
+    checkContentEditorAccessWrapper();
     fetchLeaderboard();
     
-    // Get current user ID for notification dialog
     supabase.auth.getUser().then(({ data: { user } }) => {
       if (user) {
-        setCurrentUserId(user.id);
+        setUserId(user.id);
       }
     });
   }, []);
 
-  const checkContentEditorAccess = async () => {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return;
-
-    const { data: editorRole } = await supabase
-      .from('content_editor_roles')
-      .select('role')
-      .eq('user_id', user.id)
-      .single();
-
-    setIsContentEditor(editorRole && ['admin', 'editor'].includes(editorRole.role));
+  const checkContentEditorAccessWrapper = async () => {
+    const hasAccess = await checkContentEditorAccess();
+    setIsContentEditor(hasAccess);
   };
 
   const fetchGoldEarned = async () => {
@@ -109,9 +112,9 @@ const Dashboard = () => {
     if (!user) return;
 
     const { data } = await supabase
-      .from('profiles')
-      .select('gold_earned')
-      .eq('user_id', user.id)
+      .from("profiles")
+      .select("gold_earned")
+      .eq("user_id", user.id)
       .single();
 
     if (data) {
@@ -122,15 +125,14 @@ const Dashboard = () => {
   const fetchUserData = async () => {
     const { data: { session } } = await supabase.auth.getSession();
     if (session) {
-      // Fetch nickname from profiles table
       const { data: profile } = await supabase
-        .from('profiles')
-        .select('nickname')
-        .eq('user_id', session.user.id)
+        .from("profiles")
+        .select("nickname")
+        .eq("user_id", session.user.id)
         .single();
 
       const userName = profile?.nickname || session.user.email?.split("@")[0] || "Utilisateur";
-      setUserData(prev => ({ ...prev, name: userName }));
+      setUserData({ name: userName });
     }
   };
 
@@ -140,24 +142,23 @@ const Dashboard = () => {
       if (!user) return;
 
       const { data, error } = await supabase
-        .from('notes')
-        .select('*')
-        .eq('user_id', user.id)
-        .order('updated_at', { ascending: false })
+        .from("notes")
+        .select("*")
+        .eq("user_id", user.id)
+        .order("updated_at", { ascending: false })
         .limit(5);
 
       if (data && !error) {
         setRecentNotes(data);
       }
     } catch (error) {
-      console.error('Error fetching notes:', error);
+      console.error("Error fetching notes:", error);
     }
   };
 
   const fetchLeaderboard = async () => {
     setLeaderboardLoading(true);
     
-    // Fetch top 5 users by gold earned (excluding system accounts)
     const { data: topUsers, error } = await supabase
       .from("profiles")
       .select("id, user_id, full_name, nickname, avatar_url, gold_earned, academic_grade")
@@ -171,7 +172,6 @@ const Dashboard = () => {
       return;
     }
 
-    // Add rank to each user
     const rankedUsers = topUsers?.map((user, index) => ({
       ...user,
       rank: index + 1,
@@ -184,13 +184,13 @@ const Dashboard = () => {
   const getRankIcon = (rank: number) => {
     switch (rank) {
       case 1:
-        return <Crown size={20} className="text-yellow-500" />;
+        return <Crown className="w-5 h-5 text-yellow-500" />;
       case 2:
-        return <Medal size={20} className="text-gray-400" />;
+        return <Medal className="w-5 h-5 text-gray-400" />;
       case 3:
-        return <Award size={20} className="text-amber-600" />;
+        return <Award className="w-5 h-5 text-amber-600" />;
       default:
-        return <Trophy size={16} className="text-muted-foreground" />;
+        return <Trophy className="w-4 h-4 text-muted-foreground" />;
     }
   };
 
@@ -210,502 +210,303 @@ const Dashboard = () => {
   const topicInfo: { [key: string]: { title: string; icon: string } } = {
     "numeration-binaire": { title: "Numération Binaire", icon: "💻" },
     "polygones": { title: "Les Polygones", icon: "⬡" },
-    "unites-mesures": { title: "Unités de Mesures", icon: "📏" },
     "divisibilite": { title: "Divisibilité", icon: "➗" },
     "decimaux": { title: "Décimaux", icon: "🔢" },
     "cercle-disque": { title: "Cercle et Disque", icon: "⭕" },
-    "triangles": { title: "Les Triangles", icon: "🔺" },
-    "aires-perimetres": { title: "Aires et Périmètres", icon: "📐" },
-    "proportionnalite": { title: "Proportionnalité", icon: "📊" },
-    "entiers-relatifs": { title: "Entiers Relatifs", icon: "➕➖" },
-    "volumes-solides": { title: "Volumes de Solides", icon: "📦" },
-    "fractions": { title: "Les Fractions", icon: "🍕" },
-    "parallelogrammes": { title: "Les Parallélogrammes", icon: "◇" },
-    "reperage-quadrillage": { title: "Repérage sur Quadrillage", icon: "🗺️" },
-    "transformations": { title: "Les Transformations", icon: "🔄" },
-    "statistiques": { title: "Statistiques Élémentaires", icon: "📈" }
   };
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
-    return date.toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', year: 'numeric' });
+    return date.toLocaleDateString("fr-FR", { day: "numeric", month: "short", year: "numeric" });
   };
 
   const subjects = [
-    { id: "math", name: "Mathématiques", icon: "🔢", progress: 45, description: "Algèbre, géométrie et calcul" },
-    { id: "french", name: "Français", icon: "🇫🇷", progress: 60, description: "Grammaire, conjugaison et littérature" },
-    { id: "science", name: "Sciences", icon: "🔬", progress: 30, description: "Physique, chimie et biologie" },
-    { id: "history", name: "Histoire", icon: "📜", progress: 20, description: "Histoire d'Haïti et mondiale" },
+    { id: "math", name: "Mathématiques", icon: "🔢", description: "Algèbre, géométrie et calcul" },
+    { id: "french", name: "Français", icon: "🇫🇷", description: "Grammaire et littérature" },
+    { id: "science", name: "Sciences", icon: "🔬", description: "Physique, chimie et biologie" },
+    { id: "history", name: "Histoire", icon: "📜", description: "Histoire d'Haïti et mondiale" },
   ];
 
   return (
-    <div className="pt-14 sm:pt-16 px-3 sm:px-4 lg:px-8 pb-8 sm:pb-12">
-        <div className="fixed top-4 right-4 z-50">
-          <ThemeToggle />
-        </div>
-        
-        {/* Notification Permission Banner */}
-        {currentUserId && <NotificationPermissionBanner userId={currentUserId} />}
-        
-        {/* PWA Install Banner */}
-        {showPrompt && (
-          <PWAInstallPrompt
-            isIOS={isIOS}
-            onInstall={installApp}
-            onDismiss={dismissPrompt}
-          />
-        )}
-        
-        {/* Welcome Header */}
-        <div className="bg-gradient-to-br from-[hsl(var(--primary))] to-[hsl(var(--success))] text-white p-3 xs:p-4 sm:p-6 lg:p-8 rounded-xl xs:rounded-2xl sm:rounded-[20px] mb-3 xs:mb-4 sm:mb-6 lg:mb-8 relative overflow-hidden">
-          <div className="absolute top-0 right-0 w-1/2 h-full opacity-10">
-            <div className="w-full h-full bg-gradient-radial from-white/20 to-transparent animate-[float_20s_ease-in-out_infinite]" />
-          </div>
-          <div className="relative z-10">
-            <h2 className="text-base xs:text-lg sm:text-xl lg:text-2xl xl:text-3xl font-bold mb-1 xs:mb-1.5 sm:mb-2">
-              Bienvenue, <span className="break-words">{userData.name}</span>!
-            </h2>
-            <p className="text-[11px] xs:text-xs sm:text-sm lg:text-base opacity-75 leading-relaxed">
-              Continuez votre apprentissage personnalisé avec Eric, votre assistant IA
-            </p>
-          </div>
-        </div>
-
-        {/* Content Editor Access (Only for editors/admins) */}
-        {isContentEditor && (
-          <Card className="border-2 border-primary bg-gradient-to-br from-primary/5 to-purple-500/5 rounded-xl mb-4">
-            <CardContent className="p-4 flex items-center gap-4">
-              <div className="flex-shrink-0 text-4xl">✏️</div>
-              <div className="flex-1">
-                <h3 className="font-bold text-lg mb-1">
-                  Éditeur de Contenu
-                  <span className="ml-2 text-xs bg-primary text-primary-foreground px-2 py-1 rounded-full">ÉDITEUR</span>
-                </h3>
-                <p className="text-sm text-muted-foreground mb-3">
-                  Créez et gérez le contenu des cours avec l'assistance de l'IA
-                </p>
-                <Button 
-                  onClick={() => navigate("/content-editor")}
-                  className="bg-gradient-to-r from-primary to-purple-500 hover:opacity-90"
-                >
-                  Accéder à l'éditeur →
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-        )}
-
-        {/* TEST: Passion Discovery Section */}
-        <Card className="border-2 border-purple-500 bg-gradient-to-br from-purple-50/50 to-pink-50/50 dark:from-purple-950/20 dark:to-pink-950/20 rounded-xl mb-4">
-          <CardContent className="p-4 flex items-center gap-4">
-            <div className="flex-shrink-0 text-4xl">🎨</div>
-            <div className="flex-1">
-              <h3 className="font-bold text-lg mb-1">
-                NOUVEAU : Découvre ta passion & Développement personnel 
-                <span className="ml-2 text-xs bg-purple-500 text-white px-2 py-1 rounded-full">TEST</span>
-              </h3>
-              <p className="text-sm text-muted-foreground mb-3">
-                Explore la musique, les arts, les échecs, l'éducation civique et le développement personnel avec Eric en IA
+    <Layout>
+      <OnboardingTour />
+      <div className="min-h-screen bg-background">
+        <div className="container mx-auto px-4 py-6 space-y-8 pb-24">
+          {/* Welcome Header */}
+          <div data-tour="welcome-header" className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
+            <div>
+              <h1 className="text-3xl font-bold text-foreground">
+                Bienvenue, {userData.name}! 👋
+              </h1>
+              <p className="text-muted-foreground mt-1">
+                Continuez votre apprentissage personnalisé avec Eric
               </p>
-              <Button 
-                onClick={() => navigate("/passion-test")}
-                className="bg-gradient-to-r from-purple-500 to-pink-500 hover:opacity-90"
-              >
-                Tester la version interactive →
-              </Button>
             </div>
-          </CardContent>
-        </Card>
-
-        {/* Analytics Header Section */}
-        {analyticsLoading ? (
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-            <Skeleton className="h-32 rounded-xl" />
-            <Skeleton className="h-32 rounded-xl" />
-            <Skeleton className="h-32 rounded-xl" />
           </div>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+
+          {/* Notification & PWA Banners */}
+          {userId && <NotificationPermissionBanner userId={userId} />}
+          {showPrompt && (
+            <PWAInstallPrompt
+              isIOS={isIOS}
+              onInstall={installApp}
+              onDismiss={dismissPrompt}
+            />
+          )}
+
+          {isContentEditor && (
+            <Link to="/content-editor">
+              <Card className="bg-gradient-to-br from-purple-500/10 to-pink-500/10 border-purple-500/20 hover:border-purple-500/40 transition-all cursor-pointer">
+                <CardContent className="p-6">
+                  <div className="flex items-center gap-4">
+                    <div className="p-3 bg-purple-500/20 rounded-full">
+                      <Edit3 className="w-8 h-8 text-purple-500" />
+                    </div>
+                    <div>
+                      <h3 className="text-lg font-semibold text-foreground">Éditeur de Contenu</h3>
+                      <p className="text-sm text-muted-foreground">Gérer et créer du contenu</p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </Link>
+          )}
+
+          {/* Test Onboarding Button - Only for specific account */}
+          {userId === "48d1e98c-a62c-4d46-ba89-b5bf3faa44be" && (
+            <Card className="bg-gradient-to-br from-blue-500/10 to-cyan-500/10 border-blue-500/20">
+              <CardContent className="p-6">
+                <button
+                  onClick={restartOnboardingTour}
+                  className="w-full flex items-center gap-4 text-left hover:opacity-80 transition-opacity"
+                >
+                  <div className="p-3 bg-blue-500/20 rounded-full">
+                    <Sparkles className="w-8 h-8 text-blue-500" />
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-semibold text-foreground">🎓 Tester le guide</h3>
+                    <p className="text-sm text-muted-foreground">Relancer la visite guidée</p>
+                  </div>
+                </button>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Analytics Widgets */}
+          <div data-tour="analytics-widgets" className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <LearningStreakWidget streak={analytics.streak} />
             <WeeklyGoalWidget current={analytics.weeklyGoal.current} target={analytics.weeklyGoal.target} />
             <StudyTimeWidget weeklyMinutes={analytics.studyTimeThisWeek} monthlyMinutes={analytics.studyTimeThisMonth} />
           </div>
-        )}
 
-        {/* Enhanced KPI Cards */}
-        {analyticsLoading ? (
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-            <Skeleton className="h-32 rounded-xl" />
-            <Skeleton className="h-32 rounded-xl" />
-            <Skeleton className="h-32 rounded-xl" />
-            <Skeleton className="h-32 rounded-xl" />
-          </div>
-        ) : (
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6" data-tour="stats-section">
-            <Card className="border-none rounded-xl shadow-md hover:shadow-lg hover:-translate-y-1 transition-all duration-300">
-              <CardContent className="p-4 sm:p-6 text-center">
-                <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-yellow-400 to-orange-500 flex items-center justify-center text-white mx-auto mb-3">
-                  <Trophy className="w-6 h-6" />
+          {/* KPI Cards */}
+          <div data-tour="kpi-cards" className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            <Card className="bg-gradient-to-br from-yellow-500/10 to-orange-500/10 border-yellow-500/20">
+              <CardContent className="p-6">
+                <div className="flex items-center gap-4">
+                  <div className="p-3 bg-yellow-500/20 rounded-full">
+                    <Trophy className="w-8 h-8 text-yellow-500" />
+                  </div>
+                  <div>
+                    <p className="text-sm text-muted-foreground">Or gagné</p>
+                    <p className="text-3xl font-bold text-foreground">{goldEarned}</p>
+                  </div>
                 </div>
-                <div className="text-2xl sm:text-3xl font-extrabold bg-gradient-to-br from-yellow-500 to-orange-600 bg-clip-text text-transparent mb-1">
-                  {goldEarned}
-                </div>
-                <div className="text-xs font-semibold text-muted-foreground mb-1">Golds gagnés</div>
-                <p className="text-xs text-muted-foreground">
-                  +{analytics.weeklyLessons * 10} cette semaine
-                </p>
               </CardContent>
             </Card>
 
-            <Card className="border-none rounded-xl shadow-md hover:shadow-lg hover:-translate-y-1 transition-all duration-300">
-              <CardContent className="p-4 sm:p-6 text-center">
-                <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center text-white mx-auto mb-3">
-                  <BookOpen className="w-6 h-6" />
+            <Card className="bg-gradient-to-br from-blue-500/10 to-cyan-500/10 border-blue-500/20">
+              <CardContent className="p-6">
+                <div className="flex items-center gap-4">
+                  <div className="p-3 bg-blue-500/20 rounded-full">
+                    <BookOpen className="w-8 h-8 text-blue-500" />
+                  </div>
+                  <div>
+                    <p className="text-sm text-muted-foreground">Leçons complétées</p>
+                    <p className="text-3xl font-bold text-foreground">{analytics.totalLessonsCompleted}</p>
+                  </div>
                 </div>
-                <div className="text-2xl sm:text-3xl font-extrabold bg-gradient-to-br from-blue-500 to-blue-700 bg-clip-text text-transparent mb-1">
-                  {analytics.totalLessonsCompleted}
-                </div>
-                <div className="text-xs font-semibold text-muted-foreground mb-1">Leçons complétées</div>
-                <p className="text-xs text-muted-foreground">
-                  {analytics.weeklyLessons} cette semaine
-                </p>
               </CardContent>
             </Card>
 
-            <Card className="border-none rounded-xl shadow-md hover:shadow-lg hover:-translate-y-1 transition-all duration-300">
-              <CardContent className="p-4 sm:p-6 text-center">
-                <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-green-400 to-green-600 flex items-center justify-center text-white mx-auto mb-3">
-                  <Award className="w-6 h-6" />
+            <Card className="bg-gradient-to-br from-green-500/10 to-emerald-500/10 border-green-500/20">
+              <CardContent className="p-6">
+                <div className="flex items-center gap-4">
+                  <div className="p-3 bg-green-500/20 rounded-full">
+                    <Target className="w-8 h-8 text-green-500" />
+                  </div>
+                  <div>
+                    <p className="text-sm text-muted-foreground">Score moyen</p>
+                    <p className="text-3xl font-bold text-foreground">{analytics.averageScore}%</p>
+                  </div>
                 </div>
-                <div className="text-2xl sm:text-3xl font-extrabold bg-gradient-to-br from-green-500 to-green-700 bg-clip-text text-transparent mb-1">
-                  {analytics.averageScore}%
-                </div>
-                <div className="text-xs font-semibold text-muted-foreground mb-1">Score moyen</div>
-                <p className="text-xs text-muted-foreground">
-                  {analytics.averageScore >= 80 ? "Excellent! 🎯" : "Continue! 💪"}
-                </p>
               </CardContent>
             </Card>
 
-            <Card className="border-none rounded-xl shadow-md hover:shadow-lg hover:-translate-y-1 transition-all duration-300">
-              <CardContent className="p-4 sm:p-6 text-center">
-                <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-purple-400 to-purple-600 flex items-center justify-center text-white mx-auto mb-3">
-                  <Target className="w-6 h-6" />
+            <Card className="bg-gradient-to-br from-purple-500/10 to-pink-500/10 border-purple-500/20">
+              <CardContent className="p-6">
+                <div className="flex items-center gap-4">
+                  <div className="p-3 bg-purple-500/20 rounded-full">
+                    <Clock className="w-8 h-8 text-purple-500" />
+                  </div>
+                  <div>
+                    <p className="text-sm text-muted-foreground">Temps d'étude</p>
+                    <p className="text-3xl font-bold text-foreground">{Math.round(analytics.studyTimeThisWeek / 60)}h</p>
+                  </div>
                 </div>
-                <div className="text-2xl sm:text-3xl font-extrabold bg-gradient-to-br from-purple-500 to-purple-700 bg-clip-text text-transparent mb-1">
-                  {Math.floor(analytics.studyTimeThisWeek / 60)}h
-                </div>
-                <div className="text-xs font-semibold text-muted-foreground mb-1">Temps d'étude</div>
-                <p className="text-xs text-muted-foreground">
-                  Cette semaine
-                </p>
               </CardContent>
             </Card>
           </div>
-        )}
 
-        {/* Charts Section */}
-        {analyticsLoading ? (
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-            <Skeleton className="h-80 rounded-xl" />
-            <Skeleton className="h-80 rounded-xl" />
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+          {/* Charts Section */}
+          <div data-tour="charts-section" className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <WeeklyActivityChart data={analytics.weeklyActivity} />
             <SubjectProgressChart data={analytics.subjectProgress} />
           </div>
-        )}
 
-        {/* Learning Insights & Achievements */}
-        {!analyticsLoading && (
-          <div className="space-y-6 mb-8">
-            <LearningInsightsPanel analytics={analytics} />
-            <AchievementsBadges 
-              achievements={analytics.achievements} 
-              totalLessons={analytics.totalLessonsCompleted}
-            />
-          </div>
-        )}
+          <LearningInsightsPanel />
+          <AchievementsBadges />
 
-        {/* Parcours */}
-        <Card className="border-none rounded-[20px] shadow-md mb-8">
-          <CardHeader>
-            <CardTitle className="text-xl">Choisissez votre parcours</CardTitle>
-            <p className="text-muted-foreground text-sm mt-2">
-              Programme complet par chapitres ou rattrapage ciblé. Votre agent IA vous guidera, expliquera simplement, puis vous proposera des quiz.
-            </p>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <Card className="border border-border rounded-2xl hover:shadow-md transition-all">
-                <CardContent className="p-6">
-                  <strong className="block mb-2">Programme complet</strong>
-                  <p className="text-muted-foreground text-sm mb-4">
-                    Chapitres du MENFP pour votre niveau.
-                  </p>
-                  <Button 
-                    className="bg-gradient-to-br from-[hsl(var(--primary))] to-[hsl(var(--success))] hover:opacity-90"
-                    onClick={() => navigate("/math-course")}
-                  >
-                    Suivre le programme
-                  </Button>
-                </CardContent>
-              </Card>
-
-              <Card className="border border-border rounded-2xl hover:shadow-md transition-all">
-                <CardContent className="p-6">
-                  <strong className="block mb-2">Rattrapage</strong>
-                  <p className="text-muted-foreground text-sm mb-4">
-                    Révisez des matières précises.
-                  </p>
-                  <Button 
-                    variant="outline" 
-                    className="border-2 border-[hsl(var(--primary))] text-[hsl(var(--primary))] hover:bg-[hsl(var(--primary))] hover:text-white"
-                    onClick={() => navigate("/math-course")}
-                  >
-                    Je veux réviser
-                  </Button>
-                </CardContent>
-              </Card>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Recent Notes Section */}
-        {recentNotes.length > 0 && (
-          <Card className="border-none rounded-[20px] shadow-md mb-8 overflow-hidden bg-gradient-to-br from-blue-50/50 via-purple-50/30 to-pink-50/50 dark:from-blue-950/20 dark:via-purple-950/10 dark:to-pink-950/20">
-            <CardHeader className="pb-4">
-              <div className="flex items-center justify-between">
-                <CardTitle className="text-xl font-bold flex items-center gap-3">
-                  <div className="p-2 bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl">
-                    <BookOpen className="text-white" size={24} />
-                  </div>
-                  <span>Mes notes récentes</span>
-                </CardTitle>
-                <Button 
-                  variant="ghost" 
-                  size="sm"
-                  onClick={() => navigate("/resources")}
-                  className="text-primary hover:bg-primary/10"
-                >
-                  Voir tout →
-                </Button>
-              </div>
-              <p className="text-sm text-muted-foreground mt-2">
-                Tes dernières prises de notes pendant tes leçons
-              </p>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {recentNotes.map((note, index) => {
-                  const topic = topicInfo[note.lesson_topic];
-                  const gradients = [
-                    "from-blue-500/10 to-blue-600/5",
-                    "from-purple-500/10 to-purple-600/5",
-                    "from-pink-500/10 to-pink-600/5",
-                    "from-green-500/10 to-green-600/5",
-                    "from-orange-500/10 to-orange-600/5",
-                  ];
-                  const borderColors = [
-                    "border-blue-500/20",
-                    "border-purple-500/20",
-                    "border-pink-500/20",
-                    "border-green-500/20",
-                    "border-orange-500/20",
-                  ];
-                  
-                  return (
-                    <div
-                      key={note.id}
-                      className={`group relative border ${borderColors[index % borderColors.length]} rounded-2xl p-5 bg-gradient-to-br ${gradients[index % gradients.length]} hover:shadow-xl hover:-translate-y-2 transition-all duration-300 cursor-pointer animate-fade-in overflow-hidden`}
-                      style={{ animationDelay: `${index * 100}ms` }}
-                      onClick={() => navigate(`/math-lesson/${note.lesson_topic}`)}
-                    >
-                      {/* Decorative element */}
-                      <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-white/10 to-transparent rounded-full -mr-16 -mt-16 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                      
-                      <div className="relative">
-                        {/* Icon and Title */}
-                        <div className="flex items-start gap-3 mb-3">
-                          <div className="flex-shrink-0 w-12 h-12 rounded-xl bg-gradient-to-br from-primary/20 to-primary/10 flex items-center justify-center text-2xl group-hover:scale-110 transition-transform duration-300">
-                            {topic?.icon || "📝"}
-                          </div>
-                          <div className="flex-1 min-w-0">
-                            <h5 className="text-base font-bold text-foreground mb-1 group-hover:text-primary transition-colors line-clamp-1">
-                              {topic?.title || note.lesson_topic}
-                            </h5>
-                            <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                              <Calendar size={12} />
-                              <span>{formatDate(note.updated_at)}</span>
-                            </div>
-                          </div>
-                        </div>
-
-                        {/* Note Content */}
-                        <p className="text-sm text-muted-foreground line-clamp-3 leading-relaxed mb-3">
-                          {note.content.substring(0, 120)}...
-                        </p>
-
-                        {/* Action Button */}
-                        <div className="flex items-center justify-between">
-                          <div className="px-3 py-1 rounded-full bg-primary/10 text-primary text-xs font-medium">
-                            Mathématiques
-                          </div>
-                          <div className="text-primary text-sm font-medium group-hover:translate-x-1 transition-transform">
-                            Lire →
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            </CardContent>
-          </Card>
-        )}
-
-        {/* Subjects and Featured */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          {/* Subjects */}
-          <Card className="border-none rounded-[20px] shadow-md">
-            <CardHeader className="flex flex-row items-center justify-between">
-              <CardTitle className="text-xl">Matières (MENFP)</CardTitle>
-              <Button 
-                variant="ghost" 
-                size="sm"
-                onClick={() => navigate("/matieres")}
-                className="text-primary hover:text-primary"
-              >
-                Voir tout →
-              </Button>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              {subjects.map((subject) => (
-                <div
-                  key={subject.id}
-                  className="border border-border rounded-2xl p-5 bg-gradient-to-br from-muted/30 to-card hover:-translate-y-1 hover:shadow-md transition-all duration-300 cursor-pointer"
-                  onClick={() => navigate("/math-course")}
-                >
-                  <div className="flex items-center gap-3 mb-2">
-                    <span className="text-2xl">{subject.icon}</span>
-                    <h5 className="text-lg font-bold">{subject.name}</h5>
-                  </div>
-                  <p className="text-sm text-muted-foreground mb-3">{subject.description}</p>
-                  <Progress value={subject.progress} className="h-2" />
-                  <p className="text-xs text-muted-foreground mt-2">{subject.progress}% complété</p>
-                </div>
-              ))}
-            </CardContent>
-          </Card>
-
-          {/* Leaderboard */}
-          <Card className="border-none rounded-[20px] shadow-md">
-            <CardHeader className="flex flex-row items-center justify-between">
-              <CardTitle className="text-xl flex items-center gap-2">
-                <Trophy size={24} className="text-primary" />
+          {/* Leaderboard Section */}
+          <Card data-tour="leaderboard-section" className="bg-gradient-to-br from-yellow-500/5 to-orange-500/5 border-yellow-500/20">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Trophy className="w-6 h-6 text-yellow-500" />
                 Classement
               </CardTitle>
-              <Button 
-                variant="ghost" 
-                size="sm"
-                onClick={() => navigate("/leaderboard")}
-                className="text-primary hover:text-primary"
-              >
-                Voir tout →
-              </Button>
             </CardHeader>
             <CardContent>
               {leaderboardLoading ? (
-                <div className="space-y-3">
+                <div className="space-y-4">
                   {[...Array(5)].map((_, i) => (
-                    <div key={i} className="flex items-center gap-3 p-3 border border-border rounded-xl">
-                      <Skeleton className="h-10 w-10 rounded-full" />
-                      <div className="flex-1 space-y-2">
-                        <Skeleton className="h-4 w-32" />
-                        <Skeleton className="h-3 w-24" />
+                    <Skeleton key={i} className="h-20 w-full" />
+                  ))}
+                </div>
+              ) : leaderboard.length === 0 ? (
+                <p className="text-center text-muted-foreground py-8">
+                  Aucun utilisateur dans le classement pour le moment
+                </p>
+              ) : (
+                <div className="space-y-3">
+                  {leaderboard.map((user) => (
+                    <div
+                      key={user.id}
+                      className={`flex items-center gap-4 p-4 rounded-lg bg-gradient-to-br ${getRankBgColor(user.rank)} border transition-all hover:scale-[1.02]`}
+                    >
+                      <div className="flex items-center justify-center w-10 h-10">
+                        {getRankIcon(user.rank)}
                       </div>
-                      <Skeleton className="h-6 w-16" />
+                      <Avatar className="w-12 h-12">
+                        <AvatarImage src={user.avatar_url ? getAvatarUrl(user.avatar_url) : undefined} />
+                        <AvatarFallback>{user.nickname?.[0] || user.full_name?.[0]}</AvatarFallback>
+                      </Avatar>
+                      <div className="flex-1">
+                        <p className="font-semibold text-foreground">{user.nickname || user.full_name}</p>
+                        <p className="text-sm text-muted-foreground">{user.academic_grade}</p>
+                      </div>
+                      <div className="text-right">
+                        <p className="font-bold text-lg text-yellow-600">{user.gold_earned}</p>
+                        <p className="text-xs text-muted-foreground">Gold</p>
+                      </div>
                     </div>
                   ))}
                 </div>
-              ) : (
-                <div className="space-y-2">
-                  {leaderboard.map((user) => {
-                    const isCurrentUser = user.user_id === currentUserId;
-                    
-                    return (
-                      <div
-                        key={user.id}
-                        className={`p-3 rounded-xl bg-gradient-to-r ${getRankBgColor(user.rank)} border transition-all hover:scale-[1.02] ${
-                          isCurrentUser ? "ring-2 ring-primary" : ""
-                        }`}
-                      >
-                        <div className="flex items-center gap-3">
-                          {/* Rank Icon */}
-                          <div className="flex items-center justify-center min-w-[32px]">
-                            {getRankIcon(user.rank)}
-                          </div>
-
-                          {/* Avatar */}
-                          <Avatar className="h-10 w-10">
-                            <AvatarImage src={getAvatarUrl(user.avatar_url)} />
-                            <AvatarFallback className="bg-gradient-to-br from-primary/20 to-success/20 font-semibold text-sm">
-                              {user.nickname?.[0] || user.full_name?.[0] || "?"}
-                            </AvatarFallback>
-                          </Avatar>
-
-                          {/* User Info */}
-                          <div className="flex-1 min-w-0">
-                            <div className="flex items-center gap-2">
-                              <p className="font-semibold truncate text-sm">
-                                {user.nickname || user.full_name}
-                              </p>
-                              {isCurrentUser && (
-                                <span className="text-xs bg-primary text-primary-foreground px-2 py-0.5 rounded-full whitespace-nowrap">
-                                  Vous
-                                </span>
-                              )}
-                            </div>
-                            <p className="text-xs text-muted-foreground truncate">
-                              {user.academic_grade}
-                            </p>
-                          </div>
-
-                          {/* Gold Count */}
-                          <div className="text-right">
-                            <div className="flex items-center gap-1 text-amber-500 font-bold">
-                              <span className="text-lg">🏆</span>
-                              <span className="text-sm">{user.gold_earned}</span>
-                            </div>
-                          </div>
-
-                          {/* Rank Number */}
-                          <div className="min-w-[32px] text-center">
-                            <p className="text-lg font-bold text-muted-foreground">
-                              #{user.rank}
-                            </p>
-                          </div>
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
               )}
+            </CardContent>
+          </Card>
 
-              {!leaderboardLoading && leaderboard.length === 0 && (
-                <div className="p-8 text-center">
-                  <Trophy size={40} className="mx-auto mb-3 text-muted-foreground" />
+          {/* Choose Your Path Section */}
+          <Card data-tour="parcours-section" className="bg-gradient-to-br from-primary/5 to-secondary/5">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <GraduationCap className="w-6 h-6" />
+                Choisissez votre parcours
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <Card className="border-2 border-primary/20 hover:border-primary/40 transition-all cursor-pointer" onClick={() => navigate("/matieres")}>
+                <CardContent className="p-6 text-center">
+                  <div className="w-16 h-16 mx-auto mb-4 bg-gradient-to-br from-primary to-secondary rounded-full flex items-center justify-center">
+                    <BookOpen className="w-8 h-8 text-white" />
+                  </div>
+                  <h3 className="text-xl font-bold text-foreground mb-2">Programme complet</h3>
                   <p className="text-sm text-muted-foreground">
-                    Aucun utilisateur dans le classement
+                    Explorez toutes les matières et leçons disponibles
                   </p>
+                </CardContent>
+              </Card>
+
+              <Card className="border-2 border-secondary/20 hover:border-secondary/40 transition-all cursor-pointer" onClick={() => navigate("/resources")}>
+                <CardContent className="p-6 text-center">
+                  <div className="w-16 h-16 mx-auto mb-4 bg-gradient-to-br from-secondary to-accent rounded-full flex items-center justify-center">
+                    <Brain className="w-8 h-8 text-white" />
+                  </div>
+                  <h3 className="text-xl font-bold text-foreground mb-2">Révisions</h3>
+                  <p className="text-sm text-muted-foreground">
+                    Révisez vos leçons et préparez vos examens
+                  </p>
+                </CardContent>
+              </Card>
+            </CardContent>
+          </Card>
+
+          {/* Recent Notes */}
+          {recentNotes.length > 0 && (
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <FileText className="w-6 h-6" />
+                  Notes récentes
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-3">
+                  {recentNotes.map((note) => (
+                    <div key={note.id} className="p-4 bg-muted/50 rounded-lg hover:bg-muted transition-colors">
+                      <div className="flex items-start justify-between">
+                        <div className="flex-1">
+                          <h4 className="font-semibold text-foreground mb-1">
+                            {topicInfo[note.lesson_topic]?.icon} {topicInfo[note.lesson_topic]?.title || note.lesson_topic}
+                          </h4>
+                          <p className="text-sm text-muted-foreground line-clamp-2">
+                            {note.content}
+                          </p>
+                        </div>
+                        <span className="text-xs text-muted-foreground ml-4">
+                          {formatDate(note.updated_at)}
+                        </span>
+                      </div>
+                    </div>
+                  ))}
                 </div>
-              )}
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Subjects */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Star className="w-6 h-6" />
+                Matières
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                {subjects.map((subject) => (
+                  <div key={subject.id} className="p-4 bg-gradient-to-br from-muted/50 to-muted/30 rounded-lg hover:shadow-lg transition-all cursor-pointer">
+                    <div className="text-3xl mb-3">{subject.icon}</div>
+                    <h3 className="font-bold text-foreground mb-1">{subject.name}</h3>
+                    <p className="text-xs text-muted-foreground mb-3">{subject.description}</p>
+                  </div>
+                ))}
+              </div>
             </CardContent>
           </Card>
         </div>
       </div>
-    );
+    </Layout>
+  );
 };
 
 export default Dashboard;
