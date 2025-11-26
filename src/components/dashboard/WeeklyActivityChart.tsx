@@ -7,35 +7,34 @@ interface WeeklyActivityChartProps {
 
 export const WeeklyActivityChart = ({ data }: WeeklyActivityChartProps) => {
   return (
-    <Card className="bg-gray-900/50 border-gray-800/50 backdrop-blur-sm">
+    <Card>
       <CardHeader>
-        <CardTitle className="text-white">Activité Hebdomadaire</CardTitle>
+        <CardTitle>Activité Hebdomadaire</CardTitle>
       </CardHeader>
       <CardContent>
         <ResponsiveContainer width="100%" height={250}>
           <BarChart data={data}>
-            <CartesianGrid strokeDasharray="3 3" className="stroke-gray-700" />
+            <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
             <XAxis 
               dataKey="day" 
               className="text-xs"
-              tick={{ fill: "#9ca3af" }}
+              tick={{ fill: "hsl(var(--muted-foreground))" }}
             />
             <YAxis 
               className="text-xs"
-              tick={{ fill: "#9ca3af" }}
+              tick={{ fill: "hsl(var(--muted-foreground))" }}
             />
             <Tooltip 
               contentStyle={{ 
-                backgroundColor: "#1f2937",
-                border: "1px solid #374151",
-                borderRadius: "8px",
-                color: "#fff"
+                backgroundColor: "hsl(var(--card))",
+                border: "1px solid hsl(var(--border))",
+                borderRadius: "8px"
               }}
-              labelStyle={{ color: "#fff" }}
+              labelStyle={{ color: "hsl(var(--foreground))" }}
             />
             <Bar 
               dataKey="lessons" 
-              fill="#8b5cf6" 
+              fill="hsl(var(--primary))" 
               radius={[8, 8, 0, 0]}
               name="Leçons"
             />
