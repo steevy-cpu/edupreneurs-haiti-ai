@@ -31,6 +31,7 @@ import { Progress } from "@/components/ui/progress";
 import { NotificationPermissionBanner } from "@/components/NotificationPermissionBanner";
 import { PWAInstallPrompt } from "@/components/PWAInstallPrompt";
 import { getAvatarUrl } from "@/lib/avatarMap";
+import { ThemeToggle } from "@/components/ThemeToggle";
 
 interface Note {
   id: string;
@@ -227,6 +228,11 @@ const Dashboard = () => {
     <Layout>
       <OnboardingTour />
       <div className="min-h-screen bg-background">
+        {/* Theme Toggle - Top Right */}
+        <div className="fixed top-4 right-4 z-50">
+          <ThemeToggle />
+        </div>
+        
         <div className="container mx-auto px-4 py-6 space-y-8 pb-24">
           {/* Welcome Header */}
           <div data-tour="welcome-header" className="bg-gradient-to-br from-[hsl(var(--primary))] to-[hsl(var(--success))] text-white p-3 xs:p-4 sm:p-6 lg:p-8 rounded-xl xs:rounded-2xl sm:rounded-[20px] mb-3 xs:mb-4 sm:mb-6 lg:mb-8 relative overflow-hidden">
