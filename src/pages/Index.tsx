@@ -1,17 +1,18 @@
-import { useState } from "react";
+import { useState, lazy, Suspense } from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import ericCelebrating from "@/assets/eric-celebrating.png";
 import ericMain01 from "@/assets/eric-main01.png";
-import ericWelcome from "@/assets/eric-welcome.png";
-import ericThinking from "@/assets/eric-main01.png";
-import ericPointingRight from "@/assets/eric-main01.png";
+import ericThinkingPose from "@/assets/eric-thinking-pose.png";
+import ericPointingRight from "@/assets/eric-right-pointing.png";
 import heroImage from "@/assets/hero-education.jpg";
 import edupreneursLogo from "@/assets/edupreneurs-new-logo.png";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { Menu, X } from "lucide-react";
-import { HomeChatbot } from "@/components/HomeChatbot";
+
+// Lazy load chatbot for better initial page load
+const HomeChatbot = lazy(() => import("@/components/HomeChatbot").then(module => ({ default: module.HomeChatbot })));
 
 const Index = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -89,7 +90,7 @@ const Index = () => {
               EDUPRENEURS change la donne avec un apprentissage entièrement personnalisé, basé sur le programme MENFP.
             </p>
             <div className="flex flex-col sm:flex-row flex-wrap gap-1.5 xs:gap-2 sm:gap-3 lg:gap-4">
-              <Link to="/dashboard" className="w-full sm:w-auto">
+              <Link to="/auth" className="w-full sm:w-auto">
                 <Button size="lg" className="w-full sm:w-auto bg-gradient-to-r from-primary to-primary/80 hover:opacity-90 shadow-lg text-[11px] xs:text-xs sm:text-sm lg:text-base py-2 xs:py-2.5">
                   🚀 Commencer Maintenant
                 </Button>
@@ -138,7 +139,7 @@ const Index = () => {
             En 2025, le système éducatif peine à répondre au besoin éducatif. Nous croyons fermement qu'avec les bonnes méthodes 
             et la technologie, le programme du MENFP peut enfin impacter positivement notre jeunesse.
           </p>
-          <img src={heroImage} alt="EDUPRENEURS Logo" className="h-32 sm:h-40 lg:h-44 rounded-xl sm:rounded-2xl shadow-xl mx-auto" loading="lazy" decoding="async" />
+          <img src={heroImage} alt="Étudiants haïtiens apprenant avec EDUPRENEURS" className="h-32 sm:h-40 lg:h-44 rounded-xl sm:rounded-2xl shadow-xl mx-auto" loading="eager" decoding="async" />
         </div>
       </section>
 
@@ -308,7 +309,7 @@ const Index = () => {
               </CardDescription>
             </CardHeader>
             <CardContent className="text-center space-y-6">
-              <Link to="/dashboard">
+              <Link to="/auth">
                 <Button size="lg" className="bg-gradient-to-r from-primary to-primary/80 hover:opacity-90 shadow-lg">
                   🚀 Commencer l'apprentissage
                 </Button>
@@ -331,7 +332,7 @@ const Index = () => {
             </div>
             <div className="flex-shrink-0">
               <img 
-                src={ericThinking} 
+                src={ericThinkingPose} 
                 alt="Eric réfléchit à vos questions" 
                 className="w-32 h-32 sm:w-40 sm:h-40 object-contain animate-[float_4s_ease-in-out_infinite]"
                 loading="lazy"
@@ -484,8 +485,10 @@ const Index = () => {
         </div>
       </footer>
 
-      {/* Home Page Chatbot */}
-      <HomeChatbot />
+      {/* Home Page Chatbot - Lazy loaded for performance */}
+      <Suspense fallback={<div />}>
+        <HomeChatbot />
+      </Suspense>
     </div>
   );
 };
