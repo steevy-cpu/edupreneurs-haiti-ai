@@ -160,7 +160,7 @@ const App = () => (
               <Route path="/sciences-sociales-af8-course" element={<SciencesSocialesCourseAF8 />} />
               <Route path="/sciences-sociales-af8-lesson/:topicId" element={<Layout><SciencesSocialesLessonAF8 /></Layout>} />
               <Route path="/histoire-geographie-7af-course" element={<HistoireGeographieCourse />} />
-              <Route path="/histoire-geographie-7af-lesson/:lessonSlug" element={<DynamicLessonPage />} />
+              <Route path="/course/histoire-geographie-7af/:lessonSlug" element={<DynamicLessonPage />} />
               <Route path="/creole-course" element={<CreoleCourse />} />
               <Route path="/creole-lesson/:topicId" element={<Layout><CreoleLesson /></Layout>} />
               <Route path="/creole-af8-course" element={<CreoleCourseAF8 />} />
