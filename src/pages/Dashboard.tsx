@@ -15,8 +15,12 @@ import {
   Calendar,
   Trophy,
   Award,
-  Target
+  Target,
+  Crown,
+  Medal
 } from "lucide-react";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { getAvatarUrl } from "@/lib/avatarMap";
 import ericThumbsUp from "@/assets/eric-main01.png";
 import { NotificationPermissionBanner } from "@/components/NotificationPermissionBanner";
 import { PWAInstallPrompt } from "@/components/PWAInstallPrompt";
@@ -37,6 +41,17 @@ interface Note {
   updated_at: string;
 }
 
+interface LeaderboardUser {
+  id: string;
+  user_id: string;
+  full_name: string;
+  nickname: string;
+  avatar_url: string | null;
+  gold_earned: number;
+  academic_grade: string;
+  rank: number;
+}
+
 const Dashboard = () => {
   const navigate = useNavigate();
   const [userData, setUserData] = useState({
@@ -52,6 +67,8 @@ const Dashboard = () => {
 
   const [currentUserId, setCurrentUserId] = useState<string>('');
   const [isContentEditor, setIsContentEditor] = useState(false);
+  const [leaderboard, setLeaderboard] = useState<LeaderboardUser[]>([]);
+  const [leaderboardLoading, setLeaderboardLoading] = useState(true);
   
   // PWA Install hook
   const { showPrompt, isIOS, installApp, dismissPrompt } = usePWAInstall();
@@ -64,6 +81,7 @@ const Dashboard = () => {
     fetchRecentNotes();
     fetchGoldEarned();
     checkContentEditorAccess();
+    fetchLeaderboard();
     
     // Get current user ID for notification dialog
     supabase.auth.getUser().then(({ data: { user } }) => {
@@ -133,6 +151,59 @@ const Dashboard = () => {
       }
     } catch (error) {
       console.error('Error fetching notes:', error);
+    }
+  };
+
+  const fetchLeaderboard = async () => {
+    setLeaderboardLoading(true);
+    
+    // Fetch top 5 users by gold earned (excluding system accounts)
+    const { data: topUsers, error } = await supabase
+      .from("profiles")
+      .select("id, user_id, full_name, nickname, avatar_url, gold_earned, academic_grade")
+      .eq("is_system_account", false)
+      .order("gold_earned", { ascending: false })
+      .limit(5);
+
+    if (error) {
+      console.error("Error fetching leaderboard:", error);
+      setLeaderboardLoading(false);
+      return;
+    }
+
+    // Add rank to each user
+    const rankedUsers = topUsers?.map((user, index) => ({
+      ...user,
+      rank: index + 1,
+    })) || [];
+
+    setLeaderboard(rankedUsers);
+    setLeaderboardLoading(false);
+  };
+
+  const getRankIcon = (rank: number) => {
+    switch (rank) {
+      case 1:
+        return <Crown size={20} className="text-yellow-500" />;
+      case 2:
+        return <Medal size={20} className="text-gray-400" />;
+      case 3:
+        return <Award size={20} className="text-amber-600" />;
+      default:
+        return <Trophy size={16} className="text-muted-foreground" />;
+    }
+  };
+
+  const getRankBgColor = (rank: number) => {
+    switch (rank) {
+      case 1:
+        return "from-yellow-500/20 to-amber-500/20 border-yellow-500/30";
+      case 2:
+        return "from-gray-400/20 to-slate-400/20 border-gray-400/30";
+      case 3:
+        return "from-amber-600/20 to-orange-600/20 border-amber-600/30";
+      default:
+        return "from-muted/50 to-muted/30 border-border/50";
     }
   };
 
@@ -528,47 +599,108 @@ const Dashboard = () => {
             </CardContent>
           </Card>
 
-          {/* Featured */}
+          {/* Leaderboard */}
           <Card className="border-none rounded-[20px] shadow-md">
-            <CardHeader>
-              <CardTitle className="text-xl">À la une pour votre niveau</CardTitle>
+            <CardHeader className="flex flex-row items-center justify-between">
+              <CardTitle className="text-xl flex items-center gap-2">
+                <Trophy size={24} className="text-primary" />
+                Classement
+              </CardTitle>
+              <Button 
+                variant="ghost" 
+                size="sm"
+                onClick={() => navigate("/leaderboard")}
+                className="text-primary hover:text-primary"
+              >
+                Voir tout →
+              </Button>
             </CardHeader>
             <CardContent>
-              <div className="bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 rounded-xl p-4 mb-4 text-sm text-amber-800 dark:text-amber-200">
-                <strong>Astuce:</strong> commencez par « Décimaux » en Mathématiques (7e). Cliquez sur « Lire la leçon ».
-              </div>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <Card className="border border-border rounded-2xl hover:shadow-md transition-all">
-                  <CardContent className="p-5">
-                    <strong className="block mb-2">Décimaux — Lecture</strong>
-                    <p className="text-muted-foreground text-sm mb-4">
-                      Explications simples avec schémas.
-                    </p>
-                    <Button 
-                      className="w-full bg-gradient-to-br from-[hsl(var(--primary))] to-[hsl(var(--success))] hover:opacity-90"
-                      onClick={() => navigate("/math-lesson/decimaux")}
-                    >
-                      Lire la leçon
-                    </Button>
-                  </CardContent>
-                </Card>
+              {leaderboardLoading ? (
+                <div className="space-y-3">
+                  {[...Array(5)].map((_, i) => (
+                    <div key={i} className="flex items-center gap-3 p-3 border border-border rounded-xl">
+                      <Skeleton className="h-10 w-10 rounded-full" />
+                      <div className="flex-1 space-y-2">
+                        <Skeleton className="h-4 w-32" />
+                        <Skeleton className="h-3 w-24" />
+                      </div>
+                      <Skeleton className="h-6 w-16" />
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  {leaderboard.map((user) => {
+                    const isCurrentUser = user.user_id === currentUserId;
+                    
+                    return (
+                      <div
+                        key={user.id}
+                        className={`p-3 rounded-xl bg-gradient-to-r ${getRankBgColor(user.rank)} border transition-all hover:scale-[1.02] ${
+                          isCurrentUser ? "ring-2 ring-primary" : ""
+                        }`}
+                      >
+                        <div className="flex items-center gap-3">
+                          {/* Rank Icon */}
+                          <div className="flex items-center justify-center min-w-[32px]">
+                            {getRankIcon(user.rank)}
+                          </div>
 
-                <Card className="border border-border rounded-2xl hover:shadow-md transition-all">
-                  <CardContent className="p-5">
-                    <strong className="block mb-2">Décimaux — Quiz</strong>
-                    <p className="text-muted-foreground text-sm mb-4">
-                      Vérifiez votre compréhension et gagnez des golds.
-                    </p>
-                    <Button 
-                      variant="outline"
-                      className="w-full border-2 border-[hsl(var(--primary))] text-[hsl(var(--primary))] hover:bg-[hsl(var(--primary))] hover:text-white"
-                      onClick={() => navigate("/math-lesson/decimaux")}
-                    >
-                      Passer le quiz
-                    </Button>
-                  </CardContent>
-                </Card>
-              </div>
+                          {/* Avatar */}
+                          <Avatar className="h-10 w-10">
+                            <AvatarImage src={getAvatarUrl(user.avatar_url)} />
+                            <AvatarFallback className="bg-gradient-to-br from-primary/20 to-success/20 font-semibold text-sm">
+                              {user.nickname?.[0] || user.full_name?.[0] || "?"}
+                            </AvatarFallback>
+                          </Avatar>
+
+                          {/* User Info */}
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2">
+                              <p className="font-semibold truncate text-sm">
+                                {user.nickname || user.full_name}
+                              </p>
+                              {isCurrentUser && (
+                                <span className="text-xs bg-primary text-primary-foreground px-2 py-0.5 rounded-full whitespace-nowrap">
+                                  Vous
+                                </span>
+                              )}
+                            </div>
+                            <p className="text-xs text-muted-foreground truncate">
+                              {user.academic_grade}
+                            </p>
+                          </div>
+
+                          {/* Gold Count */}
+                          <div className="text-right">
+                            <div className="flex items-center gap-1 text-amber-500 font-bold">
+                              <span className="text-lg">🏆</span>
+                              <span className="text-sm">{user.gold_earned}</span>
+                            </div>
+                          </div>
+
+                          {/* Rank Number */}
+                          <div className="min-w-[32px] text-center">
+                            <p className="text-lg font-bold text-muted-foreground">
+                              #{user.rank}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+
+              {!leaderboardLoading && leaderboard.length === 0 && (
+                <div className="p-8 text-center">
+                  <Trophy size={40} className="mx-auto mb-3 text-muted-foreground" />
+                  <p className="text-sm text-muted-foreground">
+                    Aucun utilisateur dans le classement
+                  </p>
+                </div>
+              )}
             </CardContent>
           </Card>
         </div>
