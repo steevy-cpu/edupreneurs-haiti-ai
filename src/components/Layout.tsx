@@ -502,7 +502,11 @@ export const Layout = ({ children }: LayoutProps) => {
       </div>
 
       {/* Eric Chatbot - Hidden on Community page */}
-      {location.pathname !== "/community" && <EricChatbot />}
+      {location.pathname !== "/community" && (
+        <div data-tour="eric-chatbot">
+          <EricChatbot />
+        </div>
+      )}
     </div>
   );
 };

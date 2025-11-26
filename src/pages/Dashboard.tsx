@@ -364,8 +364,17 @@ const Dashboard = () => {
             <SubjectProgressChart data={analytics.subjectProgress} />
           </div>
 
-          <LearningInsightsPanel />
-          <AchievementsBadges />
+          <LearningInsightsPanel 
+            analytics={{
+              subjectProgress: analytics.subjectProgress,
+              averageScore: analytics.averageScore,
+              streak: analytics.streak
+            }} 
+          />
+          <AchievementsBadges 
+            achievements={[]} 
+            totalLessons={analytics.totalLessonsCompleted} 
+          />
 
           {/* Leaderboard Section */}
           <Card data-tour="leaderboard-section" className="bg-gradient-to-br from-yellow-500/5 to-orange-500/5 border-yellow-500/20">
