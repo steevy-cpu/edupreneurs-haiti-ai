@@ -353,13 +353,21 @@ export const OnboardingTour = () => {
                 >
                   ← Retour
                 </button>
-                <button
-                  onClick={handleNext}
-                  disabled={!selectedAvatar}
-                  className="px-6 py-3 bg-primary text-primary-foreground rounded-lg font-medium hover:bg-primary/90 transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-lg hover:shadow-xl"
-                >
-                  Continuer →
-                </button>
+                <div className="flex gap-3">
+                  <button
+                    onClick={completeOnboarding}
+                    className="px-4 py-2 text-sm font-medium text-muted-foreground hover:text-foreground border border-border rounded-lg hover:bg-accent transition-colors"
+                  >
+                    Passer
+                  </button>
+                  <button
+                    onClick={handleNext}
+                    disabled={!selectedAvatar}
+                    className="px-6 py-3 bg-primary text-primary-foreground rounded-lg font-medium hover:bg-primary/90 transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-lg hover:shadow-xl"
+                  >
+                    Suivant →
+                  </button>
+                </div>
               </div>
             </div>
           ) : (
@@ -382,16 +390,23 @@ export const OnboardingTour = () => {
               )}
 
               <div className="flex justify-between items-center pt-4 border-t border-border">
-                {currentStep > 0 && (
-                  <button
-                    onClick={handlePrevious}
-                    className="px-6 py-2 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
-                  >
-                    ← Retour
-                  </button>
-                )}
+                <button
+                  onClick={handlePrevious}
+                  disabled={currentStep === 0}
+                  className="px-6 py-2 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  ← Retour
+                </button>
                 
-                <div className="ml-auto">
+                <div className="flex gap-3">
+                  {currentStep !== steps.length - 1 && (
+                    <button
+                      onClick={completeOnboarding}
+                      className="px-4 py-2 text-sm font-medium text-muted-foreground hover:text-foreground border border-border rounded-lg hover:bg-accent transition-colors"
+                    >
+                      Passer
+                    </button>
+                  )}
                   {currentStep === steps.length - 1 ? (
                     <button
                       onClick={completeOnboarding}
