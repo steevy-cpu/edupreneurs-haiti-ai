@@ -718,10 +718,10 @@ export default function Auth() {
                   <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-primary/10 text-primary rounded-full text-sm font-medium">
                     ✨ Essai gratuit 7 jours
                   </span>
-                  <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-accent/10 text-accent-foreground rounded-full text-sm font-medium">
+                  <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-accent/20 text-foreground rounded-full text-sm font-bold">
                     🇭🇹 Français & Créole
                   </span>
-                  <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-secondary/10 text-secondary-foreground rounded-full text-sm font-medium">
+                  <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-secondary/20 text-foreground rounded-full text-sm font-bold">
                     🤖 IA personnalisée
                   </span>
                 </div>
