@@ -25,13 +25,9 @@ import {
 } from "lucide-react";
 import { usePWAInstall } from "@/hooks/usePWAInstall";
 import { useDashboardAnalytics } from "@/hooks/useDashboardAnalytics";
-import { LearningStreakWidget } from "@/components/dashboard/LearningStreakWidget";
-import { WeeklyGoalWidget } from "@/components/dashboard/WeeklyGoalWidget";
-import { StudyTimeWidget } from "@/components/dashboard/StudyTimeWidget";
 import { WeeklyActivityChart } from "@/components/dashboard/WeeklyActivityChart";
 import { SubjectProgressChart } from "@/components/dashboard/SubjectProgressChart";
-import { LearningInsightsPanel } from "@/components/dashboard/LearningInsightsPanel";
-import { AchievementsBadges } from "@/components/dashboard/AchievementsBadges";
+import { Progress } from "@/components/ui/progress";
 import { NotificationPermissionBanner } from "@/components/NotificationPermissionBanner";
 import { PWAInstallPrompt } from "@/components/PWAInstallPrompt";
 import { getAvatarUrl } from "@/lib/avatarMap";
@@ -233,14 +229,21 @@ const Dashboard = () => {
       <div className="min-h-screen bg-background">
         <div className="container mx-auto px-4 py-6 space-y-8 pb-24">
           {/* Welcome Header */}
-          <div data-tour="welcome-header" className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
-            <div>
-              <h1 className="text-3xl font-bold text-foreground">
-                Bienvenue, {userData.name}! 👋
+          <div data-tour="welcome-header" className="relative bg-gradient-to-r from-teal-500 to-cyan-500 rounded-2xl p-8 overflow-hidden">
+            <div className="relative z-10">
+              <h1 className="text-4xl font-bold text-white mb-2">
+                Bienvenue, {userData.name}!
               </h1>
-              <p className="text-muted-foreground mt-1">
-                Continuez votre apprentissage personnalisé avec Eric
+              <p className="text-white/90 text-lg">
+                Continuez votre apprentissage personnalisé avec Eric, votre assistant IA
               </p>
+            </div>
+            <div className="absolute right-0 bottom-0 w-48 h-48 opacity-20">
+              <img 
+                src="/src/assets/eric-waving.png" 
+                alt="Eric" 
+                className="w-full h-full object-contain"
+              />
             </div>
           </div>
 
@@ -253,6 +256,31 @@ const Dashboard = () => {
               onDismiss={dismissPrompt}
             />
           )}
+
+          {/* Passion Discovery Banner */}
+          <Link to="/passion-discovery">
+            <Card className="border-2 border-purple-500/30 hover:border-purple-500/50 transition-all cursor-pointer bg-gradient-to-br from-background to-purple-500/5">
+              <CardContent className="p-6">
+                <div className="flex items-start gap-4">
+                  <div className="text-4xl">🎨</div>
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2 mb-2">
+                      <h3 className="text-xl font-bold text-foreground">
+                        NOUVEAU: Découvre ta passion & Développement personnel
+                      </h3>
+                      <span className="px-2 py-1 bg-purple-500 text-white text-xs font-bold rounded">TEST</span>
+                    </div>
+                    <p className="text-muted-foreground mb-4">
+                      Explore la musique, les arts, les échecs, l'éducation civique et le développement personnel avec Eric en IA
+                    </p>
+                    <button className="px-6 py-2 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-full font-medium hover:opacity-90 transition-opacity">
+                      Tester la version interactive →
+                    </button>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </Link>
 
           {isContentEditor && (
             <Link to="/content-editor">
@@ -294,56 +322,46 @@ const Dashboard = () => {
 
           {/* Analytics Widgets */}
           <div data-tour="analytics-widgets" className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <LearningStreakWidget streak={analytics.streak} />
-            <WeeklyGoalWidget current={analytics.weeklyGoal.current} target={analytics.weeklyGoal.target} />
-            <StudyTimeWidget weeklyMinutes={analytics.studyTimeThisWeek} monthlyMinutes={analytics.studyTimeThisMonth} />
-          </div>
-
-          {/* KPI Cards */}
-          <div data-tour="kpi-cards" className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            <Card className="bg-gradient-to-br from-yellow-500/10 to-orange-500/10 border-yellow-500/20">
+            {/* Learning Streak */}
+            <Card className="bg-gradient-to-br from-orange-50 to-orange-100 dark:from-orange-950/30 dark:to-orange-900/20 border-orange-200 dark:border-orange-800/50">
               <CardContent className="p-6">
-                <div className="flex items-center gap-4">
-                  <div className="p-3 bg-yellow-500/20 rounded-full">
-                    <Trophy className="w-8 h-8 text-yellow-500" />
+                <div className="flex items-center gap-4 mb-3">
+                  <div className="p-3 bg-orange-500/20 rounded-full">
+                    <Flame className="w-8 h-8 text-orange-500" />
                   </div>
                   <div>
-                    <p className="text-sm text-muted-foreground">Or gagné</p>
-                    <p className="text-3xl font-bold text-foreground">{goldEarned}</p>
+                    <p className="text-sm text-muted-foreground">Série d'apprentissage</p>
+                    <p className="text-3xl font-bold text-foreground">
+                      {analytics.streak} {analytics.streak === 1 ? "jour" : "jours"}
+                    </p>
                   </div>
                 </div>
               </CardContent>
             </Card>
 
-            <Card className="bg-gradient-to-br from-blue-500/10 to-cyan-500/10 border-blue-500/20">
+            {/* Weekly Goal */}
+            <Card className="bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-950/30 dark:to-blue-900/20 border-blue-200 dark:border-blue-800/50">
               <CardContent className="p-6">
-                <div className="flex items-center gap-4">
+                <div className="flex items-center gap-4 mb-3">
                   <div className="p-3 bg-blue-500/20 rounded-full">
-                    <BookOpen className="w-8 h-8 text-blue-500" />
+                    <Target className="w-8 h-8 text-blue-500" />
                   </div>
-                  <div>
-                    <p className="text-sm text-muted-foreground">Leçons complétées</p>
-                    <p className="text-3xl font-bold text-foreground">{analytics.totalLessonsCompleted}</p>
+                  <div className="flex-1">
+                    <p className="text-sm text-muted-foreground">Objectif Hebdomadaire</p>
+                    <p className="text-2xl font-bold text-foreground">
+                      {analytics.weeklyGoal.current} / {analytics.weeklyGoal.target} leçons
+                    </p>
                   </div>
                 </div>
+                <Progress 
+                  value={Math.min((analytics.weeklyGoal.current / analytics.weeklyGoal.target) * 100, 100)} 
+                  className="h-2" 
+                />
               </CardContent>
             </Card>
 
-            <Card className="bg-gradient-to-br from-green-500/10 to-emerald-500/10 border-green-500/20">
-              <CardContent className="p-6">
-                <div className="flex items-center gap-4">
-                  <div className="p-3 bg-green-500/20 rounded-full">
-                    <Target className="w-8 h-8 text-green-500" />
-                  </div>
-                  <div>
-                    <p className="text-sm text-muted-foreground">Score moyen</p>
-                    <p className="text-3xl font-bold text-foreground">{analytics.averageScore}%</p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card className="bg-gradient-to-br from-purple-500/10 to-pink-500/10 border-purple-500/20">
+            {/* Study Time */}
+            <Card className="bg-gradient-to-br from-purple-50 to-purple-100 dark:from-purple-950/30 dark:to-purple-900/20 border-purple-200 dark:border-purple-800/50">
               <CardContent className="p-6">
                 <div className="flex items-center gap-4">
                   <div className="p-3 bg-purple-500/20 rounded-full">
@@ -351,9 +369,59 @@ const Dashboard = () => {
                   </div>
                   <div>
                     <p className="text-sm text-muted-foreground">Temps d'étude</p>
-                    <p className="text-3xl font-bold text-foreground">{Math.round(analytics.studyTimeThisWeek / 60)}h</p>
+                    <p className="text-3xl font-bold text-foreground">
+                      {Math.floor(analytics.studyTimeThisWeek / 60)}h {analytics.studyTimeThisWeek % 60}min
+                    </p>
+                    <p className="text-xs text-muted-foreground">Cette semaine</p>
                   </div>
                 </div>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* KPI Cards */}
+          <div data-tour="kpi-cards" className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            <Card className="bg-card border-border hover:shadow-lg transition-shadow">
+              <CardContent className="p-6 text-center">
+                <div className="w-16 h-16 mx-auto mb-4 bg-orange-500 rounded-2xl flex items-center justify-center">
+                  <Trophy className="w-8 h-8 text-white" />
+                </div>
+                <p className="text-4xl font-bold text-foreground mb-1">{goldEarned}</p>
+                <p className="text-sm text-muted-foreground">Golds gagnés</p>
+                <p className="text-xs text-muted-foreground">+0 cette semaine</p>
+              </CardContent>
+            </Card>
+
+            <Card className="bg-card border-border hover:shadow-lg transition-shadow">
+              <CardContent className="p-6 text-center">
+                <div className="w-16 h-16 mx-auto mb-4 bg-blue-500 rounded-2xl flex items-center justify-center">
+                  <BookOpen className="w-8 h-8 text-white" />
+                </div>
+                <p className="text-4xl font-bold text-foreground mb-1">{analytics.totalLessonsCompleted}</p>
+                <p className="text-sm text-muted-foreground">Leçons complétées</p>
+                <p className="text-xs text-muted-foreground">0 cette semaine</p>
+              </CardContent>
+            </Card>
+
+            <Card className="bg-card border-border hover:shadow-lg transition-shadow">
+              <CardContent className="p-6 text-center">
+                <div className="w-16 h-16 mx-auto mb-4 bg-green-500 rounded-2xl flex items-center justify-center">
+                  <Award className="w-8 h-8 text-white" />
+                </div>
+                <p className="text-4xl font-bold text-foreground mb-1">{analytics.averageScore}%</p>
+                <p className="text-sm text-muted-foreground">Score moyen</p>
+                <p className="text-xs text-muted-foreground">Continue! 💪</p>
+              </CardContent>
+            </Card>
+
+            <Card className="bg-card border-border hover:shadow-lg transition-shadow">
+              <CardContent className="p-6 text-center">
+                <div className="w-16 h-16 mx-auto mb-4 bg-purple-500 rounded-2xl flex items-center justify-center">
+                  <Clock className="w-8 h-8 text-white" />
+                </div>
+                <p className="text-4xl font-bold text-foreground mb-1">{Math.round(analytics.studyTimeThisWeek / 60)}h</p>
+                <p className="text-sm text-muted-foreground">Temps d'étude</p>
+                <p className="text-xs text-muted-foreground">Cette semaine</p>
               </CardContent>
             </Card>
           </div>
@@ -363,18 +431,6 @@ const Dashboard = () => {
             <WeeklyActivityChart data={analytics.weeklyActivity} />
             <SubjectProgressChart data={analytics.subjectProgress} />
           </div>
-
-          <LearningInsightsPanel 
-            analytics={{
-              subjectProgress: analytics.subjectProgress,
-              averageScore: analytics.averageScore,
-              streak: analytics.streak
-            }} 
-          />
-          <AchievementsBadges 
-            achievements={[]} 
-            totalLessons={analytics.totalLessonsCompleted} 
-          />
 
           {/* Leaderboard Section */}
           <Card data-tour="leaderboard-section" className="bg-gradient-to-br from-yellow-500/5 to-orange-500/5 border-yellow-500/20">
