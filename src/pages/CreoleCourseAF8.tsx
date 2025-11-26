@@ -6,6 +6,7 @@ import { ArrowLeft, BookOpen, Calendar } from "lucide-react";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import DOMPurify from "dompurify";
 
 interface Lesson {
   id: string;
@@ -77,6 +78,11 @@ const CreoleCourseAF8 = () => {
     'Mai': 'from-indigo-500/10 to-blue-500/10 border-indigo-500/20',
     'Juin': 'from-teal-500/10 to-cyan-500/10 border-teal-500/20',
     'Juillet': 'from-orange-500/10 to-red-500/10 border-orange-500/20',
+  };
+
+  const stripHtml = (html: string) => {
+    const clean = DOMPurify.sanitize(html, { ALLOWED_TAGS: [] });
+    return clean.trim();
   };
 
   return (
@@ -156,7 +162,7 @@ const CreoleCourseAF8 = () => {
                             )}
                           </div>
                           <CardDescription className="line-clamp-2">
-                            {lesson.objectif}
+                            {stripHtml(lesson.objectif)}
                           </CardDescription>
                         </CardHeader>
                         <CardContent>
