@@ -703,22 +703,61 @@ export default function Auth() {
           
           <div className="auth-grid grid md:grid-cols-[1.1fr_0.9fr] gap-8 w-full">
             {/* Info Panel */}
-            <aside className="auth-panel auth-info bg-card border border-border rounded-2xl shadow-lg p-7">
-              <h1 className="text-3xl font-bold mb-2">Bienvenue</h1>
-              <p className="text-muted-foreground mb-5">
-                Créez votre compte ou connectez-vous pour accéder à votre apprentissage personnalisé aligné au MENFP.
-              </p>
-              <div className="flex flex-wrap gap-2 mb-4">
-                <span className="auth-badge">Essai 7 jours</span>
-                <span className="auth-badge">FR / HT</span>
-                <span className="auth-badge">IA personnalisée</span>
+            <aside className="auth-panel auth-info bg-gradient-to-br from-primary/5 via-background to-accent/5 border border-border rounded-2xl shadow-xl p-8">
+              <div className="space-y-6">
+                <div>
+                  <h1 className="text-3xl md:text-4xl font-bold mb-3 bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+                    Bienvenue sur EDUPRENEURS
+                  </h1>
+                  <p className="text-muted-foreground text-base leading-relaxed">
+                    Plateforme d'apprentissage personnalisé alignée au programme du MENFP, avec assistance IA et suivi de progression.
+                  </p>
+                </div>
+                
+                <div className="flex flex-wrap gap-2">
+                  <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-primary/10 text-primary rounded-full text-sm font-medium">
+                    ✨ Essai gratuit 7 jours
+                  </span>
+                  <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-accent/10 text-accent-foreground rounded-full text-sm font-medium">
+                    🇭🇹 Français & Créole
+                  </span>
+                  <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-secondary/10 text-secondary-foreground rounded-full text-sm font-medium">
+                    🤖 IA personnalisée
+                  </span>
+                </div>
+                
+                <div className="space-y-3">
+                  <div className="flex items-start gap-3">
+                    <div className="flex-shrink-0 w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
+                      <span className="text-lg">📚</span>
+                    </div>
+                    <div>
+                      <h3 className="font-semibold text-foreground mb-1">Contenu riche et interactif</h3>
+                      <p className="text-sm text-muted-foreground">Leçons détaillées, schémas explicatifs et exercices pratiques</p>
+                    </div>
+                  </div>
+                  
+                  <div className="flex items-start gap-3">
+                    <div className="flex-shrink-0 w-8 h-8 rounded-full bg-accent/10 flex items-center justify-center">
+                      <span className="text-lg">🎯</span>
+                    </div>
+                    <div>
+                      <h3 className="font-semibold text-foreground mb-1">Quiz et récompenses</h3>
+                      <p className="text-sm text-muted-foreground">Testez vos connaissances et gagnez des golds à chaque réussite</p>
+                    </div>
+                  </div>
+                  
+                  <div className="flex items-start gap-3">
+                    <div className="flex-shrink-0 w-8 h-8 rounded-full bg-secondary/10 flex items-center justify-center">
+                      <span className="text-lg">💳</span>
+                    </div>
+                    <div>
+                      <h3 className="font-semibold text-foreground mb-1">Paiement flexible</h3>
+                      <p className="text-sm text-muted-foreground">MonCash, NatCash - Environ 200 HTG/mois après l'essai</p>
+                    </div>
+                  </div>
+                </div>
               </div>
-              <ul className="auth-bullets list-none m-0 p-0 text-muted-foreground space-y-2">
-                <li className="flex items-center gap-2">• Leçons et schémas simples</li>
-                <li className="flex items-center gap-2">• Quiz amusants et golds</li>
-                <li className="flex items-center gap-2">• Paiement MonCash / NatCash</li>
-                <li className="flex items-center gap-2">• Prix cible ~200 HTG / mois</li>
-              </ul>
             </aside>
 
             {/* Mobile Image */}
@@ -823,42 +862,6 @@ export default function Auth() {
                     >
                       Mot de passe oublié ?
                     </button>
-
-                    <div className="flex flex-col gap-2 mt-4">
-                      <Button 
-                        type="button"
-                        variant="outline"
-                        className="w-full"
-                        onClick={async () => {
-                          try {
-                            // Clear onboarding flag to show tour again
-                            localStorage.removeItem("onboarding_completed");
-                            
-                            const { error } = await supabase.auth.signInWithPassword({
-                              email: "celestinsteeve738@gmail.com",
-                              password: "test123",
-                            });
-                            if (error) throw error;
-                            toast({
-                              title: "Connexion test réussie",
-                              description: "Mode test activé",
-                            });
-                            navigate("/dashboard");
-                          } catch (error: any) {
-                            toast({
-                              title: "Erreur",
-                              description: error.message,
-                              variant: "destructive",
-                            });
-                          }
-                        }}
-                      >
-                        🧪 Connexion Test Rapide
-                      </Button>
-                      <p className="auth-note text-xs text-muted-foreground text-center">
-                        ou utilisez: <code className="bg-muted px-1 py-0.5 rounded text-xs">celestinsteeve738@gmail.com / test123</code>
-                      </p>
-                    </div>
                   </form>
                 )}
 
