@@ -501,8 +501,8 @@ export const Layout = ({ children }: LayoutProps) => {
         {children}
       </div>
 
-      {/* Eric Chatbot - Hidden on Community page */}
-      {location.pathname !== "/community" && (
+      {/* Eric Chatbot - Hidden on Community page, lesson pages, and feed */}
+      {!isCommunityPage && !isLessonPage && !isFeedPage && (
         <div data-tour="eric-chatbot">
           <EricChatbot />
         </div>
