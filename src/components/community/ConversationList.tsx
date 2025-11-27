@@ -75,15 +75,28 @@ export function ConversationList({
   const formatLastSeenTime = (dateString: string) => {
     try {
       const date = new Date(dateString);
-      // Format time in New York timezone, French locale, HH:mm format
-      return date.toLocaleTimeString('fr-FR', { 
-        hour: '2-digit', 
-        minute: '2-digit',
-        timeZone: 'America/New_York'
+      const now = new Date();
+      const diffMs = now.getTime() - date.getTime();
+      const diffMins = Math.floor(diffMs / 60000);
+      const diffHours = Math.floor(diffMs / 3600000);
+      const diffDays = Math.floor(diffMs / 86400000);
+
+      if (diffMins < 1) return "à l'instant";
+      if (diffMins < 60) return `il y a ${diffMins} min`;
+      if (diffHours < 24) return `il y a ${diffHours}h`;
+      if (diffDays === 1) return "hier";
+      if (diffDays < 7) return `il y a ${diffDays} jours`;
+      
+      // For older dates, show the full date with time
+      return date.toLocaleDateString("fr-FR", { 
+        day: "numeric", 
+        month: "short",
+        hour: '2-digit',
+        minute: '2-digit'
       });
     } catch (error) {
       console.error('Error formatting last seen time:', error);
-      return '--:--';
+      return 'Hors ligne';
     }
   };
 
@@ -97,9 +110,17 @@ export function ConversationList({
     const lastSeen = lastSeenTimes[userId];
     if (!lastSeen) return "Hors ligne";
     
-    // Display "Dernière connexion à HH:mm"
+    // Display relative time
     const timeString = formatLastSeenTime(lastSeen);
-    return `Dernière connexion à ${timeString}`;
+    
+    // If it's very recent (today), just show the relative time
+    if (timeString.includes('instant') || timeString.includes('min') || 
+        timeString.includes('h') || timeString === 'hier') {
+      return `Vu ${timeString}`;
+    }
+    
+    // For older dates, show "Dernière connexion le [date]"
+    return `Dernière connexion le ${timeString}`;
   };
 
   const filteredConversations = conversations.filter(conv => {
