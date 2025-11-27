@@ -759,7 +759,7 @@ All colors MUST be HSL.
     max-width: 70%;
     font-size: 0.9rem;
     line-height: 1.6;
-    border: 1px solid hsl(var(--border));
+    border: none;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
     position: relative;
     word-wrap: break-word;
@@ -782,7 +782,7 @@ All colors MUST be HSL.
     width: 28px;
     height: 28px;
     padding: 6px;
-    border: 1px solid hsl(var(--border)) !important;
+    border: none;
     box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
     transition: all 0.3s;
     cursor: pointer;
@@ -810,7 +810,7 @@ All colors MUST be HSL.
     padding: 10px 15px;
     margin-bottom: 10px;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-    border: 1px solid hsl(var(--border));
+    border: none;
     font-size: 0.85rem;
   }
 
@@ -832,7 +832,7 @@ All colors MUST be HSL.
     padding: 12px;
     margin: 0;
     box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
-    border: 1px solid hsl(var(--border));
+    border: none;
   }
   
   .eric-input-group {
