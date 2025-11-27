@@ -701,14 +701,12 @@ All colors MUST be HSL.
     backdrop-filter: blur(10px);
     color: white !important;
     border: 2px solid rgba(255, 255, 255, 0.3) !important;
-    box-shadow: 0 2px 8px rgba(239, 68, 68, 0.3);
     transition: all 0.3s;
   }
   
   .eric-close-btn:hover {
     background: rgba(239, 68, 68, 1) !important;
     transform: scale(1.1);
-    box-shadow: 0 4px 12px rgba(239, 68, 68, 0.5);
   }
 
   .eric-chat-messages {
@@ -760,7 +758,6 @@ All colors MUST be HSL.
     font-size: 0.9rem;
     line-height: 1.6;
     border: none;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
     position: relative;
     word-wrap: break-word;
     overflow-wrap: break-word;
@@ -783,7 +780,6 @@ All colors MUST be HSL.
     height: 28px;
     padding: 6px;
     border: none;
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
     transition: all 0.3s;
     cursor: pointer;
   }
@@ -809,7 +805,6 @@ All colors MUST be HSL.
     backdrop-filter: blur(10px);
     padding: 10px 15px;
     margin-bottom: 10px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
     border: none;
     font-size: 0.85rem;
   }
@@ -831,7 +826,6 @@ All colors MUST be HSL.
     backdrop-filter: blur(15px);
     padding: 12px;
     margin: 0;
-    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
     border: none;
   }
   
@@ -870,12 +864,10 @@ All colors MUST be HSL.
     border: none;
     cursor: pointer;
     transition: all 0.3s;
-    box-shadow: 0 2px 8px rgba(16, 185, 129, 0.3);
   }
   
   .eric-voice-btn:hover {
     transform: scale(1.05);
-    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.4);
   }
 
   .eric-send-btn {
@@ -887,12 +879,10 @@ All colors MUST be HSL.
     border: none;
     cursor: pointer;
     transition: all 0.3s;
-    box-shadow: 0 2px 8px rgba(37, 99, 235, 0.3);
   }
   
   .eric-send-btn:hover {
     transform: scale(1.05);
-    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.4);
   }
   
   .eric-send-btn:disabled {
