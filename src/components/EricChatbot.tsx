@@ -324,7 +324,7 @@ export const EricChatbot = () => {
           onMouseDown={handleMouseDown}
           onTouchStart={handleTouchStart}
           onClick={(e) => {
-            if (!hasActuallyDragged) {
+            if (!hasActuallyDragged && !isOpen) {
               setIsOpen(true);
             }
           }}
