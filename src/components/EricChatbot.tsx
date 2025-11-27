@@ -358,8 +358,7 @@ export const EricChatbot = () => {
               flexDirection: 'column',
               background: 'transparent',
               borderRadius: '1.5rem',
-              padding: '1.25rem',
-              boxShadow: '0 10px 40px rgba(0,0,0,0.2)'
+              padding: '1.25rem'
             } : {
               display: 'none'
             }}
