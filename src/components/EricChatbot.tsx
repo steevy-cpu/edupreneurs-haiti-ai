@@ -342,35 +342,8 @@ export const EricChatbot = () => {
           />
         </div>
       ) : (
-        /* Chat Interface with Eric at top right */
-        <>
-          {/* Eric Picture at top right of chatbox */}
-          <div 
-            ref={floatingRef}
-            style={position ? {
-              position: 'fixed',
-              left: `${position.x + 300}px`,
-              top: `${position.y + 15}px`,
-              zIndex: 1002,
-              width: '4.5rem',
-              cursor: isDragging ? 'grabbing' : 'grab'
-            } : {
-              display: 'none'
-            }}
-            onMouseDown={handleMouseDown}
-            onTouchStart={handleTouchStart}
-          >
-            <img 
-              src={ericAvatar} 
-              alt="Eric - Assistant IA" 
-              title="Eric - Votre assistant"
-              className="w-full h-auto pointer-events-none drop-shadow-2xl"
-              loading="lazy"
-              decoding="async"
-            />
-          </div>
-
-          <div 
+        /* Chat Interface */
+        <div
             ref={chatRef}
             style={position ? {
               position: 'fixed',
@@ -461,7 +434,6 @@ export const EricChatbot = () => {
             </div>
           </div>
         </div>
-        </>
       )}
     </>
   );
