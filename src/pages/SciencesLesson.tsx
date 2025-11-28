@@ -342,7 +342,7 @@ export default function SciencesLesson() {
                 <Badge variant="secondary">{topicInfo.category}</Badge>
                 <Badge variant="outline">{topicInfo.difficulty}</Badge>
               </div>
-              <h1 className="text-3xl md:text-4xl font-bold mb-3 hyphens-auto">{topicInfo.title}</h1>
+              <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-3 hyphens-auto [overflow-wrap:break-word]">{topicInfo.title}</h1>
               <div className="flex gap-4 text-sm text-muted-foreground flex-wrap">
                 <span className="flex items-center gap-1">
                   <BookOpen className="w-4 h-4" />

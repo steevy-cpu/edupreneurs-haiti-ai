@@ -363,7 +363,7 @@ const FrancaisLesson = () => {
                     {currentIndex + 1}
                   </div>
                   <div className="flex-1">
-                    <CardTitle className="text-xl sm:text-2xl mb-2 text-foreground hyphens-auto">{lesson.title}</CardTitle>
+                    <CardTitle className="text-lg sm:text-xl md:text-2xl mb-2 text-foreground hyphens-auto [overflow-wrap:break-word]">{lesson.title}</CardTitle>
                     <p className="text-sm text-purple-600 dark:text-purple-400">📅 {lesson.mois}</p>
                   </div>
                 </div>

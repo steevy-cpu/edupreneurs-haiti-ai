@@ -256,22 +256,22 @@ export default function EspagnolLesson() {
         </div>
       </nav>
 
-      <div className="container mx-auto px-4 pt-24 pb-12 max-w-7xl">
+      <div className="container mx-auto px-3 sm:px-4 pt-24 pb-12 max-w-7xl">
         {/* Lesson Header */}
-        <Card className="p-8 mb-8 bg-gradient-to-r from-purple-500/10 to-purple-600/10">
-          <div className="flex items-start gap-6">
-            <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-purple-500 to-purple-700 flex items-center justify-center flex-shrink-0">
-              <Languages className="w-10 h-10 text-white" />
+        <Card className="p-4 sm:p-6 md:p-8 mb-6 sm:mb-8 bg-gradient-to-r from-purple-500/10 to-purple-600/10">
+          <div className="flex items-start gap-3 sm:gap-4 md:gap-6">
+            <div className="w-14 h-14 sm:w-16 sm:h-16 md:w-20 md:h-20 rounded-2xl bg-gradient-to-br from-purple-500 to-purple-700 flex items-center justify-center flex-shrink-0">
+              <Languages className="w-7 h-7 sm:w-8 sm:h-8 md:w-10 md:h-10 text-white" />
             </div>
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2 mb-2 flex-wrap">
                 <Badge variant="secondary">Espagnol</Badge>
                 <Badge variant="outline">Niveau 7AF</Badge>
               </div>
-              <h1 className="text-3xl md:text-4xl font-bold mb-3 hyphens-auto">{lesson.title}</h1>
-              <div className="flex gap-4 text-sm text-muted-foreground flex-wrap">
+              <h1 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold mb-3 hyphens-auto [overflow-wrap:break-word]">{lesson.title}</h1>
+              <div className="flex gap-2 sm:gap-4 text-xs sm:text-sm text-muted-foreground flex-wrap">
                 <span className="flex items-center gap-1">
-                  <BookOpen className="w-4 h-4" />
+                  <BookOpen className="w-3 h-3 sm:w-4 sm:h-4" />
                   45 min
                 </span>
                 <span className="flex items-center gap-1">
@@ -279,7 +279,7 @@ export default function EspagnolLesson() {
                 </span>
                 {lessonCompleted && (
                   <span className="flex items-center gap-1 text-green-600 font-semibold">
-                    <Award className="w-4 h-4" />
+                    <Award className="w-3 h-3 sm:w-4 sm:h-4" />
                     +{earnedPoints} points gagnés
                   </span>
                 )}
