@@ -473,20 +473,20 @@ const Community = () => {
       
       // Fetch profiles with last_seen for all participants
       if (allParticipantIds.size > 0) {
-        const { data: profilesData } = await supabase
-          .from('profiles')
-          .select('user_id, last_seen')
-          .in('user_id', Array.from(allParticipantIds));
+        const { data: profiles } = await supabase
+          .from("profiles")
+          .select("user_id, full_name, nickname, avatar_url, verified, last_seen")
+          .in("user_id", Array.from(allParticipantIds));
         
-        if (profilesData) {
-          const lastSeenMap: Record<string, string> = {};
-          profilesData.forEach(profile => {
+        // Update lastSeenTimes with actual database values
+        if (profiles) {
+          const newLastSeenTimes: Record<string, string> = {};
+          profiles.forEach(profile => {
             if (profile.last_seen) {
-              lastSeenMap[profile.user_id] = profile.last_seen;
+              newLastSeenTimes[profile.user_id] = profile.last_seen;
             }
           });
-          setLastSeenTimes(lastSeenMap);
-          console.log('📥 [Community] Fetched last_seen from DB:', lastSeenMap);
+          setLastSeenTimes(prev => ({ ...prev, ...newLastSeenTimes }));
         }
       }
       
