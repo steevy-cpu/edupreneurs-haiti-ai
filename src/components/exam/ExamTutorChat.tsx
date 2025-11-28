@@ -97,13 +97,25 @@ export const ExamTutorChat = ({
   };
 
   const sendInitialGreeting = async () => {
-    const greeting = `Salut! 👋 Je suis Eric, ton tuteur pour cet examen.
+    let greeting = '';
+    
+    if (exercise.exercise_number === 1) {
+      // Full introduction for first question
+      greeting = `Salut! 👋 Je suis Eric, ton tuteur pour cet examen.
 
 Voici la question ${exercise.exercise_number}:
 
 ${exercise.question_text}
 
 Prends ton temps pour réfléchir. Tu peux me demander des indices ou cliquer sur "Révéler la réponse" si tu es bloqué! 💡`;
+    } else {
+      // Simple transition for subsequent questions
+      greeting = `Très bien! Passons maintenant à la question ${exercise.exercise_number}:
+
+${exercise.question_text}
+
+Prends ton temps pour réfléchir! 💡`;
+    }
     
     await saveMessage('assistant', greeting);
     setShowQuestion(true);
