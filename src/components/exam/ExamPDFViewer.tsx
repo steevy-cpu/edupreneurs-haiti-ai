@@ -62,14 +62,14 @@ export const ExamPDFViewer = ({ pdfUrl, examTitle }: ExamPDFViewerProps) => {
         {hasError ? (
           <div className="absolute inset-0 flex flex-col items-center justify-center p-8 text-center gap-4">
             <p className="text-muted-foreground mb-2">
-              Impossible de charger le PDF dans votre navigateur.
+              Votre navigateur ne peut pas afficher le PDF directement.
             </p>
-            <div className="flex gap-2">
-              <Button onClick={handleFullScreen} variant="default">
+            <div className="flex flex-col sm:flex-row gap-2">
+              <Button onClick={handleFullScreen} variant="default" size="lg">
                 <ExternalLink className="h-4 w-4 mr-2" />
                 Ouvrir dans un nouvel onglet
               </Button>
-              <Button asChild variant="outline">
+              <Button asChild variant="outline" size="lg">
                 <a href={pdfUrl} download>
                   Télécharger le PDF
                 </a>
@@ -77,18 +77,13 @@ export const ExamPDFViewer = ({ pdfUrl, examTitle }: ExamPDFViewerProps) => {
             </div>
           </div>
         ) : (
-          <object
-            data={pdfUrl}
-            type="application/pdf"
-            className="w-full h-full"
+          <iframe
+            src={`${pdfUrl}#view=FitH`}
+            className="w-full h-full border-0"
+            title={examTitle}
             onError={() => setHasError(true)}
-          >
-            <embed
-              src={pdfUrl}
-              type="application/pdf"
-              className="w-full h-full"
-            />
-          </object>
+            style={{ minHeight: '500px' }}
+          />
         )}
       </div>
     </Card>
