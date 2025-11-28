@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, Suspense, useMemo } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -39,65 +39,55 @@ export default function SciencesExpérimentalesLesson7AF() {
   const { stop } = useTTS();
 
   useEffect(() => {
-    fetchLesson();
-    fetchNotes();
+    // Parallel fetch for better performance
+    fetchLessonAndNotes();
   }, [lessonSlug]);
 
-  const fetchLesson = async () => {
+  const fetchLessonAndNotes = async () => {
     try {
-      const { data: subjectData, error: subjectError } = await supabase
-        .from("subjects")
-        .select("id")
-        .eq("slug", "sciences-experimentales-7af")
-        .eq("grade_level", "7AF")
-        .single();
+      // Get user first (needed for notes)
+      const { data: { user } } = await supabase.auth.getUser();
 
-      if (subjectError) throw subjectError;
+      // Fetch lesson and notes in parallel
+      const [lessonResult, notesResult] = await Promise.all([
+        // Optimized: single query with join instead of 2 sequential queries
+        supabase
+          .from("lessons")
+          .select("id, title, objectif, introduction, contenu, exemples_exercices, youtube_url, quiz_final, activites_interactives, subject_id, subjects!inner(slug)")
+          .eq("slug", lessonSlug)
+          .eq("subjects.slug", "sciences-experimentales-7af")
+          .eq("subjects.grade_level", "7AF")
+          .maybeSingle(),
+        
+        // Fetch notes only if user is logged in
+        user ? supabase
+          .from("lesson_notes")
+          .select("notes")
+          .eq("user_id", user.id)
+          .eq("lesson_id", lessonSlug || "")
+          .maybeSingle() : Promise.resolve({ data: null, error: null })
+      ]);
 
-      const { data, error } = await supabase
-        .from("lessons")
-        .select("id, title, objectif, introduction, contenu, exemples_exercices, youtube_url, quiz_final, activites_interactives")
-        .eq("subject_id", subjectData.id)
-        .eq("slug", lessonSlug)
-        .single();
+      if (lessonResult.error) throw lessonResult.error;
 
-      if (error) throw error;
-
-      if (!data) {
+      if (!lessonResult.data) {
         toast.error("Leçon non trouvée");
         navigate("/sciences-experimentales-7af");
         return;
       }
 
-      setLesson(data);
+      setLesson(lessonResult.data);
+
+      // Set notes if available
+      if (notesResult.data) {
+        setNotes(notesResult.data.notes || "");
+      }
     } catch (error) {
       console.error("Error fetching lesson:", error);
       toast.error("Erreur lors du chargement de la leçon");
       navigate("/sciences-experimentales-7af");
     } finally {
       setLoading(false);
-    }
-  };
-
-  const fetchNotes = async () => {
-    try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
-
-      const { data, error } = await supabase
-        .from("lesson_notes")
-        .select("notes")
-        .eq("user_id", user.id)
-        .eq("lesson_id", lessonSlug || "")
-        .maybeSingle();
-
-      if (error && error.code !== "PGRST116") throw error;
-
-      if (data) {
-        setNotes(data.notes || "");
-      }
-    } catch (error) {
-      console.error("Error fetching notes:", error);
     }
   };
 

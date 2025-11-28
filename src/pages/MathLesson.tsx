@@ -50,173 +50,100 @@ const MathLesson = () => {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    window.scrollTo(0, 0);
-    setActiveTab("introduction");
-    if (topicId) {
-      fetchLesson();
-      loadPersonalNotes();
-      fetchActivitiesContent();
-    }
-  }, [topicId]);
-
-  const fetchLesson = async () => {
-    if (!topicId) return;
-    
-    setIsLoading(true);
-    try {
-      // Try to fetch from database first
-      const { data, error } = await supabase
-        .from('lessons')
-        .select('*')
-        .eq('slug', topicId)
-        .eq('grade_level', '7AF')
-        .maybeSingle();
-
-      if (data) {
-        setLesson(data);
-      } else {
-        // Fallback to static data if not in database
-        const mathLessons = await import('@/data/mathLessons');
-        const staticLesson = mathLessons.mathLessons7AF[topicId];
-        
-        if (staticLesson) {
-          // Get proper title from topicId
-          const titleMap: Record<string, string> = {
-            "ensembles": "Ensembles",
-            "plans-droites": "Plans et Droites",
-            "nombres-naturels": "Nombres Naturels",
-            "numeration-binaire": "Numération Binaire",
-            "polygones": "Les Polygones",
-            "unites-mesures": "Unités de Mesures",
-            "divisibilite": "Divisibilité",
-            "decimaux": "Décimaux",
-            "cercle-disque": "Cercle et Disque",
-            "triangles": "Les Triangles",
-            "aires-perimetres": "Aires et Périmètres",
-            "proportionnalite": "Proportionnalité",
-            "entiers-relatifs": "Entiers Relatifs",
-            "volumes-solides": "Volumes de Solides",
-            "fractions": "Les Fractions",
-            "parallelogrammes": "Les Parallélogrammes",
-            "reperage-quadrillage": "Repérage sur Quadrillage",
-            "transformations": "Les Transformations",
-            "statistiques": "Statistiques Élémentaires"
-          };
-          
-          // Convert static lesson format to Lesson interface
-          setLesson({
-            id: topicId,
-            title: titleMap[topicId] || topicId.charAt(0).toUpperCase() + topicId.slice(1),
-            objectif: staticLesson.objectif,
-            introduction: staticLesson.introduction,
-            contenu: staticLesson.contenu,
-            exemples_exercices: staticLesson.exemplesExercices || "",
-            activites_interactives: "",
-            quiz_final: "",
-            youtube_url: ""
-          });
-        }
-      }
-    } catch (error) {
-      console.error('Error fetching lesson:', error);
-      // Try static data as final fallback
+    // Parallel fetch for better performance
+    const fetchData = async () => {
+      if (!topicId) return;
+      
+      setIsLoading(true);
       try {
-        const mathLessons = await import('@/data/mathLessons');
-        const staticLesson = mathLessons.mathLessons7AF[topicId];
-        
-        if (staticLesson) {
-          const titleMap: Record<string, string> = {
-            "ensembles": "Ensembles",
-            "plans-droites": "Plans et Droites",
-            "nombres-naturels": "Nombres Naturels",
-            "numeration-binaire": "Numération Binaire",
-            "polygones": "Les Polygones",
-            "unites-mesures": "Unités de Mesures",
-            "divisibilite": "Divisibilité",
-            "decimaux": "Décimaux",
-            "cercle-disque": "Cercle et Disque",
-            "triangles": "Les Triangles",
-            "aires-perimetres": "Aires et Périmètres",
-            "proportionnalite": "Proportionnalité",
-            "entiers-relatifs": "Entiers Relatifs",
-            "volumes-solides": "Volumes de Solides",
-            "fractions": "Les Fractions",
-            "parallelogrammes": "Les Parallélogrammes",
-            "reperage-quadrillage": "Repérage sur Quadrillage",
-            "transformations": "Les Transformations",
-            "statistiques": "Statistiques Élémentaires"
-          };
+        const { data: { user } } = await supabase.auth.getUser();
+
+        // Fetch lesson and notes in parallel
+        const [lessonResult, notesResult] = await Promise.all([
+          supabase
+            .from('lessons')
+            .select('id, title, objectif, introduction, contenu, exemples_exercices, activites_interactives, quiz_final, youtube_url')
+            .eq('slug', topicId)
+            .eq('grade_level', '7AF')
+            .maybeSingle(),
           
-          setLesson({
-            id: topicId,
-            title: titleMap[topicId] || topicId.charAt(0).toUpperCase() + topicId.slice(1),
-            objectif: staticLesson.objectif,
-            introduction: staticLesson.introduction,
-            contenu: staticLesson.contenu,
-            exemples_exercices: staticLesson.exemplesExercices || "",
-            activites_interactives: "",
-            quiz_final: "",
-            youtube_url: ""
-          });
+          user ? supabase
+            .from("lesson_notes")
+            .select("notes")
+            .eq("user_id", user.id)
+            .eq("lesson_id", `math-${topicId}`)
+            .maybeSingle() : Promise.resolve({ data: null, error: null })
+        ]);
+
+        if (lessonResult.data) {
+          setLesson(lessonResult.data);
+          
+          // Load activities only if available
+          if (lessonResult.data.activites_interactives) {
+            setActivitiesContent(lessonResult.data.activites_interactives);
+          }
+        } else {
+          // Fallback to static data if not in database
+          const mathLessons = await import('@/data/mathLessons');
+          const staticLesson = mathLessons.mathLessons7AF[topicId];
+          
+          if (staticLesson) {
+            const titleMap: Record<string, string> = {
+              "ensembles": "Ensembles",
+              "plans-droites": "Plans et Droites",
+              "nombres-naturels": "Nombres Naturels",
+              "numeration-binaire": "Numération Binaire",
+              "polygones": "Les Polygones",
+              "unites-mesures": "Unités de Mesures",
+              "divisibilite": "Divisibilité",
+              "decimaux": "Décimaux",
+              "cercle-disque": "Cercle et Disque",
+              "triangles": "Les Triangles",
+              "aires-perimetres": "Aires et Périmètres",
+              "proportionnalite": "Proportionnalité",
+              "entiers-relatifs": "Entiers Relatifs",
+              "volumes-solides": "Volumes de Solides",
+              "fractions": "Les Fractions",
+              "parallelogrammes": "Les Parallélogrammes",
+              "reperage-quadrillage": "Repérage sur Quadrillage",
+              "transformations": "Les Transformations",
+              "statistiques": "Statistiques Élémentaires"
+            };
+            
+            setLesson({
+              id: topicId,
+              title: titleMap[topicId] || topicId.charAt(0).toUpperCase() + topicId.slice(1),
+              objectif: staticLesson.objectif,
+              introduction: staticLesson.introduction,
+              contenu: staticLesson.contenu,
+              exemples_exercices: staticLesson.exemplesExercices || "",
+              activites_interactives: "",
+              quiz_final: "",
+              youtube_url: ""
+            });
+          }
         }
-      } catch (fallbackError) {
-        console.error('Error loading static lesson:', fallbackError);
+
+        // Set notes if available
+        if (notesResult.data) {
+          setPersonalNotes(notesResult.data.notes || "");
+        }
+      } catch (error) {
+        console.error('Error fetching lesson:', error);
         toast({
           title: "Erreur",
           description: "Impossible de charger la leçon",
           variant: "destructive"
         });
+      } finally {
+        setIsLoading(false);
       }
-    } finally {
-      setIsLoading(false);
-    }
-  };
+    };
 
-  const fetchActivitiesContent = async () => {
-    if (!topicId) return;
-    
-    setIsLoadingActivities(true);
-    try {
-      const { data, error } = await supabase
-        .from('lessons')
-        .select('activites_interactives')
-        .eq('slug', topicId)
-        .eq('grade_level', '7AF')
-        .maybeSingle();
-
-      if (data?.activites_interactives) {
-        setActivitiesContent(data.activites_interactives);
-      }
-      // If no activities in database, leave empty (will show "no activities available" message)
-    } catch (error) {
-      console.error('Error fetching activities:', error);
-    } finally {
-      setIsLoadingActivities(false);
-    }
-  };
-
-  const loadPersonalNotes = async () => {
-    if (!topicId) return;
-    
-    try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
-
-      // For static lessons, use the slug as the lesson_id
-      const { data, error } = await supabase
-        .from('lesson_notes')
-        .select('notes')
-        .eq('user_id', user.id)
-        .eq('lesson_id', topicId)
-        .maybeSingle();
-
-      if (data && !error) {
-        setPersonalNotes(data.notes || "");
-      }
-    } catch (error) {
-      console.error('Error loading notes:', error);
-    }
-  };
+    window.scrollTo(0, 0);
+    setActiveTab("introduction");
+    fetchData();
+  }, [topicId]);
 
   const savePersonalNotes = async () => {
     if (!topicId) return;
