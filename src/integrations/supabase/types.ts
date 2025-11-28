@@ -346,6 +346,145 @@ export type Database = {
           },
         ]
       }
+      exam_exercises: {
+        Row: {
+          concept: string
+          correct_answer: string | null
+          created_at: string
+          exam_id: string
+          exercise_number: number
+          exercise_type: string
+          explanation: string | null
+          id: string
+          options: Json | null
+          points: number
+          question_text: string
+        }
+        Insert: {
+          concept: string
+          correct_answer?: string | null
+          created_at?: string
+          exam_id: string
+          exercise_number: number
+          exercise_type?: string
+          explanation?: string | null
+          id?: string
+          options?: Json | null
+          points?: number
+          question_text: string
+        }
+        Update: {
+          concept?: string
+          correct_answer?: string | null
+          created_at?: string
+          exam_id?: string
+          exercise_number?: number
+          exercise_type?: string
+          explanation?: string | null
+          id?: string
+          options?: Json | null
+          points?: number
+          question_text?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "exam_exercises_exam_id_fkey"
+            columns: ["exam_id"]
+            isOneToOne: false
+            referencedRelation: "official_exams"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      exam_practice_conversations: {
+        Row: {
+          created_at: string
+          exercise_id: string
+          id: string
+          message_content: string
+          message_role: string
+          session_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          exercise_id: string
+          id?: string
+          message_content: string
+          message_role: string
+          session_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          exercise_id?: string
+          id?: string
+          message_content?: string
+          message_role?: string
+          session_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "exam_practice_conversations_exercise_id_fkey"
+            columns: ["exercise_id"]
+            isOneToOne: false
+            referencedRelation: "exam_exercises"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "exam_practice_conversations_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "exam_practice_sessions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      exam_practice_sessions: {
+        Row: {
+          completed_at: string | null
+          completed_exercises: Json
+          current_exercise: number
+          exam_id: string
+          id: string
+          score: number
+          started_at: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          completed_at?: string | null
+          completed_exercises?: Json
+          current_exercise?: number
+          exam_id: string
+          id?: string
+          score?: number
+          started_at?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          completed_at?: string | null
+          completed_exercises?: Json
+          current_exercise?: number
+          exam_id?: string
+          id?: string
+          score?: number
+          started_at?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "exam_practice_sessions_exam_id_fkey"
+            columns: ["exam_id"]
+            isOneToOne: false
+            referencedRelation: "official_exams"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       follows: {
         Row: {
           created_at: string
@@ -854,6 +993,45 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      official_exams: {
+        Row: {
+          created_at: string
+          grade_level: string
+          id: string
+          pdf_url: string | null
+          subject: string
+          title: string
+          total_exercises: number
+          total_points: number
+          updated_at: string
+          year: number
+        }
+        Insert: {
+          created_at?: string
+          grade_level: string
+          id?: string
+          pdf_url?: string | null
+          subject: string
+          title: string
+          total_exercises?: number
+          total_points?: number
+          updated_at?: string
+          year: number
+        }
+        Update: {
+          created_at?: string
+          grade_level?: string
+          id?: string
+          pdf_url?: string | null
+          subject?: string
+          title?: string
+          total_exercises?: number
+          total_points?: number
+          updated_at?: string
+          year?: number
+        }
+        Relationships: []
       }
       passion_module_progress: {
         Row: {

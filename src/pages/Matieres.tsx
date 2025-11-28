@@ -540,6 +540,50 @@ export default function Matieres() {
               </div>
             </Card>
 
+            {/* Exam Preparation Section for 9AF */}
+            {selectedGrade === '9AF' && (
+              <Card className="p-6 mb-8 bg-gradient-to-br from-primary/5 to-primary/10 border-primary/20">
+                <div className="flex flex-col md:flex-row items-center gap-6">
+                  <div className="flex-shrink-0">
+                    <div className="w-24 h-24 rounded-full bg-gradient-to-br from-amber-500 to-orange-600 flex items-center justify-center">
+                      <Award className="w-12 h-12 text-white" />
+                    </div>
+                  </div>
+                  <div className="flex-1 text-center md:text-left">
+                    <h3 className="text-2xl font-bold mb-2">
+                      Préparation aux Examens Officiels 🎓
+                    </h3>
+                    <p className="text-muted-foreground mb-4">
+                      Prépare-toi pour l'examen officiel de 9ème AF avec Eric! Pratique avec les questions de l'examen 2025 et reçois des explications personnalisées pour chaque concept.
+                    </p>
+                    <div className="flex flex-wrap gap-3 justify-center md:justify-start">
+                      <Badge variant="secondary" className="text-sm">
+                        📝 18 exercices officiels
+                      </Badge>
+                      <Badge variant="secondary" className="text-sm">
+                        🤖 Tuteur IA Eric
+                      </Badge>
+                      <Badge variant="secondary" className="text-sm">
+                        🎥 Vidéos explicatives
+                      </Badge>
+                      <Badge variant="secondary" className="text-sm">
+                        🏆 Points de récompense
+                      </Badge>
+                    </div>
+                  </div>
+                  <div className="flex-shrink-0">
+                    <Button
+                      size="lg"
+                      onClick={() => navigate('/exam-preparation/math-9af-2025')}
+                      className="bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700 text-white font-bold"
+                    >
+                      Commencer la préparation
+                    </Button>
+                  </div>
+                </div>
+              </Card>
+            )}
+
             {/* Subjects Grid */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mb-8">
           {displaySubjects.map((subject, index) => {
