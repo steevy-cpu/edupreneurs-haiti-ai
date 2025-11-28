@@ -256,6 +256,11 @@ export default function ExamPreparation() {
                       sessionId={session?.id || ""}
                       exerciseId={currentExerciseData?.id || ""}
                       exercise={currentExerciseData}
+                      examInfo={{
+                        subject: exam.subject,
+                        year: exam.year,
+                        title: exam.title,
+                      }}
                       totalExercises={exercises.length}
                       currentExerciseIndex={currentExercise - 1}
                       onAnswerValidated={handleAnswerValidated}
@@ -283,6 +288,11 @@ export default function ExamPreparation() {
                   sessionId={session?.id || ""}
                   exerciseId={currentExerciseData?.id || ""}
                   exercise={currentExerciseData}
+                  examInfo={{
+                    subject: exam.subject,
+                    year: exam.year,
+                    title: exam.title,
+                  }}
                   totalExercises={exercises.length}
                   currentExerciseIndex={currentExercise - 1}
                   onAnswerValidated={handleAnswerValidated}

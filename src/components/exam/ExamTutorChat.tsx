@@ -30,6 +30,11 @@ interface ExamTutorChatProps {
     concept: string;
     points: number;
   };
+  examInfo: {
+    subject: string;
+    year: number;
+    title: string;
+  };
   totalExercises: number;
   currentExerciseIndex: number;
   onAnswerValidated?: (isCorrect: boolean, points: number) => void;
@@ -41,6 +46,7 @@ export const ExamTutorChat = ({
   sessionId,
   exerciseId,
   exercise,
+  examInfo,
   totalExercises,
   currentExerciseIndex,
   onAnswerValidated,
@@ -101,7 +107,7 @@ export const ExamTutorChat = ({
     
     if (exercise.exercise_number === 1) {
       // Full introduction for first question
-      greeting = `Salut! 👋 Je suis Eric, ton tuteur pour cet examen.
+      greeting = `Salut! 👋 Je suis Eric, ton tuteur pour l'examen de ${examInfo.subject} ${examInfo.year}.
 
 Voici la question ${exercise.exercise_number}:
 
