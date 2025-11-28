@@ -135,6 +135,35 @@ export const GlobalMusicPlayer = () => {
   const handlePlayerClick = () => {
     // Only open if the user didn't drag
     if (!hasMoved) {
+      // Before expanding, ensure the player will fit on screen
+      if (playerRef.current) {
+        const expandedWidth = 320; // w-80 = 320px
+        const expandedHeight = 400; // approximate expanded height
+        
+        let newX = position.x;
+        let newY = position.y;
+        
+        // If using default positioning (right-bottom)
+        if (position.x === 0 && position.y === 0) {
+          // Calculate position to ensure it fits
+          newX = Math.max(0, window.innerWidth - expandedWidth - 24);
+          newY = Math.max(0, window.innerHeight - expandedHeight - 24);
+          setPosition({ x: newX, y: newY });
+        } else {
+          // Check if current position will cause overflow when expanded
+          if (position.x + expandedWidth > window.innerWidth) {
+            newX = Math.max(0, window.innerWidth - expandedWidth - 16);
+          }
+          if (position.y + expandedHeight > window.innerHeight) {
+            newY = Math.max(0, window.innerHeight - expandedHeight - 16);
+          }
+          
+          if (newX !== position.x || newY !== position.y) {
+            setPosition({ x: newX, y: newY });
+          }
+        }
+      }
+      
       setMinimized(false);
     }
   };
@@ -152,10 +181,10 @@ export const GlobalMusicPlayer = () => {
         ref={playerRef}
         className="fixed z-50 cursor-move"
         style={{
-          left: position.x === 0 ? 'auto' : `${position.x}px`,
-          top: position.y === 0 ? 'auto' : `${position.y}px`,
-          right: position.x === 0 ? '24px' : 'auto',
-          bottom: position.y === 0 ? '24px' : 'auto',
+          left: position.x !== 0 ? `${position.x}px` : 'auto',
+          top: position.y !== 0 ? `${position.y}px` : 'auto',
+          right: position.x === 0 && position.y === 0 ? '24px' : 'auto',
+          bottom: position.x === 0 && position.y === 0 ? '24px' : 'auto',
         }}
         onMouseDown={handleMouseDown}
         onTouchStart={handleTouchStart}
@@ -172,18 +201,18 @@ export const GlobalMusicPlayer = () => {
             )}
           </Button>
         ) : (
-          <Card className="w-80 shadow-2xl border-2">
+          <Card className="w-[calc(100vw-32px)] sm:w-80 max-w-80 shadow-2xl border-2">
             <CardHeader className="pb-3 bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-950/30 dark:to-pink-950/30">
               <div className="flex items-center justify-between">
-                <CardTitle className="text-base flex items-center gap-2">
-                  <Volume2 className="w-5 h-5 text-primary" />
-                  Musique d'étude 🎵
+                <CardTitle className="text-sm sm:text-base flex items-center gap-2 truncate">
+                  <Volume2 className="w-4 h-4 sm:w-5 sm:h-5 text-primary shrink-0" />
+                  <span className="truncate">Musique d'étude 🎵</span>
                 </CardTitle>
                 <Button
                   variant="ghost"
                   size="icon"
                   onClick={() => setMinimized(true)}
-                  className="h-8 w-8"
+                  className="h-8 w-8 shrink-0"
                 >
                   <X className="w-4 h-4" />
                 </Button>
@@ -198,12 +227,12 @@ export const GlobalMusicPlayer = () => {
                 <>
                   {/* Current Track */}
                   {tracks.length > 0 && (
-                    <div className="p-4">
-                      <div className="flex items-start gap-3 mb-3">
+                    <div className="p-3 sm:p-4">
+                      <div className="flex items-start gap-2 sm:gap-3 mb-3">
                         <img
                           src={tracks[currentTrackIndex].thumbnail}
                           alt={tracks[currentTrackIndex].title}
-                          className="w-16 h-16 rounded object-cover flex-shrink-0"
+                          className="w-14 h-14 sm:w-16 sm:h-16 rounded object-cover flex-shrink-0"
                           loading="lazy"
                           decoding="async"
                         />
@@ -223,7 +252,7 @@ export const GlobalMusicPlayer = () => {
                           variant="outline"
                           size="icon"
                           onClick={playPause}
-                          className="h-10 w-10"
+                          className="h-9 w-9 sm:h-10 sm:w-10"
                         >
                           {isPlaying ? (
                             <Pause className="w-4 h-4" />
@@ -235,27 +264,27 @@ export const GlobalMusicPlayer = () => {
                           variant="outline"
                           size="icon"
                           onClick={nextTrack}
-                          className="h-10 w-10"
+                          className="h-9 w-9 sm:h-10 sm:w-10"
                         >
                           <SkipForward className="w-4 h-4" />
                         </Button>
                         <Dialog open={open} onOpenChange={setOpen}>
                           <DialogTrigger asChild>
-                            <Button variant="outline" size="sm">
+                            <Button variant="outline" size="sm" className="text-xs sm:text-sm">
                               Playlist
                             </Button>
                           </DialogTrigger>
-                          <DialogContent className="max-w-2xl max-h-[80vh] fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
+                          <DialogContent className="max-w-[calc(100vw-32px)] sm:max-w-2xl max-h-[80vh]">
                             <DialogHeader>
-                              <DialogTitle className="flex items-center gap-2">
-                                <Music className="w-5 h-5" />
+                              <DialogTitle className="flex items-center gap-2 text-base sm:text-lg">
+                                <Music className="w-4 h-4 sm:w-5 sm:h-5" />
                                 Playlist de musique classique
                               </DialogTitle>
-                              <DialogDescription>
+                              <DialogDescription className="text-xs sm:text-sm">
                                 Sélectionne une piste pour commencer à écouter
                               </DialogDescription>
                             </DialogHeader>
-                            <ScrollArea className="h-[500px] pr-4">
+                            <ScrollArea className="h-[400px] sm:h-[500px] pr-2 sm:pr-4">
                               <div className="space-y-2">
                                 {tracks.map((track, index) => (
                                   <button
@@ -264,7 +293,7 @@ export const GlobalMusicPlayer = () => {
                                       playTrack(index);
                                       setOpen(false);
                                     }}
-                                    className={`w-full flex items-center gap-4 p-4 rounded-lg hover:bg-accent transition-colors text-left ${
+                                    className={`w-full flex items-center gap-3 sm:gap-4 p-3 sm:p-4 rounded-lg hover:bg-accent transition-colors text-left ${
                                       index === currentTrackIndex && isPlaying
                                         ? "bg-primary/10 border-2 border-primary"
                                         : "border-2 border-transparent"
@@ -273,12 +302,12 @@ export const GlobalMusicPlayer = () => {
                                     <img
                                       src={track.thumbnail}
                                       alt={track.title}
-                                      className="w-20 h-20 rounded-lg object-cover flex-shrink-0"
+                                      className="w-16 h-16 sm:w-20 sm:h-20 rounded-lg object-cover flex-shrink-0"
                                       loading="lazy"
                                       decoding="async"
                                     />
                                     <div className="flex-1 min-w-0">
-                                      <p className="font-medium text-sm leading-tight mb-1">
+                                      <p className="font-medium text-xs sm:text-sm leading-tight mb-1 line-clamp-2">
                                         {track.title}
                                       </p>
                                       <p className="text-xs text-muted-foreground">
@@ -286,9 +315,9 @@ export const GlobalMusicPlayer = () => {
                                       </p>
                                     </div>
                                     {index === currentTrackIndex && isPlaying ? (
-                                      <Music className="w-6 h-6 text-primary animate-pulse flex-shrink-0" />
+                                      <Music className="w-5 h-5 sm:w-6 sm:h-6 text-primary animate-pulse flex-shrink-0" />
                                     ) : (
-                                      <Play className="w-6 h-6 text-muted-foreground flex-shrink-0" />
+                                      <Play className="w-5 h-5 sm:w-6 sm:h-6 text-muted-foreground flex-shrink-0" />
                                     )}
                                   </button>
                                 ))}
