@@ -135,35 +135,6 @@ export const GlobalMusicPlayer = () => {
   const handlePlayerClick = () => {
     // Only open if the user didn't drag
     if (!hasMoved) {
-      // Before expanding, ensure the player will fit on screen
-      if (playerRef.current) {
-        const expandedWidth = 320; // w-80 = 320px
-        const expandedHeight = 400; // approximate expanded height
-        
-        let newX = position.x;
-        let newY = position.y;
-        
-        // If using default positioning (right-bottom)
-        if (position.x === 0 && position.y === 0) {
-          // Calculate position to ensure it fits
-          newX = Math.max(0, window.innerWidth - expandedWidth - 24);
-          newY = Math.max(0, window.innerHeight - expandedHeight - 24);
-          setPosition({ x: newX, y: newY });
-        } else {
-          // Check if current position will cause overflow when expanded
-          if (position.x + expandedWidth > window.innerWidth) {
-            newX = Math.max(0, window.innerWidth - expandedWidth - 16);
-          }
-          if (position.y + expandedHeight > window.innerHeight) {
-            newY = Math.max(0, window.innerHeight - expandedHeight - 16);
-          }
-          
-          if (newX !== position.x || newY !== position.y) {
-            setPosition({ x: newX, y: newY });
-          }
-        }
-      }
-      
       setMinimized(false);
     }
   };

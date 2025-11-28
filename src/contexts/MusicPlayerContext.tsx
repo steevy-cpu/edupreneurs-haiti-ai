@@ -50,6 +50,9 @@ export const MusicPlayerProvider = ({ children }: { children: ReactNode }) => {
     setIsLoading(true);
     // Curated classical music for studying - all with valid thumbnails
     const curatedTracks: PlaylistTrack[] = [
+      // Special Relaxation Music
+      { id: "45Siu4EtXzE", title: "Musique Relaxante pour Étudier - Concentration", thumbnail: "https://i.ytimg.com/vi/45Siu4EtXzE/hqdefault.jpg" },
+      
       // Mozart - Perfect for Focus
       { id: "Rb0UmrCXxVA", title: "Mozart - Musique Classique pour Étudier", thumbnail: "https://i.ytimg.com/vi/Rb0UmrCXxVA/hqdefault.jpg" },
       { id: "jgpJVI3tDbY", title: "Mozart - Concertos pour Piano Complets", thumbnail: "https://i.ytimg.com/vi/jgpJVI3tDbY/hqdefault.jpg" },
