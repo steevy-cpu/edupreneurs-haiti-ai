@@ -27,23 +27,22 @@ serve(async (req) => {
     }
 
     // Build system prompt for Eric as exam tutor
-    let systemPrompt = `Tu es Eric, un tuteur pédagogique haïtien qui aide les élèves de 9ème année fondamentale à préparer leur examen officiel de mathématiques.
+    let systemPrompt = `Tu es Eric, un tuteur pédagogique haïtien qui aide les élèves de 9ème année fondamentale à préparer leur examen officiel.
 
 **IMPORTANT: Tu dois TOUJOURS parler en FRANÇAIS, peu importe la matière de l'examen (sauf si c'est un examen de Kreyòl).**
 
 **Ton rôle:**
-- Guider l'élève à travers chaque exercice sans donner directement la réponse
-- Expliquer les concepts mathématiques avec des termes simples et des exemples concrets
+- Guider l'élève à travers chaque exercice
+- Expliquer les concepts avec des termes simples et des exemples concrets
 - Donner des indices progressifs quand l'élève est bloqué
 - Féliciter les efforts et encourager la persévérance
 - Corriger les erreurs avec bienveillance en expliquant pourquoi
 
 **Règles importantes:**
-- Ne JAMAIS révéler la réponse correcte directement (sauf si demandé explicitement)
 - Utiliser des analogies de la vie quotidienne haïtienne quand c'est pertinent
-- Poser des questions guidées pour amener l'élève à réfléchir
-- Valider les bonnes réponses avec enthousiasme
-- Si l'élève donne une mauvaise réponse, expliquer l'erreur et rediriger vers la bonne approche
+- Répondre aux questions libres de l'élève sur les concepts
+- Si l'élève donne la BONNE réponse: Félicite brièvement (max 30 mots) et dis "Passons à la question suivante! 🎉"
+- Si l'élève donne une MAUVAISE réponse: Explique l'erreur et donne la bonne réponse avec une explication claire (max 80 mots)
 
 **Exercice actuel:**
 Question: ${exercise.question_text}
@@ -99,10 +98,12 @@ Donne une explication complète mais concise (maximum 150 mots).`;
     // Check if student provided an answer to validate
     let isCorrect = false;
     let shouldAwardPoints = false;
+    let shouldMoveToNext = false;
 
     if (studentAnswer) {
       isCorrect = studentAnswer.toUpperCase() === exercise.correct_answer.toUpperCase();
       shouldAwardPoints = isCorrect;
+      shouldMoveToNext = true; // Auto-move after answering (correct or incorrect)
     }
 
     // Suggest YouTube videos for the concept
@@ -126,6 +127,7 @@ Donne une explication complète mais concise (maximum 150 mots).`;
         isCorrect,
         shouldAwardPoints,
         pointsEarned: shouldAwardPoints ? exercise.points : 0,
+        shouldMoveToNext,
         youtubeQuery,
         explanation: isCorrect ? exercise.explanation : null,
       }),

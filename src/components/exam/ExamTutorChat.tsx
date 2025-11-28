@@ -69,6 +69,7 @@ export const ExamTutorChat = ({
 
   useEffect(() => {
     loadConversation();
+    setSelectedAnswer(null); // Reset answer selection when exercise changes
   }, [exerciseId]);
 
   const loadConversation = async () => {
@@ -169,6 +170,20 @@ Prends ton temps pour réfléchir. Tu peux me demander des indices ou cliquer su
           title: "Bravo! 🎉",
           description: `Tu as gagné ${data.pointsEarned} points!`,
         });
+        
+        // Auto-move to next question after short delay
+        setTimeout(() => {
+          if (onNextExercise) {
+            onNextExercise();
+          }
+        }, 2000);
+      } else {
+        // Also move to next after showing wrong answer explanation
+        setTimeout(() => {
+          if (onNextExercise) {
+            onNextExercise();
+          }
+        }, 4000);
       }
     } catch (error) {
       console.error('Error sending message:', error);
