@@ -180,6 +180,12 @@ export const Layout = ({ children }: LayoutProps) => {
 
     console.log('🌐 [Layout] Setting up global presence for user:', user.id);
     
+    // Update last_seen in database when user comes online
+    await supabase
+      .from('profiles')
+      .update({ last_seen: new Date().toISOString() })
+      .eq('user_id', user.id);
+    
     const channel = supabase.channel('online-users', {
       config: {
         presence: {
@@ -196,8 +202,13 @@ export const Layout = ({ children }: LayoutProps) => {
       .on('presence', { event: 'join' }, ({ key }) => {
         console.log('👋 [Layout] User joined global presence:', key);
       })
-      .on('presence', { event: 'leave' }, ({ key }) => {
+      .on('presence', { event: 'leave' }, async ({ key }) => {
         console.log('👋 [Layout] User left global presence:', key);
+        // Update last_seen when user leaves
+        await supabase
+          .from('profiles')
+          .update({ last_seen: new Date().toISOString() })
+          .eq('user_id', key);
       });
 
     // Then subscribe and track
