@@ -14,6 +14,7 @@ import { TextToSpeechButton } from "@/components/TextToSpeechButton";
 import { useTTS } from "@/hooks/useTTS";
 import { DownloadLessonButton } from "@/components/DownloadLessonButton";
 import { YouTubeVideoSection } from "@/components/YouTubeVideoSection";
+import { EricChatbot } from "@/components/EricChatbot";
 
 interface Lesson {
   id: string;
@@ -308,6 +309,9 @@ export default function SciencesExpérimentalesLesson7AF() {
           </TabsContent>
         </Tabs>
       </div>
+
+      {/* Eric Chatbot */}
+      <EricChatbot />
     </div>
   );
 }
