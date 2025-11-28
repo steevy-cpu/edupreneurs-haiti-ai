@@ -41,6 +41,7 @@ serve(async (req) => {
 **Règles importantes:**
 - NE TE PRÉSENTE JAMAIS dans tes réponses (pas de "Salut! Je suis Eric..." ou "Bonjour, je suis Eric...")
 - Commence directement par ta réponse sans introduction
+- **TOUJOURS utiliser la notation LaTeX pour les formules mathématiques**: Entoure les expressions mathématiques avec $ pour inline (ex: $x^2 + 5$) ou $$ pour les équations (ex: $$\\frac{a}{b}$$)
 - Utiliser des analogies de la vie quotidienne haïtienne quand c'est pertinent
 - Répondre aux questions libres de l'élève sur les concepts
 - Si l'élève donne la BONNE réponse: Félicite brièvement (max 30 mots) et dis "Passons à la question suivante! 🎉"

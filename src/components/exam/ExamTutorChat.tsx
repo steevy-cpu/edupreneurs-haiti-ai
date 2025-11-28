@@ -11,6 +11,8 @@ import { Badge } from "@/components/ui/badge";
 import { Send, Loader2, Youtube, MessageCircle, Trash2, ChevronLeft, ChevronRight } from "lucide-react";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import ericAiHelper from "@/assets/eric-ai-helper.png";
+import 'katex/dist/katex.min.css';
+import { InlineMath, BlockMath } from 'react-katex';
 
 interface Message {
   id: string;
@@ -341,6 +343,29 @@ Prends ton temps pour réfléchir! 💡`;
     await sendInitialGreeting();
   };
 
+  const renderMessageWithMath = (content: string) => {
+    // Split by block math ($$...$$) first
+    const blockParts = content.split(/(\$\$[\s\S]+?\$\$)/g);
+    
+    return blockParts.map((part, blockIndex) => {
+      if (part.startsWith('$$') && part.endsWith('$$')) {
+        const latex = part.slice(2, -2).trim();
+        return <BlockMath key={`block-${blockIndex}`} math={latex} />;
+      }
+      
+      // Split remaining parts by inline math ($...$)
+      const inlineParts = part.split(/(\$[^$]+?\$)/g);
+      
+      return inlineParts.map((inlinePart, inlineIndex) => {
+        if (inlinePart.startsWith('$') && inlinePart.endsWith('$')) {
+          const latex = inlinePart.slice(1, -1);
+          return <InlineMath key={`inline-${blockIndex}-${inlineIndex}`} math={latex} />;
+        }
+        return <span key={`text-${blockIndex}-${inlineIndex}`}>{inlinePart}</span>;
+      });
+    });
+  };
+
   return (
     <Card className="flex flex-col h-[calc(100vh-2rem)]">
       {/* Header */}
@@ -402,9 +427,9 @@ Prends ton temps pour réfléchir! 💡`;
                     : 'bg-muted'
                 }`}
               >
-                <p className="text-sm whitespace-pre-wrap leading-relaxed">
-                  {message.message_content}
-                </p>
+                <div className="text-sm whitespace-pre-wrap leading-relaxed">
+                  {renderMessageWithMath(message.message_content)}
+                </div>
               </Card>
             </div>
           ))}
