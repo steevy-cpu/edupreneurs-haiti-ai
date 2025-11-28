@@ -110,45 +110,40 @@ export default function SciencesLesson() {
 
   useEffect(() => {
     window.scrollTo(0, 0);
-    loadPersonalNotes();
-    fetchYoutubeUrl();
+    fetchNotesAndYoutube();
   }, [topicId]);
 
-  const fetchYoutubeUrl = async () => {
+  const fetchNotesAndYoutube = async () => {
     if (!topicId) return;
     
     try {
-      const { data, error } = await supabase
-        .from('lessons')
-        .select('youtube_url')
-        .eq('slug', topicId)
-        .maybeSingle();
-
-      if (data && !error) {
-        setYoutubeUrl(data.youtube_url);
-      }
-    } catch (error) {
-      console.error('Error fetching YouTube URL:', error);
-    }
-  };
-
-  const loadPersonalNotes = async () => {
-    try {
       const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
 
-      const { data, error } = await supabase
-        .from('lesson_notes' as any)
-        .select('notes')
-        .eq('user_id', user.id)
-        .eq('lesson_id', `sciences-${topicId}`)
-        .maybeSingle();
+      // Fetch notes and YouTube URL in parallel
+      const [notesResult, youtubeResult] = await Promise.all([
+        user ? supabase
+          .from('lesson_notes' as any)
+          .select('notes')
+          .eq('user_id', user.id)
+          .eq('lesson_id', `sciences-${topicId}`)
+          .maybeSingle() : Promise.resolve({ data: null, error: null }),
+        
+        supabase
+          .from('lessons')
+          .select('youtube_url')
+          .eq('slug', topicId)
+          .maybeSingle()
+      ]);
 
-      if (!error && data) {
-        setPersonalNotes((data as any)?.notes || "");
+      if (notesResult.data) {
+        setPersonalNotes((notesResult.data as any)?.notes || "");
+      }
+
+      if (youtubeResult.data && !youtubeResult.error) {
+        setYoutubeUrl(youtubeResult.data.youtube_url);
       }
     } catch (error) {
-      console.error('Error loading notes:', error);
+      console.error('Error loading notes and YouTube:', error);
     }
   };
 

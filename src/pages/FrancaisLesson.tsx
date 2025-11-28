@@ -64,36 +64,50 @@ const FrancaisLesson = () => {
 
   useEffect(() => {
     if (topicId) {
-      loadNotesFromDatabase();
-      loadUserGold(true);
-      loadLessonFromDatabase();
+      loadAllData();
     }
   }, [topicId]);
 
-  const loadLessonFromDatabase = async () => {
+  const loadAllData = async () => {
     if (!topicId) return;
 
     try {
-      // Try to fetch from database first
-      const { data: dbLesson, error } = await supabase
-        .from('lessons')
-        .select('*')
-        .eq('slug', topicId)
-        .eq('grade_level', '7AF')
-        .maybeSingle();
+      const { data: { user } } = await supabase.auth.getUser();
 
-      if (dbLesson && !error) {
-        // Use database content
+      // Fetch lesson, notes, and user gold in parallel
+      const [lessonResult, notesResult, profileResult] = await Promise.all([
+        supabase
+          .from('lessons')
+          .select('*')
+          .eq('slug', topicId)
+          .eq('grade_level', '7AF')
+          .maybeSingle(),
+        
+        user ? supabase
+          .from('notes')
+          .select('content')
+          .eq('user_id', user.id)
+          .eq('lesson_topic', topicId)
+          .single() : Promise.resolve({ data: null, error: null }),
+        
+        user ? supabase
+          .from('profiles')
+          .select('gold_earned')
+          .eq('user_id', user.id)
+          .single() : Promise.resolve({ data: null, error: null })
+      ]);
+
+      // Handle lesson data
+      if (lessonResult.data && !lessonResult.error) {
         setLessonData({
-          objectif: dbLesson.objectif || "",
-          introduction: dbLesson.introduction || "",
-          contenu: dbLesson.contenu || "",
-          activites: dbLesson.activites_interactives || "",
-          quiz: dbLesson.quiz_final || "",
+          objectif: lessonResult.data.objectif || "",
+          introduction: lessonResult.data.introduction || "",
+          contenu: lessonResult.data.contenu || "",
+          activites: lessonResult.data.activites_interactives || "",
+          quiz: lessonResult.data.quiz_final || "",
         });
-        setYoutubeUrl(dbLesson.youtube_url);
+        setYoutubeUrl(lessonResult.data.youtube_url);
       } else if (lesson) {
-        // Fallback to static data and generate activities/quiz
         setLessonData({
           objectif: lesson.objectif,
           introduction: lesson.introduction,
@@ -101,14 +115,23 @@ const FrancaisLesson = () => {
           activites: "",
           quiz: ""
         });
-        
-        // Load activities and quiz from cache or generate
         loadActivitiesAndQuiz();
       }
+
+      // Handle notes
+      if (notesResult.data && !notesResult.error) {
+        setNotes(notesResult.data.content || "");
+        setNotesSaved(true);
+      }
+
+      // Handle user gold
+      if (profileResult.data && !profileResult.error) {
+        setUserGold(profileResult.data.gold_earned || 0);
+        setSessionStartGold(profileResult.data.gold_earned || 0);
+      }
     } catch (error) {
-      console.error('Error loading lesson:', error);
+      console.error('Error loading data:', error);
       if (lesson) {
-        // Fallback to static data
         setLessonData({
           objectif: lesson.objectif,
           introduction: lesson.introduction,
@@ -204,27 +227,6 @@ const FrancaisLesson = () => {
       }
     } catch (error) {
       console.error('Error loading user gold:', error);
-    }
-  };
-
-  const loadNotesFromDatabase = async () => {
-    try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
-
-      const { data, error } = await supabase
-        .from('notes')
-        .select('content')
-        .eq('user_id', user.id)
-        .eq('lesson_topic', topicId)
-        .single();
-
-      if (data && !error) {
-        setNotes(data.content || "");
-        setNotesSaved(true);
-      }
-    } catch (error) {
-      console.error('Error loading notes:', error);
     }
   };
 

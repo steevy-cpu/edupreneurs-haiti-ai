@@ -22,7 +22,7 @@ import { YouTubeVideoSection } from "@/components/YouTubeVideoSection";
 import { DownloadLessonButton } from "@/components/DownloadLessonButton";
 import { TextToSpeechButton } from "@/components/TextToSpeechButton";
 import { useTTS } from "@/hooks/useTTS";
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense, useMemo } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { HTMLQuizParser } from "@/components/HTMLQuizParser";
@@ -60,53 +60,58 @@ export default function EspagnolLesson() {
 
   useEffect(() => {
     window.scrollTo(0, 0);
-    fetchLesson();
-    fetchUserProfile();
+    fetchLessonAndData();
   }, [topicId]);
 
-  const fetchUserProfile = async () => {
-    try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
-
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('nickname')
-        .eq('user_id', user.id)
-        .maybeSingle();
-
-      if (profile?.nickname) {
-        setUserNickname(profile.nickname);
-      }
-    } catch (error) {
-      console.error('Error fetching user profile:', error);
-    }
-  };
-
-  const fetchLesson = async () => {
+  const fetchLessonAndData = async () => {
     if (!topicId) return;
     
     setLoading(true);
     try {
-      const { data, error } = await supabase
-        .from('lessons')
-        .select('*')
-        .eq('slug', topicId)
-        .eq('subject_id', '188811d2-c1e8-47a5-954c-7f2187824b1f') // Espagnol subject
-        .eq('grade_level', '7AF')
-        .maybeSingle();
+      const { data: { user } } = await supabase.auth.getUser();
 
-      if (error) throw error;
+      // Fetch lesson, user profile, and notes in parallel
+      const [lessonResult, profileResult, notesResult] = await Promise.all([
+        supabase
+          .from('lessons')
+          .select('*')
+          .eq('slug', topicId)
+          .eq('subject_id', '188811d2-c1e8-47a5-954c-7f2187824b1f')
+          .eq('grade_level', '7AF')
+          .maybeSingle(),
+        
+        user ? supabase
+          .from('profiles')
+          .select('nickname')
+          .eq('user_id', user.id)
+          .maybeSingle() : Promise.resolve({ data: null, error: null }),
+        
+        user ? supabase
+          .from('lesson_notes' as any)
+          .select('notes')
+          .eq('user_id', user.id)
+          .eq('lesson_id', `espagnol-${topicId}`)
+          .maybeSingle() : Promise.resolve({ data: null, error: null })
+      ]);
+
+      if (lessonResult.error) throw lessonResult.error;
       
-      if (data) {
-        setLesson(data as Lesson);
-        loadPersonalNotes();
+      if (lessonResult.data) {
+        setLesson(lessonResult.data as Lesson);
       } else {
         toast({
           title: "Leçon non trouvée",
           description: "Cette leçon n'existe pas ou n'est pas encore disponible.",
           variant: "destructive"
         });
+      }
+
+      if (profileResult.data?.nickname) {
+        setUserNickname(profileResult.data.nickname);
+      }
+
+      if (notesResult.data) {
+        setPersonalNotes((notesResult.data as any)?.notes || "");
       }
     } catch (error) {
       console.error('Error fetching lesson:', error);
@@ -117,26 +122,6 @@ export default function EspagnolLesson() {
       });
     } finally {
       setLoading(false);
-    }
-  };
-
-  const loadPersonalNotes = async () => {
-    try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
-
-      const { data, error } = await supabase
-        .from('lesson_notes' as any)
-        .select('notes')
-        .eq('user_id', user.id)
-        .eq('lesson_id', `espagnol-${topicId}`)
-        .maybeSingle();
-
-      if (!error && data) {
-        setPersonalNotes((data as any)?.notes || "");
-      }
-    } catch (error) {
-      console.error('Error loading notes:', error);
     }
   };
 

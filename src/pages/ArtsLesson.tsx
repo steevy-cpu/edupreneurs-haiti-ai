@@ -48,17 +48,16 @@ export default function ArtsLesson() {
 
   useEffect(() => {
     window.scrollTo(0, 0);
-    fetchLessonData();
-    loadPersonalNotes();
-    fetchActivitiesContent();
-    fetchQuizContent();
+    fetchAllLessonData();
   }, [topicId]);
 
-  const fetchLessonData = async () => {
+  const fetchAllLessonData = async () => {
     if (!topicId) return;
     
     setLoading(true);
     try {
+      const { data: { user } } = await supabase.auth.getUser();
+
       // First get the Arts subject ID
       const { data: subjectData, error: subjectError } = await supabase
         .from('subjects')
@@ -78,18 +77,41 @@ export default function ArtsLesson() {
         return;
       }
 
-      // Then get the lesson with subject filter
-      const { data, error } = await supabase
-        .from('lessons')
-        .select('*')
-        .eq('slug', topicId)
-        .eq('grade_level', '7AF')
-        .eq('subject_id', subjectData.id)
-        .eq('is_published', true)
-        .maybeSingle();
+      // Fetch all lesson data in parallel
+      const [lessonResult, notesResult, activitiesResult, quizResult] = await Promise.all([
+        supabase
+          .from('lessons')
+          .select('*')
+          .eq('slug', topicId)
+          .eq('grade_level', '7AF')
+          .eq('subject_id', subjectData.id)
+          .eq('is_published', true)
+          .maybeSingle(),
+        
+        user ? supabase
+          .from('lesson_notes')
+          .select('notes')
+          .eq('user_id', user.id)
+          .eq('lesson_id', `arts-${topicId}`)
+          .maybeSingle() : Promise.resolve({ data: null, error: null }),
+        
+        supabase
+          .from('lessons')
+          .select('activites_interactives')
+          .eq('slug', topicId)
+          .eq('grade_level', '7AF')
+          .maybeSingle(),
+        
+        supabase
+          .from('lessons')
+          .select('quiz_final')
+          .eq('slug', topicId)
+          .eq('grade_level', '7AF')
+          .maybeSingle()
+      ]);
 
-      if (error) {
-        console.error('Error fetching lesson:', error);
+      if (lessonResult.error) {
+        console.error('Error fetching lesson:', lessonResult.error);
         toast({
           title: "Erreur",
           description: "Impossible de charger la leçon",
@@ -98,78 +120,28 @@ export default function ArtsLesson() {
         return;
       }
 
-      if (data) {
-        setLessonData(data);
-        setYoutubeUrl(data.youtube_url);
+      if (lessonResult.data) {
+        setLessonData(lessonResult.data);
+        setYoutubeUrl(lessonResult.data.youtube_url);
+      }
+
+      if (notesResult.data) {
+        setPersonalNotes((notesResult.data as any)?.notes || "");
+      }
+
+      if (activitiesResult.data?.activites_interactives) {
+        setActivitiesContent(activitiesResult.data.activites_interactives);
+      }
+
+      if (quizResult.data?.quiz_final) {
+        setQuizContent(quizResult.data.quiz_final);
       }
     } catch (error) {
       console.error('Error fetching lesson:', error);
     } finally {
       setLoading(false);
-    }
-  };
-
-  const fetchActivitiesContent = async () => {
-    if (!topicId) return;
-    
-    setIsLoadingActivities(true);
-    try {
-      const { data, error } = await supabase
-        .from('lessons')
-        .select('activites_interactives')
-        .eq('slug', topicId)
-        .eq('grade_level', '7AF')
-        .maybeSingle();
-
-      if (data?.activites_interactives) {
-        setActivitiesContent(data.activites_interactives);
-      }
-    } catch (error) {
-      console.error('Error fetching activities:', error);
-    } finally {
       setIsLoadingActivities(false);
-    }
-  };
-
-  const fetchQuizContent = async () => {
-    if (!topicId) return;
-    
-    setIsLoadingQuiz(true);
-    try {
-      const { data, error } = await supabase
-        .from('lessons')
-        .select('quiz_final')
-        .eq('slug', topicId)
-        .eq('grade_level', '7AF')
-        .maybeSingle();
-
-      if (data?.quiz_final) {
-        setQuizContent(data.quiz_final);
-      }
-    } catch (error) {
-      console.error('Error fetching quiz:', error);
-    } finally {
       setIsLoadingQuiz(false);
-    }
-  };
-
-  const loadPersonalNotes = async () => {
-    try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
-
-      const { data, error } = await supabase
-        .from('lesson_notes' as any)
-        .select('notes')
-        .eq('user_id', user.id)
-        .eq('lesson_id', `arts-${topicId}`)
-        .maybeSingle();
-
-      if (!error && data) {
-        setPersonalNotes((data as any)?.notes || "");
-      }
-    } catch (error) {
-      console.error('Error loading notes:', error);
     }
   };
 

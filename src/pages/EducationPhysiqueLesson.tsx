@@ -47,18 +47,17 @@ export default function EducationPhysiqueLesson() {
 
   useEffect(() => {
     window.scrollTo(0, 0);
-    fetchLessonData();
-    loadPersonalNotes();
-    fetchActivitiesContent();
-    fetchQuizContent();
+    fetchAllLessonData();
   }, [topicId]);
 
-  const fetchLessonData = async () => {
+  const fetchAllLessonData = async () => {
     if (!topicId) return;
     
     setLoading(true);
     try {
-      // First get the Éducation Physique subject ID
+      const { data: { user } } = await supabase.auth.getUser();
+
+      // First get the subject ID
       const { data: subjectData, error: subjectError } = await supabase
         .from('subjects')
         .select('id')
@@ -77,18 +76,43 @@ export default function EducationPhysiqueLesson() {
         return;
       }
 
-      // Then get the lesson with subject filter
-      const { data, error } = await supabase
-        .from('lessons')
-        .select('*')
-        .eq('slug', topicId)
-        .eq('grade_level', '7AF')
-        .eq('subject_id', subjectData.id)
-        .eq('is_published', true)
-        .maybeSingle();
+      // Fetch all lesson data in parallel
+      const [lessonResult, notesResult, activitiesResult, quizResult] = await Promise.all([
+        supabase
+          .from('lessons')
+          .select('*')
+          .eq('slug', topicId)
+          .eq('grade_level', '7AF')
+          .eq('subject_id', subjectData.id)
+          .eq('is_published', true)
+          .maybeSingle(),
+        
+        user ? supabase
+          .from('lesson_notes')
+          .select('notes')
+          .eq('user_id', user.id)
+          .eq('lesson_id', `education-physique-${topicId}`)
+          .maybeSingle() : Promise.resolve({ data: null, error: null }),
+        
+        supabase
+          .from('lessons')
+          .select('activites_interactives')
+          .eq('slug', topicId)
+          .eq('subject_id', subjectData.id)
+          .eq('is_published', true)
+          .maybeSingle(),
+        
+        supabase
+          .from('lessons')
+          .select('quiz_final')
+          .eq('slug', topicId)
+          .eq('subject_id', subjectData.id)
+          .eq('is_published', true)
+          .maybeSingle()
+      ]);
 
-      if (error) {
-        console.error('Error fetching lesson:', error);
+      if (lessonResult.error) {
+        console.error('Error fetching lesson:', lessonResult.error);
         toast({
           title: "Erreur",
           description: "Impossible de charger la leçon",
@@ -97,10 +121,10 @@ export default function EducationPhysiqueLesson() {
         return;
       }
 
-      if (data) {
-        setLessonData(data);
-        if (data.youtube_url) {
-          setYoutubeUrl(data.youtube_url);
+      if (lessonResult.data) {
+        setLessonData(lessonResult.data);
+        if (lessonResult.data.youtube_url) {
+          setYoutubeUrl(lessonResult.data.youtube_url);
         }
       } else {
         toast({
@@ -109,73 +133,23 @@ export default function EducationPhysiqueLesson() {
           variant: "destructive",
         });
       }
+
+      if (notesResult.data) {
+        setPersonalNotes((notesResult.data as any)?.notes || "");
+      }
+
+      if (activitiesResult.data?.activites_interactives) {
+        setActivitiesContent(activitiesResult.data.activites_interactives);
+      }
+
+      if (quizResult.data?.quiz_final) {
+        setQuizContent(quizResult.data.quiz_final);
+      }
     } catch (error) {
-      console.error('Error in fetchLessonData:', error);
+      console.error('Error in fetchAllLessonData:', error);
     } finally {
       setLoading(false);
-    }
-  };
-
-  const fetchActivitiesContent = async () => {
-    if (!topicId) return;
-    
-    setIsLoadingActivities(true);
-    try {
-      const { data: subjectData } = await supabase
-        .from('subjects')
-        .select('id')
-        .eq('slug', 'education-physique')
-        .eq('grade_level', '7AF')
-        .single();
-
-      if (!subjectData) return;
-
-      const { data } = await supabase
-        .from('lessons')
-        .select('activites_interactives')
-        .eq('slug', topicId)
-        .eq('subject_id', subjectData.id)
-        .eq('is_published', true)
-        .maybeSingle();
-
-      if (data?.activites_interactives) {
-        setActivitiesContent(data.activites_interactives);
-      }
-    } catch (error) {
-      console.error('Error fetching activities:', error);
-    } finally {
       setIsLoadingActivities(false);
-    }
-  };
-
-  const fetchQuizContent = async () => {
-    if (!topicId) return;
-    
-    setIsLoadingQuiz(true);
-    try {
-      const { data: subjectData } = await supabase
-        .from('subjects')
-        .select('id')
-        .eq('slug', 'education-physique')
-        .eq('grade_level', '7AF')
-        .single();
-
-      if (!subjectData) return;
-
-      const { data } = await supabase
-        .from('lessons')
-        .select('quiz_final')
-        .eq('slug', topicId)
-        .eq('subject_id', subjectData.id)
-        .eq('is_published', true)
-        .maybeSingle();
-
-      if (data?.quiz_final) {
-        setQuizContent(data.quiz_final);
-      }
-    } catch (error) {
-      console.error('Error fetching quiz:', error);
-    } finally {
       setIsLoadingQuiz(false);
     }
   };

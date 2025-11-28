@@ -52,23 +52,38 @@ export default function CreoleLesson() {
   useEffect(() => {
     window.scrollTo(0, 0);
     if (topicId) {
-      fetchLesson();
-      loadPersonalNotes();
+      fetchLessonAndNotes();
     }
   }, [topicId]);
 
-  const fetchLesson = async () => {
+  const fetchLessonAndNotes = async () => {
     try {
       setLoading(true);
-      const { data, error } = await supabase
-        .from('lessons')
-        .select('*')
-        .eq('slug', topicId)
-        .eq('grade_level', '7AF')
-        .single();
+      const { data: { user } } = await supabase.auth.getUser();
 
-      if (error) throw error;
-      setLesson(data);
+      // Fetch lesson and notes in parallel
+      const [lessonResult, notesResult] = await Promise.all([
+        supabase
+          .from('lessons')
+          .select('*')
+          .eq('slug', topicId)
+          .eq('grade_level', '7AF')
+          .single(),
+        
+        user ? supabase
+          .from('lesson_notes')
+          .select('notes')
+          .eq('user_id', user.id)
+          .eq('lesson_id', topicId || '')
+          .maybeSingle() : Promise.resolve({ data: null, error: null })
+      ]);
+
+      if (lessonResult.error) throw lessonResult.error;
+      setLesson(lessonResult.data);
+
+      if (notesResult.data && notesResult.error?.code !== 'PGRST116') {
+        setPersonalNotes(notesResult.data.notes || "");
+      }
     } catch (error) {
       console.error('Error fetching lesson:', error);
       toast({
@@ -78,27 +93,6 @@ export default function CreoleLesson() {
       });
     } finally {
       setLoading(false);
-    }
-  };
-
-  const loadPersonalNotes = async () => {
-    try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
-
-      const { data, error } = await supabase
-        .from('lesson_notes')
-        .select('notes')
-        .eq('user_id', user.id)
-        .eq('lesson_id', topicId || '')
-        .maybeSingle();
-
-      if (error && error.code !== 'PGRST116') throw error;
-      if (data) {
-        setPersonalNotes(data.notes || "");
-      }
-    } catch (error) {
-      console.error('Error loading notes:', error);
     }
   };
 
@@ -291,7 +285,7 @@ export default function CreoleLesson() {
                   <InteractiveActivitiesEnhanced
                     content={lesson.activites_interactives}
                     isLoading={false}
-                    onRegenerate={() => fetchLesson()}
+                    onRegenerate={() => fetchLessonAndNotes()}
                     onGoldUpdate={() => {}}
                   />
                 ) : (
