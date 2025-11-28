@@ -179,7 +179,7 @@ export default function SciencesExpérimentalesLesson7AF() {
       <div className="container mx-auto px-3 sm:px-4 pt-20 sm:pt-24 pb-12">
         {/* Lesson Header */}
         <Card className="p-4 sm:p-6 md:p-8 mb-6 sm:mb-8 bg-gradient-to-r from-cyan-500/10 to-cyan-600/10 border-cyan-500/20">
-          <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-3 sm:mb-4 break-words">{lesson.title}</h1>
+          <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-3 sm:mb-4 hyphens-auto">{lesson.title}</h1>
           <div className="flex flex-col sm:flex-row items-start gap-3">
             <Target className="w-5 h-5 sm:w-6 sm:h-6 text-primary shrink-0 mt-1" />
             <div className="flex-1 w-full">

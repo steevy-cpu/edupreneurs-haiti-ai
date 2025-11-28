@@ -337,7 +337,7 @@ export default function ArtsLesson() {
           <div className="flex items-start gap-4 mb-6">
             <div className="text-5xl">{lessonIcon}</div>
             <div className="flex-1">
-              <h1 className="text-3xl sm:text-4xl font-bold text-foreground mb-3">
+              <h1 className="text-3xl sm:text-4xl font-bold text-foreground mb-3 hyphens-auto">
                 {lessonData.title}
               </h1>
               <div className="flex flex-wrap gap-2">
