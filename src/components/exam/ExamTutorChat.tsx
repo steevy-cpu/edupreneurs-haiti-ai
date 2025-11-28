@@ -324,7 +324,7 @@ Prends ton temps pour réfléchir. Tu peux me demander des indices ou cliquer su
   };
 
   return (
-    <Card className="flex flex-col h-[calc(100vh-8rem)]">
+    <Card className="flex flex-col h-[calc(100vh-2rem)]">
       {/* Header */}
       <div className="flex items-center gap-3 p-3 border-b bg-muted/30 flex-shrink-0">
         <Avatar className="h-10 w-10 border-2 border-primary">
