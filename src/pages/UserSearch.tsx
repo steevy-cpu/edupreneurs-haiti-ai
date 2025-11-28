@@ -167,92 +167,100 @@ const UserSearch = () => {
     <div className="min-h-screen bg-background">
       {/* Header */}
       <div className="sticky top-0 z-50 border-b border-border/50 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-        <div className="max-w-2xl mx-auto px-4 py-3 flex items-center gap-3">
+        <div className="max-w-2xl mx-auto px-3 sm:px-4 py-2.5 sm:py-3 flex items-center gap-2 sm:gap-3">
           <Button
             size="icon"
             variant="ghost"
             onClick={() => navigate("/dashboard")}
+            className="h-9 w-9 sm:h-10 sm:w-10"
           >
-            <ArrowLeft size={24} />
+            <ArrowLeft className="h-5 w-5 sm:h-6 sm:w-6" />
           </Button>
-          <h1 className="text-xl font-semibold flex-1">Rechercher des utilisateurs</h1>
+          <h1 className="text-base sm:text-xl font-semibold flex-1 truncate">Rechercher des utilisateurs</h1>
           <ThemeToggle />
         </div>
       </div>
 
       {/* Search Bar */}
-      <div className="max-w-2xl mx-auto px-4 py-4">
+      <div className="max-w-2xl mx-auto px-3 sm:px-4 py-3 sm:py-4">
         <div className="relative">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground" size={20} />
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground" size={18} />
           <Input
             type="text"
             placeholder="Rechercher par nom ou pseudo..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-10"
+            className="pl-10 h-10 sm:h-11 text-sm sm:text-base"
           />
         </div>
       </div>
 
       {/* Results */}
-      <ScrollArea className="h-[calc(100vh-140px)]">
-        <div className="max-w-2xl mx-auto pb-20">
+      <ScrollArea className="h-[calc(100vh-120px)] sm:h-[calc(100vh-140px)]">
+        <div className="max-w-2xl mx-auto pb-20 sm:pb-24">
           {isLoading ? (
-            <div className="flex justify-center py-10">
-              <p className="text-muted-foreground">Recherche...</p>
+            <div className="flex justify-center py-8 sm:py-10">
+              <p className="text-sm sm:text-base text-muted-foreground">Recherche...</p>
             </div>
           ) : profiles.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-20 px-4 text-center">
-              <div className="w-24 h-24 rounded-full bg-muted/30 flex items-center justify-center mb-4">
-                <Search size={32} className="text-muted-foreground" />
+            <div className="flex flex-col items-center justify-center py-12 sm:py-20 px-4 text-center">
+              <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-full bg-muted/30 flex items-center justify-center mb-3 sm:mb-4">
+                <Search size={28} className="text-muted-foreground sm:w-8 sm:h-8" />
               </div>
-              <h3 className="text-lg font-medium mb-2">
+              <h3 className="text-base sm:text-lg font-medium mb-1.5 sm:mb-2">
                 {searchQuery ? "Aucun résultat" : "Commencez votre recherche"}
               </h3>
-              <p className="text-sm text-muted-foreground max-w-xs">
+              <p className="text-xs sm:text-sm text-muted-foreground max-w-xs px-2">
                 {searchQuery
                   ? "Essayez un autre nom ou pseudo"
                   : "Tapez un nom ou pseudo pour trouver des utilisateurs"}
               </p>
             </div>
           ) : (
-            <div className="space-y-2 px-4">
+            <div className="space-y-1.5 sm:space-y-2 px-3 sm:px-4">
               {profiles.map((profile) => (
                 <div
                   key={profile.user_id}
-                  className="flex items-center gap-3 p-3 rounded-lg hover:bg-muted/30 transition-colors"
+                  className="flex items-center gap-2.5 sm:gap-3 p-2.5 sm:p-3 rounded-lg hover:bg-muted/30 transition-colors"
                 >
-                  <Avatar className="h-12 w-12 cursor-pointer" onClick={() => navigate(`/profile/${profile.user_id}`)}>
+                  <Avatar 
+                    className="h-11 w-11 sm:h-12 sm:w-12 shrink-0 cursor-pointer" 
+                    onClick={() => navigate(`/profile/${profile.user_id}`)}
+                  >
                     <AvatarImage src={getAvatarUrl(profile.avatar_url)} alt={profile.full_name} />
-                    <AvatarFallback className="bg-gradient-to-br from-primary/20 to-success/20 text-foreground">
+                    <AvatarFallback className="bg-gradient-to-br from-primary/20 to-success/20 text-foreground text-sm sm:text-base">
                       {profile.full_name[0]}
                     </AvatarFallback>
                   </Avatar>
-                  <div className="flex-1 cursor-pointer" onClick={() => navigate(`/profile/${profile.user_id}`)}>
-                    <div className="flex items-center gap-1.5">
-                      <p className="font-semibold">{profile.full_name}</p>
+                  <div className="flex-1 min-w-0 cursor-pointer" onClick={() => navigate(`/profile/${profile.user_id}`)}>
+                    <div className="flex items-center gap-1 sm:gap-1.5">
+                      <p className="font-semibold text-sm sm:text-base truncate">{profile.full_name}</p>
                       {profile.verified && (
-                        <BadgeCheck className="w-4 h-4 text-primary fill-primary/20" />
+                        <BadgeCheck className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-primary fill-primary/20 shrink-0" />
                       )}
                     </div>
-                    <p className="text-sm text-muted-foreground">@{profile.nickname}</p>
+                    <p className="text-xs sm:text-sm text-muted-foreground truncate">@{profile.nickname}</p>
                   </div>
-                  <Button
-                    size="icon"
-                    variant="ghost"
-                    onClick={() => navigate(`/profile/${profile.user_id}`)}
-                    className="hover:bg-primary/10"
-                  >
-                    <Eye size={20} />
-                  </Button>
-                  <Button
-                    size="icon"
-                    variant="ghost"
-                    onClick={() => startConversation(profile.user_id)}
-                    className="hover:bg-primary/10"
-                  >
-                    <MessageCircle size={20} />
-                  </Button>
+                  <div className="flex items-center gap-1 shrink-0">
+                    <Button
+                      size="icon"
+                      variant="ghost"
+                      onClick={() => navigate(`/profile/${profile.user_id}`)}
+                      className="hover:bg-primary/10 h-9 w-9 sm:h-10 sm:w-10"
+                      title="Voir le profil"
+                    >
+                      <Eye className="h-4 w-4 sm:h-5 sm:w-5" />
+                    </Button>
+                    <Button
+                      size="icon"
+                      variant="ghost"
+                      onClick={() => startConversation(profile.user_id)}
+                      className="hover:bg-primary/10 h-9 w-9 sm:h-10 sm:w-10"
+                      title="Envoyer un message"
+                    >
+                      <MessageCircle className="h-4 w-4 sm:h-5 sm:w-5" />
+                    </Button>
+                  </div>
                 </div>
               ))}
             </div>
