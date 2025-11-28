@@ -27,6 +27,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { HTMLQuizParser } from "@/components/HTMLQuizParser";
 import { SpanishPracticeChat } from "@/components/SpanishPracticeChat";
+import { EricChatbot } from "@/components/EricChatbot";
 
 interface Lesson {
   id: string;
@@ -523,6 +524,9 @@ export default function EspagnolLesson() {
         </Card>
 
       </div>
+
+      {/* Eric Chatbot */}
+      <EricChatbot />
     </div>
   );
 }
