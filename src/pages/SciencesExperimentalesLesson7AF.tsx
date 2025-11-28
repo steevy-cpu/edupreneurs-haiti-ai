@@ -149,17 +149,18 @@ export default function SciencesExpérimentalesLesson7AF() {
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5">
       {/* Navigation Bar */}
       <nav className="fixed top-0 left-0 right-0 z-40 bg-background/95 backdrop-blur-md border-b border-border">
-        <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
+        <div className="container mx-auto px-3 sm:px-4 py-3 sm:py-4">
+          <div className="flex items-center justify-between gap-2">
             <Button
               variant="ghost"
               onClick={() => navigate("/sciences-experimentales-7af")}
-              className="gap-2"
+              className="gap-1 sm:gap-2 px-2 sm:px-4"
+              size="sm"
             >
               <ChevronLeft className="w-4 h-4" />
-              <span className="font-semibold">Retour aux leçons</span>
+              <span className="font-semibold text-xs sm:text-sm">Retour aux leçons</span>
             </Button>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1 sm:gap-2">
               {lesson && (
                 <DownloadLessonButton
                   lessonData={lesson}
@@ -175,19 +176,19 @@ export default function SciencesExpérimentalesLesson7AF() {
         </div>
       </nav>
 
-      <div className="container mx-auto px-4 pt-24 pb-12">
+      <div className="container mx-auto px-3 sm:px-4 pt-20 sm:pt-24 pb-12">
         {/* Lesson Header */}
-        <Card className="p-8 mb-8 bg-gradient-to-r from-cyan-500/10 to-cyan-600/10 border-cyan-500/20">
-          <h1 className="text-4xl font-bold mb-4">{lesson.title}</h1>
-          <div className="flex items-start gap-3">
-            <Target className="w-6 h-6 text-primary shrink-0 mt-1" />
-            <div className="flex-1">
-              <div className="flex items-center justify-between mb-2">
-                <p className="text-lg font-semibold">Objectif de la leçon</p>
+        <Card className="p-4 sm:p-6 md:p-8 mb-6 sm:mb-8 bg-gradient-to-r from-cyan-500/10 to-cyan-600/10 border-cyan-500/20">
+          <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-3 sm:mb-4 break-words">{lesson.title}</h1>
+          <div className="flex flex-col sm:flex-row items-start gap-3">
+            <Target className="w-5 h-5 sm:w-6 sm:h-6 text-primary shrink-0 mt-1" />
+            <div className="flex-1 w-full">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 mb-2">
+                <p className="text-base sm:text-lg font-semibold">Objectif de la leçon</p>
                 <TextToSpeechButton text={lesson.objectif} sectionName="Objectif" />
               </div>
               <div 
-                className="lesson-content prose prose-slate dark:prose-invert max-w-none"
+                className="lesson-content prose prose-sm sm:prose-base prose-slate dark:prose-invert max-w-none"
                 dangerouslySetInnerHTML={{ __html: lesson.objectif }}
               />
             </div>
@@ -205,38 +206,38 @@ export default function SciencesExpérimentalesLesson7AF() {
           </TabsList>
 
           <TabsContent value="introduction" className="space-y-4">
-            <Card className="p-8">
-              <div className="flex items-center justify-between mb-4">
-                <h2 className="text-2xl font-bold">📖 Introduction</h2>
+            <Card className="p-4 sm:p-6 md:p-8">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 sm:gap-4 mb-4">
+                <h2 className="text-xl sm:text-2xl font-bold">📖 Introduction</h2>
                 <TextToSpeechButton text={lesson.introduction || ""} sectionName="Introduction" />
               </div>
               <div 
-                className="lesson-content prose prose-slate dark:prose-invert max-w-none"
+                className="lesson-content prose prose-sm sm:prose-base prose-slate dark:prose-invert max-w-none"
                 dangerouslySetInnerHTML={{ __html: lesson.introduction || "<p>Introduction à venir...</p>" }}
               />
             </Card>
           </TabsContent>
 
           <TabsContent value="contenu" className="space-y-4">
-            <Card className="p-8 space-y-6">
-              <div className="flex items-center justify-between mb-4">
-                <h2 className="text-2xl font-bold">📚 Contenu du cours</h2>
+            <Card className="p-4 sm:p-6 md:p-8 space-y-6">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 sm:gap-4 mb-4">
+                <h2 className="text-xl sm:text-2xl font-bold">📚 Contenu du cours</h2>
                 <TextToSpeechButton text={lesson.contenu || ""} sectionName="Contenu Principal" />
               </div>
               <div 
-                className="lesson-content prose prose-slate dark:prose-invert max-w-none"
+                className="lesson-content prose prose-sm sm:prose-base prose-slate dark:prose-invert max-w-none"
                 dangerouslySetInnerHTML={{ __html: lesson.contenu || "<p>Contenu à venir...</p>" }}
               />
               
               {lesson.exemples_exercices && (
                 <>
-                  <div className="border-t my-8" />
-                  <div className="flex items-center justify-between mb-4">
-                    <h2 className="text-2xl font-bold">✏️ Exemples et Exercices</h2>
+                  <div className="border-t my-6 sm:my-8" />
+                  <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 sm:gap-4 mb-4">
+                    <h2 className="text-xl sm:text-2xl font-bold">✏️ Exemples et Exercices</h2>
                     <TextToSpeechButton text={lesson.exemples_exercices} sectionName="Exemples et Exercices" />
                   </div>
                   <div 
-                    className="lesson-content prose prose-slate dark:prose-invert max-w-none"
+                    className="lesson-content prose prose-sm sm:prose-base prose-slate dark:prose-invert max-w-none"
                     dangerouslySetInnerHTML={{ __html: lesson.exemples_exercices }}
                   />
                 </>
@@ -254,9 +255,9 @@ export default function SciencesExpérimentalesLesson7AF() {
           </TabsContent>
 
           <TabsContent value="activites" className="space-y-4">
-            <Card className="p-8">
-              <div className="flex items-center justify-between mb-4">
-                <h2 className="text-2xl font-bold">🎮 Activités Interactives</h2>
+            <Card className="p-4 sm:p-6 md:p-8">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 sm:gap-4 mb-4">
+                <h2 className="text-xl sm:text-2xl font-bold">🎮 Activités Interactives</h2>
                 {lesson.activites_interactives && (
                   <TextToSpeechButton text={lesson.activites_interactives} sectionName="Activités" />
                 )}
@@ -267,21 +268,21 @@ export default function SciencesExpérimentalesLesson7AF() {
                   isLoading={false}
                 />
               ) : (
-                <p className="text-muted-foreground">Activités interactives à venir pour pratiquer vos connaissances...</p>
+                <p className="text-sm sm:text-base text-muted-foreground">Activités interactives à venir pour pratiquer vos connaissances...</p>
               )}
             </Card>
           </TabsContent>
 
           <TabsContent value="notes" className="space-y-4">
-            <Card className="p-8">
-              <h2 className="text-2xl font-bold mb-4">📝 Mes Notes Personnelles</h2>
+            <Card className="p-4 sm:p-6 md:p-8">
+              <h2 className="text-xl sm:text-2xl font-bold mb-4">📝 Mes Notes Personnelles</h2>
               <Textarea
                 placeholder="Écrivez vos notes ici..."
                 value={notes}
                 onChange={(e) => setNotes(e.target.value)}
-                className="min-h-[300px] mb-4"
+                className="min-h-[200px] sm:min-h-[300px] mb-4 text-sm sm:text-base"
               />
-              <Button onClick={saveNotes} disabled={isSaving}>
+              <Button onClick={saveNotes} disabled={isSaving} className="w-full sm:w-auto">
                 {isSaving ? (
                   <>
                     <Loader2 className="w-4 h-4 mr-2 animate-spin" />
@@ -295,15 +296,15 @@ export default function SciencesExpérimentalesLesson7AF() {
           </TabsContent>
 
           <TabsContent value="quiz" className="space-y-4">
-            <Card className="p-8">
-              <h2 className="text-2xl font-bold mb-4">🎯 Quiz Final</h2>
+            <Card className="p-4 sm:p-6 md:p-8">
+              <h2 className="text-xl sm:text-2xl font-bold mb-4">🎯 Quiz Final</h2>
               {lesson.quiz_final ? (
                 <InteractiveQuiz 
                   content={lesson.quiz_final}
                   isLoading={false}
                 />
               ) : (
-                <p className="text-muted-foreground">Quiz interactif à venir pour tester vos connaissances...</p>
+                <p className="text-sm sm:text-base text-muted-foreground">Quiz interactif à venir pour tester vos connaissances...</p>
               )}
             </Card>
           </TabsContent>
