@@ -314,9 +314,10 @@ const EducationPhysiqueCourse = () => {
                       <CardTitle className="text-lg group-hover:text-red-600 dark:group-hover:text-red-400 transition-colors line-clamp-2 mb-2">
                         {lesson.title}
                       </CardTitle>
-                      <p className="text-sm text-muted-foreground line-clamp-2">
-                        {lesson.description}
-                      </p>
+                      <div 
+                        className="text-sm text-muted-foreground line-clamp-2 prose-sm prose dark:prose-invert max-w-none"
+                        dangerouslySetInnerHTML={{ __html: lesson.description || '' }}
+                      />
                     </CardHeader>
                     <CardContent className="space-y-4">
                       <div className="flex items-center justify-between pt-4 border-t border-border/30">

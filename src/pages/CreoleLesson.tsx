@@ -170,24 +170,29 @@ export default function CreoleLesson() {
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5">
       {/* Navigation */}
       <nav className="fixed top-0 left-0 right-0 z-40 bg-background/95 backdrop-blur-md border-b border-border">
-        <div className="container mx-auto px-4 py-4 flex items-center justify-between">
-          <Button
-            variant="ghost"
-            onClick={() => navigate("/creole-course")}
-            className="gap-2"
-          >
-            <ChevronLeft className="w-4 h-4" />
-            <span>Retounen nan kou a</span>
-          </Button>
-          <div className="flex items-center gap-2">
-            <DownloadLessonButton
-              lessonData={lesson}
-              personalNotes={personalNotes}
-              subjectName="Créole AF7"
-              variant="outline"
+        <div className="container mx-auto px-3 sm:px-4 py-3 sm:py-4">
+          <div className="flex items-center justify-between gap-2">
+            <Button
+              variant="ghost"
+              onClick={() => navigate("/creole-course")}
+              className="gap-1 sm:gap-2 text-xs sm:text-sm px-2 sm:px-4"
               size="sm"
-            />
-            <ThemeToggle />
+            >
+              <ChevronLeft className="w-3 h-3 sm:w-4 sm:h-4" />
+              <span className="hidden xs:inline">Retounen nan kou a</span>
+              <span className="xs:hidden">Retounen</span>
+            </Button>
+            <div className="flex items-center gap-1 sm:gap-2">
+              <DownloadLessonButton
+                lessonData={lesson}
+                personalNotes={personalNotes}
+                subjectName="Créole AF7"
+                variant="outline"
+                size="sm"
+                className="text-xs sm:text-sm"
+              />
+              <ThemeToggle />
+            </div>
           </div>
         </div>
       </nav>
