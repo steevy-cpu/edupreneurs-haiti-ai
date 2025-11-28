@@ -54,6 +54,8 @@ export const ExamTutorChat = ({
   const [isLoading, setIsLoading] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [youtubeQuery, setYoutubeQuery] = useState("");
+  const [showQuestion, setShowQuestion] = useState(true);
+  const [selectedAnswer, setSelectedAnswer] = useState<string | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
 
@@ -96,13 +98,15 @@ export const ExamTutorChat = ({
   const sendInitialGreeting = async () => {
     const greeting = `Salut! 👋 Je suis Eric, ton tuteur pour cet examen.
 
-Regarde la question ${exercise.exercise_number} dans le document PDF à gauche. Elle porte sur ${exercise.concept}.
+Voici la question ${exercise.exercise_number}:
 
-Prends ton temps pour lire et comprendre la question. Quand tu es prêt, sélectionne une réponse (A, B, C, ou D) en cliquant sur les boutons ci-dessus!
+${exercise.question_text}
 
-Tu peux aussi me poser des questions si tu as besoin d'aide. 💡`;
+Prends ton temps pour réfléchir. Tu peux me demander des indices ou cliquer sur "Révéler la réponse" si tu es bloqué! 💡`;
     
     await saveMessage('assistant', greeting);
+    setShowQuestion(true);
+    setSelectedAnswer(null);
   };
 
   const saveMessage = async (role: string, content: string) => {
@@ -127,6 +131,90 @@ Tu peux aussi me poser des questions si tu as besoin d'aide. 💡`;
       setMessages(prev => [...prev, data]);
     } catch (error) {
       console.error('Error saving message:', error);
+    }
+  };
+
+  const handleAnswerSelection = async (answer: string) => {
+    setSelectedAnswer(answer);
+    const messageText = `Ma réponse: ${answer}`;
+    
+    setIsLoading(true);
+
+    await saveMessage('user', messageText);
+
+    try {
+      const { data, error } = await supabase.functions.invoke('exam-tutor', {
+        body: {
+          exercise,
+          userMessage: messageText,
+          conversationHistory: messages,
+          studentAnswer: answer,
+        }
+      });
+
+      if (error) throw error;
+
+      await saveMessage('assistant', data.response);
+
+      if (data.youtubeQuery) {
+        setYoutubeQuery(data.youtubeQuery);
+      }
+
+      if (data.shouldAwardPoints && onAnswerValidated) {
+        onAnswerValidated(data.isCorrect, data.pointsEarned);
+      }
+
+      if (data.isCorrect) {
+        toast({
+          title: "Bravo! 🎉",
+          description: `Tu as gagné ${data.pointsEarned} points!`,
+        });
+      }
+    } catch (error) {
+      console.error('Error sending message:', error);
+      toast({
+        title: "Erreur",
+        description: "Impossible de contacter Eric. Réessaie!",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleRevealAnswer = async () => {
+    const messageText = "Révèle-moi la réponse avec une explication";
+    
+    setIsLoading(true);
+
+    await saveMessage('user', messageText);
+
+    try {
+      const { data, error } = await supabase.functions.invoke('exam-tutor', {
+        body: {
+          exercise,
+          userMessage: messageText,
+          conversationHistory: messages,
+          revealAnswer: true,
+        }
+      });
+
+      if (error) throw error;
+
+      await saveMessage('assistant', data.response);
+
+      if (data.youtubeQuery) {
+        setYoutubeQuery(data.youtubeQuery);
+      }
+    } catch (error) {
+      console.error('Error revealing answer:', error);
+      toast({
+        title: "Erreur",
+        description: "Impossible de révéler la réponse. Réessaie!",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -308,16 +396,32 @@ Tu peux aussi me poser des questions si tu as besoin d'aide. 💡`;
 
       {/* Input Area */}
       <div className="p-4 border-t bg-background space-y-3">
+        {/* Answer Options */}
+        {showQuestion && options.length > 0 && (
+          <div className="space-y-2">
+            <p className="text-xs font-medium text-muted-foreground">
+              Sélectionne ta réponse:
+            </p>
+            <div className="grid grid-cols-2 gap-2">
+              {options.map((option: string, idx: number) => (
+                <Button
+                  key={idx}
+                  variant={selectedAnswer === letters[idx] ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => handleAnswerSelection(letters[idx])}
+                  disabled={isLoading || selectedAnswer !== null}
+                  className="justify-start text-left h-auto py-3"
+                >
+                  <span className="font-bold mr-2">{letters[idx]})</span>
+                  <span className="text-xs">{option}</span>
+                </Button>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Quick Actions */}
         <div className="flex gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => handleQuickAction("Explique-moi ce concept en détail.")}
-            disabled={isLoading}
-            className="flex-1"
-          >
-            Explique-moi
-          </Button>
           <Button
             variant="outline"
             size="sm"
@@ -326,6 +430,15 @@ Tu peux aussi me poser des questions si tu as besoin d'aide. 💡`;
             className="flex-1"
           >
             Indice
+          </Button>
+          <Button
+            variant="secondary"
+            size="sm"
+            onClick={handleRevealAnswer}
+            disabled={isLoading}
+            className="flex-1"
+          >
+            Révéler la réponse
           </Button>
         </div>
 

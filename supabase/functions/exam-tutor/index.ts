@@ -15,7 +15,8 @@ serve(async (req) => {
       exercise, 
       userMessage, 
       conversationHistory,
-      studentAnswer 
+      studentAnswer,
+      revealAnswer
     } = await req.json();
 
     console.log('Exam tutor request:', { exercise: exercise?.exercise_number, userMessage });
@@ -26,7 +27,9 @@ serve(async (req) => {
     }
 
     // Build system prompt for Eric as exam tutor
-    const systemPrompt = `Tu es Eric, un tuteur pédagogique haïtien qui aide les élèves de 9ème année fondamentale à préparer leur examen officiel de mathématiques.
+    let systemPrompt = `Tu es Eric, un tuteur pédagogique haïtien qui aide les élèves de 9ème année fondamentale à préparer leur examen officiel de mathématiques.
+
+**IMPORTANT: Tu dois TOUJOURS parler en FRANÇAIS, peu importe la matière de l'examen (sauf si c'est un examen de Kreyòl).**
 
 **Ton rôle:**
 - Guider l'élève à travers chaque exercice sans donner directement la réponse
@@ -36,16 +39,28 @@ serve(async (req) => {
 - Corriger les erreurs avec bienveillance en expliquant pourquoi
 
 **Règles importantes:**
-- Ne JAMAIS révéler la réponse correcte directement
+- Ne JAMAIS révéler la réponse correcte directement (sauf si demandé explicitement)
 - Utiliser des analogies de la vie quotidienne haïtienne quand c'est pertinent
 - Poser des questions guidées pour amener l'élève à réfléchir
 - Valider les bonnes réponses avec enthousiasme
 - Si l'élève donne une mauvaise réponse, expliquer l'erreur et rediriger vers la bonne approche
 
-    **Exercice actuel:**
+**Exercice actuel:**
 Question: ${exercise.question_text}
 Options: ${(Array.isArray(exercise.options) ? exercise.options : []).map((opt: string, idx: number) => `${String.fromCharCode(65 + idx)}) ${opt}`).join(', ')}
+Réponse correcte: ${exercise.correct_answer}
 Concept: ${exercise.concept}`;
+
+    // If reveal answer is requested, modify the prompt
+    if (revealAnswer) {
+      systemPrompt += `\n\n**ACTION REQUISE:** L'élève te demande de révéler la réponse. Tu dois:
+1. Donner la bonne réponse (${exercise.correct_answer})
+2. Expliquer clairement POURQUOI c'est la bonne réponse
+3. Détailler le concept mathématique impliqué avec des exemples simples
+4. Encourager l'élève à passer à la prochaine question
+
+Donne une explication complète mais concise (maximum 150 mots).`;
+    }
 
     // Build messages array
     const messages = [
