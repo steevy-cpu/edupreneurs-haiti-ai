@@ -28,6 +28,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { DownloadLessonButton } from "@/components/DownloadLessonButton";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import { EricChatbot } from "@/components/EricChatbot";
 
 interface LessonData {
   objectif: string;
@@ -616,6 +617,9 @@ const FrancaisLesson = () => {
           </div>
         </div>
       </div>
+
+      {/* Eric Chatbot */}
+      <EricChatbot />
     </div>
   );
 };
