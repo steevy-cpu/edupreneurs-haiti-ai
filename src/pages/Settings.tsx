@@ -230,16 +230,20 @@ const Settings = () => {
   const handleDeleteAccount = async () => {
     setLoading(true);
     try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        toast.error("Non authentifié");
+        return;
+      }
 
-      // Delete profile first (cascade will handle related data)
-      const { error: profileError } = await supabase
-        .from("profiles")
-        .delete()
-        .eq("user_id", user.id);
+      // Call edge function to delete user account completely
+      const { error } = await supabase.functions.invoke('delete-user-account', {
+        headers: {
+          Authorization: `Bearer ${session.access_token}`
+        }
+      });
 
-      if (profileError) throw profileError;
+      if (error) throw error;
 
       // Sign out
       await supabase.auth.signOut();
@@ -247,6 +251,7 @@ const Settings = () => {
       toast.success("Compte supprimé avec succès");
       navigate("/auth");
     } catch (error: any) {
+      console.error("Delete account error:", error);
       toast.error("Erreur lors de la suppression: " + error.message);
     } finally {
       setLoading(false);
