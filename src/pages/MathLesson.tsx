@@ -315,7 +315,7 @@ const MathLesson = () => {
         <div className="mb-6">
           <div className="flex items-start gap-4">
             <div className="flex-1">
-              <h1 className="text-3xl font-bold mb-2 text-foreground">{lesson.title}</h1>
+              <h1 className="text-3xl font-bold mb-2 text-foreground hyphens-auto">{lesson.title}</h1>
               <div className="flex items-center gap-2">
                 <span className="px-3 py-1 bg-primary/10 text-primary rounded-full text-sm font-medium">
                   Mathématiques
