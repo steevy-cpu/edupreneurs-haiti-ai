@@ -309,9 +309,9 @@ Prends ton temps pour réfléchir. Tu peux me demander des indices ou cliquer su
   };
 
   return (
-    <Card className="flex flex-col h-full">
+    <Card className="flex flex-col h-[calc(100vh-12rem)]">
       {/* Header */}
-      <div className="flex items-center gap-3 p-4 border-b bg-muted/30">
+      <div className="flex items-center gap-3 p-4 border-b bg-muted/30 flex-shrink-0">
         <Avatar className="h-10 w-10 border-2 border-primary">
           <AvatarImage src={ericAiHelper} alt="Eric" />
           <AvatarFallback>E</AvatarFallback>
@@ -347,7 +347,7 @@ Prends ton temps pour réfléchir. Tu peux me demander des indices ou cliquer su
       </div>
 
       {/* Messages */}
-      <ScrollArea className="flex-1 p-4">
+      <ScrollArea className="flex-1 p-4 min-h-0">
         <div className="space-y-4">
           {messages.map((message) => (
             <div
@@ -395,7 +395,7 @@ Prends ton temps pour réfléchir. Tu peux me demander des indices ou cliquer su
       </ScrollArea>
 
       {/* Input Area */}
-      <div className="p-4 border-t bg-background space-y-3">
+      <div className="p-4 border-t bg-background space-y-3 flex-shrink-0">
         {/* Answer Options */}
         {showQuestion && options.length > 0 && (
           <div className="space-y-2">
