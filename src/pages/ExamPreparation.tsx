@@ -206,11 +206,11 @@ export default function ExamPreparation() {
               Retour aux matières
             </Button>
 
-            <div className="space-y-2">
-              <h1 className="text-3xl font-bold">
+            <div className="space-y-1">
+              <h1 className="text-xl font-bold">
                 {exam?.title || "Préparation à l'examen"}
               </h1>
-              <p className="text-muted-foreground">
+              <p className="text-sm text-muted-foreground">
                 Consulte l'examen PDF à gauche, Eric te guide exercice par exercice à droite
               </p>
             </div>
