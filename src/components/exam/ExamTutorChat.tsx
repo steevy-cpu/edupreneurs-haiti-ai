@@ -115,8 +115,8 @@ ${exercise.question_text}
 
 Prends ton temps pour réfléchir. Tu peux me demander des indices ou cliquer sur "Révéler la réponse" si tu es bloqué! 💡`;
     } else {
-      // Simple transition for subsequent questions
-      greeting = `Très bien! Passons maintenant à la question ${exercise.exercise_number}:
+      // Simple transition for subsequent questions with full context
+      greeting = `Très bien! Passons maintenant à la question ${exercise.exercise_number} de l'examen officiel de ${examInfo.subject} (${examInfo.year}) pour la 9ème AF:
 
 ${exercise.question_text}
 
