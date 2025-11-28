@@ -22,6 +22,7 @@ import { TextToSpeechButton } from "@/components/TextToSpeechButton";
 import { InteractiveQuiz } from "@/components/InteractiveQuiz";
 import { DownloadLessonButton } from "@/components/DownloadLessonButton";
 import { YouTubeVideoSection } from "@/components/YouTubeVideoSection";
+import { EricChatbot } from "@/components/EricChatbot";
 import DOMPurify from "dompurify";
 
 interface Lesson {
@@ -510,6 +511,9 @@ const MathLesson = () => {
           </Button>
         </div>
       </div>
+
+      {/* Eric Chatbot */}
+      <EricChatbot />
     </div>
   );
 };
