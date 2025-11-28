@@ -310,17 +310,17 @@ const MathLesson = () => {
       </div>
 
       {/* Main Content */}
-      <div className="container mx-auto px-4 pt-20 pb-8">
+      <div className="container mx-auto px-3 sm:px-4 pt-20 pb-8">
         {/* Lesson Header */}
-        <div className="mb-6">
-          <div className="flex items-start gap-4">
-            <div className="flex-1">
-              <h1 className="text-3xl font-bold mb-2 text-foreground hyphens-auto">{lesson.title}</h1>
-              <div className="flex items-center gap-2">
-                <span className="px-3 py-1 bg-primary/10 text-primary rounded-full text-sm font-medium">
+        <div className="mb-4 sm:mb-6">
+          <div className="flex items-start gap-3 sm:gap-4">
+            <div className="flex-1 min-w-0">
+              <h1 className="text-2xl sm:text-3xl font-bold mb-2 text-foreground hyphens-auto [overflow-wrap:break-word]">{lesson.title}</h1>
+              <div className="flex items-center gap-2 flex-wrap">
+                <span className="px-2 sm:px-3 py-1 bg-primary/10 text-primary rounded-full text-xs sm:text-sm font-medium">
                   Mathématiques
                 </span>
-                <span className="px-3 py-1 bg-muted text-muted-foreground rounded-full text-sm font-medium">
+                <span className="px-2 sm:px-3 py-1 bg-muted text-muted-foreground rounded-full text-xs sm:text-sm font-medium">
                   AF7
                 </span>
               </div>

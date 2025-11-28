@@ -356,7 +356,7 @@ export default function EducationPhysiqueLesson() {
             <Dumbbell className="w-4 h-4 mr-2" />
             Éducation Physique - 7AF
           </Badge>
-          <h1 className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-orange-600 via-red-600 to-pink-600 bg-clip-text text-transparent hyphens-auto">
+          <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold bg-gradient-to-r from-orange-600 via-red-600 to-pink-600 bg-clip-text text-transparent hyphens-auto [overflow-wrap:break-word]">
             {lessonData.title}
           </h1>
         </div>
