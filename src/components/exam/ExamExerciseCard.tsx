@@ -38,7 +38,8 @@ export const ExamExerciseCard = ({
   selectedAnswer,
   isAnswered,
 }: ExamExerciseCardProps) => {
-  const options = JSON.parse(exercise.options || '[]');
+  // Options is already parsed by Supabase JSONB, no need to JSON.parse
+  const options = Array.isArray(exercise.options) ? exercise.options : [];
   const letters = ['A', 'B', 'C', 'D'];
 
   return (
