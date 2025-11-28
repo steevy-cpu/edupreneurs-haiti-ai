@@ -27,6 +27,7 @@ import { InteractiveQuiz } from "@/components/InteractiveQuiz";
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { EricChatbot } from "@/components/EricChatbot";
 
 export default function ArtsLesson() {
   const { topicId } = useParams<{ topicId: string }>();
@@ -553,6 +554,9 @@ export default function ArtsLesson() {
           </TabsContent>
         </Tabs>
       </div>
+
+      {/* Eric Chatbot */}
+      <EricChatbot />
     </div>
   );
 }

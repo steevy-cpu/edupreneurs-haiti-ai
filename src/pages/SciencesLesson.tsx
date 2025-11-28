@@ -88,6 +88,7 @@ import { ThemeToggle } from "@/components/ThemeToggle";
 import { DownloadLessonButton } from "@/components/DownloadLessonButton";
 import { YouTubeVideoSection } from "@/components/YouTubeVideoSection";
 import { InteractiveActivitiesEnhanced } from "@/components/InteractiveActivitiesEnhanced";
+import { EricChatbot } from "@/components/EricChatbot";
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -567,6 +568,9 @@ export default function SciencesLesson() {
           </Button>
         </div>
       </div>
+
+      {/* Eric Chatbot */}
+      <EricChatbot />
     </div>
   );
 }
