@@ -133,49 +133,44 @@ export default function SciencesSocialesLesson() {
 
   useEffect(() => {
     window.scrollTo(0, 0);
-    fetchLessonFromDB();
-    loadPersonalNotes();
+    fetchLessonAndNotes();
   }, [topicId]);
 
-  const fetchLessonFromDB = async () => {
+  const fetchLessonAndNotes = async () => {
     if (!topicId) return;
     
     try {
       setLoadingLesson(true);
-      const { data, error } = await supabase
-        .from('lessons')
-        .select('*')
-        .eq('slug', topicId)
-        .eq('grade_level', '7AF')
-        .maybeSingle();
+      const { data: { user } } = await supabase.auth.getUser();
 
-      if (data && !error) {
-        setDbLesson(data as DBLesson);
+      // Fetch lesson and notes in parallel
+      const [lessonResult, notesResult] = await Promise.all([
+        supabase
+          .from('lessons')
+          .select('*')
+          .eq('slug', topicId)
+          .eq('grade_level', '7AF')
+          .maybeSingle(),
+        
+        user ? supabase
+          .from('lesson_notes' as any)
+          .select('notes')
+          .eq('user_id', user.id)
+          .eq('lesson_id', `sciences-sociales-${topicId}`)
+          .maybeSingle() : Promise.resolve({ data: null, error: null })
+      ]);
+
+      if (lessonResult.data && !lessonResult.error) {
+        setDbLesson(lessonResult.data as DBLesson);
+      }
+
+      if (notesResult.data) {
+        setPersonalNotes((notesResult.data as any)?.notes || "");
       }
     } catch (error) {
-      console.error('Error fetching lesson from DB:', error);
+      console.error('Error fetching lesson and notes:', error);
     } finally {
       setLoadingLesson(false);
-    }
-  };
-
-  const loadPersonalNotes = async () => {
-    try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
-
-      const { data, error } = await supabase
-        .from('lesson_notes' as any)
-        .select('notes')
-        .eq('user_id', user.id)
-        .eq('lesson_id', `sciences-sociales-${topicId}`)
-        .maybeSingle();
-
-      if (!error && data) {
-        setPersonalNotes((data as any)?.notes || "");
-      }
-    } catch (error) {
-      console.error('Error loading notes:', error);
     }
   };
 

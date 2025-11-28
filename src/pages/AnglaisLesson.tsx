@@ -110,29 +110,47 @@ export default function AnglaisLesson() {
   }, []);
 
   useEffect(() => {
-    const fetchLesson = async () => {
-      try {
-        const { data, error } = await supabase
-          .from('lessons')
-          .select('id, slug, title, objectif, introduction, contenu, exemples_exercices, activites_interactives, quiz_final, mois, youtube_url')
-          .eq('slug', topicId)
-          .eq('is_published', true)
-          .single();
+    const fetchLessonAndNotes = async () => {
+      if (!topicId) return;
 
-        if (error) throw error;
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+
+        // Fetch lesson and notes in parallel
+        const [lessonResult, notesResult] = await Promise.all([
+          supabase
+            .from('lessons')
+            .select('id, slug, title, objectif, introduction, contenu, exemples_exercices, activites_interactives, quiz_final, mois, youtube_url')
+            .eq('slug', topicId)
+            .eq('is_published', true)
+            .single(),
+          
+          user ? supabase
+            .from('lesson_notes')
+            .select('notes')
+            .eq('user_id', user.id)
+            .eq('lesson_id', topicId)
+            .maybeSingle() : Promise.resolve({ data: null, error: null })
+        ]);
+
+        if (lessonResult.error) throw lessonResult.error;
 
         setLesson({
-          id: data.id,
-          title: data.title,
-          objectif: data.objectif,
-          introduction: data.introduction,
-          contenu: data.contenu,
-          exemples_exercices: data.exemples_exercices,
-          activites_interactives: data.activites_interactives,
-          quiz_final: data.quiz_final,
-          mois: data.mois,
-          youtubeUrl: data.youtube_url
+          id: lessonResult.data.id,
+          title: lessonResult.data.title,
+          objectif: lessonResult.data.objectif,
+          introduction: lessonResult.data.introduction,
+          contenu: lessonResult.data.contenu,
+          exemples_exercices: lessonResult.data.exemples_exercices,
+          activites_interactives: lessonResult.data.activites_interactives,
+          quiz_final: lessonResult.data.quiz_final,
+          mois: lessonResult.data.mois,
+          youtubeUrl: lessonResult.data.youtube_url
         });
+
+        if (notesResult.data && notesResult.error?.code !== 'PGRST116') {
+          setPersonalNotes(notesResult.data.notes || "");
+        }
       } catch (error) {
         console.error('Error fetching lesson:', error);
         toast.error('Erreur lors du chargement de la leçon');
@@ -143,31 +161,9 @@ export default function AnglaisLesson() {
     };
 
     if (topicId) {
-      fetchLesson();
-      loadPersonalNotes();
+      fetchLessonAndNotes();
     }
   }, [topicId, navigate]);
-
-  const loadPersonalNotes = async () => {
-    try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
-
-      const { data, error } = await supabase
-        .from('lesson_notes')
-        .select('notes')
-        .eq('user_id', user.id)
-        .eq('lesson_id', topicId || '')
-        .maybeSingle();
-
-      if (error && error.code !== 'PGRST116') throw error;
-      if (data) {
-        setPersonalNotes(data.notes || "");
-      }
-    } catch (error) {
-      console.error('Error loading notes:', error);
-    }
-  };
 
   const savePersonalNotes = async () => {
     try {
