@@ -25,6 +25,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { DownloadLessonButton } from "@/components/DownloadLessonButton";
 import { EnglishPracticeChat } from "@/components/EnglishPracticeChat";
+import { EricChatbot } from "@/components/EricChatbot";
 
 interface LessonData {
   id: string;
@@ -413,6 +414,9 @@ export default function AnglaisLesson() {
           </Button>
         </div>
       </div>
+
+      {/* Eric Chatbot */}
+      <EricChatbot />
     </div>
   );
 }

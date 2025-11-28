@@ -24,6 +24,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { DownloadLessonButton } from "@/components/DownloadLessonButton";
+import { EricChatbot } from "@/components/EricChatbot";
 
 interface Lesson {
   id: string;
@@ -381,6 +382,9 @@ export default function CreoleLesson() {
           </div>
         </div>
       </div>
+
+      {/* Eric Chatbot */}
+      <EricChatbot />
     </div>
   );
 }
