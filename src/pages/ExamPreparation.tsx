@@ -1,16 +1,16 @@
-import { useEffect, useState } from "react";
+import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { Layout } from "@/components/Layout";
-import { ExamExerciseCard } from "@/components/exam/ExamExerciseCard";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { ExamPDFViewer } from "@/components/exam/ExamPDFViewer";
 import { ExamTutorChat } from "@/components/exam/ExamTutorChat";
 import { ExamProgressBar } from "@/components/exam/ExamProgressBar";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Card } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { BookOpen, MessageCircle, Trophy } from "lucide-react";
-import { Skeleton } from "@/components/ui/skeleton";
+import { ArrowLeft, FileText, MessageCircle } from "lucide-react";
 
 export default function ExamPreparation() {
   const { examSlug } = useParams();
@@ -21,7 +21,7 @@ export default function ExamPreparation() {
   const [exercises, setExercises] = useState<any[]>([]);
   const [session, setSession] = useState<any>(null);
   const [currentExercise, setCurrentExercise] = useState(1);
-  const [selectedAnswer, setSelectedAnswer] = useState<string>();
+  const [selectedAnswer, setSelectedAnswer] = useState<string | null>(null);
   const [completedExercises, setCompletedExercises] = useState<number[]>([]);
   const [score, setScore] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
@@ -106,7 +106,7 @@ export default function ExamPreparation() {
     if (currentExercise < exercises.length) {
       const nextExercise = currentExercise + 1;
       setCurrentExercise(nextExercise);
-      setSelectedAnswer(undefined);
+      setSelectedAnswer(null);
 
       await supabase
         .from('exam_practice_sessions')
@@ -119,7 +119,7 @@ export default function ExamPreparation() {
     if (currentExercise > 1) {
       const prevExercise = currentExercise - 1;
       setCurrentExercise(prevExercise);
-      setSelectedAnswer(undefined);
+      setSelectedAnswer(null);
 
       await supabase
         .from('exam_practice_sessions')
@@ -196,87 +196,109 @@ export default function ExamPreparation() {
 
   return (
     <Layout>
-      <div className="container mx-auto px-4 py-8 space-y-8">
-        {/* Header */}
-        <div className="text-center space-y-2">
-          <h1 className="text-4xl font-bold">
-            {exam.title} - {exam.year}
-          </h1>
-          <p className="text-muted-foreground">
-            Prépare-toi avec Eric pour l'examen officiel de {exam.grade_level}
-          </p>
-        </div>
+      <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20">
+        <div className="container mx-auto px-4 py-8">
+          {/* Header */}
+          <div className="mb-6">
+            <Button
+              variant="ghost"
+              onClick={() => navigate("/matieres")}
+              className="mb-4"
+            >
+              <ArrowLeft className="h-4 w-4 mr-2" />
+              Retour aux matières
+            </Button>
 
-        {/* Progress Bar */}
-        <ExamProgressBar
-          currentExercise={currentExercise}
-          totalExercises={exercises.length}
-          completedExercises={completedExercises}
-        />
+            <div className="space-y-2">
+              <h1 className="text-3xl font-bold">
+                {exam?.title || "Préparation à l'examen"}
+              </h1>
+              <p className="text-muted-foreground">
+                Consulte l'examen PDF à gauche, Eric te guide exercice par exercice à droite
+              </p>
+            </div>
+          </div>
 
-        {/* Mobile Tabs */}
-        <div className="block md:hidden">
-          <Tabs defaultValue="exercise" className="w-full">
-            <TabsList className="grid w-full grid-cols-2">
-              <TabsTrigger value="exercise">
-                <BookOpen className="h-4 w-4 mr-2" />
-                Exercice
-              </TabsTrigger>
-              <TabsTrigger value="tutor">
-                <MessageCircle className="h-4 w-4 mr-2" />
-                Eric
-              </TabsTrigger>
-            </TabsList>
-            <TabsContent value="exercise" className="mt-6">
-              <ExamExerciseCard
-                exercise={currentExerciseData}
-                currentExercise={currentExercise}
-                totalExercises={exercises.length}
-                completedExercises={completedExercises}
-                score={score}
-                onPrevious={handlePreviousExercise}
-                onNext={handleNextExercise}
-                onSelectAnswer={setSelectedAnswer}
-                selectedAnswer={selectedAnswer}
-                isAnswered={completedExercises.includes(currentExercise)}
-              />
-            </TabsContent>
-            <TabsContent value="tutor" className="mt-6">
-              <Card className="h-[600px]">
-                <ExamTutorChat
-                  sessionId={session.id}
-                  exerciseId={currentExerciseData.id}
-                  exercise={currentExerciseData}
-                  onAnswerValidated={handleAnswerValidated}
-                />
-              </Card>
-            </TabsContent>
-          </Tabs>
-        </div>
-
-        {/* Desktop Split View */}
-        <div className="hidden md:grid md:grid-cols-2 gap-8">
-          <ExamExerciseCard
-            exercise={currentExerciseData}
-            currentExercise={currentExercise}
-            totalExercises={exercises.length}
-            completedExercises={completedExercises}
-            score={score}
-            onPrevious={handlePreviousExercise}
-            onNext={handleNextExercise}
-            onSelectAnswer={setSelectedAnswer}
-            selectedAnswer={selectedAnswer}
-            isAnswered={completedExercises.includes(currentExercise)}
-          />
-          
-          <Card className="h-[700px]">
-            <ExamTutorChat
-              sessionId={session.id}
-              exerciseId={currentExerciseData.id}
-              exercise={currentExerciseData}
-              onAnswerValidated={handleAnswerValidated}
+          {/* Progress Bar */}
+          {exam && exercises.length > 0 && (
+            <ExamProgressBar
+              currentExercise={currentExercise}
+              totalExercises={exercises.length}
+              completedExercises={completedExercises}
             />
-          </Card>
+          )}
+
+          {/* Main Content */}
+          <div className="mt-6">
+            {/* Mobile: Tabs Layout */}
+            <div className="lg:hidden">
+              <Tabs defaultValue="pdf" className="w-full">
+                <TabsList className="grid w-full grid-cols-2">
+                  <TabsTrigger value="pdf">
+                    <FileText className="h-4 w-4 mr-2" />
+                    Document PDF
+                  </TabsTrigger>
+                  <TabsTrigger value="tutor">
+                    <MessageCircle className="h-4 w-4 mr-2" />
+                    Tuteur Eric
+                  </TabsTrigger>
+                </TabsList>
+                
+                <TabsContent value="pdf" className="mt-6">
+                  <div className="h-[600px]">
+                    <ExamPDFViewer
+                      pdfUrl={exam?.pdf_url || null}
+                      examTitle={exam?.title || "Examen"}
+                    />
+                  </div>
+                </TabsContent>
+
+                <TabsContent value="tutor" className="mt-6">
+                  <div className="h-[600px]">
+                    <ExamTutorChat
+                      sessionId={session?.id || ""}
+                      exerciseId={currentExerciseData?.id || ""}
+                      exercise={currentExerciseData}
+                      totalExercises={exercises.length}
+                      currentExerciseIndex={currentExercise - 1}
+                      onAnswerValidated={handleAnswerValidated}
+                      onPreviousExercise={handlePreviousExercise}
+                      onNextExercise={handleNextExercise}
+                      selectedAnswer={selectedAnswer}
+                      onSelectAnswer={setSelectedAnswer}
+                    />
+                  </div>
+                </TabsContent>
+              </Tabs>
+            </div>
+
+            {/* Desktop: Side by Side Layout */}
+            <div className="hidden lg:grid lg:grid-cols-2 lg:gap-6">
+              {/* Left: PDF Viewer */}
+              <div className="h-[700px]">
+                <ExamPDFViewer
+                  pdfUrl={exam?.pdf_url || null}
+                  examTitle={exam?.title || "Examen"}
+                />
+              </div>
+
+              {/* Right: Eric Tutor Chat */}
+              <div className="h-[700px]">
+                <ExamTutorChat
+                  sessionId={session?.id || ""}
+                  exerciseId={currentExerciseData?.id || ""}
+                  exercise={currentExerciseData}
+                  totalExercises={exercises.length}
+                  currentExerciseIndex={currentExercise - 1}
+                  onAnswerValidated={handleAnswerValidated}
+                  onPreviousExercise={handlePreviousExercise}
+                  onNextExercise={handleNextExercise}
+                  selectedAnswer={selectedAnswer}
+                  onSelectAnswer={setSelectedAnswer}
+                />
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </Layout>

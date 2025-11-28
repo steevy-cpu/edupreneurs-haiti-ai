@@ -1,22 +1,16 @@
 import { useState, useEffect, useRef } from "react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Card } from "@/components/ui/card";
-import { Avatar } from "@/components/ui/avatar";
-import { Send, Lightbulb, HelpCircle, Trash2, Plus, Youtube } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { Card } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Badge } from "@/components/ui/badge";
+import { Send, Loader2, Youtube, MessageCircle, Trash2, ChevronLeft, ChevronRight } from "lucide-react";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import ericAiHelper from "@/assets/eric-ai-helper.png";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
 
 interface Message {
   id: string;
@@ -28,18 +22,39 @@ interface Message {
 interface ExamTutorChatProps {
   sessionId: string;
   exerciseId: string;
-  exercise: any;
+  exercise: {
+    exercise_number: number;
+    question_text: string;
+    options: any;
+    correct_answer: string | null;
+    concept: string;
+    points: number;
+  };
+  totalExercises: number;
+  currentExerciseIndex: number;
   onAnswerValidated?: (isCorrect: boolean, points: number) => void;
+  onPreviousExercise?: () => void;
+  onNextExercise?: () => void;
+  selectedAnswer: string | null;
+  onSelectAnswer: (answer: string) => void;
 }
 
 export const ExamTutorChat = ({
   sessionId,
   exerciseId,
   exercise,
+  totalExercises,
+  currentExerciseIndex,
   onAnswerValidated,
+  onPreviousExercise,
+  onNextExercise,
+  selectedAnswer,
+  onSelectAnswer,
 }: ExamTutorChatProps) => {
+  const options = Array.isArray(exercise.options) ? exercise.options : [];
+  const letters = ['A', 'B', 'C', 'D'];
   const [messages, setMessages] = useState<Message[]>([]);
-  const [input, setInput] = useState("");
+  const [inputMessage, setInputMessage] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [youtubeQuery, setYoutubeQuery] = useState("");
@@ -75,7 +90,6 @@ export const ExamTutorChat = ({
       if (data && data.length > 0) {
         setMessages(data);
       } else {
-        // Send initial greeting
         await sendInitialGreeting();
       }
     } catch (error) {
@@ -84,7 +98,13 @@ export const ExamTutorChat = ({
   };
 
   const sendInitialGreeting = async () => {
-    const greeting = `Salut! 👋 Je suis Eric, ton tuteur pour cet examen. Je vais t'aider avec cette question sur ${exercise.concept}. Prends ton temps pour lire la question, et dis-moi ce que tu en penses! Tu peux me demander des indices si tu es bloqué. 💡`;
+    const greeting = `Salut! 👋 Je suis Eric, ton tuteur pour cet examen.
+
+Regarde la question ${exercise.exercise_number} dans le document PDF à gauche. Elle porte sur ${exercise.concept}.
+
+Prends ton temps pour lire et comprendre la question. Quand tu es prêt, sélectionne une réponse (A, B, C, ou D) en cliquant sur les boutons ci-dessus!
+
+Tu peux aussi me poser des questions si tu as besoin d'aide. 💡`;
     
     await saveMessage('assistant', greeting);
   };
@@ -114,12 +134,13 @@ export const ExamTutorChat = ({
     }
   };
 
-  const handleSendMessage = async (quickMessage?: string) => {
-    const messageText = quickMessage || input;
+  const handleSendMessage = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const messageText = inputMessage;
     if (!messageText.trim() || isLoading) return;
 
     setIsLoading(true);
-    setInput("");
+    setInputMessage("");
 
     await saveMessage('user', messageText);
 
@@ -129,7 +150,7 @@ export const ExamTutorChat = ({
           exercise,
           userMessage: messageText,
           conversationHistory: messages,
-          studentAnswer: messageText.match(/^[A-D]$/i) ? messageText : null,
+          studentAnswer: selectedAnswer,
         }
       });
 
@@ -161,6 +182,10 @@ export const ExamTutorChat = ({
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const handleQuickAction = (message: string) => {
+    setInputMessage(message);
   };
 
   const handleClearHistory = async () => {
@@ -201,123 +226,214 @@ export const ExamTutorChat = ({
   };
 
   return (
-    <div className="flex flex-col h-full">
+    <Card className="flex flex-col h-full">
       {/* Header */}
-      <div className="flex items-center justify-between p-4 border-b">
-        <div className="flex items-center gap-3">
-          <Avatar className="h-10 w-10">
-            <img src={ericAiHelper} alt="Eric" />
-          </Avatar>
-          <div>
-            <h3 className="font-semibold">Eric - Ton Tuteur</h3>
-            <p className="text-sm text-muted-foreground">{exercise.concept}</p>
-          </div>
+      <div className="flex items-center gap-3 p-4 border-b bg-muted/30">
+        <Avatar className="h-10 w-10 border-2 border-primary">
+          <AvatarImage src={ericAiHelper} alt="Eric" />
+          <AvatarFallback>E</AvatarFallback>
+        </Avatar>
+        <div className="flex-1">
+          <h3 className="font-semibold">Eric - Ton Tuteur</h3>
+          <p className="text-xs text-muted-foreground">
+            Assistant IA pour l'examen
+          </p>
         </div>
         <div className="flex gap-2">
-          <Button variant="ghost" size="icon" onClick={handleNewChat}>
-            <Plus className="h-4 w-4" />
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleNewChat}
+            disabled={isLoading}
+            className="hidden sm:flex"
+          >
+            <MessageCircle className="h-4 w-4 mr-2" />
+            Nouveau
           </Button>
           <Button
-            variant="ghost"
-            size="icon"
+            variant="outline"
+            size="sm"
             onClick={() => setShowDeleteDialog(true)}
+            disabled={isLoading || messages.length === 0}
+            className="hidden sm:flex"
           >
-            <Trash2 className="h-4 w-4" />
+            <Trash2 className="h-4 w-4 mr-2" />
+            Effacer
           </Button>
+        </div>
+      </div>
+
+      {/* Exercise Context Section */}
+      <div className="p-4 border-b bg-muted/10 space-y-3">
+        <div className="flex items-center justify-between">
+          <Badge variant="secondary" className="text-sm">
+            Question {exercise.exercise_number} sur {totalExercises}
+          </Badge>
+          <Badge variant="outline" className="text-sm">
+            {exercise.points} {exercise.points > 1 ? 'points' : 'point'}
+          </Badge>
+        </div>
+        
+        <div className="p-3 bg-background rounded-lg border">
+          <p className="text-sm font-medium leading-relaxed">
+            {exercise.question_text}
+          </p>
+        </div>
+
+        {/* Answer Options */}
+        <div className="grid grid-cols-2 gap-2">
+          {options.map((option: string, index: number) => (
+            <Button
+              key={index}
+              variant={selectedAnswer === letters[index] ? "default" : "outline"}
+              className="w-full justify-start text-left h-auto py-3 px-4"
+              onClick={() => onSelectAnswer(letters[index])}
+            >
+              <span className="font-bold mr-2">{letters[index]}.</span>
+              <span className="flex-1 text-xs">{option}</span>
+            </Button>
+          ))}
         </div>
       </div>
 
       {/* Messages */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-4">
-        {messages.map((message) => (
-          <div
-            key={message.id}
-            className={`flex gap-3 ${
-              message.message_role === 'user' ? 'justify-end' : 'justify-start'
-            }`}
-          >
-            {message.message_role === 'assistant' && (
-              <Avatar className="h-8 w-8">
-                <img src={ericAiHelper} alt="Eric" />
-              </Avatar>
-            )}
-            <Card
-              className={`p-3 max-w-[80%] ${
-                message.message_role === 'user'
-                  ? 'bg-primary text-primary-foreground'
-                  : 'bg-muted'
+      <ScrollArea className="flex-1 p-4">
+        <div className="space-y-4">
+          {messages.map((message) => (
+            <div
+              key={message.id}
+              className={`flex gap-3 ${
+                message.message_role === 'user' ? 'justify-end' : 'justify-start'
               }`}
             >
-              <p className="text-sm whitespace-pre-wrap">{message.message_content}</p>
-            </Card>
-          </div>
-        ))}
-        {isLoading && (
-          <div className="flex gap-3">
-            <Avatar className="h-8 w-8">
-              <img src={ericAiHelper} alt="Eric" />
-            </Avatar>
-            <Card className="p-3 bg-muted">
-              <div className="flex gap-1">
-                <div className="w-2 h-2 bg-primary rounded-full animate-bounce" />
-                <div className="w-2 h-2 bg-primary rounded-full animate-bounce [animation-delay:0.2s]" />
-                <div className="w-2 h-2 bg-primary rounded-full animate-bounce [animation-delay:0.4s]" />
-              </div>
-            </Card>
-          </div>
-        )}
-        <div ref={messagesEndRef} />
-      </div>
+              {message.message_role === 'assistant' && (
+                <Avatar className="h-8 w-8 flex-shrink-0">
+                  <AvatarImage src={ericAiHelper} alt="Eric" />
+                  <AvatarFallback>E</AvatarFallback>
+                </Avatar>
+              )}
+              <Card
+                className={`p-3 max-w-[80%] ${
+                  message.message_role === 'user'
+                    ? 'bg-primary text-primary-foreground'
+                    : 'bg-muted'
+                }`}
+              >
+                <p className="text-sm whitespace-pre-wrap leading-relaxed">
+                  {message.message_content}
+                </p>
+              </Card>
+            </div>
+          ))}
+          {isLoading && (
+            <div className="flex gap-3">
+              <Avatar className="h-8 w-8">
+                <AvatarImage src={ericAiHelper} alt="Eric" />
+                <AvatarFallback>E</AvatarFallback>
+              </Avatar>
+              <Card className="p-3 bg-muted">
+                <div className="flex gap-1">
+                  <div className="w-2 h-2 bg-primary rounded-full animate-bounce" />
+                  <div className="w-2 h-2 bg-primary rounded-full animate-bounce [animation-delay:0.2s]" />
+                  <div className="w-2 h-2 bg-primary rounded-full animate-bounce [animation-delay:0.4s]" />
+                </div>
+              </Card>
+            </div>
+          )}
+          <div ref={messagesEndRef} />
+        </div>
+      </ScrollArea>
 
-      {/* YouTube suggestion */}
-      {youtubeQuery && (
-        <div className="px-4 pb-2">
+      {/* Input Area */}
+      <div className="p-4 border-t bg-background space-y-3">
+        <div className="flex gap-2">
           <Button
             variant="outline"
             size="sm"
-            className="w-full"
-            onClick={() => window.open(`https://www.youtube.com/results?search_query=${encodeURIComponent(youtubeQuery)}`, '_blank')}
+            onClick={() => handleQuickAction("Explique-moi ce concept en détail.")}
+            disabled={isLoading}
+            className="flex-1"
           >
-            <Youtube className="h-4 w-4 mr-2" />
-            Voir des vidéos sur {exercise.concept}
+            Explique-moi
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => handleQuickAction("Donne-moi un indice pour cette question.")}
+            disabled={isLoading}
+            className="flex-1"
+          >
+            Indice
           </Button>
         </div>
-      )}
 
-      {/* Quick actions */}
-      <div className="flex gap-2 px-4 pb-2">
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => handleSendMessage("Explique-moi ce concept")}
-          disabled={isLoading}
-        >
-          <HelpCircle className="h-4 w-4 mr-2" />
-          Explique-moi
-        </Button>
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => handleSendMessage("Donne-moi un indice")}
-          disabled={isLoading}
-        >
-          <Lightbulb className="h-4 w-4 mr-2" />
-          Indice
-        </Button>
-      </div>
+        {youtubeQuery && (
+          <div className="p-3 bg-muted rounded-lg">
+            <div className="flex items-start gap-2">
+              <Youtube className="h-5 w-5 text-red-500 mt-0.5" />
+              <div className="flex-1">
+                <p className="text-sm font-medium mb-2">
+                  Vidéo recommandée par Eric
+                </p>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  asChild
+                  className="w-full"
+                >
+                  <a
+                    href={`https://www.youtube.com/results?search_query=${encodeURIComponent(youtubeQuery)}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    <Youtube className="h-4 w-4 mr-2" />
+                    Voir la vidéo
+                  </a>
+                </Button>
+              </div>
+            </div>
+          </div>
+        )}
 
-      {/* Input */}
-      <div className="p-4 border-t">
-        <div className="flex gap-2">
+        <form onSubmit={handleSendMessage} className="flex gap-2">
           <Input
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
-            placeholder="Tape ta réponse ou pose une question..."
+            value={inputMessage}
+            onChange={(e) => setInputMessage(e.target.value)}
+            placeholder="Pose une question à Eric..."
             disabled={isLoading}
+            className="flex-1"
           />
-          <Button onClick={() => handleSendMessage()} disabled={isLoading}>
-            <Send className="h-4 w-4" />
+          <Button type="submit" disabled={isLoading || !inputMessage.trim()}>
+            {isLoading ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              <Send className="h-4 w-4" />
+            )}
+          </Button>
+        </form>
+
+        {/* Navigation Controls */}
+        <div className="flex items-center justify-between pt-2 border-t">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={onPreviousExercise}
+            disabled={currentExerciseIndex === 0}
+          >
+            <ChevronLeft className="h-4 w-4 mr-1" />
+            Précédent
+          </Button>
+          <span className="text-xs text-muted-foreground">
+            {currentExerciseIndex + 1} / {totalExercises}
+          </span>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={onNextExercise}
+            disabled={currentExerciseIndex >= totalExercises - 1}
+          >
+            Suivant
+            <ChevronRight className="h-4 w-4 ml-1" />
           </Button>
         </div>
       </div>
@@ -338,6 +454,6 @@ export const ExamTutorChat = ({
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-    </div>
+    </Card>
   );
 };
