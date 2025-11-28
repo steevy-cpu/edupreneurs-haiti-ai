@@ -35,8 +35,6 @@ interface ExamTutorChatProps {
   onAnswerValidated?: (isCorrect: boolean, points: number) => void;
   onPreviousExercise?: () => void;
   onNextExercise?: () => void;
-  selectedAnswer: string | null;
-  onSelectAnswer: (answer: string) => void;
 }
 
 export const ExamTutorChat = ({
@@ -48,8 +46,6 @@ export const ExamTutorChat = ({
   onAnswerValidated,
   onPreviousExercise,
   onNextExercise,
-  selectedAnswer,
-  onSelectAnswer,
 }: ExamTutorChatProps) => {
   const options = Array.isArray(exercise.options) ? exercise.options : [];
   const letters = ['A', 'B', 'C', 'D'];
@@ -150,7 +146,6 @@ Tu peux aussi me poser des questions si tu as besoin d'aide. 💡`;
           exercise,
           userMessage: messageText,
           conversationHistory: messages,
-          studentAnswer: selectedAnswer,
         }
       });
 
@@ -260,39 +255,6 @@ Tu peux aussi me poser des questions si tu as besoin d'aide. 💡`;
             <Trash2 className="h-4 w-4 mr-2" />
             Effacer
           </Button>
-        </div>
-      </div>
-
-      {/* Exercise Context Section */}
-      <div className="p-4 border-b bg-muted/10 space-y-3">
-        <div className="flex items-center justify-between">
-          <Badge variant="secondary" className="text-sm">
-            Question {exercise.exercise_number} sur {totalExercises}
-          </Badge>
-          <Badge variant="outline" className="text-sm">
-            {exercise.points} {exercise.points > 1 ? 'points' : 'point'}
-          </Badge>
-        </div>
-        
-        <div className="p-3 bg-background rounded-lg border">
-          <p className="text-sm font-medium leading-relaxed">
-            {exercise.question_text}
-          </p>
-        </div>
-
-        {/* Answer Options */}
-        <div className="grid grid-cols-2 gap-2">
-          {options.map((option: string, index: number) => (
-            <Button
-              key={index}
-              variant={selectedAnswer === letters[index] ? "default" : "outline"}
-              className="w-full justify-start text-left h-auto py-3 px-4"
-              onClick={() => onSelectAnswer(letters[index])}
-            >
-              <span className="font-bold mr-2">{letters[index]}.</span>
-              <span className="flex-1 text-xs">{option}</span>
-            </Button>
-          ))}
         </div>
       </div>
 
