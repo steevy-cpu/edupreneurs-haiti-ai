@@ -42,9 +42,9 @@ serve(async (req) => {
 - Valider les bonnes réponses avec enthousiasme
 - Si l'élève donne une mauvaise réponse, expliquer l'erreur et rediriger vers la bonne approche
 
-**Exercice actuel:**
+    **Exercice actuel:**
 Question: ${exercise.question_text}
-Options: ${JSON.parse(exercise.options || '[]').map((opt: string, idx: number) => `${String.fromCharCode(65 + idx)}) ${opt}`).join(', ')}
+Options: ${(Array.isArray(exercise.options) ? exercise.options : []).map((opt: string, idx: number) => `${String.fromCharCode(65 + idx)}) ${opt}`).join(', ')}
 Concept: ${exercise.concept}`;
 
     // Build messages array
