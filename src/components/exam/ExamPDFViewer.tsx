@@ -11,6 +11,7 @@ interface ExamPDFViewerProps {
 
 export const ExamPDFViewer = ({ pdfUrl, examTitle }: ExamPDFViewerProps) => {
   const [hasError, setHasError] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
 
   if (!pdfUrl) {
     return (
@@ -59,6 +60,15 @@ export const ExamPDFViewer = ({ pdfUrl, examTitle }: ExamPDFViewerProps) => {
 
       {/* PDF Viewer */}
       <div className="flex-1 relative overflow-hidden bg-muted/10">
+        {isLoading && !hasError && (
+          <div className="absolute inset-0 flex items-center justify-center">
+            <div className="text-center space-y-4">
+              <Skeleton className="h-8 w-32 mx-auto" />
+              <p className="text-sm text-muted-foreground">Chargement du PDF...</p>
+            </div>
+          </div>
+        )}
+        
         {hasError ? (
           <div className="absolute inset-0 flex flex-col items-center justify-center p-8 text-center gap-4">
             <p className="text-muted-foreground mb-2">
@@ -78,11 +88,24 @@ export const ExamPDFViewer = ({ pdfUrl, examTitle }: ExamPDFViewerProps) => {
           </div>
         ) : (
           <iframe
-            src={`${pdfUrl}#view=FitH`}
+            src={`${pdfUrl}#toolbar=0&navpanes=0&view=FitH`}
             className="w-full h-full border-0"
             title={examTitle}
-            onError={() => setHasError(true)}
-            style={{ minHeight: '500px' }}
+            onLoad={() => {
+              setIsLoading(false);
+              // Check if iframe loaded successfully
+              setTimeout(() => {
+                const iframe = document.querySelector('iframe[title="' + examTitle + '"]') as HTMLIFrameElement;
+                if (iframe && !iframe.contentWindow) {
+                  setHasError(true);
+                }
+              }, 1000);
+            }}
+            onError={() => {
+              setIsLoading(false);
+              setHasError(true);
+            }}
+            style={{ minHeight: '500px', display: isLoading ? 'none' : 'block' }}
           />
         )}
       </div>
