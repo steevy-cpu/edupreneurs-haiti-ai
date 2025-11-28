@@ -21,7 +21,6 @@ export default function ExamPreparation() {
   const [exercises, setExercises] = useState<any[]>([]);
   const [session, setSession] = useState<any>(null);
   const [currentExercise, setCurrentExercise] = useState(1);
-  const [selectedAnswer, setSelectedAnswer] = useState<string | null>(null);
   const [completedExercises, setCompletedExercises] = useState<number[]>([]);
   const [score, setScore] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
@@ -106,7 +105,6 @@ export default function ExamPreparation() {
     if (currentExercise < exercises.length) {
       const nextExercise = currentExercise + 1;
       setCurrentExercise(nextExercise);
-      setSelectedAnswer(null);
 
       await supabase
         .from('exam_practice_sessions')
@@ -119,7 +117,6 @@ export default function ExamPreparation() {
     if (currentExercise > 1) {
       const prevExercise = currentExercise - 1;
       setCurrentExercise(prevExercise);
-      setSelectedAnswer(null);
 
       await supabase
         .from('exam_practice_sessions')
@@ -264,8 +261,6 @@ export default function ExamPreparation() {
                       onAnswerValidated={handleAnswerValidated}
                       onPreviousExercise={handlePreviousExercise}
                       onNextExercise={handleNextExercise}
-                      selectedAnswer={selectedAnswer}
-                      onSelectAnswer={setSelectedAnswer}
                     />
                   </div>
                 </TabsContent>
@@ -293,8 +288,6 @@ export default function ExamPreparation() {
                   onAnswerValidated={handleAnswerValidated}
                   onPreviousExercise={handlePreviousExercise}
                   onNextExercise={handleNextExercise}
-                  selectedAnswer={selectedAnswer}
-                  onSelectAnswer={setSelectedAnswer}
                 />
               </div>
             </div>
