@@ -139,6 +139,36 @@ export const GlobalMusicPlayer = () => {
     }
   };
 
+  // Calculate if expanded card would overflow and adjust its position
+  const getCardStyle = () => {
+    if (minimized || !playerRef.current) return {};
+    
+    const cardWidth = 320; // w-80 = 320px on larger screens
+    const cardHeight = 400; // approximate expanded height
+    const padding = 16;
+    
+    let adjustX = 0;
+    let adjustY = 0;
+    
+    // Get icon position
+    const iconX = position.x !== 0 ? position.x : window.innerWidth - 80; // 80 = icon size + padding
+    const iconY = position.y !== 0 ? position.y : window.innerHeight - 80;
+    
+    // Check if card would overflow right
+    if (iconX + cardWidth > window.innerWidth) {
+      adjustX = -(iconX + cardWidth - window.innerWidth + padding);
+    }
+    
+    // Check if card would overflow bottom
+    if (iconY + cardHeight > window.innerHeight) {
+      adjustY = -(iconY + cardHeight - window.innerHeight + padding);
+    }
+    
+    return {
+      transform: `translate(${adjustX}px, ${adjustY}px)`,
+    };
+  };
+
   // Only show the music player when user is authenticated, there are tracks, and not on home page
   if (!isAuthenticated || tracks.length === 0 || location.pathname === '/') return null;
 
@@ -172,7 +202,10 @@ export const GlobalMusicPlayer = () => {
             )}
           </Button>
         ) : (
-          <Card className="w-[calc(100vw-32px)] sm:w-80 max-w-80 shadow-2xl border-2">
+          <Card 
+            className="w-[calc(100vw-32px)] sm:w-80 max-w-80 shadow-2xl border-2 transition-transform duration-200"
+            style={getCardStyle()}
+          >
             <CardHeader className="pb-3 bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-950/30 dark:to-pink-950/30">
               <div className="flex items-center justify-between">
                 <CardTitle className="text-sm sm:text-base flex items-center gap-2 truncate">
