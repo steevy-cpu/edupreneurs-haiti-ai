@@ -196,12 +196,12 @@ export default function SciencesExpérimentalesLesson7AF() {
 
         {/* Lesson Content */}
         <Tabs value={activeTab} onValueChange={(val) => { setActiveTab(val); stop(); }} className="space-y-6">
-          <TabsList className="grid w-full grid-cols-5">
-            <TabsTrigger value="introduction">Introduction</TabsTrigger>
-            <TabsTrigger value="contenu">Contenu & Exercices</TabsTrigger>
-            <TabsTrigger value="activites">Activités</TabsTrigger>
-            <TabsTrigger value="notes">Mes Notes</TabsTrigger>
-            <TabsTrigger value="quiz">Quiz Final</TabsTrigger>
+          <TabsList className="w-full grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-1 h-auto">
+            <TabsTrigger value="introduction" className="text-xs sm:text-sm py-2">Introduction</TabsTrigger>
+            <TabsTrigger value="contenu" className="text-xs sm:text-sm py-2">Contenu & Exercices</TabsTrigger>
+            <TabsTrigger value="activites" className="text-xs sm:text-sm py-2">Activités</TabsTrigger>
+            <TabsTrigger value="notes" className="text-xs sm:text-sm py-2">Mes Notes</TabsTrigger>
+            <TabsTrigger value="quiz" className="text-xs sm:text-sm py-2">Quiz Final</TabsTrigger>
           </TabsList>
 
           <TabsContent value="introduction" className="space-y-4">
