@@ -63,6 +63,7 @@ const EducationPhysiqueCourse = lazy(() => import("./pages/EducationPhysiqueCour
 const EducationPhysiqueLesson = lazy(() => import("./pages/EducationPhysiqueLesson"));
 const Matieres = lazy(() => import("./pages/Matieres"));
 const ExamPreparation = lazy(() => import("./pages/ExamPreparation"));
+const ExamsHub = lazy(() => import("./pages/ExamsHub"));
 const Resources = lazy(() => import("./pages/Resources"));
 const Affiliations = lazy(() => import("./pages/Affiliations"));
 const Settings = lazy(() => import("./pages/Settings"));
@@ -173,7 +174,8 @@ const App = () => (
               <Route path="/leaderboard" element={<Layout><Leaderboard /></Layout>} />
               <Route path="/settings" element={<Layout><Settings /></Layout>} />
             <Route path="/matieres" element={<Matieres />} />
-            <Route path="/exam-preparation/:examSlug" element={<ExamPreparation />} />
+            <Route path="/exam-preparation/:examId" element={<ExamPreparation />} />
+            <Route path="/examens-officiels" element={<ExamsHub />} />
             <Route path="/resources" element={<Layout><Resources /></Layout>} />
               <Route path="/privacy-policy" element={<PrivacyPolicy />} />
               <Route path="/test-email" element={<TestEmail />} />
