@@ -482,31 +482,21 @@ Prends ton temps pour réfléchir! 💡`;
         </div>
 
         {youtubeQuery && (
-          <div className="p-3 bg-muted rounded-lg">
-            <div className="flex items-start gap-2">
-              <Youtube className="h-5 w-5 text-red-500 mt-0.5" />
-              <div className="flex-1">
-                <p className="text-sm font-medium mb-2">
-                  Vidéo recommandée par Eric
-                </p>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  asChild
-                  className="w-full"
-                >
-                  <a
-                    href={`https://www.youtube.com/results?search_query=${encodeURIComponent(youtubeQuery)}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    <Youtube className="h-4 w-4 mr-2" />
-                    Voir la vidéo
-                  </a>
-                </Button>
-              </div>
-            </div>
-          </div>
+          <Button
+            variant="outline"
+            size="sm"
+            asChild
+            className="w-full"
+          >
+            <a
+              href={`https://www.youtube.com/results?search_query=${encodeURIComponent(youtubeQuery)}`}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              <Youtube className="h-4 w-4 mr-2" />
+              Vidéo recommandée
+            </a>
+          </Button>
         )}
 
         <form onSubmit={handleSendMessage} className="flex gap-2">
