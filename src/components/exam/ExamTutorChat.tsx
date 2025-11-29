@@ -344,28 +344,9 @@ Prends ton temps pour réfléchir! 💡`;
   };
 
   const renderMessageWithMath = (content: string) => {
-    // Split by block math ($$...$$) first
-    const blockParts = content.split(/(\$\$[\s\S]+?\$\$)/g);
-    
-    return blockParts.map((part, blockIndex) => {
-      if (part.startsWith('$$') && part.endsWith('$$')) {
-        const latex = part.slice(2, -2).trim();
-        return <BlockMath key={`block-${blockIndex}`} math={latex} />;
-      }
-      
-      // Split remaining parts by inline math ($...$)
-      const inlineParts = part.split(/(\$[^$]+?\$)/g);
-      
-      return inlineParts.map((inlinePart, inlineIndex) => {
-        if (inlinePart.startsWith('$') && inlinePart.endsWith('$')) {
-          const latex = inlinePart.slice(1, -1);
-          return <InlineMath key={`inline-${blockIndex}-${inlineIndex}`} math={latex} />;
-        }
-        return <span key={`text-${blockIndex}-${inlineIndex}`}>{inlinePart}</span>;
-      });
-    });
+    // TEMP: render plain text while we debug KaTeX issues
+    return content;
   };
-
   return (
     <Card className="flex flex-col h-full overflow-hidden">
       {/* Header */}
