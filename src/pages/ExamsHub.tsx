@@ -32,7 +32,7 @@ const ExamsHub = () => {
   const navigate = useNavigate();
   const [exams, setExams] = useState<Exam[]>([]);
   const [loading, setLoading] = useState(true);
-  const [selectedSubject, setSelectedSubject] = useState<string>("all");
+  const [selectedSubject, setSelectedSubject] = useState<string | null>(null);
 
   useEffect(() => {
     loadExams();
@@ -56,9 +56,9 @@ const ExamsHub = () => {
     }
   };
 
-  const filteredExams = selectedSubject === "all" 
-    ? exams 
-    : exams.filter(exam => exam.subject === selectedSubject);
+  const filteredExams = selectedSubject
+    ? exams.filter(exam => exam.subject === selectedSubject)
+    : [];
 
   const getSubjectColor = (subject: string) => {
     return SUBJECTS.find(s => s.name === subject)?.color || "from-gray-500 to-gray-600";
@@ -67,6 +67,12 @@ const ExamsHub = () => {
   const handlePractice = (examId: string) => {
     navigate(`/exam-preparation/${examId}`);
   };
+
+  // Count exams per subject
+  const subjectCounts = SUBJECTS.map(subject => ({
+    ...subject,
+    examCount: exams.filter(exam => exam.subject === subject.name).length
+  }));
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20">
@@ -115,95 +121,139 @@ const ExamsHub = () => {
       </div>
 
       <div className="container mx-auto px-4 py-8">
-        {/* Subject Filter */}
-        <div className="mb-8">
-          <h3 className="text-lg font-semibold mb-4">Filtrer par matière</h3>
-          <div className="flex flex-wrap gap-2">
+        {/* Back Button - Show when subject is selected */}
+        {selectedSubject && (
+          <div className="mb-6">
             <Button
-              variant={selectedSubject === "all" ? "default" : "outline"}
-              onClick={() => setSelectedSubject("all")}
-              className="rounded-full"
+              variant="ghost"
+              onClick={() => setSelectedSubject(null)}
+              className="gap-2"
             >
-              Toutes les matières
+              <ArrowLeft className="h-4 w-4" />
+              Retour aux matières
             </Button>
-            {SUBJECTS.map((subject) => (
-              <Button
-                key={subject.name}
-                variant={selectedSubject === subject.name ? "default" : "outline"}
-                onClick={() => setSelectedSubject(subject.name)}
-                className="rounded-full"
-              >
-                {subject.name}
-              </Button>
-            ))}
           </div>
-        </div>
+        )}
 
-        {/* Exams Grid */}
-        {loading ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            {[...Array(8)].map((_, i) => (
-              <Card key={i}>
-                <CardHeader>
-                  <Skeleton className="h-6 w-3/4 mb-2" />
-                  <Skeleton className="h-4 w-1/2" />
-                </CardHeader>
-                <CardContent>
-                  <Skeleton className="h-10 w-full" />
-                </CardContent>
-              </Card>
-            ))}
+        {/* Subject Selection - Show when no subject is selected */}
+        {!selectedSubject && (
+          <div>
+            <h2 className="text-2xl font-bold mb-6 text-center">
+              Choisissez une matière
+            </h2>
+            
+            {loading ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                {[...Array(7)].map((_, i) => (
+                  <Card key={i}>
+                    <CardHeader>
+                      <Skeleton className="h-12 w-12 rounded-full mb-4" />
+                      <Skeleton className="h-6 w-3/4 mb-2" />
+                      <Skeleton className="h-4 w-1/2" />
+                    </CardHeader>
+                  </Card>
+                ))}
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                {subjectCounts.map((subject) => (
+                  <Card
+                    key={subject.name}
+                    className="group cursor-pointer hover:shadow-xl transition-all duration-300 hover:-translate-y-1"
+                    onClick={() => setSelectedSubject(subject.name)}
+                  >
+                    <div className={`h-2 bg-gradient-to-r ${subject.color}`} />
+                    <CardHeader className="pb-4">
+                      <div className={`w-16 h-16 mx-auto rounded-full bg-gradient-to-r ${subject.color} flex items-center justify-center mb-4`}>
+                        <BookOpen className="h-8 w-8 text-white" />
+                      </div>
+                      <CardTitle className="text-xl text-center group-hover:text-primary transition-colors">
+                        {subject.name}
+                      </CardTitle>
+                      <CardDescription className="text-center">
+                        {subject.examCount} examens disponibles
+                      </CardDescription>
+                    </CardHeader>
+                  </Card>
+                ))}
+              </div>
+            )}
           </div>
-        ) : filteredExams.length === 0 ? (
-          <div className="text-center py-16">
-            <BookOpen className="h-16 w-16 mx-auto text-muted-foreground mb-4" />
-            <h3 className="text-xl font-semibold mb-2">Aucun examen trouvé</h3>
-            <p className="text-muted-foreground">
-              Aucun examen disponible pour cette sélection
-            </p>
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            {filteredExams.map((exam) => (
-              <Card 
-                key={exam.id} 
-                className="group hover:shadow-lg transition-all duration-300 border-2 hover:border-primary/50"
-              >
-                <CardHeader>
-                  <div className={`w-full h-2 rounded-full bg-gradient-to-r ${getSubjectColor(exam.subject)} mb-4`} />
-                  <CardTitle className="text-xl group-hover:text-primary transition-colors">
-                    {exam.subject}
-                  </CardTitle>
-                  <CardDescription className="flex items-center gap-2">
-                    <Calendar className="h-4 w-4" />
-                    <span className="text-lg font-bold">{exam.year}</span>
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="flex justify-between text-sm text-muted-foreground">
-                    <span>{exam.total_exercises} exercices</span>
-                    <span>{exam.total_points} points</span>
-                  </div>
-                  
-                  {exam.pdf_url ? (
-                    <Button 
-                      onClick={() => handlePractice(exam.id)}
-                      className="w-full group-hover:scale-105 transition-transform"
-                    >
-                      Pratiquer avec Eric
-                    </Button>
-                  ) : (
-                    <Button 
-                      disabled
-                      variant="outline"
-                      className="w-full"
-                    >
-                      Bientôt disponible
-                    </Button>
-                  )}
-                </CardContent>
-              </Card>
-            ))}
+        )}
+
+        {/* Exams Grid - Show when subject is selected */}
+        {selectedSubject && (
+          <div>
+            <h2 className="text-2xl font-bold mb-6">
+              Examens Officiels - {selectedSubject}
+            </h2>
+            
+            {loading ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                {[...Array(8)].map((_, i) => (
+                  <Card key={i}>
+                    <CardHeader>
+                      <Skeleton className="h-6 w-3/4 mb-2" />
+                      <Skeleton className="h-4 w-1/2" />
+                    </CardHeader>
+                    <CardContent>
+                      <Skeleton className="h-10 w-full" />
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            ) : filteredExams.length === 0 ? (
+              <div className="text-center py-16">
+                <BookOpen className="h-16 w-16 mx-auto text-muted-foreground mb-4" />
+                <h3 className="text-xl font-semibold mb-2">Aucun examen trouvé</h3>
+                <p className="text-muted-foreground">
+                  Aucun examen disponible pour {selectedSubject}
+                </p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                {filteredExams.map((exam) => (
+                  <Card 
+                    key={exam.id} 
+                    className="group hover:shadow-lg transition-all duration-300 border-2 hover:border-primary/50"
+                  >
+                    <CardHeader>
+                      <div className={`w-full h-2 rounded-full bg-gradient-to-r ${getSubjectColor(exam.subject)} mb-4`} />
+                      <CardTitle className="text-xl group-hover:text-primary transition-colors">
+                        {exam.subject}
+                      </CardTitle>
+                      <CardDescription className="flex items-center gap-2">
+                        <Calendar className="h-4 w-4" />
+                        <span className="text-lg font-bold">{exam.year}</span>
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      <div className="flex justify-between text-sm text-muted-foreground">
+                        <span>{exam.total_exercises} exercices</span>
+                        <span>{exam.total_points} points</span>
+                      </div>
+                      
+                      {exam.pdf_url ? (
+                        <Button 
+                          onClick={() => handlePractice(exam.id)}
+                          className="w-full group-hover:scale-105 transition-transform"
+                        >
+                          Pratiquer avec Eric
+                        </Button>
+                      ) : (
+                        <Button 
+                          disabled
+                          variant="outline"
+                          className="w-full"
+                        >
+                          Bientôt disponible
+                        </Button>
+                      )}
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            )}
           </div>
         )}
       </div>
