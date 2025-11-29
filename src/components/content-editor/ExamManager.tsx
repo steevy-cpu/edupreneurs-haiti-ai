@@ -233,7 +233,7 @@ export function ExamManager() {
 
       const { error: exercisesError } = await supabase
         .from("exam_exercises")
-        .insert(exercisesToInsert);
+        .upsert(exercisesToInsert, { onConflict: "exam_id,exercise_number" });
 
       if (exercisesError) throw exercisesError;
 
