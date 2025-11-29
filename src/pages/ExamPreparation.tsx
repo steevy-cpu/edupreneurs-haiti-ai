@@ -252,21 +252,27 @@ export default function ExamPreparation() {
 
                 <TabsContent value="tutor" className="mt-6">
                   <div className="h-[600px]">
-                    <ExamTutorChat
-                      sessionId={session?.id || ""}
-                      exerciseId={currentExerciseData?.id || ""}
-                      exercise={currentExerciseData}
-                      examInfo={{
-                        subject: exam.subject,
-                        year: exam.year,
-                        title: exam.title,
-                      }}
-                      totalExercises={exercises.length}
-                      currentExerciseIndex={currentExercise - 1}
-                      onAnswerValidated={handleAnswerValidated}
-                      onPreviousExercise={handlePreviousExercise}
-                      onNextExercise={handleNextExercise}
-                    />
+                    {session && currentExerciseData ? (
+                      <ExamTutorChat
+                        sessionId={session.id}
+                        exerciseId={currentExerciseData.id}
+                        exercise={currentExerciseData}
+                        examInfo={{
+                          subject: exam.subject,
+                          year: exam.year,
+                          title: exam.title,
+                        }}
+                        totalExercises={exercises.length}
+                        currentExerciseIndex={currentExercise - 1}
+                        onAnswerValidated={handleAnswerValidated}
+                        onPreviousExercise={handlePreviousExercise}
+                        onNextExercise={handleNextExercise}
+                      />
+                    ) : (
+                      <div className="flex items-center justify-center h-full">
+                        <p className="text-muted-foreground">Chargement du tuteur...</p>
+                      </div>
+                    )}
                   </div>
                 </TabsContent>
               </Tabs>
@@ -284,21 +290,27 @@ export default function ExamPreparation() {
 
               {/* Right: Eric Tutor Chat */}
               <div className="h-[700px]">
-                <ExamTutorChat
-                  sessionId={session?.id || ""}
-                  exerciseId={currentExerciseData?.id || ""}
-                  exercise={currentExerciseData}
-                  examInfo={{
-                    subject: exam.subject,
-                    year: exam.year,
-                    title: exam.title,
-                  }}
-                  totalExercises={exercises.length}
-                  currentExerciseIndex={currentExercise - 1}
-                  onAnswerValidated={handleAnswerValidated}
-                  onPreviousExercise={handlePreviousExercise}
-                  onNextExercise={handleNextExercise}
-                />
+                {session && currentExerciseData ? (
+                  <ExamTutorChat
+                    sessionId={session.id}
+                    exerciseId={currentExerciseData.id}
+                    exercise={currentExerciseData}
+                    examInfo={{
+                      subject: exam.subject,
+                      year: exam.year,
+                      title: exam.title,
+                    }}
+                    totalExercises={exercises.length}
+                    currentExerciseIndex={currentExercise - 1}
+                    onAnswerValidated={handleAnswerValidated}
+                    onPreviousExercise={handlePreviousExercise}
+                    onNextExercise={handleNextExercise}
+                  />
+                ) : (
+                  <div className="flex items-center justify-center h-full">
+                    <p className="text-muted-foreground">Chargement du tuteur...</p>
+                  </div>
+                )}
               </div>
             </div>
           </div>
