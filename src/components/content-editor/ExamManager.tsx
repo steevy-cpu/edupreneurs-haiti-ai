@@ -109,6 +109,11 @@ export function ExamManager() {
       return;
     }
 
+    if (!pdfFile) {
+      toast.error("Veuillez sélectionner un fichier PDF avant de continuer");
+      return;
+    }
+
     if (!extractedText.trim()) {
       toast.error("Veuillez coller le texte extrait du PDF");
       return;
@@ -124,6 +129,12 @@ export function ExamManager() {
     try {
       // 1. Upload PDF first
       const pdfUrl = await uploadPdfToStorage();
+      
+      if (!pdfUrl) {
+        toast.error("Échec du téléversement du PDF. Veuillez réessayer.");
+        setIsAnalyzing(false);
+        return;
+      }
 
       // 2. Parse the extracted text using AI
       const { data: parsedData, error: parseError } = await supabase.functions.invoke(
