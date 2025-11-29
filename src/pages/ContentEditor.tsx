@@ -14,6 +14,7 @@ import { LessonComments } from "@/components/content-editor/LessonComments";
 import { BatchLessonGenerator } from "@/components/content-editor/BatchLessonGenerator";
 import { SingleLessonGenerator } from "@/components/content-editor/SingleLessonGenerator";
 import { CreateMatiereDialog } from "@/components/content-editor/CreateMatiereDialog";
+import { ExamManager } from "@/components/content-editor/ExamManager";
 
 const ContentEditor = () => {
   const navigate = useNavigate();
@@ -196,7 +197,7 @@ const ContentEditor = () => {
         {/* Main Content with Tabs */}
         <div className="max-w-[1600px] mx-auto">
           <Tabs defaultValue="review" className="space-y-6">
-            <TabsList className="grid w-full grid-cols-2 lg:w-[400px]">
+            <TabsList className="grid w-full grid-cols-3 lg:w-[600px]">
               <TabsTrigger value="review">
                 <BookOpen className="mr-2 h-4 w-4" />
                 Révision
@@ -204,6 +205,10 @@ const ContentEditor = () => {
               <TabsTrigger value="batch">
                 <Zap className="mr-2 h-4 w-4" />
                 Génération par lot
+              </TabsTrigger>
+              <TabsTrigger value="exams">
+                <BarChart3 className="mr-2 h-4 w-4" />
+                Examens Officiels
               </TabsTrigger>
             </TabsList>
 
@@ -285,6 +290,10 @@ const ContentEditor = () => {
 
             <TabsContent value="batch">
               <BatchLessonGenerator />
+            </TabsContent>
+
+            <TabsContent value="exams">
+              <ExamManager />
             </TabsContent>
           </Tabs>
         </div>
