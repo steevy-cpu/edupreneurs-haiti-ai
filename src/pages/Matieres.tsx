@@ -574,7 +574,7 @@ export default function Matieres() {
                   <div className="flex-shrink-0">
                     <Button
                       size="lg"
-                      onClick={() => navigate('/exam-preparation/math-9af-2025')}
+                      onClick={() => navigate('/examens-officiels')}
                       className="bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700 text-white font-bold"
                     >
                       Commencer la préparation
