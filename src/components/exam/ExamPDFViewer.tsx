@@ -3,6 +3,7 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ZoomIn, ZoomOut, Maximize2, ExternalLink } from "lucide-react";
+import pdfWorkerSrc from "pdfjs-dist/legacy/build/pdf.worker.min?url";
 
 interface ExamPDFViewerProps {
   pdfUrl: string | null;
@@ -55,12 +56,11 @@ export const ExamPDFViewer = ({ pdfUrl, examTitle }: ExamPDFViewerProps) => {
 
         const data = await response.arrayBuffer();
 
-        // Configure PDF.js worker (using CDN worker to avoid bundler config)
+        // Configure PDF.js worker using local bundled worker for better browser compatibility
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const workerOptions = (GlobalWorkerOptions as any);
+        const workerOptions = GlobalWorkerOptions as any;
         if (!workerOptions.workerSrc) {
-          workerOptions.workerSrc =
-            "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.4.168/pdf.worker.min.js";
+          workerOptions.workerSrc = pdfWorkerSrc;
         }
 
         if (!viewerRef.current || isCancelled) return;
