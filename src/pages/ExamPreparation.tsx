@@ -11,6 +11,7 @@ import { ExamPDFViewer } from "@/components/exam/ExamPDFViewer";
 import { ExamTutorChat } from "@/components/exam/ExamTutorChat";
 import { ExamProgressBar } from "@/components/exam/ExamProgressBar";
 import { ArrowLeft, FileText, MessageCircle } from "lucide-react";
+import { ThemeToggle } from "@/components/ThemeToggle";
 
 export default function ExamPreparation() {
   const { examId } = useParams<{ examId: string }>();
@@ -212,14 +213,16 @@ export default function ExamPreparation() {
         <div className="container mx-auto px-4 py-4">
           {/* Header */}
           <div className="mb-6">
-            <Button
-              variant="ghost"
-              onClick={() => navigate("/examens-officiels")}
-              className="mb-4"
-            >
-              <ArrowLeft className="h-4 w-4 mr-2" />
-              Retour aux examens
-            </Button>
+            <div className="flex justify-between items-center mb-4">
+              <Button
+                variant="ghost"
+                onClick={() => navigate("/examens-officiels")}
+              >
+                <ArrowLeft className="h-4 w-4 mr-2" />
+                Retour aux examens
+              </Button>
+              <ThemeToggle />
+            </div>
 
             <div className="space-y-1">
               <h1 className="text-xl font-bold">
