@@ -206,8 +206,20 @@ export function ExamManager() {
         toast.success("Nouvel examen créé avec succès");
       }
 
-      // 4. Insert exercises
-      const exercisesToInsert = parsedData.exercises.map((ex: any) => ({
+      // 4. Insert exercises (deduplicate by exerciseNumber to avoid constraint errors)
+      const uniqueExercises = parsedData.exercises.reduce((acc: any[], ex: any) => {
+        if (!acc.some((e) => e.exerciseNumber === ex.exerciseNumber)) {
+          acc.push(ex);
+        } else {
+          console.warn(
+            "Duplicate exerciseNumber detected, skipping duplicate:",
+            ex.exerciseNumber
+          );
+        }
+        return acc;
+      }, []);
+
+      const exercisesToInsert = uniqueExercises.map((ex: any) => ({
         exam_id: examId,
         exercise_number: ex.exerciseNumber,
         exercise_type: ex.exerciseType,
