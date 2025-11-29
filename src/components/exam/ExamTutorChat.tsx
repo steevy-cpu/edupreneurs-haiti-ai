@@ -444,7 +444,7 @@ Prends ton temps pour réfléchir! 💡`;
             <p className="text-xs font-medium text-muted-foreground">
               Sélectionne ta réponse:
             </p>
-            <div className="grid grid-cols-2 gap-2">
+            <div className="grid grid-cols-4 gap-2">
               {options.map((option: string, idx: number) => (
                 <Button
                   key={idx}
@@ -452,9 +452,9 @@ Prends ton temps pour réfléchir! 💡`;
                   size="sm"
                   onClick={() => handleAnswerSelection(letters[idx])}
                   disabled={isLoading || selectedAnswer !== null}
-                  className="justify-start text-left h-auto py-3"
+                  className="justify-start text-left h-auto py-2"
                 >
-                  <span className="font-bold mr-2">{letters[idx]})</span>
+                  <span className="font-bold mr-1">{letters[idx]})</span>
                   <span className="text-xs">{option}</span>
                 </Button>
               ))}
@@ -469,7 +469,7 @@ Prends ton temps pour réfléchir! 💡`;
             size="sm"
             onClick={() => handleQuickAction("Donne-moi un indice pour cette question.")}
             disabled={isLoading}
-            className="flex-1"
+            className="flex-1 h-8 text-xs px-2"
           >
             Indice
           </Button>
@@ -478,7 +478,7 @@ Prends ton temps pour réfléchir! 💡`;
             size="sm"
             onClick={handleRevealAnswer}
             disabled={isLoading}
-            className="flex-1"
+            className="flex-1 h-8 text-xs px-2"
           >
             Révéler la réponse
           </Button>
