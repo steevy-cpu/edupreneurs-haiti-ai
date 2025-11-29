@@ -125,6 +125,15 @@ export default function ExamPreparation() {
     }
   };
 
+  const handleExerciseClick = async (exerciseNumber: number) => {
+    setCurrentExercise(exerciseNumber);
+
+    await supabase
+      .from('exam_practice_sessions')
+      .update({ current_exercise: exerciseNumber })
+      .eq('id', session.id);
+  };
+
   const handleAnswerValidated = async (isCorrect: boolean, points: number) => {
     if (isCorrect && !completedExercises.includes(currentExercise)) {
       const newScore = score + points;
@@ -222,6 +231,7 @@ export default function ExamPreparation() {
               currentExercise={currentExercise}
               totalExercises={exercises.length}
               completedExercises={completedExercises}
+              onExerciseClick={handleExerciseClick}
             />
           )}
 
