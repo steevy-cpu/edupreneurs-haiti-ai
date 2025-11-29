@@ -9,6 +9,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Loader2, Upload, FileText, CheckCircle2, AlertCircle, Trash2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { normalizeToSlug } from "@/lib/slugNormalization";
 
 interface ExistingExam {
   id: string;
@@ -80,8 +81,9 @@ export function ExamManager() {
 
     try {
       setIsUploading(true);
-      const fileName = `${subject.toLowerCase().replace(/\s+/g, "-")}-${year}-9af.pdf`;
-      const filePath = `${fileName}`;
+      const safeSubjectSlug = normalizeToSlug(subject || "examen");
+      const fileName = `${safeSubjectSlug}-${year}-9af.pdf`;
+      const filePath = fileName;
 
       const { error: uploadError } = await supabase.storage
         .from("exam-documents")
