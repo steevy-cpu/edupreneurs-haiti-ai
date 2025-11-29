@@ -5,12 +5,14 @@ interface ExamProgressBarProps {
   currentExercise: number;
   totalExercises: number;
   completedExercises: number[];
+  onExerciseClick?: (exerciseNumber: number) => void;
 }
 
 export const ExamProgressBar = ({
   currentExercise,
   totalExercises,
   completedExercises,
+  onExerciseClick,
 }: ExamProgressBarProps) => {
   const progressPercentage = (completedExercises.length / totalExercises) * 100;
 
@@ -29,7 +31,8 @@ export const ExamProgressBar = ({
         {Array.from({ length: totalExercises }, (_, i) => i + 1).map((num) => (
           <button
             key={num}
-            className={`aspect-square rounded-lg flex items-center justify-center text-xs font-medium transition-all ${
+            onClick={() => onExerciseClick?.(num)}
+            className={`aspect-square rounded-lg flex items-center justify-center text-xs font-medium transition-all cursor-pointer ${
               num === currentExercise
                 ? 'bg-primary text-primary-foreground ring-2 ring-primary ring-offset-2'
                 : completedExercises.includes(num)
