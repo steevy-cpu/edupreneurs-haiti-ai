@@ -12,9 +12,15 @@ interface ExamPDFViewerProps {
 export const ExamPDFViewer = ({ pdfUrl, examTitle }: ExamPDFViewerProps) => {
   const [hasError, setHasError] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [useGoogleViewer, setUseGoogleViewer] = useState(false);
 
-  // Construct the full PDF URL
-  const fullPdfUrl = pdfUrl?.startsWith('http') ? pdfUrl : `${window.location.origin}${pdfUrl}`;
+  // Construct the full PDF URL - handle both Storage URLs and relative paths
+  const fullPdfUrl = pdfUrl?.startsWith('http') 
+    ? pdfUrl 
+    : `${window.location.origin}${pdfUrl}`;
+
+  // Google PDF Viewer fallback URL
+  const googleViewerUrl = `https://docs.google.com/gview?url=${encodeURIComponent(fullPdfUrl)}&embedded=true`;
 
   if (!pdfUrl) {
     return (
@@ -30,6 +36,18 @@ export const ExamPDFViewer = ({ pdfUrl, examTitle }: ExamPDFViewerProps) => {
   }
 
   const handleFullScreen = () => window.open(fullPdfUrl, '_blank');
+
+  const handleIframeError = () => {
+    setIsLoading(false);
+    if (!useGoogleViewer) {
+      // Try Google Viewer as fallback
+      setUseGoogleViewer(true);
+      setIsLoading(true);
+    } else {
+      // Both methods failed
+      setHasError(true);
+    }
+  };
 
   return (
     <Card className="h-full flex flex-col overflow-hidden">
@@ -91,14 +109,11 @@ export const ExamPDFViewer = ({ pdfUrl, examTitle }: ExamPDFViewerProps) => {
           </div>
         ) : (
           <iframe
-            src={`${fullPdfUrl}#toolbar=0&navpanes=0&view=FitH`}
+            src={useGoogleViewer ? googleViewerUrl : `${fullPdfUrl}#toolbar=0&navpanes=0&view=FitH`}
             className="w-full h-full border-0"
             title={examTitle}
             onLoad={() => setIsLoading(false)}
-            onError={() => {
-              setIsLoading(false);
-              setHasError(true);
-            }}
+            onError={handleIframeError}
             style={{ minHeight: '500px', display: isLoading ? 'none' : 'block' }}
           />
         )}
