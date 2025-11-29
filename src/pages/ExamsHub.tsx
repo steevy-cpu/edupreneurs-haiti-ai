@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { BookOpen, Calendar, FileCheck, ArrowLeft } from "lucide-react";
-import ericTeaching from "@/assets/eric-teaching.png";
+import ericNewProfile from "@/assets/eric-new-profile.png";
 
 interface Exam {
   id: string;
@@ -112,7 +112,7 @@ const ExamsHub = () => {
               </div>
             </div>
             <img 
-              src={ericTeaching} 
+              src={ericNewProfile} 
               alt="Eric" 
               className="w-64 h-64 object-contain drop-shadow-2xl"
             />
