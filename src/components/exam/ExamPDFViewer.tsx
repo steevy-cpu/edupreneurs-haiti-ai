@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -12,15 +12,13 @@ interface ExamPDFViewerProps {
 export const ExamPDFViewer = ({ pdfUrl, examTitle }: ExamPDFViewerProps) => {
   const [hasError, setHasError] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
-  const [useGoogleViewer, setUseGoogleViewer] = useState(false);
+
+  const viewerRef = useRef<HTMLDivElement | null>(null);
 
   // Construct the full PDF URL - handle both Storage URLs and relative paths
-  const fullPdfUrl = pdfUrl?.startsWith('http') 
-    ? pdfUrl 
+  const fullPdfUrl = pdfUrl?.startsWith("http")
+    ? pdfUrl
     : `${window.location.origin}${pdfUrl}`;
-
-  // Google PDF Viewer fallback URL
-  const googleViewerUrl = `https://docs.google.com/gview?url=${encodeURIComponent(fullPdfUrl)}&embedded=true`;
 
   if (!pdfUrl) {
     return (
@@ -35,19 +33,84 @@ export const ExamPDFViewer = ({ pdfUrl, examTitle }: ExamPDFViewerProps) => {
     );
   }
 
-  const handleFullScreen = () => window.open(fullPdfUrl, '_blank');
+  const handleFullScreen = () => window.open(fullPdfUrl, "_blank");
 
-  const handleIframeError = () => {
-    setIsLoading(false);
-    if (!useGoogleViewer) {
-      // Try Google Viewer as fallback
-      setUseGoogleViewer(true);
-      setIsLoading(true);
-    } else {
-      // Both methods failed
-      setHasError(true);
-    }
-  };
+  useEffect(() => {
+    if (!viewerRef.current || !fullPdfUrl) return;
+
+    let isCancelled = false;
+    setIsLoading(true);
+    setHasError(false);
+
+    const loadPdf = async () => {
+      try {
+        const [{ getDocument, GlobalWorkerOptions }, response] = await Promise.all([
+          import("pdfjs-dist/legacy/build/pdf.mjs"),
+          fetch(fullPdfUrl),
+        ]);
+
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}`);
+        }
+
+        const data = await response.arrayBuffer();
+
+        // Configure PDF.js worker (using CDN worker to avoid bundler config)
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const workerOptions = (GlobalWorkerOptions as any);
+        if (!workerOptions.workerSrc) {
+          workerOptions.workerSrc =
+            "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.4.168/pdf.worker.min.js";
+        }
+
+        if (!viewerRef.current || isCancelled) return;
+
+        // Clear previous render
+        viewerRef.current.innerHTML = "";
+
+        const pdf = await getDocument({ data }).promise;
+
+        for (let pageNumber = 1; pageNumber <= pdf.numPages; pageNumber++) {
+          const page = await pdf.getPage(pageNumber);
+          const viewport = page.getViewport({ scale: 1.2 });
+
+          const canvas = document.createElement("canvas");
+          const context = canvas.getContext("2d");
+
+          if (!context) continue;
+
+          canvas.height = viewport.height;
+          canvas.width = viewport.width;
+          canvas.style.width = "100%";
+          canvas.style.margin = "0 auto 1.5rem auto";
+          canvas.style.display = "block";
+
+          viewerRef.current.appendChild(canvas);
+
+          await page.render({
+            canvasContext: context,
+            viewport,
+          }).promise;
+        }
+
+        if (!isCancelled) {
+          setIsLoading(false);
+        }
+      } catch (error) {
+        console.error("PDF render error:", error);
+        if (!isCancelled) {
+          setHasError(true);
+          setIsLoading(false);
+        }
+      }
+    };
+
+    loadPdf();
+
+    return () => {
+      isCancelled = true;
+    };
+  }, [fullPdfUrl]);
 
   return (
     <Card className="h-full flex flex-col overflow-hidden">
@@ -89,7 +152,7 @@ export const ExamPDFViewer = ({ pdfUrl, examTitle }: ExamPDFViewerProps) => {
             </div>
           </div>
         )}
-        
+
         {hasError ? (
           <div className="absolute inset-0 flex flex-col items-center justify-center p-8 text-center gap-4">
             <p className="text-muted-foreground mb-2">
@@ -108,13 +171,10 @@ export const ExamPDFViewer = ({ pdfUrl, examTitle }: ExamPDFViewerProps) => {
             </div>
           </div>
         ) : (
-          <iframe
-            src={useGoogleViewer ? googleViewerUrl : `${fullPdfUrl}#toolbar=0&navpanes=0&view=FitH`}
-            className="w-full h-full border-0"
-            title={examTitle}
-            onLoad={() => setIsLoading(false)}
-            onError={handleIframeError}
-            style={{ minHeight: '500px', display: isLoading ? 'none' : 'block' }}
+          <div
+            ref={viewerRef}
+            className="w-full h-full overflow-auto px-4 py-6"
+            style={{ minHeight: "500px" }}
           />
         )}
       </div>
