@@ -13,6 +13,9 @@ export const ExamPDFViewer = ({ pdfUrl, examTitle }: ExamPDFViewerProps) => {
   const [hasError, setHasError] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
 
+  // Construct the full PDF URL
+  const fullPdfUrl = pdfUrl?.startsWith('http') ? pdfUrl : `${window.location.origin}${pdfUrl}`;
+
   if (!pdfUrl) {
     return (
       <Card className="p-8 text-center h-full flex flex-col items-center justify-center">
@@ -26,7 +29,7 @@ export const ExamPDFViewer = ({ pdfUrl, examTitle }: ExamPDFViewerProps) => {
     );
   }
 
-  const handleFullScreen = () => window.open(pdfUrl, '_blank');
+  const handleFullScreen = () => window.open(fullPdfUrl, '_blank');
 
   return (
     <Card className="h-full flex flex-col overflow-hidden">
@@ -50,7 +53,7 @@ export const ExamPDFViewer = ({ pdfUrl, examTitle }: ExamPDFViewerProps) => {
             asChild
             className="h-8 px-3"
           >
-            <a href={pdfUrl} download target="_blank" rel="noopener noreferrer">
+            <a href={fullPdfUrl} download target="_blank" rel="noopener noreferrer">
               <ExternalLink className="h-4 w-4 mr-1" />
               <span className="hidden sm:inline">Télécharger</span>
             </a>
@@ -80,40 +83,24 @@ export const ExamPDFViewer = ({ pdfUrl, examTitle }: ExamPDFViewerProps) => {
                 Ouvrir dans un nouvel onglet
               </Button>
               <Button asChild variant="outline" size="lg">
-                <a href={pdfUrl} download>
+                <a href={fullPdfUrl} download>
                   Télécharger le PDF
                 </a>
               </Button>
             </div>
           </div>
         ) : (
-          <object
-            data={`${pdfUrl}#toolbar=0&navpanes=0&view=FitH`}
-            type="application/pdf"
+          <iframe
+            src={`${fullPdfUrl}#toolbar=0&navpanes=0&view=FitH`}
             className="w-full h-full border-0"
-            style={{ minHeight: '500px', display: isLoading ? 'none' : 'block' }}
+            title={examTitle}
             onLoad={() => setIsLoading(false)}
-          >
-            <iframe
-              src={`${pdfUrl}#toolbar=0&navpanes=0&view=FitH`}
-              className="w-full h-full border-0"
-              title={examTitle}
-              onLoad={() => {
-                setIsLoading(false);
-                setTimeout(() => {
-                  const iframe = document.querySelector('iframe[title="' + examTitle + '"]') as HTMLIFrameElement;
-                  if (iframe && !iframe.contentWindow) {
-                    setHasError(true);
-                  }
-                }, 1000);
-              }}
-              onError={() => {
-                setIsLoading(false);
-                setHasError(true);
-              }}
-              style={{ minHeight: '500px' }}
-            />
-          </object>
+            onError={() => {
+              setIsLoading(false);
+              setHasError(true);
+            }}
+            style={{ minHeight: '500px', display: isLoading ? 'none' : 'block' }}
+          />
         )}
       </div>
     </Card>
