@@ -87,26 +87,33 @@ export const ExamPDFViewer = ({ pdfUrl, examTitle }: ExamPDFViewerProps) => {
             </div>
           </div>
         ) : (
-          <iframe
-            src={`${pdfUrl}#toolbar=0&navpanes=0&view=FitH`}
+          <object
+            data={`${pdfUrl}#toolbar=0&navpanes=0&view=FitH`}
+            type="application/pdf"
             className="w-full h-full border-0"
-            title={examTitle}
-            onLoad={() => {
-              setIsLoading(false);
-              // Check if iframe loaded successfully
-              setTimeout(() => {
-                const iframe = document.querySelector('iframe[title="' + examTitle + '"]') as HTMLIFrameElement;
-                if (iframe && !iframe.contentWindow) {
-                  setHasError(true);
-                }
-              }, 1000);
-            }}
-            onError={() => {
-              setIsLoading(false);
-              setHasError(true);
-            }}
             style={{ minHeight: '500px', display: isLoading ? 'none' : 'block' }}
-          />
+            onLoad={() => setIsLoading(false)}
+          >
+            <iframe
+              src={`${pdfUrl}#toolbar=0&navpanes=0&view=FitH`}
+              className="w-full h-full border-0"
+              title={examTitle}
+              onLoad={() => {
+                setIsLoading(false);
+                setTimeout(() => {
+                  const iframe = document.querySelector('iframe[title="' + examTitle + '"]') as HTMLIFrameElement;
+                  if (iframe && !iframe.contentWindow) {
+                    setHasError(true);
+                  }
+                }, 1000);
+              }}
+              onError={() => {
+                setIsLoading(false);
+                setHasError(true);
+              }}
+              style={{ minHeight: '500px' }}
+            />
+          </object>
         )}
       </div>
     </Card>
