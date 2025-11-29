@@ -194,7 +194,7 @@ export default function ExamPreparation() {
   return (
     <Layout>
       <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20">
-        <div className="container mx-auto px-4 py-8">
+        <div className="container mx-auto px-4 py-4">
           {/* Header */}
           <div className="mb-6">
             <Button
@@ -242,7 +242,7 @@ export default function ExamPreparation() {
                 </TabsList>
                 
                 <TabsContent value="pdf" className="mt-6">
-                  <div className="h-[calc(100vh-200px)] min-h-[500px]">
+                  <div className="h-[calc(100vh-140px)] min-h-[550px]">
                     <ExamPDFViewer
                       pdfUrl={exam?.pdf_url || null}
                       examTitle={exam?.title || "Examen"}
@@ -251,7 +251,7 @@ export default function ExamPreparation() {
                 </TabsContent>
  
                 <TabsContent value="tutor" className="mt-6">
-                  <div className="h-[calc(100vh-200px)] min-h-[500px]">
+                  <div className="h-[calc(100vh-140px)] min-h-[550px]">
                     {session && currentExerciseData ? (
                       <ExamTutorChat
                         sessionId={session.id}
@@ -281,7 +281,7 @@ export default function ExamPreparation() {
             {/* Desktop: Side by Side Layout */}
             <div className="hidden lg:grid lg:grid-cols-2 lg:gap-6">
               {/* Left: PDF Viewer */}
-              <div className="h-[calc(100vh-200px)] min-h-[500px]">
+              <div className="h-[calc(100vh-140px)] min-h-[550px]">
                 <ExamPDFViewer
                   pdfUrl={exam?.pdf_url || null}
                   examTitle={exam?.title || "Examen"}
@@ -289,7 +289,7 @@ export default function ExamPreparation() {
               </div>
 
               {/* Right: Eric Tutor Chat */}
-              <div className="h-[calc(100vh-200px)] min-h-[500px]">
+              <div className="h-[calc(100vh-140px)] min-h-[550px]">
                 {session && currentExerciseData ? (
                   <ExamTutorChat
                     sessionId={session.id}
