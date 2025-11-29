@@ -367,7 +367,7 @@ Prends ton temps pour réfléchir! 💡`;
   };
 
   return (
-    <Card className="flex flex-col h-full">
+    <Card className="flex flex-col h-full overflow-hidden">
       {/* Header */}
       <div className="flex items-center gap-3 p-3 border-b bg-muted/30 flex-shrink-0">
         <Avatar className="h-10 w-10 border-2 border-primary">
