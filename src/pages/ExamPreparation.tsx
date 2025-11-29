@@ -13,7 +13,7 @@ import { ExamProgressBar } from "@/components/exam/ExamProgressBar";
 import { ArrowLeft, FileText, MessageCircle } from "lucide-react";
 
 export default function ExamPreparation() {
-  const { examSlug } = useParams();
+  const { examId } = useParams<{ examId: string }>();
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -27,7 +27,7 @@ export default function ExamPreparation() {
 
   useEffect(() => {
     loadExamData();
-  }, [examSlug]);
+  }, [examId]);
 
   const loadExamData = async () => {
     try {
@@ -37,11 +37,17 @@ export default function ExamPreparation() {
         return;
       }
 
-      // Load exam
+      if (!examId) {
+        console.error('No exam ID provided');
+        navigate('/examens-officiels');
+        return;
+      }
+
+      // Load exam by ID
       const { data: examData, error: examError } = await supabase
         .from('official_exams')
         .select('*')
-        .eq('grade_level', '9AF')
+        .eq('id', examId)
         .single();
 
       if (examError) throw examError;
@@ -189,8 +195,8 @@ export default function ExamPreparation() {
         <div className="container mx-auto px-4 py-8">
           <Card className="p-8 text-center">
             <p>Examen non trouvé</p>
-            <Button onClick={() => navigate('/matieres')} className="mt-4">
-              Retour aux matières
+            <Button onClick={() => navigate('/examens-officiels')} className="mt-4">
+              Retour aux examens
             </Button>
           </Card>
         </div>
@@ -208,11 +214,11 @@ export default function ExamPreparation() {
           <div className="mb-6">
             <Button
               variant="ghost"
-              onClick={() => navigate("/matieres")}
+              onClick={() => navigate("/examens-officiels")}
               className="mb-4"
             >
               <ArrowLeft className="h-4 w-4 mr-2" />
-              Retour aux matières
+              Retour aux examens
             </Button>
 
             <div className="space-y-1">
