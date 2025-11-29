@@ -242,7 +242,7 @@ export default function ExamPreparation() {
                 </TabsList>
                 
                 <TabsContent value="pdf" className="mt-6">
-                  <div className="h-[calc(100vh-260px)] min-h-[400px]">
+                  <div className="h-[calc(100vh-200px)] min-h-[500px]">
                     <ExamPDFViewer
                       pdfUrl={exam?.pdf_url || null}
                       examTitle={exam?.title || "Examen"}
@@ -251,7 +251,7 @@ export default function ExamPreparation() {
                 </TabsContent>
  
                 <TabsContent value="tutor" className="mt-6">
-                  <div className="h-[calc(100vh-260px)] min-h-[400px]">
+                  <div className="h-[calc(100vh-200px)] min-h-[500px]">
                     {session && currentExerciseData ? (
                       <ExamTutorChat
                         sessionId={session.id}
@@ -279,40 +279,40 @@ export default function ExamPreparation() {
             </div>
 
             {/* Desktop: Side by Side Layout */}
-             <div className="hidden lg:grid lg:grid-cols-2 lg:gap-6">
-               {/* Left: PDF Viewer */}
-               <div className="h-[calc(100vh-260px)] min-h-[400px]">
-                 <ExamPDFViewer
-                   pdfUrl={exam?.pdf_url || null}
-                   examTitle={exam?.title || "Examen"}
-                 />
-               </div>
- 
-               {/* Right: Eric Tutor Chat */}
-               <div className="h-[calc(100vh-260px)] min-h-[400px]">
-                 {session && currentExerciseData ? (
-                   <ExamTutorChat
-                     sessionId={session.id}
-                     exerciseId={currentExerciseData.id}
-                     exercise={currentExerciseData}
-                     examInfo={{
-                       subject: exam.subject,
-                       year: exam.year,
-                       title: exam.title,
-                     }}
-                     totalExercises={exercises.length}
-                     currentExerciseIndex={currentExercise - 1}
-                     onAnswerValidated={handleAnswerValidated}
-                     onPreviousExercise={handlePreviousExercise}
-                     onNextExercise={handleNextExercise}
-                   />
-                 ) : (
-                   <div className="flex items-center justify-center h-full">
-                     <p className="text-muted-foreground">Chargement du tuteur...</p>
-                   </div>
-                 )}
-               </div>
-             </div>
+            <div className="hidden lg:grid lg:grid-cols-2 lg:gap-6">
+              {/* Left: PDF Viewer */}
+              <div className="h-[calc(100vh-200px)] min-h-[500px]">
+                <ExamPDFViewer
+                  pdfUrl={exam?.pdf_url || null}
+                  examTitle={exam?.title || "Examen"}
+                />
+              </div>
+
+              {/* Right: Eric Tutor Chat */}
+              <div className="h-[calc(100vh-200px)] min-h-[500px]">
+                {session && currentExerciseData ? (
+                  <ExamTutorChat
+                    sessionId={session.id}
+                    exerciseId={currentExerciseData.id}
+                    exercise={currentExerciseData}
+                    examInfo={{
+                      subject: exam.subject,
+                      year: exam.year,
+                      title: exam.title,
+                    }}
+                    totalExercises={exercises.length}
+                    currentExerciseIndex={currentExercise - 1}
+                    onAnswerValidated={handleAnswerValidated}
+                    onPreviousExercise={handlePreviousExercise}
+                    onNextExercise={handleNextExercise}
+                  />
+                ) : (
+                  <div className="flex items-center justify-center h-full">
+                    <p className="text-muted-foreground">Chargement du tuteur...</p>
+                  </div>
+                )}
+              </div>
+            </div>
           </div>
         </div>
       </div>
