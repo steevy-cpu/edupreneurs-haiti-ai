@@ -4,8 +4,10 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { BookOpen, Calendar, FileCheck, ArrowLeft } from "lucide-react";
+import { BookOpen, Calendar, FileCheck, ArrowLeft, Calculator, Beaker, Globe, Languages, Flag, MessageCircle } from "lucide-react";
 import ericNewProfile from "@/assets/eric-new-profile.png";
+import { EricChatbot } from "@/components/EricChatbot";
+import { ThemeToggle } from "@/components/ThemeToggle";
 
 interface Exam {
   id: string;
@@ -19,13 +21,13 @@ interface Exam {
 }
 
 const SUBJECTS = [
-  { name: "Mathématiques", color: "from-blue-500 to-blue-600" },
-  { name: "Français", color: "from-purple-500 to-purple-600" },
-  { name: "Sciences Expérimentales", color: "from-green-500 to-green-600" },
-  { name: "Sciences Sociales", color: "from-amber-500 to-amber-600" },
-  { name: "Anglais", color: "from-red-500 to-red-600" },
-  { name: "Espagnol", color: "from-orange-500 to-orange-600" },
-  { name: "Créole", color: "from-cyan-500 to-cyan-600" },
+  { name: "Mathématiques", color: "from-blue-500 to-blue-600", icon: Calculator },
+  { name: "Français", color: "from-purple-500 to-purple-600", icon: BookOpen },
+  { name: "Sciences Expérimentales", color: "from-green-500 to-green-600", icon: Beaker },
+  { name: "Sciences Sociales", color: "from-amber-500 to-amber-600", icon: Globe },
+  { name: "Anglais", color: "from-red-500 to-red-600", icon: Languages },
+  { name: "Espagnol", color: "from-orange-500 to-orange-600", icon: Flag },
+  { name: "Créole", color: "from-cyan-500 to-cyan-600", icon: MessageCircle },
 ];
 
 const ExamsHub = () => {
@@ -79,14 +81,16 @@ const ExamsHub = () => {
       {/* Header */}
       <div className="relative overflow-hidden bg-gradient-to-r from-primary/10 via-primary/5 to-background border-b">
         <div className="container mx-auto px-4 py-12">
-          <Button
-            variant="ghost"
-            onClick={() => navigate("/matieres")}
-            className="mb-6"
-          >
-            <ArrowLeft className="mr-2 h-4 w-4" />
-            Retour aux matières
-          </Button>
+          <div className="flex justify-between items-center mb-6">
+            <Button
+              variant="ghost"
+              onClick={() => navigate("/matieres")}
+            >
+              <ArrowLeft className="mr-2 h-4 w-4" />
+              Retour aux matières
+            </Button>
+            <ThemeToggle />
+          </div>
           
           <div className="flex flex-col lg:flex-row items-center gap-8">
             <div className="flex-1 space-y-4">
@@ -156,26 +160,29 @@ const ExamsHub = () => {
               </div>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                {subjectCounts.map((subject) => (
-                  <Card
-                    key={subject.name}
-                    className="group cursor-pointer hover:shadow-xl transition-all duration-300 hover:-translate-y-1"
-                    onClick={() => setSelectedSubject(subject.name)}
-                  >
-                    <div className={`h-2 bg-gradient-to-r ${subject.color}`} />
-                    <CardHeader className="pb-4">
-                      <div className={`w-16 h-16 mx-auto rounded-full bg-gradient-to-r ${subject.color} flex items-center justify-center mb-4`}>
-                        <BookOpen className="h-8 w-8 text-white" />
-                      </div>
-                      <CardTitle className="text-xl text-center group-hover:text-primary transition-colors">
-                        {subject.name}
-                      </CardTitle>
-                      <CardDescription className="text-center">
-                        {subject.examCount} examens disponibles
-                      </CardDescription>
-                    </CardHeader>
-                  </Card>
-                ))}
+                {subjectCounts.map((subject) => {
+                  const SubjectIcon = subject.icon;
+                  return (
+                    <Card
+                      key={subject.name}
+                      className="group cursor-pointer hover:shadow-xl transition-all duration-300 hover:-translate-y-1"
+                      onClick={() => setSelectedSubject(subject.name)}
+                    >
+                      <div className={`h-2 bg-gradient-to-r ${subject.color}`} />
+                      <CardHeader className="pb-4">
+                        <div className={`w-16 h-16 mx-auto rounded-full bg-gradient-to-r ${subject.color} flex items-center justify-center mb-4`}>
+                          <SubjectIcon className="h-8 w-8 text-white" />
+                        </div>
+                        <CardTitle className="text-xl text-center group-hover:text-primary transition-colors">
+                          {subject.name}
+                        </CardTitle>
+                        <CardDescription className="text-center">
+                          {subject.examCount} examens disponibles
+                        </CardDescription>
+                      </CardHeader>
+                    </Card>
+                  );
+                })}
               </div>
             )}
           </div>
@@ -257,6 +264,9 @@ const ExamsHub = () => {
           </div>
         )}
       </div>
+
+      {/* Eric Chatbot */}
+      <EricChatbot />
     </div>
   );
 };
