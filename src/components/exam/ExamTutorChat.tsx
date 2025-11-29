@@ -64,6 +64,7 @@ export const ExamTutorChat = ({
   const [youtubeQuery, setYoutubeQuery] = useState("");
   const [showQuestion, setShowQuestion] = useState(true);
   const [selectedAnswer, setSelectedAnswer] = useState<string | null>(null);
+  const [hasGreeted, setHasGreeted] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
 
@@ -107,8 +108,8 @@ export const ExamTutorChat = ({
   const sendInitialGreeting = async () => {
     let greeting = '';
     
-    if (exercise.exercise_number === 1) {
-      // Full introduction for first question
+    if (exercise.exercise_number === 1 && !hasGreeted) {
+      // Full introduction only for first question on first load
       greeting = `Salut! 👋 Je suis Eric, ton tuteur pour l'examen de ${examInfo.subject} ${examInfo.year}.
 
 Voici la question ${exercise.exercise_number}:
@@ -116,13 +117,15 @@ Voici la question ${exercise.exercise_number}:
 ${exercise.question_text}
 
 Prends ton temps pour réfléchir. Tu peux me demander des indices ou cliquer sur "Révéler la réponse" si tu es bloqué! 💡`;
+      setHasGreeted(true);
     } else {
-      // Simple transition for subsequent questions with full context
-      greeting = `Très bien! Passons maintenant à la question ${exercise.exercise_number} de l'examen officiel de ${examInfo.subject} (${examInfo.year}) pour la 9ème AF:
+      // Simple transition for all other cases (jumping or progressing)
+      greeting = `Passons à la question ${exercise.exercise_number} de l'examen officiel de ${examInfo.subject} (${examInfo.year}) pour la 9ème AF:
 
 ${exercise.question_text}
 
 Prends ton temps pour réfléchir! 💡`;
+      setHasGreeted(true);
     }
     
     await saveMessage('assistant', greeting);
