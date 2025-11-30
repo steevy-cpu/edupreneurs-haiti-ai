@@ -71,6 +71,8 @@ Retourne exactement ce format JSON (sans balises markdown, sans texte additionne
 }`;
 
     console.log("🤖 Calling Lovable AI to parse exam text...");
+    console.log(`📝 Extracted text length: ${extractedText.length} characters`);
+    console.log(`📚 Subject: ${subject}, Year: ${year}`);
 
     const aiResponse = await fetch(
       "https://ai.gateway.lovable.dev/v1/chat/completions",
@@ -101,6 +103,7 @@ Retourne exactement ce format JSON (sans balises markdown, sans texte additionne
     const aiContent = aiData.choices[0].message.content;
 
     console.log("✅ AI response received");
+    console.log(`📊 Raw AI response length: ${aiContent.length} characters`);
 
     // Parse the JSON response
     let parsedData;
@@ -129,6 +132,9 @@ Retourne exactement ce format JSON (sans balises markdown, sans texte additionne
     console.log(
       `✅ Successfully parsed ${parsedData.exercises.length} exercises`
     );
+    console.log(`📋 Exercise numbers found: ${parsedData.exercises.map((e: any) => e.exerciseNumber).join(", ")}`);
+    console.log(`🎯 Exercise types: ${parsedData.exercises.map((e: any) => e.exerciseType).join(", ")}`);
+    console.log(`💯 Total points calculated: ${parsedData.totalPoints}`);
 
     return new Response(JSON.stringify(parsedData), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },

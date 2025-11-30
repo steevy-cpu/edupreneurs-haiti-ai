@@ -42,7 +42,8 @@ const ExamsHub = () => {
 
   const loadExams = async () => {
     try {
-      const { data, error } = await supabase
+      // Join with exam_exercises to get actual exercise count
+      const { data: examsData, error } = await supabase
         .from("official_exams")
         .select("*")
         .eq("grade_level", "9AF")
@@ -50,7 +51,23 @@ const ExamsHub = () => {
         .order("subject");
 
       if (error) throw error;
-      setExams(data || []);
+
+      // Get actual exercise counts for each exam
+      const examsWithActualCounts = await Promise.all(
+        (examsData || []).map(async (exam) => {
+          const { count } = await supabase
+            .from("exam_exercises")
+            .select("*", { count: "exact", head: true })
+            .eq("exam_id", exam.id);
+
+          return {
+            ...exam,
+            total_exercises: count || 0, // Use actual count from exercises table
+          };
+        })
+      );
+
+      setExams(examsWithActualCounts);
     } catch (error) {
       console.error("Error loading exams:", error);
     } finally {
