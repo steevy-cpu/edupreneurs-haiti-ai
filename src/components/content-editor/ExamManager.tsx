@@ -22,6 +22,17 @@ interface ExistingExam {
   grade_level: string;
 }
 
+interface ParsedExercise {
+  exerciseNumber: number;
+  exerciseType: string;
+  questionText: string;
+  options: any;
+  correctAnswer: string | null;
+  explanation: string | null;
+  points: number;
+  concept: string;
+}
+
 const SUBJECTS = [
   "Mathématiques",
   "Français",
@@ -43,6 +54,13 @@ export function ExamManager() {
   const [isUploading, setIsUploading] = useState(false);
   const [existingExams, setExistingExams] = useState<ExistingExam[]>([]);
   const [isLoadingExams, setIsLoadingExams] = useState(true);
+  const [parsedPreview, setParsedPreview] = useState<{
+    title: string;
+    totalExercises: number;
+    totalPoints: number;
+    exercises: ParsedExercise[];
+  } | null>(null);
+  const [showPreview, setShowPreview] = useState(false);
 
   useEffect(() => {
     loadExistingExams();
@@ -152,7 +170,35 @@ export function ExamManager() {
 
       if (parseError) throw parseError;
 
-      // 3. Check if exam already exists
+      // Show preview
+      setParsedPreview(parsedData);
+      setShowPreview(true);
+      setIsAnalyzing(false);
+      toast.success(`✅ ${parsedData.totalExercises} exercices détectés. Vérifiez l'aperçu ci-dessous.`);
+      return;
+    } catch (error: any) {
+      console.error("Error analyzing exam:", error);
+      toast.error(error.message || "Erreur lors de l'analyse");
+      setIsAnalyzing(false);
+    }
+  };
+
+  const handleConfirmAndSave = async () => {
+    if (!parsedPreview) return;
+
+    setIsAnalyzing(true);
+
+    try {
+      // 1. Get PDF URL (already uploaded)
+      const pdfUrl = await uploadPdfToStorage();
+      
+      if (!pdfUrl) {
+        toast.error("Échec du téléversement du PDF. Veuillez réessayer.");
+        setIsAnalyzing(false);
+        return;
+      }
+
+      // 2. Check if exam already exists
       const { data: existingExam } = await supabase
         .from("official_exams")
         .select("id")
@@ -168,9 +214,9 @@ export function ExamManager() {
         const { error: updateError } = await supabase
           .from("official_exams")
           .update({
-            title: parsedData.title,
-            total_exercises: parsedData.totalExercises,
-            total_points: parsedData.totalPoints,
+            title: parsedPreview.title,
+            total_exercises: parsedPreview.totalExercises,
+            total_points: parsedPreview.totalPoints,
             pdf_url: pdfUrl,
           })
           .eq("id", existingExam.id);
@@ -190,12 +236,12 @@ export function ExamManager() {
         const { data: newExam, error: examError } = await supabase
           .from("official_exams")
           .insert({
-            title: parsedData.title,
+            title: parsedPreview.title,
             subject,
             year: parseInt(year),
             grade_level: "9AF",
-            total_exercises: parsedData.totalExercises,
-            total_points: parsedData.totalPoints,
+            total_exercises: parsedPreview.totalExercises,
+            total_points: parsedPreview.totalPoints,
             pdf_url: pdfUrl,
           })
           .select()
@@ -206,8 +252,8 @@ export function ExamManager() {
         toast.success("Nouvel examen créé avec succès");
       }
 
-      // 4. Insert exercises (deduplicate by exerciseNumber to avoid constraint errors)
-      const uniqueExercises = parsedData.exercises.reduce((acc: any[], ex: any) => {
+      // 3. Insert exercises (deduplicate by exerciseNumber to avoid constraint errors)
+      const uniqueExercises = parsedPreview.exercises.reduce((acc: any[], ex: any) => {
         if (!acc.some((e) => e.exerciseNumber === ex.exerciseNumber)) {
           acc.push(ex);
         } else {
@@ -237,8 +283,19 @@ export function ExamManager() {
 
       if (exercisesError) throw exercisesError;
 
+      // 4. Update total_exercises with actual count from database
+      const { count: actualCount } = await supabase
+        .from("exam_exercises")
+        .select("*", { count: "exact", head: true })
+        .eq("exam_id", examId);
+
+      await supabase
+        .from("official_exams")
+        .update({ total_exercises: actualCount || 0 })
+        .eq("id", examId);
+
       toast.success(
-        `${parsedData.totalExercises} exercices enregistrés avec succès`
+        `${actualCount || parsedPreview.totalExercises} exercices enregistrés avec succès`
       );
 
       // 5. Reset form and reload
@@ -246,6 +303,8 @@ export function ExamManager() {
       setYear("");
       setPdfFile(null);
       setExtractedText("");
+      setParsedPreview(null);
+      setShowPreview(false);
       loadExistingExams();
     } catch (error: any) {
       console.error("Error analyzing and saving exam:", error);
@@ -366,7 +425,8 @@ export function ExamManager() {
               isUploading ||
               !subject ||
               !year ||
-              !extractedText.trim()
+              !extractedText.trim() ||
+              showPreview
             }
             className="w-full"
             size="lg"
@@ -379,12 +439,93 @@ export function ExamManager() {
             ) : (
               <>
                 <FileText className="mr-2 h-4 w-4" />
-                Analyser et Sauvegarder
+                Analyser le PDF
               </>
             )}
           </Button>
         </CardContent>
       </Card>
+
+      {/* Preview Section */}
+      {showPreview && parsedPreview && (
+        <Card className="border-primary">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <CheckCircle2 className="h-5 w-5 text-green-500" />
+              Aperçu de l'analyse
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <span className="font-semibold">Titre:</span>
+                <span>{parsedPreview.title}</span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="font-semibold">Exercices détectés:</span>
+                <Badge variant="secondary" className="text-lg">
+                  {parsedPreview.totalExercises}
+                </Badge>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="font-semibold">Points totaux:</span>
+                <Badge variant="secondary" className="text-lg">
+                  {parsedPreview.totalPoints}
+                </Badge>
+              </div>
+            </div>
+
+            <div className="border rounded-lg p-4 max-h-64 overflow-y-auto space-y-2">
+              <p className="font-semibold text-sm mb-2">Exercices extraits:</p>
+              {parsedPreview.exercises.slice(0, 5).map((ex) => (
+                <div key={ex.exerciseNumber} className="text-sm border-b pb-2">
+                  <span className="font-semibold">#{ex.exerciseNumber}:</span>{" "}
+                  {ex.questionText.substring(0, 80)}...
+                  <span className="text-muted-foreground ml-2">
+                    ({ex.points} pts - {ex.exerciseType})
+                  </span>
+                </div>
+              ))}
+              {parsedPreview.exercises.length > 5 && (
+                <p className="text-xs text-muted-foreground text-center pt-2">
+                  ... et {parsedPreview.exercises.length - 5} autres exercices
+                </p>
+              )}
+            </div>
+
+            <div className="flex gap-2">
+              <Button
+                onClick={handleConfirmAndSave}
+                disabled={isAnalyzing || isUploading}
+                className="flex-1"
+                size="lg"
+              >
+                {isAnalyzing || isUploading ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Sauvegarde...
+                  </>
+                ) : (
+                  <>
+                    <CheckCircle2 className="mr-2 h-4 w-4" />
+                    Confirmer et Sauvegarder
+                  </>
+                )}
+              </Button>
+              <Button
+                onClick={() => {
+                  setParsedPreview(null);
+                  setShowPreview(false);
+                }}
+                variant="outline"
+                disabled={isAnalyzing || isUploading}
+              >
+                Annuler
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Existing Exams List */}
       <Card>
