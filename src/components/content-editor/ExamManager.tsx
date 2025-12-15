@@ -265,17 +265,22 @@ export function ExamManager() {
         return acc;
       }, []);
 
-      const exercisesToInsert = uniqueExercises.map((ex: any) => ({
-        exam_id: examId,
-        exercise_number: ex.exerciseNumber,
-        exercise_type: ex.exerciseType,
-        question_text: ex.questionText,
-        options: ex.options || null,
-        correct_answer: ex.correctAnswer || null,
-        explanation: ex.explanation || null,
-        points: ex.points,
-        concept: ex.concept,
-      }));
+       const exercisesToInsert = uniqueExercises.map((ex: any) => ({
+         exam_id: examId,
+         exercise_number: ex.exerciseNumber,
+         exercise_type: ex.exerciseType,
+         question_text: ex.questionText,
+         options: ex.options || null,
+         correct_answer: ex.correctAnswer || null,
+         explanation: ex.explanation || null,
+         points:
+           typeof ex.points === "number" && Number.isFinite(ex.points)
+             ? ex.points
+             : ex.exerciseType === "multiple_choice"
+               ? 5
+               : 8,
+         concept: ex.concept || "Général",
+       }));
 
       const { error: exercisesError } = await supabase
         .from("exam_exercises")
