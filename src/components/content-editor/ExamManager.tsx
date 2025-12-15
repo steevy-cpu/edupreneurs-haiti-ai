@@ -215,8 +215,8 @@ export function ExamManager() {
           .from("official_exams")
           .update({
             title: parsedPreview.title,
-            total_exercises: parsedPreview.totalExercises,
-            total_points: parsedPreview.totalPoints,
+            total_exercises: parsedPreview.totalExercises || parsedPreview.exercises.length,
+            total_points: parsedPreview.totalPoints || 100,
             pdf_url: pdfUrl,
           })
           .eq("id", existingExam.id);
@@ -240,8 +240,8 @@ export function ExamManager() {
             subject,
             year: parseInt(year),
             grade_level: "9AF",
-            total_exercises: parsedPreview.totalExercises,
-            total_points: parsedPreview.totalPoints,
+            total_exercises: parsedPreview.totalExercises || parsedPreview.exercises.length,
+            total_points: parsedPreview.totalPoints || 100,
             pdf_url: pdfUrl,
           })
           .select()

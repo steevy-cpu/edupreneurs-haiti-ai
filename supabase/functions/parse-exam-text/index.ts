@@ -129,14 +129,29 @@ Retourne exactement ce format JSON (sans balises markdown, sans texte additionne
       throw new Error("Invalid parsed data structure");
     }
 
+    // Calculate total points from exercises if not provided or null
+    const calculatedTotalPoints = parsedData.exercises.reduce(
+      (sum: number, ex: any) => sum + (ex.points || 0),
+      0
+    );
+    const totalPoints = parsedData.totalPoints || calculatedTotalPoints || 100;
+    const totalExercises = parsedData.exercises.length || 0;
+
     console.log(
       `✅ Successfully parsed ${parsedData.exercises.length} exercises`
     );
     console.log(`📋 Exercise numbers found: ${parsedData.exercises.map((e: any) => e.exerciseNumber).join(", ")}`);
     console.log(`🎯 Exercise types: ${parsedData.exercises.map((e: any) => e.exerciseType).join(", ")}`);
-    console.log(`💯 Total points calculated: ${parsedData.totalPoints}`);
+    console.log(`💯 Total points calculated: ${totalPoints}`);
 
-    return new Response(JSON.stringify(parsedData), {
+    // Return with guaranteed non-null values
+    const responseData = {
+      ...parsedData,
+      totalPoints,
+      totalExercises,
+    };
+
+    return new Response(JSON.stringify(responseData), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   } catch (error) {
