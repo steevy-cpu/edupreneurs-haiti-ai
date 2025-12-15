@@ -129,26 +129,60 @@ Retourne exactement ce format JSON (sans balises markdown, sans texte additionne
       throw new Error("Invalid parsed data structure");
     }
 
-    // Calculate total points from exercises if not provided or null
-    const calculatedTotalPoints = parsedData.exercises.reduce(
+    // Normalize exercises to guarantee required fields (DB constraints)
+    const missingPointsCount = parsedData.exercises.filter((e: any) => e?.points == null).length;
+
+    const exercises = parsedData.exercises
+      .map((ex: any) => {
+        const exerciseType =
+          ex.exerciseType === "multiple_choice" || ex.exerciseType === "open_ended"
+            ? ex.exerciseType
+            : "open_ended";
+
+        const points =
+          typeof ex.points === "number" && Number.isFinite(ex.points) && ex.points > 0
+            ? ex.points
+            : exerciseType === "multiple_choice"
+              ? 5
+              : 8;
+
+        return {
+          exerciseNumber: Number(ex.exerciseNumber) || 0,
+          exerciseType,
+          questionText: String(ex.questionText ?? "").trim(),
+          options: ex.options ?? null,
+          correctAnswer: ex.correctAnswer ?? null,
+          explanation: ex.explanation ?? null,
+          points,
+          concept: String(ex.concept ?? "Général").trim() || "Général",
+        };
+      })
+      .filter((ex: any) => ex.exerciseNumber > 0 && ex.questionText.length > 0);
+
+    // Calculate totals (never null)
+    const calculatedTotalPoints = exercises.reduce(
       (sum: number, ex: any) => sum + (ex.points || 0),
       0
     );
-    const totalPoints = parsedData.totalPoints || calculatedTotalPoints || 100;
-    const totalExercises = parsedData.exercises.length || 0;
 
-    console.log(
-      `✅ Successfully parsed ${parsedData.exercises.length} exercises`
-    );
-    console.log(`📋 Exercise numbers found: ${parsedData.exercises.map((e: any) => e.exerciseNumber).join(", ")}`);
-    console.log(`🎯 Exercise types: ${parsedData.exercises.map((e: any) => e.exerciseType).join(", ")}`);
+    const totalPoints =
+      (typeof parsedData.totalPoints === "number" && Number.isFinite(parsedData.totalPoints)
+        ? parsedData.totalPoints
+        : 0) || calculatedTotalPoints || 100;
+    const totalExercises = exercises.length || 0;
+
+    console.log(`✅ Successfully parsed ${exercises.length} exercises`);
+    console.log(`📋 Exercise numbers found: ${exercises.map((e: any) => e.exerciseNumber).join(", ")}`);
+    console.log(`🎯 Exercise types: ${exercises.map((e: any) => e.exerciseType).join(", ")}`);
+    console.log(`🧩 Exercises missing points from AI: ${missingPointsCount}`);
     console.log(`💯 Total points calculated: ${totalPoints}`);
 
     // Return with guaranteed non-null values
     const responseData = {
-      ...parsedData,
-      totalPoints,
+      title: parsedData.title || `Examen Officiel de ${subject} ${year}`,
       totalExercises,
+      totalPoints,
+      exercises,
     };
 
     return new Response(JSON.stringify(responseData), {
