@@ -3,13 +3,20 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Loader2, Upload, FileText, CheckCircle2, AlertCircle, Trash2 } from "lucide-react";
+import { Loader2, Upload, FileText, CheckCircle2, AlertCircle, Trash2, Eye } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { Progress } from "@/components/ui/progress";
 import { normalizeToSlug } from "@/lib/slugNormalization";
+import * as pdfjsLib from "pdfjs-dist";
+
+// Set up PDF.js worker
+pdfjsLib.GlobalWorkerOptions.workerSrc = new URL(
+  "pdfjs-dist/legacy/build/pdf.worker.min.mjs",
+  import.meta.url
+).toString();
 
 interface ExistingExam {
   id: string;
@@ -49,9 +56,11 @@ export function ExamManager() {
   const [subject, setSubject] = useState("");
   const [year, setYear] = useState("");
   const [pdfFile, setPdfFile] = useState<File | null>(null);
-  const [extractedText, setExtractedText] = useState("");
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
+  const [isConvertingPdf, setIsConvertingPdf] = useState(false);
+  const [conversionProgress, setConversionProgress] = useState(0);
+  const [totalPages, setTotalPages] = useState(0);
   const [existingExams, setExistingExams] = useState<ExistingExam[]>([]);
   const [isLoadingExams, setIsLoadingExams] = useState(true);
   const [parsedPreview, setParsedPreview] = useState<{
@@ -88,6 +97,8 @@ export function ExamManager() {
     const file = e.target.files?.[0];
     if (file && file.type === "application/pdf") {
       setPdfFile(file);
+      setParsedPreview(null);
+      setShowPreview(false);
       toast.success(`PDF "${file.name}" sélectionné`);
     } else {
       toast.error("Veuillez sélectionner un fichier PDF valide");
@@ -123,6 +134,60 @@ export function ExamManager() {
     }
   };
 
+  const convertPdfToImages = async (file: File): Promise<string[]> => {
+    setIsConvertingPdf(true);
+    setConversionProgress(0);
+    
+    try {
+      const arrayBuffer = await file.arrayBuffer();
+      const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+      const numPages = pdf.numPages;
+      setTotalPages(numPages);
+      
+      const images: string[] = [];
+      
+      for (let pageNum = 1; pageNum <= numPages; pageNum++) {
+        const page = await pdf.getPage(pageNum);
+        
+        // High resolution for accuracy (scale 2.0 = 200%)
+        const scale = 2.0;
+        const viewport = page.getViewport({ scale });
+        
+        const canvas = document.createElement("canvas");
+        const context = canvas.getContext("2d");
+        
+        if (!context) {
+          throw new Error("Could not get canvas context");
+        }
+        
+        canvas.width = viewport.width;
+        canvas.height = viewport.height;
+        
+        await page.render({
+          canvasContext: context,
+          viewport: viewport,
+          canvas: canvas,
+        }).promise;
+        
+        // Convert to base64 PNG
+        const dataUrl = canvas.toDataURL("image/png", 0.95);
+        images.push(dataUrl);
+        
+        // Update progress
+        setConversionProgress(Math.round((pageNum / numPages) * 100));
+        
+        console.log(`Converted page ${pageNum}/${numPages}`);
+      }
+      
+      return images;
+    } catch (error) {
+      console.error("Error converting PDF to images:", error);
+      throw new Error("Erreur lors de la conversion du PDF en images");
+    } finally {
+      setIsConvertingPdf(false);
+    }
+  };
+
   const handleAnalyzeAndSave = async () => {
     if (!subject || !year) {
       toast.error("Veuillez sélectionner une matière et une année");
@@ -134,20 +199,11 @@ export function ExamManager() {
       return;
     }
 
-    if (!extractedText.trim()) {
-      toast.error("Veuillez coller le texte extrait du PDF");
-      return;
-    }
-
-    if (extractedText.trim().length < 200) {
-      toast.error("Le texte semble trop court. Veuillez coller le contenu complet de l'examen.");
-      return;
-    }
-
     setIsAnalyzing(true);
 
     try {
       // 1. Upload PDF first
+      toast.info("Téléversement du PDF...");
       const pdfUrl = await uploadPdfToStorage();
       
       if (!pdfUrl) {
@@ -156,19 +212,38 @@ export function ExamManager() {
         return;
       }
 
-      // 2. Parse the extracted text using AI
+      // 2. Convert PDF to images
+      toast.info("Conversion du PDF en images haute résolution...");
+      const pageImages = await convertPdfToImages(pdfFile);
+      
+      if (pageImages.length === 0) {
+        toast.error("Aucune page n'a pu être extraite du PDF");
+        setIsAnalyzing(false);
+        return;
+      }
+
+      toast.info(`${pageImages.length} pages extraites. Analyse par IA en cours...`);
+
+      // 3. Send images to Vision AI for parsing
       const { data: parsedData, error: parseError } = await supabase.functions.invoke(
-        "parse-exam-text",
+        "parse-exam-vision",
         {
           body: {
             subject,
             year: parseInt(year),
-            extractedText,
+            pageImages,
           },
         }
       );
 
-      if (parseError) throw parseError;
+      if (parseError) {
+        console.error("Parse error:", parseError);
+        throw new Error(parseError.message || "Erreur lors de l'analyse");
+      }
+
+      if (parsedData.error) {
+        throw new Error(parsedData.error);
+      }
 
       // Show preview
       setParsedPreview(parsedData);
@@ -265,22 +340,22 @@ export function ExamManager() {
         return acc;
       }, []);
 
-       const exercisesToInsert = uniqueExercises.map((ex: any) => ({
-         exam_id: examId,
-         exercise_number: ex.exerciseNumber,
-         exercise_type: ex.exerciseType,
-         question_text: ex.questionText,
-         options: ex.options || null,
-         correct_answer: ex.correctAnswer || null,
-         explanation: ex.explanation || null,
-         points:
-           typeof ex.points === "number" && Number.isFinite(ex.points)
-             ? ex.points
-             : ex.exerciseType === "multiple_choice"
-               ? 5
-               : 8,
-         concept: ex.concept || "Général",
-       }));
+      const exercisesToInsert = uniqueExercises.map((ex: any) => ({
+        exam_id: examId,
+        exercise_number: ex.exerciseNumber,
+        exercise_type: ex.exerciseType,
+        question_text: ex.questionText,
+        options: ex.options || null,
+        correct_answer: ex.correctAnswer || null,
+        explanation: ex.explanation || null,
+        points:
+          typeof ex.points === "number" && Number.isFinite(ex.points)
+            ? ex.points
+            : ex.exerciseType === "multiple_choice"
+              ? 5
+              : 8,
+        concept: ex.concept || "Général",
+      }));
 
       const { error: exercisesError } = await supabase
         .from("exam_exercises")
@@ -307,7 +382,6 @@ export function ExamManager() {
       setSubject("");
       setYear("");
       setPdfFile(null);
-      setExtractedText("");
       setParsedPreview(null);
       setShowPreview(false);
       loadExistingExams();
@@ -343,6 +417,8 @@ export function ExamManager() {
       toast.error("Erreur lors de la suppression de l'examen");
     }
   };
+
+  const isProcessing = isAnalyzing || isUploading || isConvertingPdf;
 
   return (
     <div className="space-y-6">
@@ -390,7 +466,7 @@ export function ExamManager() {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="pdf-upload">PDF de l'examen</Label>
+            <Label htmlFor="pdf-upload">PDF de l'examen *</Label>
             <div className="flex items-center gap-2">
               <Input
                 id="pdf-upload"
@@ -398,53 +474,58 @@ export function ExamManager() {
                 accept=".pdf"
                 onChange={handlePdfUpload}
                 className="flex-1"
+                disabled={isProcessing}
               />
               {pdfFile && (
                 <Badge variant="secondary" className="whitespace-nowrap">
+                  <FileText className="h-3 w-3 mr-1" />
                   {pdfFile.name}
                 </Badge>
               )}
             </div>
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="extracted-text">
-              Texte extrait du PDF * (copier-coller)
-            </Label>
-            <Textarea
-              id="extracted-text"
-              placeholder="Collez ici le contenu textuel complet de l'examen..."
-              value={extractedText}
-              onChange={(e) => setExtractedText(e.target.value)}
-              className="min-h-[200px] font-mono text-sm"
-            />
             <p className="text-xs text-muted-foreground">
-              {extractedText.length} caractères
+              L'IA Vision analysera automatiquement le PDF pour extraire les questions
             </p>
           </div>
 
+          {/* Progress indicator for PDF conversion */}
+          {isConvertingPdf && (
+            <div className="space-y-2 p-4 bg-muted/50 rounded-lg">
+              <div className="flex items-center justify-between text-sm">
+                <span className="flex items-center gap-2">
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  Conversion des pages en images...
+                </span>
+                <span className="font-medium">{conversionProgress}%</span>
+              </div>
+              <Progress value={conversionProgress} className="h-2" />
+              {totalPages > 0 && (
+                <p className="text-xs text-muted-foreground text-center">
+                  Page {Math.ceil((conversionProgress / 100) * totalPages)} sur {totalPages}
+                </p>
+              )}
+            </div>
+          )}
+
           <Button
             onClick={handleAnalyzeAndSave}
-            disabled={
-              isAnalyzing ||
-              isUploading ||
-              !subject ||
-              !year ||
-              !extractedText.trim() ||
-              showPreview
-            }
+            disabled={isProcessing || !subject || !year || !pdfFile || showPreview}
             className="w-full"
             size="lg"
           >
-            {isAnalyzing || isUploading ? (
+            {isProcessing ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                {isUploading ? "Téléversement PDF..." : "Analyse en cours..."}
+                {isUploading
+                  ? "Téléversement PDF..."
+                  : isConvertingPdf
+                    ? "Conversion en cours..."
+                    : "Analyse IA Vision en cours..."}
               </>
             ) : (
               <>
-                <FileText className="mr-2 h-4 w-4" />
-                Analyser le PDF
+                <Eye className="mr-2 h-4 w-4" />
+                Analyser avec IA Vision
               </>
             )}
           </Button>
@@ -457,7 +538,7 @@ export function ExamManager() {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <CheckCircle2 className="h-5 w-5 text-green-500" />
-              Aperçu de l'analyse
+              Aperçu de l'analyse IA Vision
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
@@ -485,7 +566,7 @@ export function ExamManager() {
               {parsedPreview.exercises.slice(0, 5).map((ex) => (
                 <div key={ex.exerciseNumber} className="text-sm border-b pb-2">
                   <span className="font-semibold">#{ex.exerciseNumber}:</span>{" "}
-                  {ex.questionText.substring(0, 80)}...
+                  {ex.questionText.substring(0, 100)}...
                   <span className="text-muted-foreground ml-2">
                     ({ex.points} pts - {ex.exerciseType})
                   </span>
@@ -501,11 +582,11 @@ export function ExamManager() {
             <div className="flex gap-2">
               <Button
                 onClick={handleConfirmAndSave}
-                disabled={isAnalyzing || isUploading}
+                disabled={isProcessing}
                 className="flex-1"
                 size="lg"
               >
-                {isAnalyzing || isUploading ? (
+                {isProcessing ? (
                   <>
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                     Sauvegarde...
@@ -523,7 +604,7 @@ export function ExamManager() {
                   setShowPreview(false);
                 }}
                 variant="outline"
-                disabled={isAnalyzing || isUploading}
+                disabled={isProcessing}
               >
                 Annuler
               </Button>
