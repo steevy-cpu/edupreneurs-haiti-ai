@@ -68,6 +68,25 @@ export const ExamTutorChat = ({
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
 
+  // Helper function to format options for display in chat
+  const formatOptionsForChat = (opts: any): string => {
+    if (!opts) return '';
+    
+    const optLetters = ['A', 'B', 'C', 'D'];
+    
+    if (Array.isArray(opts)) {
+      return opts.map((opt, idx) => `${optLetters[idx]}) ${opt}`).join('\n');
+    } else if (typeof opts === 'object') {
+      // Handle object format {a: "...", b: "...", c: "...", d: "..."}
+      return Object.entries(opts)
+        .sort(([a], [b]) => a.localeCompare(b))
+        .map(([key, value]) => `${key.toUpperCase()}) ${value}`)
+        .join('\n');
+    }
+    
+    return '';
+  };
+
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   };
@@ -107,14 +126,16 @@ export const ExamTutorChat = ({
 
   const sendInitialGreeting = async () => {
     let greeting = '';
+    const formattedOptions = formatOptionsForChat(exercise.options);
+    const optionsSection = formattedOptions ? `\n\n${formattedOptions}` : '';
     
     if (exercise.exercise_number === 1 && !hasGreeted) {
       // Full introduction only for first question on first load
       greeting = `Salut! 👋 Je suis Eric, ton tuteur pour l'examen de ${examInfo.subject} ${examInfo.year}.
 
-Voici la question ${exercise.exercise_number}:
+📝 **Question ${exercise.exercise_number}:**
 
-${exercise.question_text}
+${exercise.question_text}${optionsSection}
 
 Prends ton temps pour réfléchir. Tu peux me demander des indices ou cliquer sur "Révéler la réponse" si tu es bloqué! 💡`;
       setHasGreeted(true);
@@ -122,7 +143,9 @@ Prends ton temps pour réfléchir. Tu peux me demander des indices ou cliquer su
       // Simple transition for all other cases (jumping or progressing)
       greeting = `Passons à la question ${exercise.exercise_number} de l'examen officiel de ${examInfo.subject} (${examInfo.year}) pour la 9ème AF:
 
-${exercise.question_text}
+📝 **Question ${exercise.exercise_number}:**
+
+${exercise.question_text}${optionsSection}
 
 Prends ton temps pour réfléchir! 💡`;
       setHasGreeted(true);
