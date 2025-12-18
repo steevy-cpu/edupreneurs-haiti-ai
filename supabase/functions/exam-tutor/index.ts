@@ -60,8 +60,10 @@ ${referenceTextsSection}
 
 **Exercice actuel:**
 Question: ${exercise.question_text}
-Options: ${(Array.isArray(exercise.options) ? exercise.options : []).map((opt: string, idx: number) => `${String.fromCharCode(65 + idx)}) ${opt}`).join(', ')}
-Réponse correcte: ${exercise.correct_answer}
+${exercise.options && Array.isArray(exercise.options) && exercise.options.length > 0 
+  ? `Options: ${exercise.options.map((opt: string, idx: number) => `${String.fromCharCode(65 + idx)}) ${opt}`).join(', ')}`
+  : 'Type: Question ouverte (pas de choix multiples)'}
+${exercise.correct_answer ? `Réponse correcte: ${exercise.correct_answer}` : 'Note: La réponse correcte n\'est pas définie dans la base de données. Guide l\'élève sans pouvoir valider automatiquement.'}
 Concept: ${exercise.concept}`;
 
     // If reveal answer is requested, modify the prompt
@@ -114,10 +116,15 @@ Donne une explication complète mais concise (maximum 150 mots).`;
     let shouldAwardPoints = false;
     let shouldMoveToNext = false;
 
-    if (studentAnswer) {
+    if (studentAnswer && exercise.correct_answer) {
+      // Null-safe comparison - only validate if we have a correct answer
       isCorrect = studentAnswer.toUpperCase() === exercise.correct_answer.toUpperCase();
       shouldAwardPoints = isCorrect;
       shouldMoveToNext = true; // Auto-move after answering (correct or incorrect)
+    } else if (studentAnswer && !exercise.correct_answer) {
+      // No correct answer in database - log and handle gracefully
+      console.warn(`Exercise ${exercise.exercise_number} has no correct_answer defined`);
+      shouldMoveToNext = true;
     }
 
     // Suggest YouTube videos for the concept

@@ -35,10 +35,17 @@ const ExamsHub = () => {
   const [exams, setExams] = useState<Exam[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedSubject, setSelectedSubject] = useState<string | null>(null);
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
 
   useEffect(() => {
-    loadExams();
+    checkAuthAndLoadExams();
   }, []);
+
+  const checkAuthAndLoadExams = async () => {
+    const { data: { user } } = await supabase.auth.getUser();
+    setIsAuthenticated(!!user);
+    loadExams();
+  };
 
   const loadExams = async () => {
     try {
@@ -84,6 +91,10 @@ const ExamsHub = () => {
   };
 
   const handlePractice = (examId: string) => {
+    if (!isAuthenticated) {
+      navigate('/auth', { state: { returnTo: `/exam-preparation/${examId}` } });
+      return;
+    }
     navigate(`/exam-preparation/${examId}`);
   };
 

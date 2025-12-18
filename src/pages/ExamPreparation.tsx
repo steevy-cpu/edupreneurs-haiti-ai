@@ -116,39 +116,48 @@ export default function ExamPreparation() {
   };
 
   const handleNextExercise = async () => {
-    if (currentExercise < exercises.length) {
+    if (currentExercise < exercises.length && session?.id) {
       const nextExercise = currentExercise + 1;
       setCurrentExercise(nextExercise);
 
-      await supabase
+      const { error } = await supabase
         .from('exam_practice_sessions')
         .update({ current_exercise: nextExercise })
         .eq('id', session.id);
+      
+      if (error) console.error('Failed to update session:', error);
     }
   };
 
   const handlePreviousExercise = async () => {
-    if (currentExercise > 1) {
+    if (currentExercise > 1 && session?.id) {
       const prevExercise = currentExercise - 1;
       setCurrentExercise(prevExercise);
 
-      await supabase
+      const { error } = await supabase
         .from('exam_practice_sessions')
         .update({ current_exercise: prevExercise })
         .eq('id', session.id);
+      
+      if (error) console.error('Failed to update session:', error);
     }
   };
 
   const handleExerciseClick = async (exerciseNumber: number) => {
+    if (!session?.id) return;
     setCurrentExercise(exerciseNumber);
 
-    await supabase
+    const { error } = await supabase
       .from('exam_practice_sessions')
       .update({ current_exercise: exerciseNumber })
       .eq('id', session.id);
+    
+    if (error) console.error('Failed to update session:', error);
   };
 
   const handleAnswerValidated = async (isCorrect: boolean, points: number) => {
+    if (!session?.id) return;
+    
     if (isCorrect && !completedExercises.includes(currentExercise)) {
       const newScore = score + points;
       const newCompleted = [...completedExercises, currentExercise];
@@ -156,7 +165,8 @@ export default function ExamPreparation() {
       setScore(newScore);
       setCompletedExercises(newCompleted);
 
-      await supabase
+      // Update session with error handling
+      const { error: sessionError } = await supabase
         .from('exam_practice_sessions')
         .update({
           score: newScore,
@@ -164,21 +174,35 @@ export default function ExamPreparation() {
         })
         .eq('id', session.id);
 
-      // Award gold to profile
-      const { data: user } = await supabase.auth.getUser();
-      if (user.user) {
-        const { data: profile } = await supabase
-          .from('profiles')
-          .select('gold_earned')
-          .eq('user_id', user.user.id)
-          .single();
+      if (sessionError) {
+        console.error('Failed to update session score:', sessionError);
+      }
 
-        if (profile) {
-          await supabase
+      // Award gold to profile with error handling
+      try {
+        const { data: user } = await supabase.auth.getUser();
+        if (user.user) {
+          const { data: profile, error: profileError } = await supabase
             .from('profiles')
-            .update({ gold_earned: (profile.gold_earned || 0) + points })
-            .eq('user_id', user.user.id);
+            .select('gold_earned')
+            .eq('user_id', user.user.id)
+            .maybeSingle();
+
+          if (profileError) {
+            console.error('Failed to fetch profile:', profileError);
+          } else if (profile) {
+            const { error: updateError } = await supabase
+              .from('profiles')
+              .update({ gold_earned: (profile.gold_earned || 0) + points })
+              .eq('user_id', user.user.id);
+            
+            if (updateError) {
+              console.error('Failed to award gold:', updateError);
+            }
+          }
         }
+      } catch (error) {
+        console.error('Error in gold award flow:', error);
       }
     }
   };
