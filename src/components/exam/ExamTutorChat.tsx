@@ -21,6 +21,12 @@ interface Message {
   created_at: string;
 }
 
+interface ReferenceText {
+  section?: string;
+  title?: string;
+  text: string;
+}
+
 interface ExamTutorChatProps {
   sessionId: string;
   exerciseId: string;
@@ -37,6 +43,7 @@ interface ExamTutorChatProps {
     year: number;
     title: string;
   };
+  referenceTexts?: ReferenceText[];
   totalExercises: number;
   currentExerciseIndex: number;
   onAnswerValidated?: (isCorrect: boolean, points: number) => void;
@@ -49,6 +56,7 @@ export const ExamTutorChat = ({
   exerciseId,
   exercise,
   examInfo,
+  referenceTexts = [],
   totalExercises,
   currentExerciseIndex,
   onAnswerValidated,
@@ -196,6 +204,7 @@ Prends ton temps pour réfléchir! 💡`;
           userMessage: messageText,
           conversationHistory: messages,
           studentAnswer: answer,
+          referenceTexts,
         }
       });
 
@@ -257,6 +266,7 @@ Prends ton temps pour réfléchir! 💡`;
           userMessage: messageText,
           conversationHistory: messages,
           revealAnswer: true,
+          referenceTexts,
         }
       });
 
@@ -295,6 +305,7 @@ Prends ton temps pour réfléchir! 💡`;
           exercise,
           userMessage: messageText,
           conversationHistory: messages,
+          referenceTexts,
         }
       });
 

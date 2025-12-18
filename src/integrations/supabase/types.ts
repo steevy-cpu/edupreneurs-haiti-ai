@@ -1000,6 +1000,7 @@ export type Database = {
           grade_level: string
           id: string
           pdf_url: string | null
+          reference_texts: Json | null
           subject: string
           title: string
           total_exercises: number
@@ -1012,6 +1013,7 @@ export type Database = {
           grade_level: string
           id?: string
           pdf_url?: string | null
+          reference_texts?: Json | null
           subject: string
           title: string
           total_exercises?: number
@@ -1024,6 +1026,7 @@ export type Database = {
           grade_level?: string
           id?: string
           pdf_url?: string | null
+          reference_texts?: Json | null
           subject?: string
           title?: string
           total_exercises?: number

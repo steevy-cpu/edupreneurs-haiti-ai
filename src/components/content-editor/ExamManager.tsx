@@ -68,6 +68,7 @@ export function ExamManager() {
     totalExercises: number;
     totalPoints: number;
     exercises: ParsedExercise[];
+    referenceTexts?: { section?: string; title?: string; text: string }[];
   } | null>(null);
   const [showPreview, setShowPreview] = useState(false);
 
@@ -293,6 +294,7 @@ export function ExamManager() {
             total_exercises: parsedPreview.totalExercises || parsedPreview.exercises.length,
             total_points: parsedPreview.totalPoints || 100,
             pdf_url: pdfUrl,
+            reference_texts: parsedPreview.referenceTexts || [],
           })
           .eq("id", existingExam.id);
 
@@ -318,6 +320,7 @@ export function ExamManager() {
             total_exercises: parsedPreview.totalExercises || parsedPreview.exercises.length,
             total_points: parsedPreview.totalPoints || 100,
             pdf_url: pdfUrl,
+            reference_texts: parsedPreview.referenceTexts || [],
           })
           .select()
           .single();
