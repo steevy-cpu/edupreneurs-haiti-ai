@@ -472,13 +472,13 @@ Prends ton temps pour réfléchir! 💡`;
 
       {/* Input Area */}
       <div className="p-3 border-t bg-background space-y-2 flex-shrink-0">
-        {/* Answer Options */}
+        {/* Answer Options - Only show if we have valid options */}
         {showQuestion && options.length > 0 && (
           <div className="space-y-2">
             <p className="text-xs font-medium text-muted-foreground">
               Sélectionne ta réponse:
             </p>
-            <div className="grid grid-cols-4 gap-2">
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
               {options.map((option: string, idx: number) => (
                 <Button
                   key={idx}
@@ -489,10 +489,17 @@ Prends ton temps pour réfléchir! 💡`;
                   className="justify-start text-left h-auto py-2"
                 >
                   <span className="font-bold mr-1">{letters[idx]})</span>
-                  <span className="text-xs">{option}</span>
+                  <span className="text-xs truncate">{option}</span>
                 </Button>
               ))}
             </div>
+          </div>
+        )}
+        
+        {/* Message for exercises without options */}
+        {showQuestion && options.length === 0 && (
+          <div className="text-xs text-muted-foreground bg-muted/50 p-2 rounded">
+            Question ouverte - Tape ta réponse ci-dessous ou demande de l'aide à Eric
           </div>
         )}
 
