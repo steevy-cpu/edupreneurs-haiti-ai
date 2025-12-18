@@ -6,7 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Loader2, Upload, FileText, CheckCircle2, AlertCircle, Trash2, Eye } from "lucide-react";
+import { Loader2, Upload, FileText, CheckCircle2, AlertCircle, Trash2, Eye, RefreshCw } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { normalizeToSlug } from "@/lib/slugNormalization";
@@ -27,6 +27,7 @@ interface ExistingExam {
   total_points: number;
   pdf_url: string | null;
   grade_level: string;
+  reference_texts?: any[];
 }
 
 interface ParsedExercise {
@@ -63,6 +64,7 @@ export function ExamManager() {
   const [totalPages, setTotalPages] = useState(0);
   const [existingExams, setExistingExams] = useState<ExistingExam[]>([]);
   const [isLoadingExams, setIsLoadingExams] = useState(true);
+  const [reanalyzingExamId, setReanalyzingExamId] = useState<string | null>(null);
   const [parsedPreview, setParsedPreview] = useState<{
     title: string;
     totalExercises: number;
@@ -71,6 +73,7 @@ export function ExamManager() {
     referenceTexts?: { section?: string; title?: string; text: string }[];
   } | null>(null);
   const [showPreview, setShowPreview] = useState(false);
+  const [reanalyzeExamData, setReanalyzeExamData] = useState<ExistingExam | null>(null);
 
   useEffect(() => {
     loadExistingExams();
@@ -80,12 +83,17 @@ export function ExamManager() {
     try {
       const { data, error } = await supabase
         .from("official_exams")
-        .select("*")
+        .select("id, title, subject, year, total_exercises, total_points, pdf_url, grade_level, reference_texts")
         .eq("grade_level", "9AF")
         .order("year", { ascending: false });
 
       if (error) throw error;
-      setExistingExams(data || []);
+      // Map data to ensure reference_texts is always an array
+      const mappedData = (data || []).map(exam => ({
+        ...exam,
+        reference_texts: Array.isArray(exam.reference_texts) ? exam.reference_texts : []
+      }));
+      setExistingExams(mappedData);
     } catch (error) {
       console.error("Error loading exams:", error);
       toast.error("Erreur lors du chargement des examens");
@@ -186,6 +194,149 @@ export function ExamManager() {
       throw new Error("Erreur lors de la conversion du PDF en images");
     } finally {
       setIsConvertingPdf(false);
+    }
+  };
+
+  const handleReanalyzeExam = async (exam: ExistingExam) => {
+    if (!exam.pdf_url) {
+      toast.error("Cet examen n'a pas de PDF associé");
+      return;
+    }
+
+    setReanalyzingExamId(exam.id);
+    setReanalyzeExamData(exam);
+
+    try {
+      // 1. Fetch PDF from storage
+      toast.info("Téléchargement du PDF...");
+      const response = await fetch(exam.pdf_url);
+      if (!response.ok) {
+        throw new Error("Impossible de télécharger le PDF");
+      }
+      const blob = await response.blob();
+      const file = new File([blob], `${exam.subject}-${exam.year}.pdf`, { type: 'application/pdf' });
+
+      // 2. Convert to images
+      toast.info("Conversion du PDF en images...");
+      const pageImages = await convertPdfToImages(file);
+
+      if (pageImages.length === 0) {
+        toast.error("Aucune page n'a pu être extraite du PDF");
+        return;
+      }
+
+      // 3. Send to Vision AI
+      toast.info(`${pageImages.length} pages extraites. Analyse par IA en cours...`);
+      const { data: parsedData, error: parseError } = await supabase.functions.invoke(
+        "parse-exam-vision",
+        {
+          body: {
+            subject: exam.subject,
+            year: exam.year,
+            pageImages,
+          },
+        }
+      );
+
+      if (parseError) {
+        throw new Error(parseError.message || "Erreur lors de l'analyse");
+      }
+
+      if (parsedData.error) {
+        throw new Error(parsedData.error);
+      }
+
+      // 4. Show preview
+      setSubject(exam.subject);
+      setYear(exam.year.toString());
+      setParsedPreview(parsedData);
+      setShowPreview(true);
+      toast.success(`✅ ${parsedData.totalExercises} exercices et ${parsedData.referenceTexts?.length || 0} textes de référence détectés`);
+    } catch (error: any) {
+      console.error("Error re-analyzing exam:", error);
+      toast.error(error.message || "Erreur lors de la ré-analyse");
+      setReanalyzeExamData(null);
+    } finally {
+      setReanalyzingExamId(null);
+    }
+  };
+
+  const handleConfirmReanalyze = async () => {
+    if (!parsedPreview || !reanalyzeExamData) return;
+
+    setIsAnalyzing(true);
+
+    try {
+      // Update exam with new reference_texts
+      const { error: updateError } = await supabase
+        .from("official_exams")
+        .update({
+          title: parsedPreview.title,
+          total_exercises: parsedPreview.totalExercises || parsedPreview.exercises.length,
+          total_points: parsedPreview.totalPoints || 100,
+          reference_texts: parsedPreview.referenceTexts || [],
+        })
+        .eq("id", reanalyzeExamData.id);
+
+      if (updateError) throw updateError;
+
+      // Delete old exercises
+      await supabase
+        .from("exam_exercises")
+        .delete()
+        .eq("exam_id", reanalyzeExamData.id);
+
+      // Insert new exercises
+      const uniqueExercises = parsedPreview.exercises.reduce((acc: any[], ex: any) => {
+        if (!acc.some((e) => e.exerciseNumber === ex.exerciseNumber)) {
+          acc.push(ex);
+        }
+        return acc;
+      }, []);
+
+      const exercisesToInsert = uniqueExercises.map((ex: any) => ({
+        exam_id: reanalyzeExamData.id,
+        exercise_number: ex.exerciseNumber,
+        exercise_type: ex.exerciseType,
+        question_text: ex.questionText,
+        options: ex.options || null,
+        correct_answer: ex.correctAnswer || null,
+        explanation: ex.explanation || null,
+        points: typeof ex.points === "number" && Number.isFinite(ex.points) ? ex.points : ex.exerciseType === "multiple_choice" ? 5 : 8,
+        concept: ex.concept || "Général",
+      }));
+
+      const { error: exercisesError } = await supabase
+        .from("exam_exercises")
+        .upsert(exercisesToInsert, { onConflict: "exam_id,exercise_number" });
+
+      if (exercisesError) throw exercisesError;
+
+      // Update total_exercises with actual count
+      const { count: actualCount } = await supabase
+        .from("exam_exercises")
+        .select("*", { count: "exact", head: true })
+        .eq("exam_id", reanalyzeExamData.id);
+
+      await supabase
+        .from("official_exams")
+        .update({ total_exercises: actualCount || 0 })
+        .eq("id", reanalyzeExamData.id);
+
+      toast.success(`Examen ré-analysé avec succès: ${actualCount} exercices, ${parsedPreview.referenceTexts?.length || 0} textes de référence`);
+
+      // Reset
+      setSubject("");
+      setYear("");
+      setParsedPreview(null);
+      setShowPreview(false);
+      setReanalyzeExamData(null);
+      loadExistingExams();
+    } catch (error: any) {
+      console.error("Error saving re-analyzed exam:", error);
+      toast.error(error.message || "Erreur lors de la sauvegarde");
+    } finally {
+      setIsAnalyzing(false);
     }
   };
 
@@ -541,7 +692,7 @@ export function ExamManager() {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <CheckCircle2 className="h-5 w-5 text-green-500" />
-              Aperçu de l'analyse IA Vision
+              {reanalyzeExamData ? "Aperçu de la ré-analyse" : "Aperçu de l'analyse IA Vision"}
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
@@ -562,7 +713,27 @@ export function ExamManager() {
                   {parsedPreview.totalPoints}
                 </Badge>
               </div>
+              <div className="flex items-center justify-between">
+                <span className="font-semibold">Textes de référence:</span>
+                <Badge variant={parsedPreview.referenceTexts?.length ? "default" : "secondary"} className="text-lg">
+                  {parsedPreview.referenceTexts?.length || 0}
+                </Badge>
+              </div>
             </div>
+
+            {/* Reference texts preview */}
+            {parsedPreview.referenceTexts && parsedPreview.referenceTexts.length > 0 && (
+              <div className="border rounded-lg p-4 max-h-48 overflow-y-auto space-y-2 bg-muted/30">
+                <p className="font-semibold text-sm mb-2">Textes de référence extraits:</p>
+                {parsedPreview.referenceTexts.map((ref, idx) => (
+                  <div key={idx} className="text-sm border-b pb-2">
+                    <span className="font-semibold">{ref.section || `Texte ${idx + 1}`}:</span>{" "}
+                    {ref.title && <span className="text-muted-foreground">{ref.title} - </span>}
+                    {ref.text.substring(0, 150)}...
+                  </div>
+                ))}
+              </div>
+            )}
 
             <div className="border rounded-lg p-4 max-h-64 overflow-y-auto space-y-2">
               <p className="font-semibold text-sm mb-2">Exercices extraits:</p>
@@ -584,7 +755,7 @@ export function ExamManager() {
 
             <div className="flex gap-2">
               <Button
-                onClick={handleConfirmAndSave}
+                onClick={reanalyzeExamData ? handleConfirmReanalyze : handleConfirmAndSave}
                 disabled={isProcessing}
                 className="flex-1"
                 size="lg"
@@ -605,6 +776,7 @@ export function ExamManager() {
                 onClick={() => {
                   setParsedPreview(null);
                   setShowPreview(false);
+                  setReanalyzeExamData(null);
                 }}
                 variant="outline"
                 disabled={isProcessing}
@@ -633,49 +805,83 @@ export function ExamManager() {
             </div>
           ) : (
             <div className="space-y-3">
-              {existingExams.map((exam) => (
-                <Card key={exam.id} className="border">
-                  <CardContent className="p-4">
-                    <div className="flex items-start justify-between gap-4">
-                      <div className="flex-1 space-y-2">
-                        <div className="flex items-center gap-2">
-                          <h4 className="font-semibold">{exam.title}</h4>
-                          {exam.pdf_url ? (
-                            <CheckCircle2 className="h-4 w-4 text-green-500" />
-                          ) : (
-                            <AlertCircle className="h-4 w-4 text-orange-500" />
-                          )}
-                        </div>
-                        <div className="flex flex-wrap gap-2 text-sm text-muted-foreground">
-                          <Badge variant="outline">{exam.subject}</Badge>
-                          <Badge variant="outline">{exam.year}</Badge>
-                          <Badge variant="secondary">
-                            {exam.total_exercises} exercices
-                          </Badge>
-                          <Badge variant="secondary">
-                            {exam.total_points} points
-                          </Badge>
-                          {exam.pdf_url ? (
-                            <Badge className="bg-green-500/10 text-green-700 dark:text-green-400">
-                              PDF disponible
+              {existingExams.map((exam) => {
+                const hasReferenceTexts = exam.reference_texts && exam.reference_texts.length > 0;
+                const isReanalyzing = reanalyzingExamId === exam.id;
+                
+                return (
+                  <Card key={exam.id} className="border">
+                    <CardContent className="p-4">
+                      <div className="flex items-start justify-between gap-4">
+                        <div className="flex-1 space-y-2">
+                          <div className="flex items-center gap-2">
+                            <h4 className="font-semibold">{exam.title}</h4>
+                            {exam.pdf_url ? (
+                              <CheckCircle2 className="h-4 w-4 text-green-500" />
+                            ) : (
+                              <AlertCircle className="h-4 w-4 text-orange-500" />
+                            )}
+                          </div>
+                          <div className="flex flex-wrap gap-2 text-sm text-muted-foreground">
+                            <Badge variant="outline">{exam.subject}</Badge>
+                            <Badge variant="outline">{exam.year}</Badge>
+                            <Badge variant="secondary">
+                              {exam.total_exercises} exercices
                             </Badge>
-                          ) : (
-                            <Badge variant="destructive">PDF manquant</Badge>
+                            <Badge variant="secondary">
+                              {exam.total_points} points
+                            </Badge>
+                            {exam.pdf_url ? (
+                              <Badge className="bg-green-500/10 text-green-700 dark:text-green-400">
+                                PDF disponible
+                              </Badge>
+                            ) : (
+                              <Badge variant="destructive">PDF manquant</Badge>
+                            )}
+                            {hasReferenceTexts ? (
+                              <Badge className="bg-blue-500/10 text-blue-700 dark:text-blue-400">
+                                Textes extraits ✓
+                              </Badge>
+                            ) : (
+                              <Badge variant="outline" className="border-orange-500/50 text-orange-600 dark:text-orange-400">
+                                Textes manquants
+                              </Badge>
+                            )}
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          {exam.pdf_url && (
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => handleReanalyzeExam(exam)}
+                              disabled={isReanalyzing || isProcessing}
+                              className="whitespace-nowrap"
+                            >
+                              {isReanalyzing ? (
+                                <Loader2 className="h-4 w-4 animate-spin" />
+                              ) : (
+                                <>
+                                  <RefreshCw className="h-4 w-4 mr-1" />
+                                  Re-analyser
+                                </>
+                              )}
+                            </Button>
                           )}
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => handleDeleteExam(exam.id, exam.title)}
+                            className="text-destructive hover:text-destructive"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
                         </div>
                       </div>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => handleDeleteExam(exam.id, exam.title)}
-                        className="text-destructive hover:text-destructive"
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
+                    </CardContent>
+                  </Card>
+                );
+              })}
             </div>
           )}
         </CardContent>
