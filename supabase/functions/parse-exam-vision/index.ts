@@ -36,19 +36,27 @@ serve(async (req) => {
       },
     }));
 
-    const systemPrompt = `Tu es un expert OCR spécialisé dans l'extraction d'examens officiels haïtiens pour la 9ème année fondamentale (9AF).
+const systemPrompt = `Tu es un expert OCR spécialisé dans l'extraction d'examens officiels haïtiens pour la 9ème année fondamentale (9AF).
 
 INSTRUCTIONS CRITIQUES:
 1. Analyse attentivement CHAQUE page de l'examen
-2. Identifie TOUS les exercices/questions avec leurs numéros
-3. Pour les QCM, extrait précisément les options A), B), C), D)
-4. Préserve les accents français et créoles (é, è, à, ç, ô, etc.)
-5. Identifie les points attribués à chaque question si visibles
-6. Détermine le type d'exercice: "multiple_choice" ou "open_ended"
+2. Identifie et extrait TOUS les TEXTES DE RÉFÉRENCE (Reading, Texte, Lecture, passages, extraits de texte) qui sont utilisés pour répondre aux questions - EXTRAIT LE TEXTE COMPLET sans le tronquer
+3. Identifie TOUS les exercices/questions avec leurs numéros
+4. Pour les QCM, extrait précisément les options A), B), C), D)
+5. Préserve les accents français et créoles (é, è, à, ç, ô, etc.)
+6. Identifie les points attribués à chaque question si visibles
+7. Détermine le type d'exercice: "multiple_choice" ou "open_ended"
 
 RETOURNE UN JSON VALIDE avec cette structure EXACTE:
 {
   "title": "Examen officiel de [Matière] [Année] - 9AF",
+  "referenceTexts": [
+    {
+      "section": "Section A",
+      "title": "Titre du texte (ex: Reading: Going to a Restaurant)",
+      "text": "LE TEXTE COMPLET DU PASSAGE - ne pas tronquer, extraire tout le contenu"
+    }
+  ],
   "exercises": [
     {
       "exerciseNumber": 1,
@@ -66,6 +74,8 @@ RETOURNE UN JSON VALIDE avec cette structure EXACTE:
 }
 
 IMPORTANT:
+- EXTRAIT TOUS les textes de référence (Reading, Texte, Passage, etc.) COMPLETS dans "referenceTexts"
+- Si l'examen contient des textes de lecture pour répondre aux questions, ils DOIVENT être dans "referenceTexts"
 - Ne rate AUCUNE question
 - Numérote séquentiellement (1, 2, 3...)
 - Si les points ne sont pas visibles: 5 pts pour QCM, 8 pts pour questions ouvertes
@@ -174,8 +184,18 @@ Retourne UNIQUEMENT le JSON structuré, sans texte additionnel.`;
 
     const totalPoints = normalizedExercises.reduce((sum: number, ex: any) => sum + (ex.points || 0), 0);
 
+    // Normalize reference texts
+    const referenceTexts = Array.isArray(parsedData.referenceTexts) 
+      ? parsedData.referenceTexts.map((ref: any) => ({
+          section: ref.section || "Texte",
+          title: ref.title || "",
+          text: ref.text || "",
+        }))
+      : [];
+
     const result = {
       title: parsedData.title || `Examen officiel de ${subject} ${year} - 9AF`,
+      referenceTexts,
       exercises: normalizedExercises,
       totalExercises: normalizedExercises.length,
       totalPoints: totalPoints || 100,

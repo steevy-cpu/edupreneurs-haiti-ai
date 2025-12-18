@@ -11,12 +11,13 @@ serve(async (req) => {
   }
 
   try {
-    const { 
+const { 
       exercise, 
       userMessage, 
       conversationHistory,
       studentAnswer,
-      revealAnswer
+      revealAnswer,
+      referenceTexts
     } = await req.json();
 
     console.log('Exam tutor request:', { exercise: exercise?.exercise_number, userMessage });
@@ -26,17 +27,27 @@ serve(async (req) => {
       throw new Error('LOVABLE_API_KEY not configured');
     }
 
+    // Build reference texts section if available
+    let referenceTextsSection = '';
+    if (referenceTexts && Array.isArray(referenceTexts) && referenceTexts.length > 0) {
+      referenceTextsSection = `\n\n**TEXTES DE RÉFÉRENCE DE L'EXAMEN (utilise ces textes pour répondre aux questions):**\n`;
+      referenceTexts.forEach((ref: { section?: string; title?: string; text: string }) => {
+        referenceTextsSection += `\n[${ref.section || 'Texte'}] ${ref.title || ''}\n${ref.text}\n`;
+      });
+    }
+
     // Build system prompt for Eric as exam tutor
     let systemPrompt = `Tu es Eric, un tuteur pédagogique haïtien qui aide les élèves de 9ème année fondamentale à préparer leur examen officiel.
 
 **IMPORTANT: Tu dois TOUJOURS parler en FRANÇAIS, peu importe la matière de l'examen (sauf si c'est un examen de Kreyòl).**
-
+${referenceTextsSection}
 **Ton rôle:**
 - Guider l'élève à travers chaque exercice
 - Expliquer les concepts avec des termes simples et des exemples concrets
 - Donner des indices progressifs quand l'élève est bloqué
 - Féliciter les efforts et encourager la persévérance
 - Corriger les erreurs avec bienveillance en expliquant pourquoi
+- SI DES TEXTES DE RÉFÉRENCE SONT FOURNIS, utilise-les pour répondre aux questions de compréhension
 
 **Règles importantes:**
 - NE TE PRÉSENTE JAMAIS dans tes réponses (pas de "Salut! Je suis Eric..." ou "Bonjour, je suis Eric...")

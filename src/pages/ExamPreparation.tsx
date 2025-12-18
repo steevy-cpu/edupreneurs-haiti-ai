@@ -25,6 +25,7 @@ export default function ExamPreparation() {
   const [completedExercises, setCompletedExercises] = useState<number[]>([]);
   const [score, setScore] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
+  const [referenceTexts, setReferenceTexts] = useState<any[]>([]);
 
   useEffect(() => {
     loadExamData();
@@ -53,6 +54,12 @@ export default function ExamPreparation() {
 
       if (examError) throw examError;
       setExam(examData);
+      
+      // Set reference texts from exam data
+      const refTexts = examData.reference_texts;
+      if (refTexts && Array.isArray(refTexts)) {
+        setReferenceTexts(refTexts);
+      }
 
       // Load exercises
       const { data: exercisesData, error: exercisesError } = await supabase
@@ -272,7 +279,7 @@ export default function ExamPreparation() {
                 <TabsContent value="tutor" className="mt-6">
                   <div className="h-[calc(100vh-140px)] min-h-[550px]">
                     {session && currentExerciseData ? (
-                      <ExamTutorChat
+                    <ExamTutorChat
                         sessionId={session.id}
                         exerciseId={currentExerciseData.id}
                         exercise={currentExerciseData}
@@ -281,6 +288,7 @@ export default function ExamPreparation() {
                           year: exam.year,
                           title: exam.title,
                         }}
+                        referenceTexts={referenceTexts}
                         totalExercises={exercises.length}
                         currentExerciseIndex={currentExercise - 1}
                         onAnswerValidated={handleAnswerValidated}
@@ -319,6 +327,7 @@ export default function ExamPreparation() {
                       year: exam.year,
                       title: exam.title,
                     }}
+                    referenceTexts={referenceTexts}
                     totalExercises={exercises.length}
                     currentExerciseIndex={currentExercise - 1}
                     onAnswerValidated={handleAnswerValidated}
