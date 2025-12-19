@@ -1,6 +1,6 @@
 import { useNavigate, useLocation } from "react-router-dom";
 import { Home, BookOpen, Rss, MessageSquare, Bell, Settings } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 
 interface NavItem {
@@ -8,6 +8,50 @@ interface NavItem {
   path: string;
   badge?: number;
 }
+
+// Navigation paths for swipe gestures
+const NAV_PATHS = ["/dashboard", "/matieres", "/feed", "/community", "/notifications", "/settings"];
+
+export const useMobileSwipeNavigation = () => {
+  const navigate = useNavigate();
+  const location = useLocation();
+  const [touchStart, setTouchStart] = useState<number | null>(null);
+  const [touchEnd, setTouchEnd] = useState<number | null>(null);
+
+  const currentIndex = NAV_PATHS.indexOf(location.pathname);
+  const minSwipeDistance = 80;
+
+  const onTouchStart = useCallback((e: React.TouchEvent) => {
+    setTouchEnd(null);
+    setTouchStart(e.targetTouches[0].clientX);
+  }, []);
+
+  const onTouchMove = useCallback((e: React.TouchEvent) => {
+    setTouchEnd(e.targetTouches[0].clientX);
+  }, []);
+
+  const onTouchEnd = useCallback(() => {
+    if (!touchStart || !touchEnd) return;
+    
+    const distance = touchStart - touchEnd;
+    const isLeftSwipe = distance > minSwipeDistance;
+    const isRightSwipe = distance < -minSwipeDistance;
+
+    if (currentIndex === -1) return;
+
+    if (isLeftSwipe && currentIndex < NAV_PATHS.length - 1) {
+      navigate(NAV_PATHS[currentIndex + 1]);
+    }
+    if (isRightSwipe && currentIndex > 0) {
+      navigate(NAV_PATHS[currentIndex - 1]);
+    }
+    
+    setTouchStart(null);
+    setTouchEnd(null);
+  }, [touchStart, touchEnd, currentIndex, navigate]);
+
+  return { onTouchStart, onTouchMove, onTouchEnd };
+};
 
 export const MobileBottomNav = () => {
   const navigate = useNavigate();
@@ -75,7 +119,7 @@ export const MobileBottomNav = () => {
 
   return (
     <nav
-      className="fixed bottom-0 inset-x-0 z-[1000] bg-card/95 backdrop-blur-lg border-t border-border md:hidden"
+      className="fixed bottom-0 inset-x-0 z-[1000] bg-card/95 backdrop-blur-lg border-t border-border lg:hidden"
       style={{ 
         position: 'fixed',
         paddingBottom: 'env(safe-area-inset-bottom, 0px)'

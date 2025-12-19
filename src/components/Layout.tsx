@@ -22,7 +22,7 @@ import dashboardImage from "@/assets/dashboard00.png";
 import edupreneursLogo from "@/assets/edupreneurs-new-logo.png";
 import { EricChatbot } from "@/components/EricChatbot";
 import { getAvatarUrl } from "@/lib/avatarMap";
-import { MobileBottomNav } from "@/components/MobileBottomNav";
+import { MobileBottomNav, useMobileSwipeNavigation } from "@/components/MobileBottomNav";
 
 interface LayoutProps {
   children: ReactNode;
@@ -38,6 +38,7 @@ export const Layout = ({ children }: LayoutProps) => {
   const [userAvatar, setUserAvatar] = useState<string>(dashboardImage);
   const [userNickname, setUserNickname] = useState<string>("Étudiant");
   const presenceChannelRef = useState<{ current: any | null }>({ current: null })[0];
+  const { onTouchStart, onTouchMove, onTouchEnd } = useMobileSwipeNavigation();
 
   useEffect(() => {
     checkAuth();
@@ -509,7 +510,12 @@ export const Layout = ({ children }: LayoutProps) => {
       )}
 
       {/* Main Content */}
-      <div className={`transition-all duration-300 pb-20 md:pb-0 ${!isCommunityPage && sidebarOpen ? "lg:ml-[240px] xl:ml-[260px] 2xl:ml-[280px]" : ""}`}>
+      <div 
+        className={`transition-all duration-300 pb-20 lg:pb-0 ${!isCommunityPage && sidebarOpen ? "lg:ml-[240px] xl:ml-[260px] 2xl:ml-[280px]" : ""}`}
+        onTouchStart={onTouchStart}
+        onTouchMove={onTouchMove}
+        onTouchEnd={onTouchEnd}
+      >
         {children}
       </div>
 
