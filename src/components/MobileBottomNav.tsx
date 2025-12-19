@@ -2,11 +2,13 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { Home, BookOpen, Rss, MessageSquare, Bell, Settings } from "lucide-react";
 import { useEffect, useState, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { useQueryClient } from "@tanstack/react-query";
 
 interface NavItem {
   icon: React.ElementType;
   path: string;
   badge?: number;
+  prefetchKey?: string[];
 }
 
 // Navigation paths for swipe gestures
@@ -56,14 +58,15 @@ export const useMobileSwipeNavigation = () => {
 export const MobileBottomNav = () => {
   const navigate = useNavigate();
   const location = useLocation();
+  const queryClient = useQueryClient();
   const [unreadMessages, setUnreadMessages] = useState(0);
   const [unreadNotifications, setUnreadNotifications] = useState(0);
 
   const navItems: NavItem[] = [
     { icon: Home, path: "/dashboard" },
     { icon: BookOpen, path: "/matieres" },
-    { icon: Rss, path: "/feed" },
-    { icon: MessageSquare, path: "/community", badge: unreadMessages > 0 ? unreadMessages : undefined },
+    { icon: Rss, path: "/feed", prefetchKey: ["feed-posts"] },
+    { icon: MessageSquare, path: "/community", badge: unreadMessages > 0 ? unreadMessages : undefined, prefetchKey: ["conversations"] },
     { icon: Bell, path: "/notifications", badge: unreadNotifications > 0 ? unreadNotifications : undefined },
     { icon: Settings, path: "/settings" },
   ];
@@ -109,6 +112,14 @@ export const MobileBottomNav = () => {
 
   const isActive = (path: string) => location.pathname === path;
 
+  // Prefetch data when touching/hovering a nav item
+  const handlePrefetch = (prefetchKey?: string[]) => {
+    if (prefetchKey) {
+      // Trigger a refetch if data is stale, otherwise use cached
+      queryClient.invalidateQueries({ queryKey: prefetchKey, refetchType: 'none' });
+    }
+  };
+
   // Hide on certain pages
   const hiddenPaths = ["/auth", "/onboarding"];
   const isLessonPage = location.pathname.includes("-lesson/");
@@ -134,6 +145,8 @@ export const MobileBottomNav = () => {
             <button
               key={item.path}
               onClick={() => navigate(item.path)}
+              onTouchStart={() => handlePrefetch(item.prefetchKey)}
+              onMouseEnter={() => handlePrefetch(item.prefetchKey)}
               className={`relative flex items-center justify-center flex-1 h-full transition-all duration-200 ${
                 active 
                   ? "text-primary" 
