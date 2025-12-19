@@ -177,13 +177,14 @@ export default function Matieres() {
   const [refreshTrigger, setRefreshTrigger] = useState(0);
   const { subjects: dbSubjects, isLoading } = useSubjects(refreshTrigger);
   const [lessonCounts, setLessonCounts] = useState<Record<string, number>>({});
+  const [exerciseCounts, setExerciseCounts] = useState<Record<string, number>>({});
 
   const currentGrade = gradeLevels.find(g => g.id === selectedGrade);
   const isNS3OrNS4 = selectedGrade === "NS3" || selectedGrade === "NS4";
   
-  // Fetch actual lesson counts from database
+  // Fetch actual lesson and exercise counts from database
   useEffect(() => {
-    const fetchLessonCounts = async () => {
+    const fetchCounts = async () => {
       try {
         const { data: subjectsData, error: subjectsError } = await supabase
           .from('subjects')
@@ -194,28 +195,35 @@ export default function Matieres() {
 
         const { data: lessons, error } = await supabase
           .from('lessons')
-          .select('subject_id, id')
+          .select('subject_id, id, exemples_exercices')
           .eq('grade_level', selectedGrade)
           .eq('is_published', true);
 
         if (error) throw error;
 
-        // Count lessons per subject and map by slug
-        const counts: Record<string, number> = {};
+        // Count lessons and exercises per subject
+        const lessonCountsMap: Record<string, number> = {};
+        const exerciseCountsMap: Record<string, number> = {};
+        
         lessons?.forEach(lesson => {
           const subject = subjectsData?.find(s => s.id === lesson.subject_id);
           if (subject) {
-            counts[subject.slug] = (counts[subject.slug] || 0) + 1;
+            lessonCountsMap[subject.slug] = (lessonCountsMap[subject.slug] || 0) + 1;
+            // Count lessons that have exercises content
+            if (lesson.exemples_exercices && lesson.exemples_exercices.trim() !== '') {
+              exerciseCountsMap[subject.slug] = (exerciseCountsMap[subject.slug] || 0) + 1;
+            }
           }
         });
         
-        setLessonCounts(counts);
+        setLessonCounts(lessonCountsMap);
+        setExerciseCounts(exerciseCountsMap);
       } catch (error) {
-        console.error('Error fetching lesson counts:', error);
+        console.error('Error fetching counts:', error);
       }
     };
 
-    fetchLessonCounts();
+    fetchCounts();
   }, [selectedGrade, refreshTrigger]);
   
   // Filter subjects by selected grade and series (for NS3/NS4)
@@ -234,7 +242,7 @@ export default function Matieres() {
     description: s.description || '',
     icon: iconMap[s.icon_name || 'BookOpen'] || BookOpen,
     lessons: lessonCounts[s.slug] || 0,
-    exercises: s.exercise_count || 0,
+    exercises: exerciseCounts[s.slug] || 0,
     color: colorMap[s.color || 'blue'] || 'from-blue-500 to-blue-600'
   }));
 
