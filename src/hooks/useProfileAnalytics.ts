@@ -35,6 +35,7 @@ export const useProfileAnalytics = (userId: string | null) => {
 
       if (error) {
         console.error("Error fetching completions:", error);
+        setIsLoading(false);
         return;
       }
 
@@ -47,7 +48,7 @@ export const useProfileAnalytics = (userId: string | null) => {
         streak,
       });
     } catch (error) {
-      // Silent fail - show default analytics
+      console.error("Error loading profile analytics:", error);
     } finally {
       setIsLoading(false);
     }
@@ -64,10 +65,20 @@ export const useProfileAnalytics = (userId: string | null) => {
       (a, b) => new Date(b.completed_at).getTime() - new Date(a.completed_at).getTime()
     );
 
-    for (let i = 0; i < sortedCompletions.length; i++) {
-      const completionDate = new Date(sortedCompletions[i].completed_at);
-      completionDate.setHours(0, 0, 0, 0);
+    // Get unique dates
+    const uniqueDates = new Set<string>();
+    sortedCompletions.forEach((c) => {
+      const date = new Date(c.completed_at);
+      date.setHours(0, 0, 0, 0);
+      uniqueDates.add(date.toISOString());
+    });
 
+    const sortedDates = Array.from(uniqueDates).sort((a, b) => 
+      new Date(b).getTime() - new Date(a).getTime()
+    );
+
+    for (let i = 0; i < sortedDates.length; i++) {
+      const completionDate = new Date(sortedDates[i]);
       const daysDiff = Math.floor(
         (currentDate.getTime() - completionDate.getTime()) / (1000 * 60 * 60 * 24)
       );
