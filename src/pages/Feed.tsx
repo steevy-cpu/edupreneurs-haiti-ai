@@ -29,6 +29,7 @@ import EmojiPicker from "emoji-picker-react";
 import { getAvatarUrl } from "@/lib/avatarMap";
 import { optimizeMediaFile, formatFileSize } from "@/utils/mediaOptimization";
 import { NotificationPermissionBanner } from "@/components/NotificationPermissionBanner";
+import { useFeedData } from "@/hooks/useFeedData";
 
 interface Profile {
   id: string;
@@ -68,8 +69,8 @@ interface Post {
 const Feed = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { posts, isLoading, isRefreshing, refreshFeed, updatePostOptimistically, removePostOptimistically } = useFeedData();
   const [currentUser, setCurrentUser] = useState<any>(null);
-  const [posts, setPosts] = useState<Post[]>([]);
   const [newPostContent, setNewPostContent] = useState("");
   const [isCreatingPost, setIsCreatingPost] = useState(false);
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
@@ -86,12 +87,10 @@ const Feed = () => {
   const [selectedPostToShare, setSelectedPostToShare] = useState<Post | null>(null);
   const [followingUsers, setFollowingUsers] = useState<Profile[]>([]);
   const [sendingMessage, setSendingMessage] = useState(false);
-  const [isRefreshing, setIsRefreshing] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     checkAuth();
-    fetchPosts();
     subscribeToNewPosts();
   }, []);
 
@@ -104,95 +103,12 @@ const Feed = () => {
     setCurrentUser(user);
   };
 
-  const fetchPosts = async (showToast = false) => {
-    if (showToast) setIsRefreshing(true);
-    
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return;
-
-    const { data: postsData, error: postsError } = await supabase
-      .from("posts")
-      .select("*")
-      .order("created_at", { ascending: false })
-      .limit(50);
-
-    if (postsError) {
-      console.error("Error fetching posts:", postsError);
-      setIsRefreshing(false);
-      return;
-    }
-
-    const userIds = [...new Set(postsData?.map(p => p.user_id) || [])];
-    const { data: profilesData } = await supabase
-      .from("profiles")
-      .select("*")
-      .in("user_id", userIds);
-
-    const postIds = postsData?.map(p => p.id) || [];
-    const { data: likesData } = await supabase
-      .from("post_likes")
-      .select("post_id, user_id")
-      .in("post_id", postIds);
-
-    const { data: commentsData } = await supabase
-      .from("post_comments")
-      .select("*")
-      .in("post_id", postIds)
-      .order("created_at", { ascending: true });
-
-    const commentUserIds = [...new Set(commentsData?.map(c => c.user_id) || [])];
-    const { data: commentProfilesData } = await supabase
-      .from("profiles")
-      .select("*")
-      .in("user_id", commentUserIds);
-
-    const { data: sharesData } = await supabase
-      .from("post_shares")
-      .select("post_id, user_id")
-      .in("post_id", postIds);
-
-    const enrichedPosts = postsData?.map(post => {
-      const profile = profilesData?.find(p => p.user_id === post.user_id);
-      const postLikes = likesData?.filter(l => l.post_id === post.id) || [];
-      const isLiked = postLikes.some(l => l.user_id === user.id);
-      
-      // Organize comments with replies
-      const postComments = commentsData?.filter(c => c.post_id === post.id).map(comment => ({
-        ...comment,
-        profile: commentProfilesData?.find(p => p.user_id === comment.user_id) as Profile
-      })) || [];
-
-      // Build nested comment structure
-      const topLevelComments = postComments.filter(c => !c.parent_comment_id);
-      const commentsWithReplies = topLevelComments.map(comment => ({
-        ...comment,
-        replies: postComments.filter(c => c.parent_comment_id === comment.id)
-      }));
-
-      const postShares = sharesData?.filter(s => s.post_id === post.id) || [];
-      const isShared = postShares.some(s => s.user_id === user.id);
-      
-      return {
-        ...post,
-        profile,
-        likes: postLikes.length,
-        isLiked,
-        comments: commentsWithReplies,
-        commentCount: postComments.length,
-        shareCount: postShares.length,
-        isShared
-      };
-    }) || [];
-
-    setPosts(enrichedPosts);
-    
-    if (showToast) {
-      setIsRefreshing(false);
-      toast({
-        title: "Actualisation réussie",
-        description: "Le fil d'actualité a été mis à jour.",
-      });
-    }
+  const handleRefresh = () => {
+    refreshFeed();
+    toast({
+      title: "Actualisation...",
+      description: "Le fil d'actualité est en cours de mise à jour.",
+    });
   };
 
   const subscribeToNewPosts = () => {
@@ -206,7 +122,7 @@ const Feed = () => {
           table: "posts",
         },
         () => {
-          fetchPosts();
+          refreshFeed();
         }
       )
       .subscribe();
@@ -393,7 +309,7 @@ const Feed = () => {
       description: "Post supprimé",
     });
     setDeletePostId(null);
-    await fetchPosts();
+    refreshFeed();
   };
 
   const deleteComment = async (commentId: string) => {
@@ -416,7 +332,7 @@ const Feed = () => {
       description: "Commentaire supprimé",
     });
     setDeleteCommentId(null);
-    await fetchPosts();
+    refreshFeed();
   };
 
   const toggleLike = async (postId: string, isCurrentlyLiked: boolean) => {
@@ -481,16 +397,11 @@ const Feed = () => {
       }
     }
 
-    setPosts(posts.map(p => {
-      if (p.id === postId) {
-        return {
-          ...p,
-          likes: isCurrentlyLiked ? (p.likes || 0) - 1 : (p.likes || 0) + 1,
-          isLiked: !isCurrentlyLiked
-        };
-      }
-      return p;
-    }));
+    // Optimistic update for likes
+    updatePostOptimistically(postId, {
+      likes: isCurrentlyLiked ? ((posts.find(p => p.id === postId)?.likes || 0) - 1) : ((posts.find(p => p.id === postId)?.likes || 0) + 1),
+      isLiked: !isCurrentlyLiked
+    });
   };
 
   const addComment = async (postId: string, parentCommentId: string | null = null) => {
@@ -563,7 +474,7 @@ const Feed = () => {
       setCommentInputs({ ...commentInputs, [postId]: "" });
     }
     
-    await fetchPosts();
+    refreshFeed();
     toast({
       title: "Succès",
       description: "Commentaire ajouté",
@@ -749,16 +660,11 @@ const Feed = () => {
       });
     }
 
-    setPosts(posts.map(p => {
-      if (p.id === postId) {
-        return {
-          ...p,
-          shareCount: isCurrentlyShared ? (p.shareCount || 0) - 1 : (p.shareCount || 0) + 1,
-          isShared: !isCurrentlyShared
-        };
-      }
-      return p;
-    }));
+    // Optimistic update for shares
+    updatePostOptimistically(postId, {
+      shareCount: isCurrentlyShared ? ((posts.find(p => p.id === postId)?.shareCount || 0) - 1) : ((posts.find(p => p.id === postId)?.shareCount || 0) + 1),
+      isShared: !isCurrentlyShared
+    });
   };
 
   const handleEmojiSelect = (emojiData: any, postId: string, commentId?: string) => {
@@ -903,7 +809,7 @@ const Feed = () => {
             <Button
               size="icon"
               variant="ghost"
-              onClick={() => fetchPosts(true)}
+              onClick={handleRefresh}
               disabled={isRefreshing}
               className="hover:bg-accent/50"
               title="Actualiser"
