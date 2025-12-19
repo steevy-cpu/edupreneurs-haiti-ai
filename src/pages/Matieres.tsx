@@ -24,6 +24,7 @@ import {
 import ericPointingImage from "@/assets/eric-right-pointing.png";
 import ericTeaching from "@/assets/eric-teaching.png";
 import edupreneursBg from "@/assets/edupreneurs-bg.png";
+import menfpLogo from "@/assets/menfp-logo.webp";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { MusicSelector } from "@/components/MusicSelector";
 import { useSubjects } from "@/hooks/useLessonsCache";
@@ -474,8 +475,8 @@ export default function Matieres() {
               <Card className="p-6 mb-8 bg-gradient-to-br from-primary/5 to-primary/10 border-primary/20">
                 <div className="flex flex-col md:flex-row items-center gap-6">
                   <div className="flex-shrink-0">
-                    <div className="w-24 h-24 rounded-full bg-gradient-to-br from-amber-500 to-orange-600 flex items-center justify-center">
-                      <Award className="w-12 h-12 text-white" />
+                    <div className="w-24 h-24 rounded-lg bg-white flex items-center justify-center p-2 shadow-md">
+                      <img src={menfpLogo} alt="MENFP Logo" className="w-full h-full object-contain" />
                     </div>
                   </div>
                   <div className="flex-1 text-center md:text-left">
