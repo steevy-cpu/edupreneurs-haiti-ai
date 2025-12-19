@@ -173,13 +173,14 @@ serve(async (req) => {
       .eq('user_id', recipientUserId);
 
     if (fetchError || !subscriptions || subscriptions.length === 0) {
-      console.log(`⚠️ No push subscription found for user: ${recipientUserId}`);
+      console.log(`ℹ️ No push subscription found for user: ${recipientUserId} (user hasn't enabled notifications)`);
       return new Response(
         JSON.stringify({ 
-          success: false, 
-          message: 'No push subscription found for user' 
+          success: true, 
+          message: 'No push subscription found - user has not enabled push notifications',
+          skipped: true
         }), 
-        { status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
