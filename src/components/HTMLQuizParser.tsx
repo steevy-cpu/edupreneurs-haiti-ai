@@ -77,19 +77,14 @@ export const HTMLQuizParser = ({ htmlContent, lessonSlug, subject }: HTMLQuizPar
       .replace(/data-answer="([A-D])\)[^"]*"/g, 'data-answer="$1"')
       .replace(/data-correct="([A-D])[^"]*"/g, 'data-correct="$1"');
 
-    // Split into per-question fragments (prevents nesting from breaking option extraction)
-    const questionFragments = repairedHtml
-      .split(/(?=<div class="quiz-question"\b)/g)
-      .filter((frag) => frag.includes('class="quiz-question"'));
+    // Parse using a proper DOM parser - this handles all questions correctly
+    const tempParser = new DOMParser();
+    const fullDoc = tempParser.parseFromString(repairedHtml, 'text/html');
+    const allQuestionElements = fullDoc.querySelectorAll('.quiz-question');
 
     const parsed: ParsedQuestion[] = [];
 
-    questionFragments.forEach((fragment, index) => {
-      const parser = new DOMParser();
-      const doc = parser.parseFromString(fragment, 'text/html');
-      const qEl = doc.querySelector('.quiz-question');
-      if (!qEl) return;
-
+    allQuestionElements.forEach((qEl, index) => {
       const numberAttr = qEl.getAttribute('data-number');
       const number = numberAttr ? parseInt(numberAttr) : index + 1;
 
