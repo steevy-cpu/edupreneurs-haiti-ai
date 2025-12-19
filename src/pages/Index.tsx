@@ -1,7 +1,8 @@
-import { useState, lazy, Suspense } from "react";
+import { useState, useEffect, lazy, Suspense } from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { supabase } from "@/integrations/supabase/client";
 import ericCelebrating from "@/assets/eric-celebrating.png";
 import ericMain01 from "@/assets/eric-main01.png";
 import ericThinkingPose from "@/assets/eric-thinking-pose.png";
@@ -9,7 +10,7 @@ import ericPointingRight from "@/assets/eric-right-pointing.png";
 import heroImage from "@/assets/hero-education.jpg";
 import edupreneursLogo from "@/assets/edupreneurs-new-logo.png";
 import { ThemeToggle } from "@/components/ThemeToggle";
-import { Menu, X } from "lucide-react";
+import { Menu, X, BookOpen, Trophy, MessageCircle, Newspaper, Users, GraduationCap, Heart, FileText } from "lucide-react";
 
 // Lazy load chatbot for better initial page load
 const HomeChatbot = lazy(() => import("@/components/HomeChatbot").then(module => ({ default: module.HomeChatbot })));
@@ -17,6 +18,28 @@ const HomeChatbot = lazy(() => import("@/components/HomeChatbot").then(module =>
 const Index = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [expandedFaq, setExpandedFaq] = useState<number | null>(null);
+  const [stats, setStats] = useState({ lessons: 0, exams: 0, users: 0 });
+
+  useEffect(() => {
+    const fetchStats = async () => {
+      try {
+        const [lessonsRes, examsRes, usersRes] = await Promise.all([
+          supabase.from('lessons').select('id', { count: 'exact', head: true }).eq('is_published', true),
+          supabase.from('official_exams').select('id', { count: 'exact', head: true }),
+          supabase.from('profiles').select('id', { count: 'exact', head: true })
+        ]);
+        
+        setStats({
+          lessons: lessonsRes.count || 0,
+          exams: examsRes.count || 0,
+          users: usersRes.count || 0
+        });
+      } catch (error) {
+        console.error('Error fetching stats:', error);
+      }
+    };
+    fetchStats();
+  }, []);
 
   const toggleFaq = (index: number) => {
     setExpandedFaq(expandedFaq === index ? null : index);
@@ -119,8 +142,8 @@ const Index = () => {
             </div>
             <div className="grid grid-cols-2 sm:flex sm:flex-wrap gap-2 sm:gap-3 lg:gap-4 pt-3 sm:pt-4 lg:pt-6">
               {[
-                { number: "200", label: "Gourdes/mois" },
-                { number: "7j", label: "Essai gratuit" },
+                { number: stats.lessons > 0 ? `${stats.lessons}+` : "2500+", label: "Leçons" },
+                { number: stats.exams > 0 ? `${stats.exams}+` : "85+", label: "Examens Officiels" },
                 { number: "24/7", label: "Assistant IA" },
                 { number: "7ème-Term", label: "Tous niveaux" }
               ].map((stat, idx) => (
@@ -206,6 +229,116 @@ const Index = () => {
               </Card>
             ))}
           </div>
+        </div>
+      </section>
+
+      {/* Platform Features Section */}
+      <section className="py-12 sm:py-16 md:py-20 px-4 bg-gradient-to-b from-primary/5 to-background">
+        <div className="container mx-auto">
+          <div className="text-center mb-8 sm:mb-12">
+            <h2 className="text-2xl sm:text-3xl md:text-4xl font-black text-primary mb-3 sm:mb-4">
+              ✨ Fonctionnalités de la Plateforme
+            </h2>
+            <p className="text-sm sm:text-base text-muted-foreground max-w-3xl mx-auto">
+              Découvrez toutes les fonctionnalités qui font d'EDUPRENEURS la plateforme éducative la plus complète d'Haïti
+            </p>
+          </div>
+          
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+            {[
+              { 
+                icon: FileText, 
+                title: "Hub des Examens Officiels", 
+                desc: "Accédez aux examens officiels de 2011 à 2025. Préparez-vous avec les vrais sujets du MENFP et des corrections détaillées par notre IA.",
+                highlight: `${stats.exams > 0 ? stats.exams : 85}+ examens disponibles`,
+                color: "from-blue-500 to-cyan-500",
+                link: "/exams-hub"
+              },
+              { 
+                icon: Heart, 
+                title: "Découvre ta Passion", 
+                desc: "Test de personnalité pour découvrir vos talents cachés. Explorez la musique, les arts, les échecs et la littérature avec notre guide interactif.",
+                highlight: "4 domaines à explorer",
+                color: "from-pink-500 to-rose-500",
+                link: "/passion-discovery"
+              },
+              { 
+                icon: GraduationCap, 
+                title: "Développement Personnel", 
+                desc: "Modules d'éducation civique, leadership et développement personnel pour former des citoyens responsables et des leaders de demain.",
+                highlight: "Formation complète",
+                color: "from-purple-500 to-violet-500",
+                link: "/passion-discovery"
+              },
+              { 
+                icon: MessageCircle, 
+                title: "Messagerie & Communauté", 
+                desc: "Discutez avec vos camarades et Eric votre assistant IA. Créez des groupes d'étude et partagez vos réussites.",
+                highlight: "Chat en temps réel",
+                color: "from-green-500 to-emerald-500",
+                link: "/community"
+              },
+              { 
+                icon: Newspaper, 
+                title: "Fil d'Actualité", 
+                desc: "Restez connecté avec la communauté EDUPRENEURS. Partagez vos progrès, inspirez les autres et célébrez ensemble.",
+                highlight: "Réseau social éducatif",
+                color: "from-orange-500 to-amber-500",
+                link: "/feed"
+              },
+              { 
+                icon: Trophy, 
+                title: "Classement & Compétition", 
+                desc: "Montez dans le classement en accumulant des Gold. Comparez-vous aux meilleurs élèves d'Haïti et gagnez des récompenses.",
+                highlight: "Top étudiants",
+                color: "from-yellow-500 to-orange-500",
+                link: "/leaderboard"
+              }
+            ].map((feature, idx) => (
+              <Link key={idx} to={feature.link} className="group">
+                <Card className="h-full hover:scale-105 transition-all duration-300 hover:shadow-2xl border-primary/20 hover:border-primary/40 bg-gradient-to-br from-card to-card/50 relative overflow-hidden">
+                  <div className={`absolute top-0 left-0 w-full h-1 bg-gradient-to-r ${feature.color}`}></div>
+                  <CardHeader className="pb-2">
+                    <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${feature.color} flex items-center justify-center mb-3 group-hover:scale-110 transition-transform duration-300 shadow-lg`}>
+                      <feature.icon className="w-6 h-6 text-white" />
+                    </div>
+                    <CardTitle className="text-lg font-bold text-primary group-hover:text-accent transition-colors">{feature.title}</CardTitle>
+                    <CardDescription className="text-sm font-medium leading-relaxed">{feature.desc}</CardDescription>
+                  </CardHeader>
+                  <CardContent className="pt-0">
+                    <span className={`inline-block px-3 py-1 rounded-full text-xs font-bold bg-gradient-to-r ${feature.color} text-white shadow-md`}>
+                      {feature.highlight}
+                    </span>
+                  </CardContent>
+                </Card>
+              </Link>
+            ))}
+          </div>
+
+          {/* Stats Banner */}
+          <Card className="mt-12 bg-gradient-to-r from-primary via-accent to-primary text-primary-foreground border-0 overflow-hidden relative">
+            <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGRlZnM+PHBhdHRlcm4gaWQ9ImdyaWQiIHdpZHRoPSI2MCIgaGVpZ2h0PSI2MCIgcGF0dGVyblVuaXRzPSJ1c2VyU3BhY2VPblVzZSI+PHBhdGggZD0iTSAxMCAwIEwgMCAwIDAgMTAiIGZpbGw9Im5vbmUiIHN0cm9rZT0id2hpdGUiIHN0cm9rZS1vcGFjaXR5PSIwLjEiIHN0cm9rZS13aWR0aD0iMSIvPjwvcGF0dGVybj48L2RlZnM+PHJlY3Qgd2lkdGg9IjEwMCUiIGhlaWdodD0iMTAwJSIgZmlsbD0idXJsKCNncmlkKSIvPjwvc3ZnPg==')] opacity-20"></div>
+            <CardContent className="py-8 relative z-10">
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-6 text-center">
+                <div className="space-y-1">
+                  <div className="text-3xl sm:text-4xl font-black">{stats.lessons > 0 ? stats.lessons.toLocaleString() : '2,500'}+</div>
+                  <div className="text-sm opacity-90 font-semibold">Leçons Disponibles</div>
+                </div>
+                <div className="space-y-1">
+                  <div className="text-3xl sm:text-4xl font-black">{stats.exams > 0 ? stats.exams : 85}+</div>
+                  <div className="text-sm opacity-90 font-semibold">Examens Officiels</div>
+                </div>
+                <div className="space-y-1">
+                  <div className="text-3xl sm:text-4xl font-black">2011-2025</div>
+                  <div className="text-sm opacity-90 font-semibold">Archives d'Examens</div>
+                </div>
+                <div className="space-y-1">
+                  <div className="text-3xl sm:text-4xl font-black">7ème-Term</div>
+                  <div className="text-sm opacity-90 font-semibold">Niveaux Couverts</div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
         </div>
       </section>
 
