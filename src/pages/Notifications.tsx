@@ -38,6 +38,7 @@ interface Notification {
 
 export default function Notifications() {
   const [notifications, setNotifications] = useState<Notification[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   const [deleteNotificationId, setDeleteNotificationId] = useState<string | null>(null);
   const [deleteAllDialogOpen, setDeleteAllDialogOpen] = useState(false);
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
@@ -82,6 +83,7 @@ export default function Notifications() {
       if (!user) {
         console.log("❌ No user found - redirecting to auth");
         navigate("/auth");
+        setIsLoading(false);
         return;
       }
 
@@ -101,6 +103,7 @@ export default function Notifications() {
           variant: "destructive"
         });
         setNotifications([]);
+        setIsLoading(false);
         return;
       }
 
@@ -109,6 +112,7 @@ export default function Notifications() {
       if (!notificationsData || notificationsData.length === 0) {
         console.log("ℹ️ No notifications data found");
         setNotifications([]);
+        setIsLoading(false);
         return;
       }
 
@@ -165,6 +169,8 @@ export default function Notifications() {
         variant: "destructive"
       });
       setNotifications([]);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -478,7 +484,7 @@ export default function Notifications() {
   const unreadCount = notifications.filter((n) => !n.read).length;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background to-background/80 p-6">
+    <div className="min-h-screen bg-gradient-to-br from-background to-background/80 px-3 py-4 sm:p-6">
       {/* Notification Permission Banner */}
       {currentUserId && <NotificationPermissionBanner userId={currentUserId} />}
       
@@ -486,12 +492,14 @@ export default function Notifications() {
         <ThemeToggle />
       </div>
       <div className="max-w-2xl mx-auto">
-        <div className="flex items-center justify-between mb-6">
-          <h1 className="text-3xl font-bold">Notifications</h1>
-          <div className="flex gap-2">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4 sm:mb-6">
+          <h1 className="text-2xl sm:text-3xl font-bold">Notifications</h1>
+          <div className="flex gap-2 flex-wrap">
             {unreadCount > 0 && (
-              <Button onClick={markAllAsRead} variant="outline" size="sm">
-                Mark all as read
+              <Button onClick={markAllAsRead} variant="outline" size="sm" className="text-xs sm:text-sm">
+                <Check className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
+                <span className="hidden xs:inline">Marquer comme lu</span>
+                <span className="xs:hidden">Tout lu</span>
               </Button>
             )}
             {notifications.length > 0 && (
@@ -499,58 +507,79 @@ export default function Notifications() {
                 onClick={() => setDeleteAllDialogOpen(true)} 
                 variant="outline" 
                 size="sm"
-                className="text-destructive hover:text-destructive"
+                className="text-destructive hover:text-destructive text-xs sm:text-sm"
               >
-                <Trash2 className="h-4 w-4 mr-2" />
-                Delete All
+                <Trash2 className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
+                <span className="hidden xs:inline">Tout supprimer</span>
+                <span className="xs:hidden">Supprimer</span>
               </Button>
             )}
           </div>
         </div>
 
-        {notifications.length === 0 ? (
-          <Card className="p-8 text-center">
-            <p className="text-muted-foreground">No notifications yet</p>
+        {isLoading ? (
+          // Loading skeleton
+          <div className="space-y-2">
+            {[1, 2, 3, 4].map((i) => (
+              <Card key={i} className="p-3 sm:p-4 animate-pulse">
+                <div className="flex items-start gap-2 sm:gap-3">
+                  <div className="h-8 w-8 sm:h-10 sm:w-10 rounded-full bg-muted/50 flex-shrink-0" />
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="flex-1">
+                        <div className="h-4 w-3/4 bg-muted/50 rounded mb-2" />
+                        <div className="h-3 w-1/2 bg-muted/30 rounded" />
+                      </div>
+                      <div className="h-3 w-8 bg-muted/30 rounded" />
+                    </div>
+                  </div>
+                </div>
+              </Card>
+            ))}
+          </div>
+        ) : notifications.length === 0 ? (
+          <Card className="p-6 sm:p-8 text-center">
+            <p className="text-muted-foreground text-sm sm:text-base">Aucune notification pour le moment</p>
           </Card>
         ) : (
           <div className="space-y-2">
             {notifications.map((notification) => (
               <Card
                 key={notification.id}
-                className={`p-4 cursor-pointer hover:bg-accent transition-colors ${
+                className={`p-3 sm:p-4 cursor-pointer hover:bg-accent transition-colors ${
                   !notification.read ? "bg-accent/50" : ""
                 }`}
               >
-                <div className="flex items-start gap-3" onClick={() => handleNotificationClick(notification)}>
-                  <Avatar className="h-10 w-10">
+                <div className="flex items-start gap-2 sm:gap-3" onClick={() => handleNotificationClick(notification)}>
+                  <Avatar className="h-8 w-8 sm:h-10 sm:w-10 flex-shrink-0">
                     <AvatarImage src={getAvatarUrl(notification.actorProfile.avatar_url)} />
-                    <AvatarFallback>
+                    <AvatarFallback className="text-xs sm:text-sm">
                       {notification.actorProfile.nickname
                         .substring(0, 2)
                         .toUpperCase()}
                     </AvatarFallback>
                   </Avatar>
-                  <div className="flex-1">
-                    <div className="flex items-start justify-between">
-                      <div className="flex items-center gap-2">
-                        {getNotificationIcon(notification.type)}
-                        <p className="text-sm">
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="flex items-start sm:items-center gap-1.5 sm:gap-2 flex-1 min-w-0">
+                        <span className="flex-shrink-0">{getNotificationIcon(notification.type)}</span>
+                        <p className="text-xs sm:text-sm line-clamp-2">
                           {getNotificationText(notification)}
                         </p>
                       </div>
-                      <div className="flex items-center gap-2">
-                        <span className="text-xs text-muted-foreground">
+                      <div className="flex items-center gap-1 flex-shrink-0">
+                        <span className="text-[10px] sm:text-xs text-muted-foreground whitespace-nowrap">
                           {formatTimeAgo(notification.created_at)}
                         </span>
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
-                            <Button variant="ghost" size="icon" className="h-8 w-8">
-                              <MoreVertical className="h-4 w-4" />
+                            <Button variant="ghost" size="icon" className="h-6 w-6 sm:h-8 sm:w-8">
+                              <MoreVertical className="h-3 w-3 sm:h-4 sm:w-4" />
                             </Button>
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="end">
                             <DropdownMenuItem
-                              className="text-destructive focus:text-destructive"
+                              className="text-destructive focus:text-destructive text-sm"
                               onClick={(e) => {
                                 e.stopPropagation();
                                 setDeleteNotificationId(notification.id);
@@ -564,16 +593,16 @@ export default function Notifications() {
                       </div>
                     </div>
                     {notification.type === "follow_request" && notification.followRequestPending && (
-                      <div className="flex gap-2 mt-3">
+                      <div className="flex gap-2 mt-2 sm:mt-3">
                         <Button
                           size="sm"
                           onClick={(e) => {
                             e.stopPropagation();
                             handleAcceptFollow(notification);
                           }}
-                          className="flex items-center gap-1"
+                          className="flex items-center gap-1 text-xs sm:text-sm h-7 sm:h-9 px-2 sm:px-3"
                         >
-                          <Check size={14} />
+                          <Check size={12} className="sm:w-[14px] sm:h-[14px]" />
                           Accepter
                         </Button>
                         <Button
@@ -583,9 +612,9 @@ export default function Notifications() {
                             e.stopPropagation();
                             handleDeclineFollow(notification);
                           }}
-                          className="flex items-center gap-1"
+                          className="flex items-center gap-1 text-xs sm:text-sm h-7 sm:h-9 px-2 sm:px-3"
                         >
-                          <X size={14} />
+                          <X size={12} className="sm:w-[14px] sm:h-[14px]" />
                           Refuser
                         </Button>
                       </div>
