@@ -73,7 +73,7 @@ const subjects: Subject[] = [
     color: "from-purple-500 to-purple-600"
   },
   {
-    id: "sciences",
+    id: "sciences-experimentales-7af",
     title: "Sciences Expérimentales",
     description: "Physique, chimie, biologie et méthode scientifique",
     icon: Beaker,
@@ -134,6 +134,15 @@ const subjects: Subject[] = [
     lessons: 12,
     exercises: 30,
     color: "from-orange-500 to-red-600"
+  },
+  {
+    id: "histoire-geographie-7af",
+    title: "Histoire-Géographie",
+    description: "Découvrez l'histoire et la géographie du monde et d'Haïti",
+    icon: Map,
+    lessons: 20,
+    exercises: 40,
+    color: "from-indigo-500 to-indigo-600"
   }
 ];
 
@@ -632,43 +641,8 @@ export default function Matieres() {
                     className="w-full"
                     onClick={(e) => {
                       e.stopPropagation();
-                      const isMath = subject.id === 'mathematiques' || subject.id === 'matematik-8af' || subject.id === 'mathematiques-af9';
-                      const isSciences = subject.id === 'sciences' || subject.id === 'sciences-experimentales-8af' || subject.id === 'sciences-experimentales' || subject.id === 'sciences-experimentales-7af';
-                      const isAnglais = subject.id === 'anglais' || subject.id === 'anglais-8af' || subject.id === 'anglais-af9';
-                      const isEspagnol = subject.id === 'espagnol' || subject.id === 'espagnol-8af' || subject.id === 'espagnol-af9';
-                      
-                      let courseRoute;
-                      const isCreole = subject.id === 'creole' || subject.id === 'creole-8af';
-                      const isSciencesSociales = subject.id === 'sciences-sociales' || subject.id === 'sciences-sociales-8af';
-                      const isHistoireGeo = subject.id === 'histoire-geographie-7af';
-                      if (isMath) {
-                        courseRoute = selectedGrade === '9AF' ? '/mathematiques-af9' : (selectedGrade === '8AF' ? '/math-af8-course' : '/math-course');
-                      } else if (isSciences) {
-                        courseRoute = selectedGrade === '9AF' ? '/sciences-experimentales-af9' : (selectedGrade === '8AF' ? '/sciences-af8-course' : '/sciences-experimentales-7af');
-                      } else if (isAnglais) {
-                        courseRoute = selectedGrade === '9AF' ? '/anglais-af9' : (selectedGrade === '8AF' ? '/anglais-af8-course' : '/anglais-course');
-                      } else if (isEspagnol) {
-                        courseRoute = selectedGrade === '9AF' ? '/espagnol-af9' : (selectedGrade === '8AF' ? '/espagnol-af8-course' : '/espagnol-course');
-                      } else if (isCreole) {
-                        courseRoute = selectedGrade === '8AF' ? '/creole-af8-course' : '/creole-course';
-                      } else if (isSciencesSociales) {
-                        courseRoute = selectedGrade === '8AF' ? '/sciences-sociales-af8-course' : '/sciences-sociales-course';
-                      } else if (isHistoireGeo) {
-                        courseRoute = '/histoire-geographie-7af-course';
-                      } else if (subject.id === 'francais') {
-                        courseRoute = '/francais-course';
-                      } else if (subject.id === 'arts') {
-                        courseRoute = '/arts-course';
-                      } else if (subject.id === 'education-physique') {
-                        courseRoute = '/education-physique-course';
-                      } else if (subject.id === 'francais-9af' || subject.id === 'français-9af') {
-                        courseRoute = '/francais-af9';
-                      } else {
-                        // For dynamically created subjects, use new route format
-                        courseRoute = `/course/${subject.id}`;
-                      }
-                      
-                      navigate(courseRoute);
+                      // Use unified dynamic route for all subjects
+                      navigate(`/course/${subject.id}`);
                     }}
                   >
                     Commencer
