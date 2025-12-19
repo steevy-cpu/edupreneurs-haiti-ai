@@ -3,7 +3,6 @@ import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Progress } from "@/components/ui/progress";
 import { 
   BookOpen, 
   Calculator, 
@@ -33,7 +32,7 @@ import { supabase } from "@/integrations/supabase/client";
 type GradeLevel = "7AF" | "8AF" | "9AF" | "NS1" | "NS2" | "NS3" | "NS4";
 type Series = "LLA" | "SES" | "SMP" | "SVT";
 
-interface Subject {
+interface DisplaySubject {
   id: string;
   title: string;
   description: string;
@@ -52,99 +51,6 @@ interface SeriesOption {
   icon: any;
   color: string;
 }
-
-const subjects: Subject[] = [
-  {
-    id: "mathematiques",
-    title: "Mathématiques",
-    description: "Algèbre, géométrie, arithmétique et résolution de problèmes",
-    icon: Calculator,
-    lessons: 24,
-    exercises: 120,
-    color: "from-emerald-500 to-emerald-600"
-  },
-  {
-    id: "francais",
-    title: "Français",
-    description: "Grammaire, conjugaison, orthographe et littérature",
-    icon: BookOpen,
-    lessons: 28,
-    exercises: 95,
-    color: "from-purple-500 to-purple-600"
-  },
-  {
-    id: "sciences-experimentales-7af",
-    title: "Sciences Expérimentales",
-    description: "Physique, chimie, biologie et méthode scientifique",
-    icon: Beaker,
-    lessons: 20,
-    exercises: 80,
-    color: "from-amber-500 to-amber-600"
-  },
-  {
-    id: "sciences-sociales",
-    title: "Sciences Sociales",
-    description: "Histoire d'Haïti, géographie mondiale et études sociales",
-    icon: Globe,
-    lessons: 30,
-    exercises: 65,
-    color: "from-orange-500 to-amber-500"
-  },
-  {
-    id: "anglais",
-    title: "Anglais",
-    description: "Vocabulaire, grammaire et conversation en anglais",
-    icon: Languages,
-    lessons: 23,
-    exercises: 90,
-    color: "from-cyan-500 to-cyan-600"
-  },
-  {
-    id: "espagnol",
-    title: "Espagnol",
-    description: "Cours d'espagnol selon le programme MENFP",
-    icon: Flag,
-    lessons: 23,
-    exercises: 85,
-    color: "from-rose-500 to-rose-600"
-  },
-  {
-    id: "creole",
-    title: "Kreyòl Ayisyen",
-    description: "Lang, literati ak kilti ayisyèn",
-    icon: Users,
-    lessons: 30,
-    exercises: 90,
-    color: "from-pink-500 to-pink-600"
-  },
-  {
-    id: "arts",
-    title: "Arts & Culture",
-    description: "Arts plastiques, musique et expression créative",
-    icon: Palette,
-    lessons: 3,
-    exercises: 0,
-    color: "from-orange-500 to-orange-600"
-  },
-  {
-    id: "education-physique",
-    title: "Éducation Physique",
-    description: "Activités sportives, santé et bien-être",
-    icon: Activity,
-    lessons: 12,
-    exercises: 30,
-    color: "from-orange-500 to-red-600"
-  },
-  {
-    id: "histoire-geographie-7af",
-    title: "Histoire-Géographie",
-    description: "Découvrez l'histoire et la géographie du monde et d'Haïti",
-    icon: Map,
-    lessons: 20,
-    exercises: 40,
-    color: "from-indigo-500 to-indigo-600"
-  }
-];
 
 const seriesOptions: SeriesOption[] = [
   {
@@ -191,9 +97,8 @@ const gradeLevels = [
   { id: "NS4" as GradeLevel, label: "NS4", fullName: "4ème secondaire" }
 ];
 
-// Icon mapping for database subjects (PascalCase keys to match database)
+// Icon mapping for database subjects
 const iconMap: Record<string, any> = {
-  // Legacy kebab-case support
   'calculator': Calculator,
   'book-open': BookOpen,
   'flask-conical': FlaskConical,
@@ -206,18 +111,17 @@ const iconMap: Record<string, any> = {
   'palette': Palette,
   'activity': Activity,
   'languages': Languages,
-  
-  // PascalCase naming (matches CreateMatiereDialog)
+  'Calculator': Calculator,
+  'BookOpen': BookOpen,
   'Languages': Languages,
   'Globe': Globe,
-  'BookOpen': BookOpen,
   'MessageSquare': MessageCircle,
   'BookA': BookOpen,
-  'Calculator': Calculator,
   'PieChart': Calculator,
   'Binary': Calculator,
   'Sigma': Calculator,
   'FlaskConical': FlaskConical,
+  'Flask': Beaker,
   'Atom': Beaker,
   'Microscope': Beaker,
   'Dna': Beaker,
@@ -245,7 +149,8 @@ const iconMap: Record<string, any> = {
   'Brain': BookOpen,
   'Lightbulb': BookOpen,
   'GraduationCap': GraduationCap,
-  'Book': BookOpen
+  'Book': BookOpen,
+  'Flag': Flag
 };
 
 // Color mapping for database subjects
@@ -322,49 +227,22 @@ export default function Matieres() {
     return true;
   });
   
-  // Merge database subjects with hardcoded subjects for 7AF
-  const displaySubjects = selectedGrade === "7AF" 
-    ? [
-        ...subjects.map(s => ({
-          ...s,
-          lessons: lessonCounts[s.id] || s.lessons,
-        })),
-        ...filteredSubjects
-          .filter(dbSubject => {
-            // Check if this database subject matches any hardcoded subject
-            // Match by exact slug or by partial slug (e.g., "sciences" matches "sciences-experimentales-7af")
-            return !subjects.some(s => 
-              s.id === dbSubject.slug || 
-              dbSubject.slug.startsWith(s.id + '-') ||
-              s.id === dbSubject.slug.replace('-7af', '')
-            );
-          })
-          .map(s => ({
-            id: s.slug,
-            title: s.name,
-            description: s.description || '',
-            icon: iconMap[s.icon_name || 'book-open'] || BookOpen,
-            lessons: lessonCounts[s.slug] || 0,
-            exercises: s.exercise_count || 0,
-            color: colorMap[s.color || 'blue'] || 'from-blue-500 to-blue-600'
-          }))
-      ]
-    : filteredSubjects.map(s => ({
-        id: s.slug,
-        title: s.name,
-        description: s.description || '',
-        icon: iconMap[s.icon_name || 'book-open'] || BookOpen,
-        lessons: lessonCounts[s.slug] || 0,
-        exercises: s.exercise_count || 0,
-        color: colorMap[s.color || 'blue'] || 'from-blue-500 to-blue-600'
-      }));
+  // Transform database subjects to display format
+  const displaySubjects: DisplaySubject[] = filteredSubjects.map(s => ({
+    id: s.slug,
+    title: s.name,
+    description: s.description || '',
+    icon: iconMap[s.icon_name || 'BookOpen'] || BookOpen,
+    lessons: lessonCounts[s.slug] || 0,
+    exercises: s.exercise_count || 0,
+    color: colorMap[s.color || 'blue'] || 'from-blue-500 to-blue-600'
+  }));
 
   const totalLessons = displaySubjects.reduce((sum, s) => sum + s.lessons, 0);
   const totalExercises = displaySubjects.reduce((sum, s) => sum + s.exercises, 0);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5">
-
       {/* Navigation Bar */}
       <nav className="fixed top-0 left-0 right-0 z-40 bg-background/95 backdrop-blur-md border-b border-border">
         <div className="container mx-auto px-4 py-4">
@@ -377,7 +255,10 @@ export default function Matieres() {
               <ChevronLeft className="w-4 h-4" />
               <span className="font-semibold">EDUPRENEURS</span>
             </Button>
-            <ThemeToggle />
+            <div className="flex items-center gap-2">
+              <MusicSelector />
+              <ThemeToggle />
+            </div>
           </div>
         </div>
       </nav>
@@ -398,46 +279,34 @@ export default function Matieres() {
                 Programmes Académiques
               </h1>
               <p className="text-xl mb-6 text-white">
-                Explorez nos matières du programme haïtien - De la 7ème année fondamentale à la 4ème secondaire
+                Contenu aligné sur le programme officiel du Ministère de l'Éducation Nationale et de la Formation Professionnelle d'Haïti (MENFP)
               </p>
-              <div className="flex gap-3 justify-center md:justify-start flex-wrap">
-                <Badge variant="secondary" className="px-4 py-2 text-sm bg-white/90 text-purple-700 hover:bg-white">
-                  <Flag className="w-4 h-4 mr-2" />
-                  Aligné MENFP
-                </Badge>
-                <Badge variant="secondary" className="px-4 py-2 text-sm bg-white/90 text-purple-700 hover:bg-white">
-                  <Globe className="w-4 h-4 mr-2" />
-                  FR / HT
-                </Badge>
-                <Badge variant="secondary" className="px-4 py-2 text-sm bg-white/90 text-purple-700 hover:bg-white">
-                  <Award className="w-4 h-4 mr-2" />
-                  Certifié
-                </Badge>
-              </div>
+            </div>
+            <div className="hidden md:block">
+              <img 
+                src={ericTeaching}
+                alt="Eric enseignant"
+                className="w-64 h-64 object-contain"
+                loading="lazy"
+                decoding="async"
+              />
             </div>
           </div>
         </div>
       </div>
 
       <div className="container mx-auto px-4 py-8">
-        {/* Music Selector */}
+        {/* Grade Level Selection */}
         <div className="mb-8">
-          <MusicSelector />
-        </div>
-
-        {/* Grade Level Selector */}
-        <Card className="p-6 mb-8">
-          <h3 className="text-xl font-semibold text-center mb-6">
-            Choisissez votre niveau
-          </h3>
-          <div className="flex gap-2 justify-center flex-wrap">
+          <h3 className="text-lg font-semibold mb-4 text-center">Sélectionnez votre niveau</h3>
+          <div className="flex flex-wrap justify-center gap-2">
             {gradeLevels.map((grade) => (
               <Button
                 key={grade.id}
                 variant={selectedGrade === grade.id ? "default" : "outline"}
                 onClick={() => {
                   setSelectedGrade(grade.id);
-                  setSelectedSeries(null); // Reset series when grade changes
+                  setSelectedSeries(null);
                 }}
                 className="min-w-[80px]"
               >
@@ -445,7 +314,7 @@ export default function Matieres() {
               </Button>
             ))}
           </div>
-        </Card>
+        </div>
 
         {/* Series Selection for NS3/NS4 */}
         {isNS3OrNS4 && !selectedSeries && (
@@ -509,7 +378,14 @@ export default function Matieres() {
           </div>
         )}
 
-        {((!isNS3OrNS4 && displaySubjects.length > 0) || (isNS3OrNS4 && selectedSeries && displaySubjects.length > 0)) ? (
+        {/* Loading State */}
+        {isLoading && (
+          <div className="flex items-center justify-center py-12">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+          </div>
+        )}
+
+        {((!isNS3OrNS4 && displaySubjects.length > 0) || (isNS3OrNS4 && selectedSeries && displaySubjects.length > 0)) && !isLoading ? (
           <>
             {/* Stats Section */}
             <Card className="p-6 mb-8">
@@ -560,23 +436,23 @@ export default function Matieres() {
                   </div>
                   <div className="flex-1 text-center md:text-left">
                     <h3 className="text-2xl font-bold mb-2">
-                      Préparation aux Examens Officiels 🎓
+                      Préparation aux Examens Officiels
                     </h3>
                     <p className="text-muted-foreground mb-4">
                       Prépare-toi pour l'examen officiel de 9ème AF avec Eric! Pratique avec les questions de l'examen 2025 et reçois des explications personnalisées pour chaque concept.
                     </p>
                     <div className="flex flex-wrap gap-3 justify-center md:justify-start">
                       <Badge variant="secondary" className="text-sm">
-                        📝 18 exercices officiels
+                        18 exercices officiels
                       </Badge>
                       <Badge variant="secondary" className="text-sm">
-                        🤖 Tuteur IA Eric
+                        Tuteur IA Eric
                       </Badge>
                       <Badge variant="secondary" className="text-sm">
-                        🎥 Vidéos explicatives
+                        Vidéos explicatives
                       </Badge>
                       <Badge variant="secondary" className="text-sm">
-                        🏆 Points de récompense
+                        Points de récompense
                       </Badge>
                     </div>
                   </div>
@@ -595,74 +471,81 @@ export default function Matieres() {
 
             {/* Subjects Grid */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mb-8">
-          {displaySubjects.map((subject, index) => {
-            const IconComponent = subject.icon;
-            // Check if subject has published lessons
-            const hasContent = subject.lessons > 0;
-            
-            return (
-              <Card
-                key={subject.id}
-                className={`group transition-all duration-300 overflow-hidden ${
-                  hasContent ? 'hover:shadow-xl hover:-translate-y-2 cursor-pointer' : ''
-                }`}
-                onClick={() => {
-                  if (hasContent) {
-                    navigate(`/course/${subject.id}`);
-                  }
-                }}
-              >
-                <div className={`h-1 bg-gradient-to-r ${subject.color}`} />
+              {displaySubjects.map((subject) => {
+                const IconComponent = subject.icon;
+                const hasContent = subject.lessons > 0;
                 
-                <div className="p-6">
-                  <div className={`w-16 h-16 rounded-xl bg-gradient-to-br ${subject.color} flex items-center justify-center mb-4`}>
-                    <IconComponent className="w-8 h-8 text-white" />
-                  </div>
-
-                  <h3 className="text-xl font-bold mb-2 group-hover:text-primary transition-colors">
-                    {subject.title}
-                  </h3>
-
-                  <p className="text-sm text-muted-foreground mb-4 line-clamp-2">
-                    {subject.description}
-                  </p>
-
-                  <div className="flex gap-2 mb-4 flex-wrap">
-                    <Badge variant="secondary" className="text-xs">
-                      {subject.lessons} {subject.lessons === 1 ? 'leçon' : 'leçons'}
-                    </Badge>
-                    <Badge variant="secondary" className="text-xs">
-                      {subject.exercises} {subject.exercises === 1 ? 'exercice' : 'exercices'}
-                    </Badge>
-                  </div>
-
-                {hasContent ? (
-                  <Button
-                    className="w-full"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      // Use unified dynamic route for all subjects
-                      navigate(`/course/${subject.id}`);
+                return (
+                  <Card
+                    key={subject.id}
+                    className={`group transition-all duration-300 overflow-hidden ${
+                      hasContent ? 'hover:shadow-xl hover:-translate-y-2 cursor-pointer' : ''
+                    }`}
+                    onClick={() => {
+                      if (hasContent) {
+                        navigate(`/course/${subject.id}`);
+                      }
                     }}
                   >
-                    Commencer
-                  </Button>
-                ) : (
-                  <Button
-                    className="w-full"
-                    variant="secondary"
-                    disabled
-                  >
-                    Bientôt disponible
-                  </Button>
-                )}
-                </div>
-              </Card>
-            );
-          })}
+                    <div className={`h-1 bg-gradient-to-r ${subject.color}`} />
+                    
+                    <div className="p-6">
+                      <div className={`w-16 h-16 rounded-xl bg-gradient-to-br ${subject.color} flex items-center justify-center mb-4`}>
+                        <IconComponent className="w-8 h-8 text-white" />
+                      </div>
+
+                      <h3 className="text-xl font-bold mb-2 group-hover:text-primary transition-colors">
+                        {subject.title}
+                      </h3>
+
+                      <p className="text-sm text-muted-foreground mb-4 line-clamp-2">
+                        {subject.description}
+                      </p>
+
+                      <div className="flex gap-2 mb-4 flex-wrap">
+                        <Badge variant="secondary" className="text-xs">
+                          {subject.lessons} {subject.lessons === 1 ? 'leçon' : 'leçons'}
+                        </Badge>
+                        <Badge variant="secondary" className="text-xs">
+                          {subject.exercises} {subject.exercises === 1 ? 'exercice' : 'exercices'}
+                        </Badge>
+                      </div>
+
+                      {hasContent ? (
+                        <Button
+                          className="w-full"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            navigate(`/course/${subject.id}`);
+                          }}
+                        >
+                          Commencer
+                        </Button>
+                      ) : (
+                        <Button
+                          className="w-full"
+                          variant="secondary"
+                          disabled
+                        >
+                          Bientôt disponible
+                        </Button>
+                      )}
+                    </div>
+                  </Card>
+                );
+              })}
             </div>
           </>
         ) : null}
+
+        {/* No subjects message */}
+        {!isLoading && displaySubjects.length === 0 && (!isNS3OrNS4 || selectedSeries) && (
+          <Card className="p-8 text-center mb-8">
+            <p className="text-muted-foreground">
+              Aucune matière disponible pour ce niveau. Les contenus sont en cours de développement.
+            </p>
+          </Card>
+        )}
 
         {/* Eric Mascot Section */}
         <Card className="p-8 mb-8 bg-gradient-to-r from-primary/10 to-secondary/10">
