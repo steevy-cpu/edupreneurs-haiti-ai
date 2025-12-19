@@ -243,11 +243,11 @@ export default function Matieres() {
       }
     };
 
-    // Fetch official exam exercises count
+    // Fetch official exams count
     const fetchOfficialExamCount = async () => {
       try {
         const { count, error } = await supabase
-          .from('exam_exercises')
+          .from('official_exams')
           .select('*', { count: 'exact', head: true });
         
         if (!error && count !== null) {
@@ -487,7 +487,7 @@ export default function Matieres() {
                     </p>
                     <div className="flex flex-wrap gap-3 justify-center md:justify-start">
                       <Badge variant="secondary" className="text-sm">
-                        {officialExamCount} exercices officiels
+                        {officialExamCount} examens officiels
                       </Badge>
                       <Badge variant="secondary" className="text-sm">
                         Tuteur IA Eric
