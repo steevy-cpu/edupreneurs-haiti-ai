@@ -1,5 +1,6 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo, useCallback } from "react";
 import { useNavigate, Link } from "react-router-dom";
+import { Helmet } from "react-helmet";
 import { supabase } from "@/integrations/supabase/client";
 import { Layout } from "@/components/Layout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -59,7 +60,7 @@ const checkContentEditorAccess = async () => {
     .from("content_editor_roles")
     .select("role")
     .eq("user_id", user.id)
-    .single();
+    .maybeSingle();
   
   return !!data;
 };
@@ -149,7 +150,7 @@ const Dashboard = () => {
         setRecentNotes(data);
       }
     } catch (error) {
-      console.error("Error fetching notes:", error);
+      // Silent fail - notes are not critical
     }
   };
 
@@ -164,7 +165,6 @@ const Dashboard = () => {
       .limit(5);
 
     if (error) {
-      console.error("Error fetching leaderboard:", error);
       setLeaderboardLoading(false);
       return;
     }
@@ -178,7 +178,7 @@ const Dashboard = () => {
     setLeaderboardLoading(false);
   };
 
-  const getRankIcon = (rank: number) => {
+  const getRankIcon = useCallback((rank: number) => {
     switch (rank) {
       case 1:
         return <Crown className="w-5 h-5 text-yellow-500" />;
@@ -189,9 +189,9 @@ const Dashboard = () => {
       default:
         return <Trophy className="w-4 h-4 text-muted-foreground" />;
     }
-  };
+  }, []);
 
-  const getRankBgColor = (rank: number) => {
+  const getRankBgColor = useCallback((rank: number) => {
     switch (rank) {
       case 1:
         return "from-yellow-500/20 to-amber-500/20 border-yellow-500/30";
@@ -202,30 +202,36 @@ const Dashboard = () => {
       default:
         return "from-muted/50 to-muted/30 border-border/50";
     }
-  };
+  }, []);
 
-  const topicInfo: { [key: string]: { title: string; icon: string } } = {
+  const topicInfo = useMemo(() => ({
     "numeration-binaire": { title: "Numération Binaire", icon: "💻" },
     "polygones": { title: "Les Polygones", icon: "⬡" },
     "divisibilite": { title: "Divisibilité", icon: "➗" },
     "decimaux": { title: "Décimaux", icon: "🔢" },
     "cercle-disque": { title: "Cercle et Disque", icon: "⭕" },
-  };
+  }), []);
 
-  const formatDate = (dateString: string) => {
+  const formatDate = useCallback((dateString: string) => {
     const date = new Date(dateString);
     return date.toLocaleDateString("fr-FR", { day: "numeric", month: "short", year: "numeric" });
-  };
+  }, []);
 
-  const subjects = [
-    { id: "math", name: "Mathématiques", icon: "🔢", description: "Algèbre, géométrie et calcul" },
-    { id: "french", name: "Français", icon: "🇫🇷", description: "Grammaire et littérature" },
-    { id: "science", name: "Sciences", icon: "🔬", description: "Physique, chimie et biologie" },
-    { id: "history", name: "Histoire", icon: "📜", description: "Histoire d'Haïti et mondiale" },
-  ];
+  const subjects = useMemo(() => [
+    { id: "math", name: "Mathématiques", icon: "🔢", description: "Algèbre, géométrie et calcul", path: "/matieres" },
+    { id: "french", name: "Français", icon: "🇫🇷", description: "Grammaire et littérature", path: "/matieres" },
+    { id: "science", name: "Sciences", icon: "🔬", description: "Physique, chimie et biologie", path: "/matieres" },
+    { id: "history", name: "Histoire", icon: "📜", description: "Histoire d'Haïti et mondiale", path: "/matieres" },
+  ], []);
 
   return (
     <Layout>
+      <Helmet>
+        <title>Tableau de bord - Edupreneurs</title>
+        <meta name="description" content="Suivez votre progression d'apprentissage, vos statistiques et vos objectifs avec le tableau de bord Edupreneurs." />
+        <meta property="og:title" content="Tableau de bord - Edupreneurs" />
+        <meta property="og:description" content="Suivez votre progression d'apprentissage avec Edupreneurs." />
+      </Helmet>
       <OnboardingTour />
       <div className="min-h-screen bg-background">
         {/* Theme Toggle - Top Right */}
@@ -388,7 +394,7 @@ const Dashboard = () => {
                   {goldEarned}
                 </div>
                 <div className="text-xs font-semibold text-muted-foreground mb-1">Golds gagnés</div>
-                <p className="text-xs text-muted-foreground">+0 cette semaine</p>
+                <p className="text-xs text-muted-foreground">Total cumulé</p>
               </CardContent>
             </Card>
 
@@ -401,7 +407,7 @@ const Dashboard = () => {
                   {analytics.totalLessonsCompleted}
                 </div>
                 <div className="text-xs font-semibold text-muted-foreground mb-1">Leçons complétées</div>
-                <p className="text-xs text-muted-foreground">0 cette semaine</p>
+                <p className="text-xs text-muted-foreground">+{analytics.weeklyLessons} cette semaine</p>
               </CardContent>
             </Card>
 
@@ -490,7 +496,12 @@ const Dashboard = () => {
                 <Trophy className="w-6 h-6 text-primary" />
                 Classement
               </CardTitle>
-              <button className="text-sm text-primary hover:text-primary font-medium">Voir tout →</button>
+              <button 
+                onClick={() => navigate("/leaderboard")} 
+                className="text-sm text-primary hover:text-primary/80 font-medium transition-colors"
+              >
+                Voir tout →
+              </button>
             </CardHeader>
             <CardContent>
               {leaderboardLoading ? (
@@ -609,7 +620,11 @@ const Dashboard = () => {
             <CardContent>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                 {subjects.map((subject) => (
-                  <div key={subject.id} className="p-4 bg-gradient-to-br from-muted/50 to-muted/30 rounded-lg hover:shadow-lg transition-all cursor-pointer">
+                  <div 
+                    key={subject.id} 
+                    onClick={() => navigate(subject.path)}
+                    className="p-4 bg-gradient-to-br from-muted/50 to-muted/30 rounded-lg hover:shadow-lg hover:-translate-y-1 transition-all cursor-pointer"
+                  >
                     <div className="text-3xl mb-3">{subject.icon}</div>
                     <h3 className="font-bold text-foreground mb-1">{subject.name}</h3>
                     <p className="text-xs text-muted-foreground mb-3">{subject.description}</p>

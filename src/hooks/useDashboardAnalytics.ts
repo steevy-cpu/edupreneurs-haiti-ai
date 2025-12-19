@@ -60,7 +60,7 @@ export const useDashboardAnalytics = (userId: string | null) => {
         .order("completed_at", { ascending: false });
 
       if (completionsError) {
-        console.error("Error fetching lesson completions:", completionsError);
+        // Silent fail - continue with empty completions
       }
 
       // Calculate basic stats
@@ -184,18 +184,6 @@ export const useDashboardAnalytics = (userId: string | null) => {
         current: weeklyLessons, // Always use actual weekly lessons as current value
       };
 
-      console.log("📊 Dashboard Analytics Loaded:", {
-        totalLessonsCompleted,
-        averageScore: Math.round(averageScore),
-        weeklyLessons,
-        monthlyLessons,
-        streak,
-        studyTimeThisWeek,
-        weeklyGoal,
-        subjectProgressCount: subjectProgress.length,
-        hasCompletions: completions && completions.length > 0,
-      });
-
       setAnalytics({
         totalLessonsCompleted,
         averageScore: Math.round(averageScore),
@@ -211,8 +199,7 @@ export const useDashboardAnalytics = (userId: string | null) => {
         weeklyGoal,
       });
     } catch (error) {
-      console.error("❌ Error loading analytics:", error);
-      // Set loading to false even on error to show default state
+      // Silent fail - show default state on error
     } finally {
       setIsLoading(false);
     }
