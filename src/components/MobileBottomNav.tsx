@@ -21,8 +21,8 @@ export const MobileBottomNav = () => {
     { icon: Home, path: "/dashboard" },
     { icon: BookOpen, path: "/matieres" },
     { icon: Rss, path: "/feed" },
-    { icon: MessageSquare, path: "/community", badge: unreadMessages },
-    { icon: Bell, path: "/notifications", badge: unreadNotifications },
+    { icon: MessageSquare, path: "/community", badge: unreadMessages > 0 ? unreadMessages : undefined },
+    { icon: Bell, path: "/notifications", badge: unreadNotifications > 0 ? unreadNotifications : undefined },
     { icon: Settings, path: "/settings" },
   ];
 
