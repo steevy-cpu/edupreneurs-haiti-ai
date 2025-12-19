@@ -72,9 +72,50 @@ const Dashboard = () => {
   const [leaderboardLoading, setLeaderboardLoading] = useState(true);
   const [isAuthChecking, setIsAuthChecking] = useState(true);
   const [isUserDataLoading, setIsUserDataLoading] = useState(true);
+  const [totalLessonsCompleted, setTotalLessonsCompleted] = useState(0);
   
   const { showPrompt, isIOS, installApp, dismissPrompt } = usePWAInstall();
   const { analytics, isLoading: analyticsLoading } = useDashboardAnalytics(userId || null);
+
+  // Badge definitions with thresholds
+  const badges = useMemo(() => [
+    { 
+      id: "first_lesson", 
+      name: "Première Leçon", 
+      description: "Complète ta première leçon",
+      icon: Star,
+      threshold: 1,
+      color: "text-yellow-500",
+      bgColor: "bg-yellow-500/20 border-yellow-500/50"
+    },
+    { 
+      id: "dedicated_learner", 
+      name: "Apprenant Assidu", 
+      description: "Complète 10 leçons",
+      icon: Award,
+      threshold: 10,
+      color: "text-blue-500",
+      bgColor: "bg-blue-500/20 border-blue-500/50"
+    },
+    { 
+      id: "master", 
+      name: "Maître", 
+      description: "Complète 50 leçons",
+      icon: Trophy,
+      threshold: 50,
+      color: "text-purple-500",
+      bgColor: "bg-purple-500/20 border-purple-500/50"
+    },
+    { 
+      id: "legend", 
+      name: "Légende", 
+      description: "Complète 100 leçons",
+      icon: Flame,
+      threshold: 100,
+      color: "text-orange-500",
+      bgColor: "bg-orange-500/20 border-orange-500/50"
+    },
+  ], []);
 
   // Auth guard - redirect unauthenticated users
   useEffect(() => {
@@ -100,7 +141,7 @@ const Dashboard = () => {
     setIsUserDataLoading(true);
     
     // Parallel fetch for efficiency
-    const [profileResult, notesResult, editorResult] = await Promise.all([
+    const [profileResult, notesResult, editorResult, completionsResult] = await Promise.all([
       supabase
         .from("profiles")
         .select("nickname, gold_earned")
@@ -116,7 +157,11 @@ const Dashboard = () => {
         .from("content_editor_roles")
         .select("role")
         .eq("user_id", currentUserId)
-        .maybeSingle()
+        .maybeSingle(),
+      supabase
+        .from("lesson_completions")
+        .select("id", { count: "exact" })
+        .eq("user_id", currentUserId)
     ]);
 
     // Process profile data
@@ -132,6 +177,9 @@ const Dashboard = () => {
 
     // Process editor access
     setIsContentEditor(!!editorResult.data);
+    
+    // Process lesson completions count
+    setTotalLessonsCompleted(completionsResult.count || 0);
     
     setIsUserDataLoading(false);
   };
@@ -461,27 +509,37 @@ const Dashboard = () => {
               </CardHeader>
               <CardContent>
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                  <div className="flex flex-col items-center p-4 rounded-lg border transition-all bg-muted/50 border-muted opacity-50">
-                    <Star className="w-8 h-8 mb-2 text-muted-foreground" />
-                    <p className="text-xs font-medium text-center mb-1">Première Leçon</p>
-                    <p className="text-xs text-muted-foreground text-center">Complète ta première leçon</p>
-                  </div>
-                  <div className="flex flex-col items-center p-4 rounded-lg border transition-all bg-muted/50 border-muted opacity-50">
-                    <Award className="w-8 h-8 mb-2 text-muted-foreground" />
-                    <p className="text-xs font-medium text-center mb-1">Apprenant Assidu</p>
-                    <p className="text-xs text-muted-foreground text-center">Complète 10 leçons</p>
-                  </div>
-                  <div className="flex flex-col items-center p-4 rounded-lg border transition-all bg-muted/50 border-muted opacity-50">
-                    <Trophy className="w-8 h-8 mb-2 text-muted-foreground" />
-                    <p className="text-xs font-medium text-center mb-1">Maître</p>
-                    <p className="text-xs text-muted-foreground text-center">Complète 50 leçons</p>
-                  </div>
-                  <div className="flex flex-col items-center p-4 rounded-lg border transition-all bg-muted/50 border-muted opacity-50">
-                    <Flame className="w-8 h-8 mb-2 text-muted-foreground" />
-                    <p className="text-xs font-medium text-center mb-1">Éclair</p>
-                    <p className="text-xs text-muted-foreground text-center">Complète 100 leçons</p>
-                  </div>
+                  {badges.map((badge) => {
+                    const isUnlocked = totalLessonsCompleted >= badge.threshold;
+                    const IconComponent = badge.icon;
+                    
+                    return (
+                      <div 
+                        key={badge.id}
+                        className={`flex flex-col items-center p-4 rounded-lg border transition-all ${
+                          isUnlocked 
+                            ? `${badge.bgColor} shadow-md` 
+                            : "bg-muted/50 border-muted opacity-50"
+                        }`}
+                      >
+                        <IconComponent 
+                          className={`w-8 h-8 mb-2 ${isUnlocked ? badge.color : "text-muted-foreground"}`} 
+                        />
+                        <p className={`text-xs font-medium text-center mb-1 ${isUnlocked ? "text-foreground" : ""}`}>
+                          {badge.name}
+                        </p>
+                        <p className="text-xs text-muted-foreground text-center">
+                          {isUnlocked ? "✓ Débloqué!" : badge.description}
+                        </p>
+                      </div>
+                    );
+                  })}
                 </div>
+                {totalLessonsCompleted > 0 && (
+                  <p className="text-sm text-muted-foreground text-center mt-4">
+                    Tu as complété {totalLessonsCompleted} leçon{totalLessonsCompleted > 1 ? "s" : ""} au total!
+                  </p>
+                )}
               </CardContent>
             </Card>
           </div>
