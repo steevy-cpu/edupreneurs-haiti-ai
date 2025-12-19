@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { CheckCircle2, XCircle, Trophy } from "lucide-react";
+import { CheckCircle2, XCircle, Trophy, AlertTriangle, RefreshCw } from "lucide-react";
 import { useSoundEffects } from "@/hooks/useSoundEffects";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
@@ -28,45 +28,100 @@ export const HTMLQuizParser = ({ htmlContent, lessonSlug, subject }: HTMLQuizPar
   const [showFeedback, setShowFeedback] = useState(false);
   const [score, setScore] = useState(0);
   const [completed, setCompleted] = useState(false);
+  const [isLessonCompleted, setIsLessonCompleted] = useState(false);
+  const [parseError, setParseError] = useState(false);
   const { playSound } = useSoundEffects();
   const { toast } = useToast();
 
   useEffect(() => {
+    checkLessonCompletion();
     parseHTMLQuiz(htmlContent);
-  }, [htmlContent]);
+  }, [htmlContent, lessonSlug]);
+
+  const checkLessonCompletion = async () => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      const { data } = await supabase
+        .from('lesson_completions')
+        .select('*')
+        .eq('user_id', user.id)
+        .eq('lesson_slug', lessonSlug)
+        .maybeSingle();
+
+      if (data) {
+        setIsLessonCompleted(true);
+      }
+    } catch (error) {
+      console.error('Error checking lesson completion:', error);
+    }
+  };
 
   const parseHTMLQuiz = (html: string) => {
+    if (!html || html.trim() === '') {
+      setParseError(true);
+      return;
+    }
+
     const parser = new DOMParser();
     const doc = parser.parseFromString(html, 'text/html');
     const questionElements = doc.querySelectorAll('.quiz-question');
     
     const parsed: ParsedQuestion[] = [];
     
-    questionElements.forEach((qEl) => {
-      const number = parseInt(qEl.getAttribute('data-number') || '0');
-      const questionText = qEl.querySelector('p')?.textContent?.trim() || '';
+    questionElements.forEach((qEl, index) => {
+      const numberAttr = qEl.getAttribute('data-number');
+      const number = numberAttr ? parseInt(numberAttr) : index + 1;
+      
+      // Get question text from <p> tag inside the question element
+      const questionP = qEl.querySelector('p');
+      const questionText = questionP?.textContent?.trim() || '';
       
       const options: { letter: string; text: string }[] = [];
       qEl.querySelectorAll('.option').forEach((opt) => {
         const letter = opt.getAttribute('data-answer') || '';
-        const text = opt.textContent?.trim().replace(/^[A-D]\)\s*/, '') || '';
-        options.push({ letter, text });
+        let text = opt.textContent?.trim() || '';
+        // Remove the letter prefix (A), B), etc.)
+        text = text.replace(/^[A-D]\)\s*/, '').trim();
+        if (letter && text) {
+          options.push({ letter, text });
+        }
       });
       
-      const correctAnswer = qEl.querySelector('.correct-answer')?.getAttribute('data-correct') || '';
-      const explanationEl = qEl.querySelector('.correct-answer p:last-child');
-      const explanation = explanationEl?.textContent?.trim() || '';
+      const correctAnswerEl = qEl.querySelector('.correct-answer');
+      const correctAnswer = correctAnswerEl?.getAttribute('data-correct') || '';
       
-      if (number && questionText && options.length > 0 && correctAnswer) {
+      // Get explanation - try to get the second <p> inside correct-answer
+      let explanation = '';
+      const explanationParagraphs = correctAnswerEl?.querySelectorAll('p');
+      if (explanationParagraphs && explanationParagraphs.length > 1) {
+        explanation = explanationParagraphs[1]?.textContent?.trim() || '';
+      } else if (explanationParagraphs && explanationParagraphs.length === 1) {
+        // If only one paragraph, try to extract explanation from it
+        const text = explanationParagraphs[0]?.textContent?.trim() || '';
+        // Remove the "Réponse correcte: X" part
+        explanation = text.replace(/Réponse correcte\s*:\s*[A-D]/i, '').trim();
+      }
+      
+      // More lenient validation - require at least question and options
+      if (questionText && options.length >= 2 && correctAnswer) {
         parsed.push({
           number,
           question: questionText,
           options,
           correctAnswer,
-          explanation
+          explanation: explanation || 'Bonne réponse!'
         });
       }
     });
+    
+    if (parsed.length === 0) {
+      console.warn('HTMLQuizParser: No questions could be parsed from:', html.substring(0, 200));
+      setParseError(true);
+    } else {
+      setParseError(false);
+    }
     
     setQuestions(parsed);
   };
@@ -76,7 +131,7 @@ export const HTMLQuizParser = ({ htmlContent, lessonSlug, subject }: HTMLQuizPar
     setSelectedAnswer(letter);
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (!selectedAnswer) return;
     
     const currentQuestion = questions[currentQuestionIndex];
@@ -87,8 +142,35 @@ export const HTMLQuizParser = ({ htmlContent, lessonSlug, subject }: HTMLQuizPar
     if (isCorrect) {
       setScore(score + 1);
       playSound('correct');
+      
+      // Award gold for correct answer if lesson not completed
+      if (!isLessonCompleted) {
+        await awardGold(1);
+      }
     } else {
       playSound('incorrect');
+    }
+  };
+
+  const awardGold = async (amount: number) => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('gold_earned')
+        .eq('user_id', user.id)
+        .single();
+
+      if (profile) {
+        await supabase
+          .from('profiles')
+          .update({ gold_earned: (profile.gold_earned || 0) + amount })
+          .eq('user_id', user.id);
+      }
+    } catch (error) {
+      console.error('Error awarding gold:', error);
     }
   };
 
@@ -124,45 +206,87 @@ export const HTMLQuizParser = ({ htmlContent, lessonSlug, subject }: HTMLQuizPar
       });
     }
 
-    // Only save completion and award gold if passed (80% or higher)
-    if (passed) {
+    // Only save completion and award gold if passed (80% or higher) and not already completed
+    if (passed && !isLessonCompleted) {
       try {
         const { data: { user } } = await supabase.auth.getUser();
         if (!user) return;
 
-        await supabase.from('lesson_completions').upsert({
-          user_id: user.id,
-          lesson_slug: lessonSlug,
-          subject: subject,
-          score: percentage,
-          completed_at: new Date().toISOString()
-        }, {
-          onConflict: 'user_id,lesson_slug,subject'
-        });
+        // Mark lesson as complete
+        const { error: completionError } = await supabase
+          .from('lesson_completions')
+          .upsert({
+            user_id: user.id,
+            lesson_slug: lessonSlug,
+            subject: subject,
+            score: percentage,
+            completed_at: new Date().toISOString()
+          }, {
+            onConflict: 'user_id,lesson_slug'
+          });
 
-        // Award gold
-        const { data: profile } = await supabase
-          .from('profiles')
-          .select('gold_earned')
-          .eq('user_id', user.id)
-          .single();
-
-        if (profile) {
-          await supabase
-            .from('profiles')
-            .update({ gold_earned: (profile.gold_earned || 0) + goldEarned })
-            .eq('user_id', user.id);
+        if (completionError) {
+          console.error('Error saving completion:', completionError);
+        } else {
+          setIsLessonCompleted(true);
         }
+
+        // Award completion gold
+        await awardGold(goldEarned);
+        
+        toast({
+          title: "🏆 Leçon complétée !",
+          description: `Tu as gagné ${goldEarned} points d'or pour avoir terminé cette leçon !`,
+        });
       } catch (error) {
         console.error('Error saving quiz completion:', error);
       }
     }
   };
 
-  if (questions.length === 0) {
+  const handleRestart = () => {
+    setCurrentQuestionIndex(0);
+    setSelectedAnswer(null);
+    setShowFeedback(false);
+    setScore(0);
+    setCompleted(false);
+  };
+
+  // Show error state if parsing failed
+  if (parseError || (questions.length === 0 && htmlContent)) {
+    return (
+      <Card className="p-6 border-2 border-amber-300 dark:border-amber-700 bg-gradient-to-br from-amber-50 to-orange-50 dark:from-amber-950/20 dark:to-orange-950/20">
+        <div className="flex items-start gap-4">
+          <AlertTriangle className="w-6 h-6 text-amber-600 dark:text-amber-400 flex-shrink-0 mt-1" />
+          <div className="space-y-4 flex-1">
+            <div>
+              <h3 className="font-bold text-lg text-amber-700 dark:text-amber-300 mb-2">
+                Quiz non disponible
+              </h3>
+              <p className="text-sm text-muted-foreground">
+                Le quiz n'a pas pu être chargé dans le format interactif. 
+                Veuillez réessayer plus tard ou contacter le support.
+              </p>
+            </div>
+            <Button 
+              onClick={() => window.location.reload()} 
+              variant="outline"
+              className="gap-2"
+            >
+              <RefreshCw className="w-4 h-4" />
+              Recharger la page
+            </Button>
+          </div>
+        </div>
+      </Card>
+    );
+  }
+
+  // Show loading state only briefly
+  if (questions.length === 0 && !htmlContent) {
     return (
       <div className="text-center py-8 text-muted-foreground">
-        <p>Chargement du quiz...</p>
+        <p>Aucun quiz disponible pour cette leçon.</p>
       </div>
     );
   }
@@ -189,9 +313,19 @@ export const HTMLQuizParser = ({ htmlContent, lessonSlug, subject }: HTMLQuizPar
                 Il te faut au moins 80% pour réussir la leçon
               </p>
             )}
+            {passed && !isLessonCompleted && (
+              <p className="text-sm text-green-600 dark:text-green-400 mt-2 font-medium">
+                ✅ Leçon marquée comme complétée !
+              </p>
+            )}
+            {isLessonCompleted && (
+              <p className="text-sm text-muted-foreground mt-2">
+                Cette leçon était déjà complétée
+              </p>
+            )}
           </div>
           <Button 
-            onClick={() => window.location.reload()} 
+            onClick={handleRestart}
             className={passed ? 'bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700' : 'bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-700 hover:to-orange-700'}
           >
             Refaire le quiz
@@ -202,17 +336,27 @@ export const HTMLQuizParser = ({ htmlContent, lessonSlug, subject }: HTMLQuizPar
   }
 
   const currentQuestion = questions[currentQuestionIndex];
+  
+  // Safety check
+  if (!currentQuestion) {
+    return (
+      <div className="text-center py-8 text-muted-foreground">
+        <p>Erreur: Question non trouvée</p>
+      </div>
+    );
+  }
+  
   const isCorrect = selectedAnswer === currentQuestion.correctAnswer;
 
   return (
     <div className="space-y-6">
       {/* Progress */}
       <div className="flex items-center justify-between">
-        <Badge variant="secondary" className="text-sm">
+        <Badge variant="secondary" className="text-sm bg-gradient-to-r from-purple-600 to-pink-600 text-white">
           Question {currentQuestionIndex + 1} sur {questions.length}
         </Badge>
         <Badge variant="outline" className="text-sm">
-          Score: {score}/{currentQuestionIndex}
+          Score: {score}/{currentQuestionIndex + (showFeedback ? 1 : 0)}
         </Badge>
       </div>
 
@@ -290,13 +434,13 @@ export const HTMLQuizParser = ({ htmlContent, lessonSlug, subject }: HTMLQuizPar
           </Card>
         )}
 
-        {/* Actions */}
+        {/* Actions - ALWAYS show the button */}
         <div className="flex justify-end gap-3 mt-6">
           {!showFeedback ? (
             <Button
               onClick={handleSubmit}
               disabled={!selectedAnswer}
-              className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700"
+              className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 disabled:opacity-50"
             >
               Valider ma réponse
             </Button>
