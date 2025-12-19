@@ -1,5 +1,6 @@
-import { useState, useEffect, lazy, Suspense } from "react";
+import { useState, useEffect, lazy, Suspense, useMemo, useCallback } from "react";
 import { Link } from "react-router-dom";
+import { Helmet } from "react-helmet";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { supabase } from "@/integrations/supabase/client";
@@ -15,55 +16,153 @@ import { Menu, X, BookOpen, Trophy, MessageCircle, Newspaper, Users, GraduationC
 // Lazy load chatbot for better initial page load
 const HomeChatbot = lazy(() => import("@/components/HomeChatbot").then(module => ({ default: module.HomeChatbot })));
 
+// Default fallback values
+const DEFAULT_STATS = { lessons: 2500, exams: 85, users: 10 };
+
 const Index = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [expandedFaq, setExpandedFaq] = useState<number | null>(null);
-  const [stats, setStats] = useState({ lessons: 0, exams: 0, users: 0 });
+  const [stats, setStats] = useState(DEFAULT_STATS);
+  const [statsLoaded, setStatsLoaded] = useState(false);
+
+  const fetchStats = useCallback(async () => {
+    try {
+      const [lessonsRes, examsRes, usersRes] = await Promise.all([
+        supabase.from('lessons').select('id', { count: 'exact', head: true }).eq('is_published', true),
+        supabase.from('official_exams').select('id', { count: 'exact', head: true }),
+        supabase.from('profiles').select('id', { count: 'exact', head: true })
+      ]);
+      
+      setStats({
+        lessons: lessonsRes.count || DEFAULT_STATS.lessons,
+        exams: examsRes.count || DEFAULT_STATS.exams,
+        users: usersRes.count || DEFAULT_STATS.users
+      });
+      setStatsLoaded(true);
+    } catch (error) {
+      console.error('Error fetching stats:', error);
+    }
+  }, []);
 
   useEffect(() => {
-    const fetchStats = async () => {
-      try {
-        const [lessonsRes, examsRes, usersRes] = await Promise.all([
-          supabase.from('lessons').select('id', { count: 'exact', head: true }).eq('is_published', true),
-          supabase.from('official_exams').select('id', { count: 'exact', head: true }),
-          supabase.from('profiles').select('id', { count: 'exact', head: true })
-        ]);
-        
-        setStats({
-          lessons: lessonsRes.count || 0,
-          exams: examsRes.count || 0,
-          users: usersRes.count || 0
-        });
-      } catch (error) {
-        console.error('Error fetching stats:', error);
-      }
-    };
     fetchStats();
 
-    // Subscribe to realtime updates for new students
+    // Subscribe to realtime updates for changes
     const channel = supabase
       .channel('homepage-stats')
       .on(
         'postgres_changes',
-        { event: 'INSERT', schema: 'public', table: 'profiles' },
-        () => {
-          // Refetch stats when a new user signs up
-          fetchStats();
-        }
+        { event: '*', schema: 'public', table: 'profiles' },
+        () => fetchStats()
+      )
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'lessons' },
+        () => fetchStats()
+      )
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'official_exams' },
+        () => fetchStats()
       )
       .subscribe();
 
     return () => {
       supabase.removeChannel(channel);
     };
-  }, []);
+  }, [fetchStats]);
 
   const toggleFaq = (index: number) => {
     setExpandedFaq(expandedFaq === index ? null : index);
   };
 
+  // Memoized static arrays to prevent recreation on every render
+  const heroStats = useMemo(() => [
+    { number: `${stats.lessons}+`, label: "Leçons" },
+    { number: `${stats.exams}+`, label: "Examens" },
+    { number: `${stats.users}+`, label: "Étudiants" },
+    { number: "24/7", label: "Assistant IA" },
+    { number: "7AF-NS4", label: "Niveaux" }
+  ], [stats]);
+
+  const features = useMemo(() => [
+    { icon: "🎯", title: "Apprentissage 100% Personnalisé", desc: "L'agent IA s'adapte à votre niveau, de la 7ème à la préparation universitaire" },
+    { icon: "💰", title: "Prix Dérisoire - 200 Gdes/mois", desc: "Accessible à tous avec une semaine d'essai gratuite" },
+    { icon: "🏆", title: "Système Gold Révolutionnaire", desc: "Gagnez des points, débloquez des fonctions premium, et même de l'argent réel" },
+    { icon: "🌐", title: "Multilingue Intelligent", desc: "Créole, Français, Anglais, Espagnol - Votre IA parle votre langue" }
+  ], []);
+
+  const platformFeatures = useMemo(() => [
+    { 
+      icon: FileText, 
+      title: "Hub des Examens Officiels", 
+      desc: "Accédez aux examens officiels de 2011 à 2025. Préparez-vous avec les vrais sujets du MENFP et des corrections détaillées par notre IA.",
+      highlight: `${stats.exams}+ examens disponibles`,
+      color: "from-blue-500 to-cyan-500",
+      link: "/exams-hub"
+    },
+    { 
+      icon: Heart, 
+      title: "Découvre ta Passion", 
+      desc: "Test de personnalité pour découvrir vos talents cachés. Explorez la musique, les arts, les échecs et la littérature avec notre guide interactif.",
+      highlight: "4 domaines à explorer",
+      color: "from-pink-500 to-rose-500",
+      link: "/passion-discovery"
+    },
+    { 
+      icon: GraduationCap, 
+      title: "Développement Personnel", 
+      desc: "Modules d'éducation civique, leadership et développement personnel pour former des citoyens responsables et des leaders de demain.",
+      highlight: "Formation complète",
+      color: "from-purple-500 to-violet-500",
+      link: "/passion-discovery"
+    },
+    { 
+      icon: MessageCircle, 
+      title: "Messagerie & Communauté", 
+      desc: "Discutez avec vos camarades et Eric votre assistant IA. Créez des groupes d'étude et partagez vos réussites.",
+      highlight: "Chat en temps réel",
+      color: "from-green-500 to-emerald-500",
+      link: "/community"
+    },
+    { 
+      icon: Newspaper, 
+      title: "Fil d'Actualité", 
+      desc: "Restez connecté avec la communauté EDUPRENEURS. Partagez vos progrès, inspirez les autres et célébrez ensemble.",
+      highlight: "Réseau social éducatif",
+      color: "from-orange-500 to-amber-500",
+      link: "/feed"
+    },
+    { 
+      icon: Trophy, 
+      title: "Classement & Compétition", 
+      desc: "Montez dans le classement en accumulant des Gold. Comparez-vous aux meilleurs élèves d'Haïti et gagnez des récompenses.",
+      highlight: "Top étudiants",
+      color: "from-yellow-500 to-orange-500",
+      link: "/leaderboard"
+    }
+  ], [stats.exams]);
+
+  const faqItems = useMemo(() => [
+    { q: "Comment m'inscrire à EDUPRENEURS ?", a: "Créez un compte avec votre email, choisissez votre niveau académique et profitez de votre semaine d'essai gratuite. Ensuite, abonnez-vous pour seulement 200 gourdes par mois." },
+    { q: "Comment fonctionne l'assistant IA ?", a: "Votre assistant IA personnalisé vous aide dans toutes les matières, explique les leçons en créole ou français, et s'adapte à votre rythme d'apprentissage." },
+    { q: "Qu'est-ce que le système Gold ?", a: "Gagnez des points Gold en réussissant les quiz, utilisez-les pour débloquer des fonctions premium, changer votre avatar ou même gagner de l'argent réel." },
+    { q: "Le contenu suit-il le programme officiel ?", a: "Absolument ! Notre plateforme est entièrement basée sur le programme du Ministère de l'Éducation Nationale (MENFP) de la 7ème à la Terminale." }
+  ], []);
+
   return (
     <div className="min-h-screen bg-background font-poppins">
+      {/* SEO Meta Tags */}
+      <Helmet>
+        <title>EDUPRENEURS - L'Éducation Haïtienne Révolutionnée par l'IA | Plateforme MENFP</title>
+        <meta name="description" content="EDUPRENEURS: Plateforme éducative haïtienne avec assistant IA personnalisé. Programme MENFP complet de la 7AF à NS4. Cours, examens officiels, et préparation universitaire. Essai gratuit 7 jours." />
+        <meta name="keywords" content="éducation haïti, MENFP, cours en ligne, assistant IA, examens officiels, préparation universitaire, apprentissage personnalisé" />
+        <meta property="og:title" content="EDUPRENEURS - L'Éducation Haïtienne Révolutionnée par l'IA" />
+        <meta property="og:description" content="Plateforme éducative avec assistant IA personnalisé. Programme MENFP complet. Essai gratuit 7 jours." />
+        <meta property="og:type" content="website" />
+        <meta property="og:locale" content="fr_HT" />
+        <link rel="canonical" href="https://edupreneurs.app" />
+      </Helmet>
       {/* Header */}
       <header className="sticky top-0 z-50 bg-card/95 backdrop-blur-lg border-b border-border/50 shadow-sm transition-all duration-300">
         <div className="container mx-auto px-2 sm:px-4 py-2 sm:py-4 flex justify-between items-center">
@@ -158,13 +257,7 @@ const Index = () => {
               </Link>
             </div>
             <div className="flex flex-wrap justify-center gap-2 sm:gap-3 lg:gap-4 pt-3 sm:pt-4 lg:pt-6">
-              {[
-                { number: stats.lessons > 0 ? `${stats.lessons}+` : "2500+", label: "Leçons" },
-                { number: stats.exams > 0 ? `${stats.exams}+` : "85+", label: "Examens" },
-                { number: stats.users > 0 ? `${stats.users}+` : "10+", label: "Étudiants" },
-                { number: "24/7", label: "Assistant IA" },
-                { number: "7AF-NS4", label: "Niveaux" }
-              ].map((stat, idx) => (
+              {heroStats.map((stat, idx) => (
                 <Card key={idx} className="bg-gradient-to-br from-card to-card/50 backdrop-blur-sm border-primary/20 hover:border-primary/40 transition-all duration-300 hover:shadow-lg hover:scale-105 group">
                   <CardContent className="p-3 sm:p-4 lg:p-5 text-center min-w-[80px] sm:min-w-[100px] lg:min-w-[110px]">
                     <div className="text-base sm:text-xl lg:text-2xl font-black bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent group-hover:scale-110 transition-transform whitespace-nowrap">{stat.number}</div>
@@ -229,12 +322,7 @@ const Index = () => {
             </div>
           </div>
           <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
-            {[
-              { icon: "🎯", title: "Apprentissage 100% Personnalisé", desc: "L'agent IA s'adapte à votre niveau, de la 7ème à la préparation universitaire" },
-              { icon: "💰", title: "Prix Dérisoire - 200 Gdes/mois", desc: "Accessible à tous avec une semaine d'essai gratuite" },
-              { icon: "🏆", title: "Système Gold Révolutionnaire", desc: "Gagnez des points, débloquez des fonctions premium, et même de l'argent réel" },
-              { icon: "🌐", title: "Multilingue Intelligent", desc: "Créole, Français, Anglais, Espagnol - Votre IA parle votre langue" }
-            ].map((feature, idx) => (
+            {features.map((feature, idx) => (
               <Card key={idx} className="group hover:scale-105 transition-all duration-300 bg-gradient-to-br from-card to-card/50 border-primary/20 hover:border-primary/40 hover:shadow-2xl relative overflow-hidden">
                 <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-accent/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                 <CardHeader className="p-4 sm:p-6 relative z-10">
@@ -263,56 +351,7 @@ const Index = () => {
           </div>
           
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
-            {[
-              { 
-                icon: FileText, 
-                title: "Hub des Examens Officiels", 
-                desc: "Accédez aux examens officiels de 2011 à 2025. Préparez-vous avec les vrais sujets du MENFP et des corrections détaillées par notre IA.",
-                highlight: `${stats.exams > 0 ? stats.exams : 85}+ examens disponibles`,
-                color: "from-blue-500 to-cyan-500",
-                link: "/exams-hub"
-              },
-              { 
-                icon: Heart, 
-                title: "Découvre ta Passion", 
-                desc: "Test de personnalité pour découvrir vos talents cachés. Explorez la musique, les arts, les échecs et la littérature avec notre guide interactif.",
-                highlight: "4 domaines à explorer",
-                color: "from-pink-500 to-rose-500",
-                link: "/passion-discovery"
-              },
-              { 
-                icon: GraduationCap, 
-                title: "Développement Personnel", 
-                desc: "Modules d'éducation civique, leadership et développement personnel pour former des citoyens responsables et des leaders de demain.",
-                highlight: "Formation complète",
-                color: "from-purple-500 to-violet-500",
-                link: "/passion-discovery"
-              },
-              { 
-                icon: MessageCircle, 
-                title: "Messagerie & Communauté", 
-                desc: "Discutez avec vos camarades et Eric votre assistant IA. Créez des groupes d'étude et partagez vos réussites.",
-                highlight: "Chat en temps réel",
-                color: "from-green-500 to-emerald-500",
-                link: "/community"
-              },
-              { 
-                icon: Newspaper, 
-                title: "Fil d'Actualité", 
-                desc: "Restez connecté avec la communauté EDUPRENEURS. Partagez vos progrès, inspirez les autres et célébrez ensemble.",
-                highlight: "Réseau social éducatif",
-                color: "from-orange-500 to-amber-500",
-                link: "/feed"
-              },
-              { 
-                icon: Trophy, 
-                title: "Classement & Compétition", 
-                desc: "Montez dans le classement en accumulant des Gold. Comparez-vous aux meilleurs élèves d'Haïti et gagnez des récompenses.",
-                highlight: "Top étudiants",
-                color: "from-yellow-500 to-orange-500",
-                link: "/leaderboard"
-              }
-            ].map((feature, idx) => (
+            {platformFeatures.map((feature, idx) => (
               <Link key={idx} to={feature.link} className="group">
                 <Card className="h-full hover:scale-105 transition-all duration-300 hover:shadow-2xl border-primary/20 hover:border-primary/40 bg-gradient-to-br from-card to-card/50 relative overflow-hidden">
                   <div className={`absolute top-0 left-0 w-full h-1 bg-gradient-to-r ${feature.color}`}></div>
@@ -482,7 +521,7 @@ const Index = () => {
       </section>
 
       {/* FAQ */}
-      <section className="relative py-12 sm:py-16 md:py-20 px-4 bg-gradient-to-b from-background to-primary/5 overflow-hidden">
+      <section id="faq" className="relative py-12 sm:py-16 md:py-20 px-4 bg-gradient-to-b from-background to-primary/5 overflow-hidden">
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-px bg-gradient-to-r from-transparent via-primary/50 to-transparent"></div>
         
         <div className="container mx-auto max-w-3xl">
@@ -502,12 +541,7 @@ const Index = () => {
             </div>
           </div>
           <div className="space-y-4">
-            {[
-              { q: "Comment m'inscrire à EDUPRENEURS ?", a: "Créez un compte avec votre email, choisissez votre niveau académique et profitez de votre semaine d'essai gratuite. Ensuite, abonnez-vous pour seulement 200 gourdes par mois." },
-              { q: "Comment fonctionne l'assistant IA ?", a: "Votre assistant IA personnalisé vous aide dans toutes les matières, explique les leçons en créole ou français, et s'adapte à votre rythme d'apprentissage." },
-              { q: "Qu'est-ce que le système Gold ?", a: "Gagnez des points Gold en réussissant les quiz, utilisez-les pour débloquer des fonctions premium, changer votre avatar ou même gagner de l'argent réel." },
-              { q: "Le contenu suit-il le programme officiel ?", a: "Absolument ! Notre plateforme est entièrement basée sur le programme du Ministère de l'Éducation Nationale (MENFP) de la 7ème à la Terminale." }
-            ].map((faq, idx) => (
+            {faqItems.map((faq, idx) => (
               <Card key={idx} className="group cursor-pointer hover:shadow-xl transition-all duration-300 border-primary/20 hover:border-primary/40 hover:scale-[1.02] bg-gradient-to-r from-card to-card/50" onClick={() => toggleFaq(idx)}>
                 <CardHeader>
                   <CardTitle className="text-lg flex justify-between items-center font-bold">
