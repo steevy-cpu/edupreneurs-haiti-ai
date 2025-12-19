@@ -93,8 +93,10 @@ const Community = () => {
   
   const [user, setUser] = useState<any>(null);
   const [conversations, setConversations] = useState<Conversation[]>([]);
+  const [isLoadingConversations, setIsLoadingConversations] = useState(true);
   const [selectedConversation, setSelectedConversation] = useState<string | null>(conversationId);
   const [messages, setMessages] = useState<Message[]>([]);
+  const [isLoadingMessages, setIsLoadingMessages] = useState(false);
   const [newMessage, setNewMessage] = useState("");
   const [isSending, setIsSending] = useState(false);
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
@@ -418,7 +420,10 @@ const Community = () => {
 
   const fetchConversations = async () => {
     const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return;
+    if (!user) {
+      setIsLoadingConversations(false);
+      return;
+    }
 
     // Fetch all conversations with visibility info
     const { data: participations } = await supabase
@@ -426,7 +431,10 @@ const Community = () => {
       .select("conversation_id, visible_from_message_id")
       .eq("user_id", user.id);
 
-    if (!participations) return;
+    if (!participations) {
+      setIsLoadingConversations(false);
+      return;
+    }
 
     // Create map of visibility thresholds
     const visibilityMap = new Map<string, string | null>();
@@ -438,6 +446,7 @@ const Community = () => {
     
     if (conversationIds.length === 0) {
       setConversations([]);
+      setIsLoadingConversations(false);
       return;
     }
 
@@ -670,6 +679,7 @@ const Community = () => {
     );
     
     setConversations(sortedConversations);
+    setIsLoadingConversations(false);
   };
 
   const fetchFollowers = async () => {
@@ -1933,7 +1943,21 @@ const Community = () => {
         </div>
 
         <ScrollArea className="h-[calc(100dvh-80px)]">
-          {conversations.length === 0 ? (
+          {isLoadingConversations ? (
+            // Loading skeleton
+            <div className="space-y-0">
+              {[1, 2, 3, 4, 5].map((i) => (
+                <div key={i} className="flex items-center gap-3 p-3 sm:p-4 border-b border-border/50 animate-pulse">
+                  <div className="h-10 w-10 sm:h-12 sm:w-12 rounded-full bg-muted/50 flex-shrink-0" />
+                  <div className="flex-1 min-w-0">
+                    <div className="h-4 w-32 bg-muted/50 rounded mb-2" />
+                    <div className="h-3 w-48 bg-muted/30 rounded" />
+                  </div>
+                  <div className="h-3 w-8 bg-muted/30 rounded" />
+                </div>
+              ))}
+            </div>
+          ) : conversations.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-20 px-4 text-center">
               <p className="text-muted-foreground">Aucune conversation</p>
               <Button
