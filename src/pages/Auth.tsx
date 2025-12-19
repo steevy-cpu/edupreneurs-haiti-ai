@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
+import { Helmet } from "react-helmet";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -10,6 +11,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { sendWelcomeEmail, sendPasswordResetEmail, sendVerificationEmail, generateConfirmationCode } from "@/utils/emailService";
 import { Loader2 } from "lucide-react";
+import { loginSchema, signupSchema, forgotPasswordSchema, verificationCodeSchema } from "@/lib/authValidation";
 
 export default function Auth() {
   const navigate = useNavigate();
@@ -75,7 +77,6 @@ export default function Auth() {
         
         if (profile && !profile.email_confirmed) {
           // User exists but not verified - generate and send verification code
-          console.log('🔍 Detected unverified user on page load');
           
           // Use secure database function to generate new code
           try {
@@ -95,8 +96,6 @@ export default function Auth() {
             };
 
             if (result.success && result.confirmation_code) {
-              console.log('✅ Generated verification code for existing user');
-              
               // Send verification email using EmailJS
               await sendVerificationEmail({
                 to_email: session.user.email || '',
@@ -105,11 +104,9 @@ export default function Auth() {
                 nickname: result.nickname,
                 academic_grade: result.academic_grade,
               });
-              
-              console.log('📧 Verification email sent to existing user');
             }
           } catch (error) {
-            console.error('Error generating verification code:', error);
+            // Silent fail - user will see the verify tab anyway
           }
           
           // Sign them out and show verify tab
@@ -154,10 +151,19 @@ export default function Auth() {
       return;
     }
 
+    // Validate verification code with Zod
+    const codeValidation = verificationCodeSchema.safeParse({ code: verificationCode });
+    if (!codeValidation.success) {
+      toast({
+        title: "Code invalide",
+        description: codeValidation.error.errors[0]?.message || "Format de code invalide",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setIsVerifying(true);
     try {
-      console.log('🔍 Verifying code:', verificationCode.trim(), 'for user:', pendingUserId);
-      
       // Use secure database function to verify code
       const { data, error } = await supabase.rpc('verify_email_code', {
         p_user_id: pendingUserId,
@@ -168,8 +174,6 @@ export default function Auth() {
 
       // Type assertion for the response
       const result = data as { success: boolean; error?: string; full_name?: string; nickname?: string };
-      
-      console.log('✅ Verification result:', result);
 
       // Check the result
       if (!result.success) {
@@ -218,8 +222,6 @@ export default function Auth() {
 
     setIsResending(true);
     try {
-      console.log('🔄 Resending verification code for user:', pendingUserId);
-
       // Use secure database function to generate and update code
       const { data, error } = await supabase.rpc('resend_verification_code', {
         p_user_id: pendingUserId
@@ -240,8 +242,6 @@ export default function Auth() {
         throw new Error(result.error || 'Failed to generate new code');
       }
 
-      console.log('✅ New verification code generated:', result.confirmation_code);
-
       // Get email
       const userEmail = signupData.email || loginData.email;
       if (!userEmail) {
@@ -256,8 +256,6 @@ export default function Auth() {
         nickname: result.nickname,
         academic_grade: result.academic_grade,
       });
-
-      console.log('📧 Verification email sent successfully');
 
       // Reset countdown
       setResendCooldown(60);
@@ -282,6 +280,17 @@ export default function Auth() {
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     
+    // Validate with Zod
+    const validation = loginSchema.safeParse(loginData);
+    if (!validation.success) {
+      toast({
+        title: "Données invalides",
+        description: validation.error.errors[0]?.message || "Veuillez vérifier vos informations",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setIsLoggingIn(true);
     try {
       const { data: authData, error } = await supabase.auth.signInWithPassword({
@@ -300,13 +309,12 @@ export default function Auth() {
         .single();
 
       if (profileError) {
-        console.error("Profile error:", profileError);
+        // Profile fetch failed, but don't block login
       }
 
       if (profile && !profile.email_confirmed) {
         // User not verified - generate new code, UPDATE BEFORE SIGNOUT
         const newCode = generateConfirmationCode();
-        console.log('🔑 Generated new verification code for login:', newCode);
         
         // Update profile with new code WHILE STILL AUTHENTICATED
         const { error: updateError } = await supabase
@@ -315,7 +323,6 @@ export default function Auth() {
           .eq('user_id', authData.user.id);
         
         if (updateError) {
-          console.error("Error updating verification code:", updateError);
           toast({
             title: "Erreur",
             description: "Impossible de générer un nouveau code de vérification",
@@ -336,9 +343,8 @@ export default function Auth() {
             nickname: profile.nickname,
             academic_grade: profile.academic_grade,
           });
-          console.log('✅ Verification email sent with code:', newCode);
         } catch (emailError) {
-          console.error("Error sending verification email:", emailError);
+          // Email send failed, but user can still resend
         }
         
         // Set pending user and show verify tab
@@ -371,8 +377,7 @@ export default function Auth() {
           }
         });
       } catch (emailError) {
-        console.error("Error sending login notification:", emailError);
-        // Don't block login if email fails
+        // Don't block login if notification email fails
       }
 
       toast({
@@ -455,7 +460,6 @@ export default function Auth() {
     // Debounce the API call
     nicknameCheckTimer.current = setTimeout(async () => {
       try {
-        console.log('🔍 Checking nickname availability for:', nickname);
         const { data, error } = await supabase.rpc('check_nickname_available', {
           nickname_input: nickname
         });
@@ -463,10 +467,8 @@ export default function Auth() {
         if (error) throw error;
         
         const isAvailable = data === true;
-        console.log('✅ Nickname check result:', { nickname, isAvailable });
         setNicknameAvailable(isAvailable);
       } catch (error) {
-        console.error("❌ Error checking nickname:", error);
         setNicknameAvailable(null);
       } finally {
         setCheckingNickname(false);
@@ -477,60 +479,13 @@ export default function Auth() {
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!signupData.email || !signupData.emailConfirm || !signupData.password || 
-        !signupData.nickname || !signupData.academicGrade || !signupData.phoneNumber ||
-        !signupData.school || !signupData.gender) {
+    // Validate with Zod
+    const validation = signupSchema.safeParse(signupData);
+    if (!validation.success) {
+      const firstError = validation.error.errors[0];
       toast({
-        title: "Champs requis",
-        description: "Veuillez remplir tous les champs obligatoires",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    setIsSigningUp(true);
-
-    if (signupData.email !== signupData.emailConfirm) {
-      toast({
-        title: "Emails ne correspondent pas",
-        description: "Veuillez vérifier que les deux emails sont identiques",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    // Validate password requirements
-    if (signupData.password.length < 6) {
-      toast({
-        title: "Mot de passe trop court",
-        description: "Le mot de passe doit contenir au moins 6 caractères",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    if (!/[0-9]/.test(signupData.password)) {
-      toast({
-        title: "Mot de passe invalide",
-        description: "Le mot de passe doit contenir au moins un chiffre",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    if (!/[A-Z]/.test(signupData.password)) {
-      toast({
-        title: "Mot de passe invalide",
-        description: "Le mot de passe doit contenir au moins une majuscule",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    if (!/[!@#$%^&*(),.?":{}|<>]/.test(signupData.password)) {
-      toast({
-        title: "Mot de passe invalide",
-        description: "Le mot de passe doit contenir au moins un caractère spécial",
+        title: "Données invalides",
+        description: firstError?.message || "Veuillez vérifier vos informations",
         variant: "destructive",
       });
       return;
@@ -544,6 +499,8 @@ export default function Auth() {
       });
       return;
     }
+
+    setIsSigningUp(true);
 
     try {
       const { data: authData, error: authError } = await supabase.auth.signUp({
@@ -559,7 +516,6 @@ export default function Auth() {
 
       // Generate verification code
       const confirmationCode = generateConfirmationCode();
-      console.log('🔑 Generated verification code for signup:', confirmationCode);
 
       const { error: profileError } = await supabase
         .from('profiles')
@@ -573,15 +529,12 @@ export default function Auth() {
           gender: signupData.gender,
           email_confirmed: false,
           phone_confirmed: false,
-          confirmation_code: confirmationCode.trim(), // Ensure no whitespace
+          confirmation_code: confirmationCode.trim(),
         });
 
       if (profileError) throw profileError;
 
-      // Sign out the user immediately after signup to prevent access
-      await supabase.auth.signOut();
-
-      // Handle referral if present
+      // Handle referral BEFORE sign out (while user is still authenticated for RLS)
       if (referralCode) {
         try {
           // Find the referrer's profile
@@ -620,10 +573,12 @@ export default function Auth() {
             }
           }
         } catch (refError) {
-          console.error("Referral error:", refError);
           // Don't block signup if referral fails
         }
       }
+
+      // Sign out the user AFTER referral handling
+      await supabase.auth.signOut();
 
       // Send verification email with code
       try {
@@ -635,7 +590,6 @@ export default function Auth() {
           academic_grade: signupData.academicGrade,
         });
       } catch (emailError) {
-        console.error("Error sending verification email:", emailError);
         toast({
           title: "Erreur d'envoi",
           description: "Impossible d'envoyer l'email de vérification",
@@ -655,7 +609,6 @@ export default function Auth() {
       setResendCooldown(60);
       setCanResend(false);
     } catch (error: any) {
-      console.error("Signup error:", error);
       toast({
         title: "Erreur d'inscription",
         description: error.message,
@@ -667,6 +620,16 @@ export default function Auth() {
   };
 
   return (
+    <>
+      <Helmet>
+        <title>Connexion & Inscription - EDUPRENEURS | Plateforme éducative haïtienne</title>
+        <meta name="description" content="Connectez-vous ou créez un compte sur EDUPRENEURS. Plateforme d'apprentissage personnalisé alignée au programme MENFP avec assistance IA." />
+        <meta name="keywords" content="connexion, inscription, EDUPRENEURS, éducation Haïti, MENFP, apprentissage en ligne" />
+        <meta property="og:title" content="Connexion & Inscription - EDUPRENEURS" />
+        <meta property="og:description" content="Rejoignez la plateforme éducative haïtienne avec assistance IA personnalisée." />
+        <meta property="og:type" content="website" />
+        <link rel="canonical" href={`${window.location.origin}/auth`} />
+      </Helmet>
     <div className="auth-page min-h-screen bg-background">
       {/* Header */}
       <header className="auth-header sticky top-0 z-10 flex items-center justify-between px-2 sm:px-4 md:px-8 py-2 sm:py-4 bg-card border-b border-border">
@@ -1235,5 +1198,6 @@ export default function Auth() {
         </div>
       </div>
     </div>
+    </>
   );
 }
