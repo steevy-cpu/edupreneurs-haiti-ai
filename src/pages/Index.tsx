@@ -169,6 +169,35 @@ const Index = () => {
         </div>
       </section>
 
+      {/* Stats Banner */}
+      <section className="py-8 sm:py-12 px-4">
+        <div className="container mx-auto">
+          <Card className="bg-gradient-to-r from-primary via-accent to-primary text-primary-foreground border-0 overflow-hidden relative rounded-2xl sm:rounded-3xl">
+            <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGRlZnM+PHBhdHRlcm4gaWQ9ImdyaWQiIHdpZHRoPSI2MCIgaGVpZ2h0PSI2MCIgcGF0dGVyblVuaXRzPSJ1c2VyU3BhY2VPblVzZSI+PHBhdGggZD0iTSAxMCAwIEwgMCAwIDAgMTAiIGZpbGw9Im5vbmUiIHN0cm9rZT0id2hpdGUiIHN0cm9rZS1vcGFjaXR5PSIwLjEiIHN0cm9rZS13aWR0aD0iMSIvPjwvcGF0dGVybj48L2RlZnM+PHJlY3Qgd2lkdGg9IjEwMCUiIGhlaWdodD0iMTAwJSIgZmlsbD0idXJsKCNncmlkKSIvPjwvc3ZnPg==')] opacity-20"></div>
+            <CardContent className="py-8 sm:py-10 relative z-10">
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6 text-center">
+                <div className="space-y-1">
+                  <div className="text-2xl sm:text-3xl md:text-4xl font-black">{stats.lessons > 0 ? stats.lessons.toLocaleString() : '2,500'}+</div>
+                  <div className="text-xs sm:text-sm opacity-90 font-semibold">Leçons Disponibles</div>
+                </div>
+                <div className="space-y-1">
+                  <div className="text-2xl sm:text-3xl md:text-4xl font-black">{stats.exams > 0 ? stats.exams : 85}+</div>
+                  <div className="text-xs sm:text-sm opacity-90 font-semibold">Examens Officiels</div>
+                </div>
+                <div className="space-y-1">
+                  <div className="text-2xl sm:text-3xl md:text-4xl font-black">2011-2025</div>
+                  <div className="text-xs sm:text-sm opacity-90 font-semibold">Archives d'Examens</div>
+                </div>
+                <div className="space-y-1">
+                  <div className="text-2xl sm:text-3xl md:text-4xl font-black">7ème-Term</div>
+                  <div className="text-xs sm:text-sm opacity-90 font-semibold">Niveaux Couverts</div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      </section>
+
       {/* Revolution Section */}
       <section className="relative py-12 sm:py-16 lg:py-20 px-3 sm:px-4 bg-gradient-to-b from-primary/5 to-background text-center overflow-hidden">
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-px bg-gradient-to-r from-transparent via-primary/50 to-transparent"></div>
@@ -314,31 +343,6 @@ const Index = () => {
               </Link>
             ))}
           </div>
-
-          {/* Stats Banner */}
-          <Card className="mt-12 bg-gradient-to-r from-primary via-accent to-primary text-primary-foreground border-0 overflow-hidden relative">
-            <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGRlZnM+PHBhdHRlcm4gaWQ9ImdyaWQiIHdpZHRoPSI2MCIgaGVpZ2h0PSI2MCIgcGF0dGVyblVuaXRzPSJ1c2VyU3BhY2VPblVzZSI+PHBhdGggZD0iTSAxMCAwIEwgMCAwIDAgMTAiIGZpbGw9Im5vbmUiIHN0cm9rZT0id2hpdGUiIHN0cm9rZS1vcGFjaXR5PSIwLjEiIHN0cm9rZS13aWR0aD0iMSIvPjwvcGF0dGVybj48L2RlZnM+PHJlY3Qgd2lkdGg9IjEwMCUiIGhlaWdodD0iMTAwJSIgZmlsbD0idXJsKCNncmlkKSIvPjwvc3ZnPg==')] opacity-20"></div>
-            <CardContent className="py-8 relative z-10">
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-6 text-center">
-                <div className="space-y-1">
-                  <div className="text-3xl sm:text-4xl font-black">{stats.lessons > 0 ? stats.lessons.toLocaleString() : '2,500'}+</div>
-                  <div className="text-sm opacity-90 font-semibold">Leçons Disponibles</div>
-                </div>
-                <div className="space-y-1">
-                  <div className="text-3xl sm:text-4xl font-black">{stats.exams > 0 ? stats.exams : 85}+</div>
-                  <div className="text-sm opacity-90 font-semibold">Examens Officiels</div>
-                </div>
-                <div className="space-y-1">
-                  <div className="text-3xl sm:text-4xl font-black">2011-2025</div>
-                  <div className="text-sm opacity-90 font-semibold">Archives d'Examens</div>
-                </div>
-                <div className="space-y-1">
-                  <div className="text-3xl sm:text-4xl font-black">7ème-Term</div>
-                  <div className="text-sm opacity-90 font-semibold">Niveaux Couverts</div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
         </div>
       </section>
 
