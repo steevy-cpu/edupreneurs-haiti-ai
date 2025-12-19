@@ -64,8 +64,15 @@ export const HTMLQuizParser = ({ htmlContent, lessonSlug, subject }: HTMLQuizPar
       return;
     }
 
+    // Pre-process HTML to fix common malformed data-answer attributes
+    // Pattern: data-answer="D) Some text..." should be data-answer="D"
+    let cleanedHtml = html.replace(/data-answer="([A-D])\)[^"]*"/g, 'data-answer="$1"');
+    
+    // Also fix data-correct if malformed
+    cleanedHtml = cleanedHtml.replace(/data-correct="([A-D])[^"]*"/g, 'data-correct="$1"');
+
     const parser = new DOMParser();
-    const doc = parser.parseFromString(html, 'text/html');
+    const doc = parser.parseFromString(cleanedHtml, 'text/html');
     const questionElements = doc.querySelectorAll('.quiz-question');
     
     const parsed: ParsedQuestion[] = [];
@@ -80,17 +87,39 @@ export const HTMLQuizParser = ({ htmlContent, lessonSlug, subject }: HTMLQuizPar
       
       const options: { letter: string; text: string }[] = [];
       qEl.querySelectorAll('.option').forEach((opt) => {
-        const letter = opt.getAttribute('data-answer') || '';
+        let letter = opt.getAttribute('data-answer') || '';
         let text = opt.textContent?.trim() || '';
-        // Remove the letter prefix (A), B), etc.)
+        
+        // Extract letter from attribute (handle malformed like "D) text...")
+        const letterMatch = letter.match(/^([A-D])/);
+        if (letterMatch) {
+          letter = letterMatch[1];
+        }
+        
+        // Remove the letter prefix (A), B), etc.) from text
         text = text.replace(/^[A-D]\)\s*/, '').trim();
+        
+        // If we still don't have a valid letter, try to extract from text
+        if (!letter && text) {
+          const textLetterMatch = opt.textContent?.trim().match(/^([A-D])\)/);
+          if (textLetterMatch) {
+            letter = textLetterMatch[1];
+          }
+        }
+        
         if (letter && text) {
           options.push({ letter, text });
         }
       });
       
       const correctAnswerEl = qEl.querySelector('.correct-answer');
-      const correctAnswer = correctAnswerEl?.getAttribute('data-correct') || '';
+      let correctAnswer = correctAnswerEl?.getAttribute('data-correct') || '';
+      
+      // Extract just the letter if malformed
+      const correctMatch = correctAnswer.match(/^([A-D])/);
+      if (correctMatch) {
+        correctAnswer = correctMatch[1];
+      }
       
       // Get explanation - try to get the second <p> inside correct-answer
       let explanation = '';
