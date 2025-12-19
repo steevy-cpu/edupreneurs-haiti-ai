@@ -39,6 +39,23 @@ const Index = () => {
       }
     };
     fetchStats();
+
+    // Subscribe to realtime updates for new students
+    const channel = supabase
+      .channel('homepage-stats')
+      .on(
+        'postgres_changes',
+        { event: 'INSERT', schema: 'public', table: 'profiles' },
+        () => {
+          // Refetch stats when a new user signs up
+          fetchStats();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, []);
 
   const toggleFaq = (index: number) => {
@@ -140,17 +157,18 @@ const Index = () => {
                 </Button>
               </Link>
             </div>
-            <div className="grid grid-cols-2 sm:flex sm:flex-wrap gap-2 sm:gap-3 lg:gap-4 pt-3 sm:pt-4 lg:pt-6">
+            <div className="grid grid-cols-3 sm:grid-cols-5 gap-2 sm:gap-3 lg:gap-4 pt-3 sm:pt-4 lg:pt-6">
               {[
                 { number: stats.lessons > 0 ? `${stats.lessons}+` : "2500+", label: "Leçons" },
-                { number: stats.exams > 0 ? `${stats.exams}+` : "85+", label: "Examens Officiels" },
+                { number: stats.exams > 0 ? `${stats.exams}+` : "85+", label: "Examens" },
+                { number: stats.users > 0 ? `${stats.users}+` : "10+", label: "Étudiants" },
                 { number: "24/7", label: "Assistant IA" },
-                { number: "7ème-Term", label: "Tous niveaux" }
+                { number: "7AF-NS4", label: "Niveaux" }
               ].map((stat, idx) => (
-                <Card key={idx} className="flex-1 min-w-0 sm:min-w-[90px] lg:min-w-[100px] bg-gradient-to-br from-card to-card/50 backdrop-blur-sm border-primary/20 hover:border-primary/40 transition-all duration-300 hover:shadow-lg hover:scale-105 group">
+                <Card key={idx} className="flex-1 min-w-0 bg-gradient-to-br from-card to-card/50 backdrop-blur-sm border-primary/20 hover:border-primary/40 transition-all duration-300 hover:shadow-lg hover:scale-105 group">
                   <CardContent className="p-2 sm:p-3 lg:p-4 text-center">
-                    <div className="text-base sm:text-xl lg:text-2xl font-black bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent group-hover:scale-110 transition-transform">{stat.number}</div>
-                    <div className="text-[9px] sm:text-[10px] lg:text-xs text-muted-foreground font-bold uppercase leading-tight">{stat.label}</div>
+                    <div className="text-sm sm:text-lg lg:text-xl font-black bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent group-hover:scale-110 transition-transform">{stat.number}</div>
+                    <div className="text-[8px] sm:text-[10px] lg:text-xs text-muted-foreground font-bold uppercase leading-tight">{stat.label}</div>
                   </CardContent>
                 </Card>
               ))}
@@ -175,7 +193,7 @@ const Index = () => {
           <Card className="bg-gradient-to-r from-primary via-accent to-primary text-primary-foreground border-0 overflow-hidden relative rounded-2xl sm:rounded-3xl">
             <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGRlZnM+PHBhdHRlcm4gaWQ9ImdyaWQiIHdpZHRoPSI2MCIgaGVpZ2h0PSI2MCIgcGF0dGVyblVuaXRzPSJ1c2VyU3BhY2VPblVzZSI+PHBhdGggZD0iTSAxMCAwIEwgMCAwIDAgMTAiIGZpbGw9Im5vbmUiIHN0cm9rZT0id2hpdGUiIHN0cm9rZS1vcGFjaXR5PSIwLjEiIHN0cm9rZS13aWR0aD0iMSIvPjwvcGF0dGVybj48L2RlZnM+PHJlY3Qgd2lkdGg9IjEwMCUiIGhlaWdodD0iMTAwJSIgZmlsbD0idXJsKCNncmlkKSIvPjwvc3ZnPg==')] opacity-20"></div>
             <CardContent className="py-8 sm:py-10 relative z-10">
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6 text-center">
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4 sm:gap-6 text-center">
                 <div className="space-y-1">
                   <div className="text-2xl sm:text-3xl md:text-4xl font-black">{stats.lessons > 0 ? stats.lessons.toLocaleString() : '2,500'}+</div>
                   <div className="text-xs sm:text-sm opacity-90 font-semibold">Leçons Disponibles</div>
@@ -185,11 +203,15 @@ const Index = () => {
                   <div className="text-xs sm:text-sm opacity-90 font-semibold">Examens Officiels</div>
                 </div>
                 <div className="space-y-1">
+                  <div className="text-2xl sm:text-3xl md:text-4xl font-black">{stats.users > 0 ? stats.users : 10}+</div>
+                  <div className="text-xs sm:text-sm opacity-90 font-semibold">Étudiants Inscrits</div>
+                </div>
+                <div className="space-y-1">
                   <div className="text-2xl sm:text-3xl md:text-4xl font-black">2011-2025</div>
                   <div className="text-xs sm:text-sm opacity-90 font-semibold">Archives d'Examens</div>
                 </div>
-                <div className="space-y-1">
-                  <div className="text-2xl sm:text-3xl md:text-4xl font-black">7ème-Term</div>
+                <div className="space-y-1 col-span-2 sm:col-span-1">
+                  <div className="text-2xl sm:text-3xl md:text-4xl font-black">7AF à NS4</div>
                   <div className="text-xs sm:text-sm opacity-90 font-semibold">Niveaux Couverts</div>
                 </div>
               </div>
