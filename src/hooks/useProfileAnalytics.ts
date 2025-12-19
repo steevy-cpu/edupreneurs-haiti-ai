@@ -47,7 +47,7 @@ export const useProfileAnalytics = (userId: string | null) => {
         streak,
       });
     } catch (error) {
-      console.error("❌ Error loading profile analytics:", error);
+      // Silent fail - show default analytics
     } finally {
       setIsLoading(false);
     }
