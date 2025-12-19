@@ -1,11 +1,10 @@
 import { useNavigate, useLocation } from "react-router-dom";
-import { Home, BookOpen, Newspaper, MessageSquare, Bell, Settings } from "lucide-react";
+import { Home, BookOpen, Rss, MessageSquare, Bell, Settings } from "lucide-react";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 
 interface NavItem {
   icon: React.ElementType;
-  label: string;
   path: string;
   badge?: number;
 }
@@ -19,12 +18,12 @@ export const MobileBottomNav = () => {
   const [touchEnd, setTouchEnd] = useState<number | null>(null);
 
   const navItems: NavItem[] = [
-    { icon: Home, label: "Dashboard", path: "/dashboard" },
-    { icon: BookOpen, label: "Matières", path: "/matieres" },
-    { icon: Newspaper, label: "Fil", path: "/feed" },
-    { icon: MessageSquare, label: "Messages", path: "/community", badge: unreadMessages },
-    { icon: Bell, label: "Notifs", path: "/notifications", badge: unreadNotifications },
-    { icon: Settings, label: "Paramètres", path: "/settings" },
+    { icon: Home, path: "/dashboard" },
+    { icon: BookOpen, path: "/matieres" },
+    { icon: Rss, path: "/feed" },
+    { icon: MessageSquare, path: "/community", badge: unreadMessages },
+    { icon: Bell, path: "/notifications", badge: unreadNotifications },
+    { icon: Settings, path: "/settings" },
   ];
 
   const currentIndex = navItems.findIndex(item => item.path === location.pathname);
@@ -112,7 +111,7 @@ export const MobileBottomNav = () => {
       onTouchMove={onTouchMove}
       onTouchEnd={onTouchEnd}
     >
-      <div className="flex items-center justify-around h-16 px-2">
+      <div className="flex items-center justify-around h-14 px-2">
         {navItems.map((item) => {
           const Icon = item.icon;
           const active = isActive(item.path);
@@ -121,7 +120,7 @@ export const MobileBottomNav = () => {
             <button
               key={item.path}
               onClick={() => navigate(item.path)}
-              className={`relative flex flex-col items-center justify-center flex-1 h-full transition-all duration-200 ${
+              className={`relative flex items-center justify-center flex-1 h-full transition-all duration-200 ${
                 active 
                   ? "text-primary" 
                   : "text-muted-foreground hover:text-foreground"
@@ -129,19 +128,16 @@ export const MobileBottomNav = () => {
             >
               <div className="relative">
                 <Icon 
-                  size={22} 
+                  size={24} 
                   strokeWidth={active ? 2.5 : 2}
-                  className={active ? "scale-110" : ""}
+                  className={`transition-transform duration-200 ${active ? "scale-110" : ""}`}
                 />
                 {item.badge && item.badge > 0 && (
-                  <span className="absolute -top-1 -right-2 flex items-center justify-center min-w-[16px] h-4 px-1 rounded-full bg-destructive text-destructive-foreground text-[10px] font-bold">
+                  <span className="absolute -top-1.5 -right-2 flex items-center justify-center min-w-[18px] h-[18px] px-1 rounded-full bg-destructive text-destructive-foreground text-[10px] font-bold">
                     {item.badge > 99 ? "99+" : item.badge}
                   </span>
                 )}
               </div>
-              <span className={`text-[10px] mt-1 ${active ? "font-semibold" : "font-medium"}`}>
-                {item.label}
-              </span>
               {active && (
                 <div className="absolute top-0 left-1/2 -translate-x-1/2 w-8 h-0.5 bg-primary rounded-full" />
               )}

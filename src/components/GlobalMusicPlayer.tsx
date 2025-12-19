@@ -185,7 +185,7 @@ export const GlobalMusicPlayer = () => {
           left: position.x !== 0 ? `${position.x}px` : 'auto',
           top: position.y !== 0 ? `${position.y}px` : 'auto',
           right: position.x === 0 && position.y === 0 ? '24px' : 'auto',
-          bottom: position.x === 0 && position.y === 0 ? '24px' : 'auto',
+          bottom: position.x === 0 && position.y === 0 ? 'calc(80px + env(safe-area-inset-bottom, 0px))' : 'auto',
         }}
         onMouseDown={handleMouseDown}
         onTouchStart={handleTouchStart}
