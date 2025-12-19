@@ -16,52 +16,9 @@ import { LegacyRedirect } from "@/components/LegacyRedirect";
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
 import Dashboard from "./pages/Dashboard";
-import SciencesExperimentalesCourse7AF from "./pages/SciencesExperimentalesCourse7AF";
 
 // Lazy load non-critical pages for better performance
 const Onboarding = lazy(() => import("./pages/Onboarding"));
-const MathCourse = lazy(() => import("./pages/MathCourse"));
-const MathLesson = lazy(() => import("./pages/MathLesson"));
-const MathCourseAF8 = lazy(() => import("./pages/MathCourseAF8"));
-const MathLessonAF8 = lazy(() => import("./pages/MathLessonAF8"));
-const MathCourseAF9 = lazy(() => import("./pages/MathCourseAF9"));
-const MathLessonAF9 = lazy(() => import("./pages/MathLessonAF9"));
-const SciencesExperimentalesCourseAF9 = lazy(() => import("./pages/SciencesExperimentalesCourseAF9"));
-const SciencesExperimentalesLessonAF9 = lazy(() => import("./pages/SciencesExperimentalesLessonAF9"));
-const SciencesExperimentalesLesson7AF = lazy(() => import("./pages/SciencesExperimentalesLesson7AF"));
-const AnglaisCourseAF9 = lazy(() => import("./pages/AnglaisCourseAF9"));
-const AnglaisLessonAF9 = lazy(() => import("./pages/AnglaisLessonAF9"));
-const SciencesCourseAF8 = lazy(() => import("./pages/SciencesCourseAF8"));
-const SciencesLessonAF8 = lazy(() => import("./pages/SciencesLessonAF8"));
-const SciencesCourse = lazy(() => import("./pages/SciencesCourse"));
-const SciencesLesson = lazy(() => import("./pages/SciencesLesson"));
-const AnglaisCourse = lazy(() => import("./pages/AnglaisCourse"));
-const AnglaisLesson = lazy(() => import("./pages/AnglaisLesson"));
-const AnglaisCourseAF8 = lazy(() => import("./pages/AnglaisCourseAF8"));
-const AnglaisLessonAF8 = lazy(() => import("./pages/AnglaisLessonAF8"));
-const EspagnolCourse = lazy(() => import("./pages/EspagnolCourse"));
-const EspagnolLesson = lazy(() => import("./pages/EspagnolLesson"));
-const EspagnolCourseAF8 = lazy(() => import("./pages/EspagnolCourseAF8"));
-const EspagnolLessonAF8 = lazy(() => import("./pages/EspagnolLessonAF8"));
-const EspagnolCourseAF9 = lazy(() => import("./pages/EspagnolCourseAF9"));
-const EspagnolLessonAF9 = lazy(() => import("./pages/EspagnolLessonAF9"));
-const FrancaisCourse = lazy(() => import("./pages/FrancaisCourse"));
-const FrancaisLesson = lazy(() => import("./pages/FrancaisLesson"));
-const FrancaisCourseAF9 = lazy(() => import("./pages/FrancaisCourseAF9"));
-const FrancaisLessonAF9 = lazy(() => import("./pages/FrancaisLessonAF9"));
-const SciencesSocialesCourse = lazy(() => import("./pages/SciencesSocialesCourse"));
-const SciencesSocialesLesson = lazy(() => import("./pages/SciencesSocialesLesson"));
-const SciencesSocialesCourseAF8 = lazy(() => import("./pages/SciencesSocialesCourseAF8"));
-const SciencesSocialesLessonAF8 = lazy(() => import("./pages/SciencesSocialesLessonAF8"));
-const HistoireGeographieCourse = lazy(() => import("./pages/HistoireGeographieCourse"));
-const CreoleCourse = lazy(() => import("./pages/CreoleCourse"));
-const CreoleLesson = lazy(() => import("./pages/CreoleLesson"));
-const CreoleCourseAF8 = lazy(() => import("./pages/CreoleCourseAF8"));
-const CreoleLessonAF8 = lazy(() => import("./pages/CreoleLessonAF8"));
-const ArtsCourse = lazy(() => import("./pages/ArtsCourse"));
-const ArtsLesson = lazy(() => import("./pages/ArtsLesson"));
-const EducationPhysiqueCourse = lazy(() => import("./pages/EducationPhysiqueCourse"));
-const EducationPhysiqueLesson = lazy(() => import("./pages/EducationPhysiqueLesson"));
 const Matieres = lazy(() => import("./pages/Matieres"));
 const ExamPreparation = lazy(() => import("./pages/ExamPreparation"));
 const ExamsHub = lazy(() => import("./pages/ExamsHub"));
@@ -176,8 +133,7 @@ const App = () => (
               <Route path="/affiliations" element={<Layout><Affiliations /></Layout>} />
               <Route path="/leaderboard" element={<Layout><Leaderboard /></Layout>} />
               <Route path="/settings" element={<Layout><Settings /></Layout>} />
-            <Route path="/matieres" element={<Matieres />} />
-            <Route path="/exam-preparation/:examId" element={<ExamPreparation />} />
+              <Route path="/exam-preparation/:examId" element={<ExamPreparation />} />
             <Route path="/examens-officiels" element={<ExamsHub />} />
             <Route path="/resources" element={<Layout><Resources /></Layout>} />
               <Route path="/privacy-policy" element={<PrivacyPolicy />} />
