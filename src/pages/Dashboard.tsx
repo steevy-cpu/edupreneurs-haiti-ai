@@ -52,18 +52,6 @@ interface LeaderboardUser {
   rank: number;
 }
 
-const checkContentEditorAccess = async () => {
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return false;
-  
-  const { data } = await supabase
-    .from("content_editor_roles")
-    .select("role")
-    .eq("user_id", user.id)
-    .maybeSingle();
-  
-  return !!data;
-};
 
 const restartOnboardingTour = () => {
   localStorage.removeItem("onboarding_completed");
@@ -82,76 +70,70 @@ const Dashboard = () => {
   const [isContentEditor, setIsContentEditor] = useState(false);
   const [leaderboard, setLeaderboard] = useState<LeaderboardUser[]>([]);
   const [leaderboardLoading, setLeaderboardLoading] = useState(true);
+  const [isAuthChecking, setIsAuthChecking] = useState(true);
+  const [isUserDataLoading, setIsUserDataLoading] = useState(true);
   
   const { showPrompt, isIOS, installApp, dismissPrompt } = usePWAInstall();
   const { analytics, isLoading: analyticsLoading } = useDashboardAnalytics(userId || null);
 
+  // Auth guard - redirect unauthenticated users
   useEffect(() => {
-    fetchUserData();
-    fetchRecentNotes();
-    fetchGoldEarned();
-    checkContentEditorAccessWrapper();
-    fetchLeaderboard();
-    
-    supabase.auth.getUser().then(({ data: { user } }) => {
-      if (user) {
-        setUserId(user.id);
-      }
-    });
-  }, []);
-
-  const checkContentEditorAccessWrapper = async () => {
-    const hasAccess = await checkContentEditorAccess();
-    setIsContentEditor(hasAccess);
-  };
-
-  const fetchGoldEarned = async () => {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return;
-
-    const { data } = await supabase
-      .from("profiles")
-      .select("gold_earned")
-      .eq("user_id", user.id)
-      .single();
-
-    if (data) {
-      setGoldEarned(data.gold_earned || 0);
-    }
-  };
-
-  const fetchUserData = async () => {
-    const { data: { session } } = await supabase.auth.getSession();
-    if (session) {
-      const { data: profile } = await supabase
-        .from("profiles")
-        .select("nickname")
-        .eq("user_id", session.user.id)
-        .single();
-
-      const userName = profile?.nickname || session.user.email?.split("@")[0] || "Utilisateur";
-      setUserData({ name: userName });
-    }
-  };
-
-  const fetchRecentNotes = async () => {
-    try {
+    const checkAuth = async () => {
       const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
+      if (!user) {
+        navigate("/auth", { replace: true });
+        return;
+      }
+      setUserId(user.id);
+      setIsAuthChecking(false);
+      
+      // Fetch all user-related data with single user object
+      fetchAllUserData(user.id);
+      fetchLeaderboard();
+    };
+    
+    checkAuth();
+  }, [navigate]);
 
-      const { data, error } = await supabase
+  // Consolidated data fetching with single user id
+  const fetchAllUserData = async (currentUserId: string) => {
+    setIsUserDataLoading(true);
+    
+    // Parallel fetch for efficiency
+    const [profileResult, notesResult, editorResult] = await Promise.all([
+      supabase
+        .from("profiles")
+        .select("nickname, gold_earned")
+        .eq("user_id", currentUserId)
+        .single(),
+      supabase
         .from("notes")
         .select("*")
-        .eq("user_id", user.id)
+        .eq("user_id", currentUserId)
         .order("updated_at", { ascending: false })
-        .limit(5);
+        .limit(5),
+      supabase
+        .from("content_editor_roles")
+        .select("role")
+        .eq("user_id", currentUserId)
+        .maybeSingle()
+    ]);
 
-      if (data && !error) {
-        setRecentNotes(data);
-      }
-    } catch (error) {
-      // Silent fail - notes are not critical
+    // Process profile data
+    if (profileResult.data) {
+      setUserData({ name: profileResult.data.nickname || "Utilisateur" });
+      setGoldEarned(profileResult.data.gold_earned || 0);
     }
+
+    // Process notes
+    if (notesResult.data && !notesResult.error) {
+      setRecentNotes(notesResult.data);
+    }
+
+    // Process editor access
+    setIsContentEditor(!!editorResult.data);
+    
+    setIsUserDataLoading(false);
   };
 
   const fetchLeaderboard = async () => {
@@ -224,6 +206,17 @@ const Dashboard = () => {
     { id: "history", name: "Histoire", icon: "📜", description: "Histoire d'Haïti et mondiale", path: "/matieres" },
   ], []);
 
+  // Show loading state while checking auth
+  if (isAuthChecking) {
+    return (
+      <Layout>
+        <div className="min-h-screen bg-background flex items-center justify-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+        </div>
+      </Layout>
+    );
+  }
+
   return (
     <Layout>
       <Helmet>
@@ -247,7 +240,11 @@ const Dashboard = () => {
             </div>
             <div className="relative z-10">
               <h2 className="text-base xs:text-lg sm:text-xl lg:text-2xl xl:text-3xl font-bold mb-1 xs:mb-1.5 sm:mb-2">
-                Bienvenue, <span className="break-words">{userData.name}</span>!
+                Bienvenue, {isUserDataLoading ? (
+                  <Skeleton className="inline-block h-6 w-24 bg-white/20" />
+                ) : (
+                  <span className="break-words">{userData.name}</span>
+                )}!
               </h2>
               <p className="text-[11px] xs:text-xs sm:text-sm lg:text-base opacity-75 leading-relaxed">
                 Continuez votre apprentissage personnalisé avec Eric, votre assistant IA
@@ -391,7 +388,7 @@ const Dashboard = () => {
                   <Trophy className="w-6 h-6" />
                 </div>
                 <div className="text-2xl sm:text-3xl font-extrabold bg-gradient-to-br from-yellow-500 to-orange-600 bg-clip-text text-transparent mb-1">
-                  {goldEarned}
+                  {isUserDataLoading ? <Skeleton className="h-8 w-12 mx-auto" /> : goldEarned}
                 </div>
                 <div className="text-xs font-semibold text-muted-foreground mb-1">Golds gagnés</div>
                 <p className="text-xs text-muted-foreground">Total cumulé</p>
