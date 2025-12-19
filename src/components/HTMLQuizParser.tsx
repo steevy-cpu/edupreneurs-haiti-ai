@@ -65,8 +65,20 @@ export const HTMLQuizParser = ({ htmlContent, lessonSlug, subject }: HTMLQuizPar
     }
 
     // Pre-process HTML to fix common malformed data-answer attributes
-    // Pattern: data-answer="D) Some text..." should be data-answer="D"
-    let cleanedHtml = html.replace(/data-answer="([A-D])\)[^"]*"/g, 'data-answer="$1"');
+    // The bug: data-answer="D) Some text" (missing closing quote causes HTML to break)
+    // This happens when the attribute contains unescaped text like:
+    // data-answer="D) Un arrangement d'éléments..."
+    // The apostrophe or the missing closing structure breaks parsing
+    
+    // Fix malformed data-answer: find patterns where the attribute value contains more than just a letter
+    // Match data-answer=" followed by a letter, then ) and any text until we hit a > or <
+    let cleanedHtml = html
+      // Fix data-answer="X) text..." patterns - extract just the letter
+      .replace(/data-answer="([A-D])\)[^"<>]*(?:"|(?=<|>))/g, 'data-answer="$1"')
+      // Fix data-answer="X" patterns that might have extra content
+      .replace(/data-answer="([A-D])[^"A-D][^"]*"/g, 'data-answer="$1"')
+      // Fix unclosed quotes by looking for data-answer="X) and closing before next tag
+      .replace(/data-answer="([A-D])\)([^"]*?)(<)/g, 'data-answer="$1"$3');
     
     // Also fix data-correct if malformed
     cleanedHtml = cleanedHtml.replace(/data-correct="([A-D])[^"]*"/g, 'data-correct="$1"');
