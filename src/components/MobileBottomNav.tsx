@@ -14,8 +14,6 @@ export const MobileBottomNav = () => {
   const location = useLocation();
   const [unreadMessages, setUnreadMessages] = useState(0);
   const [unreadNotifications, setUnreadNotifications] = useState(0);
-  const [touchStart, setTouchStart] = useState<number | null>(null);
-  const [touchEnd, setTouchEnd] = useState<number | null>(null);
 
   const navItems: NavItem[] = [
     { icon: Home, path: "/dashboard" },
@@ -25,8 +23,6 @@ export const MobileBottomNav = () => {
     { icon: Bell, path: "/notifications", badge: unreadNotifications > 0 ? unreadNotifications : undefined },
     { icon: Settings, path: "/settings" },
   ];
-
-  const currentIndex = navItems.findIndex(item => item.path === location.pathname);
 
   useEffect(() => {
     fetchCounts();
@@ -67,33 +63,6 @@ export const MobileBottomNav = () => {
     setUnreadNotifications(notifCount || 0);
   };
 
-  // Swipe detection
-  const minSwipeDistance = 50;
-
-  const onTouchStart = (e: React.TouchEvent) => {
-    setTouchEnd(null);
-    setTouchStart(e.targetTouches[0].clientX);
-  };
-
-  const onTouchMove = (e: React.TouchEvent) => {
-    setTouchEnd(e.targetTouches[0].clientX);
-  };
-
-  const onTouchEnd = () => {
-    if (!touchStart || !touchEnd) return;
-    
-    const distance = touchStart - touchEnd;
-    const isLeftSwipe = distance > minSwipeDistance;
-    const isRightSwipe = distance < -minSwipeDistance;
-
-    if (isLeftSwipe && currentIndex < navItems.length - 1) {
-      navigate(navItems[currentIndex + 1].path);
-    }
-    if (isRightSwipe && currentIndex > 0) {
-      navigate(navItems[currentIndex - 1].path);
-    }
-  };
-
   const isActive = (path: string) => location.pathname === path;
 
   // Hide on certain pages
@@ -106,10 +75,11 @@ export const MobileBottomNav = () => {
 
   return (
     <nav
-      className="fixed bottom-0 left-0 right-0 z-[1000] bg-card/95 backdrop-blur-lg border-t border-border md:hidden safe-bottom"
-      onTouchStart={onTouchStart}
-      onTouchMove={onTouchMove}
-      onTouchEnd={onTouchEnd}
+      className="fixed bottom-0 inset-x-0 z-[1000] bg-card/95 backdrop-blur-lg border-t border-border md:hidden"
+      style={{ 
+        position: 'fixed',
+        paddingBottom: 'env(safe-area-inset-bottom, 0px)'
+      }}
     >
       <div className="flex items-center justify-around h-14 px-2">
         {navItems.map((item) => {
