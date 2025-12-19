@@ -618,7 +618,7 @@ const Dashboard = () => {
                   </CardContent>
                 </Card>
 
-                <Card className="border border-border rounded-2xl hover:shadow-md transition-all" onClick={() => navigate("/resources")}>
+                <Card className="border border-border rounded-2xl hover:shadow-md transition-all" onClick={() => navigate("/matieres")}>
                   <CardContent className="p-6">
                     <strong className="block mb-2">Rattrapage</strong>
                     <p className="text-muted-foreground text-sm mb-4">Révisez des matières précises.</p>
