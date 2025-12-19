@@ -64,88 +64,70 @@ export const HTMLQuizParser = ({ htmlContent, lessonSlug, subject }: HTMLQuizPar
       return;
     }
 
-    // Pre-process HTML to fix common malformed data-answer attributes
-    // The bug: data-answer="D) Some text" (missing closing quote causes HTML to break)
-    // This happens when the attribute contains unescaped text like:
-    // data-answer="D) Un arrangement d'éléments..."
-    // The apostrophe or the missing closing structure breaks parsing
-    
-    // Fix malformed data-answer: find patterns where the attribute value contains more than just a letter
-    // Match data-answer=" followed by a letter, then ) and any text until we hit a > or <
-    let cleanedHtml = html
-      // Fix data-answer="X) text..." patterns - extract just the letter
-      .replace(/data-answer="([A-D])\)[^"<>]*(?:"|(?=<|>))/g, 'data-answer="$1"')
-      // Fix data-answer="X" patterns that might have extra content
-      .replace(/data-answer="([A-D])[^"A-D][^"]*"/g, 'data-answer="$1"')
-      // Fix unclosed quotes by looking for data-answer="X) and closing before next tag
-      .replace(/data-answer="([A-D])\)([^"]*?)(<)/g, 'data-answer="$1"$3');
-    
-    // Also fix data-correct if malformed
-    cleanedHtml = cleanedHtml.replace(/data-correct="([A-D])[^"]*"/g, 'data-correct="$1"');
+    // The stored quiz HTML can be malformed (e.g., broken data-answer attributes) which can cause the browser
+    // parser to nest multiple questions inside the first question.
+    // To guarantee we only show ONE question at a time, we parse each quiz-question block separately.
 
-    const parser = new DOMParser();
-    const doc = parser.parseFromString(cleanedHtml, 'text/html');
-    const questionElements = doc.querySelectorAll('.quiz-question');
-    
+    // First, repair the most common malformed option markup.
+    const repairedHtml = html
+      .replace(
+        /data-answer="([A-D])\)\s*([^<]*?)<\/div>/g,
+        (_m, letter: string, text: string) => `data-answer="${letter}">${letter}) ${text.trim()}</div>`
+      )
+      .replace(/data-answer="([A-D])\)[^"]*"/g, 'data-answer="$1"')
+      .replace(/data-correct="([A-D])[^"]*"/g, 'data-correct="$1"');
+
+    // Split into per-question fragments (prevents nesting from breaking option extraction)
+    const questionFragments = repairedHtml
+      .split(/(?=<div class="quiz-question"\b)/g)
+      .filter((frag) => frag.includes('class="quiz-question"'));
+
     const parsed: ParsedQuestion[] = [];
-    
-    questionElements.forEach((qEl, index) => {
+
+    questionFragments.forEach((fragment, index) => {
+      const parser = new DOMParser();
+      const doc = parser.parseFromString(fragment, 'text/html');
+      const qEl = doc.querySelector('.quiz-question');
+      if (!qEl) return;
+
       const numberAttr = qEl.getAttribute('data-number');
       const number = numberAttr ? parseInt(numberAttr) : index + 1;
-      
-      // Get question text from <p> tag inside the question element
+
       const questionP = qEl.querySelector('p');
       const questionText = questionP?.textContent?.trim() || '';
-      
+
       const options: { letter: string; text: string }[] = [];
       qEl.querySelectorAll('.option').forEach((opt) => {
         let letter = opt.getAttribute('data-answer') || '';
         let text = opt.textContent?.trim() || '';
-        
-        // Extract letter from attribute (handle malformed like "D) text...")
+
         const letterMatch = letter.match(/^([A-D])/);
-        if (letterMatch) {
-          letter = letterMatch[1];
-        }
-        
-        // Remove the letter prefix (A), B), etc.) from text
+        if (letterMatch) letter = letterMatch[1];
+
         text = text.replace(/^[A-D]\)\s*/, '').trim();
-        
-        // If we still don't have a valid letter, try to extract from text
+
         if (!letter && text) {
           const textLetterMatch = opt.textContent?.trim().match(/^([A-D])\)/);
-          if (textLetterMatch) {
-            letter = textLetterMatch[1];
-          }
+          if (textLetterMatch) letter = textLetterMatch[1];
         }
-        
-        if (letter && text) {
-          options.push({ letter, text });
-        }
+
+        if (letter && text) options.push({ letter, text });
       });
-      
+
       const correctAnswerEl = qEl.querySelector('.correct-answer');
       let correctAnswer = correctAnswerEl?.getAttribute('data-correct') || '';
-      
-      // Extract just the letter if malformed
       const correctMatch = correctAnswer.match(/^([A-D])/);
-      if (correctMatch) {
-        correctAnswer = correctMatch[1];
-      }
-      
-      // Get explanation - try to get the second <p> inside correct-answer
+      if (correctMatch) correctAnswer = correctMatch[1];
+
       let explanation = '';
       const explanationParagraphs = correctAnswerEl?.querySelectorAll('p');
       if (explanationParagraphs && explanationParagraphs.length > 1) {
         explanation = explanationParagraphs[1]?.textContent?.trim() || '';
       } else if (explanationParagraphs && explanationParagraphs.length === 1) {
-        // If only one paragraph, try to extract explanation from it
         const text = explanationParagraphs[0]?.textContent?.trim() || '';
-        // Remove the "Réponse correcte: X" part
         explanation = text.replace(/Réponse correcte\s*:\s*[A-D]/i, '').trim();
       }
-      
-      // More lenient validation - require at least question and options
+
       if (questionText && options.length >= 2 && correctAnswer) {
         parsed.push({
           number,
@@ -156,14 +138,14 @@ export const HTMLQuizParser = ({ htmlContent, lessonSlug, subject }: HTMLQuizPar
         });
       }
     });
-    
+
     if (parsed.length === 0) {
       console.warn('HTMLQuizParser: No questions could be parsed from:', html.substring(0, 200));
       setParseError(true);
     } else {
       setParseError(false);
     }
-    
+
     setQuestions(parsed);
   };
 
@@ -434,7 +416,7 @@ export const HTMLQuizParser = ({ htmlContent, lessonSlug, subject }: HTMLQuizPar
 
             return (
               <button
-                key={option.letter}
+                key={`${currentQuestion.number}-${option.letter}-${option.text}`}
                 onClick={() => handleAnswerSelect(option.letter)}
                 disabled={showFeedback}
                 className={buttonClass}
