@@ -13,6 +13,7 @@ import { sendWelcomeEmail, sendPasswordResetEmail, sendVerificationEmail, genera
 import { Loader2 } from "lucide-react";
 import { loginSchema, signupSchema, forgotPasswordSchema, verificationCodeSchema } from "@/lib/authValidation";
 
+// Auth page component
 export default function Auth() {
   const navigate = useNavigate();
   const { toast } = useToast();
