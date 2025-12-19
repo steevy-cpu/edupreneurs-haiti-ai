@@ -182,6 +182,25 @@ export default function Matieres() {
   const currentGrade = gradeLevels.find(g => g.id === selectedGrade);
   const isNS3OrNS4 = selectedGrade === "NS3" || selectedGrade === "NS4";
   
+  // Helper function to count activities from HTML content
+  const countActivities = (html: string | null): number => {
+    if (!html) return 0;
+    // Count activity cards/items - they use class="activity-card" or data-activity
+    const activityMatches = html.match(/class="activity-card"|data-activity|<div[^>]*activity[^>]*>/gi);
+    if (activityMatches) return activityMatches.length;
+    // Fallback: count numbered activity sections
+    const numberedMatches = html.match(/Activité\s*\d+|Activity\s*\d+/gi);
+    return numberedMatches ? numberedMatches.length : 0;
+  };
+
+  // Helper function to count quiz questions from HTML content
+  const countQuizQuestions = (html: string | null): number => {
+    if (!html) return 0;
+    // Count quiz questions - they use class="quiz-question"
+    const quizMatches = html.match(/class="quiz-question"/gi);
+    return quizMatches ? quizMatches.length : 0;
+  };
+
   // Fetch actual lesson and exercise counts from database
   useEffect(() => {
     const fetchCounts = async () => {
@@ -195,7 +214,7 @@ export default function Matieres() {
 
         const { data: lessons, error } = await supabase
           .from('lessons')
-          .select('subject_id, id, exemples_exercices')
+          .select('subject_id, id, activites_interactives, quiz_final')
           .eq('grade_level', selectedGrade)
           .eq('is_published', true);
 
@@ -209,10 +228,10 @@ export default function Matieres() {
           const subject = subjectsData?.find(s => s.id === lesson.subject_id);
           if (subject) {
             lessonCountsMap[subject.slug] = (lessonCountsMap[subject.slug] || 0) + 1;
-            // Count lessons that have exercises content
-            if (lesson.exemples_exercices && lesson.exemples_exercices.trim() !== '') {
-              exerciseCountsMap[subject.slug] = (exerciseCountsMap[subject.slug] || 0) + 1;
-            }
+            // Count actual activities and quiz questions
+            const activitiesCount = countActivities(lesson.activites_interactives);
+            const quizCount = countQuizQuestions(lesson.quiz_final);
+            exerciseCountsMap[subject.slug] = (exerciseCountsMap[subject.slug] || 0) + activitiesCount + quizCount;
           }
         });
         
