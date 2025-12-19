@@ -157,7 +157,7 @@ const Index = () => {
                 </Button>
               </Link>
             </div>
-            <div className="grid grid-cols-3 sm:grid-cols-5 gap-2 sm:gap-3 lg:gap-4 pt-3 sm:pt-4 lg:pt-6">
+            <div className="flex flex-wrap justify-center gap-2 sm:gap-3 lg:gap-4 pt-3 sm:pt-4 lg:pt-6">
               {[
                 { number: stats.lessons > 0 ? `${stats.lessons}+` : "2500+", label: "Leçons" },
                 { number: stats.exams > 0 ? `${stats.exams}+` : "85+", label: "Examens" },
@@ -165,10 +165,10 @@ const Index = () => {
                 { number: "24/7", label: "Assistant IA" },
                 { number: "7AF-NS4", label: "Niveaux" }
               ].map((stat, idx) => (
-                <Card key={idx} className="flex-1 min-w-0 bg-gradient-to-br from-card to-card/50 backdrop-blur-sm border-primary/20 hover:border-primary/40 transition-all duration-300 hover:shadow-lg hover:scale-105 group">
-                  <CardContent className="p-2 sm:p-3 lg:p-4 text-center">
-                    <div className="text-sm sm:text-lg lg:text-xl font-black bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent group-hover:scale-110 transition-transform">{stat.number}</div>
-                    <div className="text-[8px] sm:text-[10px] lg:text-xs text-muted-foreground font-bold uppercase leading-tight">{stat.label}</div>
+                <Card key={idx} className="bg-gradient-to-br from-card to-card/50 backdrop-blur-sm border-primary/20 hover:border-primary/40 transition-all duration-300 hover:shadow-lg hover:scale-105 group">
+                  <CardContent className="p-3 sm:p-4 lg:p-5 text-center min-w-[80px] sm:min-w-[100px] lg:min-w-[110px]">
+                    <div className="text-base sm:text-xl lg:text-2xl font-black bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent group-hover:scale-110 transition-transform whitespace-nowrap">{stat.number}</div>
+                    <div className="text-[9px] sm:text-xs lg:text-sm text-muted-foreground font-bold uppercase leading-tight whitespace-nowrap">{stat.label}</div>
                   </CardContent>
                 </Card>
               ))}
