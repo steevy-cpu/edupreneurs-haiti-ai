@@ -300,8 +300,10 @@ export default function Matieres() {
               <ChevronLeft className="w-4 h-4" />
               <span className="font-semibold">EDUPRENEURS</span>
             </Button>
-            <div className="hidden md:flex items-center gap-2">
-              <MusicSelector />
+            <div className="flex items-center gap-2">
+              <div className="hidden md:block">
+                <MusicSelector />
+              </div>
               <ThemeToggle />
             </div>
           </div>
