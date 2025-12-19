@@ -178,6 +178,7 @@ export default function Matieres() {
   const { subjects: dbSubjects, isLoading } = useSubjects(refreshTrigger);
   const [lessonCounts, setLessonCounts] = useState<Record<string, number>>({});
   const [exerciseCounts, setExerciseCounts] = useState<Record<string, number>>({});
+  const [officialExamCount, setOfficialExamCount] = useState<number>(0);
 
   const currentGrade = gradeLevels.find(g => g.id === selectedGrade);
   const isNS3OrNS4 = selectedGrade === "NS3" || selectedGrade === "NS4";
@@ -242,7 +243,23 @@ export default function Matieres() {
       }
     };
 
+    // Fetch official exam exercises count
+    const fetchOfficialExamCount = async () => {
+      try {
+        const { count, error } = await supabase
+          .from('exam_exercises')
+          .select('*', { count: 'exact', head: true });
+        
+        if (!error && count !== null) {
+          setOfficialExamCount(count);
+        }
+      } catch (error) {
+        console.error('Error fetching exam count:', error);
+      }
+    };
+
     fetchCounts();
+    fetchOfficialExamCount();
   }, [selectedGrade, refreshTrigger]);
   
   // Filter subjects by selected grade and series (for NS3/NS4)
@@ -470,7 +487,7 @@ export default function Matieres() {
                     </p>
                     <div className="flex flex-wrap gap-3 justify-center md:justify-start">
                       <Badge variant="secondary" className="text-sm">
-                        18 exercices officiels
+                        {officialExamCount} exercices officiels
                       </Badge>
                       <Badge variant="secondary" className="text-sm">
                         Tuteur IA Eric
