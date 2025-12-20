@@ -2193,14 +2193,15 @@ const Community = () => {
                 paddingBottom: 'calc(var(--kb) + var(--safe-bottom))'
               }}
             >
-              {/* Background pattern */}
+              {/* Background pattern with 50% transparency */}
               <div 
                 className="absolute inset-0 pointer-events-none"
                 style={{
                   backgroundImage: `url(${chatBackground})`,
                   backgroundSize: '300px',
                   backgroundRepeat: 'repeat',
-                  backgroundPosition: 'center'
+                  backgroundPosition: 'center',
+                  opacity: 0.5
                 }}
               />
               {/* Eric Help Banner for Group Chats */}
