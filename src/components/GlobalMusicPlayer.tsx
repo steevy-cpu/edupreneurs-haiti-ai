@@ -180,12 +180,17 @@ export const GlobalMusicPlayer = () => {
       {/* Floating Music Player */}
       <div 
         ref={playerRef}
-        className="fixed z-50 cursor-move"
+        className="fixed z-[500] cursor-move"
         style={{
           left: position.x !== 0 ? `${position.x}px` : 'auto',
           top: position.y !== 0 ? `${position.y}px` : 'auto',
           right: position.x === 0 && position.y === 0 ? '24px' : 'auto',
-          bottom: position.x === 0 && position.y === 0 ? 'calc(80px + env(safe-area-inset-bottom, 0px))' : 'auto',
+          bottom:
+            position.x === 0 && position.y === 0
+              ? (location.pathname === "/community"
+                  ? 'calc(160px + env(safe-area-inset-bottom, 0px))'
+                  : 'calc(80px + env(safe-area-inset-bottom, 0px))')
+              : 'auto',
         }}
         onMouseDown={handleMouseDown}
         onTouchStart={handleTouchStart}
