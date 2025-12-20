@@ -2198,9 +2198,9 @@ const Community = () => {
               </DropdownMenu>
             </div>
 
-            {/* Scrollable Messages Area (includes Eric banner + messages) - with top padding for fixed header and bottom for composer */}
+            {/* Scrollable Messages Area (includes Eric banner + messages) - with top padding for fixed header and bottom for composer + nav */}
             <div 
-              className="flex-1 overflow-y-auto overflow-x-hidden pt-[72px] pb-[100px]"
+              className="flex-1 overflow-y-auto overflow-x-hidden pt-[72px] pb-[160px] md:pb-[100px]"
             >
               {/* Eric Help Banner for Group Chats */}
               {(() => {
@@ -2317,12 +2317,11 @@ const Community = () => {
             </div>
             </div>
 
-            {/* Composer - Fixed at bottom */}
-            <div className="fixed bottom-0 left-0 right-0 md:left-80 lg:left-96 border-t border-border/50 bg-background/95 backdrop-blur-md shrink-0 z-20" style={{
-              transform: `translateY(calc(-1 * var(--kb)))`,
-              paddingBottom: 'calc(0.5rem + var(--safe-bottom))'
+            {/* Composer - Fixed at bottom, above bottom nav on mobile */}
+            <div className="fixed left-0 right-0 md:left-80 lg:left-96 border-t border-border/50 bg-background/95 backdrop-blur-md shrink-0 z-[9999] bottom-16 md:bottom-0" style={{
+              transform: `translateY(calc(-1 * var(--kb)))`
             }}>
-              <div className="p-4 pt-2">
+              <div className="p-3 pt-2 md:p-4 md:pt-2">
               {replyingTo && (
                 <div className="mb-2 px-3 py-2 bg-muted/50 rounded-lg border border-border/30 flex items-start justify-between max-w-full overflow-hidden">
                   <div className="flex-1 min-w-0">
