@@ -2074,7 +2074,7 @@ const Community = () => {
           />
         )}
         {selectedConversation ? (
-          <div className="h-full flex flex-col relative z-10" style={{
+          <div className="h-full flex flex-col relative" style={{
             height: '100dvh'
           }}>
             {/* Fixed Header - Always stays at top */}
@@ -2200,7 +2200,7 @@ const Community = () => {
 
             {/* Scrollable Messages Area (includes Eric banner + messages) - with top padding for fixed header and bottom for composer + nav */}
             <div 
-              className="flex-1 overflow-y-auto overflow-x-hidden pt-[72px] pb-[160px] md:pb-[100px]"
+              className="flex-1 overflow-y-auto overflow-x-hidden pt-[72px] pb-[calc(10rem+env(safe-area-inset-bottom,0px))] md:pb-[100px]"
             >
               {/* Eric Help Banner for Group Chats */}
               {(() => {
@@ -2318,7 +2318,7 @@ const Community = () => {
             </div>
 
             {/* Composer - Fixed at bottom, above bottom nav on mobile */}
-            <div className="fixed left-0 right-0 md:left-80 lg:left-96 border-t border-border/50 bg-background/95 backdrop-blur-md shrink-0 z-[9999] bottom-16 md:bottom-0" style={{
+            <div className="fixed left-0 right-0 md:left-80 lg:left-96 border-t border-border/50 bg-background/95 backdrop-blur-md shrink-0 z-[9999] bottom-[calc(3.5rem+env(safe-area-inset-bottom,0px))] md:bottom-0" style={{
               transform: `translateY(calc(-1 * var(--kb)))`
             }}>
               <div className="p-3 pt-2 md:p-4 md:pt-2">
