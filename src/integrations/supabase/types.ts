@@ -1205,6 +1205,7 @@ export type Database = {
           created_at: string
           id: string
           image_url: string | null
+          is_public: boolean
           updated_at: string
           user_id: string
           video_url: string | null
@@ -1214,6 +1215,7 @@ export type Database = {
           created_at?: string
           id?: string
           image_url?: string | null
+          is_public?: boolean
           updated_at?: string
           user_id: string
           video_url?: string | null
@@ -1223,6 +1225,7 @@ export type Database = {
           created_at?: string
           id?: string
           image_url?: string | null
+          is_public?: boolean
           updated_at?: string
           user_id?: string
           video_url?: string | null
@@ -1669,6 +1672,10 @@ export type Database = {
           p_referrer_id: string
         }
         Returns: undefined
+      }
+      can_view_post: {
+        Args: { _is_public: boolean; _post_user_id: string; _user_id: string }
+        Returns: boolean
       }
       check_nickname_available: {
         Args: { nickname_input: string }

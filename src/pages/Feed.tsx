@@ -7,7 +7,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useToast } from "@/hooks/use-toast";
-import { Heart, MessageCircle, Send, Plus, Image, Share2, Trash2, Smile, Reply, BadgeCheck, ArrowLeft, RefreshCw } from "lucide-react";
+import { Heart, MessageCircle, Send, Plus, Image, Share2, Trash2, Smile, Reply, BadgeCheck, ArrowLeft, RefreshCw, Globe } from "lucide-react";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import {
@@ -40,6 +40,7 @@ const Feed = () => {
   const [currentUser, setCurrentUser] = useState<any>(null);
   const [newPostContent, setNewPostContent] = useState("");
   const [isCreatingPost, setIsCreatingPost] = useState(false);
+  const [isPublicPost, setIsPublicPost] = useState(false);
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
   const [selectedVideo, setSelectedVideo] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
@@ -235,6 +236,7 @@ const Feed = () => {
       content: newPostContent.trim(),
       image_url: imageUrl,
       video_url: videoUrl,
+      is_public: isPublicPost,
     });
 
     if (error) {
@@ -252,10 +254,11 @@ const Feed = () => {
     setSelectedVideo(null);
     setImagePreview(null);
     setVideoPreview(null);
+    setIsPublicPost(false);
     setIsCreatingPost(false);
     toast({
       title: "Succès",
-      description: "Post créé avec succès",
+      description: isPublicPost ? "Post public créé avec succès" : "Post créé avec succès",
     });
   };
 
@@ -827,6 +830,32 @@ const Feed = () => {
                   </div>
                 )}
 
+                {/* Public post toggle */}
+                <div className="flex items-center justify-between p-3 rounded-lg bg-muted/30 border border-border/50">
+                  <div className="flex items-center gap-2">
+                    <Globe size={18} className={isPublicPost ? "text-primary" : "text-muted-foreground"} />
+                    <div>
+                      <p className="text-sm font-medium">Post public</p>
+                      <p className="text-xs text-muted-foreground">Visible par tous les utilisateurs</p>
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    role="switch"
+                    aria-checked={isPublicPost}
+                    onClick={() => setIsPublicPost(!isPublicPost)}
+                    className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                      isPublicPost ? "bg-primary" : "bg-muted"
+                    }`}
+                  >
+                    <span
+                      className={`inline-block h-4 w-4 transform rounded-full bg-background transition-transform ${
+                        isPublicPost ? "translate-x-6" : "translate-x-1"
+                      }`}
+                    />
+                  </button>
+                </div>
+
                 <div className="flex justify-between items-center gap-2">
                   <div className="flex gap-2">
                     <input
@@ -938,6 +967,11 @@ const Feed = () => {
                       </p>
                       {post.profile?.verified && (
                         <BadgeCheck className="w-4 h-4 text-primary fill-primary/20" />
+                      )}
+                      {post.is_public && (
+                        <span title="Post public">
+                          <Globe className="w-3.5 h-3.5 text-muted-foreground" />
+                        </span>
                       )}
                     </div>
                     <p className="text-xs text-muted-foreground">
