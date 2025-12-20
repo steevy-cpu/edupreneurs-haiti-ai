@@ -2,6 +2,7 @@ import { useState, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Switch } from "@/components/ui/switch";
 import { Plus, Image, Globe } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
@@ -251,21 +252,10 @@ export function CreatePostDialog({ currentUser, onPostCreated }: CreatePostDialo
                 <p className="text-xs text-muted-foreground">Visible par tous les utilisateurs</p>
               </div>
             </div>
-            <button
-              type="button"
-              role="switch"
-              aria-checked={isPublicPost}
-              onClick={() => setIsPublicPost(!isPublicPost)}
-              className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                isPublicPost ? "bg-primary" : "bg-muted"
-              }`}
-            >
-              <span
-                className={`inline-block h-4 w-4 transform rounded-full bg-background transition-transform ${
-                  isPublicPost ? "translate-x-6" : "translate-x-1"
-                }`}
-              />
-            </button>
+            <Switch
+              checked={isPublicPost}
+              onCheckedChange={setIsPublicPost}
+            />
           </div>
 
           <div className="flex justify-between items-center gap-2">
