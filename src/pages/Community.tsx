@@ -22,6 +22,7 @@ import { GroupInfoDialog } from "@/components/GroupInfoDialog";
 import { NotificationPermissionBanner } from "@/components/NotificationPermissionBanner";
 import ericAiHelper from "@/assets/eric-ai-helper.png";
 import { Bug } from "lucide-react";
+import { logger } from "@/utils/logger";
 import { 
   Profile, 
   GroupChat, 
