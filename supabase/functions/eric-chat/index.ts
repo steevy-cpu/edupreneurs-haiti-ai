@@ -64,10 +64,10 @@ serve(async (req) => {
 
     console.log('Conversation history length:', conversationHistory.length);
 
-    // Call Gemini AI
-    const GEMINI_API_KEY = Deno.env.get('GEMINI_API_KEY');
-    if (!GEMINI_API_KEY) {
-      throw new Error('GEMINI_API_KEY is not configured');
+    // Call Lovable AI (uses pre-configured LOVABLE_API_KEY)
+    const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
+    if (!LOVABLE_API_KEY) {
+      throw new Error('LOVABLE_API_KEY is not configured');
     }
 
     // Get current time for greeting
@@ -140,59 +140,50 @@ Si on te pose une question NON-ÉDUCATIVE, réponds:
 "Bonjour ! Je suis Eric, votre assistant IA éducatif. Je suis là pour vous aider avec vos études. 📚
 Je ne peux malheureusement pas répondre à des questions en dehors de l'éducation. Avez-vous une question sur vos cours ?"`;
 
-    // Build messages array with conversation history
-    const aiMessages = [];
-    
-    // Add system prompt as first user message
-    aiMessages.push({
-      role: 'user',
-      parts: [{ text: systemPrompt }]
-    });
-    
-    // Add conversation history
-    for (const msg of conversationHistory) {
-      const role = msg.role === 'user' ? 'user' : 'model';
-      aiMessages.push({
-        role: role,
-        parts: [{ text: msg.content }]
-      });
-    }
-    
-    // Add current message with sender name prefix for group chat context
-    aiMessages.push({
-      role: 'user',
-      parts: [{ text: `[${nicknameText}]: ${userMessage}` }]
-    });
+    // Build messages array for Lovable AI (OpenAI format)
+    const aiMessages = [
+      { role: 'system', content: systemPrompt },
+      ...conversationHistory,
+      { role: 'user', content: `[${nicknameText}]: ${userMessage}` }
+    ];
 
-    console.log('Calling Gemini API...');
+    console.log('Calling Lovable AI...');
 
-    const response = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent?key=${GEMINI_API_KEY}`,
-      {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          contents: aiMessages,
-          generationConfig: {
-            temperature: 0.8,
-            topK: 40,
-            topP: 0.95,
-            maxOutputTokens: 2000,
-          },
-        }),
-      }
-    );
+    const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${LOVABLE_API_KEY}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        model: 'google/gemini-2.5-flash',
+        messages: aiMessages,
+        max_tokens: 2000,
+      }),
+    });
 
     if (!response.ok) {
       const errorText = await response.text();
-      console.error('Gemini API error:', response.status, errorText);
-      throw new Error(`Gemini API error: ${response.status}`);
+      console.error('Lovable AI error:', response.status, errorText);
+      
+      if (response.status === 429) {
+        return new Response(
+          JSON.stringify({ error: 'Rate limits exceeded, please try again later.' }),
+          { status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+      if (response.status === 402) {
+        return new Response(
+          JSON.stringify({ error: 'Service temporarily unavailable.' }),
+          { status: 402, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+      
+      throw new Error(`AI API error: ${response.status}`);
     }
 
     const data = await response.json();
-    let aiResponse = data.candidates?.[0]?.content?.parts?.[0]?.text || 'Désolé, je n\'ai pas pu générer une réponse.';
+    let aiResponse = data.choices?.[0]?.message?.content || 'Désolé, je n\'ai pas pu générer une réponse.';
     
     // Clean asterisks from the response
     aiResponse = aiResponse.replace(/\*\*/g, '').replace(/\*/g, '');
