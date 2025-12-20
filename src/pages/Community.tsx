@@ -2078,8 +2078,8 @@ const Community = () => {
             gridTemplateRows: 'var(--chat-header-h) 1fr auto',
             height: '100dvh'
           }}>
-            {/* Fixed Header (First row of grid) */}
-            <div className="sticky top-0 z-10 border-b border-border/50 bg-background/95 backdrop-blur-md p-4 flex items-center gap-3 shrink-0">
+            {/* Fixed Header - Always stays at top */}
+            <div className="fixed top-0 left-0 right-0 md:left-80 lg:left-96 z-20 border-b border-border/50 bg-background/95 backdrop-blur-md p-4 flex items-center gap-3 shrink-0">
               <Button
                 size="icon"
                 variant="ghost"
@@ -2199,9 +2199,9 @@ const Community = () => {
               </DropdownMenu>
             </div>
 
-            {/* Scrollable Messages Area (includes Eric banner + messages) */}
+            {/* Scrollable Messages Area (includes Eric banner + messages) - with top padding for fixed header */}
             <div 
-              className="overflow-y-auto overflow-x-hidden"
+              className="overflow-y-auto overflow-x-hidden pt-[72px]"
               style={{
                 paddingBottom: 'calc(var(--kb) + var(--safe-bottom))'
               }}
