@@ -2188,15 +2188,22 @@ const Community = () => {
 
             {/* Scrollable Messages Area (includes Eric banner + messages) */}
             <div 
-              className="overflow-y-auto overflow-x-hidden"
+              className="overflow-y-auto overflow-x-hidden relative"
               style={{
-                paddingBottom: 'calc(var(--kb) + var(--safe-bottom))',
-                backgroundImage: `url(${chatBackground})`,
-                backgroundSize: '300px',
-                backgroundRepeat: 'repeat',
-                backgroundPosition: 'center'
+                paddingBottom: 'calc(var(--kb) + var(--safe-bottom))'
               }}
             >
+              {/* Background with 50% opacity overlay */}
+              <div 
+                className="absolute inset-0 pointer-events-none"
+                style={{
+                  backgroundImage: `url(${chatBackground})`,
+                  backgroundSize: '300px',
+                  backgroundRepeat: 'repeat',
+                  backgroundPosition: 'center',
+                  opacity: 0.5
+                }}
+              />
               {/* Eric Help Banner for Group Chats */}
               {(() => {
                 const currentConv = conversations.find(c => c.id === selectedConversation);
