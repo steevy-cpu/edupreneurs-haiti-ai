@@ -2200,7 +2200,7 @@ const Community = () => {
 
             {/* Scrollable Messages Area (includes Eric banner + messages) - with top padding for fixed header and bottom for composer + nav */}
             <div 
-              className="flex-1 overflow-y-auto overflow-x-hidden pt-[72px] pb-[calc(10rem+env(safe-area-inset-bottom,0px))] md:pb-[100px]"
+              className="flex-1 overflow-y-auto overflow-x-hidden pt-[72px] pb-[calc(8rem+env(safe-area-inset-bottom,0px))] md:pb-[96px]"
             >
               {/* Eric Help Banner for Group Chats */}
               {(() => {
