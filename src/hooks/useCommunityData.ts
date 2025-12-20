@@ -1,21 +1,12 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { Conversation, Profile, GroupChat } from "@/types/community";
 
-interface Conversation {
-  id: string;
-  is_group: boolean;
-  group_id: string | null;
-  updated_at: string;
+// Extended Conversation type for the hook
+interface ConversationWithDetails extends Omit<Conversation, 'otherUser' | 'lastMessage' | 'lastMessageTime'> {
   participants: {
     user_id: string;
-    profile: {
-      user_id: string;
-      full_name: string;
-      nickname: string;
-      avatar_url: string | null;
-      verified: boolean;
-      last_seen: string | null;
-    };
+    profile: Profile;
   }[];
   lastMessage?: {
     content: string;
@@ -23,15 +14,10 @@ interface Conversation {
     sender_id: string;
   };
   unreadCount?: number;
-  group?: {
-    id: string;
-    name: string;
-    avatar_url: string | null;
-    description: string | null;
-  };
+  group?: GroupChat;
 }
 
-const fetchConversations = async (): Promise<Conversation[]> => {
+const fetchConversations = async (): Promise<ConversationWithDetails[]> => {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return [];
 
@@ -54,6 +40,7 @@ const fetchConversations = async (): Promise<Conversation[]> => {
       id,
       is_group,
       group_id,
+      created_at,
       updated_at
     `)
     .in("id", conversationIds)
@@ -74,7 +61,7 @@ const fetchConversations = async (): Promise<Conversation[]> => {
   
   const { data: profiles } = await supabase
     .from("profiles")
-    .select("user_id, full_name, nickname, avatar_url, verified, last_seen")
+    .select("id, user_id, full_name, nickname, avatar_url, verified, last_seen")
     .in("user_id", allUserIds);
 
   // Fetch last messages for each conversation
@@ -102,12 +89,13 @@ const fetchConversations = async (): Promise<Conversation[]> => {
     : { data: [] };
 
   // Enrich conversations
-  const enrichedConversations: Conversation[] = conversations.map(conv => {
+  const enrichedConversations: ConversationWithDetails[] = conversations.map(conv => {
     const participants = allParticipants
       ?.filter(p => p.conversation_id === conv.id && p.user_id !== user.id)
       .map(p => ({
         user_id: p.user_id,
         profile: profiles?.find(pr => pr.user_id === p.user_id) || {
+          id: p.user_id,
           user_id: p.user_id,
           full_name: "Utilisateur",
           nickname: "user",
