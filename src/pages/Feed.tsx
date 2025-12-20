@@ -30,41 +30,8 @@ import { getAvatarUrl } from "@/lib/avatarMap";
 import { optimizeMediaFile, formatFileSize } from "@/utils/mediaOptimization";
 import { NotificationPermissionBanner } from "@/components/NotificationPermissionBanner";
 import { useFeedData } from "@/hooks/useFeedData";
-
-interface Profile {
-  id: string;
-  user_id: string;
-  full_name: string;
-  nickname: string;
-  avatar_url: string | null;
-  verified: boolean;
-}
-
-interface Comment {
-  id: string;
-  content: string;
-  created_at: string;
-  user_id: string;
-  parent_comment_id: string | null;
-  profile: Profile;
-  replies?: Comment[];
-}
-
-interface Post {
-  id: string;
-  user_id: string;
-  content: string;
-  image_url: string | null;
-  video_url: string | null;
-  created_at: string;
-  profile?: Profile;
-  likes?: number;
-  isLiked?: boolean;
-  comments?: Comment[];
-  commentCount?: number;
-  shareCount?: number;
-  isShared?: boolean;
-}
+import { formatTimeAgo } from "@/utils/dateUtils";
+import { Profile, Post, Comment } from "@/types/feed";
 
 const Feed = () => {
   const navigate = useNavigate();
@@ -91,7 +58,8 @@ const Feed = () => {
 
   useEffect(() => {
     checkAuth();
-    subscribeToNewPosts();
+    const cleanup = subscribeToNewPosts();
+    return cleanup;
   }, []);
 
   const checkAuth = async () => {
@@ -281,7 +249,9 @@ const Feed = () => {
 
     setNewPostContent("");
     setSelectedImage(null);
+    setSelectedVideo(null);
     setImagePreview(null);
+    setVideoPreview(null);
     setIsCreatingPost(false);
     toast({
       title: "Succès",
@@ -679,18 +649,6 @@ const Feed = () => {
         [postId]: (commentInputs[postId] || "") + emojiData.emoji
       });
     }
-  };
-
-  const formatTimeAgo = (timestamp: string) => {
-    const now = new Date();
-    const postDate = new Date(timestamp);
-    const diffInSeconds = Math.floor((now.getTime() - postDate.getTime()) / 1000);
-
-    if (diffInSeconds < 60) return "À l'instant";
-    if (diffInSeconds < 3600) return `Il y a ${Math.floor(diffInSeconds / 60)}m`;
-    if (diffInSeconds < 86400) return `Il y a ${Math.floor(diffInSeconds / 3600)}h`;
-    if (diffInSeconds < 604800) return `Il y a ${Math.floor(diffInSeconds / 86400)}j`;
-    return postDate.toLocaleDateString("fr-FR", { day: "numeric", month: "short" });
   };
 
   const renderComment = (comment: Comment, postId: string, isReply: boolean = false) => (
