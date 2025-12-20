@@ -2,7 +2,6 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useToast } from "@/hooks/use-toast";
@@ -21,8 +20,13 @@ import { CreateGroupDialog } from "@/components/CreateGroupDialog";
 import { GroupInfoDialog } from "@/components/GroupInfoDialog";
 import { NotificationPermissionBanner } from "@/components/NotificationPermissionBanner";
 import ericAiHelper from "@/assets/eric-ai-helper.png";
-import { Bug } from "lucide-react";
 import { logger } from "@/utils/logger";
+import { 
+  ConversationListItem, 
+  ChatHeader, 
+  TypingIndicator,
+  ConversationSkeleton 
+} from "@/components/community";
 import { 
   Profile, 
   GroupChat, 
@@ -86,7 +90,7 @@ const Community = () => {
     try {
       localStorage.setItem('lastSeenTimes', JSON.stringify(lastSeenTimes));
     } catch (error) {
-      console.error('Failed to save lastSeenTimes:', error);
+      logger.error('Failed to save lastSeenTimes:', error);
     }
   }, [lastSeenTimes]);
 
@@ -119,7 +123,7 @@ const Community = () => {
   useEffect(() => {
     const handleVisibilityChange = () => {
       if (document.visibilityState === 'visible' && user) {
-        console.log('📱 Page visible, refreshing conversations');
+        logger.log('📱 Page visible, refreshing conversations');
         fetchConversations();
       }
     };
@@ -131,7 +135,7 @@ const Community = () => {
   // Subscribe to typing presence for all conversations - only when conversation IDs change
   useEffect(() => {
     if (user && conversations.length > 0) {
-      console.log('🔔 Setting up typing presence for all conversations');
+      logger.log('🔔 Setting up typing presence for all conversations');
       
       // Only set up channels for new conversations
       conversations.forEach(conv => {
@@ -144,7 +148,7 @@ const Community = () => {
       const currentConvIds = new Set(conversations.map(c => c.id));
       Object.keys(presenceChannelsRef.current).forEach(convId => {
         if (!currentConvIds.has(convId)) {
-          console.log('🧹 Cleaning up removed conversation presence channel:', convId);
+          logger.log('🧹 Cleaning up removed conversation presence channel:', convId);
           supabase.removeChannel(presenceChannelsRef.current[convId]);
           delete presenceChannelsRef.current[convId];
         }
@@ -154,7 +158,7 @@ const Community = () => {
     return () => {
       // Cleanup all presence channels on unmount
       Object.keys(presenceChannelsRef.current).forEach(convId => {
-        console.log('🧹 Cleaning up typing presence channel for conversation:', convId);
+        logger.log('🧹 Cleaning up typing presence channel for conversation:', convId);
         supabase.removeChannel(presenceChannelsRef.current[convId]);
       });
       presenceChannelsRef.current = {};
@@ -162,9 +166,9 @@ const Community = () => {
   }, [conversations.map(c => c.id).join(','), user?.id]);
 
   useEffect(() => {
-    console.log('🔍 useEffect triggered - selectedConversation:', selectedConversation, 'user:', user?.id);
+    logger.log('🔍 useEffect triggered - selectedConversation:', selectedConversation, 'user:', user?.id);
     if (selectedConversation && user) {
-      console.log('✅ Conditions met, loading conversation and subscribing');
+      logger.log('✅ Conditions met, loading conversation and subscribing');
       const loadConversation = async () => {
         await fetchMessages(selectedConversation);
         await markMessagesAsRead(selectedConversation);
@@ -174,7 +178,7 @@ const Community = () => {
       subscribeToConversationMessages(selectedConversation);
       subscribeToReactions(selectedConversation);
     } else {
-      console.log('❌ Conditions not met - selectedConversation:', !!selectedConversation, 'user:', !!user);
+      logger.log('❌ Conditions not met - selectedConversation:', !!selectedConversation, 'user:', !!user);
     }
     return () => {
       if (messageChannelRef.current) {
@@ -264,12 +268,12 @@ const Community = () => {
     if (globalPresenceChannelRef.current) {
       const state = globalPresenceChannelRef.current.state;
       if (state === 'joined') {
-        console.log('✅ [Community] Global presence listener already active');
+        logger.log('✅ [Community] Global presence listener already active');
         return;
       }
     }
 
-    console.log('🌐 [Community] Setting up presence listener for user:', user.id);
+    logger.log('🌐 [Community] Setting up presence listener for user:', user.id);
     
     // Create a unique channel name for Community's listener
     const channel = supabase.channel(`community-presence-${user.id}`);
@@ -282,19 +286,19 @@ const Community = () => {
         
         if (onlineChannel) {
           const state = onlineChannel.presenceState();
-          console.log('🔄 [Community] Presence sync from Layout channel:', state);
+          logger.log('🔄 [Community] Presence sync from Layout channel:', state);
           const userIds = new Set<string>([ERIC_USER_ID]); // Eric is always online
           Object.values(state).forEach((presences: any) => {
             presences.forEach((p: any) => {
               if (p.user_id) userIds.add(p.user_id);
             });
           });
-          console.log('👥 [Community] Online users:', Array.from(userIds));
+          logger.log('👥 [Community] Online users:', Array.from(userIds));
           setOnlineUsers(userIds);
         }
       })
       .subscribe((status) => {
-        console.log('📡 [Community] Presence listener status:', status);
+        logger.log('📡 [Community] Presence listener status:', status);
         
         // Poll for presence updates every 5 seconds
         if (status === 'SUBSCRIBED') {
@@ -315,12 +319,12 @@ const Community = () => {
                 const prevArray = Array.from(prev).sort();
                 const newArray = Array.from(userIds).sort();
                 if (JSON.stringify(prevArray) !== JSON.stringify(newArray)) {
-                  console.log('👥 [Community] Online users updated:', Array.from(userIds));
+                  logger.log('👥 [Community] Online users updated:', Array.from(userIds));
                   
                   // Track who went offline and update their last_seen in database
                   prev.forEach(async (userId) => {
                     if (!userIds.has(userId) && userId !== ERIC_USER_ID) {
-                      console.log('📴 [Community] User went offline:', userId);
+                      logger.log('📴 [Community] User went offline:', userId);
                       const now = new Date().toISOString();
                       
                       // Update last_seen in database
@@ -329,9 +333,9 @@ const Community = () => {
                           .from('profiles')
                           .update({ last_seen: now })
                           .eq('user_id', userId);
-                        console.log('✅ [Community] Updated last_seen in DB for:', userId);
+                        logger.log('✅ [Community] Updated last_seen in DB for:', userId);
                       } catch (error) {
-                        console.error('❌ [Community] Error updating last_seen:', error);
+                        logger.error('❌ [Community] Error updating last_seen:', error);
                       }
                       
                       // Update local state
@@ -511,11 +515,11 @@ const Community = () => {
       }
     });
 
-    console.log('📊 Visible messages per conversation:', Object.fromEntries(
+    logger.log('📊 Visible messages per conversation:', Object.fromEntries(
       Array.from(visibleMessages.entries()).map(([id, msgs]) => [id, msgs.length])
     ));
     
-    console.log('🔍 [FETCH] Starting to build conversation list...');
+    logger.log('🔍 [FETCH] Starting to build conversation list...');
 
     // Build conversations list - deduplicate both group and 1-on-1
     const groupedByUser = new Map<string, Conversation>();
@@ -530,11 +534,11 @@ const Community = () => {
       
       // Skip this conversation if no visible messages (deleted conversation with no new messages)
       if (convVisibleMessages.length === 0) {
-        console.log(`🚫 [FETCH] Skipping conversation ${convId} - no visible messages (user deleted it)`);
+        logger.log(`🚫 [FETCH] Skipping conversation ${convId} - no visible messages (user deleted it)`);
         return;
       }
 
-      console.log(`✅ [FETCH] Including conversation ${convId} - ${convVisibleMessages.length} visible messages`);
+      logger.log(`✅ [FETCH] Including conversation ${convId} - ${convVisibleMessages.length} visible messages`);
 
       const lastMsg = convVisibleMessages[convVisibleMessages.length - 1];
       const unreadCount = convVisibleMessages.filter(m => !m.read && m.sender_id !== user.id).length;
@@ -615,7 +619,7 @@ const Community = () => {
           }
         }
         
-        console.log(`💬 Conversation ${convId} with ${otherUserProfile?.full_name}: ${unreadCount} unread`);
+        logger.log(`💬 Conversation ${convId} with ${otherUserProfile?.full_name}: ${unreadCount} unread`);
       }
     });
 
@@ -669,11 +673,11 @@ const Community = () => {
       .single();
     
     if (participantError) {
-      console.error('❌ Error fetching participant visibility:', participantError);
+      logger.error('❌ Error fetching participant visibility:', participantError);
     }
 
     const visibilityThreshold = participantData?.visible_from_message_id;
-    console.log('🔍 Message visibility threshold:', visibilityThreshold || 'ALL MESSAGES');
+    logger.log('🔍 Message visibility threshold:', visibilityThreshold || 'ALL MESSAGES');
 
     // Fetch all messages for this conversation first
     let query = supabase
@@ -685,7 +689,7 @@ const Community = () => {
     const { data: allMessages, error: messagesError } = await query;
     
     if (messagesError) {
-      console.error('❌ Messages error:', messagesError);
+      logger.error('❌ Messages error:', messagesError);
     }
 
     // Filter messages on the client side based on visibility threshold
@@ -696,11 +700,11 @@ const Community = () => {
       if (thresholdIndex !== -1) {
         // Show messages FROM the threshold message onwards (inclusive)
         messagesData = allMessages.slice(thresholdIndex);
-        console.log(`📊 Filtered from ${allMessages.length} to ${messagesData.length} messages (starting from threshold)`);
+        logger.log(`📊 Filtered from ${allMessages.length} to ${messagesData.length} messages (starting from threshold)`);
       }
     }
     
-    console.log('💬 Final visible messages count:', messagesData.length);
+    logger.log('💬 Final visible messages count:', messagesData.length);
 
     if (!messagesData) return;
 
@@ -778,7 +782,7 @@ const Community = () => {
       supabase.removeChannel(messageChannelRef.current);
     }
 
-    console.log('🔔 Setting up realtime subscription for conversation:', conversationId);
+    logger.log('🔔 Setting up realtime subscription for conversation:', conversationId);
 
     // Subscribe to real-time updates for this specific conversation
     const channel = supabase
@@ -875,7 +879,7 @@ const Community = () => {
           
           // If in group chat and mentions Eric, trigger Eric's response (including user's own messages)
           if (isGroupChat && mentionsEric && payload.new.sender_id !== ERIC_USER_ID) {
-            console.log('🤖 Eric mentioned in group chat, triggering response...');
+            logger.log('🤖 Eric mentioned in group chat, triggering response...');
             
             // Get sender's profile info
             supabase.functions.invoke('eric-chat', {
@@ -886,14 +890,14 @@ const Community = () => {
                 userNickname: profile?.nickname || profile?.full_name
               }
             }).catch(error => {
-              console.error('Error calling Eric chat:', error);
+              logger.error('Error calling Eric chat:', error);
             });
           }
 
           // Show notification if message is from another user AND this is the CURRENT conversation
           // (notifications for other conversations are handled in subscribeToMessages)
           if (payload.new.sender_id !== user?.id && conversationId === selectedConversation) {
-            console.log('🔔 Message in current conversation, showing notification');
+            logger.log('🔔 Message in current conversation, showing notification');
             if ('Notification' in window && Notification.permission === 'granted') {
               const senderName = profile?.nickname || profile?.full_name || 'Quelqu\'un';
               const messageContent = sharedPost 
@@ -963,7 +967,7 @@ const Community = () => {
           table: "messages",
         },
         async (payload) => {
-          console.log('📨 New message received:', payload);
+          logger.log('📨 New message received:', payload);
           
           // Only play sound once here (not in conversation-specific subscription)
           if (payload.new.sender_id !== user?.id) {
@@ -996,7 +1000,7 @@ const Community = () => {
           // Show browser notification for messages in other conversations
           // (messages in the current conversation are handled by subscribeToConversationMessages)
           if (payload.new.sender_id !== user?.id && conversationId !== selectedConversation) {
-            console.log('🔔 Showing browser notification for new message');
+            logger.log('🔔 Showing browser notification for new message');
             
             // Fetch sender profile for notification
             const { data: senderProfile } = await supabase
@@ -1065,7 +1069,7 @@ const Community = () => {
           table: "messages",
         },
         async (payload) => {
-          console.log('✅ Message updated:', payload);
+          logger.log('✅ Message updated:', payload);
           // If message was marked as read, update the conversation's unread count
           if (payload.new.read && !payload.old.read) {
             // Update conversation unread count immediately
@@ -1080,7 +1084,7 @@ const Community = () => {
         }
       )
       .subscribe((status) => {
-        console.log('📡 Messages subscription status:', status);
+        logger.log('📡 Messages subscription status:', status);
       });
 
     return () => {
@@ -1148,7 +1152,7 @@ const Community = () => {
         }
       }
     } catch (error: any) {
-      console.error('Error optimizing media:', error);
+      logger.error('Error optimizing media:', error);
       toast({
         title: "Erreur",
         description: error.message || `Impossible d'optimiser ${isImage ? "l'image" : "la vidéo"}`,
@@ -1198,7 +1202,7 @@ const Community = () => {
         });
 
       if (addError) {
-        console.error("Error re-adding user to conversation:", addError);
+        logger.error("Error re-adding user to conversation:", addError);
         toast({
           title: "Erreur",
           description: "Impossible de rejoindre la conversation",
@@ -1216,7 +1220,7 @@ const Community = () => {
         .eq("user_id", user.id);
 
       if (resetError) {
-        console.error("Error resetting visibility:", resetError);
+        logger.error("Error resetting visibility:", resetError);
       }
     }
 
@@ -1301,7 +1305,7 @@ const Community = () => {
           });
 
           if (ericError) {
-            console.error('Error calling Eric chat:', ericError);
+            logger.error('Error calling Eric chat:', ericError);
             toast({
               title: "Erreur",
               description: "Impossible d'obtenir une réponse d'Eric",
@@ -1309,7 +1313,7 @@ const Community = () => {
             });
           }
         } catch (aiError) {
-          console.error('Error getting AI response:', aiError);
+          logger.error('Error getting AI response:', aiError);
           toast({
             title: "Erreur",
             description: "Impossible d'obtenir une réponse d'Eric",
@@ -1332,7 +1336,7 @@ const Community = () => {
             }
           });
         } catch (pushError) {
-          console.error('Error sending push notification:', pushError);
+          logger.error('Error sending push notification:', pushError);
         }
       }
     } else if (conversation?.is_group && conversation?.group?.id) {
@@ -1371,12 +1375,12 @@ const Community = () => {
                 }
               });
             } catch (error) {
-              console.error(`Error sending push to ${member.user_id}:`, error);
+              logger.error(`Error sending push to ${member.user_id}:`, error);
             }
           }
         }
       } catch (error) {
-        console.error('Error sending group push notifications:', error);
+        logger.error('Error sending group push notifications:', error);
       }
     }
     setIsSending(false);
@@ -1487,7 +1491,7 @@ const Community = () => {
         description: "Message modifié",
       });
     } catch (error) {
-      console.error("Error updating message:", error);
+      logger.error("Error updating message:", error);
       toast({
         title: "Erreur",
         description: "Impossible de modifier le message",
@@ -1516,7 +1520,7 @@ const Community = () => {
         description: "Message supprimé",
       });
     } catch (error) {
-      console.error("Error deleting message:", error);
+      logger.error("Error deleting message:", error);
       toast({
         title: "Erreur",
         description: "Impossible de supprimer le message",
@@ -1561,7 +1565,7 @@ const Community = () => {
 
   const subscribeToTypingPresence = (conversationId: string) => {
     if (!user) {
-      console.log('❌ Cannot setup typing presence - no user');
+      logger.log('❌ Cannot setup typing presence - no user');
       return;
     }
 
@@ -1569,7 +1573,7 @@ const Community = () => {
       supabase.removeChannel(presenceChannelsRef.current[conversationId]);
     }
 
-    console.log('🔄 Setting up typing presence for conversation:', conversationId, 'User:', user.id);
+    logger.log('🔄 Setting up typing presence for conversation:', conversationId, 'User:', user.id);
 
     const channel = supabase.channel(`typing-${conversationId}`, {
       config: {
@@ -1582,27 +1586,27 @@ const Community = () => {
     channel
       .on('presence', { event: 'sync' }, () => {
         const state = channel.presenceState();
-        console.log('👥 Presence state synced for conversation:', conversationId, state);
+        logger.log('👥 Presence state synced for conversation:', conversationId, state);
         setTypingUsers(prev => ({
           ...prev,
           [conversationId]: state
         }));
       })
       .on('presence', { event: 'join' }, ({ key, newPresences }) => {
-        console.log('👋 User joined:', key, newPresences);
+        logger.log('👋 User joined:', key, newPresences);
       })
       .on('presence', { event: 'leave' }, ({ key, leftPresences }) => {
-        console.log('👋 User left:', key, leftPresences);
+        logger.log('👋 User left:', key, leftPresences);
       })
       .subscribe(async (status) => {
-        console.log('📡 Typing presence subscription status:', status);
+        logger.log('📡 Typing presence subscription status:', status);
         if (status === 'SUBSCRIBED') {
-          console.log('✅ Tracking initial typing state for user:', user.id);
+          logger.log('✅ Tracking initial typing state for user:', user.id);
           const trackResult = await channel.track({
             user_id: user.id,
             typing: false,
           });
-          console.log('Track result:', trackResult);
+          logger.log('Track result:', trackResult);
         }
       });
 
@@ -1611,24 +1615,24 @@ const Community = () => {
 
   const sendTypingStatus = async (isTyping: boolean) => {
     if (!selectedConversation || !presenceChannelsRef.current[selectedConversation] || !user) {
-      console.log('❌ Cannot send typing status - no channel or user');
+      logger.log('❌ Cannot send typing status - no channel or user');
       return;
     }
 
     try {
-      console.log('📤 Sending typing status:', isTyping, 'for user:', user.id);
+      logger.log('📤 Sending typing status:', isTyping, 'for user:', user.id);
       const result = await presenceChannelsRef.current[selectedConversation].track({
         user_id: user.id,
         typing: isTyping,
       });
-      console.log('✅ Typing status sent:', result);
+      logger.log('✅ Typing status sent:', result);
     } catch (error) {
-      console.error('❌ Error sending typing status:', error);
+      logger.error('❌ Error sending typing status:', error);
     }
   };
 
   const handleTyping = (value: string) => {
-    console.log('⌨️ handleTyping called with value length:', value.length);
+    logger.log('⌨️ handleTyping called with value length:', value.length);
     setNewMessage(value);
 
     // Clear existing timeout
@@ -1638,16 +1642,16 @@ const Community = () => {
 
     // Send typing status
     if (value.trim()) {
-      console.log('⌨️ User is typing, sending status true');
+      logger.log('⌨️ User is typing, sending status true');
       sendTypingStatus(true);
 
       // Auto-clear typing status after 3 seconds of inactivity
       typingTimeoutRef.current = setTimeout(() => {
-        console.log('⌨️ Typing timeout reached, sending status false');
+        logger.log('⌨️ Typing timeout reached, sending status false');
         sendTypingStatus(false);
       }, 3000);
     } else {
-      console.log('⌨️ Input empty, sending status false');
+      logger.log('⌨️ Input empty, sending status false');
       sendTypingStatus(false);
     }
   };
@@ -1663,11 +1667,11 @@ const Community = () => {
   }, []);
 
   const handleDeleteConversation = async (conversationId: string) => {
-    console.log('🚀 [DELETE] Function called with conversationId:', conversationId);
+    logger.log('🚀 [DELETE] Function called with conversationId:', conversationId);
     
     try {
       if (!user?.id) {
-        console.error('❌ [DELETE] No user ID found');
+        logger.error('❌ [DELETE] No user ID found');
         toast({
           title: "Erreur",
           description: "Utilisateur non authentifié",
@@ -1676,21 +1680,21 @@ const Community = () => {
         return;
       }
 
-      console.log('✅ [DELETE] User ID:', user.id);
-      console.log('📋 [DELETE] Current conversations:', conversations.length);
+      logger.log('✅ [DELETE] User ID:', user.id);
+      logger.log('📋 [DELETE] Current conversations:', conversations.length);
 
       // Find if this is a group or single conversation
       const conversation = conversations.find(c => c.id === conversationId);
       const isGroup = conversation?.is_group;
 
-      console.log('🔍 [DELETE] Found conversation:', { 
+      logger.log('🔍 [DELETE] Found conversation:', { 
         found: !!conversation, 
         isGroup, 
         conversationName: isGroup ? conversation?.group?.name : conversation?.otherUser?.nickname 
       });
 
       if (isGroup) {
-        console.log('🗂️ [DELETE] Deleting messages from group conversation');
+        logger.log('🗂️ [DELETE] Deleting messages from group conversation');
         // For group conversations: delete only user's messages
         const { error: deleteError } = await supabase
           .from("messages")
@@ -1699,12 +1703,12 @@ const Community = () => {
           .eq("sender_id", user.id);
 
         if (deleteError) {
-          console.error("❌ [DELETE] Error deleting messages:", deleteError);
+          logger.error("❌ [DELETE] Error deleting messages:", deleteError);
           throw deleteError;
         }
-        console.log('✅ [DELETE] Deleted user messages from group');
+        logger.log('✅ [DELETE] Deleted user messages from group');
       } else {
-        console.log('💬 [DELETE] Hiding messages in single conversation');
+        logger.log('💬 [DELETE] Hiding messages in single conversation');
         // For single conversations (WhatsApp-like behavior):
         // Set visible_from_message_id to hide all current messages
         
@@ -1718,11 +1722,11 @@ const Community = () => {
           .maybeSingle();
 
         if (fetchError) {
-          console.error("❌ [DELETE] Error fetching last message:", fetchError);
+          logger.error("❌ [DELETE] Error fetching last message:", fetchError);
           throw fetchError;
         }
 
-        console.log('📨 [DELETE] Last message ID:', lastMessage?.id);
+        logger.log('📨 [DELETE] Last message ID:', lastMessage?.id);
 
         // Update visible_from_message_id to exclude all current messages
         const { error: updateError } = await supabase
@@ -1734,22 +1738,22 @@ const Community = () => {
           .eq("user_id", user.id);
 
         if (updateError) {
-          console.error("❌ [DELETE] Error updating visibility:", updateError);
+          logger.error("❌ [DELETE] Error updating visibility:", updateError);
           throw updateError;
         }
-        console.log('✅ [DELETE] Updated visibility threshold to:', lastMessage?.id);
+        logger.log('✅ [DELETE] Updated visibility threshold to:', lastMessage?.id);
       }
 
       // Clear local messages state
       setMessages([]);
-      console.log('🧹 [DELETE] Cleared local messages');
+      logger.log('🧹 [DELETE] Cleared local messages');
 
       // Clear selection if this conversation was selected
       if (selectedConversation === conversationId) {
         setSelectedConversation(null);
         // Update URL to reflect no conversation selected
         navigate('/community');
-        console.log('🔄 [DELETE] Cleared selection and navigated to /community');
+        logger.log('🔄 [DELETE] Cleared selection and navigated to /community');
       }
 
       toast({
@@ -1760,11 +1764,11 @@ const Community = () => {
       });
 
       // Refresh conversations list to hide the deleted conversation
-      console.log('🔄 [DELETE] Refreshing conversations list...');
+      logger.log('🔄 [DELETE] Refreshing conversations list...');
       await fetchConversations();
-      console.log('✅ [DELETE] Conversations refreshed');
+      logger.log('✅ [DELETE] Conversations refreshed');
     } catch (error) {
-      console.error("❌ [DELETE] Critical error:", error);
+      logger.error("❌ [DELETE] Critical error:", error);
       toast({
         title: "Erreur",
         description: "Impossible de supprimer la conversation",
@@ -1772,7 +1776,7 @@ const Community = () => {
       });
     } finally {
       setDeleteConversationId(null);
-      console.log('🏁 [DELETE] Cleanup complete');
+      logger.log('🏁 [DELETE] Cleanup complete');
     }
   };
 
@@ -1798,7 +1802,7 @@ const Community = () => {
         description: `${type === 'image' ? 'L\'image' : 'La vidéo'} a été enregistrée sur votre appareil`,
       });
     } catch (error) {
-      console.error('Error downloading media:', error);
+      logger.error('Error downloading media:', error);
       toast({
         title: "Erreur",
         description: "Impossible de télécharger le fichier",
