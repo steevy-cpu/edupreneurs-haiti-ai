@@ -2,30 +2,8 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Heart, MessageCircle, Share2, Trash2, BadgeCheck } from "lucide-react";
 import { getAvatarUrl } from "@/lib/avatarMap";
-
-interface Profile {
-  id: string;
-  user_id: string;
-  full_name: string;
-  nickname: string;
-  avatar_url: string | null;
-  verified: boolean;
-}
-
-interface Post {
-  id: string;
-  user_id: string;
-  content: string;
-  image_url: string | null;
-  video_url: string | null;
-  created_at: string;
-  profile?: Profile;
-  likes?: number;
-  isLiked?: boolean;
-  commentCount?: number;
-  shareCount?: number;
-  isShared?: boolean;
-}
+import { formatTimeAgo } from "@/utils/dateUtils";
+import { Post } from "@/types/feed";
 
 interface PostCardProps {
   post: Post;
@@ -44,22 +22,6 @@ export function PostCard({
   onShare,
   onDelete,
 }: PostCardProps) {
-  const formatTimeAgo = (dateString: string) => {
-    const date = new Date(dateString);
-    const now = new Date();
-    const diffMs = now.getTime() - date.getTime();
-    const diffMins = Math.floor(diffMs / 60000);
-    const diffHours = Math.floor(diffMs / 3600000);
-    const diffDays = Math.floor(diffMs / 86400000);
-
-    if (diffMins < 1) return "à l'instant";
-    if (diffMins < 60) return `il y a ${diffMins}min`;
-    if (diffHours < 24) return `il y a ${diffHours}h`;
-    if (diffDays === 1) return "hier";
-    if (diffDays < 7) return `il y a ${diffDays}j`;
-    return date.toLocaleDateString("fr-FR", { day: "numeric", month: "short" });
-  };
-
   return (
     <div className="border-b border-border/50 bg-background">
       {/* Post Header */}
