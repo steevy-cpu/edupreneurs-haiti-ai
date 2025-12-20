@@ -25,7 +25,9 @@ import {
   ConversationListItem, 
   ChatHeader, 
   TypingIndicator,
-  ConversationSkeleton 
+  ConversationSkeleton,
+  MessageBubble,
+  SystemMessage 
 } from "@/components/community";
 import { 
   Profile, 
@@ -2216,387 +2218,38 @@ const Community = () => {
                 <div className="space-y-4 pb-4 max-w-full">
                 {messages.map((message) => {
                   const isOwn = message.sender_id === user?.id;
-                  const isSystemMessage = message.content.includes('a rejoint le groupe') || message.content.includes('a quitté le groupe');
+                  const isSystemMsg = message.content.includes('a rejoint le groupe') || 
+                    message.content.includes('a quitté le groupe') ||
+                    message.content.includes('Bienvenue dans');
                   
                   // System message rendering (centered)
-                  if (isSystemMessage) {
-                    return (
-                      <div key={message.id} className="flex justify-center px-2">
-                        <div className="bg-muted/50 text-muted-foreground text-xs sm:text-sm px-4 py-2 rounded-full border border-border/50 max-w-[90%] text-center">
-                          {message.content}
-                        </div>
-                      </div>
-                    );
+                  if (isSystemMsg) {
+                    return <SystemMessage key={message.id} content={message.content} />;
                   }
                   
                   // Regular message rendering
                   return (
-                    <>
-                      {/* System messages like "X a rejoint le groupe" */}
-                      {(message.content.includes('a rejoint le groupe') || 
-                        message.content.includes('a quitté le groupe') ||
-                        message.content.includes('Bienvenue dans')) && (
-                        <div key={message.id} className="flex justify-center my-2 px-2">
-                          <div className="bg-muted/50 rounded-full px-4 py-1.5">
-                            <p className="text-xs text-muted-foreground text-center">
-                              {message.content}
-                            </p>
-                          </div>
-                        </div>
-                      )}
-                      
-                      {/* Regular messages */}
-                      {!message.content.includes('a rejoint le groupe') && 
-                       !message.content.includes('a quitté le groupe') &&
-                       !message.content.includes('Bienvenue dans') && (
-                    <div
+                    <MessageBubble
                       key={message.id}
-                      className={`flex ${isOwn ? "justify-end" : "justify-start"} px-2`}
-                    >
-                      <div 
-                        className={`flex gap-1.5 sm:gap-2 max-w-[85%] sm:max-w-[70%] ${isOwn ? "flex-row-reverse" : "flex-row"} cursor-pointer group`}
-                        onClick={(e) => {
-                          // Don't trigger reply if clicking on avatar or post
-                          if (!(e.target as HTMLElement).closest('.no-reply-trigger')) {
-                            setReplyingTo(message);
-                          }
-                        }}
-                      >
-                        <Avatar 
-                          className="h-7 w-7 sm:h-8 sm:w-8 shrink-0 cursor-pointer hover:opacity-80 transition-opacity no-reply-trigger"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            if (message.profile?.user_id) {
-                              navigate(`/profile/${message.profile.user_id}`);
-                            }
-                          }}
-                        >
-                          <AvatarImage src={getAvatarUrl(message.profile?.avatar_url)} />
-                          <AvatarFallback className="bg-gradient-to-br from-primary/20 to-success/20 text-[10px] sm:text-xs">
-                            {(message.profile?.nickname || message.profile?.full_name)?.[0] || "?"}
-                          </AvatarFallback>
-                        </Avatar>
-                        <div className="flex flex-col gap-1 min-w-0 max-w-full">
-                          {message.replied_to && (
-                            <div className={`text-xs px-2 py-1 rounded-lg border break-words ${
-                              isOwn ? "bg-primary/20 border-primary/30" : "bg-muted/60 border-border/30"
-                            }`}>
-                              <div className="font-semibold opacity-70">
-                                {message.replied_to.profile?.nickname || message.replied_to.profile?.full_name}
-                              </div>
-                              <div className="opacity-60 truncate">
-                                {message.replied_to.content.substring(0, 50)}
-                                {message.replied_to.content.length > 50 && "..."}
-                              </div>
-                            </div>
-                          )}
-                          {message.shared_post ? (
-                            // Shared Post Display
-                            <div
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                navigate("/feed");
-                              }}
-                              className={`rounded-2xl px-3 py-2 sm:px-4 sm:py-3 cursor-pointer hover:opacity-90 transition-opacity no-reply-trigger break-words ${
-                                isOwn
-                                  ? "bg-primary/90 text-primary-foreground"
-                                  : "bg-muted"
-                              }`}
-                            >
-                              <div className="flex items-center gap-2 mb-2 pb-2 border-b border-border/20">
-                                <span className="text-xs font-semibold opacity-80">
-                                  📝 Post partagé de {message.shared_post.profile?.nickname || message.shared_post.profile?.full_name}
-                                </span>
-                              </div>
-                              <p className="text-xs sm:text-sm whitespace-pre-wrap break-words mb-2">
-                                {message.shared_post.content}
-                              </p>
-                              {message.shared_post.image_url && (
-                                <div>
-                                  <div className="flex items-center gap-2 mb-1">
-                                    <span className="text-xs font-medium flex items-center gap-1">
-                                      📷 Image
-                                    </span>
-                                    <Button
-                                      size="sm"
-                                      variant="ghost"
-                                      className="h-6 w-6 p-0 hover:bg-background/50 no-reply-trigger"
-                                      onClick={(e) => {
-                                        e.stopPropagation();
-                                        handleDownloadMedia(message.shared_post.image_url, 'image');
-                                      }}
-                                    >
-                                      <Download size={14} />
-                                    </Button>
-                                  </div>
-                                  <img
-                                    src={message.shared_post.image_url}
-                                    alt="Post"
-                                    className="rounded-lg w-full max-h-48 object-contain bg-muted/20 cursor-pointer hover:opacity-90 transition-opacity"
-                                    loading="lazy"
-                                    decoding="async"
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      setFullSizeImage(message.shared_post.image_url);
-                                    }}
-                                  />
-                                </div>
-                              )}
-                              <p className="text-xs opacity-70 mt-2">Cliquez pour voir le post</p>
-                            </div>
-                          ) : editingMessageId === message.id ? (
-                            // Editing Mode
-                            <div className="flex flex-col gap-2 w-full">
-                              <Textarea
-                                value={editedContent}
-                                onChange={(e) => setEditedContent(e.target.value)}
-                                className="min-h-[60px] resize-none"
-                                autoFocus
-                                onClick={(e) => e.stopPropagation()}
-                              />
-                              <div className="flex gap-2 justify-end">
-                                <Button
-                                  size="sm"
-                                  variant="ghost"
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    handleCancelEdit();
-                                  }}
-                                  className="no-reply-trigger"
-                                >
-                                  <X size={14} className="mr-1" />
-                                  Annuler
-                                </Button>
-                                <Button
-                                  size="sm"
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    handleSaveEdit(message.id);
-                                  }}
-                                  className="no-reply-trigger"
-                                >
-                                  <Check size={14} className="mr-1" />
-                                  Enregistrer
-                                </Button>
-                              </div>
-                            </div>
-                          ) : (
-                            // Regular Message Display
-                            <div className="relative group/message">
-                              <div
-                                className={`rounded-2xl px-3 py-2 sm:px-4 break-words overflow-wrap-anywhere ${
-                                  isOwn
-                                    ? "bg-primary text-primary-foreground"
-                                    : "bg-muted"
-                                }`}
-                              >
-                                <div className={`flex items-start ${message.image_url ? 'justify-between' : 'justify-start'} gap-2`}>
-                                  <p className="text-xs sm:text-sm whitespace-pre-wrap break-words overflow-wrap-anywhere flex-1">
-                                    {message.content}
-                                  </p>
-                                  {message.image_url && (
-                                    <Button
-                                      size="sm"
-                                      variant="ghost"
-                                      className="h-6 w-6 p-0 hover:bg-background/50 no-reply-trigger shrink-0"
-                                      onClick={(e) => {
-                                        e.stopPropagation();
-                                        handleDownloadMedia(message.image_url, 'image');
-                                      }}
-                                    >
-                                      <Download size={14} />
-                                    </Button>
-                                  )}
-                                </div>
-                                {message.image_url && (
-                                  <img
-                                    src={message.image_url}
-                                    alt="Image"
-                                    className="mt-2 rounded-lg w-full max-h-64 object-contain bg-muted/20 cursor-pointer hover:opacity-90 transition-opacity"
-                                    loading="lazy"
-                                    decoding="async"
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      setFullSizeImage(message.image_url);
-                                    }}
-                                  />
-                                )}
-                                {message.video_url && (
-                                  <div className="relative group/video mt-2">
-                                    <video
-                                      src={message.video_url}
-                                      controls
-                                      className="rounded-lg w-full max-h-64 bg-muted/20"
-                                      preload="metadata"
-                                    />
-                                    <Button
-                                      size="sm"
-                                      variant="secondary"
-                                      className="absolute bottom-2 right-2 h-8 w-8 p-0 opacity-0 group-hover/video:opacity-100 transition-opacity bg-background/90 hover:bg-background no-reply-trigger shadow-lg"
-                                      onClick={(e) => {
-                                        e.stopPropagation();
-                                        handleDownloadMedia(message.video_url, 'video');
-                                      }}
-                                    >
-                                      <Download size={16} />
-                                    </Button>
-                                  </div>
-                                )}
-                              </div>
-                              {isOwn && (
-                                <div className="absolute -right-2 top-0 opacity-0 group-hover/message:opacity-100 transition-opacity flex gap-1">
-                                  <Button
-                                    size="sm"
-                                    variant="ghost"
-                                    className="h-6 w-6 p-0 bg-background/90 hover:bg-background no-reply-trigger"
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      handleEditMessage(message.id, message.content);
-                                    }}
-                                  >
-                                    <Edit2 size={12} />
-                                  </Button>
-                                  <Button
-                                    size="sm"
-                                    variant="ghost"
-                                    className="h-6 w-6 p-0 bg-background/90 hover:bg-destructive hover:text-destructive-foreground no-reply-trigger"
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      handleDeleteMessage(message.id);
-                                    }}
-                                  >
-                                    <Trash2 size={12} />
-                                  </Button>
-                                </div>
-                              )}
-                            </div>
-                          )}
-                          <div className="flex items-center gap-1 mt-1">
-                            <span className="text-xs text-muted-foreground">
-                              {formatTime(message.created_at)}
-                            </span>
-                            {isOwn && (
-                              <span className="inline-flex">
-                                {message.read ? (
-                                  <CheckCheck size={14} className="text-primary" />
-                                ) : (
-                                  <Check size={14} className="text-muted-foreground" />
-                                )}
-                              </span>
-                            )}
-                          </div>
-                          
-                          {/* Reactions Display */}
-                          {reactions[message.id] && reactions[message.id].length > 0 && (
-                            <div className="flex flex-wrap gap-1 mt-1">
-                              {Object.entries(
-                                reactions[message.id].reduce((acc, reaction) => {
-                                  if (!acc[reaction.emoji]) {
-                                    acc[reaction.emoji] = [];
-                                  }
-                                  acc[reaction.emoji].push(reaction.user_id);
-                                  return acc;
-                                }, {} as Record<string, string[]>)
-                              ).map(([emoji, userIds]) => {
-                                const hasUserReacted = userIds.includes(user?.id);
-                                return (
-                                  <button
-                                    key={emoji}
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      toggleReaction(message.id, emoji);
-                                    }}
-                                    className={`flex items-center gap-1 px-2 py-0.5 rounded-full text-xs transition-colors no-reply-trigger ${
-                                      hasUserReacted 
-                                        ? "bg-primary/20 border border-primary/50" 
-                                        : "bg-muted border border-border hover:bg-muted/80"
-                                    }`}
-                                  >
-                                    <span>{emoji}</span>
-                                    <span className="text-[10px] font-medium">{userIds.length}</span>
-                                  </button>
-                                );
-                              })}
-                              
-                              {/* Add Reaction Button */}
-                              <Popover 
-                                open={showReactionPicker === message.id} 
-                                onOpenChange={(open) => setShowReactionPicker(open ? message.id : null)}
-                              >
-                                <PopoverTrigger asChild>
-                                  <button
-                                    onClick={(e) => e.stopPropagation()}
-                                    className="px-2 py-0.5 rounded-full text-xs bg-muted border border-border hover:bg-muted/80 transition-colors no-reply-trigger"
-                                  >
-                                    ➕
-                                  </button>
-                                </PopoverTrigger>
-                                <PopoverContent 
-                                  className="w-auto p-2" 
-                                  onClick={(e) => e.stopPropagation()}
-                                >
-                                  <div className="flex gap-2">
-                                    {['❤️', '😂', '😮', '😢', '😡', '👍', '👎', '🔥', '🎉'].map((emoji) => (
-                                      <button
-                                        key={emoji}
-                                        onClick={(e) => {
-                                          e.stopPropagation();
-                                          toggleReaction(message.id, emoji);
-                                        }}
-                                        className="text-xl hover:scale-125 transition-transform"
-                                      >
-                                        {emoji}
-                                      </button>
-                                    ))}
-                                  </div>
-                                </PopoverContent>
-                              </Popover>
-                            </div>
-                          )}
-                          
-                          {/* Add Reaction Button (when no reactions exist) */}
-                          {(!reactions[message.id] || reactions[message.id].length === 0) && (
-                            <div className="opacity-0 group-hover:opacity-100 transition-opacity mt-1">
-                              <Popover 
-                                open={showReactionPicker === message.id} 
-                                onOpenChange={(open) => setShowReactionPicker(open ? message.id : null)}
-                              >
-                                <PopoverTrigger asChild>
-                                  <button
-                                    onClick={(e) => e.stopPropagation()}
-                                    className="px-2 py-0.5 rounded-full text-xs bg-muted border border-border hover:bg-muted/80 transition-colors no-reply-trigger flex items-center gap-1"
-                                  >
-                                    <Smile size={12} />
-                                    <span className="text-[10px]">Réagir</span>
-                                  </button>
-                                </PopoverTrigger>
-                                <PopoverContent 
-                                  className="w-auto p-2" 
-                                  onClick={(e) => e.stopPropagation()}
-                                >
-                                  <div className="flex gap-2">
-                                    {['❤️', '😂', '😮', '😢', '😡', '👍', '👎', '🔥', '🎉'].map((emoji) => (
-                                      <button
-                                        key={emoji}
-                                        onClick={(e) => {
-                                          e.stopPropagation();
-                                          toggleReaction(message.id, emoji);
-                                        }}
-                                        className="text-xl hover:scale-125 transition-transform"
-                                      >
-                                        {emoji}
-                                      </button>
-                                    ))}
-                                  </div>
-                                </PopoverContent>
-                              </Popover>
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-                      )}
-                    </>
+                      message={message}
+                      isOwn={isOwn}
+                      userId={user?.id}
+                      reactions={reactions[message.id] || []}
+                      editingMessageId={editingMessageId}
+                      editedContent={editedContent}
+                      showReactionPicker={showReactionPicker}
+                      onSetReplyingTo={setReplyingTo}
+                      onEditMessage={handleEditMessage}
+                      onCancelEdit={handleCancelEdit}
+                      onSaveEdit={handleSaveEdit}
+                      onSetEditedContent={setEditedContent}
+                      onDeleteMessage={handleDeleteMessage}
+                      onToggleReaction={toggleReaction}
+                      onSetShowReactionPicker={setShowReactionPicker}
+                      onDownloadMedia={handleDownloadMedia}
+                      onSetFullSizeImage={setFullSizeImage}
+                      formatTime={formatTime}
+                    />
                   );
                 })}
                 
@@ -2605,13 +2258,13 @@ const Community = () => {
                   if (!selectedConversation) return null;
                   
                   const conversationTypingUsers = typingUsers[selectedConversation] || {};
-                  console.log('🎨 Rendering typing indicator for conversation:', selectedConversation, conversationTypingUsers);
+                  logger.log('🎨 Rendering typing indicator for conversation:', selectedConversation, conversationTypingUsers);
                   
                   return Object.entries(conversationTypingUsers).map(([key, value]) => {
                     const presence = Array.isArray(value) ? value[0] : value;
-                    console.log('🔍 Presence:', presence, 'typing:', presence?.typing, 'user_id:', presence?.user_id, 'current user:', user?.id);
+                    logger.log('🔍 Presence:', presence, 'typing:', presence?.typing, 'user_id:', presence?.user_id, 'current user:', user?.id);
                     if (presence?.typing && presence?.user_id !== user?.id) {
-                      console.log('✅ Showing typing indicator for user:', presence?.user_id);
+                      logger.log('✅ Showing typing indicator for user:', presence?.user_id);
                       const conversation = conversations.find(c => c.id === selectedConversation);
                       
                       // Find the actual user profile for group chats
@@ -2641,7 +2294,7 @@ const Community = () => {
                         </div>
                       );
                     }
-                    console.log('❌ Not showing typing indicator for this presence');
+                    logger.log('❌ Not showing typing indicator for this presence');
                     return null;
                   });
                 })()}
