@@ -2059,9 +2059,22 @@ const Community = () => {
       </div>
 
       {/* Messages View - WhatsApp-style keyboard-adaptive layout */}
-      <div className={`${selectedConversation ? "fixed inset-0 md:relative md:inset-auto" : "hidden md:block"} md:flex-1 bg-background z-[9998]`}>
+      <div className={`${selectedConversation ? "fixed inset-0 md:relative md:inset-auto" : "hidden md:block"} md:flex-1 bg-background z-[9998] relative`}>
+        {/* Full-page background pattern with 50% transparency */}
+        {selectedConversation && (
+          <div 
+            className="absolute inset-0 pointer-events-none z-0"
+            style={{
+              backgroundImage: `url(${chatBackground})`,
+              backgroundSize: '300px',
+              backgroundRepeat: 'repeat',
+              backgroundPosition: 'center',
+              opacity: 0.5
+            }}
+          />
+        )}
         {selectedConversation ? (
-          <div className="h-full grid" style={{
+          <div className="h-full grid relative z-10" style={{
             gridTemplateRows: 'var(--chat-header-h) 1fr auto',
             height: '100dvh'
           }}>
@@ -2188,22 +2201,11 @@ const Community = () => {
 
             {/* Scrollable Messages Area (includes Eric banner + messages) */}
             <div 
-              className="overflow-y-auto overflow-x-hidden relative"
+              className="overflow-y-auto overflow-x-hidden"
               style={{
                 paddingBottom: 'calc(var(--kb) + var(--safe-bottom))'
               }}
             >
-              {/* Background pattern with 50% transparency */}
-              <div 
-                className="absolute inset-0 pointer-events-none"
-                style={{
-                  backgroundImage: `url(${chatBackground})`,
-                  backgroundSize: '300px',
-                  backgroundRepeat: 'repeat',
-                  backgroundPosition: 'center',
-                  opacity: 0.5
-                }}
-              />
               {/* Eric Help Banner for Group Chats */}
               {(() => {
                 const currentConv = conversations.find(c => c.id === selectedConversation);
