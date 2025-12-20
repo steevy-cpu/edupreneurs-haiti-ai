@@ -2074,12 +2074,11 @@ const Community = () => {
           />
         )}
         {selectedConversation ? (
-          <div className="h-full grid relative z-10" style={{
-            gridTemplateRows: 'var(--chat-header-h) 1fr auto',
+          <div className="h-full flex flex-col relative z-10" style={{
             height: '100dvh'
           }}>
             {/* Fixed Header - Always stays at top */}
-            <div className="fixed top-0 left-0 right-0 md:left-80 lg:left-96 z-20 border-b border-border/50 bg-background/95 backdrop-blur-md p-4 flex items-center gap-3 shrink-0">
+            <div className="fixed top-0 left-0 right-0 md:left-80 lg:left-96 z-20 border-b border-border/50 bg-background/95 backdrop-blur-md p-4 flex items-center gap-3 shrink-0 h-[72px]">
               <Button
                 size="icon"
                 variant="ghost"
@@ -2199,12 +2198,9 @@ const Community = () => {
               </DropdownMenu>
             </div>
 
-            {/* Scrollable Messages Area (includes Eric banner + messages) - with top padding for fixed header */}
+            {/* Scrollable Messages Area (includes Eric banner + messages) - with top padding for fixed header and bottom for composer */}
             <div 
-              className="overflow-y-auto overflow-x-hidden pt-[72px]"
-              style={{
-                paddingBottom: 'calc(var(--kb) + var(--safe-bottom))'
-              }}
+              className="flex-1 overflow-y-auto overflow-x-hidden pt-[72px] pb-[100px]"
             >
               {/* Eric Help Banner for Group Chats */}
               {(() => {
@@ -2321,10 +2317,8 @@ const Community = () => {
             </div>
             </div>
 
-            {/* Composer - Sticks to bottom and rides keyboard */}
-            <div className="border-t border-border/50 bg-background/95 backdrop-blur-md shrink-0" style={{
-              position: 'sticky',
-              bottom: 0,
+            {/* Composer - Fixed at bottom */}
+            <div className="fixed bottom-0 left-0 right-0 md:left-80 lg:left-96 border-t border-border/50 bg-background/95 backdrop-blur-md shrink-0 z-20" style={{
               transform: `translateY(calc(-1 * var(--kb)))`,
               paddingBottom: 'calc(0.5rem + var(--safe-bottom))'
             }}>
