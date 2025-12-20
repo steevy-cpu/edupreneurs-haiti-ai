@@ -255,6 +255,7 @@ export function CreatePostDialog({ currentUser, onPostCreated }: CreatePostDialo
             <Switch
               checked={isPublicPost}
               onCheckedChange={setIsPublicPost}
+              className="shadow-sm ring-1 ring-border data-[state=checked]:ring-primary/50"
             />
           </div>
 
