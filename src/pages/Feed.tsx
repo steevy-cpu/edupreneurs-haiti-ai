@@ -50,6 +50,7 @@ const Feed = () => {
   const [showComments, setShowComments] = useState<{ [key: string]: boolean }>({});
   const [replyingTo, setReplyingTo] = useState<{ [key: string]: string | null }>({});
   const [deletePostId, setDeletePostId] = useState<string | null>(null);
+  const [expandedPosts, setExpandedPosts] = useState<{ [key: string]: boolean }>({});
   const [deleteCommentId, setDeleteCommentId] = useState<string | null>(null);
   const [shareDialogOpen, setShareDialogOpen] = useState(false);
   const [selectedPostToShare, setSelectedPostToShare] = useState<Post | null>(null);
@@ -992,7 +993,25 @@ const Feed = () => {
                 {/* Post Content */}
                 <div className="px-4 pb-3">
                   <p className="text-sm whitespace-pre-wrap break-words">
-                    {post.content}
+                    {post.content.length > 150 && !expandedPosts[post.id] 
+                      ? post.content.slice(0, 150) 
+                      : post.content}
+                    {post.content.length > 150 && !expandedPosts[post.id] && (
+                      <button 
+                        onClick={() => setExpandedPosts(prev => ({ ...prev, [post.id]: true }))}
+                        className="text-muted-foreground hover:text-foreground ml-1 font-medium"
+                      >
+                        ...voir plus
+                      </button>
+                    )}
+                    {post.content.length > 150 && expandedPosts[post.id] && (
+                      <button 
+                        onClick={() => setExpandedPosts(prev => ({ ...prev, [post.id]: false }))}
+                        className="text-muted-foreground hover:text-foreground ml-1 font-medium block mt-1"
+                      >
+                        voir moins
+                      </button>
+                    )}
                   </p>
                   {post.image_url && (
                     <img 
