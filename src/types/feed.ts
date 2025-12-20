@@ -26,6 +26,7 @@ export interface Post {
   image_url: string | null;
   video_url: string | null;
   created_at: string;
+  is_public?: boolean;
   profile?: Profile;
   likes?: number;
   isLiked?: boolean;
