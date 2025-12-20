@@ -1,9 +1,12 @@
+import { useState } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Heart, MessageCircle, Share2, Trash2, BadgeCheck } from "lucide-react";
 import { getAvatarUrl } from "@/lib/avatarMap";
 import { formatTimeAgo } from "@/utils/dateUtils";
 import { Post } from "@/types/feed";
+
+const MAX_CONTENT_LENGTH = 150;
 
 interface PostCardProps {
   post: Post;
@@ -22,6 +25,12 @@ export function PostCard({
   onShare,
   onDelete,
 }: PostCardProps) {
+  const [isExpanded, setIsExpanded] = useState(false);
+  const shouldTruncate = post.content.length > MAX_CONTENT_LENGTH;
+  const displayContent = shouldTruncate && !isExpanded 
+    ? post.content.slice(0, MAX_CONTENT_LENGTH) 
+    : post.content;
+
   return (
     <div className="border-b border-border/50 bg-background">
       {/* Post Header */}
@@ -60,7 +69,23 @@ export function PostCard({
       {/* Post Content */}
       <div className="px-3 xs:px-4 pb-2.5 xs:pb-3">
         <p className="text-xs xs:text-sm whitespace-pre-wrap break-words leading-relaxed">
-          {post.content}
+          {displayContent}
+          {shouldTruncate && !isExpanded && (
+            <button 
+              onClick={() => setIsExpanded(true)}
+              className="text-muted-foreground hover:text-foreground ml-1 font-medium"
+            >
+              ...voir plus
+            </button>
+          )}
+          {shouldTruncate && isExpanded && (
+            <button 
+              onClick={() => setIsExpanded(false)}
+              className="text-muted-foreground hover:text-foreground ml-1 font-medium block mt-1"
+            >
+              voir moins
+            </button>
+          )}
         </p>
         {post.image_url && (
           <img 
