@@ -20,6 +20,7 @@ import { CreateGroupDialog } from "@/components/CreateGroupDialog";
 import { GroupInfoDialog } from "@/components/GroupInfoDialog";
 import { NotificationPermissionBanner } from "@/components/NotificationPermissionBanner";
 import ericAiHelper from "@/assets/eric-ai-helper.png";
+import chatBackground from "@/assets/background-chat.png";
 import { logger } from "@/utils/logger";
 import { 
   ConversationListItem, 
@@ -2186,9 +2187,16 @@ const Community = () => {
             </div>
 
             {/* Scrollable Messages Area (includes Eric banner + messages) */}
-            <div className="overflow-y-auto overflow-x-hidden" style={{
-              paddingBottom: 'calc(var(--kb) + var(--safe-bottom))'
-            }}>
+            <div 
+              className="overflow-y-auto overflow-x-hidden"
+              style={{
+                paddingBottom: 'calc(var(--kb) + var(--safe-bottom))',
+                backgroundImage: `url(${chatBackground})`,
+                backgroundSize: '300px',
+                backgroundRepeat: 'repeat',
+                backgroundPosition: 'center'
+              }}
+            >
               {/* Eric Help Banner for Group Chats */}
               {(() => {
                 const currentConv = conversations.find(c => c.id === selectedConversation);
