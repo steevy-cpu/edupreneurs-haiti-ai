@@ -22,64 +22,14 @@ import { GroupInfoDialog } from "@/components/GroupInfoDialog";
 import { NotificationPermissionBanner } from "@/components/NotificationPermissionBanner";
 import ericAiHelper from "@/assets/eric-ai-helper.png";
 import { Bug } from "lucide-react";
-
-interface Profile {
-  id: string;
-  user_id: string;
-  full_name: string;
-  nickname: string;
-  avatar_url: string | null;
-  verified: boolean;
-}
-
-interface GroupChat {
-  id: string;
-  name: string;
-  avatar_url: string | null;
-  description: string | null;
-  created_by: string;
-  member_count?: number;
-}
-
-interface Conversation {
-  id: string;
-  created_at: string;
-  is_group: boolean;
-  group?: GroupChat;
-  otherUser?: Profile;
-  lastMessage?: string;
-  lastMessageTime?: string;
-  unreadCount?: number;
-}
-
-interface Message {
-  id: string;
-  content: string;
-  sender_id: string;
-  created_at: string;
-  read: boolean;
-  profile?: Profile;
-  shared_post_id?: string | null;
-  replied_to_id?: string | null;
-  replied_to?: Message;
-  image_url?: string | null;
-  video_url?: string | null;
-  shared_post?: {
-    id: string;
-    content: string;
-    image_url: string | null;
-    user_id: string;
-    profile?: Profile;
-  };
-}
-
-interface Reaction {
-  id: string;
-  message_id: string;
-  user_id: string;
-  emoji: string;
-  created_at: string;
-}
+import { 
+  Profile, 
+  GroupChat, 
+  Conversation, 
+  Message, 
+  Reaction, 
+  ERIC_USER_ID 
+} from "@/types/community";
 
 const Community = () => {
   const navigate = useNavigate();
@@ -87,9 +37,6 @@ const Community = () => {
   const [searchParams] = useSearchParams();
   const conversationId = searchParams.get("conversation");
   const { playSendSound, playReceiveSound } = useMessageSounds();
-  
-  // Eric's user ID - he's always shown as online
-  const ERIC_USER_ID = '68f2f959-e14a-47f9-8277-07df3a6fcd79';
   
   const [user, setUser] = useState<any>(null);
   const [conversations, setConversations] = useState<Conversation[]>([]);
@@ -556,8 +503,8 @@ const Community = () => {
           // Threshold not found - show all messages
           visibleMessages.set(convId, convMessages);
         } else {
-          // Only include messages after the threshold
-          const visibleMsgs = convMessages.slice(thresholdIndex + 1);
+          // Include messages FROM the threshold message onwards (inclusive)
+          const visibleMsgs = convMessages.slice(thresholdIndex);
           visibleMessages.set(convId, visibleMsgs);
         }
       }

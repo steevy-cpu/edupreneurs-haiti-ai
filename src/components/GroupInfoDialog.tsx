@@ -10,23 +10,7 @@ import { getAvatarUrl } from "@/lib/avatarMap";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
-
-interface Profile {
-  id: string;
-  user_id: string;
-  full_name: string;
-  nickname: string;
-  avatar_url: string | null;
-  verified: boolean;
-}
-
-interface GroupChat {
-  id: string;
-  name: string;
-  avatar_url: string | null;
-  description: string | null;
-  created_by: string;
-}
+import { Profile, GroupChat } from "@/types/community";
 
 interface GroupInfoDialogProps {
   open: boolean;
