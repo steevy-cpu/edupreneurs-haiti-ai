@@ -10,10 +10,12 @@ import {
   Phone, CreditCard, Check, ArrowRight, ArrowLeft,
   Smartphone, Clock, Shield, Sparkles, Crown,
   Loader2, Upload, Camera, Image, AlertCircle,
-  CheckCircle2, XCircle, HelpCircle, Copy, FileText
+  CheckCircle2, XCircle, HelpCircle, Copy, FileText,
+  Settings
 } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
+import { Link } from "react-router-dom";
 
 type Step = 'select-plan' | 'ussd-instructions' | 'upload-receipt' | 'pending-verification' | 'verified' | 'rejected';
 
@@ -683,10 +685,19 @@ export default function NatCashDemo() {
         {step === 'rejected' && renderRejected()}
 
         {/* Footer info */}
-        <div className="mt-8 text-center">
+        <div className="mt-8 text-center space-y-4">
           <div className="inline-flex items-center gap-2 text-sm text-muted-foreground">
             <Shield className="w-4 h-4" />
             <span>Paiement sécurisé via NatCash/Digicel</span>
+          </div>
+          
+          <div>
+            <Link to="/admin/payments-demo">
+              <Button variant="outline" size="sm">
+                <Settings className="w-4 h-4 mr-2" />
+                Voir le Panel Admin (Demo)
+              </Button>
+            </Link>
           </div>
         </div>
       </div>
