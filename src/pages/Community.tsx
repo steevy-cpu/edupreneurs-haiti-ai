@@ -87,6 +87,34 @@ const Community = () => {
   const [followers, setFollowers] = useState<Profile[]>([]);
   const [showGroupInfo, setShowGroupInfo] = useState(false);
   const [selectedGroupId, setSelectedGroupId] = useState<string | null>(null);
+  const [keyboardHeight, setKeyboardHeight] = useState(0);
+
+  // Handle virtual keyboard on mobile
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.visualViewport) {
+        const vvHeight = window.visualViewport.height;
+        const windowHeight = window.innerHeight;
+        const kbHeight = Math.max(0, windowHeight - vvHeight);
+        setKeyboardHeight(kbHeight);
+        document.documentElement.style.setProperty('--kb', `${kbHeight}px`);
+      }
+    };
+
+    if (window.visualViewport) {
+      window.visualViewport.addEventListener('resize', handleResize);
+      window.visualViewport.addEventListener('scroll', handleResize);
+      handleResize();
+    }
+
+    return () => {
+      if (window.visualViewport) {
+        window.visualViewport.removeEventListener('resize', handleResize);
+        window.visualViewport.removeEventListener('scroll', handleResize);
+      }
+      document.documentElement.style.setProperty('--kb', '0px');
+    };
+  }, []);
 
   // Save lastSeenTimes to localStorage whenever it changes
   useEffect(() => {
@@ -2203,7 +2231,10 @@ const Community = () => {
 
             {/* Scrollable Messages Area (includes Eric banner + messages) - with top padding for fixed header and bottom for composer + nav */}
             <div 
-              className="flex-1 overflow-y-auto overflow-x-hidden pt-[72px] pb-[calc(8rem+env(safe-area-inset-bottom,0px))] md:pb-[96px]"
+              className="flex-1 overflow-y-auto overflow-x-hidden pt-[72px] md:pb-[96px]"
+              style={{
+                paddingBottom: `calc(8rem + env(safe-area-inset-bottom, 0px) + ${keyboardHeight}px)`
+              }}
             >
               {/* Eric Help Banner for Group Chats */}
               {(() => {
@@ -2321,9 +2352,12 @@ const Community = () => {
             </div>
 
             {/* Composer - Fixed at bottom, above bottom nav on mobile */}
-            <div className="fixed left-0 right-0 md:left-80 lg:left-96 border-t border-border/50 bg-background/95 backdrop-blur-md shrink-0 z-[9999] bottom-[calc(3.5rem+env(safe-area-inset-bottom,0px))] md:bottom-0" style={{
-              transform: `translateY(calc(-1 * var(--kb)))`
-            }}>
+            <div 
+              className="fixed left-0 right-0 md:left-80 lg:left-96 border-t border-border/50 bg-background/95 backdrop-blur-md shrink-0 z-[9999] md:bottom-0"
+              style={{
+                bottom: `calc(3.5rem + env(safe-area-inset-bottom, 0px) + ${keyboardHeight}px)`
+              }}
+            >
               <div className="p-3 pt-2 md:p-4 md:pt-2">
               {replyingTo && (
                 <div className="mb-2 px-3 py-2 bg-muted/50 rounded-lg border border-border/30 flex items-start justify-between max-w-full overflow-hidden">
