@@ -656,33 +656,39 @@ const Feed = () => {
   };
 
   const renderComment = (comment: Comment, postId: string, isReply: boolean = false) => (
-    <div key={comment.id} className={`flex gap-2 ${isReply ? "ml-8" : ""}`}>
-      <Avatar className="h-7 w-7 flex-shrink-0">
+    <div key={comment.id} className={`flex gap-2.5 ${isReply ? "ml-8 mt-2" : ""}`}>
+      <Avatar 
+        className="h-8 w-8 flex-shrink-0 ring-1 ring-border cursor-pointer hover:opacity-80 transition-opacity"
+        onClick={() => navigate(`/profile/${comment.user_id}`)}
+      >
         <AvatarImage src={getAvatarUrl(comment.profile?.avatar_url)} />
-        <AvatarFallback className="text-xs">
+        <AvatarFallback className="text-xs font-medium">
           {comment.profile?.nickname?.[0] || "?"}
         </AvatarFallback>
       </Avatar>
       <div className="flex-1 min-w-0">
-        <div className="bg-muted/30 rounded-lg px-3 py-2">
-          <div className="flex items-center gap-1.5">
-            <p className="font-semibold text-xs">
+        <div className="bg-background rounded-xl px-3 py-2 shadow-sm border border-border/30">
+          <div className="flex items-center gap-1.5 mb-0.5">
+            <p 
+              className="font-semibold text-xs cursor-pointer hover:underline"
+              onClick={() => navigate(`/profile/${comment.user_id}`)}
+            >
               {comment.profile?.nickname || "Utilisateur"}
             </p>
             {comment.profile?.verified && (
               <BadgeCheck className="w-3 h-3 text-primary fill-primary/20" />
             )}
+            <span className="text-[10px] text-muted-foreground">
+              · {formatTimeAgo(comment.created_at)}
+            </span>
           </div>
-          <p className="text-sm break-words">{comment.content}</p>
+          <p className="text-sm break-words leading-relaxed">{comment.content}</p>
         </div>
-        <div className="flex items-center gap-3 mt-1 px-1">
-          <p className="text-xs text-muted-foreground">
-            {formatTimeAgo(comment.created_at)}
-          </p>
+        <div className="flex items-center gap-3 mt-1.5 px-2">
           {!isReply && (
             <button
               onClick={() => setReplyingTo({ ...replyingTo, [postId]: comment.id })}
-              className="text-xs text-muted-foreground hover:text-primary flex items-center gap-1"
+              className="text-xs text-muted-foreground hover:text-primary flex items-center gap-1 transition-colors"
             >
               <Reply size={12} />
               Répondre
@@ -691,7 +697,7 @@ const Feed = () => {
           {comment.user_id === currentUser?.id && (
             <button
               onClick={() => setDeleteCommentId(comment.id)}
-              className="text-xs text-destructive hover:text-destructive/80 flex items-center gap-1"
+              className="text-xs text-muted-foreground hover:text-destructive flex items-center gap-1 transition-colors"
             >
               <Trash2 size={12} />
               Supprimer
@@ -713,11 +719,11 @@ const Feed = () => {
                   addComment(postId, comment.id);
                 }
               }}
-              className="flex-1"
+              className="flex-1 h-8 text-sm"
             />
             <Popover>
               <PopoverTrigger asChild>
-                <Button size="sm" variant="ghost">
+                <Button size="icon" variant="ghost" className="h-8 w-8 shrink-0">
                   <Smile size={16} />
                 </Button>
               </PopoverTrigger>
@@ -729,18 +735,19 @@ const Feed = () => {
               </PopoverContent>
             </Popover>
             <Button
-              size="sm"
+              size="icon"
               onClick={() => addComment(postId, comment.id)}
               disabled={!replyInputs[comment.id]?.trim()}
+              className="h-8 w-8 shrink-0"
             >
-              <Send size={16} />
+              <Send size={14} />
             </Button>
           </div>
         )}
 
         {/* Render replies */}
         {comment.replies && comment.replies.length > 0 && (
-          <div className="mt-3 space-y-3">
+          <div className="mt-2 space-y-2">
             {comment.replies.map(reply => renderComment(reply, postId, true))}
           </div>
         )}
@@ -749,40 +756,41 @@ const Feed = () => {
   );
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background pb-20 sm:pb-6">
       {/* Notification Permission Banner */}
       {currentUser && <NotificationPermissionBanner userId={currentUser.id} />}
       
       {/* Header */}
-      <div className="sticky top-0 z-50 border-b border-border/50 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-        <div className="max-w-2xl mx-auto px-4 py-3 flex items-center justify-between">
-          <div className="flex items-center gap-3">
+      <div className="sticky top-0 z-50 border-b border-border/50 bg-background/95 backdrop-blur-md supports-[backdrop-filter]:bg-background/60 safe-area-top">
+        <div className="max-w-2xl mx-auto px-3 sm:px-4 py-2.5 sm:py-3 flex items-center justify-between">
+          <div className="flex items-center gap-2 sm:gap-3">
             <Button
               size="icon"
               variant="ghost"
               onClick={() => navigate("/dashboard")}
+              className="h-9 w-9"
             >
-              <ArrowLeft size={20} />
+              <ArrowLeft size={18} className="sm:w-5 sm:h-5" />
             </Button>
-            <h1 className="text-xl font-semibold">Fil d'actualité</h1>
+            <h1 className="text-lg sm:text-xl font-bold">Fil d'actualité</h1>
           </div>
           
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1 sm:gap-2">
             <Button
               size="icon"
               variant="ghost"
               onClick={handleRefresh}
               disabled={isRefreshing}
-              className="hover:bg-accent/50"
+              className="h-9 w-9 hover:bg-accent/50"
               title="Actualiser"
             >
-              <RefreshCw size={20} className={isRefreshing ? "animate-spin" : ""} />
+              <RefreshCw size={18} className={`sm:w-5 sm:h-5 ${isRefreshing ? "animate-spin" : ""}`} />
             </Button>
             <ThemeToggle />
             <Dialog>
             <DialogTrigger asChild>
-              <Button size="icon" variant="ghost" className="hover:bg-accent/50">
-                <Plus size={24} />
+              <Button size="icon" className="h-9 w-9 bg-primary hover:bg-primary/90">
+                <Plus size={20} />
               </Button>
             </DialogTrigger>
             <DialogContent className="sm:max-w-[500px]">
@@ -911,17 +919,17 @@ const Feed = () => {
       </div>
 
       {/* Feed */}
-      <ScrollArea className="h-[calc(100vh-60px)]">
-        <div className="max-w-2xl mx-auto pb-20">
+      <ScrollArea className="h-[calc(100dvh-56px)]">
+        <div className="max-w-2xl mx-auto">
           {isLoading ? (
             // Loading skeleton - show while data is being fetched
-            <div className="space-y-4 px-4 pt-4">
+            <div className="space-y-3 px-3 sm:px-4 pt-3 sm:pt-4">
               {[1, 2, 3].map((i) => (
-                <div key={i} className="border-b border-border/50 pb-4 animate-pulse">
+                <div key={i} className="bg-card rounded-xl p-4 shadow-sm border border-border/30 animate-pulse">
                   <div className="flex items-center gap-3 mb-3">
-                    <div className="h-10 w-10 rounded-full bg-muted/50" />
+                    <div className="h-11 w-11 rounded-full bg-muted/50" />
                     <div className="flex-1">
-                      <div className="h-4 w-24 bg-muted/50 rounded mb-1" />
+                      <div className="h-4 w-28 bg-muted/50 rounded mb-1.5" />
                       <div className="h-3 w-16 bg-muted/30 rounded" />
                     </div>
                   </div>
@@ -929,48 +937,58 @@ const Feed = () => {
                     <div className="h-4 w-full bg-muted/40 rounded" />
                     <div className="h-4 w-3/4 bg-muted/40 rounded" />
                   </div>
-                  <div className="flex gap-6 mt-4">
-                    <div className="h-5 w-12 bg-muted/30 rounded" />
-                    <div className="h-5 w-12 bg-muted/30 rounded" />
-                    <div className="h-5 w-12 bg-muted/30 rounded ml-auto" />
+                  <div className="flex gap-6 mt-4 pt-3 border-t border-border/30">
+                    <div className="h-8 w-16 bg-muted/30 rounded-full" />
+                    <div className="h-8 w-16 bg-muted/30 rounded-full" />
+                    <div className="h-8 w-16 bg-muted/30 rounded-full ml-auto" />
                   </div>
                 </div>
               ))}
             </div>
           ) : posts.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-20 px-4 text-center">
-              <div className="w-24 h-24 rounded-full bg-muted/30 flex items-center justify-center mb-4">
-                <MessageCircle size={32} className="text-muted-foreground" />
+            <div className="flex flex-col items-center justify-center py-16 px-6 text-center">
+              <div className="w-20 h-20 rounded-full bg-muted/40 flex items-center justify-center mb-4">
+                <MessageCircle size={32} className="text-muted-foreground/50" />
               </div>
               <h3 className="text-lg font-medium mb-2">Aucun post pour le moment</h3>
-              <p className="text-sm text-muted-foreground max-w-xs">
+              <p className="text-sm text-muted-foreground max-w-[200px] mb-4">
                 Suivez des personnes pour voir leurs posts ici
               </p>
+              <Button onClick={() => navigate('/user-search')} variant="outline" className="gap-2">
+                Rechercher des utilisateurs
+              </Button>
             </div>
           ) : (
-            posts.map((post) => (
+            <div className="space-y-3 px-3 sm:px-4 pt-3 sm:pt-4">
+            {posts.map((post) => (
               <div
                 key={post.id}
-                className="border-b border-border/50 bg-background"
+                className="bg-card rounded-xl shadow-sm border border-border/30 overflow-hidden"
               >
                 {/* Post Header */}
                 <div className="flex items-center gap-3 px-4 py-3">
-                  <Avatar className="h-10 w-10">
+                  <Avatar 
+                    className="h-11 w-11 ring-2 ring-background shadow-sm cursor-pointer hover:opacity-80 transition-opacity"
+                    onClick={() => navigate(`/profile/${post.user_id}`)}
+                  >
                     <AvatarImage src={getAvatarUrl(post.profile?.avatar_url)} />
-                    <AvatarFallback className="bg-gradient-to-br from-primary/20 to-success/20 text-foreground">
+                    <AvatarFallback className="bg-gradient-to-br from-primary/20 to-success/20 text-foreground font-medium">
                       {post.profile?.full_name?.[0] || "?"}
                     </AvatarFallback>
                   </Avatar>
-                  <div className="flex-1">
+                  <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-1.5">
-                      <p className="font-semibold text-sm">
+                      <p 
+                        className="font-semibold text-sm cursor-pointer hover:underline truncate"
+                        onClick={() => navigate(`/profile/${post.user_id}`)}
+                      >
                         {post.profile?.full_name || "Utilisateur"}
                       </p>
                       {post.profile?.verified && (
-                        <BadgeCheck className="w-4 h-4 text-primary fill-primary/20" />
+                        <BadgeCheck className="w-4 h-4 text-primary fill-primary/20 shrink-0" />
                       )}
                       {post.is_public && (
-                        <span title="Post public">
+                        <span title="Post public" className="shrink-0">
                           <Globe className="w-3.5 h-3.5 text-muted-foreground" />
                         </span>
                       )}
@@ -981,9 +999,10 @@ const Feed = () => {
                   </div>
                   {post.user_id === currentUser?.id && (
                     <Button
-                      size="sm"
+                      size="icon"
                       variant="ghost"
                       onClick={() => setDeletePostId(post.id)}
+                      className="h-8 w-8 shrink-0"
                     >
                       <Trash2 size={16} className="text-destructive" />
                     </Button>
@@ -1031,21 +1050,21 @@ const Feed = () => {
                 </div>
 
                 {/* Post Actions */}
-                <div className="flex items-center gap-6 px-4 py-2">
+                <div className="flex items-center gap-2 px-4 py-2.5 border-t border-border/30">
                   <button
                     onClick={() => toggleLike(post.id, post.isLiked || false)}
-                    className="flex items-center gap-2 group"
+                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full transition-all duration-200 ${
+                      post.isLiked 
+                        ? "bg-red-500/10 text-red-500" 
+                        : "hover:bg-muted/50 text-muted-foreground hover:text-red-500"
+                    }`}
                   >
                     <Heart
-                      size={20}
-                      className={`transition-colors ${
-                        post.isLiked
-                          ? "fill-red-500 text-red-500"
-                          : "text-foreground group-hover:text-red-500"
-                      }`}
+                      size={18}
+                      className={post.isLiked ? "fill-current" : ""}
                     />
                     {post.likes ? (
-                      <span className="text-sm text-muted-foreground">
+                      <span className="text-sm font-medium">
                         {post.likes}
                       </span>
                     ) : null}
@@ -1053,14 +1072,15 @@ const Feed = () => {
                   
                   <button 
                     onClick={() => setShowComments({ ...showComments, [post.id]: !showComments[post.id] })}
-                    className="flex items-center gap-2 group"
+                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full transition-all duration-200 ${
+                      showComments[post.id]
+                        ? "bg-primary/10 text-primary"
+                        : "hover:bg-muted/50 text-muted-foreground hover:text-primary"
+                    }`}
                   >
-                    <MessageCircle
-                      size={20}
-                      className="text-foreground group-hover:text-primary transition-colors"
-                    />
+                    <MessageCircle size={18} />
                     {post.commentCount ? (
-                      <span className="text-sm text-muted-foreground">
+                      <span className="text-sm font-medium">
                         {post.commentCount}
                       </span>
                     ) : null}
@@ -1068,14 +1088,11 @@ const Feed = () => {
 
                   <button 
                     onClick={() => openShareDialog(post)}
-                    className="flex items-center gap-2 group ml-auto"
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-full hover:bg-muted/50 text-muted-foreground hover:text-primary transition-all duration-200 ml-auto"
                   >
-                    <Share2
-                      size={20}
-                      className="text-foreground group-hover:text-primary transition-colors"
-                    />
+                    <Share2 size={18} />
                     {post.shareCount ? (
-                      <span className="text-sm text-muted-foreground">
+                      <span className="text-sm font-medium">
                         {post.shareCount}
                       </span>
                     ) : null}
@@ -1084,11 +1101,15 @@ const Feed = () => {
 
                 {/* Comments Section */}
                 {showComments[post.id] && (
-                  <div className="px-4 pb-3 pt-2 space-y-3 border-t border-border/50">
-                    {post.comments && post.comments.map((comment) => renderComment(comment, post.id))}
+                  <div className="px-4 pb-4 pt-3 space-y-3 bg-muted/20">
+                    {post.comments && post.comments.length > 0 ? (
+                      post.comments.map((comment) => renderComment(comment, post.id))
+                    ) : (
+                      <p className="text-sm text-muted-foreground text-center py-2">Aucun commentaire</p>
+                    )}
 
                     {/* Add Comment Input */}
-                    <div className="flex gap-2 pt-2">
+                    <div className="flex gap-2 pt-2 border-t border-border/30">
                       <Input
                         value={commentInputs[post.id] || ""}
                         onChange={(e) =>
@@ -1100,12 +1121,12 @@ const Feed = () => {
                             addComment(post.id);
                           }
                         }}
-                        className="flex-1"
+                        className="flex-1 h-9 text-sm"
                       />
                       <Popover>
                         <PopoverTrigger asChild>
-                          <Button size="sm" variant="ghost">
-                            <Smile size={16} />
+                          <Button size="icon" variant="ghost" className="h-9 w-9 shrink-0">
+                            <Smile size={18} />
                           </Button>
                         </PopoverTrigger>
                         <PopoverContent className="w-full p-0" align="end">
@@ -1116,9 +1137,10 @@ const Feed = () => {
                         </PopoverContent>
                       </Popover>
                       <Button
-                        size="sm"
+                        size="icon"
                         onClick={() => addComment(post.id)}
                         disabled={!commentInputs[post.id]?.trim()}
+                        className="h-9 w-9 shrink-0"
                       >
                         <Send size={16} />
                       </Button>
@@ -1126,7 +1148,8 @@ const Feed = () => {
                   </div>
                 )}
               </div>
-            ))
+            ))}
+            </div>
           )}
         </div>
       </ScrollArea>
