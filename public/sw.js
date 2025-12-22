@@ -170,19 +170,27 @@ self.addEventListener('notificationclick', (event) => {
         if (action === 'mark_read' && notificationData.notificationId) {
           console.log('✅ Marking notification as read:', notificationData.notificationId);
           
-          // Call backend to mark as read
+          // Call edge function to mark as read
           try {
-            const response = await fetch(`${self.location.origin}/api/notifications/${notificationData.notificationId}/read`, {
+            const response = await fetch('https://xdyavylcmucjpueybdku.supabase.co/functions/v1/mark-notification-read', {
               method: 'POST',
-              headers: { 'Content-Type': 'application/json' }
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ notificationId: notificationData.notificationId })
             });
             
             if (response.ok) {
+              console.log('✅ Notification marked as read via API');
               // Broadcast to all tabs that notification was marked as read
-              notificationChannel.postMessage({
-                type: 'notification_read',
-                notificationId: notificationData.notificationId
-              });
+              try {
+                notificationChannel.postMessage({
+                  type: 'notification_read',
+                  notificationId: notificationData.notificationId
+                });
+              } catch (broadcastError) {
+                console.warn('⚠️ Could not broadcast read status:', broadcastError);
+              }
+            } else {
+              console.error('❌ API returned error:', response.status);
             }
           } catch (error) {
             console.error('❌ Failed to mark as read:', error);
@@ -199,16 +207,21 @@ self.addEventListener('notificationclick', (event) => {
         // Mark as read when opening notification
         if (notificationData.notificationId) {
           try {
-            const response = await fetch(`${self.location.origin}/api/notifications/${notificationData.notificationId}/read`, {
+            const response = await fetch('https://xdyavylcmucjpueybdku.supabase.co/functions/v1/mark-notification-read', {
               method: 'POST',
-              headers: { 'Content-Type': 'application/json' }
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ notificationId: notificationData.notificationId })
             });
             
             if (response.ok) {
-              notificationChannel.postMessage({
-                type: 'notification_read',
-                notificationId: notificationData.notificationId
-              });
+              try {
+                notificationChannel.postMessage({
+                  type: 'notification_read',
+                  notificationId: notificationData.notificationId
+                });
+              } catch (broadcastError) {
+                console.warn('⚠️ Could not broadcast read status:', broadcastError);
+              }
             }
           } catch (error) {
             console.error('❌ Failed to mark as read on open:', error);

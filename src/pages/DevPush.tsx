@@ -184,15 +184,39 @@ export default function DevPush() {
 
       log('success', 'Subscribed to push notifications');
 
-      // Save to backend
+      // Get device info
+      const deviceId = localStorage.getItem('edupreneurs_device_id') || 
+        `device_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
+      if (!localStorage.getItem('edupreneurs_device_id')) {
+        localStorage.setItem('edupreneurs_device_id', deviceId);
+      }
+      
+      const ua = navigator.userAgent;
+      let browser = 'Unknown';
+      if (ua.includes('SamsungBrowser')) browser = 'Samsung Internet';
+      else if (ua.includes('Chrome') && !ua.includes('Edg')) browser = 'Chrome';
+      else if (ua.includes('Edg')) browser = 'Edge';
+      else if (ua.includes('Safari') && !ua.includes('Chrome')) browser = 'Safari';
+      else if (ua.includes('Firefox')) browser = 'Firefox';
+      
+      let os = 'Unknown';
+      if (ua.includes('Windows')) os = 'Windows';
+      else if (ua.includes('Mac')) os = 'macOS';
+      else if (ua.includes('iPhone') || ua.includes('iPad')) os = 'iOS';
+      else if (ua.includes('Android')) os = 'Android';
+      
+      // Save to backend with correct onConflict for unique constraint
       const { error } = await supabase
         .from('push_subscriptions' as any)
         .upsert({
           user_id: user.id,
+          device_id: deviceId,
+          browser,
+          os,
           subscription: subscription.toJSON(),
           updated_at: new Date().toISOString()
         }, {
-          onConflict: 'user_id'
+          onConflict: 'user_id,device_id'
         });
 
       if (error) throw error;

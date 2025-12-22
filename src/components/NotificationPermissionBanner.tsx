@@ -53,14 +53,14 @@ export const NotificationPermissionBanner = ({ userId }: NotificationPermissionB
     // Check if browser supports notifications
     if (!('Notification' in window)) {
       console.warn('⚠️ Notifications not supported in this browser');
-      setError(`Les notifications ne sont pas supportées par ${detectedBrowser}`);
+      // Don't show dialog, no point
       return;
     }
 
-    // Safari desktop doesn't support push
+    // Safari desktop doesn't support push - don't show dialog
     if (detectedBrowser === 'Safari' && !iOS) {
       console.warn('⚠️ Safari desktop does not support web push');
-      setError('Safari desktop ne supporte pas les notifications push. Utilisez Chrome, Edge ou Firefox.');
+      // Don't show dialog, not supported
       return;
     }
     
