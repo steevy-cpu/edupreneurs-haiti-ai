@@ -1101,6 +1101,7 @@ export type Database = {
       }
       payment_transactions: {
         Row: {
+          admin_verified: boolean | null
           amount: number
           completed_at: string | null
           created_at: string | null
@@ -1108,16 +1109,23 @@ export type Database = {
           description: string | null
           id: string
           metadata: Json | null
+          natcash_phone: string | null
+          natcash_reference: string | null
           order_id: string
           payer_phone: string | null
           payment_token: string | null
           provider: string
+          receipt_url: string | null
           status: string | null
           transaction_id: string | null
           updated_at: string | null
           user_id: string
+          verification_notes: string | null
+          verified_at: string | null
+          verified_by: string | null
         }
         Insert: {
+          admin_verified?: boolean | null
           amount: number
           completed_at?: string | null
           created_at?: string | null
@@ -1125,16 +1133,23 @@ export type Database = {
           description?: string | null
           id?: string
           metadata?: Json | null
+          natcash_phone?: string | null
+          natcash_reference?: string | null
           order_id: string
           payer_phone?: string | null
           payment_token?: string | null
           provider: string
+          receipt_url?: string | null
           status?: string | null
           transaction_id?: string | null
           updated_at?: string | null
           user_id: string
+          verification_notes?: string | null
+          verified_at?: string | null
+          verified_by?: string | null
         }
         Update: {
+          admin_verified?: boolean | null
           amount?: number
           completed_at?: string | null
           created_at?: string | null
@@ -1142,14 +1157,20 @@ export type Database = {
           description?: string | null
           id?: string
           metadata?: Json | null
+          natcash_phone?: string | null
+          natcash_reference?: string | null
           order_id?: string
           payer_phone?: string | null
           payment_token?: string | null
           provider?: string
+          receipt_url?: string | null
           status?: string | null
           transaction_id?: string | null
           updated_at?: string | null
           user_id?: string
+          verification_notes?: string | null
+          verified_at?: string | null
+          verified_by?: string | null
         }
         Relationships: []
       }
