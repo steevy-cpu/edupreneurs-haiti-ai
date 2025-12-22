@@ -44,6 +44,8 @@ export default function Profile() {
   const [loading, setLoading] = useState(true);
   const [followersCount, setFollowersCount] = useState(0);
   const [followingCount, setFollowingCount] = useState(0);
+  const [followLoading, setFollowLoading] = useState(false);
+  const [messageLoading, setMessageLoading] = useState(false);
   
   // Fetch profile analytics for streak and achievements
   const { analytics, isLoading: analyticsLoading } = useProfileAnalytics(userId || null);
@@ -133,6 +135,7 @@ export default function Profile() {
   };
 
   const handleFollow = async () => {
+    setFollowLoading(true);
     try {
       const { error } = await supabase
         .from('follows')
@@ -170,17 +173,18 @@ export default function Profile() {
       }
 
       setFollowStatus({ following: true, status: 'pending', followId: null });
-      toast.success('Follow request sent!');
+      toast.success('Demande envoyée!');
       fetchFollowStatus();
     } catch (error: any) {
-      toast.error('Failed to send follow request');
+      toast.error('Échec de la demande');
       console.error('Error following user:', error);
-      console.error('Error message:', error?.message);
-      console.error('Error details:', error?.details);
+    } finally {
+      setFollowLoading(false);
     }
   };
 
   const handleUnfollow = async () => {
+    setFollowLoading(true);
     try {
       const { error } = await supabase
         .from('follows')
@@ -191,15 +195,18 @@ export default function Profile() {
       if (error) throw error;
 
       setFollowStatus({ following: false, status: null, followId: null });
-      toast.success('Unfollowed successfully');
+      toast.success('Désabonné avec succès');
       fetchFollowCounts();
     } catch (error: any) {
-      toast.error('Failed to unfollow');
+      toast.error('Échec du désabonnement');
       console.error('Error unfollowing user:', error);
+    } finally {
+      setFollowLoading(false);
     }
   };
 
   const startConversation = async () => {
+    setMessageLoading(true);
     try {
       // First check if a conversation exists between these two users
       // by looking at the other user's conversations
@@ -295,11 +302,13 @@ export default function Profile() {
 
       if (participantsError) throw participantsError;
 
-      toast.success('Conversation started!');
+      toast.success('Conversation démarrée!');
       navigate(`/community?conversation=${conversationId}`);
     } catch (error: any) {
-      toast.error('Failed to start conversation');
+      toast.error('Échec du démarrage de la conversation');
       console.error('Error starting conversation:', error);
+    } finally {
+      setMessageLoading(false);
     }
   };
 
@@ -307,11 +316,23 @@ export default function Profile() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-background p-4">
+      <div className="min-h-screen bg-background p-4 pb-24">
         <div className="max-w-2xl mx-auto space-y-4">
-          <Skeleton className="h-32 w-32 rounded-full mx-auto" />
-          <Skeleton className="h-8 w-48 mx-auto" />
-          <Skeleton className="h-20 w-full" />
+          <Skeleton className="h-8 w-20" />
+          <Card className="p-6">
+            <div className="flex flex-col items-center space-y-4">
+              <Skeleton className="h-24 w-24 sm:h-32 sm:w-32 rounded-full" />
+              <Skeleton className="h-8 w-40" />
+              <Skeleton className="h-4 w-32" />
+              <div className="flex gap-8 py-4">
+                <Skeleton className="h-12 w-16" />
+                <Skeleton className="h-12 w-16" />
+                <Skeleton className="h-12 w-16" />
+              </div>
+              <Skeleton className="h-10 w-full max-w-xs" />
+              <Skeleton className="h-10 w-full max-w-xs" />
+            </div>
+          </Card>
         </div>
       </div>
     );
@@ -319,12 +340,13 @@ export default function Profile() {
 
   if (!profile) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <Card className="p-8 text-center">
+      <div className="min-h-screen bg-background flex items-center justify-center pb-24">
+        <Card className="p-8 text-center max-w-sm mx-4">
           <User className="w-16 h-16 mx-auto mb-4 text-muted-foreground" />
-          <h2 className="text-2xl font-bold mb-2">Profile not found</h2>
+          <h2 className="text-xl font-bold mb-2">Profil introuvable</h2>
+          <p className="text-muted-foreground mb-4 text-sm">Ce profil n'existe pas ou a été supprimé.</p>
           <Button onClick={() => navigate(-1)} variant="outline">
-            Go Back
+            Retour
           </Button>
         </Card>
       </div>
@@ -332,19 +354,19 @@ export default function Profile() {
   }
 
   return (
-    <div className="min-h-screen bg-background pb-20">
+    <div className="min-h-screen bg-background pb-24">
       <div className="fixed top-4 right-4 z-50">
         <ThemeToggle />
       </div>
       <div className="max-w-2xl mx-auto p-3 sm:p-4 space-y-4 sm:space-y-6">
         <Button
           variant="ghost"
-          onClick={() => navigate('/community')}
+          onClick={() => navigate(-1)}
           className="mb-2 sm:mb-4"
           size="sm"
         >
           <ArrowLeft className="w-4 h-4 mr-2" />
-          Back
+          Retour
         </Button>
 
         <Card className="p-4 sm:p-8">
@@ -364,19 +386,19 @@ export default function Profile() {
               <p className="text-sm sm:text-base text-muted-foreground">{profile.full_name}</p>
             </div>
 
-            <div className="flex gap-8 py-4">
+            <div className="flex gap-6 sm:gap-8 py-4">
               <div className="text-center">
-                <p className="text-2xl font-bold">{followersCount}</p>
-                <p className="text-sm text-muted-foreground">Followers</p>
+                <p className="text-xl sm:text-2xl font-bold">{followersCount}</p>
+                <p className="text-xs sm:text-sm text-muted-foreground">Abonnés</p>
               </div>
               <div className="text-center">
-                <p className="text-2xl font-bold">{followingCount}</p>
-                <p className="text-sm text-muted-foreground">Following</p>
+                <p className="text-xl sm:text-2xl font-bold">{followingCount}</p>
+                <p className="text-xs sm:text-sm text-muted-foreground">Abonnements</p>
               </div>
               {!profile.is_system_account && (
                 <div className="text-center">
-                  <p className="text-2xl font-bold">{profile.affiliation_points}</p>
-                  <p className="text-sm text-muted-foreground">Points</p>
+                  <p className="text-xl sm:text-2xl font-bold">{profile.affiliation_points}</p>
+                  <p className="text-xs sm:text-sm text-muted-foreground">Points</p>
                 </div>
               )}
             </div>
@@ -386,35 +408,51 @@ export default function Profile() {
                 {!profile.is_system_account && (
                   <>
                     {!followStatus.following && (
-                      <Button onClick={handleFollow} className="w-full">
-                        <UserPlus className="w-4 h-4 mr-2" />
-                        Follow
+                      <Button onClick={handleFollow} className="w-full" disabled={followLoading}>
+                        {followLoading ? (
+                          <div className="w-4 h-4 mr-2 border-2 border-current border-t-transparent rounded-full animate-spin" />
+                        ) : (
+                          <UserPlus className="w-4 h-4 mr-2" />
+                        )}
+                        S'abonner
                       </Button>
                     )}
                     {followStatus.following && followStatus.status === 'pending' && (
-                      <Button onClick={handleUnfollow} variant="outline" className="w-full">
-                        <Clock className="w-4 h-4 mr-2" />
-                        Pending
+                      <Button onClick={handleUnfollow} variant="outline" className="w-full" disabled={followLoading}>
+                        {followLoading ? (
+                          <div className="w-4 h-4 mr-2 border-2 border-current border-t-transparent rounded-full animate-spin" />
+                        ) : (
+                          <Clock className="w-4 h-4 mr-2" />
+                        )}
+                        En attente
                       </Button>
                     )}
                     {followStatus.following && followStatus.status === 'accepted' && (
-                      <Button onClick={handleUnfollow} variant="outline" className="w-full">
-                        <UserCheck className="w-4 h-4 mr-2" />
-                        Following
+                      <Button onClick={handleUnfollow} variant="outline" className="w-full" disabled={followLoading}>
+                        {followLoading ? (
+                          <div className="w-4 h-4 mr-2 border-2 border-current border-t-transparent rounded-full animate-spin" />
+                        ) : (
+                          <UserCheck className="w-4 h-4 mr-2" />
+                        )}
+                        Abonné
                       </Button>
                     )}
                   </>
                 )}
-                <Button onClick={startConversation} variant="default" className="w-full">
-                  <MessageCircle className="w-4 h-4 mr-2" />
-                  Send Message
+                <Button onClick={startConversation} variant="default" className="w-full" disabled={messageLoading}>
+                  {messageLoading ? (
+                    <div className="w-4 h-4 mr-2 border-2 border-current border-t-transparent rounded-full animate-spin" />
+                  ) : (
+                    <MessageCircle className="w-4 h-4 mr-2" />
+                  )}
+                  Envoyer un message
                 </Button>
               </div>
             )}
 
             {isOwnProfile && (
               <Button onClick={() => navigate('/settings')} variant="outline" className="w-full max-w-xs">
-                Edit Profile
+                Modifier le profil
               </Button>
             )}
           </div>
@@ -507,10 +545,17 @@ export default function Profile() {
           )}
 
           <div className="mt-8 space-y-4">
-            {profile.bio && (
+            {profile.bio ? (
               <div>
                 <h3 className="font-semibold mb-2">Bio</h3>
                 <p className="text-muted-foreground">{profile.bio}</p>
+              </div>
+            ) : isOwnProfile && (
+              <div className="bg-muted/50 border border-dashed border-muted-foreground/30 rounded-lg p-4 text-center">
+                <p className="text-sm text-muted-foreground mb-2">Vous n'avez pas encore de bio</p>
+                <Button variant="outline" size="sm" onClick={() => navigate('/settings')}>
+                  Ajouter une bio
+                </Button>
               </div>
             )}
 
@@ -518,12 +563,12 @@ export default function Profile() {
               <div className="grid grid-cols-2 gap-4">
                 {profile.school && (
                   <div>
-                    <h3 className="font-semibold mb-1">School</h3>
+                    <h3 className="font-semibold mb-1">École</h3>
                     <p className="text-muted-foreground">{profile.school}</p>
                   </div>
                 )}
                 <div>
-                  <h3 className="font-semibold mb-1">Grade</h3>
+                  <h3 className="font-semibold mb-1">Classe</h3>
                   <p className="text-muted-foreground">{profile.academic_grade}</p>
                 </div>
               </div>
