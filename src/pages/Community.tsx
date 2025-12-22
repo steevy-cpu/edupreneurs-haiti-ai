@@ -2060,7 +2060,11 @@ const Community = () => {
 
       {/* Messages View - WhatsApp-style keyboard-adaptive layout */}
       <div
-        className={`${selectedConversation ? "fixed inset-0 md:relative md:inset-auto" : "hidden md:block"} md:flex-1 bg-background md:ml-80 lg:ml-96 relative`}
+        className={`${
+          selectedConversation
+            ? "fixed inset-0 w-screen md:relative md:inset-auto md:w-auto"
+            : "hidden md:block"
+        } md:flex-1 bg-background md:ml-80 lg:ml-96 relative`}
         style={
           selectedConversation
             ? {
