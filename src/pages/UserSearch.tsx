@@ -1,14 +1,16 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
-import { Search, MessageCircle, ArrowLeft, Eye, BadgeCheck } from "lucide-react";
+import { Search, MessageCircle, ArrowLeft, Eye, BadgeCheck, X, Loader2 } from "lucide-react";
 import { getAvatarUrl } from "@/lib/avatarMap";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import { MobileBottomNav } from "@/components/MobileBottomNav";
 
 interface Profile {
   user_id: string;
@@ -21,13 +23,17 @@ interface Profile {
 const UserSearch = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
+  const searchInputRef = useRef<HTMLInputElement>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [profiles, setProfiles] = useState<Profile[]>([]);
   const [currentUser, setCurrentUser] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [loadingConversation, setLoadingConversation] = useState<string | null>(null);
 
   useEffect(() => {
     checkAuth();
+    // Autofocus search input on mount
+    setTimeout(() => searchInputRef.current?.focus(), 100);
   }, []);
 
   const checkAuth = async () => {
@@ -76,12 +82,19 @@ const UserSearch = () => {
     return () => clearTimeout(debounce);
   }, [searchQuery, currentUser]);
 
+  const clearSearch = () => {
+    setSearchQuery("");
+    setProfiles([]);
+    searchInputRef.current?.focus();
+  };
+
   const startConversation = async (otherUserId: string) => {
     if (!currentUser) {
       console.log("No current user found");
       return;
     }
 
+    setLoadingConversation(otherUserId);
     console.log("Starting conversation with user:", otherUserId);
 
     // Check if conversation already exists
@@ -104,6 +117,7 @@ const UserSearch = () => {
         if (participants?.length === 2 && participants.some(p => p.user_id === otherUserId)) {
           console.log("Found existing conversation:", conv.conversation_id);
           navigate(`/community?conversation=${conv.conversation_id}`);
+          setLoadingConversation(null);
           return;
         }
       }
@@ -124,6 +138,7 @@ const UserSearch = () => {
         description: `Impossible de créer la conversation: ${convError.message}`,
         variant: "destructive",
       });
+      setLoadingConversation(null);
       return;
     }
 
@@ -134,6 +149,7 @@ const UserSearch = () => {
         description: "Impossible de créer la conversation: aucune donnée retournée",
         variant: "destructive",
       });
+      setLoadingConversation(null);
       return;
     }
 
@@ -156,22 +172,42 @@ const UserSearch = () => {
         description: `Impossible d'ajouter les participants: ${participantsError.message}`,
         variant: "destructive",
       });
+      setLoadingConversation(null);
       return;
     }
 
     console.log("Successfully created conversation, navigating...");
     navigate(`/community?conversation=${conversationId}`);
+    setLoadingConversation(null);
   };
 
+  const ResultSkeleton = () => (
+    <div className="space-y-1.5 sm:space-y-2 px-3 sm:px-4">
+      {[1, 2, 3, 4, 5].map((i) => (
+        <div key={i} className="flex items-center gap-2.5 sm:gap-3 p-2.5 sm:p-3 rounded-lg animate-pulse">
+          <Skeleton className="h-11 w-11 sm:h-12 sm:w-12 rounded-full" />
+          <div className="flex-1 space-y-2">
+            <Skeleton className="h-4 w-32" />
+            <Skeleton className="h-3 w-24" />
+          </div>
+          <div className="flex gap-1">
+            <Skeleton className="h-9 w-9 sm:h-10 sm:w-10 rounded-md" />
+            <Skeleton className="h-9 w-9 sm:h-10 sm:w-10 rounded-md" />
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background pb-20">
       {/* Header */}
       <div className="sticky top-0 z-50 border-b border-border/50 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
         <div className="max-w-2xl mx-auto px-3 sm:px-4 py-2.5 sm:py-3 flex items-center gap-2 sm:gap-3">
           <Button
             size="icon"
             variant="ghost"
-            onClick={() => navigate("/dashboard")}
+            onClick={() => navigate(-1)}
             className="h-9 w-9 sm:h-10 sm:w-10"
           >
             <ArrowLeft className="h-5 w-5 sm:h-6 sm:w-6" />
@@ -186,24 +222,40 @@ const UserSearch = () => {
         <div className="relative">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground" size={18} />
           <Input
+            ref={searchInputRef}
             type="text"
             placeholder="Rechercher par nom ou pseudo..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-10 h-10 sm:h-11 text-sm sm:text-base"
+            className="pl-10 pr-10 h-10 sm:h-11 text-sm sm:text-base"
           />
+          {searchQuery && (
+            <Button
+              size="icon"
+              variant="ghost"
+              onClick={clearSearch}
+              className="absolute right-1 top-1/2 transform -translate-y-1/2 h-8 w-8 hover:bg-muted"
+            >
+              <X className="h-4 w-4 text-muted-foreground" />
+            </Button>
+          )}
         </div>
+        
+        {/* Result count */}
+        {searchQuery && !isLoading && profiles.length > 0 && (
+          <p className="text-xs sm:text-sm text-muted-foreground mt-2 px-1">
+            {profiles.length} {profiles.length === 1 ? "résultat trouvé" : "résultats trouvés"}
+          </p>
+        )}
       </div>
 
       {/* Results */}
-      <ScrollArea className="h-[calc(100vh-120px)] sm:h-[calc(100vh-140px)]">
-        <div className="max-w-2xl mx-auto pb-20 sm:pb-24">
+      <ScrollArea className="h-[calc(100vh-180px)] sm:h-[calc(100vh-200px)]">
+        <div className="max-w-2xl mx-auto pb-4">
           {isLoading ? (
-            <div className="flex justify-center py-8 sm:py-10">
-              <p className="text-sm sm:text-base text-muted-foreground">Recherche...</p>
-            </div>
+            <ResultSkeleton />
           ) : profiles.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-12 sm:py-20 px-4 text-center">
+            <div className="flex flex-col items-center justify-center py-12 sm:py-20 px-4 text-center animate-fade-in">
               <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-full bg-muted/30 flex items-center justify-center mb-3 sm:mb-4">
                 <Search size={28} className="text-muted-foreground sm:w-8 sm:h-8" />
               </div>
@@ -218,13 +270,14 @@ const UserSearch = () => {
             </div>
           ) : (
             <div className="space-y-1.5 sm:space-y-2 px-3 sm:px-4">
-              {profiles.map((profile) => (
+              {profiles.map((profile, index) => (
                 <div
                   key={profile.user_id}
-                  className="flex items-center gap-2.5 sm:gap-3 p-2.5 sm:p-3 rounded-lg hover:bg-muted/30 transition-colors"
+                  className="flex items-center gap-2.5 sm:gap-3 p-2.5 sm:p-3 rounded-lg hover:bg-muted/30 transition-colors animate-fade-in"
+                  style={{ animationDelay: `${index * 50}ms` }}
                 >
                   <Avatar 
-                    className="h-11 w-11 sm:h-12 sm:w-12 shrink-0 cursor-pointer" 
+                    className="h-11 w-11 sm:h-12 sm:w-12 shrink-0 cursor-pointer hover-scale" 
                     onClick={() => navigate(`/profile/${profile.user_id}`)}
                   >
                     <AvatarImage src={getAvatarUrl(profile.avatar_url)} alt={profile.full_name} />
@@ -257,8 +310,13 @@ const UserSearch = () => {
                       onClick={() => startConversation(profile.user_id)}
                       className="hover:bg-primary/10 h-9 w-9 sm:h-10 sm:w-10"
                       title="Envoyer un message"
+                      disabled={loadingConversation === profile.user_id}
                     >
-                      <MessageCircle className="h-4 w-4 sm:h-5 sm:w-5" />
+                      {loadingConversation === profile.user_id ? (
+                        <Loader2 className="h-4 w-4 sm:h-5 sm:w-5 animate-spin" />
+                      ) : (
+                        <MessageCircle className="h-4 w-4 sm:h-5 sm:w-5" />
+                      )}
                     </Button>
                   </div>
                 </div>
@@ -267,6 +325,8 @@ const UserSearch = () => {
           )}
         </div>
       </ScrollArea>
+
+      <MobileBottomNav />
     </div>
   );
 };
