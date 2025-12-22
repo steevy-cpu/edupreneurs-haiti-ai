@@ -92,3 +92,12 @@ verify_jwt = false
 
 [functions.moncash-check-status]
 verify_jwt = false
+
+[functions.natcash-create-order]
+verify_jwt = false
+
+[functions.natcash-upload-receipt]
+verify_jwt = false
+
+[functions.natcash-admin-verify]
+verify_jwt = false
