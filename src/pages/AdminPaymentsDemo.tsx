@@ -23,10 +23,32 @@ import {
   FileText,
   ZoomIn,
   Download,
-  RefreshCw
+  RefreshCw,
+  TrendingUp
 } from "lucide-react";
+import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend, BarChart, Bar } from "recharts";
 import { Link } from "react-router-dom";
 import { toast } from "sonner";
+
+// Demo revenue data for the chart
+const demoRevenueData = [
+  { month: "Jan", natcash: 12500, moncash: 18200, total: 30700 },
+  { month: "Fév", natcash: 15800, moncash: 22100, total: 37900 },
+  { month: "Mar", natcash: 18200, moncash: 19800, total: 38000 },
+  { month: "Avr", natcash: 22400, moncash: 25600, total: 48000 },
+  { month: "Mai", natcash: 28900, moncash: 31200, total: 60100 },
+  { month: "Juin", natcash: 35600, moncash: 38400, total: 74000 },
+  { month: "Juil", natcash: 42300, moncash: 45100, total: 87400 },
+  { month: "Août", natcash: 38700, moncash: 41200, total: 79900 },
+  { month: "Sep", natcash: 45200, moncash: 48900, total: 94100 },
+  { month: "Oct", natcash: 52100, moncash: 55400, total: 107500 },
+  { month: "Nov", natcash: 58900, moncash: 62300, total: 121200 },
+  { month: "Déc", natcash: 67500, moncash: 71800, total: 139300 },
+];
+
+const totalNatCash = demoRevenueData.reduce((sum, d) => sum + d.natcash, 0);
+const totalMonCash = demoRevenueData.reduce((sum, d) => sum + d.moncash, 0);
+const grandTotal = totalNatCash + totalMonCash;
 
 // Demo data for pending payments
 const demoPendingPayments = [
@@ -289,6 +311,115 @@ export default function AdminPaymentsDemo() {
             </CardContent>
           </Card>
         </div>
+
+        {/* Revenue Chart Section */}
+        <Card className="mb-6">
+          <CardHeader>
+            <div className="flex items-center justify-between">
+              <div>
+                <CardTitle className="flex items-center gap-2">
+                  <TrendingUp className="h-5 w-5 text-primary" />
+                  Revenus Totaux
+                </CardTitle>
+                <CardDescription>Comparaison NatCash vs MonCash (2024)</CardDescription>
+              </div>
+              <div className="flex gap-4 text-right">
+                <div>
+                  <p className="text-xs text-muted-foreground">NatCash</p>
+                  <p className="text-lg font-bold text-orange-500">{totalNatCash.toLocaleString()} HTG</p>
+                </div>
+                <div>
+                  <p className="text-xs text-muted-foreground">MonCash</p>
+                  <p className="text-lg font-bold text-blue-500">{totalMonCash.toLocaleString()} HTG</p>
+                </div>
+                <div className="border-l pl-4">
+                  <p className="text-xs text-muted-foreground">Total</p>
+                  <p className="text-lg font-bold text-green-500">{grandTotal.toLocaleString()} HTG</p>
+                </div>
+              </div>
+            </div>
+          </CardHeader>
+          <CardContent>
+            <div className="h-[300px] w-full">
+              <ResponsiveContainer width="100%" height="100%">
+                <AreaChart data={demoRevenueData} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
+                  <defs>
+                    <linearGradient id="colorNatcash" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="#f97316" stopOpacity={0.8}/>
+                      <stop offset="95%" stopColor="#f97316" stopOpacity={0.1}/>
+                    </linearGradient>
+                    <linearGradient id="colorMoncash" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.8}/>
+                      <stop offset="95%" stopColor="#3b82f6" stopOpacity={0.1}/>
+                    </linearGradient>
+                  </defs>
+                  <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+                  <XAxis dataKey="month" className="text-xs" tick={{ fill: 'hsl(var(--muted-foreground))' }} />
+                  <YAxis 
+                    className="text-xs" 
+                    tick={{ fill: 'hsl(var(--muted-foreground))' }}
+                    tickFormatter={(value) => `${(value / 1000).toFixed(0)}k`}
+                  />
+                  <Tooltip 
+                    contentStyle={{ 
+                      backgroundColor: 'hsl(var(--background))', 
+                      border: '1px solid hsl(var(--border))',
+                      borderRadius: '8px'
+                    }}
+                    formatter={(value: number) => [`${value.toLocaleString()} HTG`, '']}
+                    labelStyle={{ color: 'hsl(var(--foreground))' }}
+                  />
+                  <Legend />
+                  <Area 
+                    type="monotone" 
+                    dataKey="natcash" 
+                    name="NatCash"
+                    stroke="#f97316" 
+                    fillOpacity={1} 
+                    fill="url(#colorNatcash)" 
+                  />
+                  <Area 
+                    type="monotone" 
+                    dataKey="moncash" 
+                    name="MonCash"
+                    stroke="#3b82f6" 
+                    fillOpacity={1} 
+                    fill="url(#colorMoncash)" 
+                  />
+                </AreaChart>
+              </ResponsiveContainer>
+            </div>
+            
+            {/* Monthly Breakdown Bar Chart */}
+            <div className="mt-6">
+              <h4 className="text-sm font-medium mb-4">Répartition Mensuelle</h4>
+              <div className="h-[200px] w-full">
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={demoRevenueData} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
+                    <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+                    <XAxis dataKey="month" className="text-xs" tick={{ fill: 'hsl(var(--muted-foreground))' }} />
+                    <YAxis 
+                      className="text-xs" 
+                      tick={{ fill: 'hsl(var(--muted-foreground))' }}
+                      tickFormatter={(value) => `${(value / 1000).toFixed(0)}k`}
+                    />
+                    <Tooltip 
+                      contentStyle={{ 
+                        backgroundColor: 'hsl(var(--background))', 
+                        border: '1px solid hsl(var(--border))',
+                        borderRadius: '8px'
+                      }}
+                      formatter={(value: number) => [`${value.toLocaleString()} HTG`, '']}
+                    />
+                    <Legend />
+                    <Bar dataKey="natcash" name="NatCash" fill="#f97316" radius={[4, 4, 0, 0]} />
+                    <Bar dataKey="moncash" name="MonCash" fill="#3b82f6" radius={[4, 4, 0, 0]} />
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
 
         {/* Tabs */}
         <Tabs defaultValue="pending" className="space-y-4">
