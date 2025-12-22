@@ -30,6 +30,9 @@ verify_jwt = true
 [functions.send-push-notification]
 verify_jwt = false
 
+[functions.mark-notification-read]
+verify_jwt = false
+
 [functions.math-ai-tutor]
 verify_jwt = false
 

@@ -14,9 +14,9 @@ interface PushSubscription {
   };
 }
 
-// VAPID keys
+// VAPID keys - Public key can be in code, private key must be secret
 const VAPID_PUBLIC_KEY = 'BOQ0Fn35WtOTVFKRkrQRxYzb9oRwi2IldpPeSU3VHbHLoiNwheYEpklA2YVBh3Ah3h2De8743ShfRYx61lVhNUM';
-const VAPID_PRIVATE_KEY = 'l8hOAmgFFSaCTcVsqy0D56k5pvTvvMks3M6bbMhGS00';
+const VAPID_PRIVATE_KEY = Deno.env.get('VAPID_PRIVATE_KEY') || '';
 
 // Helper to convert base64url to base64
 function base64UrlToBase64(base64url: string): string {
@@ -95,17 +95,36 @@ async function createVapidAuthToken(endpoint: string): Promise<string> {
   return `${unsignedToken}.${signatureB64}`;
 }
 
-// Notification category mapping helper
+// Notification category mapping helper - comprehensive mapping
 function getCategoryFromType(type?: string): string {
   const typeMap: { [key: string]: string } = {
+    // Messages
     'message': 'message',
+    'group_message': 'message',
+    'direct_message': 'message',
+    // Social interactions
     'comment': 'comment',
+    'reply': 'comment',
     'like': 'like',
+    'share': 'share',
+    // Posts
     'new_post': 'post',
+    'post': 'post',
+    // Mentions
     'mention': 'mention',
+    // Follows
     'follow_request': 'follow',
+    'follow_accepted': 'follow',
+    'follow': 'follow',
+    // Groups
     'group_invite': 'group',
     'group_deleted': 'group',
+    'group_member_added': 'group',
+    'group_member_removed': 'group',
+    // Lesson related
+    'lesson_comment': 'lesson',
+    // System
+    'system': 'system',
   };
   return typeMap[type || ''] || 'message';
 }
@@ -113,6 +132,15 @@ function getCategoryFromType(type?: string): string {
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders });
+  }
+
+  // Validate VAPID private key is configured
+  if (!VAPID_PRIVATE_KEY) {
+    console.error('❌ VAPID_PRIVATE_KEY environment variable is not set');
+    return new Response(
+      JSON.stringify({ error: 'Push notification service not configured' }),
+      { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+    );
   }
 
   try {

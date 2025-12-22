@@ -59,11 +59,17 @@ export const isIOSDevice = (): boolean => {
   return isIOS;
 };
 
-// Check if running as installed PWA
+// Check if running as installed PWA - with delayed check for iOS
 export const isStandalonePWA = (): boolean => {
-  const isStandalone = window.matchMedia('(display-mode: standalone)').matches ||
-                       (window.navigator as any).standalone === true;
-  console.log(`📲 Running as PWA: ${isStandalone}`);
+  // Check for iOS standalone mode
+  const isIOSStandalone = (window.navigator as any).standalone === true;
+  // Check for standard display-mode: standalone
+  const isStandardStandalone = window.matchMedia('(display-mode: standalone)').matches;
+  // Also check fullscreen mode which some browsers use
+  const isFullscreen = window.matchMedia('(display-mode: fullscreen)').matches;
+  
+  const isStandalone = isIOSStandalone || isStandardStandalone || isFullscreen;
+  console.log(`📲 Running as PWA: ${isStandalone} (iOS: ${isIOSStandalone}, Standard: ${isStandardStandalone})`);
   return isStandalone;
 };
 
