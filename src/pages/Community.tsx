@@ -1894,36 +1894,38 @@ const Community = () => {
       {user && <NotificationPermissionBanner userId={user.id} />}
       
       {/* Conversations List - Fixed sidebar on desktop/tablet */}
-      <div className={`${selectedConversation ? "hidden md:flex" : "flex"} flex-col w-full md:w-80 lg:w-96 border-r border-border/50 md:fixed md:left-0 md:top-0 md:h-[100dvh] md:z-[100] bg-background pb-16 md:pb-0`}>
-        <div className="sticky top-0 z-50 border-b border-border/50 bg-background/95 backdrop-blur p-3 sm:p-4">
-          <div className="flex items-center gap-2 sm:gap-3 mb-2 sm:mb-3">
+      <div className={`${selectedConversation ? "hidden md:flex" : "flex"} flex-col w-full md:w-80 lg:w-96 border-r border-border/50 md:fixed md:left-0 md:top-0 md:h-[100dvh] md:z-[100] bg-background pb-20 md:pb-0`}>
+        <div className="sticky top-0 z-50 border-b border-border/50 bg-background/95 backdrop-blur-md p-3 sm:p-4 safe-area-top">
+          <div className="flex items-center gap-2 sm:gap-3">
             <Button
               size="icon"
               variant="ghost"
               onClick={() => navigate("/dashboard")}
-              className="shrink-0"
+              className="shrink-0 h-9 w-9"
             >
               <ArrowLeft size={18} className="sm:w-5 sm:h-5" />
             </Button>
-            <h1 className="text-lg sm:text-xl font-semibold flex-1">Messages</h1>
-            <Button
-              size="icon"
-              variant="ghost"
-              onClick={() => setShowCreateGroup(true)}
-              className="shrink-0"
-              title="Créer un groupe"
-            >
-              <Users size={18} className="sm:w-5 sm:h-5" />
-            </Button>
-            <ThemeToggle />
-            <Button
-              size="icon"
-              variant="ghost"
-              onClick={() => navigate("/user-search")}
-              className="shrink-0"
-            >
-              <Search size={18} className="sm:w-5 sm:h-5" />
-            </Button>
+            <h1 className="text-lg sm:text-xl font-bold flex-1">Messages</h1>
+            <div className="flex items-center gap-1">
+              <Button
+                size="icon"
+                variant="ghost"
+                onClick={() => setShowCreateGroup(true)}
+                className="shrink-0 h-9 w-9"
+                title="Créer un groupe"
+              >
+                <Users size={18} className="sm:w-5 sm:h-5" />
+              </Button>
+              <ThemeToggle />
+              <Button
+                size="icon"
+                variant="ghost"
+                onClick={() => navigate("/user-search")}
+                className="shrink-0 h-9 w-9"
+              >
+                <Search size={18} className="sm:w-5 sm:h-5" />
+              </Button>
+            </div>
           </div>
         </div>
 
@@ -1943,56 +1945,72 @@ const Community = () => {
               ))}
             </div>
           ) : conversations.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-20 px-4 text-center">
-              <p className="text-muted-foreground">Aucune conversation</p>
+            <div className="flex flex-col items-center justify-center py-16 px-6 text-center">
+              <div className="h-20 w-20 rounded-full bg-muted/50 flex items-center justify-center mb-4">
+                <Users className="h-10 w-10 text-muted-foreground/50" />
+              </div>
+              <h3 className="text-lg font-medium mb-2">Aucune conversation</h3>
+              <p className="text-sm text-muted-foreground mb-4 max-w-[200px]">
+                Commencez à discuter avec d'autres utilisateurs
+              </p>
               <Button
-                className="mt-4"
                 onClick={() => navigate("/user-search")}
+                className="gap-2"
               >
+                <Search className="h-4 w-4" />
                 Rechercher des utilisateurs
               </Button>
             </div>
           ) : (
-            conversations.map((conv) => (
+            <div className="divide-y divide-border/30">
+            {conversations.map((conv) => {
+              const hasUnread = conv.unreadCount !== undefined && conv.unreadCount > 0;
+              const isOnline = !conv.is_group && conv.otherUser?.user_id && onlineUsers.has(conv.otherUser.user_id);
+              
+              return (
               <div
                 key={conv.id}
-                className={`flex items-center gap-2 sm:gap-3 p-3 sm:p-4 cursor-pointer hover:bg-muted/30 transition-colors border-b border-border/50 ${
-                  selectedConversation === conv.id ? "bg-muted/50" : ""
+                className={`flex items-center gap-2.5 sm:gap-3 p-3 sm:p-4 cursor-pointer transition-all duration-200 ${
+                  selectedConversation === conv.id 
+                    ? "bg-primary/10 border-l-4 border-l-primary" 
+                    : hasUnread 
+                      ? "bg-accent/40 hover:bg-accent/60" 
+                      : "hover:bg-muted/40"
                 }`}
               >
-                <div className="flex items-center gap-2 sm:gap-3 flex-1 min-w-0">
+                <div className="flex items-center gap-2.5 sm:gap-3 flex-1 min-w-0">
                   <div 
                     className="relative"
                     onClick={() => setSelectedConversation(conv.id)}
                   >
-                    <Avatar className="h-10 w-10 sm:h-12 sm:w-12 shrink-0">
+                    <Avatar className={`h-11 w-11 sm:h-12 sm:w-12 shrink-0 ring-2 ring-background shadow-sm ${hasUnread ? 'ring-primary/30' : ''}`}>
                       {conv.is_group ? (
                         <>
                           <AvatarImage src={conv.group?.avatar_url || undefined} />
-                          <AvatarFallback className="bg-gradient-to-br from-primary/20 to-success/20 text-sm sm:text-base">
+                          <AvatarFallback className="bg-gradient-to-br from-primary/20 to-success/20 text-sm sm:text-base font-medium">
                             <Users className="h-5 w-5" />
                           </AvatarFallback>
                         </>
                       ) : (
                         <>
                           <AvatarImage src={getAvatarUrl(conv.otherUser?.avatar_url)} />
-                          <AvatarFallback className="bg-gradient-to-br from-primary/20 to-success/20 text-sm sm:text-base">
+                          <AvatarFallback className="bg-gradient-to-br from-primary/20 to-success/20 text-sm sm:text-base font-medium">
                             {(conv.otherUser?.nickname || conv.otherUser?.full_name)?.[0] || "?"}
                           </AvatarFallback>
                         </>
                       )}
                     </Avatar>
-                    {!conv.is_group && conv.otherUser?.user_id && onlineUsers.has(conv.otherUser.user_id) && (
-                      <div className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 rounded-full border-2 border-background" />
+                    {isOnline && (
+                      <div className="absolute bottom-0 right-0 w-3.5 h-3.5 bg-green-500 rounded-full border-2 border-background shadow-sm" />
                     )}
                   </div>
                   <div 
-                    className="flex-1 min-w-0"
+                    className="flex-1 min-w-0 pr-1"
                     onClick={() => setSelectedConversation(conv.id)}
                   >
                     <div className="flex items-center gap-1.5 min-w-0">
                       <p 
-                        className="font-semibold truncate text-sm sm:text-base cursor-pointer hover:underline flex-shrink"
+                        className={`truncate text-sm sm:text-base cursor-pointer hover:underline flex-shrink ${hasUnread ? 'font-bold' : 'font-semibold'}`}
                         onClick={(e) => {
                           if (conv.is_group && conv.group) {
                             e.stopPropagation();
@@ -2014,49 +2032,51 @@ const Community = () => {
                       {!conv.is_group && conv.otherUser?.verified && (
                         <BadgeCheck className="w-4 h-4 text-primary fill-primary/20 shrink-0" />
                       )}
-                      {!conv.is_group && conv.otherUser?.user_id && onlineUsers.has(conv.otherUser.user_id) && (
-                        <span className="text-xs text-green-500 font-medium shrink-0 whitespace-nowrap">En ligne</span>
-                      )}
                     </div>
-                    {(() => {
-                      if (!conv.is_group) {
-                        // Check if the other user is typing in this conversation
-                        const conversationTypingUsers = typingUsers[conv.id] || {};
-                        const otherUserTyping = Object.entries(conversationTypingUsers).some(([key, value]) => {
-                          const presence = Array.isArray(value) ? value[0] : value;
-                          return presence?.typing && presence?.user_id === conv.otherUser?.user_id;
-                        });
-                        
-                        if (otherUserTyping) {
-                          return (
-                            <div className="flex items-center gap-1 text-muted-foreground text-xs italic">
-                              <span>en train d'écrire</span>
-                              <span className="flex gap-0.5">
-                                <span className="animate-bounce" style={{ animationDelay: '0ms' }}>.</span>
-                                <span className="animate-bounce" style={{ animationDelay: '150ms' }}>.</span>
-                                <span className="animate-bounce" style={{ animationDelay: '300ms' }}>.</span>
-                              </span>
-                            </div>
-                          );
+                    <div className="flex items-center gap-2 mt-0.5">
+                      {isOnline && (
+                        <span className="text-[10px] sm:text-xs text-green-500 font-medium shrink-0 whitespace-nowrap">En ligne</span>
+                      )}
+                      {(() => {
+                        if (!conv.is_group) {
+                          // Check if the other user is typing in this conversation
+                          const conversationTypingUsers = typingUsers[conv.id] || {};
+                          const otherUserTyping = Object.entries(conversationTypingUsers).some(([key, value]) => {
+                            const presence = Array.isArray(value) ? value[0] : value;
+                            return presence?.typing && presence?.user_id === conv.otherUser?.user_id;
+                          });
+                          
+                          if (otherUserTyping) {
+                            return (
+                              <div className="flex items-center gap-1 text-primary text-xs italic font-medium">
+                                <span>en train d'écrire</span>
+                                <span className="flex gap-0.5">
+                                  <span className="animate-bounce" style={{ animationDelay: '0ms' }}>.</span>
+                                  <span className="animate-bounce" style={{ animationDelay: '150ms' }}>.</span>
+                                  <span className="animate-bounce" style={{ animationDelay: '300ms' }}>.</span>
+                                </span>
+                              </div>
+                            );
+                          }
                         }
-                      }
-                      
-                      return (
-                        <p className="text-xs sm:text-sm text-muted-foreground line-clamp-2 break-words overflow-hidden">
-                          {conv.lastMessage || "Aucun message"}
-                        </p>
-                      );
-                    })()}
+                        
+                        return (
+                          <p className={`text-xs sm:text-sm line-clamp-1 break-words overflow-hidden ${hasUnread ? 'text-foreground/80 font-medium' : 'text-muted-foreground'}`}>
+                            {conv.lastMessage || "Aucun message"}
+                          </p>
+                        );
+                      })()}
+                    </div>
                   </div>
-                  <div className="flex flex-col items-end gap-1 shrink-0">
+                  <div className="flex flex-col items-end gap-1.5 shrink-0 ml-1">
                     {conv.lastMessageTime && (
-                      <span className="text-[10px] sm:text-xs text-muted-foreground">
+                      <span className={`text-[10px] sm:text-xs ${hasUnread ? 'text-primary font-medium' : 'text-muted-foreground'}`}>
                         {formatTime(conv.lastMessageTime)}
                       </span>
                     )}
-                    {conv.unreadCount !== undefined && conv.unreadCount > 0 && (
-                      <span className="flex items-center justify-center h-5 w-5 sm:h-6 sm:w-6 rounded-full bg-primary text-primary-foreground text-[10px] sm:text-xs font-bold shadow-lg">
-                        {conv.unreadCount > 9 ? '9+' : conv.unreadCount}
+                    {hasUnread && (
+                      <span className="flex items-center justify-center min-w-[20px] h-5 sm:min-w-[24px] sm:h-6 px-1.5 rounded-full bg-primary text-primary-foreground text-[10px] sm:text-xs font-bold shadow-md">
+                        {conv.unreadCount! > 99 ? '99+' : conv.unreadCount}
                       </span>
                     )}
                   </div>
@@ -2083,7 +2103,9 @@ const Community = () => {
                   </DropdownMenuContent>
                 </DropdownMenu>
               </div>
-            ))
+              );
+            })}
+            </div>
           )}
         </ScrollArea>
       </div>

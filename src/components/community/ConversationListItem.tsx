@@ -28,45 +28,51 @@ export const ConversationListItem = ({
 }: ConversationListItemProps) => {
   const conv = conversation;
 
+  const hasUnread = conv.unreadCount !== undefined && conv.unreadCount > 0;
+
   return (
     <div
-      className={`flex items-center gap-2 sm:gap-3 p-3 sm:p-4 cursor-pointer hover:bg-muted/30 transition-colors border-b border-border/50 ${
-        isSelected ? "bg-muted/50" : ""
+      className={`flex items-center gap-2.5 sm:gap-3 p-3 sm:p-4 cursor-pointer transition-all duration-200 ${
+        isSelected 
+          ? "bg-primary/10 border-l-4 border-l-primary" 
+          : hasUnread 
+            ? "bg-accent/40 hover:bg-accent/60" 
+            : "hover:bg-muted/40"
       }`}
     >
-      <div className="flex items-center gap-2 sm:gap-3 flex-1 min-w-0">
+      <div className="flex items-center gap-2.5 sm:gap-3 flex-1 min-w-0">
         <div 
           className="relative"
           onClick={() => onSelect(conv.id)}
         >
-          <Avatar className="h-10 w-10 sm:h-12 sm:w-12 shrink-0">
+          <Avatar className={`h-11 w-11 sm:h-12 sm:w-12 shrink-0 ring-2 ring-background shadow-sm ${hasUnread ? 'ring-primary/30' : ''}`}>
             {conv.is_group ? (
               <>
                 <AvatarImage src={conv.group?.avatar_url || undefined} />
-                <AvatarFallback className="bg-gradient-to-br from-primary/20 to-success/20 text-sm sm:text-base">
+                <AvatarFallback className="bg-gradient-to-br from-primary/20 to-success/20 text-sm sm:text-base font-medium">
                   <Users className="h-5 w-5" />
                 </AvatarFallback>
               </>
             ) : (
               <>
                 <AvatarImage src={getAvatarUrl(conv.otherUser?.avatar_url)} />
-                <AvatarFallback className="bg-gradient-to-br from-primary/20 to-success/20 text-sm sm:text-base">
+                <AvatarFallback className="bg-gradient-to-br from-primary/20 to-success/20 text-sm sm:text-base font-medium">
                   {(conv.otherUser?.nickname || conv.otherUser?.full_name)?.[0] || "?"}
                 </AvatarFallback>
               </>
             )}
           </Avatar>
           {!conv.is_group && conv.otherUser?.user_id && isOnline && (
-            <div className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 rounded-full border-2 border-background" />
+            <div className="absolute bottom-0 right-0 w-3.5 h-3.5 bg-green-500 rounded-full border-2 border-background shadow-sm" />
           )}
         </div>
         <div 
-          className="flex-1 min-w-0"
+          className="flex-1 min-w-0 pr-1"
           onClick={() => onSelect(conv.id)}
         >
           <div className="flex items-center gap-1.5 min-w-0">
             <p 
-              className="font-semibold truncate text-sm sm:text-base cursor-pointer hover:underline flex-shrink"
+              className={`truncate text-sm sm:text-base cursor-pointer hover:underline flex-shrink ${hasUnread ? 'font-bold' : 'font-semibold'}`}
               onClick={(e) => {
                 if (conv.is_group && conv.group) {
                   e.stopPropagation();
@@ -87,34 +93,36 @@ export const ConversationListItem = ({
             {!conv.is_group && conv.otherUser?.verified && (
               <BadgeCheck className="w-4 h-4 text-primary fill-primary/20 shrink-0" />
             )}
+          </div>
+          <div className="flex items-center gap-2 mt-0.5">
             {!conv.is_group && conv.otherUser?.user_id && isOnline && (
-              <span className="text-xs text-green-500 font-medium shrink-0 whitespace-nowrap">En ligne</span>
+              <span className="text-[10px] sm:text-xs text-green-500 font-medium shrink-0 whitespace-nowrap">En ligne</span>
+            )}
+            {!conv.is_group && isTyping ? (
+              <div className="flex items-center gap-1 text-primary text-xs italic font-medium">
+                <span>en train d'écrire</span>
+                <span className="flex gap-0.5">
+                  <span className="animate-bounce" style={{ animationDelay: '0ms' }}>.</span>
+                  <span className="animate-bounce" style={{ animationDelay: '150ms' }}>.</span>
+                  <span className="animate-bounce" style={{ animationDelay: '300ms' }}>.</span>
+                </span>
+              </div>
+            ) : (
+              <p className={`text-xs sm:text-sm line-clamp-1 break-words overflow-hidden ${hasUnread ? 'text-foreground/80 font-medium' : 'text-muted-foreground'}`}>
+                {conv.lastMessage || "Aucun message"}
+              </p>
             )}
           </div>
-          {!conv.is_group && isTyping ? (
-            <div className="flex items-center gap-1 text-muted-foreground text-xs italic">
-              <span>en train d'écrire</span>
-              <span className="flex gap-0.5">
-                <span className="animate-bounce" style={{ animationDelay: '0ms' }}>.</span>
-                <span className="animate-bounce" style={{ animationDelay: '150ms' }}>.</span>
-                <span className="animate-bounce" style={{ animationDelay: '300ms' }}>.</span>
-              </span>
-            </div>
-          ) : (
-            <p className="text-xs sm:text-sm text-muted-foreground line-clamp-2 break-words overflow-hidden">
-              {conv.lastMessage || "Aucun message"}
-            </p>
-          )}
         </div>
-        <div className="flex flex-col items-end gap-1 shrink-0">
+        <div className="flex flex-col items-end gap-1.5 shrink-0 ml-1">
           {conv.lastMessageTime && (
-            <span className="text-[10px] sm:text-xs text-muted-foreground">
+            <span className={`text-[10px] sm:text-xs ${hasUnread ? 'text-primary font-medium' : 'text-muted-foreground'}`}>
               {formatTime(conv.lastMessageTime)}
             </span>
           )}
-          {conv.unreadCount !== undefined && conv.unreadCount > 0 && (
-            <span className="flex items-center justify-center h-5 w-5 sm:h-6 sm:w-6 rounded-full bg-primary text-primary-foreground text-[10px] sm:text-xs font-bold shadow-lg">
-              {conv.unreadCount > 9 ? '9+' : conv.unreadCount}
+          {hasUnread && (
+            <span className="flex items-center justify-center min-w-[20px] h-5 sm:min-w-[24px] sm:h-6 px-1.5 rounded-full bg-primary text-primary-foreground text-[10px] sm:text-xs font-bold shadow-md">
+              {conv.unreadCount! > 99 ? '99+' : conv.unreadCount}
             </span>
           )}
         </div>
@@ -126,7 +134,7 @@ export const ConversationListItem = ({
             <MoreVertical className="h-4 w-4" />
           </Button>
         </DropdownMenuTrigger>
-        <DropdownMenuContent align="end">
+        <DropdownMenuContent align="end" className="min-w-[180px]">
           <DropdownMenuItem
             className="text-destructive focus:text-destructive"
             onClick={(e) => {
