@@ -40,6 +40,15 @@ serve(async (req) => {
       throw new Error('User not authenticated');
     }
 
+    // Protected accounts that cannot be deleted (Eric AI assistant)
+    const PROTECTED_USER_IDS = ['68f2f959-e14a-47f9-8277-07df3a6fcd79'];
+    
+    if (PROTECTED_USER_IDS.includes(user.id)) {
+      throw new Error('This system account cannot be deleted');
+    }
+
+    console.log(`Deleting user account: ${user.id}`);
+
     // Create admin client to delete the user
     const supabaseAdmin = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
