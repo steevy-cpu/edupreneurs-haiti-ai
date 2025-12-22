@@ -2059,20 +2059,19 @@ const Community = () => {
       </div>
 
       {/* Messages View - WhatsApp-style keyboard-adaptive layout */}
-      <div className={`${selectedConversation ? "fixed inset-0 md:relative md:inset-auto" : "hidden md:block"} md:flex-1 bg-background md:ml-80 lg:ml-96 relative`}>
-        {/* Full-page background pattern with 50% transparency */}
-        {selectedConversation && (
-          <div 
-            className="absolute inset-0 pointer-events-none z-0"
-            style={{
-              backgroundImage: `url(${chatBackground})`,
-              backgroundSize: '300px',
-              backgroundRepeat: 'repeat',
-              backgroundPosition: 'center',
-              opacity: 0.5
-            }}
-          />
-        )}
+      <div
+        className={`${selectedConversation ? "fixed inset-0 md:relative md:inset-auto" : "hidden md:block"} md:flex-1 bg-background md:ml-80 lg:ml-96 relative`}
+        style={
+          selectedConversation
+            ? {
+                backgroundImage: `linear-gradient(hsl(var(--background) / 0.55), hsl(var(--background) / 0.55)), url(${chatBackground})`,
+                backgroundSize: '300px',
+                backgroundRepeat: 'repeat',
+                backgroundPosition: 'center',
+              }
+            : undefined
+        }
+      >
         {selectedConversation ? (
           <div className="h-full flex flex-col relative" style={{
             height: '100dvh'
