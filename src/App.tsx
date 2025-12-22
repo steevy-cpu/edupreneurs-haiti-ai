@@ -53,6 +53,7 @@ const MigratePDFs = lazy(() => import("./pages/MigratePDFs"));
 const PaymentDemo = lazy(() => import("./pages/PaymentDemo"));
 const NatCashDemo = lazy(() => import("./pages/NatCashDemo"));
 const AdminPayments = lazy(() => import("./pages/AdminPayments"));
+const AdminPaymentsDemo = lazy(() => import("./pages/AdminPaymentsDemo"));
 
 // Loading component for suspense fallback
 const PageLoader = () => (
@@ -165,6 +166,7 @@ const App = () => (
           <Route path="/payment-demo" element={<PaymentDemo />} />
           <Route path="/natcash-demo" element={<NatCashDemo />} />
           <Route path="/admin/payments" element={<Layout><AdminPayments /></Layout>} />
+          <Route path="/admin/payments-demo" element={<AdminPaymentsDemo />} />
               {/* Dynamic routes for content editor generated subjects - MUST be before catch-all */}
               <Route path="/course/:slug" element={<DynamicCoursePage />} />
               <Route path="/course/:slug/:lessonSlug" element={<DynamicLessonPage />} />
