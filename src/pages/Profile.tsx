@@ -544,14 +544,15 @@ export default function Profile() {
             </div>
           )}
 
-          <div className="mt-8 space-y-4">
+          {/* Bio & Info Section */}
+          <div className="mt-8 pt-6 border-t space-y-5">
             {profile.bio ? (
-              <div>
-                <h3 className="font-semibold mb-2">Bio</h3>
-                <p className="text-muted-foreground">{profile.bio}</p>
+              <div className="bg-gradient-to-br from-primary/5 to-accent/5 rounded-xl p-4 sm:p-5">
+                <h3 className="font-playfair font-semibold text-lg mb-2 text-foreground">Bio</h3>
+                <p className="text-muted-foreground leading-relaxed font-poppins">{profile.bio}</p>
               </div>
             ) : isOwnProfile && (
-              <div className="bg-muted/50 border border-dashed border-muted-foreground/30 rounded-lg p-4 text-center">
+              <div className="bg-muted/50 border border-dashed border-muted-foreground/30 rounded-xl p-4 text-center">
                 <p className="text-sm text-muted-foreground mb-2">Vous n'avez pas encore de bio</p>
                 <Button variant="outline" size="sm" onClick={() => navigate('/settings')}>
                   Ajouter une bio
@@ -562,14 +563,14 @@ export default function Profile() {
             {!profile.is_system_account && (
               <div className="grid grid-cols-2 gap-4">
                 {profile.school && (
-                  <div>
-                    <h3 className="font-semibold mb-1">École</h3>
-                    <p className="text-muted-foreground">{profile.school}</p>
+                  <div className="bg-gradient-to-br from-secondary/50 to-muted/30 rounded-xl p-4">
+                    <h3 className="font-playfair font-semibold text-base mb-1 text-foreground">École</h3>
+                    <p className="text-muted-foreground font-poppins text-sm sm:text-base">{profile.school}</p>
                   </div>
                 )}
-                <div>
-                  <h3 className="font-semibold mb-1">Classe</h3>
-                  <p className="text-muted-foreground">{profile.academic_grade}</p>
+                <div className="bg-gradient-to-br from-secondary/50 to-muted/30 rounded-xl p-4">
+                  <h3 className="font-playfair font-semibold text-base mb-1 text-foreground">Classe</h3>
+                  <p className="text-muted-foreground font-poppins text-sm sm:text-base">{profile.academic_grade}</p>
                 </div>
               </div>
             )}
