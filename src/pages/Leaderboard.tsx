@@ -110,8 +110,12 @@ const Leaderboard = () => {
     }
   };
 
+  const handleUserClick = (userId: string) => {
+    navigate(`/profile/${userId}`);
+  };
+
   return (
-    <div className="min-h-screen bg-background pb-16 sm:pb-20 pt-14 sm:pt-16">
+    <div className="min-h-screen bg-background pb-24 pt-14 sm:pt-16">
       {/* Theme Toggle */}
       <div className="fixed top-4 right-4 z-50">
         <ThemeToggle />
@@ -141,20 +145,31 @@ const Leaderboard = () => {
         </div>
       </div>
 
+      {/* How to earn gold hint */}
+      <div className="max-w-4xl mx-auto px-3 sm:px-4 pt-4">
+        <div className="bg-amber-500/10 border border-amber-500/20 rounded-lg px-3 py-2 flex items-center gap-2">
+          <span className="text-lg">💡</span>
+          <p className="text-xs sm:text-sm text-muted-foreground">
+            Gagnez du gold en complétant des leçons et des quiz!
+          </p>
+        </div>
+      </div>
+
       {/* Leaderboard */}
       <div className="max-w-4xl mx-auto px-3 sm:px-4 pt-4 sm:pt-6">
         {loading ? (
-          <div className="space-y-4">
-            {[...Array(10)].map((_, i) => (
-              <Card key={i} className="border-none rounded-[20px] shadow-md">
-                <CardContent className="p-4">
-                  <div className="flex items-center gap-4">
-                    <Skeleton className="h-12 w-12 rounded-full" />
+          <div className="space-y-3">
+            {[...Array(5)].map((_, i) => (
+              <Card key={i} className="border-none rounded-xl shadow-md">
+                <CardContent className="p-3 sm:p-4">
+                  <div className="flex items-center gap-3">
+                    <Skeleton className="h-8 w-8 rounded-full" />
+                    <Skeleton className="h-10 w-10 rounded-full" />
                     <div className="flex-1 space-y-2">
-                      <Skeleton className="h-4 w-32" />
-                      <Skeleton className="h-3 w-24" />
+                      <Skeleton className="h-4 w-28" />
+                      <Skeleton className="h-3 w-20" />
                     </div>
-                    <Skeleton className="h-8 w-20" />
+                    <Skeleton className="h-6 w-16" />
                   </div>
                 </CardContent>
               </Card>
@@ -168,21 +183,28 @@ const Leaderboard = () => {
               return (
                 <Card
                   key={user.id}
-                  className={`border-none rounded-xl sm:rounded-2xl lg:rounded-[20px] shadow-md transition-all hover:scale-[1.01] sm:hover:scale-[1.02] ${
+                  className={`border-none rounded-xl sm:rounded-2xl shadow-md transition-all hover:scale-[1.01] cursor-pointer ${
                     isCurrentUser ? "ring-2 ring-primary" : ""
                   }`}
+                  onClick={() => handleUserClick(user.user_id)}
                 >
                   <CardContent
-                    className={`p-3 sm:p-4 bg-gradient-to-r ${getRankBgColor(user.rank)} border`}
+                    className={`p-3 sm:p-4 bg-gradient-to-r ${getRankBgColor(user.rank)} border rounded-xl sm:rounded-2xl`}
                   >
-                    <div className="flex items-center gap-2 sm:gap-3 lg:gap-4">
+                    <div className="flex items-center gap-2 sm:gap-3">
                       {/* Rank */}
-                      <div className="flex items-center justify-center min-w-[32px] sm:min-w-[40px] lg:min-w-[48px]">
-                        {getRankIcon(user.rank)}
+                      <div className="flex items-center justify-center min-w-[32px] sm:min-w-[40px]">
+                        {user.rank <= 3 ? (
+                          getRankIcon(user.rank)
+                        ) : (
+                          <span className="text-base sm:text-lg font-bold text-muted-foreground">
+                            #{user.rank}
+                          </span>
+                        )}
                       </div>
 
                       {/* Avatar */}
-                      <Avatar className="h-10 w-10 sm:h-12 sm:w-12">
+                      <Avatar className="h-10 w-10 sm:h-12 sm:w-12 ring-2 ring-background">
                         <AvatarImage src={getAvatarUrl(user.avatar_url)} />
                         <AvatarFallback className="bg-gradient-to-br from-primary/20 to-success/20 font-semibold text-xs sm:text-base">
                           {user.nickname?.[0] || user.full_name?.[0] || "?"}
@@ -208,19 +230,12 @@ const Leaderboard = () => {
 
                       {/* Gold Count */}
                       <div className="text-right">
-                        <div className="flex items-center gap-0.5 sm:gap-1 lg:gap-1.5 text-amber-500 font-bold text-base sm:text-lg">
-                          <span className="text-lg sm:text-xl lg:text-2xl">🏆</span>
-                          <span className="text-sm sm:text-base lg:text-lg">{user.gold_earned}</span>
+                        <div className="flex items-center gap-0.5 sm:gap-1 text-amber-500 font-bold">
+                          <span className="text-base sm:text-lg">🏆</span>
+                          <span className="text-sm sm:text-base">{user.gold_earned}</span>
                         </div>
                         <p className="text-[10px] sm:text-xs text-muted-foreground">
                           gold
-                        </p>
-                      </div>
-
-                      {/* Rank Number */}
-                      <div className="min-w-[32px] sm:min-w-[40px] text-center">
-                        <p className="text-lg sm:text-xl lg:text-2xl font-bold text-muted-foreground">
-                          #{user.rank}
                         </p>
                       </div>
                     </div>
@@ -232,11 +247,14 @@ const Leaderboard = () => {
         )}
 
         {!loading && leaderboard.length === 0 && (
-          <Card className="border-none rounded-[20px] shadow-md">
-            <CardContent className="p-12 text-center">
+          <Card className="border-none rounded-xl shadow-md">
+            <CardContent className="p-8 sm:p-12 text-center">
               <Trophy size={48} className="mx-auto mb-4 text-muted-foreground" />
               <p className="text-muted-foreground">
                 Aucun utilisateur dans le classement pour le moment
+              </p>
+              <p className="text-xs text-muted-foreground mt-2">
+                Complétez des leçons pour apparaître ici!
               </p>
             </CardContent>
           </Card>
