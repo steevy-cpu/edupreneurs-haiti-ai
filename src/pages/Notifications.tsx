@@ -485,22 +485,42 @@ export default function Notifications() {
   const unreadCount = notifications.filter((n) => !n.read).length;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background to-background/80 px-3 py-4 sm:p-6">
+    <div className="min-h-screen bg-gradient-to-br from-background to-background/80 px-3 py-4 sm:p-6 pb-24 sm:pb-6">
       {/* Notification Permission Banner */}
       {currentUserId && <NotificationPermissionBanner userId={currentUserId} />}
       
-      <div className="fixed top-4 right-4 z-50">
-        <ThemeToggle />
-      </div>
       <div className="max-w-2xl mx-auto">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4 sm:mb-6">
-          <h1 className="text-2xl sm:text-3xl font-bold">Notifications</h1>
-          <div className="flex gap-2 flex-wrap">
+        {/* Header with title and actions */}
+        <div className="flex items-center justify-between gap-2 mb-4 sm:mb-6">
+          <div className="flex items-center gap-2">
+            <h1 className="text-xl sm:text-2xl md:text-3xl font-bold">Notifications</h1>
             {unreadCount > 0 && (
-              <Button onClick={markAllAsRead} variant="outline" size="sm" className="text-xs sm:text-sm">
+              <span className="bg-primary text-primary-foreground text-[10px] sm:text-xs font-medium px-1.5 sm:px-2 py-0.5 rounded-full">
+                {unreadCount}
+              </span>
+            )}
+          </div>
+          <div className="flex items-center gap-1 sm:gap-2">
+            <ThemeToggle />
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => navigate('/notification-settings')}
+              className="h-8 w-8 sm:h-9 sm:w-9"
+              title="Paramètres de notification"
+            >
+              <Settings className="h-4 w-4 sm:h-5 sm:w-5" />
+            </Button>
+          </div>
+        </div>
+
+        {/* Action buttons row */}
+        {(unreadCount > 0 || notifications.length > 0) && (
+          <div className="flex gap-2 mb-4 overflow-x-auto pb-1">
+            {unreadCount > 0 && (
+              <Button onClick={markAllAsRead} variant="outline" size="sm" className="text-xs sm:text-sm whitespace-nowrap flex-shrink-0">
                 <Check className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
-                <span className="hidden xs:inline">Marquer comme lu</span>
-                <span className="xs:hidden">Tout lu</span>
+                Marquer comme lu
               </Button>
             )}
             {notifications.length > 0 && (
@@ -508,15 +528,14 @@ export default function Notifications() {
                 onClick={() => setDeleteAllDialogOpen(true)} 
                 variant="outline" 
                 size="sm"
-                className="text-destructive hover:text-destructive text-xs sm:text-sm"
+                className="text-destructive hover:text-destructive text-xs sm:text-sm whitespace-nowrap flex-shrink-0"
               >
                 <Trash2 className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
-                <span className="hidden xs:inline">Tout supprimer</span>
-                <span className="xs:hidden">Supprimer</span>
+                Tout supprimer
               </Button>
             )}
           </div>
-        </div>
+        )}
 
         {isLoading ? (
           // Loading skeleton
@@ -547,63 +566,85 @@ export default function Notifications() {
             {notifications.map((notification) => (
               <Card
                 key={notification.id}
-                className={`p-3 sm:p-4 cursor-pointer hover:bg-accent transition-colors ${
-                  !notification.read ? "bg-accent/50" : ""
+                className={`p-3 sm:p-4 cursor-pointer transition-all duration-200 hover:shadow-md ${
+                  !notification.read 
+                    ? "bg-primary/10 border-l-4 border-l-primary shadow-sm" 
+                    : "hover:bg-accent/50"
                 }`}
               >
-                <div className="flex items-start gap-2 sm:gap-3" onClick={() => handleNotificationClick(notification)}>
-                  <Avatar className="h-8 w-8 sm:h-10 sm:w-10 flex-shrink-0">
+                <div className="flex items-start gap-2.5 sm:gap-3" onClick={() => handleNotificationClick(notification)}>
+                  {/* Avatar */}
+                  <Avatar className="h-9 w-9 sm:h-11 sm:w-11 flex-shrink-0 ring-2 ring-background shadow-sm">
                     <AvatarImage src={getAvatarUrl(notification.actorProfile.avatar_url)} />
-                    <AvatarFallback className="text-xs sm:text-sm">
+                    <AvatarFallback className="text-xs sm:text-sm font-medium">
                       {notification.actorProfile.nickname
                         .substring(0, 2)
                         .toUpperCase()}
                     </AvatarFallback>
                   </Avatar>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-start justify-between gap-2">
-                      <div className="flex items-start sm:items-center gap-1.5 sm:gap-2 flex-1 min-w-0">
-                        <span className="flex-shrink-0">{getNotificationIcon(notification.type)}</span>
-                        <p className="text-xs sm:text-sm line-clamp-2">
-                          {getNotificationText(notification)}
-                        </p>
-                      </div>
-                      <div className="flex items-center gap-1 flex-shrink-0">
-                        <span className="text-[10px] sm:text-xs text-muted-foreground whitespace-nowrap">
+                  
+                  {/* Content */}
+                  <div className="flex-1 min-w-0 pr-1">
+                    <div className="flex items-start gap-2">
+                      {/* Icon and text */}
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-start gap-1.5 sm:gap-2">
+                          <span className="flex-shrink-0 mt-0.5">{getNotificationIcon(notification.type)}</span>
+                          <p className="text-xs sm:text-sm leading-relaxed line-clamp-2 break-words">
+                            {getNotificationText(notification)}
+                          </p>
+                        </div>
+                        <span className="text-[10px] sm:text-xs text-muted-foreground mt-1 block">
                           {formatTimeAgo(notification.created_at)}
                         </span>
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
-                            <Button variant="ghost" size="icon" className="h-6 w-6 sm:h-8 sm:w-8">
-                              <MoreVertical className="h-3 w-3 sm:h-4 sm:w-4" />
-                            </Button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end">
+                      </div>
+                      
+                      {/* Menu button */}
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
+                          <Button variant="ghost" size="icon" className="h-7 w-7 sm:h-8 sm:w-8 flex-shrink-0 -mr-1">
+                            <MoreVertical className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end" className="min-w-[140px]">
+                          {!notification.read && (
                             <DropdownMenuItem
-                              className="text-destructive focus:text-destructive text-sm"
+                              className="text-sm"
                               onClick={(e) => {
                                 e.stopPropagation();
-                                setDeleteNotificationId(notification.id);
+                                markAsRead(notification.id);
                               }}
                             >
-                              <Trash2 className="h-4 w-4 mr-2" />
-                              Supprimer
+                              <Check className="h-4 w-4 mr-2" />
+                              Marquer lu
                             </DropdownMenuItem>
-                          </DropdownMenuContent>
-                        </DropdownMenu>
-                      </div>
+                          )}
+                          <DropdownMenuItem
+                            className="text-destructive focus:text-destructive text-sm"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setDeleteNotificationId(notification.id);
+                            }}
+                          >
+                            <Trash2 className="h-4 w-4 mr-2" />
+                            Supprimer
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
                     </div>
+                    
+                    {/* Follow request actions */}
                     {notification.type === "follow_request" && notification.followRequestPending && (
-                      <div className="flex gap-2 mt-2 sm:mt-3">
+                      <div className="flex gap-2 mt-2.5 sm:mt-3">
                         <Button
                           size="sm"
                           onClick={(e) => {
                             e.stopPropagation();
                             handleAcceptFollow(notification);
                           }}
-                          className="flex items-center gap-1 text-xs sm:text-sm h-7 sm:h-9 px-2 sm:px-3"
+                          className="flex items-center gap-1.5 text-xs sm:text-sm h-8 sm:h-9 px-3 sm:px-4"
                         >
-                          <Check size={12} className="sm:w-[14px] sm:h-[14px]" />
+                          <Check size={14} />
                           Accepter
                         </Button>
                         <Button
@@ -613,9 +654,9 @@ export default function Notifications() {
                             e.stopPropagation();
                             handleDeclineFollow(notification);
                           }}
-                          className="flex items-center gap-1 text-xs sm:text-sm h-7 sm:h-9 px-2 sm:px-3"
+                          className="flex items-center gap-1.5 text-xs sm:text-sm h-8 sm:h-9 px-3 sm:px-4"
                         >
-                          <X size={12} className="sm:w-[14px] sm:h-[14px]" />
+                          <X size={14} />
                           Refuser
                         </Button>
                       </div>
