@@ -154,6 +154,7 @@ export default function FollowRequests() {
             title: 'EDUPRENEURS',
             body: `${acceptorProfile?.nickname || acceptorProfile?.full_name || 'Someone'} a accepté votre demande d'abonnement`,
             url: '/notifications',
+            type: 'follow_accepted'
           }
         });
         console.log('✅ Follow acceptance push notification sent');
