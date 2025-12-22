@@ -1363,7 +1363,8 @@ const Community = () => {
               recipientUserId: conversation.otherUser.user_id,
               title: `💬 ${senderName}`,
               body: messagePreview,
-              conversationId: selectedConversation
+              conversationId: selectedConversation,
+              type: 'message'
             }
           });
         } catch (pushError) {
@@ -1402,7 +1403,8 @@ const Community = () => {
                   recipientUserId: member.user_id,
                   title: `👥 ${senderName} dans ${groupName}`,
                   body: messagePreview,
-                  conversationId: selectedConversation
+                  conversationId: selectedConversation,
+                  type: 'message'
                 }
               });
             } catch (error) {

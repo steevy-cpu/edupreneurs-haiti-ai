@@ -161,6 +161,7 @@ export default function Profile() {
             title: 'EDUPRENEURS',
             body: `${currentUserProfile?.nickname || currentUserProfile?.full_name || 'Someone'} vous a envoyé une demande d'abonnement`,
             url: '/notifications',
+            type: 'follow'
           }
         });
         console.log('✅ Follow request push notification sent');

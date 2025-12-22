@@ -5,6 +5,10 @@ interface PushNotificationData {
   title: string;
   body: string;
   conversationId?: string;
+  type?: 'message' | 'like' | 'comment' | 'share' | 'follow' | 'follow_accepted' | 'mention' | 'post';
+  actorId?: string;
+  entityId?: string;
+  url?: string;
 }
 
 /**

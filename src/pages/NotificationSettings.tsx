@@ -107,6 +107,7 @@ export default function NotificationSettings() {
         recipientUserId: userId,
         title: `🧪 Test: ${cat.label}`,
         body: `Ceci est une notification de test pour la catégorie "${cat.label}"`,
+        type: category as 'message' | 'like' | 'comment' | 'share' | 'follow' | 'follow_accepted' | 'mention' | 'post',
       });
 
       toast.success('Notification de test envoyée !');
