@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -25,6 +25,7 @@ import {
   FileText,
   Users,
   UserCheck,
+  Loader2,
 } from "lucide-react";
 import ericArmsCrossed from "@/assets/eric-main01.png";
 import {
@@ -54,10 +55,28 @@ interface UserProfile {
   avatar_url: string | null;
 }
 
+interface NotificationCategory {
+  category: string;
+  label: string;
+  description: string;
+  enabled: boolean;
+}
+
+const DEFAULT_NOTIFICATION_CATEGORIES: Omit<NotificationCategory, 'enabled'>[] = [
+  { category: 'email', label: 'Notifications par email', description: 'Recevez des emails sur votre progression' },
+  { category: 'lesson_reminders', label: 'Rappels de leçons', description: 'Recevez des rappels pour continuer vos leçons' },
+  { category: 'achievements', label: 'Alertes de réussite', description: 'Soyez notifié quand vous débloquez des badges' },
+  { category: 'weekly_progress', label: 'Rapport hebdomadaire', description: 'Recevez un résumé de votre progression chaque semaine' },
+];
+
 const Settings = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
+  const [pageLoading, setPageLoading] = useState(true);
+  const [savingProfile, setSavingProfile] = useState(false);
+  const [savingPassword, setSavingPassword] = useState(false);
   const [userEmail, setUserEmail] = useState("");
+  const [userId, setUserId] = useState<string | null>(null);
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [followerCount, setFollowerCount] = useState(0);
   const [followingCount, setFollowingCount] = useState(0);
@@ -71,47 +90,43 @@ const Settings = () => {
     school: "",
   });
   const [passwordForm, setPasswordForm] = useState({
-    currentPassword: "",
     newPassword: "",
     confirmPassword: "",
   });
-  const [notifications, setNotifications] = useState({
-    emailNotifications: true,
-    lessonReminders: true,
-    achievementAlerts: true,
-    weeklyProgress: false,
-  });
+  const [notificationCategories, setNotificationCategories] = useState<NotificationCategory[]>([]);
+  const [savingNotification, setSavingNotification] = useState<string | null>(null);
   const [language, setLanguage] = useState(() => {
     return localStorage.getItem("lessonLanguage") || "fr";
   });
 
-  useEffect(() => {
-    fetchUserData();
-  }, []);
-
-  useEffect(() => {
-    localStorage.setItem("lessonLanguage", language);
-  }, [language]);
-
-  const fetchUserData = async () => {
+  // Fetch all data in parallel
+  const fetchUserData = useCallback(async () => {
+    setPageLoading(true);
+    
     const { data: { session } } = await supabase.auth.getSession();
     if (!session) {
       navigate("/auth");
       return;
     }
+    
     setUserEmail(session.user.email || "");
+    setUserId(session.user.id);
 
-    const { data: profileData, error } = await supabase
-      .from("profiles")
-      .select("*")
-      .eq("user_id", session.user.id)
-      .single();
+    // Fetch all data in parallel
+    const [profileResult, followersResult, followingResult, notificationPrefsResult] = await Promise.all([
+      supabase.from("profiles").select("*").eq("user_id", session.user.id).single(),
+      supabase.from("follows").select("*", { count: "exact", head: true }).eq("following_id", session.user.id).eq("status", "accepted"),
+      supabase.from("follows").select("*", { count: "exact", head: true }).eq("follower_id", session.user.id).eq("status", "accepted"),
+      supabase.from("notification_preferences").select("*").eq("user_id", session.user.id),
+    ]);
 
-    if (error) {
-      console.error("Error fetching profile:", error);
+    if (profileResult.error) {
+      console.error("Error fetching profile:", profileResult.error);
+      setPageLoading(false);
       return;
     }
 
+    const profileData = profileResult.data;
     setProfile(profileData);
     setSelectedAvatar(profileData.avatar_url || "");
     setProfileForm({
@@ -123,23 +138,30 @@ const Settings = () => {
       school: profileData.school || "",
     });
 
-    // Fetch follower count
-    const { count: followersCount } = await supabase
-      .from("follows")
-      .select("*", { count: "exact", head: true })
-      .eq("following_id", session.user.id)
-      .eq("status", "accepted");
+    setFollowerCount(followersResult.count || 0);
+    setFollowingCount(followingResult.count || 0);
 
-    // Fetch following count
-    const { count: followingsCount } = await supabase
-      .from("follows")
-      .select("*", { count: "exact", head: true })
-      .eq("follower_id", session.user.id)
-      .eq("status", "accepted");
+    // Merge saved preferences with defaults
+    const savedPrefs = notificationPrefsResult.data || [];
+    const mergedCategories = DEFAULT_NOTIFICATION_CATEGORIES.map(cat => {
+      const saved = savedPrefs.find(p => p.category === cat.category);
+      return {
+        ...cat,
+        enabled: saved?.enabled ?? true, // Default to true if not set
+      };
+    });
+    setNotificationCategories(mergedCategories);
 
-    setFollowerCount(followersCount || 0);
-    setFollowingCount(followingsCount || 0);
-  };
+    setPageLoading(false);
+  }, [navigate]);
+
+  useEffect(() => {
+    fetchUserData();
+  }, [fetchUserData]);
+
+  useEffect(() => {
+    localStorage.setItem("lessonLanguage", language);
+  }, [language]);
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
@@ -166,18 +188,41 @@ const Settings = () => {
 
   const handleProfileUpdate = async (e: React.FormEvent) => {
     e.preventDefault();
-    setLoading(true);
+    
+    // Validation
+    if (!profileForm.fullName.trim()) {
+      toast.error("Le nom complet est requis");
+      return;
+    }
+    if (!profileForm.nickname.trim()) {
+      toast.error("Le pseudo est requis");
+      return;
+    }
+    if (profileForm.nickname.length < 3) {
+      toast.error("Le pseudo doit contenir au moins 3 caractères");
+      return;
+    }
+    if (!profileForm.academicGrade) {
+      toast.error("Le niveau académique est requis");
+      return;
+    }
+    if (!profileForm.phoneNumber.trim()) {
+      toast.error("Le numéro de téléphone est requis");
+      return;
+    }
+    
+    setSavingProfile(true);
 
     try {
       const { error } = await supabase
         .from("profiles")
         .update({
-          full_name: profileForm.fullName,
-          nickname: profileForm.nickname,
+          full_name: profileForm.fullName.trim(),
+          nickname: profileForm.nickname.trim(),
           academic_grade: profileForm.academicGrade,
-          phone_number: profileForm.phoneNumber,
-          bio: profileForm.bio,
-          school: profileForm.school,
+          phone_number: profileForm.phoneNumber.trim(),
+          bio: profileForm.bio.trim() || null,
+          school: profileForm.school.trim() || null,
         })
         .eq("user_id", profile?.user_id);
 
@@ -188,24 +233,25 @@ const Settings = () => {
     } catch (error: any) {
       toast.error("Erreur lors de la mise à jour: " + error.message);
     } finally {
-      setLoading(false);
+      setSavingProfile(false);
     }
   };
 
   const handlePasswordChange = async (e: React.FormEvent) => {
     e.preventDefault();
     
+    // Validation
+    if (passwordForm.newPassword.length < 6) {
+      toast.error("Le mot de passe doit contenir au moins 6 caractères");
+      return;
+    }
+    
     if (passwordForm.newPassword !== passwordForm.confirmPassword) {
       toast.error("Les mots de passe ne correspondent pas");
       return;
     }
 
-    if (passwordForm.newPassword.length < 6) {
-      toast.error("Le mot de passe doit contenir au moins 6 caractères");
-      return;
-    }
-
-    setLoading(true);
+    setSavingPassword(true);
 
     try {
       const { error } = await supabase.auth.updateUser({
@@ -216,14 +262,50 @@ const Settings = () => {
 
       toast.success("Mot de passe modifié avec succès!");
       setPasswordForm({
-        currentPassword: "",
         newPassword: "",
         confirmPassword: "",
       });
     } catch (error: any) {
       toast.error("Erreur lors du changement: " + error.message);
     } finally {
-      setLoading(false);
+      setSavingPassword(false);
+    }
+  };
+
+  const handleNotificationToggle = async (category: string, enabled: boolean) => {
+    if (!userId) return;
+    
+    setSavingNotification(category);
+    
+    try {
+      // Update local state optimistically
+      setNotificationCategories(prev => 
+        prev.map(cat => cat.category === category ? { ...cat, enabled } : cat)
+      );
+
+      // Upsert to database
+      const { error } = await supabase
+        .from("notification_preferences")
+        .upsert({
+          user_id: userId,
+          category,
+          enabled,
+          updated_at: new Date().toISOString(),
+        }, {
+          onConflict: 'user_id,category',
+        });
+
+      if (error) throw error;
+      
+      toast.success("Préférence mise à jour");
+    } catch (error: any) {
+      // Revert on error
+      setNotificationCategories(prev => 
+        prev.map(cat => cat.category === category ? { ...cat, enabled: !enabled } : cat)
+      );
+      toast.error("Erreur lors de la mise à jour");
+    } finally {
+      setSavingNotification(null);
     }
   };
 
@@ -236,7 +318,6 @@ const Settings = () => {
         return;
       }
 
-      // Call edge function to delete user account completely
       const { error } = await supabase.functions.invoke('delete-user-account', {
         headers: {
           Authorization: `Bearer ${session.access_token}`
@@ -245,7 +326,6 @@ const Settings = () => {
 
       if (error) throw error;
 
-      // Sign out
       await supabase.auth.signOut();
       
       toast.success("Compte supprimé avec succès");
@@ -258,8 +338,19 @@ const Settings = () => {
     }
   };
 
+  if (pageLoading) {
+    return (
+      <div className="pt-20 px-4 sm:px-6 lg:px-8 pb-24 max-w-7xl mx-auto flex items-center justify-center min-h-[60vh]">
+        <div className="flex flex-col items-center gap-4">
+          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+          <p className="text-muted-foreground">Chargement des paramètres...</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className="pt-20 px-4 sm:px-6 lg:px-8 pb-8 max-w-7xl mx-auto">
+    <div className="pt-20 px-4 sm:px-6 lg:px-8 pb-24 max-w-7xl mx-auto">
         <div className="fixed top-4 right-4 z-50">
           <ThemeToggle />
         </div>
@@ -387,19 +478,21 @@ const Settings = () => {
                     <div className="space-y-2">
                       <Label htmlFor="fullName" className="flex items-center gap-2">
                         <User size={16} />
-                        Nom complet
+                        Nom complet *
                       </Label>
                       <Input
                         id="fullName"
                         value={profileForm.fullName}
                         onChange={(e) => setProfileForm({ ...profileForm, fullName: e.target.value })}
                         placeholder="Votre nom complet"
+                        required
+                        maxLength={100}
                       />
                     </div>
                     <div className="space-y-2">
                       <Label htmlFor="nickname" className="flex items-center gap-2">
                         <User size={16} />
-                        Pseudo
+                        Pseudo *
                       </Label>
                       <Input
                         id="nickname"
@@ -407,6 +500,8 @@ const Settings = () => {
                         onChange={(e) => setProfileForm({ ...profileForm, nickname: e.target.value })}
                         placeholder="Votre pseudo"
                         required
+                        minLength={3}
+                        maxLength={30}
                       />
                     </div>
                   </div>
@@ -415,7 +510,7 @@ const Settings = () => {
                     <div className="space-y-2">
                       <Label htmlFor="academicGrade" className="flex items-center gap-2">
                         <GraduationCap size={16} />
-                        Niveau académique
+                        Niveau académique *
                       </Label>
                       <select
                         id="academicGrade"
@@ -436,7 +531,7 @@ const Settings = () => {
                     <div className="space-y-2">
                       <Label htmlFor="phoneNumber" className="flex items-center gap-2">
                         <Phone size={16} />
-                        Numéro de téléphone
+                        Numéro de téléphone *
                       </Label>
                       <Input
                         id="phoneNumber"
@@ -444,6 +539,7 @@ const Settings = () => {
                         onChange={(e) => setProfileForm({ ...profileForm, phoneNumber: e.target.value })}
                         placeholder="+509 XXXX XXXX"
                         required
+                        maxLength={20}
                       />
                     </div>
                   </div>
@@ -474,16 +570,26 @@ const Settings = () => {
                       value={profileForm.school}
                       onChange={(e) => setProfileForm({ ...profileForm, school: e.target.value })}
                       placeholder="Nom de votre école"
+                      maxLength={100}
                     />
                   </div>
 
                   <Button 
                     type="submit" 
-                    disabled={loading}
+                    disabled={savingProfile}
                     className="bg-gradient-to-br from-[hsl(var(--primary))] to-[hsl(var(--success))] hover:opacity-90"
                   >
-                    <Save className="mr-2 h-4 w-4" />
-                    {loading ? "Enregistrement..." : "Enregistrer les modifications"}
+                    {savingProfile ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Enregistrement...
+                      </>
+                    ) : (
+                      <>
+                        <Save className="mr-2 h-4 w-4" />
+                        Enregistrer les modifications
+                      </>
+                    )}
                   </Button>
                 </form>
               </CardContent>
@@ -532,7 +638,11 @@ const Settings = () => {
                         onChange={(e) => setPasswordForm({ ...passwordForm, newPassword: e.target.value })}
                         placeholder="Au moins 6 caractères"
                         required
+                        minLength={6}
                       />
+                      {passwordForm.newPassword && passwordForm.newPassword.length < 6 && (
+                        <p className="text-xs text-destructive">Le mot de passe doit contenir au moins 6 caractères</p>
+                      )}
                     </div>
                     <div className="space-y-2">
                       <Label htmlFor="confirmPassword">Confirmer le mot de passe</Label>
@@ -544,13 +654,23 @@ const Settings = () => {
                         placeholder="Retapez le mot de passe"
                         required
                       />
+                      {passwordForm.confirmPassword && passwordForm.newPassword !== passwordForm.confirmPassword && (
+                        <p className="text-xs text-destructive">Les mots de passe ne correspondent pas</p>
+                      )}
                     </div>
                     <Button 
                       type="submit" 
-                      disabled={loading}
+                      disabled={savingPassword || passwordForm.newPassword.length < 6 || passwordForm.newPassword !== passwordForm.confirmPassword}
                       className="bg-gradient-to-br from-[hsl(var(--primary))] to-[hsl(var(--success))] hover:opacity-90"
                     >
-                      {loading ? "Modification..." : "Changer le mot de passe"}
+                      {savingPassword ? (
+                        <>
+                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                          Modification...
+                        </>
+                      ) : (
+                        "Changer le mot de passe"
+                      )}
                     </Button>
                   </form>
                 </CardContent>
@@ -569,7 +689,7 @@ const Settings = () => {
                 <CardContent className="p-4 sm:p-6 pt-0">
                   <AlertDialog>
                     <AlertDialogTrigger asChild>
-                      <Button variant="destructive" className="w-full">
+                      <Button variant="destructive" className="w-full" disabled={loading}>
                         <Trash2 className="mr-2 h-4 w-4" />
                         Supprimer mon compte
                       </Button>
@@ -587,8 +707,16 @@ const Settings = () => {
                         <AlertDialogAction
                           onClick={handleDeleteAccount}
                           className="bg-destructive hover:bg-destructive/90"
+                          disabled={loading}
                         >
-                          Oui, supprimer mon compte
+                          {loading ? (
+                            <>
+                              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                              Suppression...
+                            </>
+                          ) : (
+                            "Oui, supprimer mon compte"
+                          )}
                         </AlertDialogAction>
                       </AlertDialogFooter>
                     </AlertDialogContent>
@@ -607,73 +735,34 @@ const Settings = () => {
                   Préférences de notification
                 </CardTitle>
                 <CardDescription className="text-sm">
-                  Choisissez comment vous souhaitez être informé
+                  Choisissez comment vous souhaitez être informé. Les modifications sont enregistrées automatiquement.
                 </CardDescription>
               </CardHeader>
               <CardContent className="p-4 sm:p-6 pt-0 space-y-4 sm:space-y-6">
-                <div className="flex items-center justify-between">
-                  <div className="space-y-0.5">
-                    <Label htmlFor="email-notifs">Notifications par email</Label>
-                    <p className="text-sm text-muted-foreground">
-                      Recevez des emails sur votre progression
-                    </p>
+                {notificationCategories.map((cat, index) => (
+                  <div key={cat.category}>
+                    <div className="flex items-center justify-between">
+                      <div className="space-y-0.5">
+                        <Label htmlFor={cat.category}>{cat.label}</Label>
+                        <p className="text-sm text-muted-foreground">
+                          {cat.description}
+                        </p>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        {savingNotification === cat.category && (
+                          <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+                        )}
+                        <Switch
+                          id={cat.category}
+                          checked={cat.enabled}
+                          onCheckedChange={(checked) => handleNotificationToggle(cat.category, checked)}
+                          disabled={savingNotification === cat.category}
+                        />
+                      </div>
+                    </div>
+                    {index < notificationCategories.length - 1 && <Separator className="mt-4" />}
                   </div>
-                  <Switch
-                    id="email-notifs"
-                    checked={notifications.emailNotifications}
-                    onCheckedChange={(checked) => 
-                      setNotifications({ ...notifications, emailNotifications: checked })
-                    }
-                  />
-                </div>
-                <Separator />
-                <div className="flex items-center justify-between">
-                  <div className="space-y-0.5">
-                    <Label htmlFor="lesson-reminders">Rappels de leçons</Label>
-                    <p className="text-sm text-muted-foreground">
-                      Recevez des rappels pour continuer vos leçons
-                    </p>
-                  </div>
-                  <Switch
-                    id="lesson-reminders"
-                    checked={notifications.lessonReminders}
-                    onCheckedChange={(checked) => 
-                      setNotifications({ ...notifications, lessonReminders: checked })
-                    }
-                  />
-                </div>
-                <Separator />
-                <div className="flex items-center justify-between">
-                  <div className="space-y-0.5">
-                    <Label htmlFor="achievement-alerts">Alertes de réussite</Label>
-                    <p className="text-sm text-muted-foreground">
-                      Soyez notifié quand vous débloquez des badges
-                    </p>
-                  </div>
-                  <Switch
-                    id="achievement-alerts"
-                    checked={notifications.achievementAlerts}
-                    onCheckedChange={(checked) => 
-                      setNotifications({ ...notifications, achievementAlerts: checked })
-                    }
-                  />
-                </div>
-                <Separator />
-                <div className="flex items-center justify-between">
-                  <div className="space-y-0.5">
-                    <Label htmlFor="weekly-progress">Rapport hebdomadaire</Label>
-                    <p className="text-sm text-muted-foreground">
-                      Recevez un résumé de votre progression chaque semaine
-                    </p>
-                  </div>
-                  <Switch
-                    id="weekly-progress"
-                    checked={notifications.weeklyProgress}
-                    onCheckedChange={(checked) => 
-                      setNotifications({ ...notifications, weeklyProgress: checked })
-                    }
-                  />
-                </div>
+                ))}
               </CardContent>
             </Card>
           </TabsContent>
@@ -694,12 +783,12 @@ const Settings = () => {
                 <div className="p-4 sm:p-6 bg-gradient-to-br from-[hsl(var(--primary))]/10 to-[hsl(var(--success))]/10 rounded-xl border-2 border-[hsl(var(--primary))]/20">
                   <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-4">
                     <div>
-                      <h3 className="text-xl sm:text-2xl font-bold">Plan Mensuel</h3>
-                      <p className="text-sm text-muted-foreground">Accès complet à toutes les fonctionnalités</p>
+                      <h3 className="text-xl sm:text-2xl font-bold">Plan Gratuit</h3>
+                      <p className="text-sm text-muted-foreground">Accès de base aux fonctionnalités</p>
                     </div>
                     <div className="text-left sm:text-right">
                       <div className="text-2xl sm:text-3xl font-extrabold bg-gradient-to-br from-[hsl(var(--primary))] to-[hsl(var(--success))] bg-clip-text text-transparent">
-                        200 HTG
+                        0 HTG
                       </div>
                       <div className="text-sm text-muted-foreground">par mois</div>
                     </div>
@@ -707,24 +796,24 @@ const Settings = () => {
                   <div className="space-y-2 mb-6">
                     <div className="flex items-center gap-2 text-sm">
                       <div className="w-2 h-2 rounded-full bg-[hsl(var(--success))]" />
-                      Toutes les matières MENFP
+                      Accès aux leçons de base
                     </div>
                     <div className="flex items-center gap-2 text-sm">
                       <div className="w-2 h-2 rounded-full bg-[hsl(var(--success))]" />
-                      Assistant IA personnalisé
+                      Assistant IA limité
                     </div>
-                    <div className="flex items-center gap-2 text-sm">
-                      <div className="w-2 h-2 rounded-full bg-[hsl(var(--success))]" />
-                      Quiz illimités et golds
+                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                      <div className="w-2 h-2 rounded-full bg-muted" />
+                      Quiz illimités (Premium)
                     </div>
-                    <div className="flex items-center gap-2 text-sm">
-                      <div className="w-2 h-2 rounded-full bg-[hsl(var(--success))]" />
-                      Support prioritaire
+                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                      <div className="w-2 h-2 rounded-full bg-muted" />
+                      Support prioritaire (Premium)
                     </div>
                   </div>
-                  <div className="flex items-center gap-2 p-3 bg-green-100 dark:bg-green-950/30 border border-green-200 dark:border-green-800 rounded-lg text-sm text-green-800 dark:text-green-200">
-                    <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
-                    Abonnement actif jusqu'au 4 novembre 2025
+                  <div className="flex items-center gap-2 p-3 bg-amber-100 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 rounded-lg text-sm text-amber-800 dark:text-amber-200">
+                    <div className="w-2 h-2 rounded-full bg-amber-500" />
+                    Les abonnements premium arrivent bientôt!
                   </div>
                 </div>
 
@@ -732,28 +821,22 @@ const Settings = () => {
 
                 <div className="space-y-4">
                   <h4 className="font-semibold">Méthode de paiement</h4>
-                  <div className="flex items-center gap-4 p-4 border border-border rounded-lg">
-                    <div className="w-12 h-8 bg-gradient-to-br from-[hsl(var(--accent))] to-[hsl(25_100%_50%)] rounded flex items-center justify-center text-white text-xs font-bold">
-                      MC
-                    </div>
+                  <div className="flex items-center gap-4 p-4 border border-border rounded-lg bg-muted/50">
                     <div className="flex-1">
-                      <p className="font-medium">MonCash</p>
-                      <p className="text-sm text-muted-foreground">Terminant par ••{profile?.phone_number?.slice(-4)}</p>
+                      <p className="font-medium text-muted-foreground">Aucune méthode de paiement</p>
+                      <p className="text-sm text-muted-foreground">Ajoutez une méthode de paiement pour passer en Premium</p>
                     </div>
-                    <Button variant="outline" size="sm">
-                      Modifier
-                    </Button>
                   </div>
                 </div>
 
                 <Separator />
 
                 <div className="flex gap-3">
-                  <Button variant="outline" className="flex-1">
-                    Annuler l'abonnement
-                  </Button>
-                  <Button className="flex-1 bg-gradient-to-br from-[hsl(var(--primary))] to-[hsl(var(--success))] hover:opacity-90">
-                    Mettre à niveau
+                  <Button 
+                    className="flex-1 bg-gradient-to-br from-[hsl(var(--primary))] to-[hsl(var(--success))] hover:opacity-90"
+                    disabled
+                  >
+                    Passer en Premium (Bientôt)
                   </Button>
                 </div>
               </CardContent>
@@ -797,26 +880,6 @@ const Settings = () => {
                     Utilisez le bouton de thème en haut à droite pour changer entre le mode clair et sombre
                   </p>
                 </div>
-
-                <Separator />
-
-                <div className="space-y-4">
-                  <Label htmlFor="difficulty">Niveau de difficulté par défaut</Label>
-                  <select
-                    id="difficulty"
-                    className="flex h-10 w-full rounded-lg border border-input bg-background px-3 py-2 text-sm"
-                  >
-                    <option>Facile</option>
-                    <option>Moyen</option>
-                    <option>Difficile</option>
-                    <option>Personnalisé</option>
-                  </select>
-                </div>
-
-                <Button className="w-full bg-gradient-to-br from-[hsl(var(--primary))] to-[hsl(var(--success))] hover:opacity-90">
-                  <Save className="mr-2 h-4 w-4" />
-                  Enregistrer les préférences
-                </Button>
               </CardContent>
             </Card>
           </TabsContent>
