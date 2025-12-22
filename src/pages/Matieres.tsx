@@ -287,18 +287,19 @@ export default function Matieres() {
   const totalExercises = displaySubjects.reduce((sum, s) => sum + s.exercises, 0);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5">
+    <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5 pb-24">
       {/* Navigation Bar */}
       <nav className="fixed top-0 left-0 right-0 z-40 bg-background/95 backdrop-blur-md border-b border-border">
-        <div className="container mx-auto px-4 py-4">
+        <div className="container mx-auto px-4 py-3">
           <div className="flex items-center justify-between">
             <Button
               variant="ghost"
+              size="sm"
               onClick={() => navigate("/dashboard")}
               className="gap-2"
             >
               <ChevronLeft className="w-4 h-4" />
-              <span className="font-semibold">EDUPRENEURS</span>
+              <span className="font-semibold hidden sm:inline">EDUPRENEURS</span>
             </Button>
             <div className="flex items-center gap-2">
               <div className="hidden md:block">
@@ -346,7 +347,7 @@ export default function Matieres() {
         {/* Grade Level Selection */}
         <div className="mb-8">
           <h3 className="text-lg font-semibold mb-4 text-center">Sélectionnez votre niveau</h3>
-          <div className="flex flex-wrap justify-center gap-2">
+          <div className="flex overflow-x-auto pb-2 gap-2 justify-start sm:justify-center scrollbar-hide">
             {gradeLevels.map((grade) => (
               <Button
                 key={grade.id}
@@ -355,7 +356,12 @@ export default function Matieres() {
                   setSelectedGrade(grade.id);
                   setSelectedSeries(null);
                 }}
-                className="min-w-[80px]"
+                className={`min-w-[70px] flex-shrink-0 transition-all duration-200 ${
+                  selectedGrade === grade.id 
+                    ? 'ring-2 ring-primary ring-offset-2 ring-offset-background shadow-lg' 
+                    : 'hover:border-primary/50'
+                }`}
+                size="sm"
               >
                 {grade.label}
               </Button>
@@ -427,45 +433,49 @@ export default function Matieres() {
 
         {/* Loading State */}
         {isLoading && (
-          <div className="flex items-center justify-center py-12">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+          <div className="flex flex-col items-center justify-center py-16 gap-4">
+            <div className="relative">
+              <div className="animate-spin rounded-full h-12 w-12 border-4 border-primary/20 border-t-primary"></div>
+              <GraduationCap className="absolute inset-0 m-auto w-5 h-5 text-primary" />
+            </div>
+            <p className="text-sm text-muted-foreground animate-pulse">Chargement des matières...</p>
           </div>
         )}
 
         {((!isNS3OrNS4 && displaySubjects.length > 0) || (isNS3OrNS4 && selectedSeries && displaySubjects.length > 0)) && !isLoading ? (
           <>
             {/* Stats Section */}
-            <Card className="p-6 mb-8">
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-                <div className="text-center">
-                  <div className="text-4xl font-bold text-primary mb-2">
+            <Card className="p-4 sm:p-6 mb-8 border-primary/20 bg-gradient-to-r from-primary/5 to-transparent">
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6">
+                <div className="text-center p-3 rounded-lg bg-background/50">
+                  <div className="text-3xl sm:text-4xl font-bold text-primary mb-1">
                     {displaySubjects.length}
                   </div>
-                  <div className="text-sm text-muted-foreground font-semibold">
+                  <div className="text-xs sm:text-sm text-muted-foreground font-medium">
                     Matières
                   </div>
                 </div>
-                <div className="text-center">
-                  <div className="text-4xl font-bold text-primary mb-2">
+                <div className="text-center p-3 rounded-lg bg-background/50">
+                  <div className="text-3xl sm:text-4xl font-bold text-primary mb-1">
                     {totalLessons > 0 ? `${totalLessons}+` : '0'}
                   </div>
-                  <div className="text-sm text-muted-foreground font-semibold">
+                  <div className="text-xs sm:text-sm text-muted-foreground font-medium">
                     Leçons
                   </div>
                 </div>
-                <div className="text-center">
-                  <div className="text-4xl font-bold text-primary mb-2">
+                <div className="text-center p-3 rounded-lg bg-background/50">
+                  <div className="text-3xl sm:text-4xl font-bold text-primary mb-1">
                     {totalExercises > 0 ? `${totalExercises}+` : '0'}
                   </div>
-                  <div className="text-sm text-muted-foreground font-semibold">
+                  <div className="text-xs sm:text-sm text-muted-foreground font-medium">
                     Exercices
                   </div>
                 </div>
-                <div className="text-center">
-                  <div className="text-4xl font-bold text-primary mb-2">
+                <div className="text-center p-3 rounded-lg bg-background/50">
+                  <div className="text-3xl sm:text-4xl font-bold text-primary mb-1">
                     ∞
                   </div>
-                  <div className="text-sm text-muted-foreground font-semibold">
+                  <div className="text-xs sm:text-sm text-muted-foreground font-medium">
                     Possibilités
                   </div>
                 </div>
@@ -517,7 +527,7 @@ export default function Matieres() {
             )}
 
             {/* Subjects Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mb-8">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6 mb-8">
               {displaySubjects.map((subject) => {
                 const IconComponent = subject.icon;
                 const hasContent = subject.lessons > 0;
@@ -525,8 +535,10 @@ export default function Matieres() {
                 return (
                   <Card
                     key={subject.id}
-                    className={`group transition-all duration-300 overflow-hidden ${
-                      hasContent ? 'hover:shadow-xl hover:-translate-y-2 cursor-pointer' : ''
+                    className={`group transition-all duration-300 overflow-hidden relative ${
+                      hasContent 
+                        ? 'hover:shadow-xl hover:-translate-y-1 cursor-pointer border-border hover:border-primary/30' 
+                        : 'opacity-70 border-dashed'
                     }`}
                     onClick={() => {
                       if (hasContent) {
@@ -534,47 +546,59 @@ export default function Matieres() {
                       }
                     }}
                   >
-                    <div className={`h-1 bg-gradient-to-r ${subject.color}`} />
+                    {/* Top gradient bar */}
+                    <div className={`h-1.5 bg-gradient-to-r ${subject.color} ${!hasContent ? 'opacity-50' : ''}`} />
                     
-                    <div className="p-6">
-                      <div className={`w-16 h-16 rounded-xl bg-gradient-to-br ${subject.color} flex items-center justify-center mb-4`}>
-                        <IconComponent className="w-8 h-8 text-white" />
+                    {/* Available badge for subjects with content */}
+                    {hasContent && (
+                      <div className="absolute top-3 right-3">
+                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium bg-green-500/10 text-green-600 dark:text-green-400">
+                          <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
+                          Disponible
+                        </span>
+                      </div>
+                    )}
+                    
+                    <div className="p-4 sm:p-6">
+                      <div className={`w-14 h-14 sm:w-16 sm:h-16 rounded-xl bg-gradient-to-br ${subject.color} flex items-center justify-center mb-4 shadow-lg ${!hasContent ? 'grayscale' : ''} group-hover:scale-105 transition-transform`}>
+                        <IconComponent className="w-7 h-7 sm:w-8 sm:h-8 text-white" />
                       </div>
 
-                      <h3 className="text-xl font-bold mb-2 group-hover:text-primary transition-colors">
+                      <h3 className="text-lg sm:text-xl font-bold mb-2 group-hover:text-primary transition-colors line-clamp-1">
                         {subject.title}
                       </h3>
 
-                      <p className="text-sm text-muted-foreground mb-4 line-clamp-2">
+                      <p className="text-xs sm:text-sm text-muted-foreground mb-4 line-clamp-2 min-h-[2.5rem]">
                         {subject.description}
                       </p>
 
                       <div className="flex gap-2 mb-4 flex-wrap">
-                        <Badge variant="secondary" className="text-xs">
-                          {subject.lessons} {subject.lessons === 1 ? 'leçon' : 'leçons'}
+                        <Badge variant="secondary" className="text-xs font-medium">
+                          📚 {subject.lessons} {subject.lessons === 1 ? 'leçon' : 'leçons'}
                         </Badge>
-                        <Badge variant="secondary" className="text-xs">
-                          {subject.exercises} {subject.exercises === 1 ? 'exercice' : 'exercices'}
+                        <Badge variant="secondary" className="text-xs font-medium">
+                          ✏️ {subject.exercises} {subject.exercises === 1 ? 'exercice' : 'exercices'}
                         </Badge>
                       </div>
 
                       {hasContent ? (
                         <Button
-                          className="w-full"
+                          className="w-full group-hover:bg-primary group-hover:text-primary-foreground transition-colors"
+                          variant="default"
                           onClick={(e) => {
                             e.stopPropagation();
                             navigate(`/course/${subject.id}`);
                           }}
                         >
-                          Commencer
+                          Commencer →
                         </Button>
                       ) : (
                         <Button
                           className="w-full"
-                          variant="secondary"
+                          variant="outline"
                           disabled
                         >
-                          Bientôt disponible
+                          🚧 Bientôt disponible
                         </Button>
                       )}
                     </div>
@@ -587,37 +611,52 @@ export default function Matieres() {
 
         {/* No subjects message */}
         {!isLoading && displaySubjects.length === 0 && (!isNS3OrNS4 || selectedSeries) && (
-          <Card className="p-8 text-center mb-8">
-            <p className="text-muted-foreground">
-              Aucune matière disponible pour ce niveau. Les contenus sont en cours de développement.
-            </p>
+          <Card className="p-8 sm:p-12 text-center mb-8 border-dashed">
+            <div className="flex flex-col items-center gap-4">
+              <div className="w-16 h-16 rounded-full bg-muted flex items-center justify-center">
+                <BookOpen className="w-8 h-8 text-muted-foreground" />
+              </div>
+              <div>
+                <h3 className="text-lg font-semibold mb-2">Contenu en préparation</h3>
+                <p className="text-muted-foreground text-sm max-w-md mx-auto">
+                  Les matières pour ce niveau sont en cours de développement. Revenez bientôt pour découvrir les nouveaux contenus !
+                </p>
+              </div>
+              <Button variant="outline" onClick={() => setSelectedGrade("7AF")}>
+                Explorer 7AF
+              </Button>
+            </div>
           </Card>
         )}
 
         {/* Eric Mascot Section */}
-        <Card className="p-8 mb-8 bg-gradient-to-r from-primary/10 to-secondary/10">
-          <div className="flex flex-col md:flex-row items-center gap-6">
+        <Card className="p-6 sm:p-8 bg-gradient-to-r from-primary/10 via-primary/5 to-secondary/10 border-primary/20 overflow-hidden relative">
+          <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-full -translate-y-1/2 translate-x-1/2" />
+          <div className="flex flex-col md:flex-row items-center gap-6 relative">
             <div className="flex-shrink-0">
-              <img 
-                src={ericPointingImage} 
-                alt="Eric - Assistant IA" 
-                className="w-48 h-48 object-contain"
-                loading="lazy"
-                decoding="async"
-              />
+              <div className="relative">
+                <div className="absolute inset-0 bg-primary/20 rounded-full blur-xl animate-pulse" />
+                <img 
+                  src={ericPointingImage} 
+                  alt="Eric - Assistant IA" 
+                  className="w-32 h-32 sm:w-48 sm:h-48 object-contain relative z-10"
+                  loading="lazy"
+                  decoding="async"
+                />
+              </div>
             </div>
             <div className="flex-1 text-center md:text-left">
-              <h3 className="text-2xl font-bold mb-3">
+              <h3 className="text-xl sm:text-2xl font-bold mb-3">
                 Besoin d'aide pour choisir ?
               </h3>
-              <p className="text-muted-foreground mb-4">
+              <p className="text-sm sm:text-base text-muted-foreground mb-4">
                 Eric, votre guide pédagogique, est là pour vous aider à choisir les bonnes matières 
                 et à comprendre le programme. Cliquez sur l'icône flottante pour discuter avec lui !
               </p>
               <div className="flex flex-wrap gap-2 justify-center md:justify-start">
-                <Badge variant="outline">Conseils personnalisés</Badge>
-                <Badge variant="outline">Orientation académique</Badge>
-                <Badge variant="outline">Support 24/7</Badge>
+                <Badge variant="secondary" className="text-xs sm:text-sm">✨ Conseils personnalisés</Badge>
+                <Badge variant="secondary" className="text-xs sm:text-sm">🎯 Orientation académique</Badge>
+                <Badge variant="secondary" className="text-xs sm:text-sm">🤖 Support 24/7</Badge>
               </div>
             </div>
           </div>
