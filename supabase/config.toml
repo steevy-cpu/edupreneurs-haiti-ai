@@ -83,3 +83,12 @@ verify_jwt = false
 
 [functions.delete-user-account]
 verify_jwt = true
+
+[functions.moncash-create-payment]
+verify_jwt = false
+
+[functions.moncash-verify-payment]
+verify_jwt = false
+
+[functions.moncash-check-status]
+verify_jwt = false
