@@ -317,6 +317,7 @@ export const Layout = ({ children }: LayoutProps) => {
   const isActive = (path: string) => location.pathname === path;
 
   const isCommunityPage = location.pathname === "/community";
+  const isUserSearchPage = location.pathname === "/user-search";
   const isLessonPage = location.pathname.startsWith("/math-lesson") || 
                        location.pathname.startsWith("/francais-lesson") ||
                        location.pathname.startsWith("/espagnol-lesson") ||
@@ -325,11 +326,14 @@ export const Layout = ({ children }: LayoutProps) => {
                        location.pathname.startsWith("/sciences-sociales-lesson") ||
                        location.pathname.startsWith("/anglais-lesson");
   const isFeedPage = location.pathname === "/feed";
+  
+  // Pages that have their own header/navigation
+  const hideLayoutNav = isCommunityPage || isLessonPage || isFeedPage || isUserSearchPage;
 
   return (
     <div className="min-h-screen bg-background">
       {/* Menu Button */}
-      {!isCommunityPage && !isLessonPage && !isFeedPage && (
+      {!hideLayoutNav && (
         <button
           data-tour="menu-button"
           onClick={() => setSidebarOpen(!sidebarOpen)}
@@ -341,7 +345,7 @@ export const Layout = ({ children }: LayoutProps) => {
       )}
 
       {/* Sidebar Overlay */}
-      {!isCommunityPage && !isLessonPage && !isFeedPage && sidebarOpen && (
+      {!hideLayoutNav && sidebarOpen && (
         <div 
           className="fixed inset-0 bg-background/80 backdrop-blur-sm z-[999] lg:hidden"
           onClick={() => setSidebarOpen(false)}
@@ -349,7 +353,7 @@ export const Layout = ({ children }: LayoutProps) => {
       )}
 
       {/* Sidebar */}
-      {!isCommunityPage && !isLessonPage && !isFeedPage && (
+      {!hideLayoutNav && (
         <div
           data-tour="sidebar-content"
           className={`fixed top-0 left-0 h-screen w-[240px] sm:w-[260px] lg:w-[280px] bg-card border-r border-border shadow-lg z-[1000] transition-transform duration-300 overflow-y-auto ${sidebarOpen ? "translate-x-0" : "-translate-x-full"}`}
