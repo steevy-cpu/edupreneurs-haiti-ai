@@ -10,7 +10,7 @@ import { ThemeToggle } from "@/components/ThemeToggle";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { sendWelcomeEmail, sendPasswordResetEmail, sendVerificationEmail, generateConfirmationCode } from "@/utils/emailService";
-import { Loader2 } from "lucide-react";
+import { Loader2, Eye, EyeOff } from "lucide-react";
 import { loginSchema, signupSchema, forgotPasswordSchema, verificationCodeSchema } from "@/lib/authValidation";
 
 // Auth page component
@@ -46,6 +46,10 @@ export default function Auth() {
   const [isSigningUp, setIsSigningUp] = useState(false);
   const [isVerifying, setIsVerifying] = useState(false);
   const [isResettingPassword, setIsResettingPassword] = useState(false);
+  const [showLoginPassword, setShowLoginPassword] = useState(false);
+  const [showSignupPassword, setShowSignupPassword] = useState(false);
+  const [signupStep, setSignupStep] = useState(1);
+  const totalSignupSteps = 3;
 
   // Countdown timer for resend cooldown
   useEffect(() => {
@@ -798,15 +802,24 @@ export default function Auth() {
                       <Label htmlFor="login-password" className="text-sm text-muted-foreground">
                         Mot de passe
                       </Label>
-                      <Input
-                        id="login-password"
-                        type="password"
-                        required
-                        placeholder="Votre mot de passe"
-                        value={loginData.password}
-                        onChange={(e) => setLoginData({ ...loginData, password: e.target.value })}
-                        className="auth-input"
-                      />
+                      <div className="relative">
+                        <Input
+                          id="login-password"
+                          type={showLoginPassword ? "text" : "password"}
+                          required
+                          placeholder="Votre mot de passe"
+                          value={loginData.password}
+                          onChange={(e) => setLoginData({ ...loginData, password: e.target.value })}
+                          className="auth-input pr-10"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setShowLoginPassword(!showLoginPassword)}
+                          className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                        >
+                          {showLoginPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                        </button>
+                      </div>
                     </div>
                     <Button type="submit" disabled={isLoggingIn} className="auth-btn-submit w-full mt-6">
                       {isLoggingIn ? (
@@ -884,20 +897,50 @@ export default function Auth() {
                         💡 N'oubliez pas de vérifier votre dossier <strong>spam/courrier indésirable</strong> si vous ne voyez pas l'email.
                       </p>
                     </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="verification-code" className="text-sm text-muted-foreground">
+                    <div className="space-y-3">
+                      <Label className="text-sm text-muted-foreground text-center block">
                         Code de vérification
                       </Label>
-                      <Input
-                        id="verification-code"
-                        type="text"
-                        required
-                        maxLength={6}
-                        placeholder="123456"
-                        value={verificationCode}
-                        onChange={(e) => setVerificationCode(e.target.value.replace(/\D/g, ''))}
-                        className="auth-input text-center text-2xl tracking-widest font-bold"
-                      />
+                      <div className="flex justify-center gap-2">
+                        {[0, 1, 2, 3, 4, 5].map((index) => (
+                          <input
+                            key={index}
+                            id={`otp-${index}`}
+                            type="text"
+                            inputMode="numeric"
+                            maxLength={1}
+                            value={verificationCode[index] || ''}
+                            onChange={(e) => {
+                              const value = e.target.value.replace(/\D/g, '');
+                              if (value.length <= 1) {
+                                const newCode = verificationCode.split('');
+                                newCode[index] = value;
+                                const updatedCode = newCode.join('').slice(0, 6);
+                                setVerificationCode(updatedCode);
+                                // Auto-focus next input
+                                if (value && index < 5) {
+                                  document.getElementById(`otp-${index + 1}`)?.focus();
+                                }
+                              }
+                            }}
+                            onKeyDown={(e) => {
+                              // Handle backspace to go to previous input
+                              if (e.key === 'Backspace' && !verificationCode[index] && index > 0) {
+                                document.getElementById(`otp-${index - 1}`)?.focus();
+                              }
+                            }}
+                            onPaste={(e) => {
+                              e.preventDefault();
+                              const pastedData = e.clipboardData.getData('text').replace(/\D/g, '').slice(0, 6);
+                              setVerificationCode(pastedData);
+                              // Focus last filled input or last input
+                              const focusIndex = Math.min(pastedData.length, 5);
+                              document.getElementById(`otp-${focusIndex}`)?.focus();
+                            }}
+                            className="w-12 h-14 text-center text-2xl font-bold border border-input rounded-lg bg-muted/50 focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all"
+                          />
+                        ))}
+                      </div>
                       <p className="text-xs text-muted-foreground text-center">
                         Veuillez entrer le code reçu par email
                       </p>
@@ -950,247 +993,385 @@ export default function Auth() {
                   </form>
                 )}
 
-                {/* Signup Form */}
+                {/* Signup Form - Multi-step Wizard */}
                 {activeTab === "signup" && (
                   <form onSubmit={handleSignup} className="space-y-4">
-                    <div className="grid md:grid-cols-2 gap-3">
-                      <div className="space-y-2">
-                        <Label htmlFor="signup-email" className="text-sm text-muted-foreground">
-                          Adresse e-mail *
-                        </Label>
-                        <Input
-                          id="signup-email"
-                          type="email"
-                          required
-                          value={signupData.email}
-                          onChange={(e) => setSignupData({ ...signupData, email: e.target.value })}
-                          className="auth-input"
+                    {/* Progress Indicator */}
+                    <div className="mb-6">
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="text-sm font-medium text-foreground">Étape {signupStep} sur {totalSignupSteps}</span>
+                        <span className="text-xs text-muted-foreground">
+                          {signupStep === 1 && "Compte"}
+                          {signupStep === 2 && "Profil"}
+                          {signupStep === 3 && "Finalisation"}
+                        </span>
+                      </div>
+                      <div className="w-full h-2 bg-muted rounded-full overflow-hidden">
+                        <div 
+                          className="h-full bg-primary rounded-full transition-all duration-300"
+                          style={{ width: `${(signupStep / totalSignupSteps) * 100}%` }}
                         />
                       </div>
-                      <div className="space-y-2">
-                        <Label htmlFor="signup-email-confirm" className="text-sm text-muted-foreground">
-                          Confirmer l'e-mail *
-                        </Label>
-                        <Input
-                          id="signup-email-confirm"
-                          type="email"
-                          required
-                          value={signupData.emailConfirm}
-                          onChange={(e) => setSignupData({ ...signupData, emailConfirm: e.target.value })}
-                          className="auth-input"
-                        />
+                      <div className="flex justify-between mt-2">
+                        {[1, 2, 3].map((step) => (
+                          <div 
+                            key={step}
+                            className={`flex items-center justify-center w-8 h-8 rounded-full text-sm font-bold transition-all ${
+                              step < signupStep 
+                                ? 'bg-primary text-primary-foreground' 
+                                : step === signupStep 
+                                  ? 'bg-primary text-primary-foreground ring-4 ring-primary/20' 
+                                  : 'bg-muted text-muted-foreground'
+                            }`}
+                          >
+                            {step < signupStep ? '✓' : step}
+                          </div>
+                        ))}
                       </div>
                     </div>
 
-                    <div className="space-y-2">
-                      <Label htmlFor="signup-password" className="text-sm text-muted-foreground">
-                        Mot de passe *
-                      </Label>
-                      <Input
-                        id="signup-password"
-                        type="password"
-                        required
-                        minLength={6}
-                        value={signupData.password}
-                        onChange={(e) => setSignupData({ ...signupData, password: e.target.value })}
-                        className="auth-input"
-                      />
-                      {signupData.password && (
-                        <div className="space-y-1 text-xs mt-2">
-                          <p className={`flex items-center gap-1 ${signupData.password.length >= 6 ? 'text-success' : 'text-muted-foreground'}`}>
-                            {signupData.password.length >= 6 ? '✓' : '○'} Au moins 6 caractères
-                          </p>
-                          <p className={`flex items-center gap-1 ${/[0-9]/.test(signupData.password) ? 'text-success' : 'text-muted-foreground'}`}>
-                            {/[0-9]/.test(signupData.password) ? '✓' : '○'} Au moins un chiffre
-                          </p>
-                          <p className={`flex items-center gap-1 ${/[A-Z]/.test(signupData.password) ? 'text-success' : 'text-muted-foreground'}`}>
-                            {/[A-Z]/.test(signupData.password) ? '✓' : '○'} Au moins une majuscule
-                          </p>
-                          <p className={`flex items-center gap-1 ${/[!@#$%^&*(),.?":{}|<>]/.test(signupData.password) ? 'text-success' : 'text-muted-foreground'}`}>
-                            {/[!@#$%^&*(),.?":{}|<>]/.test(signupData.password) ? '✓' : '○'} Au moins un caractère spécial (!@#$%...)
+                    {/* Step 1: Account Info */}
+                    {signupStep === 1 && (
+                      <div className="space-y-4 animate-in fade-in slide-in-from-right-4 duration-300">
+                        <div className="text-center mb-4">
+                          <h3 className="text-lg font-bold">Créez votre compte</h3>
+                          <p className="text-sm text-muted-foreground">Entrez vos informations de connexion</p>
+                        </div>
+
+                        <div className="space-y-2">
+                          <Label htmlFor="signup-email" className="text-sm text-muted-foreground">
+                            Adresse e-mail *
+                          </Label>
+                          <Input
+                            id="signup-email"
+                            type="email"
+                            required
+                            placeholder="ex: nom@domaine.com"
+                            value={signupData.email}
+                            onChange={(e) => setSignupData({ ...signupData, email: e.target.value })}
+                            className="auth-input"
+                          />
+                        </div>
+
+                        <div className="space-y-2">
+                          <Label htmlFor="signup-email-confirm" className="text-sm text-muted-foreground">
+                            Confirmer l'e-mail *
+                          </Label>
+                          <Input
+                            id="signup-email-confirm"
+                            type="email"
+                            required
+                            placeholder="Confirmez votre email"
+                            value={signupData.emailConfirm}
+                            onChange={(e) => setSignupData({ ...signupData, emailConfirm: e.target.value })}
+                            className="auth-input"
+                          />
+                          {signupData.email && signupData.emailConfirm && signupData.email !== signupData.emailConfirm && (
+                            <p className="text-xs text-destructive">Les emails ne correspondent pas</p>
+                          )}
+                        </div>
+
+                        <div className="space-y-2">
+                          <Label htmlFor="signup-password" className="text-sm text-muted-foreground">
+                            Mot de passe *
+                          </Label>
+                          <div className="relative">
+                            <Input
+                              id="signup-password"
+                              type={showSignupPassword ? "text" : "password"}
+                              required
+                              minLength={6}
+                              placeholder="Créez un mot de passe sécurisé"
+                              value={signupData.password}
+                              onChange={(e) => setSignupData({ ...signupData, password: e.target.value })}
+                              className="auth-input pr-10"
+                            />
+                            <button
+                              type="button"
+                              onClick={() => setShowSignupPassword(!showSignupPassword)}
+                              className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                            >
+                              {showSignupPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                            </button>
+                          </div>
+                          <div className="space-y-1 text-xs mt-2">
+                            <p className={`flex items-center gap-1 ${signupData.password.length >= 6 ? 'text-success' : 'text-muted-foreground'}`}>
+                              {signupData.password.length >= 6 ? '✓' : '○'} Au moins 6 caractères
+                            </p>
+                            <p className={`flex items-center gap-1 ${/[0-9]/.test(signupData.password) ? 'text-success' : 'text-muted-foreground'}`}>
+                              {/[0-9]/.test(signupData.password) ? '✓' : '○'} Au moins un chiffre
+                            </p>
+                            <p className={`flex items-center gap-1 ${/[A-Z]/.test(signupData.password) ? 'text-success' : 'text-muted-foreground'}`}>
+                              {/[A-Z]/.test(signupData.password) ? '✓' : '○'} Au moins une majuscule
+                            </p>
+                            <p className={`flex items-center gap-1 ${/[!@#$%^&*(),.?":{}|<>]/.test(signupData.password) ? 'text-success' : 'text-muted-foreground'}`}>
+                              {/[!@#$%^&*(),.?":{}|<>]/.test(signupData.password) ? '✓' : '○'} Au moins un caractère spécial
+                            </p>
+                          </div>
+                        </div>
+
+                        <Button 
+                          type="button" 
+                          className="w-full mt-4"
+                          onClick={() => {
+                            if (!signupData.email || !signupData.emailConfirm || !signupData.password) {
+                              toast({ title: "Champs requis", description: "Veuillez remplir tous les champs", variant: "destructive" });
+                              return;
+                            }
+                            if (signupData.email !== signupData.emailConfirm) {
+                              toast({ title: "Emails différents", description: "Les emails ne correspondent pas", variant: "destructive" });
+                              return;
+                            }
+                            if (signupData.password.length < 6) {
+                              toast({ title: "Mot de passe trop court", description: "Le mot de passe doit contenir au moins 6 caractères", variant: "destructive" });
+                              return;
+                            }
+                            setSignupStep(2);
+                          }}
+                        >
+                          Continuer →
+                        </Button>
+                      </div>
+                    )}
+
+                    {/* Step 2: Profile Info */}
+                    {signupStep === 2 && (
+                      <div className="space-y-4 animate-in fade-in slide-in-from-right-4 duration-300">
+                        <div className="text-center mb-4">
+                          <h3 className="text-lg font-bold">Votre profil</h3>
+                          <p className="text-sm text-muted-foreground">Parlez-nous un peu de vous</p>
+                        </div>
+
+                        <div className="grid md:grid-cols-2 gap-3">
+                          <div className="space-y-2">
+                            <Label htmlFor="signup-fullname" className="text-sm text-muted-foreground">
+                              Nom complet
+                            </Label>
+                            <Input
+                              id="signup-fullname"
+                              type="text"
+                              placeholder="Votre nom complet"
+                              value={signupData.fullName}
+                              onChange={(e) => setSignupData({ ...signupData, fullName: e.target.value })}
+                              className="auth-input"
+                            />
+                          </div>
+                          <div className="space-y-2">
+                            <Label htmlFor="signup-nickname" className="text-sm text-muted-foreground">
+                              Pseudo *
+                            </Label>
+                            <Input
+                              id="signup-nickname"
+                              type="text"
+                              required
+                              placeholder="Choisissez un pseudo unique"
+                              value={signupData.nickname}
+                              onChange={(e) => {
+                                setSignupData({ ...signupData, nickname: e.target.value });
+                                checkNicknameAvailability(e.target.value);
+                              }}
+                              className="auth-input"
+                            />
+                            {checkingNickname && (
+                              <p className="text-xs text-muted-foreground flex items-center gap-1">
+                                <Loader2 className="h-3 w-3 animate-spin" /> Vérification...
+                              </p>
+                            )}
+                            {nicknameAvailable === false && (
+                              <p className="text-xs text-destructive">Ce pseudo est déjà utilisé</p>
+                            )}
+                            {nicknameAvailable === true && (
+                              <p className="text-xs text-success">Ce pseudo est disponible ✓</p>
+                            )}
+                          </div>
+                        </div>
+
+                        <div className="grid md:grid-cols-2 gap-3">
+                          <div className="space-y-2">
+                            <Label htmlFor="signup-grade" className="text-sm text-muted-foreground">
+                              Niveau académique *
+                            </Label>
+                            <select
+                              id="signup-grade"
+                              required
+                              value={signupData.academicGrade}
+                              onChange={(e) => setSignupData({ ...signupData, academicGrade: e.target.value })}
+                              className="auth-input flex h-10 w-full rounded-lg border border-input bg-muted/50 px-3 py-2 text-sm"
+                            >
+                              <option value="">Sélectionnez…</option>
+                              <option>7e</option>
+                              <option>8e</option>
+                              <option>9e</option>
+                              <option>S1</option>
+                              <option>S2</option>
+                              <option>Philo</option>
+                            </select>
+                          </div>
+                          <div className="space-y-2">
+                            <Label htmlFor="signup-gender" className="text-sm text-muted-foreground">
+                              Genre *
+                            </Label>
+                            <select
+                              id="signup-gender"
+                              required
+                              value={signupData.gender}
+                              onChange={(e) => setSignupData({ ...signupData, gender: e.target.value })}
+                              className="auth-input flex h-10 w-full rounded-lg border border-input bg-muted/50 px-3 py-2 text-sm"
+                            >
+                              <option value="">Sélectionnez…</option>
+                              <option value="Masculin">Masculin</option>
+                              <option value="Féminin">Féminin</option>
+                            </select>
+                          </div>
+                        </div>
+
+                        <div className="grid md:grid-cols-2 gap-3">
+                          <div className="space-y-2">
+                            <Label htmlFor="signup-phone" className="text-sm text-muted-foreground">
+                              Numéro de téléphone *
+                            </Label>
+                            <Input
+                              id="signup-phone"
+                              type="tel"
+                              required
+                              placeholder="ex: +509 3x xx xx xx"
+                              value={signupData.phoneNumber}
+                              onChange={(e) => setSignupData({ ...signupData, phoneNumber: e.target.value })}
+                              className="auth-input"
+                            />
+                          </div>
+                          <div className="space-y-2">
+                            <Label htmlFor="signup-school" className="text-sm text-muted-foreground">
+                              Nom de l'école *
+                            </Label>
+                            <Input
+                              id="signup-school"
+                              type="text"
+                              required
+                              placeholder="ex: Collège Sacré-coeur"
+                              value={signupData.school}
+                              onChange={(e) => setSignupData({ ...signupData, school: e.target.value })}
+                              className="auth-input"
+                            />
+                          </div>
+                        </div>
+
+                        <div className="flex gap-2 mt-4">
+                          <Button 
+                            type="button" 
+                            variant="outline"
+                            className="flex-1"
+                            onClick={() => setSignupStep(1)}
+                          >
+                            ← Retour
+                          </Button>
+                          <Button 
+                            type="button" 
+                            className="flex-1"
+                            onClick={() => {
+                              if (!signupData.nickname || !signupData.academicGrade || !signupData.gender || !signupData.phoneNumber || !signupData.school) {
+                                toast({ title: "Champs requis", description: "Veuillez remplir tous les champs obligatoires", variant: "destructive" });
+                                return;
+                              }
+                              if (nicknameAvailable === false) {
+                                toast({ title: "Pseudo non disponible", description: "Veuillez choisir un autre pseudo", variant: "destructive" });
+                                return;
+                              }
+                              setSignupStep(3);
+                            }}
+                          >
+                            Continuer →
+                          </Button>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Step 3: Payment & Privacy */}
+                    {signupStep === 3 && (
+                      <div className="space-y-4 animate-in fade-in slide-in-from-right-4 duration-300">
+                        <div className="text-center mb-4">
+                          <h3 className="text-lg font-bold">Dernière étape !</h3>
+                          <p className="text-sm text-muted-foreground">Choisissez votre méthode de paiement</p>
+                        </div>
+
+                        <div className="space-y-3">
+                          <strong className="block text-sm">Méthode de paiement *</strong>
+                          <div className="grid gap-2">
+                            {[
+                              { value: 'moncash', label: 'MonCash', icon: '📱' },
+                              { value: 'natcash', label: 'NatCash', icon: '💳' },
+                              { value: 'carte', label: 'Carte bancaire', icon: '💳' },
+                            ].map((method) => (
+                              <label 
+                                key={method.value}
+                                className={`flex items-center gap-3 p-4 border rounded-lg cursor-pointer transition-all ${
+                                  signupData.payment === method.value 
+                                    ? 'border-primary bg-primary/5 ring-2 ring-primary/20' 
+                                    : 'border-input bg-muted/50 hover:border-primary/50'
+                                }`}
+                              >
+                                <input
+                                  type="radio"
+                                  name="payment"
+                                  value={method.value}
+                                  required
+                                  checked={signupData.payment === method.value}
+                                  onChange={(e) => setSignupData({ ...signupData, payment: e.target.value })}
+                                  className="sr-only"
+                                />
+                                <span className="text-xl">{method.icon}</span>
+                                <span className="font-medium">{method.label}</span>
+                                {signupData.payment === method.value && (
+                                  <span className="ml-auto text-primary">✓</span>
+                                )}
+                              </label>
+                            ))}
+                          </div>
+                          <p className="text-xs text-muted-foreground mt-2">
+                            ✨ Essai gratuit 7 jours, puis ~200 HTG / mois.
                           </p>
                         </div>
-                      )}
-                    </div>
 
-                    <div className="grid md:grid-cols-2 gap-3">
-                      <div className="space-y-2">
-                        <Label htmlFor="signup-fullname" className="text-sm text-muted-foreground">
-                          Nom complet
-                        </Label>
-                        <Input
-                          id="signup-fullname"
-                          type="text"
-                          value={signupData.fullName}
-                          onChange={(e) => setSignupData({ ...signupData, fullName: e.target.value })}
-                          className="auth-input"
-                        />
-                      </div>
-                      <div className="space-y-2">
-                        <Label htmlFor="signup-nickname" className="text-sm text-muted-foreground">
-                          Pseudo *
-                        </Label>
-                        <Input
-                          id="signup-nickname"
-                          type="text"
-                          required
-                          value={signupData.nickname}
-                          onChange={(e) => {
-                            setSignupData({ ...signupData, nickname: e.target.value });
-                            checkNicknameAvailability(e.target.value);
-                          }}
-                          className="auth-input"
-                        />
-                        {checkingNickname && (
-                          <p className="text-xs text-muted-foreground">Vérification...</p>
-                        )}
-                        {nicknameAvailable === false && (
-                          <p className="text-xs text-destructive">Ce pseudo est déjà utilisé</p>
-                        )}
-                        {nicknameAvailable === true && (
-                          <p className="text-xs text-success">Ce pseudo est disponible ✓</p>
-                        )}
-                      </div>
-                    </div>
-
-                    <div className="grid md:grid-cols-2 gap-3">
-                      <div className="space-y-2">
-                        <Label htmlFor="signup-grade" className="text-sm text-muted-foreground">
-                          Niveau académique *
-                        </Label>
-                        <select
-                          id="signup-grade"
-                          required
-                          value={signupData.academicGrade}
-                          onChange={(e) => setSignupData({ ...signupData, academicGrade: e.target.value })}
-                          className="auth-input flex h-10 w-full rounded-lg border border-input bg-muted/50 px-3 py-2 text-sm"
-                        >
-                          <option value="">Sélectionnez…</option>
-                          <option>7e</option>
-                          <option>8e</option>
-                          <option>9e</option>
-                          <option>S1</option>
-                          <option>S2</option>
-                          <option>Philo</option>
-                        </select>
-                      </div>
-                      <div className="space-y-2">
-                        <Label htmlFor="signup-phone" className="text-sm text-muted-foreground">
-                          Numéro *
-                        </Label>
-                        <Input
-                          id="signup-phone"
-                          type="tel"
-                          required
-                          placeholder="ex: +509 3x xx xx xx"
-                          value={signupData.phoneNumber}
-                          onChange={(e) => setSignupData({ ...signupData, phoneNumber: e.target.value })}
-                          className="auth-input"
-                        />
-                      </div>
-                    </div>
-
-                    <div className="grid md:grid-cols-2 gap-3">
-                      <div className="space-y-2">
-                        <Label htmlFor="signup-school" className="text-sm text-muted-foreground">
-                          Nom de l'école *
-                        </Label>
-                        <Input
-                          id="signup-school"
-                          type="text"
-                          required
-                          placeholder="ex: Collège Sacré-coeur de Papaye"
-                          value={signupData.school}
-                          onChange={(e) => setSignupData({ ...signupData, school: e.target.value })}
-                          className="auth-input"
-                        />
-                      </div>
-                      <div className="space-y-2">
-                        <Label htmlFor="signup-gender" className="text-sm text-muted-foreground">
-                          Genre *
-                        </Label>
-                        <select
-                          id="signup-gender"
-                          required
-                          value={signupData.gender}
-                          onChange={(e) => setSignupData({ ...signupData, gender: e.target.value })}
-                          className="auth-input flex h-10 w-full rounded-lg border border-input bg-muted/50 px-3 py-2 text-sm"
-                        >
-                          <option value="">Sélectionnez…</option>
-                          <option value="Masculin">Masculin</option>
-                          <option value="Féminin">Féminin</option>
-                        </select>
-                      </div>
-                    </div>
-
-                    <div className="flex items-center gap-2.5">
-                      <input
-                        type="checkbox"
-                        id="privacy"
-                        required
-                        checked={signupData.privacy}
-                        onChange={(e) => setSignupData({ ...signupData, privacy: e.target.checked })}
-                        className="w-4 h-4"
-                      />
-                      <Label htmlFor="privacy" className="text-sm text-muted-foreground">
-                        J'accepte les{" "}
-                        <Link to="/privacy-policy" className="text-primary underline" target="_blank">
-                          politiques de confidentialité
-                        </Link>
-                        .
-                      </Label>
-                    </div>
-
-                    <div className="auth-pay mt-6">
-                      <strong className="block mb-2 text-sm">Méthode de paiement</strong>
-                      <div className="flex flex-col gap-2">
-                        <label className="auth-radio flex items-center gap-2 p-3 border border-input rounded-lg bg-muted/50 cursor-pointer">
+                        <div className="flex items-start gap-3 p-4 border border-input rounded-lg bg-muted/30">
                           <input
-                            type="radio"
-                            name="payment"
-                            value="moncash"
+                            type="checkbox"
+                            id="privacy"
                             required
-                            checked={signupData.payment === "moncash"}
-                            onChange={(e) => setSignupData({ ...signupData, payment: e.target.value })}
+                            checked={signupData.privacy}
+                            onChange={(e) => setSignupData({ ...signupData, privacy: e.target.checked })}
+                            className="w-5 h-5 mt-0.5 rounded"
                           />
-                          MonCash
-                        </label>
-                        <label className="auth-radio flex items-center gap-2 p-3 border border-input rounded-lg bg-muted/50 cursor-pointer">
-                          <input
-                            type="radio"
-                            name="payment"
-                            value="natcash"
-                            checked={signupData.payment === "natcash"}
-                            onChange={(e) => setSignupData({ ...signupData, payment: e.target.value })}
-                          />
-                          NatCash
-                        </label>
-                        <label className="auth-radio flex items-center gap-2 p-3 border border-input rounded-lg bg-muted/50 cursor-pointer">
-                          <input
-                            type="radio"
-                            name="payment"
-                            value="carte"
-                            checked={signupData.payment === "carte"}
-                            onChange={(e) => setSignupData({ ...signupData, payment: e.target.value })}
-                          />
-                          Carte bancaire
-                        </label>
-                      </div>
-                      <p className="auth-note text-xs text-muted-foreground mt-2">
-                        Essai gratuit 7 jours, puis ~200 HTG / mois.
-                      </p>
-                    </div>
+                          <Label htmlFor="privacy" className="text-sm text-muted-foreground leading-relaxed">
+                            J'accepte les{" "}
+                            <Link to="/privacy-policy" className="text-primary underline font-medium" target="_blank">
+                              politiques de confidentialité
+                            </Link>
+                            {" "}et les conditions d'utilisation.
+                          </Label>
+                        </div>
 
-                    <Button type="submit" disabled={isSigningUp} className="auth-btn-submit w-full mt-6">
-                      {isSigningUp ? (
-                        <>
-                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                          Création en cours...
-                        </>
-                      ) : (
-                        "Créer mon compte"
-                      )}
-                    </Button>
+                        <div className="flex gap-2 mt-4">
+                          <Button 
+                            type="button" 
+                            variant="outline"
+                            className="flex-1"
+                            onClick={() => setSignupStep(2)}
+                          >
+                            ← Retour
+                          </Button>
+                          <Button type="submit" disabled={isSigningUp} className="flex-1">
+                            {isSigningUp ? (
+                              <>
+                                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                Création...
+                              </>
+                            ) : (
+                              "Créer mon compte 🎉"
+                            )}
+                          </Button>
+                        </div>
+                      </div>
+                    )}
                   </form>
                 )}
               </div>
