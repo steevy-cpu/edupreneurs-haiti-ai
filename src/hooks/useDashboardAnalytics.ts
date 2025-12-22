@@ -98,10 +98,20 @@ export const useDashboardAnalytics = (userId: string | null) => {
         };
       });
 
-      // Subject progress - only show subjects with some progress
+      // Get user's academic grade level to filter subjects
+      const { data: userProfile } = await supabase
+        .from("profiles")
+        .select("academic_grade")
+        .eq("user_id", userId)
+        .single();
+
+      const userGradeLevel = userProfile?.academic_grade || "7AF";
+
+      // Subject progress - filter by user's grade level
       const { data: subjects } = await supabase
         .from("subjects")
-        .select("name, slug, lesson_count")
+        .select("name, slug, lesson_count, grade_level")
+        .eq("grade_level", userGradeLevel)
         .order("name", { ascending: true });
 
       const subjectProgress = subjects?.map((subject) => {
@@ -117,7 +127,7 @@ export const useDashboardAnalytics = (userId: string | null) => {
           lessonsCompleted,
           totalLessons,
         };
-      }).filter(s => s.lessonsCompleted > 0 || s.totalLessons > 0) // Only show subjects with activity
+      }).filter(s => s.totalLessons > 0) // Only show subjects with lessons
         .slice(0, 6) || [];
 
       // Study time - estimate based on lesson completions if no study sessions
