@@ -457,8 +457,8 @@ export default function Profile() {
             )}
           </div>
 
-          {/* Learning Streak Section */}
-          {!profile.is_system_account && !analyticsLoading && (
+          {/* Learning Streak Section - Only visible on own profile */}
+          {isOwnProfile && !profile.is_system_account && !analyticsLoading && (
             <div className="mt-6 pt-6 border-t">
               <h3 className="font-semibold mb-4 flex items-center gap-2">
                 <Flame className="w-5 h-5 text-orange-500" />
@@ -486,8 +486,8 @@ export default function Profile() {
             </div>
           )}
 
-          {/* Achievements/Badges Section */}
-          {!profile.is_system_account && !analyticsLoading && (
+          {/* Achievements/Badges Section - Only visible on own profile */}
+          {isOwnProfile && !profile.is_system_account && !analyticsLoading && (
             <div className="mt-6 pt-6 border-t">
               <h3 className="font-semibold mb-4 flex items-center gap-2">
                 <Trophy className="w-5 h-5 text-yellow-500" />
