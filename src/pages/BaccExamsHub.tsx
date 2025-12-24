@@ -387,11 +387,18 @@ const BaccExamsHub = () => {
                       <div className={`w-full h-2 rounded-full bg-gradient-to-r ${SUBJECT_COLORS[exam.subject] || "from-gray-500 to-gray-600"} mb-4`} />
                       <div className="flex items-center justify-between mb-2">
                         <CardTitle className="text-xl group-hover:text-amber-500 transition-colors">
-                          {exam.is_model_exam ? "Modèle" : exam.year}
+                          {exam.is_model_exam ? (
+                            <span className="flex items-center gap-2">
+                              <span className="text-amber-500">⭐ Modèle</span>
+                              {exam.year && <span className="text-muted-foreground text-sm">({exam.year})</span>}
+                            </span>
+                          ) : (
+                            exam.year
+                          )}
                         </CardTitle>
                         <div className="flex gap-1">
                           {exam.is_model_exam && (
-                            <Badge className="bg-amber-500">Modèle</Badge>
+                            <Badge className="bg-gradient-to-r from-amber-500 to-orange-500 text-white border-0">Modèle</Badge>
                           )}
                           {exam.session === "rattrapage" && (
                             <Badge variant="destructive">Rattrapage</Badge>
