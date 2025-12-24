@@ -7,7 +7,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Switch } from "@/components/ui/switch";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Loader2, Upload, FileText, CheckCircle2, Trash2, Eye, RefreshCw, GraduationCap } from "lucide-react";
+import { Loader2, Upload, FileText, CheckCircle2, Trash2, Eye, RefreshCw, GraduationCap, Check } from "lucide-react";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { normalizeToSlug } from "@/lib/slugNormalization";
@@ -78,7 +80,7 @@ const SESSIONS = [
 ];
 
 export function BaccExamManager() {
-  const [series, setSeries] = useState("");
+  const [selectedSeries, setSelectedSeries] = useState<string[]>([]);
   const [subject, setSubject] = useState("");
   const [year, setYear] = useState("");
   const [session, setSession] = useState("principale");
@@ -105,7 +107,7 @@ export function BaccExamManager() {
 
   useEffect(() => {
     loadExistingExams();
-  }, [series]);
+  }, [selectedSeries]);
 
   const loadExistingExams = async () => {
     try {
@@ -116,8 +118,8 @@ export function BaccExamManager() {
         .eq("grade_level", "NS4")
         .order("year", { ascending: false });
 
-      if (series) {
-        query = query.eq("series", series);
+      if (selectedSeries.length > 0) {
+        query = query.in("series", selectedSeries);
       }
 
       const { data, error } = await query;
@@ -154,7 +156,7 @@ export function BaccExamManager() {
     try {
       setIsUploading(true);
       const safeSubjectSlug = normalizeToSlug(subject || "examen");
-      const safeSeriesSlug = normalizeToSlug(series || "bac");
+      const safeSeriesSlug = normalizeToSlug(selectedSeries[0] || "bac");
       const sessionSuffix = session === "rattrapage" ? "-rattrapage" : "";
       const modelSuffix = isModelExam ? "-modele" : "";
       const fileName = `bac-${safeSeriesSlug}-${safeSubjectSlug}-${year}${sessionSuffix}${modelSuffix}.pdf`;
@@ -274,7 +276,7 @@ export function BaccExamManager() {
         throw new Error(parsedData.error);
       }
 
-      setSeries(exam.series || "");
+      setSelectedSeries(exam.series ? [exam.series] : []);
       setSubject(exam.subject);
       setYear(exam.year.toString());
       setSession(exam.session || "principale");
@@ -362,8 +364,8 @@ export function BaccExamManager() {
   };
 
   const handleAnalyzeAndSave = async () => {
-    if (!series || !subject || (!year && !isModelExam)) {
-      toast.error("Veuillez sélectionner une série, une matière et une année");
+    if (selectedSeries.length === 0 || !subject || (!year && !isModelExam)) {
+      toast.error("Veuillez sélectionner au moins une série, une matière et une année");
       return;
     }
 
@@ -403,7 +405,7 @@ export function BaccExamManager() {
             year: isModelExam ? new Date().getFullYear() : parseInt(year),
             pageImages,
             gradeLevel: "NS4",
-            series,
+            series: selectedSeries[0],
           },
         }
       );
@@ -449,7 +451,7 @@ export function BaccExamManager() {
         .eq("subject", subject)
         .eq("year", isModelExam ? new Date().getFullYear() : parseInt(year))
         .eq("grade_level", "NS4")
-        .eq("series", series)
+        .eq("series", selectedSeries[0])
         .eq("session", session)
         .eq("is_model_exam", isModelExam)
         .order("version_number", { ascending: false })
@@ -460,8 +462,8 @@ export function BaccExamManager() {
       const nextVersion = existingExam ? (existingExam.version_number || 1) + 1 : 1;
 
       const examTitle = isModelExam 
-        ? `Modèle - ${subject} ${series}` 
-        : `${subject} ${series} ${year} ${session === "rattrapage" ? "(Rattrapage)" : ""}`;
+        ? `Modèle - ${subject} ${selectedSeries[0]}` 
+        : `${subject} ${selectedSeries[0]} ${year} ${session === "rattrapage" ? "(Rattrapage)" : ""}`;
 
       // Always create a new exam (allowing multiple versions)
       const { data: newExam, error: examError } = await supabase
@@ -471,7 +473,7 @@ export function BaccExamManager() {
           subject,
           year: isModelExam ? new Date().getFullYear() : parseInt(year),
           grade_level: "NS4",
-          series,
+          series: selectedSeries[0],
           session,
           is_model_exam: isModelExam,
           version_number: nextVersion,
@@ -561,7 +563,21 @@ export function BaccExamManager() {
     setReanalyzeExamData(null);
   };
 
-  const availableSubjects = series ? SUBJECTS_BY_SERIES[series] || [] : [];
+  // Get available subjects from all selected series (union of subjects)
+  const availableSubjects = selectedSeries.length > 0 
+    ? [...new Set(selectedSeries.flatMap(s => SUBJECTS_BY_SERIES[s] || []))]
+    : [];
+
+  const handleSeriesToggle = (seriesValue: string) => {
+    setSelectedSeries(prev => {
+      if (prev.includes(seriesValue)) {
+        return prev.filter(s => s !== seriesValue);
+      } else {
+        return [...prev, seriesValue];
+      }
+    });
+    setSubject("");
+  };
 
   return (
     <div className="space-y-6">
@@ -588,29 +604,49 @@ export function BaccExamManager() {
         </CardHeader>
         <CardContent className="space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {/* Series */}
+            {/* Series - Multi-select with checkboxes */}
             <div className="space-y-2">
-              <Label htmlFor="series">Série *</Label>
-              <Select value={series} onValueChange={(val) => { setSeries(val); setSubject(""); }}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Sélectionner une série" />
-                </SelectTrigger>
-                <SelectContent>
-                  {SERIES.map((s) => (
-                    <SelectItem key={s.value} value={s.value}>
-                      {s.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <Label>Série(s) *</Label>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button variant="outline" className="w-full justify-between font-normal">
+                    {selectedSeries.length === 0 
+                      ? "Sélectionner une ou plusieurs séries"
+                      : selectedSeries.length === 1
+                        ? SERIES.find(s => s.value === selectedSeries[0])?.label
+                        : `${selectedSeries.length} séries sélectionnées`
+                    }
+                    <Check className={`ml-2 h-4 w-4 ${selectedSeries.length > 0 ? 'opacity-100' : 'opacity-0'}`} />
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-full p-2 bg-background border z-50" align="start">
+                  <div className="space-y-2">
+                    {SERIES.map((s) => (
+                      <div key={s.value} className="flex items-center space-x-2">
+                        <Checkbox 
+                          id={`series-${s.value}`}
+                          checked={selectedSeries.includes(s.value)}
+                          onCheckedChange={() => handleSeriesToggle(s.value)}
+                        />
+                        <label 
+                          htmlFor={`series-${s.value}`} 
+                          className="text-sm cursor-pointer flex-1"
+                        >
+                          {s.label}
+                        </label>
+                      </div>
+                    ))}
+                  </div>
+                </PopoverContent>
+              </Popover>
             </div>
 
             {/* Subject */}
             <div className="space-y-2">
               <Label htmlFor="subject">Matière *</Label>
-              <Select value={subject} onValueChange={setSubject} disabled={!series}>
+              <Select value={subject} onValueChange={setSubject} disabled={selectedSeries.length === 0}>
                 <SelectTrigger>
-                  <SelectValue placeholder={series ? "Sélectionner une matière" : "Choisir une série d'abord"} />
+                  <SelectValue placeholder={selectedSeries.length > 0 ? "Sélectionner une matière" : "Choisir une série d'abord"} />
                 </SelectTrigger>
                 <SelectContent>
                   {availableSubjects.map((s) => (
@@ -705,7 +741,7 @@ export function BaccExamManager() {
           {/* Action Button */}
           <Button
             onClick={handleAnalyzeAndSave}
-            disabled={!series || !subject || (!year && !isModelExam) || !pdfFile || isAnalyzing || isConvertingPdf}
+            disabled={selectedSeries.length === 0 || !subject || (!year && !isModelExam) || !pdfFile || isAnalyzing || isConvertingPdf}
             className="w-full md:w-auto"
           >
             {isAnalyzing ? (
