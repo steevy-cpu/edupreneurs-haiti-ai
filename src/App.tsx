@@ -54,6 +54,7 @@ const PaymentDemo = lazy(() => import("./pages/PaymentDemo"));
 const NatCashDemo = lazy(() => import("./pages/NatCashDemo"));
 const AdminPayments = lazy(() => import("./pages/AdminPayments"));
 const AdminPaymentsDemo = lazy(() => import("./pages/AdminPaymentsDemo"));
+const BaccExamsHub = lazy(() => import("./pages/BaccExamsHub"));
 
 // Loading component for suspense fallback
 const PageLoader = () => (
@@ -167,6 +168,9 @@ const App = () => (
           <Route path="/natcash-demo" element={<NatCashDemo />} />
           <Route path="/admin/payments" element={<Layout><AdminPayments /></Layout>} />
           <Route path="/admin/payments-demo" element={<AdminPaymentsDemo />} />
+          <Route path="/baccalaureat" element={<BaccExamsHub />} />
+          <Route path="/baccalaureat/:series" element={<BaccExamsHub />} />
+          <Route path="/baccalaureat/:series/:subject" element={<BaccExamsHub />} />
               {/* Dynamic routes for content editor generated subjects - MUST be before catch-all */}
               <Route path="/course/:slug" element={<DynamicCoursePage />} />
               <Route path="/course/:slug/:lessonSlug" element={<DynamicLessonPage />} />
