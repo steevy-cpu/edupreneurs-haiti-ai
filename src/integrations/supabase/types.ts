@@ -999,39 +999,51 @@ export type Database = {
           created_at: string
           grade_level: string
           id: string
+          is_model_exam: boolean | null
           pdf_url: string | null
           reference_texts: Json | null
+          series: string | null
+          session: string | null
           subject: string
           title: string
           total_exercises: number
           total_points: number
           updated_at: string
+          version_number: number | null
           year: number
         }
         Insert: {
           created_at?: string
           grade_level: string
           id?: string
+          is_model_exam?: boolean | null
           pdf_url?: string | null
           reference_texts?: Json | null
+          series?: string | null
+          session?: string | null
           subject: string
           title: string
           total_exercises?: number
           total_points?: number
           updated_at?: string
+          version_number?: number | null
           year: number
         }
         Update: {
           created_at?: string
           grade_level?: string
           id?: string
+          is_model_exam?: boolean | null
           pdf_url?: string | null
           reference_texts?: Json | null
+          series?: string | null
+          session?: string | null
           subject?: string
           title?: string
           total_exercises?: number
           total_points?: number
           updated_at?: string
+          version_number?: number | null
           year?: number
         }
         Relationships: []
