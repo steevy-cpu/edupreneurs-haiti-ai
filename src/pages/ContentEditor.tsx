@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
-import { ArrowLeft, BookOpen, Zap, BarChart3, Sparkles } from "lucide-react";
+import { ArrowLeft, BookOpen, Zap, BarChart3, Sparkles, GraduationCap } from "lucide-react";
 import { LessonBrowser } from "@/components/content-editor/LessonBrowser";
 import { LessonPreview } from "@/components/content-editor/LessonPreview";
 import { YouTubeManager } from "@/components/content-editor/YouTubeManager";
@@ -15,6 +15,7 @@ import { BatchLessonGenerator } from "@/components/content-editor/BatchLessonGen
 import { SingleLessonGenerator } from "@/components/content-editor/SingleLessonGenerator";
 import { CreateMatiereDialog } from "@/components/content-editor/CreateMatiereDialog";
 import { ExamManager } from "@/components/content-editor/ExamManager";
+import { BaccExamManager } from "@/components/content-editor/BaccExamManager";
 
 const ContentEditor = () => {
   const navigate = useNavigate();
