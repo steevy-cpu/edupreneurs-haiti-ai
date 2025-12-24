@@ -180,6 +180,7 @@ export default function Matieres() {
   const [lessonCounts, setLessonCounts] = useState<Record<string, number>>({});
   const [exerciseCounts, setExerciseCounts] = useState<Record<string, number>>({});
   const [officialExamCount, setOfficialExamCount] = useState<number>(0);
+  const [baccExamCount, setBaccExamCount] = useState<number>(0);
 
   const currentGrade = gradeLevels.find(g => g.id === selectedGrade);
   const isNS3OrNS4 = selectedGrade === "NS3" || selectedGrade === "NS4";
@@ -244,12 +245,13 @@ export default function Matieres() {
       }
     };
 
-    // Fetch official exams count
+    // Fetch official exams count for 9AF
     const fetchOfficialExamCount = async () => {
       try {
         const { count, error } = await supabase
           .from('official_exams')
-          .select('*', { count: 'exact', head: true });
+          .select('*', { count: 'exact', head: true })
+          .eq('grade_level', '9AF');
         
         if (!error && count !== null) {
           setOfficialExamCount(count);
@@ -259,9 +261,33 @@ export default function Matieres() {
       }
     };
 
+    // Fetch Baccalauréat exams count for NS4
+    const fetchBaccExamCount = async () => {
+      try {
+        let query = supabase
+          .from('official_exams')
+          .select('*', { count: 'exact', head: true })
+          .eq('grade_level', 'NS4');
+        
+        // Filter by series if selected
+        if (selectedSeries) {
+          query = query.eq('series', selectedSeries);
+        }
+        
+        const { count, error } = await query;
+        
+        if (!error && count !== null) {
+          setBaccExamCount(count);
+        }
+      } catch (error) {
+        console.error('Error fetching bacc exam count:', error);
+      }
+    };
+
     fetchCounts();
     fetchOfficialExamCount();
-  }, [selectedGrade, refreshTrigger]);
+    fetchBaccExamCount();
+  }, [selectedGrade, selectedSeries, refreshTrigger]);
   
   // Filter subjects by selected grade and series (for NS3/NS4)
   const filteredSubjects = dbSubjects.filter(s => {
@@ -519,6 +545,53 @@ export default function Matieres() {
                       onClick={() => navigate('/examens-officiels')}
                       className="bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700 text-white font-bold"
                     >
+                      Commencer la préparation
+                    </Button>
+                  </div>
+                </div>
+              </Card>
+            )}
+
+            {/* Baccalauréat Exam Preparation Section for NS3/NS4 */}
+            {(selectedGrade === 'NS3' || selectedGrade === 'NS4') && selectedSeries && (
+              <Card className="p-6 mb-8 bg-gradient-to-br from-amber-500/5 to-orange-500/10 border-amber-500/20">
+                <div className="flex flex-col md:flex-row items-center gap-6">
+                  <div className="flex-shrink-0">
+                    <div className="w-24 h-24 rounded-lg bg-gradient-to-br from-amber-500 to-orange-600 flex items-center justify-center shadow-lg">
+                      <GraduationCap className="w-12 h-12 text-white" />
+                    </div>
+                  </div>
+                  <div className="flex-1 text-center md:text-left">
+                    <h3 className="text-2xl font-bold mb-2">
+                      Examens du Baccalauréat NS4
+                    </h3>
+                    <p className="text-muted-foreground mb-4">
+                      Prépare-toi avec les anciens et modèles d'examens. Eric t'accompagne pour 
+                      comprendre chaque concept et réussir tes épreuves, y compris les dissertations 
+                      de philosophie.
+                    </p>
+                    <div className="flex flex-wrap gap-3 justify-center md:justify-start">
+                      <Badge variant="secondary" className="text-sm bg-amber-500/10 text-amber-600 dark:text-amber-400">
+                        📚 {baccExamCount} examens disponibles
+                      </Badge>
+                      <Badge variant="secondary" className="text-sm">
+                        ⭐ Modèles d'examens
+                      </Badge>
+                      <Badge variant="secondary" className="text-sm">
+                        📝 Dissertations guidées
+                      </Badge>
+                      <Badge variant="secondary" className="text-sm">
+                        🤖 Tuteur IA Eric
+                      </Badge>
+                    </div>
+                  </div>
+                  <div className="flex-shrink-0">
+                    <Button
+                      size="lg"
+                      onClick={() => navigate(`/baccalaureat${selectedSeries ? `/${selectedSeries}` : ''}`)}
+                      className="bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700 text-white font-bold"
+                    >
+                      <GraduationCap className="mr-2 h-5 w-5" />
                       Commencer la préparation
                     </Button>
                   </div>
