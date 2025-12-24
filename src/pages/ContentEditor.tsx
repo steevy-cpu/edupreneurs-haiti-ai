@@ -198,7 +198,7 @@ const ContentEditor = () => {
         {/* Main Content with Tabs */}
         <div className="max-w-[1600px] mx-auto">
           <Tabs defaultValue="review" className="space-y-6">
-            <TabsList className="grid w-full grid-cols-3 lg:w-[600px]">
+            <TabsList className="grid w-full grid-cols-4 lg:w-[800px]">
               <TabsTrigger value="review">
                 <BookOpen className="mr-2 h-4 w-4" />
                 Révision
@@ -209,7 +209,11 @@ const ContentEditor = () => {
               </TabsTrigger>
               <TabsTrigger value="exams">
                 <BarChart3 className="mr-2 h-4 w-4" />
-                Examens Officiels
+                Examens 9AF
+              </TabsTrigger>
+              <TabsTrigger value="baccalaureat">
+                <GraduationCap className="mr-2 h-4 w-4" />
+                Baccalauréat NS4
               </TabsTrigger>
             </TabsList>
 
@@ -295,6 +299,10 @@ const ContentEditor = () => {
 
             <TabsContent value="exams">
               <ExamManager />
+            </TabsContent>
+
+            <TabsContent value="baccalaureat">
+              <BaccExamManager />
             </TabsContent>
           </Tabs>
         </div>

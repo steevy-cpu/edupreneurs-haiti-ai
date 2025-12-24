@@ -209,8 +209,8 @@ export function BaccExamManager() {
         await page.render({
           canvasContext: context,
           viewport: viewport,
-          // @ts-ignore - canvas property is optional in newer versions
-        }).promise;
+          canvas: canvas,
+        } as any).promise;
 
         const dataUrl = canvas.toDataURL("image/png", 0.95);
         images.push(dataUrl);
