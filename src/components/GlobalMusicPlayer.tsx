@@ -140,8 +140,22 @@ export const GlobalMusicPlayer = () => {
   };
 
   // Calculate if expanded card would overflow and adjust its position
-  const getCardStyle = () => {
+  const getCardStyle = (): React.CSSProperties => {
     if (minimized || !playerRef.current) return {};
+    
+    const isMobile = window.innerWidth < 640;
+    
+    // On mobile, position the card from the center of the screen
+    if (isMobile) {
+      return {
+        position: 'fixed' as const,
+        left: '16px',
+        right: '16px',
+        bottom: 'calc(100px + env(safe-area-inset-bottom, 0px))',
+        top: 'auto',
+        transform: 'none',
+      };
+    }
     
     const cardWidth = 320; // w-80 = 320px on larger screens
     const cardHeight = 400; // approximate expanded height
