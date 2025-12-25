@@ -1331,7 +1331,7 @@ const PassionDiscoveryContent = () => {
           </div>
 
           <div className="lg:col-span-1 order-first lg:order-last">
-            <Card className="lg:sticky lg:top-6 h-[50vh] lg:h-[calc(100vh-8rem)] flex flex-col">
+            <Card className="lg:sticky lg:top-6 h-[70vh] lg:h-[calc(100vh-6rem)] flex flex-col">
               <CardHeader className="border-b py-3 md:py-4">
                 <div className="flex items-center gap-3">
                   <img src={ericRightPointing} alt="Eric" className="w-10 h-10 md:w-12 md:h-12 rounded-full object-cover" loading="lazy" decoding="async" />
