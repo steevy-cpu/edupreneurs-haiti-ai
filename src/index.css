@@ -667,13 +667,7 @@ All colors MUST be HSL.
   }
 
 /* Eric Chatbot Styles - Updated with glassmorphism design */
-.eric-floating-character {
-    @apply fixed top-24 right-5 z-[1000] w-28 cursor-pointer transition-transform duration-300 hover:scale-105;
-  }
-
-  .eric-floating-character img {
-    @apply drop-shadow-2xl;
-  }
+/* Note: .eric-floating-character positioning is now handled via inline styles for draggable support */
 
   .eric-floating-tooltip {
     @apply absolute bottom-full left-1/2 -translate-x-1/2 mb-4 px-3 py-1.5 rounded-lg text-xs font-semibold text-center opacity-100 visible pointer-events-none whitespace-nowrap;
