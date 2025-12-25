@@ -36,6 +36,7 @@ export const EricChatbot = () => {
     handleMouseDown,
     handleTouchStart,
     getPositionStyles,
+    resetPosition,
   } = useEricDraggable(isOpen, { defaultWidth: 380, defaultHeight: 500 });
 
   // Fetch user profile on mount
@@ -196,7 +197,10 @@ export const EricChatbot = () => {
               variant="destructive"
               size="icon"
               className="absolute -top-2 -right-2 w-7 h-7 sm:w-8 sm:h-8 rounded-full shadow-lg z-10"
-              onClick={() => setIsOpen(false)}
+              onClick={() => {
+                resetPosition();
+                setIsOpen(false);
+              }}
               title="Fermer le chat"
             >
               <X className="w-4 h-4" />
