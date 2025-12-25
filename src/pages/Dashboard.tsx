@@ -366,6 +366,61 @@ const Dashboard = () => {
             </Card>
           )}
 
+          {/* KPI Cards */}
+          <div data-tour="kpi-cards" className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+            <Card className="border-none rounded-xl shadow-md hover:shadow-lg hover:-translate-y-1 transition-all duration-300">
+              <CardContent className="p-4 sm:p-6 text-center">
+                <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-yellow-400 to-orange-500 flex items-center justify-center text-white mx-auto mb-3">
+                  <Trophy className="w-6 h-6" />
+                </div>
+                <div className="text-2xl sm:text-3xl font-extrabold bg-gradient-to-br from-yellow-500 to-orange-600 bg-clip-text text-transparent mb-1">
+                  {isUserDataLoading ? <Skeleton className="h-8 w-12 mx-auto" /> : goldEarned}
+                </div>
+                <div className="text-xs font-semibold text-muted-foreground mb-1">Golds gagnés</div>
+                <p className="text-xs text-muted-foreground">Total cumulé</p>
+              </CardContent>
+            </Card>
+
+            <Card className="border-none rounded-xl shadow-md hover:shadow-lg hover:-translate-y-1 transition-all duration-300">
+              <CardContent className="p-4 sm:p-6 text-center">
+                <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center text-white mx-auto mb-3">
+                  <BookOpen className="w-6 h-6" />
+                </div>
+                <div className="text-2xl sm:text-3xl font-extrabold bg-gradient-to-br from-blue-500 to-blue-700 bg-clip-text text-transparent mb-1">
+                  {analytics.totalLessonsCompleted}
+                </div>
+                <div className="text-xs font-semibold text-muted-foreground mb-1">Leçons complétées</div>
+                <p className="text-xs text-muted-foreground">+{analytics.weeklyLessons} cette semaine</p>
+              </CardContent>
+            </Card>
+
+            <Card className="border-none rounded-xl shadow-md hover:shadow-lg hover:-translate-y-1 transition-all duration-300">
+              <CardContent className="p-4 sm:p-6 text-center">
+                <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-green-400 to-green-600 flex items-center justify-center text-white mx-auto mb-3">
+                  <Award className="w-6 h-6" />
+                </div>
+                <div className="text-2xl sm:text-3xl font-extrabold bg-gradient-to-br from-green-500 to-green-700 bg-clip-text text-transparent mb-1">
+                  {analytics.averageScore}%
+                </div>
+                <div className="text-xs font-semibold text-muted-foreground mb-1">Score moyen</div>
+                <p className="text-xs text-muted-foreground">Continue! 💪</p>
+              </CardContent>
+            </Card>
+
+            <Card className="border-none rounded-xl shadow-md hover:shadow-lg hover:-translate-y-1 transition-all duration-300">
+              <CardContent className="p-4 sm:p-6 text-center">
+                <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-purple-400 to-purple-600 flex items-center justify-center text-white mx-auto mb-3">
+                  <Target className="w-6 h-6" />
+                </div>
+                <div className="text-2xl sm:text-3xl font-extrabold bg-gradient-to-br from-purple-500 to-purple-700 bg-clip-text text-transparent mb-1">
+                  {Math.round(analytics.studyTimeThisWeek / 60)}h
+                </div>
+                <div className="text-xs font-semibold text-muted-foreground mb-1">Temps d'étude</div>
+                <p className="text-xs text-muted-foreground">Cette semaine</p>
+              </CardContent>
+            </Card>
+          </div>
+
           {/* Analytics Widgets */}
           <div data-tour="analytics-widgets" className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
             {/* Learning Streak */}
@@ -421,61 +476,6 @@ const Dashboard = () => {
                     <p className="text-xs text-muted-foreground">Cette semaine</p>
                   </div>
                 </div>
-              </CardContent>
-            </Card>
-          </div>
-
-          {/* KPI Cards */}
-          <div data-tour="kpi-cards" className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-            <Card className="border-none rounded-xl shadow-md hover:shadow-lg hover:-translate-y-1 transition-all duration-300">
-              <CardContent className="p-4 sm:p-6 text-center">
-                <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-yellow-400 to-orange-500 flex items-center justify-center text-white mx-auto mb-3">
-                  <Trophy className="w-6 h-6" />
-                </div>
-                <div className="text-2xl sm:text-3xl font-extrabold bg-gradient-to-br from-yellow-500 to-orange-600 bg-clip-text text-transparent mb-1">
-                  {isUserDataLoading ? <Skeleton className="h-8 w-12 mx-auto" /> : goldEarned}
-                </div>
-                <div className="text-xs font-semibold text-muted-foreground mb-1">Golds gagnés</div>
-                <p className="text-xs text-muted-foreground">Total cumulé</p>
-              </CardContent>
-            </Card>
-
-            <Card className="border-none rounded-xl shadow-md hover:shadow-lg hover:-translate-y-1 transition-all duration-300">
-              <CardContent className="p-4 sm:p-6 text-center">
-                <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center text-white mx-auto mb-3">
-                  <BookOpen className="w-6 h-6" />
-                </div>
-                <div className="text-2xl sm:text-3xl font-extrabold bg-gradient-to-br from-blue-500 to-blue-700 bg-clip-text text-transparent mb-1">
-                  {analytics.totalLessonsCompleted}
-                </div>
-                <div className="text-xs font-semibold text-muted-foreground mb-1">Leçons complétées</div>
-                <p className="text-xs text-muted-foreground">+{analytics.weeklyLessons} cette semaine</p>
-              </CardContent>
-            </Card>
-
-            <Card className="border-none rounded-xl shadow-md hover:shadow-lg hover:-translate-y-1 transition-all duration-300">
-              <CardContent className="p-4 sm:p-6 text-center">
-                <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-green-400 to-green-600 flex items-center justify-center text-white mx-auto mb-3">
-                  <Award className="w-6 h-6" />
-                </div>
-                <div className="text-2xl sm:text-3xl font-extrabold bg-gradient-to-br from-green-500 to-green-700 bg-clip-text text-transparent mb-1">
-                  {analytics.averageScore}%
-                </div>
-                <div className="text-xs font-semibold text-muted-foreground mb-1">Score moyen</div>
-                <p className="text-xs text-muted-foreground">Continue! 💪</p>
-              </CardContent>
-            </Card>
-
-            <Card className="border-none rounded-xl shadow-md hover:shadow-lg hover:-translate-y-1 transition-all duration-300">
-              <CardContent className="p-4 sm:p-6 text-center">
-                <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-purple-400 to-purple-600 flex items-center justify-center text-white mx-auto mb-3">
-                  <Target className="w-6 h-6" />
-                </div>
-                <div className="text-2xl sm:text-3xl font-extrabold bg-gradient-to-br from-purple-500 to-purple-700 bg-clip-text text-transparent mb-1">
-                  {Math.round(analytics.studyTimeThisWeek / 60)}h
-                </div>
-                <div className="text-xs font-semibold text-muted-foreground mb-1">Temps d'étude</div>
-                <p className="text-xs text-muted-foreground">Cette semaine</p>
               </CardContent>
             </Card>
           </div>
