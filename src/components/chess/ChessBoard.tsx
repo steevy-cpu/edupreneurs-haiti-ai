@@ -120,7 +120,7 @@ const ChessBoard: React.FC<ChessBoardProps> = ({
       </div>
 
       {/* Chess Board */}
-      <div className="w-full max-w-[600px] mx-auto">
+      <div className="w-full max-w-[min(100%,500px)] mx-auto">
         <Chessboard
           position={game.fen()}
           onPieceDrop={onPieceDrop}
