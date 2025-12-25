@@ -97,11 +97,6 @@ export const useEricDraggable = (
       return;
     }
     
-    // Don't start dragging on the closed element if not yet moved - let click work
-    if (!isOpen && !hasMoved) {
-      return;
-    }
-    
     setHasActuallyDragged(false);
     
     if (!hasMoved) {
@@ -127,11 +122,6 @@ export const useEricDraggable = (
   const handleTouchStart = useCallback((e: React.TouchEvent) => {
     const target = e.target as HTMLElement;
     if (target.closest('button, textarea, input, .eric-chat-messages')) {
-      return;
-    }
-    
-    // Don't start dragging on the closed element if not yet moved - let tap work
-    if (!isOpen && !hasMoved) {
       return;
     }
     
