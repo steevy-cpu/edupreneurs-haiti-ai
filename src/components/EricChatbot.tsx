@@ -176,89 +176,106 @@ export const EricChatbot = () => {
           />
         </div>
       ) : (
-        /* Chat Interface - responsive sizing */
+        /* Eric + Chat Interface positioned together - chat floats under Eric */
         <div
           ref={chatRef}
           style={{
             ...getPositionStyles(true, {
+              openTop: '5rem',
               openRight: '0.5rem',
-              openBottom: '1rem',
             }),
             zIndex: 1001,
-            display: 'flex',
-            flexDirection: 'column',
-            background: 'transparent',
-            borderRadius: '1.5rem',
           }}
-          className="w-[280px] sm:w-[320px] md:w-[360px] lg:w-[380px] max-h-[70vh] sm:max-h-[75vh] md:max-h-[calc(100vh-40px)] p-3 sm:p-4 md:p-5"
+          className="flex flex-col items-end"
           onMouseDown={handleMouseDown}
           onTouchStart={handleTouchStart}
         >
-          <Button
-            variant="destructive"
-            size="icon"
-            className="eric-close-btn"
-            onClick={() => setIsOpen(false)}
-            title="Fermer le chat"
-          >
-            <X className="w-4 h-4" />
-          </Button>
-
-          {/* Messages */}
-          <div className="eric-chat-messages">
-            {messages.map((message, index) => (
-              <div 
-                key={index} 
-                className={`eric-message ${message.sender === "user" ? "eric-message-user" : "eric-message-eric"}`}
-              >
-                <img 
-                  src={message.sender === "eric" ? ericAvatar : (getAvatarUrl(userAvatarUrl) || "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23059669'><path d='M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z'/></svg>")}
-                  alt={message.sender}
-                  className="eric-message-avatar"
-                  loading="lazy"
-                  decoding="async"
-                />
-                <div className="eric-message-content">
-                  {message.content}
-                  {message.navigationPath && (
-                    <Button
-                      className="mt-3 w-full"
-                      onClick={() => navigate(message.navigationPath!)}
-                    >
-                      Aller à cette page
-                    </Button>
-                  )}
-                </div>
-              </div>
-            ))}
-            {isTyping && (
-              <div className="eric-typing-indicator">
-                Eric écrit<span className="eric-dots">...</span>
-              </div>
-            )}
-            <div ref={messagesEndRef} />
+          {/* Eric image at top-right of chat */}
+          <div className="w-14 sm:w-16 md:w-20 lg:w-24 mr-2 sm:mr-4 cursor-grab active:cursor-grabbing">
+            <img 
+              src={ericAvatar} 
+              alt="Eric - Assistant IA" 
+              className="w-full h-auto pointer-events-none drop-shadow-2xl"
+              loading="lazy"
+              decoding="async"
+            />
           </div>
+          
+          {/* Chat area directly under Eric */}
+          <div className="relative bg-background/95 backdrop-blur-sm rounded-2xl shadow-xl border border-border/30 w-[260px] sm:w-[300px] md:w-[340px] lg:w-[380px] max-h-[45vh] sm:max-h-[50vh] md:max-h-[55vh] flex flex-col -mt-2">
+            {/* Close button */}
+            <Button
+              variant="destructive"
+              size="icon"
+              className="absolute -top-2 -right-2 w-7 h-7 sm:w-8 sm:h-8 rounded-full shadow-lg z-10"
+              onClick={() => setIsOpen(false)}
+              title="Fermer le chat"
+            >
+              <X className="w-4 h-4" />
+            </Button>
 
-          {/* Input Area */}
-          <div className="eric-input-area">
-            <div className="eric-input-group">
-              <Textarea
-                value={input}
-                onChange={(e) => setInput(e.target.value)}
-                onKeyPress={handleKeyPress}
-                placeholder="Tapez votre question..."
-                maxLength={200}
-                className="eric-input resize-none"
-                rows={1}
-              />
-              <Button
-                size="icon"
-                className="eric-send-btn"
-                onClick={sendMessage}
-                disabled={!input.trim()}
-              >
-                <Send className="w-4 h-4" />
-              </Button>
+            {/* Messages */}
+            <div className="flex-1 overflow-y-auto p-3 sm:p-4 space-y-3">
+              {messages.map((message, index) => (
+                <div 
+                  key={index} 
+                  className={`flex items-start gap-2 ${message.sender === "user" ? "flex-row-reverse" : "flex-row"}`}
+                >
+                  <img 
+                    src={message.sender === "eric" ? ericAvatar : (getAvatarUrl(userAvatarUrl) || "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23059669'><path d='M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z'/></svg>")}
+                    alt={message.sender}
+                    className="w-6 h-6 sm:w-8 sm:h-8 rounded-full object-cover flex-shrink-0"
+                    loading="lazy"
+                    decoding="async"
+                  />
+                  <div className={`max-w-[80%] p-2 sm:p-3 rounded-xl text-xs sm:text-sm ${
+                    message.sender === "user" 
+                      ? "bg-primary text-primary-foreground rounded-br-sm" 
+                      : "bg-muted rounded-bl-sm"
+                  }`}>
+                    {message.content}
+                    {message.navigationPath && (
+                      <Button
+                        className="mt-2 w-full text-xs"
+                        size="sm"
+                        onClick={() => navigate(message.navigationPath!)}
+                      >
+                        Aller à cette page
+                      </Button>
+                    )}
+                  </div>
+                </div>
+              ))}
+              {isTyping && (
+                <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                  <span>Eric écrit</span>
+                  <span className="animate-pulse">...</span>
+                </div>
+              )}
+              <div ref={messagesEndRef} />
+            </div>
+
+            {/* Input Area */}
+            <div className="p-2 sm:p-3 border-t border-border/30">
+              <div className="flex items-center gap-2">
+                <Textarea
+                  value={input}
+                  onChange={(e) => setInput(e.target.value)}
+                  onKeyPress={handleKeyPress}
+                  placeholder="Tapez votre question..."
+                  maxLength={200}
+                  className="flex-1 min-h-[36px] max-h-[60px] text-xs sm:text-sm resize-none rounded-full px-3 py-2"
+                  rows={1}
+                />
+                <Button
+                  size="icon"
+                  className="rounded-full w-8 h-8 sm:w-9 sm:h-9 flex-shrink-0"
+                  onClick={sendMessage}
+                  disabled={!input.trim()}
+                >
+                  <Send className="w-4 h-4" />
+                </Button>
+              </div>
             </div>
           </div>
         </div>
