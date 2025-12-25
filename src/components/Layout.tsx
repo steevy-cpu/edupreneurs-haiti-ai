@@ -337,6 +337,7 @@ export const Layout = ({ children }: LayoutProps) => {
                        location.pathname.startsWith("/sciences-sociales-lesson") ||
                        location.pathname.startsWith("/anglais-lesson");
   const isFeedPage = location.pathname === "/feed";
+  const isChessPage = location.pathname === "/chess-game";
   
   // Pages that have their own header/navigation
   const hideLayoutNav = isCommunityPage || isLessonPage || isFeedPage || isUserSearchPage;
@@ -554,8 +555,8 @@ export const Layout = ({ children }: LayoutProps) => {
       {/* Mobile Bottom Navigation */}
       <MobileBottomNav />
 
-      {/* Eric Chatbot - Hidden on Community page, lesson pages, and feed */}
-      {!isCommunityPage && !isLessonPage && !isFeedPage && (
+      {/* Eric Chatbot - Hidden on Community page, lesson pages, feed, and chess page */}
+      {!isCommunityPage && !isLessonPage && !isFeedPage && !isChessPage && (
         <div data-tour="eric-chatbot">
           <EricChatbot />
         </div>
