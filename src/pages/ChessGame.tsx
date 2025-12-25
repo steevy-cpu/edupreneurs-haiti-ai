@@ -3,9 +3,10 @@ import { Chess } from 'chess.js';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
-import { ArrowLeft, Trophy } from 'lucide-react';
+import { ArrowLeft } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { useChessSounds } from '@/hooks/useChessSounds';
 import ChessBoard from '@/components/chess/ChessBoard';
 import ChessChat from '@/components/chess/ChessChat';
 import { Helmet } from 'react-helmet';
@@ -19,6 +20,7 @@ interface ChatMessage {
 const ChessGame: React.FC = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { playSound } = useChessSounds();
   const [game, setGame] = useState(new Chess());
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [isThinking, setIsThinking] = useState(false);
@@ -43,23 +45,27 @@ const ChessGame: React.FC = () => {
     fetchProfile();
   }, []);
 
-  // Update game status
+  // Update game status and play sounds
   useEffect(() => {
     if (game.isCheckmate()) {
       const winner = game.turn() === 'w' ? 'Eric' : 'Toi';
       setGameStatus(`🏆 Échec et mat! ${winner} a gagné!`);
+      playSound('checkmate');
     } else if (game.isDraw()) {
       setGameStatus('🤝 Match nul!');
+      playSound('gameEnd');
     } else if (game.isStalemate()) {
       setGameStatus('🤝 Pat - Match nul!');
+      playSound('gameEnd');
     } else if (game.isCheck()) {
       setGameStatus('⚠️ Échec!');
+      playSound('check');
     } else if (game.turn() === 'w') {
       setGameStatus("C'est ton tour!");
     } else {
       setGameStatus("Tour d'Eric...");
     }
-  }, [game]);
+  }, [game, playSound]);
 
   const callChessAI = async (isEricTurn: boolean, userMessage?: string, fen?: string) => {
     try {
@@ -109,6 +115,13 @@ const ChessGame: React.FC = () => {
           const moveResult = gameCopy.move({ from, to, promotion });
           
           if (moveResult) {
+            // Play sound based on move type
+            if (moveResult.captured) {
+              playSound('capture');
+            } else {
+              playSound('move');
+            }
+            
             setGame(gameCopy);
             
             // Add Eric's explanation to chat
@@ -149,7 +162,7 @@ const ChessGame: React.FC = () => {
     } finally {
       setIsThinking(false);
     }
-  }, [messages, userNickname, toast]);
+  }, [messages, userNickname, toast, playSound]);
 
   const handlePlayerMove = useCallback((from: string, to: string, promotion?: string): boolean => {
     const gameCopy = new Chess(game.fen());
@@ -158,6 +171,13 @@ const ChessGame: React.FC = () => {
       const move = gameCopy.move({ from, to, promotion: promotion || 'q' });
       
       if (move) {
+        // Play sound based on move type
+        if (move.captured) {
+          playSound('capture');
+        } else {
+          playSound('move');
+        }
+        
         setGame(gameCopy);
         
         // Add move to chat
@@ -181,9 +201,10 @@ const ChessGame: React.FC = () => {
     }
     
     return false;
-  }, [game, makeEricMove]);
+  }, [game, makeEricMove, playSound]);
 
   const handleNewGame = useCallback(() => {
+    playSound('gameStart');
     setGame(new Chess());
     setMessages([{
       role: 'assistant',
@@ -191,7 +212,7 @@ const ChessGame: React.FC = () => {
       timestamp: new Date()
     }]);
     setGameStatus("C'est ton tour!");
-  }, [userNickname]);
+  }, [userNickname, playSound]);
 
   const handleSendMessage = useCallback(async (message: string) => {
     // Add user message

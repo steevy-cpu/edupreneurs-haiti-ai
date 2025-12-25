@@ -30,9 +30,9 @@ const ChessChat: React.FC<ChessChatProps> = ({
 
   useEffect(() => {
     if (scrollRef.current) {
-      scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+      scrollRef.current.scrollIntoView({ behavior: 'smooth', block: 'end' });
     }
-  }, [messages]);
+  }, [messages, isLoading]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -65,8 +65,8 @@ const ChessChat: React.FC<ChessChatProps> = ({
       </div>
 
       {/* Messages */}
-      <ScrollArea className="flex-1 p-4" ref={scrollRef}>
-        <div className="space-y-4">
+      <ScrollArea className="flex-1 p-4">
+        <div className="space-y-4" ref={scrollRef}>
           {messages.length === 0 ? (
             <div className="text-center text-muted-foreground py-8">
               <p className="mb-2">👋 Salut {userNickname}!</p>
