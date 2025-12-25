@@ -3,6 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Send, Loader2 } from 'lucide-react';
+import ericChairDesk from '@/assets/eric-chair-desk.png';
 
 interface Message {
   role: 'user' | 'assistant';
@@ -50,9 +51,21 @@ const ChessChat: React.FC<ChessChatProps> = ({
 
   return (
     <div className="flex flex-col h-full">
+      {/* Header */}
+      <div className="flex-shrink-0 flex items-center gap-3 p-3 border-b bg-card">
+        <img 
+          src={ericChairDesk} 
+          alt="Eric" 
+          className="w-10 h-10 rounded-full object-cover"
+        />
+        <div>
+          <h3 className="font-semibold text-foreground text-sm">Eric - Coach d'Échecs</h3>
+          <p className="text-xs text-muted-foreground">Je t'accompagne dans ta partie! ♟️</p>
+        </div>
+      </div>
 
       {/* Messages */}
-      <ScrollArea className="flex-1 p-4">
+      <ScrollArea className="flex-1 min-h-0 p-4">
         <div className="space-y-4" ref={scrollRef}>
           {messages.length === 0 ? (
             <div className="text-center text-muted-foreground py-8">
@@ -103,7 +116,7 @@ const ChessChat: React.FC<ChessChatProps> = ({
       </ScrollArea>
 
       {/* Quick Replies */}
-      <div className="px-4 py-2 border-t flex gap-2 overflow-x-auto">
+      <div className="flex-shrink-0 px-4 py-2 border-t flex gap-2 overflow-x-auto">
         {quickReplies.map((reply, index) => (
           <Button
             key={index}
@@ -119,7 +132,7 @@ const ChessChat: React.FC<ChessChatProps> = ({
       </div>
 
       {/* Input */}
-      <form onSubmit={handleSubmit} className="p-4 border-t bg-card">
+      <form onSubmit={handleSubmit} className="flex-shrink-0 p-3 border-t bg-card">
         <div className="flex gap-2">
           <Input
             ref={inputRef}
