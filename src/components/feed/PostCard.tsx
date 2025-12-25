@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Link } from "react-router-dom";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Heart, MessageCircle, Share2, Trash2, BadgeCheck } from "lucide-react";
@@ -7,6 +8,43 @@ import { formatTimeAgo } from "@/utils/dateUtils";
 import { Post } from "@/types/feed";
 
 const MAX_CONTENT_LENGTH = 150;
+
+// Function to render content with clickable links
+const renderContentWithLinks = (content: string) => {
+  // Match internal routes (starting with /) and external URLs
+  const linkRegex = /(\/[a-zA-Z0-9\-_/]+|https?:\/\/[^\s]+)/g;
+  const parts = content.split(linkRegex);
+  
+  return parts.map((part, index) => {
+    // Check if this part is an internal route
+    if (part.startsWith('/') && part.length > 1) {
+      return (
+        <Link 
+          key={index} 
+          to={part} 
+          className="text-primary hover:underline font-medium"
+        >
+          {part}
+        </Link>
+      );
+    }
+    // Check if this part is an external URL
+    if (part.match(/^https?:\/\//)) {
+      return (
+        <a 
+          key={index} 
+          href={part} 
+          target="_blank" 
+          rel="noopener noreferrer"
+          className="text-primary hover:underline font-medium"
+        >
+          {part}
+        </a>
+      );
+    }
+    return part;
+  });
+};
 
 interface PostCardProps {
   post: Post;
@@ -69,7 +107,7 @@ export function PostCard({
       {/* Post Content */}
       <div className="px-3 xs:px-4 pb-2.5 xs:pb-3">
         <p className="text-xs xs:text-sm whitespace-pre-wrap break-words leading-relaxed">
-          {displayContent}
+          {renderContentWithLinks(displayContent)}
           {shouldTruncate && !isExpanded && (
             <button 
               onClick={() => setIsExpanded(true)}
