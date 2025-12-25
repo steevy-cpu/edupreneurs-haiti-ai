@@ -22,8 +22,6 @@ interface MusicPlayerContextType {
 
 const MusicPlayerContext = createContext<MusicPlayerContextType | undefined>(undefined);
 
-const YOUTUBE_API_KEY = "AIzaSyDu6sWsM5NEgb48nFFIz49guKR5amdsGWA";
-
 export const MusicPlayerProvider = ({ children }: { children: ReactNode }) => {
   const [tracks, setTracks] = useState<PlaylistTrack[]>([]);
   const [isLoading, setIsLoading] = useState(true);
