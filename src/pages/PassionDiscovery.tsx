@@ -1,10 +1,11 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Music, Palette, Brain, BookOpen, Play, CheckCircle2, Lock, Loader2, ArrowLeft, Send, Youtube, ArrowRight, Award, Users, Heart, Lightbulb, RotateCcw } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Music, Palette, Brain, BookOpen, Play, CheckCircle2, Lock, Loader2, ArrowLeft, Send, Youtube, ArrowRight, Award, Users, Heart, Lightbulb, RotateCcw, Search } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -22,6 +23,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { getActivitiesForModule, getCategoriesWithActivities, type ActivityContent } from "@/data/passionActivities";
 import ericTeaching from "@/assets/eric-teaching.png";
 import ericThinking from "@/assets/eric-thinking-pose.png";
 import ericWelcome from "@/assets/eric-welcome.png";
@@ -103,6 +105,7 @@ const PassionDiscoveryContent = () => {
   const [activityStates, setActivityStates] = useState<Record<string, boolean>>({});
   const [showLeaveDialog, setShowLeaveDialog] = useState(false);
   const [pendingNavigation, setPendingNavigation] = useState<(() => void) | null>(null);
+  const [searchQuery, setSearchQuery] = useState("");
   
   // React Query hooks
   const { data: preferences, isLoading: preferencesLoading } = usePassionPreferences(userId);
@@ -224,11 +227,22 @@ const PassionDiscoveryContent = () => {
     }
   ];
 
-  const generateDefaultActivities = (moduleId: string, moduleTitle: string): Activity[] => {
+  const getModuleActivities = (categoryId: string, moduleId: string, moduleTitle: string): Activity[] => {
+    // Try to get real activities first
+    const realActivities = getActivitiesForModule(categoryId, moduleId);
+    
+    if (realActivities) {
+      return realActivities.map((activity: ActivityContent) => ({
+        ...activity,
+        completed: activityStates[activity.id] || false
+      }));
+    }
+    
+    // Fallback to generated activities for categories without real content
     return [
       {
         id: `${moduleId}-video`,
-        type: "video",
+        type: "video" as const,
         title: `Introduction à ${moduleTitle}`,
         description: "Vidéo explicative pour découvrir les concepts de base",
         duration: "5 min",
@@ -236,7 +250,7 @@ const PassionDiscoveryContent = () => {
       },
       {
         id: `${moduleId}-reading`,
-        type: "reading",
+        type: "reading" as const,
         title: `Contenu pédagogique`,
         description: "Texte détaillé avec explications et exemples",
         duration: "10 min",
@@ -244,7 +258,7 @@ const PassionDiscoveryContent = () => {
       },
       {
         id: `${moduleId}-quiz`,
-        type: "quiz",
+        type: "quiz" as const,
         title: `Quiz d'évaluation`,
         description: "Teste tes connaissances sur ce module",
         duration: "5 min",
@@ -252,7 +266,7 @@ const PassionDiscoveryContent = () => {
       },
       {
         id: `${moduleId}-game`,
-        type: "game",
+        type: "game" as const,
         title: `Activité pratique`,
         description: "Mets en pratique ce que tu as appris",
         duration: "10 min",
@@ -272,7 +286,7 @@ const PassionDiscoveryContent = () => {
         ...module,
         completed: moduleProgress.completed,
         locked: !previousModuleCompleted && index > 0,
-        activities: generateDefaultActivities(module.id, module.title)
+        activities: getModuleActivities(categoryId, module.id, module.title)
       };
     });
   };
@@ -546,7 +560,7 @@ const PassionDiscoveryContent = () => {
       const module = category?.modules.find(m => m.id === selectedModule);
       
       if (module) {
-        const activities = generateDefaultActivities(selectedModule, module.title);
+        const activities = getModuleActivities(selectedCategory, selectedModule, module.title);
         const newActivityStates = { ...activityStates, [activityId]: true };
         const completedCount = activities.filter(a => newActivityStates[a.id]).length;
         const progressPercentage = (completedCount / activities.length) * 100;
@@ -564,6 +578,35 @@ const PassionDiscoveryContent = () => {
   const allCategories = [...categories, ...civicCategories, ...developmentCategories];
   const currentCategory = allCategories.find(cat => cat.id === selectedCategory);
   const currentModule = currentCategory?.modules.find(mod => mod.id === selectedModule);
+
+  // Filter categories based on search
+  const filteredCategories = useMemo(() => {
+    if (!searchQuery.trim()) return categories;
+    const query = searchQuery.toLowerCase();
+    return categories.filter(cat => 
+      cat.title.toLowerCase().includes(query) ||
+      cat.description.toLowerCase().includes(query) ||
+      cat.modules.some(m => m.title.toLowerCase().includes(query))
+    );
+  }, [categories, searchQuery]);
+
+  const filteredCivicCategories = useMemo(() => {
+    if (!searchQuery.trim()) return civicCategories;
+    const query = searchQuery.toLowerCase();
+    return civicCategories.filter(cat => 
+      cat.title.toLowerCase().includes(query) ||
+      cat.description.toLowerCase().includes(query)
+    );
+  }, [civicCategories, searchQuery]);
+
+  const filteredDevelopmentCategories = useMemo(() => {
+    if (!searchQuery.trim()) return developmentCategories;
+    const query = searchQuery.toLowerCase();
+    return developmentCategories.filter(cat => 
+      cat.title.toLowerCase().includes(query) ||
+      cat.description.toLowerCase().includes(query)
+    );
+  }, [developmentCategories, searchQuery]);
 
   // Loading state
   if (preferencesLoading) {
