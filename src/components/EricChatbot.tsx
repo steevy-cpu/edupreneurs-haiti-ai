@@ -160,12 +160,16 @@ export const EricChatbot = () => {
         }),
         zIndex: 1000,
       }}
-      onMouseDown={handleMouseDown}
-      onTouchStart={handleTouchStart}
+      // Only apply drag to container when chat is open
+      onMouseDown={isOpen ? handleMouseDown : undefined}
+      onTouchStart={isOpen ? handleTouchStart : undefined}
     >
-      {/* Eric's image - always visible, clickable to toggle chat */}
+      {/* Eric's image - always visible, draggable when closed, clickable to toggle chat */}
       <div 
         className={`w-14 sm:w-16 md:w-20 lg:w-28 cursor-pointer ${!isOpen ? 'hover:scale-105' : ''} transition-transform`}
+        // Apply drag handlers to Eric's image when chat is closed
+        onMouseDown={!isOpen ? handleMouseDown : undefined}
+        onTouchStart={!isOpen ? handleTouchStart : undefined}
         onClick={() => {
           if (!hasActuallyDragged) {
             if (isOpen) {
