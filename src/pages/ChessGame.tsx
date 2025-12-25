@@ -61,11 +61,11 @@ const ChessGame: React.FC = () => {
     }
   }, [game]);
 
-  const callChessAI = async (isEricTurn: boolean, userMessage?: string) => {
+  const callChessAI = async (isEricTurn: boolean, userMessage?: string, fen?: string) => {
     try {
       const { data, error } = await supabase.functions.invoke('chess-ai-tutor', {
         body: {
-          fen: game.fen(),
+          fen: fen || game.fen(),
           chatHistory: messages.slice(-10),
           userMessage,
           userNickname,
@@ -81,20 +81,29 @@ const ChessGame: React.FC = () => {
     }
   };
 
-  const makeEricMove = useCallback(async () => {
-    if (game.isGameOver()) return;
+  const makeEricMove = useCallback(async (currentGame: Chess) => {
+    // Only move if it's Black's turn and game is not over
+    if (currentGame.turn() !== 'b' || currentGame.isGameOver()) {
+      console.log('Skipping Eric move - not Black turn or game over');
+      return;
+    }
 
     setIsThinking(true);
     try {
-      const response = await callChessAI(true);
+      const currentFen = currentGame.fen();
+      console.log('Eric making move, FEN:', currentFen, 'Turn:', currentGame.turn());
+      
+      const response = await callChessAI(true, undefined, currentFen);
 
       if (response.type === 'move' && response.move) {
-        const gameCopy = new Chess(game.fen());
+        const gameCopy = new Chess(currentFen);
         
         // Parse the move
         const from = response.move.substring(0, 2);
         const to = response.move.substring(2, 4);
         const promotion = response.move.length > 4 ? response.move[4] : undefined;
+
+        console.log('Eric attempting move:', { from, to, promotion, currentTurn: gameCopy.turn() });
 
         try {
           const moveResult = gameCopy.move({ from, to, promotion });
@@ -111,12 +120,13 @@ const ChessGame: React.FC = () => {
               }]);
             }
           } else {
-            throw new Error('Invalid move');
+            throw new Error('Invalid move returned');
           }
         } catch (moveError) {
-          console.error('Move error:', moveError);
-          // Try to get any valid move
+          console.error('Move error:', moveError, 'Attempted:', { from, to });
+          // Try to get any valid move for Black
           const validMoves = gameCopy.moves({ verbose: true });
+          console.log('Valid moves for Black:', validMoves.map(m => m.san));
           if (validMoves.length > 0) {
             const randomMove = validMoves[Math.floor(Math.random() * validMoves.length)];
             gameCopy.move(randomMove);
@@ -139,7 +149,7 @@ const ChessGame: React.FC = () => {
     } finally {
       setIsThinking(false);
     }
-  }, [game, messages, userNickname, toast]);
+  }, [messages, userNickname, toast]);
 
   const handlePlayerMove = useCallback((from: string, to: string, promotion?: string): boolean => {
     const gameCopy = new Chess(game.fen());
@@ -157,10 +167,10 @@ const ChessGame: React.FC = () => {
           timestamp: new Date()
         }]);
 
-        // Trigger Eric's turn after a short delay
+        // Trigger Eric's turn after a short delay - pass the updated game directly
         if (!gameCopy.isGameOver()) {
           setTimeout(() => {
-            makeEricMove();
+            makeEricMove(gameCopy);
           }, 500);
         }
         
