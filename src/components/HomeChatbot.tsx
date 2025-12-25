@@ -29,7 +29,6 @@ export const HomeChatbot = () => {
     "Quels cours sont disponibles ?",
     "Comment fonctionne la plateforme ?"
   ];
-  const [isSpeaking, setIsSpeaking] = useState<number | null>(null);
   const [position, setPosition] = useState({ x: 0, y: 0 });
   const [hasMoved, setHasMoved] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
