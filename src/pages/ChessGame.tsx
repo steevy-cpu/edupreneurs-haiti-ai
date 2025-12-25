@@ -303,7 +303,7 @@ const ChessGame: React.FC = () => {
             </div>
 
             {/* Chat Area - Right side on tablet/desktop */}
-            <Card className="flex-1 overflow-hidden flex flex-col min-h-[400px] md:min-h-0 md:max-w-[45%]">
+            <Card className="flex-1 overflow-hidden flex flex-col min-h-[50vh] md:min-h-0 md:max-w-[45%]">
               <ChessChat
                 messages={messages}
                 onSendMessage={handleSendMessage}
