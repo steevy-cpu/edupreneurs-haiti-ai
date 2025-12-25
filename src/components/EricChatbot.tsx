@@ -176,7 +176,7 @@ export const EricChatbot = () => {
           />
         </div>
       ) : (
-        /* Eric + Chat Interface positioned together - chat floats under Eric */
+        /* Chat Interface - positioned at top-right, no separate Eric image */
         <div
           ref={chatRef}
           style={{
@@ -186,23 +186,11 @@ export const EricChatbot = () => {
             }),
             zIndex: 1001,
           }}
-          className="flex flex-col items-end"
           onMouseDown={handleMouseDown}
           onTouchStart={handleTouchStart}
         >
-          {/* Eric image at top-right of chat */}
-          <div className="w-14 sm:w-16 md:w-20 lg:w-24 mr-2 sm:mr-4 cursor-grab active:cursor-grabbing">
-            <img 
-              src={ericAvatar} 
-              alt="Eric - Assistant IA" 
-              className="w-full h-auto pointer-events-none drop-shadow-2xl"
-              loading="lazy"
-              decoding="async"
-            />
-          </div>
-          
-          {/* Chat area directly under Eric */}
-          <div className="relative bg-background/95 backdrop-blur-sm rounded-2xl shadow-xl border border-border/30 w-[260px] sm:w-[300px] md:w-[340px] lg:w-[380px] max-h-[45vh] sm:max-h-[50vh] md:max-h-[55vh] flex flex-col -mt-2">
+          {/* Chat area */}
+          <div className="relative bg-background/95 backdrop-blur-sm rounded-2xl shadow-xl border border-border/30 w-[260px] sm:w-[300px] md:w-[340px] lg:w-[380px] max-h-[50vh] sm:max-h-[55vh] md:max-h-[60vh] flex flex-col">
             {/* Close button */}
             <Button
               variant="destructive"
