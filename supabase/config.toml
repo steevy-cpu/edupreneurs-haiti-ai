@@ -104,3 +104,6 @@ verify_jwt = false
 
 [functions.natcash-admin-verify]
 verify_jwt = false
+
+[functions.youtube-search]
+verify_jwt = false
