@@ -7,6 +7,7 @@ import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import ericAvatar from "@/assets/dashboard00.png";
 import { getAvatarUrl } from "@/lib/avatarMap";
+import { useEricDraggable } from "@/hooks/useEricDraggable";
 
 interface Message {
   content: string;
@@ -22,15 +23,20 @@ export const EricChatbot = () => {
   const [isTyping, setIsTyping] = useState(false);
   const [userNickname, setUserNickname] = useState<string>("");
   const [userAvatarUrl, setUserAvatarUrl] = useState<string>("");
-  const [position, setPosition] = useState({ x: 0, y: 0 });
-  const [hasMoved, setHasMoved] = useState(false);
-  const [isDragging, setIsDragging] = useState(false);
-  const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
-  const [hasActuallyDragged, setHasActuallyDragged] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  const floatingRef = useRef<HTMLDivElement>(null);
-  const chatRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
+
+  // Use the shared draggable hook
+  const {
+    hasMoved,
+    isDragging,
+    hasActuallyDragged,
+    floatingRef,
+    chatRef,
+    handleMouseDown,
+    handleTouchStart,
+    getPositionStyles,
+  } = useEricDraggable(isOpen, { defaultWidth: 380, defaultHeight: 500 });
 
   // Fetch user profile on mount
   useEffect(() => {
@@ -87,51 +93,6 @@ export const EricChatbot = () => {
     scrollToBottom();
   }, [messages]);
 
-  // Initialize position on the right side when chatbox opens
-  useEffect(() => {
-    if (isOpen && !hasMoved) {
-      const chatWidth = 380;
-      const chatHeight = 500;
-      setPosition({
-        x: window.innerWidth - chatWidth - 20,
-        y: Math.max(20, (window.innerHeight - chatHeight) / 2)
-      });
-    }
-  }, [isOpen, hasMoved]);
-
-  // Constrain position within viewport bounds
-  const constrainToViewport = (pos: { x: number; y: number }) => {
-    const chatWidth = 380;
-    const chatHeight = 500;
-
-    const maxX = window.innerWidth - chatWidth;
-    const maxY = window.innerHeight - chatHeight;
-
-    return {
-      x: Math.max(0, Math.min(pos.x, maxX)),
-      y: Math.max(0, Math.min(pos.y, maxY))
-    };
-  };
-
-  // Handle window resize to keep chatbox in viewport
-  useEffect(() => {
-    if (!hasMoved) return;
-
-    const handleResize = () => {
-      setPosition(prev => constrainToViewport(prev));
-    };
-
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
-  }, [hasMoved]);
-
-  // Constrain position when chatbox opens to prevent cutoff
-  useEffect(() => {
-    if (isOpen && hasMoved) {
-      setPosition(prev => constrainToViewport(prev));
-    }
-  }, [isOpen, hasMoved]);
-
   const sendMessage = async () => {
     if (!input.trim()) return;
 
@@ -180,143 +141,6 @@ export const EricChatbot = () => {
     }
   };
 
-  // Drag handlers for both mouse and touch
-  const handleMouseDown = (e: React.MouseEvent) => {
-    const target = e.target as HTMLElement;
-    if (target.closest('button, textarea, input, .eric-chat-messages')) {
-      return;
-    }
-    
-    // Don't start dragging on the closed Eric if not yet moved - just let the click work
-    if (!isOpen && !hasMoved) {
-      return;
-    }
-    
-    setHasActuallyDragged(false);
-    
-    if (!hasMoved) {
-      const currentRef = isOpen ? chatRef.current : floatingRef.current;
-      if (currentRef) {
-        const rect = currentRef.getBoundingClientRect();
-        setPosition({ x: rect.left, y: rect.top });
-        setDragStart({
-          x: e.clientX - rect.left,
-          y: e.clientY - rect.top
-        });
-      }
-    } else {
-      setDragStart({
-        x: e.clientX - position.x,
-        y: e.clientY - position.y
-      });
-    }
-    
-    setIsDragging(true);
-  };
-
-  const handleTouchStart = (e: React.TouchEvent) => {
-    const target = e.target as HTMLElement;
-    if (target.closest('button, textarea, input, .eric-chat-messages')) {
-      return;
-    }
-    
-    // Don't start dragging on the closed Eric if not yet moved - just let the tap work
-    if (!isOpen && !hasMoved) {
-      return;
-    }
-    
-    setHasActuallyDragged(false);
-    
-    const touch = e.touches[0];
-    
-    if (!hasMoved) {
-      const currentRef = isOpen ? chatRef.current : floatingRef.current;
-      if (currentRef) {
-        const rect = currentRef.getBoundingClientRect();
-        setPosition({ x: rect.left, y: rect.top });
-        setDragStart({
-          x: touch.clientX - rect.left,
-          y: touch.clientY - rect.top
-        });
-      }
-    } else {
-      setDragStart({
-        x: touch.clientX - position.x,
-        y: touch.clientY - position.y
-      });
-    }
-    
-    setIsDragging(true);
-  };
-
-  // Handle mouse/touch move for dragging
-  useEffect(() => {
-    if (!isDragging) return;
-
-    const handleMouseMove = (e: MouseEvent) => {
-      setHasActuallyDragged(true);
-      setHasMoved(true);
-      
-      const newX = e.clientX - dragStart.x;
-      const newY = e.clientY - dragStart.y;
-      
-      const currentRef = isOpen ? chatRef.current : floatingRef.current;
-      const width = currentRef?.offsetWidth || 380;
-      const height = currentRef?.offsetHeight || 500;
-      
-      const maxX = window.innerWidth - width;
-      const maxY = window.innerHeight - height;
-      
-      setPosition({
-        x: Math.max(0, Math.min(newX, maxX)),
-        y: Math.max(0, Math.min(newY, maxY))
-      });
-    };
-
-    const handleTouchMove = (e: TouchEvent) => {
-      e.preventDefault();
-      
-      setHasActuallyDragged(true);
-      setHasMoved(true);
-      
-      const touch = e.touches[0];
-      const newX = touch.clientX - dragStart.x;
-      const newY = touch.clientY - dragStart.y;
-      
-      const currentRef = isOpen ? chatRef.current : floatingRef.current;
-      const width = currentRef?.offsetWidth || 380;
-      const height = currentRef?.offsetHeight || 500;
-      
-      const maxX = window.innerWidth - width;
-      const maxY = window.innerHeight - height;
-      
-      setPosition({
-        x: Math.max(0, Math.min(newX, maxX)),
-        y: Math.max(0, Math.min(newY, maxY))
-      });
-    };
-
-    const handleMouseUp = () => {
-      setIsDragging(false);
-    };
-
-    const handleTouchEnd = () => {
-      setIsDragging(false);
-    };
-
-    document.addEventListener('mousemove', handleMouseMove);
-    document.addEventListener('mouseup', handleMouseUp);
-    document.addEventListener('touchmove', handleTouchMove, { passive: false });
-    document.addEventListener('touchend', handleTouchEnd);
-
-    return () => {
-      document.removeEventListener('mousemove', handleMouseMove);
-      document.removeEventListener('mouseup', handleMouseUp);
-      document.removeEventListener('touchmove', handleTouchMove);
-      document.removeEventListener('touchend', handleTouchEnd);
-    };
-  }, [isDragging, dragStart, isOpen]);
-
   return (
     <>
       {!isOpen ? (
@@ -324,15 +148,12 @@ export const EricChatbot = () => {
         <div 
           ref={floatingRef}
           style={{
-            position: 'fixed',
-            left: hasMoved ? `${position.x}px` : 'auto',
-            top: hasMoved ? `${position.y}px` : '6rem',
-            right: hasMoved ? 'auto' : '1.25rem',
+            ...getPositionStyles(false, {
+              closedTop: '6rem',
+              closedRight: '1.25rem',
+            }),
             zIndex: 1000,
             width: '7rem',
-            cursor: isDragging ? 'grabbing' : 'pointer',
-            userSelect: 'none',
-            transition: isDragging ? 'none' : 'transform 0.3s'
           }}
           className="hover:scale-105"
           onMouseDown={handleMouseDown}
@@ -358,36 +179,33 @@ export const EricChatbot = () => {
       ) : (
         /* Chat Interface */
         <div
-            ref={chatRef}
-            style={{
-              position: 'fixed',
-              left: hasMoved ? `${position.x}px` : 'auto',
-              top: hasMoved ? `${position.y}px` : 'auto',
-              right: hasMoved ? 'auto' : '1.25rem',
-              bottom: hasMoved ? 'auto' : '2rem',
-              zIndex: 1001,
-              width: '380px',
-              maxHeight: 'calc(100vh - 40px)',
-              cursor: isDragging ? 'grabbing' : 'default',
-              userSelect: 'none',
-              display: 'flex',
-              flexDirection: 'column',
-              background: 'transparent',
-              borderRadius: '1.5rem',
-              padding: '1.25rem'
-            }}
-            onMouseDown={handleMouseDown}
-            onTouchStart={handleTouchStart}
+          ref={chatRef}
+          style={{
+            ...getPositionStyles(true, {
+              openRight: '1.25rem',
+              openBottom: '2rem',
+            }),
+            zIndex: 1001,
+            width: '380px',
+            maxHeight: 'calc(100vh - 40px)',
+            display: 'flex',
+            flexDirection: 'column',
+            background: 'transparent',
+            borderRadius: '1.5rem',
+            padding: '1.25rem'
+          }}
+          onMouseDown={handleMouseDown}
+          onTouchStart={handleTouchStart}
+        >
+          <Button
+            variant="destructive"
+            size="icon"
+            className="eric-close-btn"
+            onClick={() => setIsOpen(false)}
+            title="Fermer le chat"
           >
-            <Button
-              variant="destructive"
-              size="icon"
-              className="eric-close-btn"
-              onClick={() => setIsOpen(false)}
-              title="Fermer le chat"
-            >
-              <X className="w-4 h-4" />
-            </Button>
+            <X className="w-4 h-4" />
+          </Button>
 
           {/* Messages */}
           <div className="eric-chat-messages">
