@@ -66,6 +66,7 @@ interface Category {
   fullDescription: string;
   color: string;
   modules: Module[];
+  hasGameLink?: boolean;
 }
 
 interface YouTubeVideo {
@@ -327,6 +328,7 @@ const PassionDiscoveryContent = () => {
       description: "Développe ta logique et ta concentration",
       fullDescription: "Des activités pour stimuler la logique, la patience, la concentration et la prise de décision réfléchie.",
       color: "from-orange-500 to-red-500",
+      hasGameLink: true,
       modules: [
         { id: "basics", title: "Bases des Échecs", description: "Apprends les règles et mouvements", duration: "15 min", completed: false },
         { id: "strategy", title: "Stratégies", description: "Développe ton jeu tactique", duration: "20 min", completed: false },
@@ -927,6 +929,18 @@ const PassionDiscoveryContent = () => {
                               )}
                             </div>
 
+                            {category.hasGameLink && (
+                              <Button 
+                                className="w-full bg-gradient-to-r from-amber-500 to-orange-600 hover:opacity-90 text-white font-semibold py-5 md:py-6 text-base md:text-lg mb-2"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  navigate('/chess-game');
+                                }}
+                              >
+                                ♟️ Jouer aux Échecs avec Eric
+                                <ArrowRight className="ml-2 h-4 w-4 md:h-5 md:w-5" />
+                              </Button>
+                            )}
                             <Button 
                               className={`w-full bg-gradient-to-r ${category.color} hover:opacity-90 text-white font-semibold py-5 md:py-6 text-base md:text-lg group-hover:scale-105 transition-transform`}
                             >
