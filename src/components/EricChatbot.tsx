@@ -144,18 +144,17 @@ export const EricChatbot = () => {
   return (
     <>
       {!isOpen ? (
-        /* Floating Character when closed */
+        /* Floating Character when closed - responsive sizing */
         <div 
           ref={floatingRef}
           style={{
             ...getPositionStyles(false, {
-              closedTop: '6rem',
-              closedRight: '1.25rem',
+              closedTop: '5rem',
+              closedRight: '0.75rem',
             }),
             zIndex: 1000,
-            width: '7rem',
           }}
-          className="hover:scale-105"
+          className="hover:scale-105 w-14 sm:w-16 md:w-20 lg:w-28"
           onMouseDown={handleMouseDown}
           onTouchStart={handleTouchStart}
           onClick={() => {
@@ -164,7 +163,7 @@ export const EricChatbot = () => {
             }
           }}
         >
-          <div className="eric-floating-tooltip">
+          <div className="eric-floating-tooltip text-[10px] sm:text-xs">
             Cliquez sur moi
           </div>
           <img 
@@ -177,23 +176,21 @@ export const EricChatbot = () => {
           />
         </div>
       ) : (
-        /* Chat Interface */
+        /* Chat Interface - responsive sizing */
         <div
           ref={chatRef}
           style={{
             ...getPositionStyles(true, {
-              openRight: '1.25rem',
-              openBottom: '2rem',
+              openRight: '0.5rem',
+              openBottom: '1rem',
             }),
             zIndex: 1001,
-            width: '380px',
-            maxHeight: 'calc(100vh - 40px)',
             display: 'flex',
             flexDirection: 'column',
             background: 'transparent',
             borderRadius: '1.5rem',
-            padding: '1.25rem'
           }}
+          className="w-[280px] sm:w-[320px] md:w-[360px] lg:w-[380px] max-h-[70vh] sm:max-h-[75vh] md:max-h-[calc(100vh-40px)] p-3 sm:p-4 md:p-5"
           onMouseDown={handleMouseDown}
           onTouchStart={handleTouchStart}
         >
