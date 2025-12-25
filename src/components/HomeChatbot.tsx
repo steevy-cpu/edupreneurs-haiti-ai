@@ -106,17 +106,17 @@ export const HomeChatbot = () => {
           ref={floatingRef}
           style={{
             ...getPositionStyles(false, {
-              closedRight: '2rem',
-              closedBottom: '2rem',
+              closedRight: '1rem',
+              closedBottom: '1.5rem',
             }),
             zIndex: 1000,
-            width: '5rem',
           }}
+          className="w-12 sm:w-14 md:w-16 lg:w-20"
           onMouseDown={handleMouseDown}
           onTouchStart={handleTouchStart}
           onClick={() => setIsOpen(true)}
         >
-          <div className="eric-floating-tooltip">
+          <div className="eric-floating-tooltip text-[10px] sm:text-xs">
             Cliquez sur moi
           </div>
           <img 
@@ -130,20 +130,20 @@ export const HomeChatbot = () => {
         </div>
       ) : (
         <>
-          {/* Eric avatar above the chat when open */}
+          {/* Eric avatar above the chat when open - responsive */}
           <div 
             style={{
               position: 'fixed',
-              left: hasMoved ? `${position.x + 220}px` : 'auto',
-              top: hasMoved ? `${position.y - 40}px` : 'auto',
-              right: hasMoved ? 'auto' : '2.5rem',
-              bottom: hasMoved ? 'auto' : 'calc(100vh - 22rem)',
+              left: hasMoved ? `${position.x + 180}px` : 'auto',
+              top: hasMoved ? `${position.y - 30}px` : 'auto',
+              right: hasMoved ? 'auto' : '2rem',
+              bottom: hasMoved ? 'auto' : 'calc(100vh - 20rem)',
               zIndex: 1002,
-              width: '4rem',
               cursor: isDragging ? 'grabbing' : 'pointer',
               userSelect: 'none',
               transition: isDragging ? 'none' : 'all 0.3s'
             }}
+            className="w-10 sm:w-12 md:w-14 lg:w-16"
             onMouseDown={handleMouseDown}
             onTouchStart={handleTouchStart}
           >
@@ -161,18 +161,16 @@ export const HomeChatbot = () => {
             ref={chatRef}
             style={{
               ...getPositionStyles(true, {
-                openRight: '2rem',
-                openBottom: '2rem',
+                openRight: '0.5rem',
+                openBottom: '1rem',
               }),
               zIndex: 1001,
-              width: '320px',
-              maxHeight: '420px',
               display: 'flex',
               flexDirection: 'column',
               background: 'transparent',
               borderRadius: '1.5rem',
-              padding: '1rem'
             }}
+            className="w-[260px] sm:w-[280px] md:w-[300px] lg:w-[320px] max-h-[60vh] sm:max-h-[65vh] md:max-h-[420px] p-3 sm:p-4"
             onMouseDown={handleMouseDown}
             onTouchStart={handleTouchStart}
           >
