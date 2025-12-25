@@ -182,8 +182,8 @@ export const EricChatbot = () => {
           ref={chatRef}
           style={{
             ...getPositionStyles(true, {
-              openTop: '5rem',
-              openRight: '0.5rem',
+            openTop: '9rem',
+            openRight: '0.5rem',
             }),
             zIndex: 1001,
           }}
