@@ -20,7 +20,7 @@ import {
 } from "lucide-react";
 import dashboardImage from "@/assets/dashboard00.png";
 import edupreneursLogo from "@/assets/edupreneurs-new-logo.png";
-import { EricChatbot } from "@/components/EricChatbot";
+
 import { getAvatarUrl } from "@/lib/avatarMap";
 import { MobileBottomNav, useMobileSwipeNavigation } from "@/components/MobileBottomNav";
 import {
@@ -555,12 +555,6 @@ export const Layout = ({ children }: LayoutProps) => {
       {/* Mobile Bottom Navigation */}
       <MobileBottomNav />
 
-      {/* Eric Chatbot - Hidden on Community page, lesson pages, feed, and chess page */}
-      {!isCommunityPage && !isLessonPage && !isFeedPage && !isChessPage && (
-        <div data-tour="eric-chatbot">
-          <EricChatbot />
-        </div>
-      )}
     </div>
   );
 };

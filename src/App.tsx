@@ -2,7 +2,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import { Layout } from "@/components/Layout";
 import { CookieConsent } from "@/components/CookieConsent";
@@ -11,6 +11,7 @@ import { GlobalMusicPlayer } from "@/components/GlobalMusicPlayer";
 import { ScrollToTop } from "@/components/ScrollToTop";
 import { lazy, Suspense } from "react";
 import { LegacyRedirect } from "@/components/LegacyRedirect";
+import { EricChatbot } from "@/components/EricChatbot";
 
 // Eager load critical pages
 import Index from "./pages/Index";
@@ -64,6 +65,34 @@ const PageLoader = () => (
   </div>
 );
 
+// Eric Chatbot wrapper with route-based visibility
+const EricChatbotWrapper = () => {
+  const location = useLocation();
+  
+  // Pages where Eric should be hidden
+  const hiddenRoutes = [
+    '/',
+    '/auth',
+    '/reset-password',
+    '/onboarding',
+    '/community',
+    '/feed',
+    '/chess-game',
+    '/privacy-policy',
+  ];
+  
+  const isLessonPage = location.pathname.startsWith('/course/') && location.pathname.split('/').length > 2;
+  const isHidden = hiddenRoutes.includes(location.pathname) || isLessonPage;
+  
+  if (isHidden) return null;
+  
+  return (
+    <div data-tour="eric-chatbot">
+      <EricChatbot />
+    </div>
+  );
+};
+
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
@@ -87,6 +116,7 @@ const App = () => (
             <ScrollToTop />
             <CookieConsent />
             <GlobalMusicPlayer />
+            <EricChatbotWrapper />
             <Suspense fallback={<PageLoader />}>
               <Routes>
               <Route path="/" element={<Index />} />
