@@ -1,8 +1,8 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { X, Send } from "lucide-react";
+import { Send } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import ericAvatar from "@/assets/dashboard00.png";
@@ -38,6 +38,12 @@ export const EricChatbot = () => {
     getPositionStyles,
     resetPosition,
   } = useEricDraggable(isOpen, { defaultWidth: 380, defaultHeight: 500 });
+
+  // Use a single DOM node for both open/closed measurements to avoid "duplicate" behavior
+  const setRootRef = useCallback((node: HTMLDivElement | null) => {
+    (floatingRef as any).current = node;
+    (chatRef as any).current = node;
+  }, [floatingRef, chatRef]);
 
   // Fetch user profile on mount
   useEffect(() => {
@@ -144,11 +150,13 @@ export const EricChatbot = () => {
 
   return (
     <div 
-      ref={floatingRef}
+      ref={setRootRef}
       style={{
-        ...getPositionStyles(false, {
+        ...getPositionStyles(isOpen, {
           closedTop: '5rem',
           closedRight: '0.75rem',
+          openTop: '5rem',
+          openRight: '0.75rem',
         }),
         zIndex: 1000,
       }}
