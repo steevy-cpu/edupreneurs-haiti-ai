@@ -257,9 +257,9 @@ const ChessGame: React.FC = () => {
 
         {/* Main Content */}
         <div className="container mx-auto px-2 sm:px-4 py-2 sm:py-4">
-          <div className="flex flex-col lg:flex-row gap-3 lg:gap-4 h-[calc(100vh-5rem)]">
-            {/* Chess Board - Left side on desktop */}
-            <div className="flex-shrink-0 lg:flex-1 lg:max-w-[55%]">
+          <div className="flex flex-col md:flex-row gap-3 md:gap-4 h-[calc(100vh-5rem)]">
+            {/* Chess Board - Left side on tablet/desktop */}
+            <div className="flex-shrink-0 md:flex-1 md:max-w-[55%]">
               <Card className="p-2 sm:p-4">
                 <ChessBoard
                   game={game}
@@ -271,8 +271,8 @@ const ChessGame: React.FC = () => {
               </Card>
             </div>
 
-            {/* Chat Area - Right side on desktop */}
-            <Card className="flex-1 overflow-hidden flex flex-col min-h-[300px] lg:min-h-0 lg:max-w-[45%]">
+            {/* Chat Area - Right side on tablet/desktop */}
+            <Card className="flex-1 overflow-hidden flex flex-col min-h-[300px] md:min-h-0 md:max-w-[45%]">
               <ChessChat
                 messages={messages}
                 onSendMessage={handleSendMessage}
