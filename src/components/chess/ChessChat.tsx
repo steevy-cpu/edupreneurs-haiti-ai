@@ -3,7 +3,6 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Send, Loader2 } from 'lucide-react';
-import ericChairDesk from '@/assets/eric-chair-desk.png';
 
 interface Message {
   role: 'user' | 'assistant';
@@ -51,18 +50,6 @@ const ChessChat: React.FC<ChessChatProps> = ({
 
   return (
     <div className="flex flex-col h-full">
-      {/* Header */}
-      <div className="flex items-center gap-3 p-4 border-b bg-card">
-        <img 
-          src={ericChairDesk} 
-          alt="Eric" 
-          className="w-12 h-12 rounded-full object-cover"
-        />
-        <div>
-          <h3 className="font-semibold text-foreground">Eric - Coach d'Échecs</h3>
-          <p className="text-sm text-muted-foreground">Je t'accompagne dans ta partie! ♟️</p>
-        </div>
-      </div>
 
       {/* Messages */}
       <ScrollArea className="flex-1 p-4">
