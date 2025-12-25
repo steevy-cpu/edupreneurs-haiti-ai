@@ -190,13 +190,13 @@ export const EricChatbot = () => {
           onMouseDown={handleMouseDown}
           onTouchStart={handleTouchStart}
         >
-          {/* Chat area */}
-          <div className="relative bg-background/95 backdrop-blur-sm rounded-2xl shadow-xl border border-border/30 w-[260px] sm:w-[300px] md:w-[340px] lg:w-[380px] max-h-[50vh] sm:max-h-[55vh] md:max-h-[60vh] flex flex-col">
+          {/* Chat area - floating style, no container */}
+          <div className="relative w-[260px] sm:w-[300px] md:w-[340px] lg:w-[380px] flex flex-col">
             {/* Close button */}
             <Button
               variant="destructive"
               size="icon"
-              className="absolute -top-2 -right-2 w-7 h-7 sm:w-8 sm:h-8 rounded-full shadow-lg z-10"
+              className="absolute -top-2 right-0 w-7 h-7 sm:w-8 sm:h-8 rounded-full shadow-lg z-10"
               onClick={() => {
                 resetPosition();
                 setIsOpen(false);
@@ -206,8 +206,8 @@ export const EricChatbot = () => {
               <X className="w-4 h-4" />
             </Button>
 
-            {/* Messages */}
-            <div className="flex-1 overflow-y-auto p-3 sm:p-4 space-y-3">
+            {/* Messages - floating bubbles */}
+            <div className="flex-1 overflow-y-auto space-y-3 max-h-[40vh] sm:max-h-[45vh] md:max-h-[50vh] pt-6">
               {messages.map((message, index) => (
                 <div 
                   key={index} 
@@ -220,10 +220,10 @@ export const EricChatbot = () => {
                     loading="lazy"
                     decoding="async"
                   />
-                  <div className={`max-w-[80%] p-2 sm:p-3 rounded-xl text-xs sm:text-sm ${
+                  <div className={`max-w-[85%] p-2.5 sm:p-3 rounded-2xl text-xs sm:text-sm shadow-md ${
                     message.sender === "user" 
                       ? "bg-primary text-primary-foreground rounded-br-sm" 
-                      : "bg-muted rounded-bl-sm"
+                      : "bg-background/95 backdrop-blur-sm rounded-bl-sm"
                   }`}>
                     {message.content}
                     {message.navigationPath && (
@@ -247,21 +247,21 @@ export const EricChatbot = () => {
               <div ref={messagesEndRef} />
             </div>
 
-            {/* Input Area */}
-            <div className="p-2 sm:p-3 border-t border-border/30">
-              <div className="flex items-center gap-2">
+            {/* Input Area - floating style */}
+            <div className="pt-2 sm:pt-3">
+              <div className="flex items-center gap-2 bg-background/95 backdrop-blur-sm rounded-full shadow-md p-1.5 pl-4">
                 <Textarea
                   value={input}
                   onChange={(e) => setInput(e.target.value)}
                   onKeyPress={handleKeyPress}
                   placeholder="Tapez votre question..."
                   maxLength={200}
-                  className="flex-1 min-h-[36px] max-h-[60px] text-xs sm:text-sm resize-none rounded-full px-3 py-2"
+                  className="flex-1 min-h-[32px] max-h-[50px] text-xs sm:text-sm resize-none border-0 bg-transparent focus-visible:ring-0 px-0 py-1.5"
                   rows={1}
                 />
                 <Button
                   size="icon"
-                  className="rounded-full w-8 h-8 sm:w-9 sm:h-9 flex-shrink-0"
+                  className="rounded-full w-9 h-9 sm:w-10 sm:h-10 flex-shrink-0"
                   onClick={sendMessage}
                   disabled={!input.trim()}
                 >
