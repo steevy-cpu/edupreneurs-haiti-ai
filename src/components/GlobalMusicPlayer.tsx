@@ -291,7 +291,12 @@ export const GlobalMusicPlayer = () => {
                         >
                           <SkipForward className="w-4 h-4" />
                         </Button>
-                        <Dialog open={open} onOpenChange={setOpen}>
+                        <Dialog open={open} onOpenChange={(isOpen) => {
+                          setOpen(isOpen);
+                          if (isOpen) {
+                            setMinimized(true);
+                          }
+                        }}>
                           <DialogTrigger asChild>
                             <Button variant="outline" size="sm" className="text-xs sm:text-sm">
                               Playlist
