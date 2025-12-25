@@ -287,8 +287,8 @@ const ChessGame: React.FC = () => {
         </div>
 
         {/* Main Content */}
-        <div className="container mx-auto px-2 sm:px-4 py-2 sm:py-4">
-          <div className="flex flex-col md:flex-row gap-3 md:gap-4 h-[calc(100vh-5rem)]">
+        <div className="container mx-auto px-2 sm:px-4 py-2 sm:py-4 pb-24 md:pb-4">
+          <div className="flex flex-col md:flex-row gap-3 md:gap-4 md:h-[calc(100vh-5rem)]">
             {/* Chess Board - Left side on tablet/desktop */}
             <div className="flex-shrink-0 md:flex-1 md:max-w-[55%]">
               <Card className="p-2 sm:p-4">
