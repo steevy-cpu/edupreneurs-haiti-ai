@@ -32,6 +32,7 @@ interface DraggableReturn {
     closedTop?: string;
     closedBottom?: string;
   }) => React.CSSProperties;
+  resetPosition: () => void;
 }
 
 export const useEricDraggable = (
@@ -268,6 +269,13 @@ export const useEricDraggable = (
     }
   }, [hasMoved, position, isDragging]);
 
+  // Reset position to default (for when closing the chat)
+  const resetPosition = useCallback(() => {
+    setHasMoved(false);
+    setPosition({ x: 0, y: 0 });
+    setHasActuallyDragged(false);
+  }, []);
+
   return {
     position,
     hasMoved,
@@ -278,5 +286,6 @@ export const useEricDraggable = (
     handleMouseDown,
     handleTouchStart,
     getPositionStyles,
+    resetPosition,
   };
 };
