@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -32,6 +32,43 @@ import { NotificationPermissionBanner } from "@/components/NotificationPermissio
 import { useFeedData } from "@/hooks/useFeedData";
 import { formatTimeAgo } from "@/utils/dateUtils";
 import { Profile, Post, Comment } from "@/types/feed";
+
+// Function to render content with clickable links
+const renderContentWithLinks = (content: string) => {
+  // Match internal routes (starting with /) and external URLs
+  const linkRegex = /(\/[a-zA-Z0-9\-_/]+|https?:\/\/[^\s]+)/g;
+  const parts = content.split(linkRegex);
+  
+  return parts.map((part, index) => {
+    // Check if this part is an internal route
+    if (part.startsWith('/') && part.length > 1) {
+      return (
+        <Link 
+          key={index} 
+          to={part} 
+          className="text-primary hover:underline font-medium"
+        >
+          {part}
+        </Link>
+      );
+    }
+    // Check if this part is an external URL
+    if (part.match(/^https?:\/\//)) {
+      return (
+        <a 
+          key={index} 
+          href={part} 
+          target="_blank" 
+          rel="noopener noreferrer"
+          className="text-primary hover:underline font-medium"
+        >
+          {part}
+        </a>
+      );
+    }
+    return part;
+  });
+};
 
 const Feed = () => {
   const navigate = useNavigate();
@@ -1012,9 +1049,9 @@ const Feed = () => {
                 {/* Post Content */}
                 <div className="px-4 pb-3">
                   <p className="text-sm whitespace-pre-wrap break-words">
-                    {post.content.length > 150 && !expandedPosts[post.id] 
+                    {renderContentWithLinks(post.content.length > 150 && !expandedPosts[post.id] 
                       ? post.content.slice(0, 150) 
-                      : post.content}
+                      : post.content)}
                     {post.content.length > 150 && !expandedPosts[post.id] && (
                       <button 
                         onClick={() => setExpandedPosts(prev => ({ ...prev, [post.id]: true }))}
