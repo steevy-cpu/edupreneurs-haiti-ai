@@ -3,7 +3,7 @@ import { Chess } from 'chess.js';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
-import { ArrowLeft, Trophy, AlertCircle } from 'lucide-react';
+import { ArrowLeft, Trophy } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import ChessBoard from '@/components/chess/ChessBoard';
@@ -256,21 +256,11 @@ const ChessGame: React.FC = () => {
         </div>
 
         {/* Main Content */}
-        <div className="container mx-auto px-4 py-6">
-          <div className="grid lg:grid-cols-3 gap-6 h-[calc(100vh-10rem)]">
-            {/* Chat Area - Left side */}
-            <Card className="lg:col-span-1 overflow-hidden flex flex-col order-2 lg:order-1 h-[50vh] lg:h-full">
-              <ChessChat
-                messages={messages}
-                onSendMessage={handleSendMessage}
-                isLoading={isThinking}
-                userNickname={userNickname}
-              />
-            </Card>
-
-            {/* Chess Board - Right side */}
-            <div className="lg:col-span-2 order-1 lg:order-2">
-              <Card className="p-4 lg:p-6">
+        <div className="container mx-auto px-2 sm:px-4 py-2 sm:py-4">
+          <div className="flex flex-col lg:flex-row gap-3 lg:gap-4 h-[calc(100vh-5rem)]">
+            {/* Chess Board - Left side on desktop */}
+            <div className="flex-shrink-0 lg:flex-1 lg:max-w-[55%]">
+              <Card className="p-2 sm:p-4">
                 <ChessBoard
                   game={game}
                   onMove={handlePlayerMove}
@@ -279,20 +269,17 @@ const ChessGame: React.FC = () => {
                   gameStatus={gameStatus}
                 />
               </Card>
-
-              {/* Game Tips */}
-              <Card className="mt-4 p-4 bg-muted/50">
-                <h3 className="font-semibold mb-2 flex items-center gap-2">
-                  <AlertCircle className="w-4 h-4 text-primary" />
-                  Conseils
-                </h3>
-                <ul className="text-sm text-muted-foreground space-y-1">
-                  <li>• Clique ou glisse les pièces pour jouer</li>
-                  <li>• Eric t'expliquera chaque coup qu'il fait</li>
-                  <li>• N'hésite pas à lui poser des questions!</li>
-                </ul>
-              </Card>
             </div>
+
+            {/* Chat Area - Right side on desktop */}
+            <Card className="flex-1 overflow-hidden flex flex-col min-h-[300px] lg:min-h-0 lg:max-w-[45%]">
+              <ChessChat
+                messages={messages}
+                onSendMessage={handleSendMessage}
+                isLoading={isThinking}
+                userNickname={userNickname}
+              />
+            </Card>
           </div>
         </div>
       </div>
