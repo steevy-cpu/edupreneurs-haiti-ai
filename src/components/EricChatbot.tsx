@@ -75,7 +75,7 @@ export const EricChatbot = () => {
           }
           
           setMessages([{
-            content: `${greeting} ${nickname} ! Je suis Eric, votre professeur. Comment puis-je vous aider ? 😊`,
+            content: `${greeting} ${nickname} ! Je suis Eric, votre assistant. Comment puis-je vous aider ? 😊`,
             sender: "eric"
           }]);
         }
@@ -83,7 +83,7 @@ export const EricChatbot = () => {
         console.error('Error fetching user profile:', error);
         // Fallback greeting without nickname
         setMessages([{
-          content: "Salut ! Je suis Eric, votre professeur. Comment puis-je vous aider ? 😊",
+          content: "Salut ! Je suis Eric, votre assistant. Comment puis-je vous aider ? 😊",
           sender: "eric"
         }]);
       }
