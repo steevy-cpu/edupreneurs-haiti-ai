@@ -192,17 +192,20 @@ export const EricChatbot = () => {
                 key={index} 
                 className={`flex items-start gap-2 ${message.sender === "user" ? "flex-row-reverse" : "flex-row"}`}
               >
-                <img 
-                  src={message.sender === "eric" ? ericAvatar : (getAvatarUrl(userAvatarUrl) || "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23059669'><path d='M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z'/></svg>")}
-                  alt={message.sender}
-                  className="w-6 h-6 sm:w-8 sm:h-8 rounded-full object-cover flex-shrink-0"
-                  loading="lazy"
-                  decoding="async"
-                />
-                <div className={`max-w-[85%] p-2.5 sm:p-3 rounded-2xl text-xs sm:text-sm shadow-md ${
+                {/* Only show avatar for user messages - Eric is already visible above */}
+                {message.sender === "user" && (
+                  <img 
+                    src={getAvatarUrl(userAvatarUrl) || "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23059669'><path d='M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z'/></svg>"}
+                    alt="user"
+                    className="w-6 h-6 sm:w-8 sm:h-8 rounded-full object-cover flex-shrink-0"
+                    loading="lazy"
+                    decoding="async"
+                  />
+                )}
+                <div className={`max-w-[90%] p-2.5 sm:p-3 rounded-2xl text-xs sm:text-sm shadow-md ${
                   message.sender === "user" 
                     ? "bg-primary text-primary-foreground rounded-br-sm" 
-                    : "bg-background/95 backdrop-blur-sm rounded-bl-sm"
+                    : "bg-background/95 backdrop-blur-sm rounded-bl-sm border border-border/20"
                 }`}>
                   {message.content}
                   {message.navigationPath && (
