@@ -49,7 +49,7 @@ const ChessBoard: React.FC<ChessBoardProps> = ({
     return true;
   }, [game]);
 
-  const handleSquareClick = useCallback(({ square }: { piece: unknown; square: string }) => {
+  const onSquareClick = useCallback((square: Square) => {
     // Don't allow moves if it's not player's turn or game is over
     if (game.turn() !== 'w' || game.isGameOver() || isThinking) {
       return;
@@ -57,10 +57,10 @@ const ChessBoard: React.FC<ChessBoardProps> = ({
 
     // If no piece is selected, try to select one
     if (!moveFrom) {
-      const piece = game.get(square as Square);
+      const piece = game.get(square);
       if (piece && piece.color === 'w') {
-        setMoveFrom(square as Square);
-        getMoveOptions(square as Square);
+        setMoveFrom(square);
+        getMoveOptions(square);
       }
       return;
     }
@@ -74,27 +74,22 @@ const ChessBoard: React.FC<ChessBoardProps> = ({
     
     if (!moveResult) {
       // If move failed, try selecting a new piece
-      const piece = game.get(square as Square);
+      const piece = game.get(square);
       if (piece && piece.color === 'w') {
-        setMoveFrom(square as Square);
-        getMoveOptions(square as Square);
+        setMoveFrom(square);
+        getMoveOptions(square);
       }
     }
   }, [game, moveFrom, getMoveOptions, onMove, isThinking]);
 
-  const handlePieceDrop = useCallback(({ piece, sourceSquare, targetSquare }: { 
-    piece: unknown; 
-    sourceSquare: string; 
-    targetSquare: string | null 
-  }) => {
+  const onPieceDrop = useCallback((sourceSquare: Square, targetSquare: Square, piece: string) => {
     // Don't allow moves if it's not player's turn or game is over
-    if (game.turn() !== 'w' || game.isGameOver() || isThinking || !targetSquare) {
+    if (game.turn() !== 'w' || game.isGameOver() || isThinking) {
       return false;
     }
 
     // Check for pawn promotion
-    const pieceStr = String(piece);
-    const isPawn = pieceStr?.toLowerCase().includes('p');
+    const isPawn = piece?.toLowerCase().includes('p');
     const promotion = isPawn && (targetSquare[1] === '8' || targetSquare[1] === '1') ? 'q' : undefined;
     
     const result = onMove(sourceSquare, targetSquare, promotion);
@@ -127,20 +122,18 @@ const ChessBoard: React.FC<ChessBoardProps> = ({
       {/* Chess Board */}
       <div className="w-full max-w-[600px] mx-auto">
         <Chessboard
-          options={{
-            position: game.fen(),
-            onPieceDrop: handlePieceDrop,
-            onSquareClick: handleSquareClick,
-            squareStyles: optionSquares,
-            boardOrientation: 'white',
-            allowDragging: game.turn() === 'w' && !game.isGameOver() && !isThinking,
-            boardStyle: {
-              borderRadius: '8px',
-              boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)'
-            },
-            darkSquareStyle: { backgroundColor: '#769656' },
-            lightSquareStyle: { backgroundColor: '#eeeed2' }
+          position={game.fen()}
+          onPieceDrop={onPieceDrop}
+          onSquareClick={onSquareClick}
+          customSquareStyles={optionSquares}
+          boardOrientation="white"
+          arePiecesDraggable={game.turn() === 'w' && !game.isGameOver() && !isThinking}
+          customBoardStyle={{
+            borderRadius: '8px',
+            boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)'
           }}
+          customDarkSquareStyle={{ backgroundColor: '#769656' }}
+          customLightSquareStyle={{ backgroundColor: '#eeeed2' }}
         />
       </div>
 
