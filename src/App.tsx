@@ -45,6 +45,7 @@ const EmailJSTest = lazy(() => import("./pages/EmailJSTest"));
 const UploadEmailAssets = lazy(() => import("./pages/UploadEmailAssets"));
 const CustomizeAI = lazy(() => import("./pages/CustomizeAI"));
 const PassionDiscovery = lazy(() => import("./pages/PassionDiscovery"));
+const ChessGame = lazy(() => import("./pages/ChessGame"));
 
 const ContentEditor = lazy(() => import("./pages/ContentEditor"));
 const DataMigration = lazy(() => import("./pages/DataMigration"));
@@ -159,6 +160,7 @@ const App = () => (
           <Route path="/dev/push" element={<DevPush />} />
               <Route path="/notification-settings" element={<NotificationSettings />} />
           <Route path="/passion-discovery" element={<PassionDiscovery />} />
+          <Route path="/chess-game" element={<Layout><ChessGame /></Layout>} />
           <Route path="/content-editor" element={<Layout><ContentEditor /></Layout>} />
           <Route path="/ai-analytics" element={<Layout><AIGenerationAnalytics /></Layout>} />
           <Route path="/data-migration" element={<Layout><DataMigration /></Layout>} />
