@@ -28,7 +28,7 @@ const handler = async (req: Request): Promise<Response> => {
     console.log("Sending login notification to:", email);
 
     const emailResponse = await resend.emails.send({
-      from: "Edupreneurs <onboarding@resend.dev>",
+      from: "Edupreneurs <noreply@mon-edupreneur.com>",
       to: [email],
       subject: "🔔 Nouvelle connexion à votre compte",
       html: `

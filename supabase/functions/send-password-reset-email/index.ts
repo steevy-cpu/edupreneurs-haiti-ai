@@ -25,7 +25,7 @@ const handler = async (req: Request): Promise<Response> => {
     console.log("Sending password reset email to:", email);
 
     const emailResponse = await resend.emails.send({
-      from: "Edupreneurs <onboarding@resend.dev>",
+      from: "Edupreneurs <noreply@mon-edupreneur.com>",
       to: [email],
       subject: "🔐 Réinitialisation de votre mot de passe",
       html: `

@@ -41,8 +41,6 @@ const DynamicCoursePage = lazy(() => import("./pages/DynamicCoursePage"));
 const DynamicLessonPage = lazy(() => import("./pages/DynamicLessonPage"));
 const NotificationSettings = lazy(() => import("./pages/NotificationSettings"));
 const EmailTest = lazy(() => import("./pages/EmailTest"));
-const TestEmail = lazy(() => import("./pages/TestEmail"));
-const EmailJSTest = lazy(() => import("./pages/EmailJSTest"));
 const UploadEmailAssets = lazy(() => import("./pages/UploadEmailAssets"));
 const CustomizeAI = lazy(() => import("./pages/CustomizeAI"));
 const PassionDiscovery = lazy(() => import("./pages/PassionDiscovery"));
@@ -183,9 +181,7 @@ const App = () => (
             <Route path="/examens-officiels" element={<ExamsHub />} />
             <Route path="/resources" element={<Layout><Resources /></Layout>} />
               <Route path="/privacy-policy" element={<PrivacyPolicy />} />
-              <Route path="/test-email" element={<TestEmail />} />
               <Route path="/email-test" element={<EmailTest />} />
-              <Route path="/emailjs-test" element={<EmailJSTest />} />
               <Route path="/upload-email-assets" element={<UploadEmailAssets />} />
           <Route path="/dev/push" element={<DevPush />} />
               <Route path="/notification-settings" element={<NotificationSettings />} />
