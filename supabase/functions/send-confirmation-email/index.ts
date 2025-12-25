@@ -29,7 +29,7 @@ const handler = async (req: Request): Promise<Response> => {
     console.log("Sending confirmation email to:", email);
 
     const emailResponse = await resend.emails.send({
-      from: "Edupreneurs <onboarding@resend.dev>",
+      from: "Edupreneurs <noreply@mon-edupreneur.com>",
       to: [email],
       subject: "Bienvenue ! Confirmez votre inscription",
       html: `

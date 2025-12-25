@@ -9,7 +9,7 @@ import edupreneursLogo from "@/assets/edupreneurs-new-logo.png";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { sendWelcomeEmail, sendPasswordResetEmail, sendVerificationEmail, generateConfirmationCode } from "@/utils/emailService";
+import { generateConfirmationCode } from "@/utils/emailService";
 import { Loader2, Eye, EyeOff } from "lucide-react";
 import { loginSchema, signupSchema, forgotPasswordSchema, verificationCodeSchema } from "@/lib/authValidation";
 
@@ -101,13 +101,15 @@ export default function Auth() {
             };
 
             if (result.success && result.confirmation_code) {
-              // Send verification email using EmailJS
-              await sendVerificationEmail({
-                to_email: session.user.email || '',
-                to_name: result.full_name || result.nickname || 'Utilisateur',
-                confirmation_code: result.confirmation_code,
-                nickname: result.nickname,
-                academic_grade: result.academic_grade,
+              // Send verification email using Resend edge function
+              await supabase.functions.invoke('send-confirmation-email', {
+                body: {
+                  email: session.user.email || '',
+                  fullName: result.full_name || result.nickname || 'Utilisateur',
+                  nickname: result.nickname || '',
+                  academicGrade: result.academic_grade || '',
+                  confirmationCode: result.confirmation_code,
+                }
               });
             }
           } catch (error) {
@@ -190,12 +192,13 @@ export default function Auth() {
         return;
       }
 
-      // Send welcome email
+      // Send welcome email using Resend edge function
       try {
-        await sendWelcomeEmail({
-          to_email: signupData.email || loginData.email,
-          to_name: result.full_name || result.nickname || 'Utilisateur',
-          nickname: result.nickname,
+        await supabase.functions.invoke('send-welcome-email', {
+          body: {
+            email: signupData.email || loginData.email,
+            fullName: result.full_name || result.nickname || 'Utilisateur',
+          }
         });
       } catch (emailError) {
         console.error("Error sending welcome email:", emailError);
@@ -253,13 +256,15 @@ export default function Auth() {
         throw new Error("Email not found");
       }
 
-      // Send new verification email using EmailJS
-      await sendVerificationEmail({
-        to_email: userEmail,
-        to_name: result.full_name || result.nickname || 'Utilisateur',
-        confirmation_code: result.confirmation_code!,
-        nickname: result.nickname,
-        academic_grade: result.academic_grade,
+      // Send new verification email using Resend edge function
+      await supabase.functions.invoke('send-confirmation-email', {
+        body: {
+          email: userEmail,
+          fullName: result.full_name || result.nickname || 'Utilisateur',
+          nickname: result.nickname || '',
+          academicGrade: result.academic_grade || '',
+          confirmationCode: result.confirmation_code!,
+        }
       });
 
       // Reset countdown
@@ -339,14 +344,16 @@ export default function Auth() {
         // NOW sign out after successful update
         await supabase.auth.signOut();
         
-        // Send verification email using EmailJS
+        // Send verification email using Resend edge function
         try {
-          await sendVerificationEmail({
-            to_email: loginData.email,
-            to_name: profile.full_name || profile.nickname,
-            confirmation_code: newCode,
-            nickname: profile.nickname,
-            academic_grade: profile.academic_grade,
+          await supabase.functions.invoke('send-confirmation-email', {
+            body: {
+              email: loginData.email,
+              fullName: profile.full_name || profile.nickname,
+              nickname: profile.nickname || '',
+              academicGrade: profile.academic_grade || '',
+              confirmationCode: newCode,
+            }
           });
         } catch (emailError) {
           // Email send failed, but user can still resend
@@ -423,10 +430,12 @@ export default function Auth() {
       const { token, full_name } = tokenData[0];
       const resetUrl = `${window.location.origin}/reset-password?token=${token}`;
       
-      // Send password reset email via EmailJS only
-      await sendPasswordResetEmail({
-        to_email: forgotPasswordEmail,
-        reset_url: resetUrl,
+      // Send password reset email via Resend edge function
+      await supabase.functions.invoke('send-password-reset-email', {
+        body: {
+          email: forgotPasswordEmail,
+          resetUrl: resetUrl,
+        }
       });
       
       toast({
@@ -585,14 +594,16 @@ export default function Auth() {
       // Sign out the user AFTER referral handling
       await supabase.auth.signOut();
 
-      // Send verification email with code
+      // Send verification email with code using Resend edge function
       try {
-        await sendVerificationEmail({
-          to_email: signupData.email,
-          to_name: signupData.fullName || signupData.nickname,
-          confirmation_code: confirmationCode,
-          nickname: signupData.nickname,
-          academic_grade: signupData.academicGrade,
+        await supabase.functions.invoke('send-confirmation-email', {
+          body: {
+            email: signupData.email,
+            fullName: signupData.fullName || signupData.nickname,
+            nickname: signupData.nickname,
+            academicGrade: signupData.academicGrade,
+            confirmationCode: confirmationCode,
+          }
         });
       } catch (emailError) {
         toast({
