@@ -840,16 +840,37 @@ const PassionDiscoveryContent = () => {
                 </p>
               </div>
 
+              {/* Search Bar */}
+              <div className="max-w-md mx-auto mb-6 md:mb-8">
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" aria-hidden="true" />
+                  <Input
+                    type="search"
+                    placeholder="Rechercher une passion ou un module..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="pl-10"
+                    aria-label="Rechercher des catégories et modules"
+                  />
+                </div>
+              </div>
+
               <Tabs defaultValue="passion" className="w-full max-w-6xl mx-auto">
-                <TabsList className="grid w-full grid-cols-3 mb-6 md:mb-8">
+                <TabsList className="grid w-full grid-cols-3 mb-6 md:mb-8" role="tablist" aria-label="Types de catégories">
                   <TabsTrigger value="passion" className="text-xs md:text-sm">Passion</TabsTrigger>
                   <TabsTrigger value="civic" className="text-xs md:text-sm">Civique</TabsTrigger>
                   <TabsTrigger value="development" className="text-xs md:text-sm">Personnel</TabsTrigger>
                 </TabsList>
 
-                <TabsContent value="passion" className="space-y-6">
+                <TabsContent value="passion" className="space-y-6" role="tabpanel" aria-label="Catégories passion">
+                  {filteredCategories.length === 0 ? (
+                    <div className="text-center py-12 text-muted-foreground">
+                      <Search className="w-12 h-12 mx-auto mb-4 opacity-50" />
+                      <p>Aucune catégorie trouvée pour "{searchQuery}"</p>
+                    </div>
+                  ) : (
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8">
-                    {categories.map((category, index) => {
+                    {filteredCategories.map((category, index) => {
                       const Icon = category.icon;
                       const categoryProgress = getCategoryProgress(category.id, category.modules.length);
 
@@ -917,11 +938,17 @@ const PassionDiscoveryContent = () => {
                       );
                     })}
                   </div>
+                  )}
                 </TabsContent>
 
-                <TabsContent value="civic" className="space-y-6">
+                <TabsContent value="civic" className="space-y-6" role="tabpanel" aria-label="Catégories civiques">
+                  {filteredCivicCategories.length === 0 && searchQuery ? (
+                    <div className="text-center py-12 text-muted-foreground">
+                      <p>Aucune catégorie trouvée pour "{searchQuery}"</p>
+                    </div>
+                  ) : (
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    {civicCategories.map((category, index) => {
+                    {filteredCivicCategories.map((category, index) => {
                       const Icon = category.icon;
                       const categoryProgress = getCategoryProgress(category.id, category.modules.length);
 
@@ -961,11 +988,17 @@ const PassionDiscoveryContent = () => {
                       );
                     })}
                   </div>
+                  )}
                 </TabsContent>
 
-                <TabsContent value="development" className="space-y-6">
+                <TabsContent value="development" className="space-y-6" role="tabpanel" aria-label="Catégories développement personnel">
+                  {filteredDevelopmentCategories.length === 0 && searchQuery ? (
+                    <div className="text-center py-12 text-muted-foreground">
+                      <p>Aucune catégorie trouvée pour "{searchQuery}"</p>
+                    </div>
+                  ) : (
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8">
-                    {developmentCategories.map((category, index) => {
+                    {filteredDevelopmentCategories.map((category, index) => {
                       const Icon = category.icon;
                       const categoryProgress = getCategoryProgress(category.id, category.modules.length);
 
@@ -1026,6 +1059,7 @@ const PassionDiscoveryContent = () => {
                       );
                     })}
                   </div>
+                  )}
                 </TabsContent>
               </Tabs>
             </>
@@ -1194,7 +1228,7 @@ const PassionDiscoveryContent = () => {
                 moduleId={currentModule.id}
                 moduleTitle={currentModule.title}
                 moduleDescription={currentModule.description}
-                activities={generateDefaultActivities(currentModule.id, currentModule.title)}
+                activities={getModuleActivities(currentCategory.id, currentModule.id, currentModule.title)}
                 onActivityComplete={handleActivityComplete}
                 onModuleComplete={() => {
                   if (currentCategory && currentModule) {
