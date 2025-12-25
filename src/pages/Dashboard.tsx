@@ -315,14 +315,13 @@ const Dashboard = () => {
                 <div className="flex-shrink-0 text-4xl">🎨</div>
                 <div className="flex-1">
                   <h3 className="font-bold text-lg mb-1">
-                    NOUVEAU : Découvre ta passion & Développement personnel
-                    <span className="ml-2 text-xs bg-purple-500 text-white px-2 py-1 rounded-full">TEST</span>
+                    Découvre ta passion & Développement personnel
                   </h3>
                   <p className="text-sm text-muted-foreground mb-3">
                     Explore la musique, les arts, les échecs, l'éducation civique et le développement personnel avec Eric en IA
                   </p>
                   <button className="px-4 py-2 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-md text-sm font-medium hover:opacity-90 transition-opacity">
-                    Tester la version interactive →
+                    Découvrir mes passions →
                   </button>
                 </div>
               </CardContent>
