@@ -26,6 +26,7 @@ interface DraggableReturn {
     openWidth?: string;
     openRight?: string;
     openBottom?: string;
+    openTop?: string;
     closedWidth?: string;
     closedRight?: string;
     closedTop?: string;
@@ -232,6 +233,7 @@ export const useEricDraggable = (
       openWidth?: string;
       openRight?: string;
       openBottom?: string;
+      openTop?: string;
       closedWidth?: string;
       closedRight?: string;
       closedTop?: string;
@@ -241,12 +243,14 @@ export const useEricDraggable = (
     const cfg = styleConfig || {};
     
     if (forOpenState) {
+      // If openTop is provided, position from top instead of bottom
+      const hasOpenTop = cfg.openTop !== undefined;
       return {
         position: 'fixed',
         left: hasMoved ? `${position.x}px` : 'auto',
-        top: hasMoved ? `${position.y}px` : 'auto',
+        top: hasMoved ? `${position.y}px` : (hasOpenTop ? cfg.openTop : 'auto'),
         right: hasMoved ? 'auto' : (cfg.openRight || '1.25rem'),
-        bottom: hasMoved ? 'auto' : (cfg.openBottom || '2rem'),
+        bottom: hasMoved ? 'auto' : (hasOpenTop ? 'auto' : (cfg.openBottom || '2rem')),
         cursor: isDragging ? 'grabbing' : 'default',
         userSelect: 'none',
       };
