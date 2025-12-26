@@ -10,6 +10,46 @@ interface Message {
   content: string;
 }
 
+type DifficultyLevel = 'beginner' | 'intermediate' | 'expert';
+
+const getDifficultyPrompt = (difficulty: DifficultyLevel): string => {
+  switch (difficulty) {
+    case 'beginner':
+      return `
+NIVEAU DE JEU: DÉBUTANT 🌱
+- Tu joues comme un débutant qui apprend les échecs
+- Fais parfois des erreurs VOLONTAIRES et évidentes pour permettre à l'élève de les exploiter
+- Privilégie les coups simples et prévisibles
+- Oublie parfois de protéger tes pièces
+- Explique tes coups de manière TRÈS simple, comme si tu parlais à un enfant de 8 ans
+- Utilise beaucoup d'encouragements et d'emojis
+- Ne fais PAS de tactiques complexes (pas de fourchettes, pas de clouages)`;
+      
+    case 'intermediate':
+      return `
+NIVEAU DE JEU: INTERMÉDIAIRE 🎯
+- Tu joues à un niveau intermédiaire solide
+- Joue des coups corrects mais pas toujours les plus optimaux
+- Montre des concepts tactiques de base (fourchettes, clouages simples)
+- Explique des stratégies comme le contrôle du centre, le développement des pièces
+- Fais occasionnellement une petite erreur que l'élève peut exploiter
+- Sois pédagogique et explique le "pourquoi" de tes coups`;
+      
+    case 'expert':
+      return `
+NIVEAU DE JEU: EXPERT 🏆
+- Tu joues au plus haut niveau possible
+- Choisis TOUJOURS le meilleur coup ou un des meilleurs coups
+- Utilise des tactiques avancées (sacrifices, combinaisons)
+- Explique des concepts stratégiques avancés (structure de pions, cases faibles, initiative)
+- Sois un défi pour l'élève, mais reste encourageant
+- Si l'élève fait une erreur, exploite-la mais explique comment il aurait pu l'éviter`;
+      
+    default:
+      return getDifficultyPrompt('intermediate');
+  }
+};
+
 serve(async (req) => {
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
@@ -17,12 +57,14 @@ serve(async (req) => {
   }
 
   try {
-    const { fen, chatHistory, userMessage, userNickname, isEricTurn } = await req.json();
+    const { fen, chatHistory, userMessage, userNickname, isEricTurn, difficulty = 'intermediate' } = await req.json();
 
     const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
     if (!LOVABLE_API_KEY) {
       throw new Error('LOVABLE_API_KEY is not configured');
     }
+
+    const difficultyPrompt = getDifficultyPrompt(difficulty as DifficultyLevel);
 
     let systemPrompt = `Tu es Eric, un professeur d'échecs patient et encourageant pour des élèves haïtiens. 
 Tu parles en français simple et accessible.
@@ -33,9 +75,10 @@ IDENTITÉ ET RÔLES - TRÈS IMPORTANT:
 - Quand tu analyses la position, rappelle-toi: les noirs c'est TOI, les blancs c'est L'ÉLÈVE
 - Ne confonds JAMAIS qui joue quelle couleur
 
+${difficultyPrompt}
+
 Règles importantes:
 - Tu dois TOUJOURS expliquer tes coups de manière pédagogique
-- Adapte ton niveau à celui de l'élève (sois un peu plus faible pour l'encourager)
 - Utilise des emojis pour rendre la conversation vivante
 - Si l'élève pose une question, réponds-y avec patience
 
@@ -48,19 +91,29 @@ Position actuelle (FEN): ${fen}
 
 C'est ton tour de jouer (tu joues les NOIRES).
 Tu dois répondre avec un JSON valide contenant:
-1. "move": ton coup en notation algébrique (ex: "e7e5", "g8f6", "e8g8" pour le roque)
+1. "move": ton coup en notation UCI (case départ + case arrivée)
 2. "explanation": une explication pédagogique de ton coup en français
 
-IMPORTANT: 
-- Le format du coup doit être: case de départ + case d'arrivée (ex: "e7e5", "b8c6")
-- Pour le roque côté roi: "e8g8" (noirs) 
-- Pour le roque côté dame: "e8c8" (noirs)
-- Pour la promotion: ajoute la pièce (ex: "e2e1q" pour une promotion en dame)
+⚠️ FORMAT DU COUP - TRÈS IMPORTANT:
+- Utilise UNIQUEMENT la notation UCI: case de départ + case d'arrivée
+- Exemples corrects: "e7e5", "g8f6", "b8c6", "d7d5", "f8c5"
+- Pour le roque côté roi (petit roque noir): "e8g8"
+- Pour le roque côté dame (grand roque noir): "e8c8"
+- Pour la promotion: ajoute la lettre de la pièce (ex: "e2e1q" pour dame)
 
-Exemple de réponse:
+❌ NE JAMAIS utiliser la notation SAN comme "Nf6", "Bc5", "Qh4", "O-O"
+❌ NE JAMAIS utiliser de majuscules pour les pièces dans le coup
+
+Exemple de réponse CORRECTE:
+{
+  "move": "g8f6",
+  "explanation": "Je développe mon cavalier vers f6! 🐴 C'est un coup classique qui contrôle le centre et prépare le roque."
+}
+
+Autre exemple:
 {
   "move": "e7e5",
-  "explanation": "Je joue mon pion au centre! 🎯 C'est un coup classique pour contrôler le centre de l'échiquier."
+  "explanation": "Je réponds avec mon pion au centre! 🎯 Maintenant je contrôle les cases d4 et f4."
 }`;
     } else {
       systemPrompt += `
@@ -97,11 +150,11 @@ Donne des conseils stratégiques si approprié.`;
     if (isEricTurn && !userMessage) {
       messages.push({
         role: 'user',
-        content: "C'est ton tour de jouer. Analyse la position et choisis ton meilleur coup. Réponds UNIQUEMENT avec un JSON valide."
+        content: "C'est ton tour de jouer. Analyse la position et choisis ton meilleur coup selon ton niveau. Réponds UNIQUEMENT avec un JSON valide. N'oublie pas: format UCI uniquement (ex: e7e5, g8f6)."
       });
     }
 
-    console.log('Calling Lovable AI for chess move/chat');
+    console.log('Calling Lovable AI for chess move/chat, difficulty:', difficulty);
 
     const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
       method: 'POST',
@@ -120,7 +173,8 @@ Donne des conseils stratégiques si approprié.`;
     if (!response.ok) {
       if (response.status === 429) {
         return new Response(JSON.stringify({ 
-          error: "Trop de requêtes. Veuillez réessayer dans quelques secondes." 
+          error: "rate_limit",
+          message: "Trop de requêtes. Veuillez réessayer dans quelques secondes." 
         }), {
           status: 429,
           headers: { ...corsHeaders, 'Content-Type': 'application/json' },
@@ -128,7 +182,8 @@ Donne des conseils stratégiques si approprié.`;
       }
       if (response.status === 402) {
         return new Response(JSON.stringify({ 
-          error: "Service temporairement indisponible." 
+          error: "payment_required",
+          message: "Service temporairement indisponible." 
         }), {
           status: 402,
           headers: { ...corsHeaders, 'Content-Type': 'application/json' },
@@ -151,9 +206,16 @@ Donne des conseils stratégiques si approprié.`;
         const jsonMatch = aiResponse.match(/\{[\s\S]*\}/);
         if (jsonMatch) {
           const parsed = JSON.parse(jsonMatch[0]);
+          
+          // Validate and normalize move format
+          let move = parsed.move?.toLowerCase()?.trim() || '';
+          
+          // Log the original move for debugging
+          console.log('Original move from AI:', parsed.move, 'Normalized:', move);
+          
           return new Response(JSON.stringify({
-            move: parsed.move,
-            explanation: parsed.explanation,
+            move: move,
+            explanation: parsed.explanation || "Je joue ce coup! 🎯",
             type: 'move'
           }), {
             headers: { ...corsHeaders, 'Content-Type': 'application/json' },
@@ -161,10 +223,11 @@ Donne des conseils stratégiques si approprié.`;
         }
       } catch (parseError) {
         console.error('Failed to parse move:', parseError);
-        // Return a default explanation if parsing fails
+        // Return a chat message if parsing fails
         return new Response(JSON.stringify({
           message: aiResponse,
-          type: 'chat'
+          type: 'chat',
+          parseError: true
         }), {
           headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         });
