@@ -71,10 +71,10 @@ const getEmailTemplate = (fullName: string, nickname: string, academicGrade: str
                   <tr>
                     <td style="padding: 40px;">
                       <p style="margin: 0 0 24px 0; font-size: 18px; color: #1e293b; line-height: 1.7;">
-                        Bonjour <strong style="color: #6366f1;">${fullName}</strong> 👋
+                        Salut <strong style="color: #6366f1;">${fullName}</strong> 👋
                       </p>
                       <p style="margin: 0 0 32px 0; font-size: 16px; color: #475569; line-height: 1.8;">
-                        Bienvenue sur Edupreneurs ! Pour activer votre compte et commencer votre parcours d'apprentissage, veuillez utiliser le code de confirmation ci-dessous.
+                        Bienvenue sur Edupreneurs ! Pour activer votre compte et commencer votre parcours d'apprentissage, veuillez utiliser le code de confirmation ci-dessous. <strong style="color: #ef4444;">Ce code expire dans 10 minutes.</strong>
                       </p>
                       
                       <!-- Code Box -->

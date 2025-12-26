@@ -54,7 +54,7 @@ const getEmailTemplate = () => `
                   <tr>
                     <td style="padding: 40px;">
                       <p style="margin: 0 0 24px 0; font-size: 18px; color: #1e293b; line-height: 1.7;">
-                        Bonjour 👋
+                        Salut 👋
                       </p>
                       <p style="margin: 0 0 32px 0; font-size: 16px; color: #475569; line-height: 1.8;">
                         Ceci est un email de test de votre système d'authentification Edupreneurs. Si vous voyez ce message, tout fonctionne correctement !
