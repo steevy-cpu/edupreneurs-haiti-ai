@@ -107,6 +107,9 @@ const PassionDiscoveryContent = () => {
   const [showLeaveDialog, setShowLeaveDialog] = useState(false);
   const [pendingNavigation, setPendingNavigation] = useState<(() => void) | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
+  const [selectedAnswerIndex, setSelectedAnswerIndex] = useState<number | null>(null);
+  const [isTransitioning, setIsTransitioning] = useState(false);
+  const [saveError, setSaveError] = useState(false);
   
   // React Query hooks
   const { data: preferences, isLoading: preferencesLoading } = usePassionPreferences(userId);
@@ -430,38 +433,64 @@ const PassionDiscoveryContent = () => {
     modules: buildModulesWithLocking(cat.modules, cat.id)
   }));
 
-  const handleAnswerSelect = (passion: keyof PassionScores) => {
-    setPassionScores(prev => ({
-      ...prev,
-      [passion]: prev[passion] + 1
-    }));
+  const handleAnswerSelect = (passion: keyof PassionScores, answerIndex: number) => {
+    if (isTransitioning || isLoading) return;
+    
+    // Show selection animation
+    setSelectedAnswerIndex(answerIndex);
+    setIsTransitioning(true);
+    
+    // Calculate new scores immediately to avoid race condition
+    const newScores = {
+      ...passionScores,
+      [passion]: passionScores[passion] + 1
+    };
+    setPassionScores(newScores);
 
-    if (currentQuestion < quizQuestions.length - 1) {
-      setCurrentQuestion(prev => prev + 1);
-    } else {
-      saveQuizResults();
-    }
+    // Delay before transitioning to next question for visual feedback
+    setTimeout(() => {
+      if (currentQuestion < quizQuestions.length - 1) {
+        setCurrentQuestion(prev => prev + 1);
+        setSelectedAnswerIndex(null);
+        setIsTransitioning(false);
+      } else {
+        // Pass the new scores directly to avoid stale state bug
+        saveQuizResults(newScores);
+      }
+    }, 400);
   };
 
-  const saveQuizResults = async () => {
+  const saveQuizResults = async (scores: PassionScores) => {
     if (!userId) {
       toast.error("Tu dois être connecté pour sauvegarder tes résultats");
+      setIsTransitioning(false);
       return;
     }
 
     setIsLoading(true);
+    setSaveError(false);
+    
     saveQuizMutation.mutate(
-      { userId, scores: passionScores },
+      { userId, scores },
       {
         onSuccess: () => {
           setQuizStep("results");
           setIsLoading(false);
+          setIsTransitioning(false);
+          setSelectedAnswerIndex(null);
         },
         onError: () => {
           setIsLoading(false);
+          setIsTransitioning(false);
+          setSaveError(true);
+          toast.error("Erreur lors de la sauvegarde. Réessaye!");
         }
       }
     );
+  };
+
+  const handleRetryQuizSave = () => {
+    saveQuizResults(passionScores);
   };
 
   const getTopPassions = () => {
@@ -760,18 +789,50 @@ const PassionDiscoveryContent = () => {
               </div>
             </CardHeader>
             <CardContent className="space-y-3 pb-6">
-              {question.options.map((option, index) => (
-                <Button
-                  key={index}
-                  onClick={() => handleAnswerSelect(option.passion as keyof PassionScores)}
-                  variant="outline"
-                  className="w-full h-auto py-4 px-5 text-left justify-between hover:bg-primary/5 hover:border-primary/50 hover:shadow-md transition-all duration-200 text-sm md:text-base group"
-                  disabled={isLoading}
-                >
-                  <span className="flex-1 pr-2">{option.text}</span>
-                  <ArrowRight className="w-5 h-5 flex-shrink-0 text-muted-foreground group-hover:text-primary group-hover:translate-x-1 transition-all" />
-                </Button>
-              ))}
+              {saveError && (
+                <div className="bg-destructive/10 border border-destructive/20 rounded-lg p-4 mb-4">
+                  <p className="text-sm text-destructive mb-2">Erreur lors de la sauvegarde</p>
+                  <Button 
+                    onClick={handleRetryQuizSave} 
+                    variant="outline" 
+                    size="sm"
+                    className="border-destructive text-destructive hover:bg-destructive/10"
+                    disabled={isLoading}
+                  >
+                    {isLoading ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <RotateCcw className="w-4 h-4 mr-2" />}
+                    Réessayer
+                  </Button>
+                </div>
+              )}
+              {question.options.map((option, index) => {
+                const isSelected = selectedAnswerIndex === index;
+                return (
+                  <Button
+                    key={index}
+                    onClick={() => handleAnswerSelect(option.passion as keyof PassionScores, index)}
+                    variant="outline"
+                    className={`w-full h-auto py-4 px-5 text-left justify-between transition-all duration-300 text-sm md:text-base group ${
+                      isSelected 
+                        ? "bg-primary/10 border-primary shadow-lg scale-[1.02] ring-2 ring-primary/30" 
+                        : "hover:bg-primary/5 hover:border-primary/50 hover:shadow-md"
+                    }`}
+                    disabled={isTransitioning || isLoading}
+                  >
+                    <span className="flex-1 pr-2">{option.text}</span>
+                    {isSelected ? (
+                      <CheckCircle2 className="w-5 h-5 flex-shrink-0 text-primary animate-scale-in" />
+                    ) : (
+                      <ArrowRight className="w-5 h-5 flex-shrink-0 text-muted-foreground group-hover:text-primary group-hover:translate-x-1 transition-all" />
+                    )}
+                  </Button>
+                );
+              })}
+              {isLoading && currentQuestion === quizQuestions.length - 1 && (
+                <div className="flex items-center justify-center gap-2 text-muted-foreground pt-2">
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  <span className="text-sm">Sauvegarde en cours...</span>
+                </div>
+              )}
             </CardContent>
           </Card>
         </div>
