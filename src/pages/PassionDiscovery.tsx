@@ -24,13 +24,13 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { getActivitiesForModule, getCategoriesWithActivities, type ActivityContent } from "@/data/passionActivities";
-import ericTeaching from "@/assets/eric-teaching.png";
+import ericCelebrating from "@/assets/eric-celebrating.png";
 import ericThinking from "@/assets/eric-thinking-pose.png";
-import ericWelcome from "@/assets/eric-welcome.png";
+import ericWaving from "@/assets/eric-waving.png";
 import ericThumbUp from "@/assets/eric-thumb-up.png";
 import ericPointing from "@/assets/eric-pointing-up.png";
-import ericChairDesk from "@/assets/eric-chair-desk.png";
-import ericRightPointing from "@/assets/eric-right-pointing-2.png";
+import ericTeaching from "@/assets/eric-teaching.png";
+import ericComputer from "@/assets/eric-computer.png";
 
 interface QuizQuestion {
   id: number;
@@ -174,12 +174,12 @@ const PassionDiscoveryContent = () => {
     {
       id: 1,
       question: "Quand tu as du temps libre, qu'est-ce que tu préfères faire?",
-      ericImage: ericWelcome,
+      ericImage: ericWaving,
       options: [
-        { text: "Écouter de la musique ou jouer d'un instrument 🎵", passion: "music", ericImage: ericRightPointing },
-        { text: "Dessiner, peindre ou créer quelque chose 🎨", passion: "arts", ericImage: ericRightPointing },
-        { text: "Jouer aux échecs ou résoudre des énigmes 🧠", passion: "chess", ericImage: ericRightPointing },
-        { text: "Lire un livre ou écrire des histoires 📚", passion: "literature", ericImage: ericRightPointing }
+        { text: "Écouter de la musique ou jouer d'un instrument 🎵", passion: "music", ericImage: ericPointing },
+        { text: "Dessiner, peindre ou créer quelque chose 🎨", passion: "arts", ericImage: ericPointing },
+        { text: "Jouer aux échecs ou résoudre des énigmes 🧠", passion: "chess", ericImage: ericPointing },
+        { text: "Lire un livre ou écrire des histoires 📚", passion: "literature", ericImage: ericPointing }
       ]
     },
     {
@@ -220,10 +220,10 @@ const PassionDiscoveryContent = () => {
       question: "Quel type d'activité te détend le plus?",
       ericImage: ericThumbUp,
       options: [
-        { text: "Jouer ou écouter de la musique 🎧", passion: "music", ericImage: ericWelcome },
-        { text: "Dessiner ou créer des designs 🖌️", passion: "arts", ericImage: ericWelcome },
-        { text: "Jouer à des jeux de réflexion 🎲", passion: "chess", ericImage: ericWelcome },
-        { text: "Lire ou écrire tranquillement 📖", passion: "literature", ericImage: ericWelcome }
+        { text: "Jouer ou écouter de la musique 🎧", passion: "music", ericImage: ericCelebrating },
+        { text: "Dessiner ou créer des designs 🖌️", passion: "arts", ericImage: ericCelebrating },
+        { text: "Jouer à des jeux de réflexion 🎲", passion: "chess", ericImage: ericCelebrating },
+        { text: "Lire ou écrire tranquillement 📖", passion: "literature", ericImage: ericCelebrating }
       ]
     }
   ];
@@ -647,57 +647,77 @@ const PassionDiscoveryContent = () => {
   // Intro Screen
   if (quizStep === "intro") {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-purple-50 via-pink-50 to-orange-50 dark:from-purple-950/20 dark:via-pink-950/20 dark:to-orange-950/20 flex items-center justify-center p-4">
-        <Card className="max-w-2xl w-full shadow-2xl">
-          <CardHeader className="text-center pb-8">
-            <div className="flex justify-center mb-6">
-              <img src={ericWelcome} alt="Eric" className="w-32 h-32 md:w-40 md:h-40 animate-scale-in" loading="lazy" decoding="async" />
+      <div className="min-h-screen bg-gradient-to-br from-violet-100 via-fuchsia-50 to-amber-50 dark:from-violet-950/30 dark:via-fuchsia-950/20 dark:to-amber-950/20 flex items-center justify-center p-4">
+        <div className="max-w-4xl w-full">
+          {/* Hero Section */}
+          <div className="relative mb-8">
+            <div className="absolute inset-0 bg-gradient-to-r from-violet-500/20 via-fuchsia-500/20 to-amber-500/20 blur-3xl rounded-full" />
+            <div className="relative flex flex-col md:flex-row items-center gap-6 md:gap-10">
+              <div className="relative">
+                <div className="absolute -inset-4 bg-gradient-to-r from-violet-500 via-fuchsia-500 to-amber-500 rounded-full blur-2xl opacity-30 animate-pulse" />
+                <img 
+                  src={ericCelebrating} 
+                  alt="Eric célèbre" 
+                  className="relative w-40 h-40 md:w-52 md:h-52 drop-shadow-2xl animate-scale-in" 
+                  loading="lazy" 
+                  decoding="async" 
+                />
+              </div>
+              <div className="text-center md:text-left flex-1">
+                <h1 className="text-4xl md:text-5xl lg:text-6xl font-black mb-4 bg-gradient-to-r from-violet-600 via-fuchsia-600 to-amber-500 bg-clip-text text-transparent leading-tight">
+                  Découvre ta Passion!
+                </h1>
+                <p className="text-lg md:text-xl text-muted-foreground max-w-lg">
+                  Salut! Je suis <span className="font-bold text-foreground">Eric</span>, ton guide personnel. En 2 minutes, découvre ce qui te passionne vraiment!
+                </p>
+              </div>
             </div>
-            <CardTitle className="text-3xl md:text-4xl mb-4 bg-gradient-to-r from-purple-600 via-pink-600 to-orange-500 bg-clip-text text-transparent">
-              Bienvenue dans Découvre ta Passion!
-            </CardTitle>
-            <CardDescription className="text-base md:text-lg">
-              Salut! Je suis Eric, ton guide personnel. Je vais t'aider à découvrir tes passions à travers un petit quiz amusant! 🎉
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-6">
-            <div className="bg-muted p-4 md:p-6 rounded-lg space-y-3">
-              <p className="font-semibold text-lg">📋 Ce quiz va t'aider à découvrir:</p>
-              <ul className="space-y-2 ml-4">
-                <li className="flex items-center gap-2">
-                  <Music className="w-5 h-5 text-purple-500 flex-shrink-0" />
-                  <span>Si tu aimes la musique 🎵</span>
-                </li>
-                <li className="flex items-center gap-2">
-                  <Palette className="w-5 h-5 text-blue-500 flex-shrink-0" />
-                  <span>Si tu es plutôt artistique 🎨</span>
-                </li>
-                <li className="flex items-center gap-2">
-                  <Brain className="w-5 h-5 text-orange-500 flex-shrink-0" />
-                  <span>Si tu aimes les défis intellectuels ♟️</span>
-                </li>
-                <li className="flex items-center gap-2">
-                  <BookOpen className="w-5 h-5 text-green-500 flex-shrink-0" />
-                  <span>Si tu es passionné(e) par les mots 📚</span>
-                </li>
-              </ul>
-            </div>
-            <p className="text-center text-muted-foreground">
-              Cela ne prendra que 2 minutes. Prêt(e) à découvrir tes talents cachés? 🌟
-            </p>
-            <div className="flex flex-col sm:flex-row gap-3">
-              <Button variant="outline" onClick={() => navigate("/dashboard")} className="flex-1">
-                Plus tard
-              </Button>
-              <Button 
-                onClick={() => setQuizStep("quiz")}
-                className="flex-1 bg-gradient-to-r from-purple-500 via-pink-500 to-orange-500 hover:opacity-90 text-white font-semibold"
-              >
-                Commencer le quiz! 🚀
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
+          </div>
+
+          {/* Feature Cards */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4 mb-8">
+            {[
+              { icon: Music, label: "Musique", color: "from-violet-500 to-purple-600", bg: "bg-violet-100 dark:bg-violet-900/30" },
+              { icon: Palette, label: "Arts", color: "from-cyan-500 to-blue-600", bg: "bg-cyan-100 dark:bg-cyan-900/30" },
+              { icon: Brain, label: "Stratégie", color: "from-amber-500 to-orange-600", bg: "bg-amber-100 dark:bg-amber-900/30" },
+              { icon: BookOpen, label: "Littérature", color: "from-emerald-500 to-teal-600", bg: "bg-emerald-100 dark:bg-emerald-900/30" },
+            ].map((item) => (
+              <Card key={item.label} className={`${item.bg} border-0 backdrop-blur-sm hover:scale-105 transition-transform duration-300`}>
+                <CardContent className="p-4 flex flex-col items-center text-center">
+                  <div className={`p-3 rounded-xl bg-gradient-to-br ${item.color} text-white mb-2 shadow-lg`}>
+                    <item.icon className="w-5 h-5 md:w-6 md:h-6" />
+                  </div>
+                  <span className="text-sm font-semibold">{item.label}</span>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+
+          {/* CTA Card */}
+          <Card className="backdrop-blur-md bg-background/80 border-2 border-primary/20 shadow-2xl">
+            <CardContent className="p-6 md:p-8">
+              <div className="flex flex-col md:flex-row items-center gap-6">
+                <div className="flex-1 text-center md:text-left">
+                  <h2 className="text-xl md:text-2xl font-bold mb-2">Prêt(e) à commencer?</h2>
+                  <p className="text-muted-foreground">5 questions rapides pour découvrir tes talents cachés</p>
+                </div>
+                <div className="flex flex-col sm:flex-row gap-3 w-full md:w-auto">
+                  <Button variant="ghost" onClick={() => navigate("/dashboard")} className="text-muted-foreground">
+                    Plus tard
+                  </Button>
+                  <Button 
+                    onClick={() => setQuizStep("quiz")}
+                    size="lg"
+                    className="bg-gradient-to-r from-violet-600 via-fuchsia-600 to-amber-500 hover:opacity-90 text-white font-bold px-8 shadow-lg shadow-fuchsia-500/25"
+                  >
+                    Commencer le quiz
+                    <ArrowRight className="ml-2 h-5 w-5" />
+                  </Button>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
       </div>
     );
   }
@@ -708,34 +728,53 @@ const PassionDiscoveryContent = () => {
     const progress = ((currentQuestion + 1) / quizQuestions.length) * 100;
 
     return (
-      <div className="min-h-screen bg-gradient-to-br from-purple-50 via-pink-50 to-orange-50 dark:from-purple-950/20 dark:via-pink-950/20 dark:to-orange-950/20 flex items-center justify-center p-4">
-        <Card className="max-w-3xl w-full shadow-2xl">
-          <CardHeader>
-            <div className="flex items-center justify-between mb-4">
-              <Badge variant="secondary">Question {currentQuestion + 1}/{quizQuestions.length}</Badge>
-              <span className="text-sm text-muted-foreground">{Math.round(progress)}%</span>
-            </div>
-            <Progress value={progress} className="h-2 mb-6" />
-            <div className="flex justify-center mb-6">
-              <img src={question.ericImage} alt="Eric" className="w-24 h-24 md:w-32 md:h-32 animate-fade-in" loading="lazy" decoding="async" />
-            </div>
-            <CardTitle className="text-xl md:text-2xl text-center">{question.question}</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            {question.options.map((option, index) => (
-              <Button
-                key={index}
-                onClick={() => handleAnswerSelect(option.passion as keyof PassionScores)}
-                variant="outline"
-                className="w-full h-auto py-4 text-left justify-start hover:bg-primary/10 hover:border-primary transition-all text-sm md:text-base"
-                disabled={isLoading}
-              >
-                <span className="flex-1">{option.text}</span>
-                <ArrowRight className="w-5 h-5 ml-2 flex-shrink-0" />
-              </Button>
-            ))}
-          </CardContent>
-        </Card>
+      <div className="min-h-screen bg-gradient-to-br from-violet-100 via-fuchsia-50 to-amber-50 dark:from-violet-950/30 dark:via-fuchsia-950/20 dark:to-amber-950/20 flex items-center justify-center p-4">
+        <div className="max-w-2xl w-full space-y-6">
+          {/* Progress Header */}
+          <div className="flex items-center justify-between text-sm">
+            <Badge variant="secondary" className="font-semibold">
+              Question {currentQuestion + 1} sur {quizQuestions.length}
+            </Badge>
+            <span className="text-muted-foreground font-medium">{Math.round(progress)}%</span>
+          </div>
+          <Progress value={progress} className="h-2" />
+
+          {/* Question Card */}
+          <Card className="backdrop-blur-md bg-background/90 border-2 border-primary/10 shadow-2xl overflow-hidden">
+            <div className="h-1 bg-gradient-to-r from-violet-500 via-fuchsia-500 to-amber-500" />
+            <CardHeader className="pb-4">
+              <div className="flex flex-col sm:flex-row items-center gap-4 mb-4">
+                <div className="relative">
+                  <div className="absolute -inset-2 bg-gradient-to-r from-violet-500 to-fuchsia-500 rounded-full blur-lg opacity-20" />
+                  <img 
+                    src={question.ericImage} 
+                    alt="Eric" 
+                    className="relative w-20 h-20 md:w-24 md:h-24 drop-shadow-lg" 
+                    loading="lazy" 
+                    decoding="async" 
+                  />
+                </div>
+                <CardTitle className="text-xl md:text-2xl text-center sm:text-left flex-1">
+                  {question.question}
+                </CardTitle>
+              </div>
+            </CardHeader>
+            <CardContent className="space-y-3 pb-6">
+              {question.options.map((option, index) => (
+                <Button
+                  key={index}
+                  onClick={() => handleAnswerSelect(option.passion as keyof PassionScores)}
+                  variant="outline"
+                  className="w-full h-auto py-4 px-5 text-left justify-between hover:bg-primary/5 hover:border-primary/50 hover:shadow-md transition-all duration-200 text-sm md:text-base group"
+                  disabled={isLoading}
+                >
+                  <span className="flex-1 pr-2">{option.text}</span>
+                  <ArrowRight className="w-5 h-5 flex-shrink-0 text-muted-foreground group-hover:text-primary group-hover:translate-x-1 transition-all" />
+                </Button>
+              ))}
+            </CardContent>
+          </Card>
+        </div>
       </div>
     );
   }
@@ -746,55 +785,71 @@ const PassionDiscoveryContent = () => {
     const topCategories = categories.filter(cat => topPassions.includes(cat.id));
 
     return (
-      <div className="min-h-screen bg-gradient-to-br from-purple-50 via-pink-50 to-orange-50 dark:from-purple-950/20 dark:via-pink-950/20 dark:to-orange-950/20 flex items-center justify-center p-4">
-        <Card className="max-w-3xl w-full shadow-2xl">
-          <CardHeader className="text-center">
-            <div className="flex justify-center mb-6">
-              <img src={ericThumbUp} alt="Eric" className="w-32 h-32 md:w-40 md:h-40 animate-scale-in" loading="lazy" decoding="async" />
+      <div className="min-h-screen bg-gradient-to-br from-violet-100 via-fuchsia-50 to-amber-50 dark:from-violet-950/30 dark:via-fuchsia-950/20 dark:to-amber-950/20 flex items-center justify-center p-4">
+        <div className="max-w-3xl w-full space-y-6">
+          {/* Celebration Header */}
+          <div className="text-center">
+            <div className="relative inline-block mb-4">
+              <div className="absolute -inset-4 bg-gradient-to-r from-violet-500 via-fuchsia-500 to-amber-500 rounded-full blur-2xl opacity-30 animate-pulse" />
+              <img 
+                src={ericCelebrating} 
+                alt="Eric célèbre" 
+                className="relative w-36 h-36 md:w-44 md:h-44 drop-shadow-2xl animate-scale-in" 
+                loading="lazy" 
+                decoding="async" 
+              />
             </div>
-            <CardTitle className="text-3xl md:text-4xl mb-4">
-              Résultats Découverts! 🎉
-            </CardTitle>
-            <CardDescription className="text-base md:text-lg">
-              Voici ce que j'ai découvert sur tes passions:
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-6">
-            <div className="bg-muted p-4 md:p-6 rounded-lg space-y-4">
-              <h3 className="font-bold text-xl mb-4">Tes passions principales:</h3>
-              {topCategories.map((category, index) => {
-                const Icon = category.icon;
-                return (
-                  <div key={category.id} className="flex items-center gap-4 p-4 bg-background rounded-lg">
-                    <div className={`p-3 rounded-full bg-gradient-to-br ${category.color} text-white flex-shrink-0`}>
-                      <Icon className="w-6 h-6" />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <h4 className="font-bold">{index === 0 ? "🥇 " : index === 1 ? "🥈 " : "🥉 "}{category.title}</h4>
-                      <p className="text-sm text-muted-foreground truncate">{category.description}</p>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-            
-            <div className="bg-primary/10 p-4 md:p-6 rounded-lg border-2 border-primary/20">
-              <p className="text-center font-medium mb-2">
-                💡 Excellent! Tu as des talents variés!
-              </p>
-              <p className="text-center text-sm text-muted-foreground">
-                Explore tous les domaines qui t'intéressent et développe tes compétences avec moi!
-              </p>
-            </div>
+            <h1 className="text-3xl md:text-4xl font-black mb-2 bg-gradient-to-r from-violet-600 via-fuchsia-600 to-amber-500 bg-clip-text text-transparent">
+              Résultats Découverts!
+            </h1>
+            <p className="text-muted-foreground text-lg">Voici tes passions principales</p>
+          </div>
 
-            <Button 
-              onClick={() => setQuizStep("categories")}
-              className="w-full bg-gradient-to-r from-purple-500 via-pink-500 to-orange-500 hover:opacity-90 text-white font-semibold py-6 text-lg"
-            >
-              Explorer mes passions! 🚀
-            </Button>
-          </CardContent>
-        </Card>
+          {/* Results Cards */}
+          <div className="grid gap-4">
+            {topCategories.map((category, index) => {
+              const Icon = category.icon;
+              const medals = ["🥇", "🥈", "🥉"];
+              return (
+                <Card 
+                  key={category.id} 
+                  className="backdrop-blur-md bg-background/90 border-2 border-primary/10 hover:border-primary/30 transition-all hover:shadow-lg overflow-hidden"
+                  style={{ animationDelay: `${index * 150}ms` }}
+                >
+                  <div className={`h-1 bg-gradient-to-r ${category.color}`} />
+                  <CardContent className="p-4 md:p-5">
+                    <div className="flex items-center gap-4">
+                      <span className="text-2xl md:text-3xl">{medals[index]}</span>
+                      <div className={`p-3 rounded-xl bg-gradient-to-br ${category.color} text-white shadow-lg flex-shrink-0`}>
+                        <Icon className="w-5 h-5 md:w-6 md:h-6" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <h3 className="font-bold text-base md:text-lg">{category.title}</h3>
+                        <p className="text-sm text-muted-foreground truncate">{category.description}</p>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              );
+            })}
+          </div>
+          
+          {/* CTA */}
+          <Card className="backdrop-blur-md bg-gradient-to-r from-violet-500/10 via-fuchsia-500/10 to-amber-500/10 border-2 border-primary/20">
+            <CardContent className="p-6 text-center">
+              <p className="font-semibold text-lg mb-1">Tu as des talents variés!</p>
+              <p className="text-sm text-muted-foreground mb-4">Explore tous les domaines et développe tes compétences avec moi</p>
+              <Button 
+                onClick={() => setQuizStep("categories")}
+                size="lg"
+                className="bg-gradient-to-r from-violet-600 via-fuchsia-600 to-amber-500 hover:opacity-90 text-white font-bold px-8 shadow-lg shadow-fuchsia-500/25"
+              >
+                Explorer mes passions
+                <ArrowRight className="ml-2 h-5 w-5" />
+              </Button>
+            </CardContent>
+          </Card>
+        </div>
       </div>
     );
   }
@@ -802,7 +857,7 @@ const PassionDiscoveryContent = () => {
   // Category & Module Selection
   if (!selectedModule) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-background via-purple-50/30 to-pink-50/30 dark:from-background dark:via-purple-950/10 dark:to-pink-950/10">
+      <div className="min-h-screen bg-gradient-to-br from-background via-violet-50/30 to-fuchsia-50/30 dark:from-background dark:via-violet-950/10 dark:to-fuchsia-950/10">
         <div className="container mx-auto px-4 py-6 md:py-8">
           <div className="flex items-center justify-between mb-6">
             <Button
@@ -830,16 +885,29 @@ const PassionDiscoveryContent = () => {
 
           {!selectedCategory && (
             <>
-              <div className="text-center mb-8 md:mb-12 animate-fade-in">
-                <div className="inline-block mb-4">
-                  <img src={ericChairDesk} alt="Eric" className="w-32 h-32 md:w-48 md:h-48 mx-auto animate-scale-in" loading="lazy" decoding="async" />
+              {/* Hero Section */}
+              <div className="relative mb-8 md:mb-12">
+                <div className="absolute inset-0 bg-gradient-to-r from-violet-500/10 via-fuchsia-500/10 to-amber-500/10 blur-3xl rounded-full" />
+                <div className="relative flex flex-col md:flex-row items-center gap-6 md:gap-10 p-6 md:p-8 rounded-3xl bg-gradient-to-r from-violet-500/5 via-fuchsia-500/5 to-amber-500/5 backdrop-blur-sm border border-primary/10">
+                  <div className="relative flex-shrink-0">
+                    <div className="absolute -inset-4 bg-gradient-to-r from-violet-500 via-fuchsia-500 to-amber-500 rounded-full blur-2xl opacity-20" />
+                    <img 
+                      src={ericComputer} 
+                      alt="Eric" 
+                      className="relative w-28 h-28 md:w-40 md:h-40 drop-shadow-xl" 
+                      loading="lazy" 
+                      decoding="async" 
+                    />
+                  </div>
+                  <div className="text-center md:text-left flex-1">
+                    <h1 className="text-3xl md:text-4xl lg:text-5xl font-black mb-3 bg-gradient-to-r from-violet-600 via-fuchsia-600 to-amber-500 bg-clip-text text-transparent leading-tight">
+                      Découverte & Épanouissement
+                    </h1>
+                    <p className="text-base md:text-lg text-muted-foreground max-w-2xl">
+                      Explore tes passions, développe ta citoyenneté et deviens la meilleure version de toi-même
+                    </p>
+                  </div>
                 </div>
-                <h1 className="text-3xl md:text-5xl lg:text-6xl font-bold mb-4 bg-gradient-to-r from-purple-600 via-pink-600 to-orange-500 bg-clip-text text-transparent">
-                  Découverte & Épanouissement
-                </h1>
-                <p className="text-base md:text-xl text-muted-foreground max-w-3xl mx-auto">
-                  Explore tes passions, développe ta citoyenneté et deviens la meilleure version de toi-même
-                </p>
               </div>
 
               {/* Search Bar */}
@@ -1348,7 +1416,7 @@ const PassionDiscoveryContent = () => {
             <Card className="lg:sticky lg:top-6 h-[70vh] lg:h-[calc(100vh-6rem)] flex flex-col">
               <CardHeader className="border-b py-3 md:py-4">
                 <div className="flex items-center gap-3">
-                  <img src={ericRightPointing} alt="Eric" className="w-10 h-10 md:w-12 md:h-12 rounded-full object-cover" loading="lazy" decoding="async" />
+                  <img src={ericPointing} alt="Eric" className="w-10 h-10 md:w-12 md:h-12 rounded-full object-cover" loading="lazy" decoding="async" />
                   <div className="min-w-0">
                     <CardTitle className="text-base md:text-lg">Discute avec Eric</CardTitle>
                     <CardDescription className="text-xs md:text-sm">Ton tuteur IA personnel</CardDescription>
