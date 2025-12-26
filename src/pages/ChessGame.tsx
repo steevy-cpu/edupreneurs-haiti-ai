@@ -8,7 +8,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useChessSounds } from '@/hooks/useChessSounds';
 import ChessBoard from '@/components/chess/ChessBoard';
-import ChessChat from '@/components/chess/ChessChat';
+import FloatingChessMessages from '@/components/chess/FloatingChessMessages';
 import { Helmet } from 'react-helmet';
 
 interface ChatMessage {
@@ -73,6 +73,7 @@ const ChessGame: React.FC = () => {
   const [userNickname, setUserNickname] = useState('');
   const [gameStatus, setGameStatus] = useState("C'est ton tour!");
   const [difficulty, setDifficulty] = useState<DifficultyLevel>('intermediate');
+  const [isChatOpen, setIsChatOpen] = useState(false);
 
   // Fetch user profile
   useEffect(() => {
@@ -465,9 +466,9 @@ const ChessGame: React.FC = () => {
 
         {/* Main Content */}
         <div className="container mx-auto px-2 sm:px-4 py-2 sm:py-4 pb-24 md:pb-4">
-          <div className="flex flex-col md:flex-row gap-3 md:gap-4 md:h-[calc(100vh-5rem)]">
-            {/* Chess Board - Left side on tablet/desktop */}
-            <div className="flex-shrink-0 md:flex-1 md:max-w-[55%]">
+          <div className="flex justify-center">
+            {/* Chess Board with floating messages */}
+            <div className="relative w-full max-w-2xl">
               <Card className="p-2 sm:p-4">
                 <ChessBoard
                   game={game}
@@ -479,17 +480,16 @@ const ChessGame: React.FC = () => {
                   onDifficultyChange={handleDifficultyChange}
                 />
               </Card>
-            </div>
-
-            {/* Chat Area - Right side on tablet/desktop */}
-            <Card className="flex-1 overflow-hidden flex flex-col min-h-[50vh] md:min-h-0 md:max-w-[45%]">
-              <ChessChat
+              
+              {/* Floating Messages Overlay */}
+              <FloatingChessMessages
                 messages={messages}
                 onSendMessage={handleSendMessage}
                 isLoading={isThinking}
-                userNickname={userNickname}
+                isOpen={isChatOpen}
+                onToggle={() => setIsChatOpen(!isChatOpen)}
               />
-            </Card>
+            </div>
           </div>
         </div>
       </div>
