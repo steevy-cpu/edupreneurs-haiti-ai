@@ -36,13 +36,7 @@ const getEmailTemplate = (fullName: string, email: string, timestamp: string, de
             <!-- Logo Header -->
             <tr>
               <td style="text-align: center; padding-bottom: 30px;">
-                <table role="presentation" cellspacing="0" cellpadding="0" border="0" style="margin: 0 auto;">
-                  <tr>
-                    <td style="background: linear-gradient(135deg, #8b5cf6 0%, #6366f1 50%, #3b82f6 100%); border-radius: 16px; padding: 12px 24px;">
-                      <span style="font-size: 28px; font-weight: 800; color: #ffffff; letter-spacing: -0.5px;">Edupreneurs</span>
-                    </td>
-                  </tr>
-                </table>
+                <img src="https://mon-edupreneur.com/logo.png" alt="Edupreneurs" width="180" height="auto" style="display: block; margin: 0 auto; max-width: 180px; height: auto;" />
               </td>
             </tr>
             
