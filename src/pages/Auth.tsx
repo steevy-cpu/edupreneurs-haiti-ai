@@ -12,6 +12,7 @@ import { useToast } from "@/hooks/use-toast";
 import { generateConfirmationCode } from "@/utils/emailService";
 import { Loader2, Eye, EyeOff } from "lucide-react";
 import { loginSchema, signupSchema, forgotPasswordSchema, verificationCodeSchema } from "@/lib/authValidation";
+import { getFullDeviceIdentifier } from "@/utils/deviceFingerprint";
 
 // Auth page component
 export default function Auth() {
@@ -373,23 +374,68 @@ export default function Auth() {
         return;
       }
 
-      // Send login notification (optional)
+      // Smart login notification - only send email for new devices
       try {
-        const timestamp = new Date().toLocaleString('fr-FR', {
-          dateStyle: 'full',
-          timeStyle: 'short',
-        });
+        const deviceInfo = getFullDeviceIdentifier();
         
-        await supabase.functions.invoke('send-login-notification', {
-          body: {
-            email: loginData.email,
-            fullName: profile?.full_name || 'Utilisateur',
-            timestamp,
-            device: navigator.userAgent.includes('Mobile') ? 'Mobile' : 'Desktop',
+        // Check if this device is already trusted
+        const { data: existingDevice, error: deviceCheckError } = await supabase
+          .from('user_trusted_devices')
+          .select('id')
+          .eq('user_id', authData.user.id)
+          .eq('device_fingerprint', deviceInfo.fingerprint)
+          .maybeSingle();
+        
+        if (deviceCheckError) {
+          console.error('Error checking device:', deviceCheckError);
+        }
+        
+        if (existingDevice) {
+          // Known device - just update last_login_at, NO EMAIL
+          await supabase
+            .from('user_trusted_devices')
+            .update({ last_login_at: new Date().toISOString() })
+            .eq('id', existingDevice.id);
+          
+          console.log('Known device login - no notification email sent');
+        } else {
+          // New device - register it and send notification email
+          const { error: insertError } = await supabase
+            .from('user_trusted_devices')
+            .insert({
+              user_id: authData.user.id,
+              device_fingerprint: deviceInfo.fingerprint,
+              device_name: deviceInfo.deviceName,
+              browser: deviceInfo.browser,
+              os: deviceInfo.os,
+            });
+          
+          if (insertError) {
+            console.error('Error registering device:', insertError);
           }
-        });
-      } catch (emailError) {
-        // Don't block login if notification email fails
+          
+          // Send login notification for new device
+          const timestamp = new Date().toLocaleString('fr-FR', {
+            dateStyle: 'full',
+            timeStyle: 'short',
+          });
+          
+          await supabase.functions.invoke('send-login-notification', {
+            body: {
+              email: loginData.email,
+              fullName: profile?.full_name || 'Utilisateur',
+              timestamp,
+              device: deviceInfo.deviceName,
+              browser: deviceInfo.browser,
+              os: deviceInfo.os,
+            }
+          });
+          
+          console.log('New device detected - notification email sent');
+        }
+      } catch (deviceError) {
+        // Don't block login if device tracking fails
+        console.error('Device tracking error:', deviceError);
       }
 
       toast({
