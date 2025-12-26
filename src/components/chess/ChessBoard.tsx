@@ -3,6 +3,14 @@ import { Chessboard } from 'react-chessboard';
 import { Chess, Square } from 'chess.js';
 import { Button } from '@/components/ui/button';
 import { RefreshCw } from 'lucide-react';
+import { 
+  Select, 
+  SelectContent, 
+  SelectItem, 
+  SelectTrigger, 
+  SelectValue 
+} from '@/components/ui/select';
+import type { DifficultyLevel } from '@/pages/ChessGame';
 
 interface ChessBoardProps {
   game: Chess;
@@ -10,6 +18,8 @@ interface ChessBoardProps {
   onNewGame: () => void;
   isThinking: boolean;
   gameStatus: string;
+  difficulty: DifficultyLevel;
+  onDifficultyChange: (difficulty: DifficultyLevel) => void;
 }
 
 const ChessBoard: React.FC<ChessBoardProps> = ({
@@ -17,7 +27,9 @@ const ChessBoard: React.FC<ChessBoardProps> = ({
   onMove,
   onNewGame,
   isThinking,
-  gameStatus
+  gameStatus,
+  difficulty,
+  onDifficultyChange
 }) => {
   const [moveFrom, setMoveFrom] = useState<Square | null>(null);
   const [optionSquares, setOptionSquares] = useState<Record<string, React.CSSProperties>>({});
@@ -105,8 +117,31 @@ const ChessBoard: React.FC<ChessBoardProps> = ({
     return 'text-muted-foreground';
   };
 
+  const getDifficultyLabel = () => {
+    switch (difficulty) {
+      case 'beginner': return '🌱 Débutant';
+      case 'intermediate': return '🎯 Intermédiaire';
+      case 'expert': return '🏆 Expert';
+    }
+  };
+
   return (
     <div className="flex flex-col gap-4">
+      {/* Difficulty Selector */}
+      <div className="flex items-center justify-center gap-3">
+        <span className="text-sm font-medium text-muted-foreground">Niveau:</span>
+        <Select value={difficulty} onValueChange={(value) => onDifficultyChange(value as DifficultyLevel)}>
+          <SelectTrigger className="w-44">
+            <SelectValue placeholder="Niveau" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="beginner">🌱 Débutant</SelectItem>
+            <SelectItem value="intermediate">🎯 Intermédiaire</SelectItem>
+            <SelectItem value="expert">🏆 Expert</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
+
       {/* Game Status */}
       <div className="text-center">
         <p className={`font-semibold ${getStatusColor()}`}>

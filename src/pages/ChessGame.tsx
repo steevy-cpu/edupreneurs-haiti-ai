@@ -17,6 +17,52 @@ interface ChatMessage {
   timestamp: Date;
 }
 
+export type DifficultyLevel = 'beginner' | 'intermediate' | 'expert';
+
+// Helper to convert SAN to UCI if needed
+const sanToUci = (game: Chess, sanOrUci: string): string | null => {
+  // If already looks like UCI (4-5 chars, starts with file), return as-is
+  if (/^[a-h][1-8][a-h][1-8][qrbnk]?$/.test(sanOrUci)) {
+    return sanOrUci;
+  }
+  
+  // Try to parse as SAN and convert to UCI
+  try {
+    const gameCopy = new Chess(game.fen());
+    const move = gameCopy.move(sanOrUci);
+    if (move) {
+      return move.from + move.to + (move.promotion || '');
+    }
+  } catch (e) {
+    console.log('Could not convert SAN to UCI:', sanOrUci);
+  }
+  
+  return null;
+};
+
+// Generate a fallback explanation based on move type
+const generateFallbackExplanation = (move: { san: string; captured?: string; flags: string }): string => {
+  const explanations: string[] = [];
+  
+  if (move.captured) {
+    explanations.push(`Je capture ta pièce avec ${move.san}! 🎯`);
+  } else if (move.flags.includes('k') || move.flags.includes('q')) {
+    explanations.push(`Je fais le roque pour mettre mon roi en sécurité! 🏰`);
+  } else if (move.san.startsWith('N')) {
+    explanations.push(`Je développe mon cavalier! 🐴 Bonne position au centre.`);
+  } else if (move.san.startsWith('B')) {
+    explanations.push(`Je place mon fou sur une belle diagonale! 📐`);
+  } else if (move.san.startsWith('Q')) {
+    explanations.push(`Je bouge ma dame pour contrôler plus de cases! 👑`);
+  } else if (move.san.startsWith('R')) {
+    explanations.push(`Je positionne ma tour sur une colonne ouverte! 🏰`);
+  } else {
+    explanations.push(`Je joue ${move.san}! C'est un bon coup pour ma position. 🎯`);
+  }
+  
+  return explanations[0];
+};
+
 const ChessGame: React.FC = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -26,6 +72,7 @@ const ChessGame: React.FC = () => {
   const [isThinking, setIsThinking] = useState(false);
   const [userNickname, setUserNickname] = useState('');
   const [gameStatus, setGameStatus] = useState("C'est ton tour!");
+  const [difficulty, setDifficulty] = useState<DifficultyLevel>('intermediate');
 
   // Fetch user profile
   useEffect(() => {
@@ -75,11 +122,39 @@ const ChessGame: React.FC = () => {
           chatHistory: messages.slice(-10),
           userMessage,
           userNickname,
-          isEricTurn
+          isEricTurn,
+          difficulty
         }
       });
 
-      if (error) throw error;
+      if (error) {
+        // Handle rate limit and payment errors
+        if (error.message?.includes('429')) {
+          toast({
+            title: "Trop de requêtes",
+            description: "Attends quelques secondes avant de réessayer.",
+            variant: "destructive"
+          });
+        } else if (error.message?.includes('402')) {
+          toast({
+            title: "Service indisponible",
+            description: "Le service est temporairement indisponible.",
+            variant: "destructive"
+          });
+        }
+        throw error;
+      }
+      
+      // Handle rate limit error in response
+      if (data?.error === 'rate_limit' || data?.error === 'payment_required') {
+        toast({
+          title: data.error === 'rate_limit' ? "Trop de requêtes" : "Service indisponible",
+          description: data.message,
+          variant: "destructive"
+        });
+        throw new Error(data.message);
+      }
+      
       return data;
     } catch (error) {
       console.error('Error calling chess AI:', error);
@@ -97,14 +172,17 @@ const ChessGame: React.FC = () => {
     setIsThinking(true);
     try {
       const currentFen = currentGame.fen();
-      console.log('Eric making move, FEN:', currentFen, 'Turn:', currentGame.turn());
+      console.log('Eric making move, FEN:', currentFen, 'Turn:', currentGame.turn(), 'Difficulty:', difficulty);
       
       const response = await callChessAI(true, undefined, currentFen);
+      const gameCopy = new Chess(currentFen);
 
+      // Try to make the AI's suggested move
       if (response.type === 'move' && response.move) {
-        const gameCopy = new Chess(currentFen);
+        let moveSucceeded = false;
+        let moveResult = null;
         
-        // Parse the move
+        // First try the move as-is (UCI format)
         const from = response.move.substring(0, 2);
         const to = response.move.substring(2, 4);
         const promotion = response.move.length > 4 ? response.move[4] : undefined;
@@ -112,57 +190,121 @@ const ChessGame: React.FC = () => {
         console.log('Eric attempting move:', { from, to, promotion, currentTurn: gameCopy.turn() });
 
         try {
-          const moveResult = gameCopy.move({ from, to, promotion });
-          
+          moveResult = gameCopy.move({ from, to, promotion });
           if (moveResult) {
-            // Play sound based on move type
-            if (moveResult.captured) {
-              playSound('capture');
-            } else {
-              playSound('move');
-            }
-            
-            setGame(gameCopy);
-            
-            // Add Eric's explanation to chat
-            if (response.explanation) {
-              setMessages(prev => [...prev, {
-                role: 'assistant',
-                content: response.explanation,
-                timestamp: new Date()
-              }]);
-            }
-          } else {
-            throw new Error('Invalid move returned');
+            moveSucceeded = true;
           }
-        } catch (moveError) {
-          console.error('Move error:', moveError, 'Attempted:', { from, to });
-          // Try to get any valid move for Black
-          const validMoves = gameCopy.moves({ verbose: true });
-          console.log('Valid moves for Black:', validMoves.map(m => m.san));
-          if (validMoves.length > 0) {
-            const randomMove = validMoves[Math.floor(Math.random() * validMoves.length)];
-            gameCopy.move(randomMove);
-            setGame(gameCopy);
-            setMessages(prev => [...prev, {
-              role: 'assistant',
-              content: `Je joue ${randomMove.san}! 🎯`,
-              timestamp: new Date()
-            }]);
+        } catch (e) {
+          console.log('Direct UCI move failed, trying SAN conversion');
+        }
+
+        // If UCI failed, try converting from SAN
+        if (!moveSucceeded) {
+          const uciMove = sanToUci(gameCopy, response.move);
+          if (uciMove) {
+            try {
+              const uciFrom = uciMove.substring(0, 2);
+              const uciTo = uciMove.substring(2, 4);
+              const uciPromotion = uciMove.length > 4 ? uciMove[4] : undefined;
+              moveResult = gameCopy.move({ from: uciFrom, to: uciTo, promotion: uciPromotion });
+              if (moveResult) {
+                moveSucceeded = true;
+                console.log('SAN to UCI conversion succeeded:', response.move, '->', uciMove);
+              }
+            } catch (e) {
+              console.log('SAN to UCI move also failed');
+            }
           }
         }
+
+        if (moveSucceeded && moveResult) {
+          // Play sound based on move type
+          if (moveResult.captured) {
+            playSound('capture');
+          } else {
+            playSound('move');
+          }
+          
+          setGame(gameCopy);
+          
+          // Add Eric's explanation to chat - always show something
+          const explanation = response.explanation || generateFallbackExplanation(moveResult);
+          setMessages(prev => [...prev, {
+            role: 'assistant',
+            content: explanation,
+            timestamp: new Date()
+          }]);
+          
+          return; // Success, exit early
+        }
+        
+        // Move failed - try fallback
+        console.error('Move error, attempting fallback. Attempted:', response.move);
+      }
+
+      // Handle chat response or fallback
+      if (response.type === 'chat' && response.message) {
+        setMessages(prev => [...prev, {
+          role: 'assistant',
+          content: response.message,
+          timestamp: new Date()
+        }]);
+      }
+
+      // If we reach here, we need a fallback move
+      const validMoves = gameCopy.moves({ verbose: true });
+      console.log('Using fallback. Valid moves for Black:', validMoves.map(m => m.san));
+      
+      if (validMoves.length > 0) {
+        // Pick a random move as fallback
+        const randomMove = validMoves[Math.floor(Math.random() * validMoves.length)];
+        gameCopy.move(randomMove);
+        
+        if (randomMove.captured) {
+          playSound('capture');
+        } else {
+          playSound('move');
+        }
+        
+        setGame(gameCopy);
+        
+        // Generate a proper explanation for the fallback move
+        const fallbackExplanation = generateFallbackExplanation(randomMove);
+        setMessages(prev => [...prev, {
+          role: 'assistant',
+          content: fallbackExplanation,
+          timestamp: new Date()
+        }]);
       }
     } catch (error) {
       console.error('Error making Eric move:', error);
-      toast({
-        title: "Erreur",
-        description: "Eric n'a pas pu jouer. Réessaie!",
-        variant: "destructive"
-      });
+      
+      // Even on error, try to make a move so the game continues
+      const gameCopy = new Chess(currentGame.fen());
+      const validMoves = gameCopy.moves({ verbose: true });
+      
+      if (validMoves.length > 0) {
+        const randomMove = validMoves[Math.floor(Math.random() * validMoves.length)];
+        gameCopy.move(randomMove);
+        playSound('move');
+        setGame(gameCopy);
+        
+        setMessages(prev => [...prev, {
+          role: 'assistant',
+          content: `Je joue ${randomMove.san}! Désolé, j'ai eu un petit problème de connexion. 😅`,
+          timestamp: new Date()
+        }]);
+      } else {
+        toast({
+          title: "Erreur",
+          description: "Eric n'a pas pu jouer. Réessaie!",
+          variant: "destructive"
+        });
+      }
     } finally {
       setIsThinking(false);
     }
-  }, [messages, userNickname, toast, playSound]);
+  }, [messages, userNickname, toast, playSound, difficulty]);
 
   const handlePlayerMove = useCallback((from: string, to: string, promotion?: string): boolean => {
     const gameCopy = new Chess(game.fen());
@@ -206,13 +348,48 @@ const ChessGame: React.FC = () => {
   const handleNewGame = useCallback(() => {
     playSound('gameStart');
     setGame(new Chess());
+    
+    const difficultyNames = {
+      beginner: 'débutant 🌱',
+      intermediate: 'intermédiaire 🎯',
+      expert: 'expert 🏆'
+    };
+    
     setMessages([{
       role: 'assistant',
-      content: `🎮 Nouvelle partie! Tu joues les blancs, je joue les noirs. Bonne chance ${userNickname || 'mon ami'}! ♟️`,
+      content: `🎮 Nouvelle partie! Tu joues les blancs, je joue les noirs en mode ${difficultyNames[difficulty]}. Bonne chance ${userNickname || 'mon ami'}! ♟️`,
       timestamp: new Date()
     }]);
     setGameStatus("C'est ton tour!");
-  }, [userNickname, playSound]);
+  }, [userNickname, playSound, difficulty]);
+
+  const handleDifficultyChange = useCallback((newDifficulty: DifficultyLevel) => {
+    setDifficulty(newDifficulty);
+    
+    const difficultyNames = {
+      beginner: 'débutant 🌱',
+      intermediate: 'intermédiaire 🎯',
+      expert: 'expert 🏆'
+    };
+    
+    toast({
+      title: "Niveau changé",
+      description: `Je joue maintenant en mode ${difficultyNames[newDifficulty]}!`
+    });
+    
+    // Add a message from Eric acknowledging the change
+    setMessages(prev => [...prev, {
+      role: 'assistant',
+      content: `D'accord! Je vais maintenant jouer en mode ${difficultyNames[newDifficulty]}. ${
+        newDifficulty === 'beginner' 
+          ? "Je ferai des erreurs pour que tu puisses apprendre! 😊" 
+          : newDifficulty === 'expert'
+          ? "Attention, je vais jouer mes meilleurs coups! 💪"
+          : "Je vais jouer de manière équilibrée. 🎯"
+      }`,
+      timestamp: new Date()
+    }]);
+  }, [toast]);
 
   const handleSendMessage = useCallback(async (message: string) => {
     // Add user message
@@ -243,14 +420,14 @@ const ChessGame: React.FC = () => {
     } finally {
       setIsThinking(false);
     }
-  }, [game, messages, userNickname]);
+  }, [game, messages, userNickname, difficulty]);
 
   // Initialize welcome message
   useEffect(() => {
     if (messages.length === 0 && userNickname) {
       setMessages([{
         role: 'assistant',
-        content: `👋 Salut ${userNickname}! Je suis Eric, ton coach d'échecs. Tu joues les blancs, moi les noirs. Fais ton premier coup et je t'expliquerai ma stratégie! ♟️🎯`,
+        content: `👋 Salut ${userNickname}! Je suis Eric, ton coach d'échecs. Tu joues les blancs, moi les noirs. Choisis ton niveau de difficulté et fais ton premier coup! ♟️🎯`,
         timestamp: new Date()
       }]);
     }
@@ -298,6 +475,8 @@ const ChessGame: React.FC = () => {
                   onNewGame={handleNewGame}
                   isThinking={isThinking}
                   gameStatus={gameStatus}
+                  difficulty={difficulty}
+                  onDifficultyChange={handleDifficultyChange}
                 />
               </Card>
             </div>
