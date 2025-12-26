@@ -17,6 +17,176 @@ interface ConfirmationEmailRequest {
   confirmationCode: string;
 }
 
+const getEmailTemplate = (fullName: string, nickname: string, academicGrade: string, email: string, confirmationCode: string) => `
+<!DOCTYPE html>
+<html lang="fr">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="color-scheme" content="light">
+    <meta name="supported-color-schemes" content="light">
+    <title>Confirmez votre inscription</title>
+    <!--[if mso]>
+    <noscript>
+      <xml>
+        <o:OfficeDocumentSettings>
+          <o:PixelsPerInch>96</o:PixelsPerInch>
+        </o:OfficeDocumentSettings>
+      </xml>
+    </noscript>
+    <![endif]-->
+  </head>
+  <body style="margin: 0; padding: 0; background-color: #f8fafc; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale;">
+    <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="background-color: #f8fafc;">
+      <tr>
+        <td style="padding: 40px 20px;">
+          <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="600" style="margin: 0 auto; max-width: 600px;">
+            
+            <!-- Logo Header -->
+            <tr>
+              <td style="text-align: center; padding-bottom: 30px;">
+                <table role="presentation" cellspacing="0" cellpadding="0" border="0" style="margin: 0 auto;">
+                  <tr>
+                    <td style="background: linear-gradient(135deg, #8b5cf6 0%, #6366f1 50%, #3b82f6 100%); border-radius: 16px; padding: 12px 24px;">
+                      <span style="font-size: 28px; font-weight: 800; color: #ffffff; letter-spacing: -0.5px;">Edupreneurs</span>
+                    </td>
+                  </tr>
+                </table>
+              </td>
+            </tr>
+            
+            <!-- Main Card -->
+            <tr>
+              <td>
+                <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="background: #ffffff; border-radius: 24px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1); overflow: hidden;">
+                  
+                  <!-- Hero Section -->
+                  <tr>
+                    <td style="background: linear-gradient(135deg, #8b5cf6 0%, #6366f1 50%, #3b82f6 100%); padding: 50px 40px; text-align: center;">
+                      <div style="font-size: 64px; margin-bottom: 16px;">✉️</div>
+                      <h1 style="margin: 0 0 12px 0; font-size: 32px; font-weight: 800; color: #ffffff; letter-spacing: -0.5px;">
+                        Vérifiez votre email
+                      </h1>
+                      <p style="margin: 0; font-size: 18px; color: rgba(255, 255, 255, 0.9); font-weight: 500;">
+                        Plus qu'une étape pour rejoindre l'aventure !
+                      </p>
+                    </td>
+                  </tr>
+                  
+                  <!-- Content -->
+                  <tr>
+                    <td style="padding: 40px;">
+                      <p style="margin: 0 0 24px 0; font-size: 18px; color: #1e293b; line-height: 1.7;">
+                        Bonjour <strong style="color: #6366f1;">${fullName}</strong> 👋
+                      </p>
+                      <p style="margin: 0 0 32px 0; font-size: 16px; color: #475569; line-height: 1.8;">
+                        Bienvenue sur Edupreneurs ! Pour activer votre compte et commencer votre parcours d'apprentissage, veuillez utiliser le code de confirmation ci-dessous.
+                      </p>
+                      
+                      <!-- Code Box -->
+                      <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="margin-bottom: 32px;">
+                        <tr>
+                          <td style="background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%); border: 2px dashed #cbd5e1; border-radius: 16px; padding: 32px; text-align: center;">
+                            <p style="margin: 0 0 12px 0; font-size: 14px; color: #64748b; font-weight: 600; text-transform: uppercase; letter-spacing: 1px;">
+                              Votre code de confirmation
+                            </p>
+                            <div style="font-size: 42px; font-weight: 800; color: #6366f1; letter-spacing: 8px; font-family: 'SF Mono', SFMono-Regular, Consolas, 'Liberation Mono', Menlo, monospace;">
+                              ${confirmationCode}
+                            </div>
+                          </td>
+                        </tr>
+                      </table>
+                      
+                      <!-- Divider -->
+                      <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="margin-bottom: 32px;">
+                        <tr>
+                          <td style="height: 1px; background: linear-gradient(to right, transparent, #e2e8f0, transparent);"></td>
+                        </tr>
+                      </table>
+                      
+                      <!-- Account Info -->
+                      <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="background: #f8fafc; border-radius: 16px; overflow: hidden; margin-bottom: 32px;">
+                        <tr>
+                          <td style="padding: 24px;">
+                            <h3 style="margin: 0 0 20px 0; font-size: 16px; font-weight: 700; color: #1e293b;">
+                              📋 Informations de votre compte
+                            </h3>
+                            
+                            <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
+                              <tr>
+                                <td style="padding: 12px 0; border-bottom: 1px solid #e2e8f0;">
+                                  <span style="font-size: 14px; color: #64748b;">Nom complet</span>
+                                </td>
+                                <td style="padding: 12px 0; border-bottom: 1px solid #e2e8f0; text-align: right;">
+                                  <span style="font-size: 14px; color: #1e293b; font-weight: 600;">${fullName}</span>
+                                </td>
+                              </tr>
+                              <tr>
+                                <td style="padding: 12px 0; border-bottom: 1px solid #e2e8f0;">
+                                  <span style="font-size: 14px; color: #64748b;">Pseudo</span>
+                                </td>
+                                <td style="padding: 12px 0; border-bottom: 1px solid #e2e8f0; text-align: right;">
+                                  <span style="font-size: 14px; color: #1e293b; font-weight: 600;">@${nickname}</span>
+                                </td>
+                              </tr>
+                              <tr>
+                                <td style="padding: 12px 0; border-bottom: 1px solid #e2e8f0;">
+                                  <span style="font-size: 14px; color: #64748b;">Niveau</span>
+                                </td>
+                                <td style="padding: 12px 0; border-bottom: 1px solid #e2e8f0; text-align: right;">
+                                  <span style="font-size: 14px; color: #1e293b; font-weight: 600;">${academicGrade}</span>
+                                </td>
+                              </tr>
+                              <tr>
+                                <td style="padding: 12px 0;">
+                                  <span style="font-size: 14px; color: #64748b;">Email</span>
+                                </td>
+                                <td style="padding: 12px 0; text-align: right;">
+                                  <span style="font-size: 14px; color: #1e293b; font-weight: 600;">${email}</span>
+                                </td>
+                              </tr>
+                            </table>
+                          </td>
+                        </tr>
+                      </table>
+                      
+                      <!-- Security Notice -->
+                      <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
+                        <tr>
+                          <td style="background: #fef3c7; border-left: 4px solid #f59e0b; border-radius: 0 12px 12px 0; padding: 16px 20px;">
+                            <p style="margin: 0; font-size: 14px; color: #92400e; line-height: 1.6;">
+                              <strong>🔒 Important :</strong> Gardez ce code en sécurité et ne le partagez avec personne.
+                            </p>
+                          </td>
+                        </tr>
+                      </table>
+                    </td>
+                  </tr>
+                  
+                </table>
+              </td>
+            </tr>
+            
+            <!-- Footer -->
+            <tr>
+              <td style="padding: 40px 20px; text-align: center;">
+                <p style="margin: 0 0 12px 0; font-size: 14px; color: #64748b;">
+                  Si vous n'avez pas créé ce compte, veuillez ignorer cet email.
+                </p>
+                <p style="margin: 0; font-size: 13px; color: #94a3b8;">
+                  © 2025 Edupreneurs. Tous droits réservés.
+                </p>
+              </td>
+            </tr>
+            
+          </table>
+        </td>
+      </tr>
+    </table>
+  </body>
+</html>
+`;
+
 const handler = async (req: Request): Promise<Response> => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -31,92 +201,8 @@ const handler = async (req: Request): Promise<Response> => {
     const emailResponse = await resend.emails.send({
       from: "Edupreneurs <noreply@mon-edupreneur.com>",
       to: [email],
-      subject: "Bienvenue ! Confirmez votre inscription",
-      html: `
-        <!DOCTYPE html>
-        <html>
-          <head>
-            <style>
-              body {
-                font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-                line-height: 1.6;
-                color: #333;
-                max-width: 600px;
-                margin: 0 auto;
-                padding: 20px;
-              }
-              .header {
-                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-                color: white;
-                padding: 30px;
-                text-align: center;
-                border-radius: 10px 10px 0 0;
-              }
-              .content {
-                background: #f9fafb;
-                padding: 30px;
-                border-radius: 0 0 10px 10px;
-              }
-              .code-box {
-                background: white;
-                border: 2px solid #667eea;
-                border-radius: 8px;
-                padding: 20px;
-                text-align: center;
-                margin: 20px 0;
-              }
-              .code {
-                font-size: 32px;
-                font-weight: bold;
-                color: #667eea;
-                letter-spacing: 5px;
-              }
-              .info-box {
-                background: white;
-                border-left: 4px solid #667eea;
-                padding: 15px;
-                margin: 15px 0;
-              }
-              .footer {
-                text-align: center;
-                padding: 20px;
-                color: #666;
-                font-size: 12px;
-              }
-            </style>
-          </head>
-          <body>
-            <div class="header">
-              <h1>🎓 Bienvenue sur notre plateforme !</h1>
-            </div>
-            <div class="content">
-              <h2>Bonjour ${fullName} !</h2>
-              <p>Merci de vous être inscrit sur notre plateforme d'éducation. Nous sommes ravis de vous accueillir !</p>
-              
-              <div class="code-box">
-                <p style="margin: 0; color: #666;">Votre code de confirmation :</p>
-                <div class="code">${confirmationCode}</div>
-              </div>
-              
-              <div class="info-box">
-                <h3 style="margin-top: 0;">📋 Informations de votre compte :</h3>
-                <p><strong>Nom complet :</strong> ${fullName}</p>
-                <p><strong>Pseudo :</strong> ${nickname}</p>
-                <p><strong>Niveau académique :</strong> ${academicGrade}</p>
-                <p><strong>Email :</strong> ${email}</p>
-              </div>
-              
-              <p>Ce code de confirmation a également été envoyé sur WhatsApp. Vous pouvez l'utiliser pour vérifier votre compte.</p>
-              
-              <p><strong>Important :</strong> Gardez ce code en sécurité et ne le partagez avec personne.</p>
-            </div>
-            <div class="footer">
-              <p>Si vous n'avez pas créé ce compte, veuillez ignorer cet email.</p>
-              <p>© 2025 Edupreneurs. Tous droits réservés.</p>
-            </div>
-          </body>
-        </html>
-      `,
+      subject: "✉️ Confirmez votre inscription - Edupreneurs",
+      html: getEmailTemplate(fullName, nickname, academicGrade, email, confirmationCode),
     });
 
     console.log("Email sent successfully:", emailResponse);
