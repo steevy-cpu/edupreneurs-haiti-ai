@@ -12,9 +12,10 @@ const corsHeaders = {
 interface PasswordResetRequest {
   email: string;
   resetUrl: string;
+  fullName?: string;
 }
 
-const getEmailTemplate = (resetUrl: string) => `
+const getEmailTemplate = (resetUrl: string, fullName?: string) => `
 <!DOCTYPE html>
 <html lang="fr">
   <head>
@@ -59,7 +60,7 @@ const getEmailTemplate = (resetUrl: string) => `
                   <tr>
                     <td style="padding: 40px;">
                       <p style="margin: 0 0 24px 0; font-size: 18px; color: #1e293b; line-height: 1.7;">
-                        Bonjour 👋
+                        Bonjour ${fullName ? `<strong style="color: #f97316;">${fullName}</strong>` : ''} 👋
                       </p>
                       <p style="margin: 0 0 32px 0; font-size: 16px; color: #475569; line-height: 1.8;">
                         Nous avons reçu une demande de réinitialisation de mot de passe pour votre compte Edupreneurs. Cliquez sur le bouton ci-dessous pour créer un nouveau mot de passe.
@@ -206,7 +207,7 @@ const handler = async (req: Request): Promise<Response> => {
   }
 
   try {
-    const { email, resetUrl }: PasswordResetRequest = await req.json();
+    const { email, resetUrl, fullName }: PasswordResetRequest = await req.json();
 
     console.log("Sending password reset email to:", email);
 
@@ -214,7 +215,7 @@ const handler = async (req: Request): Promise<Response> => {
       from: "Edupreneurs <noreply@mon-edupreneur.com>",
       to: [email],
       subject: "🔐 Réinitialisation de votre mot de passe - Edupreneurs",
-      html: getEmailTemplate(resetUrl),
+      html: getEmailTemplate(resetUrl, fullName),
     });
 
     console.log("Password reset email sent successfully:", emailResponse);
