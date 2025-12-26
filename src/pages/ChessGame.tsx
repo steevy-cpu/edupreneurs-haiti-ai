@@ -423,12 +423,24 @@ const ChessGame: React.FC = () => {
     }
   }, [game, messages, userNickname, difficulty]);
 
+  const handleRequestTutorial = useCallback(() => {
+    setIsChatOpen(true);
+    setMessages(prev => [...prev, {
+      role: 'user',
+      content: "Apprends-moi à jouer aux échecs!",
+      timestamp: new Date()
+    }]);
+    
+    // Send tutorial request to AI
+    handleSendMessage("Donne-moi un tutoriel sur les règles de base des échecs: comment les pièces bougent, le but du jeu, et des conseils pour débuter.");
+  }, [handleSendMessage]);
+
   // Initialize welcome message
   useEffect(() => {
     if (messages.length === 0 && userNickname) {
       setMessages([{
         role: 'assistant',
-        content: `👋 Salut ${userNickname}! Je suis Eric, ton coach d'échecs. Tu joues les blancs, moi les noirs. Choisis ton niveau de difficulté et fais ton premier coup! ♟️🎯`,
+        content: `👋 Salut ${userNickname}! Je suis Eric, ton coach d'échecs. Tu joues les blancs, moi les noirs. Choisis ton niveau de difficulté et fais ton premier coup! ♟️🎯\n\n💡 Clique sur "Tutoriel" si tu veux apprendre les règles!`,
         timestamp: new Date()
       }]);
     }
@@ -474,6 +486,7 @@ const ChessGame: React.FC = () => {
                   game={game}
                   onMove={handlePlayerMove}
                   onNewGame={handleNewGame}
+                  onRequestTutorial={handleRequestTutorial}
                   isThinking={isThinking}
                   gameStatus={gameStatus}
                   difficulty={difficulty}

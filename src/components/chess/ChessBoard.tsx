@@ -2,7 +2,7 @@ import React, { useState, useCallback } from 'react';
 import { Chessboard } from 'react-chessboard';
 import { Chess, Square } from 'chess.js';
 import { Button } from '@/components/ui/button';
-import { RefreshCw } from 'lucide-react';
+import { RefreshCw, GraduationCap } from 'lucide-react';
 import { 
   Select, 
   SelectContent, 
@@ -16,6 +16,7 @@ interface ChessBoardProps {
   game: Chess;
   onMove: (from: string, to: string, promotion?: string) => boolean;
   onNewGame: () => void;
+  onRequestTutorial: () => void;
   isThinking: boolean;
   gameStatus: string;
   difficulty: DifficultyLevel;
@@ -26,6 +27,7 @@ const ChessBoard: React.FC<ChessBoardProps> = ({
   game,
   onMove,
   onNewGame,
+  onRequestTutorial,
   isThinking,
   gameStatus,
   difficulty,
@@ -182,6 +184,16 @@ const ChessBoard: React.FC<ChessBoardProps> = ({
         >
           <RefreshCw className="w-4 h-4" />
           Nouvelle partie
+        </Button>
+        <Button
+          variant="secondary"
+          size="sm"
+          onClick={onRequestTutorial}
+          className="gap-2"
+          disabled={isThinking}
+        >
+          <GraduationCap className="w-4 h-4" />
+          Tutoriel
         </Button>
       </div>
 
