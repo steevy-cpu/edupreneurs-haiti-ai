@@ -60,7 +60,7 @@ const getEmailTemplate = (resetUrl: string, fullName?: string) => `
                   <tr>
                     <td style="padding: 40px;">
                       <p style="margin: 0 0 24px 0; font-size: 18px; color: #1e293b; line-height: 1.7;">
-                        Bonjour ${fullName ? `<strong style="color: #f97316;">${fullName}</strong>` : ''} 👋
+                        Salut ${fullName ? `<strong style="color: #f97316;">${fullName}</strong>` : ''} 👋
                       </p>
                       <p style="margin: 0 0 32px 0; font-size: 16px; color: #475569; line-height: 1.8;">
                         Nous avons reçu une demande de réinitialisation de mot de passe pour votre compte Edupreneurs. Cliquez sur le bouton ci-dessous pour créer un nouveau mot de passe.
