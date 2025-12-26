@@ -1327,6 +1327,7 @@ export type Database = {
           bio: string | null
           confirmation_code: string | null
           created_at: string | null
+          date_of_birth: string | null
           email_confirmed: boolean | null
           full_name: string
           gender: string | null
@@ -1351,6 +1352,7 @@ export type Database = {
           bio?: string | null
           confirmation_code?: string | null
           created_at?: string | null
+          date_of_birth?: string | null
           email_confirmed?: boolean | null
           full_name: string
           gender?: string | null
@@ -1375,6 +1377,7 @@ export type Database = {
           bio?: string | null
           confirmation_code?: string | null
           created_at?: string | null
+          date_of_birth?: string | null
           email_confirmed?: boolean | null
           full_name?: string
           gender?: string | null

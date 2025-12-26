@@ -33,6 +33,7 @@ export default function Auth() {
     password: "",
     school: "",
     gender: "",
+    dateOfBirth: "",
     privacy: false,
     payment: "",
   });
@@ -588,6 +589,7 @@ export default function Auth() {
           phone_number: signupData.phoneNumber,
           school: signupData.school,
           gender: signupData.gender,
+          date_of_birth: signupData.dateOfBirth || null,
           email_confirmed: false,
           phone_confirmed: false,
           confirmation_code: confirmationCode.trim(),
@@ -1312,6 +1314,25 @@ export default function Auth() {
                               className="auth-input"
                             />
                           </div>
+                        </div>
+
+                        <div className="space-y-2">
+                          <Label htmlFor="signup-dob" className="text-sm text-muted-foreground">
+                            Date de naissance 🎂
+                          </Label>
+                          <Input
+                            id="signup-dob"
+                            type="date"
+                            placeholder="JJ/MM/AAAA"
+                            value={signupData.dateOfBirth}
+                            max={new Date().toISOString().split('T')[0]}
+                            min="1950-01-01"
+                            onChange={(e) => setSignupData({ ...signupData, dateOfBirth: e.target.value })}
+                            className="auth-input"
+                          />
+                          <p className="text-xs text-muted-foreground">
+                            Pour recevoir un email spécial le jour de votre anniversaire! 🎉
+                          </p>
                         </div>
 
                         <div className="flex gap-2 mt-4">
