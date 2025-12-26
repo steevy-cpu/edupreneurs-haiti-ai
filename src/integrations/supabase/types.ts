@@ -1048,6 +1048,42 @@ export type Database = {
         }
         Relationships: []
       }
+      passion_activity_videos: {
+        Row: {
+          activity_id: string
+          category_id: string
+          created_at: string | null
+          id: string
+          module_id: string
+          title: string | null
+          updated_at: string | null
+          updated_by: string | null
+          youtube_url: string | null
+        }
+        Insert: {
+          activity_id: string
+          category_id: string
+          created_at?: string | null
+          id?: string
+          module_id: string
+          title?: string | null
+          updated_at?: string | null
+          updated_by?: string | null
+          youtube_url?: string | null
+        }
+        Update: {
+          activity_id?: string
+          category_id?: string
+          created_at?: string | null
+          id?: string
+          module_id?: string
+          title?: string | null
+          updated_at?: string | null
+          updated_by?: string | null
+          youtube_url?: string | null
+        }
+        Relationships: []
+      }
       passion_module_progress: {
         Row: {
           category_id: string

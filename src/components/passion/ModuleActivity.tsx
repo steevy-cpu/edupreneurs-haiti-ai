@@ -6,6 +6,7 @@ import { CheckCircle2, Play, Youtube, FileText, Brain, Trophy, XCircle } from "l
 import { Badge } from "@/components/ui/badge";
 import { YouTubeVideoSection } from "@/components/YouTubeVideoSection";
 import { getActivitiesForModule, type ActivityContent } from "@/data/passionActivities";
+import { usePassionModuleVideos } from "@/hooks/usePassionVideos";
 import { toast } from "sonner";
 
 interface Activity {
@@ -48,9 +49,19 @@ export const ModuleActivity = ({
   const completedCount = activities.filter(a => a.completed).length;
   const progressPercentage = (completedCount / activities.length) * 100;
 
+  // Fetch custom videos for this module
+  const { data: customVideos } = usePassionModuleVideos(categoryId, moduleId);
+
   // Get real activity content if available
   const realActivities = getActivitiesForModule(categoryId, moduleId);
   const currentRealActivity = realActivities?.find(a => a.id === selectedActivity?.id);
+
+  // Get custom video URL for an activity
+  const getCustomVideoUrl = (activityId: string): string | null => {
+    if (!customVideos) return null;
+    const video = customVideos.find(v => v.activity_id === activityId);
+    return video?.youtube_url || null;
+  };
 
   const getActivityIcon = (type: string) => {
     switch (type) {
@@ -145,6 +156,7 @@ export const ModuleActivity = ({
                 lessonTitle={`${moduleTitle} - ${selectedActivity.title}`}
                 objectives={selectedActivity.description}
                 subject={categoryId}
+                customYoutubeUrl={getCustomVideoUrl(selectedActivity.id) || undefined}
               />
               <p className="text-sm text-muted-foreground text-center">
                 Regarde ces vidéos pour découvrir et apprendre sur ce sujet passionnant!
