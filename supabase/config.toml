@@ -66,6 +66,12 @@ verify_jwt = false
 [functions.send-farewell-email]
 verify_jwt = false
 
+[functions.send-birthday-email]
+verify_jwt = false
+
+[functions.check-birthdays]
+verify_jwt = false
+
 [functions.reset-password]
 verify_jwt = false
 
