@@ -14,6 +14,198 @@ interface PasswordResetRequest {
   resetUrl: string;
 }
 
+const getEmailTemplate = (resetUrl: string) => `
+<!DOCTYPE html>
+<html lang="fr">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="color-scheme" content="light">
+    <meta name="supported-color-schemes" content="light">
+    <title>Réinitialisation de mot de passe</title>
+  </head>
+  <body style="margin: 0; padding: 0; background-color: #f8fafc; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale;">
+    <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="background-color: #f8fafc;">
+      <tr>
+        <td style="padding: 40px 20px;">
+          <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="600" style="margin: 0 auto; max-width: 600px;">
+            
+            <!-- Logo Header -->
+            <tr>
+              <td style="text-align: center; padding-bottom: 30px;">
+                <table role="presentation" cellspacing="0" cellpadding="0" border="0" style="margin: 0 auto;">
+                  <tr>
+                    <td style="background: linear-gradient(135deg, #8b5cf6 0%, #6366f1 50%, #3b82f6 100%); border-radius: 16px; padding: 12px 24px;">
+                      <span style="font-size: 28px; font-weight: 800; color: #ffffff; letter-spacing: -0.5px;">Edupreneurs</span>
+                    </td>
+                  </tr>
+                </table>
+              </td>
+            </tr>
+            
+            <!-- Main Card -->
+            <tr>
+              <td>
+                <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="background: #ffffff; border-radius: 24px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1); overflow: hidden;">
+                  
+                  <!-- Hero Section -->
+                  <tr>
+                    <td style="background: linear-gradient(135deg, #f97316 0%, #ea580c 50%, #dc2626 100%); padding: 50px 40px; text-align: center;">
+                      <div style="font-size: 64px; margin-bottom: 16px;">🔐</div>
+                      <h1 style="margin: 0 0 12px 0; font-size: 32px; font-weight: 800; color: #ffffff; letter-spacing: -0.5px;">
+                        Réinitialisation
+                      </h1>
+                      <p style="margin: 0; font-size: 18px; color: rgba(255, 255, 255, 0.9); font-weight: 500;">
+                        de votre mot de passe
+                      </p>
+                    </td>
+                  </tr>
+                  
+                  <!-- Content -->
+                  <tr>
+                    <td style="padding: 40px;">
+                      <p style="margin: 0 0 24px 0; font-size: 18px; color: #1e293b; line-height: 1.7;">
+                        Bonjour 👋
+                      </p>
+                      <p style="margin: 0 0 32px 0; font-size: 16px; color: #475569; line-height: 1.8;">
+                        Nous avons reçu une demande de réinitialisation de mot de passe pour votre compte Edupreneurs. Cliquez sur le bouton ci-dessous pour créer un nouveau mot de passe.
+                      </p>
+                      
+                      <!-- CTA Button -->
+                      <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="margin-bottom: 24px;">
+                        <tr>
+                          <td style="text-align: center;">
+                            <a href="${resetUrl}" style="display: inline-block; background: linear-gradient(135deg, #f97316 0%, #ea580c 100%); color: #ffffff; text-decoration: none; padding: 16px 48px; border-radius: 12px; font-weight: 700; font-size: 16px; box-shadow: 0 4px 14px -3px rgba(249, 115, 22, 0.4);">
+                              🔑 Réinitialiser mon mot de passe
+                            </a>
+                          </td>
+                        </tr>
+                        <tr>
+                          <td style="text-align: center; padding-top: 12px;">
+                            <p style="margin: 0; font-size: 13px; color: #94a3b8;">
+                              Ce lien est valide pendant 1 heure
+                            </p>
+                          </td>
+                        </tr>
+                      </table>
+                      
+                      <!-- Warning Box -->
+                      <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="margin-bottom: 32px;">
+                        <tr>
+                          <td style="background: #fef2f2; border-left: 4px solid #ef4444; border-radius: 0 12px 12px 0; padding: 20px;">
+                            <p style="margin: 0 0 8px 0; font-size: 15px; font-weight: 700; color: #991b1b;">
+                              ⚠️ Important !
+                            </p>
+                            <p style="margin: 0; font-size: 14px; color: #b91c1c; line-height: 1.6;">
+                              Si vous n'avez pas demandé cette réinitialisation, ignorez cet email. Votre mot de passe actuel restera inchangé et votre compte est en sécurité.
+                            </p>
+                          </td>
+                        </tr>
+                      </table>
+                      
+                      <!-- Divider -->
+                      <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="margin-bottom: 32px;">
+                        <tr>
+                          <td style="height: 1px; background: linear-gradient(to right, transparent, #e2e8f0, transparent);"></td>
+                        </tr>
+                      </table>
+                      
+                      <!-- Security Tips -->
+                      <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="background: #f8fafc; border-radius: 16px; padding: 24px;">
+                        <tr>
+                          <td>
+                            <h3 style="margin: 0 0 20px 0; font-size: 16px; font-weight: 700; color: #1e293b;">
+                              🛡️ Conseils de sécurité
+                            </h3>
+                            
+                            <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
+                              <tr>
+                                <td style="padding: 8px 0;">
+                                  <table role="presentation" cellspacing="0" cellpadding="0" border="0">
+                                    <tr>
+                                      <td style="vertical-align: top; padding-right: 12px;">
+                                        <span style="display: inline-block; width: 24px; height: 24px; background: #dcfce7; border-radius: 50%; text-align: center; line-height: 24px; font-size: 12px; color: #16a34a;">✓</span>
+                                      </td>
+                                      <td style="font-size: 14px; color: #475569; line-height: 1.6;">
+                                        Choisissez un mot de passe unique et complexe
+                                      </td>
+                                    </tr>
+                                  </table>
+                                </td>
+                              </tr>
+                              <tr>
+                                <td style="padding: 8px 0;">
+                                  <table role="presentation" cellspacing="0" cellpadding="0" border="0">
+                                    <tr>
+                                      <td style="vertical-align: top; padding-right: 12px;">
+                                        <span style="display: inline-block; width: 24px; height: 24px; background: #dcfce7; border-radius: 50%; text-align: center; line-height: 24px; font-size: 12px; color: #16a34a;">✓</span>
+                                      </td>
+                                      <td style="font-size: 14px; color: #475569; line-height: 1.6;">
+                                        Utilisez au moins 8 caractères avec des chiffres et symboles
+                                      </td>
+                                    </tr>
+                                  </table>
+                                </td>
+                              </tr>
+                              <tr>
+                                <td style="padding: 8px 0;">
+                                  <table role="presentation" cellspacing="0" cellpadding="0" border="0">
+                                    <tr>
+                                      <td style="vertical-align: top; padding-right: 12px;">
+                                        <span style="display: inline-block; width: 24px; height: 24px; background: #dcfce7; border-radius: 50%; text-align: center; line-height: 24px; font-size: 12px; color: #16a34a;">✓</span>
+                                      </td>
+                                      <td style="font-size: 14px; color: #475569; line-height: 1.6;">
+                                        Ne partagez jamais votre mot de passe avec personne
+                                      </td>
+                                    </tr>
+                                  </table>
+                                </td>
+                              </tr>
+                              <tr>
+                                <td style="padding: 8px 0;">
+                                  <table role="presentation" cellspacing="0" cellpadding="0" border="0">
+                                    <tr>
+                                      <td style="vertical-align: top; padding-right: 12px;">
+                                        <span style="display: inline-block; width: 24px; height: 24px; background: #dcfce7; border-radius: 50%; text-align: center; line-height: 24px; font-size: 12px; color: #16a34a;">✓</span>
+                                      </td>
+                                      <td style="font-size: 14px; color: #475569; line-height: 1.6;">
+                                        Changez régulièrement vos mots de passe
+                                      </td>
+                                    </tr>
+                                  </table>
+                                </td>
+                              </tr>
+                            </table>
+                          </td>
+                        </tr>
+                      </table>
+                    </td>
+                  </tr>
+                  
+                </table>
+              </td>
+            </tr>
+            
+            <!-- Footer -->
+            <tr>
+              <td style="padding: 40px 20px; text-align: center;">
+                <p style="margin: 0 0 12px 0; font-size: 14px; color: #64748b; font-weight: 600;">
+                  Edupreneurs - Votre sécurité est notre priorité
+                </p>
+                <p style="margin: 0; font-size: 13px; color: #94a3b8;">
+                  © 2025 Edupreneurs. Tous droits réservés.
+                </p>
+              </td>
+            </tr>
+            
+          </table>
+        </td>
+      </tr>
+    </table>
+  </body>
+</html>
+`;
+
 const handler = async (req: Request): Promise<Response> => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -27,180 +219,8 @@ const handler = async (req: Request): Promise<Response> => {
     const emailResponse = await resend.emails.send({
       from: "Edupreneurs <noreply@mon-edupreneur.com>",
       to: [email],
-      subject: "🔐 Réinitialisation de votre mot de passe",
-      html: `
-        <!DOCTYPE html>
-        <html>
-          <head>
-            <meta charset="utf-8">
-            <meta name="viewport" content="width=device-width, initial-scale=1.0">
-            <style>
-              * { margin: 0; padding: 0; box-sizing: border-box; }
-              body {
-                font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-                line-height: 1.6;
-                color: #1a1a1a;
-                background: #f5f5f5;
-                padding: 20px;
-                -webkit-font-smoothing: antialiased;
-                -moz-osx-font-smoothing: grayscale;
-              }
-              .container {
-                max-width: 600px;
-                margin: 0 auto;
-                background: white;
-                border-radius: 16px;
-                overflow: hidden;
-                box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-              }
-              .header {
-                background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
-                color: white;
-                padding: 40px 30px;
-                text-align: center;
-              }
-              .header h1 {
-                font-size: 32px;
-                margin-bottom: 10px;
-                font-weight: 700;
-              }
-              .content {
-                padding: 40px 30px;
-              }
-              .alert-box {
-                background: #fef2f2;
-                border-left: 4px solid #ef4444;
-                border-radius: 8px;
-                padding: 20px;
-                margin: 25px 0;
-              }
-              .alert-box p {
-                color: #991b1b;
-                font-size: 15px;
-              }
-              .cta-button {
-                display: inline-block;
-                background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
-                color: white;
-                text-decoration: none;
-                padding: 16px 40px;
-                border-radius: 8px;
-                font-weight: 600;
-                font-size: 16px;
-                margin: 20px 0;
-                transition: transform 0.2s;
-              }
-              .security-tips {
-                background: #f9fafb;
-                border-radius: 12px;
-                padding: 25px;
-                margin: 30px 0;
-              }
-              .tip-item {
-                display: flex;
-                align-items: flex-start;
-                margin-bottom: 12px;
-              }
-              .tip-item:last-child {
-                margin-bottom: 0;
-              }
-              .footer {
-                background: #f9fafb;
-                padding: 30px;
-                text-align: center;
-                color: #6b7280;
-                font-size: 14px;
-              }
-              .divider {
-                height: 1px;
-                background: linear-gradient(to right, transparent, #e5e7eb, transparent);
-                margin: 30px 0;
-              }
-            </style>
-          </head>
-          <body>
-            <div class="container">
-              <div class="header">
-                <h1>🔐 Réinitialisation</h1>
-                <p style="font-size: 18px; opacity: 0.95;">de votre mot de passe</p>
-              </div>
-              
-              <div class="content">
-                <p style="font-size: 18px; color: #2d2d2d; margin-bottom: 20px; line-height: 1.7;">
-                  Bonjour,
-                </p>
-                <p style="color: #3d3d3d; margin-bottom: 20px; line-height: 1.7;">
-                  Nous avons reçu une demande de réinitialisation de mot de passe pour votre compte Edupreneurs.
-                </p>
-
-                <div style="text-align: center; margin: 30px 0;">
-                  <a href="${resetUrl}" class="cta-button">
-                    🔑 Réinitialiser mon mot de passe
-                  </a>
-                  <p style="color: #6b7280; font-size: 14px; margin-top: 10px;">
-                    Ce lien est valide pendant 1 heure
-                  </p>
-                </div>
-
-                <div class="alert-box">
-                  <p style="font-weight: 600; margin-bottom: 8px;">⚠️ Important !</p>
-                  <p>
-                    Si vous n'avez pas demandé cette réinitialisation, ignorez cet email. 
-                    Votre mot de passe actuel restera inchangé et votre compte est en sécurité.
-                  </p>
-                </div>
-
-                <div class="divider"></div>
-
-                <div class="security-tips">
-                  <h3 style="color: #1f2937; margin-bottom: 15px; font-size: 18px;">
-                    🛡️ Conseils de sécurité
-                  </h3>
-                  
-                  <div class="tip-item">
-                    <span style="color: #10b981; margin-right: 8px;">✓</span>
-                    <span style="color: #3d3d3d; font-size: 14px; line-height: 1.6;">
-                      Choisissez un mot de passe unique et complexe
-                    </span>
-                  </div>
-                  
-                  <div class="tip-item">
-                    <span style="color: #10b981; margin-right: 8px;">✓</span>
-                    <span style="color: #3d3d3d; font-size: 14px; line-height: 1.6;">
-                      Utilisez au moins 8 caractères avec des chiffres et symboles
-                    </span>
-                  </div>
-                  
-                  <div class="tip-item">
-                    <span style="color: #10b981; margin-right: 8px;">✓</span>
-                    <span style="color: #3d3d3d; font-size: 14px; line-height: 1.6;">
-                      Ne partagez jamais votre mot de passe avec personne
-                    </span>
-                  </div>
-                  
-                  <div class="tip-item">
-                    <span style="color: #10b981; margin-right: 8px;">✓</span>
-                    <span style="color: #3d3d3d; font-size: 14px; line-height: 1.6;">
-                      Changez régulièrement vos mots de passe
-                    </span>
-                  </div>
-                </div>
-
-                <p style="color: #6b7280; font-size: 14px; margin-top: 25px;">
-                  <strong>Besoin d'aide ?</strong> Contactez notre équipe support si vous rencontrez des difficultés.
-                </p>
-              </div>
-
-              <div class="footer">
-                <p style="margin-bottom: 10px;">
-                  <strong>Edupreneurs</strong> - Votre sécurité est notre priorité
-                </p>
-                <p>© 2025 Edupreneurs. Tous droits réservés.</p>
-              </div>
-            </div>
-          </body>
-        </html>
-      `,
+      subject: "🔐 Réinitialisation de votre mot de passe - Edupreneurs",
+      html: getEmailTemplate(resetUrl),
     });
 
     console.log("Password reset email sent successfully:", emailResponse);

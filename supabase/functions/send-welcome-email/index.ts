@@ -15,6 +15,189 @@ interface WelcomeEmailRequest {
   verificationUrl?: string;
 }
 
+const getEmailTemplate = (fullName: string, verificationUrl?: string) => `
+<!DOCTYPE html>
+<html lang="fr">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="color-scheme" content="light">
+    <meta name="supported-color-schemes" content="light">
+    <title>Bienvenue sur Edupreneurs</title>
+  </head>
+  <body style="margin: 0; padding: 0; background-color: #f8fafc; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale;">
+    <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="background-color: #f8fafc;">
+      <tr>
+        <td style="padding: 40px 20px;">
+          <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="600" style="margin: 0 auto; max-width: 600px;">
+            
+            <!-- Logo Header -->
+            <tr>
+              <td style="text-align: center; padding-bottom: 30px;">
+                <table role="presentation" cellspacing="0" cellpadding="0" border="0" style="margin: 0 auto;">
+                  <tr>
+                    <td style="background: linear-gradient(135deg, #8b5cf6 0%, #6366f1 50%, #3b82f6 100%); border-radius: 16px; padding: 12px 24px;">
+                      <span style="font-size: 28px; font-weight: 800; color: #ffffff; letter-spacing: -0.5px;">Edupreneurs</span>
+                    </td>
+                  </tr>
+                </table>
+              </td>
+            </tr>
+            
+            <!-- Main Card -->
+            <tr>
+              <td>
+                <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="background: #ffffff; border-radius: 24px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1); overflow: hidden;">
+                  
+                  <!-- Hero Section -->
+                  <tr>
+                    <td style="background: linear-gradient(135deg, #10b981 0%, #059669 50%, #047857 100%); padding: 50px 40px; text-align: center;">
+                      <div style="font-size: 64px; margin-bottom: 16px;">🎉</div>
+                      <h1 style="margin: 0 0 12px 0; font-size: 32px; font-weight: 800; color: #ffffff; letter-spacing: -0.5px;">
+                        Bienvenue parmi nous !
+                      </h1>
+                      <p style="margin: 0; font-size: 18px; color: rgba(255, 255, 255, 0.9); font-weight: 500;">
+                        Votre aventure éducative commence maintenant
+                      </p>
+                    </td>
+                  </tr>
+                  
+                  <!-- Content -->
+                  <tr>
+                    <td style="padding: 40px;">
+                      <p style="margin: 0 0 24px 0; font-size: 18px; color: #1e293b; line-height: 1.7;">
+                        Bonjour <strong style="color: #10b981;">${fullName}</strong> 👋
+                      </p>
+                      <p style="margin: 0 0 32px 0; font-size: 16px; color: #475569; line-height: 1.8;">
+                        Félicitations ! Vous faites maintenant partie de la communauté Edupreneurs. Nous sommes ravis de vous accompagner dans votre parcours d'apprentissage.
+                      </p>
+                      
+                      ${verificationUrl ? `
+                      <!-- CTA Button -->
+                      <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="margin-bottom: 32px;">
+                        <tr>
+                          <td style="text-align: center;">
+                            <a href="${verificationUrl}" style="display: inline-block; background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: #ffffff; text-decoration: none; padding: 16px 48px; border-radius: 12px; font-weight: 700; font-size: 16px; box-shadow: 0 4px 14px -3px rgba(16, 185, 129, 0.4);">
+                              ✓ Vérifier mon email
+                            </a>
+                          </td>
+                        </tr>
+                      </table>
+                      ` : ''}
+                      
+                      <!-- Features Grid -->
+                      <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="margin-bottom: 32px;">
+                        <tr>
+                          <td style="padding-bottom: 20px;">
+                            <h3 style="margin: 0; font-size: 18px; font-weight: 700; color: #1e293b;">
+                              🚀 Ce qui vous attend
+                            </h3>
+                          </td>
+                        </tr>
+                        
+                        <!-- Feature Row 1 -->
+                        <tr>
+                          <td>
+                            <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
+                              <tr>
+                                <td width="48%" style="vertical-align: top; padding-right: 8px; padding-bottom: 16px;">
+                                  <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="background: #f0fdf4; border-radius: 16px; padding: 20px;">
+                                    <tr>
+                                      <td>
+                                        <div style="font-size: 32px; margin-bottom: 12px;">📚</div>
+                                        <h4 style="margin: 0 0 8px 0; font-size: 15px; font-weight: 700; color: #166534;">Cours interactifs</h4>
+                                        <p style="margin: 0; font-size: 13px; color: #15803d; line-height: 1.5;">Apprenez de manière ludique et engageante</p>
+                                      </td>
+                                    </tr>
+                                  </table>
+                                </td>
+                                <td width="48%" style="vertical-align: top; padding-left: 8px; padding-bottom: 16px;">
+                                  <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="background: #eff6ff; border-radius: 16px; padding: 20px;">
+                                    <tr>
+                                      <td>
+                                        <div style="font-size: 32px; margin-bottom: 12px;">🤖</div>
+                                        <h4 style="margin: 0 0 8px 0; font-size: 15px; font-weight: 700; color: #1e40af;">Assistant IA Eric</h4>
+                                        <p style="margin: 0; font-size: 13px; color: #1d4ed8; line-height: 1.5;">Tuteur virtuel disponible 24/7</p>
+                                      </td>
+                                    </tr>
+                                  </table>
+                                </td>
+                              </tr>
+                            </table>
+                          </td>
+                        </tr>
+                        
+                        <!-- Feature Row 2 -->
+                        <tr>
+                          <td>
+                            <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
+                              <tr>
+                                <td width="48%" style="vertical-align: top; padding-right: 8px; padding-bottom: 16px;">
+                                  <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="background: #fef3c7; border-radius: 16px; padding: 20px;">
+                                    <tr>
+                                      <td>
+                                        <div style="font-size: 32px; margin-bottom: 12px;">🏆</div>
+                                        <h4 style="margin: 0 0 8px 0; font-size: 15px; font-weight: 700; color: #92400e;">Récompenses</h4>
+                                        <p style="margin: 0; font-size: 13px; color: #b45309; line-height: 1.5;">Gagnez des points et montez dans le classement</p>
+                                      </td>
+                                    </tr>
+                                  </table>
+                                </td>
+                                <td width="48%" style="vertical-align: top; padding-left: 8px; padding-bottom: 16px;">
+                                  <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="background: #fae8ff; border-radius: 16px; padding: 20px;">
+                                    <tr>
+                                      <td>
+                                        <div style="font-size: 32px; margin-bottom: 12px;">👥</div>
+                                        <h4 style="margin: 0 0 8px 0; font-size: 15px; font-weight: 700; color: #86198f;">Communauté</h4>
+                                        <p style="margin: 0; font-size: 13px; color: #a21caf; line-height: 1.5;">Échangez avec d'autres apprenants</p>
+                                      </td>
+                                    </tr>
+                                  </table>
+                                </td>
+                              </tr>
+                            </table>
+                          </td>
+                        </tr>
+                      </table>
+                      
+                      <!-- Help Box -->
+                      <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
+                        <tr>
+                          <td style="background: #f8fafc; border-radius: 16px; padding: 24px; text-align: center;">
+                            <p style="margin: 0; font-size: 15px; color: #475569; line-height: 1.7;">
+                              <strong style="color: #1e293b;">Besoin d'aide ?</strong><br>
+                              Notre équipe est là pour vous accompagner à chaque étape de votre parcours.
+                            </p>
+                          </td>
+                        </tr>
+                      </table>
+                    </td>
+                  </tr>
+                  
+                </table>
+              </td>
+            </tr>
+            
+            <!-- Footer -->
+            <tr>
+              <td style="padding: 40px 20px; text-align: center;">
+                <p style="margin: 0 0 12px 0; font-size: 14px; color: #64748b; font-weight: 600;">
+                  Edupreneurs - Votre partenaire pour réussir
+                </p>
+                <p style="margin: 0; font-size: 13px; color: #94a3b8;">
+                  © 2025 Edupreneurs. Tous droits réservés.
+                </p>
+              </td>
+            </tr>
+            
+          </table>
+        </td>
+      </tr>
+    </table>
+  </body>
+</html>
+`;
+
 const handler = async (req: Request): Promise<Response> => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -28,186 +211,8 @@ const handler = async (req: Request): Promise<Response> => {
     const emailResponse = await resend.emails.send({
       from: "Edupreneurs <noreply@mon-edupreneur.com>",
       to: [email],
-      subject: "🎓 Bienvenue sur Edupreneurs !",
-      html: `
-        <!DOCTYPE html>
-        <html>
-          <head>
-            <meta charset="utf-8">
-            <meta name="viewport" content="width=device-width, initial-scale=1.0">
-            <style>
-              * { margin: 0; padding: 0; box-sizing: border-box; }
-              body {
-                font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-                line-height: 1.6;
-                color: #1a1a1a;
-                background: #f5f5f5;
-                padding: 20px;
-                -webkit-font-smoothing: antialiased;
-                -moz-osx-font-smoothing: grayscale;
-              }
-              .container {
-                max-width: 600px;
-                margin: 0 auto;
-                background: white;
-                border-radius: 16px;
-                overflow: hidden;
-                box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-              }
-              .header {
-                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-                color: white;
-                padding: 40px 30px;
-                text-align: center;
-              }
-              .header h1 {
-                font-size: 32px;
-                margin-bottom: 10px;
-                font-weight: 700;
-              }
-              .content {
-                padding: 40px 30px;
-              }
-              .welcome-text {
-                font-size: 18px;
-                color: #2d2d2d;
-                margin-bottom: 20px;
-                line-height: 1.7;
-              }
-              .feature-list {
-                background: #f9fafb;
-                border-radius: 12px;
-                padding: 25px;
-                margin: 30px 0;
-              }
-              .feature-item {
-                display: flex;
-                align-items: flex-start;
-                margin-bottom: 15px;
-              }
-              .feature-item:last-child {
-                margin-bottom: 0;
-              }
-              .feature-icon {
-                font-size: 24px;
-                margin-right: 12px;
-                flex-shrink: 0;
-              }
-              .feature-text {
-                color: #3d3d3d;
-                font-size: 15px;
-                line-height: 1.6;
-              }
-              .cta-button {
-                display: inline-block;
-                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-                color: white;
-                text-decoration: none;
-                padding: 16px 40px;
-                border-radius: 8px;
-                font-weight: 600;
-                font-size: 16px;
-                margin: 20px 0;
-                transition: transform 0.2s;
-              }
-              .footer {
-                background: #f9fafb;
-                padding: 30px;
-                text-align: center;
-                color: #6b7280;
-                font-size: 14px;
-              }
-              .divider {
-                height: 1px;
-                background: linear-gradient(to right, transparent, #e5e7eb, transparent);
-                margin: 30px 0;
-              }
-            </style>
-          </head>
-          <body>
-            <div class="container">
-              <div class="header">
-                <h1>🎓 Bienvenue !</h1>
-                <p style="font-size: 18px; opacity: 0.95;">Votre aventure éducative commence ici</p>
-              </div>
-              
-              <div class="content">
-                <p class="welcome-text">
-                  Bonjour <strong>${fullName}</strong>,
-                </p>
-                <p class="welcome-text">
-                  Nous sommes ravis de vous accueillir sur <strong>Edupreneurs</strong>, votre plateforme d'apprentissage interactive !
-                </p>
-
-                ${verificationUrl ? `
-                <div style="text-align: center; margin: 30px 0;">
-                  <a href="${verificationUrl}" class="cta-button">
-                    ✓ Vérifier mon email
-                  </a>
-                  <p style="color: #6b7280; font-size: 14px; margin-top: 10px;">
-                    Cliquez pour activer votre compte
-                  </p>
-                </div>
-                ` : ''}
-
-                <div class="divider"></div>
-
-                <div class="feature-list">
-                  <h3 style="color: #1f2937; margin-bottom: 20px; font-size: 20px;">
-                    Ce qui vous attend :
-                  </h3>
-                  
-                  <div class="feature-item">
-                    <span class="feature-icon">📚</span>
-                    <span class="feature-text">
-                      <strong>Cours interactifs</strong> - Apprenez les mathématiques de manière ludique et engageante
-                    </span>
-                  </div>
-                  
-                  <div class="feature-item">
-                    <span class="feature-icon">🤖</span>
-                    <span class="feature-text">
-                      <strong>Assistant IA Eric</strong> - Un tuteur virtuel disponible 24/7 pour vous aider
-                    </span>
-                  </div>
-                  
-                  <div class="feature-item">
-                    <span class="feature-icon">🎮</span>
-                    <span class="feature-text">
-                      <strong>Jeux éducatifs</strong> - Progressez tout en vous amusant avec nos activités
-                    </span>
-                  </div>
-                  
-                  <div class="feature-item">
-                    <span class="feature-icon">👥</span>
-                    <span class="feature-text">
-                      <strong>Communauté</strong> - Échangez avec d'autres apprenants et partagez vos progrès
-                    </span>
-                  </div>
-                  
-                  <div class="feature-item">
-                    <span class="feature-icon">🏆</span>
-                    <span class="feature-text">
-                      <strong>Récompenses</strong> - Gagnez des points et montez dans le classement
-                    </span>
-                  </div>
-                </div>
-
-                <p style="color: #6b7280; font-size: 15px; margin-top: 30px;">
-                  <strong>Besoin d'aide ?</strong> Notre équipe est là pour vous accompagner à chaque étape de votre parcours.
-                </p>
-              </div>
-
-              <div class="footer">
-                <p style="margin-bottom: 10px;">
-                  <strong>Edupreneurs</strong> - Votre partenaire pour réussir
-                </p>
-                <p>© 2025 Edupreneurs. Tous droits réservés.</p>
-              </div>
-            </div>
-          </body>
-        </html>
-      `,
+      subject: "🎉 Bienvenue sur Edupreneurs !",
+      html: getEmailTemplate(fullName, verificationUrl),
     });
 
     console.log("Welcome email sent successfully:", emailResponse);
