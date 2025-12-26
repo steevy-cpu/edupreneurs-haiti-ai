@@ -1,15 +1,20 @@
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { Resend } from "https://esm.sh/resend@4.0.0";
 
 const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
 
 const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Headers":
+    "authorization, x-client-info, apikey, content-type",
 };
 
-const getFarewellEmailTemplate = (fullName: string) => `
+interface FarewellEmailRequest {
+  email: string;
+  fullName: string;
+}
+
+const getEmailTemplate = (fullName: string) => `
 <!DOCTYPE html>
 <html lang="fr">
   <head>
@@ -124,115 +129,42 @@ const getFarewellEmailTemplate = (fullName: string) => `
 </html>
 `;
 
-serve(async (req) => {
-  // Handle CORS preflight requests
-  if (req.method === 'OPTIONS') {
+const handler = async (req: Request): Promise<Response> => {
+  if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
-    // Get the authorization header
-    const authHeader = req.headers.get('Authorization');
-    if (!authHeader) {
-      throw new Error('No authorization header');
-    }
+    const { email, fullName }: FarewellEmailRequest = await req.json();
 
-    // Create Supabase client with user's token
-    const supabaseClient = createClient(
-      Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_ANON_KEY') ?? '',
-      {
-        global: {
-          headers: { Authorization: authHeader },
-        },
-      }
-    );
+    console.log("Sending farewell email to:", email);
 
-    // Get the user from the token
-    const {
-      data: { user },
-      error: userError,
-    } = await supabaseClient.auth.getUser();
+    const emailResponse = await resend.emails.send({
+      from: "Edupreneurs <noreply@mon-edupreneur.com>",
+      to: [email],
+      subject: "😢 Au revoir - Votre compte a été supprimé",
+      html: getEmailTemplate(fullName),
+    });
 
-    if (userError || !user) {
-      throw new Error('User not authenticated');
-    }
+    console.log("Farewell email sent successfully:", emailResponse);
 
-    // Protected accounts that cannot be deleted (Eric AI assistant)
-    const PROTECTED_USER_IDS = ['68f2f959-e14a-47f9-8277-07df3a6fcd79'];
-    
-    if (PROTECTED_USER_IDS.includes(user.id)) {
-      throw new Error('This system account cannot be deleted');
-    }
-
-    console.log(`Preparing to delete user account: ${user.id}`);
-
-    // Create admin client
-    const supabaseAdmin = createClient(
-      Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
-    );
-
-    // Fetch user profile BEFORE deletion to get their info for the email
-    const { data: profile, error: profileError } = await supabaseAdmin
-      .from('profiles')
-      .select('full_name')
-      .eq('user_id', user.id)
-      .single();
-
-    if (profileError) {
-      console.error('Error fetching profile:', profileError);
-    }
-
-    const userEmail = user.email;
-    const fullName = profile?.full_name || 'Utilisateur';
-
-    // Send farewell email BEFORE deleting the account
-    if (userEmail) {
-      try {
-        console.log(`Sending farewell email to: ${userEmail}`);
-        
-        const emailResponse = await resend.emails.send({
-          from: "Edupreneurs <noreply@mon-edupreneur.com>",
-          to: [userEmail],
-          subject: "😢 Au revoir - Votre compte a été supprimé",
-          html: getFarewellEmailTemplate(fullName),
-        });
-
-        console.log('Farewell email sent successfully:', emailResponse);
-      } catch (emailError) {
-        // Log the error but don't fail the deletion
-        console.error('Error sending farewell email:', emailError);
-      }
-    }
-
-    // Now delete the user from auth (this will cascade delete profile and related data)
-    const { error: deleteError } = await supabaseAdmin.auth.admin.deleteUser(
-      user.id
-    );
-
-    if (deleteError) {
-      throw deleteError;
-    }
-
-    console.log(`User account deleted successfully: ${user.id}`);
-
+    return new Response(JSON.stringify(emailResponse), {
+      status: 200,
+      headers: {
+        "Content-Type": "application/json",
+        ...corsHeaders,
+      },
+    });
+  } catch (error: any) {
+    console.error("Error sending farewell email:", error);
     return new Response(
-      JSON.stringify({ success: true, message: 'Account deleted successfully' }),
+      JSON.stringify({ error: error.message }),
       {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        status: 200,
-      }
-    );
-  } catch (error) {
-    console.error('Error deleting account:', error);
-    const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
-    return new Response(
-      JSON.stringify({ error: errorMessage }),
-      {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        status: 400,
+        status: 500,
+        headers: { "Content-Type": "application/json", ...corsHeaders },
       }
     );
   }
-});
+};
+
+serve(handler);

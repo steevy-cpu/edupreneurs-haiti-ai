@@ -63,6 +63,9 @@ verify_jwt = false
 [functions.send-login-notification]
 verify_jwt = false
 
+[functions.send-farewell-email]
+verify_jwt = false
+
 [functions.reset-password]
 verify_jwt = false
 
