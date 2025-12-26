@@ -13,13 +13,13 @@ import { generateConfirmationCode } from "@/utils/emailService";
 import { Loader2, Eye, EyeOff } from "lucide-react";
 import { loginSchema, signupSchema, forgotPasswordSchema, verificationCodeSchema } from "@/lib/authValidation";
 import { getFullDeviceIdentifier } from "@/utils/deviceFingerprint";
-
-// Auth page component
+import { PhoneVerificationSection } from "@/components/PhoneVerificationSection";
 export default function Auth() {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [searchParams] = useSearchParams();
-  const [activeTab, setActiveTab] = useState<"login" | "signup" | "verify" | "forgot-password">("login");
+  const [activeTab, setActiveTab] = useState<"login" | "signup" | "verify" | "phone-verify" | "forgot-password">("login");
+  const [pendingPhoneNumber, setPendingPhoneNumber] = useState<string>("");
   const [forgotPasswordEmail, setForgotPasswordEmail] = useState("");
   const [loginData, setLoginData] = useState({ email: "", password: "" });
   const [referralCode, setReferralCode] = useState<string | null>(null);
@@ -208,13 +208,13 @@ export default function Auth() {
 
       toast({
         title: "Email vérifié ! ✅",
-        description: "Votre compte est maintenant actif. Vous pouvez vous connecter.",
+        description: "Vous pouvez maintenant vérifier votre téléphone (optionnel).",
       });
 
-      // Reset form and go to login
-      setPendingUserId(null);
-      setVerificationCode("");
-      setActiveTab("login");
+      // Transition to phone verification step (optional)
+      setPendingPhoneNumber(signupData.phoneNumber);
+      setActiveTab("phone-verify");
+      // Keep pendingUserId for phone verification
     } catch (error: any) {
       console.error("Verification error:", error);
       toast({
@@ -837,6 +837,11 @@ export default function Auth() {
                     Vérification de l'email
                   </div>
                 )}
+                {activeTab === "phone-verify" && (
+                  <div className="auth-tab flex-1 text-center py-3.5 px-2.5 font-bold text-primary border-b-[3px] border-primary">
+                    Vérification du téléphone
+                  </div>
+                )}
               </div>
 
               {/* Content */}
@@ -1051,6 +1056,34 @@ export default function Auth() {
                       Retour à l'inscription
                     </button>
                   </form>
+                )}
+
+                {/* Phone Verification (Optional) */}
+                {activeTab === "phone-verify" && pendingUserId && (
+                  <PhoneVerificationSection
+                    userId={pendingUserId}
+                    phoneNumber={pendingPhoneNumber || signupData.phoneNumber}
+                    onVerified={() => {
+                      toast({
+                        title: "Tout est prêt! 🎉",
+                        description: "Email et téléphone vérifiés. Vous pouvez maintenant vous connecter.",
+                      });
+                      setPendingUserId(null);
+                      setVerificationCode("");
+                      setPendingPhoneNumber("");
+                      setActiveTab("login");
+                    }}
+                    onSkip={() => {
+                      toast({
+                        title: "Inscription terminée!",
+                        description: "Vous pouvez vérifier votre téléphone plus tard dans les paramètres.",
+                      });
+                      setPendingUserId(null);
+                      setVerificationCode("");
+                      setPendingPhoneNumber("");
+                      setActiveTab("login");
+                    }}
+                  />
                 )}
 
                 {/* Signup Form - Multi-step Wizard */}
