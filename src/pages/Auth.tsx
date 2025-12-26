@@ -435,6 +435,7 @@ export default function Auth() {
         body: {
           email: forgotPasswordEmail,
           resetUrl: resetUrl,
+          fullName: full_name,
         }
       });
       
