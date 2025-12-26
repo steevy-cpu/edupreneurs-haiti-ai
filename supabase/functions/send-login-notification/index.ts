@@ -62,7 +62,7 @@ const getEmailTemplate = (fullName: string, email: string, timestamp: string, de
                   <tr>
                     <td style="padding: 40px;">
                       <p style="margin: 0 0 24px 0; font-size: 18px; color: #1e293b; line-height: 1.7;">
-                        Bonjour <strong style="color: #3b82f6;">${fullName}</strong> 👋
+                        Salut <strong style="color: #3b82f6;">${fullName}</strong> 👋
                       </p>
                       <p style="margin: 0 0 32px 0; font-size: 16px; color: #475569; line-height: 1.8;">
                         Nous vous informons qu'une connexion a été effectuée sur votre compte Edupreneurs.
