@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
-import { ArrowLeft, BookOpen, Zap, BarChart3, Sparkles, GraduationCap } from "lucide-react";
+import { ArrowLeft, BookOpen, Zap, BarChart3, Sparkles, GraduationCap, Youtube } from "lucide-react";
 import { LessonBrowser } from "@/components/content-editor/LessonBrowser";
 import { LessonPreview } from "@/components/content-editor/LessonPreview";
 import { YouTubeManager } from "@/components/content-editor/YouTubeManager";
@@ -16,6 +16,7 @@ import { SingleLessonGenerator } from "@/components/content-editor/SingleLessonG
 import { CreateMatiereDialog } from "@/components/content-editor/CreateMatiereDialog";
 import { ExamManager } from "@/components/content-editor/ExamManager";
 import { BaccExamManager } from "@/components/content-editor/BaccExamManager";
+import { PassionVideoManager } from "@/components/content-editor/PassionVideoManager";
 
 const ContentEditor = () => {
   const navigate = useNavigate();
@@ -198,7 +199,7 @@ const ContentEditor = () => {
         {/* Main Content with Tabs */}
         <div className="max-w-[1600px] mx-auto">
           <Tabs defaultValue="review" className="space-y-6">
-            <TabsList className="grid w-full grid-cols-4 lg:w-[800px]">
+            <TabsList className="grid w-full grid-cols-5 lg:w-[1000px]">
               <TabsTrigger value="review">
                 <BookOpen className="mr-2 h-4 w-4" />
                 Révision
@@ -214,6 +215,10 @@ const ContentEditor = () => {
               <TabsTrigger value="baccalaureat">
                 <GraduationCap className="mr-2 h-4 w-4" />
                 Baccalauréat NS4
+              </TabsTrigger>
+              <TabsTrigger value="passion-videos">
+                <Youtube className="mr-2 h-4 w-4" />
+                Vidéos Passions
               </TabsTrigger>
             </TabsList>
 
@@ -303,6 +308,10 @@ const ContentEditor = () => {
 
             <TabsContent value="baccalaureat">
               <BaccExamManager />
+            </TabsContent>
+
+            <TabsContent value="passion-videos">
+              <PassionVideoManager />
             </TabsContent>
           </Tabs>
         </div>
