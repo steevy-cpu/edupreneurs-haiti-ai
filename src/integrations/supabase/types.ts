@@ -1696,6 +1696,48 @@ export type Database = {
         }
         Relationships: []
       }
+      user_trusted_devices: {
+        Row: {
+          browser: string | null
+          created_at: string | null
+          device_fingerprint: string
+          device_name: string | null
+          first_login_at: string | null
+          id: string
+          ip_address: string | null
+          is_trusted: boolean | null
+          last_login_at: string | null
+          os: string | null
+          user_id: string
+        }
+        Insert: {
+          browser?: string | null
+          created_at?: string | null
+          device_fingerprint: string
+          device_name?: string | null
+          first_login_at?: string | null
+          id?: string
+          ip_address?: string | null
+          is_trusted?: boolean | null
+          last_login_at?: string | null
+          os?: string | null
+          user_id: string
+        }
+        Update: {
+          browser?: string | null
+          created_at?: string | null
+          device_fingerprint?: string
+          device_name?: string | null
+          first_login_at?: string | null
+          id?: string
+          ip_address?: string | null
+          is_trusted?: boolean | null
+          last_login_at?: string | null
+          os?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       public_profiles: {
