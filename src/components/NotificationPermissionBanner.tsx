@@ -19,10 +19,13 @@ import {
   detectBrowser 
 } from "@/utils/pushNotifications";
 import { IOSPushNotificationGuide } from "./IOSPushNotificationGuide";
+import { useCookieConsent, onConsentChange } from "@/hooks/useCookieConsent";
 
 interface NotificationPermissionBannerProps {
   userId: string;
 }
+
+const DEBUG_NOTIFICATIONS = import.meta.env.DEV;
 
 export const NotificationPermissionBanner = ({ userId }: NotificationPermissionBannerProps) => {
   const [showDialog, setShowDialog] = useState(false);
@@ -31,9 +34,9 @@ export const NotificationPermissionBanner = ({ userId }: NotificationPermissionB
   const [isPWA, setIsPWA] = useState(false);
   const [browser, setBrowser] = useState<string>('');
   const [error, setError] = useState<string | null>(null);
+  const { hasDecided, hasAccepted } = useCookieConsent();
 
   useEffect(() => {
-    // Detect iOS, PWA mode, and browser
     const iOS = isIOSDevice();
     const standalone = isStandalonePWA();
     const detectedBrowser = detectBrowser();
@@ -42,54 +45,69 @@ export const NotificationPermissionBanner = ({ userId }: NotificationPermissionB
     setIsPWA(standalone);
     setBrowser(detectedBrowser);
     
-    console.log('═══════════════════════════════════════════');
-    console.log('📱 DEVICE DETECTION');
-    console.log('═══════════════════════════════════════════');
-    console.log('🌐 Browser:', detectedBrowser);
-    console.log('📱 iOS:', iOS);
-    console.log('📲 PWA Mode:', standalone);
-    console.log('═══════════════════════════════════════════\n');
+    if (DEBUG_NOTIFICATIONS) {
+      console.log('📱 Device: iOS:', iOS, '| PWA:', standalone, '| Browser:', detectedBrowser);
+    }
     
     // Check if browser supports notifications
     if (!('Notification' in window)) {
-      console.warn('⚠️ Notifications not supported in this browser');
-      // Don't show dialog, no point
+      if (DEBUG_NOTIFICATIONS) console.warn('⚠️ Notifications not supported');
       return;
     }
 
-    // Safari desktop doesn't support push - don't show dialog
+    // Safari desktop doesn't support push
     if (detectedBrowser === 'Safari' && !iOS) {
-      console.warn('⚠️ Safari desktop does not support web push');
-      // Don't show dialog, not supported
+      if (DEBUG_NOTIFICATIONS) console.warn('⚠️ Safari desktop - no push support');
       return;
     }
-    
-    // Show dialog if permission is default (not yet decided)
-    const checkPermission = () => {
+
+    const shouldShowDialog = () => {
       const permission = Notification.permission;
       
-      console.log('🔔 Current notification permission:', permission);
+      // Wait for cookie consent first
+      if (!hasDecided) {
+        if (DEBUG_NOTIFICATIONS) console.log('⏳ Waiting for cookie consent...');
+        return false;
+      }
+
+      // Don't show if cookies were declined
+      if (!hasAccepted) {
+        if (DEBUG_NOTIFICATIONS) console.log('🚫 Cookies declined, skipping notification prompt');
+        return false;
+      }
       
-      // For iOS, only show if running as PWA
+      // For iOS non-PWA, show installation guide
       if (iOS && !standalone) {
-        console.log('ℹ️ iOS non-PWA detected, will show installation guide');
-        setTimeout(() => setShowDialog(true), 1000);
-        return;
+        return true;
       }
       
-      // Always show if permission is default (not yet asked)
+      // Show if permission is default (not yet asked)
       if (permission === 'default') {
-        console.log('📋 Permission not yet requested, showing dialog...');
-        setTimeout(() => setShowDialog(true), 1000);
+        return true;
       } else if (permission === 'denied') {
-        console.log('❌ Permission previously denied');
         setError(`Notifications bloquées. Changez les paramètres de ${detectedBrowser} pour ce site.`);
-      } else if (permission === 'granted') {
-        console.log('✅ Permission already granted');
       }
+      
+      return false;
     };
 
-    checkPermission();
+    // Delay showing notification dialog after cookie consent
+    if (shouldShowDialog()) {
+      const timer = setTimeout(() => setShowDialog(true), 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [hasDecided, hasAccepted]);
+
+  // Listen for cookie consent changes
+  useEffect(() => {
+    const unsubscribe = onConsentChange((accepted) => {
+      if (accepted && Notification.permission === 'default') {
+        setTimeout(() => {
+          setShowDialog(true);
+        }, 5000);
+      }
+    });
+    return () => { unsubscribe(); };
   }, []);
 
   const handleAllow = async () => {
@@ -97,24 +115,17 @@ export const NotificationPermissionBanner = ({ userId }: NotificationPermissionB
     setError(null);
     
     try {
-      console.log('═══════════════════════════════════════════');
-      console.log('🔔 USER INITIATED NOTIFICATION SETUP');
-      console.log('═══════════════════════════════════════════\n');
+      if (DEBUG_NOTIFICATIONS) console.log('🔔 Starting notification setup...');
       
-      // Request permission
       const permission = await requestNotificationPermission();
       
       if (permission === 'granted') {
-        console.log('✅ Permission granted, proceeding with setup...\n');
-        
-        // Register service worker
         const registration = await registerServiceWorker();
         if (registration) {
-          // Subscribe to push notifications
           const success = await subscribeToPushNotifications(registration, userId);
           
           if (success) {
-            console.log('🎉 All done! Notifications are enabled.\n');
+            if (DEBUG_NOTIFICATIONS) console.log('🎉 Notifications enabled!');
             setShowDialog(false);
           } else {
             setError('Échec de l\'abonnement. Vérifiez votre connexion et réessayez.');
@@ -123,13 +134,10 @@ export const NotificationPermissionBanner = ({ userId }: NotificationPermissionB
           setError(`Service worker non disponible. ${browser === 'Safari' ? 'iOS nécessite l\'installation PWA.' : 'Réessayez plus tard.'}`);
         }
       } else if (permission === 'denied') {
-        console.log('❌ User denied permission\n');
         setError(`Vous avez refusé les notifications. Changez cela dans les paramètres de ${browser}.`);
-      } else {
-        console.log('⚠️ Permission prompt dismissed\n');
       }
     } catch (error: any) {
-      console.error('❌ Unexpected error:', error);
+      console.error('❌ Notification setup error:', error);
       setError(`Erreur: ${error.message || 'Impossible d\'activer les notifications'}`);
     } finally {
       setIsRequesting(false);
@@ -137,7 +145,6 @@ export const NotificationPermissionBanner = ({ userId }: NotificationPermissionB
   };
 
   const handleDeny = () => {
-    console.log('ℹ️ User dismissed notification dialog');
     setShowDialog(false);
   };
 

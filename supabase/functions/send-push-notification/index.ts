@@ -52,27 +52,24 @@ async function createVapidAuthToken(endpoint: string): Promise<string> {
   const payload = {
     aud: audience,
     exp: Math.floor(Date.now() / 1000) + (12 * 60 * 60),
-    sub: 'mailto:admin@edupreneurs.com'
+    sub: 'mailto:contact@mon-edupreneur.com'
   };
   
   const headerB64 = uint8ArrayToBase64Url(new TextEncoder().encode(JSON.stringify(header)));
   const payloadB64 = uint8ArrayToBase64Url(new TextEncoder().encode(JSON.stringify(payload)));
   const unsignedToken = `${headerB64}.${payloadB64}`;
   
-  // Decode the public key to extract x and y coordinates
   const publicKeyBuffer = Uint8Array.from(atob(base64UrlToBase64(VAPID_PUBLIC_KEY)), c => c.charCodeAt(0));
   
-  // First byte is 0x04 (uncompressed), then 32 bytes for x, 32 bytes for y
   const x = uint8ArrayToBase64Url(publicKeyBuffer.slice(1, 33));
   const y = uint8ArrayToBase64Url(publicKeyBuffer.slice(33, 65));
   
-  // The private key is already in base64url format, just use it directly
   const jwk = {
     kty: 'EC',
     crv: 'P-256',
     x: x,
     y: y,
-    d: VAPID_PRIVATE_KEY,  // Already in base64url format
+    d: VAPID_PRIVATE_KEY,
     ext: true,
     key_ops: ['sign']
   };
@@ -95,35 +92,27 @@ async function createVapidAuthToken(endpoint: string): Promise<string> {
   return `${unsignedToken}.${signatureB64}`;
 }
 
-// Notification category mapping helper - comprehensive mapping
+// Notification category mapping helper
 function getCategoryFromType(type?: string): string {
   const typeMap: { [key: string]: string } = {
-    // Messages
     'message': 'message',
     'group_message': 'message',
     'direct_message': 'message',
-    // Social interactions
     'comment': 'comment',
     'reply': 'comment',
     'like': 'like',
     'share': 'share',
-    // Posts
     'new_post': 'post',
     'post': 'post',
-    // Mentions
     'mention': 'mention',
-    // Follows
     'follow_request': 'follow',
     'follow_accepted': 'follow',
     'follow': 'follow',
-    // Groups
     'group_invite': 'group',
     'group_deleted': 'group',
     'group_member_added': 'group',
     'group_member_removed': 'group',
-    // Lesson related
     'lesson_comment': 'lesson',
-    // System
     'system': 'system',
   };
   return typeMap[type || ''] || 'message';
@@ -134,9 +123,8 @@ serve(async (req) => {
     return new Response('ok', { headers: corsHeaders });
   }
 
-  // Validate VAPID private key is configured
   if (!VAPID_PRIVATE_KEY) {
-    console.error('❌ VAPID_PRIVATE_KEY environment variable is not set');
+    console.error('❌ VAPID_PRIVATE_KEY not configured');
     return new Response(
       JSON.stringify({ error: 'Push notification service not configured' }),
       { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
@@ -156,8 +144,6 @@ serve(async (req) => {
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
-
-    console.log(`📤 Sending push notification to user: ${recipientUserId}, type: ${type}, actorId: ${actorId}`);
 
     // Get actor profile for better notification messages
     let actorName = 'Someone';
@@ -182,40 +168,29 @@ serve(async (req) => {
       .eq('category', category)
       .single();
 
-    // If user has disabled this category, don't send
     if (prefData && !prefData.enabled) {
-      console.log(`⚠️ User has disabled ${category} notifications`);
       return new Response(
-        JSON.stringify({ 
-          success: false, 
-          message: 'User has disabled this notification category' 
-        }), 
+        JSON.stringify({ success: false, message: 'User has disabled this notification category' }), 
         { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
     
-    // Get all user's push subscriptions (multiple devices)
+    // Get all user's push subscriptions
     const { data: subscriptions, error: fetchError } = await supabase
       .from('push_subscriptions')
       .select('*')
       .eq('user_id', recipientUserId);
 
     if (fetchError || !subscriptions || subscriptions.length === 0) {
-      console.log(`ℹ️ No push subscription found for user: ${recipientUserId} (user hasn't enabled notifications)`);
       return new Response(
-        JSON.stringify({ 
-          success: true, 
-          message: 'No push subscription found - user has not enabled push notifications',
-          skipped: true
-        }), 
+        JSON.stringify({ success: true, message: 'No push subscription found', skipped: true }), 
         { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
-    // Build enhanced notification payload with deduplication tag
+    // Build notification payload
     const tag = entityId ? `${category}:${entityId}` : `notif-${Date.now()}`;
     
-    // Build better notification body based on type
     let notificationBody = body;
     if (!body && type) {
       switch (type) {
@@ -266,8 +241,6 @@ serve(async (req) => {
 
       try {
         const endpoint = subscription.endpoint;
-        console.log(`🔔 Sending to device ${subData.device_id} (${subData.browser}/${subData.os}): ${endpoint.substring(0, 50)}...`);
-
         const vapidToken = await createVapidAuthToken(endpoint);
 
         const pushResponse = await fetch(endpoint, {
@@ -281,47 +254,27 @@ serve(async (req) => {
         });
 
         if (pushResponse.ok) {
-          console.log(`✅ Push notification sent successfully to device ${subData.device_id}`);
           return { success: true, deviceId: subData.device_id };
         } else {
-          const errorText = await pushResponse.text().catch(() => 'Unknown error');
-          console.error(`❌ Failed to send to device ${subData.device_id}:`, pushResponse.status, errorText);
-          
-          // If subscription is expired (404 or 410), delete it
+          // Delete expired subscriptions
           if (pushResponse.status === 404 || pushResponse.status === 410) {
-            console.log(`🗑️ Deleting expired subscription for device ${subData.device_id}`);
             await supabase
               .from('push_subscriptions')
               .delete()
               .eq('id', subData.id);
           }
           
-          return { 
-            success: false, 
-            deviceId: subData.device_id,
-            error: `Push service error: ${pushResponse.status}` 
-          };
+          return { success: false, deviceId: subData.device_id, error: `Status: ${pushResponse.status}` };
         }
       } catch (error: any) {
-        console.error(`❌ Exception sending to device ${subData.device_id}:`, error);
-        return { 
-          success: false, 
-          deviceId: subData.device_id,
-          error: error.message 
-        };
+        return { success: false, deviceId: subData.device_id, error: error.message };
       }
     }));
 
     const successCount = results.filter(r => r.success).length;
-    console.log(`📊 Push sent to ${successCount}/${results.length} devices`);
 
     return new Response(
-      JSON.stringify({ 
-        success: successCount > 0,
-        successCount,
-        totalDevices: results.length,
-        results
-      }), 
+      JSON.stringify({ success: successCount > 0, successCount, totalDevices: results.length, results }), 
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
 
