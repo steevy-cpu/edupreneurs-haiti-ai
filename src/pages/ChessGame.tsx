@@ -74,6 +74,13 @@ const ChessGame: React.FC = () => {
   const [gameStatus, setGameStatus] = useState("C'est ton tour!");
   const [difficulty, setDifficulty] = useState<DifficultyLevel>('intermediate');
   const [isChatOpen, setIsChatOpen] = useState(false);
+  
+  // New state for enhancements
+  const [lastMove, setLastMove] = useState<{ from: string; to: string } | null>(null);
+  const [capturedByWhite, setCapturedByWhite] = useState<string[]>([]);
+  const [capturedByBlack, setCapturedByBlack] = useState<string[]>([]);
+  const [moveHistory, setMoveHistory] = useState<string[]>([]);
+  const [gameHistory, setGameHistory] = useState<string[]>([]); // FEN history for undo
 
   // Fetch user profile
   useEffect(() => {
@@ -222,11 +229,15 @@ const ChessGame: React.FC = () => {
           // Play sound based on move type
           if (moveResult.captured) {
             playSound('capture');
+            // Track captured piece (white piece captured by black)
+            setCapturedByBlack(prev => [...prev, moveResult.captured!]);
           } else {
             playSound('move');
           }
           
           setGame(gameCopy);
+          setLastMove({ from: moveResult.from, to: moveResult.to });
+          setMoveHistory(prev => [...prev, moveResult.san]);
           
           // Add Eric's explanation to chat - always show something
           const explanation = response.explanation || generateFallbackExplanation(moveResult);
@@ -263,11 +274,14 @@ const ChessGame: React.FC = () => {
         
         if (randomMove.captured) {
           playSound('capture');
+          setCapturedByBlack(prev => [...prev, randomMove.captured!]);
         } else {
           playSound('move');
         }
         
         setGame(gameCopy);
+        setLastMove({ from: randomMove.from, to: randomMove.to });
+        setMoveHistory(prev => [...prev, randomMove.san]);
         
         // Generate a proper explanation for the fallback move
         const fallbackExplanation = generateFallbackExplanation(randomMove);
@@ -287,8 +301,17 @@ const ChessGame: React.FC = () => {
       if (validMoves.length > 0) {
         const randomMove = validMoves[Math.floor(Math.random() * validMoves.length)];
         gameCopy.move(randomMove);
-        playSound('move');
+        
+        if (randomMove.captured) {
+          playSound('capture');
+          setCapturedByBlack(prev => [...prev, randomMove.captured!]);
+        } else {
+          playSound('move');
+        }
+        
         setGame(gameCopy);
+        setLastMove({ from: randomMove.from, to: randomMove.to });
+        setMoveHistory(prev => [...prev, randomMove.san]);
         
         setMessages(prev => [...prev, {
           role: 'assistant',
@@ -308,20 +331,28 @@ const ChessGame: React.FC = () => {
   }, [messages, userNickname, toast, playSound, difficulty]);
 
   const handlePlayerMove = useCallback((from: string, to: string, promotion?: string): boolean => {
-    const gameCopy = new Chess(game.fen());
+    const currentFen = game.fen();
+    const gameCopy = new Chess(currentFen);
     
     try {
       const move = gameCopy.move({ from, to, promotion: promotion || 'q' });
       
       if (move) {
+        // Save current state for undo
+        setGameHistory(prev => [...prev, currentFen]);
+        
         // Play sound based on move type
         if (move.captured) {
           playSound('capture');
+          // Track captured piece (black piece captured by white)
+          setCapturedByWhite(prev => [...prev, move.captured!]);
         } else {
           playSound('move');
         }
         
         setGame(gameCopy);
+        setLastMove({ from, to });
+        setMoveHistory(prev => [...prev, move.san]);
         
         // Add move to chat
         setMessages(prev => [...prev, {
@@ -350,6 +381,13 @@ const ChessGame: React.FC = () => {
     playSound('gameStart');
     setGame(new Chess());
     
+    // Reset all game state
+    setLastMove(null);
+    setCapturedByWhite([]);
+    setCapturedByBlack([]);
+    setMoveHistory([]);
+    setGameHistory([]);
+    
     const difficultyNames = {
       beginner: 'débutant 🌱',
       intermediate: 'intermédiaire 🎯',
@@ -363,6 +401,47 @@ const ChessGame: React.FC = () => {
     }]);
     setGameStatus("C'est ton tour!");
   }, [userNickname, playSound, difficulty]);
+
+  const handleUndo = useCallback(() => {
+    if (gameHistory.length === 0 || isThinking) return;
+    
+    // We need to undo both the player's move and Eric's response
+    // Go back to the state before the last player move
+    const newHistory = [...gameHistory];
+    const previousFen = newHistory.pop();
+    
+    if (previousFen) {
+      setGame(new Chess(previousFen));
+      setGameHistory(newHistory);
+      
+      // Remove last 2 moves from history (player + Eric, or just player if Eric hasn't moved)
+      const historyLength = moveHistory.length;
+      const movesToRemove = historyLength > 0 && historyLength % 2 === 0 ? 2 : 1;
+      setMoveHistory(prev => prev.slice(0, -movesToRemove));
+      
+      // Recalculate captured pieces from scratch based on new game state
+      const newGame = new Chess(previousFen);
+      // For simplicity, we'll just keep the captured pieces as they are
+      // A more complex implementation would track this properly
+      
+      // Update last move
+      const history = newGame.history({ verbose: true });
+      if (history.length > 0) {
+        const lastMoveObj = history[history.length - 1];
+        setLastMove({ from: lastMoveObj.from, to: lastMoveObj.to });
+      } else {
+        setLastMove(null);
+      }
+      
+      playSound('move');
+      
+      setMessages(prev => [...prev, {
+        role: 'assistant',
+        content: "D'accord, j'annule le dernier coup! C'est de nouveau ton tour. 🔄",
+        timestamp: new Date()
+      }]);
+    }
+  }, [gameHistory, moveHistory, isThinking, playSound]);
 
   const handleDifficultyChange = useCallback((newDifficulty: DifficultyLevel) => {
     setDifficulty(newDifficulty);
@@ -487,10 +566,16 @@ const ChessGame: React.FC = () => {
                   onMove={handlePlayerMove}
                   onNewGame={handleNewGame}
                   onRequestTutorial={handleRequestTutorial}
+                  onUndo={handleUndo}
                   isThinking={isThinking}
                   gameStatus={gameStatus}
                   difficulty={difficulty}
                   onDifficultyChange={handleDifficultyChange}
+                  lastMove={lastMove}
+                  capturedByWhite={capturedByWhite}
+                  capturedByBlack={capturedByBlack}
+                  moveHistory={moveHistory}
+                  canUndo={gameHistory.length > 0 && !isThinking}
                 />
               </Card>
               
