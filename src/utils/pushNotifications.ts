@@ -181,15 +181,24 @@ export const subscribeToPushNotifications = async (
     // Get device info
     const { browser, os } = getBrowserInfo();
     const deviceId = getDeviceId();
+    const currentDomain = window.location.hostname;
 
-    // Clean up old subscriptions without device info
+    // Clean up old subscriptions without device info or from old domains
     await supabase
       .from('push_subscriptions' as any)
       .delete()
       .eq('user_id', userId)
       .or('device_id.is.null,browser.is.null,os.is.null');
 
-    // Save new subscription to database
+    // Also clean up subscriptions from different domains (old lovable.app subscriptions)
+    await supabase
+      .from('push_subscriptions' as any)
+      .delete()
+      .eq('user_id', userId)
+      .eq('device_id', deviceId)
+      .neq('domain', currentDomain);
+
+    // Save new subscription to database with domain
     const { error } = await supabase
       .from('push_subscriptions' as any)
       .upsert({
@@ -197,6 +206,7 @@ export const subscribeToPushNotifications = async (
         device_id: deviceId,
         browser,
         os,
+        domain: currentDomain,
         subscription: subscription.toJSON(),
         last_used_at: new Date().toISOString()
       }, {
@@ -208,11 +218,53 @@ export const subscribeToPushNotifications = async (
       return false;
     }
 
-    if (DEBUG) console.log('✅ Push notifications configured');
+    if (DEBUG) console.log('✅ Push notifications configured for domain:', currentDomain);
     return true;
     
   } catch (error: any) {
     console.error('❌ Push subscription error:', error.message);
+    return false;
+  }
+};
+
+/**
+ * Check if user needs to re-subscribe (e.g., after domain change)
+ */
+export const checkSubscriptionValidity = async (userId: string): Promise<boolean> => {
+  try {
+    const currentDomain = window.location.hostname;
+    const deviceId = getDeviceId();
+    
+    const { data: subscription } = await supabase
+      .from('push_subscriptions' as any)
+      .select('domain, last_used_at')
+      .eq('user_id', userId)
+      .eq('device_id', deviceId)
+      .single() as { data: { domain?: string; last_used_at?: string } | null };
+    
+    if (!subscription) {
+      if (DEBUG) console.log('⚠️ No subscription found for this device');
+      return false;
+    }
+    
+    // Check if subscription is for current domain
+    if (subscription.domain && subscription.domain !== currentDomain && subscription.domain !== 'legacy') {
+      if (DEBUG) console.log('⚠️ Subscription is for different domain:', subscription.domain);
+      return false;
+    }
+    
+    // Check if subscription is too old (60 days)
+    if (subscription.last_used_at) {
+      const lastUsed = new Date(subscription.last_used_at);
+      const maxAge = 60 * 24 * 60 * 60 * 1000; // 60 days
+      if (Date.now() - lastUsed.getTime() > maxAge) {
+        if (DEBUG) console.log('⚠️ Subscription is too old');
+        return false;
+      }
+    }
+    
+    return true;
+  } catch {
     return false;
   }
 };
