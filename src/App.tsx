@@ -36,6 +36,7 @@ const FollowRequests = lazy(() => import("./pages/FollowRequests"));
 const Community = lazy(() => import("./pages/Community"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 const PrivacyPolicy = lazy(() => import("./pages/PrivacyPolicy"));
+const CookieSettings = lazy(() => import("./pages/CookieSettings"));
 const DevPush = lazy(() => import("./pages/DevPush"));
 const DynamicCoursePage = lazy(() => import("./pages/DynamicCoursePage"));
 const DynamicLessonPage = lazy(() => import("./pages/DynamicLessonPage"));
@@ -181,6 +182,7 @@ const App = () => (
             <Route path="/examens-officiels" element={<ExamsHub />} />
             <Route path="/resources" element={<Layout><Resources /></Layout>} />
               <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+              <Route path="/cookie-settings" element={<CookieSettings />} />
               <Route path="/email-test" element={<EmailTest />} />
               <Route path="/upload-email-assets" element={<UploadEmailAssets />} />
           <Route path="/dev/push" element={<DevPush />} />
