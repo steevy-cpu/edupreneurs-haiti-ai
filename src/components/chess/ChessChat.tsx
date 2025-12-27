@@ -18,6 +18,19 @@ interface ChessChatProps {
   userNickname: string;
 }
 
+// Clean markdown formatting from text
+const cleanMarkdown = (text: string): string => {
+  return text
+    .replace(/#{1,6}\s*/g, '') // Remove headers (##, ###, etc.)
+    .replace(/\*\*\*(.*?)\*\*\*/g, '$1') // Remove bold italic (***text***)
+    .replace(/\*\*(.*?)\*\*/g, '$1') // Remove bold (**text**)
+    .replace(/\*(.*?)\*/g, '$1') // Remove italic (*text*)
+    .replace(/`{3}[\s\S]*?`{3}/g, '') // Remove code blocks
+    .replace(/`([^`]+)`/g, '$1') // Remove inline code
+    .replace(/\[([^\]]+)\]\([^)]+\)/g, '$1') // Remove links, keep text
+    .trim();
+};
+
 const ChessChat: React.FC<ChessChatProps> = ({
   messages,
   onSendMessage,
@@ -88,7 +101,9 @@ const ChessChat: React.FC<ChessChatProps> = ({
                       : 'bg-muted text-foreground rounded-bl-md'
                   }`}
                 >
-                  <p className="whitespace-pre-wrap">{msg.content}</p>
+                  <p className="whitespace-pre-wrap">
+                    {msg.role === 'assistant' ? cleanMarkdown(msg.content) : msg.content}
+                  </p>
                   <p className={`text-xs mt-1 ${
                     msg.role === 'user' ? 'text-primary-foreground/70' : 'text-muted-foreground'
                   }`}>
