@@ -1,8 +1,8 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useMemo } from 'react';
 import { Chessboard } from 'react-chessboard';
 import { Chess, Square } from 'chess.js';
 import { Button } from '@/components/ui/button';
-import { RefreshCw, GraduationCap } from 'lucide-react';
+import { RefreshCw, GraduationCap, Undo2 } from 'lucide-react';
 import { 
   Select, 
   SelectContent, 
@@ -11,16 +11,24 @@ import {
   SelectValue 
 } from '@/components/ui/select';
 import type { DifficultyLevel } from '@/pages/ChessGame';
+import CapturedPieces from './CapturedPieces';
+import MoveHistory from './MoveHistory';
 
 interface ChessBoardProps {
   game: Chess;
   onMove: (from: string, to: string, promotion?: string) => boolean;
   onNewGame: () => void;
   onRequestTutorial: () => void;
+  onUndo: () => void;
   isThinking: boolean;
   gameStatus: string;
   difficulty: DifficultyLevel;
   onDifficultyChange: (difficulty: DifficultyLevel) => void;
+  lastMove: { from: string; to: string } | null;
+  capturedByWhite: string[];
+  capturedByBlack: string[];
+  moveHistory: string[];
+  canUndo: boolean;
 }
 
 const ChessBoard: React.FC<ChessBoardProps> = ({
@@ -28,13 +36,37 @@ const ChessBoard: React.FC<ChessBoardProps> = ({
   onMove,
   onNewGame,
   onRequestTutorial,
+  onUndo,
   isThinking,
   gameStatus,
   difficulty,
-  onDifficultyChange
+  onDifficultyChange,
+  lastMove,
+  capturedByWhite,
+  capturedByBlack,
+  moveHistory,
+  canUndo
 }) => {
   const [moveFrom, setMoveFrom] = useState<Square | null>(null);
   const [optionSquares, setOptionSquares] = useState<Record<string, React.CSSProperties>>({});
+
+  // Combine last move highlight with option squares
+  const customSquareStyles = useMemo(() => {
+    const styles: Record<string, React.CSSProperties> = {};
+    
+    // Add last move highlighting
+    if (lastMove) {
+      styles[lastMove.from] = {
+        backgroundColor: 'rgba(255, 255, 0, 0.4)'
+      };
+      styles[lastMove.to] = {
+        backgroundColor: 'rgba(255, 255, 0, 0.5)'
+      };
+    }
+    
+    // Merge with option squares (these take priority)
+    return { ...styles, ...optionSquares };
+  }, [lastMove, optionSquares]);
 
   const getMoveOptions = useCallback((square: Square) => {
     const moves = game.moves({
@@ -128,7 +160,7 @@ const ChessBoard: React.FC<ChessBoardProps> = ({
   };
 
   return (
-    <div className="flex flex-col gap-4">
+    <div className="flex flex-col gap-3">
       {/* Difficulty Selector */}
       <div className="flex items-center justify-center gap-3">
         <span className="text-sm font-medium text-muted-foreground">Niveau:</span>
@@ -156,13 +188,19 @@ const ChessBoard: React.FC<ChessBoardProps> = ({
         )}
       </div>
 
+      {/* Captured Pieces */}
+      <CapturedPieces 
+        capturedByWhite={capturedByWhite}
+        capturedByBlack={capturedByBlack}
+      />
+
       {/* Chess Board */}
       <div className="w-full max-w-[min(100%,500px)] mx-auto">
         <Chessboard
           position={game.fen()}
           onPieceDrop={onPieceDrop}
           onSquareClick={onSquareClick}
-          customSquareStyles={optionSquares}
+          customSquareStyles={customSquareStyles}
           boardOrientation="white"
           arePiecesDraggable={game.turn() === 'w' && !game.isGameOver() && !isThinking}
           customBoardStyle={{
@@ -174,8 +212,26 @@ const ChessBoard: React.FC<ChessBoardProps> = ({
         />
       </div>
 
+      {/* Move History */}
+      <div className="border rounded-lg">
+        <div className="text-xs font-medium text-muted-foreground px-2 py-1 border-b bg-muted/30">
+          📜 Historique des coups
+        </div>
+        <MoveHistory moves={moveHistory} />
+      </div>
+
       {/* Controls */}
-      <div className="flex justify-center gap-3">
+      <div className="flex justify-center gap-2 flex-wrap">
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={onUndo}
+          className="gap-2"
+          disabled={!canUndo || isThinking}
+        >
+          <Undo2 className="w-4 h-4" />
+          Annuler
+        </Button>
         <Button
           variant="outline"
           size="sm"
