@@ -18,6 +18,9 @@ interface PushSubscription {
 const VAPID_PUBLIC_KEY = 'BOQ0Fn35WtOTVFKRkrQRxYzb9oRwi2IldpPeSU3VHbHLoiNwheYEpklA2YVBh3Ah3h2De8743ShfRYx61lVhNUM';
 const VAPID_PRIVATE_KEY = Deno.env.get('VAPID_PRIVATE_KEY') || '';
 
+// Maximum age for subscriptions (60 days in milliseconds)
+const MAX_SUBSCRIPTION_AGE_MS = 60 * 24 * 60 * 60 * 1000;
+
 // Helper to convert base64url to base64
 function base64UrlToBase64(base64url: string): string {
   return base64url.replace(/-/g, '+').replace(/_/g, '/');
@@ -118,6 +121,30 @@ function getCategoryFromType(type?: string): string {
   return typeMap[type || ''] || 'message';
 }
 
+// Cleanup old/invalid subscriptions
+async function cleanupOldSubscriptions(supabase: any, userId: string): Promise<number> {
+  const cutoffDate = new Date(Date.now() - MAX_SUBSCRIPTION_AGE_MS).toISOString();
+  
+  const { data: oldSubs, error } = await supabase
+    .from('push_subscriptions')
+    .delete()
+    .eq('user_id', userId)
+    .lt('last_used_at', cutoffDate)
+    .select('id');
+  
+  if (error) {
+    console.error('Error cleaning up old subscriptions:', error);
+    return 0;
+  }
+  
+  const count = oldSubs?.length || 0;
+  if (count > 0) {
+    console.log(`🧹 Cleaned up ${count} old subscriptions for user ${userId}`);
+  }
+  
+  return count;
+}
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders });
@@ -145,8 +172,11 @@ serve(async (req) => {
       );
     }
 
+    // Cleanup old subscriptions first
+    await cleanupOldSubscriptions(supabase, recipientUserId);
+
     // Get actor profile for better notification messages
-    let actorName = 'Someone';
+    let actorName = 'Quelqu\'un';
     if (actorId) {
       const { data: actorProfile } = await supabase
         .from('profiles')
@@ -169,8 +199,9 @@ serve(async (req) => {
       .single();
 
     if (prefData && !prefData.enabled) {
+      console.log(`⏭️ User ${recipientUserId} has disabled ${category} notifications`);
       return new Response(
-        JSON.stringify({ success: false, message: 'User has disabled this notification category' }), 
+        JSON.stringify({ success: false, message: 'User has disabled this notification category', skipped: true }), 
         { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
@@ -181,12 +212,23 @@ serve(async (req) => {
       .select('*')
       .eq('user_id', recipientUserId);
 
-    if (fetchError || !subscriptions || subscriptions.length === 0) {
+    if (fetchError) {
+      console.error('Error fetching subscriptions:', fetchError);
+      return new Response(
+        JSON.stringify({ error: 'Failed to fetch subscriptions' }), 
+        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    if (!subscriptions || subscriptions.length === 0) {
+      console.log(`⏭️ No push subscriptions found for user ${recipientUserId}`);
       return new Response(
         JSON.stringify({ success: true, message: 'No push subscription found', skipped: true }), 
         { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
+
+    console.log(`📤 Sending push to ${subscriptions.length} device(s) for user ${recipientUserId}`);
 
     // Build notification payload
     const tag = entityId ? `${category}:${entityId}` : `notif-${Date.now()}`;
@@ -204,10 +246,19 @@ serve(async (req) => {
           notificationBody = `${actorName} a partagé votre publication`;
           break;
         case 'message':
+        case 'group_message':
           notificationBody = `Nouveau message de ${actorName}`;
           break;
         case 'follow_request':
+        case 'follow':
           notificationBody = `${actorName} souhaite vous suivre`;
+          break;
+        case 'follow_accepted':
+          notificationBody = `${actorName} a accepté votre demande de suivi`;
+          break;
+        case 'new_post':
+        case 'post':
+          notificationBody = `${actorName} a publié quelque chose`;
           break;
         default:
           notificationBody = body || 'Nouvelle notification';
@@ -254,27 +305,51 @@ serve(async (req) => {
         });
 
         if (pushResponse.ok) {
+          // Update last_used_at for successful delivery
+          await supabase
+            .from('push_subscriptions')
+            .update({ last_used_at: new Date().toISOString() })
+            .eq('id', subData.id);
+          
+          console.log(`✅ Push sent to device ${subData.device_id || 'unknown'}`);
           return { success: true, deviceId: subData.device_id };
         } else {
-          // Delete expired subscriptions
-          if (pushResponse.status === 404 || pushResponse.status === 410) {
+          const status = pushResponse.status;
+          console.error(`❌ Push failed for device ${subData.device_id}: status ${status}`);
+          
+          // Delete expired/invalid subscriptions
+          if (status === 404 || status === 410) {
+            console.log(`🗑️ Removing expired subscription ${subData.id}`);
             await supabase
               .from('push_subscriptions')
               .delete()
               .eq('id', subData.id);
           }
           
-          return { success: false, deviceId: subData.device_id, error: `Status: ${pushResponse.status}` };
+          return { success: false, deviceId: subData.device_id, error: `Status: ${status}` };
         }
       } catch (error: any) {
+        console.error(`❌ Push error for device ${subData.device_id}:`, error.message);
         return { success: false, deviceId: subData.device_id, error: error.message };
       }
     }));
 
     const successCount = results.filter(r => r.success).length;
+    const failedCount = results.length - successCount;
+
+    console.log(`📊 Push results: ${successCount}/${results.length} successful`);
+    
+    if (failedCount > 0) {
+      console.log(`⚠️ ${failedCount} device(s) failed to receive notification`);
+    }
 
     return new Response(
-      JSON.stringify({ success: successCount > 0, successCount, totalDevices: results.length, results }), 
+      JSON.stringify({ 
+        success: successCount > 0, 
+        successCount, 
+        totalDevices: results.length, 
+        results 
+      }), 
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
 

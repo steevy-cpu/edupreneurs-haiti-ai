@@ -1459,6 +1459,7 @@ export type Database = {
           browser: string | null
           created_at: string
           device_id: string | null
+          domain: string | null
           id: string
           last_used_at: string | null
           os: string | null
@@ -1470,6 +1471,7 @@ export type Database = {
           browser?: string | null
           created_at?: string
           device_id?: string | null
+          domain?: string | null
           id?: string
           last_used_at?: string | null
           os?: string | null
@@ -1481,6 +1483,7 @@ export type Database = {
           browser?: string | null
           created_at?: string
           device_id?: string | null
+          domain?: string | null
           id?: string
           last_used_at?: string | null
           os?: string | null
