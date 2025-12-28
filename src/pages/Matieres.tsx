@@ -344,8 +344,8 @@ export default function Matieres() {
           className="absolute inset-0 bg-cover bg-center scale-105"
           style={{ backgroundImage: `url(${edupreneursBg})` }}
         />
-        <div className="absolute inset-0 bg-gradient-to-b from-black/70 via-black/50 to-background" />
-        <div className="absolute inset-0 bg-gradient-to-r from-primary/20 to-transparent mix-blend-overlay" />
+        <div className="absolute inset-0 bg-gradient-to-b from-black/80 via-black/70 to-background" />
+        <div className="absolute inset-0 bg-gradient-to-r from-primary/10 to-transparent mix-blend-overlay" />
         
         {/* Decorative elements */}
         <div className="absolute top-20 left-10 w-32 h-32 bg-primary/20 rounded-full blur-3xl animate-pulse" />
@@ -354,43 +354,74 @@ export default function Matieres() {
         <div className="container mx-auto px-4 relative z-10">
           <div className="flex flex-col items-center text-center max-w-4xl mx-auto">
             {/* Badge */}
-            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/10 backdrop-blur-md border border-white/20 mb-6">
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/15 backdrop-blur-md border border-white/30 mb-6 animate-fade-in">
               <img src={menfpLogo} alt="MENFP" className="w-6 h-6 rounded-full" />
-              <span className="text-sm font-medium text-white/90">Programme officiel MENFP</span>
+              <span className="text-sm font-semibold text-white drop-shadow-md">Programme officiel MENFP</span>
             </div>
             
-            {/* Title */}
-            <h1 className="text-4xl sm:text-5xl md:text-6xl font-black mb-6 text-white tracking-tight">
-              <span className="inline-flex items-center gap-3">
-                <span className="p-2 rounded-xl bg-primary/20 backdrop-blur-sm">
-                  <GraduationCap className="w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 text-primary" />
+            {/* Title with staggered animation */}
+            <h1 className="text-4xl sm:text-5xl md:text-6xl font-black mb-6 tracking-tight">
+              <span className="inline-flex items-center gap-3 justify-center flex-wrap">
+                <span 
+                  className="p-2 rounded-xl bg-primary/30 backdrop-blur-sm border border-primary/40 animate-fade-in"
+                  style={{ animationDelay: '0.1s', animationFillMode: 'both' }}
+                >
+                  <GraduationCap className="w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 text-white" />
                 </span>
-                Programmes
+                <span 
+                  className="text-white drop-shadow-[0_2px_10px_rgba(0,0,0,0.5)] animate-fade-in"
+                  style={{ animationDelay: '0.2s', animationFillMode: 'both' }}
+                >
+                  Programmes
+                </span>
               </span>
               <br />
-              <span className="bg-gradient-to-r from-primary via-emerald-400 to-teal-400 bg-clip-text text-transparent">
+              <span 
+                className="bg-gradient-to-r from-emerald-300 via-primary to-teal-300 bg-clip-text text-transparent drop-shadow-lg animate-fade-in"
+                style={{ animationDelay: '0.4s', animationFillMode: 'both' }}
+              >
                 Académiques
               </span>
             </h1>
             
-            {/* Description */}
-            <p className="text-base sm:text-lg md:text-xl text-white/80 max-w-2xl leading-relaxed mb-8">
-              Contenu aligné sur le programme officiel du Ministère de l'Éducation Nationale et de la Formation Professionnelle d'Haïti
+            {/* Description with word-by-word animation */}
+            <p className="text-base sm:text-lg md:text-xl max-w-2xl leading-relaxed mb-8">
+              {["Contenu", "aligné", "sur", "le", "programme", "officiel", "du", "Ministère", "de", "l'Éducation", "Nationale", "et", "de", "la", "Formation", "Professionnelle", "d'Haïti"].map((word, index) => (
+                <span
+                  key={index}
+                  className="inline-block text-white drop-shadow-[0_1px_3px_rgba(0,0,0,0.8)] animate-fade-in mr-[0.3em]"
+                  style={{ 
+                    animationDelay: `${0.5 + index * 0.05}s`,
+                    animationFillMode: 'both'
+                  }}
+                >
+                  {word}
+                </span>
+              ))}
             </p>
             
             {/* Stats row */}
-            <div className="flex flex-wrap items-center justify-center gap-4 sm:gap-8">
-              <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-white/10 backdrop-blur-sm border border-white/10">
-                <BookOpen className="w-4 h-4 text-primary" />
-                <span className="text-sm font-semibold text-white">7 niveaux</span>
+            <div className="flex flex-wrap items-center justify-center gap-4 sm:gap-6">
+              <div 
+                className="flex items-center gap-2 px-4 py-2.5 rounded-full bg-white/20 backdrop-blur-md border border-white/30 shadow-lg animate-fade-in"
+                style={{ animationDelay: '1.4s', animationFillMode: 'both' }}
+              >
+                <BookOpen className="w-4 h-4 text-emerald-300" />
+                <span className="text-sm font-bold text-white drop-shadow-sm">7 niveaux</span>
               </div>
-              <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-white/10 backdrop-blur-sm border border-white/10">
-                <Award className="w-4 h-4 text-amber-400" />
-                <span className="text-sm font-semibold text-white">4 séries Bac</span>
+              <div 
+                className="flex items-center gap-2 px-4 py-2.5 rounded-full bg-white/20 backdrop-blur-md border border-white/30 shadow-lg animate-fade-in"
+                style={{ animationDelay: '1.5s', animationFillMode: 'both' }}
+              >
+                <Award className="w-4 h-4 text-amber-300" />
+                <span className="text-sm font-bold text-white drop-shadow-sm">4 séries Bac</span>
               </div>
-              <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-white/10 backdrop-blur-sm border border-white/10">
-                <GraduationCap className="w-4 h-4 text-emerald-400" />
-                <span className="text-sm font-semibold text-white">100% gratuit</span>
+              <div 
+                className="flex items-center gap-2 px-4 py-2.5 rounded-full bg-white/20 backdrop-blur-md border border-white/30 shadow-lg animate-fade-in"
+                style={{ animationDelay: '1.6s', animationFillMode: 'both' }}
+              >
+                <GraduationCap className="w-4 h-4 text-primary" />
+                <span className="text-sm font-bold text-white drop-shadow-sm">100% gratuit</span>
               </div>
             </div>
           </div>
