@@ -1543,6 +1543,65 @@ export type Database = {
         }
         Relationships: []
       }
+      quiz_validations: {
+        Row: {
+          ai_analysis: string | null
+          ai_confidence_score: number | null
+          content_type: string
+          corrected_answer: string | null
+          created_at: string
+          error_description: string | null
+          id: string
+          lesson_id: string
+          original_answer: string | null
+          question_index: number
+          updated_at: string
+          validated_at: string | null
+          validated_by: string | null
+          validation_status: string
+        }
+        Insert: {
+          ai_analysis?: string | null
+          ai_confidence_score?: number | null
+          content_type: string
+          corrected_answer?: string | null
+          created_at?: string
+          error_description?: string | null
+          id?: string
+          lesson_id: string
+          original_answer?: string | null
+          question_index: number
+          updated_at?: string
+          validated_at?: string | null
+          validated_by?: string | null
+          validation_status?: string
+        }
+        Update: {
+          ai_analysis?: string | null
+          ai_confidence_score?: number | null
+          content_type?: string
+          corrected_answer?: string | null
+          created_at?: string
+          error_description?: string | null
+          id?: string
+          lesson_id?: string
+          original_answer?: string | null
+          question_index?: number
+          updated_at?: string
+          validated_at?: string | null
+          validated_by?: string | null
+          validation_status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "quiz_validations_lesson_id_fkey"
+            columns: ["lesson_id"]
+            isOneToOne: false
+            referencedRelation: "lessons"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       referrals: {
         Row: {
           created_at: string | null

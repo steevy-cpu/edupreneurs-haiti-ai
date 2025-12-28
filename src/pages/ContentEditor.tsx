@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
-import { ArrowLeft, BookOpen, Zap, BarChart3, Sparkles, GraduationCap, Youtube } from "lucide-react";
+import { ArrowLeft, BookOpen, Zap, BarChart3, Sparkles, GraduationCap, Youtube, CheckCircle2 } from "lucide-react";
 import { LessonBrowser } from "@/components/content-editor/LessonBrowser";
 import { LessonPreview } from "@/components/content-editor/LessonPreview";
 import { YouTubeManager } from "@/components/content-editor/YouTubeManager";
@@ -19,6 +19,7 @@ import { BaccExamManager } from "@/components/content-editor/BaccExamManager";
 import { PassionVideoManager } from "@/components/content-editor/PassionVideoManager";
 import { CurriculumAnalyzer } from "@/components/content-editor/CurriculumAnalyzer";
 import { LessonImageManager } from "@/components/content-editor/LessonImageManager";
+import { QuizActivityValidator } from "@/components/content-editor/QuizActivityValidator";
 
 const ContentEditor = () => {
   const navigate = useNavigate();
@@ -202,14 +203,18 @@ const ContentEditor = () => {
         {/* Main Content with Tabs */}
         <div className="max-w-[1600px] mx-auto">
           <Tabs defaultValue="review" className="space-y-6">
-            <TabsList className="grid w-full grid-cols-5 lg:w-[1000px]">
+            <TabsList className="grid w-full grid-cols-6 lg:w-[1200px]">
               <TabsTrigger value="review">
                 <BookOpen className="mr-2 h-4 w-4" />
                 Révision
               </TabsTrigger>
+              <TabsTrigger value="validation">
+                <CheckCircle2 className="mr-2 h-4 w-4" />
+                Validation
+              </TabsTrigger>
               <TabsTrigger value="batch">
                 <Zap className="mr-2 h-4 w-4" />
-                Génération par lot
+                Génération
               </TabsTrigger>
               <TabsTrigger value="exams">
                 <BarChart3 className="mr-2 h-4 w-4" />
@@ -217,11 +222,11 @@ const ContentEditor = () => {
               </TabsTrigger>
               <TabsTrigger value="baccalaureat">
                 <GraduationCap className="mr-2 h-4 w-4" />
-                Baccalauréat NS4
+                Baccalauréat
               </TabsTrigger>
               <TabsTrigger value="passion-videos">
                 <Youtube className="mr-2 h-4 w-4" />
-                Vidéos Passions
+                Passions
               </TabsTrigger>
             </TabsList>
 
@@ -325,6 +330,10 @@ const ContentEditor = () => {
                   </div>
                 </div>
               </div>
+            </TabsContent>
+
+            <TabsContent value="validation">
+              <QuizActivityValidator />
             </TabsContent>
 
             <TabsContent value="batch">
