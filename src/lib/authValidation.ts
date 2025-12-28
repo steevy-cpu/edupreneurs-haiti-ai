@@ -1,5 +1,20 @@
 import { z } from "zod";
 
+// Valid academic grade values (standardized format)
+export const ACADEMIC_GRADES = ['7AF', '8AF', '9AF', 'NS1', 'NS2', 'NS3', 'NS4'] as const;
+export type AcademicGrade = typeof ACADEMIC_GRADES[number];
+
+// Grade options for signup dropdown
+export const GRADE_OPTIONS: { value: AcademicGrade; label: string }[] = [
+  { value: '7AF', label: '7ème année fondamentale' },
+  { value: '8AF', label: '8ème année fondamentale' },
+  { value: '9AF', label: '9ème année fondamentale' },
+  { value: 'NS1', label: 'Nouveau Secondaire 1' },
+  { value: 'NS2', label: 'Nouveau Secondaire 2' },
+  { value: 'NS3', label: 'Nouveau Secondaire 3 (Rhéto)' },
+  { value: 'NS4', label: 'Nouveau Secondaire 4 (Philo)' },
+];
+
 // Login validation schema
 export const loginSchema = z.object({
   email: z
@@ -40,7 +55,10 @@ export const signupSchema = z.object({
     .regex(/^[a-zA-Z0-9_]+$/, "Le pseudo ne peut contenir que des lettres, chiffres et underscores"),
   academicGrade: z
     .string()
-    .min(1, "Le niveau académique est requis"),
+    .min(1, "Le niveau académique est requis")
+    .refine((val) => ACADEMIC_GRADES.includes(val as AcademicGrade), {
+      message: "Niveau académique invalide",
+    }),
   phoneNumber: z
     .string()
     .trim()

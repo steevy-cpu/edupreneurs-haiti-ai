@@ -7,6 +7,8 @@ import { toast } from "sonner";
 import { CourseLayout, CourseHeader, LessonCard, ProgressCard, MonthSection } from "@/components/course";
 import { groupLessonsByMonth, MONTH_ORDER, BaseLesson, BaseSubject } from "@/utils/courseHelpers";
 import { EricChatbot } from "@/components/EricChatbot";
+import { useUserGrade, GRADE_LABELS } from "@/hooks/useUserGrade";
+import { Lock } from "lucide-react";
 
 export default function DynamicCoursePage() {
   const { slug } = useParams();
@@ -15,6 +17,9 @@ export default function DynamicCoursePage() {
   const [lessons, setLessons] = useState<BaseLesson[]>([]);
   const [completedLessons, setCompletedLessons] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+
+  // User grade access
+  const { userGrade, canAccessGrade, isLoading: gradeLoading, isAuthenticated } = useUserGrade();
 
   // Decode URL-encoded characters
   const subjectSlug = slug ? decodeURIComponent(slug) : '';
@@ -83,13 +88,37 @@ export default function DynamicCoursePage() {
   // Group lessons by month
   const groupedByMonth = groupLessonsByMonth(lessons);
 
-  if (isLoading) {
+  if (isLoading || gradeLoading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5 flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
           <p className="text-muted-foreground">Chargement...</p>
         </div>
+      </div>
+    );
+  }
+
+  // Check grade access AFTER loading subject
+  if (subject && isAuthenticated && !canAccessGrade(subject.grade_level)) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5 flex items-center justify-center p-4">
+        <Card className="p-8 text-center max-w-md">
+          <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-destructive/10 flex items-center justify-center">
+            <Lock className="w-8 h-8 text-destructive" />
+          </div>
+          <h2 className="text-2xl font-bold mb-2">Accès restreint</h2>
+          <p className="text-muted-foreground mb-4">
+            Ce cours est pour le niveau <strong>{subject.grade_level}</strong>. 
+            Votre compte est enregistré pour <strong>{userGrade ? GRADE_LABELS[userGrade] : 'un autre niveau'}</strong>.
+          </p>
+          <p className="text-sm text-muted-foreground mb-6">
+            Contactez le support si vous souhaitez changer de niveau.
+          </p>
+          <Button onClick={() => navigate('/matieres')}>
+            Retour aux matières
+          </Button>
+        </Card>
       </div>
     );
   }
