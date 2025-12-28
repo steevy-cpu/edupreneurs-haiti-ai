@@ -26,82 +26,19 @@ serve(async (req) => {
     console.log(`Analyzing curriculum PDF for ${subjectName} (${gradeLevel}) with ${pageImages.length} pages`);
     console.log(`Existing lessons to compare: ${existingLessons?.length || 0}`);
 
-    // Prepare system prompt for thorough curriculum analysis
-    const systemPrompt = `Tu es un expert en analyse de programmes scolaires haïtiens. Tu dois analyser minutieusement ce document PDF de programme éducatif.
+    const systemPrompt = `Tu es un expert en analyse de programmes scolaires haïtiens. Analyse ce document PDF de programme éducatif de façon EXHAUSTIVE.
 
-OBJECTIF: Extraire TOUS les éléments du curriculum de façon exhaustive pour identifier ce qui pourrait manquer dans les leçons existantes.
+MATIÈRE: ${subjectName}
+NIVEAU: ${gradeLevel}
 
-INSTRUCTIONS D'ANALYSE DÉTAILLÉE:
-1. CHAPITRES & UNITÉS: Identifie chaque chapitre, unité ou module
-2. LEÇONS & THÈMES: Liste chaque leçon, thème ou sujet mentionné
-3. OBJECTIFS: Note les objectifs d'apprentissage spécifiques
-4. COMPÉTENCES: Identifie les compétences visées
-5. NOTIONS CLÉS: Repère les concepts, définitions et formules importantes
-6. EXERCICES TYPES: Note les types d'exercices ou activités suggérées
+INSTRUCTIONS:
+1. Identifie TOUS les chapitres, leçons, thèmes du document
+2. Compare avec les leçons existantes: ${JSON.stringify(existingLessons || [])}
+3. Identifie ce qui est couvert, manquant, ou partiellement couvert
 
-RÈGLES IMPORTANTES:
-- Sois EXHAUSTIF - ne manque aucun élément du programme
-- Inclus les sous-thèmes et détails fins
-- Note les numéros de pages si visibles
-- Préserve la hiérarchie (chapitre > leçon > sous-thème)
+Sois EXHAUSTIF - examine chaque page minutieusement.`;
 
-COMPARAISON AVEC LES LEÇONS EXISTANTES:
-Les leçons déjà créées sont: ${JSON.stringify(existingLessons || [])}
-
-Tu dois identifier:
-1. Les topics du PDF qui correspondent à des leçons existantes (match)
-2. Les topics du PDF qui ne sont PAS couverts (manquants)
-3. Les topics partiellement couverts (le titre existe mais le contenu semble incomplet)
-
-FORMAT DE RÉPONSE (JSON strict):
-{
-  "documentTitle": "Titre du document analysé",
-  "gradeLevel": "${gradeLevel}",
-  "subject": "${subjectName}",
-  "totalTopicsFound": 0,
-  "chapters": [
-    {
-      "name": "Nom du chapitre",
-      "topics": [
-        {
-          "name": "Nom du topic/leçon",
-          "description": "Brève description du contenu",
-          "objectives": ["objectif 1", "objectif 2"],
-          "keyNotions": ["notion 1", "notion 2"],
-          "pageReference": "p. X"
-        }
-      ]
-    }
-  ],
-  "coveredTopics": [
-    {
-      "pdfTopic": "Topic du PDF",
-      "matchedLesson": "Titre de la leçon existante",
-      "matchConfidence": "exact|partial"
-    }
-  ],
-  "missingTopics": [
-    {
-      "name": "Topic manquant",
-      "chapter": "Chapitre parent",
-      "priority": "high|medium|low",
-      "suggestedLessonTitle": "Titre suggéré pour la nouvelle leçon",
-      "description": "Ce que cette leçon devrait couvrir"
-    }
-  ],
-  "partiallyCoovered": [
-    {
-      "pdfTopic": "Topic du PDF",
-      "existingLesson": "Leçon existante",
-      "missingAspects": ["Ce qui manque dans la leçon actuelle"]
-    }
-  ],
-  "recommendations": [
-    "Recommandation pour améliorer la couverture du programme"
-  ]
-}`;
-
-    // Prepare image content for the API
+    // Prepare image content
     const imageContent = pageImages.map((base64Image: string) => ({
       type: "image_url",
       image_url: {
@@ -109,16 +46,7 @@ FORMAT DE RÉPONSE (JSON strict):
       }
     }));
 
-    const userPrompt = `Analyse attentivement ce document de programme scolaire.
-
-MATIÈRE: ${subjectName}
-NIVEAU: ${gradeLevel}
-LEÇONS EXISTANTES: ${JSON.stringify(existingLessons || [], null, 2)}
-
-RAPPEL: Tu dois être EXHAUSTIF dans ton analyse. Examine chaque page minutieusement pour ne manquer aucun topic, chapitre, objectif ou notion clé du programme.
-
-Retourne UNIQUEMENT le JSON valide sans commentaires ni markdown.`;
-
+    // Use tool calling for reliable structured output
     const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
       method: 'POST',
       headers: {
@@ -132,11 +60,93 @@ Retourne UNIQUEMENT le JSON valide sans commentaires ni markdown.`;
           { 
             role: 'user', 
             content: [
-              { type: 'text', text: userPrompt },
+              { type: 'text', text: 'Analyse ce document de programme scolaire et utilise la fonction analyze_curriculum pour retourner les résultats.' },
               ...imageContent
             ]
           }
         ],
+        tools: [
+          {
+            type: "function",
+            function: {
+              name: "analyze_curriculum",
+              description: "Retourne l'analyse complète du curriculum avec les topics couverts, manquants et partiellement couverts",
+              parameters: {
+                type: "object",
+                properties: {
+                  documentTitle: { type: "string", description: "Titre du document analysé" },
+                  chapters: {
+                    type: "array",
+                    items: {
+                      type: "object",
+                      properties: {
+                        name: { type: "string" },
+                        topics: {
+                          type: "array",
+                          items: {
+                            type: "object",
+                            properties: {
+                              name: { type: "string" },
+                              description: { type: "string" },
+                              objectives: { type: "array", items: { type: "string" } },
+                              keyNotions: { type: "array", items: { type: "string" } }
+                            },
+                            required: ["name", "description"]
+                          }
+                        }
+                      },
+                      required: ["name", "topics"]
+                    }
+                  },
+                  coveredTopics: {
+                    type: "array",
+                    items: {
+                      type: "object",
+                      properties: {
+                        pdfTopic: { type: "string" },
+                        matchedLesson: { type: "string" },
+                        matchConfidence: { type: "string", enum: ["exact", "partial"] }
+                      },
+                      required: ["pdfTopic", "matchedLesson", "matchConfidence"]
+                    }
+                  },
+                  missingTopics: {
+                    type: "array",
+                    items: {
+                      type: "object",
+                      properties: {
+                        name: { type: "string" },
+                        chapter: { type: "string" },
+                        priority: { type: "string", enum: ["high", "medium", "low"] },
+                        suggestedLessonTitle: { type: "string" },
+                        description: { type: "string" }
+                      },
+                      required: ["name", "chapter", "priority", "suggestedLessonTitle", "description"]
+                    }
+                  },
+                  partiallyCoovered: {
+                    type: "array",
+                    items: {
+                      type: "object",
+                      properties: {
+                        pdfTopic: { type: "string" },
+                        existingLesson: { type: "string" },
+                        missingAspects: { type: "array", items: { type: "string" } }
+                      },
+                      required: ["pdfTopic", "existingLesson", "missingAspects"]
+                    }
+                  },
+                  recommendations: {
+                    type: "array",
+                    items: { type: "string" }
+                  }
+                },
+                required: ["documentTitle", "chapters", "coveredTopics", "missingTopics", "partiallyCoovered", "recommendations"]
+              }
+            }
+          }
+        ],
+        tool_choice: { type: "function", function: { name: "analyze_curriculum" } }
       }),
     });
 
@@ -166,30 +176,27 @@ Retourne UNIQUEMENT le JSON valide sans commentaires ni markdown.`;
     }
 
     const data = await response.json();
-    const content = data.choices?.[0]?.message?.content;
+    console.log('AI response received');
 
-    if (!content) {
-      throw new Error('No content in AI response');
+    // Extract tool call result
+    const toolCall = data.choices?.[0]?.message?.tool_calls?.[0];
+    if (!toolCall || toolCall.function.name !== 'analyze_curriculum') {
+      console.error('No valid tool call in response');
+      throw new Error('AI did not return structured analysis');
     }
-
-    console.log('Raw AI response length:', content.length);
-
-    // Clean and parse JSON
-    let cleanedContent = content
-      .replace(/```json\s*/g, '')
-      .replace(/```\s*/g, '')
-      .trim();
 
     let result;
     try {
-      result = JSON.parse(cleanedContent);
+      result = JSON.parse(toolCall.function.arguments);
     } catch (parseError) {
-      console.error('JSON parse error:', parseError);
-      console.error('Content to parse:', cleanedContent.substring(0, 500));
-      throw new Error('Failed to parse AI response as JSON');
+      console.error('Failed to parse tool arguments:', parseError);
+      console.error('Arguments:', toolCall.function.arguments?.substring(0, 500));
+      throw new Error('Failed to parse AI analysis');
     }
 
-    // Ensure required fields exist
+    // Ensure all fields exist
+    result.gradeLevel = gradeLevel;
+    result.subject = subjectName;
     result.coveredTopics = result.coveredTopics || [];
     result.missingTopics = result.missingTopics || [];
     result.partiallyCoovered = result.partiallyCoovered || [];
@@ -197,28 +204,18 @@ Retourne UNIQUEMENT le JSON valide sans commentaires ni markdown.`;
     result.chapters = result.chapters || [];
 
     // Calculate statistics
+    const totalTopics = result.chapters.reduce((acc: number, ch: any) => acc + (ch.topics?.length || 0), 0);
     result.statistics = {
-      totalTopicsInPDF: result.chapters.reduce((acc: number, ch: any) => acc + (ch.topics?.length || 0), 0),
+      totalTopicsInPDF: totalTopics,
       coveredCount: result.coveredTopics.length,
       missingCount: result.missingTopics.length,
       partialCount: result.partiallyCoovered.length,
-      coveragePercentage: 0
+      coveragePercentage: totalTopics > 0 
+        ? Math.round(((result.coveredTopics.length + result.partiallyCoovered.length * 0.5) / totalTopics) * 100)
+        : 0
     };
 
-    const totalTopics = result.statistics.totalTopicsInPDF;
-    if (totalTopics > 0) {
-      result.statistics.coveragePercentage = Math.round(
-        ((result.coveredTopics.length + result.partiallyCoovered.length * 0.5) / totalTopics) * 100
-      );
-    }
-
-    console.log('Analysis complete:', {
-      totalTopics: result.statistics.totalTopicsInPDF,
-      covered: result.statistics.coveredCount,
-      missing: result.statistics.missingCount,
-      partial: result.statistics.partialCount,
-      coverage: result.statistics.coveragePercentage
-    });
+    console.log('Analysis complete:', result.statistics);
 
     return new Response(JSON.stringify(result), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
