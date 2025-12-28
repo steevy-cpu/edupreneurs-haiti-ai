@@ -18,7 +18,9 @@ import {
   Award,
   FlaskConical,
   MessageCircle,
-  Map
+  Map,
+  Lock,
+  Star
 } from "lucide-react";
 
 import ericPointingImage from "@/assets/eric-right-pointing.png";
@@ -28,7 +30,9 @@ import { ThemeToggle } from "@/components/ThemeToggle";
 import { useSubjects } from "@/hooks/useLessonsCache";
 import { useMatieresFavorites } from "@/hooks/useMatieresFavorites";
 import { useMatieresProgress } from "@/hooks/useMatieresProgress";
+import { useUserGrade, GRADE_LABELS } from "@/hooks/useUserGrade";
 import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 import {
   MatieresSearchFilter,
   ContinueLearningSection,
@@ -90,6 +94,9 @@ export default function Matieres() {
   const [officialExamCount, setOfficialExamCount] = useState<number>(0);
   const [baccExamCount, setBaccExamCount] = useState<number>(0);
 
+  // User grade access hook
+  const { userGrade, isSuperUser, isLoading: gradeLoading, isAuthenticated, canAccessGrade } = useUserGrade();
+
   // New state for enhanced features
   const [searchQuery, setSearchQuery] = useState("");
   const [sortOption, setSortOption] = useState<SortOption>("name-asc");
@@ -100,6 +107,13 @@ export default function Matieres() {
 
   const currentGrade = gradeLevels.find(g => g.id === selectedGrade);
   const isNS3OrNS4 = selectedGrade === "NS3" || selectedGrade === "NS4";
+
+  // Auto-select user's grade on initial load
+  useEffect(() => {
+    if (userGrade && !gradeLoading && isAuthenticated) {
+      setSelectedGrade(userGrade);
+    }
+  }, [userGrade, gradeLoading, isAuthenticated]);
 
   const countActivities = (html: string | null): number => {
     if (!html) return 0;
@@ -306,20 +320,47 @@ export default function Matieres() {
         <div className="mb-8">
           <h3 className="text-lg font-semibold mb-4 text-center">Sélectionnez votre niveau</h3>
           <div className="flex overflow-x-auto pb-2 gap-2 justify-start sm:justify-center scrollbar-hide touch-pan-x">
-            {gradeLevels.map((grade) => (
-              <Button
-                key={grade.id}
-                variant={selectedGrade === grade.id ? "default" : "outline"}
-                onClick={() => { setSelectedGrade(grade.id); setSelectedSeries(null); }}
-                className={`min-w-[70px] flex-shrink-0 transition-all duration-200 ${
-                  selectedGrade === grade.id ? 'ring-2 ring-primary ring-offset-2 ring-offset-background shadow-lg' : 'hover:border-primary/50'
-                }`}
-                size="sm"
-              >
-                {grade.label}
-              </Button>
-            ))}
+            {gradeLevels.map((grade) => {
+              const isUserGrade = userGrade === grade.id;
+              const isLocked = isAuthenticated && !canAccessGrade(grade.id);
+              
+              return (
+                <Button
+                  key={grade.id}
+                  variant={selectedGrade === grade.id ? "default" : "outline"}
+                  onClick={() => {
+                    if (isLocked) {
+                      toast.error(
+                        `Ce niveau est verrouillé. Votre compte est enregistré pour ${GRADE_LABELS[userGrade!] || userGrade}. Contactez le support pour changer de niveau.`
+                      );
+                      return;
+                    }
+                    setSelectedGrade(grade.id);
+                    setSelectedSeries(null);
+                  }}
+                  className={`min-w-[70px] flex-shrink-0 transition-all duration-200 gap-1.5 ${
+                    selectedGrade === grade.id 
+                      ? 'ring-2 ring-primary ring-offset-2 ring-offset-background shadow-lg' 
+                      : isLocked 
+                        ? 'opacity-50 cursor-not-allowed hover:bg-muted' 
+                        : 'hover:border-primary/50'
+                  }`}
+                  size="sm"
+                >
+                  {isUserGrade && <Star className="w-3 h-3 fill-current" />}
+                  {isLocked && <Lock className="w-3 h-3" />}
+                  {grade.label}
+                </Button>
+              );
+            })}
           </div>
+          {isAuthenticated && userGrade && (
+            <p className="text-center text-xs text-muted-foreground mt-2">
+              <Star className="w-3 h-3 inline mr-1 fill-primary text-primary" />
+              Votre niveau: <span className="font-semibold text-primary">{GRADE_LABELS[userGrade]}</span>
+              {isSuperUser && <span className="ml-2 text-amber-500">(Accès complet)</span>}
+            </p>
+          )}
         </div>
 
         {/* Series Selection for NS3/NS4 */}

@@ -2,6 +2,10 @@ import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { LessonPageTemplate } from "@/components/LessonPageTemplate";
+import { Card } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { useUserGrade, GRADE_LABELS } from "@/hooks/useUserGrade";
+import { Lock } from "lucide-react";
 import ericTeaching from "@/assets/eric-teaching.png";
 import ericScientist from "@/assets/eric-scientist.png";
 import ericBiologist from "@/assets/eric-biologist.png";
@@ -14,6 +18,9 @@ export default function DynamicLessonPage() {
   const [lesson, setLesson] = useState<any>(null);
   const [subject, setSubject] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
+
+  // User grade access
+  const { userGrade, canAccessGrade, isLoading: gradeLoading, isAuthenticated } = useUserGrade();
 
   useEffect(() => {
     loadLessonData();
@@ -67,13 +74,37 @@ export default function DynamicLessonPage() {
     }
   };
 
-  if (isLoading) {
+  if (isLoading || gradeLoading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5 flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
           <p className="text-muted-foreground">Chargement de la leçon...</p>
         </div>
+      </div>
+    );
+  }
+
+  // Check grade access AFTER loading subject
+  if (subject && isAuthenticated && !canAccessGrade(subject.grade_level)) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5 flex items-center justify-center p-4">
+        <Card className="p-8 text-center max-w-md">
+          <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-destructive/10 flex items-center justify-center">
+            <Lock className="w-8 h-8 text-destructive" />
+          </div>
+          <h2 className="text-2xl font-bold mb-2">Accès restreint</h2>
+          <p className="text-muted-foreground mb-4">
+            Cette leçon est pour le niveau <strong>{subject.grade_level}</strong>. 
+            Votre compte est enregistré pour <strong>{userGrade ? GRADE_LABELS[userGrade] : 'un autre niveau'}</strong>.
+          </p>
+          <p className="text-sm text-muted-foreground mb-6">
+            Contactez le support si vous souhaitez changer de niveau.
+          </p>
+          <Button onClick={() => navigate('/matieres')}>
+            Retour aux matières
+          </Button>
+        </Card>
       </div>
     );
   }

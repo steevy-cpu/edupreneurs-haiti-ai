@@ -11,7 +11,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { generateConfirmationCode } from "@/utils/emailService";
 import { Loader2, Eye, EyeOff } from "lucide-react";
-import { loginSchema, signupSchema, forgotPasswordSchema, verificationCodeSchema } from "@/lib/authValidation";
+import { loginSchema, signupSchema, forgotPasswordSchema, verificationCodeSchema, GRADE_OPTIONS } from "@/lib/authValidation";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { getFullDeviceIdentifier } from "@/utils/deviceFingerprint";
 import { PhoneVerificationSection } from "@/components/PhoneVerificationSection";
 export default function Auth() {
@@ -1284,21 +1285,21 @@ export default function Auth() {
                             <Label htmlFor="signup-grade" className="text-sm text-muted-foreground">
                               Niveau académique *
                             </Label>
-                            <select
-                              id="signup-grade"
-                              required
+                            <Select
                               value={signupData.academicGrade}
-                              onChange={(e) => setSignupData({ ...signupData, academicGrade: e.target.value })}
-                              className="auth-input flex h-10 w-full rounded-lg border border-input bg-muted/50 px-3 py-2 text-sm"
+                              onValueChange={(value) => setSignupData({ ...signupData, academicGrade: value })}
                             >
-                              <option value="">Sélectionnez…</option>
-                              <option>7e</option>
-                              <option>8e</option>
-                              <option>9e</option>
-                              <option>S1</option>
-                              <option>S2</option>
-                              <option>Philo</option>
-                            </select>
+                              <SelectTrigger className="w-full bg-muted/50">
+                                <SelectValue placeholder="Sélectionnez votre niveau..." />
+                              </SelectTrigger>
+                              <SelectContent className="bg-background border border-border z-50">
+                                {GRADE_OPTIONS.map((option) => (
+                                  <SelectItem key={option.value} value={option.value}>
+                                    {option.label}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
                           </div>
                           <div className="space-y-2">
                             <Label htmlFor="signup-gender" className="text-sm text-muted-foreground">
