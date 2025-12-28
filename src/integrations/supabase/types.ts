@@ -162,6 +162,233 @@ export type Database = {
         }
         Relationships: []
       }
+      chess_achievements: {
+        Row: {
+          achievement_description: string | null
+          achievement_key: string
+          achievement_name: string
+          earned_at: string
+          icon: string | null
+          id: string
+          user_id: string
+        }
+        Insert: {
+          achievement_description?: string | null
+          achievement_key: string
+          achievement_name: string
+          earned_at?: string
+          icon?: string | null
+          id?: string
+          user_id: string
+        }
+        Update: {
+          achievement_description?: string | null
+          achievement_key?: string
+          achievement_name?: string
+          earned_at?: string
+          icon?: string | null
+          id?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      chess_games: {
+        Row: {
+          analysis: Json | null
+          blunders: number | null
+          brilliant_moves: number | null
+          created_at: string
+          difficulty: string | null
+          elo_change: number | null
+          ended_at: string | null
+          final_fen: string | null
+          good_moves: number | null
+          id: string
+          inaccuracies: number | null
+          mistakes: number | null
+          move_history: Json | null
+          moves_count: number
+          opening_name: string | null
+          opponent_type: string
+          result: string
+          started_at: string
+          time_control: string | null
+          total_time_seconds: number | null
+          user_id: string
+        }
+        Insert: {
+          analysis?: Json | null
+          blunders?: number | null
+          brilliant_moves?: number | null
+          created_at?: string
+          difficulty?: string | null
+          elo_change?: number | null
+          ended_at?: string | null
+          final_fen?: string | null
+          good_moves?: number | null
+          id?: string
+          inaccuracies?: number | null
+          mistakes?: number | null
+          move_history?: Json | null
+          moves_count?: number
+          opening_name?: string | null
+          opponent_type?: string
+          result: string
+          started_at?: string
+          time_control?: string | null
+          total_time_seconds?: number | null
+          user_id: string
+        }
+        Update: {
+          analysis?: Json | null
+          blunders?: number | null
+          brilliant_moves?: number | null
+          created_at?: string
+          difficulty?: string | null
+          elo_change?: number | null
+          ended_at?: string | null
+          final_fen?: string | null
+          good_moves?: number | null
+          id?: string
+          inaccuracies?: number | null
+          mistakes?: number | null
+          move_history?: Json | null
+          moves_count?: number
+          opening_name?: string | null
+          opponent_type?: string
+          result?: string
+          started_at?: string
+          time_control?: string | null
+          total_time_seconds?: number | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      chess_player_stats: {
+        Row: {
+          avg_time_per_move: number | null
+          created_at: string
+          current_winning_streak: number
+          elo_rating: number
+          games_drawn: number
+          games_lost: number
+          games_played: number
+          games_won: number
+          id: string
+          longest_winning_streak: number
+          total_moves: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          avg_time_per_move?: number | null
+          created_at?: string
+          current_winning_streak?: number
+          elo_rating?: number
+          games_drawn?: number
+          games_lost?: number
+          games_played?: number
+          games_won?: number
+          id?: string
+          longest_winning_streak?: number
+          total_moves?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          avg_time_per_move?: number | null
+          created_at?: string
+          current_winning_streak?: number
+          elo_rating?: number
+          games_drawn?: number
+          games_lost?: number
+          games_played?: number
+          games_won?: number
+          id?: string
+          longest_winning_streak?: number
+          total_moves?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      chess_puzzle_attempts: {
+        Row: {
+          attempts: number
+          created_at: string
+          id: string
+          puzzle_id: string
+          solved: boolean
+          time_seconds: number | null
+          user_id: string
+        }
+        Insert: {
+          attempts?: number
+          created_at?: string
+          id?: string
+          puzzle_id: string
+          solved?: boolean
+          time_seconds?: number | null
+          user_id: string
+        }
+        Update: {
+          attempts?: number
+          created_at?: string
+          id?: string
+          puzzle_id?: string
+          solved?: boolean
+          time_seconds?: number | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "chess_puzzle_attempts_puzzle_id_fkey"
+            columns: ["puzzle_id"]
+            isOneToOne: false
+            referencedRelation: "chess_puzzles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      chess_puzzles: {
+        Row: {
+          created_at: string
+          daily_date: string | null
+          difficulty: string
+          explanation: string | null
+          fen: string
+          hint: string | null
+          id: string
+          is_daily: boolean | null
+          solution: string[]
+          theme: string | null
+        }
+        Insert: {
+          created_at?: string
+          daily_date?: string | null
+          difficulty: string
+          explanation?: string | null
+          fen: string
+          hint?: string | null
+          id?: string
+          is_daily?: boolean | null
+          solution: string[]
+          theme?: string | null
+        }
+        Update: {
+          created_at?: string
+          daily_date?: string | null
+          difficulty?: string
+          explanation?: string | null
+          fen?: string
+          hint?: string | null
+          id?: string
+          is_daily?: boolean | null
+          solution?: string[]
+          theme?: string | null
+        }
+        Relationships: []
+      }
       content_change_log: {
         Row: {
           change_type: string
