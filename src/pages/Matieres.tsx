@@ -328,9 +328,6 @@ export default function Matieres() {
               <span className="font-semibold hidden sm:inline">EDUPRENEURS</span>
             </Button>
             <div className="flex items-center gap-2">
-              <div className="hidden md:block">
-                <MusicSelector />
-              </div>
               <ThemeToggle />
             </div>
           </div>
