@@ -338,35 +338,66 @@ export default function Matieres() {
       </nav>
 
       {/* Hero Header with Eric */}
-      <div className="relative pt-32 pb-16 overflow-hidden">
+      <div className="relative pt-20 pb-12 md:pt-24 md:pb-16 overflow-hidden">
+        {/* Background with gradient overlay */}
         <div 
-          className="absolute inset-0 bg-cover bg-center"
+          className="absolute inset-0 bg-cover bg-center scale-105"
           style={{ backgroundImage: `url(${edupreneursBg})` }}
         />
-        <div className="absolute inset-0 bg-black/60" />
+        <div className="absolute inset-0 bg-gradient-to-b from-black/70 via-black/50 to-background" />
+        <div className="absolute inset-0 bg-gradient-to-r from-primary/20 to-transparent mix-blend-overlay" />
+        
+        {/* Decorative elements */}
+        <div className="absolute top-20 left-10 w-32 h-32 bg-primary/20 rounded-full blur-3xl animate-pulse" />
+        <div className="absolute bottom-10 right-10 w-40 h-40 bg-primary/15 rounded-full blur-3xl animate-pulse delay-700" />
         
         <div className="container mx-auto px-4 relative z-10">
-          <div className="flex flex-col md:flex-row items-center gap-8">
-            <div className="flex-1 text-center md:text-left">
-              <h1 className="text-5xl font-bold mb-4 flex items-center justify-center md:justify-start gap-3 text-white">
-                <GraduationCap className="w-12 h-12" />
-                Programmes Académiques
-              </h1>
-              <p className="text-xl mb-6 text-white">
-                Contenu aligné sur le programme officiel du Ministère de l'Éducation Nationale et de la Formation Professionnelle d'Haïti (MENFP)
-              </p>
+          <div className="flex flex-col items-center text-center max-w-4xl mx-auto">
+            {/* Badge */}
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/10 backdrop-blur-md border border-white/20 mb-6">
+              <img src={menfpLogo} alt="MENFP" className="w-6 h-6 rounded-full" />
+              <span className="text-sm font-medium text-white/90">Programme officiel MENFP</span>
             </div>
-            <div className="hidden md:block">
-              <img 
-                src={ericTeaching}
-                alt="Eric enseignant"
-                className="w-64 h-64 object-contain"
-                loading="lazy"
-                decoding="async"
-              />
+            
+            {/* Title */}
+            <h1 className="text-4xl sm:text-5xl md:text-6xl font-black mb-6 text-white tracking-tight">
+              <span className="inline-flex items-center gap-3">
+                <span className="p-2 rounded-xl bg-primary/20 backdrop-blur-sm">
+                  <GraduationCap className="w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 text-primary" />
+                </span>
+                Programmes
+              </span>
+              <br />
+              <span className="bg-gradient-to-r from-primary via-emerald-400 to-teal-400 bg-clip-text text-transparent">
+                Académiques
+              </span>
+            </h1>
+            
+            {/* Description */}
+            <p className="text-base sm:text-lg md:text-xl text-white/80 max-w-2xl leading-relaxed mb-8">
+              Contenu aligné sur le programme officiel du Ministère de l'Éducation Nationale et de la Formation Professionnelle d'Haïti
+            </p>
+            
+            {/* Stats row */}
+            <div className="flex flex-wrap items-center justify-center gap-4 sm:gap-8">
+              <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-white/10 backdrop-blur-sm border border-white/10">
+                <BookOpen className="w-4 h-4 text-primary" />
+                <span className="text-sm font-semibold text-white">7 niveaux</span>
+              </div>
+              <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-white/10 backdrop-blur-sm border border-white/10">
+                <Award className="w-4 h-4 text-amber-400" />
+                <span className="text-sm font-semibold text-white">4 séries Bac</span>
+              </div>
+              <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-white/10 backdrop-blur-sm border border-white/10">
+                <GraduationCap className="w-4 h-4 text-emerald-400" />
+                <span className="text-sm font-semibold text-white">100% gratuit</span>
+              </div>
             </div>
           </div>
         </div>
+        
+        {/* Bottom wave effect */}
+        <div className="absolute bottom-0 left-0 right-0 h-16 bg-gradient-to-t from-background to-transparent" />
       </div>
 
       <div className="container mx-auto px-4 py-8">
