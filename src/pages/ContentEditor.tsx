@@ -17,6 +17,8 @@ import { CreateMatiereDialog } from "@/components/content-editor/CreateMatiereDi
 import { ExamManager } from "@/components/content-editor/ExamManager";
 import { BaccExamManager } from "@/components/content-editor/BaccExamManager";
 import { PassionVideoManager } from "@/components/content-editor/PassionVideoManager";
+import { CurriculumAnalyzer } from "@/components/content-editor/CurriculumAnalyzer";
+import { LessonImageManager } from "@/components/content-editor/LessonImageManager";
 
 const ContentEditor = () => {
   const navigate = useNavigate();
@@ -24,6 +26,7 @@ const ContentEditor = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [hasAccess, setHasAccess] = useState(false);
   const [selectedLesson, setSelectedLesson] = useState<any>(null);
+  const [subjectLessons, setSubjectLessons] = useState<Array<{ id: string; title: string; slug: string }>>([]);
   const [refreshKey, setRefreshKey] = useState(0);
   const [showCreateMatiere, setShowCreateMatiere] = useState(false);
 
@@ -229,7 +232,6 @@ const ContentEditor = () => {
                   <LessonBrowser
                     onSelectLesson={async (lesson) => {
                       console.log('✅ Lesson selected:', lesson);
-                      // Fetch full lesson data with all content fields
                       try {
                         const { data, error } = await supabase
                           .from('lessons')
@@ -239,14 +241,14 @@ const ContentEditor = () => {
                         
                         if (error) throw error;
                         if (data) {
-                          console.log('📄 Full lesson data loaded:', {
-                            id: data.id,
-                            title: data.title,
-                            hasContent: !!data.contenu,
-                            hasObjectif: !!data.objectif,
-                            hasIntroduction: !!data.introduction
-                          });
                           setSelectedLesson(data);
+                          
+                          // Fetch all lessons for this subject for CurriculumAnalyzer
+                          const { data: allLessons } = await supabase
+                            .from('lessons')
+                            .select('id, title, slug')
+                            .eq('subject_id', data.subject_id);
+                          setSubjectLessons(allLessons || []);
                         }
                       } catch (error) {
                         console.error('Error loading full lesson:', error);
@@ -259,7 +261,17 @@ const ContentEditor = () => {
                 </div>
 
                 {/* Content - Right Column */}
-                <div className="lg:col-span-8 space-y-6">
+                <div className="lg:col-span-8 space-y-4">
+                  {/* Curriculum Analyzer - Subject Level */}
+                  {selectedLesson?.subjects && (
+                    <CurriculumAnalyzer
+                      subjectId={selectedLesson.subjects.id}
+                      subjectName={selectedLesson.subjects.name}
+                      gradeLevel={selectedLesson.grade_level}
+                      existingLessons={subjectLessons}
+                    />
+                  )}
+
                   {/* Single Lesson Generator */}
                   {selectedLesson && (
                     <Card>
@@ -278,6 +290,23 @@ const ContentEditor = () => {
                         </div>
                       </CardContent>
                     </Card>
+                  )}
+
+                  {/* Image Manager */}
+                  {selectedLesson && (
+                    <LessonImageManager
+                      lessonId={selectedLesson.id}
+                      lessonTitle={selectedLesson.title}
+                      contenu={selectedLesson.contenu}
+                      exemplesExercices={selectedLesson.exemples_exercices}
+                      onContentUpdate={async (field, newContent) => {
+                        await supabase
+                          .from('lessons')
+                          .update({ [field]: newContent })
+                          .eq('id', selectedLesson.id);
+                        refreshLesson();
+                      }}
+                    />
                   )}
 
                   {/* Lesson Preview - Student View */}

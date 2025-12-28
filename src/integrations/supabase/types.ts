@@ -298,6 +298,56 @@ export type Database = {
           },
         ]
       }
+      curriculum_analysis_logs: {
+        Row: {
+          analyzed_by: string
+          created_at: string
+          existing_lessons: Json | null
+          grade_level: string
+          id: string
+          missing_topics: Json | null
+          partial_matches: Json | null
+          pdf_name: string
+          subject_id: string | null
+          suggestions: Json | null
+          topics_found: Json | null
+        }
+        Insert: {
+          analyzed_by: string
+          created_at?: string
+          existing_lessons?: Json | null
+          grade_level: string
+          id?: string
+          missing_topics?: Json | null
+          partial_matches?: Json | null
+          pdf_name: string
+          subject_id?: string | null
+          suggestions?: Json | null
+          topics_found?: Json | null
+        }
+        Update: {
+          analyzed_by?: string
+          created_at?: string
+          existing_lessons?: Json | null
+          grade_level?: string
+          id?: string
+          missing_topics?: Json | null
+          partial_matches?: Json | null
+          pdf_name?: string
+          subject_id?: string | null
+          suggestions?: Json | null
+          topics_found?: Json | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "curriculum_analysis_logs_subject_id_fkey"
+            columns: ["subject_id"]
+            isOneToOne: false
+            referencedRelation: "subjects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       english_practice_conversations: {
         Row: {
           created_at: string | null
