@@ -1666,6 +1666,27 @@ export type Database = {
         }
         Relationships: []
       }
+      user_favorites: {
+        Row: {
+          created_at: string
+          id: string
+          subject_slug: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          subject_slug: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          subject_slug?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_goals: {
         Row: {
           completed: boolean

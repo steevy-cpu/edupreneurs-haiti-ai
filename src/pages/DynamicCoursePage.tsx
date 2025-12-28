@@ -145,6 +145,8 @@ export default function DynamicCoursePage() {
                   orderIndex={lesson.order_index}
                   isPublished={lesson.is_published ?? false}
                   isCompleted={completedLessons.includes(lesson.slug)}
+                  subjectSlug={subjectSlug}
+                  lessonSlug={lesson.slug}
                   onClick={() => {
                     if (lesson.is_published) {
                       navigate(`/course/${subjectSlug}/${lesson.slug}`);
@@ -168,6 +170,8 @@ export default function DynamicCoursePage() {
               orderIndex={lesson.order_index}
               isPublished={lesson.is_published ?? false}
               isCompleted={completedLessons.includes(lesson.slug)}
+              subjectSlug={subjectSlug}
+              lessonSlug={lesson.slug}
               onClick={() => {
                 if (lesson.is_published) {
                   navigate(`/course/${subjectSlug}/${lesson.slug}`);
@@ -191,6 +195,8 @@ export default function DynamicCoursePage() {
               orderIndex={lesson.order_index}
               isPublished={lesson.is_published ?? false}
               isCompleted={completedLessons.includes(lesson.slug)}
+              subjectSlug={subjectSlug}
+              lessonSlug={lesson.slug}
               onClick={() => {
                 if (lesson.is_published) {
                   navigate(`/course/${subjectSlug}/${lesson.slug}`);

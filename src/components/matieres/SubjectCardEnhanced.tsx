@@ -10,17 +10,8 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import { 
   Heart, 
-  Share2, 
-  MoreVertical,
   TrendingUp,
   Clock,
   Flame,
@@ -68,24 +59,6 @@ export function SubjectCardEnhanced({
   const navigate = useNavigate();
   const [isHovered, setIsHovered] = useState(false);
   const hasContent = lessons > 0;
-
-  const handleShare = async () => {
-    const url = `${window.location.origin}/course/${id}`;
-    if (navigator.share) {
-      try {
-        await navigator.share({
-          title: `${title} - EDUPRENEURS`,
-          text: `Découvrez le cours de ${title} sur EDUPRENEURS!`,
-          url
-        });
-      } catch (err) {
-        // User cancelled or error
-      }
-    } else {
-      await navigator.clipboard.writeText(url);
-      toast.success("Lien copié dans le presse-papiers!");
-    }
-  };
 
   const getDifficultyBadge = () => {
     const configs = {
@@ -162,27 +135,6 @@ export function SubjectCardEnhanced({
                 </TooltipContent>
               </Tooltip>
 
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <button
-                    onClick={(e) => e.stopPropagation()}
-                    className="p-1.5 rounded-full bg-background/80 backdrop-blur-sm hover:bg-background text-muted-foreground transition-colors"
-                  >
-                    <MoreVertical className="w-3.5 h-3.5" />
-                  </button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-48">
-                  <DropdownMenuItem onClick={(e) => { e.stopPropagation(); handleShare(); }}>
-                    <Share2 className="w-4 h-4 mr-2" />
-                    Partager
-                  </DropdownMenuItem>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem onClick={(e) => { e.stopPropagation(); onToggleFavorite?.(); }}>
-                    <Heart className={`w-4 h-4 mr-2 ${isFavorite ? 'fill-current text-red-500' : ''}`} />
-                    {isFavorite ? "Retirer des favoris" : "Ajouter aux favoris"}
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
             </div>
           )}
         </div>
