@@ -191,7 +191,11 @@ export const LessonImageManager: React.FC<LessonImageManagerProps> = ({
       if (error) throw error;
 
       if (data.images && data.images.length > 0) {
-        const newImageUrl = data.images[0].imageUrl;
+        // The edge function returns base64Data, convert to data URL
+        const base64Data = data.images[0].base64Data;
+        const newImageUrl = base64Data.startsWith('data:') 
+          ? base64Data 
+          : `data:image/png;base64,${base64Data}`;
         
         // Replace in content
         const content = selectedImage.field === 'contenu' ? contenu : exemplesExercices;
