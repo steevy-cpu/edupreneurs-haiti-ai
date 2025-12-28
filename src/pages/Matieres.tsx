@@ -421,7 +421,7 @@ export default function Matieres() {
                 style={{ animationDelay: '1.6s', animationFillMode: 'both' }}
               >
                 <GraduationCap className="w-4 h-4 text-primary" />
-                <span className="text-sm font-bold text-white drop-shadow-sm">100% gratuit</span>
+                <span className="text-sm font-bold text-white drop-shadow-sm">Certifié MENFP</span>
               </div>
             </div>
           </div>
