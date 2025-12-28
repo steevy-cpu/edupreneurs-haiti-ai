@@ -128,3 +128,6 @@ verify_jwt = false
 
 [functions.analyze-curriculum-pdf]
 verify_jwt = true
+
+[functions.validate-quiz-accuracy]
+verify_jwt = true
