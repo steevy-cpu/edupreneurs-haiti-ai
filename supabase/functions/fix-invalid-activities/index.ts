@@ -12,13 +12,24 @@ interface ActivityIssue {
   suggestedFix?: string;
 }
 
-interface ActivityToFix {
+// QUIZ type activity
+interface QuizActivity {
   question: string;
   options: string[];
   correctAnswer: number;
   explanation: string;
-  activityType?: string;
+  activityType: 'QUIZ';
 }
+
+// TRUE_FALSE type activity
+interface TrueFalseActivity {
+  statement: string;
+  isTrue: boolean;
+  explanation: string;
+  activityType: 'TRUE_FALSE';
+}
+
+type ActivityToFix = QuizActivity | TrueFalseActivity;
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -69,6 +80,10 @@ serve(async (req) => {
       throw new Error('LOVABLE_API_KEY is not configured');
     }
 
+    // Separate activities by type for targeted fixing
+    const quizActivities = activities.filter((a: any) => a.activityType === 'QUIZ' || !a.activityType);
+    const trueFalseActivities = activities.filter((a: any) => a.activityType === 'TRUE_FALSE');
+
     // Build a detailed prompt for fixing each activity with issues
     const activitiesWithIssues = issues.map((issue: ActivityIssue) => {
       const activity = activities[issue.activityIndex];
@@ -90,9 +105,22 @@ CONTEXTE DE LA LEÇON:
 - Niveau: ${gradeLevel}
 
 ACTIVITÉS À CORRIGER:
-${activitiesWithIssues.map((item: any, idx: number) => `
+${activitiesWithIssues.map((item: any, idx: number) => {
+  if (item.activity.activityType === 'TRUE_FALSE') {
+    return `
 ---
-ACTIVITÉ ${item.index + 1}:
+ACTIVITÉ ${item.index + 1} (TYPE: TRUE_FALSE):
+Affirmation: ${item.activity.statement}
+Réponse indiquée: ${item.activity.isTrue ? 'VRAI' : 'FAUX'}
+Explication: ${item.activity.explanation}
+
+PROBLÈME IDENTIFIÉ: ${item.issue}
+${item.suggestedFix ? `SUGGESTION: ${item.suggestedFix}` : ''}
+---`;
+  } else {
+    return `
+---
+ACTIVITÉ ${item.index + 1} (TYPE: QUIZ):
 Question: ${item.activity.question}
 Options:
 A) ${item.activity.options[0]}
@@ -104,31 +132,45 @@ Explication: ${item.activity.explanation}
 
 PROBLÈME IDENTIFIÉ: ${item.issue}
 ${item.suggestedFix ? `SUGGESTION: ${item.suggestedFix}` : ''}
----`).join('\n')}
+---`;
+  }
+}).join('\n')}
 
 INSTRUCTIONS IMPORTANTES:
 1. Corrige UNIQUEMENT les problèmes identifiés
-2. Si la réponse correcte est fausse, trouve la VRAIE bonne réponse et mets à jour le champ correctAnswer (0=A, 1=B, 2=C, 3=D)
-3. Assure-toi que l'explication correspond à la réponse correcte
-4. **TRÈS IMPORTANT: Toutes les explications DOIVENT être en FRANÇAIS** (pas en anglais, pas en créole)
-5. Garde le même format et style de question
-6. Ne change pas les questions qui n'ont pas de problème
-7. Vérifie que tes corrections sont factuellement correctes
+2. Pour les activités QUIZ: Si la réponse correcte est fausse, trouve la VRAIE bonne réponse et mets à jour le champ correctAnswer (0=A, 1=B, 2=C, 3=D)
+3. Pour les activités TRUE_FALSE: Si la réponse est incorrecte, inverse le champ isTrue (true/false)
+4. Assure-toi que l'explication correspond à la réponse correcte
+5. **TRÈS IMPORTANT: Toutes les explications DOIVENT être en FRANÇAIS** (pas en anglais, pas en créole)
+6. Garde le même format et style
+7. Ne change pas les activités qui n'ont pas de problème
+8. Vérifie que tes corrections sont factuellement correctes
 
 Retourne les activités corrigées au format JSON suivant:
 {
   "correctedActivities": [
     {
       "originalIndex": 0,
+      "activityType": "QUIZ",
       "question": "La question corrigée",
       "options": ["Option A", "Option B", "Option C", "Option D"],
       "correctAnswer": 2,
       "explanation": "L'explication en français...",
       "wasFixed": true,
       "fixApplied": "Description de la correction"
+    },
+    {
+      "originalIndex": 1,
+      "activityType": "TRUE_FALSE",
+      "statement": "L'affirmation corrigée",
+      "isTrue": true,
+      "explanation": "L'explication en français...",
+      "wasFixed": true,
+      "fixApplied": "Description de la correction"
     }
   ]
 }`;
+
     console.log('[fix-invalid-activities] Calling Lovable AI for corrections...');
 
     const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
@@ -182,7 +224,6 @@ Retourne les activités corrigées au format JSON suivant:
     // Parse the JSON response
     let parsedResponse;
     try {
-      // Try to extract JSON from the response (it might be wrapped in markdown code blocks)
       const jsonMatch = aiContent.match(/\{[\s\S]*\}/);
       if (jsonMatch) {
         parsedResponse = JSON.parse(jsonMatch[0]);
@@ -200,7 +241,7 @@ Retourne les activités corrigées au format JSON suivant:
     }
 
     // Generate the new markdown content for the activities
-    let newMarkdownContent = generateActivityMarkdown(
+    const newMarkdownContent = generateActivityMarkdown(
       activities, 
       parsedResponse.correctedActivities,
       originalContent
@@ -254,22 +295,32 @@ ERREURS DE FORMAT DÉTECTÉES:
 ${parsingErrors.map((e, i) => `${i + 1}. ${e}`).join('\n')}
 
 INSTRUCTIONS:
-1. Crée 3-5 activités de type QUIZ basées sur le sujet de la leçon
-2. Chaque question doit avoir exactement 4 options (A, B, C, D)
-3. Une seule réponse correcte par question
+1. Crée un mélange d'activités: 2-3 de type QUIZ et 2-3 de type TRUE_FALSE
+2. Pour QUIZ: Chaque question doit avoir exactement 4 options (A, B, C, D) avec une seule réponse correcte
+3. Pour TRUE_FALSE: Chaque affirmation doit être clairement vraie ou fausse, pas ambiguë
 4. **TRÈS IMPORTANT: Toutes les explications DOIVENT être en FRANÇAIS** (pas en anglais, pas en créole)
 5. Adapte le niveau aux élèves haïtiens de ${gradeLevel}
-6. Les questions doivent être factuellement correctes
+6. Les questions/affirmations doivent être factuellement correctes
 
 Retourne les activités au format JSON:
 {
   "correctedActivities": [
     {
       "originalIndex": 0,
+      "activityType": "QUIZ",
       "question": "La question",
       "options": ["Option A", "Option B", "Option C", "Option D"],
       "correctAnswer": 0,
       "explanation": "L'explication détaillée en français...",
+      "wasFixed": true,
+      "fixApplied": "Activité régénérée à partir de zéro"
+    },
+    {
+      "originalIndex": 1,
+      "activityType": "TRUE_FALSE",
+      "statement": "Une affirmation claire à évaluer comme vraie ou fausse",
+      "isTrue": true,
+      "explanation": "Explication détaillée en français de pourquoi c'est vrai/faux...",
       "wasFixed": true,
       "fixApplied": "Activité régénérée à partir de zéro"
     }
@@ -360,26 +411,49 @@ Retourne les activités au format JSON:
 
 function generateActivityMarkdownFromNew(activities: any[]): string {
   let markdown = '## 🎮 Activités Interactives\n\n';
-  markdown += '**TYPE: QUIZ**\n\n';
+  
+  // Separate by type
+  const quizActivities = activities.filter(a => a.activityType === 'QUIZ' || !a.activityType);
+  const trueFalseActivities = activities.filter(a => a.activityType === 'TRUE_FALSE');
 
-  activities.forEach((activity, idx) => {
-    markdown += `**Question ${idx + 1}:**\n${activity.question}\n\n`;
-    markdown += `A) ${activity.options[0]}\n`;
-    markdown += `B) ${activity.options[1]}\n`;
-    markdown += `C) ${activity.options[2]}\n`;
-    markdown += `D) ${activity.options[3]}\n\n`;
-    markdown += `**Réponse correcte: ${String.fromCharCode(65 + activity.correctAnswer)}**\n\n`;
-    markdown += `**Explication:** ${activity.explanation}\n\n`;
-    if (idx < activities.length - 1) {
-      markdown += '---\n\n';
+  // Generate QUIZ section
+  if (quizActivities.length > 0) {
+    markdown += '**TYPE: QUIZ**\n\n';
+    quizActivities.forEach((activity, idx) => {
+      markdown += `**Question ${idx + 1}:**\n${activity.question}\n\n`;
+      markdown += `A) ${activity.options[0]}\n`;
+      markdown += `B) ${activity.options[1]}\n`;
+      markdown += `C) ${activity.options[2]}\n`;
+      markdown += `D) ${activity.options[3]}\n\n`;
+      markdown += `**Réponse correcte: ${String.fromCharCode(65 + activity.correctAnswer)}**\n\n`;
+      markdown += `**Explication:** ${activity.explanation}\n\n`;
+      if (idx < quizActivities.length - 1) {
+        markdown += '---\n\n';
+      }
+    });
+  }
+
+  // Generate TRUE_FALSE section
+  if (trueFalseActivities.length > 0) {
+    if (quizActivities.length > 0) {
+      markdown += '\n---\n\n';
     }
-  });
+    markdown += '**TYPE: TRUE_FALSE**\n\n';
+    trueFalseActivities.forEach((activity, idx) => {
+      markdown += `**Affirmation ${idx + 1}:**\n${activity.statement}\n\n`;
+      markdown += `**Réponse: ${activity.isTrue ? 'VRAI' : 'FAUX'}**\n\n`;
+      markdown += `**Explication:** ${activity.explanation}\n\n`;
+      if (idx < trueFalseActivities.length - 1) {
+        markdown += '---\n\n';
+      }
+    });
+  }
 
   return markdown.trim();
 }
 
 function generateActivityMarkdown(
-  originalActivities: ActivityToFix[], 
+  originalActivities: any[], 
   correctedActivities: any[],
   originalContent?: string
 ): string {
@@ -391,30 +465,67 @@ function generateActivityMarkdown(
     }
   }
 
-  // Generate new markdown content
-  let markdown = '## 🎮 Activités Interactives\n\n';
-  markdown += '**TYPE: QUIZ**\n\n';
-
-  originalActivities.forEach((activity, idx) => {
+  // Merge original activities with corrections
+  const mergedActivities = originalActivities.map((activity, idx) => {
     const correction = correctionsMap.get(idx);
-    const current = correction || activity;
-
-    markdown += `**Question ${idx + 1}:**\n${current.question}\n\n`;
-    markdown += `A) ${current.options[0]}\n`;
-    markdown += `B) ${current.options[1]}\n`;
-    markdown += `C) ${current.options[2]}\n`;
-    markdown += `D) ${current.options[3]}\n\n`;
-    markdown += `**Réponse correcte: ${String.fromCharCode(65 + current.correctAnswer)}**\n\n`;
-    markdown += `**Explication:** ${current.explanation}\n\n`;
-
-    if (correction && correction.fixApplied) {
-      markdown += `<!-- Correction appliquée: ${correction.fixApplied} -->\n`;
+    if (correction) {
+      return { ...correction, activityType: correction.activityType || activity.activityType || 'QUIZ' };
     }
-
-    if (idx < originalActivities.length - 1) {
-      markdown += '---\n\n';
-    }
+    return { ...activity, activityType: activity.activityType || 'QUIZ' };
   });
+
+  // Separate by type
+  const quizActivities = mergedActivities.filter(a => a.activityType === 'QUIZ');
+  const trueFalseActivities = mergedActivities.filter(a => a.activityType === 'TRUE_FALSE');
+
+  let markdown = '## 🎮 Activités Interactives\n\n';
+
+  // Generate QUIZ section
+  if (quizActivities.length > 0) {
+    markdown += '**TYPE: QUIZ**\n\n';
+    quizActivities.forEach((activity, idx) => {
+      const wasFixed = correctionsMap.has(originalActivities.indexOf(activity)) || activity.wasFixed;
+      
+      markdown += `**Question ${idx + 1}:**\n${activity.question}\n\n`;
+      markdown += `A) ${activity.options[0]}\n`;
+      markdown += `B) ${activity.options[1]}\n`;
+      markdown += `C) ${activity.options[2]}\n`;
+      markdown += `D) ${activity.options[3]}\n\n`;
+      markdown += `**Réponse correcte: ${String.fromCharCode(65 + activity.correctAnswer)}**\n\n`;
+      markdown += `**Explication:** ${activity.explanation}\n\n`;
+
+      if (wasFixed && activity.fixApplied) {
+        markdown += `<!-- Correction appliquée: ${activity.fixApplied} -->\n`;
+      }
+
+      if (idx < quizActivities.length - 1) {
+        markdown += '---\n\n';
+      }
+    });
+  }
+
+  // Generate TRUE_FALSE section
+  if (trueFalseActivities.length > 0) {
+    if (quizActivities.length > 0) {
+      markdown += '\n---\n\n';
+    }
+    markdown += '**TYPE: TRUE_FALSE**\n\n';
+    trueFalseActivities.forEach((activity, idx) => {
+      const wasFixed = correctionsMap.has(originalActivities.indexOf(activity)) || activity.wasFixed;
+      
+      markdown += `**Affirmation ${idx + 1}:**\n${activity.statement}\n\n`;
+      markdown += `**Réponse: ${activity.isTrue ? 'VRAI' : 'FAUX'}**\n\n`;
+      markdown += `**Explication:** ${activity.explanation}\n\n`;
+
+      if (wasFixed && activity.fixApplied) {
+        markdown += `<!-- Correction appliquée: ${activity.fixApplied} -->\n`;
+      }
+
+      if (idx < trueFalseActivities.length - 1) {
+        markdown += '---\n\n';
+      }
+    });
+  }
 
   return markdown.trim();
 }
