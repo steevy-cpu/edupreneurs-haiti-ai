@@ -1102,6 +1102,12 @@ const ValidationItem = ({
                       )}
                       Vérifier Activités IA
                     </Button>
+                    {validation.activityAIValidation && !hasActivityIssues && (
+                      <Badge variant="outline" className="text-green-600 border-green-600">
+                        <CheckCircle2 className="h-3 w-3 mr-1" />
+                        Aucun problème
+                      </Badge>
+                    )}
                     {hasActivityIssues && (
                       <Button 
                         size="sm" 
