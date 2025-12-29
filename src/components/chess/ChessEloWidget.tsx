@@ -39,21 +39,21 @@ const ChessEloWidget: React.FC<ChessEloWidgetProps> = ({
     <div
       onClick={onClick}
       className={cn(
-        "flex items-center gap-3 p-2 sm:p-3 rounded-xl border cursor-pointer transition-all hover:shadow-md",
+        "flex items-center gap-1.5 sm:gap-3 px-2 py-1.5 sm:p-3 rounded-lg sm:rounded-xl border cursor-pointer transition-all hover:shadow-md",
         level.bgClass,
         "border-border/50",
         className
       )}
     >
       {/* ELO Score */}
-      <div className="flex items-center gap-2">
-        <div className="flex items-center gap-1">
-          <Trophy className="w-4 h-4 text-primary" />
-          <span className="font-bold text-lg">{elo}</span>
+      <div className="flex items-center gap-1 sm:gap-2">
+        <div className="flex items-center gap-0.5 sm:gap-1">
+          <Trophy className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-primary" />
+          <span className="font-bold text-sm sm:text-lg">{elo}</span>
         </div>
         {recentChange !== undefined && recentChange !== 0 && (
           <span className={cn(
-            "text-xs font-medium flex items-center gap-0.5",
+            "text-[10px] sm:text-xs font-medium flex items-center gap-0.5",
             recentChange > 0 ? "text-green-500" : "text-red-500"
           )}>
             {getTrendIcon()}
@@ -62,26 +62,20 @@ const ChessEloWidget: React.FC<ChessEloWidgetProps> = ({
         )}
       </div>
 
-      {/* Divider */}
-      <div className="h-8 w-px bg-border/50" />
-
-      {/* Level Badge */}
-      <div className="flex items-center gap-1.5">
-        <span className="text-lg">{level.icon}</span>
-        <span className={cn("text-sm font-medium hidden sm:inline", level.color)}>
+      {/* Level Badge - icon always visible, name on larger screens */}
+      <div className="flex items-center gap-0.5 sm:gap-1.5">
+        <span className="text-sm sm:text-lg">{level.icon}</span>
+        <span className={cn("text-xs sm:text-sm font-medium hidden sm:inline", level.color)}>
           {level.name}
         </span>
       </div>
 
-      {/* Streak */}
+      {/* Streak - only on larger screens */}
       {streak > 0 && (
-        <>
-          <div className="h-8 w-px bg-border/50" />
-          <div className="flex items-center gap-1">
-            <Flame className="w-4 h-4 text-orange-500" />
-            <span className="font-bold text-sm">{streak}</span>
-          </div>
-        </>
+        <div className="hidden sm:flex items-center gap-1">
+          <Flame className="w-4 h-4 text-orange-500" />
+          <span className="font-bold text-sm">{streak}</span>
+        </div>
       )}
     </div>
   );
