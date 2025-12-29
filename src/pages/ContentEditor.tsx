@@ -20,6 +20,7 @@ import { PassionVideoManager } from "@/components/content-editor/PassionVideoMan
 import { CurriculumAnalyzer } from "@/components/content-editor/CurriculumAnalyzer";
 import { LessonImageManager } from "@/components/content-editor/LessonImageManager";
 import { QuizActivityValidator } from "@/components/content-editor/QuizActivityValidator";
+import { LessonValidationPanel } from "@/components/content-editor/LessonValidationPanel";
 
 const CONTENT_EDITOR_STORAGE_KEY = 'content_editor_preferences';
 
@@ -249,7 +250,7 @@ const ContentEditor = () => {
               </TabsTrigger>
               <TabsTrigger value="validation">
                 <CheckCircle2 className="mr-2 h-4 w-4" />
-                Validation
+                Validation en masse
               </TabsTrigger>
               <TabsTrigger value="batch">
                 <Zap className="mr-2 h-4 w-4" />
@@ -337,6 +338,13 @@ const ContentEditor = () => {
                     </Card>
                   )}
 
+                  {/* Lesson Validation Panel - Quick validation for current lesson */}
+                  <LessonValidationPanel
+                    key={`validation-${selectedLesson?.id}-refresh-${refreshKey}`}
+                    lesson={selectedLesson}
+                    onRefresh={refreshLesson}
+                  />
+
                   {/* Image Manager */}
                   {selectedLesson && (
                     <LessonImageManager
@@ -356,7 +364,7 @@ const ContentEditor = () => {
 
                   {/* Lesson Preview - Student View */}
                   <LessonPreview 
-                    key={`lesson-${selectedLesson?.id}-refresh-${refreshKey}`} 
+                    key={`lesson-${selectedLesson?.id}-refresh-${refreshKey}`}
                     lesson={selectedLesson} 
                   />
 
