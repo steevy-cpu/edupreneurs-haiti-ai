@@ -131,3 +131,6 @@ verify_jwt = true
 
 [functions.validate-quiz-accuracy]
 verify_jwt = true
+
+[functions.validate-activities-accuracy]
+verify_jwt = true

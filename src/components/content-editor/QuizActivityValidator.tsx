@@ -16,7 +16,8 @@ import {
   ChevronUp,
   Sparkles,
   FileText,
-  Download
+  Download,
+  Gamepad2
 } from "lucide-react";
 import { toast } from "sonner";
 import {
@@ -39,6 +40,14 @@ interface ParsedQuestion {
   explanation: string;
 }
 
+interface ParsedActivity {
+  question: string;
+  options: string[];
+  correctAnswer: number;
+  explanation: string;
+  activityType?: string;
+}
+
 interface LessonValidation {
   lesson: {
     id: string;
@@ -49,12 +58,20 @@ interface LessonValidation {
   };
   quizParsed: ParsedQuestion[];
   quizErrors: string[];
-  activitiesParsed: any[];
+  activitiesParsed: ParsedActivity[];
   activityErrors: string[];
   aiValidation?: {
     confidence: number;
     issues: Array<{
       questionIndex: number;
+      issue: string;
+      suggestedFix?: string;
+    }>;
+  };
+  activityAIValidation?: {
+    confidence: number;
+    issues: Array<{
+      activityIndex: number;
       issue: string;
       suggestedFix?: string;
     }>;
@@ -73,7 +90,7 @@ export const QuizActivityValidator = () => {
   const [lessons, setLessons] = useState<any[]>([]);
   const [validations, setValidations] = useState<LessonValidation[]>([]);
   const [isLoading, setIsLoading] = useState(false);
-  const [isValidatingAI, setIsValidatingAI] = useState(false);
+  const [isValidatingAI, setIsValidatingAI] = useState<string | null>(null);
   const [selectedGrade, setSelectedGrade] = useState<string>("all");
   const [selectedSubject, setSelectedSubject] = useState<string>("all");
   const [subjects, setSubjects] = useState<any[]>([]);
@@ -213,41 +230,159 @@ export const QuizActivityValidator = () => {
     return { questions, errors };
   };
 
-  const parseActivities = (content: string): { activities: any[], errors: string[] } => {
-    const activities: any[] = [];
+  const parseActivities = (content: string): { activities: ParsedActivity[], errors: string[] } => {
+    const activities: ParsedActivity[] = [];
     const errors: string[] = [];
 
     if (!content || content.trim().length === 0) {
       return { activities, errors: ['Contenu vide'] };
     }
 
-    // Similar parsing logic for activities
+    // Check for **TYPE: QUIZ** format (common in activities)
+    const quizSections = content.split(/\*\*TYPE:\s*QUIZ\*\*/i);
+    
+    if (quizSections.length > 1) {
+      // Parse QUIZ type activities
+      quizSections.slice(1).forEach((section, sectionIdx) => {
+        // Find questions within each section
+        const questionBlocks = section.split(/\*\*Question\s*\d*:?\s*\*\*/i);
+        
+        questionBlocks.slice(1).forEach((block, idx) => {
+          const parsed = parseActivityBlock(block, sectionIdx * 10 + idx);
+          if (parsed.activity) {
+            parsed.activity.activityType = 'QUIZ';
+            activities.push(parsed.activity);
+          }
+          if (parsed.error) {
+            errors.push(parsed.error);
+          }
+        });
+      });
+    }
+
+    // Also check for Activité or Exercice patterns
     const activityPatterns = [
-      /Activité\s*\d+/gi,
-      /Exercice\s*\d+/gi,
-      /Question\s*\d+/gi
+      /#{2,3}\s*Activité\s+\d+/gi,
+      /#{2,3}\s*Exercice\s+\d+/gi,
+      /\*\*Activité\s+\d+\*\*/gi,
+      /\*\*Exercice\s+\d+\*\*/gi,
     ];
 
-    let found = false;
     for (const pattern of activityPatterns) {
-      const matches = content.match(pattern);
-      if (matches && matches.length > 0) {
-        found = true;
-        activities.push({ count: matches.length, type: 'detected' });
+      const sections = content.split(pattern);
+      if (sections.length > 1) {
+        sections.slice(1).forEach((section, idx) => {
+          const parsed = parseActivityBlock(section, idx);
+          if (parsed.activity) {
+            // Check if not already added
+            const exists = activities.some(a => a.question === parsed.activity!.question);
+            if (!exists) {
+              activities.push(parsed.activity);
+            }
+          }
+          if (parsed.error && !errors.includes(parsed.error)) {
+            errors.push(parsed.error);
+          }
+        });
         break;
       }
     }
 
-    if (!found && content.length > 100) {
-      // Try to detect structured content
-      if (content.includes('A)') || content.includes('A.') || content.includes('<div')) {
-        activities.push({ count: 1, type: 'structured' });
+    // Fallback: try parsing as general markdown with options
+    if (activities.length === 0) {
+      const questionBlocks = content.split(/\*\*Question\s*\d*:?\s*\*\*/i);
+      if (questionBlocks.length > 1) {
+        questionBlocks.slice(1).forEach((block, idx) => {
+          const parsed = parseActivityBlock(block, idx);
+          if (parsed.activity) {
+            activities.push(parsed.activity);
+          }
+          if (parsed.error) {
+            errors.push(parsed.error);
+          }
+        });
+      }
+    }
+
+    // If still no activities found, try simpler detection
+    if (activities.length === 0 && content.length > 100) {
+      if (content.includes('A)') || content.includes('A.') || content.includes('A:')) {
+        // Try to parse inline
+        const parsed = parseActivityBlock(content, 0);
+        if (parsed.activity) {
+          activities.push(parsed.activity);
+        } else {
+          errors.push('Format d\'activité non reconnu - contenu détecté mais non parsable');
+        }
       } else {
         errors.push('Format d\'activité non reconnu');
       }
     }
 
     return { activities, errors };
+  };
+
+  const parseActivityBlock = (block: string, idx: number): { activity?: ParsedActivity, error?: string } => {
+    // Extract question text (before options)
+    const questionMatch = block.match(/^[\s\n]*(.+?)(?=\n\s*[A-D][\):\.])/is);
+    if (!questionMatch) {
+      // Try alternate format
+      const altMatch = block.match(/^[\s\n]*(.+?)(?=\n\s*\*\*[A-D][\):\.])/is);
+      if (!altMatch) {
+        return { error: `Activité ${idx + 1}: texte de question non trouvé` };
+      }
+    }
+
+    const questionText = (questionMatch?.[1] || block.substring(0, 200))
+      .trim()
+      .replace(/\*\*/g, '')
+      .replace(/#{1,3}/g, '')
+      .substring(0, 500);
+
+    // Extract options
+    const optionMatches = block.matchAll(/\*?\*?([A-D])[\):\.]?\*?\*?\s*(.+?)(?=\n\s*\*?\*?[A-D][\):\.]|\n\s*\*\*Réponse|\n\s*Réponse|\n\s*\*\*Explication|\n\n\*\*|$)/gis);
+    const options: string[] = [];
+    
+    Array.from(optionMatches).forEach(match => {
+      let optionText = match[2]?.trim().replace(/\*\*/g, '').replace(/\n/g, ' ');
+      if (optionText && optionText.length > 0 && optionText.length < 500) {
+        options.push(optionText);
+      }
+    });
+
+    if (options.length !== 4) {
+      return { error: `Activité ${idx + 1}: ${options.length}/4 options trouvées` };
+    }
+
+    // Extract correct answer
+    let correctMatch = block.match(/\*\*Réponse\s+correcte\s*:?\s*\*?\*?\s*([A-D])/i);
+    if (!correctMatch) correctMatch = block.match(/Réponse\s+correcte\s*:?\s*([A-D])/i);
+    if (!correctMatch) correctMatch = block.match(/Réponse\s*:?\s*([A-D])/i);
+    if (!correctMatch) correctMatch = block.match(/Correct[e]?\s*:?\s*([A-D])/i);
+
+    if (!correctMatch) {
+      return { error: `Activité ${idx + 1}: réponse correcte non trouvée` };
+    }
+
+    const correctLetter = correctMatch[1].toUpperCase();
+    const correctIndex = correctLetter.charCodeAt(0) - 'A'.charCodeAt(0);
+
+    // Extract explanation
+    let explanationMatch = block.match(/\*\*Explication\s*:?\s*\*\*\s*\n?\s*(.+?)(?=\*\*TYPE|\*\*Question|#{2,3}|$)/is);
+    if (!explanationMatch) explanationMatch = block.match(/Explication\s*:?\s*\n?\s*(.+?)(?=\*\*TYPE|\*\*Question|#{2,3}|$)/is);
+    
+    const explanation = explanationMatch 
+      ? explanationMatch[1].trim().replace(/\*\*/g, '').substring(0, 500)
+      : 'Pas d\'explication fournie';
+
+    return {
+      activity: {
+        question: questionText,
+        options,
+        correctAnswer: correctIndex,
+        explanation,
+      }
+    };
   };
 
   const runValidation = async () => {
@@ -333,46 +468,72 @@ export const QuizActivityValidator = () => {
     }
   };
 
-  const runAIValidation = async (lessonId: string) => {
-    setIsValidatingAI(true);
+  const runAIValidation = async (lessonId: string, type: 'quiz' | 'activity') => {
+    setIsValidatingAI(`${lessonId}-${type}`);
 
     try {
       const lesson = validations.find(v => v.lesson.id === lessonId);
-      if (!lesson || lesson.quizParsed.length === 0) {
-        toast.error("Pas de quiz à valider");
-        return;
-      }
-
-      const { data, error } = await supabase.functions.invoke('validate-quiz-accuracy', {
-        body: {
-          lessonId,
-          questions: lesson.quizParsed.slice(0, 5), // Limit to 5 questions
+      
+      if (type === 'quiz') {
+        if (!lesson || lesson.quizParsed.length === 0) {
+          toast.error("Pas de quiz à valider");
+          return;
         }
-      });
 
-      if (error) throw error;
+        const { data, error } = await supabase.functions.invoke('validate-quiz-accuracy', {
+          body: {
+            lessonId,
+            questions: lesson.quizParsed.slice(0, 5),
+          }
+        });
 
-      // Update the validation with AI results
-      setValidations(prev => prev.map(v => {
-        if (v.lesson.id === lessonId) {
-          return {
-            ...v,
-            aiValidation: data,
-          };
+        if (error) throw error;
+
+        setValidations(prev => prev.map(v => {
+          if (v.lesson.id === lessonId) {
+            return { ...v, aiValidation: data };
+          }
+          return v;
+        }));
+
+        if (data.issues?.length > 0) {
+          toast.warning(`${data.issues.length} problème(s) potentiel(s) détecté(s) dans le quiz`);
+        } else {
+          toast.success(`Quiz - Confiance IA: ${Math.round(data.confidence * 100)}%`);
         }
-        return v;
-      }));
-
-      if (data.issues?.length > 0) {
-        toast.warning(`${data.issues.length} problème(s) potentiel(s) détecté(s)`);
       } else {
-        toast.success(`Confiance IA: ${Math.round(data.confidence * 100)}%`);
+        if (!lesson || lesson.activitiesParsed.length === 0) {
+          toast.error("Pas d'activités à valider");
+          return;
+        }
+
+        const { data, error } = await supabase.functions.invoke('validate-activities-accuracy', {
+          body: {
+            lessonId,
+            activities: lesson.activitiesParsed.slice(0, 5),
+          }
+        });
+
+        if (error) throw error;
+
+        setValidations(prev => prev.map(v => {
+          if (v.lesson.id === lessonId) {
+            return { ...v, activityAIValidation: data };
+          }
+          return v;
+        }));
+
+        if (data.issues?.length > 0) {
+          toast.warning(`${data.issues.length} problème(s) potentiel(s) détecté(s) dans les activités`);
+        } else {
+          toast.success(`Activités - Confiance IA: ${Math.round(data.confidence * 100)}%`);
+        }
       }
     } catch (error) {
       console.error('AI validation error:', error);
       toast.error("Erreur lors de la validation IA");
     } finally {
-      setIsValidatingAI(false);
+      setIsValidatingAI(null);
     }
   };
 
@@ -541,7 +702,7 @@ export const QuizActivityValidator = () => {
                     validation={validation}
                     isExpanded={expandedLessons.has(validation.lesson.id)}
                     onToggle={() => toggleExpanded(validation.lesson.id)}
-                    onAIValidate={() => runAIValidation(validation.lesson.id)}
+                    onAIValidate={(type) => runAIValidation(validation.lesson.id, type)}
                     isValidatingAI={isValidatingAI}
                   />
                 ))}
@@ -560,7 +721,7 @@ export const QuizActivityValidator = () => {
                       validation={validation}
                       isExpanded={expandedLessons.has(validation.lesson.id)}
                       onToggle={() => toggleExpanded(validation.lesson.id)}
-                      onAIValidate={() => runAIValidation(validation.lesson.id)}
+                      onAIValidate={(type) => runAIValidation(validation.lesson.id, type)}
                       isValidatingAI={isValidatingAI}
                     />
                   ))}
@@ -579,7 +740,7 @@ export const QuizActivityValidator = () => {
                       validation={validation}
                       isExpanded={expandedLessons.has(validation.lesson.id)}
                       onToggle={() => toggleExpanded(validation.lesson.id)}
-                      onAIValidate={() => runAIValidation(validation.lesson.id)}
+                      onAIValidate={(type) => runAIValidation(validation.lesson.id, type)}
                       isValidatingAI={isValidatingAI}
                     />
                   ))}
@@ -596,14 +757,16 @@ interface ValidationItemProps {
   validation: LessonValidation;
   isExpanded: boolean;
   onToggle: () => void;
-  onAIValidate: () => void;
-  isValidatingAI: boolean;
+  onAIValidate: (type: 'quiz' | 'activity') => void;
+  isValidatingAI: string | null;
 }
 
 const ValidationItem = ({ validation, isExpanded, onToggle, onAIValidate, isValidatingAI }: ValidationItemProps) => {
   const hasQuizErrors = validation.quizErrors.length > 0;
   const hasActivityErrors = validation.activityErrors.length > 0;
   const hasAnyContent = validation.quizParsed.length > 0 || validation.activitiesParsed.length > 0;
+  const isValidatingQuiz = isValidatingAI === `${validation.lesson.id}-quiz`;
+  const isValidatingActivity = isValidatingAI === `${validation.lesson.id}-activity`;
 
   return (
     <Collapsible open={isExpanded} onOpenChange={onToggle}>
@@ -640,7 +803,13 @@ const ValidationItem = ({ validation, isExpanded, onToggle, onAIValidate, isVali
                 {validation.aiValidation && (
                   <Badge variant="outline" className="gap-1">
                     <Sparkles className="h-3 w-3" />
-                    {Math.round(validation.aiValidation.confidence * 100)}%
+                    Q: {Math.round(validation.aiValidation.confidence * 100)}%
+                  </Badge>
+                )}
+                {validation.activityAIValidation && (
+                  <Badge variant="outline" className="gap-1">
+                    <Gamepad2 className="h-3 w-3" />
+                    A: {Math.round(validation.activityAIValidation.confidence * 100)}%
                   </Badge>
                 )}
                 {isExpanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
@@ -657,20 +826,20 @@ const ValidationItem = ({ validation, isExpanded, onToggle, onAIValidate, isVali
                 <div className="flex items-center justify-between">
                   <h4 className="font-medium flex items-center gap-2">
                     <FileText className="h-4 w-4" />
-                    Questions du Quiz
+                    Questions du Quiz ({validation.quizParsed.length})
                   </h4>
                   <Button 
                     size="sm" 
                     variant="outline" 
-                    onClick={(e) => { e.stopPropagation(); onAIValidate(); }}
-                    disabled={isValidatingAI}
+                    onClick={(e) => { e.stopPropagation(); onAIValidate('quiz'); }}
+                    disabled={isValidatingQuiz}
                   >
-                    {isValidatingAI ? (
+                    {isValidatingQuiz ? (
                       <Loader2 className="h-3 w-3 mr-1 animate-spin" />
                     ) : (
                       <Sparkles className="h-3 w-3 mr-1" />
                     )}
-                    Vérifier avec IA
+                    Vérifier Quiz IA
                   </Button>
                 </div>
                 <div className="space-y-2 pl-4 border-l-2 border-muted">
@@ -691,15 +860,57 @@ const ValidationItem = ({ validation, isExpanded, onToggle, onAIValidate, isVali
               </div>
             )}
 
+            {/* Activities Details */}
+            {validation.activitiesParsed.length > 0 && (
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <h4 className="font-medium flex items-center gap-2">
+                    <Gamepad2 className="h-4 w-4" />
+                    Activités Interactives ({validation.activitiesParsed.length})
+                  </h4>
+                  <Button 
+                    size="sm" 
+                    variant="outline" 
+                    onClick={(e) => { e.stopPropagation(); onAIValidate('activity'); }}
+                    disabled={isValidatingActivity}
+                  >
+                    {isValidatingActivity ? (
+                      <Loader2 className="h-3 w-3 mr-1 animate-spin" />
+                    ) : (
+                      <Sparkles className="h-3 w-3 mr-1" />
+                    )}
+                    Vérifier Activités IA
+                  </Button>
+                </div>
+                <div className="space-y-2 pl-4 border-l-2 border-primary/30">
+                  {validation.activitiesParsed.map((a, idx) => (
+                    <div key={idx} className="text-sm p-2 bg-primary/5 rounded">
+                      <p className="font-medium">
+                        A{idx + 1}{a.activityType ? ` (${a.activityType})` : ''}: {a.question.substring(0, 100)}...
+                      </p>
+                      <p className="text-muted-foreground">
+                        Réponse: {String.fromCharCode(65 + a.correctAnswer)}) {a.options[a.correctAnswer]?.substring(0, 50)}...
+                      </p>
+                      {validation.activityAIValidation?.issues?.find(i => i.activityIndex === idx) && (
+                        <p className="text-destructive text-xs mt-1">
+                          ⚠️ {validation.activityAIValidation.issues.find(i => i.activityIndex === idx)?.issue}
+                        </p>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
             {/* Errors */}
             {(hasQuizErrors || hasActivityErrors) && (
               <div className="space-y-2">
                 <h4 className="font-medium text-destructive">Erreurs détectées</h4>
                 {validation.quizErrors.map((err, idx) => (
-                  <p key={idx} className="text-sm text-destructive pl-4">• {err}</p>
+                  <p key={`q-${idx}`} className="text-sm text-destructive pl-4">• Quiz: {err}</p>
                 ))}
                 {validation.activityErrors.map((err, idx) => (
-                  <p key={idx} className="text-sm text-destructive pl-4">• {err}</p>
+                  <p key={`a-${idx}`} className="text-sm text-destructive pl-4">• Activités: {err}</p>
                 ))}
               </div>
             )}
