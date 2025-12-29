@@ -121,7 +121,7 @@ export const MobileBottomNav = () => {
   };
 
   // Hide on certain pages
-  const hiddenPaths = ["/auth", "/onboarding"];
+  const hiddenPaths = ["/auth", "/onboarding", "/chess-game"];
   const isLessonPage = location.pathname.includes("-lesson/");
   
   if (hiddenPaths.includes(location.pathname) || isLessonPage) {
