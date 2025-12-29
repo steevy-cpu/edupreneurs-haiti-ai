@@ -360,9 +360,9 @@ Retourne les activités au format JSON:
 
 function generateActivityMarkdownFromNew(activities: any[]): string {
   let markdown = '## 🎮 Activités Interactives\n\n';
+  markdown += '**TYPE: QUIZ**\n\n';
 
   activities.forEach((activity, idx) => {
-    markdown += `**TYPE: QUIZ**\n\n`;
     markdown += `**Question ${idx + 1}:**\n${activity.question}\n\n`;
     markdown += `A) ${activity.options[0]}\n`;
     markdown += `B) ${activity.options[1]}\n`;
@@ -370,7 +370,9 @@ function generateActivityMarkdownFromNew(activities: any[]): string {
     markdown += `D) ${activity.options[3]}\n\n`;
     markdown += `**Réponse correcte: ${String.fromCharCode(65 + activity.correctAnswer)}**\n\n`;
     markdown += `**Explication:** ${activity.explanation}\n\n`;
-    markdown += '---\n\n';
+    if (idx < activities.length - 1) {
+      markdown += '---\n\n';
+    }
   });
 
   return markdown.trim();
@@ -391,12 +393,12 @@ function generateActivityMarkdown(
 
   // Generate new markdown content
   let markdown = '## 🎮 Activités Interactives\n\n';
+  markdown += '**TYPE: QUIZ**\n\n';
 
   originalActivities.forEach((activity, idx) => {
     const correction = correctionsMap.get(idx);
     const current = correction || activity;
 
-    markdown += `**TYPE: QUIZ**\n\n`;
     markdown += `**Question ${idx + 1}:**\n${current.question}\n\n`;
     markdown += `A) ${current.options[0]}\n`;
     markdown += `B) ${current.options[1]}\n`;
@@ -406,10 +408,12 @@ function generateActivityMarkdown(
     markdown += `**Explication:** ${current.explanation}\n\n`;
 
     if (correction && correction.fixApplied) {
-      markdown += `<!-- Correction appliquée: ${correction.fixApplied} -->\n\n`;
+      markdown += `<!-- Correction appliquée: ${correction.fixApplied} -->\n`;
     }
 
-    markdown += '---\n\n';
+    if (idx < originalActivities.length - 1) {
+      markdown += '---\n\n';
+    }
   });
 
   return markdown.trim();
