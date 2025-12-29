@@ -643,23 +643,50 @@ export const QuizActivityValidator = () => {
 
       if (error) throw error;
 
-      // Update local state
-      setValidations(prev => prev.map(v => {
-        if (v.lesson.id === previewData.lessonId) {
-          // Re-parse the new content
-          const newParsed = parseActivities(previewData.newContent);
-          return {
-            ...v,
-            activitiesParsed: newParsed.activities,
-            activityErrors: newParsed.errors,
-            originalActivityContent: previewData.newContent,
-            activityAIValidation: undefined, // Reset AI validation
-          };
-        }
-        return v;
-      }));
+      // Re-parse the new content
+      const newParsed = parseActivities(previewData.newContent);
+      const isNowValid = newParsed.activities.length > 0 && newParsed.errors.length === 0;
 
-      toast.success("Activités sauvegardées avec succès!");
+      // Update local state and recalculate stats
+      setValidations(prev => {
+        const updated = prev.map(v => {
+          if (v.lesson.id === previewData.lessonId) {
+            return {
+              ...v,
+              activitiesParsed: newParsed.activities,
+              activityErrors: newParsed.errors,
+              originalActivityContent: previewData.newContent,
+              activityAIValidation: undefined, // Reset AI validation
+            };
+          }
+          return v;
+        });
+
+        // Recalculate stats
+        let activitiesValid = 0;
+        let activitiesInvalid = 0;
+        updated.forEach(v => {
+          if (v.originalActivityContent) {
+            if (v.activitiesParsed.length > 0 && v.activityErrors.length === 0) {
+              activitiesValid++;
+            } else {
+              activitiesInvalid++;
+            }
+          }
+        });
+
+        setStats(s => ({
+          ...s,
+          activitiesValid,
+          activitiesInvalid,
+        }));
+
+        return updated;
+      });
+
+      toast.success(isNowValid 
+        ? "Activités sauvegardées et validées avec succès!" 
+        : "Activités sauvegardées - vérifiez le nouveau format");
       setPreviewData(null);
     } catch (error) {
       console.error('Save error:', error);
