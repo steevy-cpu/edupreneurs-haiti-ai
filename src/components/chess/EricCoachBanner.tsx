@@ -59,98 +59,108 @@ const EricCoachBanner: React.FC<EricCoachBannerProps> = ({
   if (!latestEricMessage && !isThinking) return null;
 
   return (
-    <div className="bg-card border border-border/50 rounded-2xl overflow-hidden shadow-lg shadow-primary/5">
-      {/* Collapsed View - Single Line */}
-      <div 
-        className="flex items-center gap-3 p-2.5 cursor-pointer hover:bg-primary/5 transition-colors"
+    <div className="relative flex items-start gap-2">
+      {/* Eric Avatar - Floating outside */}
+      <img 
+        src={ericChairDesk} 
+        alt="Eric" 
+        className="w-12 h-12 rounded-full object-cover flex-shrink-0 border-2 border-primary/30 shadow-md cursor-pointer hover:scale-105 transition-transform"
         onClick={onToggle}
-      >
-        <img 
-          src={ericChairDesk} 
-          alt="Eric" 
-          className="w-9 h-9 rounded-full object-cover flex-shrink-0 border-2 border-primary/30"
-        />
+      />
+      
+      {/* Speech Bubble */}
+      <div className="relative flex-1">
+        {/* Bubble pointer */}
+        <div className="absolute left-0 top-4 -ml-2 w-0 h-0 border-t-8 border-t-transparent border-b-8 border-b-transparent border-r-8 border-r-muted" />
         
-        <div className="flex-1 min-w-0">
-          {isThinking ? (
-            <p className="text-sm text-muted-foreground animate-pulse flex items-center gap-2">
-              <span className="flex gap-1">
-                <span className="w-1.5 h-1.5 bg-primary rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
-                <span className="w-1.5 h-1.5 bg-primary rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
-                <span className="w-1.5 h-1.5 bg-primary rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
-              </span>
-              Eric réfléchit...
-            </p>
-          ) : latestEricMessage ? (
-            <p className="text-sm text-foreground truncate">
-              {cleanMarkdown(latestEricMessage.content)}
-            </p>
-          ) : null}
-        </div>
+        <div className="bg-muted rounded-2xl shadow-lg overflow-hidden">
+          {/* Collapsed View - Single Line */}
+          <div 
+            className="flex items-center gap-2 px-4 py-3 cursor-pointer hover:bg-muted-foreground/5 transition-colors"
+            onClick={onToggle}
+          >
+            <div className="flex-1 min-w-0">
+              {isThinking ? (
+                <p className="text-sm text-muted-foreground animate-pulse flex items-center gap-2">
+                  <span className="flex gap-1">
+                    <span className="w-1.5 h-1.5 bg-primary rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
+                    <span className="w-1.5 h-1.5 bg-primary rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
+                    <span className="w-1.5 h-1.5 bg-primary rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
+                  </span>
+                  Eric réfléchit...
+                </p>
+              ) : latestEricMessage ? (
+                <p className="text-sm text-foreground truncate">
+                  {cleanMarkdown(latestEricMessage.content)}
+                </p>
+              ) : null}
+            </div>
 
-        <Button variant="ghost" size="sm" className="flex-shrink-0 h-8 w-8 p-0">
-          {isExpanded ? (
-            <ChevronUp className="w-4 h-4" />
-          ) : (
-            <ChevronDown className="w-4 h-4" />
-          )}
-        </Button>
-      </div>
+            <Button variant="ghost" size="sm" className="flex-shrink-0 h-7 w-7 p-0 rounded-full">
+              {isExpanded ? (
+                <ChevronUp className="w-4 h-4" />
+              ) : (
+                <ChevronDown className="w-4 h-4" />
+              )}
+            </Button>
+          </div>
 
-      {/* Expanded View - Chat History + Input */}
-      {isExpanded && (
-        <div className="border-t border-primary/10">
-          <ScrollArea className="max-h-48">
-            <div className="p-3 space-y-2">
-              {messages.slice(-6).map((msg, idx) => (
-                <div
-                  key={idx}
-                  className={`flex gap-2 ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
-                >
-                  {msg.role === 'assistant' && (
-                    <img 
-                      src={ericChairDesk} 
-                      alt="Eric" 
-                      className="w-6 h-6 rounded-full object-cover flex-shrink-0"
-                    />
-                  )}
-                  <div
-                    className={`max-w-[85%] rounded-xl px-3 py-1.5 text-sm ${
-                      msg.role === 'user'
-                        ? 'bg-primary text-primary-foreground'
-                        : 'bg-muted'
-                    }`}
-                  >
-                    {msg.role === 'assistant' ? cleanMarkdown(msg.content) : msg.content}
-                  </div>
+          {/* Expanded View - Chat History + Input */}
+          {isExpanded && (
+            <div className="border-t border-border/50">
+              <ScrollArea className="max-h-48">
+                <div className="p-3 space-y-2">
+                  {messages.slice(-6).map((msg, idx) => (
+                    <div
+                      key={idx}
+                      className={`flex gap-2 ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
+                    >
+                      {msg.role === 'assistant' && (
+                        <img 
+                          src={ericChairDesk} 
+                          alt="Eric" 
+                          className="w-6 h-6 rounded-full object-cover flex-shrink-0"
+                        />
+                      )}
+                      <div
+                        className={`max-w-[85%] rounded-xl px-3 py-1.5 text-sm ${
+                          msg.role === 'user'
+                            ? 'bg-primary text-primary-foreground'
+                            : 'bg-background'
+                        }`}
+                      >
+                        {msg.role === 'assistant' ? cleanMarkdown(msg.content) : msg.content}
+                      </div>
+                    </div>
+                  ))}
                 </div>
-              ))}
-            </div>
-          </ScrollArea>
-          
-          {/* Message Input */}
-          {onSendMessage && (
-            <div className="p-2 border-t border-primary/10 flex gap-2">
-              <Input
-                value={inputMessage}
-                onChange={(e) => setInputMessage(e.target.value)}
-                onKeyDown={handleKeyDown}
-                placeholder="Posez une question à Eric..."
-                className="flex-1 h-9 text-sm"
-                disabled={isThinking}
-              />
-              <Button 
-                size="sm" 
-                onClick={handleSend}
-                disabled={!inputMessage.trim() || isThinking}
-                className="h-9 w-9 p-0"
-              >
-                <Send className="w-4 h-4" />
-              </Button>
+              </ScrollArea>
+              
+              {/* Message Input */}
+              {onSendMessage && (
+                <div className="p-2 border-t border-border/50 flex gap-2">
+                  <Input
+                    value={inputMessage}
+                    onChange={(e) => setInputMessage(e.target.value)}
+                    onKeyDown={handleKeyDown}
+                    placeholder="Posez une question à Eric..."
+                    className="flex-1 h-9 text-sm rounded-full"
+                    disabled={isThinking}
+                  />
+                  <Button 
+                    size="sm" 
+                    onClick={handleSend}
+                    disabled={!inputMessage.trim() || isThinking}
+                    className="h-9 w-9 p-0 rounded-full"
+                  >
+                    <Send className="w-4 h-4" />
+                  </Button>
+                </div>
+              )}
             </div>
           )}
         </div>
-      )}
+      </div>
     </div>
   );
 };
