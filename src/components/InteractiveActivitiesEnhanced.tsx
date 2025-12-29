@@ -133,12 +133,28 @@ export const InteractiveActivitiesEnhanced = ({
     console.log('🔍 Full content length:', content.length);
     const activities: Activity[] = [];
     
-    // Strip any leading text before the first ### (the AI sometimes includes the prompt)
-    const firstActivityIndex = content.indexOf('###');
-    const cleanedContent = firstActivityIndex >= 0 ? content.substring(firstActivityIndex) : content;
+    // Try to detect format: 
+    // Format 1: ### headers with **TYPE: X** (old format)
+    // Format 2: **TYPE: X** blocks without ### headers (new format from generate-interactive-activities)
     
-    // Split by ### headers to separate activities
-    const sections = cleanedContent.split(/(?=###\s)/);
+    const hasHashHeaders = content.includes('###');
+    const hasTypeBlocks = /\*\*TYPE:\s*(QUIZ|MATCHING|TRUEFALSE|TRUE_FALSE|FILLIN)\*\*/i.test(content);
+    
+    let sections: string[] = [];
+    
+    if (hasHashHeaders) {
+      // Format 1: Split by ### headers
+      const firstActivityIndex = content.indexOf('###');
+      const cleanedContent = firstActivityIndex >= 0 ? content.substring(firstActivityIndex) : content;
+      sections = cleanedContent.split(/(?=###\s)/);
+    } else if (hasTypeBlocks) {
+      // Format 2: Split by **TYPE: X** blocks (handling both TRUEFALSE and TRUE_FALSE)
+      // Also handle **Question X:** and similar patterns
+      sections = content.split(/(?=\*\*(?:TYPE:\s*(?:QUIZ|MATCHING|TRUEFALSE|TRUE_FALSE|FILLIN)|Question\s+\d+:)\*\*)/i);
+    } else {
+      // Try splitting by question patterns as fallback
+      sections = content.split(/(?=\*\*Question\s+\d+:?\*\*)/i);
+    }
     
     console.log('📊 Found activity sections:', sections.length);
     console.log('📊 Section lengths:', sections.map(s => s.length));
@@ -149,32 +165,53 @@ export const InteractiveActivitiesEnhanced = ({
       console.log(`\n🔍 Processing activity section ${idx}:`);
       console.log('First 300 chars:', section.substring(0, 300));
 
-      // Extract type - can be on same line or next line after ### header
-      const headerMatch = section.match(/###\s*[^\n]*[\n\s]*\*\*TYPE:\s*(QUIZ|MATCHING|TRUEFALSE|FILLIN)\*\*/i);
-      if (!headerMatch) {
+      // Extract type - multiple patterns supported
+      // Pattern 1: ### header with TYPE on same or next line
+      // Pattern 2: **TYPE: X** at start of section
+      // Pattern 3: Infer from content structure
+      let type: ActivityType | null = null;
+      
+      const headerMatch = section.match(/(?:###\s*[^\n]*[\n\s]*)?\*\*TYPE:\s*(QUIZ|MATCHING|TRUEFALSE|TRUE_FALSE|FILLIN)\*\*/i);
+      if (headerMatch) {
+        const rawType = headerMatch[1].toUpperCase().replace('TRUE_FALSE', 'TRUEFALSE');
+        type = rawType as ActivityType;
+      } else if (section.match(/\*\*Question\s*\d*:?\*\*/i) && section.match(/-\s*[A-D]\)/)) {
+        // Infer QUIZ from Question + A/B/C/D options
+        type = 'QUIZ';
+      }
+      
+      if (!type) {
         console.warn(`⚠️ No type found in section ${idx}`);
         return;
       }
       
-      const type = headerMatch[1].toUpperCase() as ActivityType;
       console.log(`📌 Activity type: ${type}`);
       
-      // Extract title from header: ### 🎯 Title **TYPE: QUIZ**
+      // Extract title - multiple patterns
+      // Pattern 1: ### 🎯 Title **TYPE: QUIZ**
+      // Pattern 2: **Question X:** as title
+      // Pattern 3: Generate from type
+      let title = `Activité ${idx + 1}`;
       const titleMatch = section.match(/###\s*(?:[^\s]+\s+)?(.+?)\s*\*\*TYPE:/i);
-      if (!titleMatch) {
-        console.warn(`⚠️ No title found in section ${idx}`);
-        return;
+      const questionTitleMatch = section.match(/\*\*Question\s*(\d+):?\*\*/i);
+      if (titleMatch) {
+        title = titleMatch[1].trim();
+      } else if (questionTitleMatch) {
+        title = `Question ${questionTitleMatch[1]}`;
       }
-      
-      const title = titleMatch[1].trim();
-      const difficulty = 'Moyen'; // Default difficulty since it's not in the new format
+      const difficulty = 'Moyen';
       
       console.log(`📝 Activity: ${title} (${difficulty})`);
 
       try {
         if (type === 'QUIZ') {
-          // QUIZ always has multiple choice options
-          const questionMatch = section.match(/\*\*Question:\*\*\s*(.+?)(?=\n\s*-\s*[A-D]\))/is);
+          // QUIZ - multiple patterns for question text
+          // Pattern 1: **Question:** text
+          // Pattern 2: **Question X:** text  
+          let questionMatch = section.match(/\*\*Question:?\*\*\s*(.+?)(?=\n\s*-\s*[A-D]\)|\n\s*[A-D]\))/is);
+          if (!questionMatch) {
+            questionMatch = section.match(/\*\*Question\s*\d+:?\*\*\s*\n?\s*(.+?)(?=\n\s*-?\s*[A-D]\)|\n[A-D]\))/is);
+          }
           if (!questionMatch) {
             console.warn(`⚠️ No question found in QUIZ section ${idx}`);
             return;
@@ -182,11 +219,22 @@ export const InteractiveActivitiesEnhanced = ({
           
           const question = questionMatch[1].trim().replace(/\*\*/g, '').replace(/\s+/g, ' ');
           
-          const optionMatches = section.matchAll(/-\s*([A-D])\)\s*(.+?)(?=\n\s*-\s*[A-D]\)|\*\*Réponse|$)/gis);
+          // Match options - handle both "- A)" and "A)" formats
+          const optionMatches = section.matchAll(/(?:^|\n)\s*-?\s*([A-D])\)\s*(.+?)(?=\n\s*-?\s*[A-D]\)|\*\*Réponse|---|\n\n|$)/gis);
           const options: string[] = [];
+          const optionsMap: Record<string, string> = {};
           Array.from(optionMatches).forEach(match => {
+            const letter = match[1].toUpperCase();
             const optionText = match[2].trim().replace(/\*\*/g, '').replace(/\s+/g, ' ');
-            if (optionText && !optionText.startsWith('Réponse')) options.push(optionText);
+            if (optionText && !optionText.startsWith('Réponse')) {
+              optionsMap[letter] = optionText;
+            }
+          });
+          // Ensure we have A, B, C, D in order
+          ['A', 'B', 'C', 'D'].forEach(letter => {
+            if (optionsMap[letter]) {
+              options.push(optionsMap[letter]);
+            }
           });
           
           if (options.length !== 4) {
@@ -194,7 +242,11 @@ export const InteractiveActivitiesEnhanced = ({
             return;
           }
           
-          const correctMatch = section.match(/\*\*Réponse\s+correcte:\*\*\s*([A-D])/i);
+          // Match correct answer - handle multiple formats
+          let correctMatch = section.match(/\*\*Réponse\s+correcte:?\*\*\s*([A-D])/i);
+          if (!correctMatch) {
+            correctMatch = section.match(/\*\*Réponse\s+correcte:\s*([A-D])\*\*/i);
+          }
           if (!correctMatch) {
             console.warn(`⚠️ No correct answer found in QUIZ section ${idx}`);
             return;
