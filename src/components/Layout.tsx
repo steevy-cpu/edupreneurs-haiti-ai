@@ -341,7 +341,7 @@ export const Layout = ({ children }: LayoutProps) => {
   const isChessPage = location.pathname === "/chess-game";
   
   // Pages that have their own header/navigation
-  const hideLayoutNav = isCommunityPage || isLessonPage || isFeedPage || isUserSearchPage;
+  const hideLayoutNav = isCommunityPage || isLessonPage || isFeedPage || isUserSearchPage || isChessPage;
 
   return (
     <div className="min-h-screen bg-background">
