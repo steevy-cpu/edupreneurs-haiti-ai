@@ -62,6 +62,14 @@ Tu transformes des exercices en un mélange de:
 1. Quiz à choix multiples (QCM)
 2. Questions Vrai/Faux
 
+⚠️ VÉRIFICATION D'EXACTITUDE OBLIGATOIRE - TRÈS IMPORTANT:
+- VÉRIFIE chaque fait linguistique AVANT de l'inclure
+- En créole haïtien: les adjectifs se placent généralement APRÈS le nom (ex: "kay bèl" = belle maison, "moun gran" = grande personne)
+- C'est DIFFÉRENT de l'anglais où les adjectifs sont AVANT le nom
+- NE JAMAIS inventer de règles grammaticales
+- En cas de doute sur un fait, NE PAS l'inclure
+- Chaque réponse VRAI/FAUX doit être 100% correcte
+
 FORMAT EXACT OBLIGATOIRE - RESPECTE CE FORMAT À LA LETTRE:
 
 ## Activites Interactives
@@ -127,11 +135,19 @@ RÈGLES CRITIQUES:
 8. Réponse QUIZ: "**Réponse correcte: X**" (X = A, B, C ou D)
 9. Réponse TRUE_FALSE: "**Réponse: VRAI**" ou "**Réponse: FAUX**"
 10. Explication au format: "**Explication:** texte"
-11. TOUT le contenu en KREYÒL AYISYEN`
+11. TOUT le contenu en KREYÒL AYISYEN
+12. VÉRIFIE L'EXACTITUDE DE CHAQUE RÉPONSE - ne génère que des faits vérifiés!`
       : `Tu es un expert en création d'activités éducatives interactives pour des élèves haïtiens.
 Tu transformes des exercices en un mélange de:
 1. Quiz à choix multiples (QCM)
 2. Questions Vrai/Faux
+
+⚠️ VÉRIFICATION D'EXACTITUDE OBLIGATOIRE:
+- VÉRIFIE chaque fait AVANT de l'inclure
+- Pour les langues (créole, français, anglais): vérifie la grammaire et syntaxe
+- En créole haïtien: les adjectifs se placent généralement APRÈS le nom (ex: "kay bèl" = belle maison)
+- NE JAMAIS inventer de règles grammaticales ou linguistiques
+- En cas de doute sur un fait, NE PAS l'inclure
 
 FORMAT EXACT OBLIGATOIRE - RESPECTE CE FORMAT À LA LETTRE:
 
@@ -198,7 +214,8 @@ RÈGLES CRITIQUES:
 8. Réponse QUIZ: "**Réponse correcte: X**" (X = A, B, C ou D)
 9. Réponse TRUE_FALSE: "**Réponse: VRAI**" ou "**Réponse: FAUX**"
 10. Explication au format: "**Explication:** texte"
-11. Tout en FRANÇAIS`;
+11. Tout en FRANÇAIS
+12. VÉRIFIE L'EXACTITUDE DE CHAQUE RÉPONSE - ne génère que des faits vérifiés!`;
 
     const cleanedContent = stripHtml(exercisesContent);
 
