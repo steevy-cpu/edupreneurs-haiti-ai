@@ -274,7 +274,10 @@ INSTRUCTIONS CRITIQUES:
       .replace(/^([A-D])\.\s*/gm, '$1) ') // Convert A. to A)
       .replace(/^([A-D]):\s*/gm, '$1) '); // Convert A: to A)
 
-    console.log('Interactive activities generated successfully');
+    // POST-PROCESS QUIZ QUESTIONS: Shuffle options and randomize correct answer position
+    generatedContent = shuffleQuizOptions(generatedContent);
+
+    console.log('Interactive activities generated and shuffled successfully');
     console.log('First 500 chars:', generatedContent.substring(0, 500));
 
     return new Response(
@@ -303,3 +306,87 @@ INSTRUCTIONS CRITIQUES:
     );
   }
 });
+
+// Function to shuffle quiz options and update correct answer
+function shuffleQuizOptions(content: string): string {
+  // Split content into QUIZ and TRUE_FALSE sections
+  const parts = content.split(/(\*\*TYPE:\s*(?:TRUE_FALSE|TRUEFALSE)\*\*)/i);
+  
+  let result = '';
+  let inTrueFalseSection = false;
+  
+  for (let i = 0; i < parts.length; i++) {
+    const part = parts[i];
+    
+    if (/\*\*TYPE:\s*(?:TRUE_FALSE|TRUEFALSE)\*\*/i.test(part)) {
+      inTrueFalseSection = true;
+      result += part;
+      continue;
+    }
+    
+    if (inTrueFalseSection) {
+      // Don't shuffle TRUE_FALSE sections
+      result += part;
+      continue;
+    }
+    
+    // Process QUIZ questions in this part
+    result += shuffleQuizQuestionsInSection(part);
+  }
+  
+  return result;
+}
+
+function shuffleQuizQuestionsInSection(section: string): string {
+  // Match each question block: from **Question X:** to the next **Question or ---
+  const questionPattern = /(\*\*Question\s*\d*:?\*\*\s*\n?[^\n]+\n\n?)((?:[A-D]\)\s*[^\n]+\n?)+)(\n?\*\*Réponse\s+correcte:?\s*\**\s*([A-D])\s*\**)/gi;
+  
+  return section.replace(questionPattern, (match, questionPart, optionsPart, answerPart, correctLetter) => {
+    console.log('🔀 Shuffling question, original correct:', correctLetter);
+    
+    // Parse options
+    const optionMatches = [...optionsPart.matchAll(/([A-D])\)\s*([^\n]+)/gi)];
+    if (optionMatches.length !== 4) {
+      console.log('⚠️ Not exactly 4 options, skipping shuffle');
+      return match; // Don't shuffle if we don't have exactly 4 options
+    }
+    
+    const options: { letter: string; text: string }[] = optionMatches.map(m => ({
+      letter: m[1].toUpperCase(),
+      text: m[2].trim()
+    }));
+    
+    // Find the correct answer text
+    const correctIndex = correctLetter.toUpperCase().charCodeAt(0) - 'A'.charCodeAt(0);
+    const correctText = options[correctIndex]?.text;
+    
+    if (!correctText) {
+      console.log('⚠️ Could not find correct answer text');
+      return match;
+    }
+    
+    // Fisher-Yates shuffle
+    const shuffled = [...options];
+    for (let i = shuffled.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+    }
+    
+    // Find new position of correct answer
+    const newCorrectIndex = shuffled.findIndex(opt => opt.text === correctText);
+    const newCorrectLetter = String.fromCharCode('A'.charCodeAt(0) + newCorrectIndex);
+    
+    console.log('🔀 After shuffle, new correct:', newCorrectLetter);
+    
+    // Rebuild options block
+    const newOptionsPart = shuffled.map((opt, idx) => {
+      const letter = String.fromCharCode('A'.charCodeAt(0) + idx);
+      return `${letter}) ${opt.text}`;
+    }).join('\n') + '\n';
+    
+    // Rebuild answer part
+    const newAnswerPart = `\n**Réponse correcte: ${newCorrectLetter}**`;
+    
+    return questionPart + newOptionsPart + newAnswerPart;
+  });
+}

@@ -133,258 +133,184 @@ export const InteractiveActivitiesEnhanced = ({
     console.log('🔍 Full content length:', content.length);
     const activities: Activity[] = [];
     
-    // Try to detect format: 
-    // Format 1: ### headers with **TYPE: X** (old format)
-    // Format 2: **TYPE: X** blocks without ### headers (new format from generate-interactive-activities)
+    // First, try to parse TRUE_FALSE (Affirmation format) separately
+    const trueFalseActivities = parseTrueFalseAffirmations(content);
+    activities.push(...trueFalseActivities);
     
-    const hasHashHeaders = content.includes('###');
-    const hasTypeBlocks = /\*\*TYPE:\s*(QUIZ|MATCHING|TRUEFALSE|TRUE_FALSE|FILLIN)\*\*/i.test(content);
+    // Then parse QUIZ questions
+    const quizActivities = parseQuizQuestions(content);
+    activities.push(...quizActivities);
     
-    let sections: string[] = [];
+    console.log(`📊 Total activities parsed: ${activities.length} (${trueFalseActivities.length} TRUE_FALSE, ${quizActivities.length} QUIZ)`);
     
-    if (hasHashHeaders) {
-      // Format 1: Split by ### headers
-      const firstActivityIndex = content.indexOf('###');
-      const cleanedContent = firstActivityIndex >= 0 ? content.substring(firstActivityIndex) : content;
-      sections = cleanedContent.split(/(?=###\s)/);
-    } else if (hasTypeBlocks) {
-      // Format 2: Split by **TYPE: X** blocks (handling both TRUEFALSE and TRUE_FALSE)
-      // Also handle **Question X:** and similar patterns
-      sections = content.split(/(?=\*\*(?:TYPE:\s*(?:QUIZ|MATCHING|TRUEFALSE|TRUE_FALSE|FILLIN)|Question\s+\d+:)\*\*)/i);
-    } else {
-      // Try splitting by question patterns as fallback
-      sections = content.split(/(?=\*\*Question\s+\d+:?\*\*)/i);
+    return activities;
+  };
+  
+  // Parse TRUE_FALSE affirmations in the new format
+  const parseTrueFalseAffirmations = (content: string): TrueFalseActivity[] => {
+    const activities: TrueFalseActivity[] = [];
+    
+    // Find the TRUE_FALSE section
+    const trueFalseMatch = content.match(/\*\*TYPE:\s*(?:TRUE_FALSE|TRUEFALSE)\*\*([\s\S]*?)(?=\*\*TYPE:|$)/i);
+    if (!trueFalseMatch) {
+      console.log('📊 No TRUE_FALSE section found');
+      return activities;
     }
     
-    console.log('📊 Found activity sections:', sections.length);
-    console.log('📊 Section lengths:', sections.map(s => s.length));
-
-    sections.forEach((section, idx) => {
-      if (!section.trim()) return;
-      
-      console.log(`\n🔍 Processing activity section ${idx}:`);
-      console.log('First 300 chars:', section.substring(0, 300));
-
-      // Extract type - multiple patterns supported
-      // Pattern 1: ### header with TYPE on same or next line
-      // Pattern 2: **TYPE: X** at start of section
-      // Pattern 3: Infer from content structure
-      let type: ActivityType | null = null;
-      
-      const headerMatch = section.match(/(?:###\s*[^\n]*[\n\s]*)?\*\*TYPE:\s*(QUIZ|MATCHING|TRUEFALSE|TRUE_FALSE|FILLIN)\*\*/i);
-      if (headerMatch) {
-        const rawType = headerMatch[1].toUpperCase().replace('TRUE_FALSE', 'TRUEFALSE');
-        type = rawType as ActivityType;
-      } else if (section.match(/\*\*Question\s*\d*:?\*\*/i) && section.match(/-\s*[A-D]\)/)) {
-        // Infer QUIZ from Question + A/B/C/D options
-        type = 'QUIZ';
-      }
-      
-      if (!type) {
-        console.warn(`⚠️ No type found in section ${idx}`);
-        return;
-      }
-      
-      console.log(`📌 Activity type: ${type}`);
-      
-      // Extract title - multiple patterns
-      // Pattern 1: ### 🎯 Title **TYPE: QUIZ**
-      // Pattern 2: **Question X:** as title
-      // Pattern 3: Generate from type
-      let title = `Activité ${idx + 1}`;
-      const titleMatch = section.match(/###\s*(?:[^\s]+\s+)?(.+?)\s*\*\*TYPE:/i);
-      const questionTitleMatch = section.match(/\*\*Question\s*(\d+):?\*\*/i);
-      if (titleMatch) {
-        title = titleMatch[1].trim();
-      } else if (questionTitleMatch) {
-        title = `Question ${questionTitleMatch[1]}`;
-      }
-      const difficulty = 'Moyen';
-      
-      console.log(`📝 Activity: ${title} (${difficulty})`);
-
+    const trueFalseSection = trueFalseMatch[1];
+    
+    // Split by --- or **Affirmation X:**
+    const affirmationBlocks = trueFalseSection.split(/---/).filter(block => block.trim());
+    
+    affirmationBlocks.forEach((block, idx) => {
       try {
-        if (type === 'QUIZ') {
-          // QUIZ - multiple patterns for question text
-          // Pattern 1: **Question:** text
-          // Pattern 2: **Question X:** text  
-          let questionMatch = section.match(/\*\*Question:?\*\*\s*(.+?)(?=\n\s*-\s*[A-D]\)|\n\s*[A-D]\))/is);
-          if (!questionMatch) {
-            questionMatch = section.match(/\*\*Question\s*\d+:?\*\*\s*\n?\s*(.+?)(?=\n\s*-?\s*[A-D]\)|\n[A-D]\))/is);
-          }
-          if (!questionMatch) {
-            console.warn(`⚠️ No question found in QUIZ section ${idx}`);
+        // Match **Affirmation X:** statement
+        const affirmationMatch = block.match(/\*\*Affirmation\s*\d*:?\*\*\s*\n?\s*(.+?)(?=\n\s*\*\*Réponse)/is);
+        if (!affirmationMatch) {
+          // Also try without the Affirmation header - just look for statement before **Réponse:
+          const simpleMatch = block.match(/^[^*]+(?=\*\*Réponse)/is);
+          if (!simpleMatch) {
+            console.warn(`⚠️ No affirmation found in TRUE_FALSE block ${idx}`);
             return;
           }
-          
-          const question = questionMatch[1].trim().replace(/\*\*/g, '').replace(/\s+/g, ' ');
-          
-          // Match options - handle both "- A)" and "A)" formats
-          const optionMatches = section.matchAll(/(?:^|\n)\s*-?\s*([A-D])\)\s*(.+?)(?=\n\s*-?\s*[A-D]\)|\*\*Réponse|---|\n\n|$)/gis);
-          const options: string[] = [];
-          const optionsMap: Record<string, string> = {};
-          Array.from(optionMatches).forEach(match => {
-            const letter = match[1].toUpperCase();
-            const optionText = match[2].trim().replace(/\*\*/g, '').replace(/\s+/g, ' ');
-            if (optionText && !optionText.startsWith('Réponse')) {
-              optionsMap[letter] = optionText;
-            }
-          });
-          // Ensure we have A, B, C, D in order
-          ['A', 'B', 'C', 'D'].forEach(letter => {
-            if (optionsMap[letter]) {
-              options.push(optionsMap[letter]);
-            }
-          });
-          
-          if (options.length !== 4) {
-            console.warn(`⚠️ Expected 4 options, found ${options.length} in QUIZ section ${idx}`);
-            return;
-          }
-          
-          // Match correct answer - handle multiple formats
-          let correctMatch = section.match(/\*\*Réponse\s+correcte:?\*\*\s*([A-D])/i);
-          if (!correctMatch) {
-            correctMatch = section.match(/\*\*Réponse\s+correcte:\s*([A-D])\*\*/i);
-          }
-          if (!correctMatch) {
-            console.warn(`⚠️ No correct answer found in QUIZ section ${idx}`);
-            return;
-          }
-          
-          const correctIndex = correctMatch[1].toUpperCase().charCodeAt(0) - 'A'.charCodeAt(0);
-          const explanationMatch = section.match(/\*\*Explication:\*\*\s*(.+?)(?=###|$)/is);
-          const explanation = explanationMatch ? explanationMatch[1].trim().replace(/\*\*/g, '').replace(/\s+/g, ' ') : "";
-          
-          activities.push({
-            type: 'QUIZ',
-            title,
-            difficulty,
-            question,
-            options,
-            correctAnswer: correctIndex,
-            explanation
-          });
-        } else if (type === 'FILLIN') {
-          // FILLIN has text input - check for **Complétez la phrase:** pattern
-          const sentenceMatch = section.match(/\*\*Complétez la phrase:\*\*\s*(.+?)(?=\n\s*\*\*Réponse)/is);
-          if (!sentenceMatch) {
-            console.warn(`⚠️ No sentence found in FILLIN section ${idx}`);
-            return;
-          }
-          
-          const sentence = sentenceMatch[1].trim().replace(/\*\*/g, '').replace(/\s+/g, ' ');
-          
-          // Extract the correct answer: **Réponse:** answer
-          const answerMatch = section.match(/\*\*Réponse:\*\*\s*([^\n*]+)/i);
-          if (!answerMatch) {
-            console.warn(`⚠️ No answer found in FILLIN section ${idx}`);
-            return;
-          }
-          
-          const correctAnswer = answerMatch[1].trim().toLowerCase();
-          const explanationMatch = section.match(/\*\*Explication:\*\*\s*(.+?)(?=###|$)/is);
-          const explanation = explanationMatch ? explanationMatch[1].trim().replace(/\*\*/g, '').replace(/\s+/g, ' ') : "";
-          
-          activities.push({
-            type: 'FILLIN',
-            title,
-            difficulty,
-            sentence,
-            correctAnswer,
-            acceptedAnswers: [correctAnswer], // Can add alternatives if needed
-            explanation
-          });
-        } else if (type === 'MATCHING') {
-          // Match **Colonne A:** or **Associez chaque expression à son sens correct:**
-          const columnAMatches = section.matchAll(/\*\*Colonne\s+A:\*\*\s*((?:\d+\.\s*.+?\n?)+)/gis);
-          const columnBMatches = section.matchAll(/\*\*Colonne\s+B:\*\*\s*((?:[a-z]\)\s*.+?\n?)+)/gis);
-          
-          const columnAArray = Array.from(columnAMatches);
-          const columnBArray = Array.from(columnBMatches);
-          
-          if (columnAArray.length === 0 || columnBArray.length === 0) {
-            console.warn(`⚠️ Columns not found in MATCHING section ${idx}`);
-            return;
-          }
-          
-          const columnAText = columnAArray[0][1];
-          const columnBText = columnBArray[0][1];
-          
-          const columnA = Array.from(columnAText.matchAll(/\d+\.\s*(.+?)(?=\n|$)/g))
-            .map((m, i) => ({ id: i + 1, text: m[1].trim().replace(/\*\*/g, '') }));
-          const columnB = Array.from(columnBText.matchAll(/([a-z])\)\s*(.+?)(?=\n|$)/gi))
-            .map(m => ({ id: m[1].toLowerCase(), text: m[2].trim().replace(/\*\*/g, '') }));
-          
-          if (columnA.length === 0 || columnB.length === 0) {
-            console.warn(`⚠️ Empty columns in MATCHING section ${idx}`);
-            return;
-          }
-          
-          // Match: **Réponses:** 1-b, 2-a, 3-c
-          const answersMatch = section.match(/\*\*Réponses:\*\*\s*([\d\-a-z,\s]+)/i);
-          if (!answersMatch) {
-            console.warn(`⚠️ No answers found in MATCHING section ${idx}`);
-            return;
-          }
-          
-          const correctMatches: Record<number, string> = {};
-          answersMatch[1].split(',').forEach(pair => {
-            const [num, letter] = pair.trim().split('-');
-            if (num && letter) {
-              correctMatches[parseInt(num)] = letter.trim().toLowerCase();
-            }
-          });
-          
-          const explanationMatch = section.match(/\*\*Explication:\*\*\s*(.+?)(?=###|$)/is);
-          const explanation = explanationMatch ? explanationMatch[1].trim().replace(/\*\*/g, '').replace(/\s+/g, ' ') : "";
-          
-          activities.push({
-            type: 'MATCHING',
-            title,
-            difficulty,
-            instruction: "Associez les éléments suivants:",
-            columnA,
-            columnB,
-            correctMatches,
-            explanation
-          });
-        } else if (type === 'TRUEFALSE') {
-          // Match the statement after the header until options
-          const statementMatch = section.match(/\*\*TYPE:\s*TRUEFALSE\*\*[^\n]*\n\s*\*\*(.+?)\*\*(?=\n\s*-\s*[A-B]\))/is);
-          if (!statementMatch) {
-            console.warn(`⚠️ No statement found in TRUEFALSE section ${idx}`);
-            return;
-          }
-          
-          const statement = statementMatch[1].trim().replace(/\*\*/g, '').replace(/\s+/g, ' ');
-          
-          // Match: **Réponse correcte:** A or B
-          const correctMatch = section.match(/\*\*Réponse\s+correcte:\*\*\s*([A-B])/i);
-          if (!correctMatch) {
-            console.warn(`⚠️ No correct answer found in TRUEFALSE section ${idx}`);
-            return;
-          }
-          
-          const correctIndex = correctMatch[1].toUpperCase().charCodeAt(0) - 'A'.charCodeAt(0);
-          
-          const explanationMatch = section.match(/\*\*Explication:\*\*\s*(.+?)(?=###|$)/is);
-          const explanation = explanationMatch ? explanationMatch[1].trim().replace(/\*\*/g, '').replace(/\s+/g, ' ') : "";
-          
-          activities.push({
-            type: 'TRUEFALSE',
-            title,
-            difficulty,
-            statement,
-            correctAnswer: correctIndex,
-            explanation
-          });
         }
+        
+        const statement = (affirmationMatch ? affirmationMatch[1] : block.split('**Réponse')[0])
+          .trim()
+          .replace(/\*\*/g, '')
+          .replace(/\s+/g, ' ');
+        
+        if (!statement || statement.length < 5) {
+          console.warn(`⚠️ Statement too short in TRUE_FALSE block ${idx}`);
+          return;
+        }
+        
+        // Match **Réponse: VRAI** or **Réponse: FAUX**
+        const responseMatch = block.match(/\*\*Réponse:?\*\*\s*(VRAI|FAUX)/i) 
+          || block.match(/\*\*Réponse:\s*(VRAI|FAUX)\*\*/i);
+        
+        if (!responseMatch) {
+          console.warn(`⚠️ No VRAI/FAUX response found in TRUE_FALSE block ${idx}`);
+          return;
+        }
+        
+        const isTrue = responseMatch[1].toUpperCase() === 'VRAI';
+        const correctAnswer = isTrue ? 0 : 1; // 0 = VRAI, 1 = FAUX
+        
+        // Match explanation
+        const explanationMatch = block.match(/\*\*Explication:?\*\*\s*(.+?)(?=---|$)/is);
+        const explanation = explanationMatch 
+          ? explanationMatch[1].trim().replace(/\*\*/g, '').replace(/\s+/g, ' ') 
+          : "";
+        
+        activities.push({
+          type: 'TRUEFALSE',
+          title: `Affirmation ${activities.length + 1}`,
+          difficulty: 'Moyen',
+          statement,
+          correctAnswer,
+          explanation
+        });
+        
+        console.log(`✅ Parsed TRUE_FALSE: "${statement.substring(0, 50)}..." -> ${isTrue ? 'VRAI' : 'FAUX'}`);
       } catch (error) {
-        console.error('Error parsing activity:', error);
+        console.error('Error parsing TRUE_FALSE block:', error);
       }
     });
-
+    
+    return activities;
+  };
+  
+  // Parse QUIZ questions
+  const parseQuizQuestions = (content: string): QuizActivity[] => {
+    const activities: QuizActivity[] = [];
+    
+    // Find the QUIZ section (everything before TRUE_FALSE or the whole content if no TRUE_FALSE)
+    let quizSection = content;
+    const trueFalseStart = content.search(/\*\*TYPE:\s*(?:TRUE_FALSE|TRUEFALSE)\*\*/i);
+    if (trueFalseStart > 0) {
+      quizSection = content.substring(0, trueFalseStart);
+    }
+    
+    // Split by --- or **Question X:**
+    const questionBlocks = quizSection.split(/---/).filter(block => {
+      // Only include blocks that have Question and options
+      return block.includes('**Question') && /[A-D]\)/.test(block);
+    });
+    
+    questionBlocks.forEach((block, idx) => {
+      try {
+        // Match **Question X:** text
+        let questionMatch = block.match(/\*\*Question\s*\d*:?\*\*\s*\n?\s*(.+?)(?=\n\s*[A-D]\))/is);
+        if (!questionMatch) {
+          console.warn(`⚠️ No question text found in QUIZ block ${idx}`);
+          return;
+        }
+        
+        const question = questionMatch[1].trim().replace(/\*\*/g, '').replace(/\s+/g, ' ');
+        
+        // Match options A), B), C), D)
+        const optionsMap: Record<string, string> = {};
+        const optionMatches = block.matchAll(/\n\s*([A-D])\)\s*(.+?)(?=\n\s*[A-D]\)|\n\s*\*\*Réponse|$)/gis);
+        
+        Array.from(optionMatches).forEach(match => {
+          const letter = match[1].toUpperCase();
+          let optionText = match[2].trim().replace(/\*\*/g, '').replace(/\s+/g, ' ');
+          // Clean up any trailing content
+          optionText = optionText.split('\n')[0].trim();
+          if (optionText && !optionText.startsWith('Réponse')) {
+            optionsMap[letter] = optionText;
+          }
+        });
+        
+        // Build options array in A, B, C, D order
+        const options: string[] = [];
+        ['A', 'B', 'C', 'D'].forEach(letter => {
+          if (optionsMap[letter]) {
+            options.push(optionsMap[letter]);
+          }
+        });
+        
+        if (options.length !== 4) {
+          console.warn(`⚠️ Expected 4 options, found ${options.length} in QUIZ block ${idx}`);
+          return;
+        }
+        
+        // Match correct answer - multiple formats
+        let correctMatch = block.match(/\*\*Réponse\s+correcte:?\*\*\s*([A-D])/i);
+        if (!correctMatch) {
+          correctMatch = block.match(/\*\*Réponse\s+correcte:\s*([A-D])\*\*/i);
+        }
+        if (!correctMatch) {
+          console.warn(`⚠️ No correct answer found in QUIZ block ${idx}`);
+          return;
+        }
+        
+        const correctLetter = correctMatch[1].toUpperCase();
+        const correctIndex = correctLetter.charCodeAt(0) - 'A'.charCodeAt(0);
+        
+        // Match explanation
+        const explanationMatch = block.match(/\*\*Explication:?\*\*\s*(.+?)(?=---|$)/is);
+        const explanation = explanationMatch 
+          ? explanationMatch[1].trim().replace(/\*\*/g, '').replace(/\s+/g, ' ') 
+          : "";
+        
+        activities.push({
+          type: 'QUIZ',
+          title: `Question ${activities.length + 1}`,
+          difficulty: 'Moyen',
+          question,
+          options,
+          correctAnswer: correctIndex,
+          explanation
+        });
+        
+        console.log(`✅ Parsed QUIZ: "${question.substring(0, 50)}..." -> Correct: ${correctLetter}`);
+      } catch (error) {
+        console.error('Error parsing QUIZ block:', error);
+      }
+    });
+    
     return activities;
   };
 
@@ -398,6 +324,14 @@ export const InteractiveActivitiesEnhanced = ({
         </CardHeader>
         <CardContent className="p-6">
           <p className="text-muted-foreground mb-4">Les activités n'ont pas pu être chargées.</p>
+          <details className="mb-4 text-xs">
+            <summary className="cursor-pointer text-muted-foreground hover:text-foreground">
+              Voir extrait brut (debug)
+            </summary>
+            <pre className="mt-2 p-3 bg-muted rounded-lg overflow-x-auto whitespace-pre-wrap break-words max-h-48">
+              {content.substring(0, 1000)}...
+            </pre>
+          </details>
           {onRegenerate && (
             <Button onClick={onRegenerate} variant="outline" className="w-full">
               <RefreshCw className="w-4 h-4 mr-2" />
