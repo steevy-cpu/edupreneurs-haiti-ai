@@ -17,7 +17,11 @@ import {
   Sparkles,
   FileText,
   Download,
-  Gamepad2
+  Gamepad2,
+  Wand2,
+  Eye,
+  Check,
+  X
 } from "lucide-react";
 import { toast } from "sonner";
 import {
@@ -32,6 +36,14 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
 interface ParsedQuestion {
   question: string;
@@ -60,6 +72,7 @@ interface LessonValidation {
   quizErrors: string[];
   activitiesParsed: ParsedActivity[];
   activityErrors: string[];
+  originalActivityContent?: string;
   aiValidation?: {
     confidence: number;
     issues: Array<{
@@ -86,11 +99,28 @@ interface ValidationStats {
   activitiesInvalid: number;
 }
 
+interface RegenerationPreview {
+  lessonId: string;
+  lessonTitle: string;
+  correctedActivities: Array<{
+    originalIndex: number;
+    question: string;
+    options: string[];
+    correctAnswer: number;
+    explanation: string;
+    wasFixed: boolean;
+    fixApplied?: string;
+  }>;
+  newContent: string;
+  issuesFixed: number;
+}
+
 export const QuizActivityValidator = () => {
   const [lessons, setLessons] = useState<any[]>([]);
   const [validations, setValidations] = useState<LessonValidation[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [isValidatingAI, setIsValidatingAI] = useState<string | null>(null);
+  const [isRegenerating, setIsRegenerating] = useState<string | null>(null);
   const [selectedGrade, setSelectedGrade] = useState<string>("all");
   const [selectedSubject, setSelectedSubject] = useState<string>("all");
   const [subjects, setSubjects] = useState<any[]>([]);
@@ -102,6 +132,10 @@ export const QuizActivityValidator = () => {
     activitiesValid: 0,
     activitiesInvalid: 0,
   });
+  
+  // Preview state
+  const [previewData, setPreviewData] = useState<RegenerationPreview | null>(null);
+  const [isSaving, setIsSaving] = useState(false);
 
   useEffect(() => {
     loadSubjects();
@@ -447,6 +481,7 @@ export const QuizActivityValidator = () => {
           quizErrors: quizResult.errors,
           activitiesParsed: activityResult.activities,
           activityErrors: activityResult.errors,
+          originalActivityContent: lesson.activites_interactives,
         });
       }
 
@@ -534,6 +569,97 @@ export const QuizActivityValidator = () => {
       toast.error("Erreur lors de la validation IA");
     } finally {
       setIsValidatingAI(null);
+    }
+  };
+
+  const regenerateActivities = async (lessonId: string) => {
+    const validation = validations.find(v => v.lesson.id === lessonId);
+    if (!validation) return;
+
+    const issues = validation.activityAIValidation?.issues || [];
+    if (issues.length === 0) {
+      toast.info("Aucun problème à corriger");
+      return;
+    }
+
+    setIsRegenerating(lessonId);
+
+    try {
+      const { data, error } = await supabase.functions.invoke('fix-invalid-activities', {
+        body: {
+          lessonId,
+          activities: validation.activitiesParsed,
+          issues,
+          lessonTitle: validation.lesson.title,
+          subject: validation.lesson.subject_name,
+          gradeLevel: validation.lesson.grade_level,
+          originalContent: validation.originalActivityContent,
+        }
+      });
+
+      if (error) throw error;
+
+      if (data.error) {
+        throw new Error(data.error);
+      }
+
+      // Show preview dialog
+      setPreviewData({
+        lessonId,
+        lessonTitle: validation.lesson.title,
+        correctedActivities: data.correctedActivities,
+        newContent: data.newContent,
+        issuesFixed: data.issuesFixed,
+      });
+
+      toast.success(`${data.issuesFixed} activité(s) corrigée(s) - Vérifiez l'aperçu`);
+    } catch (error) {
+      console.error('Regeneration error:', error);
+      toast.error(`Erreur: ${error instanceof Error ? error.message : 'Échec de la régénération'}`);
+    } finally {
+      setIsRegenerating(null);
+    }
+  };
+
+  const saveRegeneratedActivities = async () => {
+    if (!previewData) return;
+
+    setIsSaving(true);
+
+    try {
+      const { error } = await supabase
+        .from('lessons')
+        .update({ 
+          activites_interactives: previewData.newContent,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', previewData.lessonId);
+
+      if (error) throw error;
+
+      // Update local state
+      setValidations(prev => prev.map(v => {
+        if (v.lesson.id === previewData.lessonId) {
+          // Re-parse the new content
+          const newParsed = parseActivities(previewData.newContent);
+          return {
+            ...v,
+            activitiesParsed: newParsed.activities,
+            activityErrors: newParsed.errors,
+            originalActivityContent: previewData.newContent,
+            activityAIValidation: undefined, // Reset AI validation
+          };
+        }
+        return v;
+      }));
+
+      toast.success("Activités sauvegardées avec succès!");
+      setPreviewData(null);
+    } catch (error) {
+      console.error('Save error:', error);
+      toast.error("Erreur lors de la sauvegarde");
+    } finally {
+      setIsSaving(false);
     }
   };
 
@@ -703,7 +829,9 @@ export const QuizActivityValidator = () => {
                     isExpanded={expandedLessons.has(validation.lesson.id)}
                     onToggle={() => toggleExpanded(validation.lesson.id)}
                     onAIValidate={(type) => runAIValidation(validation.lesson.id, type)}
+                    onRegenerate={() => regenerateActivities(validation.lesson.id)}
                     isValidatingAI={isValidatingAI}
+                    isRegenerating={isRegenerating === validation.lesson.id}
                   />
                 ))}
               </div>
@@ -722,7 +850,9 @@ export const QuizActivityValidator = () => {
                       isExpanded={expandedLessons.has(validation.lesson.id)}
                       onToggle={() => toggleExpanded(validation.lesson.id)}
                       onAIValidate={(type) => runAIValidation(validation.lesson.id, type)}
+                      onRegenerate={() => regenerateActivities(validation.lesson.id)}
                       isValidatingAI={isValidatingAI}
+                      isRegenerating={isRegenerating === validation.lesson.id}
                     />
                   ))}
               </div>
@@ -741,7 +871,9 @@ export const QuizActivityValidator = () => {
                       isExpanded={expandedLessons.has(validation.lesson.id)}
                       onToggle={() => toggleExpanded(validation.lesson.id)}
                       onAIValidate={(type) => runAIValidation(validation.lesson.id, type)}
+                      onRegenerate={() => regenerateActivities(validation.lesson.id)}
                       isValidatingAI={isValidatingAI}
+                      isRegenerating={isRegenerating === validation.lesson.id}
                     />
                   ))}
               </div>
@@ -749,6 +881,83 @@ export const QuizActivityValidator = () => {
           </TabsContent>
         </Tabs>
       )}
+
+      {/* Preview Dialog */}
+      <Dialog open={!!previewData} onOpenChange={(open) => !open && setPreviewData(null)}>
+        <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Eye className="h-5 w-5" />
+              Aperçu des corrections - {previewData?.lessonTitle}
+            </DialogTitle>
+            <DialogDescription>
+              {previewData?.issuesFixed} activité(s) ont été corrigée(s). Vérifiez les modifications avant de sauvegarder.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-4">
+            {previewData?.correctedActivities.map((activity, idx) => (
+              <Card key={idx} className={activity.wasFixed ? 'border-primary' : 'border-muted'}>
+                <CardContent className="p-4">
+                  <div className="flex items-center gap-2 mb-2">
+                    <Badge variant={activity.wasFixed ? "default" : "secondary"}>
+                      Activité {activity.originalIndex + 1}
+                    </Badge>
+                    {activity.wasFixed && (
+                      <Badge variant="outline" className="text-green-600 border-green-600">
+                        <Wand2 className="h-3 w-3 mr-1" />
+                        Corrigée
+                      </Badge>
+                    )}
+                  </div>
+                  
+                  <p className="font-medium mb-2">{activity.question}</p>
+                  
+                  <div className="grid grid-cols-2 gap-2 mb-2">
+                    {activity.options.map((opt, optIdx) => (
+                      <div 
+                        key={optIdx} 
+                        className={`p-2 rounded text-sm ${
+                          optIdx === activity.correctAnswer 
+                            ? 'bg-green-100 dark:bg-green-900/30 border border-green-500' 
+                            : 'bg-muted'
+                        }`}
+                      >
+                        {String.fromCharCode(65 + optIdx)}) {opt}
+                      </div>
+                    ))}
+                  </div>
+                  
+                  <p className="text-sm text-muted-foreground">
+                    <strong>Explication:</strong> {activity.explanation}
+                  </p>
+                  
+                  {activity.fixApplied && (
+                    <p className="text-sm text-primary mt-2">
+                      <strong>Correction appliquée:</strong> {activity.fixApplied}
+                    </p>
+                  )}
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+
+          <DialogFooter className="gap-2">
+            <Button variant="outline" onClick={() => setPreviewData(null)} disabled={isSaving}>
+              <X className="h-4 w-4 mr-2" />
+              Annuler
+            </Button>
+            <Button onClick={saveRegeneratedActivities} disabled={isSaving}>
+              {isSaving ? (
+                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+              ) : (
+                <Check className="h-4 w-4 mr-2" />
+              )}
+              Sauvegarder les corrections
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
@@ -758,15 +967,26 @@ interface ValidationItemProps {
   isExpanded: boolean;
   onToggle: () => void;
   onAIValidate: (type: 'quiz' | 'activity') => void;
+  onRegenerate: () => void;
   isValidatingAI: string | null;
+  isRegenerating: boolean;
 }
 
-const ValidationItem = ({ validation, isExpanded, onToggle, onAIValidate, isValidatingAI }: ValidationItemProps) => {
+const ValidationItem = ({ 
+  validation, 
+  isExpanded, 
+  onToggle, 
+  onAIValidate, 
+  onRegenerate,
+  isValidatingAI,
+  isRegenerating 
+}: ValidationItemProps) => {
   const hasQuizErrors = validation.quizErrors.length > 0;
   const hasActivityErrors = validation.activityErrors.length > 0;
   const hasAnyContent = validation.quizParsed.length > 0 || validation.activitiesParsed.length > 0;
   const isValidatingQuiz = isValidatingAI === `${validation.lesson.id}-quiz`;
   const isValidatingActivity = isValidatingAI === `${validation.lesson.id}-activity`;
+  const hasActivityIssues = (validation.activityAIValidation?.issues?.length || 0) > 0;
 
   return (
     <Collapsible open={isExpanded} onOpenChange={onToggle}>
@@ -868,36 +1088,64 @@ const ValidationItem = ({ validation, isExpanded, onToggle, onAIValidate, isVali
                     <Gamepad2 className="h-4 w-4" />
                     Activités Interactives ({validation.activitiesParsed.length})
                   </h4>
-                  <Button 
-                    size="sm" 
-                    variant="outline" 
-                    onClick={(e) => { e.stopPropagation(); onAIValidate('activity'); }}
-                    disabled={isValidatingActivity}
-                  >
-                    {isValidatingActivity ? (
-                      <Loader2 className="h-3 w-3 mr-1 animate-spin" />
-                    ) : (
-                      <Sparkles className="h-3 w-3 mr-1" />
+                  <div className="flex items-center gap-2">
+                    <Button 
+                      size="sm" 
+                      variant="outline" 
+                      onClick={(e) => { e.stopPropagation(); onAIValidate('activity'); }}
+                      disabled={isValidatingActivity}
+                    >
+                      {isValidatingActivity ? (
+                        <Loader2 className="h-3 w-3 mr-1 animate-spin" />
+                      ) : (
+                        <Sparkles className="h-3 w-3 mr-1" />
+                      )}
+                      Vérifier Activités IA
+                    </Button>
+                    {hasActivityIssues && (
+                      <Button 
+                        size="sm" 
+                        variant="default"
+                        onClick={(e) => { e.stopPropagation(); onRegenerate(); }}
+                        disabled={isRegenerating}
+                        className="bg-primary"
+                      >
+                        {isRegenerating ? (
+                          <Loader2 className="h-3 w-3 mr-1 animate-spin" />
+                        ) : (
+                          <Wand2 className="h-3 w-3 mr-1" />
+                        )}
+                        Corriger tout ({validation.activityAIValidation?.issues?.length})
+                      </Button>
                     )}
-                    Vérifier Activités IA
-                  </Button>
+                  </div>
                 </div>
                 <div className="space-y-2 pl-4 border-l-2 border-primary/30">
-                  {validation.activitiesParsed.map((a, idx) => (
-                    <div key={idx} className="text-sm p-2 bg-primary/5 rounded">
-                      <p className="font-medium">
-                        A{idx + 1}{a.activityType ? ` (${a.activityType})` : ''}: {a.question.substring(0, 100)}...
-                      </p>
-                      <p className="text-muted-foreground">
-                        Réponse: {String.fromCharCode(65 + a.correctAnswer)}) {a.options[a.correctAnswer]?.substring(0, 50)}...
-                      </p>
-                      {validation.activityAIValidation?.issues?.find(i => i.activityIndex === idx) && (
-                        <p className="text-destructive text-xs mt-1">
-                          ⚠️ {validation.activityAIValidation.issues.find(i => i.activityIndex === idx)?.issue}
+                  {validation.activitiesParsed.map((a, idx) => {
+                    const issue = validation.activityAIValidation?.issues?.find(i => i.activityIndex === idx);
+                    return (
+                      <div key={idx} className={`text-sm p-2 rounded ${issue ? 'bg-destructive/10 border border-destructive/30' : 'bg-primary/5'}`}>
+                        <p className="font-medium">
+                          A{idx + 1}{a.activityType ? ` (${a.activityType})` : ''}: {a.question.substring(0, 100)}...
                         </p>
-                      )}
-                    </div>
-                  ))}
+                        <p className="text-muted-foreground">
+                          Réponse: {String.fromCharCode(65 + a.correctAnswer)}) {a.options[a.correctAnswer]?.substring(0, 50)}...
+                        </p>
+                        {issue && (
+                          <div className="mt-2 p-2 bg-destructive/5 rounded">
+                            <p className="text-destructive text-xs font-medium">
+                              ⚠️ {issue.issue}
+                            </p>
+                            {issue.suggestedFix && (
+                              <p className="text-xs text-muted-foreground mt-1">
+                                💡 Suggestion: {issue.suggestedFix}
+                              </p>
+                            )}
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
                 </div>
               </div>
             )}
