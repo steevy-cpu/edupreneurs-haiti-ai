@@ -167,12 +167,27 @@ export const GlobalMusicPlayer = () => {
     };
   };
 
+  // Create the YouTube player container outside React's control
+  useEffect(() => {
+    let playerDiv = document.getElementById("global-music-player");
+    if (!playerDiv) {
+      playerDiv = document.createElement("div");
+      playerDiv.id = "global-music-player";
+      playerDiv.style.display = "none";
+      document.body.appendChild(playerDiv);
+    }
+    
+    // Cleanup on unmount - but don't remove if player is active
+    return () => {
+      // We intentionally don't remove the div here to prevent React DOM conflicts
+      // The YouTube player manages its own lifecycle
+    };
+  }, []);
+
   if (!isAuthenticated || tracks.length === 0 || location.pathname === '/') return null;
 
   return (
     <>
-      {/* Hidden YouTube player */}
-      <div id="global-music-player" style={{ display: "none" }} />
 
       {/* Playlist Dialog - always mounted, independent of Card */}
       <Dialog open={playlistOpen} onOpenChange={setPlaylistOpen}>
