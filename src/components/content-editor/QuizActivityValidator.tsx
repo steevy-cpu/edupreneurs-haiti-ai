@@ -576,8 +576,12 @@ export const QuizActivityValidator = () => {
     const validation = validations.find(v => v.lesson.id === lessonId);
     if (!validation) return;
 
-    const issues = validation.activityAIValidation?.issues || [];
-    if (issues.length === 0) {
+    const aiIssues = validation.activityAIValidation?.issues || [];
+    const parsingErrors = validation.activityErrors || [];
+    const hasParsingErrors = parsingErrors.length > 0 && validation.activitiesParsed.length === 0;
+    
+    // Check if we have anything to fix
+    if (aiIssues.length === 0 && !hasParsingErrors) {
       toast.info("Aucun problème à corriger");
       return;
     }
@@ -589,11 +593,13 @@ export const QuizActivityValidator = () => {
         body: {
           lessonId,
           activities: validation.activitiesParsed,
-          issues,
+          issues: aiIssues,
+          parsingErrors: hasParsingErrors ? parsingErrors : [],
           lessonTitle: validation.lesson.title,
           subject: validation.lesson.subject_name,
           gradeLevel: validation.lesson.grade_level,
           originalContent: validation.originalActivityContent,
+          needsFullRegeneration: hasParsingErrors,
         }
       });
 
@@ -987,6 +993,9 @@ const ValidationItem = ({
   const isValidatingQuiz = isValidatingAI === `${validation.lesson.id}-quiz`;
   const isValidatingActivity = isValidatingAI === `${validation.lesson.id}-activity`;
   const hasActivityIssues = (validation.activityAIValidation?.issues?.length || 0) > 0;
+  // Can regenerate if we have AI issues OR parsing errors (format issues)
+  const hasParsingErrorsOnly = hasActivityErrors && validation.activitiesParsed.length === 0;
+  const canRegenerateActivities = hasActivityIssues || hasParsingErrorsOnly;
 
   return (
     <Collapsible open={isExpanded} onOpenChange={onToggle}>
@@ -1081,34 +1090,41 @@ const ValidationItem = ({
             )}
 
             {/* Activities Details */}
-            {validation.activitiesParsed.length > 0 && (
+            {(validation.activitiesParsed.length > 0 || hasParsingErrorsOnly) && (
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
                   <h4 className="font-medium flex items-center gap-2">
                     <Gamepad2 className="h-4 w-4" />
-                    Activités Interactives ({validation.activitiesParsed.length})
+                    Activités Interactives ({validation.activitiesParsed.length || 0})
+                    {hasParsingErrorsOnly && (
+                      <Badge variant="destructive" className="ml-2">
+                        Format invalide
+                      </Badge>
+                    )}
                   </h4>
                   <div className="flex items-center gap-2">
-                    <Button 
-                      size="sm" 
-                      variant="outline" 
-                      onClick={(e) => { e.stopPropagation(); onAIValidate('activity'); }}
-                      disabled={isValidatingActivity}
-                    >
-                      {isValidatingActivity ? (
-                        <Loader2 className="h-3 w-3 mr-1 animate-spin" />
-                      ) : (
-                        <Sparkles className="h-3 w-3 mr-1" />
-                      )}
-                      Vérifier Activités IA
-                    </Button>
-                    {validation.activityAIValidation && !hasActivityIssues && (
+                    {validation.activitiesParsed.length > 0 && (
+                      <Button 
+                        size="sm" 
+                        variant="outline" 
+                        onClick={(e) => { e.stopPropagation(); onAIValidate('activity'); }}
+                        disabled={isValidatingActivity}
+                      >
+                        {isValidatingActivity ? (
+                          <Loader2 className="h-3 w-3 mr-1 animate-spin" />
+                        ) : (
+                          <Sparkles className="h-3 w-3 mr-1" />
+                        )}
+                        Vérifier Activités IA
+                      </Button>
+                    )}
+                    {validation.activityAIValidation && !hasActivityIssues && !hasParsingErrorsOnly && (
                       <Badge variant="outline" className="text-green-600 border-green-600">
                         <CheckCircle2 className="h-3 w-3 mr-1" />
                         Aucun problème
                       </Badge>
                     )}
-                    {hasActivityIssues && (
+                    {canRegenerateActivities && (
                       <Button 
                         size="sm" 
                         variant="default"
@@ -1121,38 +1137,49 @@ const ValidationItem = ({
                         ) : (
                           <Wand2 className="h-3 w-3 mr-1" />
                         )}
-                        Corriger tout ({validation.activityAIValidation?.issues?.length})
+                        {hasParsingErrorsOnly ? 'Régénérer' : `Corriger tout (${validation.activityAIValidation?.issues?.length})`}
                       </Button>
                     )}
                   </div>
                 </div>
-                <div className="space-y-2 pl-4 border-l-2 border-primary/30">
-                  {validation.activitiesParsed.map((a, idx) => {
-                    const issue = validation.activityAIValidation?.issues?.find(i => i.activityIndex === idx);
-                    return (
-                      <div key={idx} className={`text-sm p-2 rounded ${issue ? 'bg-destructive/10 border border-destructive/30' : 'bg-primary/5'}`}>
-                        <p className="font-medium">
-                          A{idx + 1}{a.activityType ? ` (${a.activityType})` : ''}: {a.question.substring(0, 100)}...
-                        </p>
-                        <p className="text-muted-foreground">
-                          Réponse: {String.fromCharCode(65 + a.correctAnswer)}) {a.options[a.correctAnswer]?.substring(0, 50)}...
-                        </p>
-                        {issue && (
-                          <div className="mt-2 p-2 bg-destructive/5 rounded">
-                            <p className="text-destructive text-xs font-medium">
-                              ⚠️ {issue.issue}
-                            </p>
-                            {issue.suggestedFix && (
-                              <p className="text-xs text-muted-foreground mt-1">
-                                💡 Suggestion: {issue.suggestedFix}
+                {validation.activitiesParsed.length > 0 ? (
+                  <div className="space-y-2 pl-4 border-l-2 border-primary/30">
+                    {validation.activitiesParsed.map((a, idx) => {
+                      const issue = validation.activityAIValidation?.issues?.find(i => i.activityIndex === idx);
+                      return (
+                        <div key={idx} className={`text-sm p-2 rounded ${issue ? 'bg-destructive/10 border border-destructive/30' : 'bg-primary/5'}`}>
+                          <p className="font-medium">
+                            A{idx + 1}{a.activityType ? ` (${a.activityType})` : ''}: {a.question.substring(0, 100)}...
+                          </p>
+                          <p className="text-muted-foreground">
+                            Réponse: {String.fromCharCode(65 + a.correctAnswer)}) {a.options[a.correctAnswer]?.substring(0, 50)}...
+                          </p>
+                          {issue && (
+                            <div className="mt-2 p-2 bg-destructive/5 rounded">
+                              <p className="text-destructive text-xs font-medium">
+                                ⚠️ {issue.issue}
                               </p>
-                            )}
-                          </div>
-                        )}
-                      </div>
-                    );
-                  })}
-                </div>
+                              {issue.suggestedFix && (
+                                <p className="text-xs text-muted-foreground mt-1">
+                                  💡 Suggestion: {issue.suggestedFix}
+                                </p>
+                              )}
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                ) : hasParsingErrorsOnly && (
+                  <div className="p-4 bg-destructive/10 border border-destructive/30 rounded-lg">
+                    <p className="text-sm text-destructive font-medium mb-2">
+                      Le format des activités n'a pas pu être analysé correctement.
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      Cliquez sur "Régénérer" pour créer de nouvelles activités valides basées sur le contenu de la leçon.
+                    </p>
+                  </div>
+                )}
               </div>
             )}
 

@@ -30,14 +30,23 @@ serve(async (req) => {
       lessonId, 
       activities, 
       issues, 
+      parsingErrors,
       lessonTitle, 
       subject, 
       gradeLevel,
-      originalContent 
+      originalContent,
+      needsFullRegeneration 
     } = await req.json();
 
-    console.log(`[fix-invalid-activities] Processing ${activities?.length || 0} activities for lesson: ${lessonTitle}`);
-    console.log(`[fix-invalid-activities] Issues to fix: ${issues?.length || 0}`);
+    console.log(`[fix-invalid-activities] Processing for lesson: ${lessonTitle}`);
+    console.log(`[fix-invalid-activities] Activities: ${activities?.length || 0}, Issues: ${issues?.length || 0}, ParsingErrors: ${parsingErrors?.length || 0}`);
+    console.log(`[fix-invalid-activities] Needs full regeneration: ${needsFullRegeneration}`);
+
+    // Handle case where activities failed to parse - need full regeneration
+    if (needsFullRegeneration) {
+      console.log('[fix-invalid-activities] Starting full activity regeneration from scratch');
+      return await handleFullRegeneration(lessonTitle, subject, gradeLevel, originalContent, parsingErrors);
+    }
 
     if (!activities || activities.length === 0) {
       return new Response(JSON.stringify({ error: 'No activities provided' }), {
@@ -218,6 +227,154 @@ Retourne les activités corrigées au format JSON suivant:
     });
   }
 });
+
+async function handleFullRegeneration(
+  lessonTitle: string,
+  subject: string,
+  gradeLevel: string,
+  originalContent: string,
+  parsingErrors: string[]
+): Promise<Response> {
+  const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
+  if (!LOVABLE_API_KEY) {
+    throw new Error('LOVABLE_API_KEY is not configured');
+  }
+
+  const prompt = `Tu es un expert en pédagogie haïtienne. Tu dois créer des activités interactives pour une leçon dont le format actuel est invalide.
+
+CONTEXTE DE LA LEÇON:
+- Titre: ${lessonTitle}
+- Matière: ${subject}
+- Niveau: ${gradeLevel}
+
+CONTENU ORIGINAL (format invalide):
+${originalContent?.substring(0, 2000) || 'Contenu non disponible'}
+
+ERREURS DE FORMAT DÉTECTÉES:
+${parsingErrors.map((e, i) => `${i + 1}. ${e}`).join('\n')}
+
+INSTRUCTIONS:
+1. Crée 3-5 activités de type QUIZ basées sur le sujet de la leçon
+2. Chaque question doit avoir exactement 4 options (A, B, C, D)
+3. Une seule réponse correcte par question
+4. Inclure une explication pédagogique pour chaque question
+5. Adapte le niveau aux élèves haïtiens de ${gradeLevel}
+6. Les questions doivent être factuellement correctes
+
+Retourne les activités au format JSON:
+{
+  "correctedActivities": [
+    {
+      "originalIndex": 0,
+      "question": "La question",
+      "options": ["Option A", "Option B", "Option C", "Option D"],
+      "correctAnswer": 0,
+      "explanation": "L'explication détaillée...",
+      "wasFixed": true,
+      "fixApplied": "Activité régénérée à partir de zéro"
+    }
+  ]
+}`;
+
+  console.log('[fix-invalid-activities] Calling Lovable AI for full regeneration...');
+
+  const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${LOVABLE_API_KEY}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      model: 'google/gemini-2.5-flash',
+      messages: [
+        {
+          role: 'system',
+          content: 'Tu es un assistant pédagogique expert en création de contenu éducatif pour Haïti. Tu dois fournir des activités précises et factuellement correctes. Retourne UNIQUEMENT du JSON valide sans markdown.'
+        },
+        { role: 'user', content: prompt }
+      ],
+      temperature: 0.3,
+    }),
+  });
+
+  if (!response.ok) {
+    const errorText = await response.text();
+    console.error('[fix-invalid-activities] AI API error:', response.status, errorText);
+    
+    if (response.status === 429) {
+      return new Response(JSON.stringify({ error: 'Rate limit exceeded. Please try again later.' }), {
+        status: 429,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+    if (response.status === 402) {
+      return new Response(JSON.stringify({ error: 'Payment required. Please add credits.' }), {
+        status: 402,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+    
+    throw new Error(`AI API error: ${response.status}`);
+  }
+
+  const aiData = await response.json();
+  const aiContent = aiData.choices?.[0]?.message?.content;
+
+  if (!aiContent) {
+    throw new Error('No content from AI');
+  }
+
+  console.log('[fix-invalid-activities] AI response received for full regeneration, parsing...');
+
+  let parsedResponse;
+  try {
+    const jsonMatch = aiContent.match(/\{[\s\S]*\}/);
+    if (jsonMatch) {
+      parsedResponse = JSON.parse(jsonMatch[0]);
+    } else {
+      throw new Error('No JSON found in response');
+    }
+  } catch (parseError) {
+    console.error('[fix-invalid-activities] Failed to parse AI response:', aiContent);
+    throw new Error('Failed to parse AI response as JSON');
+  }
+
+  if (!parsedResponse.correctedActivities || !Array.isArray(parsedResponse.correctedActivities)) {
+    throw new Error('Invalid response structure: missing correctedActivities array');
+  }
+
+  // Generate markdown from the new activities
+  const newMarkdownContent = generateActivityMarkdownFromNew(parsedResponse.correctedActivities);
+
+  console.log('[fix-invalid-activities] Generated new content with', parsedResponse.correctedActivities.length, 'activities');
+
+  return new Response(JSON.stringify({
+    correctedActivities: parsedResponse.correctedActivities,
+    newContent: newMarkdownContent,
+    issuesFixed: parsedResponse.correctedActivities.length,
+    message: 'Activities regenerated successfully'
+  }), {
+    headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+  });
+}
+
+function generateActivityMarkdownFromNew(activities: any[]): string {
+  let markdown = '## 🎮 Activités Interactives\n\n';
+
+  activities.forEach((activity, idx) => {
+    markdown += `**TYPE: QUIZ**\n\n`;
+    markdown += `**Question ${idx + 1}:**\n${activity.question}\n\n`;
+    markdown += `A) ${activity.options[0]}\n`;
+    markdown += `B) ${activity.options[1]}\n`;
+    markdown += `C) ${activity.options[2]}\n`;
+    markdown += `D) ${activity.options[3]}\n\n`;
+    markdown += `**Réponse correcte: ${String.fromCharCode(65 + activity.correctAnswer)}**\n\n`;
+    markdown += `**Explication:** ${activity.explanation}\n\n`;
+    markdown += '---\n\n';
+  });
+
+  return markdown.trim();
+}
 
 function generateActivityMarkdown(
   originalActivities: ActivityToFix[], 
