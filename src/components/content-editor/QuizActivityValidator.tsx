@@ -1315,7 +1315,7 @@ const ValidationItem = ({
                       );
                     })}
                   </div>
-                ) : hasParsingErrorsOnly && (
+                ) : hasActivityParsingErrorsOnly && (
                   <div className="p-4 bg-destructive/10 border border-destructive/30 rounded-lg">
                     <p className="text-sm text-destructive font-medium mb-2">
                       Le format des activités n'a pas pu être analysé correctement.
