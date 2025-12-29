@@ -17,7 +17,7 @@ interface MusicPlayerContextType {
   playTrack: (index: number) => void;
   playPause: () => void;
   nextTrack: () => void;
-  initPlayer: () => void;
+  initPlayer: (trackIndex?: number) => void;
 }
 
 const MusicPlayerContext = createContext<MusicPlayerContextType | undefined>(undefined);
@@ -100,8 +100,11 @@ export const MusicPlayerProvider = ({ children }: { children: ReactNode }) => {
     setIsLoading(false);
   };
 
-  const initPlayer = () => {
+  const initPlayer = (trackIndex?: number) => {
     if (tracks.length === 0) return;
+
+    // Use provided index or fall back to currentTrackIndex
+    const indexToPlay = trackIndex ?? currentTrackIndex;
 
     // Destroy existing player if any
     if (playerRef.current && typeof playerRef.current.destroy === 'function') {
@@ -116,7 +119,7 @@ export const MusicPlayerProvider = ({ children }: { children: ReactNode }) => {
     const initialize = () => {
       if (window.YT && window.YT.Player) {
         try {
-          console.log('🎵 Initializing YouTube player with track:', tracks[currentTrackIndex].title);
+          console.log('🎵 Initializing YouTube player with track:', tracks[indexToPlay].title);
           
           // Create a new div for the player if it doesn't exist
           let playerDiv = document.getElementById("global-music-player");
@@ -129,7 +132,7 @@ export const MusicPlayerProvider = ({ children }: { children: ReactNode }) => {
           playerRef.current = new window.YT.Player("global-music-player", {
             height: "0",
             width: "0",
-            videoId: tracks[currentTrackIndex].id,
+            videoId: tracks[indexToPlay].id,
             playerVars: {
               autoplay: 1,
               controls: 0,
@@ -156,7 +159,7 @@ export const MusicPlayerProvider = ({ children }: { children: ReactNode }) => {
               },
               onError: (event: any) => {
                 console.error('❌ YouTube player error:', event.data);
-                console.error('❌ Error occurred for video:', tracks[currentTrackIndex].id);
+                console.error('❌ Error occurred for video:', tracks[indexToPlay].id);
                 // Destroy and reinitialize on error
                 setPlayerReady(false);
                 playerRef.current = null;
@@ -194,13 +197,13 @@ export const MusicPlayerProvider = ({ children }: { children: ReactNode }) => {
         // Reinitialize player on error
         setPlayerReady(false);
         playerRef.current = null;
-        initPlayer();
+        initPlayer(index);
       }
     } else {
       console.log('⏳ Player not ready, reinitializing...');
       setPlayerReady(false);
       playerRef.current = null;
-      initPlayer();
+      initPlayer(index);
     }
   };
 
