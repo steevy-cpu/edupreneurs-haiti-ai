@@ -65,7 +65,6 @@ const ChessBoardEnhanced: React.FC<ChessBoardEnhancedProps> = ({
 }) => {
   const [moveFrom, setMoveFrom] = useState<Square | null>(null);
   const [optionSquares, setOptionSquares] = useState<Record<string, React.CSSProperties>>({});
-  const [isChatExpanded, setIsChatExpanded] = useState(false);
 
   const customSquareStyles = useMemo(() => {
     const styles: Record<string, React.CSSProperties> = {};
@@ -185,8 +184,6 @@ const ChessBoardEnhanced: React.FC<ChessBoardEnhancedProps> = ({
       <EricCoachBanner
         messages={chatMessages}
         isThinking={isThinking}
-        isExpanded={isChatExpanded}
-        onToggle={() => setIsChatExpanded(!isChatExpanded)}
         onSendMessage={onSendMessage}
       />
 
