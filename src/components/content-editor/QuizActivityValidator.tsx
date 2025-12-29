@@ -274,20 +274,32 @@ export const QuizActivityValidator = () => {
       return { activities, errors: ['Contenu vide'] };
     }
 
+    // Normalize content: strip leading dashes from option lines
+    const normalizedContent = content
+      .replace(/^-\s*([A-D]\))/gm, '$1')  // Remove leading dashes before options
+      .replace(/^\*\s*([A-D]\))/gm, '$1') // Remove leading asterisks
+      .replace(/^([A-D])\.\s+/gm, '$1) ') // Convert A. to A)
+      .replace(/^([A-D]):\s+/gm, '$1) '); // Convert A: to A)
+
     // Check for **TYPE: QUIZ** format (common in activities)
-    const quizSections = content.split(/\*\*TYPE:\s*QUIZ\*\*/i);
+    const quizSections = normalizedContent.split(/\*\*TYPE:\s*QUIZ\*\*/i);
     
     if (quizSections.length > 1) {
       // Parse QUIZ type activities
       quizSections.slice(1).forEach((section, sectionIdx) => {
-        // Find questions within each section
-        const questionBlocks = section.split(/\*\*Question\s*\d*:?\s*\*\*/i);
+        // Find questions within each section - split by "---" or **Question X:**
+        const questionBlocks = section.split(/(?:^|\n)---\s*\n|\*\*Question\s*\d*:?\s*\*\*/i);
         
-        questionBlocks.slice(1).forEach((block, idx) => {
+        questionBlocks.forEach((block, idx) => {
+          if (block.trim().length < 20) return; // Skip empty blocks
           const parsed = parseActivityBlock(block, sectionIdx * 10 + idx);
           if (parsed.activity) {
             parsed.activity.activityType = 'QUIZ';
-            activities.push(parsed.activity);
+            // Check for duplicates
+            const exists = activities.some(a => a.question === parsed.activity!.question);
+            if (!exists) {
+              activities.push(parsed.activity);
+            }
           }
           if (parsed.error) {
             errors.push(parsed.error);
@@ -305,7 +317,7 @@ export const QuizActivityValidator = () => {
     ];
 
     for (const pattern of activityPatterns) {
-      const sections = content.split(pattern);
+      const sections = normalizedContent.split(pattern);
       if (sections.length > 1) {
         sections.slice(1).forEach((section, idx) => {
           const parsed = parseActivityBlock(section, idx);
@@ -326,7 +338,7 @@ export const QuizActivityValidator = () => {
 
     // Fallback: try parsing as general markdown with options
     if (activities.length === 0) {
-      const questionBlocks = content.split(/\*\*Question\s*\d*:?\s*\*\*/i);
+      const questionBlocks = normalizedContent.split(/\*\*Question\s*\d*:?\s*\*\*/i);
       if (questionBlocks.length > 1) {
         questionBlocks.slice(1).forEach((block, idx) => {
           const parsed = parseActivityBlock(block, idx);
@@ -341,10 +353,10 @@ export const QuizActivityValidator = () => {
     }
 
     // If still no activities found, try simpler detection
-    if (activities.length === 0 && content.length > 100) {
-      if (content.includes('A)') || content.includes('A.') || content.includes('A:')) {
+    if (activities.length === 0 && normalizedContent.length > 100) {
+      if (normalizedContent.includes('A)') || normalizedContent.includes('A.') || normalizedContent.includes('A:')) {
         // Try to parse inline
-        const parsed = parseActivityBlock(content, 0);
+        const parsed = parseActivityBlock(normalizedContent, 0);
         if (parsed.activity) {
           activities.push(parsed.activity);
         } else {
@@ -359,43 +371,85 @@ export const QuizActivityValidator = () => {
   };
 
   const parseActivityBlock = (block: string, idx: number): { activity?: ParsedActivity, error?: string } => {
+    // Normalize the block first - strip leading dashes/asterisks from options
+    const normalizedBlock = block
+      .replace(/^-\s*([A-D]\))/gm, '$1')
+      .replace(/^\*\s*([A-D]\))/gm, '$1')
+      .replace(/^([A-D])\.\s+/gm, '$1) ')
+      .replace(/^([A-D]):\s+/gm, '$1) ');
+
     // Extract question text (before options)
-    const questionMatch = block.match(/^[\s\n]*(.+?)(?=\n\s*[A-D][\):\.])/is);
+    let questionMatch = normalizedBlock.match(/^[\s\n]*(.+?)(?=\n\s*[A-D]\))/is);
     if (!questionMatch) {
-      // Try alternate format
-      const altMatch = block.match(/^[\s\n]*(.+?)(?=\n\s*\*\*[A-D][\):\.])/is);
-      if (!altMatch) {
-        return { error: `Activité ${idx + 1}: texte de question non trouvé` };
-      }
+      // Try alternate format with asterisks
+      questionMatch = normalizedBlock.match(/^[\s\n]*(.+?)(?=\n\s*\*?\*?[A-D][\):\.])/is);
+    }
+    
+    if (!questionMatch) {
+      return { error: `Activité ${idx + 1}: texte de question non trouvé` };
     }
 
-    const questionText = (questionMatch?.[1] || block.substring(0, 200))
+    const questionText = questionMatch[1]
       .trim()
       .replace(/\*\*/g, '')
       .replace(/#{1,3}/g, '')
+      .replace(/^Question\s*\d*:?\s*/i, '')
       .substring(0, 500);
 
-    // Extract options
-    // Improved regex with more boundaries to prevent greedy matching
-    const optionMatches = block.matchAll(/\*?\*?([A-D])[\):\.]?\*?\*?\s*(.+?)(?=\n\s*\*?\*?[A-D][\):\.]|\n\s*\*\*Réponse|\n\s*Réponse|\n\s*\*\*Explication|\n\s*---|\n\s*\*\*Question|\n\s*\*\*TYPE:|\n\n\*\*|$)/gis);
+    if (questionText.length < 5) {
+      return { error: `Activité ${idx + 1}: texte de question trop court` };
+    }
+
+    // Extract options - improved regex with strict boundaries
+    const optionRegex = /^([A-D])\)\s*(.+?)$/gm;
+    const optionMatches = Array.from(normalizedBlock.matchAll(optionRegex));
+    
+    // Deduplicate and limit to first 4 options
+    const seenLetters = new Set<string>();
     const options: string[] = [];
     
-    Array.from(optionMatches).forEach(match => {
-      let optionText = match[2]?.trim().replace(/\*\*/g, '').replace(/\n/g, ' ');
-      if (optionText && optionText.length > 0 && optionText.length < 500) {
+    for (const match of optionMatches) {
+      const letter = match[1].toUpperCase();
+      const optionText = match[2]?.trim().replace(/\*\*/g, '').replace(/\n/g, ' ');
+      
+      if (!seenLetters.has(letter) && optionText && optionText.length > 0 && optionText.length < 500) {
+        seenLetters.add(letter);
         options.push(optionText);
       }
-    });
+      
+      if (options.length >= 4) break;
+    }
+
+    // Fallback: try multiline regex if simple one didn't work
+    if (options.length < 4) {
+      const fallbackMatches = normalizedBlock.matchAll(/\*?\*?([A-D])[\):\.]?\*?\*?\s*(.+?)(?=\n\s*\*?\*?[A-D][\):\.]|\n\s*\*\*Réponse|\n\s*Réponse|\n\s*\*\*Explication|\n\s*---|\n\s*\*\*Question|\n\s*\*\*TYPE:|\n\n|$)/gis);
+      
+      options.length = 0;
+      seenLetters.clear();
+      
+      for (const match of Array.from(fallbackMatches)) {
+        const letter = match[1].toUpperCase();
+        let optionText = match[2]?.trim().replace(/\*\*/g, '').replace(/\n/g, ' ');
+        
+        if (!seenLetters.has(letter) && optionText && optionText.length > 0 && optionText.length < 500) {
+          seenLetters.add(letter);
+          options.push(optionText);
+        }
+        
+        if (options.length >= 4) break;
+      }
+    }
 
     if (options.length !== 4) {
       return { error: `Activité ${idx + 1}: ${options.length}/4 options trouvées` };
     }
 
     // Extract correct answer
-    let correctMatch = block.match(/\*\*Réponse\s+correcte\s*:?\s*\*?\*?\s*([A-D])/i);
-    if (!correctMatch) correctMatch = block.match(/Réponse\s+correcte\s*:?\s*([A-D])/i);
-    if (!correctMatch) correctMatch = block.match(/Réponse\s*:?\s*([A-D])/i);
-    if (!correctMatch) correctMatch = block.match(/Correct[e]?\s*:?\s*([A-D])/i);
+    let correctMatch = normalizedBlock.match(/\*\*Réponse\s+correcte\s*:?\s*\*?\*?\s*([A-D])/i);
+    if (!correctMatch) correctMatch = normalizedBlock.match(/Réponse\s+correcte\s*:?\s*([A-D])/i);
+    if (!correctMatch) correctMatch = normalizedBlock.match(/Réponse\s*:?\s*([A-D])/i);
+    if (!correctMatch) correctMatch = normalizedBlock.match(/Correct[e]?\s*:?\s*([A-D])/i);
+    if (!correctMatch) correctMatch = normalizedBlock.match(/data-correct="([A-D])"/i);
 
     if (!correctMatch) {
       return { error: `Activité ${idx + 1}: réponse correcte non trouvée` };
@@ -405,11 +459,11 @@ export const QuizActivityValidator = () => {
     const correctIndex = correctLetter.charCodeAt(0) - 'A'.charCodeAt(0);
 
     // Extract explanation
-    let explanationMatch = block.match(/\*\*Explication\s*:?\s*\*\*\s*\n?\s*(.+?)(?=\*\*TYPE|\*\*Question|#{2,3}|$)/is);
-    if (!explanationMatch) explanationMatch = block.match(/Explication\s*:?\s*\n?\s*(.+?)(?=\*\*TYPE|\*\*Question|#{2,3}|$)/is);
+    let explanationMatch = normalizedBlock.match(/\*\*Explication\s*:?\s*\*\*\s*\n?\s*(.+?)(?=\*\*TYPE|\*\*Question|#{2,3}|---|\n\n\*\*|$)/is);
+    if (!explanationMatch) explanationMatch = normalizedBlock.match(/Explication\s*:?\s*\n?\s*(.+?)(?=\*\*TYPE|\*\*Question|#{2,3}|---|\n\n|$)/is);
     
     const explanation = explanationMatch 
-      ? explanationMatch[1].trim().replace(/\*\*/g, '').substring(0, 500)
+      ? explanationMatch[1].trim().replace(/\*\*/g, '').replace(/---/g, '').substring(0, 500)
       : 'Pas d\'explication fournie';
 
     return {

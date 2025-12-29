@@ -8,18 +8,18 @@ const corsHeaders = {
 // Utility function to strip HTML tags and convert to plain text
 function stripHtml(html: string): string {
   return html
-    .replace(/<br\s*\/?>/gi, '\n')           // Convert <br> to newlines
-    .replace(/<\/p>/gi, '\n\n')              // Convert </p> to double newlines
-    .replace(/<\/li>/gi, '\n')               // Convert </li> to newlines
-    .replace(/<[^>]*>/g, '')                 // Remove all other HTML tags
-    .replace(/&nbsp;/gi, ' ')                // Replace &nbsp; with space
-    .replace(/&quot;/gi, '"')                // Replace &quot; with "
-    .replace(/&apos;/gi, "'")                // Replace &apos; with '
-    .replace(/&amp;/gi, '&')                 // Replace &amp; with &
-    .replace(/&lt;/gi, '<')                  // Replace &lt; with <
-    .replace(/&gt;/gi, '>')                  // Replace &gt; with >
-    .replace(/\s+/g, ' ')                    // Normalize whitespace
-    .split('\n').map(line => line.trim())    // Trim each line
+    .replace(/<br\s*\/?>/gi, '\n')
+    .replace(/<\/p>/gi, '\n\n')
+    .replace(/<\/li>/gi, '\n')
+    .replace(/<[^>]*>/g, '')
+    .replace(/&nbsp;/gi, ' ')
+    .replace(/&quot;/gi, '"')
+    .replace(/&apos;/gi, "'")
+    .replace(/&amp;/gi, '&')
+    .replace(/&lt;/gi, '<')
+    .replace(/&gt;/gi, '>')
+    .replace(/\s+/g, ' ')
+    .split('\n').map(line => line.trim())
     .join('\n')
     .trim();
 }
@@ -44,212 +44,146 @@ serve(async (req) => {
       exercisesLength: exercisesContent?.length 
     });
 
-    // Detect if this is a Creole lesson - ONLY for "Kreyòl Ayisyen" subject
-    // NOT if it's just mentioned in context (like Sciences Expérimentales teaching in Haiti)
+    // Detect if this is a Creole lesson
     const subjectNormalized = (subject || '').toLowerCase().trim().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
     const isCreoleLesson = subjectNormalized === 'kreyol ayisyen' || 
                            subjectNormalized === 'creole haitien' || 
                            subjectNormalized === 'kreyol' ||
                            subjectNormalized === 'creole';
     
-    console.log('🔍 Creole detection:', { 
-      subject, 
-      subjectNormalized, 
-      isCreoleLesson 
-    });
-    
-    const contentLanguage = isCreoleLesson ? 'KREYÒL AYISYEN (créole haïtien)' : 'Français';
+    console.log('🔍 Creole detection:', { subject, subjectNormalized, isCreoleLesson });
 
+    // Simplified prompt - ONLY QUIZ type with strict 4-option format
     const systemPrompt = isCreoleLesson 
-      ? `🚨🚨🚨 RÈGLE ABSOLUE: LE CONTENU (questions, réponses, explications) DOIT ÊTRE EN KREYÒL AYISYEN! 🚨🚨🚨
+      ? `🚨 RÈGLE ABSOLUE: LE CONTENU DOIT ÊTRE EN KREYÒL AYISYEN! 🚨
 
-Tu es un expert en création d'activités interactives éducatives pour des élèves haïtiens.
-Ton rôle est de transformer des exercices traditionnels en activités interactives engageantes EN KREYÒL AYISYEN.
+Tu es un expert en création de quiz éducatifs pour des élèves haïtiens.
+Tu transformes des exercices en quiz à choix multiples (QCM).
 
-IMPORTANT: 
-- GARDE les mots-clés structurels en FRANÇAIS (**TYPE:**, **Question:**, **Réponse correcte:**, **Explication:**, etc.) pour compatibilité
-- ÉCRIS tout le CONTENU (questions, options, réponses, explications) EN KREYÒL AYISYEN
-- Les titres d'activités peuvent être en Kreyòl
-- 🚨 CRITIQUE: Le mot "TYPE:" DOIT toujours être présent! Écris **TYPE: QUIZ**, pas juste **QUIZ**!
+FORMAT EXACT OBLIGATOIRE - RESPECTE CE FORMAT À LA LETTRE:
 
-FORMAT EXACT REQUIS:
+## Activites Interactives
 
-1. QUIZ:
-### 🎯 Konpreyansyon Tèks
 **TYPE: QUIZ**
 
-**Question:** Ki sa ki pi enpòtan lè w ap li yon tèks?
-- A) Sèlman li mo yo
-- B) Konprann mesaj la
-- C) Konte paj yo
-- D) Gade imaj yo
+**Question 1:**
+Tèks kesyon an isit la?
 
-**Réponse correcte:** B
-**Explication:** Lè w ap li yon tèks, pi enpòtan se konprann mesaj la, pa sèlman li mo yo.
+A) Premye opsyon
+B) Dezyèm opsyon
+C) Twazyèm opsyon
+D) Katriyèm opsyon
 
-2. MATCHING:
-### 🔗 Asosye Mo yo
-**TYPE: MATCHING**
+**Réponse correcte: B**
 
-**Associez les éléments suivants:**
+**Explication:** Esplikasyon detaye an kreyòl pou ede elèv yo konprann.
 
-**Colonne A:**
-1. Premye eleman
-2. Dezyèm eleman
+---
 
-**Colonne B:**
-a) Korespondans 1
-b) Korespondans 2
+**Question 2:**
+Lòt kesyon isit la?
 
-**Réponses:** 1-a, 2-b
-**Explication:** Esplikasyon an kreyòl
+A) Opsyon A
+B) Opsyon B
+C) Opsyon C
+D) Opsyon D
 
-3. TRUEFALSE:
-### ✓✗ Vre oswa Fo
-**TYPE: TRUEFALSE**
+**Réponse correcte: A**
 
-**Lakay sitiye nan sid Ayiti.**
+**Explication:** Esplikasyon an kreyòl.
 
-- A) VRE
-- B) FO
+---
 
-**Réponse correcte:** A
-**Explication:** Esplikasyon an kreyòl
+RÈGLES CRITIQUES:
+1. EXACTEMENT 4 options par question (A, B, C, D) - PAS PLUS, PAS MOINS
+2. Options sur lignes séparées: "A) texte" (pas de tiret avant!)
+3. Génère 10-15 questions minimum
+4. Sépare les questions avec "---"
+5. Réponse au format: "**Réponse correcte: X**" (X = A, B, C ou D)
+6. Explication au format: "**Explication:** texte"
+7. TOUT le contenu en KREYÒL AYISYEN`
+      : `Tu es un expert en création de quiz éducatifs pour des élèves haïtiens.
+Tu transformes des exercices en quiz à choix multiples (QCM).
 
-4. FILLIN:
-### ✏️ Ranpli Blan yo
-**TYPE: FILLIN**
+FORMAT EXACT OBLIGATOIRE - RESPECTE CE FORMAT À LA LETTRE:
 
-**Complétez la phrase:**
-Moun nan Lakay yo _______ agrikiltè.
+## Activites Interactives
 
-**Réponse:** se
-**Explication:** Esplikasyon an kreyòl
-
-RÈGLES STRICTES:
-- Utilise KREYÒL AYISYEN pou tout kontni
-- 🚨 OBLIGATOIRE: Génère AU MINIMUM 10 activités différentes, idéalement 12-15 activités pour une couverture complète
-- Varie les types d'activités (QUIZ, MATCHING, TRUEFALSE, FILLIN) pour maintenir l'engagement
-- PRÉSERVE LE CONTENU ORIGINAL des exercices autant que possible
-- Formate le contenu EXACTEMENT comme spécifié ci-dessous
-- TRANSFORME TOUS les exercices fournis (Exercice 1, 2, 3, 4, 5, 6, etc.)
-
-🔴🔴🔴 RAPPEL: TOUT DOIT ÊTRE EN KREYÒL AYISYEN!`
-      : `Tu es un expert en création d'activités interactives éducatives pour des élèves haïtiens.
-Ton rôle est de transformer des exercices traditionnels en activités interactives engageantes.
-
-RÈGLES STRICTES:
-- Utilise UNIQUEMENT le français
-- 🚨 OBLIGATOIRE: Génère AU MINIMUM 10 activités différentes, idéalement 12-15 activités pour une couverture complète
-- Varie les types d'activités (QUIZ, MATCHING, TRUEFALSE, FILLIN) pour maintenir l'engagement
-- PRÉSERVE LE CONTENU ORIGINAL des exercices autant que possible
-- Formate le contenu EXACTEMENT comme spécifié ci-dessous
-- TRANSFORME TOUS les exercices fournis (Exercice 1, 2, 3, 4, 5, 6, etc.)
-- 🚨 CRITIQUE: Le mot "TYPE:" DOIT toujours être présent! Écris **TYPE: QUIZ**, pas juste **QUIZ**!
-
-FORMAT EXACT REQUIS:
-
-1. QUIZ:
-### 🎯 Titre de l'activité
 **TYPE: QUIZ**
 
-**Question:** Quelle est la question?
-- A) Option 1
-- B) Option 2
-- C) Option 3
-- D) Option 4
+**Question 1:**
+Texte de la question ici?
 
-**Réponse correcte:** B
-**Explication:** Explication pédagogique
+A) Première option
+B) Deuxième option
+C) Troisième option
+D) Quatrième option
 
-2. MATCHING:
-### 🔗 Titre
-**TYPE: MATCHING**
+**Réponse correcte: B**
 
-**Associez les éléments suivants:**
+**Explication:** Explication pédagogique détaillée en français pour aider l'élève.
 
-**Colonne A:**
-1. Élément 1
-2. Élément 2
+---
 
-**Colonne B:**
-a) Correspondance 1
-b) Correspondance 2
+**Question 2:**
+Autre question ici?
 
-**Réponses:** 1-a, 2-b
-**Explication:** Explication
+A) Option A
+B) Option B
+C) Option C
+D) Option D
 
-3. TRUEFALSE:
-### ✓✗ Titre
-**TYPE: TRUEFALSE**
+**Réponse correcte: A**
 
-**Affirmation à évaluer**
+**Explication:** Explication en français.
 
-- A) VRAI
-- B) FAUX
+---
 
-**Réponse correcte:** A
-**Explication:** Explication
-
-4. FILLIN:
-### ✏️ Titre
-**TYPE: FILLIN**
-
-**Complétez la phrase:**
-Ma sœur _______ une belle voix.
-
-**Réponse:** a
-**Explication:** Explication`;
+RÈGLES CRITIQUES:
+1. EXACTEMENT 4 options par question (A, B, C, D) - PAS PLUS, PAS MOINS
+2. Options sur lignes séparées: "A) texte" (pas de tiret avant!)
+3. Génère 10-15 questions minimum
+4. Sépare les questions avec "---"
+5. Réponse au format: "**Réponse correcte: X**" (X = A, B, C ou D)
+6. Explication au format: "**Explication:** texte"
+7. Tout en FRANÇAIS`;
 
     const cleanedContent = stripHtml(exercisesContent);
 
     console.log('Original exercises length:', exercisesContent.length);
     console.log('Cleaned exercises length:', cleanedContent.length);
-    console.log('First 500 chars of cleaned:', cleanedContent.substring(0, 500));
 
     const userPrompt = isCreoleLesson
       ? `Lesyon: "${lessonTitle}"
 Nivo: ${gradeLevel}
 Matyè: ${subject}
 
-Men kontni egzèsis yo pou transfòme:
+Men kontni egzèsis yo pou transfòme an QCM:
 
 ${cleanedContent}
 
 ENSTRIKSYON KRITIK:
-- TRANSFÒME (pa reekri) TOU egzèsis ki egziste yo an fòma entèaktif
-- 🚨 OBLIJE: Jenere OMWEN 10 aktivite diferan, idealmam 12-15 aktivite pou kouvri TOU egzèsis yo (1, 2, 3, 4, 5, 6, elatriye)
-- Varye tip aktivite yo (QUIZ, MATCHING, TRUEFALSE, FILLIN) pou kreye angajman
-- KENBE EGZAKTEMAN menm fraz, kesyon, ak egzanp ki nan kontni sous la
-- Sèl wòl ou se pou REFÒMATE lè w ap itilize tip aktivite yo (QUIZ, MATCHING, elatriye)
-- Si egzèsis la di yon bagay, aktivite ou a dwe di menm bagay la
-- PA CHANJE non, fraz, oswa kontèks yo - KONSÈVE YO FIDÈLMAN
-- Asire w transfòme chak egzèsis (pa sèlman 2 premye yo)
-- Si repons yo pa endike, dedwi yo lojikman baze sou gramè
-- Pou chak aktivite, bay yon esplikasyon klè ak pedagojik
-
-🔴🔴🔴 SONJE: TOU DOIT ÊTRE AN KREYÒL AYISYEN!`
+- Jenere 10-15 kesyon QCM diferan
+- CHAK kesyon dwe gen EGZAKTEMAN 4 opsyon (A, B, C, D)
+- Opsyon yo dwe sou liy separe: "A) tèks" (pa gen tirè anvan!)
+- Separe kesyon yo ak "---"
+- Bay yon esplikasyon klè pou chak repons
+- TOU KONTNI AN KREYÒL AYISYEN!`
       : `Leçon: "${lessonTitle}"
 Niveau: ${gradeLevel}
 Matière: ${subject}
 
-Voici le contenu des exercices à transformer:
+Voici le contenu des exercices à transformer en QCM:
 
 ${cleanedContent}
 
 INSTRUCTIONS CRITIQUES:
-- TRANSFORME (ne réécris PAS) TOUS les exercices existants en format interactif
-- 🚨 OBLIGATOIRE: Génère AU MINIMUM 10 activités différentes, idéalement 12-15 activités pour couvrir TOUS les exercices (1, 2, 3, 4, 5, 6, etc.)
-- Varie les types d'activités (QUIZ, MATCHING, TRUEFALSE, FILLIN) pour maintenir l'engagement des élèves
-- GARDE EXACTEMENT les mêmes phrases, questions, et exemples que dans le contenu source
-- Ton seul rôle est de REFORMATER en utilisant les types d'activités (QUIZ, MATCHING, etc.)
-- Si l'exercice dit "My sister _______ a beautiful voice", ton activité doit dire "My sister _______ a beautiful voice"
-- Si l'exercice dit "They _______ from Gonaïves", ton activité doit dire "They _______ from Gonaïves"
-- Si l'exercice dit "My uncle _______ a taxi", ton activité doit dire "My uncle _______ a taxi"
-- NE CHANGE PAS les noms, phrases, ou contextes - PRÉSERVE-LES FIDÈLEMENT
-- Assure-toi de transformer chaque exercice (pas seulement les 2 premiers)
-- Si les réponses ne sont pas indiquées, déduis-les logiquement basé sur la grammaire
-- Pour chaque activité, fournis une explication claire et pédagogique`;
+- Génère 10-15 questions QCM différentes
+- CHAQUE question doit avoir EXACTEMENT 4 options (A, B, C, D)
+- Les options doivent être sur des lignes séparées: "A) texte" (pas de tiret avant!)
+- Sépare les questions avec "---"
+- Fournis une explication claire pour chaque réponse
+- TOUT EN FRANÇAIS`;
 
     console.log('Generating interactive activities with Lovable AI...');
 
@@ -275,13 +209,21 @@ INSTRUCTIONS CRITIQUES:
     }
 
     const data = await response.json();
-    const generatedContent = data.choices?.[0]?.message?.content;
+    let generatedContent = data.choices?.[0]?.message?.content;
 
     if (!generatedContent) {
       throw new Error('No content generated from Lovable AI');
     }
 
+    // Post-process: normalize option format (remove any leading dashes)
+    generatedContent = generatedContent
+      .replace(/^-\s*([A-D]\))/gm, '$1')  // Remove leading dashes before options
+      .replace(/^\*\s*([A-D]\))/gm, '$1') // Remove leading asterisks before options
+      .replace(/^([A-D])\.\s*/gm, '$1) ') // Convert A. to A)
+      .replace(/^([A-D]):\s*/gm, '$1) '); // Convert A: to A)
+
     console.log('Interactive activities generated successfully');
+    console.log('First 500 chars:', generatedContent.substring(0, 500));
 
     return new Response(
       JSON.stringify({ 

@@ -28,100 +28,58 @@ serve(async (req) => {
       throw new Error('LOVABLE_API_KEY not configured');
     }
 
-    // Detect if this is a Creole lesson - ONLY for "Kreyòl Ayisyen" subject
-    // NOT if it's just mentioned in context (like Sciences Expérimentales teaching in Haiti)
+    // Detect if this is a Creole lesson
     const subjectNormalized = (subject || '').toLowerCase().trim().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
     const isCreoleLesson = subjectNormalized === 'kreyol ayisyen' || 
                            subjectNormalized === 'creole haitien' || 
                            subjectNormalized === 'kreyol' ||
                            subjectNormalized === 'creole';
     
-    console.log('🔍 Creole detection:', { 
-      subject, 
-      subjectNormalized, 
-      isCreoleLesson 
-    });
+    console.log('🔍 Creole detection:', { subject, subjectNormalized, isCreoleLesson });
 
     const combinedContent = `${contenu || ''}\n\n${exemplesExercices || ''}`.trim();
 
+    // Strict HTML format with exactly 4 options
     const systemPrompt = isCreoleLesson
-      ? `🚨🚨🚨 RÈGLE: LE CONTENU (questions, options, explications) DOIT ÊTRE EN KREYÒL AYISYEN! 🚨🚨🚨
+      ? `🚨 RÈGLE: LE CONTENU DOIT ÊTRE EN KREYÒL AYISYEN! 🚨
 
-Tu es un expert en création de quiz éducatifs. Tu dois générer un quiz final de 10-15 questions à choix multiples basé sur le contenu de la leçon fournie.
+Tu es un expert en création de quiz éducatifs. Tu dois générer un quiz final de 10-15 questions QCM.
 
-IMPORTANT:
-- GARDE les balises HTML et attributs EN ANGLAIS pour compatibilité (<div class="quiz-question">, data-correct, etc.)
-- ÉCRIS tout le CONTENU (questions, options, explications) EN KREYÒL AYISYEN
+FORMAT HTML EXACT OBLIGATOIRE:
 
-EXEMPLE:
-<div class="quiz-question" data-number="1">
-  <h3>Kesyon 1</h3>
-  <p>Ki sa ki pi enpòtan lè w ap li yon tèks?</p>
-  <div class="quiz-options">
-    <div class="option" data-answer="A">A) Sèlman li mo yo</div>
-    <div class="option" data-answer="B">B) Konprann mesaj la</div>
-    <div class="option" data-answer="C">C) Konte paj yo</div>
-    <div class="option" data-answer="D">D) Gade imaj yo</div>
-  </div>
-  <div class="correct-answer" data-correct="B">
-    <p><strong>Repons ki kòrèk: B</strong></p>
-    <p>Lè w ap li yon tèks, pi enpòtan se konprann mesaj la...</p>
-  </div>
-</div>
-
-RÈGLES STRICTES:
-1. Générer EXACTEMENT 10-15 questions
-2. Chaque question doit avoir 4 options (A, B, C, D)
-3. Les questions doivent couvrir TOUT le contenu de la leçon
-4. Varier les niveaux de difficulté (fasil, mwayen, difisil)
-5. Tester la COMPRÉHENSION, pas juste la mémorisation
-6. Chaque question doit inclure une explication détaillée EN KREYÒL
-
-2. Chaque question doit avoir 4 options (A, B, C, D)
-3. Les questions doivent couvrir TOUT le contenu de la leçon
-4. Varier les niveaux de difficulté
-5. Tester la COMPRÉHENSION EN KREYÒL
-6. Chaque question doit inclure une explication détaillée EN KREYÒL
-
-FORMAT EXACT (HTML):
 <div class="quiz-container">
   <div class="quiz-question" data-number="1">
     <h3>Kesyon 1</h3>
-    <p>Tèks kesyon an isit la (AN KREYÒL)</p>
+    <p>Tèks kesyon an isit la?</p>
     <div class="quiz-options">
-      <div class="option" data-answer="A">A) Premye opsyon (kreyòl)</div>
-      <div class="option" data-answer="B">B) Dezyèm opsyon (kreyòl)</div>
-      <div class="option" data-answer="C">C) Twazyèm opsyon (kreyòl)</div>
-      <div class="option" data-answer="D">D) Katriyèm opsyon (kreyòl)</div>
+      <div class="option" data-answer="A">A) Premye opsyon</div>
+      <div class="option" data-answer="B">B) Dezyèm opsyon</div>
+      <div class="option" data-answer="C">C) Twazyèm opsyon</div>
+      <div class="option" data-answer="D">D) Katriyèm opsyon</div>
     </div>
-    <div class="correct-answer" data-correct="A">
-      <p><strong>Repons ki kòrèk: A</strong></p>
+    <div class="correct-answer" data-correct="B">
+      <p><strong>Repons ki kòrèk: B</strong></p>
       <p>Esplikasyon detaye an kreyòl...</p>
     </div>
   </div>
 </div>
 
-IMPORTANT:
-- Balises HTML en anglais, contenu en KREYÒL
-- Pas de classes Tailwind, pas d'emojis
-- data-correct doit correspondre à A, B, C ou D
+RÈGLES CRITIQUES:
+1. EXACTEMENT 4 options par question (A, B, C, D) - PAS PLUS, PAS MOINS
+2. Chaque option dans un <div class="option" data-answer="X">X) texte</div>
+3. data-correct doit correspondre à A, B, C ou D
+4. Générer 10-15 questions
+5. NE PAS utiliser de classes Tailwind
+6. NE PAS utiliser d'emojis dans les questions
+7. CONTENU EN KREYÒL AYISYEN`
+      : `Tu es un expert en création de quiz éducatifs. Tu dois générer un quiz final de 10-15 questions QCM.
 
-🔴 CONTENU EN KREYÒL, STRUCTURE EN HTML!`
-      : `Tu es un expert en création de quiz éducatifs. Tu dois générer un quiz final de 10-15 questions à choix multiples basé sur le contenu de la leçon fournie.
+FORMAT HTML EXACT OBLIGATOIRE:
 
-RÈGLES STRICTES:
-1. Générer EXACTEMENT 10-15 questions
-2. Chaque question doit avoir 4 options (A, B, C, D)
-3. Les questions doivent couvrir TOUT le contenu de la leçon
-4. Varier les niveaux de difficulté (facile, moyen, difficile)
-5. Tester la COMPRÉHENSION, pas juste la mémorisation
-6. Chaque question doit inclure une explication détaillée
-
-FORMAT EXACT (HTML):
 <div class="quiz-container">
   <div class="quiz-question" data-number="1">
     <h3>Question 1</h3>
-    <p>Texte de la question ici</p>
+    <p>Texte de la question ici?</p>
     <div class="quiz-options">
       <div class="option" data-answer="A">A) Première option</div>
       <div class="option" data-answer="B">B) Deuxième option</div>
@@ -133,15 +91,16 @@ FORMAT EXACT (HTML):
       <p>Explication détaillée de pourquoi cette réponse est correcte...</p>
     </div>
   </div>
-  
-  <!-- Répéter pour toutes les questions -->
 </div>
 
-IMPORTANT:
-- NE PAS utiliser de classes Tailwind
-- NE PAS utiliser d'emojis
-- Générer le HTML directement sans balises markdown
-- S'assurer que l'attribut data-correct correspond exactement à une des options (A, B, C, ou D)`;
+RÈGLES CRITIQUES:
+1. EXACTEMENT 4 options par question (A, B, C, D) - PAS PLUS, PAS MOINS
+2. Chaque option dans un <div class="option" data-answer="X">X) texte</div>
+3. data-correct doit correspondre à A, B, C ou D
+4. Générer 10-15 questions
+5. NE PAS utiliser de classes Tailwind
+6. NE PAS utiliser d'emojis dans les questions
+7. TOUT EN FRANÇAIS`;
 
     const userPrompt = isCreoleLesson
       ? `Jenere yon quiz final pou lesyon sa a:
@@ -153,7 +112,7 @@ Matyè: ${subject}
 Kontni lesyon an:
 ${combinedContent}
 
-🔴 SONJE: Ekri tout kontni (kesyon, opsyon, esplikasyon) AN KREYÒL AYISYEN!`
+🔴 SONJE: Ekri tout kontni AN KREYÒL AYISYEN! EGZAKTEMAN 4 opsyon pa kesyon!`
       : `Génère un quiz final pour cette leçon:
 
 Titre: ${lessonTitle}
@@ -161,7 +120,9 @@ Niveau: ${gradeLevel}
 Matière: ${subject}
 
 Contenu de la leçon:
-${combinedContent}`;
+${combinedContent}
+
+🔴 IMPORTANT: EXACTEMENT 4 options par question (A, B, C, D)!`;
 
     const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
       method: 'POST',
@@ -173,17 +134,7 @@ ${combinedContent}`;
         model: 'google/gemini-2.5-flash',
         messages: [
           { role: 'system', content: systemPrompt },
-          {
-            role: 'user',
-            content: `Génère un quiz final pour cette leçon:
-
-Titre: ${lessonTitle}
-Niveau: ${gradeLevel}
-Matière: ${subject}
-
-Contenu de la leçon:
-${combinedContent}`
-          }
+          { role: 'user', content: userPrompt }
         ],
       }),
     });
@@ -207,9 +158,17 @@ ${combinedContent}`
     }
 
     const data = await response.json();
-    const quizContent = data.choices[0].message.content;
+    let quizContent = data.choices[0].message.content;
+
+    // Post-process: ensure proper HTML structure
+    // Remove any markdown code blocks if present
+    quizContent = quizContent
+      .replace(/```html\n?/g, '')
+      .replace(/```\n?/g, '')
+      .trim();
 
     console.log('✅ Quiz Final generated successfully');
+    console.log('First 500 chars:', quizContent.substring(0, 500));
 
     return new Response(
       JSON.stringify({ quizContent }),
