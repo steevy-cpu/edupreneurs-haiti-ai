@@ -36,6 +36,7 @@ interface ChessBoardEnhancedProps {
   blackTime: number;
   isGameOver: boolean;
   chatMessages?: ChatMessage[];
+  onSendMessage?: (message: string) => void;
 }
 
 const ChessBoardEnhanced: React.FC<ChessBoardEnhancedProps> = ({
@@ -59,7 +60,8 @@ const ChessBoardEnhanced: React.FC<ChessBoardEnhancedProps> = ({
   whiteTime,
   blackTime,
   isGameOver,
-  chatMessages = []
+  chatMessages = [],
+  onSendMessage
 }) => {
   const [moveFrom, setMoveFrom] = useState<Square | null>(null);
   const [optionSquares, setOptionSquares] = useState<Record<string, React.CSSProperties>>({});
@@ -163,6 +165,7 @@ const ChessBoardEnhanced: React.FC<ChessBoardEnhancedProps> = ({
         isThinking={isThinking}
         isExpanded={isChatExpanded}
         onToggle={() => setIsChatExpanded(!isChatExpanded)}
+        onSendMessage={onSendMessage}
       />
 
       {/* Controls */}
