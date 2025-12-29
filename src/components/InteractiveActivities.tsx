@@ -6,6 +6,7 @@ import { CheckCircle, XCircle, ArrowRight, Loader2, RefreshCw } from "lucide-rea
 import { useSoundEffects } from "@/hooks/useSoundEffects";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { TrueFalseGame, TrueFalseQuestion } from "@/components/interactive-activities/TrueFalseGame";
 
 interface Question {
   question: string;
@@ -13,6 +14,10 @@ interface Question {
   correctAnswer: number;
   explanation: string;
 }
+
+type ActivityItem = 
+  | { type: 'quiz'; data: Question }
+  | { type: 'true_false'; data: TrueFalseQuestion };
 
 interface InteractiveActivitiesProps {
   content: string;
@@ -22,8 +27,9 @@ interface InteractiveActivitiesProps {
 }
 
 export const InteractiveActivities = ({ content, isLoading, onRegenerate, onGoldUpdate }: InteractiveActivitiesProps) => {
-  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
+  const [currentActivityIndex, setCurrentActivityIndex] = useState(0);
   const [selectedAnswer, setSelectedAnswer] = useState<number | null>(null);
+  const [selectedTrueFalse, setSelectedTrueFalse] = useState<boolean | null>(null);
   const [showFeedback, setShowFeedback] = useState(false);
   const [score, setScore] = useState(0);
   const [completed, setCompleted] = useState(false);
@@ -60,9 +66,9 @@ export const InteractiveActivities = ({ content, isLoading, onRegenerate, onGold
     checkCompletion();
   }, []);
 
-  // Parse AI-generated content into structured questions
-  const parseQuestions = (content: string): Question[] => {
-    const questions: Question[] = [];
+  // Parse AI-generated content into structured activities
+  const parseActivities = (content: string): ActivityItem[] => {
+    const activities: ActivityItem[] = [];
     
     // Normalize content first - remove leading dashes from options
     const normalizedContent = content
@@ -71,41 +77,90 @@ export const InteractiveActivities = ({ content, isLoading, onRegenerate, onGold
       .replace(/^([A-D])\.\s+/gm, '$1) ')
       .replace(/^([A-D]):\s+/gm, '$1) ');
     
-    // Try multiple parsing strategies
+    // Parse TRUE_FALSE sections
+    const trueFalseMatches = normalizedContent.match(/\*\*TYPE:\s*TRUE_FALSE\*\*([\s\S]*?)(?=\*\*TYPE:|$)/gi);
+    if (trueFalseMatches) {
+      trueFalseMatches.forEach((section) => {
+        const tfQuestions = parseTrueFalseSection(section);
+        tfQuestions.forEach(q => activities.push({ type: 'true_false', data: q }));
+      });
+    }
     
-    // Strategy 1: **TYPE: QUIZ** format with **Question X:** and "---" separators
+    // Parse QUIZ sections
     const quizSections = normalizedContent.split(/\*\*TYPE:\s*QUIZ\*\*/i);
     if (quizSections.length > 1) {
       quizSections.slice(1).forEach((section) => {
+        // Stop at TRUE_FALSE section if present
+        const quizOnlySection = section.split(/\*\*TYPE:\s*TRUE_FALSE\*\*/i)[0];
+        
         // Split by "---" or **Question X:**
-        const questionBlocks = section.split(/(?:^|\n)---\s*\n|\*\*Question\s*\d*:?\s*\*\*/i);
+        const questionBlocks = quizOnlySection.split(/(?:^|\n)---\s*\n|\*\*Question\s*\d*:?\s*\*\*/i);
         
         questionBlocks.forEach((block) => {
           if (block.trim().length < 20) return;
           const parsed = parseQuestionBlock(block);
           if (parsed) {
-            const exists = questions.some(q => q.question === parsed.question);
-            if (!exists) questions.push(parsed);
+            const exists = activities.some(a => 
+              a.type === 'quiz' && a.data.question === parsed.question
+            );
+            if (!exists) activities.push({ type: 'quiz', data: parsed });
           }
         });
       });
     }
     
-    // Strategy 2: ## Exercice format (original format)
-    if (questions.length === 0) {
+    // Fallback: ## Exercice format (original format)
+    if (activities.filter(a => a.type === 'quiz').length === 0) {
       const sections = normalizedContent.split(/#{2,3}\s*✏️?\s*Exercice\s+\d+/i);
       
       sections.slice(1).forEach((section) => {
         const parsed = parseExerciseSection(section);
-        if (parsed) questions.push(parsed);
+        if (parsed) activities.push({ type: 'quiz', data: parsed });
       });
     }
     
-    // Strategy 3: Try direct option parsing if nothing else works
-    if (questions.length === 0 && normalizedContent.includes('A)')) {
+    // Fallback: try direct option parsing if nothing else works
+    if (activities.length === 0 && normalizedContent.includes('A)')) {
       const parsed = parseQuestionBlock(normalizedContent);
-      if (parsed) questions.push(parsed);
+      if (parsed) activities.push({ type: 'quiz', data: parsed });
     }
+    
+    return activities;
+  };
+  
+  const parseTrueFalseSection = (section: string): TrueFalseQuestion[] => {
+    const questions: TrueFalseQuestion[] = [];
+    
+    // Split by "---" separator or **Affirmation X:**
+    const blocks = section.split(/(?:^|\n)---\s*\n|\*\*Affirmation\s*\d*:?\s*\*\*/i);
+    
+    blocks.forEach((block) => {
+      if (block.trim().length < 10) return;
+      
+      // Extract statement
+      let statementMatch = block.match(/^[\s\n]*(.+?)(?=\n\s*\*\*Réponse)/is);
+      if (!statementMatch) return;
+      
+      const statement = statementMatch[1]
+        .trim()
+        .replace(/\*\*/g, '')
+        .replace(/^Affirmation\s*\d*:?\s*/i, '');
+      
+      if (statement.length < 5) return;
+      
+      // Extract answer (VRAI or FAUX)
+      const answerMatch = block.match(/\*\*Réponse\s*:?\s*\*?\*?\s*(VRAI|FAUX)/i);
+      if (!answerMatch) return;
+      
+      const isTrue = answerMatch[1].toUpperCase() === 'VRAI';
+      
+      // Extract explanation
+      let explanationMatch = block.match(/\*\*Explication\s*:?\s*\*\*\s*\n?\s*(.+?)(?=\*\*|---|\n\n|$)/is);
+      if (!explanationMatch) explanationMatch = block.match(/Explication\s*:?\s*\n?\s*(.+?)(?=\*\*|---|\n\n|$)/is);
+      const explanation = explanationMatch ? explanationMatch[1].trim().replace(/\*\*/g, '') : 'Pas d\'explication';
+      
+      questions.push({ statement, isTrue, explanation });
+    });
     
     return questions;
   };
@@ -202,10 +257,10 @@ export const InteractiveActivities = ({ content, isLoading, onRegenerate, onGold
     return null;
   };
 
-  const questions = parseQuestions(content);
+  const activities = parseActivities(content);
   
-  // Show error if no questions were parsed
-  if (!isLoading && questions.length === 0 && content) {
+  // Show error if no activities were parsed
+  if (!isLoading && activities.length === 0 && content) {
     return (
       <Card className="lesson-card border-none rounded-[20px] shadow-lg border-2 border-orange-300 dark:border-orange-700 bg-gradient-to-br from-orange-50 to-red-50 dark:from-orange-950/30 dark:to-red-950/30">
         <CardHeader className="p-4 sm:p-6 bg-gradient-to-r from-orange-200 to-red-200 dark:from-orange-900/40 dark:to-red-900/40 rounded-t-[20px]">
@@ -232,8 +287,8 @@ export const InteractiveActivities = ({ content, isLoading, onRegenerate, onGold
     );
   }
   
-  // Safety check: ensure we have questions after all checks
-  if (questions.length === 0) {
+  // Safety check: ensure we have activities after all checks
+  if (activities.length === 0) {
     return (
       <Card className="lesson-card border-none rounded-[20px] shadow-lg border-2 border-amber-500/30">
         <CardHeader className="p-4 sm:p-6">
@@ -252,15 +307,15 @@ export const InteractiveActivities = ({ content, isLoading, onRegenerate, onGold
     );
   }
   
-  const currentQuestion = questions[currentQuestionIndex];
-  const progress = ((currentQuestionIndex + 1) / questions.length) * 100;
+  const currentActivity = activities[currentActivityIndex];
+  const progress = ((currentActivityIndex + 1) / activities.length) * 100;
 
-  // Safety check for currentQuestion
-  if (!currentQuestion) {
+  // Safety check for currentActivity
+  if (!currentActivity) {
     return (
       <Card className="lesson-card border-none rounded-[20px] shadow-lg border-2 border-red-500/30">
         <CardContent className="p-4 sm:p-6">
-          <p className="text-center text-muted-foreground">Erreur: Question introuvable</p>
+          <p className="text-center text-muted-foreground">Erreur: Activité introuvable</p>
         </CardContent>
       </Card>
     );
@@ -295,14 +350,37 @@ export const InteractiveActivities = ({ content, isLoading, onRegenerate, onGold
     }
   };
 
-  const handleAnswerSelect = async (index: number) => {
-    if (showFeedback) return;
+  const handleQuizAnswer = async (index: number) => {
+    if (showFeedback || currentActivity.type !== 'quiz') return;
     
     setSelectedAnswer(index);
     setShowFeedback(true);
     
-    const isCorrect = index === currentQuestion.correctAnswer;
+    const isCorrect = index === currentActivity.data.correctAnswer;
     playSound(isCorrect ? "correct" : "incorrect");
+    
+    if (isCorrect) {
+      setScore(prev => prev + 1);
+      
+      if (!isLessonCompleted) {
+        await awardGold();
+        toast({
+          title: "🎉 +1 Gold!",
+          description: "Bonne réponse!",
+          duration: 2000,
+        });
+      } else {
+        toast({
+          title: "✅ Bonne réponse!",
+          description: "Leçon déjà complétée - pas de points supplémentaires",
+          duration: 2000,
+        });
+      }
+    }
+  };
+
+  const handleTrueFalseAnswer = async (isCorrect: boolean) => {
+    setShowFeedback(true);
     
     if (isCorrect) {
       setScore(prev => prev + 1);
@@ -328,9 +406,10 @@ export const InteractiveActivities = ({ content, isLoading, onRegenerate, onGold
     playSound("next");
     setShowFeedback(false);
     setSelectedAnswer(null);
+    setSelectedTrueFalse(null);
     
-    if (currentQuestionIndex < questions.length - 1) {
-      setCurrentQuestionIndex(prev => prev + 1);
+    if (currentActivityIndex < activities.length - 1) {
+      setCurrentActivityIndex(prev => prev + 1);
     } else {
       setCompleted(true);
     }
@@ -338,8 +417,9 @@ export const InteractiveActivities = ({ content, isLoading, onRegenerate, onGold
 
   const handleRestart = () => {
     playSound("next");
-    setCurrentQuestionIndex(0);
+    setCurrentActivityIndex(0);
     setSelectedAnswer(null);
+    setSelectedTrueFalse(null);
     setShowFeedback(false);
     setScore(0);
     setCompleted(false);
@@ -377,7 +457,7 @@ export const InteractiveActivities = ({ content, isLoading, onRegenerate, onGold
   }
 
   if (completed) {
-    const percentage = Math.round((score / questions.length) * 100);
+    const percentage = Math.round((score / activities.length) * 100);
     const emoji = percentage >= 80 ? "🎉" : percentage >= 60 ? "👏" : "💪";
     
     return (
@@ -391,7 +471,7 @@ export const InteractiveActivities = ({ content, isLoading, onRegenerate, onGold
           <div className="space-y-2">
             <div className="text-6xl font-bold text-primary">{percentage}%</div>
             <p className="text-xl font-semibold">
-              {score} / {questions.length} bonnes réponses
+              {score} / {activities.length} bonnes réponses
             </p>
           </div>
           
@@ -438,13 +518,16 @@ export const InteractiveActivities = ({ content, isLoading, onRegenerate, onGold
     );
   }
 
+  // Determine activity type icon/label
+  const activityTypeLabel = currentActivity.type === 'true_false' ? '✅ Vrai ou Faux' : '🎯 QCM';
+
   return (
     <Card className="lesson-card border-none rounded-[20px] shadow-lg border-2 border-accent/30 bg-gradient-to-br from-accent/5 to-primary/5">
       <CardHeader className="p-4 sm:p-6 bg-gradient-to-r from-accent/20 to-primary/20 rounded-t-[20px]">
         <div className="space-y-3">
           <div className="flex items-center justify-between">
             <CardTitle className="flex items-center gap-2 text-lg sm:text-xl">
-              🎯 Activité {currentQuestionIndex + 1} sur {questions.length}
+              {activityTypeLabel} - {currentActivityIndex + 1}/{activities.length}
             </CardTitle>
             {onRegenerate && (
               <Button 
@@ -462,82 +545,114 @@ export const InteractiveActivities = ({ content, isLoading, onRegenerate, onGold
         </div>
       </CardHeader>
       <CardContent className="p-6 space-y-6">
-        {/* Question */}
-        <div className="p-6 bg-gradient-to-r from-primary/10 to-accent/10 rounded-lg border-2 border-primary/20">
-          <p className="text-lg font-medium leading-relaxed break-words">
-            {currentQuestion.question}
-          </p>
-        </div>
-
-        {/* Options */}
-        <div className="grid gap-3">
-          {currentQuestion.options.map((option, index) => {
-            const isSelected = selectedAnswer === index;
-            const isCorrect = index === currentQuestion.correctAnswer;
-            const showCorrect = showFeedback && isCorrect;
-            const showIncorrect = showFeedback && isSelected && !isCorrect;
-
-            return (
-              <button
-                key={index}
-                onClick={() => handleAnswerSelect(index)}
-                disabled={showFeedback}
-                className={`
-                  p-4 rounded-xl border-2 text-left transition-all duration-300
-                  ${!showFeedback ? 'hover:border-primary hover:bg-primary/5 hover:scale-[1.02]' : ''}
-                  ${isSelected && !showFeedback ? 'border-primary bg-primary/10' : 'border-muted'}
-                  ${showCorrect ? 'border-success bg-success/10 animate-scale-in' : ''}
-                  ${showIncorrect ? 'border-destructive bg-destructive/10 animate-scale-in' : ''}
-                  ${showFeedback ? 'cursor-not-allowed' : 'cursor-pointer'}
-                `}
+        {currentActivity.type === 'true_false' ? (
+          // True/False Activity
+          <>
+            <TrueFalseGame
+              question={currentActivity.data}
+              onAnswer={handleTrueFalseAnswer}
+              showFeedback={showFeedback}
+              selectedAnswer={selectedTrueFalse}
+              onSelectAnswer={setSelectedTrueFalse}
+              isLessonCompleted={isLessonCompleted}
+            />
+            
+            {/* Next Button */}
+            {showFeedback && (
+              <Button 
+                onClick={handleNext}
+                size="lg"
+                className="w-full animate-fade-in"
               >
-                <div className="flex items-center gap-3">
-                  <div className={`
-                    w-8 h-8 rounded-full flex items-center justify-center font-bold
-                    ${showCorrect ? 'bg-success text-success-foreground' : ''}
-                    ${showIncorrect ? 'bg-destructive text-destructive-foreground' : ''}
-                    ${!showFeedback ? 'bg-muted' : ''}
-                  `}>
-                    {showCorrect && <CheckCircle className="w-5 h-5" />}
-                    {showIncorrect && <XCircle className="w-5 h-5" />}
-                    {!showFeedback && String.fromCharCode(65 + index)}
-                  </div>
-                  <span className="flex-1 break-words">{option}</span>
-                </div>
-              </button>
-            );
-          })}
-        </div>
-
-        {/* Feedback */}
-        {showFeedback && (
-          <div className={`
-            p-6 rounded-lg border-2 animate-fade-in
-            ${selectedAnswer === currentQuestion.correctAnswer 
-              ? 'bg-success/10 border-success' 
-              : 'bg-orange-50 dark:bg-orange-950/20 border-orange-300 dark:border-orange-700'
-            }
-          `}>
-            <p className="font-semibold mb-2">
-              {selectedAnswer === currentQuestion.correctAnswer ? '✅ Correct!' : '📚 Explications:'}
-            </p>
-            <p className="text-sm leading-relaxed">{currentQuestion.explanation}</p>
-          </div>
-        )}
-
-        {/* Next Button */}
-        {showFeedback && (
-          <Button 
-            onClick={handleNext}
-            size="lg"
-            className="w-full animate-fade-in"
-          >
-            {currentQuestionIndex < questions.length - 1 ? (
-              <>Question suivante <ArrowRight className="w-4 h-4 ml-2" /></>
-            ) : (
-              <>Voir les résultats <CheckCircle className="w-4 h-4 ml-2" /></>
+                {currentActivityIndex < activities.length - 1 ? (
+                  <>Activité suivante <ArrowRight className="w-4 h-4 ml-2" /></>
+                ) : (
+                  <>Voir les résultats <CheckCircle className="w-4 h-4 ml-2" /></>
+                )}
+              </Button>
             )}
-          </Button>
+          </>
+        ) : (
+          // Quiz Activity
+          <>
+            {/* Question */}
+            <div className="p-6 bg-gradient-to-r from-primary/10 to-accent/10 rounded-lg border-2 border-primary/20">
+              <p className="text-lg font-medium leading-relaxed break-words">
+                {currentActivity.data.question}
+              </p>
+            </div>
+
+            {/* Options */}
+            <div className="grid gap-3">
+              {currentActivity.data.options.map((option, index) => {
+                const isSelected = selectedAnswer === index;
+                const isCorrect = index === currentActivity.data.correctAnswer;
+                const showCorrect = showFeedback && isCorrect;
+                const showIncorrect = showFeedback && isSelected && !isCorrect;
+
+                return (
+                  <button
+                    key={index}
+                    onClick={() => handleQuizAnswer(index)}
+                    disabled={showFeedback}
+                    className={`
+                      p-4 rounded-xl border-2 text-left transition-all duration-300
+                      ${!showFeedback ? 'hover:border-primary hover:bg-primary/5 hover:scale-[1.02]' : ''}
+                      ${isSelected && !showFeedback ? 'border-primary bg-primary/10' : 'border-muted'}
+                      ${showCorrect ? 'border-success bg-success/10 animate-scale-in' : ''}
+                      ${showIncorrect ? 'border-destructive bg-destructive/10 animate-scale-in' : ''}
+                      ${showFeedback ? 'cursor-not-allowed' : 'cursor-pointer'}
+                    `}
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className={`
+                        w-8 h-8 rounded-full flex items-center justify-center font-bold
+                        ${showCorrect ? 'bg-success text-success-foreground' : ''}
+                        ${showIncorrect ? 'bg-destructive text-destructive-foreground' : ''}
+                        ${!showFeedback ? 'bg-muted' : ''}
+                      `}>
+                        {showCorrect && <CheckCircle className="w-5 h-5" />}
+                        {showIncorrect && <XCircle className="w-5 h-5" />}
+                        {!showFeedback && String.fromCharCode(65 + index)}
+                      </div>
+                      <span className="flex-1 break-words">{option}</span>
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+
+            {/* Feedback */}
+            {showFeedback && (
+              <div className={`
+                p-6 rounded-lg border-2 animate-fade-in
+                ${selectedAnswer === currentActivity.data.correctAnswer 
+                  ? 'bg-success/10 border-success' 
+                  : 'bg-orange-50 dark:bg-orange-950/20 border-orange-300 dark:border-orange-700'
+                }
+              `}>
+                <p className="font-semibold mb-2">
+                  {selectedAnswer === currentActivity.data.correctAnswer ? '✅ Correct!' : '📚 Explications:'}
+                </p>
+                <p className="text-sm leading-relaxed">{currentActivity.data.explanation}</p>
+              </div>
+            )}
+
+            {/* Next Button */}
+            {showFeedback && (
+              <Button 
+                onClick={handleNext}
+                size="lg"
+                className="w-full animate-fade-in"
+              >
+                {currentActivityIndex < activities.length - 1 ? (
+                  <>Activité suivante <ArrowRight className="w-4 h-4 ml-2" /></>
+                ) : (
+                  <>Voir les résultats <CheckCircle className="w-4 h-4 ml-2" /></>
+                )}
+              </Button>
+            )}
+          </>
         )}
 
         {/* Original Content (collapsed) */}
