@@ -427,6 +427,7 @@ const ChessGame: React.FC = () => {
                     blackTime={blackTime}
                     isGameOver={isGameOver}
                     chatMessages={messages}
+                    onSendMessage={handleSendMessage}
                   />
                 </Card>
               )}

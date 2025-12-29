@@ -1,7 +1,8 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { MessageCircle, ChevronDown, ChevronUp } from 'lucide-react';
+import { ChevronDown, ChevronUp, Send } from 'lucide-react';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { Input } from '@/components/ui/input';
 import ericChairDesk from '@/assets/eric-chair-desk.png';
 
 interface Message {
@@ -15,6 +16,7 @@ interface EricCoachBannerProps {
   isThinking: boolean;
   isExpanded: boolean;
   onToggle: () => void;
+  onSendMessage?: (message: string) => void;
 }
 
 // Clean markdown formatting from text
@@ -34,9 +36,25 @@ const EricCoachBanner: React.FC<EricCoachBannerProps> = ({
   messages,
   isThinking,
   isExpanded,
-  onToggle
+  onToggle,
+  onSendMessage
 }) => {
+  const [inputMessage, setInputMessage] = useState('');
   const latestEricMessage = [...messages].reverse().find(m => m.role === 'assistant');
+  
+  const handleSend = () => {
+    if (inputMessage.trim() && onSendMessage) {
+      onSendMessage(inputMessage.trim());
+      setInputMessage('');
+    }
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      handleSend();
+    }
+  };
   
   if (!latestEricMessage && !isThinking) return null;
 
@@ -79,7 +97,7 @@ const EricCoachBanner: React.FC<EricCoachBannerProps> = ({
         </Button>
       </div>
 
-      {/* Expanded View - Chat History */}
+      {/* Expanded View - Chat History + Input */}
       {isExpanded && (
         <div className="border-t border-primary/10">
           <ScrollArea className="max-h-48">
@@ -109,6 +127,28 @@ const EricCoachBanner: React.FC<EricCoachBannerProps> = ({
               ))}
             </div>
           </ScrollArea>
+          
+          {/* Message Input */}
+          {onSendMessage && (
+            <div className="p-2 border-t border-primary/10 flex gap-2">
+              <Input
+                value={inputMessage}
+                onChange={(e) => setInputMessage(e.target.value)}
+                onKeyDown={handleKeyDown}
+                placeholder="Posez une question à Eric..."
+                className="flex-1 h-9 text-sm"
+                disabled={isThinking}
+              />
+              <Button 
+                size="sm" 
+                onClick={handleSend}
+                disabled={!inputMessage.trim() || isThinking}
+                className="h-9 w-9 p-0"
+              >
+                <Send className="w-4 h-4" />
+              </Button>
+            </div>
+          )}
         </div>
       )}
     </div>
