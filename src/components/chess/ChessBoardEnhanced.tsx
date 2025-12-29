@@ -159,15 +159,6 @@ const ChessBoardEnhanced: React.FC<ChessBoardEnhancedProps> = ({
 
   return (
     <div className="flex flex-col gap-3">
-      {/* Eric Coach Banner - Always visible at top */}
-      <EricCoachBanner
-        messages={chatMessages}
-        isThinking={isThinking}
-        isExpanded={isChatExpanded}
-        onToggle={() => setIsChatExpanded(!isChatExpanded)}
-        onSendMessage={onSendMessage}
-      />
-
       {/* Controls */}
       <ChessGameControls
         difficulty={difficulty}
@@ -183,6 +174,22 @@ const ChessBoardEnhanced: React.FC<ChessBoardEnhancedProps> = ({
         isGameOver={isGameOver}
       />
 
+      {/* Game Status - Compact */}
+      <div className="text-center py-1">
+        <p className={`font-semibold ${getStatusColor()}`}>
+          {gameStatus}
+        </p>
+      </div>
+
+      {/* Eric Coach Bubble - Floating after status */}
+      <EricCoachBanner
+        messages={chatMessages}
+        isThinking={isThinking}
+        isExpanded={isChatExpanded}
+        onToggle={() => setIsChatExpanded(!isChatExpanded)}
+        onSendMessage={onSendMessage}
+      />
+
       {/* Timer */}
       {timeControl !== 'untimed' && (
         <ChessTimer
@@ -192,13 +199,6 @@ const ChessBoardEnhanced: React.FC<ChessBoardEnhancedProps> = ({
           isGameOver={isGameOver}
         />
       )}
-
-      {/* Game Status - Compact */}
-      <div className="text-center py-1">
-        <p className={`font-semibold ${getStatusColor()}`}>
-          {gameStatus}
-        </p>
-      </div>
 
       {/* Captured Pieces */}
       <CapturedPieces 
