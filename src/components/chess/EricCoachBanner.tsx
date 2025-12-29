@@ -59,7 +59,7 @@ const EricCoachBanner: React.FC<EricCoachBannerProps> = ({
   if (!latestEricMessage && !isThinking) return null;
 
   return (
-    <div className="bg-gradient-to-r from-primary/10 via-primary/5 to-transparent border border-primary/20 rounded-xl overflow-hidden">
+    <div className="bg-card border border-border/50 rounded-2xl overflow-hidden shadow-lg shadow-primary/5">
       {/* Collapsed View - Single Line */}
       <div 
         className="flex items-center gap-3 p-2.5 cursor-pointer hover:bg-primary/5 transition-colors"
