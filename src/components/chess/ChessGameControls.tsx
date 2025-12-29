@@ -116,7 +116,7 @@ const ChessGameControls: React.FC<ChessGameControlsProps> = ({
         </Button>
         
         <Button
-          variant="ghost"
+          variant="secondary"
           size="sm"
           onClick={onShowStats}
           className="gap-1.5 h-8"

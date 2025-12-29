@@ -6,10 +6,12 @@ import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ArrowLeft, Gamepad2, Target } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useChessSounds } from '@/hooks/useChessSounds';
+import { useChessStats } from '@/hooks/useChessStats';
 import { useToast } from '@/hooks/use-toast';
 import { Chess } from 'chess.js';
 import ChessBoardEnhanced from '@/components/chess/ChessBoardEnhanced';
 import ChessPlayerStats from '@/components/chess/ChessPlayerStats';
+import ChessEloWidget from '@/components/chess/ChessEloWidget';
 import ChessPuzzleTrainer from '@/components/chess/ChessPuzzleTrainer';
 import ChessPostGameAnalysis from '@/components/chess/ChessPostGameAnalysis';
 import { Helmet } from 'react-helmet';
@@ -60,6 +62,18 @@ const ChessGame: React.FC = () => {
   const [blackTime, setBlackTime] = useState(Infinity);
   const [isGameOver, setIsGameOver] = useState(false);
   const [gameStartTime, setGameStartTime] = useState<Date | null>(null);
+
+  // Chess stats hook
+  const { 
+    stats, 
+    achievements, 
+    recentGames, 
+    isLoading: statsLoading, 
+    recentEloChange,
+    fetchStats,
+    initializeStats,
+    checkAchievements 
+  } = useChessStats(userId);
 
   useEffect(() => {
     const fetchProfile = async () => {
@@ -130,27 +144,30 @@ const ChessGame: React.FC = () => {
       });
 
       // Update player stats
-      const { data: stats } = await supabase
+      const { data: existingStats } = await supabase
         .from('chess_player_stats')
         .select('*')
         .eq('user_id', userId)
         .single();
 
-      if (stats) {
-        await supabase.from('chess_player_stats').update({
-          games_played: stats.games_played + 1,
-          games_won: result === 'win' ? stats.games_won + 1 : stats.games_won,
-          games_lost: result === 'loss' ? stats.games_lost + 1 : stats.games_lost,
-          games_drawn: result === 'draw' ? stats.games_drawn + 1 : stats.games_drawn,
-          elo_rating: Math.max(100, stats.elo_rating + eloChange),
-          total_moves: stats.total_moves + moveHistory.length,
-          current_winning_streak: result === 'win' ? stats.current_winning_streak + 1 : 0,
+      let updatedStats;
+      if (existingStats) {
+        const newStats = {
+          games_played: existingStats.games_played + 1,
+          games_won: result === 'win' ? existingStats.games_won + 1 : existingStats.games_won,
+          games_lost: result === 'loss' ? existingStats.games_lost + 1 : existingStats.games_lost,
+          games_drawn: result === 'draw' ? existingStats.games_drawn + 1 : existingStats.games_drawn,
+          elo_rating: Math.max(100, existingStats.elo_rating + eloChange),
+          total_moves: existingStats.total_moves + moveHistory.length,
+          current_winning_streak: result === 'win' ? existingStats.current_winning_streak + 1 : 0,
           longest_winning_streak: result === 'win' 
-            ? Math.max(stats.longest_winning_streak, stats.current_winning_streak + 1)
-            : stats.longest_winning_streak
-        }).eq('user_id', userId);
+            ? Math.max(existingStats.longest_winning_streak, existingStats.current_winning_streak + 1)
+            : existingStats.longest_winning_streak
+        };
+        await supabase.from('chess_player_stats').update(newStats).eq('user_id', userId);
+        updatedStats = { ...existingStats, ...newStats };
       } else {
-        await supabase.from('chess_player_stats').insert({
+        const newStats = {
           user_id: userId,
           games_played: 1,
           games_won: result === 'win' ? 1 : 0,
@@ -160,8 +177,16 @@ const ChessGame: React.FC = () => {
           total_moves: moveHistory.length,
           current_winning_streak: result === 'win' ? 1 : 0,
           longest_winning_streak: result === 'win' ? 1 : 0
-        });
+        };
+        await supabase.from('chess_player_stats').insert(newStats);
+        updatedStats = newStats;
       }
+
+      // Check for new achievements and refresh stats
+      if (updatedStats) {
+        await checkAchievements(updatedStats as any);
+      }
+      fetchStats();
     } catch (error) {
       console.error('Error saving game:', error);
     }
@@ -375,13 +400,25 @@ const ChessGame: React.FC = () => {
       <div className="min-h-screen bg-background">
         <div className="border-b bg-card/50 backdrop-blur-sm sticky top-0 z-10">
           <div className="container mx-auto px-4 py-3">
-            <div className="flex items-center justify-between">
+            <div className="flex items-center justify-between gap-2">
               <Button variant="ghost" size="sm" onClick={() => navigate('/passion-discovery')} className="gap-2">
                 <ArrowLeft className="w-4 h-4" />
-                Retour
+                <span className="hidden sm:inline">Retour</span>
               </Button>
-              <h1 className="text-lg font-bold flex items-center gap-2">♟️ Échecs avec Eric</h1>
-              <div className="w-20" />
+              
+              {/* ELO Widget - shown when stats exist */}
+              {stats && (
+                <ChessEloWidget
+                  elo={stats.elo_rating}
+                  streak={stats.current_winning_streak}
+                  recentChange={recentEloChange}
+                  onClick={() => setShowStats(true)}
+                />
+              )}
+              
+              <h1 className="text-base sm:text-lg font-bold flex items-center gap-2">
+                ♟️ <span className="hidden sm:inline">Échecs avec Eric</span>
+              </h1>
             </div>
           </div>
         </div>
@@ -456,7 +493,14 @@ const ChessGame: React.FC = () => {
         </div>
       </div>
 
-      <ChessPlayerStats isOpen={showStats} onClose={() => setShowStats(false)} />
+      <ChessPlayerStats 
+        isOpen={showStats} 
+        onClose={() => setShowStats(false)} 
+        stats={stats}
+        achievements={achievements}
+        recentGames={recentGames}
+        isLoading={statsLoading}
+      />
     </>
   );
 };
