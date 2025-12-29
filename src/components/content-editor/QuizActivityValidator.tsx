@@ -52,13 +52,25 @@ interface ParsedQuestion {
   explanation: string;
 }
 
-interface ParsedActivity {
+// QUIZ-type activity (multiple choice)
+interface ParsedQuizActivity {
   question: string;
   options: string[];
   correctAnswer: number;
   explanation: string;
-  activityType?: string;
+  activityType: 'QUIZ';
 }
+
+// TRUE_FALSE-type activity
+interface ParsedTrueFalseActivity {
+  statement: string;
+  isTrue: boolean;
+  explanation: string;
+  activityType: 'TRUE_FALSE';
+}
+
+// Union type for all activity types
+type ParsedActivity = ParsedQuizActivity | ParsedTrueFalseActivity;
 
 interface LessonValidation {
   lesson: {
@@ -281,22 +293,26 @@ export const QuizActivityValidator = () => {
       .replace(/^([A-D])\.\s+/gm, '$1) ') // Convert A. to A)
       .replace(/^([A-D]):\s+/gm, '$1) '); // Convert A: to A)
 
-    // Check for **TYPE: QUIZ** format (common in activities)
-    const quizSections = normalizedContent.split(/\*\*TYPE:\s*QUIZ\*\*/i);
+    // ============ PARSE TRUE_FALSE ACTIVITIES ============
+    const trueFalseSections = normalizedContent.split(/\*\*TYPE:\s*TRUE_FALSE\*\*/i);
     
-    if (quizSections.length > 1) {
-      // Parse QUIZ type activities
-      quizSections.slice(1).forEach((section, sectionIdx) => {
-        // Find questions within each section - split by "---" or **Question X:**
-        const questionBlocks = section.split(/(?:^|\n)---\s*\n|\*\*Question\s*\d*:?\s*\*\*/i);
+    if (trueFalseSections.length > 1) {
+      trueFalseSections.slice(1).forEach((section, sectionIdx) => {
+        // Split by affirmation blocks or separators
+        const affirmationBlocks = section.split(/(?:^|\n)---\s*\n|\*\*Affirmation\s*\d*:?\s*\*\*/i);
         
-        questionBlocks.forEach((block, idx) => {
-          if (block.trim().length < 20) return; // Skip empty blocks
-          const parsed = parseActivityBlock(block, sectionIdx * 10 + idx);
+        affirmationBlocks.forEach((block, idx) => {
+          if (block.trim().length < 10) return;
+          // Stop if we hit a new TYPE marker
+          if (/\*\*TYPE:\s*QUIZ\*\*/i.test(block)) return;
+          
+          const parsed = parseTrueFalseBlock(block, sectionIdx * 10 + idx);
           if (parsed.activity) {
-            parsed.activity.activityType = 'QUIZ';
             // Check for duplicates
-            const exists = activities.some(a => a.question === parsed.activity!.question);
+            const exists = activities.some(a => 
+              a.activityType === 'TRUE_FALSE' && 
+              (a as ParsedTrueFalseActivity).statement === parsed.activity!.statement
+            );
             if (!exists) {
               activities.push(parsed.activity);
             }
@@ -308,31 +324,73 @@ export const QuizActivityValidator = () => {
       });
     }
 
-    // Also check for Activité or Exercice patterns
-    const activityPatterns = [
-      /#{2,3}\s*Activité\s+\d+/gi,
-      /#{2,3}\s*Exercice\s+\d+/gi,
-      /\*\*Activité\s+\d+\*\*/gi,
-      /\*\*Exercice\s+\d+\*\*/gi,
-    ];
-
-    for (const pattern of activityPatterns) {
-      const sections = normalizedContent.split(pattern);
-      if (sections.length > 1) {
-        sections.slice(1).forEach((section, idx) => {
-          const parsed = parseActivityBlock(section, idx);
+    // ============ PARSE QUIZ ACTIVITIES ============
+    const quizSections = normalizedContent.split(/\*\*TYPE:\s*QUIZ\*\*/i);
+    
+    if (quizSections.length > 1) {
+      quizSections.slice(1).forEach((section, sectionIdx) => {
+        // Stop at the next TYPE marker
+        const nextTypeIdx = section.search(/\*\*TYPE:\s*(TRUE_FALSE|QUIZ)\*\*/i);
+        const sectionContent = nextTypeIdx > 0 ? section.substring(0, nextTypeIdx) : section;
+        
+        const questionBlocks = sectionContent.split(/(?:^|\n)---\s*\n|\*\*Question\s*\d*:?\s*\*\*/i);
+        
+        questionBlocks.forEach((block, idx) => {
+          if (block.trim().length < 20) return;
+          const parsed = parseActivityBlock(block, sectionIdx * 10 + idx);
           if (parsed.activity) {
-            // Check if not already added
-            const exists = activities.some(a => a.question === parsed.activity!.question);
+            const quizActivity: ParsedQuizActivity = {
+              ...parsed.activity,
+              activityType: 'QUIZ'
+            };
+            const exists = activities.some(a => 
+              a.activityType === 'QUIZ' && 
+              (a as ParsedQuizActivity).question === quizActivity.question
+            );
             if (!exists) {
-              activities.push(parsed.activity);
+              activities.push(quizActivity);
             }
           }
-          if (parsed.error && !errors.includes(parsed.error)) {
+          if (parsed.error) {
             errors.push(parsed.error);
           }
         });
-        break;
+      });
+    }
+
+    // Also check for Activité or Exercice patterns (legacy format)
+    if (activities.length === 0) {
+      const activityPatterns = [
+        /#{2,3}\s*Activité\s+\d+/gi,
+        /#{2,3}\s*Exercice\s+\d+/gi,
+        /\*\*Activité\s+\d+\*\*/gi,
+        /\*\*Exercice\s+\d+\*\*/gi,
+      ];
+
+      for (const pattern of activityPatterns) {
+        const sections = normalizedContent.split(pattern);
+        if (sections.length > 1) {
+          sections.slice(1).forEach((section, idx) => {
+            const parsed = parseActivityBlock(section, idx);
+            if (parsed.activity) {
+              const quizActivity: ParsedQuizActivity = {
+                ...parsed.activity,
+                activityType: 'QUIZ'
+              };
+              const exists = activities.some(a => 
+                a.activityType === 'QUIZ' && 
+                (a as ParsedQuizActivity).question === quizActivity.question
+              );
+              if (!exists) {
+                activities.push(quizActivity);
+              }
+            }
+            if (parsed.error && !errors.includes(parsed.error)) {
+              errors.push(parsed.error);
+            }
+          });
+          break;
+        }
       }
     }
 
@@ -343,7 +401,11 @@ export const QuizActivityValidator = () => {
         questionBlocks.slice(1).forEach((block, idx) => {
           const parsed = parseActivityBlock(block, idx);
           if (parsed.activity) {
-            activities.push(parsed.activity);
+            const quizActivity: ParsedQuizActivity = {
+              ...parsed.activity,
+              activityType: 'QUIZ'
+            };
+            activities.push(quizActivity);
           }
           if (parsed.error) {
             errors.push(parsed.error);
@@ -355,10 +417,13 @@ export const QuizActivityValidator = () => {
     // If still no activities found, try simpler detection
     if (activities.length === 0 && normalizedContent.length > 100) {
       if (normalizedContent.includes('A)') || normalizedContent.includes('A.') || normalizedContent.includes('A:')) {
-        // Try to parse inline
         const parsed = parseActivityBlock(normalizedContent, 0);
         if (parsed.activity) {
-          activities.push(parsed.activity);
+          const quizActivity: ParsedQuizActivity = {
+            ...parsed.activity,
+            activityType: 'QUIZ'
+          };
+          activities.push(quizActivity);
         } else {
           errors.push('Format d\'activité non reconnu - contenu détecté mais non parsable');
         }
@@ -370,7 +435,60 @@ export const QuizActivityValidator = () => {
     return { activities, errors };
   };
 
-  const parseActivityBlock = (block: string, idx: number): { activity?: ParsedActivity, error?: string } => {
+  // Parse TRUE_FALSE activity block
+  const parseTrueFalseBlock = (block: string, idx: number): { activity?: ParsedTrueFalseActivity, error?: string } => {
+    // Extract statement - text before **Réponse**
+    let statementMatch = block.match(/^[\s\n]*(.+?)(?=\n\s*\*\*Réponse)/is);
+    if (!statementMatch) {
+      // Try alternate: look for content before "Réponse:"
+      statementMatch = block.match(/^[\s\n]*(.+?)(?=\nRéponse\s*:)/is);
+    }
+    
+    if (!statementMatch) {
+      return { error: `Affirmation ${idx + 1}: texte non trouvé` };
+    }
+
+    const statement = statementMatch[1]
+      .trim()
+      .replace(/\*\*/g, '')
+      .replace(/#{1,3}/g, '')
+      .replace(/^Affirmation\s*\d*:?\s*/i, '')
+      .substring(0, 500);
+
+    if (statement.length < 10) {
+      return { error: `Affirmation ${idx + 1}: texte trop court` };
+    }
+
+    // Extract answer (VRAI or FAUX)
+    let answerMatch = block.match(/\*\*Réponse\s*:?\s*\*?\*?\s*(VRAI|FAUX)/i);
+    if (!answerMatch) answerMatch = block.match(/Réponse\s*:?\s*(VRAI|FAUX)/i);
+    
+    if (!answerMatch) {
+      return { error: `Affirmation ${idx + 1}: réponse VRAI/FAUX non trouvée` };
+    }
+
+    const isTrue = answerMatch[1].toUpperCase() === 'VRAI';
+
+    // Extract explanation
+    let explanationMatch = block.match(/\*\*Explication\s*:?\s*\*\*\s*\n?\s*(.+?)(?=\*\*TYPE|\*\*Affirmation|#{2,3}|---|\n\n\*\*|$)/is);
+    if (!explanationMatch) explanationMatch = block.match(/Explication\s*:?\s*\n?\s*(.+?)(?=\*\*TYPE|\*\*Affirmation|#{2,3}|---|\n\n|$)/is);
+    
+    const explanation = explanationMatch 
+      ? explanationMatch[1].trim().replace(/\*\*/g, '').replace(/---/g, '').substring(0, 500)
+      : 'Pas d\'explication fournie';
+
+    return {
+      activity: {
+        statement,
+        isTrue,
+        explanation,
+        activityType: 'TRUE_FALSE'
+      }
+    };
+  };
+
+  // Parse QUIZ activity block (returns object without activityType - caller must add it)
+  const parseActivityBlock = (block: string, idx: number): { activity?: Omit<ParsedQuizActivity, 'activityType'>, error?: string } => {
     // Normalize the block first - strip leading dashes/asterisks from options
     const normalizedBlock = block
       .replace(/^-\s*([A-D]\))/gm, '$1')
@@ -381,7 +499,6 @@ export const QuizActivityValidator = () => {
     // Extract question text (before options)
     let questionMatch = normalizedBlock.match(/^[\s\n]*(.+?)(?=\n\s*[A-D]\))/is);
     if (!questionMatch) {
-      // Try alternate format with asterisks
       questionMatch = normalizedBlock.match(/^[\s\n]*(.+?)(?=\n\s*\*?\*?[A-D][\):\.])/is);
     }
     
@@ -400,11 +517,10 @@ export const QuizActivityValidator = () => {
       return { error: `Activité ${idx + 1}: texte de question trop court` };
     }
 
-    // Extract options - improved regex with strict boundaries
+    // Extract options
     const optionRegex = /^([A-D])\)\s*(.+?)$/gm;
     const optionMatches = Array.from(normalizedBlock.matchAll(optionRegex));
     
-    // Deduplicate and limit to first 4 options
     const seenLetters = new Set<string>();
     const options: string[] = [];
     
@@ -420,7 +536,7 @@ export const QuizActivityValidator = () => {
       if (options.length >= 4) break;
     }
 
-    // Fallback: try multiline regex if simple one didn't work
+    // Fallback regex
     if (options.length < 4) {
       const fallbackMatches = normalizedBlock.matchAll(/\*?\*?([A-D])[\):\.]?\*?\*?\s*(.+?)(?=\n\s*\*?\*?[A-D][\):\.]|\n\s*\*\*Réponse|\n\s*Réponse|\n\s*\*\*Explication|\n\s*---|\n\s*\*\*Question|\n\s*\*\*TYPE:|\n\n|$)/gis);
       
@@ -429,7 +545,7 @@ export const QuizActivityValidator = () => {
       
       for (const match of Array.from(fallbackMatches)) {
         const letter = match[1].toUpperCase();
-        let optionText = match[2]?.trim().replace(/\*\*/g, '').replace(/\n/g, ' ');
+        const optionText = match[2]?.trim().replace(/\*\*/g, '').replace(/\n/g, ' ');
         
         if (!seenLetters.has(letter) && optionText && optionText.length > 0 && optionText.length < 500) {
           seenLetters.add(letter);
@@ -1345,13 +1461,46 @@ const ValidationItem = ({
                   <div className="space-y-2 pl-4 border-l-2 border-primary/30">
                     {validation.activitiesParsed.map((a, idx) => {
                       const issue = validation.activityAIValidation?.issues?.find(i => i.activityIndex === idx);
+                      
+                      // Handle TRUE_FALSE activities
+                      if (a.activityType === 'TRUE_FALSE') {
+                        const trueFalseActivity = a as ParsedTrueFalseActivity;
+                        return (
+                          <div key={idx} className={`text-sm p-2 rounded ${issue ? 'bg-destructive/10 border border-destructive/30' : 'bg-primary/5'}`}>
+                            <p className="font-medium">
+                              A{idx + 1} <Badge variant="outline" className="ml-1 text-xs">VRAI/FAUX</Badge>
+                            </p>
+                            <p className="mt-1">{trueFalseActivity.statement.substring(0, 100)}...</p>
+                            <p className="text-muted-foreground mt-1">
+                              Réponse: <Badge variant={trueFalseActivity.isTrue ? "default" : "secondary"}>
+                                {trueFalseActivity.isTrue ? 'VRAI' : 'FAUX'}
+                              </Badge>
+                            </p>
+                            {issue && (
+                              <div className="mt-2 p-2 bg-destructive/5 rounded">
+                                <p className="text-destructive text-xs font-medium">
+                                  ⚠️ {issue.issue}
+                                </p>
+                                {issue.suggestedFix && (
+                                  <p className="text-xs text-muted-foreground mt-1">
+                                    💡 Suggestion: {issue.suggestedFix}
+                                  </p>
+                                )}
+                              </div>
+                            )}
+                          </div>
+                        );
+                      }
+                      
+                      // Handle QUIZ activities
+                      const quizActivity = a as ParsedQuizActivity;
                       return (
                         <div key={idx} className={`text-sm p-2 rounded ${issue ? 'bg-destructive/10 border border-destructive/30' : 'bg-primary/5'}`}>
                           <p className="font-medium">
-                            A{idx + 1}{a.activityType ? ` (${a.activityType})` : ''}: {a.question.substring(0, 100)}...
+                            A{idx + 1} <Badge variant="outline" className="ml-1 text-xs">QUIZ</Badge>: {quizActivity.question.substring(0, 100)}...
                           </p>
                           <p className="text-muted-foreground">
-                            Réponse: {String.fromCharCode(65 + a.correctAnswer)}) {a.options[a.correctAnswer]?.substring(0, 50)}...
+                            Réponse: {String.fromCharCode(65 + quizActivity.correctAnswer)}) {quizActivity.options[quizActivity.correctAnswer]?.substring(0, 50)}...
                           </p>
                           {issue && (
                             <div className="mt-2 p-2 bg-destructive/5 rounded">
