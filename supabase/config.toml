@@ -137,3 +137,6 @@ verify_jwt = true
 
 [functions.fix-invalid-activities]
 verify_jwt = true
+
+[functions.fix-invalid-quiz]
+verify_jwt = true
