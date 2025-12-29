@@ -53,12 +53,14 @@ serve(async (req) => {
     
     console.log('🔍 Creole detection:', { subject, subjectNormalized, isCreoleLesson });
 
-    // Simplified prompt - ONLY QUIZ type with strict 4-option format
+    // Updated prompt - QUIZ + TRUE_FALSE types
     const systemPrompt = isCreoleLesson 
       ? `🚨 RÈGLE ABSOLUE: LE CONTENU DOIT ÊTRE EN KREYÒL AYISYEN! 🚨
 
-Tu es un expert en création de quiz éducatifs pour des élèves haïtiens.
-Tu transformes des exercices en quiz à choix multiples (QCM).
+Tu es un expert en création d'activités éducatives interactives pour des élèves haïtiens.
+Tu transformes des exercices en un mélange de:
+1. Quiz à choix multiples (QCM)
+2. Questions Vrai/Faux
 
 FORMAT EXACT OBLIGATOIRE - RESPECTE CE FORMAT À LA LETTRE:
 
@@ -94,16 +96,40 @@ D) Opsyon D
 
 ---
 
+**TYPE: TRUE_FALSE**
+
+**Affirmation 1:**
+Solèy la se yon zetwal.
+
+**Réponse: VRAI**
+
+**Explication:** Solèy la se vrèman yon zetwal, li se zetwal ki pi pre Latè.
+
+---
+
+**Affirmation 2:**
+Dlo bouyi a 50 degre Celsius.
+
+**Réponse: FAUX**
+
+**Explication:** Dlo bouyi a 100 degre Celsius nan nivo lanmè.
+
+---
+
 RÈGLES CRITIQUES:
-1. EXACTEMENT 4 options par question (A, B, C, D) - PAS PLUS, PAS MOINS
-2. Options sur lignes séparées: "A) texte" (pas de tiret avant!)
-3. Génère 10-15 questions minimum
-4. Sépare les questions avec "---"
-5. Réponse au format: "**Réponse correcte: X**" (X = A, B, C ou D)
-6. Explication au format: "**Explication:** texte"
-7. TOUT le contenu en KREYÒL AYISYEN`
-      : `Tu es un expert en création de quiz éducatifs pour des élèves haïtiens.
-Tu transformes des exercices en quiz à choix multiples (QCM).
+1. Pour QUIZ: EXACTEMENT 4 options par question (A, B, C, D) - PAS PLUS, PAS MOINS
+2. Pour TRUE_FALSE: Une affirmation claire, réponse VRAI ou FAUX uniquement
+3. Options sur lignes séparées: "A) texte" (pas de tiret avant!)
+4. Génère 8-10 questions QUIZ + 5-7 affirmations TRUE_FALSE
+5. Sépare les questions/affirmations avec "---"
+6. Réponse QUIZ: "**Réponse correcte: X**" (X = A, B, C ou D)
+7. Réponse TRUE_FALSE: "**Réponse: VRAI**" ou "**Réponse: FAUX**"
+8. Explication au format: "**Explication:** texte"
+9. TOUT le contenu en KREYÒL AYISYEN`
+      : `Tu es un expert en création d'activités éducatives interactives pour des élèves haïtiens.
+Tu transformes des exercices en un mélange de:
+1. Quiz à choix multiples (QCM)
+2. Questions Vrai/Faux
 
 FORMAT EXACT OBLIGATOIRE - RESPECTE CE FORMAT À LA LETTRE:
 
@@ -139,14 +165,36 @@ D) Option D
 
 ---
 
+**TYPE: TRUE_FALSE**
+
+**Affirmation 1:**
+Le soleil est une étoile.
+
+**Réponse: VRAI**
+
+**Explication:** Le soleil est effectivement une étoile de type naine jaune, c'est l'étoile la plus proche de la Terre.
+
+---
+
+**Affirmation 2:**
+L'eau bout à 50 degrés Celsius.
+
+**Réponse: FAUX**
+
+**Explication:** L'eau bout à 100 degrés Celsius au niveau de la mer, pas à 50 degrés.
+
+---
+
 RÈGLES CRITIQUES:
-1. EXACTEMENT 4 options par question (A, B, C, D) - PAS PLUS, PAS MOINS
-2. Options sur lignes séparées: "A) texte" (pas de tiret avant!)
-3. Génère 10-15 questions minimum
-4. Sépare les questions avec "---"
-5. Réponse au format: "**Réponse correcte: X**" (X = A, B, C ou D)
-6. Explication au format: "**Explication:** texte"
-7. Tout en FRANÇAIS`;
+1. Pour QUIZ: EXACTEMENT 4 options par question (A, B, C, D) - PAS PLUS, PAS MOINS
+2. Pour TRUE_FALSE: Une affirmation claire, réponse VRAI ou FAUX uniquement
+3. Options sur lignes séparées: "A) texte" (pas de tiret avant!)
+4. Génère 8-10 questions QUIZ + 5-7 affirmations TRUE_FALSE
+5. Sépare les questions/affirmations avec "---"
+6. Réponse QUIZ: "**Réponse correcte: X**" (X = A, B, C ou D)
+7. Réponse TRUE_FALSE: "**Réponse: VRAI**" ou "**Réponse: FAUX**"
+8. Explication au format: "**Explication:** texte"
+9. Tout en FRANÇAIS`;
 
     const cleanedContent = stripHtml(exercisesContent);
 
@@ -158,30 +206,30 @@ RÈGLES CRITIQUES:
 Nivo: ${gradeLevel}
 Matyè: ${subject}
 
-Men kontni egzèsis yo pou transfòme an QCM:
+Men kontni egzèsis yo pou transfòme an aktivite entèaktif:
 
 ${cleanedContent}
 
 ENSTRIKSYON KRITIK:
-- Jenere 10-15 kesyon QCM diferan
-- CHAK kesyon dwe gen EGZAKTEMAN 4 opsyon (A, B, C, D)
+- Jenere 8-10 kesyon QUIZ (QCM ak 4 opsyon A, B, C, D)
+- Jenere 5-7 afimasyon TRUE_FALSE (Vrai/Faux)
 - Opsyon yo dwe sou liy separe: "A) tèks" (pa gen tirè anvan!)
-- Separe kesyon yo ak "---"
+- Separe kesyon/afimasyon yo ak "---"
 - Bay yon esplikasyon klè pou chak repons
 - TOU KONTNI AN KREYÒL AYISYEN!`
       : `Leçon: "${lessonTitle}"
 Niveau: ${gradeLevel}
 Matière: ${subject}
 
-Voici le contenu des exercices à transformer en QCM:
+Voici le contenu des exercices à transformer en activités interactives:
 
 ${cleanedContent}
 
 INSTRUCTIONS CRITIQUES:
-- Génère 10-15 questions QCM différentes
-- CHAQUE question doit avoir EXACTEMENT 4 options (A, B, C, D)
+- Génère 8-10 questions QUIZ (QCM avec 4 options A, B, C, D)
+- Génère 5-7 affirmations TRUE_FALSE (Vrai/Faux)
 - Les options doivent être sur des lignes séparées: "A) texte" (pas de tiret avant!)
-- Sépare les questions avec "---"
+- Sépare les questions/affirmations avec "---"
 - Fournis une explication claire pour chaque réponse
 - TOUT EN FRANÇAIS`;
 
