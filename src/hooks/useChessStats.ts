@@ -155,22 +155,27 @@ export const useChessStats = (userId: string | null) => {
 
     if (newAchievements.length === 0) return;
 
-    // Insert new achievements
+    // Insert new achievements (using upsert to handle duplicates safely)
     for (const achievement of newAchievements) {
       try {
-        await supabase.from('chess_achievements').insert({
+        const { error } = await supabase.from('chess_achievements').upsert({
           user_id: userId,
           achievement_key: achievement.key,
           achievement_name: achievement.name,
           achievement_description: achievement.description,
           icon: achievement.icon
+        }, {
+          onConflict: 'user_id,achievement_key',
+          ignoreDuplicates: true
         });
 
-        // Show toast notification
-        toast({
-          title: "🏅 Nouveau badge débloqué!",
-          description: `${achievement.icon} ${achievement.name}: ${achievement.description}`,
-        });
+        if (!error) {
+          // Show toast notification only for genuinely new achievements
+          toast({
+            title: "🏅 Nouveau badge débloqué!",
+            description: `${achievement.icon} ${achievement.name}: ${achievement.description}`,
+          });
+        }
       } catch (error) {
         console.error('Error awarding achievement:', error);
       }
