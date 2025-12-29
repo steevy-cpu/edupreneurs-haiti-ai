@@ -64,50 +64,142 @@ export const InteractiveActivities = ({ content, isLoading, onRegenerate, onGold
   const parseQuestions = (content: string): Question[] => {
     const questions: Question[] = [];
     
-    // Split by exercise headers - more flexible regex
-    const sections = content.split(/#{2,3}\s*✏️?\s*Exercice\s+\d+/i);
+    // Normalize content first - remove leading dashes from options
+    const normalizedContent = content
+      .replace(/^-\s*([A-D]\))/gm, '$1')
+      .replace(/^\*\s*([A-D]\))/gm, '$1')
+      .replace(/^([A-D])\.\s+/gm, '$1) ')
+      .replace(/^([A-D]):\s+/gm, '$1) ');
     
-    sections.slice(1).forEach((section) => {
-      // Extract question text - everything between difficulty marker and first option
-      // More flexible to handle various formats
-      const questionMatch = section.match(/\([^)]*(?:Facile|Moyen|Difficile)[^)]*\)\s*\n+\s*(.+?)(?=\n\s*[A-D][\):])/is);
-      if (!questionMatch) return;
-      
-      const questionText = questionMatch[1].trim().replace(/\*\*/g, '');
-      
-      // Extract options - handle both A) and A: formats
-      const optionMatches = section.matchAll(/([A-D])[\):]\s*(.+?)(?=\n\s*[A-D][\):]|\n\s*#{2,3}|\n\n|$)/gis);
-      const options: string[] = [];
-      Array.from(optionMatches).forEach(match => {
-        const optionText = match[2].trim().replace(/\*\*/g, '');
-        if (optionText) {
-          options.push(optionText);
-        }
-      });
-      
-      // Extract correct answer - more flexible
-      const correctMatch = section.match(/#{2,3}\s*Réponse\s+correcte\s*:?\s*([A-D])/i);
-      if (!correctMatch || options.length !== 4) return;
-      
-      const correctLetter = correctMatch[1].toUpperCase();
-      const correctIndex = correctLetter.charCodeAt(0) - 'A'.charCodeAt(0);
-      
-      // Extract explanation - handle various formats
-      const explanationMatch = section.match(/#{2,3}\s*Explication\s*:?\s*\n?\s*(.+?)(?=#{2,3}|$)/is);
-      const explanation = explanationMatch ? explanationMatch[1].trim().replace(/\*\*/g, '') : "";
-      
-      // Only add if we have complete valid data
-      if (questionText && options.length === 4 && correctIndex >= 0 && correctIndex < 4 && explanation) {
-        questions.push({
-          question: questionText,
-          options,
-          correctAnswer: correctIndex,
-          explanation
+    // Try multiple parsing strategies
+    
+    // Strategy 1: **TYPE: QUIZ** format with **Question X:** and "---" separators
+    const quizSections = normalizedContent.split(/\*\*TYPE:\s*QUIZ\*\*/i);
+    if (quizSections.length > 1) {
+      quizSections.slice(1).forEach((section) => {
+        // Split by "---" or **Question X:**
+        const questionBlocks = section.split(/(?:^|\n)---\s*\n|\*\*Question\s*\d*:?\s*\*\*/i);
+        
+        questionBlocks.forEach((block) => {
+          if (block.trim().length < 20) return;
+          const parsed = parseQuestionBlock(block);
+          if (parsed) {
+            const exists = questions.some(q => q.question === parsed.question);
+            if (!exists) questions.push(parsed);
+          }
         });
-      }
-    });
+      });
+    }
+    
+    // Strategy 2: ## Exercice format (original format)
+    if (questions.length === 0) {
+      const sections = normalizedContent.split(/#{2,3}\s*✏️?\s*Exercice\s+\d+/i);
+      
+      sections.slice(1).forEach((section) => {
+        const parsed = parseExerciseSection(section);
+        if (parsed) questions.push(parsed);
+      });
+    }
+    
+    // Strategy 3: Try direct option parsing if nothing else works
+    if (questions.length === 0 && normalizedContent.includes('A)')) {
+      const parsed = parseQuestionBlock(normalizedContent);
+      if (parsed) questions.push(parsed);
+    }
     
     return questions;
+  };
+  
+  const parseQuestionBlock = (block: string): Question | null => {
+    // Extract question text (before options)
+    let questionMatch = block.match(/^[\s\n]*(.+?)(?=\n\s*[A-D]\))/is);
+    if (!questionMatch) return null;
+    
+    const questionText = questionMatch[1]
+      .trim()
+      .replace(/\*\*/g, '')
+      .replace(/#{1,3}/g, '')
+      .replace(/^Question\s*\d*:?\s*/i, '');
+    
+    if (questionText.length < 5) return null;
+    
+    // Extract options with deduplication
+    const optionRegex = /^([A-D])\)\s*(.+?)$/gm;
+    const optionMatches = Array.from(block.matchAll(optionRegex));
+    
+    const seenLetters = new Set<string>();
+    const options: string[] = [];
+    
+    for (const match of optionMatches) {
+      const letter = match[1].toUpperCase();
+      const optionText = match[2]?.trim().replace(/\*\*/g, '');
+      
+      if (!seenLetters.has(letter) && optionText && optionText.length > 0) {
+        seenLetters.add(letter);
+        options.push(optionText);
+      }
+      if (options.length >= 4) break;
+    }
+    
+    if (options.length !== 4) return null;
+    
+    // Extract correct answer
+    let correctMatch = block.match(/\*\*Réponse\s+correcte\s*:?\s*\*?\*?\s*([A-D])/i);
+    if (!correctMatch) correctMatch = block.match(/Réponse\s+correcte\s*:?\s*([A-D])/i);
+    if (!correctMatch) correctMatch = block.match(/Réponse\s*:?\s*([A-D])/i);
+    if (!correctMatch) return null;
+    
+    const correctLetter = correctMatch[1].toUpperCase();
+    const correctIndex = correctLetter.charCodeAt(0) - 'A'.charCodeAt(0);
+    
+    // Extract explanation
+    let explanationMatch = block.match(/\*\*Explication\s*:?\s*\*\*\s*\n?\s*(.+?)(?=\*\*|#{2,3}|---|\n\n|$)/is);
+    if (!explanationMatch) explanationMatch = block.match(/Explication\s*:?\s*\n?\s*(.+?)(?=\*\*|#{2,3}|---|\n\n|$)/is);
+    const explanation = explanationMatch ? explanationMatch[1].trim().replace(/\*\*/g, '') : 'Pas d\'explication';
+    
+    if (correctIndex >= 0 && correctIndex < 4) {
+      return { question: questionText, options, correctAnswer: correctIndex, explanation };
+    }
+    return null;
+  };
+  
+  const parseExerciseSection = (section: string): Question | null => {
+    // Extract question text - everything between difficulty marker and first option
+    const questionMatch = section.match(/\([^)]*(?:Facile|Moyen|Difficile)[^)]*\)\s*\n+\s*(.+?)(?=\n\s*[A-D][\):])/is);
+    if (!questionMatch) return null;
+    
+    const questionText = questionMatch[1].trim().replace(/\*\*/g, '');
+    
+    // Extract options
+    const optionMatches = section.matchAll(/([A-D])[\):]\s*(.+?)(?=\n\s*[A-D][\):]|\n\s*#{2,3}|\n\n|$)/gis);
+    const options: string[] = [];
+    const seenLetters = new Set<string>();
+    
+    for (const match of Array.from(optionMatches)) {
+      const letter = match[1].toUpperCase();
+      const optionText = match[2]?.trim().replace(/\*\*/g, '');
+      if (!seenLetters.has(letter) && optionText) {
+        seenLetters.add(letter);
+        options.push(optionText);
+      }
+      if (options.length >= 4) break;
+    }
+    
+    // Extract correct answer
+    const correctMatch = section.match(/#{2,3}\s*Réponse\s+correcte\s*:?\s*([A-D])/i);
+    if (!correctMatch || options.length !== 4) return null;
+    
+    const correctLetter = correctMatch[1].toUpperCase();
+    const correctIndex = correctLetter.charCodeAt(0) - 'A'.charCodeAt(0);
+    
+    // Extract explanation
+    const explanationMatch = section.match(/#{2,3}\s*Explication\s*:?\s*\n?\s*(.+?)(?=#{2,3}|$)/is);
+    const explanation = explanationMatch ? explanationMatch[1].trim().replace(/\*\*/g, '') : "";
+    
+    if (questionText && options.length === 4 && correctIndex >= 0 && correctIndex < 4 && explanation) {
+      return { question: questionText, options, correctAnswer: correctIndex, explanation };
+    }
+    return null;
   };
 
   const questions = parseQuestions(content);
