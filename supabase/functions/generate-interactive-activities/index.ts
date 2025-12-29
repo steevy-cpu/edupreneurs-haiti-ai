@@ -118,14 +118,16 @@ Dlo bouyi a 50 degre Celsius.
 
 RÈGLES CRITIQUES:
 1. Pour QUIZ: EXACTEMENT 4 options par question (A, B, C, D) - PAS PLUS, PAS MOINS
-2. Pour TRUE_FALSE: Une affirmation claire, réponse VRAI ou FAUX uniquement
-3. Options sur lignes séparées: "A) texte" (pas de tiret avant!)
-4. Génère 8-10 questions QUIZ + 5-7 affirmations TRUE_FALSE
-5. Sépare les questions/affirmations avec "---"
-6. Réponse QUIZ: "**Réponse correcte: X**" (X = A, B, C ou D)
-7. Réponse TRUE_FALSE: "**Réponse: VRAI**" ou "**Réponse: FAUX**"
-8. Explication au format: "**Explication:** texte"
-9. TOUT le contenu en KREYÒL AYISYEN`
+2. TOUJOURS lister les options dans l'ordre A, B, C, D - JAMAIS dans un autre ordre!
+3. Placer la bonne réponse aléatoirement parmi A, B, C, ou D (pa toujou A!)
+4. Pour TRUE_FALSE: Une affirmation claire, réponse VRAI ou FAUX uniquement
+5. Options sur lignes séparées: "A) texte" (pas de tiret avant!)
+6. Génère 8-10 questions QUIZ + 5-7 affirmations TRUE_FALSE
+7. Sépare les questions/affirmations avec "---"
+8. Réponse QUIZ: "**Réponse correcte: X**" (X = A, B, C ou D)
+9. Réponse TRUE_FALSE: "**Réponse: VRAI**" ou "**Réponse: FAUX**"
+10. Explication au format: "**Explication:** texte"
+11. TOUT le contenu en KREYÒL AYISYEN`
       : `Tu es un expert en création d'activités éducatives interactives pour des élèves haïtiens.
 Tu transformes des exercices en un mélange de:
 1. Quiz à choix multiples (QCM)
@@ -187,14 +189,16 @@ L'eau bout à 50 degrés Celsius.
 
 RÈGLES CRITIQUES:
 1. Pour QUIZ: EXACTEMENT 4 options par question (A, B, C, D) - PAS PLUS, PAS MOINS
-2. Pour TRUE_FALSE: Une affirmation claire, réponse VRAI ou FAUX uniquement
-3. Options sur lignes séparées: "A) texte" (pas de tiret avant!)
-4. Génère 8-10 questions QUIZ + 5-7 affirmations TRUE_FALSE
-5. Sépare les questions/affirmations avec "---"
-6. Réponse QUIZ: "**Réponse correcte: X**" (X = A, B, C ou D)
-7. Réponse TRUE_FALSE: "**Réponse: VRAI**" ou "**Réponse: FAUX**"
-8. Explication au format: "**Explication:** texte"
-9. Tout en FRANÇAIS`;
+2. TOUJOURS lister les options dans l'ordre A, B, C, D - JAMAIS dans un autre ordre!
+3. Placer la bonne réponse aléatoirement parmi A, B, C, ou D (pas toujours A!)
+4. Pour TRUE_FALSE: Une affirmation claire, réponse VRAI ou FAUX uniquement
+5. Options sur lignes séparées: "A) texte" (pas de tiret avant!)
+6. Génère 8-10 questions QUIZ + 5-7 affirmations TRUE_FALSE
+7. Sépare les questions/affirmations avec "---"
+8. Réponse QUIZ: "**Réponse correcte: X**" (X = A, B, C ou D)
+9. Réponse TRUE_FALSE: "**Réponse: VRAI**" ou "**Réponse: FAUX**"
+10. Explication au format: "**Explication:** texte"
+11. Tout en FRANÇAIS`;
 
     const cleanedContent = stripHtml(exercisesContent);
 
