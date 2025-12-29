@@ -57,7 +57,16 @@ serve(async (req) => {
   }
 
   try {
-    const { fen, chatHistory, userMessage, userNickname, isEricTurn, difficulty = 'intermediate' } = await req.json();
+    const { 
+      fen, 
+      chatHistory, 
+      userMessage, 
+      userNickname, 
+      isEricTurn, 
+      difficulty = 'intermediate',
+      isAnalysis = false,
+      moveHistory = []
+    } = await req.json();
 
     const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
     if (!LOVABLE_API_KEY) {
