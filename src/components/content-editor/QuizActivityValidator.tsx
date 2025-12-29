@@ -73,6 +73,7 @@ interface LessonValidation {
   activitiesParsed: ParsedActivity[];
   activityErrors: string[];
   originalActivityContent?: string;
+  originalQuizContent?: string;
   aiValidation?: {
     confidence: number;
     issues: Array<{
@@ -102,7 +103,8 @@ interface ValidationStats {
 interface RegenerationPreview {
   lessonId: string;
   lessonTitle: string;
-  correctedActivities: Array<{
+  type: 'activity' | 'quiz';
+  correctedItems: Array<{
     originalIndex: number;
     question: string;
     options: string[];
@@ -374,7 +376,8 @@ export const QuizActivityValidator = () => {
       .substring(0, 500);
 
     // Extract options
-    const optionMatches = block.matchAll(/\*?\*?([A-D])[\):\.]?\*?\*?\s*(.+?)(?=\n\s*\*?\*?[A-D][\):\.]|\n\s*\*\*Réponse|\n\s*Réponse|\n\s*\*\*Explication|\n\n\*\*|$)/gis);
+    // Improved regex with more boundaries to prevent greedy matching
+    const optionMatches = block.matchAll(/\*?\*?([A-D])[\):\.]?\*?\*?\s*(.+?)(?=\n\s*\*?\*?[A-D][\):\.]|\n\s*\*\*Réponse|\n\s*Réponse|\n\s*\*\*Explication|\n\s*---|\n\s*\*\*Question|\n\s*\*\*TYPE:|\n\n\*\*|$)/gis);
     const options: string[] = [];
     
     Array.from(optionMatches).forEach(match => {
@@ -482,6 +485,7 @@ export const QuizActivityValidator = () => {
           activitiesParsed: activityResult.activities,
           activityErrors: activityResult.errors,
           originalActivityContent: lesson.activites_interactives,
+          originalQuizContent: lesson.quiz_final,
         });
       }
 
@@ -613,7 +617,8 @@ export const QuizActivityValidator = () => {
       setPreviewData({
         lessonId,
         lessonTitle: validation.lesson.title,
-        correctedActivities: data.correctedActivities,
+        type: 'activity',
+        correctedItems: data.correctedActivities,
         newContent: data.newContent,
         issuesFixed: data.issuesFixed,
       });
@@ -627,66 +632,171 @@ export const QuizActivityValidator = () => {
     }
   };
 
-  const saveRegeneratedActivities = async () => {
+  const regenerateQuiz = async (lessonId: string) => {
+    const validation = validations.find(v => v.lesson.id === lessonId);
+    if (!validation) return;
+
+    const aiIssues = validation.aiValidation?.issues || [];
+    const parsingErrors = validation.quizErrors || [];
+    const hasParsingErrors = parsingErrors.length > 0 && validation.quizParsed.length === 0;
+    
+    // Check if we have anything to fix
+    if (aiIssues.length === 0 && !hasParsingErrors) {
+      toast.info("Aucun problème à corriger dans le quiz");
+      return;
+    }
+
+    setIsRegenerating(lessonId);
+
+    try {
+      const { data, error } = await supabase.functions.invoke('fix-invalid-quiz', {
+        body: {
+          lessonId,
+          questions: validation.quizParsed,
+          issues: aiIssues,
+          parsingErrors: hasParsingErrors ? parsingErrors : [],
+          lessonTitle: validation.lesson.title,
+          subject: validation.lesson.subject_name,
+          gradeLevel: validation.lesson.grade_level,
+          originalContent: validation.originalQuizContent,
+          needsFullRegeneration: hasParsingErrors,
+        }
+      });
+
+      if (error) throw error;
+
+      if (data.error) {
+        throw new Error(data.error);
+      }
+
+      // Show preview dialog
+      setPreviewData({
+        lessonId,
+        lessonTitle: validation.lesson.title,
+        type: 'quiz',
+        correctedItems: data.correctedQuestions,
+        newContent: data.newContent,
+        issuesFixed: data.issuesFixed,
+      });
+
+      toast.success(`${data.issuesFixed} question(s) corrigée(s) - Vérifiez l'aperçu`);
+    } catch (error) {
+      console.error('Quiz regeneration error:', error);
+      toast.error(`Erreur: ${error instanceof Error ? error.message : 'Échec de la régénération'}`);
+    } finally {
+      setIsRegenerating(null);
+    }
+  };
+
+  const saveRegeneratedContent = async () => {
     if (!previewData) return;
 
     setIsSaving(true);
 
     try {
+      const field = previewData.type === 'quiz' ? 'quiz_final' : 'activites_interactives';
+      
       const { error } = await supabase
         .from('lessons')
         .update({ 
-          activites_interactives: previewData.newContent,
+          [field]: previewData.newContent,
           updated_at: new Date().toISOString()
         })
         .eq('id', previewData.lessonId);
 
       if (error) throw error;
 
-      // Re-parse the new content
-      const newParsed = parseActivities(previewData.newContent);
-      const isNowValid = newParsed.activities.length > 0 && newParsed.errors.length === 0;
+      if (previewData.type === 'activity') {
+        // Re-parse the new content
+        const newParsed = parseActivities(previewData.newContent);
+        const isNowValid = newParsed.activities.length > 0 && newParsed.errors.length === 0;
 
-      // Update local state and recalculate stats
-      setValidations(prev => {
-        const updated = prev.map(v => {
-          if (v.lesson.id === previewData.lessonId) {
-            return {
-              ...v,
-              activitiesParsed: newParsed.activities,
-              activityErrors: newParsed.errors,
-              originalActivityContent: previewData.newContent,
-              activityAIValidation: undefined, // Reset AI validation
-            };
-          }
-          return v;
-        });
-
-        // Recalculate stats
-        let activitiesValid = 0;
-        let activitiesInvalid = 0;
-        updated.forEach(v => {
-          if (v.originalActivityContent) {
-            if (v.activitiesParsed.length > 0 && v.activityErrors.length === 0) {
-              activitiesValid++;
-            } else {
-              activitiesInvalid++;
+        // Update local state and recalculate stats
+        setValidations(prev => {
+          const updated = prev.map(v => {
+            if (v.lesson.id === previewData.lessonId) {
+              return {
+                ...v,
+                activitiesParsed: newParsed.activities,
+                activityErrors: newParsed.errors,
+                originalActivityContent: previewData.newContent,
+                activityAIValidation: undefined, // Reset AI validation
+              };
             }
-          }
+            return v;
+          });
+
+          // Recalculate stats
+          let activitiesValid = 0;
+          let activitiesInvalid = 0;
+          updated.forEach(v => {
+            if (v.originalActivityContent) {
+              if (v.activitiesParsed.length > 0 && v.activityErrors.length === 0) {
+                activitiesValid++;
+              } else {
+                activitiesInvalid++;
+              }
+            }
+          });
+
+          setStats(s => ({
+            ...s,
+            activitiesValid,
+            activitiesInvalid,
+          }));
+
+          return updated;
         });
 
-        setStats(s => ({
-          ...s,
-          activitiesValid,
-          activitiesInvalid,
-        }));
+        toast.success(isNowValid 
+          ? "Activités sauvegardées et validées avec succès!" 
+          : "Activités sauvegardées - vérifiez le nouveau format");
+      } else {
+        // Quiz
+        const newParsed = parseQuizQuestions(previewData.newContent);
+        const isNowValid = newParsed.questions.length > 0 && newParsed.errors.length === 0;
 
-        return updated;
-      });
+        setValidations(prev => {
+          const updated = prev.map(v => {
+            if (v.lesson.id === previewData.lessonId) {
+              return {
+                ...v,
+                quizParsed: newParsed.questions,
+                quizErrors: newParsed.errors,
+                originalQuizContent: previewData.newContent,
+                aiValidation: undefined, // Reset AI validation
+              };
+            }
+            return v;
+          });
 
-      toast.success(isNowValid 
-        ? "Activités sauvegardées et validées avec succès!" 
-        : "Activités sauvegardées - vérifiez le nouveau format");
+          // Recalculate stats
+          let quizValid = 0;
+          let quizInvalid = 0;
+          updated.forEach(v => {
+            if (v.originalQuizContent) {
+              if (v.quizParsed.length > 0 && v.quizErrors.length === 0) {
+                quizValid++;
+              } else {
+                quizInvalid++;
+              }
+            }
+          });
+
+          setStats(s => ({
+            ...s,
+            quizValid,
+            quizInvalid,
+          }));
+
+          return updated;
+        });
+
+        toast.success(isNowValid 
+          ? "Quiz sauvegardé et validé avec succès!" 
+          : "Quiz sauvegardé - vérifiez le nouveau format");
+      }
+
       setPreviewData(null);
     } catch (error) {
       console.error('Save error:', error);
@@ -862,7 +972,8 @@ export const QuizActivityValidator = () => {
                     isExpanded={expandedLessons.has(validation.lesson.id)}
                     onToggle={() => toggleExpanded(validation.lesson.id)}
                     onAIValidate={(type) => runAIValidation(validation.lesson.id, type)}
-                    onRegenerate={() => regenerateActivities(validation.lesson.id)}
+                    onRegenerateActivities={() => regenerateActivities(validation.lesson.id)}
+                    onRegenerateQuiz={() => regenerateQuiz(validation.lesson.id)}
                     isValidatingAI={isValidatingAI}
                     isRegenerating={isRegenerating === validation.lesson.id}
                   />
@@ -883,7 +994,8 @@ export const QuizActivityValidator = () => {
                       isExpanded={expandedLessons.has(validation.lesson.id)}
                       onToggle={() => toggleExpanded(validation.lesson.id)}
                       onAIValidate={(type) => runAIValidation(validation.lesson.id, type)}
-                      onRegenerate={() => regenerateActivities(validation.lesson.id)}
+                      onRegenerateActivities={() => regenerateActivities(validation.lesson.id)}
+                      onRegenerateQuiz={() => regenerateQuiz(validation.lesson.id)}
                       isValidatingAI={isValidatingAI}
                       isRegenerating={isRegenerating === validation.lesson.id}
                     />
@@ -904,7 +1016,8 @@ export const QuizActivityValidator = () => {
                       isExpanded={expandedLessons.has(validation.lesson.id)}
                       onToggle={() => toggleExpanded(validation.lesson.id)}
                       onAIValidate={(type) => runAIValidation(validation.lesson.id, type)}
-                      onRegenerate={() => regenerateActivities(validation.lesson.id)}
+                      onRegenerateActivities={() => regenerateActivities(validation.lesson.id)}
+                      onRegenerateQuiz={() => regenerateQuiz(validation.lesson.id)}
                       isValidatingAI={isValidatingAI}
                       isRegenerating={isRegenerating === validation.lesson.id}
                     />
@@ -924,19 +1037,19 @@ export const QuizActivityValidator = () => {
               Aperçu des corrections - {previewData?.lessonTitle}
             </DialogTitle>
             <DialogDescription>
-              {previewData?.issuesFixed} activité(s) ont été corrigée(s). Vérifiez les modifications avant de sauvegarder.
+              {previewData?.issuesFixed} {previewData?.type === 'quiz' ? 'question(s)' : 'activité(s)'} ont été corrigée(s). Vérifiez les modifications avant de sauvegarder.
             </DialogDescription>
           </DialogHeader>
 
           <div className="space-y-4">
-            {previewData?.correctedActivities.map((activity, idx) => (
-              <Card key={idx} className={activity.wasFixed ? 'border-primary' : 'border-muted'}>
+            {previewData?.correctedItems.map((item, idx) => (
+              <Card key={idx} className={item.wasFixed ? 'border-primary' : 'border-muted'}>
                 <CardContent className="p-4">
                   <div className="flex items-center gap-2 mb-2">
-                    <Badge variant={activity.wasFixed ? "default" : "secondary"}>
-                      Activité {activity.originalIndex + 1}
+                    <Badge variant={item.wasFixed ? "default" : "secondary"}>
+                      {previewData?.type === 'quiz' ? 'Question' : 'Activité'} {item.originalIndex + 1}
                     </Badge>
-                    {activity.wasFixed && (
+                    {item.wasFixed && (
                       <Badge variant="outline" className="text-green-600 border-green-600">
                         <Wand2 className="h-3 w-3 mr-1" />
                         Corrigée
@@ -944,14 +1057,14 @@ export const QuizActivityValidator = () => {
                     )}
                   </div>
                   
-                  <p className="font-medium mb-2">{activity.question}</p>
+                  <p className="font-medium mb-2">{item.question}</p>
                   
                   <div className="grid grid-cols-2 gap-2 mb-2">
-                    {activity.options.map((opt, optIdx) => (
+                    {item.options.map((opt, optIdx) => (
                       <div 
                         key={optIdx} 
                         className={`p-2 rounded text-sm ${
-                          optIdx === activity.correctAnswer 
+                          optIdx === item.correctAnswer 
                             ? 'bg-green-100 dark:bg-green-900/30 border border-green-500' 
                             : 'bg-muted'
                         }`}
@@ -962,12 +1075,12 @@ export const QuizActivityValidator = () => {
                   </div>
                   
                   <p className="text-sm text-muted-foreground">
-                    <strong>Explication:</strong> {activity.explanation}
+                    <strong>Explication:</strong> {item.explanation}
                   </p>
                   
-                  {activity.fixApplied && (
+                  {item.fixApplied && (
                     <p className="text-sm text-primary mt-2">
-                      <strong>Correction appliquée:</strong> {activity.fixApplied}
+                      <strong>Correction appliquée:</strong> {item.fixApplied}
                     </p>
                   )}
                 </CardContent>
@@ -980,7 +1093,7 @@ export const QuizActivityValidator = () => {
               <X className="h-4 w-4 mr-2" />
               Annuler
             </Button>
-            <Button onClick={saveRegeneratedActivities} disabled={isSaving}>
+            <Button onClick={saveRegeneratedContent} disabled={isSaving}>
               {isSaving ? (
                 <Loader2 className="h-4 w-4 mr-2 animate-spin" />
               ) : (
@@ -1000,7 +1113,8 @@ interface ValidationItemProps {
   isExpanded: boolean;
   onToggle: () => void;
   onAIValidate: (type: 'quiz' | 'activity') => void;
-  onRegenerate: () => void;
+  onRegenerateActivities: () => void;
+  onRegenerateQuiz: () => void;
   isValidatingAI: string | null;
   isRegenerating: boolean;
 }
@@ -1010,7 +1124,8 @@ const ValidationItem = ({
   isExpanded, 
   onToggle, 
   onAIValidate, 
-  onRegenerate,
+  onRegenerateActivities,
+  onRegenerateQuiz,
   isValidatingAI,
   isRegenerating 
 }: ValidationItemProps) => {
@@ -1020,9 +1135,12 @@ const ValidationItem = ({
   const isValidatingQuiz = isValidatingAI === `${validation.lesson.id}-quiz`;
   const isValidatingActivity = isValidatingAI === `${validation.lesson.id}-activity`;
   const hasActivityIssues = (validation.activityAIValidation?.issues?.length || 0) > 0;
+  const hasQuizIssues = (validation.aiValidation?.issues?.length || 0) > 0;
   // Can regenerate if we have AI issues OR parsing errors (format issues)
-  const hasParsingErrorsOnly = hasActivityErrors && validation.activitiesParsed.length === 0;
-  const canRegenerateActivities = hasActivityIssues || hasParsingErrorsOnly;
+  const hasActivityParsingErrorsOnly = hasActivityErrors && validation.activitiesParsed.length === 0;
+  const hasQuizParsingErrorsOnly = hasQuizErrors && validation.quizParsed.length === 0;
+  const canRegenerateActivities = hasActivityIssues || hasActivityParsingErrorsOnly;
+  const canRegenerateQuiz = hasQuizIssues || hasQuizParsingErrorsOnly;
 
   return (
     <Collapsible open={isExpanded} onOpenChange={onToggle}>
@@ -1117,13 +1235,13 @@ const ValidationItem = ({
             )}
 
             {/* Activities Details */}
-            {(validation.activitiesParsed.length > 0 || hasParsingErrorsOnly) && (
+            {(validation.activitiesParsed.length > 0 || hasActivityParsingErrorsOnly) && (
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
                   <h4 className="font-medium flex items-center gap-2">
                     <Gamepad2 className="h-4 w-4" />
                     Activités Interactives ({validation.activitiesParsed.length || 0})
-                    {hasParsingErrorsOnly && (
+                    {hasActivityParsingErrorsOnly && (
                       <Badge variant="destructive" className="ml-2">
                         Format invalide
                       </Badge>
@@ -1145,7 +1263,7 @@ const ValidationItem = ({
                         Vérifier Activités IA
                       </Button>
                     )}
-                    {validation.activityAIValidation && !hasActivityIssues && !hasParsingErrorsOnly && (
+                    {validation.activityAIValidation && !hasActivityIssues && !hasActivityParsingErrorsOnly && (
                       <Badge variant="outline" className="text-green-600 border-green-600">
                         <CheckCircle2 className="h-3 w-3 mr-1" />
                         Aucun problème
@@ -1155,7 +1273,7 @@ const ValidationItem = ({
                       <Button 
                         size="sm" 
                         variant="default"
-                        onClick={(e) => { e.stopPropagation(); onRegenerate(); }}
+                        onClick={(e) => { e.stopPropagation(); onRegenerateActivities(); }}
                         disabled={isRegenerating}
                         className="bg-primary"
                       >
@@ -1164,7 +1282,7 @@ const ValidationItem = ({
                         ) : (
                           <Wand2 className="h-3 w-3 mr-1" />
                         )}
-                        {hasParsingErrorsOnly ? 'Régénérer' : `Corriger tout (${validation.activityAIValidation?.issues?.length})`}
+                        {hasActivityParsingErrorsOnly ? 'Régénérer' : `Corriger tout (${validation.activityAIValidation?.issues?.length})`}
                       </Button>
                     )}
                   </div>
