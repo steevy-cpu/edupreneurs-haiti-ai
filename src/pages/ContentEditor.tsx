@@ -11,7 +11,6 @@ import { LessonBrowser } from "@/components/content-editor/LessonBrowser";
 import { LessonPreview } from "@/components/content-editor/LessonPreview";
 import { YouTubeManager } from "@/components/content-editor/YouTubeManager";
 import { LessonComments } from "@/components/content-editor/LessonComments";
-import { BatchLessonGenerator } from "@/components/content-editor/BatchLessonGenerator";
 import { SingleLessonGenerator } from "@/components/content-editor/SingleLessonGenerator";
 import { CreateMatiereDialog } from "@/components/content-editor/CreateMatiereDialog";
 import { ExamManager } from "@/components/content-editor/ExamManager";
@@ -19,8 +18,8 @@ import { BaccExamManager } from "@/components/content-editor/BaccExamManager";
 import { PassionVideoManager } from "@/components/content-editor/PassionVideoManager";
 import { CurriculumAnalyzer } from "@/components/content-editor/CurriculumAnalyzer";
 import { LessonImageManager } from "@/components/content-editor/LessonImageManager";
-import { QuizActivityValidator } from "@/components/content-editor/QuizActivityValidator";
 import { LessonValidationPanel } from "@/components/content-editor/LessonValidationPanel";
+import { BatchGenerationValidation } from "@/components/content-editor/BatchGenerationValidation";
 
 const CONTENT_EDITOR_STORAGE_KEY = 'content_editor_preferences';
 
@@ -243,18 +242,14 @@ const ContentEditor = () => {
         {/* Main Content with Tabs */}
         <div className="max-w-[1600px] mx-auto">
           <Tabs value={activeTab} onValueChange={handleTabChange} className="space-y-6">
-            <TabsList className="grid w-full grid-cols-6 lg:w-[1200px]">
+            <TabsList className="grid w-full grid-cols-5 lg:w-[1000px]">
               <TabsTrigger value="review">
                 <BookOpen className="mr-2 h-4 w-4" />
                 Révision
               </TabsTrigger>
-              <TabsTrigger value="validation">
-                <CheckCircle2 className="mr-2 h-4 w-4" />
-                Validation en masse
-              </TabsTrigger>
               <TabsTrigger value="batch">
                 <Zap className="mr-2 h-4 w-4" />
-                Génération
+                Génération & Validation
               </TabsTrigger>
               <TabsTrigger value="exams">
                 <BarChart3 className="mr-2 h-4 w-4" />
@@ -380,12 +375,8 @@ const ContentEditor = () => {
               </div>
             </TabsContent>
 
-            <TabsContent value="validation">
-              <QuizActivityValidator />
-            </TabsContent>
-
             <TabsContent value="batch">
-              <BatchLessonGenerator />
+              <BatchGenerationValidation />
             </TabsContent>
 
             <TabsContent value="exams">
