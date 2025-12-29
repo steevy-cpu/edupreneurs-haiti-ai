@@ -21,6 +21,25 @@ import { CurriculumAnalyzer } from "@/components/content-editor/CurriculumAnalyz
 import { LessonImageManager } from "@/components/content-editor/LessonImageManager";
 import { QuizActivityValidator } from "@/components/content-editor/QuizActivityValidator";
 
+const CONTENT_EDITOR_STORAGE_KEY = 'content_editor_preferences';
+
+interface EditorPreferences {
+  activeTab: string;
+  lastLessonId?: string;
+}
+
+const getStoredPreferences = (): EditorPreferences => {
+  try {
+    const saved = localStorage.getItem(CONTENT_EDITOR_STORAGE_KEY);
+    if (saved) {
+      return JSON.parse(saved);
+    }
+  } catch (e) {
+    console.error('Error reading localStorage:', e);
+  }
+  return { activeTab: 'review' };
+};
+
 const ContentEditor = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
@@ -30,16 +49,36 @@ const ContentEditor = () => {
   const [subjectLessons, setSubjectLessons] = useState<Array<{ id: string; title: string; slug: string }>>([]);
   const [refreshKey, setRefreshKey] = useState(0);
   const [showCreateMatiere, setShowCreateMatiere] = useState(false);
+  const [activeTab, setActiveTab] = useState<string>(() => getStoredPreferences().activeTab);
+
+  const savePreferences = (tab: string, lessonId?: string) => {
+    const prefs: EditorPreferences = {
+      activeTab: tab,
+      lastLessonId: lessonId || selectedLesson?.id
+    };
+    localStorage.setItem(CONTENT_EDITOR_STORAGE_KEY, JSON.stringify(prefs));
+  };
+
+  const handleTabChange = (value: string) => {
+    setActiveTab(value);
+    savePreferences(value);
+  };
 
   useEffect(() => {
     checkAccess();
   }, []);
 
-  // Load lesson from URL parameter
+  // Load lesson from URL parameter or localStorage
   useEffect(() => {
     const lessonId = searchParams.get('lesson');
     if (lessonId && hasAccess) {
       loadLessonFromUrl(lessonId);
+    } else if (hasAccess && !selectedLesson) {
+      // Try to load last lesson from localStorage
+      const prefs = getStoredPreferences();
+      if (prefs.lastLessonId) {
+        loadLessonFromUrl(prefs.lastLessonId);
+      }
     }
   }, [searchParams, hasAccess]);
 
@@ -202,7 +241,7 @@ const ContentEditor = () => {
 
         {/* Main Content with Tabs */}
         <div className="max-w-[1600px] mx-auto">
-          <Tabs defaultValue="review" className="space-y-6">
+          <Tabs value={activeTab} onValueChange={handleTabChange} className="space-y-6">
             <TabsList className="grid w-full grid-cols-6 lg:w-[1200px]">
               <TabsTrigger value="review">
                 <BookOpen className="mr-2 h-4 w-4" />
@@ -247,6 +286,7 @@ const ContentEditor = () => {
                         if (error) throw error;
                         if (data) {
                           setSelectedLesson(data);
+                          savePreferences(activeTab, data.id); // Save lesson to localStorage
                           
                           // Fetch all lessons for this subject for CurriculumAnalyzer
                           const { data: allLessons } = await supabase
