@@ -110,9 +110,10 @@ INSTRUCTIONS IMPORTANTES:
 1. Corrige UNIQUEMENT les problèmes identifiés
 2. Si la réponse correcte est fausse, trouve la VRAIE bonne réponse et mets à jour le champ correctAnswer (0=A, 1=B, 2=C, 3=D)
 3. Assure-toi que l'explication correspond à la réponse correcte
-4. Garde le même format et style de question
-5. Ne change pas les questions qui n'ont pas de problème
-6. Vérifie que tes corrections sont factuellement correctes
+4. **TRÈS IMPORTANT: Toutes les explications DOIVENT être en FRANÇAIS** (pas en anglais, pas en créole)
+5. Garde le même format et style de question
+6. Ne change pas les questions qui n'ont pas de problème
+7. Vérifie que tes corrections sont factuellement correctes
 
 Retourne les activités corrigées au format JSON suivant:
 {
@@ -122,13 +123,12 @@ Retourne les activités corrigées au format JSON suivant:
       "question": "La question corrigée",
       "options": ["Option A", "Option B", "Option C", "Option D"],
       "correctAnswer": 2,
-      "explanation": "L'explication corrigée...",
+      "explanation": "L'explication en français...",
       "wasFixed": true,
       "fixApplied": "Description de la correction"
     }
   ]
 }`;
-
     console.log('[fix-invalid-activities] Calling Lovable AI for corrections...');
 
     const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
@@ -257,7 +257,7 @@ INSTRUCTIONS:
 1. Crée 3-5 activités de type QUIZ basées sur le sujet de la leçon
 2. Chaque question doit avoir exactement 4 options (A, B, C, D)
 3. Une seule réponse correcte par question
-4. Inclure une explication pédagogique pour chaque question
+4. **TRÈS IMPORTANT: Toutes les explications DOIVENT être en FRANÇAIS** (pas en anglais, pas en créole)
 5. Adapte le niveau aux élèves haïtiens de ${gradeLevel}
 6. Les questions doivent être factuellement correctes
 
@@ -269,7 +269,7 @@ Retourne les activités au format JSON:
       "question": "La question",
       "options": ["Option A", "Option B", "Option C", "Option D"],
       "correctAnswer": 0,
-      "explanation": "L'explication détaillée...",
+      "explanation": "L'explication détaillée en français...",
       "wasFixed": true,
       "fixApplied": "Activité régénérée à partir de zéro"
     }
