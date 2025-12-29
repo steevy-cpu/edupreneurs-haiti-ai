@@ -5,7 +5,14 @@ import CapturedPieces from './CapturedPieces';
 import MoveHistory from './MoveHistory';
 import ChessTimer from './ChessTimer';
 import ChessGameControls from './ChessGameControls';
+import EricCoachBanner from './EricCoachBanner';
 import type { DifficultyLevel, TimeControl } from '@/hooks/useChessGame';
+
+interface ChatMessage {
+  role: 'user' | 'assistant';
+  content: string;
+  timestamp: Date;
+}
 
 interface ChessBoardEnhancedProps {
   game: Chess;
@@ -28,6 +35,7 @@ interface ChessBoardEnhancedProps {
   whiteTime: number;
   blackTime: number;
   isGameOver: boolean;
+  chatMessages?: ChatMessage[];
 }
 
 const ChessBoardEnhanced: React.FC<ChessBoardEnhancedProps> = ({
@@ -50,10 +58,12 @@ const ChessBoardEnhanced: React.FC<ChessBoardEnhancedProps> = ({
   canUndo,
   whiteTime,
   blackTime,
-  isGameOver
+  isGameOver,
+  chatMessages = []
 }) => {
   const [moveFrom, setMoveFrom] = useState<Square | null>(null);
   const [optionSquares, setOptionSquares] = useState<Record<string, React.CSSProperties>>({});
+  const [isChatExpanded, setIsChatExpanded] = useState(false);
 
   const customSquareStyles = useMemo(() => {
     const styles: Record<string, React.CSSProperties> = {};
@@ -147,6 +157,14 @@ const ChessBoardEnhanced: React.FC<ChessBoardEnhancedProps> = ({
 
   return (
     <div className="flex flex-col gap-3">
+      {/* Eric Coach Banner - Always visible at top */}
+      <EricCoachBanner
+        messages={chatMessages}
+        isThinking={isThinking}
+        isExpanded={isChatExpanded}
+        onToggle={() => setIsChatExpanded(!isChatExpanded)}
+      />
+
       {/* Controls */}
       <ChessGameControls
         difficulty={difficulty}
@@ -172,16 +190,11 @@ const ChessBoardEnhanced: React.FC<ChessBoardEnhancedProps> = ({
         />
       )}
 
-      {/* Game Status */}
-      <div className="text-center">
-        <p className={`font-semibold text-lg ${getStatusColor()}`}>
+      {/* Game Status - Compact */}
+      <div className="text-center py-1">
+        <p className={`font-semibold ${getStatusColor()}`}>
           {gameStatus}
         </p>
-        {isThinking && (
-          <p className="text-sm text-muted-foreground animate-pulse">
-            Eric réfléchit... 🤔
-          </p>
-        )}
       </div>
 
       {/* Captured Pieces */}

@@ -2,14 +2,13 @@ import React, { useState, useCallback, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
-import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
-import { ArrowLeft, Gamepad2, Target, Trophy } from 'lucide-react';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { ArrowLeft, Gamepad2, Target } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useChessSounds } from '@/hooks/useChessSounds';
 import { useToast } from '@/hooks/use-toast';
 import { Chess } from 'chess.js';
 import ChessBoardEnhanced from '@/components/chess/ChessBoardEnhanced';
-import FloatingChessMessages from '@/components/chess/FloatingChessMessages';
 import ChessPlayerStats from '@/components/chess/ChessPlayerStats';
 import ChessPuzzleTrainer from '@/components/chess/ChessPuzzleTrainer';
 import ChessPostGameAnalysis from '@/components/chess/ChessPostGameAnalysis';
@@ -47,7 +46,6 @@ const ChessGame: React.FC = () => {
   const [gameStatus, setGameStatus] = useState("C'est ton tour!");
   const [difficulty, setDifficulty] = useState<DifficultyLevel>('intermediate');
   const [timeControl, setTimeControl] = useState<TimeControl>('untimed');
-  const [isChatOpen, setIsChatOpen] = useState(false);
   const [showStats, setShowStats] = useState(false);
   const [activeTab, setActiveTab] = useState<'play' | 'puzzles'>('play');
   const [showAnalysis, setShowAnalysis] = useState(false);
@@ -358,7 +356,6 @@ const ChessGame: React.FC = () => {
   }, []);
 
   const handleRequestTutorial = useCallback(() => {
-    setIsChatOpen(true);
     handleSendMessage("Apprends-moi les règles de base des échecs!");
   }, [handleSendMessage]);
 
@@ -407,40 +404,31 @@ const ChessGame: React.FC = () => {
           <div className="flex justify-center">
             <div className="relative w-full max-w-2xl">
               {activeTab === 'play' && !showAnalysis && (
-                <>
-                  <Card className="p-2 sm:p-4">
-                    <ChessBoardEnhanced
-                      game={game}
-                      onMove={handlePlayerMove}
-                      onNewGame={handleNewGame}
-                      onRequestTutorial={handleRequestTutorial}
-                      onUndo={handleUndo}
-                      onShowStats={() => setShowStats(true)}
-                      isThinking={isThinking}
-                      gameStatus={gameStatus}
-                      difficulty={difficulty}
-                      timeControl={timeControl}
-                      onDifficultyChange={handleDifficultyChange}
-                      onTimeControlChange={handleTimeControlChange}
-                      lastMove={lastMove}
-                      capturedByWhite={capturedByWhite}
-                      capturedByBlack={capturedByBlack}
-                      moveHistory={moveHistory}
-                      canUndo={gameHistory.length > 0 && !isThinking && !isGameOver}
-                      whiteTime={whiteTime}
-                      blackTime={blackTime}
-                      isGameOver={isGameOver}
-                    />
-                  </Card>
-                  
-                  <FloatingChessMessages
-                    messages={messages}
-                    onSendMessage={handleSendMessage}
-                    isLoading={isThinking}
-                    isOpen={isChatOpen}
-                    onToggle={() => setIsChatOpen(!isChatOpen)}
+                <Card className="p-2 sm:p-4">
+                  <ChessBoardEnhanced
+                    game={game}
+                    onMove={handlePlayerMove}
+                    onNewGame={handleNewGame}
+                    onRequestTutorial={handleRequestTutorial}
+                    onUndo={handleUndo}
+                    onShowStats={() => setShowStats(true)}
+                    isThinking={isThinking}
+                    gameStatus={gameStatus}
+                    difficulty={difficulty}
+                    timeControl={timeControl}
+                    onDifficultyChange={handleDifficultyChange}
+                    onTimeControlChange={handleTimeControlChange}
+                    lastMove={lastMove}
+                    capturedByWhite={capturedByWhite}
+                    capturedByBlack={capturedByBlack}
+                    moveHistory={moveHistory}
+                    canUndo={gameHistory.length > 0 && !isThinking && !isGameOver}
+                    whiteTime={whiteTime}
+                    blackTime={blackTime}
+                    isGameOver={isGameOver}
+                    chatMessages={messages}
                   />
-                </>
+                </Card>
               )}
 
               {activeTab === 'play' && showAnalysis && gameResult && (
