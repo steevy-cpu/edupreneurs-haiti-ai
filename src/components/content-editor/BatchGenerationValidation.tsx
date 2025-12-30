@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -19,6 +19,15 @@ import {
   ChevronDown, ChevronUp, Sparkles, FileText, Gamepad2, Wand2, AlertTriangle, Zap
 } from "lucide-react";
 import { DEFAULT_WORD_COUNTS, type SectionName } from "@/lib/lessonPrompts";
+import {
+  parseQuizQuestions,
+  parseActivities,
+  type ParsedQuestion,
+  type ParsedActivity,
+  type ParsedQuizActivity,
+  type ParsedTrueFalseActivity,
+  type ParseResult,
+} from "@/utils/quizActivityParsing";
 
 // Types
 type GenerationStatus = 'pending' | 'in_progress' | 'completed' | 'error';
@@ -33,30 +42,6 @@ interface LessonGenerationStatus {
   error?: string;
   generatedContent?: Record<string, any>;
 }
-
-interface ParsedQuestion {
-  question: string;
-  options: string[];
-  correctAnswer: number;
-  explanation: string;
-}
-
-interface ParsedQuizActivity {
-  question: string;
-  options: string[];
-  correctAnswer: number;
-  explanation: string;
-  activityType: 'QUIZ';
-}
-
-interface ParsedTrueFalseActivity {
-  statement: string;
-  isTrue: boolean;
-  explanation: string;
-  activityType: 'TRUE_FALSE';
-}
-
-type ParsedActivity = ParsedQuizActivity | ParsedTrueFalseActivity;
 
 interface LessonValidation {
   lesson: {
@@ -90,23 +75,6 @@ interface ValidationStats {
   activitiesInvalid: number;
 }
 
-interface RegenerationPreview {
-  lessonId: string;
-  lessonTitle: string;
-  type: 'activity' | 'quiz';
-  correctedItems: Array<{
-    originalIndex: number;
-    question: string;
-    options: string[];
-    correctAnswer: number;
-    explanation: string;
-    wasFixed: boolean;
-    fixApplied?: string;
-  }>;
-  newContent: string;
-  issuesFixed: number;
-}
-
 export const BatchGenerationValidation = () => {
   // Shared filter states
   const [gradeLevel, setGradeLevel] = useState<string>("all");
@@ -130,6 +98,7 @@ export const BatchGenerationValidation = () => {
   const [globalContext, setGlobalContext] = useState("");
   const [isGenerating, setIsGenerating] = useState(false);
   const [isPaused, setIsPaused] = useState(false);
+  const isPausedRef = useRef(false); // Fix #2: useRef for stale closure
   const [lessonStatuses, setLessonStatuses] = useState<LessonGenerationStatus[]>([]);
   const [totalLessons, setTotalLessons] = useState(0);
   const [completedCount, setCompletedCount] = useState(0);
@@ -143,14 +112,18 @@ export const BatchGenerationValidation = () => {
   // Validation states
   const [validations, setValidations] = useState<LessonValidation[]>([]);
   const [isValidating, setIsValidating] = useState(false);
-  const [isValidatingAI, setIsValidatingAI] = useState<string | null>(null);
-  const [isRegenerating, setIsRegenerating] = useState<string | null>(null);
   const [expandedLessons, setExpandedLessons] = useState<Set<string>>(new Set());
   const [validationStats, setValidationStats] = useState<ValidationStats>({
     total: 0, quizValid: 0, quizInvalid: 0, activitiesValid: 0, activitiesInvalid: 0,
   });
-  const [validationPreviewData, setValidationPreviewData] = useState<RegenerationPreview | null>(null);
-  const [isSaving, setIsSaving] = useState(false);
+
+  // Generate then validate state
+  const [isGeneratingThenValidating, setIsGeneratingThenValidating] = useState(false);
+
+  // Confirmation dialog state
+  const [showConfirmDialog, setShowConfirmDialog] = useState(false);
+  const [pendingAction, setPendingAction] = useState<'generate' | 'validate' | 'generateThenValidate' | null>(null);
+  const [pendingLessonCount, setPendingLessonCount] = useState(0);
 
   // Active inner tab
   const [activeInnerTab, setActiveInnerTab] = useState<'generation' | 'validation'>('generation');
@@ -183,12 +156,17 @@ export const BatchGenerationValidation = () => {
     { value: "activites_interactives", label: "Activités Interactives" },
   ];
 
+  // Fix #2: Sync ref with state
+  useEffect(() => {
+    isPausedRef.current = isPaused;
+  }, [isPaused]);
+
   // Load subjects when grade level or series changes
   useEffect(() => {
     loadSubjects();
   }, [gradeLevel, series]);
 
-  // Load lessons when grade level or subject changes
+  // Load lessons when grade level, subject, or series changes
   useEffect(() => {
     if (gradeLevel !== "all" || subject !== "all") {
       loadLessonsForSelection();
@@ -196,7 +174,7 @@ export const BatchGenerationValidation = () => {
       setAvailableLessons([]);
       setSelectedLessonIds([]);
     }
-  }, [gradeLevel, subject]);
+  }, [gradeLevel, subject, series]);
 
   const loadSubjects = async () => {
     setIsLoadingSubjects(true);
@@ -225,12 +203,13 @@ export const BatchGenerationValidation = () => {
     }
   };
 
+  // Fix #4: Apply series filter in loadLessonsForSelection
   const loadLessonsForSelection = async () => {
     setIsLoadingLessons(true);
     try {
       let query = supabase
         .from('lessons')
-        .select('id, title, grade_level, subject_id, subjects(name)')
+        .select('id, title, grade_level, subject_id, subjects(name, series)')
         .order('title');
 
       if (gradeLevel !== "all") {
@@ -243,7 +222,16 @@ export const BatchGenerationValidation = () => {
 
       const { data, error } = await query;
       if (error) throw error;
-      setAvailableLessons(data || []);
+      
+      // Fix #4: Filter by series on client side for NS3/NS4
+      let filteredData = data || [];
+      if (isNS3OrNS4 && series.length > 0 && subject === "all") {
+        filteredData = filteredData.filter(lesson => 
+          lesson.subjects && series.includes((lesson.subjects as any).series)
+        );
+      }
+      
+      setAvailableLessons(filteredData);
     } catch (error) {
       console.error('Error loading lessons:', error);
       toast.error("Erreur lors du chargement des leçons");
@@ -276,7 +264,7 @@ export const BatchGenerationValidation = () => {
         return selectedLessons || [];
       }
 
-      let query = supabase.from('lessons').select('id, title, grade_level, objectif, introduction, contenu, exemples_exercices, activites_interactives, subjects(name)');
+      let query = supabase.from('lessons').select('id, title, grade_level, objectif, introduction, contenu, exemples_exercices, activites_interactives, subjects(name, series)');
 
       if (gradeLevel !== "all") {
         query = query.eq('grade_level', gradeLevel);
@@ -293,25 +281,59 @@ export const BatchGenerationValidation = () => {
         return [];
       }
 
+      let filteredData = data || [];
+      
+      // Fix #4: Apply series filter
+      if (isNS3OrNS4 && series.length > 0 && subject === "all") {
+        filteredData = filteredData.filter(lesson => 
+          lesson.subjects && series.includes((lesson.subjects as any).series)
+        );
+      }
+
       if (onlyEmpty && selectedLessonIds.length === 0) {
-        return (data || []).filter(lesson =>
+        return filteredData.filter(lesson =>
           selectedSections.some(section => !lesson[section] || lesson[section].trim() === '')
         );
       }
 
-      return data || [];
+      return filteredData;
     } catch (error: any) {
       toast.error("Erreur inattendue: " + error.message);
       return [];
     }
   };
 
-  const startGeneration = async () => {
+  // Fix #8: Add confirmation for large batches
+  const handleStartGeneration = async () => {
     if (selectedSections.length === 0 && !generateQuiz && !generateVideos && imageGenerationModel === 'none') {
       toast.error("Sélectionnez au moins une section ou fonctionnalité");
       return;
     }
 
+    const lessons = await fetchLessons();
+    
+    if (!lessons || lessons.length === 0) {
+      toast.error("Aucune leçon trouvée avec ces critères");
+      return;
+    }
+
+    // Fix #9: Rate limiting warning for large batches
+    if (lessons.length >= 50) {
+      toast.warning(`Attention: ${lessons.length} leçons à traiter. Cela peut prendre du temps et être limité par le rate limiting.`);
+    }
+
+    // Fix #8: Confirmation for 10+ lessons
+    if (lessons.length > 10) {
+      setPendingLessonCount(lessons.length);
+      setPendingAction('generate');
+      setShowConfirmDialog(true);
+      return;
+    }
+
+    await startGeneration();
+  };
+
+  const startGeneration = async () => {
     const lessons = await fetchLessons();
     
     if (!lessons || lessons.length === 0) {
@@ -351,14 +373,16 @@ export const BatchGenerationValidation = () => {
     })));
     setIsGenerating(true);
     setIsPaused(false);
+    isPausedRef.current = false;
 
     for (let i = 0; i < batchLessons.length; i++) {
-      if (isPaused) break;
+      // Fix #2: Use ref instead of state for immediate check
+      if (isPausedRef.current) break;
 
       const lesson = batchLessons[i];
       await generateLessonSections(lesson, i);
       
-      if (i < batchLessons.length - 1 && !isPaused) {
+      if (i < batchLessons.length - 1 && !isPausedRef.current) {
         await new Promise(resolve => setTimeout(resolve, 3000));
       }
     }
@@ -442,47 +466,78 @@ export const BatchGenerationValidation = () => {
         }
       }
 
-      // Generate Quiz if selected
+      // Fix #3: Generate Quiz with proper error handling
       if (generateQuiz) {
-        const { data: quizData, error: quizError } = await supabase.functions.invoke('generate-quiz-final', {
-          body: {
-            lessonTitle: lesson.title,
-            contenu: lesson.contenu || '',
-            exemplesExercices: lesson.exemples_exercices || '',
-            gradeLevel: lesson.grade_level,
-            subject: lesson.subjects?.name || 'Matière',
-          }
-        });
-
-        if (!quizError && quizData?.quizContent) {
-          setLessonStatuses(prev => prev.map((l, i) => {
-            if (i === index) {
-              return { ...l, generatedContent: { ...l.generatedContent, quiz_final: quizData.quizContent } };
+        try {
+          const { data: quizData, error: quizError } = await supabase.functions.invoke('generate-quiz-final', {
+            body: {
+              lessonTitle: lesson.title,
+              contenu: lesson.contenu || '',
+              exemplesExercices: lesson.exemples_exercices || '',
+              gradeLevel: lesson.grade_level,
+              subject: lesson.subjects?.name || 'Matière',
             }
-            return l;
-          }));
+          });
+
+          if (quizError) {
+            console.error('Quiz generation error:', quizError);
+            setLessonStatuses(prev => prev.map((l, i) =>
+              i === index ? { ...l, error: (l.error || '') + ' Quiz: ' + quizError.message } : l
+            ));
+          } else if (quizData?.quizContent) {
+            await supabase.from('lessons').update({ quiz_final: quizData.quizContent }).eq('id', lesson.id);
+            setLessonStatuses(prev => prev.map((l, i) => {
+              if (i === index) {
+                return { 
+                  ...l, 
+                  sectionsGenerated: [...l.sectionsGenerated, 'quiz_final'],
+                  generatedContent: { ...l.generatedContent, quiz_final: quizData.quizContent } 
+                };
+              }
+              return l;
+            }));
+          }
+        } catch (e: any) {
+          console.error('Quiz generation exception:', e);
+          setLessonStatuses(prev => prev.map((l, i) =>
+            i === index ? { ...l, error: (l.error || '') + ' Quiz: ' + e.message } : l
+          ));
         }
       }
 
-      // Suggest YouTube videos if selected
+      // Fix #3: Suggest YouTube videos with proper error handling
       if (generateVideos) {
-        const { data: videoData } = await supabase.functions.invoke('suggest-youtube-videos', {
-          body: {
-            lessonTitle: lesson.title,
-            contenu: lesson.contenu || '',
-            exemplesExercices: lesson.exemples_exercices || '',
-            gradeLevel: lesson.grade_level,
-            subject: lesson.subjects?.name || 'Matière',
-          }
-        });
+        try {
+          const { data: videoData, error: videoError } = await supabase.functions.invoke('suggest-youtube-videos', {
+            body: {
+              lessonTitle: lesson.title,
+              contenu: lesson.contenu || '',
+              exemplesExercices: lesson.exemples_exercices || '',
+              gradeLevel: lesson.grade_level,
+              subject: lesson.subjects?.name || 'Matière',
+            }
+          });
 
-        const videos = videoData?.videos || [];
-        setLessonStatuses(prev => prev.map((l, i) => {
-          if (i === index) {
-            return { ...l, generatedContent: { ...l.generatedContent, youtube_videos: videos } };
+          if (videoError) {
+            console.error('Video suggestion error:', videoError);
+            setLessonStatuses(prev => prev.map((l, i) =>
+              i === index ? { ...l, error: (l.error || '') + ' Video: ' + videoError.message } : l
+            ));
+          } else {
+            const videos = videoData?.videos || [];
+            setLessonStatuses(prev => prev.map((l, i) => {
+              if (i === index) {
+                return { ...l, generatedContent: { ...l.generatedContent, youtube_videos: videos } };
+              }
+              return l;
+            }));
           }
-          return l;
-        }));
+        } catch (e: any) {
+          console.error('Video suggestion exception:', e);
+          setLessonStatuses(prev => prev.map((l, i) =>
+            i === index ? { ...l, error: (l.error || '') + ' Video: ' + e.message } : l
+          ));
+        }
       }
 
       const generationTime = Date.now() - startTime;
@@ -518,254 +573,7 @@ export const BatchGenerationValidation = () => {
     a.click();
   };
 
-  // ===== VALIDATION LOGIC =====
-  const parseQuizQuestions = (content: string): { questions: ParsedQuestion[], errors: string[] } => {
-    const questions: ParsedQuestion[] = [];
-    const errors: string[] = [];
-
-    if (!content || content.trim().length === 0) {
-      return { questions, errors: ['Contenu vide'] };
-    }
-
-    if (content.includes('<div class="quiz-question"')) {
-      try {
-        const parser = new DOMParser();
-        const doc = parser.parseFromString(content, 'text/html');
-        const questionDivs = doc.querySelectorAll('.quiz-question');
-        
-        questionDivs.forEach((questionDiv, idx) => {
-          const questionText = questionDiv.querySelector('p')?.textContent?.trim() || '';
-          const options: string[] = [];
-          const optionDivs = questionDiv.querySelectorAll('.option');
-          
-          optionDivs.forEach((optionDiv) => {
-            const text = optionDiv.textContent?.trim() || '';
-            const cleanText = text.replace(/^[A-D]\)\s*/, '').trim();
-            if (cleanText) options.push(cleanText);
-          });
-          
-          const correctAnswerDiv = questionDiv.querySelector('.correct-answer');
-          const correctAnswerText = correctAnswerDiv?.querySelector('strong')?.textContent?.trim() || '';
-          const correctMatch = correctAnswerText.match(/Réponse\s+correcte\s*:\s*([A-D])/i);
-          const correctLetter = correctMatch ? correctMatch[1].toUpperCase() : 'A';
-          const correctIndex = correctLetter.charCodeAt(0) - 'A'.charCodeAt(0);
-          
-          const explanationParagraphs = correctAnswerDiv?.querySelectorAll('p');
-          let explanation = '';
-          if (explanationParagraphs && explanationParagraphs.length > 1) {
-            explanation = Array.from(explanationParagraphs).slice(1).map(p => p.textContent?.trim() || '').join(' ');
-          }
-          
-          if (questionText && options.length === 4 && explanation) {
-            questions.push({ question: questionText, options, correctAnswer: correctIndex, explanation });
-          } else {
-            errors.push(`Question ${idx + 1}: ${!questionText ? 'texte manquant' : options.length !== 4 ? `${options.length}/4 options` : 'explication manquante'}`);
-          }
-        });
-      } catch {
-        errors.push('Erreur de parsing HTML');
-      }
-    } else {
-      let sections = content.split(/#{2,3}\s*✅?\s*Question\s+\d+/i);
-      if (sections.length <= 1) {
-        sections = content.split(/Question\s+\d+/i);
-      }
-      
-      sections.slice(1).forEach((section, idx) => {
-        const questionMatch = section.match(/^\s*(.+?)(?=\n\s*[A-D][\):\.])/is);
-        if (!questionMatch) {
-          errors.push(`Question ${idx + 1}: texte non trouvé`);
-          return;
-        }
-        
-        const questionText = questionMatch[1].trim().replace(/\*\*/g, '').replace(/#{1,3}/g, '');
-        
-        const optionMatches = section.matchAll(/([A-D])[\):\.]\s*(.+?)(?=\n\s*[A-D][\):\.]|\n\s*#{2,3}|\n\n|$)/gis);
-        const options: string[] = [];
-        Array.from(optionMatches).forEach(match => {
-          const optionText = match[2]?.trim().replace(/\*\*/g, '');
-          if (optionText && optionText.length > 0 && optionText.length < 300) {
-            options.push(optionText);
-          }
-        });
-        
-        let correctMatch = section.match(/#{2,3}\s*Réponse\s+correcte\s*:?\s*([A-D])/i);
-        if (!correctMatch) correctMatch = section.match(/Réponse\s*:?\s*([A-D])/i);
-        if (!correctMatch) correctMatch = section.match(/Correct[e]?\s*:?\s*([A-D])/i);
-        
-        if (!correctMatch) {
-          errors.push(`Question ${idx + 1}: réponse correcte non trouvée`);
-          return;
-        }
-        
-        if (options.length !== 4) {
-          errors.push(`Question ${idx + 1}: ${options.length}/4 options`);
-          return;
-        }
-        
-        const correctLetter = correctMatch[1].toUpperCase();
-        const correctIndex = correctLetter.charCodeAt(0) - 'A'.charCodeAt(0);
-        
-        const explanationMatch = section.match(/#{2,3}\s*Explication\s*:?\s*\n?\s*(.+?)(?=#{2,3}|$)/is);
-        const explanation = explanationMatch ? explanationMatch[1].trim().replace(/\*\*/g, '') : "";
-        
-        if (questionText && options.length === 4 && correctIndex >= 0 && correctIndex < 4) {
-          questions.push({ question: questionText, options, correctAnswer: correctIndex, explanation: explanation || 'Pas d\'explication' });
-        }
-      });
-    }
-
-    return { questions, errors };
-  };
-
-  const parseActivities = (content: string): { activities: ParsedActivity[], errors: string[] } => {
-    const activities: ParsedActivity[] = [];
-    const errors: string[] = [];
-
-    if (!content || content.trim().length === 0) {
-      return { activities, errors: ['Contenu vide'] };
-    }
-
-    const normalizedContent = content
-      .replace(/^-\s*([A-D]\))/gm, '$1')
-      .replace(/^\*\s*([A-D]\))/gm, '$1')
-      .replace(/^([A-D])\.\s+/gm, '$1) ')
-      .replace(/^([A-D]):\s+/gm, '$1) ');
-
-    // Parse TRUE_FALSE activities
-    const trueFalseSections = normalizedContent.split(/\*\*TYPE:\s*TRUE_FALSE\*\*/i);
-    
-    if (trueFalseSections.length > 1) {
-      trueFalseSections.slice(1).forEach((section, sectionIdx) => {
-        const affirmationBlocks = section.split(/(?:^|\n)---\s*\n|\*\*Affirmation\s*\d*:?\s*\*\*/i);
-        
-        affirmationBlocks.forEach((block, idx) => {
-          if (block.trim().length < 10) return;
-          if (/\*\*TYPE:\s*QUIZ\*\*/i.test(block)) return;
-          
-          const parsed = parseTrueFalseBlock(block, sectionIdx * 10 + idx);
-          if (parsed.activity) {
-            const exists = activities.some(a => 
-              a.activityType === 'TRUE_FALSE' && 
-              (a as ParsedTrueFalseActivity).statement === parsed.activity!.statement
-            );
-            if (!exists) activities.push(parsed.activity);
-          }
-          if (parsed.error) errors.push(parsed.error);
-        });
-      });
-    }
-
-    // Parse QUIZ activities
-    const quizSections = normalizedContent.split(/\*\*TYPE:\s*QUIZ\*\*/i);
-    
-    if (quizSections.length > 1) {
-      quizSections.slice(1).forEach((section, sectionIdx) => {
-        const nextTypeIdx = section.search(/\*\*TYPE:\s*(TRUE_FALSE|QUIZ)\*\*/i);
-        const sectionContent = nextTypeIdx > 0 ? section.substring(0, nextTypeIdx) : section;
-        
-        const questionBlocks = sectionContent.split(/(?:^|\n)---\s*\n|\*\*Question\s*\d*:?\s*\*\*/i);
-        
-        questionBlocks.forEach((block, idx) => {
-          if (block.trim().length < 20) return;
-          const parsed = parseActivityBlock(block, sectionIdx * 10 + idx);
-          if (parsed.activity) {
-            const quizActivity: ParsedQuizActivity = { ...parsed.activity, activityType: 'QUIZ' };
-            const exists = activities.some(a => 
-              a.activityType === 'QUIZ' && (a as ParsedQuizActivity).question === quizActivity.question
-            );
-            if (!exists) activities.push(quizActivity);
-          }
-          if (parsed.error) errors.push(parsed.error);
-        });
-      });
-    }
-
-    return { activities, errors };
-  };
-
-  const parseTrueFalseBlock = (block: string, idx: number): { activity?: ParsedTrueFalseActivity, error?: string } => {
-    let statementMatch = block.match(/^[\s\n]*(.+?)(?=\n\s*\*\*Réponse)/is);
-    if (!statementMatch) statementMatch = block.match(/^[\s\n]*(.+?)(?=\nRéponse\s*:)/is);
-    
-    if (!statementMatch) return { error: `Affirmation ${idx + 1}: texte non trouvé` };
-
-    const statement = statementMatch[1].trim().replace(/\*\*/g, '').replace(/#{1,3}/g, '').replace(/^Affirmation\s*\d*:?\s*/i, '').substring(0, 500);
-
-    if (statement.length < 10) return { error: `Affirmation ${idx + 1}: texte trop court` };
-
-    let answerMatch = block.match(/\*\*Réponse\s*:?\s*\*?\*?\s*(VRAI|FAUX)/i);
-    if (!answerMatch) answerMatch = block.match(/Réponse\s*:?\s*(VRAI|FAUX)/i);
-    
-    if (!answerMatch) return { error: `Affirmation ${idx + 1}: réponse VRAI/FAUX non trouvée` };
-
-    const isTrue = answerMatch[1].toUpperCase() === 'VRAI';
-
-    let explanationMatch = block.match(/\*\*Explication\s*:?\s*\*\*\s*\n?\s*(.+?)(?=\*\*TYPE|\*\*Affirmation|#{2,3}|---|\n\n\*\*|$)/is);
-    if (!explanationMatch) explanationMatch = block.match(/Explication\s*:?\s*\n?\s*(.+?)(?=\*\*TYPE|\*\*Affirmation|#{2,3}|---|\n\n|$)/is);
-    
-    const explanation = explanationMatch 
-      ? explanationMatch[1].trim().replace(/\*\*/g, '').replace(/---/g, '').substring(0, 500)
-      : 'Pas d\'explication fournie';
-
-    return { activity: { statement, isTrue, explanation, activityType: 'TRUE_FALSE' } };
-  };
-
-  const parseActivityBlock = (block: string, idx: number): { activity?: Omit<ParsedQuizActivity, 'activityType'>, error?: string } => {
-    const normalizedBlock = block
-      .replace(/^-\s*([A-D]\))/gm, '$1')
-      .replace(/^\*\s*([A-D]\))/gm, '$1')
-      .replace(/^([A-D])\.\s+/gm, '$1) ')
-      .replace(/^([A-D]):\s+/gm, '$1) ');
-
-    let questionMatch = normalizedBlock.match(/^[\s\n]*(.+?)(?=\n\s*[A-D]\))/is);
-    if (!questionMatch) questionMatch = normalizedBlock.match(/^[\s\n]*(.+?)(?=\n\s*\*?\*?[A-D][\):\.])/is);
-    
-    if (!questionMatch) return { error: `Activité ${idx + 1}: texte de question non trouvé` };
-
-    const questionText = questionMatch[1].trim().replace(/\*\*/g, '').replace(/#{1,3}/g, '').replace(/^Question\s*\d*:?\s*/i, '').substring(0, 500);
-
-    if (questionText.length < 5) return { error: `Activité ${idx + 1}: texte de question trop court` };
-
-    const optionRegex = /^([A-D])\)\s*(.+?)$/gm;
-    const optionMatches = Array.from(normalizedBlock.matchAll(optionRegex));
-    
-    const seenLetters = new Set<string>();
-    const options: string[] = [];
-    
-    for (const match of optionMatches) {
-      const letter = match[1].toUpperCase();
-      const optionText = match[2]?.trim().replace(/\*\*/g, '').replace(/\n/g, ' ');
-      
-      if (!seenLetters.has(letter) && optionText && optionText.length > 0 && optionText.length < 500) {
-        seenLetters.add(letter);
-        options.push(optionText);
-      }
-      
-      if (options.length >= 4) break;
-    }
-
-    if (options.length !== 4) return { error: `Activité ${idx + 1}: ${options.length}/4 options trouvées` };
-
-    let correctMatch = normalizedBlock.match(/\*\*Réponse\s+correcte\s*:?\s*\*?\*?\s*([A-D])/i);
-    if (!correctMatch) correctMatch = normalizedBlock.match(/Réponse\s+correcte\s*:?\s*([A-D])/i);
-    if (!correctMatch) correctMatch = normalizedBlock.match(/Réponse\s*:?\s*([A-D])/i);
-
-    if (!correctMatch) return { error: `Activité ${idx + 1}: réponse correcte non trouvée` };
-
-    const correctLetter = correctMatch[1].toUpperCase();
-    const correctIndex = correctLetter.charCodeAt(0) - 'A'.charCodeAt(0);
-
-    let explanationMatch = normalizedBlock.match(/\*\*Explication\s*:?\s*\*\*\s*\n?\s*(.+?)(?=\*\*TYPE|\*\*Question|#{2,3}|---|\n\n\*\*|$)/is);
-    if (!explanationMatch) explanationMatch = normalizedBlock.match(/Explication\s*:?\s*\n?\s*(.+?)(?=\*\*TYPE|\*\*Question|#{2,3}|---|\n\n|$)/is);
-    
-    const explanation = explanationMatch 
-      ? explanationMatch[1].trim().replace(/\*\*/g, '').replace(/---/g, '').substring(0, 500)
-      : 'Pas d\'explication fournie';
-
-    return { activity: { question: questionText, options, correctAnswer: correctIndex, explanation } };
-  };
-
+  // ===== VALIDATION LOGIC (using imported utilities) =====
   const runValidation = async () => {
     setIsValidating(true);
     setValidations([]);
@@ -774,7 +582,7 @@ export const BatchGenerationValidation = () => {
     try {
       let query = supabase
         .from('lessons')
-        .select('id, title, slug, grade_level, quiz_final, activites_interactives, subjects(id, name)')
+        .select('id, title, slug, grade_level, quiz_final, activites_interactives, subjects(id, name, series)')
         .or('quiz_final.neq.null,activites_interactives.neq.null');
 
       if (gradeLevel !== 'all') {
@@ -789,20 +597,29 @@ export const BatchGenerationValidation = () => {
 
       if (error) throw error;
 
+      // Fix #4: Filter by series for NS3/NS4
+      let filteredLessons = lessonsData || [];
+      if (isNS3OrNS4 && series.length > 0 && subject === "all") {
+        filteredLessons = filteredLessons.filter(lesson => 
+          lesson.subjects && series.includes((lesson.subjects as any).series)
+        );
+      }
+
       const results: LessonValidation[] = [];
       let quizValid = 0, quizInvalid = 0, activitiesValid = 0, activitiesInvalid = 0;
 
-      for (const lesson of lessonsData || []) {
-        const quizResult = lesson.quiz_final ? parseQuizQuestions(lesson.quiz_final) : { questions: [], errors: [] };
-        const activityResult = lesson.activites_interactives ? parseActivities(lesson.activites_interactives) : { activities: [], errors: [] };
+      for (const lesson of filteredLessons) {
+        // Fix #1: Use imported parsing functions
+        const quizResult = lesson.quiz_final ? parseQuizQuestions(lesson.quiz_final) : { items: [], errors: [] };
+        const activityResult = lesson.activites_interactives ? parseActivities(lesson.activites_interactives) : { items: [], errors: [] };
 
         if (lesson.quiz_final) {
-          if (quizResult.questions.length > 0 && quizResult.errors.length === 0) quizValid++;
+          if (quizResult.items.length > 0 && quizResult.errors.length === 0) quizValid++;
           else quizInvalid++;
         }
 
         if (lesson.activites_interactives) {
-          if (activityResult.activities.length > 0 && activityResult.errors.length === 0) activitiesValid++;
+          if (activityResult.items.length > 0 && activityResult.errors.length === 0) activitiesValid++;
           else activitiesInvalid++;
         }
 
@@ -812,11 +629,11 @@ export const BatchGenerationValidation = () => {
             title: lesson.title,
             slug: lesson.slug,
             grade_level: lesson.grade_level,
-            subject_name: lesson.subjects?.name || 'N/A',
+            subject_name: (lesson.subjects as any)?.name || 'N/A',
           },
-          quizParsed: quizResult.questions,
+          quizParsed: quizResult.items,
           quizErrors: quizResult.errors,
-          activitiesParsed: activityResult.activities,
+          activitiesParsed: activityResult.items,
           activityErrors: activityResult.errors,
           originalActivityContent: lesson.activites_interactives,
           originalQuizContent: lesson.quiz_final,
@@ -832,6 +649,56 @@ export const BatchGenerationValidation = () => {
     } finally {
       setIsValidating(false);
     }
+  };
+
+  // Fix #7: Generate then validate function
+  const generateThenValidate = async () => {
+    setIsGeneratingThenValidating(true);
+    try {
+      await startGeneration();
+      // Wait a bit for generation to complete fully
+      await new Promise(resolve => setTimeout(resolve, 2000));
+      await runValidation();
+      toast.success("Génération et validation terminées!");
+    } catch (error) {
+      console.error('Generate then validate error:', error);
+      toast.error("Erreur lors de l'opération");
+    } finally {
+      setIsGeneratingThenValidating(false);
+    }
+  };
+
+  const handleGenerateThenValidate = async () => {
+    const lessons = await fetchLessons();
+    
+    if (!lessons || lessons.length === 0) {
+      toast.error("Aucune leçon trouvée avec ces critères");
+      return;
+    }
+
+    if (lessons.length > 10) {
+      setPendingLessonCount(lessons.length);
+      setPendingAction('generateThenValidate');
+      setShowConfirmDialog(true);
+      return;
+    }
+
+    await generateThenValidate();
+  };
+
+  const handleConfirmAction = async () => {
+    setShowConfirmDialog(false);
+    
+    if (pendingAction === 'generate') {
+      await startGeneration();
+    } else if (pendingAction === 'validate') {
+      await runValidation();
+    } else if (pendingAction === 'generateThenValidate') {
+      await generateThenValidate();
+    }
+    
+    setPendingAction(null);
+    setPendingLessonCount(0);
   };
 
   const exportValidationCSV = () => {
@@ -879,6 +746,25 @@ export const BatchGenerationValidation = () => {
 
   return (
     <div className="space-y-6">
+      {/* Confirmation Dialog */}
+      <Dialog open={showConfirmDialog} onOpenChange={setShowConfirmDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Confirmer l'opération</DialogTitle>
+            <DialogDescription>
+              Vous êtes sur le point de {pendingAction === 'generate' ? 'générer du contenu' : pendingAction === 'validate' ? 'valider' : 'générer et valider'} pour <strong>{pendingLessonCount}</strong> leçons.
+              {pendingLessonCount >= 50 && (
+                <span className="block mt-2 text-warning">⚠️ Attention: Cette opération peut prendre du temps et être limitée par le rate limiting.</span>
+              )}
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowConfirmDialog(false)}>Annuler</Button>
+            <Button onClick={handleConfirmAction}>Continuer</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
       {/* Shared Filters Card */}
       <Card>
         <CardHeader>
@@ -919,13 +805,14 @@ export const BatchGenerationValidation = () => {
                         id={`series-${s.value}`}
                         checked={series.includes(s.value)}
                         onCheckedChange={(checked) => {
-                          if (checked) setSeries([...series, s.value]);
-                          else setSeries(series.filter(v => v !== s.value));
-                          setSubject("all");
-                          setSelectedLessonIds([]);
+                          if (checked) {
+                            setSeries([...series, s.value]);
+                          } else {
+                            setSeries(series.filter(x => x !== s.value));
+                          }
                         }}
                       />
-                      <label htmlFor={`series-${s.value}`} className="text-sm cursor-pointer">{s.label}</label>
+                      <label htmlFor={`series-${s.value}`} className="text-xs cursor-pointer">{s.label}</label>
                     </div>
                   ))}
                 </div>
@@ -934,69 +821,84 @@ export const BatchGenerationValidation = () => {
 
             <div className="space-y-2">
               <Label>Matière</Label>
-              <Select value={subject} onValueChange={(value) => { setSubject(value); setSelectedLessonIds([]); }} disabled={isLoadingSubjects}>
+              <Select value={subject} onValueChange={setSubject} disabled={isLoadingSubjects}>
                 <SelectTrigger>
-                  <SelectValue placeholder={isLoadingSubjects ? "Chargement..." : "Toutes les matières"} />
+                  <SelectValue placeholder={isLoadingSubjects ? "Chargement..." : "Sélectionner"} />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">Toutes les matières</SelectItem>
-                  {availableSubjects.map(subj => (
-                    <SelectItem key={subj.id} value={subj.id}>
-                      {subj.name} {subj.series ? `(${subj.series})` : ''}
-                    </SelectItem>
+                  {availableSubjects.map(s => (
+                    <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>
                   ))}
                 </SelectContent>
               </Select>
             </div>
 
             <div className="space-y-2">
-              <Label>Leçon(s) spécifique(s)</Label>
-              {isLoadingLessons ? (
-                <div className="text-sm text-muted-foreground">Chargement...</div>
-              ) : availableLessons.length === 0 ? (
-                <div className="text-sm text-muted-foreground">Sélectionnez niveau/matière</div>
-              ) : (
-                <div className="space-y-2">
-                  <div className="flex items-center gap-2 mb-2">
-                    <Button type="button" variant="outline" size="sm" onClick={() => setSelectedLessonIds(availableLessons.map(l => l.id))} disabled={selectedLessonIds.length === availableLessons.length}>
-                      Tout sélectionner
-                    </Button>
-                    <Button type="button" variant="outline" size="sm" onClick={() => setSelectedLessonIds([])} disabled={selectedLessonIds.length === 0}>
-                      Désélectionner
-                    </Button>
-                  </div>
-                  <div className="max-h-48 overflow-y-auto border rounded-md p-3 space-y-2">
+              <Label>Leçons spécifiques (optionnel)</Label>
+              <Select
+                value={selectedLessonIds.length > 0 ? "selected" : "all"}
+                onValueChange={(value) => {
+                  if (value === "all") setSelectedLessonIds([]);
+                }}
+                disabled={isLoadingLessons || availableLessons.length === 0}
+              >
+                <SelectTrigger>
+                  <SelectValue>
+                    {isLoadingLessons ? "Chargement..." : 
+                     selectedLessonIds.length > 0 ? `${selectedLessonIds.length} sélectionnée(s)` : 
+                     availableLessons.length > 0 ? `${availableLessons.length} disponibles` : "Sélectionner un niveau/matière"}
+                  </SelectValue>
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Toutes les leçons du filtre</SelectItem>
+                </SelectContent>
+              </Select>
+              {availableLessons.length > 0 && (
+                <ScrollArea className="h-32 border rounded-md mt-2">
+                  <div className="p-2 space-y-1">
                     {availableLessons.map(lesson => (
                       <div key={lesson.id} className="flex items-center space-x-2">
                         <Checkbox
                           id={`lesson-${lesson.id}`}
                           checked={selectedLessonIds.includes(lesson.id)}
                           onCheckedChange={(checked) => {
-                            if (checked) setSelectedLessonIds(prev => [...prev, lesson.id]);
-                            else setSelectedLessonIds(prev => prev.filter(id => id !== lesson.id));
+                            if (checked) {
+                              setSelectedLessonIds([...selectedLessonIds, lesson.id]);
+                            } else {
+                              setSelectedLessonIds(selectedLessonIds.filter(id => id !== lesson.id));
+                            }
                           }}
                         />
-                        <label htmlFor={`lesson-${lesson.id}`} className="text-sm cursor-pointer flex-1">{lesson.title}</label>
+                        <label htmlFor={`lesson-${lesson.id}`} className="text-xs cursor-pointer truncate">
+                          {lesson.title}
+                        </label>
                       </div>
                     ))}
                   </div>
-                  {selectedLessonIds.length > 0 && (
-                    <p className="text-xs text-muted-foreground">{selectedLessonIds.length} leçon(s) sélectionnée(s)</p>
-                  )}
-                </div>
+                </ScrollArea>
               )}
             </div>
           </div>
 
-          {/* Action Buttons Row */}
-          <div className="flex flex-wrap gap-3 pt-4 border-t">
-            <Button onClick={startGeneration} disabled={isGenerating || isValidating}>
-              {isGenerating ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <PlayCircle className="mr-2 h-4 w-4" />}
+          {/* Action Buttons */}
+          <div className="flex flex-wrap gap-2">
+            <Button onClick={handleStartGeneration} disabled={isGenerating || isValidating || isGeneratingThenValidating}>
+              {isGenerating ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Wand2 className="mr-2 h-4 w-4" />}
               Lancer génération
             </Button>
-            <Button onClick={runValidation} variant="outline" disabled={isGenerating || isValidating}>
+            <Button onClick={runValidation} variant="outline" disabled={isGenerating || isValidating || isGeneratingThenValidating}>
               {isValidating ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <CheckCircle2 className="mr-2 h-4 w-4" />}
               Lancer validation
+            </Button>
+            {/* Fix #7: New "Générer puis valider" button */}
+            <Button onClick={handleGenerateThenValidate} variant="secondary" disabled={isGenerating || isValidating || isGeneratingThenValidating}>
+              {isGeneratingThenValidating ? (
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              ) : (
+                <Sparkles className="mr-2 h-4 w-4" />
+              )}
+              Générer puis valider
             </Button>
             {isGenerating && (
               <Button onClick={() => setIsPaused(!isPaused)} variant="outline">
@@ -1361,15 +1263,17 @@ const ValidationItem = ({ validation, isExpanded, onToggle }: ValidationItemProp
                   <FileText className="h-4 w-4" />
                   Questions du Quiz ({validation.quizParsed.length})
                 </h4>
-                <div className="space-y-2 pl-4 border-l-2 border-muted">
+                <div className="space-y-2">
                   {validation.quizParsed.slice(0, 3).map((q, idx) => (
-                    <div key={idx} className="text-sm p-2 bg-muted/30 rounded">
+                    <div key={idx} className="p-2 bg-muted rounded text-sm">
                       <p className="font-medium">Q{idx + 1}: {q.question.substring(0, 80)}...</p>
-                      <p className="text-muted-foreground">Réponse: {String.fromCharCode(65 + q.correctAnswer)}) {q.options[q.correctAnswer]?.substring(0, 40)}...</p>
+                      <p className="text-xs text-muted-foreground">
+                        Réponse: {String.fromCharCode(65 + q.correctAnswer)} - {q.options[q.correctAnswer]?.substring(0, 40)}...
+                      </p>
                     </div>
                   ))}
                   {validation.quizParsed.length > 3 && (
-                    <p className="text-xs text-muted-foreground">+{validation.quizParsed.length - 3} autres questions</p>
+                    <p className="text-xs text-muted-foreground">+ {validation.quizParsed.length - 3} autres questions</p>
                   )}
                 </div>
               </div>
@@ -1382,18 +1286,20 @@ const ValidationItem = ({ validation, isExpanded, onToggle }: ValidationItemProp
                   <Gamepad2 className="h-4 w-4" />
                   Activités ({validation.activitiesParsed.length})
                 </h4>
-                <div className="space-y-2 pl-4 border-l-2 border-muted">
-                  {validation.activitiesParsed.slice(0, 3).map((a, idx) => (
-                    <div key={idx} className="text-sm p-2 bg-muted/30 rounded">
-                      {a.activityType === 'QUIZ' ? (
-                        <p className="font-medium">Quiz: {(a as ParsedQuizActivity).question.substring(0, 80)}...</p>
-                      ) : (
-                        <p className="font-medium">Vrai/Faux: {(a as ParsedTrueFalseActivity).statement.substring(0, 80)}...</p>
-                      )}
+                <div className="space-y-2">
+                  {validation.activitiesParsed.slice(0, 3).map((activity, idx) => (
+                    <div key={idx} className="p-2 bg-muted rounded text-sm">
+                      <Badge variant="outline" className="mb-1">{activity.activityType}</Badge>
+                      <p className="font-medium">
+                        {activity.activityType === 'QUIZ' 
+                          ? (activity as ParsedQuizActivity).question.substring(0, 80) + '...'
+                          : (activity as ParsedTrueFalseActivity).statement.substring(0, 80) + '...'
+                        }
+                      </p>
                     </div>
                   ))}
                   {validation.activitiesParsed.length > 3 && (
-                    <p className="text-xs text-muted-foreground">+{validation.activitiesParsed.length - 3} autres activités</p>
+                    <p className="text-xs text-muted-foreground">+ {validation.activitiesParsed.length - 3} autres activités</p>
                   )}
                 </div>
               </div>

@@ -150,6 +150,7 @@ export const LessonValidationPanel = ({ lesson, onRefresh }: LessonValidationPan
     }
   };
 
+  // Fix #5: Use consistent parameters for generate-quiz-final
   const regenerateQuiz = async () => {
     if (!lesson?.id) return;
 
@@ -157,18 +158,20 @@ export const LessonValidationPanel = ({ lesson, onRefresh }: LessonValidationPan
     try {
       const { data, error } = await supabase.functions.invoke('generate-quiz-final', {
         body: {
-          lessonId: lesson.id,
-          exercisesContent: lesson.exemples_exercices || lesson.contenu || '',
-          isCreole: lesson.grade_level?.includes('creole'),
+          lessonTitle: lesson.title,
+          contenu: lesson.contenu || '',
+          exemplesExercices: lesson.exemples_exercices || '',
+          gradeLevel: lesson.grade_level,
+          subject: lesson.subjects?.name || 'Matière',
         }
       });
 
       if (error) throw error;
 
-      if (data?.content) {
+      if (data?.quizContent) {
         await supabase
           .from('lessons')
-          .update({ quiz_final: data.content })
+          .update({ quiz_final: data.quizContent })
           .eq('id', lesson.id);
 
         toast.success("Quiz régénéré avec succès");
