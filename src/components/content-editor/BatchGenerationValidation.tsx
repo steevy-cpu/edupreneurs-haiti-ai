@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -16,7 +16,7 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/component
 import { toast } from "sonner";
 import {
   PlayCircle, PauseCircle, Download, RefreshCw, Loader2, CheckCircle2, XCircle, Clock, Eye, Check, X,
-  ChevronDown, ChevronUp, Sparkles, FileText, Gamepad2, Wand2, AlertTriangle, Zap
+  ChevronDown, ChevronUp, Sparkles, FileText, Gamepad2, Wand2, AlertTriangle, Zap, RotateCcw
 } from "lucide-react";
 import { DEFAULT_WORD_COUNTS, type SectionName } from "@/lib/lessonPrompts";
 import {
@@ -75,6 +75,15 @@ interface ValidationStats {
   activitiesInvalid: number;
 }
 
+interface RegenerationPreview {
+  lessonId: string;
+  lessonTitle: string;
+  type: 'quiz' | 'activity';
+  correctedItems: any[];
+  newContent: string;
+  issuesFixed: number;
+}
+
 export const BatchGenerationValidation = () => {
   // Shared filter states
   const [gradeLevel, setGradeLevel] = useState<string>("all");
@@ -98,7 +107,7 @@ export const BatchGenerationValidation = () => {
   const [globalContext, setGlobalContext] = useState("");
   const [isGenerating, setIsGenerating] = useState(false);
   const [isPaused, setIsPaused] = useState(false);
-  const isPausedRef = useRef(false); // Fix #2: useRef for stale closure
+  const isPausedRef = useRef(false);
   const [lessonStatuses, setLessonStatuses] = useState<LessonGenerationStatus[]>([]);
   const [totalLessons, setTotalLessons] = useState(0);
   const [completedCount, setCompletedCount] = useState(0);
@@ -127,6 +136,11 @@ export const BatchGenerationValidation = () => {
 
   // Active inner tab
   const [activeInnerTab, setActiveInnerTab] = useState<'generation' | 'validation'>('generation');
+
+  // Regeneration states
+  const [isRegenerating, setIsRegenerating] = useState<string | null>(null);
+  const [regenerationPreview, setRegenerationPreview] = useState<RegenerationPreview | null>(null);
+  const [isSavingRegeneration, setIsSavingRegeneration] = useState(false);
 
   const isNS3OrNS4 = gradeLevel === "NS3" || gradeLevel === "NS4";
 
@@ -733,6 +747,183 @@ export const BatchGenerationValidation = () => {
     });
   };
 
+  // Section labels for preview
+  const sectionLabels: Record<string, string> = {
+    objectif: 'Objectif',
+    introduction: 'Introduction',
+    contenu: 'Contenu principal',
+    exemples_exercices: 'Exemples & Exercices',
+    activites_interactives: 'Activités Interactives',
+    quiz_final: 'Quiz Final',
+  };
+
+  // Preview handlers for generated content
+  const handlePreviewLesson = useCallback((lesson: LessonGenerationStatus) => {
+    setPreviewLesson(lesson);
+    setIsPreviewOpen(true);
+  }, []);
+
+  const handleRegenerateSingleLesson = useCallback(async (lessonId: string) => {
+    const lesson = allLessons.find(l => l.id === lessonId) || lessonStatuses.find(l => l.lessonId === lessonId);
+    if (!lesson) {
+      toast.error("Leçon non trouvée");
+      return;
+    }
+
+    // Find the index in lessonStatuses
+    const index = lessonStatuses.findIndex(l => l.lessonId === lessonId);
+    if (index === -1) return;
+
+    // Re-run generation for this single lesson
+    const lessonData = allLessons.find(l => l.id === lessonId);
+    if (lessonData) {
+      await generateLessonSections(lessonData, index);
+      toast.success("Régénération terminée");
+    }
+  }, [allLessons, lessonStatuses]);
+
+  // Regeneration functions for invalid quiz/activities
+  const regenerateQuiz = useCallback(async (lessonId: string) => {
+    setIsRegenerating(lessonId);
+    
+    const validation = validations.find(v => v.lesson.id === lessonId);
+    if (!validation) {
+      toast.error("Leçon non trouvée");
+      setIsRegenerating(null);
+      return;
+    }
+
+    try {
+      const issues = validation.quizErrors.map((error, idx) => ({
+        questionIndex: idx,
+        issue: error,
+      }));
+
+      const { data, error } = await supabase.functions.invoke('fix-invalid-quiz', {
+        body: {
+          lessonId,
+          lessonTitle: validation.lesson.title,
+          lessonContext: validation.originalQuizContent,
+          questions: validation.quizParsed,
+          issues,
+          needsFullRegeneration: validation.quizParsed.length === 0,
+        }
+      });
+
+      if (error) throw error;
+
+      setRegenerationPreview({
+        lessonId,
+        lessonTitle: validation.lesson.title,
+        type: 'quiz',
+        correctedItems: data.correctedQuestions || [],
+        newContent: data.newMarkdownContent || '',
+        issuesFixed: data.fixesSummary?.length || 0,
+      });
+
+      toast.success("Corrections générées - vérifiez avant de sauvegarder");
+    } catch (error: any) {
+      console.error('Quiz regeneration error:', error);
+      toast.error("Erreur lors de la régénération: " + error.message);
+    } finally {
+      setIsRegenerating(null);
+    }
+  }, [validations]);
+
+  const regenerateActivities = useCallback(async (lessonId: string) => {
+    setIsRegenerating(lessonId);
+    
+    const validation = validations.find(v => v.lesson.id === lessonId);
+    if (!validation) {
+      toast.error("Leçon non trouvée");
+      setIsRegenerating(null);
+      return;
+    }
+
+    try {
+      const issues = validation.activityErrors.map((error, idx) => ({
+        activityIndex: idx,
+        issue: error,
+      }));
+
+      const { data, error } = await supabase.functions.invoke('fix-invalid-activities', {
+        body: {
+          lessonId,
+          lessonTitle: validation.lesson.title,
+          lessonContext: validation.originalActivityContent,
+          activities: validation.activitiesParsed,
+          issues,
+          needsFullRegeneration: validation.activitiesParsed.length === 0,
+        }
+      });
+
+      if (error) throw error;
+
+      setRegenerationPreview({
+        lessonId,
+        lessonTitle: validation.lesson.title,
+        type: 'activity',
+        correctedItems: data.correctedActivities || [],
+        newContent: data.newMarkdownContent || '',
+        issuesFixed: data.fixesSummary?.length || 0,
+      });
+
+      toast.success("Corrections générées - vérifiez avant de sauvegarder");
+    } catch (error: any) {
+      console.error('Activity regeneration error:', error);
+      toast.error("Erreur lors de la régénération: " + error.message);
+    } finally {
+      setIsRegenerating(null);
+    }
+  }, [validations]);
+
+  const saveRegeneratedContent = useCallback(async () => {
+    if (!regenerationPreview) return;
+
+    setIsSavingRegeneration(true);
+    try {
+      const updateField = regenerationPreview.type === 'quiz' ? 'quiz_final' : 'activites_interactives';
+      
+      const { error } = await supabase
+        .from('lessons')
+        .update({ [updateField]: regenerationPreview.newContent })
+        .eq('id', regenerationPreview.lessonId);
+
+      if (error) throw error;
+
+      // Update local validation state
+      setValidations(prev => prev.map(v => {
+        if (v.lesson.id !== regenerationPreview.lessonId) return v;
+
+        if (regenerationPreview.type === 'quiz') {
+          const parsed = parseQuizQuestions(regenerationPreview.newContent);
+          return {
+            ...v,
+            quizParsed: parsed.items,
+            quizErrors: parsed.errors,
+            originalQuizContent: regenerationPreview.newContent,
+          };
+        } else {
+          const parsed = parseActivities(regenerationPreview.newContent);
+          return {
+            ...v,
+            activitiesParsed: parsed.items,
+            activityErrors: parsed.errors,
+            originalActivityContent: regenerationPreview.newContent,
+          };
+        }
+      }));
+
+      toast.success("Contenu corrigé sauvegardé avec succès");
+      setRegenerationPreview(null);
+    } catch (error: any) {
+      console.error('Save regeneration error:', error);
+      toast.error("Erreur lors de la sauvegarde: " + error.message);
+    } finally {
+      setIsSavingRegeneration(false);
+    }
+  }, [regenerationPreview]);
+
   const progress = totalLessons > 0 ? (completedCount / totalLessons) * 100 : 0;
 
   const getStatusIcon = (status: GenerationStatus) => {
@@ -761,6 +952,102 @@ export const BatchGenerationValidation = () => {
           <DialogFooter>
             <Button variant="outline" onClick={() => setShowConfirmDialog(false)}>Annuler</Button>
             <Button onClick={handleConfirmAction}>Continuer</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Generation Preview Dialog */}
+      <Dialog open={isPreviewOpen} onOpenChange={setIsPreviewOpen}>
+        <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Aperçu du contenu généré</DialogTitle>
+            <DialogDescription>{previewLesson?.title}</DialogDescription>
+          </DialogHeader>
+          {previewLesson?.generatedContent && (
+            <ScrollArea className="max-h-[55vh]">
+              <div className="space-y-4">
+                {Object.entries(previewLesson.generatedContent).map(([section, content]) => (
+                  <Card key={section}>
+                    <CardHeader className="py-3">
+                      <CardTitle className="text-base">{sectionLabels[section] || section}</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div 
+                        className="prose prose-sm max-w-none dark:prose-invert text-sm"
+                        dangerouslySetInnerHTML={{ __html: String(content).substring(0, 2000) + (String(content).length > 2000 ? '...' : '') }} 
+                      />
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            </ScrollArea>
+          )}
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsPreviewOpen(false)}>Fermer</Button>
+            <Button 
+              variant="outline" 
+              onClick={() => {
+                setIsPreviewOpen(false);
+                if (previewLesson) handleRegenerateSingleLesson(previewLesson.lessonId);
+              }}
+            >
+              <RefreshCw className="h-4 w-4 mr-2" />
+              Régénérer
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Regeneration Preview Dialog */}
+      <Dialog open={!!regenerationPreview} onOpenChange={(open) => !open && setRegenerationPreview(null)}>
+        <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Aperçu des corrections - {regenerationPreview?.lessonTitle}</DialogTitle>
+            <DialogDescription>
+              {regenerationPreview?.issuesFixed || 0} éléments corrigés. Vérifiez avant de sauvegarder.
+            </DialogDescription>
+          </DialogHeader>
+          <ScrollArea className="max-h-[55vh]">
+            <div className="space-y-4">
+              {regenerationPreview?.correctedItems.map((item, idx) => (
+                <Card key={idx} className={item.wasFixed ? 'border-primary' : ''}>
+                  <CardContent className="p-4">
+                    <div className="flex items-center gap-2 mb-2">
+                      <Badge variant={item.wasFixed ? 'default' : 'secondary'}>
+                        {item.wasFixed ? 'Corrigé' : 'Inchangé'}
+                      </Badge>
+                      {regenerationPreview.type === 'quiz' && (
+                        <Badge variant="outline">Q{idx + 1}</Badge>
+                      )}
+                    </div>
+                    <p className="text-sm font-medium">
+                      {regenerationPreview.type === 'quiz' ? item.question : item.statement}
+                    </p>
+                    {item.wasFixed && item.originalIssue && (
+                      <p className="text-xs text-muted-foreground mt-2 bg-muted p-2 rounded">
+                        Problème corrigé: {item.originalIssue}
+                      </p>
+                    )}
+                    {regenerationPreview.type === 'quiz' && item.options && (
+                      <div className="mt-2 text-xs space-y-1">
+                        {item.options.map((opt: string, optIdx: number) => (
+                          <div key={optIdx} className={optIdx === item.correctAnswer ? 'text-green-600 font-medium' : ''}>
+                            {String.fromCharCode(65 + optIdx)}. {opt}
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          </ScrollArea>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setRegenerationPreview(null)}>Annuler</Button>
+            <Button onClick={saveRegeneratedContent} disabled={isSavingRegeneration}>
+              {isSavingRegeneration && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+              Sauvegarder les corrections
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
@@ -1042,9 +1329,31 @@ export const BatchGenerationValidation = () => {
                             )}
                           </div>
                         </div>
-                        {lessonStatus.error && (
-                          <Badge variant="destructive" className="text-xs">{lessonStatus.error.substring(0, 30)}...</Badge>
-                        )}
+                        <div className="flex items-center gap-2">
+                          {lessonStatus.status === 'completed' && lessonStatus.generatedContent && (
+                            <>
+                              <Button 
+                                size="sm" 
+                                variant="ghost" 
+                                onClick={() => handlePreviewLesson(lessonStatus)}
+                                title="Aperçu"
+                              >
+                                <Eye className="h-4 w-4" />
+                              </Button>
+                              <Button 
+                                size="sm" 
+                                variant="ghost" 
+                                onClick={() => handleRegenerateSingleLesson(lessonStatus.lessonId)}
+                                title="Régénérer"
+                              >
+                                <RefreshCw className="h-4 w-4" />
+                              </Button>
+                            </>
+                          )}
+                          {lessonStatus.error && (
+                            <Badge variant="destructive" className="text-xs">{lessonStatus.error.substring(0, 30)}...</Badge>
+                          )}
+                        </div>
                       </div>
                     ))}
                   </div>
@@ -1131,6 +1440,9 @@ export const BatchGenerationValidation = () => {
                             validation={validation}
                             isExpanded={expandedLessons.has(validation.lesson.id)}
                             onToggle={() => toggleExpanded(validation.lesson.id)}
+                            onRegenerateQuiz={regenerateQuiz}
+                            onRegenerateActivities={regenerateActivities}
+                            isRegenerating={isRegenerating}
                           />
                         ))}
                       </div>
@@ -1146,6 +1458,9 @@ export const BatchGenerationValidation = () => {
                             validation={validation}
                             isExpanded={expandedLessons.has(validation.lesson.id)}
                             onToggle={() => toggleExpanded(validation.lesson.id)}
+                            onRegenerateQuiz={regenerateQuiz}
+                            onRegenerateActivities={regenerateActivities}
+                            isRegenerating={isRegenerating}
                           />
                         ))}
                       </div>
@@ -1161,6 +1476,9 @@ export const BatchGenerationValidation = () => {
                             validation={validation}
                             isExpanded={expandedLessons.has(validation.lesson.id)}
                             onToggle={() => toggleExpanded(validation.lesson.id)}
+                            onRegenerateQuiz={regenerateQuiz}
+                            onRegenerateActivities={regenerateActivities}
+                            isRegenerating={isRegenerating}
                           />
                         ))}
                       </div>
@@ -1191,12 +1509,23 @@ interface ValidationItemProps {
   validation: LessonValidation;
   isExpanded: boolean;
   onToggle: () => void;
+  onRegenerateQuiz: (lessonId: string) => void;
+  onRegenerateActivities: (lessonId: string) => void;
+  isRegenerating: string | null;
 }
 
-const ValidationItem = ({ validation, isExpanded, onToggle }: ValidationItemProps) => {
+const ValidationItem = ({ 
+  validation, 
+  isExpanded, 
+  onToggle,
+  onRegenerateQuiz,
+  onRegenerateActivities,
+  isRegenerating
+}: ValidationItemProps) => {
   const hasQuizErrors = validation.quizErrors.length > 0;
   const hasActivityErrors = validation.activityErrors.length > 0;
   const hasAnyContent = validation.quizParsed.length > 0 || validation.activitiesParsed.length > 0;
+  const isCurrentlyRegenerating = isRegenerating === validation.lesson.id;
 
   return (
     <Collapsible open={isExpanded} onOpenChange={onToggle}>
@@ -1253,6 +1582,48 @@ const ValidationItem = ({ validation, isExpanded, onToggle }: ValidationItemProp
                     <li key={idx} className="text-destructive">{err}</li>
                   ))}
                 </ul>
+              </div>
+            )}
+
+            {/* Regeneration Buttons */}
+            {(hasQuizErrors || hasActivityErrors) && (
+              <div className="flex flex-wrap gap-2 pt-2 border-t">
+                {hasQuizErrors && (
+                  <Button 
+                    size="sm" 
+                    variant="outline"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onRegenerateQuiz(validation.lesson.id);
+                    }}
+                    disabled={isCurrentlyRegenerating}
+                  >
+                    {isCurrentlyRegenerating ? (
+                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                    ) : (
+                      <RotateCcw className="h-4 w-4 mr-2" />
+                    )}
+                    Régénérer Quiz
+                  </Button>
+                )}
+                {hasActivityErrors && (
+                  <Button 
+                    size="sm" 
+                    variant="outline"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onRegenerateActivities(validation.lesson.id);
+                    }}
+                    disabled={isCurrentlyRegenerating}
+                  >
+                    {isCurrentlyRegenerating ? (
+                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                    ) : (
+                      <RotateCcw className="h-4 w-4 mr-2" />
+                    )}
+                    Régénérer Activités
+                  </Button>
+                )}
               </div>
             )}
 
