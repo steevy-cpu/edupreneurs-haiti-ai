@@ -142,6 +142,10 @@ export const BatchGenerationValidation = () => {
   const [regenerationPreview, setRegenerationPreview] = useState<RegenerationPreview | null>(null);
   const [isSavingRegeneration, setIsSavingRegeneration] = useState(false);
 
+  // Publishing states
+  const [isPublishing, setIsPublishing] = useState<string | null>(null);
+  const [publishedLessons, setPublishedLessons] = useState<Set<string>>(new Set());
+
   const isNS3OrNS4 = gradeLevel === "NS3" || gradeLevel === "NS4";
 
   const gradeLevels = [
@@ -934,6 +938,64 @@ export const BatchGenerationValidation = () => {
     }
   }, [regenerationPreview]);
 
+  // Publishing functions
+  const publishLesson = useCallback(async (lessonId: string) => {
+    setIsPublishing(lessonId);
+    try {
+      const { error } = await supabase
+        .from('lessons')
+        .update({ is_published: true, workflow_status: 'published' })
+        .eq('id', lessonId);
+      
+      if (error) throw error;
+      
+      setPublishedLessons(prev => new Set([...prev, lessonId]));
+      toast.success("Leçon publiée avec succès");
+    } catch (error: any) {
+      console.error('Publish error:', error);
+      toast.error("Erreur lors de la publication: " + error.message);
+    } finally {
+      setIsPublishing(null);
+    }
+  }, []);
+
+  const publishAllValidLessons = useCallback(async () => {
+    const validLessonIds = validations
+      .filter(v => v.quizErrors.length === 0 && v.activityErrors.length === 0 && 
+                   (v.quizParsed.length > 0 || v.activitiesParsed.length > 0) &&
+                   !publishedLessons.has(v.lesson.id))
+      .map(v => v.lesson.id);
+    
+    if (validLessonIds.length === 0) {
+      toast.error("Aucune leçon valide à publier");
+      return;
+    }
+    
+    setIsPublishing('bulk');
+    try {
+      const { error } = await supabase
+        .from('lessons')
+        .update({ is_published: true, workflow_status: 'published' })
+        .in('id', validLessonIds);
+      
+      if (error) throw error;
+      
+      setPublishedLessons(prev => new Set([...prev, ...validLessonIds]));
+      toast.success(`${validLessonIds.length} leçon(s) publiée(s)`);
+    } catch (error: any) {
+      console.error('Bulk publish error:', error);
+      toast.error("Erreur lors de la publication: " + error.message);
+    } finally {
+      setIsPublishing(null);
+    }
+  }, [validations, publishedLessons]);
+
+  const validLessonsCount = validations.filter(
+    v => v.quizErrors.length === 0 && v.activityErrors.length === 0 && 
+         (v.quizParsed.length > 0 || v.activitiesParsed.length > 0) &&
+         !publishedLessons.has(v.lesson.id)
+  ).length;
+
   const progress = totalLessons > 0 ? (completedCount / totalLessons) * 100 : 0;
 
   const getStatusIcon = (status: GenerationStatus) => {
@@ -1428,10 +1490,28 @@ export const BatchGenerationValidation = () => {
             <Card>
               <CardHeader className="flex flex-row items-center justify-between">
                 <CardTitle className="text-lg">Résultats de validation</CardTitle>
-                <Button variant="outline" size="sm" onClick={exportValidationCSV}>
-                  <Download className="h-4 w-4 mr-2" />
-                  Export CSV
-                </Button>
+                <div className="flex gap-2">
+                  {validLessonsCount > 0 && (
+                    <Button 
+                      variant="default" 
+                      size="sm" 
+                      onClick={publishAllValidLessons}
+                      disabled={isPublishing === 'bulk'}
+                      className="bg-green-600 hover:bg-green-700"
+                    >
+                      {isPublishing === 'bulk' ? (
+                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                      ) : (
+                        <CheckCircle2 className="h-4 w-4 mr-2" />
+                      )}
+                      Publier toutes les valides ({validLessonsCount})
+                    </Button>
+                  )}
+                  <Button variant="outline" size="sm" onClick={exportValidationCSV}>
+                    <Download className="h-4 w-4 mr-2" />
+                    Export CSV
+                  </Button>
+                </div>
               </CardHeader>
               <CardContent>
                 <Tabs defaultValue="all">
@@ -1453,6 +1533,9 @@ export const BatchGenerationValidation = () => {
                             onRegenerateQuiz={regenerateQuiz}
                             onRegenerateActivities={regenerateActivities}
                             isRegenerating={isRegenerating}
+                            onPublish={publishLesson}
+                            isPublishing={isPublishing}
+                            isPublished={publishedLessons.has(validation.lesson.id)}
                           />
                         ))}
                       </div>
@@ -1471,6 +1554,9 @@ export const BatchGenerationValidation = () => {
                             onRegenerateQuiz={regenerateQuiz}
                             onRegenerateActivities={regenerateActivities}
                             isRegenerating={isRegenerating}
+                            onPublish={publishLesson}
+                            isPublishing={isPublishing}
+                            isPublished={publishedLessons.has(validation.lesson.id)}
                           />
                         ))}
                       </div>
@@ -1489,6 +1575,9 @@ export const BatchGenerationValidation = () => {
                             onRegenerateQuiz={regenerateQuiz}
                             onRegenerateActivities={regenerateActivities}
                             isRegenerating={isRegenerating}
+                            onPublish={publishLesson}
+                            isPublishing={isPublishing}
+                            isPublished={publishedLessons.has(validation.lesson.id)}
                           />
                         ))}
                       </div>
@@ -1522,6 +1611,9 @@ interface ValidationItemProps {
   onRegenerateQuiz: (lessonId: string) => void;
   onRegenerateActivities: (lessonId: string) => void;
   isRegenerating: string | null;
+  onPublish: (lessonId: string) => void;
+  isPublishing: string | null;
+  isPublished: boolean;
 }
 
 const ValidationItem = ({ 
@@ -1530,12 +1622,17 @@ const ValidationItem = ({
   onToggle,
   onRegenerateQuiz,
   onRegenerateActivities,
-  isRegenerating
+  isRegenerating,
+  onPublish,
+  isPublishing,
+  isPublished
 }: ValidationItemProps) => {
   const hasQuizErrors = validation.quizErrors.length > 0;
   const hasActivityErrors = validation.activityErrors.length > 0;
   const hasAnyContent = validation.quizParsed.length > 0 || validation.activitiesParsed.length > 0;
   const isCurrentlyRegenerating = isRegenerating === validation.lesson.id;
+  const isCurrentlyPublishing = isPublishing === validation.lesson.id;
+  const isValid = !hasQuizErrors && !hasActivityErrors && hasAnyContent;
 
   return (
     <Collapsible open={isExpanded} onOpenChange={onToggle}>
@@ -1557,6 +1654,31 @@ const ValidationItem = ({
                 </div>
               </div>
               <div className="flex items-center gap-2">
+                {isPublished && (
+                  <Badge variant="default" className="bg-green-600">
+                    <CheckCircle2 className="h-3 w-3 mr-1" />
+                    Publiée
+                  </Badge>
+                )}
+                {isValid && !isPublished && (
+                  <Button 
+                    size="sm" 
+                    variant="default"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onPublish(validation.lesson.id);
+                    }}
+                    disabled={isCurrentlyPublishing}
+                    className="bg-green-600 hover:bg-green-700"
+                  >
+                    {isCurrentlyPublishing ? (
+                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                    ) : (
+                      <CheckCircle2 className="h-4 w-4 mr-2" />
+                    )}
+                    Publier
+                  </Button>
+                )}
                 {validation.quizParsed.length > 0 && (
                   <Badge variant={hasQuizErrors ? "destructive" : "default"}>Quiz: {validation.quizParsed.length}Q</Badge>
                 )}
