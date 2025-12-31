@@ -1216,6 +1216,23 @@ export const BatchGenerationValidation = () => {
               {availableLessons.length > 0 && (
                 <ScrollArea className="h-32 border rounded-md mt-2">
                   <div className="p-2 space-y-1">
+                    {/* Select All checkbox */}
+                    <div className="flex items-center space-x-2 pb-1 mb-1 border-b border-border">
+                      <Checkbox
+                        id="select-all-lessons"
+                        checked={selectedLessonIds.length === availableLessons.length && availableLessons.length > 0}
+                        onCheckedChange={(checked) => {
+                          if (checked) {
+                            setSelectedLessonIds(availableLessons.map(l => l.id));
+                          } else {
+                            setSelectedLessonIds([]);
+                          }
+                        }}
+                      />
+                      <label htmlFor="select-all-lessons" className="text-xs cursor-pointer font-medium">
+                        Tout sélectionner ({availableLessons.length})
+                      </label>
+                    </div>
                     {availableLessons.map(lesson => (
                       <div key={lesson.id} className="flex items-center space-x-2">
                         <Checkbox
