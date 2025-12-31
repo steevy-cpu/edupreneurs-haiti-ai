@@ -794,10 +794,12 @@ export const BatchGenerationValidation = () => {
     }
 
     try {
-      const issues = validation.quizErrors.map((error, idx) => ({
-        questionIndex: idx,
-        issue: error,
-      }));
+      // Use AI validation issues if available, otherwise create issues from parsing errors
+      const issues = validation.aiValidation?.issues || 
+        validation.quizParsed.map((_, idx) => ({
+          questionIndex: idx,
+          issue: validation.quizErrors[0] || "Format ou contenu à vérifier"
+        })).slice(0, Math.max(validation.quizErrors.length, 1));
 
       const { data, error } = await supabase.functions.invoke('fix-invalid-quiz', {
         body: {
@@ -821,7 +823,7 @@ export const BatchGenerationValidation = () => {
         type: 'quiz',
         correctedItems: data.correctedQuestions || [],
         newContent: data.newContent || data.newMarkdownContent || '',
-        issuesFixed: data.fixesSummary?.length || 0,
+        issuesFixed: data.issuesFixed || data.correctedQuestions?.filter((q: any) => q.wasFixed)?.length || 0,
       });
 
       toast.success("Corrections générées - vérifiez avant de sauvegarder");
@@ -844,10 +846,12 @@ export const BatchGenerationValidation = () => {
     }
 
     try {
-      const issues = validation.activityErrors.map((error, idx) => ({
-        activityIndex: idx,
-        issue: error,
-      }));
+      // Use AI validation issues if available, otherwise create issues from parsing errors
+      const issues = validation.activityAIValidation?.issues || 
+        validation.activitiesParsed.map((_, idx) => ({
+          activityIndex: idx,
+          issue: validation.activityErrors[0] || "Format ou contenu à vérifier"
+        })).slice(0, Math.max(validation.activityErrors.length, 1));
 
       const { data, error } = await supabase.functions.invoke('fix-invalid-activities', {
         body: {
@@ -871,7 +875,7 @@ export const BatchGenerationValidation = () => {
         type: 'activity',
         correctedItems: data.correctedActivities || [],
         newContent: data.newContent || data.newMarkdownContent || '',
-        issuesFixed: data.fixesSummary?.length || 0,
+        issuesFixed: data.issuesFixed || data.correctedActivities?.filter((a: any) => a.wasFixed)?.length || 0,
       });
 
       toast.success("Corrections générées - vérifiez avant de sauvegarder");
