@@ -803,10 +803,13 @@ export const BatchGenerationValidation = () => {
         body: {
           lessonId,
           lessonTitle: validation.lesson.title,
-          lessonContext: validation.originalQuizContent,
+          originalContent: validation.originalQuizContent,
           questions: validation.quizParsed,
           issues,
           needsFullRegeneration: validation.quizParsed.length === 0,
+          subject: validation.lesson.subject_name,
+          gradeLevel: validation.lesson.grade_level,
+          parsingErrors: validation.quizErrors,
         }
       });
 
@@ -817,7 +820,7 @@ export const BatchGenerationValidation = () => {
         lessonTitle: validation.lesson.title,
         type: 'quiz',
         correctedItems: data.correctedQuestions || [],
-        newContent: data.newMarkdownContent || '',
+        newContent: data.newContent || data.newMarkdownContent || '',
         issuesFixed: data.fixesSummary?.length || 0,
       });
 
@@ -850,10 +853,13 @@ export const BatchGenerationValidation = () => {
         body: {
           lessonId,
           lessonTitle: validation.lesson.title,
-          lessonContext: validation.originalActivityContent,
+          originalContent: validation.originalActivityContent,
           activities: validation.activitiesParsed,
           issues,
           needsFullRegeneration: validation.activitiesParsed.length === 0,
+          subject: validation.lesson.subject_name,
+          gradeLevel: validation.lesson.grade_level,
+          parsingErrors: validation.activityErrors,
         }
       });
 
@@ -864,7 +870,7 @@ export const BatchGenerationValidation = () => {
         lessonTitle: validation.lesson.title,
         type: 'activity',
         correctedItems: data.correctedActivities || [],
-        newContent: data.newMarkdownContent || '',
+        newContent: data.newContent || data.newMarkdownContent || '',
         issuesFixed: data.fixesSummary?.length || 0,
       });
 
