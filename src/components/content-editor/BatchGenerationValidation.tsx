@@ -558,6 +558,53 @@ export const BatchGenerationValidation = () => {
         }
       }
 
+      // Generate explanatory images
+      if (imageGenerationModel !== 'none') {
+        try {
+          const { data: imageData, error: imageError } = await supabase.functions.invoke('generate-explanatory-images', {
+            body: {
+              lessonTitle: lesson.title,
+              contenu: lesson.contenu || '',
+              exemplesExercices: lesson.exemples_exercices || '',
+              gradeLevel: lesson.grade_level,
+              subject: lesson.subjects?.name || 'Matière',
+              model: imageGenerationModel,
+            }
+          });
+
+          if (imageError) {
+            console.error('Image generation error:', imageError);
+            setLessonStatuses(prev => prev.map((l, i) =>
+              i === index ? { ...l, error: (l.error || '') + ' Images: ' + imageError.message } : l
+            ));
+          } else if (imageData?.images && imageData.images.length > 0) {
+            // Append generated images to contenu
+            let updatedContenu = lesson.contenu || '';
+            for (const img of imageData.images) {
+              if (img.imageData) {
+                updatedContenu += `\n\n<figure class="my-4"><img src="${img.imageData}" alt="${img.concept || 'Image explicative'}" class="rounded-lg max-w-full" /><figcaption class="text-sm text-muted-foreground mt-2">${img.concept || ''}</figcaption></figure>`;
+              }
+            }
+            await supabase.from('lessons').update({ contenu: updatedContenu }).eq('id', lesson.id);
+            setLessonStatuses(prev => prev.map((l, i) => {
+              if (i === index) {
+                return { 
+                  ...l, 
+                  sectionsGenerated: [...l.sectionsGenerated, 'images'],
+                  generatedContent: { ...l.generatedContent, images: imageData.images } 
+                };
+              }
+              return l;
+            }));
+          }
+        } catch (e: any) {
+          console.error('Image generation exception:', e);
+          setLessonStatuses(prev => prev.map((l, i) =>
+            i === index ? { ...l, error: (l.error || '') + ' Images: ' + e.message } : l
+          ));
+        }
+      }
+
       const generationTime = Date.now() - startTime;
       setLessonStatuses(prev => prev.map((l, i) =>
         i === index ? { ...l, status: 'completed' as GenerationStatus, generationTime } : l
@@ -1334,6 +1381,22 @@ export const BatchGenerationValidation = () => {
                     <Checkbox id="onlyEmpty" checked={onlyEmpty} onCheckedChange={(checked) => setOnlyEmpty(checked as boolean)} />
                     <label htmlFor="onlyEmpty" className="text-sm cursor-pointer">Sections vides uniquement</label>
                   </div>
+                </div>
+                <div className="mt-3 max-w-xs">
+                  <Label htmlFor="batch-image-model" className="text-sm">🖼️ Générer images explicatives</Label>
+                  <Select 
+                    value={imageGenerationModel} 
+                    onValueChange={(value: 'none' | 'openai' | 'lovable') => setImageGenerationModel(value)}
+                  >
+                    <SelectTrigger id="batch-image-model" className="mt-1">
+                      <SelectValue placeholder="Sélectionner un modèle" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="none">Aucun</SelectItem>
+                      <SelectItem value="openai">OpenAI (gpt-image-1)</SelectItem>
+                      <SelectItem value="lovable">Lovable AI (Nano banana)</SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
               </div>
 
