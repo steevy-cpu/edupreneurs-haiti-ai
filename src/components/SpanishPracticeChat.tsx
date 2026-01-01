@@ -15,7 +15,7 @@ import {
 import { Send, Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import ericChairDesk from "@/assets/eric-chair-desk.png";
+import judeChairDesk from "@/assets/eric-chair-desk.png";
 
 interface Message {
   role: "user" | "assistant";
@@ -262,7 +262,7 @@ export const SpanishPracticeChat = ({
 
       if (error) {
         if (error.message?.includes("429")) {
-          toast.error("Demasiadas solicitudes. Eric necesita un descanso. Intenta de nuevo en un momento.");
+          toast.error("Demasiadas solicitudes. Jude necesita un descanso. Intenta de nuevo en un momento.");
         } else if (error.message?.includes("402")) {
           toast.error("Límite de créditos alcanzado. Contacta a tu administrador.");
         } else {
@@ -316,13 +316,13 @@ export const SpanishPracticeChat = ({
           <div className="flex items-center justify-between gap-3 pb-4 border-b">
             <div className="flex items-center gap-3">
               <img
-                src={ericChairDesk}
-                alt="Eric"
+                src={judeChairDesk}
+                alt="Jude"
                 className="w-12 h-12 sm:w-16 sm:h-16 object-contain"
               />
               <div>
                 <h3 className="text-lg sm:text-xl font-semibold text-foreground">
-                  🗣️ Practica tu Español con Eric
+                  🗣️ Practica tu Español con Jude
                 </h3>
                 <p className="text-sm text-muted-foreground">
                   {hasPreviousConversation ? "Continuando conversación anterior" : "Modo de Práctica - No Calificado"}
@@ -386,7 +386,7 @@ export const SpanishPracticeChat = ({
               <div className="flex justify-start animate-in fade-in slide-in-from-bottom-2 duration-300">
                 <div className="bg-card text-card-foreground border p-2.5 sm:p-3 rounded-lg flex items-center gap-2">
                   <Loader2 className="w-4 h-4 animate-spin" />
-                  <span className="text-sm">Eric está escribiendo...</span>
+                  <span className="text-sm">Jude está escribiendo...</span>
                 </div>
               </div>
             )}
@@ -444,7 +444,7 @@ export const SpanishPracticeChat = ({
             <AlertDialogTitle>¿Borrar Historial de Conversación?</AlertDialogTitle>
             <AlertDialogDescription>
               Esto borrará permanentemente todas tus conversaciones de práctica para esta lección. 
-              No podrás revisar tus mensajes anteriores con Eric. Esta acción no se puede deshacer.
+              No podrás revisar tus mensajes anteriores con Jude. Esta acción no se puede deshacer.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

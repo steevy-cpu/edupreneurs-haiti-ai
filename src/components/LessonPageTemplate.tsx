@@ -16,6 +16,7 @@ import { InteractiveActivitiesEnhanced } from "@/components/InteractiveActivitie
 import { HTMLQuizParser } from "@/components/HTMLQuizParser";
 import { useTTS } from "@/hooks/useTTS";
 import { EricChatbot } from "@/components/EricChatbot";
+import { LessonAIPracticeSection } from "@/components/lesson/LessonAIPracticeSection";
 
 interface LessonData {
   id: string;
@@ -37,7 +38,7 @@ interface LessonPageTemplateProps {
   subjectName: string;
   subjectSlug: string;
   gradeLevel: string;
-  ericImage: string;
+  judeImage: string;
 }
 
 export const LessonPageTemplate = ({
@@ -46,7 +47,7 @@ export const LessonPageTemplate = ({
   subjectName,
   subjectSlug,
   gradeLevel,
-  ericImage
+  judeImage
 }: LessonPageTemplateProps) => {
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -179,8 +180,8 @@ export const LessonPageTemplate = ({
             <div className="relative hidden sm:block flex-shrink-0">
               <div className="absolute inset-0 bg-gradient-to-tr from-primary/20 to-transparent rounded-full blur-3xl" />
               <img
-                src={ericImage}
-                alt="Eric enseignant"
+                src={judeImage}
+                alt="Jude - Professeur"
                 className="relative w-32 h-32 sm:w-48 sm:h-48 object-contain drop-shadow-2xl"
               />
             </div>
@@ -355,9 +356,20 @@ export const LessonPageTemplate = ({
             </Card>
           </TabsContent>
         </Tabs>
+        
+        {/* AI Practice Section for Language Subjects */}
+        <div className="mt-6 sm:mt-8">
+          <LessonAIPracticeSection
+            subjectName={subjectName}
+            lessonTitle={lesson.title}
+            lessonObjective={lesson.objectif}
+            lessonSlug={lessonSlug}
+            gradeLevel={gradeLevel}
+          />
+        </div>
       </div>
 
-      {/* Eric Chatbot */}
+      {/* Jude Chatbot */}
       <EricChatbot />
     </div>
   );
