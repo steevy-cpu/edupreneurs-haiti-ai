@@ -145,9 +145,13 @@ export const OnboardingTour = () => {
       return;
     }
 
+    let element: HTMLElement | null = null;
+    let originalStyles: { zIndex: string; position: string; pointerEvents: string } | null = null;
+    let clickHandler: (() => void) | null = null;
+
     const findAndHighlightElement = () => {
       try {
-        const element = document.querySelector(step.target) as HTMLElement;
+        element = document.querySelector(step.target) as HTMLElement;
         if (element) {
           setHighlightedElement(element);
           const rect = element.getBoundingClientRect();
@@ -159,15 +163,26 @@ export const OnboardingTour = () => {
           });
           element.scrollIntoView({ behavior: "smooth", block: "center" });
 
-          // If action is click, wait for user to click the element
+          // If action is click, make element clickable above overlay
           if (step.action === "click") {
-            const handleClick = () => {
+            // Save original styles
+            originalStyles = {
+              zIndex: element.style.zIndex,
+              position: element.style.position,
+              pointerEvents: element.style.pointerEvents,
+            };
+
+            // Make element clickable above overlay
+            element.style.position = "relative";
+            element.style.zIndex = "10001";
+            element.style.pointerEvents = "auto";
+
+            clickHandler = () => {
               setTimeout(() => {
                 handleNext();
               }, 300);
             };
-            element.addEventListener("click", handleClick, { once: true });
-            return () => element.removeEventListener("click", handleClick);
+            element.addEventListener("click", clickHandler, { once: true });
           }
         }
       } catch (error) {
@@ -178,7 +193,19 @@ export const OnboardingTour = () => {
     findAndHighlightElement();
     const timeoutId = setTimeout(findAndHighlightElement, 500);
 
-    return () => clearTimeout(timeoutId);
+    return () => {
+      clearTimeout(timeoutId);
+      // Restore original styles
+      if (element && originalStyles) {
+        element.style.zIndex = originalStyles.zIndex;
+        element.style.position = originalStyles.position;
+        element.style.pointerEvents = originalStyles.pointerEvents;
+      }
+      // Remove click handler if still attached
+      if (element && clickHandler) {
+        element.removeEventListener("click", clickHandler);
+      }
+    };
   }, [currentStep, isActive]);
 
   const handleNext = async () => {
