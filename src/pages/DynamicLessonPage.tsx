@@ -6,11 +6,11 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useUserGrade, GRADE_LABELS } from "@/hooks/useUserGrade";
 import { Lock } from "lucide-react";
-import ericTeaching from "@/assets/eric-teaching.png";
-import ericScientist from "@/assets/eric-scientist.png";
-import ericBiologist from "@/assets/eric-biologist.png";
-import ericComputer from "@/assets/eric-computer.png";
-import ericMath from "@/assets/eric-math.png";
+import judeTeaching from "@/assets/eric-teaching.png";
+import judeScientist from "@/assets/eric-scientist.png";
+import judeBiologist from "@/assets/eric-biologist.png";
+import judeComputer from "@/assets/eric-computer.png";
+import judeMath from "@/assets/eric-math.png";
 
 export default function DynamicLessonPage() {
   const { slug, lessonSlug } = useParams();
@@ -125,17 +125,17 @@ export default function DynamicLessonPage() {
     );
   }
 
-  // Use appropriate Eric image based on subject
+  // Use appropriate Jude image based on subject
   const subjectLower = subject.name.toLowerCase();
-  const ericImage = subjectLower.includes('mathématique')
-    ? ericMath
+  const judeImage = subjectLower.includes('mathématique')
+    ? judeMath
     : subjectLower.includes('informatique')
-    ? ericComputer
+    ? judeComputer
     : subjectLower.includes('chimie')
-    ? ericScientist
+    ? judeScientist
     : subjectLower.includes('biologie') || subjectLower.includes('géologie')
-    ? ericBiologist
-    : ericTeaching;
+    ? judeBiologist
+    : judeTeaching;
 
   return (
     <LessonPageTemplate
@@ -144,7 +144,7 @@ export default function DynamicLessonPage() {
       subjectName={subject.name}
       subjectSlug={slug || ''}
       gradeLevel={subject.grade_level}
-      ericImage={ericImage}
+      judeImage={judeImage}
     />
   );
 }

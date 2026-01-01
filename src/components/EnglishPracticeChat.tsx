@@ -15,7 +15,7 @@ import {
 import { Send, Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import ericChairDesk from "@/assets/eric-chair-desk.png";
+import judeChairDesk from "@/assets/eric-chair-desk.png";
 
 interface Message {
   role: "user" | "assistant";
@@ -270,7 +270,7 @@ export const EnglishPracticeChat = ({
 
       if (error) {
         if (error.message?.includes("429")) {
-          toast.error("Trop de requêtes. Eric a besoin d'une pause. Réessayez dans un moment.");
+          toast.error("Trop de requêtes. Jude a besoin d'une pause. Réessayez dans un moment.");
         } else if (error.message?.includes("402")) {
           toast.error("Limite de crédits atteinte. Contactez votre administrateur.");
         } else {
@@ -324,13 +324,13 @@ export const EnglishPracticeChat = ({
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 sm:pb-4 border-b">
             <div className="flex items-center gap-2 sm:gap-3">
               <img
-                src={ericChairDesk}
-                alt="Eric"
+                src={judeChairDesk}
+                alt="Jude"
                 className="w-10 h-10 sm:w-12 sm:h-12 md:w-16 md:h-16 object-contain flex-shrink-0"
               />
               <div className="min-w-0 flex-1">
                 <h3 className="text-base sm:text-lg md:text-xl font-semibold text-foreground truncate">
-                  🗣️ Practice Your English with Eric
+                  🗣️ Practice Your English with Jude
                 </h3>
                 <p className="text-xs sm:text-sm text-muted-foreground">
                   {hasPreviousConversation ? "Continuing previous conversation" : "Practice Mode - Not Graded"}
@@ -397,7 +397,7 @@ export const EnglishPracticeChat = ({
               <div className="flex justify-start animate-in fade-in slide-in-from-bottom-2 duration-300">
                 <div className="bg-card text-card-foreground border p-2 sm:p-2.5 md:p-3 rounded-lg flex items-center gap-2">
                   <Loader2 className="w-3 h-3 sm:w-4 sm:h-4 animate-spin" />
-                  <span className="text-xs sm:text-sm">Eric is typing...</span>
+                  <span className="text-xs sm:text-sm">Jude is typing...</span>
                 </div>
               </div>
             )}
@@ -455,7 +455,7 @@ export const EnglishPracticeChat = ({
             <AlertDialogTitle>Clear Conversation History?</AlertDialogTitle>
             <AlertDialogDescription>
               This will permanently delete all your practice conversations for this lesson. 
-              You won't be able to review your previous messages with Eric. This action cannot be undone.
+              You won't be able to review your previous messages with Jude. This action cannot be undone.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
