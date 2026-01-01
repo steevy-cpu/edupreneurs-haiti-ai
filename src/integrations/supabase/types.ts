@@ -993,6 +993,56 @@ export type Database = {
           },
         ]
       }
+      lesson_videos: {
+        Row: {
+          added_by: string | null
+          created_at: string | null
+          description: string | null
+          id: string
+          is_primary: boolean | null
+          lesson_id: string
+          order_index: number
+          title: string | null
+          updated_at: string | null
+          video_id: string
+          youtube_url: string
+        }
+        Insert: {
+          added_by?: string | null
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          is_primary?: boolean | null
+          lesson_id: string
+          order_index?: number
+          title?: string | null
+          updated_at?: string | null
+          video_id: string
+          youtube_url: string
+        }
+        Update: {
+          added_by?: string | null
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          is_primary?: boolean | null
+          lesson_id?: string
+          order_index?: number
+          title?: string | null
+          updated_at?: string | null
+          video_id?: string
+          youtube_url?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "lesson_videos_lesson_id_fkey"
+            columns: ["lesson_id"]
+            isOneToOne: false
+            referencedRelation: "lessons"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       lessons: {
         Row: {
           activites_interactives: string | null
