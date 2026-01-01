@@ -1,10 +1,19 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
-import { CourseLayout, CourseHeader, LessonCard, ProgressCard, MonthSection } from "@/components/course";
+import { 
+  CourseLayout, 
+  CourseHeader, 
+  LessonCard, 
+  ProgressCard, 
+  MonthSection,
+  QuickStatsBar,
+  MonthQuickNav,
+  AIPracticeSection
+} from "@/components/course";
 import { groupLessonsByMonth, MONTH_ORDER, BaseLesson, BaseSubject } from "@/utils/courseHelpers";
 import { EricChatbot } from "@/components/EricChatbot";
 import { useUserGrade, GRADE_LABELS } from "@/hooks/useUserGrade";
@@ -17,6 +26,8 @@ export default function DynamicCoursePage() {
   const [lessons, setLessons] = useState<BaseLesson[]>([]);
   const [completedLessons, setCompletedLessons] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [activeMonth, setActiveMonth] = useState<string | undefined>();
+  const monthRefs = useRef<Record<string, HTMLDivElement | null>>({});
 
   // User grade access
   const { userGrade, canAccessGrade, isLoading: gradeLoading, isAuthenticated } = useUserGrade();
@@ -88,6 +99,55 @@ export default function DynamicCoursePage() {
   // Group lessons by month
   const groupedByMonth = groupLessonsByMonth(lessons);
 
+  // Get available months (that have lessons)
+  const availableMonths = useMemo(() => {
+    return MONTH_ORDER.filter(month => groupedByMonth[month]?.length > 0);
+  }, [groupedByMonth]);
+
+  // Calculate lesson count by month
+  const lessonCountByMonth = useMemo(() => {
+    const counts: Record<string, number> = {};
+    MONTH_ORDER.forEach(month => {
+      counts[month] = groupedByMonth[month]?.length || 0;
+    });
+    return counts;
+  }, [groupedByMonth]);
+
+  // Calculate total activities (estimate based on lessons with activites_interactives or quiz_final)
+  const totalActivities = useMemo(() => {
+    return lessons.reduce((acc, lesson) => {
+      let count = 0;
+      if (lesson.activites_interactives) count += 2; // Estimate 2 activities per lesson
+      if (lesson.quiz_final) count += 1;
+      return acc + count;
+    }, 0);
+  }, [lessons]);
+
+  // Estimate study hours (30 min per lesson average)
+  const estimatedHours = Math.ceil(publishedLessons.length * 0.5);
+
+  // Completion rate
+  const completionRate = publishedLessons.length > 0 
+    ? Math.round((completedCount / publishedLessons.length) * 100) 
+    : 0;
+
+  // Handle month click to scroll to section
+  const handleMonthClick = (month: string) => {
+    setActiveMonth(month);
+    const element = monthRefs.current[month];
+    if (element) {
+      element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  };
+
+  // Handle AI practice start
+  const handleStartPractice = () => {
+    // For now, scroll to bottom where EricChatbot is
+    // In the future, this could open a dedicated practice modal
+    toast.info("Scroll vers le bas pour discuter avec Eric AI!");
+    window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+  };
+
   if (isLoading || gradeLoading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5 flex items-center justify-center">
@@ -144,14 +204,43 @@ export default function DynamicCoursePage() {
 
   return (
     <CourseLayout>
+      {/* Enhanced Header */}
       <CourseHeader
         title={subject.name}
         description={subject.description || `Cours de ${subject.name} pour ${subject.grade_level}`}
         gradeLevel={subject.grade_level}
         lessonCount={publishedLessons.length}
         subjectName={subject.name}
+        completedCount={completedCount}
       />
 
+      {/* Quick Stats Bar */}
+      <QuickStatsBar
+        totalLessons={publishedLessons.length}
+        totalActivities={totalActivities}
+        estimatedHours={estimatedHours}
+        completionRate={completionRate}
+      />
+
+      {/* AI Practice Section (only for language subjects) */}
+      <AIPracticeSection
+        subjectName={subject.name}
+        subjectSlug={subjectSlug}
+        gradeLevel={subject.grade_level}
+        onStartPractice={handleStartPractice}
+      />
+
+      {/* Month Quick Navigation (only if monthly organization exists) */}
+      {hasMonthlyOrganization && availableMonths.length > 1 && (
+        <MonthQuickNav
+          months={availableMonths}
+          activeMonth={activeMonth}
+          onMonthClick={handleMonthClick}
+          lessonCountByMonth={lessonCountByMonth}
+        />
+      )}
+
+      {/* Progress Card */}
       <ProgressCard
         completedLessons={completedCount}
         totalLessons={publishedLessons.length}
@@ -165,27 +254,32 @@ export default function DynamicCoursePage() {
           if (!monthLessons || monthLessons.length === 0) return null;
 
           return (
-            <MonthSection key={month} month={month}>
-              {monthLessons.map((lesson) => (
-                <LessonCard
-                  key={lesson.id}
-                  title={lesson.title}
-                  objectif={lesson.objectif}
-                  orderIndex={lesson.order_index}
-                  isPublished={lesson.is_published ?? false}
-                  isCompleted={completedLessons.includes(lesson.slug)}
-                  subjectSlug={subjectSlug}
-                  lessonSlug={lesson.slug}
-                  onClick={() => {
-                    if (lesson.is_published) {
-                      navigate(`/course/${subjectSlug}/${lesson.slug}`);
-                    } else {
-                      toast.info("Cette leçon n'est pas encore disponible");
-                    }
-                  }}
-                />
-              ))}
-            </MonthSection>
+            <div
+              key={month}
+              ref={(el) => { monthRefs.current[month] = el; }}
+            >
+              <MonthSection month={month}>
+                {monthLessons.map((lesson) => (
+                  <LessonCard
+                    key={lesson.id}
+                    title={lesson.title}
+                    objectif={lesson.objectif}
+                    orderIndex={lesson.order_index}
+                    isPublished={lesson.is_published ?? false}
+                    isCompleted={completedLessons.includes(lesson.slug)}
+                    subjectSlug={subjectSlug}
+                    lessonSlug={lesson.slug}
+                    onClick={() => {
+                      if (lesson.is_published) {
+                        navigate(`/course/${subjectSlug}/${lesson.slug}`);
+                      } else {
+                        toast.info("Cette leçon n'est pas encore disponible");
+                      }
+                    }}
+                  />
+                ))}
+              </MonthSection>
+            </div>
           );
         })
       ) : (
