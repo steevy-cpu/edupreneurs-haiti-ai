@@ -1,12 +1,13 @@
 import { Badge } from "@/components/ui/badge";
 import { OptimizedImage } from "@/components/OptimizedImage";
 import { Sparkles, GraduationCap, BookOpen } from "lucide-react";
-import ericTeaching from "@/assets/eric-teaching.png";
-import ericScientist from "@/assets/eric-scientist.png";
-import ericBiologist from "@/assets/eric-biologist.png";
-import ericComputer from "@/assets/eric-computer.png";
-import ericMath from "@/assets/eric-math.png";
-import ericEdupreneurs from "@/assets/eric-edupreneurs.png";
+// Asset files - will rename later
+import judeTeaching from "@/assets/eric-teaching.png";
+import judeScientist from "@/assets/eric-scientist.png";
+import judeBiologist from "@/assets/eric-biologist.png";
+import judeComputer from "@/assets/eric-computer.png";
+import judeMath from "@/assets/eric-math.png";
+import judeEdupreneurs from "@/assets/eric-edupreneurs.png";
 
 interface CourseHeaderProps {
   title: string;
@@ -18,17 +19,17 @@ interface CourseHeaderProps {
   completedCount?: number;
 }
 
-const getEricImage = (subjectName?: string) => {
-  if (!subjectName) return ericTeaching;
+const getJudeImage = (subjectName?: string) => {
+  if (!subjectName) return judeTeaching;
   const lower = subjectName.toLowerCase();
   
-  if (lower.includes('mathématique') || lower.includes('matematik')) return ericMath;
-  if (lower.includes('informatique')) return ericComputer;
-  if (lower.includes('chimie') || lower.includes('physique')) return ericScientist;
-  if (lower.includes('biologie') || lower.includes('géologie') || lower.includes('science')) return ericBiologist;
-  if (lower.includes('social') || lower.includes('histoire')) return ericEdupreneurs;
+  if (lower.includes('mathématique') || lower.includes('matematik')) return judeMath;
+  if (lower.includes('informatique')) return judeComputer;
+  if (lower.includes('chimie') || lower.includes('physique')) return judeScientist;
+  if (lower.includes('biologie') || lower.includes('géologie') || lower.includes('science')) return judeBiologist;
+  if (lower.includes('social') || lower.includes('histoire')) return judeEdupreneurs;
   
-  return ericTeaching;
+  return judeTeaching;
 };
 
 const getSubjectGradient = (subjectName?: string) => {
@@ -65,7 +66,7 @@ export const CourseHeader = ({
   icon,
   completedCount = 0
 }: CourseHeaderProps) => {
-  const ericImage = getEricImage(subjectName || title);
+  const judeImage = getJudeImage(subjectName || title);
   const gradientClass = getSubjectGradient(subjectName || title);
   const motivationalMessage = getMotivationalMessage(completedCount, lessonCount);
 
@@ -118,12 +119,12 @@ export const CourseHeader = ({
           </div>
         </div>
 
-        {/* Eric Image */}
+        {/* Jude Image */}
         <div className="hidden md:block relative z-10">
           <div className="absolute inset-0 bg-gradient-to-r from-primary/30 to-secondary/30 rounded-2xl blur-2xl animate-pulse" />
           <OptimizedImage 
-            src={ericImage}
-            alt="Eric - Professeur"
+            src={judeImage}
+            alt="Jude - Professeur"
             className="relative w-56 h-56 lg:w-64 lg:h-64 object-cover rounded-2xl shadow-2xl border-4 border-background"
           />
         </div>
