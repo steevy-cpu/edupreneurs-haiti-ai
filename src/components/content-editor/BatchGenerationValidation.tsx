@@ -1091,17 +1091,37 @@ export const BatchGenerationValidation = () => {
                       <CardTitle className="text-base">{sectionLabels[section] || section}</CardTitle>
                     </CardHeader>
                     <CardContent>
-                      <div 
-                        className="prose prose-sm max-w-none dark:prose-invert text-sm"
-                        dangerouslySetInnerHTML={{ __html: String(content).substring(0, 2000) + (String(content).length > 2000 ? '...' : '') }} 
-                      />
+                      {/* Special handling for images array */}
+                      {section === 'images' && Array.isArray(content) ? (
+                        <div className="grid grid-cols-2 gap-4">
+                          {content.map((img: any, idx: number) => (
+                            <div key={idx} className="space-y-2">
+                              {img.imageData && (
+                                <img 
+                                  src={img.imageData} 
+                                  alt={img.concept || `Image ${idx + 1}`}
+                                  className="w-full rounded-lg border"
+                                />
+                              )}
+                              {img.concept && (
+                                <p className="text-xs text-muted-foreground text-center">{img.concept}</p>
+                              )}
+                            </div>
+                          ))}
+                        </div>
+                      ) : (
+                        <div 
+                          className="prose prose-sm max-w-none dark:prose-invert text-sm"
+                          dangerouslySetInnerHTML={{ __html: String(content).substring(0, 2000) + (String(content).length > 2000 ? '...' : '') }} 
+                        />
+                      )}
                     </CardContent>
                   </Card>
                 ))}
               </div>
             </ScrollArea>
           )}
-          <DialogFooter>
+          <DialogFooter className="flex-col sm:flex-row gap-2">
             <Button variant="outline" onClick={() => setIsPreviewOpen(false)}>Fermer</Button>
             <Button 
               variant="outline" 
@@ -1112,6 +1132,67 @@ export const BatchGenerationValidation = () => {
             >
               <RefreshCw className="h-4 w-4 mr-2" />
               Régénérer
+            </Button>
+            <Button 
+              variant="default"
+              className="bg-green-600 hover:bg-green-700"
+              disabled={isApplying}
+              onClick={async () => {
+                if (!previewLesson) return;
+                setIsApplying(true);
+                try {
+                  const updates: Record<string, string> = {};
+                  const content = previewLesson.generatedContent;
+                  
+                  // Map generated content to database columns
+                  if (content.introduction) updates.introduction = content.introduction;
+                  if (content.objectif) updates.objectif = content.objectif;
+                  if (content.contenu) updates.contenu = content.contenu;
+                  if (content.exemples_exercices) updates.exemples_exercices = content.exemples_exercices;
+                  if (content.quiz_final) updates.quiz_final = content.quiz_final;
+                  if (content.activites_interactives) updates.activites_interactives = content.activites_interactives;
+                  
+                  // Handle images - append to contenu
+                  if (content.images && Array.isArray(content.images)) {
+                    const { data: currentLesson } = await supabase
+                      .from('lessons')
+                      .select('contenu')
+                      .eq('id', previewLesson.lessonId)
+                      .single();
+                    
+                    let updatedContenu = updates.contenu || currentLesson?.contenu || '';
+                    for (const img of content.images) {
+                      if (img.imageData) {
+                        updatedContenu += `\n\n<figure class="my-4"><img src="${img.imageData}" alt="${img.concept || 'Image explicative'}" class="rounded-lg max-w-full" /><figcaption class="text-sm text-muted-foreground mt-2">${img.concept || ''}</figcaption></figure>`;
+                      }
+                    }
+                    updates.contenu = updatedContenu;
+                  }
+
+                  if (Object.keys(updates).length > 0) {
+                    const { error } = await supabase
+                      .from('lessons')
+                      .update({ ...updates, is_published: true, workflow_status: 'published' })
+                      .eq('id', previewLesson.lessonId);
+                    
+                    if (error) throw error;
+                    toast.success("Contenu publié avec succès!");
+                    setIsPreviewOpen(false);
+                  }
+                } catch (error: any) {
+                  console.error('Error publishing:', error);
+                  toast.error("Erreur lors de la publication: " + error.message);
+                } finally {
+                  setIsApplying(false);
+                }
+              }}
+            >
+              {isApplying ? (
+                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+              ) : (
+                <CheckCircle2 className="h-4 w-4 mr-2" />
+              )}
+              Publier
             </Button>
           </DialogFooter>
         </DialogContent>
