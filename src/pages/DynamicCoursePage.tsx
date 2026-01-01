@@ -140,11 +140,14 @@ export default function DynamicCoursePage() {
     }
   };
 
-  // Handle AI practice start
+  // Handle AI practice start - navigate to first published lesson
   const handleStartPractice = () => {
-    // For now, scroll to bottom where chatbot is
-    toast.info("Scroll vers le bas pour discuter avec Jude AI!");
-    window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+    const firstPublishedLesson = publishedLessons[0];
+    if (firstPublishedLesson) {
+      navigate(`/course/${subjectSlug}/${firstPublishedLesson.slug}`);
+    } else {
+      toast.info("Aucune leçon disponible pour le moment");
+    }
   };
 
   if (isLoading || gradeLoading) {
