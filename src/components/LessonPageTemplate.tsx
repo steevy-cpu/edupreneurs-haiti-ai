@@ -258,20 +258,36 @@ export const LessonPageTemplate = ({
             <span className="text-xs sm:text-base">Retour au cours</span>
           </Button>
 
-          <div className="flex flex-col md:flex-row items-start gap-4 sm:gap-8 max-w-6xl mx-auto">
-            <div className="flex-1 space-y-2 sm:space-y-4 w-full">
-              <div className="flex items-center gap-2 flex-wrap">
-                <Badge variant="secondary" className="text-xs sm:text-sm">{gradeLevel}</Badge>
-                <Badge variant="outline" className="text-xs sm:text-sm">{subjectName}</Badge>
-                {isLessonCompleted && (
-                  <Badge className="bg-green-500/20 text-green-600 border-green-500/30 text-xs sm:text-sm">
-                    ✓ Terminée
-                  </Badge>
-                )}
+          <div className="flex flex-col lg:flex-row items-start gap-4 lg:gap-8 max-w-6xl mx-auto">
+            {/* Mobile/Tablet: Jude inline with title */}
+            <div className="flex items-start gap-4 w-full lg:hidden">
+              <div className="flex-1 space-y-2 sm:space-y-3">
+                <div className="flex items-center gap-2 flex-wrap">
+                  <Badge variant="secondary" className="text-xs sm:text-sm">{gradeLevel}</Badge>
+                  <Badge variant="outline" className="text-xs sm:text-sm">{subjectName}</Badge>
+                  {isLessonCompleted && (
+                    <Badge className="bg-green-500/20 text-green-600 border-green-500/30 text-xs sm:text-sm">
+                      ✓ Terminée
+                    </Badge>
+                  )}
+                </div>
+                <h1 className="text-xl sm:text-2xl md:text-3xl font-bold bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent break-words">
+                  {lesson.title}
+                </h1>
               </div>
-              <h1 className="text-xl sm:text-3xl md:text-4xl font-bold bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent break-words">
-                {lesson.title}
-              </h1>
+              {/* Jude image for mobile/tablet */}
+              <div className="relative flex-shrink-0">
+                <div className="absolute inset-0 bg-gradient-to-tr from-primary/20 to-transparent rounded-full blur-2xl" />
+                <img
+                  src={judeImage}
+                  alt="Jude - Professeur"
+                  className="relative w-20 h-20 sm:w-28 sm:h-28 md:w-32 md:h-32 object-contain drop-shadow-xl"
+                />
+              </div>
+            </div>
+
+            {/* Mobile/Tablet: Rest of content below */}
+            <div className="space-y-2 sm:space-y-3 w-full lg:hidden">
               <div 
                 className="text-muted-foreground lesson-content text-sm sm:text-base" 
                 dangerouslySetInnerHTML={{ __html: lesson.objectif }}
@@ -279,7 +295,7 @@ export const LessonPageTemplate = ({
               
               {/* Motivational message */}
               <div className="flex items-center gap-2 text-sm text-muted-foreground bg-primary/5 rounded-lg px-3 py-2">
-                <Sparkles className="h-4 w-4 text-primary" />
+                <Sparkles className="h-4 w-4 text-primary flex-shrink-0" />
                 <span>{motivationalMessage}</span>
               </div>
 
@@ -304,13 +320,59 @@ export const LessonPageTemplate = ({
               </div>
             </div>
 
-            {/* Jude image - visible on mobile too now */}
-            <div className="relative flex-shrink-0 mx-auto md:mx-0">
+            {/* Desktop: Original side-by-side layout */}
+            <div className="hidden lg:block flex-1 space-y-4 w-full">
+              <div className="flex items-center gap-2 flex-wrap">
+                <Badge variant="secondary" className="text-sm">{gradeLevel}</Badge>
+                <Badge variant="outline" className="text-sm">{subjectName}</Badge>
+                {isLessonCompleted && (
+                  <Badge className="bg-green-500/20 text-green-600 border-green-500/30 text-sm">
+                    ✓ Terminée
+                  </Badge>
+                )}
+              </div>
+              <h1 className="text-4xl font-bold bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent break-words">
+                {lesson.title}
+              </h1>
+              <div 
+                className="text-muted-foreground lesson-content text-base" 
+                dangerouslySetInnerHTML={{ __html: lesson.objectif }}
+              />
+              
+              {/* Motivational message */}
+              <div className="flex items-center gap-2 text-sm text-muted-foreground bg-primary/5 rounded-lg px-3 py-2">
+                <Sparkles className="h-4 w-4 text-primary" />
+                <span>{motivationalMessage}</span>
+              </div>
+
+              <div className="flex gap-2 flex-wrap">
+                <TextToSpeechButton
+                  text={`${lesson.title}. ${lesson.objectif}. ${lesson.introduction || ''}`}
+                  sectionName="lesson-header"
+                  className="text-sm"
+                />
+                <DownloadLessonButton 
+                  subjectName={subjectName}
+                  lessonData={{
+                    title: lesson.title,
+                    objectif: lesson.objectif,
+                    introduction: lesson.introduction,
+                    contenu: lesson.contenu,
+                    exemples_exercices: lesson.exemples_exercices,
+                    youtube_url: lesson.youtube_url,
+                    grade_level: lesson.grade_level
+                  }} 
+                />
+              </div>
+            </div>
+
+            {/* Desktop: Jude image */}
+            <div className="relative hidden lg:block flex-shrink-0">
               <div className="absolute inset-0 bg-gradient-to-tr from-primary/20 to-transparent rounded-full blur-3xl" />
               <img
                 src={judeImage}
                 alt="Jude - Professeur"
-                className="relative w-24 h-24 sm:w-32 sm:h-32 md:w-48 md:h-48 object-contain drop-shadow-2xl"
+                className="relative w-48 h-48 object-contain drop-shadow-2xl"
               />
             </div>
           </div>
