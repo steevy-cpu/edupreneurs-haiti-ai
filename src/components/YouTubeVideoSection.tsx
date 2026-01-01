@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Loader2, Video } from "lucide-react";
+import { Loader2, Video, Star } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
 
 interface YouTubeVideo {
   id: string;
@@ -9,38 +10,104 @@ interface YouTubeVideo {
   thumbnail: string;
 }
 
+interface LessonVideo {
+  id: string;
+  youtube_url: string;
+  video_id: string;
+  title: string | null;
+  description: string | null;
+  order_index: number;
+  is_primary: boolean;
+}
+
 interface YouTubeVideoSectionProps {
+  lessonId?: string;
   lessonTitle: string;
   objectives: string;
-  gradeLevel?: string; // e.g., "AF7", "AF8", "AF9"
-  customYoutubeUrl?: string; // Custom YouTube URL for the lesson
-  subject?: string; // "mathematiques", "sciences", etc.
+  gradeLevel?: string;
+  subject?: string;
+  // Legacy prop for backward compatibility
+  customYoutubeUrl?: string;
 }
 
 const YOUTUBE_API_KEY = "AIzaSyDu6sWsM5NEgb48nFFIz49guKR5amdsGWA";
 
-export const YouTubeVideoSection = ({ lessonTitle, objectives, gradeLevel = "AF7", customYoutubeUrl, subject = "mathematiques" }: YouTubeVideoSectionProps) => {
-  const [videos, setVideos] = useState<YouTubeVideo[]>([]);
+export const YouTubeVideoSection = ({ 
+  lessonId, 
+  lessonTitle, 
+  objectives, 
+  gradeLevel = "AF7", 
+  customYoutubeUrl, 
+  subject = "mathematiques" 
+}: YouTubeVideoSectionProps) => {
+  const [lessonVideos, setLessonVideos] = useState<LessonVideo[]>([]);
+  const [searchVideos, setSearchVideos] = useState<YouTubeVideo[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [customVideoId, setCustomVideoId] = useState<string | null>(null);
 
   useEffect(() => {
-    // Extract custom video ID if URL is provided
-    if (customYoutubeUrl) {
-      const videoId = extractYouTubeVideoId(customYoutubeUrl);
-      setCustomVideoId(videoId);
-      setIsLoading(false);
-      // Skip API search when we have a custom video URL
-      return;
+    if (lessonId) {
+      loadLessonVideos();
+    } else if (customYoutubeUrl) {
+      // Legacy support: if no lessonId but customYoutubeUrl provided
+      handleLegacyUrl();
+    } else {
+      searchYouTubeVideos();
     }
-    searchVideos();
-  }, [lessonTitle, objectives, customYoutubeUrl]);
+  }, [lessonId, lessonTitle, customYoutubeUrl]);
+
+  const loadLessonVideos = async () => {
+    setIsLoading(true);
+    setError(null);
+    
+    try {
+      const { data, error: fetchError } = await supabase
+        .from('lesson_videos')
+        .select('*')
+        .eq('lesson_id', lessonId)
+        .order('order_index', { ascending: true });
+
+      if (fetchError) throw fetchError;
+
+      if (data && data.length > 0) {
+        // Sort to show primary first
+        const sorted = [...data].sort((a, b) => {
+          if (a.is_primary && !b.is_primary) return -1;
+          if (!a.is_primary && b.is_primary) return 1;
+          return a.order_index - b.order_index;
+        });
+        setLessonVideos(sorted);
+        setIsLoading(false);
+      } else {
+        // No videos in DB, fall back to search
+        await searchYouTubeVideos();
+      }
+    } catch (err) {
+      console.error("Error loading lesson videos:", err);
+      // Fall back to search on error
+      await searchYouTubeVideos();
+    }
+  };
+
+  const handleLegacyUrl = () => {
+    const videoId = extractYouTubeVideoId(customYoutubeUrl!);
+    if (videoId) {
+      setLessonVideos([{
+        id: 'legacy',
+        youtube_url: customYoutubeUrl!,
+        video_id: videoId,
+        title: null,
+        description: null,
+        order_index: 0,
+        is_primary: true,
+      }]);
+    }
+    setIsLoading(false);
+  };
 
   const extractYouTubeVideoId = (url: string): string | null => {
     if (!url) return null;
     
-    // Handle various YouTube URL formats
     const patterns = [
       /(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([^&\s]+)/,
       /youtube\.com\/shorts\/([^&\s]+)/,
@@ -53,7 +120,6 @@ export const YouTubeVideoSection = ({ lessonTitle, objectives, gradeLevel = "AF7
       }
     }
     
-    // If it's already just the video ID (11 characters)
     if (/^[a-zA-Z0-9_-]{11}$/.test(url)) {
       return url;
     }
@@ -61,41 +127,15 @@ export const YouTubeVideoSection = ({ lessonTitle, objectives, gradeLevel = "AF7
     return null;
   };
 
-  const extractKeywords = (text: string): string[] => {
-    // Common French/Creole stop words to exclude
-    const stopWords = [
-      "pouvoir", "savoir", "cette", "leçon", "être", "avoir", "faire", 
-      "pour", "dans", "avec", "plus", "tout", "mais", "vous", "nous",
-      "que", "qui", "sur", "une", "des", "les", "aux", "par"
-    ];
-
-    // Extract important mathematical and educational keywords
-    const keywords = text
-      .toLowerCase()
-      .replace(/[•\-:;,]/g, " ")
-      .split(/\s+/)
-      .filter(word => 
-        word.length > 3 && 
-        !stopWords.includes(word) &&
-        !word.match(/^\d+$/) // exclude pure numbers
-      )
-      .slice(0, 6); // Get top 6 keywords
-
-    return keywords;
-  };
-
   const buildOptimalSearchQuery = (): string => {
-    // Build topic-specific search queries based on subject and lesson title
     const cleanTitle = lessonTitle.toLowerCase().trim();
     
-    // Determine subject term for search
     const subjectTerm = subject === "mathematiques" ? "mathématiques" : 
                         subject === "sciences" ? "sciences" : 
                         subject === "francais" ? "français" : 
                         subject === "espagnol" ? "espagnol español spanish" :
                         subject;
     
-    // Extract key words from title (remove articles)
     const stopWords = ["les", "le", "la", "l'", "de", "du", "des", "et", "un", "une"];
     const keywords = cleanTitle
       .split(' ')
@@ -103,18 +143,15 @@ export const YouTubeVideoSection = ({ lessonTitle, objectives, gradeLevel = "AF7
       .slice(0, 3)
       .join(' ');
     
-    // Build simpler, more flexible query without grade level for better results
     return `${keywords} ${subjectTerm} cours leçon`;
   };
 
-  const searchVideos = async () => {
+  const searchYouTubeVideos = async () => {
     setIsLoading(true);
     setError(null);
 
     try {
       const searchQuery = buildOptimalSearchQuery();
-      
-      console.log("🎬 [YouTube] Searching for videos with query:", searchQuery);
 
       const response = await fetch(
         `https://www.googleapis.com/youtube/v3/search?` +
@@ -123,7 +160,7 @@ export const YouTubeVideoSection = ({ lessonTitle, objectives, gradeLevel = "AF7
         `q=${encodeURIComponent(searchQuery)}&` +
         `type=video&` +
         `videoEmbeddable=true&` +
-        `videoDuration=medium&` + // Prefer 4-20 min videos
+        `videoDuration=medium&` +
         `relevanceLanguage=fr&` +
         `videoDefinition=any&` +
         `safeSearch=strict&` +
@@ -137,30 +174,23 @@ export const YouTubeVideoSection = ({ lessonTitle, objectives, gradeLevel = "AF7
 
       const data = await response.json();
       
-      console.log("🎬 [YouTube] API Response:", data);
-      
       if (!data.items || data.items.length === 0) {
-        console.warn("🎬 [YouTube] No videos found for query:", searchQuery);
-        setVideos([]);
+        setSearchVideos([]);
         return;
       }
 
-      // Filter videos to ensure French/Creole content with relaxed rules
       const videoList: YouTubeVideo[] = data.items
         .filter((item: any) => {
           const title = item.snippet.title.toLowerCase();
           const description = item.snippet.description.toLowerCase();
           
-          // Keywords that strongly indicate English content (to exclude)
           const englishIndicators = ['english', 'in english', 'english lesson', 
                                       'learn in english', 'tutorial in english', 'english version'];
           
-          // Check if video has strong English indicators
           const hasEnglishIndicators = englishIndicators.some(indicator => 
             title.includes(indicator) || description.includes(indicator)
           );
           
-          // Include if not clearly English (more permissive for French content)
           return !hasEnglishIndicators;
         })
         .map((item: any) => ({
@@ -170,10 +200,9 @@ export const YouTubeVideoSection = ({ lessonTitle, objectives, gradeLevel = "AF7
           thumbnail: item.snippet.thumbnails.medium.url,
         }));
 
-      console.log("🎬 [YouTube] Filtered videos:", videoList.length, "videos found");
-      setVideos(videoList);
+      setSearchVideos(videoList);
     } catch (err) {
-      console.error("🎬 [YouTube] API Error:", err);
+      console.error("YouTube API Error:", err);
       setError("Impossible de charger les vidéos pour le moment");
     } finally {
       setIsLoading(false);
@@ -192,7 +221,7 @@ export const YouTubeVideoSection = ({ lessonTitle, objectives, gradeLevel = "AF7
         <CardContent className="p-4 sm:p-6 pt-0">
           <div className="flex flex-col items-center justify-center py-8 space-y-4">
             <Loader2 className="h-10 w-10 animate-spin text-primary" />
-            <p className="text-muted-foreground text-sm">Recherche de vidéos...</p>
+            <p className="text-muted-foreground text-sm">Chargement des vidéos...</p>
           </div>
         </CardContent>
       </Card>
@@ -215,6 +244,29 @@ export const YouTubeVideoSection = ({ lessonTitle, objectives, gradeLevel = "AF7
     );
   }
 
+  const hasLessonVideos = lessonVideos.length > 0;
+  const hasSearchVideos = searchVideos.length > 0;
+
+  if (!hasLessonVideos && !hasSearchVideos) {
+    return (
+      <Card className="lesson-card border-none rounded-[20px] shadow-md bg-gradient-to-br from-purple-50 to-pink-50 dark:from-purple-950/30 dark:to-pink-950/30 border-2 border-purple-200 dark:border-purple-800">
+        <CardHeader className="p-4 sm:p-6 bg-gradient-to-r from-purple-100 to-pink-100 dark:from-purple-900/30 dark:to-pink-900/30 rounded-t-[20px]">
+          <CardTitle className="flex items-center gap-2 text-lg sm:text-xl">
+            <Video className="text-primary shrink-0" size={20} />
+            📹 Vidéos explicatives — Aprann pi byen!
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="p-4 sm:p-6 pt-6">
+          <div className="p-8 text-center bg-background/50 rounded-lg border border-dashed border-muted">
+            <Video className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
+            <p className="text-muted-foreground mb-2">Aucune vidéo disponible pour le moment</p>
+            <p className="text-xs text-muted-foreground">Recherchez "{lessonTitle}" sur YouTube pour trouver des ressources vidéo</p>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
   return (
     <Card className="lesson-card border-none rounded-[20px] shadow-md bg-gradient-to-br from-purple-50 to-pink-50 dark:from-purple-950/30 dark:to-pink-950/30 border-2 border-purple-200 dark:border-purple-800">
       <CardHeader className="p-4 sm:p-6 bg-gradient-to-r from-purple-100 to-pink-100 dark:from-purple-900/30 dark:to-pink-900/30 rounded-t-[20px]">
@@ -227,34 +279,43 @@ export const YouTubeVideoSection = ({ lessonTitle, objectives, gradeLevel = "AF7
         </p>
       </CardHeader>
       <CardContent className="p-4 sm:p-6 pt-6">
-        {videos.length === 0 && !customVideoId ? (
-          <div className="p-8 text-center bg-background/50 rounded-lg border border-dashed border-muted">
-            <Video className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
-            <p className="text-muted-foreground mb-2">Aucune vidéo disponible pour le moment</p>
-            <p className="text-xs text-muted-foreground">Recherchez "{lessonTitle}" sur YouTube pour trouver des ressources vidéo</p>
-          </div>
-        ) : (
-          <div className="space-y-6">
-          {/* Custom Video (if provided) */}
-          {customVideoId && (
-            <div className="rounded-xl overflow-hidden shadow-lg bg-background/50 backdrop-blur-sm border-2 border-primary">
+        <div className="space-y-6">
+          {/* Lesson Videos from Database */}
+          {lessonVideos.map((video, index) => (
+            <div
+              key={video.id}
+              className={`rounded-xl overflow-hidden shadow-lg bg-background/50 backdrop-blur-sm ${
+                video.is_primary ? 'border-2 border-primary' : 'border border-purple-200 dark:border-purple-800'
+              }`}
+            >
               <div className="relative aspect-video overflow-hidden bg-muted rounded-lg">
                 <iframe
-                  src={`https://www.youtube-nocookie.com/embed/${customVideoId}?rel=0&modestbranding=1`}
-                  title="Vidéo personnalisée pour cette leçon"
+                  src={`https://www.youtube-nocookie.com/embed/${video.video_id}?rel=0&modestbranding=1`}
+                  title={video.title || `Vidéo ${index + 1}`}
                   allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
                   allowFullScreen
                   loading="lazy"
                   className="w-full h-full border-0"
                 />
               </div>
-              <div className="p-4 bg-gradient-to-r from-primary/10 to-primary/5">
-                <p className="text-sm font-semibold text-primary mb-2">
-                  ⭐ Vidéo sélectionnée spécialement pour cette leçon
-                </p>
-                <p className="text-xs text-muted-foreground">
+              <div className={`p-4 ${video.is_primary ? 'bg-gradient-to-r from-primary/10 to-primary/5' : 'bg-gradient-to-r from-purple-50/50 to-pink-50/50 dark:from-purple-900/20 dark:to-pink-900/20'}`}>
+                {video.is_primary && (
+                  <div className="flex items-center gap-2 mb-2">
+                    <Star className="h-4 w-4 text-yellow-500 fill-yellow-500" />
+                    <span className="text-sm font-semibold text-primary">
+                      Vidéo principale sélectionnée pour cette leçon
+                    </span>
+                  </div>
+                )}
+                {video.title && (
+                  <h3 className="font-semibold text-sm mb-2">{video.title}</h3>
+                )}
+                {video.description && (
+                  <p className="text-xs text-muted-foreground line-clamp-2">{video.description}</p>
+                )}
+                <p className="text-xs text-muted-foreground mt-2">
                   Si la vidéo ne s'affiche pas, <a 
-                    href={`https://www.youtube.com/watch?v=${customVideoId}`}
+                    href={`https://www.youtube.com/watch?v=${video.video_id}`}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="text-primary hover:underline font-medium"
@@ -264,15 +325,14 @@ export const YouTubeVideoSection = ({ lessonTitle, objectives, gradeLevel = "AF7
                 </p>
               </div>
             </div>
-          )}
+          ))}
 
-          {/* Search Results Videos */}
-          {videos.map((video) => (
+          {/* Search Results Videos (only show if no lesson videos) */}
+          {!hasLessonVideos && searchVideos.map((video) => (
             <div
               key={video.id}
               className="rounded-xl overflow-hidden shadow-lg bg-background/50 backdrop-blur-sm border border-purple-200 dark:border-purple-800"
             >
-              {/* YouTube Embed */}
               <div className="relative aspect-video overflow-hidden bg-muted rounded-lg">
                 <iframe
                   src={`https://www.youtube-nocookie.com/embed/${video.id}?rel=0&modestbranding=1`}
@@ -283,8 +343,6 @@ export const YouTubeVideoSection = ({ lessonTitle, objectives, gradeLevel = "AF7
                   className="w-full h-full border-0"
                 />
               </div>
-
-              {/* Video Info */}
               <div className="p-4 bg-gradient-to-r from-purple-50/50 to-pink-50/50 dark:from-purple-900/20 dark:to-pink-900/20">
                 <h3 className="font-semibold text-sm mb-2">
                   {video.title}
@@ -295,10 +353,9 @@ export const YouTubeVideoSection = ({ lessonTitle, objectives, gradeLevel = "AF7
               </div>
             </div>
           ))}
-          </div>
-        )}
+        </div>
 
-        {(videos.length > 0 || customVideoId) && (
+        {(hasLessonVideos || hasSearchVideos) && (
           <div className="mt-6 p-4 bg-gradient-to-r from-purple-100/50 to-pink-100/50 dark:from-purple-900/20 dark:to-pink-900/20 rounded-lg border border-purple-200 dark:border-purple-800">
             <p className="text-sm text-center">
               <span className="font-semibold">💡 Konsèy:</span> Gade videyo yo pou w wè eksplikasyon an aksyon! 

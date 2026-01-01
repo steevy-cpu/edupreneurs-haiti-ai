@@ -488,15 +488,14 @@ export const LessonPageTemplate = ({
               </CardContent>
             </Card>
 
-            {lesson.youtube_url && (
-              <YouTubeVideoSection 
-                customYoutubeUrl={lesson.youtube_url}
-                lessonTitle={lesson.title}
-                objectives={lesson.objectif}
-                gradeLevel={gradeLevel}
-                subject={subjectName.toLowerCase()}
-              />
-            )}
+            <YouTubeVideoSection 
+              lessonId={lesson.id}
+              lessonTitle={lesson.title}
+              objectives={lesson.objectif}
+              gradeLevel={gradeLevel}
+              subject={subjectName.toLowerCase()}
+              customYoutubeUrl={lesson.youtube_url}
+            />
           </TabsContent>
 
           <TabsContent value="activites" className="space-y-4 sm:space-y-6 mt-4">

@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Youtube, Save, Trash2, Loader2, Sparkles } from "lucide-react";
+import { Youtube, Save, Trash2, Loader2, Sparkles, Plus, GripVertical, Star } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useContentEditorPermissions } from "@/hooks/useContentEditorPermissions";
 
@@ -21,13 +21,25 @@ interface YouTubeVideo {
   thumbnail: string;
 }
 
+interface LessonVideo {
+  id: string;
+  youtube_url: string;
+  video_id: string;
+  title: string | null;
+  description: string | null;
+  order_index: number;
+  is_primary: boolean;
+}
+
 const YOUTUBE_API_KEY = "AIzaSyDu6sWsM5NEgb48nFFIz49guKR5amdsGWA";
 
 export const YouTubeManager = ({ lesson, onUpdate }: YouTubeManagerProps) => {
-  const [youtubeUrl, setYoutubeUrl] = useState(lesson?.youtube_url || "");
+  const [newVideoUrl, setNewVideoUrl] = useState("");
   const [isSaving, setIsSaving] = useState(false);
+  const [lessonVideos, setLessonVideos] = useState<LessonVideo[]>([]);
+  const [isLoadingVideos, setIsLoadingVideos] = useState(true);
   const [searchVideos, setSearchVideos] = useState<YouTubeVideo[]>([]);
-  const [isLoadingVideos, setIsLoadingVideos] = useState(false);
+  const [isLoadingSearch, setIsLoadingSearch] = useState(false);
   const [bannedVideoIds, setBannedVideoIds] = useState<Set<string>>(new Set());
   const [aiSuggestedVideos, setAiSuggestedVideos] = useState<YouTubeVideo[]>([]);
   const [isGeneratingAiSuggestions, setIsGeneratingAiSuggestions] = useState(false);
@@ -54,15 +66,38 @@ export const YouTubeManager = ({ lesson, onUpdate }: YouTubeManagerProps) => {
     loadBannedVideos();
   }, []);
 
-  // Update local state when lesson changes
+  // Load lesson videos
   useEffect(() => {
-    setYoutubeUrl(lesson?.youtube_url || "");
-    if (lesson?.title && lesson?.objectif) {
-      searchYouTubeVideos();
+    if (lesson?.id) {
+      loadLessonVideos();
+      if (lesson?.title && lesson?.objectif) {
+        searchYouTubeVideos();
+      }
     }
-  }, [lesson?.id, lesson?.youtube_url, lesson?.title, lesson?.objectif]);
+  }, [lesson?.id, lesson?.title, lesson?.objectif]);
 
-  const extractVideoId = (url: string) => {
+  const loadLessonVideos = async () => {
+    if (!lesson?.id) return;
+    
+    setIsLoadingVideos(true);
+    try {
+      const { data, error } = await supabase
+        .from('lesson_videos')
+        .select('*')
+        .eq('lesson_id', lesson.id)
+        .order('order_index', { ascending: true });
+      
+      if (error) throw error;
+      setLessonVideos(data || []);
+    } catch (error) {
+      console.error('Error loading lesson videos:', error);
+      toast.error("Erreur lors du chargement des vidéos");
+    } finally {
+      setIsLoadingVideos(false);
+    }
+  };
+
+  const extractVideoId = (url: string): string | null => {
     if (!url) return null;
     const patterns = [
       /(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([^&\s]+)/,
@@ -87,7 +122,7 @@ export const YouTubeManager = ({ lesson, onUpdate }: YouTubeManagerProps) => {
   const searchYouTubeVideos = async () => {
     if (!lesson?.title) return;
     
-    setIsLoadingVideos(true);
+    setIsLoadingSearch(true);
     try {
       const searchQuery = buildSearchQuery();
       
@@ -133,11 +168,9 @@ export const YouTubeManager = ({ lesson, onUpdate }: YouTubeManagerProps) => {
     } catch (error) {
       console.error("YouTube search error:", error);
     } finally {
-      setIsLoadingVideos(false);
+      setIsLoadingSearch(false);
     }
   };
-
-  const videoId = extractVideoId(youtubeUrl);
 
   const suggestWithAI = async () => {
     if (!lesson?.title) {
@@ -179,31 +212,143 @@ export const YouTubeManager = ({ lesson, onUpdate }: YouTubeManagerProps) => {
     }
   };
 
-  const applyAiVideo = async (videoId: string) => {
+  const addVideo = async (videoId: string, title?: string, description?: string) => {
     if (!canEdit) {
-      toast.error("Vous n'avez pas la permission de modifier cette vidéo");
+      toast.error("Vous n'avez pas la permission d'ajouter des vidéos");
       return;
     }
 
     const videoUrl = `https://www.youtube.com/watch?v=${videoId}`;
-    setYoutubeUrl(videoUrl);
     
     try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error("Non authentifié");
+
+      const nextIndex = lessonVideos.length;
+      const isPrimary = lessonVideos.length === 0;
+
       const { error } = await supabase
-        .from('lessons')
-        .update({
+        .from('lesson_videos')
+        .insert({
+          lesson_id: lesson.id,
           youtube_url: videoUrl,
-          updated_at: new Date().toISOString(),
-        })
-        .eq('id', lesson.id);
+          video_id: videoId,
+          title: title || null,
+          description: description || null,
+          order_index: nextIndex,
+          is_primary: isPrimary,
+          added_by: user.id,
+        });
 
       if (error) throw error;
 
-      toast.success("Vidéo appliquée avec succès");
+      toast.success("Vidéo ajoutée avec succès");
+      setNewVideoUrl("");
+      loadLessonVideos();
       onUpdate();
     } catch (error) {
-      console.error('Error applying AI video:', error);
-      toast.error("Erreur lors de l'application de la vidéo");
+      console.error('Error adding video:', error);
+      toast.error("Erreur lors de l'ajout de la vidéo");
+    }
+  };
+
+  const handleAddNewVideo = async () => {
+    const videoId = extractVideoId(newVideoUrl);
+    if (!videoId) {
+      toast.error("URL YouTube invalide");
+      return;
+    }
+
+    // Check if video already exists
+    if (lessonVideos.some(v => v.video_id === videoId)) {
+      toast.error("Cette vidéo est déjà ajoutée");
+      return;
+    }
+
+    await addVideo(videoId);
+  };
+
+  const removeVideo = async (videoDbId: string) => {
+    if (!canDelete) {
+      toast.error("Vous n'avez pas la permission de supprimer cette vidéo");
+      return;
+    }
+
+    try {
+      const { error } = await supabase
+        .from('lesson_videos')
+        .delete()
+        .eq('id', videoDbId);
+
+      if (error) throw error;
+
+      toast.success("Vidéo supprimée");
+      loadLessonVideos();
+      onUpdate();
+    } catch (error) {
+      console.error('Error removing video:', error);
+      toast.error("Erreur lors de la suppression");
+    }
+  };
+
+  const setPrimaryVideo = async (videoDbId: string) => {
+    if (!canEdit) {
+      toast.error("Vous n'avez pas la permission de modifier");
+      return;
+    }
+
+    try {
+      // First, unset all as primary
+      await supabase
+        .from('lesson_videos')
+        .update({ is_primary: false })
+        .eq('lesson_id', lesson.id);
+
+      // Then set the selected one as primary
+      const { error } = await supabase
+        .from('lesson_videos')
+        .update({ is_primary: true })
+        .eq('id', videoDbId);
+
+      if (error) throw error;
+
+      toast.success("Vidéo principale mise à jour");
+      loadLessonVideos();
+      onUpdate();
+    } catch (error) {
+      console.error('Error setting primary video:', error);
+      toast.error("Erreur lors de la mise à jour");
+    }
+  };
+
+  const moveVideo = async (videoDbId: string, direction: 'up' | 'down') => {
+    if (!canEdit) return;
+
+    const currentIndex = lessonVideos.findIndex(v => v.id === videoDbId);
+    if (currentIndex === -1) return;
+
+    const newIndex = direction === 'up' ? currentIndex - 1 : currentIndex + 1;
+    if (newIndex < 0 || newIndex >= lessonVideos.length) return;
+
+    try {
+      const currentVideo = lessonVideos[currentIndex];
+      const swapVideo = lessonVideos[newIndex];
+
+      await Promise.all([
+        supabase
+          .from('lesson_videos')
+          .update({ order_index: newIndex })
+          .eq('id', currentVideo.id),
+        supabase
+          .from('lesson_videos')
+          .update({ order_index: currentIndex })
+          .eq('id', swapVideo.id),
+      ]);
+
+      loadLessonVideos();
+    } catch (error) {
+      console.error('Error reordering videos:', error);
+      toast.error("Erreur lors du réordonnancement");
     }
   };
 
@@ -225,16 +370,11 @@ export const YouTubeManager = ({ lesson, onUpdate }: YouTubeManagerProps) => {
           reason: 'Vidéo inappropriée ou non pertinente'
         });
 
-      if (error) {
-        // Si la vidéo est déjà bannie, on ignore l'erreur
-        if (error.code !== '23505') throw error;
-      }
+      if (error && error.code !== '23505') throw error;
 
-      // Ajouter à la liste locale immédiatement
       setBannedVideoIds(prev => new Set([...prev, videoId]));
-      
-      // Filtrer la vidéo des résultats de recherche
       setSearchVideos(prev => prev.filter(v => v.id !== videoId));
+      setAiSuggestedVideos(prev => prev.filter(v => v.id !== videoId));
       
       toast.success("Vidéo bannie avec succès");
     } catch (error) {
@@ -248,66 +388,11 @@ export const YouTubeManager = ({ lesson, onUpdate }: YouTubeManagerProps) => {
       <Card>
         <CardContent className="p-8 text-center text-muted-foreground">
           <Youtube className="h-12 w-12 mx-auto mb-4 opacity-20" />
-          <p>Sélectionnez une leçon pour gérer sa vidéo</p>
+          <p>Sélectionnez une leçon pour gérer ses vidéos</p>
         </CardContent>
       </Card>
     );
   }
-
-  const handleSave = async () => {
-    setIsSaving(true);
-    try {
-      const { error } = await supabase
-        .from('lessons')
-        .update({
-          youtube_url: youtubeUrl || null,
-          updated_at: new Date().toISOString(),
-        })
-        .eq('id', lesson.id);
-
-      if (error) throw error;
-
-      toast.success("Vidéo YouTube mise à jour avec succès");
-      onUpdate();
-    } catch (error) {
-      console.error('Error updating YouTube URL:', error);
-      toast.error("Erreur lors de la mise à jour");
-    } finally {
-      setIsSaving(false);
-    }
-  };
-
-  const handleRemove = async () => {
-    if (!canDelete) {
-      toast.error("Vous n'avez pas la permission de supprimer cette vidéo");
-      return;
-    }
-
-    setIsSaving(true);
-    try {
-      const { error } = await supabase
-        .from('lessons')
-        .update({
-          youtube_url: null,
-          updated_at: new Date().toISOString(),
-        })
-        .eq('id', lesson.id);
-
-      if (error) throw error;
-
-      // Mettre à jour l'état local immédiatement
-      setYoutubeUrl("");
-      toast.success("Vidéo personnalisée supprimée");
-      
-      // Rafraîchir la leçon
-      await onUpdate();
-    } catch (error) {
-      console.error('Error removing YouTube URL:', error);
-      toast.error("Erreur lors de la suppression");
-    } finally {
-      setIsSaving(false);
-    }
-  };
 
   return (
     <Card className="h-[600px] max-h-[600px] flex flex-col">
@@ -317,76 +402,132 @@ export const YouTubeManager = ({ lesson, onUpdate }: YouTubeManagerProps) => {
           Vidéos YouTube
         </CardTitle>
         <p className="text-xs text-muted-foreground mt-1">
-          Gérez la vidéo personnalisée et visualisez les suggestions
+          Gérez les vidéos de cette leçon (plusieurs vidéos possibles)
         </p>
       </CardHeader>
       <CardContent className="flex-1 overflow-hidden">
         <ScrollArea className="h-full pr-4">
           <div className="space-y-4">
-            {/* Custom Video URL Input */}
+            {/* Add New Video */}
             <div className="space-y-2 pb-4 border-b">
-              <Label htmlFor="youtube-url" className="text-sm font-semibold">
-                Vidéo personnalisée de la leçon
+              <Label htmlFor="new-video-url" className="text-sm font-semibold">
+                Ajouter une nouvelle vidéo
               </Label>
-              <Input
-                id="youtube-url"
-                value={youtubeUrl}
-                onChange={(e) => setYoutubeUrl(e.target.value)}
-                placeholder="https://www.youtube.com/watch?v=..."
-                className="font-mono text-sm"
-              />
-              <p className="text-xs text-muted-foreground">
-                Cette vidéo sera affichée en priorité aux étudiants
-              </p>
-              
               <div className="flex gap-2">
+                <Input
+                  id="new-video-url"
+                  value={newVideoUrl}
+                  onChange={(e) => setNewVideoUrl(e.target.value)}
+                  placeholder="https://www.youtube.com/watch?v=..."
+                  className="font-mono text-sm flex-1"
+                />
                 <Button 
-                  onClick={handleSave} 
-                  disabled={isSaving}
-                  className="flex-1"
+                  onClick={handleAddNewVideo} 
+                  disabled={isSaving || !newVideoUrl}
                   size="sm"
                 >
-                  <Save className="mr-2 h-4 w-4" />
-                  Enregistrer
+                  <Plus className="mr-1 h-4 w-4" />
+                  Ajouter
                 </Button>
-                {lesson.youtube_url && canDelete && (
-                  <Button 
-                    onClick={handleRemove} 
-                    disabled={isSaving}
-                    variant="destructive"
-                    size="sm"
-                    title="Supprimer la vidéo personnalisée"
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
-                )}
               </div>
-              {lesson.youtube_url && !canDelete && (
-                <p className="text-xs text-muted-foreground italic">
-                  Seuls les administrateurs peuvent supprimer cette vidéo
-                </p>
-              )}
             </div>
 
-            {/* Custom Video Preview */}
-            {videoId && (
-              <div className="space-y-2">
-                <Label className="text-sm font-semibold">
-                  ⭐ Aperçu - Vidéo personnalisée
-                </Label>
-                <div className="rounded-lg overflow-hidden border-2 border-primary/20">
-                  <div className="aspect-video bg-muted">
-                    <iframe
-                      src={`https://www.youtube.com/embed/${videoId}`}
-                      title="Aperçu de la vidéo personnalisée"
-                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                      allowFullScreen
-                      className="w-full h-full"
-                    />
-                  </div>
+            {/* Current Lesson Videos */}
+            <div className="space-y-2">
+              <Label className="text-sm font-semibold">
+                📹 Vidéos de cette leçon ({lessonVideos.length})
+              </Label>
+              
+              {isLoadingVideos ? (
+                <div className="flex items-center justify-center py-8">
+                  <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
                 </div>
-              </div>
-            )}
+              ) : lessonVideos.length === 0 ? (
+                <div className="text-center py-6 text-muted-foreground text-sm border rounded-lg bg-muted/20">
+                  Aucune vidéo ajoutée. Utilisez le formulaire ci-dessus ou les suggestions ci-dessous.
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {lessonVideos.map((video, index) => (
+                    <div
+                      key={video.id}
+                      className={`rounded-lg overflow-hidden border ${video.is_primary ? 'border-primary border-2' : 'bg-card'}`}
+                    >
+                      <div className="aspect-video bg-muted relative group">
+                        <iframe
+                          src={`https://www.youtube.com/embed/${video.video_id}`}
+                          title={video.title || "Vidéo"}
+                          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                          allowFullScreen
+                          className="w-full h-full"
+                        />
+                      </div>
+                      <div className="p-3 bg-muted/30 flex items-center justify-between gap-2">
+                        <div className="flex items-center gap-2 flex-1 min-w-0">
+                          <GripVertical className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2">
+                              {video.is_primary && (
+                                <Star className="h-4 w-4 text-yellow-500 fill-yellow-500 flex-shrink-0" />
+                              )}
+                              <span className="text-xs font-medium truncate">
+                                {video.title || `Vidéo ${index + 1}`}
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-1 flex-shrink-0">
+                          {!video.is_primary && canEdit && (
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              onClick={() => setPrimaryVideo(video.id)}
+                              className="h-7 w-7 p-0"
+                              title="Définir comme vidéo principale"
+                            >
+                              <Star className="h-3 w-3" />
+                            </Button>
+                          )}
+                          {index > 0 && canEdit && (
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              onClick={() => moveVideo(video.id, 'up')}
+                              className="h-7 w-7 p-0"
+                              title="Monter"
+                            >
+                              ↑
+                            </Button>
+                          )}
+                          {index < lessonVideos.length - 1 && canEdit && (
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              onClick={() => moveVideo(video.id, 'down')}
+                              className="h-7 w-7 p-0"
+                              title="Descendre"
+                            >
+                              ↓
+                            </Button>
+                          )}
+                          {canDelete && (
+                            <Button
+                              size="sm"
+                              variant="destructive"
+                              onClick={() => removeVideo(video.id)}
+                              className="h-7 w-7 p-0"
+                              title="Supprimer"
+                            >
+                              <Trash2 className="h-3 w-3" />
+                            </Button>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
 
             {/* AI Suggested Videos */}
             <div className="space-y-2 pt-4 border-t">
@@ -444,12 +585,12 @@ export const YouTubeManager = ({ lesson, onUpdate }: YouTubeManagerProps) => {
                         <div className="flex gap-2">
                           <Button
                             size="sm"
-                            onClick={() => applyAiVideo(video.id)}
-                            disabled={!canEdit}
+                            onClick={() => addVideo(video.id, video.title, video.description)}
+                            disabled={!canEdit || lessonVideos.some(v => v.video_id === video.id)}
                             className="flex-1 h-7 text-xs"
                           >
-                            <Save className="mr-1 h-3 w-3" />
-                            Appliquer
+                            <Plus className="mr-1 h-3 w-3" />
+                            {lessonVideos.some(v => v.video_id === video.id) ? 'Déjà ajoutée' : 'Ajouter'}
                           </Button>
                           {canDelete && (
                             <Button
@@ -473,13 +614,13 @@ export const YouTubeManager = ({ lesson, onUpdate }: YouTubeManagerProps) => {
             {/* YouTube Search Results */}
             <div className="space-y-2 pt-4 border-t">
               <Label className="text-sm font-semibold">
-                📹 Vidéos de recherche automatique
+                🔍 Vidéos de recherche automatique
               </Label>
               <p className="text-xs text-muted-foreground mb-3">
                 Recherche basique basée sur le titre de la leçon
               </p>
               
-              {isLoadingVideos ? (
+              {isLoadingSearch ? (
                 <div className="flex items-center justify-center py-8">
                   <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
                 </div>
@@ -498,33 +639,44 @@ export const YouTubeManager = ({ lesson, onUpdate }: YouTubeManagerProps) => {
                           allowFullScreen
                           className="w-full h-full"
                         />
-                        {canDelete && (
-                          <Button
-                            size="sm"
-                            variant="destructive"
-                            onClick={() => banVideo(video.id)}
-                            className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity h-8 w-8 p-0"
-                            title="Bannir cette vidéo définitivement"
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
-                        )}
                       </div>
                       <div className="p-3 bg-muted/30">
                         <h4 className="font-medium text-xs line-clamp-2 mb-1">
                           {video.title}
                         </h4>
-                        <p className="text-xs text-muted-foreground line-clamp-2">
+                        <p className="text-xs text-muted-foreground line-clamp-2 mb-2">
                           {video.description}
                         </p>
+                        <div className="flex gap-2">
+                          <Button
+                            size="sm"
+                            onClick={() => addVideo(video.id, video.title, video.description)}
+                            disabled={!canEdit || lessonVideos.some(v => v.video_id === video.id)}
+                            className="flex-1 h-7 text-xs"
+                          >
+                            <Plus className="mr-1 h-3 w-3" />
+                            {lessonVideos.some(v => v.video_id === video.id) ? 'Déjà ajoutée' : 'Ajouter'}
+                          </Button>
+                          {canDelete && (
+                            <Button
+                              size="sm"
+                              variant="destructive"
+                              onClick={() => banVideo(video.id)}
+                              className="h-7 w-7 p-0"
+                              title="Bannir cette vidéo"
+                            >
+                              <Trash2 className="h-3 w-3" />
+                            </Button>
+                          )}
+                        </div>
                       </div>
                     </div>
                   ))}
                 </div>
               ) : (
-                <p className="text-xs text-muted-foreground text-center py-4">
-                  Aucune vidéo suggérée trouvée
-                </p>
+                <div className="text-center py-4 text-muted-foreground text-sm">
+                  Aucune vidéo trouvée
+                </div>
               )}
             </div>
           </div>
