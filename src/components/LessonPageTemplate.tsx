@@ -1,4 +1,4 @@
-import { useState, useEffect, ReactNode } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -7,7 +7,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { ThemeToggle } from "@/components/ThemeToggle";
-import { BookOpen, FileText, Gamepad2, Target, Lightbulb, ArrowLeft, Save, GraduationCap } from "lucide-react";
+import { BookOpen, FileText, Gamepad2, Target, Lightbulb, ArrowLeft, Save, GraduationCap, Sparkles } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { TextToSpeechButton } from "@/components/TextToSpeechButton";
 import { DownloadLessonButton } from "@/components/DownloadLessonButton";
@@ -17,6 +17,8 @@ import { HTMLQuizParser } from "@/components/HTMLQuizParser";
 import { useTTS } from "@/hooks/useTTS";
 import { EricChatbot } from "@/components/EricChatbot";
 import { LessonAIPracticeSection } from "@/components/lesson/LessonAIPracticeSection";
+import { LessonQuickStats } from "@/components/lesson/LessonQuickStats";
+import { LessonNavigation } from "@/components/lesson/LessonNavigation";
 
 interface LessonData {
   id: string;
@@ -32,6 +34,11 @@ interface LessonData {
   quiz_final?: string;
 }
 
+interface SiblingLesson {
+  slug: string;
+  title: string;
+}
+
 interface LessonPageTemplateProps {
   lesson: LessonData;
   lessonSlug: string;
@@ -39,7 +46,43 @@ interface LessonPageTemplateProps {
   subjectSlug: string;
   gradeLevel: string;
   judeImage: string;
+  // Navigation props
+  currentLessonIndex?: number;
+  totalLessons?: number;
+  previousLesson?: SiblingLesson | null;
+  nextLesson?: SiblingLesson | null;
 }
+
+// Motivational messages based on progress
+const MOTIVATIONAL_MESSAGES = [
+  "Tu fais du bon travail! Continue comme ça! 💪",
+  "Chaque leçon te rapproche de ton objectif! 🎯",
+  "L'apprentissage est une aventure, profites-en! 🚀",
+  "Tu es sur la bonne voie! 🌟",
+  "Bravo pour ta persévérance! 👏"
+];
+
+// Helper to count activities and quiz questions
+const countActivities = (activitiesHtml?: string): number => {
+  if (!activitiesHtml) return 0;
+  // Count activity blocks (data-activity-type attributes or activity markers)
+  const activityMatches = activitiesHtml.match(/data-activity-type|class="activity-|<div[^>]*activity/gi);
+  return activityMatches ? Math.min(activityMatches.length, 10) : 0;
+};
+
+const countQuizQuestions = (quizHtml?: string): number => {
+  if (!quizHtml) return 0;
+  // Count question blocks
+  const questionMatches = quizHtml.match(/data-question|class="quiz-question|<div[^>]*question/gi);
+  return questionMatches ? Math.min(questionMatches.length, 20) : 0;
+};
+
+const estimateReadingTime = (content: string, intro: string, examples: string): number => {
+  const totalText = `${intro || ''} ${content || ''} ${examples || ''}`;
+  const wordCount = totalText.split(/\s+/).filter(Boolean).length;
+  // Average reading speed: 200 words per minute, add time for activities
+  return Math.max(5, Math.ceil(wordCount / 200) + 5);
+};
 
 export const LessonPageTemplate = ({
   lesson,
@@ -47,17 +90,41 @@ export const LessonPageTemplate = ({
   subjectName,
   subjectSlug,
   gradeLevel,
-  judeImage
+  judeImage,
+  currentLessonIndex = 1,
+  totalLessons = 1,
+  previousLesson = null,
+  nextLesson = null
 }: LessonPageTemplateProps) => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [activeTab, setActiveTab] = useState("introduction");
   const [personalNotes, setPersonalNotes] = useState("");
+  const [viewedTabs, setViewedTabs] = useState<Set<string>>(new Set(["introduction"]));
+  const [isLessonCompleted, setIsLessonCompleted] = useState(false);
   const { stop } = useTTS();
+
+  // Get random motivational message (stable per session)
+  const [motivationalMessage] = useState(() => 
+    MOTIVATIONAL_MESSAGES[Math.floor(Math.random() * MOTIVATIONAL_MESSAGES.length)]
+  );
+
+  // Calculate stats
+  const activitiesCount = countActivities(lesson.activites_interactives) || 
+    (lesson.activites_interactives ? 3 : 0); // Default to 3 if has content
+  const quizQuestionsCount = countQuizQuestions(lesson.quiz_final) || 
+    (lesson.quiz_final ? 5 : 0); // Default to 5 if has content
+  const estimatedMinutes = estimateReadingTime(lesson.contenu, lesson.introduction, lesson.exemples_exercices);
 
   useEffect(() => {
     loadPersonalNotes();
+    checkLessonCompletion();
   }, [lessonSlug]);
+
+  // Track viewed tabs
+  useEffect(() => {
+    setViewedTabs(prev => new Set([...prev, activeTab]));
+  }, [activeTab]);
 
   const loadPersonalNotes = async () => {
     try {
@@ -75,9 +142,30 @@ export const LessonPageTemplate = ({
 
       if (data) {
         setPersonalNotes(data.notes || '');
+        if (data.notes) {
+          setViewedTabs(prev => new Set([...prev, 'notes']));
+        }
       }
     } catch (error) {
       console.error('Error loading notes:', error);
+    }
+  };
+
+  const checkLessonCompletion = async () => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      const { data } = await supabase
+        .from('lesson_completions')
+        .select('id')
+        .eq('lesson_slug', lessonSlug)
+        .eq('user_id', user.id)
+        .maybeSingle();
+
+      setIsLessonCompleted(!!data);
+    } catch (error) {
+      console.error('Error checking completion:', error);
     }
   };
 
@@ -121,14 +209,41 @@ export const LessonPageTemplate = ({
     }
   };
 
+  // Tab completion indicator
+  const getTabStatus = (tabId: string): 'complete' | 'viewed' | 'pending' => {
+    if (tabId === 'notes' && personalNotes.length > 0) return 'complete';
+    if (isLessonCompleted && (tabId === 'activites' || tabId === 'quiz')) return 'complete';
+    if (viewedTabs.has(tabId)) return 'viewed';
+    return 'pending';
+  };
+
+  const TabIndicator = ({ status }: { status: 'complete' | 'viewed' | 'pending' }) => (
+    <span className={`absolute -top-0.5 -right-0.5 h-2 w-2 rounded-full ${
+      status === 'complete' ? 'bg-green-500' :
+      status === 'viewed' ? 'bg-primary/60' :
+      'bg-muted-foreground/30'
+    }`} />
+  );
+
+  // Subject-specific gradient
+  const getSubjectGradient = () => {
+    const subjectLower = subjectName.toLowerCase();
+    if (subjectLower.includes('anglais')) return 'from-blue-600/20 via-cyan-500/10 to-background';
+    if (subjectLower.includes('espagnol')) return 'from-orange-500/20 via-amber-500/10 to-background';
+    if (subjectLower.includes('français')) return 'from-indigo-500/20 via-violet-500/10 to-background';
+    if (subjectLower.includes('math')) return 'from-purple-500/20 via-pink-500/10 to-background';
+    if (subjectLower.includes('science')) return 'from-emerald-500/20 via-teal-500/10 to-background';
+    return 'from-primary/10 via-primary/5 to-background';
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5">
       <div className="fixed top-2 right-2 sm:top-4 sm:right-4 z-50">
         <ThemeToggle />
       </div>
 
-      {/* Header */}
-      <div className="relative overflow-hidden bg-gradient-to-br from-primary/10 via-primary/5 to-background border-b border-border/50">
+      {/* Enhanced Header */}
+      <div className={`relative overflow-hidden bg-gradient-to-br ${getSubjectGradient()} border-b border-border/50`}>
         <div className="absolute inset-0 bg-grid-white/5 [mask-image:linear-gradient(0deg,transparent,black)]" />
         <div className="container mx-auto px-2 sm:px-4 py-4 sm:py-8 relative">
           <Button
@@ -148,6 +263,11 @@ export const LessonPageTemplate = ({
               <div className="flex items-center gap-2 flex-wrap">
                 <Badge variant="secondary" className="text-xs sm:text-sm">{gradeLevel}</Badge>
                 <Badge variant="outline" className="text-xs sm:text-sm">{subjectName}</Badge>
+                {isLessonCompleted && (
+                  <Badge className="bg-green-500/20 text-green-600 border-green-500/30 text-xs sm:text-sm">
+                    ✓ Terminée
+                  </Badge>
+                )}
               </div>
               <h1 className="text-xl sm:text-3xl md:text-4xl font-bold bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent break-words">
                 {lesson.title}
@@ -156,6 +276,13 @@ export const LessonPageTemplate = ({
                 className="text-muted-foreground lesson-content text-sm sm:text-base" 
                 dangerouslySetInnerHTML={{ __html: lesson.objectif }}
               />
+              
+              {/* Motivational message */}
+              <div className="flex items-center gap-2 text-sm text-muted-foreground bg-primary/5 rounded-lg px-3 py-2">
+                <Sparkles className="h-4 w-4 text-primary" />
+                <span>{motivationalMessage}</span>
+              </div>
+
               <div className="flex gap-2 flex-wrap">
                 <TextToSpeechButton
                   text={`${lesson.title}. ${lesson.objectif}. ${lesson.introduction || ''}`}
@@ -177,43 +304,71 @@ export const LessonPageTemplate = ({
               </div>
             </div>
 
-            <div className="relative hidden sm:block flex-shrink-0">
+            {/* Jude image - visible on mobile too now */}
+            <div className="relative flex-shrink-0 mx-auto md:mx-0">
               <div className="absolute inset-0 bg-gradient-to-tr from-primary/20 to-transparent rounded-full blur-3xl" />
               <img
                 src={judeImage}
                 alt="Jude - Professeur"
-                className="relative w-32 h-32 sm:w-48 sm:h-48 object-contain drop-shadow-2xl"
+                className="relative w-24 h-24 sm:w-32 sm:h-32 md:w-48 md:h-48 object-contain drop-shadow-2xl"
               />
             </div>
           </div>
         </div>
       </div>
 
+      {/* Lesson Navigation & Stats */}
+      <div className="container mx-auto px-2 sm:px-4 py-4 space-y-4">
+        {/* Navigation */}
+        {totalLessons > 1 && (
+          <LessonNavigation
+            currentIndex={currentLessonIndex}
+            totalLessons={totalLessons}
+            previousLesson={previousLesson}
+            nextLesson={nextLesson}
+            subjectSlug={subjectSlug}
+          />
+        )}
+
+        {/* Quick Stats */}
+        <LessonQuickStats
+          estimatedMinutes={estimatedMinutes}
+          activitiesCount={activitiesCount}
+          quizQuestionsCount={quizQuestionsCount}
+          isCompleted={isLessonCompleted}
+        />
+      </div>
+
       {/* Content Tabs */}
-      <div className="container mx-auto px-2 sm:px-4 py-4 sm:py-8">
+      <div className="container mx-auto px-2 sm:px-4 py-2 sm:py-4">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
           <TabsList className="grid w-full grid-cols-3 sm:grid-cols-3 md:grid-cols-5 h-auto p-1 gap-1">
-            <TabsTrigger value="introduction" className="flex-col sm:flex-row py-2 sm:py-3 text-xs sm:text-sm gap-1">
+            <TabsTrigger value="introduction" className="relative flex-col sm:flex-row py-2 sm:py-3 text-xs sm:text-sm gap-1">
+              <TabIndicator status={getTabStatus('introduction')} />
               <Target className="h-3 w-3 sm:h-4 sm:w-4" />
               <span className="hidden sm:inline">Introduction</span>
               <span className="sm:hidden text-[10px]">Intro</span>
             </TabsTrigger>
-            <TabsTrigger value="contenu" className="flex-col sm:flex-row py-2 sm:py-3 text-xs sm:text-sm gap-1">
+            <TabsTrigger value="contenu" className="relative flex-col sm:flex-row py-2 sm:py-3 text-xs sm:text-sm gap-1">
+              <TabIndicator status={getTabStatus('contenu')} />
               <BookOpen className="h-3 w-3 sm:h-4 sm:w-4" />
               <span className="hidden sm:inline">Contenu & Exemples</span>
               <span className="sm:hidden text-[10px]">Cours</span>
             </TabsTrigger>
-            <TabsTrigger value="activites" className="flex-col sm:flex-row py-2 sm:py-3 text-xs sm:text-sm gap-1">
+            <TabsTrigger value="activites" className="relative flex-col sm:flex-row py-2 sm:py-3 text-xs sm:text-sm gap-1">
+              <TabIndicator status={getTabStatus('activites')} />
               <Gamepad2 className="h-3 w-3 sm:h-4 sm:w-4" />
               <span className="hidden sm:inline">Activités</span>
               <span className="sm:hidden text-[10px]">Act</span>
             </TabsTrigger>
-            <TabsTrigger value="quiz" className="flex-col sm:flex-row py-2 sm:py-3 text-xs sm:text-sm gap-1">
+            <TabsTrigger value="quiz" className="relative flex-col sm:flex-row py-2 sm:py-3 text-xs sm:text-sm gap-1">
+              <TabIndicator status={getTabStatus('quiz')} />
               <GraduationCap className="h-3 w-3 sm:h-4 sm:w-4" />
               <span className="hidden sm:inline">Quiz</span>
               <span className="sm:hidden text-[10px]">Quiz</span>
             </TabsTrigger>
-            <TabsTrigger value="notes" className="flex-col sm:flex-row py-2 sm:py-3 text-xs sm:text-sm gap-1">
+            <TabsTrigger value="notes" className="relative flex-col sm:flex-row py-2 sm:py-3 text-xs sm:text-sm gap-1">
+              <TabIndicator status={getTabStatus('notes')} />
               <FileText className="h-3 w-3 sm:h-4 sm:w-4" />
               <span className="hidden sm:inline">Mes notes</span>
               <span className="sm:hidden text-[10px]">Notes</span>
@@ -367,6 +522,29 @@ export const LessonPageTemplate = ({
             gradeLevel={gradeLevel}
           />
         </div>
+
+        {/* Next Lesson CTA when completed */}
+        {isLessonCompleted && nextLesson && (
+          <Card className="mt-6 sm:mt-8 bg-gradient-to-r from-green-500/10 to-emerald-500/10 border-green-500/30">
+            <CardContent className="p-4 sm:p-6 flex flex-col sm:flex-row items-center justify-between gap-4">
+              <div className="text-center sm:text-left">
+                <h3 className="font-semibold text-lg flex items-center gap-2 justify-center sm:justify-start">
+                  <Sparkles className="h-5 w-5 text-green-500" />
+                  Félicitations! Leçon terminée!
+                </h3>
+                <p className="text-muted-foreground text-sm">
+                  Continue ton apprentissage avec la prochaine leçon
+                </p>
+              </div>
+              <Button 
+                onClick={() => navigate(`/course/${subjectSlug}/${nextLesson.slug}`)}
+                className="bg-green-600 hover:bg-green-700"
+              >
+                Prochaine leçon →
+              </Button>
+            </CardContent>
+          </Card>
+        )}
       </div>
 
       {/* Jude Chatbot */}

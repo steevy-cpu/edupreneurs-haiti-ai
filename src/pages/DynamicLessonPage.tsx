@@ -12,12 +12,23 @@ import judeBiologist from "@/assets/eric-biologist.png";
 import judeComputer from "@/assets/eric-computer.png";
 import judeMath from "@/assets/eric-math.png";
 
+interface SiblingLesson {
+  slug: string;
+  title: string;
+}
+
 export default function DynamicLessonPage() {
   const { slug, lessonSlug } = useParams();
   const navigate = useNavigate();
   const [lesson, setLesson] = useState<any>(null);
   const [subject, setSubject] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
+  
+  // Navigation state
+  const [currentLessonIndex, setCurrentLessonIndex] = useState(1);
+  const [totalLessons, setTotalLessons] = useState(1);
+  const [previousLesson, setPreviousLesson] = useState<SiblingLesson | null>(null);
+  const [nextLesson, setNextLesson] = useState<SiblingLesson | null>(null);
 
   // User grade access
   const { userGrade, canAccessGrade, isLoading: gradeLoading, isAuthenticated } = useUserGrade();
@@ -44,7 +55,45 @@ export default function DynamicLessonPage() {
       if (subjectError) throw subjectError;
       setSubject(subjectData);
 
-      // Load lesson
+      // Load ALL lessons for this subject to get navigation info
+      const { data: allLessons, error: allLessonsError } = await supabase
+        .from('lessons')
+        .select('slug, title, order_index')
+        .eq('subject_id', subjectData.id)
+        .eq('is_published', true)
+        .order('order_index', { ascending: true });
+
+      if (allLessonsError) throw allLessonsError;
+
+      // Find current lesson index and siblings
+      const currentIndex = allLessons?.findIndex(l => l.slug === decodedLessonSlug) ?? -1;
+      
+      if (allLessons && currentIndex !== -1) {
+        setCurrentLessonIndex(currentIndex + 1);
+        setTotalLessons(allLessons.length);
+        
+        // Get previous lesson
+        if (currentIndex > 0) {
+          setPreviousLesson({
+            slug: allLessons[currentIndex - 1].slug,
+            title: allLessons[currentIndex - 1].title
+          });
+        } else {
+          setPreviousLesson(null);
+        }
+        
+        // Get next lesson
+        if (currentIndex < allLessons.length - 1) {
+          setNextLesson({
+            slug: allLessons[currentIndex + 1].slug,
+            title: allLessons[currentIndex + 1].title
+          });
+        } else {
+          setNextLesson(null);
+        }
+      }
+
+      // Load current lesson details
       const { data: lessonData, error: lessonError } = await supabase
         .from('lessons')
         .select('*')
@@ -56,6 +105,8 @@ export default function DynamicLessonPage() {
 
       // Transform lesson data to match expected format
       const transformedLesson = {
+        id: lessonData.id,
+        slug: lessonData.slug,
         title: lessonData.title,
         objectif: lessonData.objectif || '',
         introduction: lessonData.introduction || '',
@@ -64,6 +115,7 @@ export default function DynamicLessonPage() {
         activites_interactives: lessonData.activites_interactives || '',
         quiz_final: lessonData.quiz_final || '',
         youtube_url: lessonData.youtube_url || null,
+        grade_level: lessonData.grade_level,
       };
 
       setLesson(transformedLesson);
@@ -145,6 +197,10 @@ export default function DynamicLessonPage() {
       subjectSlug={slug || ''}
       gradeLevel={subject.grade_level}
       judeImage={judeImage}
+      currentLessonIndex={currentLessonIndex}
+      totalLessons={totalLessons}
+      previousLesson={previousLesson}
+      nextLesson={nextLesson}
     />
   );
 }
