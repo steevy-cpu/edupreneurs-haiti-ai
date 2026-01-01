@@ -3,20 +3,17 @@ import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
 import { ThemeToggle } from "@/components/ThemeToggle";
-import { MusicSelector } from "@/components/MusicSelector";
 
 interface CourseLayoutProps {
   children: ReactNode;
   backPath?: string;
   backLabel?: string;
-  showMusicSelector?: boolean;
 }
 
 export const CourseLayout = ({
   children,
   backPath = "/matieres",
-  backLabel = "Retour aux matières",
-  showMusicSelector = true
+  backLabel = "Retour aux matières"
 }: CourseLayoutProps) => {
   const navigate = useNavigate();
 
@@ -35,14 +32,13 @@ export const CourseLayout = ({
             <span className="sm:hidden">Retour</span>
           </Button>
           <div className="flex items-center gap-2">
-            {showMusicSelector && <MusicSelector />}
             <ThemeToggle />
           </div>
         </div>
       </nav>
 
       {/* Main Content */}
-      <div className="container mx-auto px-4 py-12">
+      <div className="container mx-auto px-4 py-8 md:py-12">
         {children}
       </div>
     </div>
