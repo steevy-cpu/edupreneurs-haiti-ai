@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Loader2, Video, Star } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
@@ -40,70 +41,40 @@ export const YouTubeVideoSection = ({
   customYoutubeUrl, 
   subject = "mathematiques" 
 }: YouTubeVideoSectionProps) => {
-  const [lessonVideos, setLessonVideos] = useState<LessonVideo[]>([]);
   const [searchVideos, setSearchVideos] = useState<YouTubeVideo[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [searchError, setSearchError] = useState<string | null>(null);
+  const [isSearching, setIsSearching] = useState(false);
+  const [legacyVideo, setLegacyVideo] = useState<LessonVideo | null>(null);
 
-  useEffect(() => {
-    if (lessonId) {
-      loadLessonVideos();
-    } else if (customYoutubeUrl) {
-      // Legacy support: if no lessonId but customYoutubeUrl provided
-      handleLegacyUrl();
-    } else {
-      searchYouTubeVideos();
-    }
-  }, [lessonId, lessonTitle, customYoutubeUrl]);
-
-  const loadLessonVideos = async () => {
-    setIsLoading(true);
-    setError(null);
-    
-    try {
-      const { data, error: fetchError } = await supabase
+  // Use React Query for lesson videos - always refetch on mount
+  const { data: lessonVideos = [], isLoading, error: queryError } = useQuery({
+    queryKey: ['lesson-videos', lessonId],
+    queryFn: async () => {
+      if (!lessonId) return [];
+      
+      const { data, error } = await supabase
         .from('lesson_videos')
         .select('*')
         .eq('lesson_id', lessonId)
         .order('order_index', { ascending: true });
 
-      if (fetchError) throw fetchError;
-
+      if (error) throw error;
+      
       if (data && data.length > 0) {
         // Sort to show primary first
-        const sorted = [...data].sort((a, b) => {
+        return [...data].sort((a, b) => {
           if (a.is_primary && !b.is_primary) return -1;
           if (!a.is_primary && b.is_primary) return 1;
           return a.order_index - b.order_index;
-        });
-        setLessonVideos(sorted);
-        setIsLoading(false);
-      } else {
-        // No videos in DB, fall back to search
-        await searchYouTubeVideos();
+        }) as LessonVideo[];
       }
-    } catch (err) {
-      console.error("Error loading lesson videos:", err);
-      // Fall back to search on error
-      await searchYouTubeVideos();
-    }
-  };
-
-  const handleLegacyUrl = () => {
-    const videoId = extractYouTubeVideoId(customYoutubeUrl!);
-    if (videoId) {
-      setLessonVideos([{
-        id: 'legacy',
-        youtube_url: customYoutubeUrl!,
-        video_id: videoId,
-        title: null,
-        description: null,
-        order_index: 0,
-        is_primary: true,
-      }]);
-    }
-    setIsLoading(false);
-  };
+      
+      return [];
+    },
+    enabled: !!lessonId,
+    staleTime: 0, // Always refetch on mount
+    refetchOnWindowFocus: true,
+  });
 
   const extractYouTubeVideoId = (url: string): string | null => {
     if (!url) return null;
@@ -147,8 +118,8 @@ export const YouTubeVideoSection = ({
   };
 
   const searchYouTubeVideos = async () => {
-    setIsLoading(true);
-    setError(null);
+    setIsSearching(true);
+    setSearchError(null);
 
     try {
       const searchQuery = buildOptimalSearchQuery();
@@ -203,13 +174,47 @@ export const YouTubeVideoSection = ({
       setSearchVideos(videoList);
     } catch (err) {
       console.error("YouTube API Error:", err);
-      setError("Impossible de charger les vidéos pour le moment");
+      setSearchError("Impossible de charger les vidéos pour le moment");
     } finally {
-      setIsLoading(false);
+      setIsSearching(false);
     }
   };
 
-  if (isLoading) {
+  // Handle legacy URL
+  useEffect(() => {
+    if (!lessonId && customYoutubeUrl) {
+      const videoId = extractYouTubeVideoId(customYoutubeUrl);
+      if (videoId) {
+        setLegacyVideo({
+          id: 'legacy',
+          youtube_url: customYoutubeUrl,
+          video_id: videoId,
+          title: null,
+          description: null,
+          order_index: 0,
+          is_primary: true,
+        });
+      }
+    }
+  }, [lessonId, customYoutubeUrl]);
+
+  // Fallback to YouTube search when no lesson videos
+  useEffect(() => {
+    if (lessonId && !isLoading && lessonVideos.length === 0 && !legacyVideo) {
+      searchYouTubeVideos();
+    }
+    
+    if (!lessonId && !customYoutubeUrl) {
+      searchYouTubeVideos();
+    }
+  }, [lessonId, isLoading, lessonVideos.length, customYoutubeUrl, legacyVideo]);
+
+  // Combine all videos for display
+  const allLessonVideos = legacyVideo ? [legacyVideo] : lessonVideos;
+  const displayLoading = isLoading || isSearching;
+  const displayError = queryError ? "Erreur de chargement" : searchError;
+
+  if (displayLoading && allLessonVideos.length === 0 && searchVideos.length === 0) {
     return (
       <Card className="lesson-card border-none rounded-[20px] shadow-md bg-gradient-to-br from-purple-50 to-pink-50 dark:from-purple-950/30 dark:to-pink-950/30">
         <CardHeader className="p-4 sm:p-6">
@@ -228,7 +233,7 @@ export const YouTubeVideoSection = ({
     );
   }
 
-  if (error) {
+  if (displayError && allLessonVideos.length === 0 && searchVideos.length === 0) {
     return (
       <Card className="lesson-card border-none rounded-[20px] shadow-md bg-gradient-to-br from-purple-50 to-pink-50 dark:from-purple-950/30 dark:to-pink-950/30">
         <CardHeader className="p-4 sm:p-6">
@@ -238,16 +243,16 @@ export const YouTubeVideoSection = ({
           </CardTitle>
         </CardHeader>
         <CardContent className="p-4 sm:p-6 pt-0">
-          <p className="text-muted-foreground text-sm">{error}</p>
+          <p className="text-muted-foreground text-sm">{displayError}</p>
         </CardContent>
       </Card>
     );
   }
 
-  const hasLessonVideos = lessonVideos.length > 0;
+  const hasLessonVideos = allLessonVideos.length > 0;
   const hasSearchVideos = searchVideos.length > 0;
 
-  if (!hasLessonVideos && !hasSearchVideos) {
+  if (!hasLessonVideos && !hasSearchVideos && !displayLoading) {
     return (
       <Card className="lesson-card border-none rounded-[20px] shadow-md bg-gradient-to-br from-purple-50 to-pink-50 dark:from-purple-950/30 dark:to-pink-950/30 border-2 border-purple-200 dark:border-purple-800">
         <CardHeader className="p-4 sm:p-6 bg-gradient-to-r from-purple-100 to-pink-100 dark:from-purple-900/30 dark:to-pink-900/30 rounded-t-[20px]">
@@ -281,7 +286,7 @@ export const YouTubeVideoSection = ({
       <CardContent className="p-4 sm:p-6 pt-6">
         <div className="space-y-6">
           {/* Lesson Videos from Database */}
-          {lessonVideos.map((video, index) => (
+          {allLessonVideos.map((video, index) => (
             <div
               key={video.id}
               className={`rounded-xl overflow-hidden shadow-lg bg-background/50 backdrop-blur-sm ${
