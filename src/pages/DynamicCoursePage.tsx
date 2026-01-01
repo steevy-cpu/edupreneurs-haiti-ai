@@ -142,9 +142,8 @@ export default function DynamicCoursePage() {
 
   // Handle AI practice start
   const handleStartPractice = () => {
-    // For now, scroll to bottom where EricChatbot is
-    // In the future, this could open a dedicated practice modal
-    toast.info("Scroll vers le bas pour discuter avec Eric AI!");
+    // For now, scroll to bottom where chatbot is
+    toast.info("Scroll vers le bas pour discuter avec Jude AI!");
     window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
   };
 

@@ -3,7 +3,7 @@ import { MessageCircle, Sparkles, ChevronDown, ChevronUp } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { OptimizedImage } from "@/components/OptimizedImage";
-import ericAiHelper from "@/assets/eric-ai-helper.png";
+import judeAiHelper from "@/assets/eric-ai-helper.png"; // Asset file - will rename later
 import { cn } from "@/lib/utils";
 
 interface AIPracticeSectionProps {
@@ -19,7 +19,7 @@ const getLanguageConfig = (subjectName: string) => {
   if (lower.includes('anglais') || lower.includes('english')) {
     return {
       language: 'Anglais',
-      title: 'Practice English with Eric AI',
+      title: 'Practice English with Jude AI',
       description: 'Improve your speaking and comprehension through interactive conversations.',
       gradient: 'from-blue-500/20 via-indigo-500/10 to-purple-500/20',
       borderColor: 'border-blue-500/30',
@@ -30,7 +30,7 @@ const getLanguageConfig = (subjectName: string) => {
   if (lower.includes('espagnol') || lower.includes('spanish')) {
     return {
       language: 'Espagnol',
-      title: 'Practica Español con Eric AI',
+      title: 'Practica Español con Jude AI',
       description: 'Mejora tu español a través de conversaciones interactivas.',
       gradient: 'from-orange-500/20 via-red-500/10 to-yellow-500/20',
       borderColor: 'border-orange-500/30',
@@ -41,7 +41,7 @@ const getLanguageConfig = (subjectName: string) => {
   if (lower.includes('français') || lower.includes('francais') || lower.includes('french')) {
     return {
       language: 'Français',
-      title: 'Pratique le Français avec Eric AI',
+      title: 'Pratique le Français avec Jude AI',
       description: 'Améliore ton expression et ta compréhension par des conversations.',
       gradient: 'from-sky-500/20 via-blue-500/10 to-indigo-500/20',
       borderColor: 'border-sky-500/30',
@@ -77,12 +77,12 @@ export const AIPracticeSection = ({
       
       <CardContent className="relative p-4 md:p-6">
         <div className="flex flex-col md:flex-row items-center gap-4 md:gap-6">
-          {/* Eric Avatar */}
+          {/* Jude Avatar */}
           <div className="relative flex-shrink-0">
             <div className="absolute inset-0 bg-primary/20 rounded-full blur-xl animate-pulse" />
             <OptimizedImage
-              src={ericAiHelper}
-              alt="Eric AI Assistant"
+              src={judeAiHelper}
+              alt="Jude AI Assistant"
               className="relative w-20 h-20 md:w-24 md:h-24 rounded-full border-4 border-background shadow-lg object-cover"
             />
             <div className="absolute -bottom-1 -right-1 bg-success text-success-foreground rounded-full p-1.5 shadow-md">
@@ -129,7 +129,7 @@ export const AIPracticeSection = ({
           <div className="mt-3 p-3 bg-background/50 rounded-lg text-sm">
             <ul className="space-y-1 text-muted-foreground">
               <li>• Start with simple greetings and introductions</li>
-              <li>• Don't be afraid to make mistakes - Eric will help you!</li>
+              <li>• Do not be afraid to make mistakes - Jude will help you!</li>
               <li>• Try to use vocabulary from your lessons</li>
               <li>• Practice for at least 5 minutes each session</li>
             </ul>
