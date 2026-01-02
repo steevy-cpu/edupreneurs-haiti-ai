@@ -1186,10 +1186,13 @@ export const BatchGenerationValidation = () => {
             <DialogTitle>Aperçu du contenu généré</DialogTitle>
             <DialogDescription>{previewLesson?.title}</DialogDescription>
           </DialogHeader>
-          {previewLesson?.generatedContent && (
+          {/* Show content if we have generated text content OR audio */}
+          {((previewLesson?.generatedContent && Object.keys(previewLesson.generatedContent).length > 0) || 
+            (previewLesson?.audioUrls && Object.values(previewLesson.audioUrls).some(Boolean))) ? (
             <ScrollArea className="max-h-[55vh]">
               <div className="space-y-4">
-                {Object.entries(previewLesson.generatedContent).map(([section, content]) => (
+                {/* Text content - only render if exists */}
+                {previewLesson?.generatedContent && Object.entries(previewLesson.generatedContent).map(([section, content]) => (
                   <Card key={section}>
                     <CardHeader className="py-3">
                       <CardTitle className="text-base">{sectionLabels[section] || section}</CardTitle>
@@ -1223,7 +1226,7 @@ export const BatchGenerationValidation = () => {
                   </Card>
                 ))}
 
-                {/* Audio Preview Section */}
+                {/* Audio Preview Section - renders independently of text content */}
                 {previewLesson?.audioUrls && Object.values(previewLesson.audioUrls).some(Boolean) && (
                   <Card className="border-primary/30 bg-primary/5">
                     <CardHeader className="py-3">
@@ -1262,6 +1265,8 @@ export const BatchGenerationValidation = () => {
                 )}
               </div>
             </ScrollArea>
+          ) : (
+            <p className="text-center text-muted-foreground py-4">Aucun contenu généré à afficher</p>
           )}
           <DialogFooter className="flex-col sm:flex-row gap-2">
             <Button variant="outline" onClick={() => setIsPreviewOpen(false)}>Fermer</Button>
