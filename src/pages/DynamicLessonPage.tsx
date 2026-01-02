@@ -119,6 +119,11 @@ export default function DynamicLessonPage() {
         quiz_final: lessonData.quiz_final || '',
         youtube_url: lessonData.youtube_url || null,
         grade_level: lessonData.grade_level,
+        // Audio URLs for TTS playback
+        audio_objectif_url: lessonData.audio_objectif_url || null,
+        audio_introduction_url: lessonData.audio_introduction_url || null,
+        audio_contenu_url: lessonData.audio_contenu_url || null,
+        audio_exemples_url: lessonData.audio_exemples_url || null,
       };
 
       setLesson(transformedLesson);
