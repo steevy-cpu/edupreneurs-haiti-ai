@@ -9,12 +9,10 @@ import { Badge } from "@/components/ui/badge";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { BookOpen, FileText, Gamepad2, Target, Lightbulb, ArrowLeft, Save, GraduationCap, Sparkles } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { TextToSpeechButton } from "@/components/TextToSpeechButton";
 import { DownloadLessonButton } from "@/components/DownloadLessonButton";
 import { YouTubeVideoSection } from "@/components/YouTubeVideoSection";
 import { InteractiveActivitiesEnhanced } from "@/components/InteractiveActivitiesEnhanced";
 import { HTMLQuizParser } from "@/components/HTMLQuizParser";
-import { useTTS } from "@/hooks/useTTS";
 import { EricChatbot } from "@/components/EricChatbot";
 import { LessonAIPracticeSection } from "@/components/lesson/LessonAIPracticeSection";
 import { LessonQuickStats } from "@/components/lesson/LessonQuickStats";
@@ -102,7 +100,7 @@ export const LessonPageTemplate = ({
   const [personalNotes, setPersonalNotes] = useState("");
   const [viewedTabs, setViewedTabs] = useState<Set<string>>(new Set(["introduction"]));
   const [isLessonCompleted, setIsLessonCompleted] = useState(false);
-  const { stop } = useTTS();
+  
 
   // Get random motivational message (stable per session)
   const [motivationalMessage] = useState(() => 
@@ -248,10 +246,7 @@ export const LessonPageTemplate = ({
         <div className="container mx-auto px-2 sm:px-4 py-4 sm:py-8 relative">
           <Button
             variant="ghost"
-            onClick={() => {
-              stop();
-              navigate(`/course/${subjectSlug}`);
-            }}
+            onClick={() => navigate(`/course/${subjectSlug}`)}
             className="mb-4 sm:mb-6 hover:bg-primary/10"
           >
             <ArrowLeft className="mr-2 h-3 w-3 sm:h-4 sm:w-4" />
@@ -300,11 +295,6 @@ export const LessonPageTemplate = ({
               </div>
 
               <div className="flex gap-2 flex-wrap">
-                <TextToSpeechButton
-                  text={`${lesson.title}. ${lesson.objectif}. ${lesson.introduction || ''}`}
-                  sectionName="lesson-header"
-                  className="flex-1 sm:flex-none text-xs sm:text-sm"
-                />
                 <DownloadLessonButton 
                   subjectName={subjectName}
                   lessonData={{
@@ -346,11 +336,6 @@ export const LessonPageTemplate = ({
               </div>
 
               <div className="flex gap-2 flex-wrap">
-                <TextToSpeechButton
-                  text={`${lesson.title}. ${lesson.objectif}. ${lesson.introduction || ''}`}
-                  sectionName="lesson-header"
-                  className="text-sm"
-                />
                 <DownloadLessonButton 
                   subjectName={subjectName}
                   lessonData={{
