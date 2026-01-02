@@ -1284,18 +1284,18 @@ export const BatchGenerationValidation = () => {
                 setIsApplying(true);
                 try {
                   const updates: Record<string, string> = {};
-                  const content = previewLesson.generatedContent;
+                  const content = previewLesson.generatedContent || {};
                   
-                  // Map generated content to database columns
-                  if (content.introduction) updates.introduction = content.introduction;
-                  if (content.objectif) updates.objectif = content.objectif;
-                  if (content.contenu) updates.contenu = content.contenu;
-                  if (content.exemples_exercices) updates.exemples_exercices = content.exemples_exercices;
-                  if (content.quiz_final) updates.quiz_final = content.quiz_final;
-                  if (content.activites_interactives) updates.activites_interactives = content.activites_interactives;
+                  // Map generated content to database columns (with optional chaining for audio-only generation)
+                  if (content?.introduction) updates.introduction = content.introduction;
+                  if (content?.objectif) updates.objectif = content.objectif;
+                  if (content?.contenu) updates.contenu = content.contenu;
+                  if (content?.exemples_exercices) updates.exemples_exercices = content.exemples_exercices;
+                  if (content?.quiz_final) updates.quiz_final = content.quiz_final;
+                  if (content?.activites_interactives) updates.activites_interactives = content.activites_interactives;
                   
                   // Handle images - append to contenu
-                  if (content.images && Array.isArray(content.images)) {
+                  if (content?.images && Array.isArray(content.images)) {
                     const { data: currentLesson } = await supabase
                       .from('lessons')
                       .select('contenu')
@@ -1311,16 +1311,28 @@ export const BatchGenerationValidation = () => {
                     updates.contenu = updatedContenu;
                   }
 
-                  if (Object.keys(updates).length > 0) {
+                  const hasAudio = previewLesson?.audioUrls && Object.values(previewLesson.audioUrls).some(Boolean);
+                  const hasContent = Object.keys(updates).length > 0;
+
+                  if (hasContent || hasAudio) {
+                    const updatePayload = hasContent 
+                      ? { ...updates, is_published: true, workflow_status: 'published' as const }
+                      : { is_published: true, workflow_status: 'published' as const };
+                    
                     const { error } = await supabase
                       .from('lessons')
-                      .update({ ...updates, is_published: true, workflow_status: 'published' })
+                      .update(updatePayload)
                       .eq('id', previewLesson.lessonId);
                     
                     if (error) throw error;
-                    const hasAudio = previewLesson?.audioUrls && Object.values(previewLesson.audioUrls).some(Boolean);
-                    toast.success(hasAudio ? "Contenu et audio publiés avec succès!" : "Contenu publié avec succès!");
+                    toast.success(hasAudio && hasContent 
+                      ? "Contenu et audio publiés avec succès!" 
+                      : hasAudio 
+                        ? "Audio publié avec succès!" 
+                        : "Contenu publié avec succès!");
                     setIsPreviewOpen(false);
+                  } else {
+                    toast.error("Aucun contenu ou audio à publier");
                   }
                 } catch (error: any) {
                   console.error('Error publishing:', error);
