@@ -43,6 +43,9 @@ import {
 type GradeLevel = "7AF" | "8AF" | "9AF" | "NS1" | "NS2" | "NS3" | "NS4";
 type Series = "LLA" | "SES" | "SMP" | "SVT";
 
+// Valid grades for validation
+const VALID_GRADES: GradeLevel[] = ["7AF", "8AF", "9AF", "NS1", "NS2", "NS3", "NS4"];
+
 const gradeLevels = [
   { id: "7AF" as GradeLevel, label: "7AF", fullName: "7ème année fondamentale" },
   { id: "8AF" as GradeLevel, label: "8AF", fullName: "8ème année fondamentale" },
@@ -119,7 +122,11 @@ export default function Matieres() {
   // Auto-select user's grade on initial load
   useEffect(() => {
     if (userGrade && isAuthenticated) {
-      setSelectedGrade(userGrade as GradeLevel);
+      // Only set if userGrade is a valid grade level
+      if (VALID_GRADES.includes(userGrade as GradeLevel)) {
+        setSelectedGrade(userGrade as GradeLevel);
+      }
+      // If invalid grade (like "Philo"), keep default "7AF"
     }
   }, [userGrade, isAuthenticated]);
 
