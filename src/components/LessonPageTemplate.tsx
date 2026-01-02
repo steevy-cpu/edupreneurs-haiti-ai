@@ -17,7 +17,7 @@ import { EricChatbot } from "@/components/EricChatbot";
 import { LessonAIPracticeSection } from "@/components/lesson/LessonAIPracticeSection";
 import { LessonQuickStats } from "@/components/lesson/LessonQuickStats";
 import { LessonNavigation } from "@/components/lesson/LessonNavigation";
-import { LessonAudioPlayer } from "@/components/LessonAudioPlayer";
+import { LessonAudioPlayerSimple } from "@/components/LessonAudioPlayerSimple";
 
 interface LessonData {
   id: string;
@@ -31,6 +31,11 @@ interface LessonData {
   grade_level: string;
   activites_interactives?: string;
   quiz_final?: string;
+  // Pre-generated audio URLs
+  audio_objectif_url?: string | null;
+  audio_introduction_url?: string | null;
+  audio_contenu_url?: string | null;
+  audio_exemples_url?: string | null;
 }
 
 interface SiblingLesson {
@@ -298,12 +303,11 @@ export const LessonPageTemplate = ({
                 <span>{motivationalMessage}</span>
               </div>
 
-              {/* Audio Player - Only for first lessons */}
-              {isFirstLesson && (
-                <LessonAudioPlayer
-                  subjectSlug={subjectSlug}
-                  lessonSlug={lessonSlug}
-                  text={`${lesson.title}. ${lesson.objectif}. ${lesson.introduction || ''}`}
+              {/* Audio Player - Only show if audio URL exists */}
+              {lesson.audio_objectif_url && (
+                <LessonAudioPlayerSimple
+                  audioUrl={lesson.audio_objectif_url}
+                  label="Écouter l'objectif"
                   className="w-full"
                 />
               )}
@@ -349,12 +353,11 @@ export const LessonPageTemplate = ({
                 <span>{motivationalMessage}</span>
               </div>
 
-              {/* Audio Player - Only for first lessons */}
-              {isFirstLesson && (
-                <LessonAudioPlayer
-                  subjectSlug={subjectSlug}
-                  lessonSlug={lessonSlug}
-                  text={`${lesson.title}. ${lesson.objectif}. ${lesson.introduction || ''}`}
+              {/* Audio Player - Only show if audio URL exists */}
+              {lesson.audio_objectif_url && (
+                <LessonAudioPlayerSimple
+                  audioUrl={lesson.audio_objectif_url}
+                  label="Écouter l'objectif"
                   className="w-full max-w-md"
                 />
               )}
@@ -455,11 +458,10 @@ export const LessonPageTemplate = ({
                 </CardTitle>
               </CardHeader>
               <CardContent className="p-3 sm:p-6 space-y-4">
-                {isFirstLesson && lesson.introduction && (
-                  <LessonAudioPlayer
-                    subjectSlug={subjectSlug}
-                    lessonSlug={`${lessonSlug}-introduction`}
-                    text={lesson.introduction.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim()}
+                {lesson.audio_introduction_url && (
+                  <LessonAudioPlayerSimple
+                    audioUrl={lesson.audio_introduction_url}
+                    label="Écouter l'introduction"
                     className="w-full"
                   />
                 )}
@@ -481,11 +483,10 @@ export const LessonPageTemplate = ({
                 </CardTitle>
               </CardHeader>
               <CardContent className="p-3 sm:p-6 space-y-4">
-                {isFirstLesson && lesson.contenu && (
-                  <LessonAudioPlayer
-                    subjectSlug={subjectSlug}
-                    lessonSlug={`${lessonSlug}-contenu`}
-                    text={lesson.contenu.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim()}
+                {lesson.audio_contenu_url && (
+                  <LessonAudioPlayerSimple
+                    audioUrl={lesson.audio_contenu_url}
+                    label="Écouter le contenu"
                     className="w-full"
                   />
                 )}
@@ -505,11 +506,10 @@ export const LessonPageTemplate = ({
                 </CardTitle>
               </CardHeader>
               <CardContent className="p-3 sm:p-6 space-y-4">
-                {isFirstLesson && lesson.exemples_exercices && (
-                  <LessonAudioPlayer
-                    subjectSlug={subjectSlug}
-                    lessonSlug={`${lessonSlug}-exemples`}
-                    text={lesson.exemples_exercices.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim()}
+                {lesson.audio_exemples_url && (
+                  <LessonAudioPlayerSimple
+                    audioUrl={lesson.audio_exemples_url}
+                    label="Écouter les exemples"
                     className="w-full"
                   />
                 )}

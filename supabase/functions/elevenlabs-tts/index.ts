@@ -13,10 +13,10 @@ serve(async (req) => {
   }
 
   try {
-    const { text, subjectSlug, lessonSlug, voiceId } = await req.json();
+    const { text, lessonId, sectionName, voiceId } = await req.json();
 
-    if (!text || !subjectSlug || !lessonSlug) {
-      throw new Error('Missing required parameters: text, subjectSlug, lessonSlug');
+    if (!text || !lessonId || !sectionName) {
+      throw new Error('Missing required parameters: text, lessonId, sectionName');
     }
 
     const ELEVENLABS_API_KEY = Deno.env.get('ELEVENLABS_API_KEY');
@@ -30,36 +30,26 @@ serve(async (req) => {
     // Initialize Supabase client with service role for storage access
     const supabase = createClient(SUPABASE_URL!, SUPABASE_SERVICE_ROLE_KEY!);
 
-    // Check if audio already exists in cache
-    const audioPath = `${subjectSlug}/${lessonSlug}.mp3`;
-    
-    const { data: existingFile } = await supabase.storage
-      .from('lesson-audio')
-      .list(subjectSlug, {
-        search: `${lessonSlug}.mp3`
-      });
+    // Get lesson and subject info for the path
+    const { data: lessonData, error: lessonError } = await supabase
+      .from('lessons')
+      .select('slug, subjects(slug)')
+      .eq('id', lessonId)
+      .single();
 
-    if (existingFile && existingFile.length > 0) {
-      // Return the cached audio URL
-      const { data: publicUrl } = supabase.storage
-        .from('lesson-audio')
-        .getPublicUrl(audioPath);
-
-      console.log('Returning cached audio:', publicUrl.publicUrl);
-      
-      return new Response(
-        JSON.stringify({ 
-          audioUrl: publicUrl.publicUrl,
-          cached: true 
-        }),
-        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
+    if (lessonError || !lessonData) {
+      throw new Error(`Lesson not found: ${lessonError?.message}`);
     }
 
-    console.log('Generating new audio for:', audioPath);
+    const subjectSlug = (lessonData.subjects as any)?.slug || 'unknown';
+    const lessonSlug = lessonData.slug;
+    const audioPath = `${subjectSlug}/${lessonSlug}-${sectionName}.mp3`;
+
+    console.log(`Generating audio for: ${audioPath}`);
 
     // Generate audio using ElevenLabs
-    const selectedVoiceId = voiceId || 'EXAVITQu4vr4xnSDxMaL'; // Sarah - clear and friendly voice
+    // Sarah - clear and friendly voice, great for educational content
+    const selectedVoiceId = voiceId || 'EXAVITQu4vr4xnSDxMaL';
     
     const response = await fetch(
       `https://api.elevenlabs.io/v1/text-to-speech/${selectedVoiceId}?output_format=mp3_44100_128`,
@@ -85,6 +75,12 @@ serve(async (req) => {
     if (!response.ok) {
       const errorText = await response.text();
       console.error('ElevenLabs API error:', response.status, errorText);
+      
+      // Handle rate limiting
+      if (response.status === 429) {
+        throw new Error('Rate limit exceeded. Please wait a moment before generating more audio.');
+      }
+      
       throw new Error(`ElevenLabs API error: ${response.status}`);
     }
 
@@ -111,12 +107,45 @@ serve(async (req) => {
       .from('lesson-audio')
       .getPublicUrl(audioPath);
 
-    console.log('Audio cached successfully:', publicUrl.publicUrl);
+    const audioUrl = publicUrl.publicUrl;
+    console.log('Audio cached successfully:', audioUrl);
+
+    // Map sectionName to the correct column
+    const columnMap: Record<string, string> = {
+      'objectif': 'audio_objectif_url',
+      'introduction': 'audio_introduction_url',
+      'contenu': 'audio_contenu_url',
+      'exemples': 'audio_exemples_url',
+    };
+
+    const columnName = columnMap[sectionName];
+    if (!columnName) {
+      throw new Error(`Unknown section name: ${sectionName}`);
+    }
+
+    // Update the lesson record with the audio URL
+    const updateData: Record<string, any> = {
+      [columnName]: audioUrl,
+      audio_generated_at: new Date().toISOString(),
+    };
+
+    const { error: updateError } = await supabase
+      .from('lessons')
+      .update(updateData)
+      .eq('id', lessonId);
+
+    if (updateError) {
+      console.error('Lesson update error:', updateError);
+      throw new Error(`Failed to update lesson: ${updateError.message}`);
+    }
+
+    console.log(`Lesson ${lessonId} updated with ${columnName}`);
 
     return new Response(
       JSON.stringify({ 
-        audioUrl: publicUrl.publicUrl,
-        cached: false 
+        audioUrl,
+        sectionName,
+        success: true 
       }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
