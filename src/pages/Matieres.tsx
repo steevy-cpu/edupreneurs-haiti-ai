@@ -27,11 +27,8 @@ import ericPointingImage from "@/assets/eric-right-pointing.png";
 import edupreneursBg from "@/assets/edupreneurs-bg.png";
 import menfpLogo from "@/assets/menfp-logo.webp";
 import { ThemeToggle } from "@/components/ThemeToggle";
-import { useSubjects } from "@/hooks/useLessonsCache";
-import { useMatieresFavorites } from "@/hooks/useMatieresFavorites";
-import { useMatieresProgress } from "@/hooks/useMatieresProgress";
-import { useUserGrade, GRADE_LABELS } from "@/hooks/useUserGrade";
-import { supabase } from "@/integrations/supabase/client";
+import { useMatieresData } from "@/hooks/useMatieresData";
+import { GRADE_LABELS } from "@/hooks/useUserGrade";
 import { toast } from "sonner";
 import {
   MatieresSearchFilter,
@@ -87,97 +84,44 @@ export default function Matieres() {
   const navigate = useNavigate();
   const [selectedGrade, setSelectedGrade] = useState<GradeLevel>("7AF");
   const [selectedSeries, setSelectedSeries] = useState<Series | null>(null);
-  const [refreshTrigger] = useState(0);
-  const { subjects: dbSubjects, isLoading } = useSubjects(refreshTrigger);
-  const [lessonCounts, setLessonCounts] = useState<Record<string, number>>({});
-  const [exerciseCounts, setExerciseCounts] = useState<Record<string, number>>({});
-  const [officialExamCount, setOfficialExamCount] = useState<number>(0);
-  const [baccExamCount, setBaccExamCount] = useState<number>(0);
-
-  // User grade access hook
-  const { userGrade, isSuperUser, isLoading: gradeLoading, isAuthenticated, canAccessGrade } = useUserGrade();
 
   // New state for enhanced features
   const [searchQuery, setSearchQuery] = useState("");
   const [sortOption, setSortOption] = useState<SortOption>("name-asc");
   const [filterOption, setFilterOption] = useState<FilterOption>("all");
 
-  const { favorites, toggleFavorite, isFavorite } = useMatieresFavorites();
-  const { progressMap, recentSubjects, isLoading: progressLoading, getProgress } = useMatieresProgress(selectedGrade);
+  // UNIFIED DATA HOOK - single source of all data with parallel fetching
+  const {
+    userId,
+    isAuthenticated,
+    userGrade,
+    isSuperUser,
+    subjects: dbSubjects,
+    isLoadingSubjects: isLoading,
+    lessonCounts,
+    exerciseCounts,
+    progressMap,
+    recentSubjects,
+    isLoadingProgress: progressLoading,
+    favorites,
+    toggleFavorite,
+    isFavorite,
+    userStats,
+    officialExamCount,
+    baccExamCount,
+    canAccessGrade,
+    getProgress
+  } = useMatieresData(selectedGrade, selectedSeries);
 
   const currentGrade = gradeLevels.find(g => g.id === selectedGrade);
   const isNS3OrNS4 = selectedGrade === "NS3" || selectedGrade === "NS4";
 
   // Auto-select user's grade on initial load
   useEffect(() => {
-    if (userGrade && !gradeLoading && isAuthenticated) {
-      setSelectedGrade(userGrade);
+    if (userGrade && isAuthenticated) {
+      setSelectedGrade(userGrade as GradeLevel);
     }
-  }, [userGrade, gradeLoading, isAuthenticated]);
-
-  const countActivities = (html: string | null): number => {
-    if (!html) return 0;
-    const activityMatches = html.match(/class="activity-card"|data-activity|<div[^>]*activity[^>]*>/gi);
-    if (activityMatches) return activityMatches.length;
-    const numberedMatches = html.match(/Activité\s*\d+|Activity\s*\d+/gi);
-    return numberedMatches ? numberedMatches.length : 0;
-  };
-
-  const countQuizQuestions = (html: string | null): number => {
-    if (!html) return 0;
-    const quizMatches = html.match(/class="quiz-question"/gi);
-    return quizMatches ? quizMatches.length : 0;
-  };
-
-  useEffect(() => {
-    const fetchCounts = async () => {
-      try {
-        const { data: subjectsData } = await supabase
-          .from('subjects').select('id, slug').eq('grade_level', selectedGrade);
-
-        const { data: lessons } = await supabase
-          .from('lessons')
-          .select('subject_id, id, activites_interactives, quiz_final')
-          .eq('grade_level', selectedGrade).eq('is_published', true);
-
-        const lessonCountsMap: Record<string, number> = {};
-        const exerciseCountsMap: Record<string, number> = {};
-        
-        lessons?.forEach(lesson => {
-          const subject = subjectsData?.find(s => s.id === lesson.subject_id);
-          if (subject) {
-            lessonCountsMap[subject.slug] = (lessonCountsMap[subject.slug] || 0) + 1;
-            const activitiesCount = countActivities(lesson.activites_interactives);
-            const quizCount = countQuizQuestions(lesson.quiz_final);
-            exerciseCountsMap[subject.slug] = (exerciseCountsMap[subject.slug] || 0) + activitiesCount + quizCount;
-          }
-        });
-        
-        setLessonCounts(lessonCountsMap);
-        setExerciseCounts(exerciseCountsMap);
-      } catch (error) {
-        console.error('Error fetching counts:', error);
-      }
-    };
-
-    const fetchExamCounts = async () => {
-      try {
-        const { count: officialCount } = await supabase
-          .from('official_exams').select('*', { count: 'exact', head: true }).eq('grade_level', '9AF');
-        if (officialCount !== null) setOfficialExamCount(officialCount);
-
-        let query = supabase.from('official_exams').select('*', { count: 'exact', head: true }).eq('grade_level', 'NS4');
-        if (selectedSeries) query = query.eq('series', selectedSeries);
-        const { count: baccCount } = await query;
-        if (baccCount !== null) setBaccExamCount(baccCount);
-      } catch (error) {
-        console.error('Error fetching exam counts:', error);
-      }
-    };
-
-    fetchCounts();
-    fetchExamCounts();
-  }, [selectedGrade, selectedSeries, refreshTrigger]);
+  }, [userGrade, isAuthenticated]);
 
   const filteredSubjects = dbSubjects.filter(s => {
     if (s.grade_level !== selectedGrade) return false;
@@ -404,7 +348,7 @@ export default function Matieres() {
         {((!isNS3OrNS4 && processedSubjects.length > 0) || (isNS3OrNS4 && selectedSeries)) && !isLoading ? (
           <>
             {/* User Stats Widget */}
-            <UserStatsWidget gradeLevel={selectedGrade} />
+            <UserStatsWidget gradeLevel={selectedGrade} stats={userStats} isLoading={isLoading} isAuthenticated={isAuthenticated} />
 
             {/* Continue Learning Section */}
             <ContinueLearningSection subjects={continueLearningSubjects} isLoading={progressLoading} />
