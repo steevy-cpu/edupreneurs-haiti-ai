@@ -454,7 +454,15 @@ export const LessonPageTemplate = ({
                   Introduction
                 </CardTitle>
               </CardHeader>
-              <CardContent className="p-3 sm:p-6">
+              <CardContent className="p-3 sm:p-6 space-y-4">
+                {isFirstLesson && lesson.introduction && (
+                  <LessonAudioPlayer
+                    subjectSlug={subjectSlug}
+                    lessonSlug={`${lessonSlug}-introduction`}
+                    text={lesson.introduction.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim()}
+                    className="w-full"
+                  />
+                )}
                 {lesson.introduction ? (
                   <div className="lesson-content prose prose-sm sm:prose-lg max-w-none" dangerouslySetInnerHTML={{ __html: lesson.introduction }} />
                 ) : (
@@ -472,7 +480,15 @@ export const LessonPageTemplate = ({
                   Contenu du cours
                 </CardTitle>
               </CardHeader>
-              <CardContent className="p-3 sm:p-6">
+              <CardContent className="p-3 sm:p-6 space-y-4">
+                {isFirstLesson && lesson.contenu && (
+                  <LessonAudioPlayer
+                    subjectSlug={subjectSlug}
+                    lessonSlug={`${lessonSlug}-contenu`}
+                    text={lesson.contenu.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim()}
+                    className="w-full"
+                  />
+                )}
                 {lesson.contenu ? (
                   <div className="lesson-content prose prose-sm sm:prose-lg max-w-none overflow-x-auto" dangerouslySetInnerHTML={{ __html: lesson.contenu }} />
                 ) : (
@@ -488,7 +504,15 @@ export const LessonPageTemplate = ({
                   Exemples et Exercices
                 </CardTitle>
               </CardHeader>
-              <CardContent className="p-3 sm:p-6">
+              <CardContent className="p-3 sm:p-6 space-y-4">
+                {isFirstLesson && lesson.exemples_exercices && (
+                  <LessonAudioPlayer
+                    subjectSlug={subjectSlug}
+                    lessonSlug={`${lessonSlug}-exemples`}
+                    text={lesson.exemples_exercices.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim()}
+                    className="w-full"
+                  />
+                )}
                 {lesson.exemples_exercices ? (
                   <div className="lesson-content prose prose-sm sm:prose-lg max-w-none overflow-x-auto" dangerouslySetInnerHTML={{ __html: lesson.exemples_exercices }} />
                 ) : (
