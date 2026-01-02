@@ -1,4 +1,3 @@
-import { useEffect, useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
@@ -11,11 +10,6 @@ import {
   TrendingUp,
   Award
 } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
-
-interface UserStatsWidgetProps {
-  gradeLevel: string;
-}
 
 interface UserStats {
   totalLessonsCompleted: number;
@@ -26,82 +20,15 @@ interface UserStats {
   weeklyProgress: number;
 }
 
-export function UserStatsWidget({ gradeLevel }: UserStatsWidgetProps) {
-  const [stats, setStats] = useState<UserStats | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
+interface UserStatsWidgetProps {
+  gradeLevel: string;
+  stats?: UserStats | null;
+  isLoading?: boolean;
+  isAuthenticated?: boolean;
+}
 
-  useEffect(() => {
-    const fetchStats = async () => {
-      setIsLoading(true);
-      try {
-        const { data: { user } } = await supabase.auth.getUser();
-        if (!user) {
-          setIsAuthenticated(false);
-          setIsLoading(false);
-          return;
-        }
-
-        setIsAuthenticated(true);
-
-        // Fetch lesson completions
-        const { data: completions } = await supabase
-          .from('lesson_completions')
-          .select('*')
-          .eq('user_id', user.id);
-
-        // Fetch study sessions from last 7 days
-        const weekAgo = new Date();
-        weekAgo.setDate(weekAgo.getDate() - 7);
-        
-        const { data: sessions } = await supabase
-          .from('study_sessions')
-          .select('duration_minutes, subject_slug, started_at')
-          .eq('user_id', user.id)
-          .gte('started_at', weekAgo.toISOString());
-
-        // Fetch achievements
-        const { count: achievementsCount } = await supabase
-          .from('achievements')
-          .select('*', { count: 'exact', head: true })
-          .eq('user_id', user.id);
-
-        // Calculate stats
-        const uniqueSubjects = new Set(completions?.map(c => c.subject) || []);
-        const totalMinutes = sessions?.reduce((sum, s) => sum + (s.duration_minutes || 0), 0) || 0;
-
-        // Calculate streak (simplified - consecutive days with activity)
-        const today = new Date().toDateString();
-        const yesterday = new Date(Date.now() - 86400000).toDateString();
-        const todayActivity = sessions?.some(s => new Date(s.started_at).toDateString() === today);
-        const yesterdayActivity = sessions?.some(s => new Date(s.started_at).toDateString() === yesterday);
-        const streak = todayActivity ? (yesterdayActivity ? 2 : 1) : 0;
-
-        // Weekly goal progress (assume goal is 5 lessons per week)
-        const weeklyLessons = completions?.filter(c => {
-          const completedDate = new Date(c.completed_at);
-          return completedDate >= weekAgo;
-        }).length || 0;
-        const weeklyProgress = Math.min(Math.round((weeklyLessons / 5) * 100), 100);
-
-        setStats({
-          totalLessonsCompleted: completions?.length || 0,
-          totalSubjectsStarted: uniqueSubjects.size,
-          currentStreak: streak,
-          totalStudyMinutes: totalMinutes,
-          achievements: achievementsCount || 0,
-          weeklyProgress
-        });
-      } catch (error) {
-        console.error('Error fetching user stats:', error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    fetchStats();
-  }, [gradeLevel]);
-
+export function UserStatsWidget({ gradeLevel, stats, isLoading = false, isAuthenticated = false }: UserStatsWidgetProps) {
+  // Don't render if loading, not authenticated, or no stats
   if (isLoading || !isAuthenticated || !stats) {
     return null;
   }
