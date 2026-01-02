@@ -60,7 +60,12 @@ interface MatieresData {
 }
 
 const FAVORITES_KEY = 'matieres_favorites';
-const SUPER_USER_ID = "59285d8a-0115-4845-b265-d9163a1621c0";
+
+// Super users who can access ALL grades (same as useUserGrade.ts)
+const SUPER_USER_IDS = [
+  '0de08330-4183-48f9-b169-19b92f4d114f', // Steevy
+  '7580cd10-e18c-4b2f-ac50-def28d046c9d', // Djood
+];
 
 // Fetch all matieres data in parallel
 async function fetchAllMatieresData(gradeLevel: string, series: string | null) {
@@ -277,7 +282,7 @@ export function useMatieresData(gradeLevel: string, series: string | null = null
   const isFavorite = useCallback((slug: string) => favorites.includes(slug), [favorites]);
 
   const userGrade = data?.profile?.academic_grade || null;
-  const isSuperUser = data?.userId === SUPER_USER_ID;
+  const isSuperUser = data?.userId ? SUPER_USER_IDS.includes(data.userId) : false;
 
   const canAccessGrade = useCallback((gradeId: string) => {
     if (!data?.userId) return true; // Non-authenticated can browse
