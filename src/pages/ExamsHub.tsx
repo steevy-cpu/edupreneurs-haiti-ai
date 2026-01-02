@@ -5,8 +5,8 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { BookOpen, Calendar, FileCheck, ArrowLeft, Calculator, Beaker, Globe, Languages, Flag, MessageCircle } from "lucide-react";
-import ericNewProfile from "@/assets/eric-new-profile.png";
-import { EricChatbot } from "@/components/EricChatbot";
+import judeProfile from "@/assets/eric-new-profile.png";
+import { JudeChatbot } from "@/components/JudeChatbot";
 import { ThemeToggle } from "@/components/ThemeToggle";
 
 interface Exam {
@@ -144,8 +144,8 @@ const ExamsHub = () => {
               </div>
             </div>
             <img 
-              src={ericNewProfile} 
-              alt="Eric" 
+              src={judeProfile} 
+              alt="Jude" 
               className="w-64 h-64 object-contain drop-shadow-2xl"
             />
           </div>
@@ -273,7 +273,7 @@ const ExamsHub = () => {
                           onClick={() => handlePractice(exam.id)}
                           className="w-full group-hover:scale-105 transition-transform"
                         >
-                          Pratiquer avec Eric
+                          Pratiquer avec Jude
                         </Button>
                       ) : (
                         <Button 
@@ -293,8 +293,8 @@ const ExamsHub = () => {
         )}
       </div>
 
-      {/* Eric Chatbot */}
-      <EricChatbot />
+      {/* Jude Chatbot */}
+      <JudeChatbot />
     </div>
   );
 };

@@ -11,7 +11,7 @@ import { GlobalMusicPlayer } from "@/components/GlobalMusicPlayer";
 import { ScrollToTop } from "@/components/ScrollToTop";
 import { lazy, Suspense } from "react";
 import { LegacyRedirect } from "@/components/LegacyRedirect";
-import { EricChatbot } from "@/components/EricChatbot";
+import { JudeChatbot } from "@/components/JudeChatbot";
 
 // Eager load critical pages
 import Index from "./pages/Index";
@@ -86,8 +86,8 @@ const EricChatbotWrapper = () => {
   if (isHidden) return null;
   
   return (
-    <div data-tour="eric-chatbot">
-      <EricChatbot />
+    <div data-tour="jude-chatbot">
+      <JudeChatbot />
     </div>
   );
 };

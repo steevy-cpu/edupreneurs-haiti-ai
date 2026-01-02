@@ -139,7 +139,7 @@ export const ExamTutorChat = ({
     
     if (exercise.exercise_number === 1 && !hasGreeted) {
       // Full introduction only for first question on first load
-      greeting = `Salut! 👋 Je suis Eric, ton tuteur pour l'examen de ${examInfo.subject} ${examInfo.year}.
+      greeting = `Salut! 👋 Je suis Jude, ton tuteur pour l'examen de ${examInfo.subject} ${examInfo.year}.
 
 📝 **Question ${exercise.exercise_number}:**
 
@@ -244,7 +244,7 @@ Prends ton temps pour réfléchir! 💡`;
       console.error('Error sending message:', error);
       toast({
         title: "Erreur",
-        description: "Impossible de contacter Eric. Réessaie!",
+        description: "Impossible de contacter Jude. Réessaie!",
         variant: "destructive",
       });
     } finally {
@@ -331,7 +331,7 @@ Prends ton temps pour réfléchir! 💡`;
       console.error('Error sending message:', error);
       toast({
         title: "Erreur",
-        description: "Impossible de contacter Eric. Réessaie!",
+        description: "Impossible de contacter Jude. Réessaie!",
         variant: "destructive",
       });
     } finally {
@@ -389,11 +389,11 @@ Prends ton temps pour réfléchir! 💡`;
       {/* Header */}
       <div className="flex items-center gap-3 p-3 border-b bg-muted/30 flex-shrink-0">
         <Avatar className="h-10 w-10 border-2 border-primary">
-          <AvatarImage src={ericAiHelper} alt="Eric" />
-          <AvatarFallback>E</AvatarFallback>
+          <AvatarImage src={ericAiHelper} alt="Jude" />
+          <AvatarFallback>J</AvatarFallback>
         </Avatar>
         <div className="flex-1">
-          <h3 className="font-semibold">Eric - Ton Tuteur</h3>
+          <h3 className="font-semibold">Jude - Ton Tuteur</h3>
           <p className="text-xs text-muted-foreground">
             Assistant IA pour l'examen
           </p>
@@ -434,8 +434,8 @@ Prends ton temps pour réfléchir! 💡`;
             >
               {message.message_role === 'assistant' && (
                 <Avatar className="h-8 w-8 flex-shrink-0">
-                  <AvatarImage src={ericAiHelper} alt="Eric" />
-                  <AvatarFallback>E</AvatarFallback>
+                  <AvatarImage src={ericAiHelper} alt="Jude" />
+                  <AvatarFallback>J</AvatarFallback>
                 </Avatar>
               )}
               <Card
@@ -454,8 +454,8 @@ Prends ton temps pour réfléchir! 💡`;
           {isLoading && (
             <div className="flex gap-3">
               <Avatar className="h-8 w-8">
-                <AvatarImage src={ericAiHelper} alt="Eric" />
-                <AvatarFallback>E</AvatarFallback>
+                <AvatarImage src={ericAiHelper} alt="Jude" />
+                <AvatarFallback>J</AvatarFallback>
               </Avatar>
               <Card className="p-3 bg-muted">
                 <div className="flex gap-1">
@@ -499,7 +499,7 @@ Prends ton temps pour réfléchir! 💡`;
         {/* Message for exercises without options */}
         {showQuestion && options.length === 0 && (
           <div className="text-xs text-muted-foreground bg-muted/50 p-2 rounded">
-            Question ouverte - Tape ta réponse ci-dessous ou demande de l'aide à Eric
+            Question ouverte - Tape ta réponse ci-dessous ou demande de l'aide à Jude
           </div>
         )}
 
@@ -547,7 +547,7 @@ Prends ton temps pour réfléchir! 💡`;
           <Input
             value={inputMessage}
             onChange={(e) => setInputMessage(e.target.value)}
-            placeholder="Pose une question à Eric..."
+            placeholder="Pose une question à Jude..."
             disabled={isLoading}
             className="flex-1"
           />

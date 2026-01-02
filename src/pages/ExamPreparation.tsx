@@ -260,7 +260,7 @@ export default function ExamPreparation() {
                 {exam?.title || "Préparation à l'examen"}
               </h1>
               <p className="text-sm text-muted-foreground">
-                Consulte l'examen PDF à gauche, Eric te guide exercice par exercice à droite
+                Consulte l'examen PDF à gauche, Jude te guide exercice par exercice à droite
               </p>
             </div>
           </div>
@@ -287,7 +287,7 @@ export default function ExamPreparation() {
                   </TabsTrigger>
                   <TabsTrigger value="tutor">
                     <MessageCircle className="h-4 w-4 mr-2" />
-                    Tuteur Eric
+                    Tuteur Jude
                   </TabsTrigger>
                 </TabsList>
                 
@@ -339,7 +339,7 @@ export default function ExamPreparation() {
                 />
               </div>
 
-              {/* Right: Eric Tutor Chat */}
+              {/* Right: Jude Tutor Chat */}
               <div className="h-[calc(100vh-140px)] min-h-[550px]">
                 {session && currentExerciseData ? (
                   <ExamTutorChat

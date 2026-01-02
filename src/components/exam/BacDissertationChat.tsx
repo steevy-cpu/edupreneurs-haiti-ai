@@ -266,9 +266,9 @@ export function BacDissertationChat({ examId, subjects, onComplete }: BacDissert
       <Card className="lg:w-2/3 flex flex-col h-[600px]">
         <CardHeader className="pb-3 border-b">
           <div className="flex items-center gap-3">
-            <img src={ericAiHelper} alt="Eric" className="w-10 h-10 rounded-full" />
+            <img src={ericAiHelper} alt="Jude" className="w-10 h-10 rounded-full" />
             <div>
-              <CardTitle className="text-lg">Eric - Professeur de Philosophie</CardTitle>
+              <CardTitle className="text-lg">Jude - Professeur de Philosophie</CardTitle>
               <p className="text-sm text-muted-foreground">
                 Je te guide dans ta dissertation
               </p>
@@ -316,7 +316,7 @@ export function BacDissertationChat({ examId, subjects, onComplete }: BacDissert
                 <div className="bg-muted rounded-lg p-3">
                   <div className="flex items-center gap-2">
                     <Loader2 className="h-4 w-4 animate-spin" />
-                    <span className="text-sm text-muted-foreground">Eric réfléchit...</span>
+                    <span className="text-sm text-muted-foreground">Jude réfléchit...</span>
                   </div>
                 </div>
               </div>
@@ -332,7 +332,7 @@ export function BacDissertationChat({ examId, subjects, onComplete }: BacDissert
               value={inputMessage}
               onChange={(e) => setInputMessage(e.target.value)}
               onKeyPress={handleKeyPress}
-              placeholder="Pose une question ou réponds à Eric..."
+              placeholder="Pose une question ou réponds à Jude..."
               className="min-h-[60px] max-h-[120px] resize-none"
               disabled={isLoading}
             />

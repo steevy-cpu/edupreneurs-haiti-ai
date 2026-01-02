@@ -13,7 +13,7 @@ import { DownloadLessonButton } from "@/components/DownloadLessonButton";
 import { YouTubeVideoSection } from "@/components/YouTubeVideoSection";
 import { InteractiveActivitiesEnhanced } from "@/components/InteractiveActivitiesEnhanced";
 import { HTMLQuizParser } from "@/components/HTMLQuizParser";
-import { EricChatbot } from "@/components/EricChatbot";
+import { JudeChatbot } from "@/components/JudeChatbot";
 import { LessonAIPracticeSection } from "@/components/lesson/LessonAIPracticeSection";
 import { LessonQuickStats } from "@/components/lesson/LessonQuickStats";
 import { LessonNavigation } from "@/components/lesson/LessonNavigation";
@@ -642,7 +642,7 @@ export const LessonPageTemplate = ({
       </div>
 
       {/* Jude Chatbot */}
-      <EricChatbot />
+      <JudeChatbot />
     </div>
   );
 };

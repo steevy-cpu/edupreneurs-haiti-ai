@@ -22,8 +22,8 @@ import {
   Palette,
   Music
 } from "lucide-react";
-import ericNewProfile from "@/assets/eric-new-profile.png";
-import { EricChatbot } from "@/components/EricChatbot";
+import judeProfile from "@/assets/eric-new-profile.png";
+import { JudeChatbot } from "@/components/JudeChatbot";
 import { ThemeToggle } from "@/components/ThemeToggle";
 
 interface Exam {
@@ -229,8 +229,8 @@ const BaccExamsHub = () => {
               </div>
             </div>
             <img
-              src={ericNewProfile}
-              alt="Eric"
+              src={judeProfile}
+              alt="Jude"
               className="w-64 h-64 object-contain drop-shadow-2xl"
             />
           </div>
@@ -425,7 +425,7 @@ const BaccExamsHub = () => {
                           className="w-full group-hover:scale-105 transition-transform bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600"
                         >
                           <GraduationCap className="mr-2 h-4 w-4" />
-                          Pratiquer avec Eric
+                          Pratiquer avec Jude
                         </Button>
                       ) : (
                         <Button
@@ -445,8 +445,8 @@ const BaccExamsHub = () => {
         )}
       </div>
 
-      {/* Eric Chatbot */}
-      <EricChatbot />
+      {/* Jude Chatbot */}
+      <JudeChatbot />
     </div>
   );
 };

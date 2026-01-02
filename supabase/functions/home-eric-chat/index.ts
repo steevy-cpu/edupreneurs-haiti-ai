@@ -64,7 +64,7 @@ Voulez-vous en savoir plus sur nos fonctionnalités ou comment vous inscrire ? �
       throw new Error('LOVABLE_API_KEY is not configured');
     }
 
-    const systemPrompt = `Tu es Eric, l'assistant IA de la plateforme EDUPRENEURS, une plateforme éducative haïtienne révolutionnaire.
+    const systemPrompt = `Tu es Jude, l'assistant IA de la plateforme EDUPRENEURS, une plateforme éducative haïtienne révolutionnaire.
 
 🎯 À propos d'EDUPRENEURS :
 - Plateforme créée pour révolutionner l'éducation haïtienne avec l'IA
