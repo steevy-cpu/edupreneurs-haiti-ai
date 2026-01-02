@@ -324,10 +324,11 @@ export const BatchGenerationValidation = () => {
 
   // Fix #8: Add confirmation for large batches
   const handleStartGeneration = async () => {
-    if (selectedSections.length === 0 && !generateQuiz && !generateVideos && imageGenerationModel === 'none') {
+    if (selectedSections.length === 0 && !generateQuiz && !generateVideos && imageGenerationModel === 'none' && !generateAudio) {
       toast.error("Sélectionnez au moins une section ou fonctionnalité");
       return;
     }
+
 
     const lessons = await fetchLessons();
     
@@ -606,11 +607,84 @@ export const BatchGenerationValidation = () => {
         }
       }
 
+      // Generate Audio TTS (ElevenLabs)
+      if (generateAudio) {
+        const cleanForTTS = (htmlOrText: string) =>
+          (htmlOrText || '')
+            .replace(/<[^>]*>/g, ' ')
+            .replace(/\s+/g, ' ')
+            .trim();
+
+        const { data: latestLesson, error: latestError } = await supabase
+          .from('lessons')
+          .select('objectif, introduction, contenu, exemples_exercices')
+          .eq('id', lesson.id)
+          .single();
+
+        if (latestError) {
+          console.error('Audio TTS: failed to load lesson content:', latestError);
+          setLessonStatuses(prev => prev.map((l, i) =>
+            i === index ? { ...l, error: (l.error || '') + ' Audio: ' + latestError.message } : l
+          ));
+        } else {
+          const audioPlan = [
+            { sectionName: 'objectif' as const, sourceField: 'objectif' as const },
+            { sectionName: 'introduction' as const, sourceField: 'introduction' as const },
+            { sectionName: 'contenu' as const, sourceField: 'contenu' as const },
+            { sectionName: 'exemples' as const, sourceField: 'exemples_exercices' as const },
+          ];
+
+          for (let ai = 0; ai < audioPlan.length; ai++) {
+            const { sectionName, sourceField } = audioPlan[ai];
+            const rawText = (latestLesson as any)?.[sourceField] || '';
+            const cleanText = cleanForTTS(rawText);
+
+            if (!cleanText) continue;
+
+            try {
+              const { error: ttsError } = await supabase.functions.invoke('elevenlabs-tts', {
+                body: {
+                  text: cleanText,
+                  lessonId: lesson.id,
+                  sectionName,
+                }
+              });
+
+              if (ttsError) throw ttsError;
+
+              setLessonStatuses(prev => prev.map((l, i) => {
+                if (i === index) {
+                  return {
+                    ...l,
+                    sectionsGenerated: [...l.sectionsGenerated, `audio_${sectionName}`],
+                  };
+                }
+                return l;
+              }));
+
+              // Rate limiting: wait 3 seconds between audio generations
+              if (ai < audioPlan.length - 1) {
+                await new Promise(resolve => setTimeout(resolve, 3000));
+              }
+            } catch (e: any) {
+              console.error('Audio TTS error:', e);
+              setLessonStatuses(prev => prev.map((l, i) =>
+                i === index ? { ...l, error: (l.error || '') + ` Audio(${sectionName}): ` + (e?.message || 'Erreur') } : l
+              ));
+
+              // Small backoff before next section
+              await new Promise(resolve => setTimeout(resolve, 2000));
+            }
+          }
+        }
+      }
+
       const generationTime = Date.now() - startTime;
       setLessonStatuses(prev => prev.map((l, i) =>
         i === index ? { ...l, status: 'completed' as GenerationStatus, generationTime } : l
       ));
       setCompletedCount(prev => prev + 1);
+
 
     } catch (error: any) {
       setLessonStatuses(prev => prev.map((l, i) =>
