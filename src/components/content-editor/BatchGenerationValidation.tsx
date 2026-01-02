@@ -1320,9 +1320,21 @@ export const BatchGenerationValidation = () => {
                   const hasContent = Object.keys(updates).length > 0;
 
                   if (hasContent || hasAudio) {
-                    const updatePayload = hasContent 
-                      ? { ...updates, is_published: true, workflow_status: 'published' as const }
-                      : { is_published: true, workflow_status: 'published' as const };
+                    // Build audio updates if audio was generated
+                    const audioUpdates: Record<string, string | null> = {};
+                    if (hasAudio && previewLesson.audioUrls) {
+                      if (previewLesson.audioUrls.objectif) audioUpdates.audio_objectif_url = previewLesson.audioUrls.objectif;
+                      if (previewLesson.audioUrls.introduction) audioUpdates.audio_introduction_url = previewLesson.audioUrls.introduction;
+                      if (previewLesson.audioUrls.contenu) audioUpdates.audio_contenu_url = previewLesson.audioUrls.contenu;
+                      if (previewLesson.audioUrls.exemples) audioUpdates.audio_exemples_url = previewLesson.audioUrls.exemples;
+                    }
+
+                    const updatePayload = {
+                      ...updates,
+                      ...audioUpdates,
+                      is_published: true, 
+                      workflow_status: 'published' as const
+                    };
                     
                     const { error } = await supabase
                       .from('lessons')
