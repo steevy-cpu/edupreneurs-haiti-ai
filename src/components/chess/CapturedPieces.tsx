@@ -58,7 +58,7 @@ const CapturedPieces: React.FC<CapturedPiecesProps> = ({
 
   return (
     <div className="flex justify-between items-center gap-4 px-2 py-1 bg-muted/50 rounded-lg text-sm">
-      {/* Black's captured pieces (pieces Eric lost) */}
+      {/* Black's captured pieces (pieces Jude lost) */}
       <div className="flex items-center gap-2 min-w-0">
         <span className="text-xs text-muted-foreground shrink-0">⚫</span>
         <div className="flex-1 min-w-0">

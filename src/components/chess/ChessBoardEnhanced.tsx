@@ -5,7 +5,7 @@ import CapturedPieces from './CapturedPieces';
 import MoveHistory from './MoveHistory';
 import ChessTimer from './ChessTimer';
 import ChessGameControls from './ChessGameControls';
-import EricCoachBanner from './EricCoachBanner';
+import JudeCoachBanner from './JudeCoachBanner';
 import type { DifficultyLevel, TimeControl } from '@/hooks/useChessGame';
 
 interface ChatMessage {
@@ -180,8 +180,8 @@ const ChessBoardEnhanced: React.FC<ChessBoardEnhancedProps> = ({
         </p>
       </div>
 
-      {/* Eric Coach Bubble - Floating after status */}
-      <EricCoachBanner
+      {/* Jude Coach Bubble - Floating after status */}
+      <JudeCoachBanner
         messages={chatMessages}
         isThinking={isThinking}
         onSendMessage={onSendMessage}
@@ -235,7 +235,7 @@ const ChessBoardEnhanced: React.FC<ChessBoardEnhancedProps> = ({
         {!isGameOver && (
           game.turn() === 'w' 
             ? "⚪ C'est ton tour" 
-            : "⚫ Tour d'Eric"
+            : "⚫ Tour de Jude"
         )}
         {isGameOver && "Partie terminée"}
       </div>

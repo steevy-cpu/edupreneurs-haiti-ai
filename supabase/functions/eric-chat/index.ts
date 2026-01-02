@@ -7,7 +7,7 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-const ERIC_USER_ID = '68f2f959-e14a-47f9-8277-07df3a6fcd79';
+const JUDE_USER_ID = '68f2f959-e14a-47f9-8277-07df3a6fcd79';
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -21,7 +21,7 @@ serve(async (req) => {
       throw new Error('Missing required fields');
     }
 
-    console.log('Eric chat request:', { conversationId, userId, userNickname });
+    console.log('Jude chat request:', { conversationId, userId, userNickname });
 
     // Create Supabase client with service role to bypass RLS
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
@@ -52,13 +52,13 @@ serve(async (req) => {
     );
 
     const conversationHistory = messages?.map(msg => {
-      const isEric = msg.sender_id === ERIC_USER_ID;
+      const isJude = msg.sender_id === JUDE_USER_ID;
       const senderName = profileMap.get(msg.sender_id) || 'Utilisateur';
       
       return {
-        role: isEric ? 'assistant' : 'user',
-        // For user messages, prefix with sender name so Eric knows who said what in group chats
-        content: isEric ? msg.content : `[${senderName}]: ${msg.content}`
+        role: isJude ? 'assistant' : 'user',
+        // For user messages, prefix with sender name so Jude knows who said what in group chats
+        content: isJude ? msg.content : `[${senderName}]: ${msg.content}`
       };
     }) || [];
 
@@ -89,7 +89,7 @@ serve(async (req) => {
       ? `SALUTATION PREMIÈRE FOIS:
 - C'est la première fois que tu parles à cet utilisateur dans cette conversation
 - L'utilisateur s'appelle "${nicknameText}"
-- Commence ta réponse par "${greeting} ${nicknameText} ! Je suis Eric, votre assistant IA éducatif."
+- Commence ta réponse par "${greeting} ${nicknameText} ! Je suis Jude, votre assistant IA éducatif."
 - Demande comment tu peux aider l'utilisateur`
       : `CONVERSATION EN COURS:
 - Tu es DÉJÀ en conversation avec l'utilisateur qui s'appelle "${nicknameText}"
@@ -98,7 +98,7 @@ serve(async (req) => {
 - Continue directement la conversation de manière naturelle
 - Réponds simplement à la question posée sans te présenter à nouveau`;
 
-    const systemPrompt = `Tu es Eric, un assistant IA éducatif haïtien expert du programme du MENFP.
+    const systemPrompt = `Tu es Jude, un assistant IA éducatif haïtien expert du programme du MENFP.
 
 ${greetingInstruction}
 
@@ -137,7 +137,7 @@ ${greetingInstruction}
 
 ❌ HORS DE TA COMPÉTENCE:
 Si on te pose une question NON-ÉDUCATIVE, réponds:
-"Bonjour ! Je suis Eric, votre assistant IA éducatif. Je suis là pour vous aider avec vos études. 📚
+"Bonjour ! Je suis Jude, votre assistant IA éducatif. Je suis là pour vous aider avec vos études. 📚
 Je ne peux malheureusement pas répondre à des questions en dehors de l'éducation. Avez-vous une question sur vos cours ?"`;
 
     // Build messages array for Lovable AI (OpenAI format)
@@ -207,7 +207,7 @@ Je ne peux malheureusement pas répondre à des questions en dehors de l'éducat
       .from('messages')
       .insert({
         conversation_id: conversationId,
-        sender_id: ERIC_USER_ID,
+        sender_id: JUDE_USER_ID,
         content: aiResponse,
         read: false,
       });
@@ -217,7 +217,7 @@ Je ne peux malheureusement pas répondre à des questions en dehors de l'éducat
       throw insertError;
     }
 
-    console.log('Eric response inserted successfully');
+    console.log('Jude response inserted successfully');
 
     // Send push notification to the user
     try {
@@ -233,7 +233,7 @@ Je ne peux malheureusement pas répondre à des questions en dehors de l'éducat
       const { error: pushError } = await supabase.functions.invoke('send-push-notification', {
         body: {
           recipientUserId: userId,
-          title: '🤖 Eric (Assistant IA)',
+          title: '🤖 Jude (Assistant IA)',
           body: notificationBody,
           conversationId: conversationId
         }
@@ -256,7 +256,7 @@ Je ne peux malheureusement pas répondre à des questions en dehors de l'éducat
       }
     );
   } catch (error) {
-    console.error('Error in eric-chat function:', error);
+    console.error('Error in jude-chat function:', error);
     return new Response(
       JSON.stringify({ error: error instanceof Error ? error.message : 'Unknown error' }),
       {

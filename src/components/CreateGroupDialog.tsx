@@ -12,7 +12,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Upload, Users, X } from "lucide-react";
 import { getAvatarUrl } from "@/lib/avatarMap";
-import { ERIC_USER_ID } from "@/types/community";
+import { JUDE_USER_ID } from "@/types/community";
 
 interface Follower {
   user_id: string;
@@ -153,8 +153,8 @@ export function CreateGroupDialog({ open, onOpenChange, followers, onGroupCreate
 
       // Step 6: Add all participants to conversation FIRST (85%)
       setProgress(85);
-      // Add Eric (AI assistant) to all group chats
-      const allParticipantIds = [user.id, ERIC_USER_ID, ...Array.from(selectedMembers)];
+      // Add Jude (AI assistant) to all group chats
+      const allParticipantIds = [user.id, JUDE_USER_ID, ...Array.from(selectedMembers)];
       const participantEntries = allParticipantIds.map(userId => ({
         conversation_id: conversation.id,
         user_id: userId,

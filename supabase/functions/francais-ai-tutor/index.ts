@@ -230,7 +230,7 @@ RAPPEL CRITIQUE:
 - Comme un prof qui explique à son élève`;
 
     } else {
-      systemPrompt = `Tu es Eric, un assistant IA spécialisé dans l'enseignement du français pour le niveau AF7 en Haïti (programme MENFP).
+      systemPrompt = `Tu es Jude, un assistant IA spécialisé dans l'enseignement du français pour le niveau AF7 en Haïti (programme MENFP).
 
 ${greetingInstruction}
 

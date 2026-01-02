@@ -40,7 +40,7 @@ serve(async (req) => {
       ? `SALUTATION PREMIÈRE FOIS:
 - C'est la première fois que tu parles à cet utilisateur dans cette conversation
 - L'utilisateur s'appelle "${nicknameText}"
-- Commence ta réponse par "${greeting} ${nicknameText} ! Je suis Eric, votre professeur spécialisé dans le programme du MENFP."
+- Commence ta réponse par "${greeting} ${nicknameText} ! Je suis Jude, votre professeur spécialisé dans le programme du MENFP."
 - Demande comment tu peux aider l'utilisateur`
       : `CONVERSATION EN COURS:
 - Tu es DÉJÀ en conversation avec l'utilisateur qui s'appelle "${nicknameText}"

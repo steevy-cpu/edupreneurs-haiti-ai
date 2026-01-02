@@ -36,7 +36,7 @@ import {
   Conversation, 
   Message, 
   Reaction, 
-  ERIC_USER_ID 
+  JUDE_USER_ID 
 } from "@/types/community";
 
 const Community = () => {
@@ -72,7 +72,7 @@ const Community = () => {
   const presenceChannelsRef = useRef<Record<string, any>>({});
   const typingTimeoutRef = useRef<any>(null);
   const [typingUsers, setTypingUsers] = useState<Record<string, Record<string, any>>>({});
-  const [onlineUsers, setOnlineUsers] = useState<Set<string>>(() => new Set([ERIC_USER_ID]));
+  const [onlineUsers, setOnlineUsers] = useState<Set<string>>(() => new Set([JUDE_USER_ID]));
   const [lastSeenTimes, setLastSeenTimes] = useState<Record<string, string>>(() => {
     // Initialize from localStorage
     try {
@@ -318,7 +318,7 @@ const Community = () => {
         if (onlineChannel) {
           const state = onlineChannel.presenceState();
           logger.log('🔄 [Community] Presence sync from Layout channel:', state);
-          const userIds = new Set<string>([ERIC_USER_ID]); // Eric is always online
+          const userIds = new Set<string>([JUDE_USER_ID]); // Jude is always online
           Object.values(state).forEach((presences: any) => {
             presences.forEach((p: any) => {
               if (p.user_id) userIds.add(p.user_id);
@@ -339,7 +339,7 @@ const Community = () => {
             
             if (onlineChannel) {
               const state = onlineChannel.presenceState();
-              const userIds = new Set<string>([ERIC_USER_ID]); // Eric is always online
+              const userIds = new Set<string>([JUDE_USER_ID]); // Jude is always online
               Object.values(state).forEach((presences: any) => {
                 presences.forEach((p: any) => {
                   if (p.user_id) userIds.add(p.user_id);
@@ -354,7 +354,7 @@ const Community = () => {
                   
                   // Track who went offline and update their last_seen in database
                   prev.forEach(async (userId) => {
-                    if (!userIds.has(userId) && userId !== ERIC_USER_ID) {
+                    if (!userIds.has(userId) && userId !== JUDE_USER_ID) {
                       logger.log('📴 [Community] User went offline:', userId);
                       const now = new Date().toISOString();
                       
@@ -906,11 +906,11 @@ const Community = () => {
           // Check if this is a group message mentioning Eric
           const currentConversation = conversations.find(c => c.id === conversationId);
           const isGroupChat = currentConversation?.is_group;
-          const mentionsEric = payload.new.content.toLowerCase().includes('hey eric');
+          const mentionsJude = payload.new.content.toLowerCase().includes('hey jude');
           
-          // If in group chat and mentions Eric, trigger Eric's response (including user's own messages)
-          if (isGroupChat && mentionsEric && payload.new.sender_id !== ERIC_USER_ID) {
-            logger.log('🤖 Eric mentioned in group chat, triggering response...');
+          // If in group chat and mentions Jude, trigger Jude's response (including user's own messages)
+          if (isGroupChat && mentionsJude && payload.new.sender_id !== JUDE_USER_ID) {
+            logger.log('🤖 Jude mentioned in group chat, triggering response...');
             
             // Get sender's profile info
             supabase.functions.invoke('eric-chat', {
@@ -1322,11 +1322,11 @@ const Community = () => {
       
       const senderName = senderProfile?.full_name || user.email || 'Someone';
       
-      // Check if messaging Eric (AI assistant)
-      if (conversation.otherUser.user_id === ERIC_USER_ID) {
+      // Check if messaging Jude (AI assistant)
+      if (conversation.otherUser.user_id === JUDE_USER_ID) {
         try {
-          // Call Eric's chat function (handles AI and message insertion)
-          const { error: ericError } = await supabase.functions.invoke('eric-chat', {
+          // Call Jude's chat function (handles AI and message insertion)
+          const { error: judeError } = await supabase.functions.invoke('eric-chat', {
             body: { 
               conversationId: selectedConversation,
               userMessage: messageContent,
@@ -1335,11 +1335,11 @@ const Community = () => {
             }
           });
 
-          if (ericError) {
-            logger.error('Error calling Eric chat:', ericError);
+          if (judeError) {
+            logger.error('Error calling Jude chat:', judeError);
             toast({
               title: "Erreur",
-              description: "Impossible d'obtenir une réponse d'Eric",
+              description: "Impossible d'obtenir une réponse de Jude",
               variant: "destructive",
             });
           }
@@ -1347,7 +1347,7 @@ const Community = () => {
           logger.error('Error getting AI response:', aiError);
           toast({
             title: "Erreur",
-            description: "Impossible d'obtenir une réponse d'Eric",
+            description: "Impossible d'obtenir une réponse de Jude",
             variant: "destructive",
           });
         }

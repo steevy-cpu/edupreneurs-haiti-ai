@@ -9,7 +9,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import ericChairDesk from '@/assets/eric-chair-desk.png';
+import judeChairDesk from '@/assets/eric-chair-desk.png';
 
 interface Message {
   role: 'user' | 'assistant';
@@ -17,7 +17,7 @@ interface Message {
   timestamp: Date;
 }
 
-interface EricCoachBannerProps {
+interface JudeCoachBannerProps {
   messages: Message[];
   isThinking: boolean;
   onSendMessage?: (message: string) => void;
@@ -36,14 +36,14 @@ const cleanMarkdown = (text: string): string => {
     .trim();
 };
 
-const EricCoachBanner: React.FC<EricCoachBannerProps> = ({
+const JudeCoachBanner: React.FC<JudeCoachBannerProps> = ({
   messages,
   isThinking,
   onSendMessage
 }) => {
   const [inputMessage, setInputMessage] = useState('');
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const latestEricMessage = [...messages].reverse().find(m => m.role === 'assistant');
+  const latestJudeMessage = [...messages].reverse().find(m => m.role === 'assistant');
   
   const handleSend = () => {
     if (inputMessage.trim() && onSendMessage) {
@@ -59,16 +59,16 @@ const EricCoachBanner: React.FC<EricCoachBannerProps> = ({
     }
   };
   
-  if (!latestEricMessage && !isThinking) return null;
+  if (!latestJudeMessage && !isThinking) return null;
 
   return (
     <>
       {/* Floating Bubble Banner */}
       <div className="relative flex items-start gap-2 sm:gap-3">
-        {/* Eric Avatar - Clickable to open dialog */}
+        {/* Jude Avatar - Clickable to open dialog */}
         <img 
-          src={ericChairDesk} 
-          alt="Eric" 
+          src={judeChairDesk} 
+          alt="Jude" 
           className="w-10 h-10 sm:w-12 sm:h-12 rounded-full object-cover flex-shrink-0 border-2 border-primary/30 shadow-md cursor-pointer hover:scale-105 transition-transform"
           onClick={() => setIsDialogOpen(true)}
         />
@@ -89,11 +89,11 @@ const EricCoachBanner: React.FC<EricCoachBannerProps> = ({
                   <span className="w-1.5 h-1.5 bg-primary rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
                   <span className="w-1.5 h-1.5 bg-primary rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
                 </span>
-                Eric réfléchit...
+                Jude réfléchit...
               </p>
-            ) : latestEricMessage ? (
+            ) : latestJudeMessage ? (
               <p className="text-xs sm:text-sm text-foreground leading-relaxed">
-                {cleanMarkdown(latestEricMessage.content)}
+                {cleanMarkdown(latestJudeMessage.content)}
               </p>
             ) : null}
           </div>
@@ -106,11 +106,11 @@ const EricCoachBanner: React.FC<EricCoachBannerProps> = ({
           <DialogHeader>
             <DialogTitle className="flex items-center gap-3">
               <img 
-                src={ericChairDesk} 
-                alt="Eric" 
+                src={judeChairDesk} 
+                alt="Jude" 
                 className="w-10 h-10 rounded-full object-cover border-2 border-primary/30"
               />
-              <span>Chat avec Eric</span>
+              <span>Chat avec Jude</span>
             </DialogTitle>
           </DialogHeader>
           
@@ -124,8 +124,8 @@ const EricCoachBanner: React.FC<EricCoachBannerProps> = ({
                 >
                   {msg.role === 'assistant' && (
                     <img 
-                      src={ericChairDesk} 
-                      alt="Eric" 
+                      src={judeChairDesk} 
+                      alt="Jude" 
                       className="w-7 h-7 rounded-full object-cover flex-shrink-0"
                     />
                   )}
@@ -143,8 +143,8 @@ const EricCoachBanner: React.FC<EricCoachBannerProps> = ({
               {isThinking && (
                 <div className="flex gap-2 justify-start">
                   <img 
-                    src={ericChairDesk} 
-                    alt="Eric" 
+                    src={judeChairDesk} 
+                    alt="Jude" 
                     className="w-7 h-7 rounded-full object-cover flex-shrink-0"
                   />
                   <div className="bg-muted rounded-xl px-3 py-2">
@@ -166,7 +166,7 @@ const EricCoachBanner: React.FC<EricCoachBannerProps> = ({
                 value={inputMessage}
                 onChange={(e) => setInputMessage(e.target.value)}
                 onKeyDown={handleKeyDown}
-                placeholder="Posez une question à Eric..."
+                placeholder="Posez une question à Jude..."
                 className="flex-1 h-10 text-sm rounded-full"
                 disabled={isThinking}
               />
@@ -186,4 +186,4 @@ const EricCoachBanner: React.FC<EricCoachBannerProps> = ({
   );
 };
 
-export default EricCoachBanner;
+export default JudeCoachBanner;

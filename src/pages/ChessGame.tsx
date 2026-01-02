@@ -93,7 +93,7 @@ const ChessGame: React.FC = () => {
 
   useEffect(() => {
     if (game.isCheckmate()) {
-      const winner = game.turn() === 'w' ? 'Eric' : 'Toi';
+      const winner = game.turn() === 'w' ? 'Jude' : 'Toi';
       const result = game.turn() === 'w' ? 'loss' : 'win';
       setGameStatus(`🏆 Échec et mat! ${winner} a gagné!`);
       setIsGameOver(true);
@@ -119,7 +119,7 @@ const ChessGame: React.FC = () => {
     } else if (game.turn() === 'w') {
       setGameStatus("C'est ton tour!");
     } else {
-      setGameStatus("Tour d'Eric...");
+      setGameStatus("Tour de Jude...");
     }
   }, [game, playSound]);
 
@@ -201,7 +201,7 @@ const ChessGame: React.FC = () => {
         setWhiteTime(prev => {
           if (prev <= 1) {
             setIsGameOver(true);
-            setGameStatus("⏱️ Temps écoulé! Eric gagne!");
+            setGameStatus("⏱️ Temps écoulé! Jude gagne!");
             playSound('gameEnd');
             return 0;
           }
@@ -386,15 +386,15 @@ const ChessGame: React.FC = () => {
 
   useEffect(() => {
     if (messages.length === 0 && userNickname) {
-      setMessages([{ role: 'assistant', content: `👋 Salut ${userNickname}! Je suis Eric, ton coach d'échecs. Tu joues les blancs! ♟️`, timestamp: new Date() }]);
+      setMessages([{ role: 'assistant', content: `👋 Salut ${userNickname}! Je suis Jude, ton coach d'échecs. Tu joues les blancs! ♟️`, timestamp: new Date() }]);
     }
   }, [userNickname, messages.length]);
 
   return (
     <>
       <Helmet>
-        <title>Jouer aux Échecs avec Eric | Edupreneurs</title>
-        <meta name="description" content="Apprends les échecs en jouant contre Eric, ton coach IA personnel!" />
+        <title>Jouer aux Échecs avec Jude | Edupreneurs</title>
+        <meta name="description" content="Apprends les échecs en jouant contre Jude, ton coach IA personnel!" />
       </Helmet>
 
       <div className="min-h-screen bg-background">
@@ -417,7 +417,7 @@ const ChessGame: React.FC = () => {
               )}
               
               <h1 className="text-base sm:text-lg font-bold flex items-center gap-2">
-                ♟️ <span className="hidden sm:inline">Échecs avec Eric</span>
+                ♟️ <span className="hidden sm:inline">Échecs avec Jude</span>
               </h1>
             </div>
           </div>

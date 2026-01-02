@@ -3,7 +3,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Send, Loader2, MessageCircle, X } from 'lucide-react';
-import ericChairDesk from '@/assets/eric-chair-desk.png';
+import judeChairDesk from '@/assets/eric-chair-desk.png';
 
 interface Message {
   role: 'user' | 'assistant';
@@ -60,13 +60,13 @@ const FloatingChessMessages: React.FC<FloatingChessMessagesProps> = ({
         className="absolute bottom-4 right-4 z-20 flex items-center gap-2 bg-primary text-primary-foreground rounded-full px-3 py-2 shadow-lg hover:scale-105 transition-transform"
       >
         <img 
-          src={ericChairDesk} 
-          alt="Eric" 
+          src={judeChairDesk} 
+          alt="Jude" 
           className="w-8 h-8 rounded-full object-cover border-2 border-primary-foreground/20"
         />
         {!isOpen && (
           <span className="text-sm font-medium max-w-[120px] truncate">
-            Chat avec Eric
+            Chat avec Jude
           </span>
         )}
         {isOpen ? <X className="w-4 h-4" /> : <MessageCircle className="w-4 h-4" />}
@@ -81,8 +81,8 @@ const FloatingChessMessages: React.FC<FloatingChessMessagesProps> = ({
           <div className="bg-card/95 backdrop-blur-sm border rounded-2xl rounded-br-md p-3 shadow-lg max-w-[280px] ml-auto">
             <div className="flex items-start gap-2">
               <img 
-                src={ericChairDesk} 
-                alt="Eric" 
+                src={judeChairDesk} 
+                alt="Jude" 
                 className="w-6 h-6 rounded-full object-cover flex-shrink-0"
               />
               <p className="text-sm text-foreground line-clamp-3">
@@ -100,12 +100,12 @@ const FloatingChessMessages: React.FC<FloatingChessMessagesProps> = ({
           <div className="flex items-center justify-between p-3 border-b bg-muted/50">
             <div className="flex items-center gap-2">
               <img 
-                src={ericChairDesk} 
-                alt="Eric" 
+                src={judeChairDesk} 
+                alt="Jude" 
                 className="w-8 h-8 rounded-full object-cover"
               />
               <div>
-                <h3 className="font-semibold text-foreground text-sm">Eric - Coach</h3>
+                <h3 className="font-semibold text-foreground text-sm">Jude - Coach</h3>
                 <p className="text-xs text-muted-foreground">Pose tes questions!</p>
               </div>
             </div>
@@ -139,7 +139,7 @@ const FloatingChessMessages: React.FC<FloatingChessMessagesProps> = ({
                   <div className="bg-muted rounded-2xl rounded-bl-md px-3 py-2">
                     <div className="flex items-center gap-2">
                       <Loader2 className="w-3 h-3 animate-spin" />
-                      <span className="text-xs text-muted-foreground">Eric réfléchit...</span>
+                      <span className="text-xs text-muted-foreground">Jude réfléchit...</span>
                     </div>
                   </div>
                 </div>
