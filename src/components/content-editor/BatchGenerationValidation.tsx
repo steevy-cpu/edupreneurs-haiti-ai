@@ -234,7 +234,7 @@ export const BatchGenerationValidation = () => {
     try {
       let query = supabase
         .from('lessons')
-        .select('id, title, grade_level, subject_id, subjects(name, series)')
+        .select('id, title, grade_level, subject_id, audio_objectif_url, audio_introduction_url, audio_contenu_url, audio_exemples_url, subjects(name, series)')
         .order('title');
 
       if (gradeLevel !== "all") {
@@ -1280,9 +1280,9 @@ export const BatchGenerationValidation = () => {
               <RefreshCw className="h-4 w-4 mr-2" />
               Régénérer
             </Button>
+            {/* Save without publishing button */}
             <Button 
-              variant="default"
-              className="bg-green-600 hover:bg-green-700"
+              variant="secondary"
               disabled={isApplying}
               onClick={async () => {
                 if (!previewLesson) return;
@@ -1291,7 +1291,6 @@ export const BatchGenerationValidation = () => {
                   const updates: Record<string, string> = {};
                   const content = previewLesson.generatedContent || {};
                   
-                  // Map generated content to database columns (with optional chaining for audio-only generation)
                   if (content?.introduction) updates.introduction = content.introduction;
                   if (content?.objectif) updates.objectif = content.objectif;
                   if (content?.contenu) updates.contenu = content.contenu;
@@ -1299,7 +1298,6 @@ export const BatchGenerationValidation = () => {
                   if (content?.quiz_final) updates.quiz_final = content.quiz_final;
                   if (content?.activites_interactives) updates.activites_interactives = content.activites_interactives;
                   
-                  // Handle images - append to contenu
                   if (content?.images && Array.isArray(content.images)) {
                     const { data: currentLesson } = await supabase
                       .from('lessons')
@@ -1320,7 +1318,6 @@ export const BatchGenerationValidation = () => {
                   const hasContent = Object.keys(updates).length > 0;
 
                   if (hasContent || hasAudio) {
-                    // Build audio updates if audio was generated
                     const audioUpdates: Record<string, string | null> = {};
                     if (hasAudio && previewLesson.audioUrls) {
                       if (previewLesson.audioUrls.objectif) audioUpdates.audio_objectif_url = previewLesson.audioUrls.objectif;
@@ -1332,9 +1329,11 @@ export const BatchGenerationValidation = () => {
                     const updatePayload = {
                       ...updates,
                       ...audioUpdates,
-                      is_published: true, 
-                      workflow_status: 'published' as const
+                      audio_generated_at: hasAudio ? new Date().toISOString() : undefined,
                     };
+                    
+                    console.log('[Save] Lesson ID:', previewLesson.lessonId);
+                    console.log('[Save] Audio URLs in payload:', audioUpdates);
                     
                     const { error } = await supabase
                       .from('lessons')
@@ -1342,11 +1341,133 @@ export const BatchGenerationValidation = () => {
                       .eq('id', previewLesson.lessonId);
                     
                     if (error) throw error;
-                    toast.success(hasAudio && hasContent 
-                      ? "Contenu et audio publiés avec succès!" 
-                      : hasAudio 
-                        ? "Audio publié avec succès!" 
-                        : "Contenu publié avec succès!");
+
+                    // Verification check
+                    const { data: savedLesson } = await supabase
+                      .from('lessons')
+                      .select('audio_objectif_url, audio_introduction_url, audio_contenu_url, audio_exemples_url')
+                      .eq('id', previewLesson.lessonId)
+                      .single();
+                    
+                    const expectedAudioCount = Object.values(audioUpdates).filter(Boolean).length;
+                    const savedAudioCount = savedLesson ? Object.values(savedLesson).filter(Boolean).length : 0;
+                    
+                    if (hasAudio && savedAudioCount < expectedAudioCount) {
+                      toast.warning("Audio partiellement sauvegardé. Vérifiez la base de données.");
+                    } else {
+                      toast.success(hasAudio && hasContent 
+                        ? "Contenu et audio sauvegardés!" 
+                        : hasAudio 
+                          ? "Audio sauvegardé!" 
+                          : "Contenu sauvegardé!");
+                    }
+                  } else {
+                    toast.error("Aucun contenu ou audio à sauvegarder");
+                  }
+                } catch (error: any) {
+                  console.error('Error saving:', error);
+                  toast.error("Erreur lors de la sauvegarde: " + error.message);
+                } finally {
+                  setIsApplying(false);
+                }
+              }}
+            >
+              {isApplying ? (
+                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+              ) : (
+                <Download className="h-4 w-4 mr-2" />
+              )}
+              Sauvegarder
+            </Button>
+            {/* Save and publish button */}
+            <Button 
+              variant="default"
+              className="bg-green-600 hover:bg-green-700"
+              disabled={isApplying}
+              onClick={async () => {
+                if (!previewLesson) return;
+                setIsApplying(true);
+                try {
+                  const updates: Record<string, string> = {};
+                  const content = previewLesson.generatedContent || {};
+                  
+                  if (content?.introduction) updates.introduction = content.introduction;
+                  if (content?.objectif) updates.objectif = content.objectif;
+                  if (content?.contenu) updates.contenu = content.contenu;
+                  if (content?.exemples_exercices) updates.exemples_exercices = content.exemples_exercices;
+                  if (content?.quiz_final) updates.quiz_final = content.quiz_final;
+                  if (content?.activites_interactives) updates.activites_interactives = content.activites_interactives;
+                  
+                  if (content?.images && Array.isArray(content.images)) {
+                    const { data: currentLesson } = await supabase
+                      .from('lessons')
+                      .select('contenu')
+                      .eq('id', previewLesson.lessonId)
+                      .single();
+                    
+                    let updatedContenu = updates.contenu || currentLesson?.contenu || '';
+                    for (const img of content.images) {
+                      if (img.imageData) {
+                        updatedContenu += `\n\n<figure class="my-4"><img src="${img.imageData}" alt="${img.concept || 'Image explicative'}" class="rounded-lg max-w-full" /><figcaption class="text-sm text-muted-foreground mt-2">${img.concept || ''}</figcaption></figure>`;
+                      }
+                    }
+                    updates.contenu = updatedContenu;
+                  }
+
+                  const hasAudio = previewLesson?.audioUrls && Object.values(previewLesson.audioUrls).some(Boolean);
+                  const hasContent = Object.keys(updates).length > 0;
+
+                  if (hasContent || hasAudio) {
+                    const audioUpdates: Record<string, string | null> = {};
+                    if (hasAudio && previewLesson.audioUrls) {
+                      if (previewLesson.audioUrls.objectif) audioUpdates.audio_objectif_url = previewLesson.audioUrls.objectif;
+                      if (previewLesson.audioUrls.introduction) audioUpdates.audio_introduction_url = previewLesson.audioUrls.introduction;
+                      if (previewLesson.audioUrls.contenu) audioUpdates.audio_contenu_url = previewLesson.audioUrls.contenu;
+                      if (previewLesson.audioUrls.exemples) audioUpdates.audio_exemples_url = previewLesson.audioUrls.exemples;
+                    }
+
+                    const updatePayload = {
+                      ...updates,
+                      ...audioUpdates,
+                      audio_generated_at: hasAudio ? new Date().toISOString() : undefined,
+                      is_published: true, 
+                      workflow_status: 'published' as const
+                    };
+                    
+                    console.log('[Publish] Lesson ID:', previewLesson.lessonId);
+                    console.log('[Publish] Audio URLs in payload:', audioUpdates);
+                    
+                    const { error } = await supabase
+                      .from('lessons')
+                      .update(updatePayload)
+                      .eq('id', previewLesson.lessonId);
+                    
+                    if (error) throw error;
+
+                    // Verification check
+                    const { data: savedLesson } = await supabase
+                      .from('lessons')
+                      .select('audio_objectif_url, audio_introduction_url, audio_contenu_url, audio_exemples_url, is_published')
+                      .eq('id', previewLesson.lessonId)
+                      .single();
+                    
+                    const expectedAudioCount = Object.values(audioUpdates).filter(Boolean).length;
+                    const savedAudioCount = savedLesson ? Object.values({
+                      audio_objectif_url: savedLesson.audio_objectif_url,
+                      audio_introduction_url: savedLesson.audio_introduction_url,
+                      audio_contenu_url: savedLesson.audio_contenu_url,
+                      audio_exemples_url: savedLesson.audio_exemples_url
+                    }).filter(Boolean).length : 0;
+                    
+                    if (hasAudio && savedAudioCount < expectedAudioCount) {
+                      toast.warning("Audio partiellement sauvegardé. Vérifiez la base de données.");
+                    } else {
+                      toast.success(hasAudio && hasContent 
+                        ? "Contenu et audio publiés avec succès!" 
+                        : hasAudio 
+                          ? "Audio publié avec succès!" 
+                          : "Contenu publié avec succès!");
+                    }
                     setIsPreviewOpen(false);
                   } else {
                     toast.error("Aucun contenu ou audio à publier");
@@ -1364,7 +1485,7 @@ export const BatchGenerationValidation = () => {
               ) : (
                 <CheckCircle2 className="h-4 w-4 mr-2" />
               )}
-              Publier
+              Sauvegarder & Publier
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -1533,24 +1654,33 @@ export const BatchGenerationValidation = () => {
                         Tout sélectionner ({availableLessons.length})
                       </label>
                     </div>
-                    {availableLessons.map(lesson => (
-                      <div key={lesson.id} className="flex items-center space-x-2">
-                        <Checkbox
-                          id={`lesson-${lesson.id}`}
-                          checked={selectedLessonIds.includes(lesson.id)}
-                          onCheckedChange={(checked) => {
-                            if (checked) {
-                              setSelectedLessonIds([...selectedLessonIds, lesson.id]);
-                            } else {
-                              setSelectedLessonIds(selectedLessonIds.filter(id => id !== lesson.id));
-                            }
-                          }}
-                        />
-                        <label htmlFor={`lesson-${lesson.id}`} className="text-xs cursor-pointer truncate">
-                          {lesson.title}
-                        </label>
-                      </div>
-                    ))}
+                    {availableLessons.map(lesson => {
+                      const hasAudio = lesson.audio_objectif_url || lesson.audio_introduction_url || 
+                                       lesson.audio_contenu_url || lesson.audio_exemples_url;
+                      return (
+                        <div key={lesson.id} className="flex items-center space-x-2">
+                          <Checkbox
+                            id={`lesson-${lesson.id}`}
+                            checked={selectedLessonIds.includes(lesson.id)}
+                            onCheckedChange={(checked) => {
+                              if (checked) {
+                                setSelectedLessonIds([...selectedLessonIds, lesson.id]);
+                              } else {
+                                setSelectedLessonIds(selectedLessonIds.filter(id => id !== lesson.id));
+                              }
+                            }}
+                          />
+                          <label htmlFor={`lesson-${lesson.id}`} className="text-xs cursor-pointer truncate flex items-center gap-1">
+                            {lesson.title}
+                            {hasAudio && (
+                              <span title="Audio disponible">
+                                <Volume2 className="h-3 w-3 text-primary flex-shrink-0" />
+                              </span>
+                            )}
+                          </label>
+                        </div>
+                      );
+                    })}
                   </div>
                 </ScrollArea>
               )}
