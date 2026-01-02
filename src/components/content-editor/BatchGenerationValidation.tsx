@@ -16,7 +16,7 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/component
 import { toast } from "sonner";
 import {
   PlayCircle, PauseCircle, Download, RefreshCw, Loader2, CheckCircle2, XCircle, Clock, Eye, Check, X,
-  ChevronDown, ChevronUp, Sparkles, FileText, Gamepad2, Wand2, AlertTriangle, Zap, RotateCcw
+  ChevronDown, ChevronUp, Sparkles, FileText, Gamepad2, Wand2, AlertTriangle, Zap, RotateCcw, Volume2
 } from "lucide-react";
 import { DEFAULT_WORD_COUNTS, type SectionName } from "@/lib/lessonPrompts";
 import {
@@ -41,6 +41,12 @@ interface LessonGenerationStatus {
   qualityScore?: number;
   error?: string;
   generatedContent?: Record<string, any>;
+  audioUrls?: {
+    objectif?: string;
+    introduction?: string;
+    contenu?: string;
+    exemples?: string;
+  };
 }
 
 interface LessonValidation {
@@ -676,6 +682,30 @@ export const BatchGenerationValidation = () => {
               await new Promise(resolve => setTimeout(resolve, 2000));
             }
           }
+
+          // Fetch final audio URLs and store them in state
+          const { data: lessonWithAudio } = await supabase
+            .from('lessons')
+            .select('audio_objectif_url, audio_introduction_url, audio_contenu_url, audio_exemples_url')
+            .eq('id', lesson.id)
+            .single();
+
+          if (lessonWithAudio) {
+            setLessonStatuses(prev => prev.map((l, i) => {
+              if (i === index) {
+                return {
+                  ...l,
+                  audioUrls: {
+                    objectif: lessonWithAudio.audio_objectif_url || undefined,
+                    introduction: lessonWithAudio.audio_introduction_url || undefined,
+                    contenu: lessonWithAudio.audio_contenu_url || undefined,
+                    exemples: lessonWithAudio.audio_exemples_url || undefined,
+                  }
+                };
+              }
+              return l;
+            }));
+          }
         }
       }
 
@@ -684,7 +714,6 @@ export const BatchGenerationValidation = () => {
         i === index ? { ...l, status: 'completed' as GenerationStatus, generationTime } : l
       ));
       setCompletedCount(prev => prev + 1);
-
 
     } catch (error: any) {
       setLessonStatuses(prev => prev.map((l, i) =>
@@ -1193,6 +1222,44 @@ export const BatchGenerationValidation = () => {
                     </CardContent>
                   </Card>
                 ))}
+
+                {/* Audio Preview Section */}
+                {previewLesson?.audioUrls && Object.values(previewLesson.audioUrls).some(Boolean) && (
+                  <Card className="border-primary/30 bg-primary/5">
+                    <CardHeader className="py-3">
+                      <CardTitle className="text-base flex items-center gap-2">
+                        <Volume2 className="h-4 w-4" />
+                        Audio TTS Généré
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-3">
+                      {previewLesson.audioUrls.objectif && (
+                        <div className="flex items-center gap-2">
+                          <span className="text-sm font-medium w-28">Objectif:</span>
+                          <audio controls src={previewLesson.audioUrls.objectif} className="h-8 flex-1" />
+                        </div>
+                      )}
+                      {previewLesson.audioUrls.introduction && (
+                        <div className="flex items-center gap-2">
+                          <span className="text-sm font-medium w-28">Introduction:</span>
+                          <audio controls src={previewLesson.audioUrls.introduction} className="h-8 flex-1" />
+                        </div>
+                      )}
+                      {previewLesson.audioUrls.contenu && (
+                        <div className="flex items-center gap-2">
+                          <span className="text-sm font-medium w-28">Contenu:</span>
+                          <audio controls src={previewLesson.audioUrls.contenu} className="h-8 flex-1" />
+                        </div>
+                      )}
+                      {previewLesson.audioUrls.exemples && (
+                        <div className="flex items-center gap-2">
+                          <span className="text-sm font-medium w-28">Exemples:</span>
+                          <audio controls src={previewLesson.audioUrls.exemples} className="h-8 flex-1" />
+                        </div>
+                      )}
+                    </CardContent>
+                  </Card>
+                )}
               </div>
             </ScrollArea>
           )}
@@ -1251,7 +1318,8 @@ export const BatchGenerationValidation = () => {
                       .eq('id', previewLesson.lessonId);
                     
                     if (error) throw error;
-                    toast.success("Contenu publié avec succès!");
+                    const hasAudio = previewLesson?.audioUrls && Object.values(previewLesson.audioUrls).some(Boolean);
+                    toast.success(hasAudio ? "Contenu et audio publiés avec succès!" : "Contenu publié avec succès!");
                     setIsPreviewOpen(false);
                   }
                 } catch (error: any) {
@@ -1637,12 +1705,31 @@ export const BatchGenerationValidation = () => {
                           <div>
                             <p className="font-medium text-sm">{lessonStatus.title}</p>
                             {lessonStatus.sectionsGenerated.length > 0 && (
-                              <p className="text-xs text-muted-foreground">{lessonStatus.sectionsGenerated.length} sections</p>
+                              <p className="text-xs text-muted-foreground">
+                                {lessonStatus.sectionsGenerated.length} sections
+                                {lessonStatus.audioUrls && Object.values(lessonStatus.audioUrls).some(Boolean) && (
+                                  <span className="ml-1 text-primary">🔊 Audio</span>
+                                )}
+                              </p>
                             )}
                           </div>
                         </div>
                         <div className="flex items-center gap-2">
-                          {lessonStatus.status === 'completed' && lessonStatus.generatedContent && (
+                          {/* Quick audio play button */}
+                          {lessonStatus.audioUrls?.objectif && (
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              onClick={() => {
+                                const audio = new Audio(lessonStatus.audioUrls?.objectif);
+                                audio.play();
+                              }}
+                              title="Écouter l'audio objectif"
+                            >
+                              <Volume2 className="h-4 w-4" />
+                            </Button>
+                          )}
+                          {lessonStatus.status === 'completed' && (lessonStatus.generatedContent || lessonStatus.audioUrls) && (
                             <>
                               <Button 
                                 size="sm" 
