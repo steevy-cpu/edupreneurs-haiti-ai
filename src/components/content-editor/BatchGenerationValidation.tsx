@@ -101,6 +101,7 @@ export const BatchGenerationValidation = () => {
   ]);
   const [generateQuiz, setGenerateQuiz] = useState(false);
   const [generateVideos, setGenerateVideos] = useState(false);
+  const [generateAudio, setGenerateAudio] = useState(false);
   const [imageGenerationModel, setImageGenerationModel] = useState<'none' | 'openai' | 'lovable'>('none');
   const [onlyEmpty, setOnlyEmpty] = useState(false);
   const [wordCounts, setWordCounts] = useState(DEFAULT_WORD_COUNTS);
@@ -1461,6 +1462,10 @@ export const BatchGenerationValidation = () => {
                   <div className="flex items-center space-x-2">
                     <Checkbox id="onlyEmpty" checked={onlyEmpty} onCheckedChange={(checked) => setOnlyEmpty(checked as boolean)} />
                     <label htmlFor="onlyEmpty" className="text-sm cursor-pointer">Sections vides uniquement</label>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <Checkbox id="batch-audio-tts" checked={generateAudio} onCheckedChange={(checked) => setGenerateAudio(checked as boolean)} />
+                    <label htmlFor="batch-audio-tts" className="text-sm cursor-pointer">🔊 Audio TTS (ElevenLabs)</label>
                   </div>
                 </div>
                 <div className="mt-3 max-w-xs">
