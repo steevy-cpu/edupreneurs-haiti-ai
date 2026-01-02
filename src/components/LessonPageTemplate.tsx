@@ -17,6 +17,7 @@ import { EricChatbot } from "@/components/EricChatbot";
 import { LessonAIPracticeSection } from "@/components/lesson/LessonAIPracticeSection";
 import { LessonQuickStats } from "@/components/lesson/LessonQuickStats";
 import { LessonNavigation } from "@/components/lesson/LessonNavigation";
+import { LessonAudioPlayer } from "@/components/LessonAudioPlayer";
 
 interface LessonData {
   id: string;
@@ -49,6 +50,8 @@ interface LessonPageTemplateProps {
   totalLessons?: number;
   previousLesson?: SiblingLesson | null;
   nextLesson?: SiblingLesson | null;
+  // Audio enabled for first lessons only
+  isFirstLesson?: boolean;
 }
 
 // Motivational messages based on progress
@@ -92,7 +95,8 @@ export const LessonPageTemplate = ({
   currentLessonIndex = 1,
   totalLessons = 1,
   previousLesson = null,
-  nextLesson = null
+  nextLesson = null,
+  isFirstLesson = false
 }: LessonPageTemplateProps) => {
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -294,6 +298,16 @@ export const LessonPageTemplate = ({
                 <span>{motivationalMessage}</span>
               </div>
 
+              {/* Audio Player - Only for first lessons */}
+              {isFirstLesson && (
+                <LessonAudioPlayer
+                  subjectSlug={subjectSlug}
+                  lessonSlug={lessonSlug}
+                  text={`${lesson.title}. ${lesson.objectif}. ${lesson.introduction || ''}`}
+                  className="w-full"
+                />
+              )}
+
               <div className="flex gap-2 flex-wrap">
                 <DownloadLessonButton 
                   subjectName={subjectName}
@@ -334,6 +348,16 @@ export const LessonPageTemplate = ({
                 <Sparkles className="h-4 w-4 text-primary" />
                 <span>{motivationalMessage}</span>
               </div>
+
+              {/* Audio Player - Only for first lessons */}
+              {isFirstLesson && (
+                <LessonAudioPlayer
+                  subjectSlug={subjectSlug}
+                  lessonSlug={lessonSlug}
+                  text={`${lesson.title}. ${lesson.objectif}. ${lesson.introduction || ''}`}
+                  className="w-full max-w-md"
+                />
+              )}
 
               <div className="flex gap-2 flex-wrap">
                 <DownloadLessonButton 

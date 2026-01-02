@@ -29,6 +29,7 @@ export default function DynamicLessonPage() {
   const [totalLessons, setTotalLessons] = useState(1);
   const [previousLesson, setPreviousLesson] = useState<SiblingLesson | null>(null);
   const [nextLesson, setNextLesson] = useState<SiblingLesson | null>(null);
+  const [isFirstLesson, setIsFirstLesson] = useState(false);
 
   // User grade access
   const { userGrade, canAccessGrade, isLoading: gradeLoading, isAuthenticated } = useUserGrade();
@@ -72,6 +73,8 @@ export default function DynamicLessonPage() {
         setCurrentLessonIndex(currentIndex + 1);
         setTotalLessons(allLessons.length);
         
+        // Check if this is the first lesson (audio enabled for first lessons only)
+        setIsFirstLesson(currentIndex === 0);
         // Get previous lesson
         if (currentIndex > 0) {
           setPreviousLesson({
@@ -201,6 +204,7 @@ export default function DynamicLessonPage() {
       totalLessons={totalLessons}
       previousLesson={previousLesson}
       nextLesson={nextLesson}
+      isFirstLesson={isFirstLesson}
     />
   );
 }
