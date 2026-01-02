@@ -589,8 +589,9 @@ export const BatchGenerationValidation = () => {
             // Append generated images to contenu
             let updatedContenu = lesson.contenu || '';
             for (const img of imageData.images) {
-              if (img.imageData) {
-                updatedContenu += `\n\n<figure class="my-4"><img src="${img.imageData}" alt="${img.concept || 'Image explicative'}" class="rounded-lg max-w-full" /><figcaption class="text-sm text-muted-foreground mt-2">${img.concept || ''}</figcaption></figure>`;
+              if (img.base64Data) {
+                const imageUrl = `data:image/png;base64,${img.base64Data}`;
+                updatedContenu += `\n\n<figure class="my-4"><img src="${imageUrl}" alt="${img.concept || 'Image explicative'}" class="rounded-lg max-w-full" /><figcaption class="text-sm text-muted-foreground mt-2">${img.concept || ''}</figcaption></figure>`;
               }
             }
             await supabase.from('lessons').update({ contenu: updatedContenu }).eq('id', lesson.id);
@@ -1203,9 +1204,9 @@ export const BatchGenerationValidation = () => {
                         <div className="grid grid-cols-2 gap-4">
                           {content.map((img: any, idx: number) => (
                             <div key={idx} className="space-y-2">
-                              {img.imageData && (
+                              {img.base64Data && (
                                 <img 
-                                  src={img.imageData} 
+                                  src={`data:image/png;base64,${img.base64Data}`} 
                                   alt={img.concept || `Image ${idx + 1}`}
                                   className="w-full rounded-lg border"
                                 />
@@ -1307,8 +1308,9 @@ export const BatchGenerationValidation = () => {
                     
                     let updatedContenu = updates.contenu || currentLesson?.contenu || '';
                     for (const img of content.images) {
-                      if (img.imageData) {
-                        updatedContenu += `\n\n<figure class="my-4"><img src="${img.imageData}" alt="${img.concept || 'Image explicative'}" class="rounded-lg max-w-full" /><figcaption class="text-sm text-muted-foreground mt-2">${img.concept || ''}</figcaption></figure>`;
+                      if (img.base64Data) {
+                        const imageUrl = `data:image/png;base64,${img.base64Data}`;
+                        updatedContenu += `\n\n<figure class="my-4"><img src="${imageUrl}" alt="${img.concept || 'Image explicative'}" class="rounded-lg max-w-full" /><figcaption class="text-sm text-muted-foreground mt-2">${img.concept || ''}</figcaption></figure>`;
                       }
                     }
                     updates.contenu = updatedContenu;
@@ -1407,8 +1409,9 @@ export const BatchGenerationValidation = () => {
                     
                     let updatedContenu = updates.contenu || currentLesson?.contenu || '';
                     for (const img of content.images) {
-                      if (img.imageData) {
-                        updatedContenu += `\n\n<figure class="my-4"><img src="${img.imageData}" alt="${img.concept || 'Image explicative'}" class="rounded-lg max-w-full" /><figcaption class="text-sm text-muted-foreground mt-2">${img.concept || ''}</figcaption></figure>`;
+                      if (img.base64Data) {
+                        const imageUrl = `data:image/png;base64,${img.base64Data}`;
+                        updatedContenu += `\n\n<figure class="my-4"><img src="${imageUrl}" alt="${img.concept || 'Image explicative'}" class="rounded-lg max-w-full" /><figcaption class="text-sm text-muted-foreground mt-2">${img.concept || ''}</figcaption></figure>`;
                       }
                     }
                     updates.contenu = updatedContenu;
