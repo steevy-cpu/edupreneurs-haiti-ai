@@ -1046,6 +1046,11 @@ export type Database = {
       lessons: {
         Row: {
           activites_interactives: string | null
+          audio_contenu_url: string | null
+          audio_exemples_url: string | null
+          audio_generated_at: string | null
+          audio_introduction_url: string | null
+          audio_objectif_url: string | null
           contenu: string | null
           created_at: string
           created_by: string | null
@@ -1071,6 +1076,11 @@ export type Database = {
         }
         Insert: {
           activites_interactives?: string | null
+          audio_contenu_url?: string | null
+          audio_exemples_url?: string | null
+          audio_generated_at?: string | null
+          audio_introduction_url?: string | null
+          audio_objectif_url?: string | null
           contenu?: string | null
           created_at?: string
           created_by?: string | null
@@ -1098,6 +1108,11 @@ export type Database = {
         }
         Update: {
           activites_interactives?: string | null
+          audio_contenu_url?: string | null
+          audio_exemples_url?: string | null
+          audio_generated_at?: string | null
+          audio_introduction_url?: string | null
+          audio_objectif_url?: string | null
           contenu?: string | null
           created_at?: string
           created_by?: string | null

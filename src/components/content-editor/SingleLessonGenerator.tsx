@@ -21,7 +21,7 @@ interface SingleLessonGeneratorProps {
 type SectionStatus = 'pending' | 'generating' | 'completed' | 'error';
 
 interface SectionProgress {
-  name: SectionName | 'quiz_final' | 'youtube_url' | 'explanatory_images';
+  name: SectionName | 'quiz_final' | 'youtube_url' | 'explanatory_images' | 'audio_objectif' | 'audio_introduction' | 'audio_contenu' | 'audio_exemples';
   status: SectionStatus;
   error?: string;
 }
@@ -34,6 +34,7 @@ export const SingleLessonGenerator = ({ lesson, onComplete }: SingleLessonGenera
   ]);
   const [generateQuiz, setGenerateQuiz] = useState(false);
   const [generateVideos, setGenerateVideos] = useState(false);
+  const [generateAudio, setGenerateAudio] = useState(false);
   const [imageGenerationModel, setImageGenerationModel] = useState<'none' | 'openai' | 'lovable'>('none');
   const [wordCounts, setWordCounts] = useState(DEFAULT_WORD_COUNTS);
   const [globalContext, setGlobalContext] = useState("");
@@ -128,7 +129,7 @@ export const SingleLessonGenerator = ({ lesson, onComplete }: SingleLessonGenera
       return;
     }
 
-    if (selectedSections.length === 0 && !generateQuiz && !generateVideos && imageGenerationModel === 'none') {
+    if (selectedSections.length === 0 && !generateQuiz && !generateVideos && imageGenerationModel === 'none' && !generateAudio) {
       toast.error("Sélectionnez au moins une section ou fonctionnalité");
       return;
     }
@@ -137,8 +138,9 @@ export const SingleLessonGenerator = ({ lesson, onComplete }: SingleLessonGenera
     setCurrentSection(0);
     setGeneratedContent({}); // Clear previous content
     
-    // Calculate total tasks (sections + quiz + videos + images)
-    const totalTasks = selectedSections.length + (generateQuiz ? 1 : 0) + (generateVideos ? 1 : 0) + (imageGenerationModel !== 'none' ? 1 : 0);
+    // Calculate total tasks (sections + quiz + videos + images + audio sections)
+    const audioSections = generateAudio ? 4 : 0; // objectif, introduction, contenu, exemples
+    const totalTasks = selectedSections.length + (generateQuiz ? 1 : 0) + (generateVideos ? 1 : 0) + (imageGenerationModel !== 'none' ? 1 : 0) + audioSections;
     
     // Initialize progress for sections and optional features
     const initialProgress: SectionProgress[] = [
@@ -147,6 +149,12 @@ export const SingleLessonGenerator = ({ lesson, onComplete }: SingleLessonGenera
     if (generateQuiz) initialProgress.push({ name: 'quiz_final' as SectionName, status: 'pending' });
     if (generateVideos) initialProgress.push({ name: 'youtube_url' as SectionName, status: 'pending' });
     if (imageGenerationModel !== 'none') initialProgress.push({ name: 'explanatory_images' as any, status: 'pending' });
+    if (generateAudio) {
+      initialProgress.push({ name: 'audio_objectif' as any, status: 'pending' });
+      initialProgress.push({ name: 'audio_introduction' as any, status: 'pending' });
+      initialProgress.push({ name: 'audio_contenu' as any, status: 'pending' });
+      initialProgress.push({ name: 'audio_exemples' as any, status: 'pending' });
+    }
     
     setProgress(initialProgress);
 
@@ -444,6 +452,87 @@ export const SingleLessonGenerator = ({ lesson, onComplete }: SingleLessonGenera
       }
     }
 
+    // Generate Audio TTS if selected (sequential to respect ElevenLabs concurrency limit)
+    if (generateAudio) {
+      const audioSections = ['objectif', 'introduction', 'contenu', 'exemples'] as const;
+      
+      // Get the lesson content for audio generation
+      const { data: lessonData } = await supabase
+        .from('lessons')
+        .select('objectif, introduction, contenu, exemples_exercices')
+        .eq('id', lesson.id)
+        .single();
+
+      for (const audioSection of audioSections) {
+        currentTask++;
+        setCurrentSection(currentTask);
+        
+        const progressName = `audio_${audioSection}` as any;
+        
+        setProgress(prev => prev.map(p => 
+          p.name === progressName ? { ...p, status: 'generating' } : p
+        ));
+
+        try {
+          // Get the text content for this section
+          let textContent = '';
+          if (audioSection === 'objectif') textContent = lessonData?.objectif || '';
+          else if (audioSection === 'introduction') textContent = lessonData?.introduction || '';
+          else if (audioSection === 'contenu') textContent = lessonData?.contenu || '';
+          else if (audioSection === 'exemples') textContent = lessonData?.exemples_exercices || '';
+          
+          // Strip HTML tags
+          const cleanText = textContent.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
+          
+          if (!cleanText || cleanText.length < 10) {
+            console.log(`Skipping audio for ${audioSection} - no content`);
+            setProgress(prev => prev.map(p => 
+              p.name === progressName ? { ...p, status: 'completed' } : p
+            ));
+            continue;
+          }
+
+          console.log(`🔊 Generating audio for ${audioSection}...`);
+          
+          const { data, error } = await supabase.functions.invoke('elevenlabs-tts', {
+            body: {
+              text: cleanText,
+              lessonId: lesson.id,
+              sectionName: audioSection,
+            }
+          });
+
+          if (error) throw error;
+          
+          if (data?.audioUrl) {
+            setGeneratedContent(prev => ({
+              ...prev,
+              [`audio_${audioSection}_url`]: data.audioUrl
+            }));
+            
+            setProgress(prev => prev.map(p => 
+              p.name === progressName ? { ...p, status: 'completed' } : p
+            ));
+            successCount++;
+          }
+          
+          // Wait 3 seconds between audio generations to respect rate limits
+          if (audioSections.indexOf(audioSection) < audioSections.length - 1) {
+            await new Promise(resolve => setTimeout(resolve, 3000));
+          }
+        } catch (error: any) {
+          console.error(`Error generating audio for ${audioSection}:`, error);
+          setProgress(prev => prev.map(p => 
+            p.name === progressName ? { ...p, status: 'error', error: error.message } : p
+          ));
+          errorCount++;
+          
+          // Still wait before next attempt to avoid rate limiting
+          await new Promise(resolve => setTimeout(resolve, 2000));
+        }
+      }
+    }
+
     setIsGenerating(false);
     
     const totalGenerated = successCount;
@@ -687,8 +776,10 @@ export const SingleLessonGenerator = ({ lesson, onComplete }: SingleLessonGenera
     }
   };
 
-  const progressPercentage = selectedSections.length + (generateQuiz ? 1 : 0) + (generateVideos ? 1 : 0) + (imageGenerationModel !== 'none' ? 1 : 0) > 0 
-    ? (currentSection / (selectedSections.length + (generateQuiz ? 1 : 0) + (generateVideos ? 1 : 0) + (imageGenerationModel !== 'none' ? 1 : 0))) * 100 
+  const audioSectionCount = generateAudio ? 4 : 0;
+  const totalProgressItems = selectedSections.length + (generateQuiz ? 1 : 0) + (generateVideos ? 1 : 0) + (imageGenerationModel !== 'none' ? 1 : 0) + audioSectionCount;
+  const progressPercentage = totalProgressItems > 0 
+    ? (currentSection / totalProgressItems) * 100 
     : 0;
 
   return (
@@ -773,6 +864,17 @@ export const SingleLessonGenerator = ({ lesson, onComplete }: SingleLessonGenera
                     </SelectContent>
                   </Select>
                 </div>
+                <div className="flex items-center space-x-2">
+                  <Checkbox
+                    id="audio-tts"
+                    checked={generateAudio}
+                    onCheckedChange={(checked) => setGenerateAudio(checked as boolean)}
+                    disabled={isGenerating}
+                  />
+                  <label htmlFor="audio-tts" className="text-sm cursor-pointer">
+                    🔊 Audio TTS (ElevenLabs)
+                  </label>
+                </div>
               </div>
             </div>
           </div>
@@ -816,7 +918,7 @@ export const SingleLessonGenerator = ({ lesson, onComplete }: SingleLessonGenera
               <div className="space-y-2">
                 <div className="flex justify-between text-sm">
                   <span>Progression</span>
-                  <span>{currentSection}/{selectedSections.length + (generateQuiz ? 1 : 0) + (generateVideos ? 1 : 0)} éléments</span>
+                  <span>{currentSection}/{totalProgressItems} éléments</span>
                 </div>
                 <Progress value={progressPercentage} />
               </div>
@@ -826,6 +928,10 @@ export const SingleLessonGenerator = ({ lesson, onComplete }: SingleLessonGenera
                   const displayName = section.name === 'quiz_final' ? 'Quiz Final' :
                                      section.name === 'youtube_url' ? 'Vidéos YouTube' :
                                      section.name === 'explanatory_images' ? 'Images Explicatives' :
+                                     section.name === 'audio_objectif' ? '🔊 Audio Objectif' :
+                                     section.name === 'audio_introduction' ? '🔊 Audio Introduction' :
+                                     section.name === 'audio_contenu' ? '🔊 Audio Contenu' :
+                                     section.name === 'audio_exemples' ? '🔊 Audio Exemples' :
                                      section.name;
                   return (
                     <div key={section.name} className="flex items-center justify-between p-3 border rounded-lg">
@@ -857,13 +963,13 @@ export const SingleLessonGenerator = ({ lesson, onComplete }: SingleLessonGenera
           {/* Action Button */}
           <Button
             onClick={handleGenerate}
-            disabled={isGenerating || (selectedSections.length === 0 && !generateQuiz && !generateVideos)}
+            disabled={isGenerating || (selectedSections.length === 0 && !generateQuiz && !generateVideos && imageGenerationModel === 'none' && !generateAudio)}
             className="w-full"
           >
               {isGenerating ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Génération en cours... ({currentSection}/{selectedSections.length + (generateQuiz ? 1 : 0) + (generateVideos ? 1 : 0)})
+                  Génération en cours... ({currentSection}/{totalProgressItems})
                 </>
               ) : (
               <>
@@ -897,6 +1003,27 @@ export const SingleLessonGenerator = ({ lesson, onComplete }: SingleLessonGenera
               <div className="space-y-4 max-h-[600px] overflow-y-auto border rounded-lg p-4 bg-muted/30">
                 {Object.entries(generatedContent).map(([key, value]) => {
                   if (key === 'suggested_videos') return null;
+                  
+                  // Handle audio URLs in preview
+                  if (key.startsWith('audio_') && key.endsWith('_url')) {
+                    const sectionName = key.replace('audio_', '').replace('_url', '');
+                    const displayName = sectionName === 'objectif' ? 'Audio Objectif' :
+                                       sectionName === 'introduction' ? 'Audio Introduction' :
+                                       sectionName === 'contenu' ? 'Audio Contenu' :
+                                       sectionName === 'exemples' ? 'Audio Exemples' :
+                                       sectionName;
+                    return (
+                      <div key={key} className="space-y-2 border-b pb-4 last:border-b-0 last:pb-0">
+                        <Label className="text-sm font-semibold flex items-center gap-2">
+                          <CheckCircle2 className="h-4 w-4 text-green-500" />
+                          🔊 {displayName}
+                        </Label>
+                        <audio controls src={value as string} className="w-full h-10" preload="metadata">
+                          Votre navigateur ne supporte pas l'audio.
+                        </audio>
+                      </div>
+                    );
+                  }
                   
                   return (
                     <div key={key} className="space-y-2 border-b pb-4 last:border-b-0 last:pb-0">
