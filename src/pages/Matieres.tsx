@@ -20,7 +20,8 @@ import {
   MessageCircle,
   Map,
   Lock,
-  Star
+  Star,
+  Sparkles
 } from "lucide-react";
 
 import ericPointingImage from "@/assets/eric-right-pointing.png";
@@ -431,6 +432,31 @@ export default function Matieres() {
               </Card>
             )}
 
+            {/* Content in Preparation Info - shows for all grades */}
+            <Card className="p-6 sm:p-8 mb-6 border-dashed border-primary/30 bg-primary/5">
+              <div className="flex flex-col sm:flex-row items-center gap-4">
+                <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
+                  <Sparkles className="w-6 h-6 text-primary" />
+                </div>
+                <div className="flex-1 text-center sm:text-left">
+                  <h3 className="text-lg font-semibold mb-1">
+                    Contenu en cours de développement
+                  </h3>
+                  <p className="text-muted-foreground text-sm">
+                    De nouvelles matières et leçons pour {selectedGrade} sont régulièrement ajoutées. 
+                    Explorez le contenu disponible ci-dessous!
+                  </p>
+                </div>
+                <Button 
+                  onClick={() => {
+                    document.getElementById('subjects-grid')?.scrollIntoView({ behavior: 'smooth' });
+                  }}
+                >
+                  Explorer {selectedGrade}
+                </Button>
+              </div>
+            </Card>
+
             {/* Search and Filter */}
             <MatieresSearchFilter
               searchQuery={searchQuery}
@@ -443,7 +469,7 @@ export default function Matieres() {
             />
 
             {/* Subjects Grid */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6 mb-8">
+            <div id="subjects-grid" className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6 mb-8">
               {processedSubjects.map((subject) => (
                 <SubjectCardEnhanced
                   key={subject.id}
