@@ -66,5 +66,5 @@ export interface Reaction {
   created_at: string;
 }
 
-// Eric's user ID constant
-export const ERIC_USER_ID = '68f2f959-e14a-47f9-8277-07df3a6fcd79';
+// Jude's user ID constant (AI assistant)
+export const JUDE_USER_ID = '68f2f959-e14a-47f9-8277-07df3a6fcd79';
