@@ -5,17 +5,17 @@ import { Textarea } from "@/components/ui/textarea";
 import { Send } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import ericAvatar from "@/assets/dashboard00.png";
+import judeAvatar from "@/assets/dashboard00.png";
 import { getAvatarUrl } from "@/lib/avatarMap";
 import { useEricDraggable } from "@/hooks/useEricDraggable";
 
 interface Message {
   content: string;
-  sender: "user" | "eric";
+  sender: "user" | "jude";
   navigationPath?: string;
 }
 
-export const EricChatbot = () => {
+export const JudeChatbot = () => {
   const navigate = useNavigate();
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState<Message[]>([]);
@@ -75,16 +75,16 @@ export const EricChatbot = () => {
           }
           
           setMessages([{
-            content: `${greeting} ${nickname} ! Je suis Eric, votre assistant. Comment puis-je vous aider ? 😊`,
-            sender: "eric"
+            content: `${greeting} ${nickname} ! Je suis Jude, votre assistant. Comment puis-je vous aider ? 😊`,
+            sender: "jude"
           }]);
         }
       } catch (error) {
         console.error('Error fetching user profile:', error);
         // Fallback greeting without nickname
         setMessages([{
-          content: "Salut ! Je suis Eric, votre assistant. Comment puis-je vous aider ? 😊",
-          sender: "eric"
+          content: "Salut ! Je suis Jude, votre assistant. Comment puis-je vous aider ? 😊",
+          sender: "jude"
         }]);
       }
     };
@@ -126,7 +126,7 @@ export const EricChatbot = () => {
 
       setMessages(prev => [...prev, { 
         content: data.response, 
-        sender: "eric",
+        sender: "jude",
         navigationPath: data.navigate || undefined
       }]);
     } catch (error) {
@@ -164,10 +164,10 @@ export const EricChatbot = () => {
       onMouseDown={isOpen ? handleMouseDown : undefined}
       onTouchStart={isOpen ? handleTouchStart : undefined}
     >
-      {/* Eric's image - always visible, draggable when closed, clickable to toggle chat */}
+      {/* Jude's image - always visible, draggable when closed, clickable to toggle chat */}
       <div 
         className={`w-14 sm:w-16 md:w-20 lg:w-28 cursor-pointer ${!isOpen ? 'hover:scale-105' : ''} transition-transform`}
-        // Apply drag handlers to Eric's image when chat is closed
+        // Apply drag handlers to Jude's image when chat is closed
         onMouseDown={!isOpen ? handleMouseDown : undefined}
         onTouchStart={!isOpen ? handleTouchStart : undefined}
         onClick={() => {
@@ -185,16 +185,16 @@ export const EricChatbot = () => {
           </div>
         )}
         <img 
-          src={ericAvatar} 
-          alt="Eric - Assistant IA" 
-          title={isOpen ? "Cliquez pour fermer" : "Cliquez pour parler avec Eric"}
+          src={judeAvatar} 
+          alt="Jude - Assistant IA" 
+          title={isOpen ? "Cliquez pour fermer" : "Cliquez pour parler avec Jude"}
           className="w-full h-auto pointer-events-none drop-shadow-2xl"
           loading="lazy"
           decoding="async"
         />
       </div>
 
-      {/* Chat Interface - attached below Eric */}
+      {/* Chat Interface - attached below Jude */}
       {isOpen && (
         <div className="relative w-[260px] sm:w-[300px] md:w-[340px] lg:w-[380px] flex flex-col mt-2">
           {/* Messages - floating bubbles */}
@@ -204,7 +204,7 @@ export const EricChatbot = () => {
                 key={index} 
                 className={`flex items-start gap-2 ${message.sender === "user" ? "flex-row-reverse" : "flex-row"}`}
               >
-                {/* Only show avatar for user messages - Eric is already visible above */}
+                {/* Only show avatar for user messages - Jude is already visible above */}
                 {message.sender === "user" && (
                   <img 
                     src={getAvatarUrl(userAvatarUrl) || "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23059669'><path d='M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z'/></svg>"}
@@ -234,7 +234,7 @@ export const EricChatbot = () => {
             ))}
             {isTyping && (
               <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                <span>Eric écrit</span>
+                <span>Jude écrit</span>
                 <span className="animate-pulse">...</span>
               </div>
             )}
