@@ -586,15 +586,56 @@ export const BatchGenerationValidation = () => {
               i === index ? { ...l, error: (l.error || '') + ' Images: ' + imageError.message } : l
             ));
           } else if (imageData?.images && imageData.images.length > 0) {
-            // Append generated images to contenu
-            let updatedContenu = lesson.contenu || '';
-            for (const img of imageData.images) {
-              if (img.base64Data) {
-                const imageUrl = `data:image/png;base64,${img.base64Data}`;
-                updatedContenu += `\n\n<figure class="my-4"><img src="${imageUrl}" alt="${img.concept || 'Image explicative'}" class="rounded-lg max-w-full" /><figcaption class="text-sm text-muted-foreground mt-2">${img.concept || ''}</figcaption></figure>`;
+            // Group images by insertAt property
+            const contenuImages = imageData.images.filter((img: any) => 
+              !img.insertAt || img.insertAt === 'contenu'
+            );
+            const exemplesImages = imageData.images.filter((img: any) => 
+              img.insertAt === 'exemples_exercices'
+            );
+            
+            console.log('[Images] Distribution:', {
+              total: imageData.images.length,
+              contenu: contenuImages.length,
+              exemples: exemplesImages.length
+            });
+
+            // Build updates for each section
+            const lessonUpdates: Record<string, string> = {};
+            
+            if (contenuImages.length > 0) {
+              let updatedContenu = lesson.contenu || '';
+              for (const img of contenuImages) {
+                if (img.base64Data) {
+                  const imageUrl = `data:image/png;base64,${img.base64Data}`;
+                  updatedContenu += `\n\n<figure class="my-4"><img src="${imageUrl}" alt="${img.concept || 'Image explicative'}" class="rounded-lg max-w-full" /><figcaption class="text-sm text-muted-foreground mt-2">${img.concept || ''}</figcaption></figure>`;
+                }
               }
+              lessonUpdates.contenu = updatedContenu;
             }
-            await supabase.from('lessons').update({ contenu: updatedContenu }).eq('id', lesson.id);
+            
+            if (exemplesImages.length > 0) {
+              // Fetch current exemples_exercices
+              const { data: currentLesson } = await supabase
+                .from('lessons')
+                .select('exemples_exercices')
+                .eq('id', lesson.id)
+                .single();
+              
+              let updatedExemples = currentLesson?.exemples_exercices || '';
+              for (const img of exemplesImages) {
+                if (img.base64Data) {
+                  const imageUrl = `data:image/png;base64,${img.base64Data}`;
+                  updatedExemples += `\n\n<figure class="my-4"><img src="${imageUrl}" alt="${img.concept || 'Image explicative'}" class="rounded-lg max-w-full" /><figcaption class="text-sm text-muted-foreground mt-2">${img.concept || ''}</figcaption></figure>`;
+                }
+              }
+              lessonUpdates.exemples_exercices = updatedExemples;
+            }
+            
+            if (Object.keys(lessonUpdates).length > 0) {
+              await supabase.from('lessons').update(lessonUpdates).eq('id', lesson.id);
+            }
+            
             setLessonStatuses(prev => prev.map((l, i) => {
               if (i === index) {
                 return { 
@@ -1199,23 +1240,53 @@ export const BatchGenerationValidation = () => {
                       <CardTitle className="text-base">{sectionLabels[section] || section}</CardTitle>
                     </CardHeader>
                     <CardContent>
-                      {/* Special handling for images array */}
+                      {/* Special handling for images array - grouped by insertAt */}
                       {section === 'images' && Array.isArray(content) ? (
-                        <div className="grid grid-cols-2 gap-4">
-                          {content.map((img: any, idx: number) => (
-                            <div key={idx} className="space-y-2">
-                              {img.base64Data && (
-                                <img 
-                                  src={`data:image/png;base64,${img.base64Data}`} 
-                                  alt={img.concept || `Image ${idx + 1}`}
-                                  className="w-full rounded-lg border"
-                                />
-                              )}
-                              {img.concept && (
-                                <p className="text-xs text-muted-foreground text-center">{img.concept}</p>
-                              )}
+                        <div className="space-y-4">
+                          {/* Contenu images */}
+                          {content.filter((img: any) => !img.insertAt || img.insertAt === 'contenu').length > 0 && (
+                            <div>
+                              <h4 className="text-sm font-medium mb-2 text-primary">📝 Images pour Contenu:</h4>
+                              <div className="grid grid-cols-2 gap-4">
+                                {content.filter((img: any) => !img.insertAt || img.insertAt === 'contenu').map((img: any, idx: number) => (
+                                  <div key={idx} className="space-y-2">
+                                    {img.base64Data && (
+                                      <img 
+                                        src={`data:image/png;base64,${img.base64Data}`} 
+                                        alt={img.concept || `Image ${idx + 1}`}
+                                        className="w-full rounded-lg border"
+                                      />
+                                    )}
+                                    {img.concept && (
+                                      <p className="text-xs text-muted-foreground text-center">{img.concept}</p>
+                                    )}
+                                  </div>
+                                ))}
+                              </div>
                             </div>
-                          ))}
+                          )}
+                          {/* Exemples images */}
+                          {content.filter((img: any) => img.insertAt === 'exemples_exercices').length > 0 && (
+                            <div>
+                              <h4 className="text-sm font-medium mb-2 text-green-600 dark:text-green-400">📚 Images pour Exemples:</h4>
+                              <div className="grid grid-cols-2 gap-4">
+                                {content.filter((img: any) => img.insertAt === 'exemples_exercices').map((img: any, idx: number) => (
+                                  <div key={idx} className="space-y-2">
+                                    {img.base64Data && (
+                                      <img 
+                                        src={`data:image/png;base64,${img.base64Data}`} 
+                                        alt={img.concept || `Image ${idx + 1}`}
+                                        className="w-full rounded-lg border"
+                                      />
+                                    )}
+                                    {img.concept && (
+                                      <p className="text-xs text-muted-foreground text-center">{img.concept}</p>
+                                    )}
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          )}
                         </div>
                       ) : (
                         <div 
@@ -1300,20 +1371,50 @@ export const BatchGenerationValidation = () => {
                   if (content?.activites_interactives) updates.activites_interactives = content.activites_interactives;
                   
                   if (content?.images && Array.isArray(content.images)) {
+                    // Group images by insertAt property
+                    const contenuImages = content.images.filter((img: any) => 
+                      !img.insertAt || img.insertAt === 'contenu'
+                    );
+                    const exemplesImages = content.images.filter((img: any) => 
+                      img.insertAt === 'exemples_exercices'
+                    );
+                    
+                    console.log('[Save] Images distribution:', {
+                      total: content.images.length,
+                      contenu: contenuImages.length,
+                      exemples: exemplesImages.length
+                    });
+                    
+                    // Fetch current lesson data for both sections
                     const { data: currentLesson } = await supabase
                       .from('lessons')
-                      .select('contenu')
+                      .select('contenu, exemples_exercices')
                       .eq('id', previewLesson.lessonId)
                       .single();
                     
-                    let updatedContenu = updates.contenu || currentLesson?.contenu || '';
-                    for (const img of content.images) {
-                      if (img.base64Data) {
-                        const imageUrl = `data:image/png;base64,${img.base64Data}`;
-                        updatedContenu += `\n\n<figure class="my-4"><img src="${imageUrl}" alt="${img.concept || 'Image explicative'}" class="rounded-lg max-w-full" /><figcaption class="text-sm text-muted-foreground mt-2">${img.concept || ''}</figcaption></figure>`;
+                    // Append images to contenu section
+                    if (contenuImages.length > 0) {
+                      let updatedContenu = updates.contenu || currentLesson?.contenu || '';
+                      for (const img of contenuImages) {
+                        if (img.base64Data) {
+                          const imageUrl = `data:image/png;base64,${img.base64Data}`;
+                          updatedContenu += `\n\n<figure class="my-4"><img src="${imageUrl}" alt="${img.concept || 'Image explicative'}" class="rounded-lg max-w-full" /><figcaption class="text-sm text-muted-foreground mt-2">${img.concept || ''}</figcaption></figure>`;
+                        }
                       }
+                      updates.contenu = updatedContenu;
                     }
-                    updates.contenu = updatedContenu;
+                    
+                    // Append images to exemples section
+                    if (exemplesImages.length > 0) {
+                      let updatedExemples = updates.exemples_exercices || currentLesson?.exemples_exercices || '';
+                      for (const img of exemplesImages) {
+                        if (img.base64Data) {
+                          const imageUrl = `data:image/png;base64,${img.base64Data}`;
+                          updatedExemples += `\n\n<figure class="my-4"><img src="${imageUrl}" alt="${img.concept || 'Image explicative'}" class="rounded-lg max-w-full" /><figcaption class="text-sm text-muted-foreground mt-2">${img.concept || ''}</figcaption></figure>`;
+                        }
+                      }
+                      updates.exemples_exercices = updatedExemples;
+                    }
                   }
 
                   const hasAudio = previewLesson?.audioUrls && Object.values(previewLesson.audioUrls).some(Boolean);
@@ -1401,20 +1502,50 @@ export const BatchGenerationValidation = () => {
                   if (content?.activites_interactives) updates.activites_interactives = content.activites_interactives;
                   
                   if (content?.images && Array.isArray(content.images)) {
+                    // Group images by insertAt property
+                    const contenuImages = content.images.filter((img: any) => 
+                      !img.insertAt || img.insertAt === 'contenu'
+                    );
+                    const exemplesImages = content.images.filter((img: any) => 
+                      img.insertAt === 'exemples_exercices'
+                    );
+                    
+                    console.log('[Publish] Images distribution:', {
+                      total: content.images.length,
+                      contenu: contenuImages.length,
+                      exemples: exemplesImages.length
+                    });
+                    
+                    // Fetch current lesson data for both sections
                     const { data: currentLesson } = await supabase
                       .from('lessons')
-                      .select('contenu')
+                      .select('contenu, exemples_exercices')
                       .eq('id', previewLesson.lessonId)
                       .single();
                     
-                    let updatedContenu = updates.contenu || currentLesson?.contenu || '';
-                    for (const img of content.images) {
-                      if (img.base64Data) {
-                        const imageUrl = `data:image/png;base64,${img.base64Data}`;
-                        updatedContenu += `\n\n<figure class="my-4"><img src="${imageUrl}" alt="${img.concept || 'Image explicative'}" class="rounded-lg max-w-full" /><figcaption class="text-sm text-muted-foreground mt-2">${img.concept || ''}</figcaption></figure>`;
+                    // Append images to contenu section
+                    if (contenuImages.length > 0) {
+                      let updatedContenu = updates.contenu || currentLesson?.contenu || '';
+                      for (const img of contenuImages) {
+                        if (img.base64Data) {
+                          const imageUrl = `data:image/png;base64,${img.base64Data}`;
+                          updatedContenu += `\n\n<figure class="my-4"><img src="${imageUrl}" alt="${img.concept || 'Image explicative'}" class="rounded-lg max-w-full" /><figcaption class="text-sm text-muted-foreground mt-2">${img.concept || ''}</figcaption></figure>`;
+                        }
                       }
+                      updates.contenu = updatedContenu;
                     }
-                    updates.contenu = updatedContenu;
+                    
+                    // Append images to exemples section
+                    if (exemplesImages.length > 0) {
+                      let updatedExemples = updates.exemples_exercices || currentLesson?.exemples_exercices || '';
+                      for (const img of exemplesImages) {
+                        if (img.base64Data) {
+                          const imageUrl = `data:image/png;base64,${img.base64Data}`;
+                          updatedExemples += `\n\n<figure class="my-4"><img src="${imageUrl}" alt="${img.concept || 'Image explicative'}" class="rounded-lg max-w-full" /><figcaption class="text-sm text-muted-foreground mt-2">${img.concept || ''}</figcaption></figure>`;
+                        }
+                      }
+                      updates.exemples_exercices = updatedExemples;
+                    }
                   }
 
                   const hasAudio = previewLesson?.audioUrls && Object.values(previewLesson.audioUrls).some(Boolean);
