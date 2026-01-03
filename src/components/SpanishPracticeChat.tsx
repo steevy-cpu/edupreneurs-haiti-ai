@@ -305,135 +305,146 @@ export const SpanishPracticeChat = ({
   ];
 
   return (
-    <Card className="p-4 sm:p-6 space-y-4">
+    <Card className="flex flex-col h-[480px] sm:h-[560px] md:h-[640px] overflow-hidden">
       {isLoadingHistory ? (
-        <div className="flex items-center justify-center p-8">
+        <div className="flex items-center justify-center p-8 flex-1">
           <Loader2 className="w-6 h-6 animate-spin mr-2" />
           <span className="text-sm text-muted-foreground">Cargando conversación anterior...</span>
         </div>
       ) : (
         <>
-          <div className="flex items-center justify-between gap-3 pb-4 border-b">
-            <div className="flex items-center gap-3">
-              <img
-                src={judeChairDesk}
-                alt="Jude"
-                className="w-12 h-12 sm:w-16 sm:h-16 object-contain"
-              />
-              <div>
-                <h3 className="text-lg sm:text-xl font-semibold text-foreground">
-                  🗣️ Practica tu Español con Jude
-                </h3>
-                <p className="text-sm text-muted-foreground">
-                  {hasPreviousConversation ? "Continuando conversación anterior" : "Modo de Práctica - No Calificado"}
-                </p>
-              </div>
-            </div>
-            
-            <div className="flex gap-1.5 sm:gap-2">
-              {hasPreviousConversation && (
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={startNewConversation}
-                  title="Iniciar una conversación nueva"
-                  disabled={isLoading}
-                  className="text-xs sm:text-sm px-2 sm:px-3"
-                >
-                  <span className="hidden sm:inline">🔄 Nuevo Chat</span>
-                  <span className="sm:hidden">🔄</span>
-                </Button>
-              )}
-              
-              {messages.length > 0 && (
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => setShowDeleteDialog(true)}
-                  title="Borrar todo el historial de conversación"
-                  disabled={isLoading}
-                  className="text-xs sm:text-sm px-2 sm:px-3"
-                >
-                  <span className="hidden sm:inline">🗑️ Borrar Historial</span>
-                  <span className="sm:hidden">🗑️</span>
-                </Button>
-              )}
-            </div>
-          </div>
-
-          <div className="space-y-3 min-h-[300px] max-h-[400px] sm:max-h-[500px] overflow-y-auto p-3 sm:p-4 bg-muted/30 rounded-lg scroll-smooth">
-            {messages.map((message, index) => (
-              <div
-                key={index}
-                className={`flex ${
-                  message.role === "user" ? "justify-end" : "justify-start"
-                } animate-in fade-in slide-in-from-bottom-2 duration-300`}
-              >
-                <div
-                  className={`max-w-[85%] sm:max-w-[80%] p-2.5 sm:p-3 rounded-lg break-words ${
-                    message.role === "user"
-                      ? "bg-primary text-primary-foreground ml-auto"
-                      : "bg-card text-card-foreground border"
-                  }`}
-                >
-                  <p className="text-sm sm:text-base whitespace-pre-wrap leading-relaxed">
-                    {message.content}
+          {/* Sticky Header */}
+          <div className="flex-shrink-0 sticky top-0 z-10 bg-card px-3 sm:px-4 md:px-6 pt-3 sm:pt-4 md:pt-6 pb-3 sm:pb-4 border-b">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <div className="flex items-center gap-2 sm:gap-3">
+                <img
+                  src={judeChairDesk}
+                  alt="Jude"
+                  className="w-10 h-10 sm:w-12 sm:h-12 md:w-16 md:h-16 object-contain flex-shrink-0"
+                />
+                <div className="min-w-0 flex-1">
+                  <h3 className="text-base sm:text-lg md:text-xl font-semibold text-foreground truncate">
+                    🗣️ Practica tu Español con Jude
+                  </h3>
+                  <p className="text-xs sm:text-sm text-muted-foreground">
+                    {hasPreviousConversation ? "Continuando conversación anterior" : "Modo de Práctica - No Calificado"}
                   </p>
                 </div>
               </div>
-            ))}
-            {isLoading && (
-              <div className="flex justify-start animate-in fade-in slide-in-from-bottom-2 duration-300">
-                <div className="bg-card text-card-foreground border p-2.5 sm:p-3 rounded-lg flex items-center gap-2">
-                  <Loader2 className="w-4 h-4 animate-spin" />
-                  <span className="text-sm">Jude está escribiendo...</span>
-                </div>
+              
+              <div className="flex gap-1.5 sm:gap-2 self-end sm:self-auto">
+                {hasPreviousConversation && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={startNewConversation}
+                    title="Iniciar una conversación nueva"
+                    disabled={isLoading}
+                    className="text-xs sm:text-sm px-2 py-1 sm:px-3 h-8 sm:h-9"
+                  >
+                    <span className="hidden sm:inline">🔄 Nuevo Chat</span>
+                    <span className="sm:hidden">🔄</span>
+                  </Button>
+                )}
+                
+                {messages.length > 0 && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setShowDeleteDialog(true)}
+                    title="Borrar todo el historial de conversación"
+                    disabled={isLoading}
+                    className="text-xs sm:text-sm px-2 py-1 sm:px-3 h-8 sm:h-9"
+                  >
+                    <span className="hidden sm:inline">🗑️ Borrar Historial</span>
+                    <span className="sm:hidden">🗑️</span>
+                  </Button>
+                )}
               </div>
-            )}
-            <div ref={messagesEndRef} className="h-1" />
+            </div>
           </div>
 
-          {messages.length === 1 && !hasPreviousConversation && (
-            <div className="flex flex-wrap gap-2">
-              <p className="text-xs sm:text-sm text-muted-foreground w-full">💡 Prueba estos:</p>
-              {quickReplies.map((reply, index) => (
-                <Button
+          {/* Scrollable Messages Area */}
+          <div 
+            className="flex-1 overflow-y-auto p-3 sm:p-4 md:p-6 bg-muted/30"
+          >
+            <div className="space-y-2 sm:space-y-3">
+              {messages.map((message, index) => (
+                <div
                   key={index}
-                  variant="outline"
-                  size="sm"
-                  onClick={() => {
-                    setInput(reply);
-                  }}
-                  disabled={isLoading}
-                  className="text-xs sm:text-sm"
+                  className={`flex ${
+                    message.role === "user" ? "justify-end" : "justify-start"
+                  } animate-in fade-in slide-in-from-bottom-2 duration-300`}
                 >
-                  {reply}
-                </Button>
+                  <div
+                    className={`max-w-[90%] sm:max-w-[85%] md:max-w-[80%] p-2 sm:p-2.5 md:p-3 rounded-lg break-words ${
+                      message.role === "user"
+                        ? "bg-primary text-primary-foreground ml-auto"
+                        : "bg-card text-card-foreground border"
+                    }`}
+                  >
+                    <p className="text-xs sm:text-sm md:text-base whitespace-pre-wrap leading-relaxed">
+                      {message.content}
+                    </p>
+                  </div>
+                </div>
               ))}
-            </div>
-          )}
-
-          <div className="flex gap-2 items-end">
-            <Textarea
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              onKeyDown={handleKeyPress}
-              placeholder="Escribe tu mensaje en español..."
-              className="min-h-[60px] sm:min-h-[80px] resize-none text-sm sm:text-base flex-1"
-              disabled={isLoading}
-            />
-            <Button
-              onClick={handleSendMessage}
-              disabled={!input.trim() || isLoading || !sessionId}
-              size="icon"
-              className="h-[60px] w-[60px] sm:h-[80px] sm:w-[80px] shrink-0"
-            >
-              {isLoading ? (
-                <Loader2 className="w-4 h-4 sm:w-5 sm:h-5 animate-spin" />
-              ) : (
-                <Send className="w-4 h-4 sm:w-5 sm:h-5" />
+              {isLoading && (
+                <div className="flex justify-start animate-in fade-in slide-in-from-bottom-2 duration-300">
+                  <div className="bg-card text-card-foreground border p-2 sm:p-2.5 md:p-3 rounded-lg flex items-center gap-2">
+                    <Loader2 className="w-3 h-3 sm:w-4 sm:h-4 animate-spin" />
+                    <span className="text-xs sm:text-sm">Jude está escribiendo...</span>
+                  </div>
+                </div>
               )}
-            </Button>
+              <div ref={messagesEndRef} className="h-1" />
+            </div>
+          </div>
+
+          {/* Fixed Footer - Quick Replies + Input */}
+          <div className="flex-shrink-0 px-3 sm:px-4 md:px-6 pb-3 sm:pb-4 md:pb-6 pt-3 sm:pt-4 border-t bg-card">
+            {messages.length === 1 && !hasPreviousConversation && (
+              <div className="flex flex-wrap gap-1.5 sm:gap-2 mb-3">
+                <p className="text-xs sm:text-sm text-muted-foreground w-full mb-1">💡 Prueba estos:</p>
+                {quickReplies.map((reply, index) => (
+                  <Button
+                    key={index}
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      setInput(reply);
+                    }}
+                    disabled={isLoading}
+                    className="text-xs sm:text-sm px-2 py-1 h-7 sm:h-8"
+                  >
+                    {reply}
+                  </Button>
+                ))}
+              </div>
+            )}
+
+            <div className="flex gap-2 items-end">
+              <Textarea
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
+                onKeyDown={handleKeyPress}
+                placeholder="Escribe tu mensaje en español..."
+                className="min-h-[50px] sm:min-h-[60px] md:min-h-[80px] resize-none text-xs sm:text-sm md:text-base flex-1"
+                disabled={isLoading}
+              />
+              <Button
+                onClick={handleSendMessage}
+                disabled={!input.trim() || isLoading || !sessionId}
+                size="icon"
+                className="h-[50px] w-[50px] sm:h-[60px] sm:w-[60px] md:h-[80px] md:w-[80px] shrink-0"
+              >
+                {isLoading ? (
+                  <Loader2 className="w-3 h-3 sm:w-4 sm:h-4 md:w-5 md:h-5 animate-spin" />
+                ) : (
+                  <Send className="w-3 h-3 sm:w-4 sm:h-4 md:w-5 md:h-5" />
+                )}
+              </Button>
+            </div>
           </div>
         </>
       )}
