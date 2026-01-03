@@ -29,27 +29,31 @@ serve(async (req) => {
       ? accessories.join(', ') 
       : 'none';
 
-    const prompt = `Create a high-quality ${style || 'anime'} style avatar portrait with these exact characteristics:
-- Gender: ${gender}
-- Skin tone: ${skinTone || 'medium'}
-- Hair: ${hairColor || 'black'} colored hair, styled attractively and matching the ${gender} gender
-- Eyes: ${eyeColor || 'brown'} colored eyes, expressive and vibrant
-- Expression: ${expression || 'friendly smile'}
-- Accessories: ${accessoryList}
+    const prompt = `CRITICAL INSTRUCTIONS - You MUST follow these characteristics EXACTLY:
 
-Style requirements:
+CHARACTER SPECIFICATIONS (DO NOT DEVIATE):
+- Gender: ${gender} (MUST be clearly ${gender}, this is NON-NEGOTIABLE)
+- Skin tone: ${skinTone || 'medium'} (EXACT shade required - if "dark" use dark skin, if "light" use light skin)
+- Hair color: ${hairColor || 'black'} (MUST be this EXACT color: ${hairColor || 'black'}, not similar, not close - EXACTLY this color)
+- Eye color: ${eyeColor || 'brown'} (MUST be this EXACT color: ${eyeColor || 'brown'}, clearly visible)
+- Facial expression: ${expression || 'friendly smile'}
+- Accessories: ${accessoryList === 'none' ? 'NO accessories at all - the character must have NO glasses, NO headwear, NO earrings, NOTHING' : `MUST include these and ONLY these: ${accessoryList}`}
+
+STYLE: ${style || 'anime'} style avatar portrait
+${style === 'anime' || style === 'manga' ? '- Japanese anime/manga art style with large expressive eyes, clean lines' : ''}
+${style === 'chibi' ? '- Cute chibi style with oversized head, small body, very cute proportions' : ''}
+${style === 'cartoon' ? '- Western cartoon style with bold outlines, bright saturated colors' : ''}
+${style === 'realistic' ? '- Semi-realistic digital art style with detailed features, natural proportions' : ''}
+
+MANDATORY REQUIREMENTS:
+- Head and shoulders portrait, centered composition
 - Clean, vibrant colors with professional quality
-- Avatar suitable for social media profile picture
-- Head and shoulders portrait view, centered composition
-- Soft lighting with slight gradient background
-- ${style === 'anime' || style === 'manga' ? 'Japanese anime/manga art style with large expressive eyes' : ''}
-- ${style === 'chibi' ? 'Cute chibi style with oversized head and small body' : ''}
-- ${style === 'cartoon' ? 'Western cartoon style with bold outlines and bright colors' : ''}
-- ${style === 'realistic' ? 'Semi-realistic style with anime influences, detailed features' : ''}
-- No text or watermarks
+- Suitable for social media profile picture
+- Soft lighting with subtle gradient background
 - Square aspect ratio (1:1)
-
-Generate a single avatar portrait that looks professional and appealing.`;
+- NO text or watermarks
+- The character MUST match ALL specified characteristics EXACTLY as described above
+- Double-check: Hair is ${hairColor || 'black'}, Eyes are ${eyeColor || 'brown'}, Skin is ${skinTone || 'medium'}, Gender is ${gender}`;
 
     console.log('Generating avatar with prompt:', prompt);
 
