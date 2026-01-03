@@ -457,11 +457,11 @@ export default function Matieres() {
                   <div className="flex-1 text-center md:text-left">
                     <h3 className="text-2xl font-bold mb-2">Préparation aux Examens Officiels</h3>
                     <p className="text-muted-foreground mb-4">
-                      Prépare-toi pour l'examen officiel de 9ème AF avec Eric!
+                      Prépare-toi pour l'examen officiel de 9ème AF avec Jude!
                     </p>
                     <div className="flex flex-wrap gap-3 justify-center md:justify-start">
                       <Badge variant="secondary">{officialExamCount} examens officiels</Badge>
-                      <Badge variant="secondary">Tuteur IA Eric</Badge>
+                      <Badge variant="secondary">Tuteur IA Jude</Badge>
                     </div>
                   </div>
                   <Button size="lg" onClick={() => navigate('/examens-officiels')} className="bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700 text-white font-bold">
@@ -485,7 +485,7 @@ export default function Matieres() {
                     </p>
                     <div className="flex flex-wrap gap-3 justify-center md:justify-start">
                       <Badge variant="secondary" className="bg-amber-500/10 text-amber-600 dark:text-amber-400">📚 {baccExamCount} examens</Badge>
-                      <Badge variant="secondary">🤖 Tuteur IA Eric</Badge>
+                      <Badge variant="secondary">🤖 Tuteur IA Jude</Badge>
                     </div>
                   </div>
                   <Button size="lg" onClick={() => navigate(`/baccalaureat${selectedSeries ? `/${selectedSeries}` : ''}`)} className="bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700 text-white font-bold">
@@ -561,20 +561,20 @@ export default function Matieres() {
           </Card>
         )}
 
-        {/* Eric Mascot Section */}
+        {/* Jude Mascot Section */}
         <Card className="p-6 sm:p-8 bg-gradient-to-r from-primary/10 via-primary/5 to-secondary/10 border-primary/20 overflow-hidden relative">
           <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-full -translate-y-1/2 translate-x-1/2" />
           <div className="flex flex-col md:flex-row items-center gap-6 relative">
             <div className="flex-shrink-0">
               <div className="relative">
                 <div className="absolute inset-0 bg-primary/20 rounded-full blur-xl animate-pulse" />
-                <img src={ericPointingImage} alt="Eric - Assistant IA" className="w-32 h-32 sm:w-48 sm:h-48 object-contain relative z-10" loading="lazy" />
+                <img src={ericPointingImage} alt="Jude - Assistant IA" className="w-32 h-32 sm:w-48 sm:h-48 object-contain relative z-10" loading="lazy" />
               </div>
             </div>
             <div className="flex-1 text-center md:text-left">
               <h3 className="text-xl sm:text-2xl font-bold mb-3">Besoin d'aide pour choisir ?</h3>
               <p className="text-sm sm:text-base text-muted-foreground mb-4">
-                Eric, votre guide pédagogique, est là pour vous aider à choisir les bonnes matières et à comprendre le programme.
+                Jude, votre guide pédagogique, est là pour vous aider à choisir les bonnes matières et à comprendre le programme.
               </p>
               <div className="flex flex-wrap gap-2 justify-center md:justify-start">
                 <Badge variant="secondary">✨ Conseils personnalisés</Badge>
