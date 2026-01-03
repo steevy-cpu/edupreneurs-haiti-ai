@@ -49,7 +49,7 @@ const plans: Plan[] = [
       '7 jours d\'essai gratuit',
       'Accès illimité aux leçons',
       'Quiz et exercices illimités',
-      'Assistant IA Eric',
+      'Assistant IA Jude',
       'Téléchargement hors ligne',
       'Support prioritaire'
     ]

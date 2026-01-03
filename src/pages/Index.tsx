@@ -120,7 +120,7 @@ const Index = () => {
     { 
       icon: MessageCircle, 
       title: "Messagerie & Communauté", 
-      desc: "Discutez avec vos camarades et Eric votre assistant IA. Créez des groupes d'étude et partagez vos réussites.",
+      desc: "Discutez avec vos camarades et Jude votre assistant IA. Créez des groupes d'étude et partagez vos réussites.",
       highlight: "Chat en temps réel",
       color: "from-green-500 to-emerald-500",
       link: "/community"
@@ -271,7 +271,7 @@ const Index = () => {
             <div className="absolute inset-0 bg-gradient-to-r from-primary/20 to-accent/20 rounded-full blur-3xl animate-pulse"></div>
             <img 
               src={ericCelebrating} 
-              alt="Eric - Assistant IA EDUPRENEURS" 
+              alt="Jude - Assistant IA EDUPRENEURS" 
               className="w-full max-w-[200px] sm:max-w-[280px] md:max-w-md drop-shadow-2xl hover:scale-105 transition-transform duration-500 relative z-10"
               loading="lazy"
               decoding="async"
@@ -500,7 +500,7 @@ const Index = () => {
           <Card className="relative mt-16 max-w-4xl mx-auto bg-gradient-to-br from-card via-card to-primary/5 border-2 border-primary/20 overflow-hidden group hover:shadow-2xl transition-all duration-300">
             <div className="absolute inset-0 bg-gradient-to-r from-primary/5 via-accent/5 to-primary/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
             <CardHeader className="text-center relative z-10">
-              <CardTitle className="text-2xl md:text-3xl font-black bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">🎯 Apprentissage personnalisé avec Eric</CardTitle>
+              <CardTitle className="text-2xl md:text-3xl font-black bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">🎯 Apprentissage personnalisé avec Jude</CardTitle>
               <CardDescription className="text-base font-medium">
                 Votre assistant IA vous guide dans chaque matière, explique en créole ou français, et s'adapte à votre rythme. 
                 Gagnez des Gold en réussissant les quiz et débloquez des fonctions premium !
@@ -513,7 +513,7 @@ const Index = () => {
                 </Button>
               </Link>
               <div className="pt-4">
-                <img src={ericMain01} alt="Eric - Assistant IA" className="w-64 mx-auto drop-shadow-2xl hover:scale-105 transition-transform duration-500" loading="lazy" decoding="async" />
+                <img src={ericMain01} alt="Jude - Assistant IA" className="w-64 mx-auto drop-shadow-2xl hover:scale-105 transition-transform duration-500" loading="lazy" decoding="async" />
               </div>
             </CardContent>
           </Card>

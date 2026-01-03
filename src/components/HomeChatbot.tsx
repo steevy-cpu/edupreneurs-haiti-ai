@@ -16,7 +16,7 @@ export const HomeChatbot = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState<Message[]>([
     {
-      content: "Bonjour ! Je suis Eric, votre futur professeur. Comment puis-je vous aider à découvrir EDUPRENEURS ? 😊",
+      content: "Bonjour ! Je suis Jude, votre futur professeur. Comment puis-je vous aider à découvrir EDUPRENEURS ? 😊",
       sender: "eric"
     }
   ]);
@@ -121,8 +121,8 @@ export const HomeChatbot = () => {
           </div>
           <img 
             src={ericStudentDesk} 
-            alt="Eric - Assistant IA" 
-            title="Cliquez pour parler avec Eric"
+            alt="Jude - Assistant IA" 
+            title="Cliquez pour parler avec Jude"
             className="w-full h-auto pointer-events-none drop-shadow-2xl"
             loading="lazy"
             decoding="async"
@@ -149,8 +149,8 @@ export const HomeChatbot = () => {
           >
             <img 
               src={ericStudentDesk} 
-              alt="Eric - Assistant IA" 
-              title="Eric - Votre assistant"
+              alt="Jude - Assistant IA" 
+              title="Jude - Votre assistant"
               className="w-full h-auto pointer-events-none drop-shadow-2xl"
               loading="lazy"
               decoding="async"
@@ -204,7 +204,7 @@ export const HomeChatbot = () => {
               ))}
               {isTyping && (
                 <div className="eric-typing-indicator">
-                  Eric écrit<span className="eric-dots">...</span>
+                  Jude écrit<span className="eric-dots">...</span>
                 </div>
               )}
               

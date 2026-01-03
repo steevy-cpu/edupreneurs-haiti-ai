@@ -293,7 +293,7 @@ const Dashboard = () => {
                 )}!
               </h2>
               <p className="text-[11px] xs:text-xs sm:text-sm lg:text-base opacity-75 leading-relaxed">
-                Continuez votre apprentissage personnalisé avec Eric, votre assistant IA
+                Continuez votre apprentissage personnalisé avec Jude, votre assistant IA
               </p>
             </div>
           </div>
@@ -318,7 +318,7 @@ const Dashboard = () => {
                     Découvre ta passion & Développement personnel
                   </h3>
                   <p className="text-sm text-muted-foreground mb-3">
-                    Explore la musique, les arts, les échecs, l'éducation civique et le développement personnel avec Eric en IA
+                    Explore la musique, les arts, les échecs, l'éducation civique et le développement personnel avec Jude en IA
                   </p>
                   <button className="px-4 py-2 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-md text-sm font-medium hover:opacity-90 transition-opacity">
                     Découvrir mes passions →

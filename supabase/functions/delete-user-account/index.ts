@@ -158,7 +158,7 @@ serve(async (req) => {
       throw new Error('User not authenticated');
     }
 
-    // Protected accounts that cannot be deleted (Eric AI assistant)
+    // Protected accounts that cannot be deleted (Jude AI assistant)
     const PROTECTED_USER_IDS = ['68f2f959-e14a-47f9-8277-07df3a6fcd79'];
     
     if (PROTECTED_USER_IDS.includes(user.id)) {

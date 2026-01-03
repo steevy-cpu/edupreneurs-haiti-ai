@@ -110,7 +110,7 @@ const getEmailTemplate = (fullName: string, verificationUrl?: string) => `
                                     <tr>
                                       <td>
                                         <div style="font-size: 32px; margin-bottom: 12px;">🤖</div>
-                                        <h4 style="margin: 0 0 8px 0; font-size: 15px; font-weight: 700; color: #1e40af;">Assistant IA Eric</h4>
+                                        <h4 style="margin: 0 0 8px 0; font-size: 15px; font-weight: 700; color: #1e40af;">Assistant IA Jude</h4>
                                         <p style="margin: 0; font-size: 13px; color: #1d4ed8; line-height: 1.5;">Tuteur virtuel disponible 24/7</p>
                                       </td>
                                     </tr>

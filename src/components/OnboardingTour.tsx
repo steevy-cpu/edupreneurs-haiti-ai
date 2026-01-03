@@ -22,7 +22,7 @@ interface OnboardingStep {
 const steps: OnboardingStep[] = [
   {
     title: "Bienvenue sur Edupreneurs! 👋",
-    description: "Salut! Moi c'est Eric, ton assistant d'apprentissage. Je vais te guider à travers cette plateforme pour que tu puisses tirer le meilleur parti de ton expérience.",
+    description: "Salut! Moi c'est Jude, ton assistant d'apprentissage. Je vais te guider à travers cette plateforme pour que tu puisses tirer le meilleur parti de ton expérience.",
     image: ericWelcome,
     target: "",
     action: "none",
