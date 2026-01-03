@@ -38,7 +38,7 @@ const plans: Plan[] = [
     features: [
       'Accès illimité aux leçons',
       'Quiz et exercices illimités',
-      'Assistant IA Eric',
+      'Assistant IA Jude',
       'Téléchargement hors ligne',
       'Support prioritaire'
     ]
