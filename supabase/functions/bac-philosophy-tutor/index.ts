@@ -1,27 +1,34 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 
 const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
 interface DissertationStep {
-  step: 'choosing_subject' | 'introduction' | 'development_1' | 'development_2' | 'development_3' | 'conclusion' | 'review';
+  step:
+    | "choosing_subject"
+    | "introduction"
+    | "development_1"
+    | "development_2"
+    | "development_3"
+    | "conclusion"
+    | "review";
   label: string;
 }
 
 const DISSERTATION_STEPS: DissertationStep[] = [
-  { step: 'choosing_subject', label: 'Choix du sujet' },
-  { step: 'introduction', label: 'Introduction' },
-  { step: 'development_1', label: 'Développement I' },
-  { step: 'development_2', label: 'Développement II' },
-  { step: 'development_3', label: 'Développement III' },
-  { step: 'conclusion', label: 'Conclusion' },
-  { step: 'review', label: 'Révision finale' },
+  { step: "choosing_subject", label: "Choix du sujet" },
+  { step: "introduction", label: "Introduction" },
+  { step: "development_1", label: "Développement I" },
+  { step: "development_2", label: "Développement II" },
+  { step: "development_3", label: "Développement III" },
+  { step: "conclusion", label: "Conclusion" },
+  { step: "review", label: "Révision finale" },
 ];
 
 serve(async (req) => {
-  if (req.method === 'OPTIONS') {
+  if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
 
@@ -35,15 +42,15 @@ serve(async (req) => {
       chosenSubjectIndex,
     } = await req.json();
 
-    console.log('Bac Philosophy tutor request:', { currentStep, userMessage: userMessage?.substring(0, 50) });
+    console.log("Bac Philosophy tutor request:", { currentStep, userMessage: userMessage?.substring(0, 50) });
 
-    const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
+    const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) {
-      throw new Error('LOVABLE_API_KEY not configured');
+      throw new Error("LOVABLE_API_KEY not configured");
     }
 
     // Build the subjects section
-    let subjectsSection = '';
+    let subjectsSection = "";
     if (subjects && Array.isArray(subjects) && subjects.length > 0) {
       subjectsSection = `\n\n**SUJETS DE DISSERTATION PROPOSÉS:**\n`;
       subjects.forEach((subject: string, idx: number) => {
@@ -52,8 +59,8 @@ serve(async (req) => {
     }
 
     // Get current step info
-    const currentStepInfo = DISSERTATION_STEPS.find(s => s.step === currentStep) || DISSERTATION_STEPS[0];
-    const stepIndex = DISSERTATION_STEPS.findIndex(s => s.step === currentStep);
+    const currentStepInfo = DISSERTATION_STEPS.find((s) => s.step === currentStep) || DISSERTATION_STEPS[0];
+    const stepIndex = DISSERTATION_STEPS.findIndex((s) => s.step === currentStep);
     const nextStep = stepIndex < DISSERTATION_STEPS.length - 1 ? DISSERTATION_STEPS[stepIndex + 1] : null;
 
     // Build specialized system prompt
@@ -97,7 +104,7 @@ ${subjectsSection}
 
 ## TON RÔLE ACTUEL
 Tu guides l'élève à l'étape: **${currentStepInfo.label}**
-${chosenSubjectIndex !== undefined ? `\nSujet choisi: "${subjects?.[chosenSubjectIndex] || 'Non défini'}"` : ''}
+${chosenSubjectIndex !== undefined ? `\nSujet choisi: "${subjects?.[chosenSubjectIndex] || "Non défini"}"` : ""}
 
 **INSTRUCTIONS:**
 1. **Ne te présente JAMAIS** - commence directement par ta réponse
@@ -107,60 +114,80 @@ ${chosenSubjectIndex !== undefined ? `\nSujet choisi: "${subjects?.[chosenSubjec
 5. **Estime un score** pour chaque partie soumise
 6. **Guide vers l'étape suivante** une fois la partie validée
 
-${currentStep === 'choosing_subject' ? `
+${
+  currentStep === "choosing_subject"
+    ? `
 **ACTION:** L'élève doit choisir un des 3 sujets. Explique brièvement chaque sujet et demande lequel il préfère.
-` : ''}
+`
+    : ""
+}
 
-${currentStep === 'introduction' ? `
+${
+  currentStep === "introduction"
+    ? `
 **ACTION:** Guide l'élève pour rédiger son introduction:
 1. Propose une accroche possible
 2. Aide à définir les termes clés
 3. Formule la problématique ensemble
 4. Structure l'annonce du plan
-` : ''}
+`
+    : ""
+}
 
-${currentStep && currentStep.startsWith('development_') ? `
+${
+  currentStep && currentStep.startsWith("development_")
+    ? `
 **ACTION:** Guide le développement:
 1. Vérifie que l'argument est clair
 2. Demande des exemples concrets
 3. Aide à formuler la transition
-` : ''}
+`
+    : ""
+}
 
-${currentStep === 'conclusion' ? `
+${
+  currentStep === "conclusion"
+    ? `
 **ACTION:** Guide la conclusion:
 1. Synthétise les points essentiels
 2. Formule une réponse claire
 3. Propose une ouverture pertinente
-` : ''}
+`
+    : ""
+}
 
-${currentStep === 'review' ? `
+${
+  currentStep === "review"
+    ? `
 **ACTION:** Révision finale:
 1. Relis l'ensemble du travail
 2. Donne une note estimée sur 20
 3. Liste 3 points forts et 3 axes d'amélioration
-` : ''}
+`
+    : ""
+}
 
-${studentText ? `\n**TEXTE SOUMIS PAR L'ÉLÈVE:**\n"${studentText}"\n` : ''}`;
+${studentText ? `\n**TEXTE SOUMIS PAR L'ÉLÈVE:**\n"${studentText}"\n` : ""}`;
 
     // Build messages array
     const messages = [
-      { role: 'system', content: systemPrompt },
+      { role: "system", content: systemPrompt },
       ...conversationHistory.map((msg: any) => ({
-        role: msg.message_role === 'user' ? 'user' : 'assistant',
-        content: msg.message_content
+        role: msg.message_role === "user" ? "user" : "assistant",
+        content: msg.message_content,
       })),
-      { role: 'user', content: userMessage }
+      { role: "user", content: userMessage },
     ];
 
     // Call Lovable AI
-    const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
-      method: 'POST',
+    const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+      method: "POST",
       headers: {
-        'Authorization': `Bearer ${LOVABLE_API_KEY}`,
-        'Content-Type': 'application/json',
+        Authorization: `Bearer ${LOVABLE_API_KEY}`,
+        "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        model: 'google/gemini-2.5-flash',
+        model: "google/gemini-2.5-flash",
         messages,
         max_tokens: 1200,
       }),
@@ -170,32 +197,33 @@ ${studentText ? `\n**TEXTE SOUMIS PAR L'ÉLÈVE:**\n"${studentText}"\n` : ''}`;
       if (response.status === 429) {
         return new Response(
           JSON.stringify({ error: "Limite de requêtes atteinte, veuillez réessayer dans quelques instants." }),
-          { status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } },
         );
       }
       if (response.status === 402) {
-        return new Response(
-          JSON.stringify({ error: "Crédits insuffisants. Veuillez recharger votre compte." }),
-          { status: 402, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-        );
+        return new Response(JSON.stringify({ error: "Crédits insuffisants. Veuillez recharger votre compte." }), {
+          status: 402,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
       }
       const errorText = await response.text();
-      console.error('Lovable AI error:', response.status, errorText);
+      console.error("Lovable AI error:", response.status, errorText);
       throw new Error(`AI API error: ${response.status}`);
     }
 
     const data = await response.json();
-    const judeResponse = data.choices[0].message.content;
+    const ericResponse = data.choices[0].message.content;
 
     // Determine if we should suggest moving to next step
-    const suggestNextStep = judeResponse.toLowerCase().includes('passons') || 
-                           judeResponse.toLowerCase().includes('continue') ||
-                           judeResponse.toLowerCase().includes('bravo') ||
-                           judeResponse.toLowerCase().includes('excellent');
+    const suggestNextStep =
+      ericResponse.toLowerCase().includes("passons") ||
+      ericResponse.toLowerCase().includes("continue") ||
+      ericResponse.toLowerCase().includes("bravo") ||
+      ericResponse.toLowerCase().includes("excellent");
 
     return new Response(
       JSON.stringify({
-        response: judeResponse,
+        response: ericResponse,
         currentStep,
         nextStep: nextStep?.step || null,
         nextStepLabel: nextStep?.label || null,
@@ -203,17 +231,14 @@ ${studentText ? `\n**TEXTE SOUMIS PAR L'ÉLÈVE:**\n"${studentText}"\n` : ''}`;
         dissertationSteps: DISSERTATION_STEPS,
       }),
       {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      }
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      },
     );
   } catch (error) {
-    console.error('Error in bac-philosophy-tutor function:', error);
-    return new Response(
-      JSON.stringify({ error: error instanceof Error ? error.message : 'Unknown error' }),
-      {
-        status: 500,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      }
-    );
+    console.error("Error in bac-philosophy-tutor function:", error);
+    return new Response(JSON.stringify({ error: error instanceof Error ? error.message : "Unknown error" }), {
+      status: 500,
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
   }
 });
