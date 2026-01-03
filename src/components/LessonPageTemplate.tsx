@@ -414,9 +414,11 @@ export const LessonPageTemplate = ({
       </div>
 
       {/* Content Tabs */}
-      <div className="container mx-auto px-2 sm:px-4 py-2 sm:py-4">
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-3 sm:grid-cols-3 md:grid-cols-5 h-auto p-1 gap-1">
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+        {/* Sticky Tabs Navigation */}
+        <div className="sticky top-0 z-40 bg-background/95 backdrop-blur-sm border-b shadow-sm">
+          <div className="container mx-auto px-2 sm:px-4 py-2">
+            <TabsList className="grid w-full grid-cols-3 sm:grid-cols-3 md:grid-cols-5 h-auto p-1 gap-1">
             <TabsTrigger value="introduction" className="relative flex-col sm:flex-row py-2 sm:py-3 text-xs sm:text-sm gap-1">
               <TabIndicator status={getTabStatus('introduction')} />
               <Target className="h-3 w-3 sm:h-4 sm:w-4" />
@@ -447,8 +449,12 @@ export const LessonPageTemplate = ({
               <span className="hidden sm:inline">Mes notes</span>
               <span className="sm:hidden text-[10px]">Notes</span>
             </TabsTrigger>
-          </TabsList>
+            </TabsList>
+          </div>
+        </div>
 
+        {/* Scrollable Content Container */}
+        <div className="container mx-auto px-2 sm:px-4 py-2 sm:py-4">
           <TabsContent value="introduction" className="space-y-4 sm:space-y-6 mt-4">
             <Card>
               <CardHeader className="p-3 sm:p-6">
@@ -604,9 +610,11 @@ export const LessonPageTemplate = ({
               </CardContent>
             </Card>
           </TabsContent>
-        </Tabs>
-        
-        {/* AI Practice Section for Language Subjects */}
+        </div>
+      </Tabs>
+      
+      {/* AI Practice Section for Language Subjects */}
+      <div className="container mx-auto px-2 sm:px-4">
         <div className="mt-6 sm:mt-8">
           <LessonAIPracticeSection
             subjectName={subjectName}
