@@ -88,6 +88,7 @@ export default function Matieres() {
   const navigate = useNavigate();
   const [selectedGrade, setSelectedGrade] = useState<GradeLevel>("7AF");
   const [selectedSeries, setSelectedSeries] = useState<Series | null>(null);
+  const [showContent, setShowContent] = useState(false);
 
   // New state for enhanced features
   const [searchQuery, setSearchQuery] = useState("");
@@ -289,6 +290,7 @@ export default function Matieres() {
                     }
                     setSelectedGrade(grade.id);
                     setSelectedSeries(null);
+                    setShowContent(false);
                   }}
                   className={`min-w-[70px] flex-shrink-0 transition-all duration-200 gap-1.5 ${
                     selectedGrade === grade.id 
@@ -353,8 +355,69 @@ export default function Matieres() {
           </div>
         )}
 
-        {((!isNS3OrNS4 && processedSubjects.length > 0) || (isNS3OrNS4 && selectedSeries)) && !isLoading ? (
-          <>
+        {/* Content in Development Overlay - shows when content is hidden */}
+        {!isLoading && !showContent && (!isNS3OrNS4 || selectedSeries) && (
+          <div className="animate-fade-in">
+            <Card className="p-8 sm:p-12 md:p-16 mb-8 border-2 border-dashed border-primary/40 bg-gradient-to-br from-primary/5 via-background to-primary/10 relative overflow-hidden">
+              {/* Decorative elements */}
+              <div className="absolute top-0 left-0 w-40 h-40 bg-primary/10 rounded-full -translate-x-1/2 -translate-y-1/2 blur-3xl" />
+              <div className="absolute bottom-0 right-0 w-60 h-60 bg-primary/10 rounded-full translate-x-1/3 translate-y-1/3 blur-3xl" />
+              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-80 h-80 bg-primary/5 rounded-full blur-3xl animate-pulse" />
+              
+              <div className="relative z-10 flex flex-col items-center text-center max-w-2xl mx-auto">
+                {/* Icon */}
+                <div className="relative mb-6">
+                  <div className="absolute inset-0 bg-primary/20 rounded-full blur-xl animate-pulse" />
+                  <div className="relative w-24 h-24 sm:w-32 sm:h-32 rounded-full bg-gradient-to-br from-primary/20 to-primary/30 flex items-center justify-center border-2 border-primary/30">
+                    <Sparkles className="w-12 h-12 sm:w-16 sm:h-16 text-primary" />
+                  </div>
+                </div>
+                
+                {/* Title */}
+                <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-4 bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
+                  Contenu en cours de développement
+                </h2>
+                
+                {/* Description */}
+                <p className="text-base sm:text-lg text-muted-foreground mb-6 leading-relaxed">
+                  Notre équipe travaille activement sur le contenu pour <span className="font-semibold text-foreground">{currentGrade?.fullName}</span>. 
+                  De nouvelles matières et leçons sont régulièrement ajoutées pour enrichir votre expérience d'apprentissage.
+                </p>
+                
+                {/* Stats preview */}
+                <div className="flex flex-wrap items-center justify-center gap-3 mb-8">
+                  <Badge variant="secondary" className="text-sm px-4 py-2">
+                    <BookOpen className="w-4 h-4 mr-2" />
+                    {processedSubjects.length} matières disponibles
+                  </Badge>
+                  <Badge variant="secondary" className="text-sm px-4 py-2">
+                    <GraduationCap className="w-4 h-4 mr-2" />
+                    {totalLessons} leçons
+                  </Badge>
+                </div>
+                
+                {/* CTA Button */}
+                <Button 
+                  size="lg"
+                  onClick={() => setShowContent(true)}
+                  className="gap-3 text-lg px-8 py-6 bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105"
+                >
+                  <GraduationCap className="w-5 h-5" />
+                  Explorer {selectedGrade}
+                  {isNS3OrNS4 && selectedSeries && ` - ${selectedSeries}`}
+                </Button>
+                
+                <p className="text-xs text-muted-foreground mt-4">
+                  Cliquez pour découvrir le contenu disponible
+                </p>
+              </div>
+            </Card>
+          </div>
+        )}
+
+        {/* Main Content - only visible after clicking Explorer */}
+        {((!isNS3OrNS4 && processedSubjects.length > 0) || (isNS3OrNS4 && selectedSeries)) && !isLoading && showContent ? (
+          <div className="animate-fade-in">
             {/* User Stats Widget */}
             <UserStatsWidget gradeLevel={selectedGrade} stats={userStats} isLoading={isLoading} isAuthenticated={isAuthenticated} />
 
@@ -432,31 +495,6 @@ export default function Matieres() {
               </Card>
             )}
 
-            {/* Content in Preparation Info - shows for all grades */}
-            <Card className="p-6 sm:p-8 mb-6 border-dashed border-primary/30 bg-primary/5">
-              <div className="flex flex-col sm:flex-row items-center gap-4">
-                <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
-                  <Sparkles className="w-6 h-6 text-primary" />
-                </div>
-                <div className="flex-1 text-center sm:text-left">
-                  <h3 className="text-lg font-semibold mb-1">
-                    Contenu en cours de développement
-                  </h3>
-                  <p className="text-muted-foreground text-sm">
-                    De nouvelles matières et leçons pour {selectedGrade} sont régulièrement ajoutées. 
-                    Explorez le contenu disponible ci-dessous!
-                  </p>
-                </div>
-                <Button 
-                  onClick={() => {
-                    document.getElementById('subjects-grid')?.scrollIntoView({ behavior: 'smooth' });
-                  }}
-                >
-                  Explorer {selectedGrade}
-                </Button>
-              </div>
-            </Card>
-
             {/* Search and Filter */}
             <MatieresSearchFilter
               searchQuery={searchQuery}
@@ -489,7 +527,7 @@ export default function Matieres() {
                 />
               ))}
             </div>
-          </>
+          </div>
         ) : null}
 
         {/* No subjects message */}
