@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -8,9 +8,10 @@ import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Checkbox } from "@/components/ui/checkbox";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Progress } from "@/components/ui/progress";
+import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Upload, Users, X } from "lucide-react";
+import { Upload, Users, X, Search, Check, Sparkles } from "lucide-react";
 import { getAvatarUrl } from "@/lib/avatarMap";
 import { JUDE_USER_ID } from "@/types/community";
 
@@ -36,6 +37,22 @@ export function CreateGroupDialog({ open, onOpenChange, followers, onGroupCreate
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
   const [isCreating, setIsCreating] = useState(false);
   const [progress, setProgress] = useState(0);
+  const [searchQuery, setSearchQuery] = useState("");
+
+  // Filter followers based on search query
+  const filteredFollowers = useMemo(() => {
+    if (!searchQuery.trim()) return followers;
+    const query = searchQuery.toLowerCase();
+    return followers.filter(
+      f => f.full_name.toLowerCase().includes(query) || 
+           f.nickname.toLowerCase().includes(query)
+    );
+  }, [followers, searchQuery]);
+
+  // Get selected member profiles
+  const selectedMemberProfiles = useMemo(() => {
+    return followers.filter(f => selectedMembers.has(f.user_id));
+  }, [followers, selectedMembers]);
 
   const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -56,6 +73,12 @@ export function CreateGroupDialog({ open, onOpenChange, followers, onGroupCreate
     } else {
       newSelected.add(userId);
     }
+    setSelectedMembers(newSelected);
+  };
+
+  const removeMember = (userId: string) => {
+    const newSelected = new Set(selectedMembers);
+    newSelected.delete(userId);
     setSelectedMembers(newSelected);
   };
 
@@ -223,6 +246,7 @@ export function CreateGroupDialog({ open, onOpenChange, followers, onGroupCreate
       setAvatarFile(null);
       setAvatarPreview(null);
       setProgress(0);
+      setSearchQuery("");
     } catch (error: any) {
       console.error("Error creating group:", error);
       toast.error(`Erreur: ${error.message || "Impossible de créer le groupe"}`);
@@ -232,123 +256,216 @@ export function CreateGroupDialog({ open, onOpenChange, followers, onGroupCreate
     }
   };
 
-  return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto">
-        <DialogHeader className="space-y-3">
-          <DialogTitle className="flex items-center gap-2 text-lg sm:text-xl">
-            <Users className="h-5 w-5 shrink-0" />
-            <span className="truncate">Créer un groupe</span>
-          </DialogTitle>
-          <DialogDescription className="text-sm">
-            Créez un groupe pour discuter avec plusieurs personnes
-          </DialogDescription>
-        </DialogHeader>
+  const handleClose = () => {
+    onOpenChange(false);
+    // Reset form when closing
+    setGroupName("");
+    setDescription("");
+    setSelectedMembers(new Set());
+    setAvatarFile(null);
+    setAvatarPreview(null);
+    setProgress(0);
+    setSearchQuery("");
+  };
 
-        <div className="space-y-4">
-          {/* Avatar Upload */}
-          <div className="flex flex-col items-center gap-3 py-2">
-            <Label htmlFor="avatar" className="cursor-pointer">
-              <div className="relative">
-                <div className="h-32 w-32 rounded-full bg-muted/30 border-2 border-dashed border-muted-foreground/30 flex items-center justify-center hover:border-primary/50 transition-colors">
-                  {avatarPreview ? (
-                    <Avatar className="h-full w-full">
-                      <AvatarImage src={avatarPreview} className="object-cover" />
-                    </Avatar>
-                  ) : (
-                    <div className="flex flex-col items-center gap-2">
-                      <Upload className="h-8 w-8 text-muted-foreground" />
-                    </div>
+  return (
+    <Dialog open={open} onOpenChange={handleClose}>
+      <DialogContent className="max-w-md sm:max-w-lg max-h-[85vh] sm:max-h-[90vh] overflow-hidden flex flex-col p-0 gap-0">
+        {/* Gradient Header */}
+        <div className="bg-gradient-to-r from-primary/20 via-primary/10 to-success/20 p-4 sm:p-6 shrink-0">
+          <DialogHeader className="space-y-2">
+            <DialogTitle className="flex items-center gap-3 text-lg sm:text-xl">
+              <div className="p-2.5 bg-primary/20 rounded-full animate-pulse">
+                <Users className="h-5 w-5 text-primary" />
+              </div>
+              <span>Créer un groupe</span>
+              <Sparkles className="h-4 w-4 text-primary/60 ml-auto" />
+            </DialogTitle>
+            <DialogDescription className="text-sm">
+              Rassemblez vos amis et commencez à discuter ensemble
+            </DialogDescription>
+          </DialogHeader>
+        </div>
+
+        {/* Scrollable Content */}
+        <ScrollArea className="flex-1 overflow-y-auto">
+          <div className="p-4 sm:p-6 space-y-5">
+            {/* Avatar Upload - Enhanced */}
+            <div className="flex flex-col items-center gap-3">
+              <Label htmlFor="avatar" className="cursor-pointer group">
+                <div className="relative">
+                  <div className={`h-24 w-24 sm:h-28 sm:w-28 rounded-full border-2 border-dashed flex items-center justify-center transition-all duration-300 ${
+                    avatarPreview 
+                      ? 'border-primary bg-primary/5' 
+                      : 'border-muted-foreground/30 bg-muted/30 hover:border-primary/50 hover:bg-primary/5 group-hover:scale-105'
+                  }`}>
+                    {avatarPreview ? (
+                      <Avatar className="h-full w-full">
+                        <AvatarImage src={avatarPreview} className="object-cover" />
+                      </Avatar>
+                    ) : (
+                      <div className="flex flex-col items-center gap-1.5 text-muted-foreground">
+                        <Upload className="h-6 w-6 sm:h-7 sm:w-7" />
+                        <span className="text-[10px] sm:text-xs">Photo</span>
+                      </div>
+                    )}
+                  </div>
+                  {avatarPreview && (
+                    <button
+                      onClick={(e) => {
+                        e.preventDefault();
+                        setAvatarFile(null);
+                        setAvatarPreview(null);
+                      }}
+                      className="absolute -top-1 -right-1 bg-destructive text-destructive-foreground rounded-full p-1.5 shadow-lg hover:bg-destructive/90 transition-colors"
+                    >
+                      <X className="h-3 w-3" />
+                    </button>
                   )}
                 </div>
-                {avatarPreview && (
-                  <button
-                    onClick={(e) => {
-                      e.preventDefault();
-                      setAvatarFile(null);
-                      setAvatarPreview(null);
-                    }}
-                    className="absolute top-0 right-0 bg-destructive text-destructive-foreground rounded-full p-1.5 shadow-md hover:bg-destructive/90 transition-colors"
-                  >
-                    <X className="h-4 w-4" />
-                  </button>
-                )}
-              </div>
-            </Label>
-            <input
-              id="avatar"
-              type="file"
-              accept="image/*"
-              onChange={handleAvatarChange}
-              className="hidden"
-            />
-            <p className="text-sm text-muted-foreground text-center">Ajouter une photo de groupe</p>
-          </div>
+              </Label>
+              <input
+                id="avatar"
+                type="file"
+                accept="image/*"
+                onChange={handleAvatarChange}
+                className="hidden"
+              />
+            </div>
 
-          {/* Group Name */}
-          <div className="space-y-2">
-            <Label htmlFor="name">Nom du groupe *</Label>
-            <Input
-              id="name"
-              placeholder="Ex: Classe de Maths"
-              value={groupName}
-              onChange={(e) => setGroupName(e.target.value)}
-            />
-          </div>
+            {/* Group Name */}
+            <div className="space-y-2">
+              <Label htmlFor="name" className="text-sm font-medium">Nom du groupe *</Label>
+              <Input
+                id="name"
+                placeholder="Ex: Classe de Maths"
+                value={groupName}
+                onChange={(e) => setGroupName(e.target.value)}
+                className="h-11 sm:h-10"
+              />
+            </div>
 
-          {/* Description */}
-          <div className="space-y-2">
-            <Label htmlFor="description">Description (optionnel)</Label>
-            <Textarea
-              id="description"
-              placeholder="Décrivez le groupe..."
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              rows={2}
-            />
-          </div>
+            {/* Description */}
+            <div className="space-y-2">
+              <Label htmlFor="description" className="text-sm font-medium">Description (optionnel)</Label>
+              <Textarea
+                id="description"
+                placeholder="Décrivez le groupe..."
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                rows={2}
+                className="resize-none"
+              />
+            </div>
 
-          {/* Member Selection */}
-          <div className="space-y-2">
-            <Label>Ajouter des membres ({selectedMembers.size} sélectionné{selectedMembers.size !== 1 ? 's' : ''})</Label>
-            <ScrollArea className="h-48 border rounded-md">
-              <div className="p-2 space-y-2">
-                {followers.length === 0 ? (
-                  <p className="text-sm text-muted-foreground text-center py-4">
-                    Aucun abonné disponible
-                  </p>
-                ) : (
-                  followers.map((follower) => (
-                    <div
-                      key={follower.user_id}
-                      className="flex items-center gap-3 p-2 rounded-lg hover:bg-accent cursor-pointer"
-                      onClick={() => toggleMember(follower.user_id)}
+            {/* Selected Members Chips */}
+            {selectedMemberProfiles.length > 0 && (
+              <div className="space-y-2">
+                <Label className="text-sm font-medium">Membres sélectionnés</Label>
+                <div className="flex flex-wrap gap-2">
+                  {selectedMemberProfiles.map((member) => (
+                    <Badge
+                      key={member.user_id}
+                      variant="secondary"
+                      className="pl-1 pr-1.5 py-1 gap-1.5 bg-primary/10 hover:bg-primary/20 transition-colors cursor-pointer group"
+                      onClick={() => removeMember(member.user_id)}
                     >
-                      <Checkbox
-                        checked={selectedMembers.has(follower.user_id)}
-                        onCheckedChange={() => toggleMember(follower.user_id)}
-                      />
-                      <Avatar className="h-8 w-8">
-                        <AvatarImage src={getAvatarUrl(follower.avatar_url)} />
-                        <AvatarFallback>
-                          {follower.full_name.charAt(0)}
+                      <Avatar className="h-5 w-5">
+                        <AvatarImage src={getAvatarUrl(member.avatar_url)} />
+                        <AvatarFallback className="text-[10px]">
+                          {member.full_name.charAt(0)}
                         </AvatarFallback>
                       </Avatar>
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium truncate">
-                          {follower.full_name}
-                        </p>
-                        <p className="text-xs text-muted-foreground truncate">
-                          @{follower.nickname}
-                        </p>
-                      </div>
-                    </div>
-                  ))
-                )}
+                      <span className="text-xs max-w-[80px] truncate">{member.nickname || member.full_name}</span>
+                      <X className="h-3 w-3 opacity-60 group-hover:opacity-100 transition-opacity" />
+                    </Badge>
+                  ))}
+                </div>
               </div>
-            </ScrollArea>
-          </div>
+            )}
 
+            {/* Member Selection with Search */}
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <Label className="text-sm font-medium">
+                  Ajouter des membres
+                </Label>
+                <span className="text-xs text-muted-foreground">
+                  {selectedMembers.size} sélectionné{selectedMembers.size !== 1 ? 's' : ''}
+                </span>
+              </div>
+              
+              {/* Search Input */}
+              {followers.length > 5 && (
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    placeholder="Rechercher..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="pl-9 h-10"
+                  />
+                </div>
+              )}
+
+              {/* Members List */}
+              <div className="border rounded-lg overflow-hidden">
+                <ScrollArea className="h-44 sm:h-48">
+                  <div className="p-1.5 space-y-1">
+                    {filteredFollowers.length === 0 ? (
+                      <p className="text-sm text-muted-foreground text-center py-8">
+                        {followers.length === 0 
+                          ? "Aucun abonné disponible" 
+                          : "Aucun résultat trouvé"
+                        }
+                      </p>
+                    ) : (
+                      filteredFollowers.map((follower) => {
+                        const isSelected = selectedMembers.has(follower.user_id);
+                        return (
+                          <div
+                            key={follower.user_id}
+                            className={`flex items-center gap-3 p-2.5 rounded-lg cursor-pointer transition-all duration-200 ${
+                              isSelected 
+                                ? 'bg-primary/10 ring-1 ring-primary/30' 
+                                : 'hover:bg-accent'
+                            }`}
+                            onClick={() => toggleMember(follower.user_id)}
+                          >
+                            <div className={`flex items-center justify-center h-5 w-5 rounded-md border-2 transition-all ${
+                              isSelected 
+                                ? 'bg-primary border-primary' 
+                                : 'border-muted-foreground/30'
+                            }`}>
+                              {isSelected && <Check className="h-3 w-3 text-primary-foreground" />}
+                            </div>
+                            <Avatar className="h-9 w-9 sm:h-10 sm:w-10">
+                              <AvatarImage src={getAvatarUrl(follower.avatar_url)} />
+                              <AvatarFallback className="text-sm">
+                                {follower.full_name.charAt(0)}
+                              </AvatarFallback>
+                            </Avatar>
+                            <div className="flex-1 min-w-0">
+                              <p className="text-sm font-medium truncate">
+                                {follower.full_name}
+                              </p>
+                              <p className="text-xs text-muted-foreground truncate">
+                                @{follower.nickname}
+                              </p>
+                            </div>
+                          </div>
+                        );
+                      })
+                    )}
+                  </div>
+                </ScrollArea>
+              </div>
+            </div>
+          </div>
+        </ScrollArea>
+
+        {/* Fixed Footer with Progress and Actions */}
+        <div className="border-t p-4 sm:p-6 bg-background/95 backdrop-blur-sm shrink-0 space-y-4">
           {/* Progress Bar */}
           {isCreating && (
             <div className="space-y-2">
@@ -360,21 +477,31 @@ export function CreateGroupDialog({ open, onOpenChange, followers, onGroupCreate
           )}
 
           {/* Actions */}
-          <div className="flex gap-2 pt-2">
+          <div className="flex gap-3">
             <Button
               variant="outline"
-              onClick={() => onOpenChange(false)}
-              className="flex-1"
+              onClick={handleClose}
+              className="flex-1 h-11 sm:h-10"
               disabled={isCreating}
             >
               Annuler
             </Button>
             <Button
               onClick={handleCreateGroup}
-              className="flex-1"
+              className="flex-1 h-11 sm:h-10 bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 transition-all"
               disabled={isCreating || !groupName.trim() || selectedMembers.size === 0}
             >
-              {isCreating ? "Création..." : "Créer"}
+              {isCreating ? (
+                <span className="flex items-center gap-2">
+                  <span className="h-4 w-4 border-2 border-primary-foreground/30 border-t-primary-foreground rounded-full animate-spin" />
+                  Création...
+                </span>
+              ) : (
+                <span className="flex items-center gap-2">
+                  <Users className="h-4 w-4" />
+                  Créer le groupe
+                </span>
+              )}
             </Button>
           </div>
         </div>
