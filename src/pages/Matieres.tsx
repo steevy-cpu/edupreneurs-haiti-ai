@@ -318,8 +318,8 @@ export default function Matieres() {
           )}
         </div>
 
-        {/* Series Selection for NS3/NS4 */}
-        {isNS3OrNS4 && !selectedSeries && (
+        {/* Series Selection for NS3/NS4 - only shows after clicking Explorer */}
+        {isNS3OrNS4 && !selectedSeries && showContent && (
           <SeriesComparisonCards onSelectSeries={(series) => setSelectedSeries(series)} />
         )}
 
@@ -357,7 +357,7 @@ export default function Matieres() {
         )}
 
         {/* Content in Development Overlay - shows when content is hidden */}
-        {!isLoading && !showContent && (!isNS3OrNS4 || selectedSeries) && (
+        {!isLoading && !showContent && selectedGrade && (
           <div className="animate-fade-in">
             <Card className="p-8 sm:p-12 md:p-16 mb-8 border-2 border-dashed border-primary/40 bg-gradient-to-br from-primary/5 via-background to-primary/10 relative overflow-hidden">
               {/* Decorative elements */}
