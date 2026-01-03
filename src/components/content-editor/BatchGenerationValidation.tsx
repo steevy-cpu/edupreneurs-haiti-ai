@@ -1,6 +1,54 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+
+// Helper function to upload base64 image to storage and return public URL
+async function uploadBase64ImageToStorage(
+  base64Data: string, 
+  lessonId: string, 
+  concept: string,
+  index: number
+): Promise<string | null> {
+  try {
+    // Convert base64 to Blob
+    const byteCharacters = atob(base64Data);
+    const byteNumbers = new Array(byteCharacters.length);
+    for (let i = 0; i < byteCharacters.length; i++) {
+      byteNumbers[i] = byteCharacters.charCodeAt(i);
+    }
+    const byteArray = new Uint8Array(byteNumbers);
+    const blob = new Blob([byteArray], { type: 'image/png' });
+
+    // Generate unique filename
+    const timestamp = Date.now();
+    const safeConceptName = (concept || 'image').replace(/[^a-z0-9]/gi, '-').toLowerCase().substring(0, 50);
+    const fileName = `${lessonId}/${safeConceptName}-${index}-${timestamp}.png`;
+
+    // Upload to storage bucket
+    const { data, error } = await supabase.storage
+      .from('lesson-images')
+      .upload(fileName, blob, {
+        contentType: 'image/png',
+        upsert: true
+      });
+
+    if (error) {
+      console.error('[Storage] Failed to upload image:', error);
+      return null;
+    }
+
+    // Get public URL
+    const { data: publicUrlData } = supabase.storage
+      .from('lesson-images')
+      .getPublicUrl(fileName);
+
+    console.log('[Storage] Image uploaded successfully:', publicUrlData.publicUrl);
+    return publicUrlData.publicUrl;
+  } catch (e) {
+    console.error('[Storage] Upload exception:', e);
+    return null;
+  }
+}
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -600,15 +648,18 @@ export const BatchGenerationValidation = () => {
               exemples: exemplesImages.length
             });
 
-            // Build updates for each section
+            // Build updates for each section - upload to storage first
             const lessonUpdates: Record<string, string> = {};
             
             if (contenuImages.length > 0) {
               let updatedContenu = lesson.contenu || '';
-              for (const img of contenuImages) {
+              for (let i = 0; i < contenuImages.length; i++) {
+                const img = contenuImages[i];
                 if (img.base64Data) {
-                  const imageUrl = `data:image/png;base64,${img.base64Data}`;
-                  updatedContenu += `\n\n<figure class="my-4"><img src="${imageUrl}" alt="${img.concept || 'Image explicative'}" class="rounded-lg max-w-full" /><figcaption class="text-sm text-muted-foreground mt-2">${img.concept || ''}</figcaption></figure>`;
+                  const imageUrl = await uploadBase64ImageToStorage(img.base64Data, lesson.id, img.concept || 'image', i);
+                  if (imageUrl) {
+                    updatedContenu += `\n\n<figure class="my-4"><img src="${imageUrl}" alt="${img.concept || 'Image explicative'}" class="rounded-lg max-w-full" /><figcaption class="text-sm text-muted-foreground mt-2">${img.concept || ''}</figcaption></figure>`;
+                  }
                 }
               }
               lessonUpdates.contenu = updatedContenu;
@@ -623,10 +674,13 @@ export const BatchGenerationValidation = () => {
                 .single();
               
               let updatedExemples = currentLesson?.exemples_exercices || '';
-              for (const img of exemplesImages) {
+              for (let i = 0; i < exemplesImages.length; i++) {
+                const img = exemplesImages[i];
                 if (img.base64Data) {
-                  const imageUrl = `data:image/png;base64,${img.base64Data}`;
-                  updatedExemples += `\n\n<figure class="my-4"><img src="${imageUrl}" alt="${img.concept || 'Image explicative'}" class="rounded-lg max-w-full" /><figcaption class="text-sm text-muted-foreground mt-2">${img.concept || ''}</figcaption></figure>`;
+                  const imageUrl = await uploadBase64ImageToStorage(img.base64Data, lesson.id, img.concept || 'exemple', i);
+                  if (imageUrl) {
+                    updatedExemples += `\n\n<figure class="my-4"><img src="${imageUrl}" alt="${img.concept || 'Image explicative'}" class="rounded-lg max-w-full" /><figcaption class="text-sm text-muted-foreground mt-2">${img.concept || ''}</figcaption></figure>`;
+                  }
                 }
               }
               lessonUpdates.exemples_exercices = updatedExemples;
@@ -1385,6 +1439,8 @@ export const BatchGenerationValidation = () => {
                       exemples: exemplesImages.length
                     });
                     
+                    toast.info("Téléchargement des images en cours...");
+                    
                     // Fetch current lesson data for both sections
                     const { data: currentLesson } = await supabase
                       .from('lessons')
@@ -1392,25 +1448,31 @@ export const BatchGenerationValidation = () => {
                       .eq('id', previewLesson.lessonId)
                       .single();
                     
-                    // Append images to contenu section
+                    // Upload and append images to contenu section
                     if (contenuImages.length > 0) {
                       let updatedContenu = updates.contenu || currentLesson?.contenu || '';
-                      for (const img of contenuImages) {
+                      for (let i = 0; i < contenuImages.length; i++) {
+                        const img = contenuImages[i];
                         if (img.base64Data) {
-                          const imageUrl = `data:image/png;base64,${img.base64Data}`;
-                          updatedContenu += `\n\n<figure class="my-4"><img src="${imageUrl}" alt="${img.concept || 'Image explicative'}" class="rounded-lg max-w-full" /><figcaption class="text-sm text-muted-foreground mt-2">${img.concept || ''}</figcaption></figure>`;
+                          const imageUrl = await uploadBase64ImageToStorage(img.base64Data, previewLesson.lessonId, img.concept || 'image', i);
+                          if (imageUrl) {
+                            updatedContenu += `\n\n<figure class="my-4"><img src="${imageUrl}" alt="${img.concept || 'Image explicative'}" class="rounded-lg max-w-full" /><figcaption class="text-sm text-muted-foreground mt-2">${img.concept || ''}</figcaption></figure>`;
+                          }
                         }
                       }
                       updates.contenu = updatedContenu;
                     }
                     
-                    // Append images to exemples section
+                    // Upload and append images to exemples section
                     if (exemplesImages.length > 0) {
                       let updatedExemples = updates.exemples_exercices || currentLesson?.exemples_exercices || '';
-                      for (const img of exemplesImages) {
+                      for (let i = 0; i < exemplesImages.length; i++) {
+                        const img = exemplesImages[i];
                         if (img.base64Data) {
-                          const imageUrl = `data:image/png;base64,${img.base64Data}`;
-                          updatedExemples += `\n\n<figure class="my-4"><img src="${imageUrl}" alt="${img.concept || 'Image explicative'}" class="rounded-lg max-w-full" /><figcaption class="text-sm text-muted-foreground mt-2">${img.concept || ''}</figcaption></figure>`;
+                          const imageUrl = await uploadBase64ImageToStorage(img.base64Data, previewLesson.lessonId, img.concept || 'exemple', i);
+                          if (imageUrl) {
+                            updatedExemples += `\n\n<figure class="my-4"><img src="${imageUrl}" alt="${img.concept || 'Image explicative'}" class="rounded-lg max-w-full" /><figcaption class="text-sm text-muted-foreground mt-2">${img.concept || ''}</figcaption></figure>`;
+                          }
                         }
                       }
                       updates.exemples_exercices = updatedExemples;
@@ -1516,6 +1578,8 @@ export const BatchGenerationValidation = () => {
                       exemples: exemplesImages.length
                     });
                     
+                    toast.info("Téléchargement des images en cours...");
+                    
                     // Fetch current lesson data for both sections
                     const { data: currentLesson } = await supabase
                       .from('lessons')
@@ -1523,25 +1587,31 @@ export const BatchGenerationValidation = () => {
                       .eq('id', previewLesson.lessonId)
                       .single();
                     
-                    // Append images to contenu section
+                    // Upload and append images to contenu section
                     if (contenuImages.length > 0) {
                       let updatedContenu = updates.contenu || currentLesson?.contenu || '';
-                      for (const img of contenuImages) {
+                      for (let i = 0; i < contenuImages.length; i++) {
+                        const img = contenuImages[i];
                         if (img.base64Data) {
-                          const imageUrl = `data:image/png;base64,${img.base64Data}`;
-                          updatedContenu += `\n\n<figure class="my-4"><img src="${imageUrl}" alt="${img.concept || 'Image explicative'}" class="rounded-lg max-w-full" /><figcaption class="text-sm text-muted-foreground mt-2">${img.concept || ''}</figcaption></figure>`;
+                          const imageUrl = await uploadBase64ImageToStorage(img.base64Data, previewLesson.lessonId, img.concept || 'image', i);
+                          if (imageUrl) {
+                            updatedContenu += `\n\n<figure class="my-4"><img src="${imageUrl}" alt="${img.concept || 'Image explicative'}" class="rounded-lg max-w-full" /><figcaption class="text-sm text-muted-foreground mt-2">${img.concept || ''}</figcaption></figure>`;
+                          }
                         }
                       }
                       updates.contenu = updatedContenu;
                     }
                     
-                    // Append images to exemples section
+                    // Upload and append images to exemples section
                     if (exemplesImages.length > 0) {
                       let updatedExemples = updates.exemples_exercices || currentLesson?.exemples_exercices || '';
-                      for (const img of exemplesImages) {
+                      for (let i = 0; i < exemplesImages.length; i++) {
+                        const img = exemplesImages[i];
                         if (img.base64Data) {
-                          const imageUrl = `data:image/png;base64,${img.base64Data}`;
-                          updatedExemples += `\n\n<figure class="my-4"><img src="${imageUrl}" alt="${img.concept || 'Image explicative'}" class="rounded-lg max-w-full" /><figcaption class="text-sm text-muted-foreground mt-2">${img.concept || ''}</figcaption></figure>`;
+                          const imageUrl = await uploadBase64ImageToStorage(img.base64Data, previewLesson.lessonId, img.concept || 'exemple', i);
+                          if (imageUrl) {
+                            updatedExemples += `\n\n<figure class="my-4"><img src="${imageUrl}" alt="${img.concept || 'Image explicative'}" class="rounded-lg max-w-full" /><figcaption class="text-sm text-muted-foreground mt-2">${img.concept || ''}</figcaption></figure>`;
+                          }
                         }
                       }
                       updates.exemples_exercices = updatedExemples;
