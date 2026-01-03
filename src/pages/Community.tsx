@@ -1908,13 +1908,14 @@ const Community = () => {
             <h1 className="text-lg sm:text-xl font-bold flex-1">Messages</h1>
             <div className="flex items-center gap-1">
               <Button
-                size="icon"
-                variant="ghost"
+                variant="outline"
+                size="sm"
                 onClick={() => setShowCreateGroup(true)}
-                className="shrink-0 h-9 w-9"
+                className="gap-1.5 bg-gradient-to-r from-primary/10 to-success/10 border-primary/30 hover:border-primary/50 hover:scale-105 transition-all duration-200 h-9 px-2.5 sm:px-3"
                 title="Créer un groupe"
               >
-                <Users size={18} className="sm:w-5 sm:h-5" />
+                <Users size={16} className="shrink-0" />
+                <span className="hidden sm:inline text-xs font-medium">Nouveau</span>
               </Button>
               <ThemeToggle />
               <Button
@@ -2253,36 +2254,55 @@ const Community = () => {
               </DropdownMenu>
             </div>
 
-            {/* Scrollable Messages Area (includes Eric banner + messages) - with top padding for fixed header and bottom for composer + nav */}
-            <div 
-              className="flex-1 overflow-y-auto overflow-x-hidden pt-[72px] md:pb-[96px]"
-              style={{
-                paddingBottom: `calc(8rem + env(safe-area-inset-bottom, 0px) + ${keyboardHeight}px)`
-              }}
-            >
-              {/* Eric Help Banner for Group Chats */}
-              {(() => {
-                const currentConv = conversations.find(c => c.id === selectedConversation);
-                const isGroup = currentConv?.is_group;
-                
-                if (!isGroup) return null;
-                
-                return (
-                    <div className="mx-2 sm:mx-4 mt-2 mb-2 px-3 py-2 bg-gradient-to-r from-primary/10 to-success/10 border border-primary/20 rounded-lg backdrop-blur-sm shadow-sm">
-                      <div className="flex items-start gap-2 sm:gap-3">
-                        <img src={ericAiHelper} alt="Jude AI Assistant" className="w-8 h-8 sm:w-10 sm:h-10 rounded-full object-cover shrink-0" loading="lazy" decoding="async" />
-                        <div className="flex-1 min-w-0">
-                          <p className="text-xs sm:text-sm text-foreground font-semibold">
-                            Jude, votre assistant IA est dans ce groupe !
-                          </p>
-                          <p className="text-[10px] sm:text-xs text-muted-foreground mt-0.5">
-                            Pour lui parler, commencez votre message par <span className="font-bold text-primary">"Hey Jude"</span>
-                          </p>
+            {/* Fixed Jude Banner for Group Chats - positioned below header */}
+            {(() => {
+              const currentConv = conversations.find(c => c.id === selectedConversation);
+              const isGroup = currentConv?.is_group;
+              
+              if (!isGroup) return null;
+              
+              return (
+                <div 
+                  className="fixed left-0 right-0 md:left-80 lg:left-96 z-[15] px-2 sm:px-4 pt-2"
+                  style={{ top: '72px' }}
+                >
+                  <div className="px-3 py-2.5 bg-gradient-to-r from-primary/10 via-primary/5 to-success/10 border border-primary/20 rounded-xl backdrop-blur-md shadow-lg">
+                    <div className="flex items-center gap-2.5 sm:gap-3">
+                      <div className="relative">
+                        <img 
+                          src={ericAiHelper} 
+                          alt="Jude AI Assistant" 
+                          className="w-9 h-9 sm:w-10 sm:h-10 rounded-full object-cover shrink-0 ring-2 ring-primary/20" 
+                          loading="lazy" 
+                          decoding="async" 
+                        />
+                        <div className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-green-500 rounded-full border-2 border-background" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-xs sm:text-sm text-foreground font-semibold">
+                          Jude, votre assistant IA est dans ce groupe !
+                        </p>
+                        <p className="text-[10px] sm:text-xs text-muted-foreground mt-0.5">
+                          Tapez <span className="font-bold text-primary bg-primary/10 px-1.5 py-0.5 rounded">"Hey Jude"</span> pour lui parler
+                        </p>
                       </div>
                     </div>
                   </div>
-                );
-              })()}
+                </div>
+              );
+            })()}
+
+            {/* Scrollable Messages Area - with top padding for fixed header + banner and bottom for composer + nav */}
+            <div 
+              className="flex-1 overflow-y-auto overflow-x-hidden md:pb-[96px]"
+              style={{
+                paddingTop: (() => {
+                  const currentConv = conversations.find(c => c.id === selectedConversation);
+                  return currentConv?.is_group ? '132px' : '72px';
+                })(),
+                paddingBottom: `calc(8rem + env(safe-area-inset-bottom, 0px) + ${keyboardHeight}px)`
+              }}
+            >
 
               {/* Messages */}
               <div className="p-4">
