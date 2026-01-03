@@ -172,6 +172,13 @@ const Settings = () => {
   const handleAvatarSelect = async (avatarUrl: string) => {
     setSelectedAvatar(avatarUrl);
     
+    // If it's a full URL (AI-generated avatar), it's already saved by the generator
+    // Only update for preset avatar IDs
+    if (avatarUrl.startsWith('http') || avatarUrl.startsWith('data:')) {
+      // Full URL - just update local state, profile already updated by AI generator
+      return;
+    }
+    
     try {
       const { error } = await supabase
         .from("profiles")
@@ -469,6 +476,7 @@ const Settings = () => {
                     <AvatarSelector 
                       selectedAvatar={selectedAvatar}
                       onSelect={handleAvatarSelect}
+                      userId={userId || undefined}
                     />
                   </div>
 
