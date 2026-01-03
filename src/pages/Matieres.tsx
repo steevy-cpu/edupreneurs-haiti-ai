@@ -21,7 +21,8 @@ import {
   Map,
   Lock,
   Star,
-  Sparkles
+  Sparkles,
+  Construction
 } from "lucide-react";
 
 import ericPointingImage from "@/assets/eric-right-pointing.png";
@@ -367,15 +368,15 @@ export default function Matieres() {
               <div className="relative z-10 flex flex-col items-center text-center max-w-2xl mx-auto">
                 {/* Icon */}
                 <div className="relative mb-6">
-                  <div className="absolute inset-0 bg-primary/20 rounded-full blur-xl animate-pulse" />
-                  <div className="relative w-24 h-24 sm:w-32 sm:h-32 rounded-full bg-gradient-to-br from-primary/20 to-primary/30 flex items-center justify-center border-2 border-primary/30">
-                    <Sparkles className="w-12 h-12 sm:w-16 sm:h-16 text-primary" />
+                  <div className="absolute inset-0 bg-amber-500/20 rounded-full blur-xl animate-pulse" />
+                  <div className="relative w-24 h-24 sm:w-32 sm:h-32 rounded-full bg-gradient-to-br from-amber-500/20 to-orange-500/30 flex items-center justify-center border-2 border-amber-500/30">
+                    <Construction className="w-12 h-12 sm:w-16 sm:h-16 text-amber-600 dark:text-amber-500" />
                   </div>
                 </div>
                 
                 {/* Title */}
-                <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-4 bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
-                  Contenu en cours de développement
+                <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-4 bg-gradient-to-r from-amber-600 to-orange-500 bg-clip-text text-transparent">
+                  🚧 Contenu en cours de développement
                 </h2>
                 
                 {/* Description */}
