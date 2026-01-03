@@ -1630,23 +1630,59 @@ export const BatchGenerationValidation = () => {
                       if (previewLesson.audioUrls.exemples) audioUpdates.audio_exemples_url = previewLesson.audioUrls.exemples;
                     }
 
-                    const updatePayload = {
+                    // PHASE 1: Save content + audio (triggers lesson_version_trigger)
+                    const contentPayload = {
                       ...updates,
                       ...audioUpdates,
                       audio_generated_at: hasAudio ? new Date().toISOString() : undefined,
-                      is_published: true, 
-                      workflow_status: 'published' as const
                     };
                     
-                    console.log('[Publish] Lesson ID:', previewLesson.lessonId);
-                    console.log('[Publish] Audio URLs in payload:', audioUpdates);
+                    console.log('[Publish] Phase 1 - Saving content for lesson:', previewLesson.lessonId);
+                    console.log('[Publish] Content payload size:', JSON.stringify(contentPayload).length, 'bytes');
+                    const phase1Start = Date.now();
                     
-                    const { error } = await supabase
+                    toast.info("Sauvegarde du contenu en cours...");
+                    
+                    const { error: contentError } = await supabase
                       .from('lessons')
-                      .update(updatePayload)
+                      .update(contentPayload)
                       .eq('id', previewLesson.lessonId);
                     
-                    if (error) throw error;
+                    console.log('[Publish] Phase 1 completed in', Date.now() - phase1Start, 'ms');
+                    
+                    if (contentError) throw contentError;
+                    
+                    // PHASE 2: Set publish flags only (lightweight, no version trigger)
+                    console.log('[Publish] Phase 2 - Setting publish flags');
+                    const phase2Start = Date.now();
+                    
+                    // Retry logic for publish flags (in case of transient lock)
+                    let publishSuccess = false;
+                    let publishError: any = null;
+                    for (let attempt = 0; attempt < 3; attempt++) {
+                      const { error: flagError } = await supabase
+                        .from('lessons')
+                        .update({
+                          is_published: true, 
+                          workflow_status: 'published' as const
+                        })
+                        .eq('id', previewLesson.lessonId);
+                      
+                      if (!flagError) {
+                        publishSuccess = true;
+                        break;
+                      }
+                      publishError = flagError;
+                      console.log('[Publish] Phase 2 attempt', attempt + 1, 'failed:', flagError.message);
+                      // Small delay before retry
+                      await new Promise(resolve => setTimeout(resolve, 500));
+                    }
+                    
+                    console.log('[Publish] Phase 2 completed in', Date.now() - phase2Start, 'ms');
+                    
+                    if (!publishSuccess) {
+                      throw publishError || new Error('Failed to set publish flags');
+                    }
 
                     // Verification check
                     const { data: savedLesson } = await supabase
@@ -1665,6 +1701,8 @@ export const BatchGenerationValidation = () => {
                     
                     if (hasAudio && savedAudioCount < expectedAudioCount) {
                       toast.warning("Audio partiellement sauvegardé. Vérifiez la base de données.");
+                    } else if (!savedLesson?.is_published) {
+                      toast.warning("Contenu sauvegardé mais publication échouée. Réessayez.");
                     } else {
                       toast.success(hasAudio && hasContent 
                         ? "Contenu et audio publiés avec succès!" 
