@@ -270,7 +270,7 @@ export function CreateGroupDialog({ open, onOpenChange, followers, onGroupCreate
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>
-      <DialogContent className="max-w-md sm:max-w-lg max-h-[85vh] sm:max-h-[90vh] overflow-hidden flex flex-col p-0 gap-0">
+      <DialogContent className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[calc(100%-2rem)] max-w-md sm:max-w-lg max-h-[85vh] sm:max-h-[90vh] overflow-hidden flex flex-col p-0 gap-0 mx-0">
         {/* Gradient Header */}
         <div className="bg-gradient-to-r from-primary/20 via-primary/10 to-success/20 p-4 sm:p-6 shrink-0">
           <DialogHeader className="space-y-2">
