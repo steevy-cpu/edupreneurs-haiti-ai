@@ -37,16 +37,16 @@ export const avatarMap: Record<string, string> = {
 export const getAvatarUrl = (avatarId: string | null | undefined): string | undefined => {
   if (!avatarId) return undefined;
   
-  // Check for any avatar pattern (hashed or not) in the string
-  const match = avatarId.match(/avatar-(\d+)/);
+  // FIRST: Check if it's a full URL (AI-generated avatars stored in Supabase)
+  if (avatarId.startsWith('http') || avatarId.startsWith('data:')) {
+    return avatarId;
+  }
+  
+  // THEN: Check for preset avatar pattern (exact match only)
+  const match = avatarId.match(/^avatar-(\d{1,2})$/);
   if (match) {
     const avatarKey = `avatar-${match[1]}`;
     return avatarMap[avatarKey] || undefined;
-  }
-  
-  // If it's a full URL starting with http, return it as is
-  if (avatarId.startsWith('http')) {
-    return avatarId;
   }
   
   // Otherwise look it up in the map
