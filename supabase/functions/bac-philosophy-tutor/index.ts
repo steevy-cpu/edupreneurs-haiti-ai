@@ -57,7 +57,7 @@ serve(async (req) => {
     const nextStep = stepIndex < DISSERTATION_STEPS.length - 1 ? DISSERTATION_STEPS[stepIndex + 1] : null;
 
     // Build specialized system prompt
-    const systemPrompt = `Tu es Eric, un professeur de philosophie haïtien expert en préparation au Baccalauréat NS4.
+    const systemPrompt = `Tu es Jude, un professeur de philosophie haïtien expert en préparation au Baccalauréat NS4.
 ${subjectsSection}
 **MÉTHODOLOGIE DE LA DISSERTATION PHILOSOPHIQUE (4 heures, 20 points)**
 
@@ -185,17 +185,17 @@ ${studentText ? `\n**TEXTE SOUMIS PAR L'ÉLÈVE:**\n"${studentText}"\n` : ''}`;
     }
 
     const data = await response.json();
-    const ericResponse = data.choices[0].message.content;
+    const judeResponse = data.choices[0].message.content;
 
     // Determine if we should suggest moving to next step
-    const suggestNextStep = ericResponse.toLowerCase().includes('passons') || 
-                           ericResponse.toLowerCase().includes('continue') ||
-                           ericResponse.toLowerCase().includes('bravo') ||
-                           ericResponse.toLowerCase().includes('excellent');
+    const suggestNextStep = judeResponse.toLowerCase().includes('passons') || 
+                           judeResponse.toLowerCase().includes('continue') ||
+                           judeResponse.toLowerCase().includes('bravo') ||
+                           judeResponse.toLowerCase().includes('excellent');
 
     return new Response(
       JSON.stringify({
-        response: ericResponse,
+        response: judeResponse,
         currentStep,
         nextStep: nextStep?.step || null,
         nextStepLabel: nextStep?.label || null,

@@ -25,7 +25,7 @@ serve(async (req) => {
     }
 
     // Build system prompt for Spanish practice with French error explanations
-    const systemPrompt = `Eres Eric, un profesor de español amigable y entusiasta. Ayudas a ${userNickname || 'tu estudiante'} (estudiante haitiano de 7AF) a practicar español.
+    const systemPrompt = `Eres Jude, un profesor de español amigable y entusiasta. Ayudas a ${userNickname || 'tu estudiante'} (estudiante haitiano de 7AF) a practicar español.
 
 CONTEXTO DE LA LECCIÓN:
 📚 ${lessonContext.title}
@@ -47,10 +47,10 @@ CORRECCIÓN DE ERRORES (MUY IMPORTANTE):
 
 EJEMPLOS:
 Usuario: "Yo tiene un perro"
-Eric (en FRANCÉS): "Attention! Tu as dit 'Yo tiene', mais c'est 'Yo tengo'. Avec 'yo', on utilise 'tengo'. Essaie encore! 💪"
+Jude (en FRANCÉS): "Attention! Tu as dit 'Yo tiene', mais c'est 'Yo tengo'. Avec 'yo', on utilise 'tengo'. Essaie encore! 💪"
 
 Usuario: "Hola, ¿cómo estás?"
-Eric (en ESPAÑOL): "¡Hola! Estoy muy bien, gracias. ¿Y tú? 😊"
+Jude (en ESPAÑOL): "¡Hola! Estoy muy bien, gracias. ¿Y tú? 😊"
 
 ${isInitialGreeting ? 
   `PRIMERA INTERACCIÓN: Saluda en ESPAÑOL brevemente, menciona el tema de la lección, haz UNA pregunta simple. Máximo 2-3 frases.` 
@@ -91,7 +91,7 @@ ${isInitialGreeting ?
       if (aiResponse.status === 429) {
         return new Response(
           JSON.stringify({ 
-            error: 'Rate limit exceeded. Eric necesita un descanso. Intenta de nuevo en un momento.' 
+            error: 'Rate limit exceeded. Jude necesita un descanso. Intenta de nuevo en un momento.' 
           }),
           { 
             status: 429, 

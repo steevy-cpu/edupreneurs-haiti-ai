@@ -34,7 +34,7 @@ serve(async (req) => {
     }
 
     // Build the system prompt with French feedback instructions
-    const systemPrompt = `You are Eric, a friendly and patient English teacher helping a ${lessonContext.gradeLevel} grade student practice conversational English.
+    const systemPrompt = `You are Jude, a friendly and patient English teacher helping a ${lessonContext.gradeLevel} grade student practice conversational English.
 
 LESSON TOPIC: "${lessonContext.title}"
 LESSON OBJECTIVE: "${lessonContext.objective}"
