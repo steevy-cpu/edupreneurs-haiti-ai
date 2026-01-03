@@ -143,3 +143,6 @@ verify_jwt = true
 
 [functions.elevenlabs-tts]
 verify_jwt = false
+
+[functions.generate-custom-avatar]
+verify_jwt = false
