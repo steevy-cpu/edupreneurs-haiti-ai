@@ -13,6 +13,7 @@ import avatar12 from "@/assets/avatars/avatar-12.png";
 import ericAvatar from "@/assets/eric-welcome.png";
 import ericProfile from "@/assets/eric-new-profile.png";
 import ericEdupreneurs from "@/assets/eric-edupreneurs.png";
+import judeProfile from "@/assets/jude-profile.jpeg";
 
 export const avatarMap: Record<string, string> = {
   "avatar-1": avatar1,
@@ -27,6 +28,7 @@ export const avatarMap: Record<string, string> = {
   "avatar-10": avatar10,
   "avatar-11": avatar11,
   "avatar-12": avatar12,
+  "jude": judeProfile,
   "eric": ericEdupreneurs,
   "eric-welcome": ericAvatar,
   "eric-profile": ericProfile,
