@@ -1046,6 +1046,7 @@ export type Database = {
       lessons: {
         Row: {
           activites_interactives: string | null
+          activities_count: number | null
           audio_contenu_url: string | null
           audio_exemples_url: string | null
           audio_generated_at: string | null
@@ -1062,6 +1063,7 @@ export type Database = {
           mois: string | null
           objectif: string | null
           order_index: number
+          quiz_count: number | null
           quiz_final: string | null
           references: string[] | null
           review_notes: string | null
@@ -1076,6 +1078,7 @@ export type Database = {
         }
         Insert: {
           activites_interactives?: string | null
+          activities_count?: number | null
           audio_contenu_url?: string | null
           audio_exemples_url?: string | null
           audio_generated_at?: string | null
@@ -1092,6 +1095,7 @@ export type Database = {
           mois?: string | null
           objectif?: string | null
           order_index?: number
+          quiz_count?: number | null
           quiz_final?: string | null
           references?: string[] | null
           review_notes?: string | null
@@ -1108,6 +1112,7 @@ export type Database = {
         }
         Update: {
           activites_interactives?: string | null
+          activities_count?: number | null
           audio_contenu_url?: string | null
           audio_exemples_url?: string | null
           audio_generated_at?: string | null
@@ -1124,6 +1129,7 @@ export type Database = {
           mois?: string | null
           objectif?: string | null
           order_index?: number
+          quiz_count?: number | null
           quiz_final?: string | null
           references?: string[] | null
           review_notes?: string | null
@@ -2288,6 +2294,11 @@ export type Database = {
           valid: boolean
         }[]
       }
+      count_activities_in_html: {
+        Args: { html_content: string }
+        Returns: number
+      }
+      count_quiz_in_html: { Args: { html_content: string }; Returns: number }
       create_conversation: { Args: never; Returns: string }
       create_group_chat: {
         Args: { p_avatar_url?: string; p_description?: string; p_name: string }
