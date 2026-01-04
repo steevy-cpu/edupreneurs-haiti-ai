@@ -2514,7 +2514,9 @@ const Community = () => {
           </div>
         ) : (
           <div className="hidden md:flex items-center justify-center h-full">
-            <p className="text-muted-foreground">Sélectionnez une conversation</p>
+            <p className="text-foreground/70 font-medium bg-background/80 px-4 py-2 rounded-lg backdrop-blur-sm">
+              Sélectionnez une conversation
+            </p>
           </div>
         )}
       </div>
