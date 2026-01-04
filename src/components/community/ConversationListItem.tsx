@@ -14,6 +14,7 @@ interface ConversationListItemProps {
   onDelete: (id: string) => void;
   onGroupInfoClick: (groupId: string) => void;
   formatTime: (timestamp: string) => string;
+  showGlow?: boolean;
 }
 
 export const ConversationListItem = ({
@@ -25,6 +26,7 @@ export const ConversationListItem = ({
   onDelete,
   onGroupInfoClick,
   formatTime,
+  showGlow = true,
 }: ConversationListItemProps) => {
   const conv = conversation;
 
@@ -36,16 +38,19 @@ export const ConversationListItem = ({
         isSelected 
           ? "bg-primary/10 border-l-4 border-l-primary" 
           : hasUnread 
-            ? "bg-accent/40 hover:bg-accent/60" 
+            ? `bg-accent/40 hover:bg-accent/60 ${showGlow ? 'unread-glow' : ''}` 
             : "hover:bg-muted/40"
       }`}
+      style={hasUnread && showGlow ? { 
+        '--time-accent': 'var(--time-accent, hsl(var(--primary) / 0.5))'
+      } as React.CSSProperties : undefined}
     >
       <div className="flex items-center gap-2.5 sm:gap-3 flex-1 min-w-0">
         <div 
           className="relative"
           onClick={() => onSelect(conv.id)}
         >
-          <Avatar className={`h-11 w-11 sm:h-12 sm:w-12 shrink-0 ring-2 ring-background shadow-sm ${hasUnread ? 'ring-primary/30' : ''}`}>
+          <Avatar className={`h-11 w-11 sm:h-12 sm:w-12 shrink-0 ring-2 ring-background shadow-sm avatar-interactive ${hasUnread ? 'ring-primary/30' : ''}`}>
             {conv.is_group ? (
               <>
                 <AvatarImage src={conv.group?.avatar_url || undefined} />
@@ -63,7 +68,7 @@ export const ConversationListItem = ({
             )}
           </Avatar>
           {!conv.is_group && conv.otherUser?.user_id && isOnline && (
-            <div className="absolute bottom-0 right-0 w-3.5 h-3.5 bg-green-500 rounded-full border-2 border-background shadow-sm" />
+            <div className="absolute bottom-0 right-0 w-3.5 h-3.5 bg-green-500 rounded-full border-2 border-background shadow-sm presence-indicator" />
           )}
         </div>
         <div 
@@ -102,9 +107,9 @@ export const ConversationListItem = ({
               <div className="flex items-center gap-1 text-primary text-xs italic font-medium">
                 <span>en train d'écrire</span>
                 <span className="flex gap-0.5">
-                  <span className="animate-bounce" style={{ animationDelay: '0ms' }}>.</span>
-                  <span className="animate-bounce" style={{ animationDelay: '150ms' }}>.</span>
-                  <span className="animate-bounce" style={{ animationDelay: '300ms' }}>.</span>
+                  <span className="animate-typing-wave" style={{ animationDelay: '0ms' }}>•</span>
+                  <span className="animate-typing-wave" style={{ animationDelay: '100ms' }}>•</span>
+                  <span className="animate-typing-wave" style={{ animationDelay: '200ms' }}>•</span>
                 </span>
               </div>
             ) : (
