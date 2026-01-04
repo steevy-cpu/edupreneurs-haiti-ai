@@ -221,30 +221,6 @@ const Community = () => {
     };
   }, [selectedConversation, user]);
 
-  // Track keyboard height for mobile (Visual Viewport API)
-  useEffect(() => {
-    if (typeof window === 'undefined' || !window.visualViewport) return;
-    
-    const updateKeyboardHeight = () => {
-      if (window.visualViewport) {
-        const vh = window.innerHeight;
-        const vvh = window.visualViewport.height;
-        const keyboardHeight = Math.max(0, vh - vvh);
-        document.documentElement.style.setProperty('--kb', `${keyboardHeight}px`);
-      }
-    };
-    
-    window.visualViewport.addEventListener('resize', updateKeyboardHeight);
-    window.visualViewport.addEventListener('scroll', updateKeyboardHeight);
-    updateKeyboardHeight();
-    
-    return () => {
-      if (window.visualViewport) {
-        window.visualViewport.removeEventListener('resize', updateKeyboardHeight);
-        window.visualViewport.removeEventListener('scroll', updateKeyboardHeight);
-      }
-    };
-  }, []);
 
   const markMessagesAsRead = async (conversationId: string) => {
     if (!user) return;
@@ -2300,7 +2276,9 @@ const Community = () => {
                   const currentConv = conversations.find(c => c.id === selectedConversation);
                   return currentConv?.is_group ? '132px' : '72px';
                 })(),
-                paddingBottom: `calc(8rem + env(safe-area-inset-bottom, 0px) + ${keyboardHeight}px)`
+                paddingBottom: keyboardHeight > 0
+                  ? `calc(8rem + ${keyboardHeight}px)`
+                  : `calc(8rem + 3.5rem + env(safe-area-inset-bottom, 0px))`
               }}
             >
 
@@ -2399,7 +2377,9 @@ const Community = () => {
             <div 
               className="fixed left-0 right-0 md:left-80 lg:left-96 border-t border-border/50 bg-background/95 backdrop-blur-md shrink-0 z-[9999] md:bottom-0"
               style={{
-                bottom: `calc(3.5rem + env(safe-area-inset-bottom, 0px) + ${keyboardHeight}px)`
+                bottom: keyboardHeight > 0 
+                  ? `${keyboardHeight}px` 
+                  : `calc(3.5rem + env(safe-area-inset-bottom, 0px))`
               }}
             >
               <div className="p-3 pt-2 md:p-4 md:pt-2">
