@@ -630,7 +630,9 @@ export const InteractiveActivitiesEnhanced = ({
                 ? '✅ Correct!' 
                 : '📚 Explications:'}
             </p>
-            <p className="text-xs sm:text-sm leading-relaxed break-words">{currentActivity.explanation}</p>
+                    <p className="text-xs sm:text-sm leading-relaxed break-words">
+                      <MathText text={currentActivity.explanation || ''} />
+                    </p>
           </div>
         )}
 
