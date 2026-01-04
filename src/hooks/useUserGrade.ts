@@ -133,6 +133,11 @@ export function useUserGrade(): UseUserGradeResult {
     // If user grade is not set, deny access (shouldn't happen normally)
     if (!userGrade) return false;
     
+    // Special case: NS3 students can access NS4 content (Baccalaureat preparation)
+    if (userGrade === 'NS3' && normalizedGradeToCheck === 'NS4') {
+      return true;
+    }
+    
     // User can only access their own grade
     return userGrade === normalizedGradeToCheck;
   };

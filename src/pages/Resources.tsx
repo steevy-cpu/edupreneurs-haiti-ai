@@ -144,7 +144,7 @@ const Resources = () => {
               </div>
               <div className="flex items-center gap-2">
                 {canNS4 ? (
-                  isSuperUser || userGrade === 'NS4' ? (
+                  isSuperUser || userGrade === 'NS4' || userGrade === 'NS3' ? (
                     <Star className="w-5 h-5 text-yellow-500 fill-yellow-500" />
                   ) : null
                 ) : (
