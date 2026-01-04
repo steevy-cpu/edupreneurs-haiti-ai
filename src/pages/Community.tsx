@@ -102,13 +102,24 @@ const Community = () => {
   const [selectedGroupId, setSelectedGroupId] = useState<string | null>(null);
   const [keyboardHeight, setKeyboardHeight] = useState(0);
 
-  // Memoize chat background style to prevent re-renders
-  const chatBackgroundStyle = useMemo(() => ({
-    backgroundImage: `linear-gradient(hsl(var(--background) / 0.55), hsl(var(--background) / 0.55)), url(${chatBackground})`,
-    backgroundSize: '300px',
-    backgroundRepeat: 'repeat',
-    backgroundPosition: 'center',
-  }), []);
+  // Memoize chat background style with time-based mood overlay
+  const chatBackgroundStyle = useMemo(() => {
+    // Time-based mood gradient overlay (subtle tint)
+    const moodGradient = period === 'morning' 
+      ? 'hsl(35 90% 55% / 0.03)' 
+      : period === 'afternoon' 
+        ? 'hsl(200 90% 55% / 0.03)' 
+        : period === 'evening' 
+          ? 'hsl(270 70% 60% / 0.03)' 
+          : 'hsl(230 60% 50% / 0.03)';
+    
+    return {
+      backgroundImage: `linear-gradient(${moodGradient}, hsl(var(--background) / 0.55)), url(${chatBackground})`,
+      backgroundSize: '300px',
+      backgroundRepeat: 'repeat',
+      backgroundPosition: 'center',
+    };
+  }, [period]);
 
   // Preload chat background image on mount
   useEffect(() => {
@@ -2211,9 +2222,10 @@ const Community = () => {
                         
                         if (onlineUsers.has(otherUserId)) {
                           return (
-                            <p className="text-xs text-green-500 font-medium">
-                              En ligne
-                            </p>
+                            <div className="flex items-center gap-1.5">
+                              <div className={`w-2 h-2 bg-green-500 rounded-full ${shouldShowRipples ? 'presence-indicator' : ''}`} />
+                              <p className="text-xs text-green-500 font-medium">En ligne</p>
+                            </div>
                           );
                         } else if (lastSeenTimes[otherUserId]) {
                           return (
@@ -2507,7 +2519,7 @@ const Community = () => {
                   size="icon"
                   onClick={sendMessage}
                   disabled={(!newMessage.trim() && !selectedMediaFile) || isSending}
-                  className="shrink-0 h-10 w-10"
+                  className={`shrink-0 h-10 w-10 ${isSending ? 'animate-send-bounce' : ''}`}
                 >
                   <Send size={20} />
                 </Button>
