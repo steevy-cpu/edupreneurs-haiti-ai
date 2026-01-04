@@ -184,7 +184,7 @@ export const AIAvatarGenerator = ({ open, onOpenChange, onAvatarGenerated, userI
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>
-      <DialogContent className="fixed top-1/2 -translate-y-1/2 -translate-x-1/2 left-1/2 md:left-[calc(50%+10rem)] lg:left-[calc(50%+12rem)] w-[calc(100%-2rem)] max-w-lg max-h-[90vh] overflow-hidden flex flex-col p-0 gap-0">
+      <DialogContent className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 mx-0 w-[calc(100%-2rem)] max-w-lg max-h-[90vh] overflow-hidden flex flex-col p-0 gap-0">
         {/* Header */}
         <div className="bg-gradient-to-r from-primary/20 via-purple-500/20 to-pink-500/20 p-4 shrink-0">
           <DialogHeader>
