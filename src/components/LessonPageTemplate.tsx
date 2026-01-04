@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -18,6 +18,7 @@ import { LessonAIPracticeSection } from "@/components/lesson/LessonAIPracticeSec
 import { LessonQuickStats } from "@/components/lesson/LessonQuickStats";
 import { LessonNavigation } from "@/components/lesson/LessonNavigation";
 import { LessonAudioPlayerSimple } from "@/components/LessonAudioPlayerSimple";
+import { MathContent, isMathSubject } from "@/components/MathContent";
 
 interface LessonData {
   id: string;
@@ -292,10 +293,14 @@ export const LessonPageTemplate = ({
 
             {/* Mobile/Tablet: Rest of content below */}
             <div className="space-y-2 sm:space-y-3 w-full lg:hidden">
-              <div 
-                className="text-muted-foreground lesson-content text-sm sm:text-base" 
-                dangerouslySetInnerHTML={{ __html: lesson.objectif }}
-              />
+              {isMathSubject(subjectName) ? (
+                <MathContent content={lesson.objectif} className="text-muted-foreground text-sm sm:text-base" />
+              ) : (
+                <div 
+                  className="text-muted-foreground lesson-content text-sm sm:text-base" 
+                  dangerouslySetInnerHTML={{ __html: lesson.objectif }}
+                />
+              )}
               
               {/* Motivational message */}
               <div className="flex items-center gap-2 text-sm text-muted-foreground bg-primary/5 rounded-lg px-3 py-2">
@@ -342,10 +347,14 @@ export const LessonPageTemplate = ({
               <h1 className="text-4xl font-bold bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent break-words">
                 {lesson.title}
               </h1>
-              <div 
-                className="text-muted-foreground lesson-content text-base" 
-                dangerouslySetInnerHTML={{ __html: lesson.objectif }}
-              />
+              {isMathSubject(subjectName) ? (
+                <MathContent content={lesson.objectif} className="text-muted-foreground text-base" />
+              ) : (
+                <div 
+                  className="text-muted-foreground lesson-content text-base" 
+                  dangerouslySetInnerHTML={{ __html: lesson.objectif }}
+                />
+              )}
               
               {/* Motivational message */}
               <div className="flex items-center gap-2 text-sm text-muted-foreground bg-primary/5 rounded-lg px-3 py-2">
@@ -472,7 +481,11 @@ export const LessonPageTemplate = ({
                   />
                 )}
                 {lesson.introduction ? (
-                  <div className="lesson-content prose prose-sm sm:prose-lg max-w-none" dangerouslySetInnerHTML={{ __html: lesson.introduction }} />
+                  isMathSubject(subjectName) ? (
+                    <MathContent content={lesson.introduction} />
+                  ) : (
+                    <div className="lesson-content prose prose-sm sm:prose-lg max-w-none" dangerouslySetInnerHTML={{ __html: lesson.introduction }} />
+                  )
                 ) : (
                   <p className="text-muted-foreground text-sm sm:text-base">Pas d'introduction disponible</p>
                 )}
@@ -497,7 +510,11 @@ export const LessonPageTemplate = ({
                   />
                 )}
                 {lesson.contenu ? (
-                  <div className="lesson-content prose prose-sm sm:prose-lg max-w-none overflow-x-auto" dangerouslySetInnerHTML={{ __html: lesson.contenu }} />
+                  isMathSubject(subjectName) ? (
+                    <MathContent content={lesson.contenu} className="overflow-x-auto" />
+                  ) : (
+                    <div className="lesson-content prose prose-sm sm:prose-lg max-w-none overflow-x-auto" dangerouslySetInnerHTML={{ __html: lesson.contenu }} />
+                  )
                 ) : (
                   <p className="text-muted-foreground text-sm sm:text-base">Pas de contenu disponible</p>
                 )}
@@ -520,7 +537,11 @@ export const LessonPageTemplate = ({
                   />
                 )}
                 {lesson.exemples_exercices ? (
-                  <div className="lesson-content prose prose-sm sm:prose-lg max-w-none overflow-x-auto" dangerouslySetInnerHTML={{ __html: lesson.exemples_exercices }} />
+                  isMathSubject(subjectName) ? (
+                    <MathContent content={lesson.exemples_exercices} className="overflow-x-auto" />
+                  ) : (
+                    <div className="lesson-content prose prose-sm sm:prose-lg max-w-none overflow-x-auto" dangerouslySetInnerHTML={{ __html: lesson.exemples_exercices }} />
+                  )
                 ) : (
                   <p className="text-muted-foreground text-sm sm:text-base">Pas d'exemples disponibles</p>
                 )}
