@@ -90,7 +90,7 @@ const htmlToLatex = (text: string): string => {
   return result;
 };
 
-// Check if a string contains mathematical notation (including LaTeX delimiters)
+// Check if a string contains mathematical notation (including LaTeX delimiters and plain text math)
 const containsMath = (text: string): boolean => {
   const mathPatterns = [
     // Standard LaTeX delimiters - check these first
@@ -103,15 +103,23 @@ const containsMath = (text: string): boolean => {
     /\\sqrt\s*[\[{]/,            // \sqrt{x} or \sqrt[n]{x}
     /\\sum|\\prod|\\int/,        // Integrals and sums
     /\\neq|\\leq|\\geq|\\times|\\div|\\pm/, // Operators
-    /\\alpha|\\beta|\\gamma|\\delta|\\theta|\\pi/, // Greek letters
+    /\\alpha|\\beta|\\gamma|\\delta|\\theta|\\pi|\\lambda|\\mu|\\sigma/, // Greek letters
     /\\rightarrow|\\leftarrow|\\Rightarrow/, // Arrows
+    /\\binom|\\approx/,          // Binomial and approx
     // HTML patterns
     /<sup>/i,
     /<sub>/i,
     /&times;|&div;|&plusmn;|&le;|&ge;|&ne;|&rarr;|&infin;|&pi;|&radic;/,
-    /×|÷|±|≤|≥|≠|→|∞|π|√|∑|∏|∫|∈|∉|⊂|⊃|∪|∩|∅/,
+    /×|÷|±|≤|≥|≠|→|∞|π|√|∑|∏|∫|∈|∉|⊂|⊃|∪|∩|∅|≈|λ|μ|σ/,
     /\^{|\_{/,
     /sqrt\(/i,
+    // Plain text math patterns
+    /\w\^\(?-?\d+\)?/,           // e^(-3), x^2, a^n
+    /\)\^\d+/,                   // (0.90)^5
+    /\d+!/,                      // Factorial: 5!
+    /C\(\d+,\s*\d+\)/,           // Combinations: C(5, 0)
+    /P\([^)]+=[^)]+\)/,          // Probability: P(X=0)
+    /[A-Za-z]\([A-Za-z]\)\s*=/,  // Function notation: f(x) =
   ];
   return mathPatterns.some(pattern => pattern.test(text));
 };
@@ -419,6 +427,48 @@ export const MathContent = React.memo(({ content, className = "" }: MathContentP
 
 MathContent.displayName = 'MathContent';
 
+// Convert plain text math patterns to LaTeX
+const convertPlainTextMath = (text: string): string => {
+  let result = text;
+  
+  // Convert ≈ to \approx
+  result = result.replace(/≈/g, '\\approx ');
+  
+  // Convert Greek letters
+  result = result.replace(/λ/g, '\\lambda ');
+  result = result.replace(/μ/g, '\\mu ');
+  result = result.replace(/σ/g, '\\sigma ');
+  
+  // Convert C(n,k) to \binom{n}{k}
+  result = result.replace(/C\((\d+),\s*(\d+)\)/g, '\\binom{$1}{$2}');
+  
+  // Convert e^(-3) or e^(x) to e^{-3} or e^{x}
+  result = result.replace(/e\^\(([^)]+)\)/g, 'e^{$1}');
+  
+  // Convert (0.90)^5 to (0.90)^{5}
+  result = result.replace(/\)\^(\d+)/g, ')^{$1}');
+  
+  // Convert x^2 to x^{2} (simple exponents)
+  result = result.replace(/([a-zA-Z0-9])\^(\d+)/g, '$1^{$2}');
+  
+  // Convert * to \times when surrounded by spaces
+  result = result.replace(/\s\*\s/g, ' \\times ');
+  
+  return result;
+};
+
+// Check if text contains plain text math that needs conversion
+const hasPlainTextMath = (text: string): boolean => {
+  const patterns = [
+    /\w\^\(?-?\d+\)?/,           // e^(-3), x^2
+    /\)\^\d+/,                   // (0.90)^5
+    /C\(\d+,\s*\d+\)/,           // C(5, 0)
+    /≈/,                         // Approximately equal
+    /λ|μ|σ/,                     // Greek letters in plain text
+  ];
+  return patterns.some(p => p.test(text));
+};
+
 // Lightweight inline math text component for activity questions/options
 export const MathText = React.memo(({ text, className = "" }: { text: string; className?: string }) => {
   const rendered = useMemo(() => {
@@ -429,9 +479,26 @@ export const MathText = React.memo(({ text, className = "" }: { text: string; cl
       return <span className={className}>{text}</span>;
     }
     
-    // Check for LaTeX delimiters
+    // Check for LaTeX delimiters first
     if (hasLatexDelimiters(text)) {
       return <span className={className}>{renderWithLatexDelimiters(text)}</span>;
+    }
+    
+    // Check for plain text math patterns that need conversion
+    if (hasPlainTextMath(text)) {
+      const converted = convertPlainTextMath(text);
+      // Wrap the converted text with $ delimiters for inline math rendering
+      // But we need to be smart - only wrap the math parts
+      try {
+        // If the whole text is math-like, render it all as math
+        if (/^[\d\s\.\+\-\*\/\^\(\)\{\}\\a-zA-Z≈λμσ]+$/.test(converted.trim())) {
+          return <InlineMath math={converted} />;
+        }
+        // Otherwise, try to find and render math segments
+        return <span className={className}>{text}</span>;
+      } catch {
+        return <span className={className}>{text}</span>;
+      }
     }
     
     // Convert HTML math patterns
