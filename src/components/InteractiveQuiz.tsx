@@ -7,6 +7,7 @@ import { CheckCircle, XCircle, ArrowRight, Trophy, Loader2, RefreshCw } from "lu
 import { useSoundEffects } from "@/hooks/useSoundEffects";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { MathText } from "@/components/MathContent";
 
 interface QuizQuestion {
   question: string;
@@ -602,7 +603,7 @@ export const InteractiveQuiz = ({ content, isLoading, onRegenerate, lessonGoldRe
         {/* Question */}
         <div className="p-6 bg-gradient-to-r from-primary/10 to-success/10 rounded-lg border-2 border-primary/30">
           <p className="text-lg font-medium leading-relaxed break-words">
-            {currentQuestion.question}
+            <MathText text={currentQuestion.question} />
           </p>
         </div>
 
@@ -639,7 +640,7 @@ export const InteractiveQuiz = ({ content, isLoading, onRegenerate, lessonGoldRe
                     {showIncorrect && <XCircle className="w-5 h-5" />}
                     {!showFeedback && String.fromCharCode(65 + index)}
                   </div>
-                  <span className="flex-1 break-words">{option}</span>
+                  <span className="flex-1 break-words"><MathText text={option} /></span>
                 </div>
               </button>
             );

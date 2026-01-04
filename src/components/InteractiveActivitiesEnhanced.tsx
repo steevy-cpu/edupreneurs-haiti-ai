@@ -7,6 +7,7 @@ import { CheckCircle, XCircle, ArrowRight, Loader2, RefreshCw, Shuffle } from "l
 import { useSoundEffects } from "@/hooks/useSoundEffects";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { MathText } from "@/components/MathContent";
 
 type ActivityType = 'QUIZ' | 'MATCHING' | 'TRUEFALSE' | 'FILLIN';
 
@@ -542,7 +543,7 @@ export const InteractiveActivitiesEnhanced = ({
           <>
             <div className="p-4 sm:p-6 bg-gradient-to-r from-primary/10 to-accent/10 rounded-lg border-2 border-primary/20">
               <p className="text-base sm:text-lg font-medium leading-relaxed break-words">
-                {quizActivity.question}
+                <MathText text={quizActivity.question} />
               </p>
             </div>
 
@@ -578,7 +579,7 @@ export const InteractiveActivitiesEnhanced = ({
                         {showIncorrect && <XCircle className="w-4 h-4 sm:w-5 sm:h-5" />}
                         {!showFeedback && String.fromCharCode(65 + index)}
                       </div>
-                      <span className="flex-1 text-sm sm:text-base break-words">{option}</span>
+                      <span className="flex-1 text-sm sm:text-base break-words"><MathText text={option} /></span>
                     </div>
                   </button>
                 );
@@ -599,7 +600,7 @@ export const InteractiveActivitiesEnhanced = ({
           <>
             <div className="p-4 sm:p-6 bg-gradient-to-r from-primary/10 to-accent/10 rounded-lg border-2 border-primary/20">
               <p className="text-base sm:text-lg font-medium leading-relaxed break-words">
-                {fillInActivity.sentence}
+                <MathText text={fillInActivity.sentence} />
               </p>
             </div>
 
@@ -633,7 +634,7 @@ export const InteractiveActivitiesEnhanced = ({
               {showFeedback && !isCorrectAnswer && (
                 <div className="p-3 bg-info/10 rounded-lg border border-info/30">
                   <p className="text-sm font-medium">
-                    Réponse correcte: <span className="font-bold text-success">{fillInActivity.correctAnswer}</span>
+                    Réponse correcte: <span className="font-bold text-success"><MathText text={fillInActivity.correctAnswer} /></span>
                   </p>
                 </div>
               )}
@@ -646,7 +647,7 @@ export const InteractiveActivitiesEnhanced = ({
         return (
           <>
             <div className="p-4 sm:p-6 bg-gradient-to-r from-primary/10 to-accent/10 rounded-lg border-2 border-primary/20 mb-4">
-              <p className="text-base sm:text-lg font-medium break-words">{matchingActivity.instruction}</p>
+              <p className="text-base sm:text-lg font-medium break-words"><MathText text={matchingActivity.instruction} /></p>
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
@@ -655,7 +656,7 @@ export const InteractiveActivitiesEnhanced = ({
                 {matchingActivity.columnA.map((item) => (
                   <div key={item.id} className="p-3 sm:p-4 bg-accent/20 rounded-lg border-2 border-accent/40 min-h-[60px] flex items-center">
                     <span className="font-bold text-primary mr-2">{item.id}.</span> 
-                    <span className="text-sm sm:text-base break-words flex-1">{item.text}</span>
+                    <span className="text-sm sm:text-base break-words flex-1"><MathText text={item.text} /></span>
                   </div>
                 ))}
               </div>
@@ -687,7 +688,7 @@ export const InteractiveActivitiesEnhanced = ({
                     `}
                   >
                     <span className="font-bold text-primary mr-2">{item.id})</span> 
-                    <span className="text-sm sm:text-base break-words flex-1">{item.text}</span>
+                    <span className="text-sm sm:text-base break-words flex-1"><MathText text={item.text} /></span>
                   </button>
                 ))}
               </div>
@@ -713,7 +714,7 @@ export const InteractiveActivitiesEnhanced = ({
         return (
           <>
             <div className="p-4 sm:p-6 bg-gradient-to-r from-primary/10 to-accent/10 rounded-lg border-2 border-primary/20">
-              <p className="text-base sm:text-lg font-medium leading-relaxed break-words">{tfActivity.statement}</p>
+              <p className="text-base sm:text-lg font-medium leading-relaxed break-words"><MathText text={tfActivity.statement} /></p>
             </div>
 
             <div className="grid grid-cols-2 gap-3 sm:gap-4">

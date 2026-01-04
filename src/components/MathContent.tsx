@@ -90,46 +90,214 @@ const htmlToLatex = (text: string): string => {
   return result;
 };
 
-// Check if a string contains mathematical notation
+// Check if a string contains mathematical notation (including LaTeX delimiters)
 const containsMath = (text: string): boolean => {
   const mathPatterns = [
+    // Standard LaTeX delimiters - check these first
+    /\$\$[\s\S]+?\$\$/,         // $$...$$ block math
+    /\$[^$\n]+?\$/,              // $...$ inline math (not spanning lines)
+    /\\\([\s\S]+?\\\)/,          // \(...\) inline math
+    /\\\[[\s\S]+?\\\]/,          // \[...\] block math
+    // LaTeX commands without delimiters
+    /\\frac\s*\{/,               // \frac{a}{b}
+    /\\sqrt\s*[\[{]/,            // \sqrt{x} or \sqrt[n]{x}
+    /\\sum|\\prod|\\int/,        // Integrals and sums
+    /\\neq|\\leq|\\geq|\\times|\\div|\\pm/, // Operators
+    /\\alpha|\\beta|\\gamma|\\delta|\\theta|\\pi/, // Greek letters
+    /\\rightarrow|\\leftarrow|\\Rightarrow/, // Arrows
+    // HTML patterns
     /<sup>/i,
     /<sub>/i,
     /&times;|&div;|&plusmn;|&le;|&ge;|&ne;|&rarr;|&infin;|&pi;|&radic;/,
     /×|÷|±|≤|≥|≠|→|∞|π|√|∑|∏|∫|∈|∉|⊂|⊃|∪|∩|∅/,
     /\^{|\_{/,
-    /\\frac|\\sqrt|\\sum|\\int/,
     /sqrt\(/i,
   ];
   return mathPatterns.some(pattern => pattern.test(text));
 };
 
-// Process a text node and extract math expressions
-const processTextContent = (text: string): React.ReactNode[] => {
-  if (!containsMath(text)) {
-    return [text];
-  }
+// Check if content has LaTeX delimiters
+const hasLatexDelimiters = (text: string): boolean => {
+  return /\$\$[\s\S]+?\$\$/.test(text) ||    // $$...$$
+         /\$[^$\n]+?\$/.test(text) ||         // $...$
+         /\\\([\s\S]+?\\\)/.test(text) ||     // \(...\)
+         /\\\[[\s\S]+?\\\]/.test(text);       // \[...\]
+};
+
+// Parse content with LaTeX delimiters and render math
+const renderWithLatexDelimiters = (content: string): React.ReactNode[] => {
+  const result: React.ReactNode[] = [];
+  let remaining = content;
+  let keyCounter = 0;
   
-  const latex = htmlToLatex(text);
-  
-  // Try to render as math if it contains LaTeX commands
-  if (latex.includes("\\") || latex.includes("^{") || latex.includes("_{")) {
-    try {
-      return [<InlineMath key={Math.random()} math={latex} />];
-    } catch {
-      // If KaTeX fails, return original text
-      return [text];
+  while (remaining.length > 0) {
+    // Try to find the next math delimiter
+    // Order matters: check $$ before $ to avoid partial matches
+    
+    // Block math: $$...$$
+    const blockDollarMatch = remaining.match(/^([\s\S]*?)\$\$([\s\S]+?)\$\$/);
+    // Block math: \[...\]
+    const blockBracketMatch = remaining.match(/^([\s\S]*?)\\\[([\s\S]+?)\\\]/);
+    // Inline math: $...$
+    const inlineDollarMatch = remaining.match(/^([\s\S]*?)\$([^$\n]+?)\$/);
+    // Inline math: \(...\)
+    const inlineParenMatch = remaining.match(/^([\s\S]*?)\\\(([\s\S]+?)\\\)/);
+    
+    // Find the earliest match
+    type MatchResult = { match: RegExpMatchArray; type: 'block' | 'inline'; fullLength: number } | null;
+    
+    const candidates: MatchResult[] = [];
+    
+    if (blockDollarMatch) {
+      candidates.push({ 
+        match: blockDollarMatch, 
+        type: 'block', 
+        fullLength: blockDollarMatch[0].length 
+      });
+    }
+    if (blockBracketMatch) {
+      candidates.push({ 
+        match: blockBracketMatch, 
+        type: 'block', 
+        fullLength: blockBracketMatch[0].length 
+      });
+    }
+    if (inlineDollarMatch) {
+      candidates.push({ 
+        match: inlineDollarMatch, 
+        type: 'inline', 
+        fullLength: inlineDollarMatch[0].length 
+      });
+    }
+    if (inlineParenMatch) {
+      candidates.push({ 
+        match: inlineParenMatch, 
+        type: 'inline', 
+        fullLength: inlineParenMatch[0].length 
+      });
+    }
+    
+    // Sort by position (length of prefix before match)
+    candidates.sort((a, b) => a.match[1].length - b.match[1].length);
+    
+    const best = candidates[0];
+    
+    if (best) {
+      const [fullMatch, prefix, mathContent] = best.match;
+      
+      // Add prefix text if any
+      if (prefix) {
+        result.push(<span key={keyCounter++}>{prefix}</span>);
+      }
+      
+      // Add math content
+      try {
+        if (best.type === 'block') {
+          result.push(
+            <BlockMath key={keyCounter++} math={mathContent.trim()} />
+          );
+        } else {
+          result.push(
+            <InlineMath key={keyCounter++} math={mathContent.trim()} />
+          );
+        }
+      } catch (error) {
+        // If KaTeX fails, show original text
+        result.push(<span key={keyCounter++}>{fullMatch}</span>);
+      }
+      
+      // Move past this match
+      remaining = remaining.slice(fullMatch.length);
+    } else {
+      // No more math delimiters found, add remaining text
+      result.push(<span key={keyCounter++}>{remaining}</span>);
+      break;
     }
   }
   
-  return [text];
+  return result;
 };
 
 // Parse HTML and replace math expressions with KaTeX components
 const parseAndRenderMath = (html: string): React.ReactNode => {
   if (!html) return null;
   
-  // Create a temporary container to parse HTML
+  // If content has LaTeX delimiters, parse them first
+  if (hasLatexDelimiters(html)) {
+    // First, parse as HTML to handle any HTML tags
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(html, "text/html");
+    
+    // Process the document recursively with LaTeX delimiter support
+    const processNodeWithLatex = (node: Node): React.ReactNode => {
+      if (node.nodeType === Node.TEXT_NODE) {
+        const text = node.textContent || "";
+        if (!text.trim()) return text;
+        
+        // Check for LaTeX delimiters in text
+        if (hasLatexDelimiters(text)) {
+          return <>{renderWithLatexDelimiters(text)}</>;
+        }
+        
+        // Check for other math patterns
+        if (containsMath(text)) {
+          const latex = htmlToLatex(text);
+          try {
+            return <InlineMath key={Math.random()} math={latex} />;
+          } catch {
+            return text;
+          }
+        }
+        return text;
+      }
+      
+      if (node.nodeType === Node.ELEMENT_NODE) {
+        const element = node as Element;
+        const tagName = element.tagName.toLowerCase();
+        
+        // Process children
+        const children = Array.from(node.childNodes).map((child, index) => {
+          const result = processNodeWithLatex(child);
+          return typeof result === 'string' ? result : 
+                 React.isValidElement(result) ? React.cloneElement(result, { key: index }) : result;
+        });
+        
+        // Reconstruct the element with processed children
+        const props: Record<string, any> = { key: Math.random() };
+        
+        // Copy attributes
+        Array.from(element.attributes).forEach(attr => {
+          let name = attr.name;
+          if (name === "class") name = "className";
+          if (name === "for") name = "htmlFor";
+          props[name] = attr.value;
+        });
+        
+        // Map HTML tags to React elements
+        const Tag = tagName as keyof JSX.IntrinsicElements;
+        
+        // Void elements cannot have children
+        const voidElements = ['br', 'hr', 'img', 'input', 'meta', 'link', 'area', 'base', 'col', 'embed', 'param', 'source', 'track', 'wbr'];
+        if (voidElements.includes(tagName)) {
+          return <Tag {...props} />;
+        }
+        
+        return <Tag {...props}>{children}</Tag>;
+      }
+      
+      return null;
+    };
+    
+    const result = Array.from(doc.body.childNodes).map((node, index) => {
+      const processed = processNodeWithLatex(node);
+      return typeof processed === 'string' ? processed :
+             React.isValidElement(processed) ? React.cloneElement(processed, { key: index }) : processed;
+    });
+    
+    return <>{result}</>;
+  }
+  
+  // Fallback: Original HTML parsing for content without LaTeX delimiters
   const parser = new DOMParser();
   const doc = parser.parseFromString(html, "text/html");
   
@@ -143,7 +311,7 @@ const parseAndRenderMath = (html: string): React.ReactNode => {
       if (containsMath(text)) {
         const latex = htmlToLatex(text);
         try {
-          // Check if this is a block-level math expression (starts with newline or is standalone)
+          // Check if this is a block-level math expression
           const isBlock = latex.trim().startsWith("\\sum") || 
                           latex.trim().startsWith("\\int") ||
                           latex.trim().startsWith("\\frac");
@@ -228,7 +396,7 @@ const parseAndRenderMath = (html: string): React.ReactNode => {
   return <>{result}</>;
 };
 
-export const MathContent = ({ content, className = "" }: MathContentProps) => {
+export const MathContent = React.memo(({ content, className = "" }: MathContentProps) => {
   const renderedContent = useMemo(() => {
     if (!content) return null;
     
@@ -247,7 +415,42 @@ export const MathContent = ({ content, className = "" }: MathContentProps) => {
       {renderedContent}
     </div>
   );
-};
+});
+
+MathContent.displayName = 'MathContent';
+
+// Lightweight inline math text component for activity questions/options
+export const MathText = React.memo(({ text, className = "" }: { text: string; className?: string }) => {
+  const rendered = useMemo(() => {
+    if (!text) return null;
+    
+    // Quick check for math content
+    if (!containsMath(text)) {
+      return <span className={className}>{text}</span>;
+    }
+    
+    // Check for LaTeX delimiters
+    if (hasLatexDelimiters(text)) {
+      return <span className={className}>{renderWithLatexDelimiters(text)}</span>;
+    }
+    
+    // Convert HTML math patterns
+    const latex = htmlToLatex(text);
+    if (latex.includes("\\") || latex.includes("^{") || latex.includes("_{")) {
+      try {
+        return <InlineMath math={latex} />;
+      } catch {
+        return <span className={className}>{text}</span>;
+      }
+    }
+    
+    return <span className={className}>{text}</span>;
+  }, [text, className]);
+  
+  return <>{rendered}</>;
+});
+
+MathText.displayName = 'MathText';
 
 // Helper to check if a subject is math-related
 export const isMathSubject = (subjectName: string): boolean => {
