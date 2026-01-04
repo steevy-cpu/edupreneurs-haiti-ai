@@ -206,6 +206,12 @@ const parseAndRenderMath = (html: string): React.ReactNode => {
         return children;
       }
       
+      // Void elements cannot have children
+      const voidElements = ['br', 'hr', 'img', 'input', 'meta', 'link', 'area', 'base', 'col', 'embed', 'param', 'source', 'track', 'wbr'];
+      if (voidElements.includes(tagName)) {
+        return <Tag {...props} />;
+      }
+      
       return <Tag {...props}>{children}</Tag>;
     }
     
