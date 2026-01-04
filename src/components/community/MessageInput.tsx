@@ -1,3 +1,4 @@
+import { useState, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
@@ -36,12 +37,29 @@ export const MessageInput = ({
   onClearMedia,
   onCancelReply,
 }: MessageInputProps) => {
+  const [isSendAnimating, setIsSendAnimating] = useState(false);
+
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
-      onSend();
+      handleSend();
     }
   };
+
+  const handleSend = useCallback(() => {
+    if ((!newMessage.trim() && !mediaPreview) || isSending) return;
+    
+    // Trigger send animation
+    setIsSendAnimating(true);
+    
+    // Call actual send
+    onSend();
+    
+    // Reset animation after it completes
+    setTimeout(() => {
+      setIsSendAnimating(false);
+    }, 150);
+  }, [newMessage, mediaPreview, isSending, onSend]);
 
   return (
     <div className="border-t border-border/50 bg-background/95 backdrop-blur-md shrink-0" style={{
@@ -73,9 +91,15 @@ export const MessageInput = ({
           </div>
         )}
         
-        {/* Media Preview */}
+        {/* Media Preview with slide-up animation on send */}
         {mediaPreview && (
-          <div className="mb-2 relative">
+          <div 
+            className="mb-2 relative transition-all duration-200"
+            style={{
+              opacity: isSendAnimating ? 0 : 1,
+              transform: isSendAnimating ? 'translateY(-20px)' : 'translateY(0)',
+            }}
+          >
             {mediaType === 'image' ? (
               <img src={mediaPreview} alt="Preview" className="max-h-48 rounded-lg object-contain bg-muted/20" loading="lazy" decoding="async" />
             ) : (
@@ -143,10 +167,12 @@ export const MessageInput = ({
             disabled={isSending}
           />
           <Button
-            onClick={onSend}
+            onClick={handleSend}
             disabled={(!newMessage.trim() && !mediaPreview) || isSending}
             size="icon"
-            className="shrink-0 h-10 w-10 bg-primary hover:bg-primary/90"
+            className={`shrink-0 h-10 w-10 bg-primary hover:bg-primary/90 transition-transform ${
+              isSendAnimating ? 'animate-send-bounce' : ''
+            }`}
           >
             <Send size={18} />
           </Button>

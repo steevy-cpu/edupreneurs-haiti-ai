@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -7,6 +7,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Check, CheckCheck, Download, Edit2, Smile, Trash2, X } from "lucide-react";
 import { getAvatarUrl } from "@/lib/avatarMap";
 import { Message, Reaction } from "@/types/community";
+import { FloatingReaction } from "./FloatingReaction";
 
 interface MessageBubbleProps {
   message: Message;
@@ -27,6 +28,9 @@ interface MessageBubbleProps {
   onDownloadMedia: (url: string | null | undefined, type: 'image' | 'video') => void;
   onSetFullSizeImage: (url: string | null) => void;
   formatTime: (timestamp: string) => string;
+  messageIndex?: number;
+  shouldAnimate?: boolean;
+  shouldShowFloatingReactions?: boolean;
 }
 
 const REACTION_EMOJIS = ['❤️', '😂', '😮', '😢', '😡', '👍', '👎', '🔥', '🎉'];
@@ -50,8 +54,33 @@ export function MessageBubble({
   onDownloadMedia,
   onSetFullSizeImage,
   formatTime,
+  messageIndex = 0,
+  shouldAnimate = true,
+  shouldShowFloatingReactions = true,
 }: MessageBubbleProps) {
   const navigate = useNavigate();
+  const [floatingReactions, setFloatingReactions] = useState<string[]>([]);
+  const prevReactionsRef = useRef<Reaction[]>(reactions);
+
+  // Track new reactions for floating animation
+  useEffect(() => {
+    if (!shouldShowFloatingReactions) return;
+    
+    const prevReactions = prevReactionsRef.current;
+    const newReactions = reactions.filter(
+      r => !prevReactions.some(pr => pr.id === r.id)
+    );
+    
+    if (newReactions.length > 0) {
+      setFloatingReactions(prev => [...prev, ...newReactions.map(r => r.emoji)]);
+    }
+    
+    prevReactionsRef.current = reactions;
+  }, [reactions, shouldShowFloatingReactions]);
+
+  const handleFloatingReactionComplete = (index: number) => {
+    setFloatingReactions(prev => prev.filter((_, i) => i !== index));
+  };
 
   // Group reactions by emoji
   const groupedReactions = reactions.reduce((acc, reaction) => {
@@ -74,6 +103,18 @@ export function MessageBubble({
     if (message.profile?.user_id) {
       navigate(`/profile/${message.profile.user_id}`);
     }
+  };
+
+  // Animation styles for staggered entry
+  const getAnimationStyle = () => {
+    if (!shouldAnimate || messageIndex >= 8) return {};
+    
+    return {
+      '--msg-index': messageIndex,
+      animation: 'messageSlideIn 0.3s ease-out forwards',
+      animationDelay: `${messageIndex * 40}ms`,
+      opacity: 0,
+    } as React.CSSProperties;
   };
 
   // Shared Post Display
@@ -267,7 +308,20 @@ export function MessageBubble({
     const hasReactions = reactions.length > 0;
 
     return (
-      <>
+      <div className="relative">
+        {/* Floating reactions container */}
+        {floatingReactions.length > 0 && (
+          <div className="absolute bottom-full left-1/2 -translate-x-1/2 pointer-events-none">
+            {floatingReactions.map((emoji, index) => (
+              <FloatingReaction
+                key={`${emoji}-${index}`}
+                emoji={emoji}
+                onComplete={() => handleFloatingReactionComplete(index)}
+              />
+            ))}
+          </div>
+        )}
+
         {hasReactions && (
           <div className="flex flex-wrap gap-1 mt-1">
             {Object.entries(groupedReactions).map(([emoji, userIds]) => {
@@ -365,18 +419,21 @@ export function MessageBubble({
             </Popover>
           </div>
         )}
-      </>
+      </div>
     );
   };
 
   return (
-    <div className={`flex ${isOwn ? "justify-end" : "justify-start"} px-2`}>
+    <div 
+      className={`flex ${isOwn ? "justify-end" : "justify-start"} px-2`}
+      style={getAnimationStyle()}
+    >
       <div 
         className={`flex gap-1.5 sm:gap-2 max-w-[85%] sm:max-w-[70%] ${isOwn ? "flex-row-reverse" : "flex-row"} cursor-pointer group`}
         onClick={handleMessageClick}
       >
         <Avatar 
-          className="h-7 w-7 sm:h-8 sm:w-8 shrink-0 cursor-pointer hover:opacity-80 transition-opacity no-reply-trigger"
+          className="h-7 w-7 sm:h-8 sm:w-8 shrink-0 cursor-pointer no-reply-trigger avatar-interactive"
           onClick={handleAvatarClick}
         >
           <AvatarImage src={getAvatarUrl(message.profile?.avatar_url)} />

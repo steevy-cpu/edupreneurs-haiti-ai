@@ -203,9 +203,151 @@ All colors MUST be HSL.
     to { transform: rotate(360deg); }
   }
 
-  @keyframes gentle-bob {
+@keyframes gentle-bob {
     0%, 100% { transform: translateY(0); }
     50% { transform: translateY(-4px); }
+  }
+
+  /* Community Page Unique Animations */
+  
+  /* Message staggered entry animation */
+  @keyframes messageSlideIn {
+    from { 
+      opacity: 0; 
+      transform: translateY(12px); 
+    }
+    to { 
+      opacity: 1; 
+      transform: translateY(0); 
+    }
+  }
+
+  /* Floating reactions animation */
+  @keyframes floatUp {
+    0% { 
+      opacity: 1; 
+      transform: translateX(-50%) translateY(0) scale(1); 
+    }
+    100% { 
+      opacity: 0; 
+      transform: translateX(-50%) translateY(-60px) scale(1.4); 
+    }
+  }
+
+  /* Presence ripple effect */
+  @keyframes presenceRipple {
+    0% { 
+      transform: scale(1); 
+      opacity: 0.6; 
+    }
+    100% { 
+      transform: scale(2.5); 
+      opacity: 0; 
+    }
+  }
+
+  /* Unread message glow pulse */
+  @keyframes glowPulse {
+    0%, 100% { 
+      box-shadow: 0 0 8px 2px var(--time-accent, hsl(var(--primary) / 0.4)); 
+    }
+    50% { 
+      box-shadow: 0 0 16px 4px var(--time-accent, hsl(var(--primary) / 0.6)); 
+    }
+  }
+
+  /* Send button bounce */
+  @keyframes sendBounce {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(0.88); }
+  }
+
+  /* Enhanced typing wave animation */
+  @keyframes typingWave {
+    0%, 60%, 100% { transform: translateY(0); }
+    30% { transform: translateY(-5px); }
+  }
+
+  /* Avatar hover pop */
+  @keyframes avatarPop {
+    0% { transform: scale(1); }
+    50% { transform: scale(0.95); }
+    100% { transform: scale(1.08); }
+  }
+
+  /* Utility classes for community animations */
+  .animate-message-in {
+    animation: messageSlideIn 0.3s ease-out forwards;
+  }
+
+  .animate-float-up {
+    animation: floatUp 600ms ease-out forwards;
+  }
+
+  .animate-presence-ripple {
+    animation: presenceRipple 1.5s ease-out infinite;
+  }
+
+  .animate-glow-pulse {
+    animation: glowPulse 2s ease-in-out infinite;
+  }
+
+  .animate-send-bounce {
+    animation: sendBounce 150ms ease-out;
+  }
+
+  .animate-typing-wave {
+    animation: typingWave 1.2s ease-in-out infinite;
+  }
+
+  /* Avatar micro-interaction */
+  .avatar-interactive {
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+  }
+
+  .avatar-interactive:hover {
+    transform: scale(1.08);
+    box-shadow: 0 4px 12px hsl(var(--primary) / 0.25);
+  }
+
+  .avatar-interactive:active {
+    animation: avatarPop 0.2s ease-out;
+  }
+
+  /* Presence indicator with ripple */
+  .presence-indicator {
+    position: relative;
+  }
+
+  .presence-indicator::before {
+    content: '';
+    position: absolute;
+    inset: -2px;
+    border-radius: 50%;
+    background: inherit;
+    animation: presenceRipple 1.5s ease-out infinite;
+  }
+
+  /* Unread conversation glow */
+  .unread-glow {
+    position: relative;
+    animation: glowPulse 2s ease-in-out infinite;
+  }
+
+  /* Reduced motion support - respect user preferences */
+  @media (prefers-reduced-motion: reduce) {
+    .animate-message-in,
+    .animate-float-up,
+    .animate-presence-ripple,
+    .animate-glow-pulse,
+    .animate-send-bounce,
+    .animate-typing-wave,
+    .avatar-interactive,
+    .presence-indicator::before,
+    .unread-glow {
+      animation: none !important;
+      transition: none !important;
+    }
   }
 
   /* Auth Page Styles */

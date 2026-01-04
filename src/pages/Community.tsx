@@ -23,6 +23,8 @@ import ericAiHelper from "@/assets/eric-ai-helper.png";
 import chatBackground from "@/assets/background-chat.png";
 import { logger } from "@/utils/logger";
 import { preloadImage } from "@/utils/performanceOptimization";
+import { useNetworkAwareAnimations } from "@/hooks/useNetworkAwareAnimations";
+import { useTimeBasedAccent } from "@/hooks/useTimeBasedAccent";
 import { 
   ConversationListItem, 
   ChatHeader, 
@@ -46,6 +48,16 @@ const Community = () => {
   const [searchParams] = useSearchParams();
   const conversationId = searchParams.get("conversation");
   const { playSendSound, playReceiveSound } = useMessageSounds();
+  
+  // Network-aware animations and time-based theming
+  const { 
+    shouldAnimate, 
+    shouldShowFloatingReactions, 
+    shouldShowRipples, 
+    shouldStaggerMessages,
+    shouldShowGlow 
+  } = useNetworkAwareAnimations();
+  const { accentColor, period } = useTimeBasedAccent();
   
   const [user, setUser] = useState<any>(null);
   const [conversations, setConversations] = useState<Conversation[]>([]);
@@ -1881,7 +1893,10 @@ const Community = () => {
   };
 
   return (
-    <div className="h-[100dvh] bg-background flex overflow-hidden">
+    <div 
+      className="h-[100dvh] bg-background flex overflow-hidden"
+      style={{ '--time-accent': accentColor } as React.CSSProperties}
+    >
       {/* Notification Permission Dialog */}
       {user && <NotificationPermissionBanner userId={user.id} />}
       
@@ -1967,7 +1982,7 @@ const Community = () => {
                   selectedConversation === conv.id 
                     ? "bg-primary/10 border-l-4 border-l-primary" 
                     : hasUnread 
-                      ? "bg-accent/40 hover:bg-accent/60" 
+                      ? `bg-accent/40 hover:bg-accent/60 ${shouldShowGlow ? 'unread-glow' : ''}` 
                       : "hover:bg-muted/40"
                 }`}
               >
@@ -1976,7 +1991,7 @@ const Community = () => {
                     className="relative"
                     onClick={() => setSelectedConversation(conv.id)}
                   >
-                    <Avatar className={`h-11 w-11 sm:h-12 sm:w-12 shrink-0 ring-2 ring-background shadow-sm ${hasUnread ? 'ring-primary/30' : ''}`}>
+                    <Avatar className={`h-11 w-11 sm:h-12 sm:w-12 shrink-0 ring-2 ring-background shadow-sm avatar-interactive ${hasUnread ? 'ring-primary/30' : ''}`}>
                       {conv.is_group ? (
                         <>
                           <AvatarImage src={conv.group?.avatar_url || undefined} />
@@ -1994,7 +2009,7 @@ const Community = () => {
                       )}
                     </Avatar>
                     {isOnline && (
-                      <div className="absolute bottom-0 right-0 w-3.5 h-3.5 bg-green-500 rounded-full border-2 border-background shadow-sm" />
+                      <div className={`absolute bottom-0 right-0 w-3.5 h-3.5 bg-green-500 rounded-full border-2 border-background shadow-sm ${shouldShowRipples ? 'presence-indicator' : ''}`} />
                     )}
                   </div>
                   <div 
@@ -2044,9 +2059,9 @@ const Community = () => {
                               <div className="flex items-center gap-1 text-primary text-xs italic font-medium">
                                 <span>en train d'écrire</span>
                                 <span className="flex gap-0.5">
-                                  <span className="animate-bounce" style={{ animationDelay: '0ms' }}>.</span>
-                                  <span className="animate-bounce" style={{ animationDelay: '150ms' }}>.</span>
-                                  <span className="animate-bounce" style={{ animationDelay: '300ms' }}>.</span>
+                                  <span className="animate-typing-wave" style={{ animationDelay: '0ms' }}>•</span>
+                                  <span className="animate-typing-wave" style={{ animationDelay: '100ms' }}>•</span>
+                                  <span className="animate-typing-wave" style={{ animationDelay: '200ms' }}>•</span>
                                 </span>
                               </div>
                             );
@@ -2296,7 +2311,7 @@ const Community = () => {
               {/* Messages */}
               <div className="p-4">
                 <div className="space-y-4 pb-4 max-w-full">
-                {messages.map((message) => {
+                {messages.map((message, index) => {
                   const isOwn = message.sender_id === user?.id;
                   const isSystemMsg = message.content.includes('a rejoint le groupe') || 
                     message.content.includes('a quitté le groupe') ||
@@ -2307,7 +2322,7 @@ const Community = () => {
                     return <SystemMessage key={message.id} content={message.content} />;
                   }
                   
-                  // Regular message rendering
+                  // Regular message rendering with staggered animation
                   return (
                     <MessageBubble
                       key={message.id}
@@ -2329,6 +2344,9 @@ const Community = () => {
                       onDownloadMedia={handleDownloadMedia}
                       onSetFullSizeImage={setFullSizeImage}
                       formatTime={formatTime}
+                      messageIndex={index}
+                      shouldAnimate={shouldStaggerMessages}
+                      shouldShowFloatingReactions={shouldShowFloatingReactions}
                     />
                   );
                 })}
@@ -2356,22 +2374,7 @@ const Community = () => {
                       }
                       
                       return (
-                        <div key={key} className="flex items-center gap-2 px-2 py-1">
-                          <Avatar className="h-6 w-6 shrink-0">
-                            <AvatarImage src={getAvatarUrl(typingUserProfile?.avatar_url)} />
-                            <AvatarFallback className="text-xs">
-                              {typingUserProfile?.nickname?.[0] || typingUserProfile?.full_name?.[0] || "?"}
-                            </AvatarFallback>
-                          </Avatar>
-                          <div className="flex items-center gap-1 text-muted-foreground text-sm">
-                            <span className="italic">en train d'écrire</span>
-                            <span className="flex gap-1">
-                              <span className="animate-bounce" style={{ animationDelay: '0ms' }}>.</span>
-                              <span className="animate-bounce" style={{ animationDelay: '150ms' }}>.</span>
-                              <span className="animate-bounce" style={{ animationDelay: '300ms' }}>.</span>
-                            </span>
-                          </div>
-                        </div>
+                        <TypingIndicator key={key} profile={typingUserProfile} />
                       );
                     }
                     logger.log('❌ Not showing typing indicator for this presence');

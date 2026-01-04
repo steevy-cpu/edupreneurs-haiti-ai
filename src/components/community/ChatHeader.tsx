@@ -14,6 +14,7 @@ interface ChatHeaderProps {
   onDelete: () => void;
   onGroupInfoClick: (groupId: string) => void;
   formatLastSeen: (timestamp: string) => string;
+  showRipple?: boolean;
 }
 
 export const ChatHeader = ({
@@ -24,6 +25,7 @@ export const ChatHeader = ({
   onDelete,
   onGroupInfoClick,
   formatLastSeen,
+  showRipple = true,
 }: ChatHeaderProps) => {
   const navigate = useNavigate();
   const isGroup = conversation?.is_group;
@@ -42,7 +44,7 @@ export const ChatHeader = ({
       </Button>
       
       <Avatar 
-        className="h-10 w-10 shrink-0 cursor-pointer hover:opacity-80 transition-opacity"
+        className="h-10 w-10 shrink-0 cursor-pointer avatar-interactive"
         onClick={() => {
           if (isGroup && conversation?.group) {
             onGroupInfoClick(conversation.group.id);
@@ -100,9 +102,21 @@ export const ChatHeader = ({
           
           if (isOnline) {
             return (
-              <p className="text-xs text-green-500 font-medium">
-                En ligne
-              </p>
+              <div className="flex items-center gap-1.5">
+                {/* Online indicator with ripple effect */}
+                <div className="relative">
+                  <div className="w-2 h-2 bg-green-500 rounded-full" />
+                  {showRipple && (
+                    <div 
+                      className="absolute inset-0 w-2 h-2 bg-green-500 rounded-full animate-presence-ripple"
+                      style={{ contain: 'layout style paint' }}
+                    />
+                  )}
+                </div>
+                <p className="text-xs text-green-500 font-medium">
+                  En ligne
+                </p>
+              </div>
             );
           } else if (lastSeen) {
             return (
