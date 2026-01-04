@@ -538,22 +538,24 @@ Prends ton temps pour réfléchir! 💡`;
           </Button>
         )}
 
-        <form onSubmit={handleSendMessage} className="flex gap-2">
-          <Input
-            value={inputMessage}
-            onChange={(e) => setInputMessage(e.target.value)}
-            placeholder="Pose une question à Jude..."
-            disabled={isLoading}
-            className="flex-1"
-          />
-          <Button type="submit" disabled={isLoading || !inputMessage.trim()}>
-            {isLoading ? (
-              <Loader2 className="h-4 w-4 animate-spin" />
-            ) : (
-              <Send className="h-4 w-4" />
-            )}
-          </Button>
-        </form>
+        <div className="relative p-[2px] rounded-xl bg-gradient-to-r from-primary via-secondary to-primary bg-[length:200%_100%] animate-gradient-x">
+          <form onSubmit={handleSendMessage} className="flex gap-2 bg-card rounded-[10px] p-2">
+            <Input
+              value={inputMessage}
+              onChange={(e) => setInputMessage(e.target.value)}
+              placeholder="Pose une question à Jude..."
+              disabled={isLoading}
+              className="flex-1 border-0 focus-visible:ring-0 focus-visible:ring-offset-0"
+            />
+            <Button type="submit" disabled={isLoading || !inputMessage.trim()}>
+              {isLoading ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <Send className="h-4 w-4" />
+              )}
+            </Button>
+          </form>
+        </div>
 
         {/* Navigation Controls */}
         <div className="flex items-center justify-between pt-2 border-t">
