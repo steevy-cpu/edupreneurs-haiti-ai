@@ -19,6 +19,8 @@ import {
 } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import ericAiHelper from "@/assets/eric-ai-helper.png";
+import 'katex/dist/katex.min.css';
+import { InlineMath, BlockMath } from 'react-katex';
 
 interface DissertationStep {
   step: string;
@@ -295,14 +297,32 @@ export function BacDissertationChat({ examId, subjects, onComplete }: BacDissert
                 >
                   {message.role === 'assistant' ? (
                     <div className="prose prose-sm dark:prose-invert max-w-none">
-                      <ReactMarkdown
-                        components={{
-                          p: ({ children }) => <p className="mb-2 last:mb-0">{children}</p>,
-                          strong: ({ children }) => <strong className="font-semibold">{children}</strong>,
-                        }}
-                      >
-                        {message.content}
-                      </ReactMarkdown>
+                      {(() => {
+                        // Split content by LaTeX delimiters and render accordingly
+                        const parts = message.content.split(/(\$\$[\s\S]*?\$\$|\$[^\$\n]+\$)/g);
+                        return parts.map((part, idx) => {
+                          if (part.startsWith('$$') && part.endsWith('$$')) {
+                            const math = part.slice(2, -2).trim();
+                            return <BlockMath key={idx} math={math} />;
+                          } else if (part.startsWith('$') && part.endsWith('$') && part.length > 2) {
+                            const math = part.slice(1, -1);
+                            return <InlineMath key={idx} math={math} />;
+                          } else if (part.trim()) {
+                            return (
+                              <ReactMarkdown
+                                key={idx}
+                                components={{
+                                  p: ({ children }) => <p className="mb-2 last:mb-0">{children}</p>,
+                                  strong: ({ children }) => <strong className="font-semibold">{children}</strong>,
+                                }}
+                              >
+                                {part}
+                              </ReactMarkdown>
+                            );
+                          }
+                          return null;
+                        });
+                      })()}
                     </div>
                   ) : (
                     <p className="whitespace-pre-wrap">{message.content}</p>

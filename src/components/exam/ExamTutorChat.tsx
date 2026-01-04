@@ -11,8 +11,7 @@ import { Badge } from "@/components/ui/badge";
 import { Send, Loader2, Youtube, MessageCircle, Trash2, ChevronLeft, ChevronRight } from "lucide-react";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import ericAiHelper from "@/assets/eric-ai-helper.png";
-import 'katex/dist/katex.min.css';
-import { InlineMath, BlockMath } from 'react-katex';
+import { MathText } from '@/components/MathContent';
 
 interface Message {
   id: string;
@@ -380,10 +379,6 @@ Prends ton temps pour réfléchir! 💡`;
     await sendInitialGreeting();
   };
 
-  const renderMessageWithMath = (content: string) => {
-    // TEMP: render plain text while we debug KaTeX issues
-    return content;
-  };
   return (
     <Card className="flex flex-col h-full overflow-hidden">
       {/* Header */}
@@ -446,7 +441,7 @@ Prends ton temps pour réfléchir! 💡`;
                 }`}
               >
                 <div className="text-sm whitespace-pre-wrap leading-relaxed">
-                  {renderMessageWithMath(message.message_content)}
+                  <MathText text={message.message_content} />
                 </div>
               </Card>
             </div>
