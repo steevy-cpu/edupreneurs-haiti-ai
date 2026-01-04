@@ -22,6 +22,89 @@ import ericAiHelper from "@/assets/eric-ai-helper.png";
 import 'katex/dist/katex.min.css';
 import { InlineMath, BlockMath } from 'react-katex';
 
+// Check if content has LaTeX delimiters or math patterns
+const hasMathContent = (text: string): boolean => {
+  return /\$\$[\s\S]+?\$\$/.test(text) ||    // $$...$$
+         /\$[^$\n]+?\$/.test(text) ||         // $...$
+         /\\\([\s\S]+?\\\)/.test(text) ||     // \(...\)
+         /\\\[[\s\S]+?\\\]/.test(text) ||     // \[...\]
+         /\\frac|\\sqrt|\\sum|\\int|\\times|\\div|\\neq|\\leq|\\geq|\\alpha|\\beta|\\pi/.test(text);
+};
+
+// Render content with both Markdown and Math support
+const renderMessageContent = (content: string): React.ReactNode => {
+  if (!hasMathContent(content)) {
+    // No math, just render as Markdown
+    return (
+      <ReactMarkdown
+        components={{
+          p: ({ children }) => <p className="mb-2 last:mb-0">{children}</p>,
+          strong: ({ children }) => <strong className="font-semibold">{children}</strong>,
+        }}
+      >
+        {content}
+      </ReactMarkdown>
+    );
+  }
+
+  // Split by all LaTeX delimiter patterns
+  const parts = content.split(/(\$\$[\s\S]*?\$\$|\$[^\$\n]+\$|\\\([\s\S]*?\\\)|\\\[[\s\S]*?\\\])/g);
+  
+  return parts.map((part, idx) => {
+    // Block math: $$...$$
+    if (part.startsWith('$$') && part.endsWith('$$')) {
+      const math = part.slice(2, -2).trim();
+      try {
+        return <BlockMath key={idx} math={math} />;
+      } catch {
+        return <span key={idx}>{part}</span>;
+      }
+    }
+    // Block math: \[...\]
+    if (part.startsWith('\\[') && part.endsWith('\\]')) {
+      const math = part.slice(2, -2).trim();
+      try {
+        return <BlockMath key={idx} math={math} />;
+      } catch {
+        return <span key={idx}>{part}</span>;
+      }
+    }
+    // Inline math: $...$
+    if (part.startsWith('$') && part.endsWith('$') && part.length > 2) {
+      const math = part.slice(1, -1);
+      try {
+        return <InlineMath key={idx} math={math} />;
+      } catch {
+        return <span key={idx}>{part}</span>;
+      }
+    }
+    // Inline math: \(...\)
+    if (part.startsWith('\\(') && part.endsWith('\\)')) {
+      const math = part.slice(2, -2);
+      try {
+        return <InlineMath key={idx} math={math} />;
+      } catch {
+        return <span key={idx}>{part}</span>;
+      }
+    }
+    // Regular text - render as Markdown
+    if (part.trim()) {
+      return (
+        <ReactMarkdown
+          key={idx}
+          components={{
+            p: ({ children }) => <span className="inline">{children}</span>,
+            strong: ({ children }) => <strong className="font-semibold">{children}</strong>,
+          }}
+        >
+          {part}
+        </ReactMarkdown>
+      );
+    }
+    return null;
+  });
+};
+
 interface DissertationStep {
   step: string;
   label: string;
@@ -297,32 +380,7 @@ export function BacDissertationChat({ examId, subjects, onComplete }: BacDissert
                 >
                   {message.role === 'assistant' ? (
                     <div className="prose prose-sm dark:prose-invert max-w-none">
-                      {(() => {
-                        // Split content by LaTeX delimiters and render accordingly
-                        const parts = message.content.split(/(\$\$[\s\S]*?\$\$|\$[^\$\n]+\$)/g);
-                        return parts.map((part, idx) => {
-                          if (part.startsWith('$$') && part.endsWith('$$')) {
-                            const math = part.slice(2, -2).trim();
-                            return <BlockMath key={idx} math={math} />;
-                          } else if (part.startsWith('$') && part.endsWith('$') && part.length > 2) {
-                            const math = part.slice(1, -1);
-                            return <InlineMath key={idx} math={math} />;
-                          } else if (part.trim()) {
-                            return (
-                              <ReactMarkdown
-                                key={idx}
-                                components={{
-                                  p: ({ children }) => <p className="mb-2 last:mb-0">{children}</p>,
-                                  strong: ({ children }) => <strong className="font-semibold">{children}</strong>,
-                                }}
-                              >
-                                {part}
-                              </ReactMarkdown>
-                            );
-                          }
-                          return null;
-                        });
-                      })()}
+                      {renderMessageContent(message.content)}
                     </div>
                   ) : (
                     <p className="whitespace-pre-wrap">{message.content}</p>
