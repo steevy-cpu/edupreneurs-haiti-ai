@@ -2,6 +2,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { BookOpen, Target, FileText, PenTool, GraduationCap, Video, Gamepad2 } from "lucide-react";
 import { InteractiveActivitiesEnhanced } from "@/components/InteractiveActivitiesEnhanced";
+import { MathContent, isMathSubject } from "@/components/MathContent";
 
 interface LessonPreviewProps {
   lesson: any;
@@ -63,10 +64,14 @@ export const LessonPreview = ({ lesson }: LessonPreviewProps) => {
         </CardHeader>
         <CardContent>
           {lesson.objectif && lesson.objectif.trim() ? (
-            <div 
-              className="prose dark:prose-invert max-w-none lesson-content"
-              dangerouslySetInnerHTML={{ __html: lesson.objectif }}
-            />
+            isMathSubject(lesson.subjects?.name || '') ? (
+              <MathContent content={lesson.objectif} className="prose dark:prose-invert max-w-none" />
+            ) : (
+              <div 
+                className="prose dark:prose-invert max-w-none lesson-content"
+                dangerouslySetInnerHTML={{ __html: lesson.objectif }}
+              />
+            )
           ) : (
             <p className="text-muted-foreground italic">Contenu pas encore généré</p>
           )}
@@ -83,10 +88,14 @@ export const LessonPreview = ({ lesson }: LessonPreviewProps) => {
         </CardHeader>
         <CardContent>
           {lesson.introduction && lesson.introduction.trim() ? (
-            <div 
-              className="prose dark:prose-invert max-w-none lesson-content"
-              dangerouslySetInnerHTML={{ __html: lesson.introduction }}
-            />
+            isMathSubject(lesson.subjects?.name || '') ? (
+              <MathContent content={lesson.introduction} className="prose dark:prose-invert max-w-none" />
+            ) : (
+              <div 
+                className="prose dark:prose-invert max-w-none lesson-content"
+                dangerouslySetInnerHTML={{ __html: lesson.introduction }}
+              />
+            )
           ) : (
             <p className="text-muted-foreground italic">Contenu pas encore généré</p>
           )}
@@ -103,10 +112,14 @@ export const LessonPreview = ({ lesson }: LessonPreviewProps) => {
         </CardHeader>
         <CardContent>
           {lesson.contenu && lesson.contenu.trim() ? (
-            <div 
-              className="prose dark:prose-invert max-w-none lesson-content"
-              dangerouslySetInnerHTML={{ __html: lesson.contenu }}
-            />
+            isMathSubject(lesson.subjects?.name || '') ? (
+              <MathContent content={lesson.contenu} className="prose dark:prose-invert max-w-none" />
+            ) : (
+              <div 
+                className="prose dark:prose-invert max-w-none lesson-content"
+                dangerouslySetInnerHTML={{ __html: lesson.contenu }}
+              />
+            )
           ) : (
             <p className="text-muted-foreground italic">Contenu pas encore généré</p>
           )}
@@ -123,10 +136,14 @@ export const LessonPreview = ({ lesson }: LessonPreviewProps) => {
         </CardHeader>
         <CardContent>
           {lesson.exemples_exercices && lesson.exemples_exercices.trim() ? (
-            <div 
-              className="prose dark:prose-invert max-w-none lesson-content"
-              dangerouslySetInnerHTML={{ __html: lesson.exemples_exercices }}
-            />
+            isMathSubject(lesson.subjects?.name || '') ? (
+              <MathContent content={lesson.exemples_exercices} className="prose dark:prose-invert max-w-none" />
+            ) : (
+              <div 
+                className="prose dark:prose-invert max-w-none lesson-content"
+                dangerouslySetInnerHTML={{ __html: lesson.exemples_exercices }}
+              />
+            )
           ) : (
             <p className="text-muted-foreground italic">Contenu pas encore généré</p>
           )}

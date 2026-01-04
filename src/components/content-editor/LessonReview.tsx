@@ -1,6 +1,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { BookOpen, GraduationCap } from "lucide-react";
+import { MathContent, isMathSubject } from "@/components/MathContent";
 
 interface LessonReviewProps {
   lesson: any;
@@ -59,19 +60,31 @@ export const LessonReview = ({ lesson }: LessonReviewProps) => {
 
           {lesson.introduction && (
             <div className="mb-6">
-              <div dangerouslySetInnerHTML={{ __html: lesson.introduction }} />
+              {isMathSubject(lesson.subjects?.name || '') ? (
+                <MathContent content={lesson.introduction} />
+              ) : (
+                <div dangerouslySetInnerHTML={{ __html: lesson.introduction }} />
+              )}
             </div>
           )}
           
           {lesson.contenu && (
             <div className="mb-6">
-              <div dangerouslySetInnerHTML={{ __html: lesson.contenu }} />
+              {isMathSubject(lesson.subjects?.name || '') ? (
+                <MathContent content={lesson.contenu} />
+              ) : (
+                <div dangerouslySetInnerHTML={{ __html: lesson.contenu }} />
+              )}
             </div>
           )}
           
           {lesson.exemples_exercices && (
             <div className="mb-6">
-              <div dangerouslySetInnerHTML={{ __html: lesson.exemples_exercices }} />
+              {isMathSubject(lesson.subjects?.name || '') ? (
+                <MathContent content={lesson.exemples_exercices} />
+              ) : (
+                <div dangerouslySetInnerHTML={{ __html: lesson.exemples_exercices }} />
+              )}
             </div>
           )}
 
