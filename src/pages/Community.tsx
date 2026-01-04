@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -22,6 +22,7 @@ import { NotificationPermissionBanner } from "@/components/NotificationPermissio
 import ericAiHelper from "@/assets/eric-ai-helper.png";
 import chatBackground from "@/assets/background-chat.png";
 import { logger } from "@/utils/logger";
+import { preloadImage } from "@/utils/performanceOptimization";
 import { 
   ConversationListItem, 
   ChatHeader, 
@@ -88,6 +89,21 @@ const Community = () => {
   const [showGroupInfo, setShowGroupInfo] = useState(false);
   const [selectedGroupId, setSelectedGroupId] = useState<string | null>(null);
   const [keyboardHeight, setKeyboardHeight] = useState(0);
+
+  // Memoize chat background style to prevent re-renders
+  const chatBackgroundStyle = useMemo(() => ({
+    backgroundImage: `linear-gradient(hsl(var(--background) / 0.55), hsl(var(--background) / 0.55)), url(${chatBackground})`,
+    backgroundSize: '300px',
+    backgroundRepeat: 'repeat',
+    backgroundPosition: 'center',
+  }), []);
+
+  // Preload chat background image on mount
+  useEffect(() => {
+    preloadImage(chatBackground).catch(() => {
+      // Silent fail - image will load normally when needed
+    });
+  }, []);
 
   // Handle virtual keyboard on mobile
   useEffect(() => {
@@ -2094,17 +2110,12 @@ const Community = () => {
             ? "fixed inset-0 w-screen md:relative md:inset-auto md:w-auto"
             : "hidden md:block"
         } md:flex-1 bg-background md:ml-80 lg:ml-96 relative`}
-        style={
-          selectedConversation
-            ? {
-                backgroundImage: `linear-gradient(hsl(var(--background) / 0.55), hsl(var(--background) / 0.55)), url(${chatBackground})`,
-                backgroundSize: '300px',
-                backgroundRepeat: 'repeat',
-                backgroundPosition: 'center',
-              }
-            : undefined
-        }
       >
+        {/* Persistent background layer - always mounted to prevent reloading */}
+        <div 
+          className="absolute inset-0 pointer-events-none z-0"
+          style={chatBackgroundStyle}
+        />
         {selectedConversation ? (
           <div className="h-full flex flex-col relative" style={{
             height: '100dvh'
