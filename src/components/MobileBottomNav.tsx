@@ -61,6 +61,30 @@ export const MobileBottomNav = () => {
   const queryClient = useQueryClient();
   const [unreadMessages, setUnreadMessages] = useState(0);
   const [unreadNotifications, setUnreadNotifications] = useState(0);
+  const [keyboardOpen, setKeyboardOpen] = useState(false);
+
+  // Track keyboard visibility using visualViewport
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.visualViewport) {
+        const kbHeight = window.innerHeight - window.visualViewport.height;
+        setKeyboardOpen(kbHeight > 100);
+      }
+    };
+    
+    if (window.visualViewport) {
+      window.visualViewport.addEventListener('resize', handleResize);
+      window.visualViewport.addEventListener('scroll', handleResize);
+      handleResize();
+    }
+    
+    return () => {
+      if (window.visualViewport) {
+        window.visualViewport.removeEventListener('resize', handleResize);
+        window.visualViewport.removeEventListener('scroll', handleResize);
+      }
+    };
+  }, []);
 
   const navItems: NavItem[] = [
     { icon: Home, path: "/dashboard" },
@@ -120,11 +144,12 @@ export const MobileBottomNav = () => {
     }
   };
 
-  // Hide on certain pages
+  // Hide on certain pages or when keyboard is open on community
   const hiddenPaths = ["/auth", "/onboarding", "/chess-game"];
   const isLessonPage = location.pathname.includes("-lesson/");
+  const isCommunityPage = location.pathname === "/community";
   
-  if (hiddenPaths.includes(location.pathname) || isLessonPage) {
+  if (hiddenPaths.includes(location.pathname) || isLessonPage || (isCommunityPage && keyboardOpen)) {
     return null;
   }
 
