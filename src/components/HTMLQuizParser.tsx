@@ -6,7 +6,7 @@ import { CheckCircle2, XCircle, Trophy, AlertTriangle, RefreshCw } from "lucide-
 import { useSoundEffects } from "@/hooks/useSoundEffects";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-
+import { MathText } from "@/components/MathContent";
 interface ParsedQuestion {
   number: number;
   question: string;
@@ -383,7 +383,9 @@ export const HTMLQuizParser = ({ htmlContent, lessonSlug, subject }: HTMLQuizPar
         <h3 className="text-xl font-bold text-purple-600 dark:text-purple-400 mb-4">
           Question {currentQuestion.number}
         </h3>
-        <p className="text-lg text-foreground mb-6">{currentQuestion.question}</p>
+        <p className="text-lg text-foreground mb-6">
+          <MathText text={currentQuestion.question} />
+        </p>
 
         {/* Options */}
         <div className="space-y-3 mb-6">
@@ -420,7 +422,7 @@ export const HTMLQuizParser = ({ htmlContent, lessonSlug, subject }: HTMLQuizPar
                   <span className="font-bold text-purple-600 dark:text-purple-400">
                     {option.letter})
                   </span>
-                  <span className="flex-1">{option.text}</span>
+                  <span className="flex-1"><MathText text={option.text} /></span>
                   {showFeedback && isCorrectOption && (
                     <CheckCircle2 className="w-5 h-5 text-green-600 flex-shrink-0" />
                   )}
@@ -446,7 +448,7 @@ export const HTMLQuizParser = ({ htmlContent, lessonSlug, subject }: HTMLQuizPar
                 <p className="font-bold mb-2 text-foreground">
                   {isCorrect ? '✅ Bonne réponse !' : `❌ Mauvaise réponse. La bonne réponse est ${currentQuestion.correctAnswer}`}
                 </p>
-                <p className="text-sm text-foreground">{currentQuestion.explanation}</p>
+                <p className="text-sm text-foreground"><MathText text={currentQuestion.explanation} /></p>
               </div>
             </div>
           </Card>
