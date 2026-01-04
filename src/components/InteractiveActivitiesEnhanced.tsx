@@ -1,15 +1,14 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Progress } from "@/components/ui/progress";
-import { CheckCircle, XCircle, ArrowRight, Loader2, RefreshCw, Shuffle } from "lucide-react";
+import { CheckCircle, XCircle, ArrowRight, RefreshCw, Shuffle } from "lucide-react";
 import { useSoundEffects } from "@/hooks/useSoundEffects";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { MathText } from "@/components/MathContent";
 
-type ActivityType = 'QUIZ' | 'MATCHING' | 'TRUEFALSE' | 'FILLIN';
+type ActivityType = 'QUIZ' | 'TRUEFALSE';
 
 interface BaseActivity {
   type: ActivityType;
@@ -25,15 +24,6 @@ interface QuizActivity extends BaseActivity {
   explanation: string;
 }
 
-interface MatchingActivity extends BaseActivity {
-  type: 'MATCHING';
-  instruction: string;
-  columnA: { id: number; text: string }[];
-  columnB: { id: string; text: string }[];
-  correctMatches: Record<number, string>;
-  explanation: string;
-}
-
 interface TrueFalseActivity extends BaseActivity {
   type: 'TRUEFALSE';
   statement: string;
@@ -41,15 +31,7 @@ interface TrueFalseActivity extends BaseActivity {
   explanation: string;
 }
 
-interface FillInActivity extends BaseActivity {
-  type: 'FILLIN';
-  sentence: string;
-  correctAnswer: string; // The actual text answer (e.g., "has", "is")
-  acceptedAnswers?: string[]; // Alternative accepted answers
-  explanation: string;
-}
-
-type Activity = QuizActivity | MatchingActivity | TrueFalseActivity | FillInActivity;
+type Activity = QuizActivity | TrueFalseActivity;
 
 interface InteractiveActivitiesEnhancedProps {
   content: string;
@@ -66,8 +48,6 @@ export const InteractiveActivitiesEnhanced = ({
 }: InteractiveActivitiesEnhancedProps) => {
   const [currentActivityIndex, setCurrentActivityIndex] = useState(0);
   const [selectedAnswer, setSelectedAnswer] = useState<number | null>(null);
-  const [textAnswer, setTextAnswer] = useState<string>(''); // For FILLIN text input
-  const [selectedMatches, setSelectedMatches] = useState<Record<number, string>>({});
   const [showFeedback, setShowFeedback] = useState(false);
   const [score, setScore] = useState(0);
   const [completed, setCompleted] = useState(false);
@@ -129,193 +109,188 @@ export const InteractiveActivitiesEnhanced = ({
     }
   };
 
-  const parseActivities = (content: string): Activity[] => {
-    console.log('🔍 Parsing activities content:', content.substring(0, 200));
-    console.log('🔍 Full content length:', content.length);
-    const activities: Activity[] = [];
-    
-    // First, try to parse TRUE_FALSE (Affirmation format) separately
-    const trueFalseActivities = parseTrueFalseAffirmations(content);
-    activities.push(...trueFalseActivities);
-    
-    // Then parse QUIZ questions
-    const quizActivities = parseQuizQuestions(content);
-    activities.push(...quizActivities);
-    
-    console.log(`📊 Total activities parsed: ${activities.length} (${trueFalseActivities.length} TRUE_FALSE, ${quizActivities.length} QUIZ)`);
-    
-    return activities;
-  };
-  
-  // Parse TRUE_FALSE affirmations in the new format
-  const parseTrueFalseAffirmations = (content: string): TrueFalseActivity[] => {
+  // Parse TRUEFALSE activities - handles multiple formats
+  const parseTrueFalseActivities = (content: string): TrueFalseActivity[] => {
     const activities: TrueFalseActivity[] = [];
     
-    // Find the TRUE_FALSE section
-    const trueFalseMatch = content.match(/\*\*TYPE:\s*(?:TRUE_FALSE|TRUEFALSE)\*\*([\s\S]*?)(?=\*\*TYPE:|$)/i);
-    if (!trueFalseMatch) {
-      console.log('📊 No TRUE_FALSE section found');
-      return activities;
-    }
+    // Find all TRUEFALSE sections using TYPE marker
+    const trueFalseRegex = /\*\*TYPE:\s*(?:TRUE_FALSE|TRUEFALSE)\*\*([\s\S]*?)(?=\*\*TYPE:|$)/gi;
+    let match;
     
-    const trueFalseSection = trueFalseMatch[1];
-    
-    // Split by --- or **Affirmation X:**
-    const affirmationBlocks = trueFalseSection.split(/---/).filter(block => block.trim());
-    
-    affirmationBlocks.forEach((block, idx) => {
-      try {
-        // Match **Affirmation X:** statement
-        const affirmationMatch = block.match(/\*\*Affirmation\s*\d*:?\*\*\s*\n?\s*(.+?)(?=\n\s*\*\*Réponse)/is);
-        if (!affirmationMatch) {
-          // Also try without the Affirmation header - just look for statement before **Réponse:
-          const simpleMatch = block.match(/^[^*]+(?=\*\*Réponse)/is);
-          if (!simpleMatch) {
-            console.warn(`⚠️ No affirmation found in TRUE_FALSE block ${idx}`);
-            return;
-          }
-        }
-        
-        const statement = (affirmationMatch ? affirmationMatch[1] : block.split('**Réponse')[0])
-          .trim()
-          .replace(/\*\*/g, '')
-          .replace(/\s+/g, ' ');
-        
-        if (!statement || statement.length < 5) {
-          console.warn(`⚠️ Statement too short in TRUE_FALSE block ${idx}`);
-          return;
-        }
-        
-        // Match **Réponse: VRAI** or **Réponse: FAUX**
-        const responseMatch = block.match(/\*\*Réponse:?\*\*\s*(VRAI|FAUX)/i) 
-          || block.match(/\*\*Réponse:\s*(VRAI|FAUX)\*\*/i);
-        
-        if (!responseMatch) {
-          console.warn(`⚠️ No VRAI/FAUX response found in TRUE_FALSE block ${idx}`);
-          return;
-        }
-        
-        const isTrue = responseMatch[1].toUpperCase() === 'VRAI';
-        const correctAnswer = isTrue ? 0 : 1; // 0 = VRAI, 1 = FAUX
-        
-        // Match explanation
-        const explanationMatch = block.match(/\*\*Explication:?\*\*\s*(.+?)(?=---|$)/is);
-        const explanation = explanationMatch 
-          ? explanationMatch[1].trim().replace(/\*\*/g, '').replace(/\s+/g, ' ') 
-          : "";
-        
-        activities.push({
-          type: 'TRUEFALSE',
-          title: `Affirmation ${activities.length + 1}`,
-          difficulty: 'Moyen',
-          statement,
-          correctAnswer,
-          explanation
-        });
-        
-        console.log(`✅ Parsed TRUE_FALSE: "${statement.substring(0, 50)}..." -> ${isTrue ? 'VRAI' : 'FAUX'}`);
-      } catch (error) {
-        console.error('Error parsing TRUE_FALSE block:', error);
+    while ((match = trueFalseRegex.exec(content)) !== null) {
+      const section = match[1];
+      
+      // Try to find the statement - multiple formats
+      // Format 1: **Affirmation à évaluer** or **Affirmation a evaluer**
+      // Format 2: **Affirmation 1:**
+      let statement = '';
+      
+      const affirmationMatch = section.match(/\*\*Affirmation\s*(?:à|a)?\s*(?:évaluer|evaluer|[0-9]*):?\*\*\s*\n?\s*(.+?)(?=\n\s*[-*]?\s*[A-B]\)|\n\s*\*\*Réponse)/is);
+      if (affirmationMatch) {
+        statement = affirmationMatch[1].trim().replace(/\*\*/g, '').replace(/\s+/g, ' ');
       }
-    });
+      
+      if (!statement || statement.length < 5) {
+        console.warn('⚠️ No statement found in TRUEFALSE block');
+        continue;
+      }
+      
+      // Try to find the correct answer - multiple formats
+      let correctAnswer = -1;
+      
+      // Format 1: **Réponse correcte:** A or B (with A=VRAI, B=FAUX options)
+      const letterAnswerMatch = section.match(/\*\*Réponse\s*correcte:?\*\*\s*([A-B])/i) 
+        || section.match(/\*\*Réponse\s*correcte:\s*([A-B])\*\*/i);
+      
+      if (letterAnswerMatch) {
+        const letter = letterAnswerMatch[1].toUpperCase();
+        // Check if options show A=VRAI, B=FAUX pattern
+        const hasVraiOption = /[-*]?\s*A\)\s*VRAI/i.test(section);
+        const hasFauxOption = /[-*]?\s*B\)\s*FAUX/i.test(section);
+        
+        if (hasVraiOption && hasFauxOption) {
+          // A = VRAI (0), B = FAUX (1)
+          correctAnswer = letter === 'A' ? 0 : 1;
+        } else {
+          // Assume direct mapping: A=0, B=1
+          correctAnswer = letter === 'A' ? 0 : 1;
+        }
+      }
+      
+      // Format 2: **Réponse: VRAI** or **Réponse: FAUX**
+      if (correctAnswer === -1) {
+        const directAnswerMatch = section.match(/\*\*Réponse:?\*\*\s*(VRAI|FAUX)/i) 
+          || section.match(/\*\*Réponse:\s*(VRAI|FAUX)\*\*/i);
+        
+        if (directAnswerMatch) {
+          correctAnswer = directAnswerMatch[1].toUpperCase() === 'VRAI' ? 0 : 1;
+        }
+      }
+      
+      if (correctAnswer === -1) {
+        console.warn('⚠️ No correct answer found in TRUEFALSE block');
+        continue;
+      }
+      
+      // Get explanation
+      const explanationMatch = section.match(/\*\*Explication:?\*\*\s*(.+?)(?=\*\*TYPE:|$)/is);
+      const explanation = explanationMatch 
+        ? explanationMatch[1].trim().replace(/\*\*/g, '').replace(/\s+/g, ' ') 
+        : "";
+      
+      activities.push({
+        type: 'TRUEFALSE',
+        title: `Affirmation ${activities.length + 1}`,
+        difficulty: 'Moyen',
+        statement,
+        correctAnswer,
+        explanation
+      });
+      
+      console.log(`✅ Parsed TRUEFALSE: "${statement.substring(0, 50)}..." -> ${correctAnswer === 0 ? 'VRAI' : 'FAUX'}`);
+    }
     
     return activities;
   };
   
-  // Parse QUIZ questions
-  const parseQuizQuestions = (content: string): QuizActivity[] => {
+  // Parse QUIZ activities - handles multiple formats
+  const parseQuizActivities = (content: string): QuizActivity[] => {
     const activities: QuizActivity[] = [];
     
-    // Find the QUIZ section (everything before TRUE_FALSE or the whole content if no TRUE_FALSE)
-    let quizSection = content;
-    const trueFalseStart = content.search(/\*\*TYPE:\s*(?:TRUE_FALSE|TRUEFALSE)\*\*/i);
-    if (trueFalseStart > 0) {
-      quizSection = content.substring(0, trueFalseStart);
-    }
+    // Find all QUIZ sections using TYPE marker
+    const quizRegex = /\*\*TYPE:\s*QUIZ\*\*([\s\S]*?)(?=\*\*TYPE:|$)/gi;
+    let match;
     
-    // Split by --- or **Question X:**
-    const questionBlocks = quizSection.split(/---/).filter(block => {
-      // Only include blocks that have Question and options
-      return block.includes('**Question') && /[A-D]\)/.test(block);
-    });
-    
-    questionBlocks.forEach((block, idx) => {
-      try {
-        // Match **Question X:** text
-        let questionMatch = block.match(/\*\*Question\s*\d*:?\*\*\s*\n?\s*(.+?)(?=\n\s*[A-D]\))/is);
-        if (!questionMatch) {
-          console.warn(`⚠️ No question text found in QUIZ block ${idx}`);
-          return;
-        }
-        
-        const question = questionMatch[1].trim().replace(/\*\*/g, '').replace(/\s+/g, ' ');
-        
-        // Match options A), B), C), D)
-        const optionsMap: Record<string, string> = {};
-        const optionMatches = block.matchAll(/\n\s*([A-D])\)\s*(.+?)(?=\n\s*[A-D]\)|\n\s*\*\*Réponse|$)/gis);
-        
-        Array.from(optionMatches).forEach(match => {
-          const letter = match[1].toUpperCase();
-          let optionText = match[2].trim().replace(/\*\*/g, '').replace(/\s+/g, ' ');
-          // Clean up any trailing content
-          optionText = optionText.split('\n')[0].trim();
-          if (optionText && !optionText.startsWith('Réponse')) {
-            optionsMap[letter] = optionText;
-          }
-        });
-        
-        // Build options array in A, B, C, D order
-        const options: string[] = [];
-        ['A', 'B', 'C', 'D'].forEach(letter => {
-          if (optionsMap[letter]) {
-            options.push(optionsMap[letter]);
-          }
-        });
-        
-        if (options.length !== 4) {
-          console.warn(`⚠️ Expected 4 options, found ${options.length} in QUIZ block ${idx}`);
-          return;
-        }
-        
-        // Match correct answer - multiple formats
-        let correctMatch = block.match(/\*\*Réponse\s+correcte:?\*\*\s*([A-D])/i);
-        if (!correctMatch) {
-          correctMatch = block.match(/\*\*Réponse\s+correcte:\s*([A-D])\*\*/i);
-        }
-        if (!correctMatch) {
-          console.warn(`⚠️ No correct answer found in QUIZ block ${idx}`);
-          return;
-        }
-        
-        const correctLetter = correctMatch[1].toUpperCase();
-        const correctIndex = correctLetter.charCodeAt(0) - 'A'.charCodeAt(0);
-        
-        // Match explanation
-        const explanationMatch = block.match(/\*\*Explication:?\*\*\s*(.+?)(?=---|$)/is);
-        const explanation = explanationMatch 
-          ? explanationMatch[1].trim().replace(/\*\*/g, '').replace(/\s+/g, ' ') 
-          : "";
-        
-        activities.push({
-          type: 'QUIZ',
-          title: `Question ${activities.length + 1}`,
-          difficulty: 'Moyen',
-          question,
-          options,
-          correctAnswer: correctIndex,
-          explanation
-        });
-        
-        console.log(`✅ Parsed QUIZ: "${question.substring(0, 50)}..." -> Correct: ${correctLetter}`);
-      } catch (error) {
-        console.error('Error parsing QUIZ block:', error);
+    while ((match = quizRegex.exec(content)) !== null) {
+      const section = match[1];
+      
+      // Find question text - multiple formats
+      // Format 1: **Question 1:**
+      // Format 2: **Question:**
+      const questionMatch = section.match(/\*\*Question\s*\d*:?\*\*\s*\n?\s*(.+?)(?=\n\s*[-*]?\s*[A-D]\))/is);
+      if (!questionMatch) {
+        console.warn('⚠️ No question text found in QUIZ block');
+        continue;
       }
-    });
+      
+      const question = questionMatch[1].trim().replace(/\*\*/g, '').replace(/\s+/g, ' ');
+      
+      // Parse options - accepts optional dash/asterisk prefix: - A) or * A) or A)
+      const optionsMap: Record<string, string> = {};
+      const optionMatches = section.matchAll(/^\s*[-*]?\s*([A-D])\)\s*(.+?)$/gim);
+      
+      for (const optMatch of optionMatches) {
+        const letter = optMatch[1].toUpperCase();
+        let optionText = optMatch[2].trim().replace(/\*\*/g, '').replace(/\s+/g, ' ');
+        // Clean up any trailing content
+        optionText = optionText.split('\n')[0].trim();
+        if (optionText && !optionText.toLowerCase().startsWith('réponse')) {
+          optionsMap[letter] = optionText;
+        }
+      }
+      
+      // Build options array in A, B, C, D order
+      const options: string[] = [];
+      ['A', 'B', 'C', 'D'].forEach(letter => {
+        if (optionsMap[letter]) {
+          options.push(optionsMap[letter]);
+        }
+      });
+      
+      if (options.length < 2) {
+        console.warn(`⚠️ Expected at least 2 options, found ${options.length} in QUIZ block`);
+        continue;
+      }
+      
+      // Parse correct answer - multiple formats
+      let correctMatch = section.match(/\*\*Réponse\s*correcte:?\*\*\s*([A-D])/i);
+      if (!correctMatch) {
+        correctMatch = section.match(/\*\*Réponse\s*correcte:\s*([A-D])\*\*/i);
+      }
+      if (!correctMatch) {
+        console.warn('⚠️ No correct answer found in QUIZ block');
+        continue;
+      }
+      
+      const correctLetter = correctMatch[1].toUpperCase();
+      const correctIndex = correctLetter.charCodeAt(0) - 'A'.charCodeAt(0);
+      
+      // Get explanation
+      const explanationMatch = section.match(/\*\*Explication:?\*\*\s*(.+?)(?=\*\*TYPE:|$)/is);
+      const explanation = explanationMatch 
+        ? explanationMatch[1].trim().replace(/\*\*/g, '').replace(/\s+/g, ' ') 
+        : "";
+      
+      activities.push({
+        type: 'QUIZ',
+        title: `Question ${activities.length + 1}`,
+        difficulty: 'Moyen',
+        question,
+        options,
+        correctAnswer: correctIndex,
+        explanation
+      });
+      
+      console.log(`✅ Parsed QUIZ: "${question.substring(0, 50)}..." -> Correct: ${correctLetter}`);
+    }
     
     return activities;
   };
 
-  const activities = parseActivities(content);
+  // Parse all activities with memoization
+  const activities = useMemo(() => {
+    if (!content) return [];
+    
+    console.log('🔍 Parsing activities content:', content.substring(0, 200));
+    
+    const trueFalseActivities = parseTrueFalseActivities(content);
+    const quizActivities = parseQuizActivities(content);
+    
+    const allActivities = [...quizActivities, ...trueFalseActivities];
+    console.log(`📊 Total activities parsed: ${allActivities.length} (${quizActivities.length} QUIZ, ${trueFalseActivities.length} TRUEFALSE)`);
+    
+    return allActivities;
+  }, [content]);
 
   if (!isLoading && activities.length === 0 && content) {
     return (
@@ -367,22 +342,7 @@ export const InteractiveActivitiesEnhanced = ({
   const progress = ((currentActivityIndex + 1) / activities.length) * 100;
 
   const handleAnswerSubmit = async () => {
-    let isCorrect = false;
-
-    if (currentActivity.type === 'MATCHING') {
-      const matchingActivity = currentActivity as MatchingActivity;
-      isCorrect = Object.keys(matchingActivity.correctMatches).every(
-        key => selectedMatches[parseInt(key)] === matchingActivity.correctMatches[parseInt(key)]
-      );
-    } else if (currentActivity.type === 'FILLIN') {
-      const fillInActivity = currentActivity as FillInActivity;
-      const userAnswer = textAnswer.toLowerCase().trim();
-      isCorrect = fillInActivity.acceptedAnswers?.some(a => a.toLowerCase().trim() === userAnswer) 
-        || fillInActivity.correctAnswer.toLowerCase().trim() === userAnswer;
-    } else if (currentActivity.type === 'QUIZ' || currentActivity.type === 'TRUEFALSE') {
-      const quizActivity = currentActivity as QuizActivity | TrueFalseActivity;
-      isCorrect = selectedAnswer === quizActivity.correctAnswer;
-    }
+    const isCorrect = selectedAnswer === currentActivity.correctAnswer;
 
     setShowFeedback(true);
     playSound(isCorrect ? "correct" : "incorrect");
@@ -411,8 +371,6 @@ export const InteractiveActivitiesEnhanced = ({
     playSound("next");
     setShowFeedback(false);
     setSelectedAnswer(null);
-    setTextAnswer('');
-    setSelectedMatches({});
     
     if (currentActivityIndex < activities.length - 1) {
       setCurrentActivityIndex(prev => prev + 1);
@@ -425,8 +383,6 @@ export const InteractiveActivitiesEnhanced = ({
     playSound("next");
     setCurrentActivityIndex(0);
     setSelectedAnswer(null);
-    setTextAnswer('');
-    setSelectedMatches({});
     setShowFeedback(false);
     setScore(0);
     setCompleted(false);
@@ -588,127 +544,6 @@ export const InteractiveActivitiesEnhanced = ({
           </>
         );
 
-      case 'FILLIN':
-        const fillInActivity = currentActivity as FillInActivity;
-        const isCorrectAnswer = showFeedback && (
-          fillInActivity.acceptedAnswers?.some(a => 
-            a.toLowerCase().trim() === textAnswer.toLowerCase().trim()
-          ) || fillInActivity.correctAnswer.toLowerCase().trim() === textAnswer.toLowerCase().trim()
-        );
-        
-        return (
-          <>
-            <div className="p-4 sm:p-6 bg-gradient-to-r from-primary/10 to-accent/10 rounded-lg border-2 border-primary/20">
-              <p className="text-base sm:text-lg font-medium leading-relaxed break-words">
-                <MathText text={fillInActivity.sentence} />
-              </p>
-            </div>
-
-            <div className="space-y-4">
-              <div className="relative">
-                <input
-                  type="text"
-                  value={textAnswer}
-                  onChange={(e) => !showFeedback && setTextAnswer(e.target.value)}
-                  disabled={showFeedback}
-                  placeholder="Tapez votre réponse ici..."
-                  className={`
-                    w-full p-4 rounded-xl border-2 text-base
-                    ${!showFeedback ? 'border-primary/30 focus:border-primary focus:ring-2 focus:ring-primary/20' : ''}
-                    ${showFeedback && isCorrectAnswer ? 'border-success bg-success/10' : ''}
-                    ${showFeedback && !isCorrectAnswer ? 'border-destructive bg-destructive/10' : ''}
-                    ${showFeedback ? 'cursor-not-allowed' : ''}
-                    transition-all duration-300
-                  `}
-                />
-                {showFeedback && (
-                  <div className="absolute right-4 top-1/2 -translate-y-1/2">
-                    {isCorrectAnswer ? (
-                      <CheckCircle className="w-6 h-6 text-success" />
-                    ) : (
-                      <XCircle className="w-6 h-6 text-destructive" />
-                    )}
-                  </div>
-                )}
-              </div>
-              {showFeedback && !isCorrectAnswer && (
-                <div className="p-3 bg-info/10 rounded-lg border border-info/30">
-                  <p className="text-sm font-medium">
-                    Réponse correcte: <span className="font-bold text-success"><MathText text={fillInActivity.correctAnswer} /></span>
-                  </p>
-                </div>
-              )}
-            </div>
-          </>
-        );
-
-      case 'MATCHING':
-        const matchingActivity = currentActivity as MatchingActivity;
-        return (
-          <>
-            <div className="p-4 sm:p-6 bg-gradient-to-r from-primary/10 to-accent/10 rounded-lg border-2 border-primary/20 mb-4">
-              <p className="text-base sm:text-lg font-medium break-words"><MathText text={matchingActivity.instruction} /></p>
-            </div>
-
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
-              <div className="space-y-2 sm:space-y-3">
-                <h3 className="font-semibold text-xs sm:text-sm uppercase text-muted-foreground sticky top-0 bg-background/95 backdrop-blur py-2 z-10">Colonne A</h3>
-                {matchingActivity.columnA.map((item) => (
-                  <div key={item.id} className="p-3 sm:p-4 bg-accent/20 rounded-lg border-2 border-accent/40 min-h-[60px] flex items-center">
-                    <span className="font-bold text-primary mr-2">{item.id}.</span> 
-                    <span className="text-sm sm:text-base break-words flex-1"><MathText text={item.text} /></span>
-                  </div>
-                ))}
-              </div>
-
-              <div className="space-y-2 sm:space-y-3">
-                <h3 className="font-semibold text-xs sm:text-sm uppercase text-muted-foreground sticky top-0 bg-background/95 backdrop-blur py-2 z-10">Colonne B</h3>
-                {matchingActivity.columnB.map((item) => (
-                  <button
-                    key={item.id}
-                    onClick={() => {
-                      if (!showFeedback) {
-                        const nextUnmatched = matchingActivity.columnA.find(
-                          a => !selectedMatches[a.id]
-                        );
-                        if (nextUnmatched) {
-                          setSelectedMatches(prev => ({
-                            ...prev,
-                            [nextUnmatched.id]: item.id
-                          }));
-                        }
-                      }
-                    }}
-                    disabled={showFeedback}
-                    className={`
-                      w-full p-3 sm:p-4 rounded-lg border-2 text-left transition-all min-h-[60px] flex items-center
-                      ${!showFeedback ? 'hover:border-primary hover:bg-primary/5 active:scale-[0.98]' : ''}
-                      ${Object.values(selectedMatches).includes(item.id) ? 'border-primary bg-primary/10' : 'border-muted bg-background'}
-                      ${showFeedback ? 'cursor-not-allowed' : 'cursor-pointer'}
-                    `}
-                  >
-                    <span className="font-bold text-primary mr-2">{item.id})</span> 
-                    <span className="text-sm sm:text-base break-words flex-1"><MathText text={item.text} /></span>
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {Object.keys(selectedMatches).length > 0 && !showFeedback && (
-              <div className="mt-4 p-3 sm:p-4 bg-info/10 rounded-lg border border-info/30">
-                <p className="text-xs sm:text-sm font-semibold mb-2">Associations actuelles:</p>
-                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-                  {Object.entries(selectedMatches).map(([numId, letterId]) => (
-                    <p key={numId} className="text-xs sm:text-sm bg-background/50 p-2 rounded">
-                      {numId} → {letterId}
-                    </p>
-                  ))}
-                </div>
-              </div>
-            )}
-          </>
-        );
-
       case 'TRUEFALSE':
         const tfActivity = currentActivity as TrueFalseActivity;
         return (
@@ -753,16 +588,6 @@ export const InteractiveActivitiesEnhanced = ({
     }
   };
 
-  const canSubmit = () => {
-    if (currentActivity.type === 'MATCHING') {
-      return Object.keys(selectedMatches).length === (currentActivity as MatchingActivity).columnA.length;
-    }
-    if (currentActivity.type === 'FILLIN') {
-      return textAnswer.trim().length > 0;
-    }
-    return selectedAnswer !== null;
-  };
-
   return (
     <Card className="lesson-card border-none rounded-[20px] shadow-lg border-2 border-accent/30 max-w-4xl mx-auto">
       <CardHeader className="p-4 sm:p-6 bg-gradient-to-r from-accent/20 to-primary/20 rounded-t-[20px]">
@@ -795,21 +620,13 @@ export const InteractiveActivitiesEnhanced = ({
         {showFeedback && (
           <div className={`
             p-4 sm:p-6 rounded-lg border-2 animate-fade-in
-            ${selectedAnswer === (currentActivity as any).correctAnswer || 
-              (currentActivity.type === 'MATCHING' && 
-               Object.keys((currentActivity as MatchingActivity).correctMatches).every(
-                 key => selectedMatches[parseInt(key)] === (currentActivity as MatchingActivity).correctMatches[parseInt(key)]
-               ))
+            ${selectedAnswer === currentActivity.correctAnswer
               ? 'bg-success/10 border-success' 
               : 'bg-orange-50 dark:bg-orange-950/20 border-orange-300 dark:border-orange-700'
             }
           `}>
             <p className="font-semibold mb-2 text-sm sm:text-base">
-              {(selectedAnswer === (currentActivity as any).correctAnswer || 
-                (currentActivity.type === 'MATCHING' && 
-                 Object.keys((currentActivity as MatchingActivity).correctMatches).every(
-                   key => selectedMatches[parseInt(key)] === (currentActivity as MatchingActivity).correctMatches[parseInt(key)]
-                 )))
+              {selectedAnswer === currentActivity.correctAnswer
                 ? '✅ Correct!' 
                 : '📚 Explications:'}
             </p>
@@ -822,7 +639,7 @@ export const InteractiveActivitiesEnhanced = ({
             onClick={handleAnswerSubmit}
             size="lg"
             className="w-full min-h-[48px] text-sm sm:text-base"
-            disabled={!canSubmit()}
+            disabled={selectedAnswer === null}
           >
             Vérifier
           </Button>
