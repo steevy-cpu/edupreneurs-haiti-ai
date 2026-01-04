@@ -144,6 +144,22 @@ export default {
             backgroundPosition: "1000px 0",
           },
         },
+        "gradient-x": {
+          "0%, 100%": {
+            backgroundPosition: "0% 50%",
+          },
+          "50%": {
+            backgroundPosition: "100% 50%",
+          },
+        },
+        "border-glow": {
+          "0%, 100%": {
+            opacity: "1",
+          },
+          "50%": {
+            opacity: "0.6",
+          },
+        },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
@@ -153,6 +169,8 @@ export default {
         float: "float 15s ease-in-out infinite",
         "fade-in": "fade-in 0.5s ease-out",
         shimmer: "shimmer 2s linear infinite",
+        "gradient-x": "gradient-x 3s ease-in-out infinite",
+        "border-glow": "border-glow 2s ease-in-out infinite",
       },
     },
   },

@@ -405,27 +405,29 @@ export function BacDissertationChat({ examId, subjects, onComplete }: BacDissert
         </ScrollArea>
 
         <div className="p-4 border-t">
-          <div className="flex gap-2">
-            <Textarea
-              value={inputMessage}
-              onChange={(e) => setInputMessage(e.target.value)}
-              onKeyPress={handleKeyPress}
-              placeholder="Pose une question ou réponds à Jude..."
-              className="min-h-[60px] max-h-[120px] resize-none"
-              disabled={isLoading}
-            />
-            <Button
-              onClick={() => sendMessage(inputMessage)}
-              disabled={isLoading || !inputMessage.trim()}
-              size="icon"
-              className="h-[60px] w-[60px]"
-            >
-              {isLoading ? (
-                <Loader2 className="h-5 w-5 animate-spin" />
-              ) : (
-                <Send className="h-5 w-5" />
-              )}
-            </Button>
+          <div className="relative p-[2px] rounded-xl bg-gradient-to-r from-primary via-secondary to-primary bg-[length:200%_100%] animate-gradient-x">
+            <div className="flex gap-2 bg-card rounded-[10px] p-2">
+              <Textarea
+                value={inputMessage}
+                onChange={(e) => setInputMessage(e.target.value)}
+                onKeyPress={handleKeyPress}
+                placeholder="Pose une question ou réponds à Jude..."
+                className="min-h-[60px] max-h-[120px] resize-none border-0 focus-visible:ring-0 focus-visible:ring-offset-0"
+                disabled={isLoading}
+              />
+              <Button
+                onClick={() => sendMessage(inputMessage)}
+                disabled={isLoading || !inputMessage.trim()}
+                size="icon"
+                className="h-[60px] w-[60px]"
+              >
+                {isLoading ? (
+                  <Loader2 className="h-5 w-5 animate-spin" />
+                ) : (
+                  <Send className="h-5 w-5" />
+                )}
+              </Button>
+            </div>
           </div>
         </div>
       </Card>
