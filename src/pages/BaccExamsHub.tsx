@@ -23,7 +23,7 @@ import {
   Music
 } from "lucide-react";
 import judeProfile from "@/assets/eric-new-profile.png";
-import { JudeChatbot } from "@/components/JudeChatbot";
+
 import { ThemeToggle } from "@/components/ThemeToggle";
 
 interface Exam {
@@ -445,8 +445,6 @@ const BaccExamsHub = () => {
         )}
       </div>
 
-      {/* Jude Chatbot */}
-      <JudeChatbot />
     </div>
   );
 };

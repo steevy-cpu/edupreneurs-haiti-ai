@@ -6,7 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Skeleton } from "@/components/ui/skeleton";
 import { BookOpen, Calendar, FileCheck, ArrowLeft, Calculator, Beaker, Globe, Languages, Flag, MessageCircle } from "lucide-react";
 import judeProfile from "@/assets/eric-new-profile.png";
-import { JudeChatbot } from "@/components/JudeChatbot";
+
 import { ThemeToggle } from "@/components/ThemeToggle";
 
 interface Exam {
@@ -293,8 +293,6 @@ const ExamsHub = () => {
         )}
       </div>
 
-      {/* Jude Chatbot */}
-      <JudeChatbot />
     </div>
   );
 };
