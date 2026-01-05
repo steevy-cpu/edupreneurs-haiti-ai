@@ -115,30 +115,65 @@ const htmlToLatex = (text: string): string => {
   return result;
 };
 
+// Check if text is primarily natural language (not math) to prevent false positives
+const isNaturalLanguage = (text: string): boolean => {
+  // Count words (French/English letters including accents)
+  const words = text.match(/\b[a-zA-ZÀ-ÿ]{2,}\b/g) || [];
+  const wordCount = words.length;
+  
+  // Count math-specific symbols (not just any symbol)
+  const mathSymbols = (text.match(/[=+\-×÷±<>≤≥≠∞√∑∏∫∈∪∩∅²³⁻¹₀₁₂₃_^]/g) || []).length;
+  
+  // If text has many words and few math symbols, it's natural language
+  if (wordCount > 5 && mathSymbols < 2) {
+    return true;
+  }
+  
+  // Long text with many spaces is likely a sentence
+  if (text.length > 40 && text.split(' ').length > 6 && mathSymbols < 3) {
+    return true;
+  }
+  
+  // French sentence starters (common patterns)
+  const frenchPatterns = /^(L'|Le |La |Les |Un |Une |Des |Ce |Cette |Il |Elle |On |Nous |Vous |Ils |Elles |C'est |Qu'|Que |Qui |Pour |Dans |Avec |Sur |Par |En |À |Au |Aux )/i;
+  if (frenchPatterns.test(text) && wordCount > 4) {
+    return true;
+  }
+  
+  return false;
+};
+
 // Check if text contains physics-specific math patterns
 const containsPhysicsMath = (text: string): boolean => {
+  // Skip if it looks like natural language
+  if (isNaturalLanguage(text)) {
+    return false;
+  }
+  
   const physicsPatterns = [
-    /[A-Za-z]_[A-Za-z0-9]+/,        // Subscript notation: Q_c, v_0, x_1
-    /[A-Za-z]\d+\s*[=+-]/,          // Variables with numbers: Q1 =, Q2 -
-    /\d+\s*[kμmn]?[FVWAΩH]/,        // Physics units: 51 kVAR, 1896 μF, 10 kΩ
-    /\d+\s*(rad|Hz|Wb|VA|VAR)/i,    // More units
-    /ω|Ω|Δ|τ|ρ|φ|ε/,                // Physics Greek letters
+    /[A-Za-z]_[A-Za-z0-9]+\s*=/,    // Subscript with equals: Q_c =, v_0 =
+    /\d+\s*[kμmn]?[FVWAΩH]\b/,      // Physics units: 51 kVAR, 1896 μF, 10 kΩ
+    /\d+\s*(rad|Hz|Wb|VA|VAR)\b/i,  // More units with word boundary
     /\d+π/,                          // Expressions like 120π, 2πf
     /[²³⁻¹⁻²₀₁₂₃]/,                 // Unicode super/subscripts
     /\d+\s*\/\s*\d+/,               // Simple fractions: 1/2
-    /[A-Z]\s*=\s*[A-Z0-9]/,         // Physics formulas: C = Q
   ];
   return physicsPatterns.some(pattern => pattern.test(text));
 };
 
 // Check if a string contains mathematical notation (including LaTeX delimiters and plain text math)
 const containsMath = (text: string): boolean => {
+  // First check: explicit LaTeX delimiters always count as math
+  if (hasLatexDelimiters(text)) {
+    return true;
+  }
+  
+  // Second check: if this looks like natural language, don't treat as math
+  if (isNaturalLanguage(text)) {
+    return false;
+  }
+  
   const mathPatterns = [
-    // Standard LaTeX delimiters - check these first
-    /\$\$[\s\S]+?\$\$/,         // $$...$$ block math
-    /\$[^$\n]+?\$/,              // $...$ inline math (not spanning lines)
-    /\\\([\s\S]+?\\\)/,          // \(...\) inline math
-    /\\\[[\s\S]+?\\\]/,          // \[...\] block math
     // LaTeX commands without delimiters
     /\\frac\s*\{/,               // \frac{a}{b}
     /\\sqrt\s*[\[{]/,            // \sqrt{x} or \sqrt[n]{x}
@@ -151,7 +186,7 @@ const containsMath = (text: string): boolean => {
     /<sup>/i,
     /<sub>/i,
     /&times;|&div;|&plusmn;|&le;|&ge;|&ne;|&rarr;|&infin;|&pi;|&radic;/,
-    /×|÷|±|≤|≥|≠|→|∞|π|√|∑|∏|∫|∈|∉|⊂|⊃|∪|∩|∅|≈|λ|μ|σ|ω|Ω|Δ|τ|ρ|φ|ε/,
+    /×|÷|±|≤|≥|≠|→|∞|√|∑|∏|∫|∈|∉|⊂|⊃|∪|∩|∅|≈/,
     /\^{|\_{/,
     /sqrt\(/i,
     // Plain text math patterns
@@ -161,10 +196,7 @@ const containsMath = (text: string): boolean => {
     /C\(\d+,\s*\d+\)/,           // Combinations: C(5, 0)
     /P\([^)]+=[^)]+\)/,          // Probability: P(X=0)
     /[A-Za-z]\([A-Za-z]\)\s*=/,  // Function notation: f(x) =
-    // Physics-specific patterns
-    /[A-Za-z]_[A-Za-z0-9]+/,     // Subscript notation: Q_c, v_0
-    /\d+\s*[kμmn]?[FVWAΩH]/,     // Physics units
-    /\d+\s*(rad|Hz|Wb|VA|VAR|kVAR)/i, // More physics units
+    // Physics-specific patterns (only short expressions)
     /\d+π/,                       // Expressions like 120π
     /[²³⁻¹⁻²₀₁₂₃]/,              // Unicode super/subscripts
   ];
