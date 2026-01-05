@@ -14,6 +14,8 @@ export default defineConfig(({ mode }) => ({
   optimizeDeps: {
     // Avoid using any previously prebundled react-chessboard that may require React 19's `use`
     exclude: ["react-chessboard"],
+    // Ensure next-themes uses the same React instance as the rest of the app
+    include: ["next-themes"],
   },
   plugins: [react(), mode === "development" && componentTagger()].filter(Boolean),
   resolve: {
