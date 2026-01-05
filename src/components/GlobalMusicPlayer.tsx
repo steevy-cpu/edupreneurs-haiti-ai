@@ -122,12 +122,12 @@ export const GlobalMusicPlayer = () => {
     setPlaylistOpen(true);
   };
 
-  const getCardStyle = (): React.CSSProperties => {
-    if (minimized || !playerRef.current) return {};
-    
+  // Style for expanded player - centered on desktop, bottom on mobile
+  const getExpandedPlayerStyle = (): React.CSSProperties => {
     const isMobile = window.innerWidth < 640;
     
     if (isMobile) {
+      // Mobile: fixed at bottom
       return {
         position: 'fixed' as const,
         left: '16px',
@@ -138,26 +138,14 @@ export const GlobalMusicPlayer = () => {
       };
     }
     
-    const cardWidth = 320;
-    const cardHeight = 400;
-    const padding = 16;
-    
-    let adjustX = 0;
-    let adjustY = 0;
-    
-    const iconX = position.x !== 0 ? position.x : window.innerWidth - 80;
-    const iconY = position.y !== 0 ? position.y : window.innerHeight - 80;
-    
-    if (iconX + cardWidth > window.innerWidth) {
-      adjustX = -(iconX + cardWidth - window.innerWidth + padding);
-    }
-    
-    if (iconY + cardHeight > window.innerHeight) {
-      adjustY = -(iconY + cardHeight - window.innerHeight + padding);
-    }
-    
+    // Desktop/tablet: centered on page
     return {
-      transform: `translate(${adjustX}px, ${adjustY}px)`,
+      position: 'fixed' as const,
+      left: '50%',
+      top: '50%',
+      transform: 'translate(-50%, -50%)',
+      right: 'auto',
+      bottom: 'auto',
     };
   };
 
@@ -268,8 +256,8 @@ export const GlobalMusicPlayer = () => {
           </Button>
         ) : (
           <Card 
-            className="w-[calc(100vw-32px)] sm:w-80 max-w-80 shadow-2xl border-2 transition-transform duration-200"
-            style={getCardStyle()}
+            className="w-[calc(100vw-32px)] sm:w-80 max-w-80 shadow-2xl border-2 transition-all duration-200"
+            style={getExpandedPlayerStyle()}
           >
             <CardHeader 
               className="pb-3 bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-950/30 dark:to-pink-950/30 cursor-move"
