@@ -45,27 +45,44 @@ export function CreatePostDialog({ currentUser, onPostCreated }: CreatePostDialo
   const [cursorPosition, setCursorPosition] = useState(0);
   const [followers, setFollowers] = useState<FollowerProfile[]>([]);
 
-  // Fetch followers on mount
+  // Fetch followers on mount (two-step query to avoid join issues)
   useEffect(() => {
     const fetchFollowers = async () => {
       if (!currentUser) return;
       
-      const { data } = await supabase
+      // Step 1: Get all following IDs
+      const { data: followsData, error: followsError } = await supabase
         .from('follows')
-        .select(`
-          following_id,
-          profiles!follows_following_id_fkey (
-            user_id, full_name, nickname, avatar_url, verified
-          )
-        `)
+        .select('following_id')
         .eq('follower_id', currentUser.id)
         .eq('status', 'accepted');
       
-      if (data) {
-        const profiles = data
-          .map((f: any) => f.profiles)
-          .filter(Boolean) as FollowerProfile[];
-        setFollowers(profiles);
+      if (followsError) {
+        console.error('Error fetching follows:', followsError);
+        return;
+      }
+      
+      if (!followsData || followsData.length === 0) {
+        setFollowers([]);
+        return;
+      }
+      
+      const followingIds = followsData.map(f => f.following_id);
+      
+      // Step 2: Get profiles for those IDs
+      const { data: profilesData, error: profilesError } = await supabase
+        .from('profiles')
+        .select('user_id, full_name, nickname, avatar_url, verified')
+        .in('user_id', followingIds);
+      
+      if (profilesError) {
+        console.error('Error fetching profiles:', profilesError);
+        return;
+      }
+      
+      if (profilesData) {
+        console.log('[Mentions] Loaded', profilesData.length, 'followers');
+        setFollowers(profilesData as FollowerProfile[]);
       }
     };
     
@@ -73,6 +90,13 @@ export function CreatePostDialog({ currentUser, onPostCreated }: CreatePostDialo
       fetchFollowers();
     }
   }, [currentUser, open]);
+
+  // Update suggestions when followers load and dropdown is active
+  useEffect(() => {
+    if (showMentionSuggestions && mentionQuery === '' && followers.length > 0) {
+      setMentionSuggestions(followers);
+    }
+  }, [followers, showMentionSuggestions, mentionQuery]);
 
   const handleContentChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     const value = e.target.value;
@@ -99,7 +123,7 @@ export function CreatePostDialog({ currentUser, onPostCreated }: CreatePostDialo
           f.nickname.toLowerCase().includes(query)
         );
       }
-      setMentionSuggestions(filtered.slice(0, 8));
+      setMentionSuggestions(filtered);
       setShowMentionSuggestions(filtered.length > 0);
     } else {
       setShowMentionSuggestions(false);
@@ -135,7 +159,7 @@ export function CreatePostDialog({ currentUser, onPostCreated }: CreatePostDialo
     
     // Show all followers immediately when @ is inserted
     setMentionQuery('');
-    setMentionSuggestions(followers.slice(0, 8));
+    setMentionSuggestions(followers);
     setShowMentionSuggestions(followers.length > 0);
     
     setTimeout(() => {
