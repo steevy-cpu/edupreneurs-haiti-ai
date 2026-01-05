@@ -27,7 +27,11 @@ export const GlobalMusicPlayer = () => {
   const [isDragging, setIsDragging] = useState(false);
   const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
   const [hasMoved, setHasMoved] = useState(false);
+  const [dragStartPos, setDragStartPos] = useState({ x: 0, y: 0 });
+  const [hasDragStarted, setHasDragStarted] = useState(false);
   const playerRef = useRef<HTMLDivElement>(null);
+  
+  const DRAG_THRESHOLD = 8; // pixels before drag starts
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -44,6 +48,16 @@ export const GlobalMusicPlayer = () => {
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
       if (!isDragging) return;
+      
+      // Check if we've passed the drag threshold
+      if (!hasDragStarted) {
+        const dx = Math.abs(e.clientX - dragStartPos.x);
+        const dy = Math.abs(e.clientY - dragStartPos.y);
+        if (dx < DRAG_THRESHOLD && dy < DRAG_THRESHOLD) {
+          return; // Don't start dragging yet
+        }
+        setHasDragStarted(true);
+      }
       
       setHasMoved(true);
       
@@ -62,9 +76,23 @@ export const GlobalMusicPlayer = () => {
     const handleTouchMove = (e: TouchEvent) => {
       if (!isDragging) return;
       
+      const touch = e.touches[0];
+      
+      // Check if we've passed the drag threshold
+      if (!hasDragStarted) {
+        const dx = Math.abs(touch.clientX - dragStartPos.x);
+        const dy = Math.abs(touch.clientY - dragStartPos.y);
+        if (dx < DRAG_THRESHOLD && dy < DRAG_THRESHOLD) {
+          return; // Don't start dragging yet, allow scroll
+        }
+        setHasDragStarted(true);
+      }
+      
+      // Only prevent default scroll after threshold is met
+      e.preventDefault();
+      
       setHasMoved(true);
       
-      const touch = e.touches[0];
       let newX = touch.clientX - dragOffset.x;
       let newY = touch.clientY - dragOffset.y;
       
@@ -88,7 +116,7 @@ export const GlobalMusicPlayer = () => {
     if (isDragging) {
       document.addEventListener("mousemove", handleMouseMove);
       document.addEventListener("mouseup", handleMouseUp);
-      document.addEventListener("touchmove", handleTouchMove);
+      document.addEventListener("touchmove", handleTouchMove, { passive: false });
       document.addEventListener("touchend", handleTouchEnd);
     }
 
@@ -98,7 +126,7 @@ export const GlobalMusicPlayer = () => {
       document.removeEventListener("touchmove", handleTouchMove);
       document.removeEventListener("touchend", handleTouchEnd);
     };
-  }, [isDragging, dragOffset]);
+  }, [isDragging, dragOffset, hasDragStarted, dragStartPos]);
 
   // Drag handlers - only for specific drag handle areas
   const handleDragStart = (e: React.MouseEvent | React.TouchEvent) => {
@@ -112,6 +140,8 @@ export const GlobalMusicPlayer = () => {
       x: clientX - rect.left,
       y: clientY - rect.top,
     });
+    setDragStartPos({ x: clientX, y: clientY });
+    setHasDragStarted(false);
     setHasMoved(false);
     setIsDragging(true);
   };
