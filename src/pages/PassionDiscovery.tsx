@@ -1066,7 +1066,7 @@ const PassionDiscoveryContent = () => {
                                   navigate('/chess-game');
                                 }}
                               >
-                                ♟️ Jouer aux Échecs avec Eric
+                                ♟️ Jouer aux Échecs avec Jude
                                 <ArrowRight className="ml-2 h-4 w-4 md:h-5 md:w-5" />
                               </Button>
                             )}
