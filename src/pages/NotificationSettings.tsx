@@ -1,11 +1,12 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Layout } from '@/components/Layout';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Switch } from '@/components/ui/switch';
 import { Button } from '@/components/ui/button';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import { Bell, MessageSquare, Heart, MessageCircle, Users, AtSign, Mail } from 'lucide-react';
+import { Bell, MessageSquare, Heart, MessageCircle, Users, AtSign, Mail, ArrowLeft } from 'lucide-react';
 import { sendPushNotification } from '@/utils/sendPushNotification';
 
 interface NotificationCategory {
@@ -27,6 +28,7 @@ const CATEGORIES: Omit<NotificationCategory, 'enabled'>[] = [
 ];
 
 export default function NotificationSettings() {
+  const navigate = useNavigate();
   const [userId, setUserId] = useState<string | null>(null);
   const [categories, setCategories] = useState<NotificationCategory[]>([]);
   const [loading, setLoading] = useState(true);
@@ -103,6 +105,33 @@ export default function NotificationSettings() {
       const cat = categories.find(c => c.category === category);
       if (!cat) return;
 
+      // Map category to valid notification type
+      const typeMap: Record<string, string> = {
+        'message': 'like', // messages don't go to notifications table
+        'comment': 'comment',
+        'like': 'like',
+        'post': 'new_post',
+        'mention': 'mention',
+        'follow': 'follow_request',
+        'group': 'group_invitation',
+      };
+
+      const notificationType = typeMap[category] || 'like';
+
+      // 1. Insert test notification in database so it shows in the notifications page
+      const { error: insertError } = await supabase.from('notifications').insert({
+        user_id: userId,
+        actor_id: userId, // Self as actor for test
+        type: notificationType,
+        content: `🧪 Notification de test pour "${cat.label}"`,
+        read: false
+      });
+
+      if (insertError) {
+        console.error('Failed to insert test notification:', insertError);
+      }
+
+      // 2. Send push notification
       await sendPushNotification({
         recipientUserId: userId,
         title: `🧪 Test: ${cat.label}`,
@@ -110,7 +139,7 @@ export default function NotificationSettings() {
         type: category as 'message' | 'like' | 'comment' | 'share' | 'follow' | 'follow_accepted' | 'mention' | 'post',
       });
 
-      toast.success('Notification de test envoyée !');
+      toast.success('Notification de test envoyée ! Vérifiez la page des notifications.');
     } catch (error) {
       console.error('Failed to send test notification:', error);
       toast.error('Échec de l\'envoi du test');
@@ -134,11 +163,21 @@ export default function NotificationSettings() {
   return (
     <Layout>
       <div className="container max-w-2xl py-8 space-y-6">
-        <div>
-          <h1 className="text-3xl font-bold">Paramètres de notification</h1>
-          <p className="text-muted-foreground mt-2">
-            Gérez vos préférences de notifications push
-          </p>
+        <div className="flex items-center gap-4">
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => navigate('/notifications')}
+            className="h-9 w-9"
+          >
+            <ArrowLeft className="h-5 w-5" />
+          </Button>
+          <div>
+            <h1 className="text-3xl font-bold">Paramètres de notification</h1>
+            <p className="text-muted-foreground mt-1">
+              Gérez vos préférences de notifications push
+            </p>
+          </div>
         </div>
 
         <Card>
