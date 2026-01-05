@@ -1,16 +1,27 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogDescription } from "@/components/ui/dialog";
 import { Switch } from "@/components/ui/switch";
-import { Plus, Image, Globe } from "lucide-react";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import { Plus, Image, Globe, Lock, Video, AtSign, Loader2, BadgeCheck, X, PenSquare, Sparkles } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { optimizeMediaFile, formatFileSize } from "@/utils/mediaOptimization";
+import { getAvatarUrl } from "@/lib/avatarMap";
 
 interface CreatePostDialogProps {
   currentUser: any;
   onPostCreated: () => void;
+}
+
+interface FollowerProfile {
+  user_id: string;
+  full_name: string;
+  nickname: string;
+  avatar_url: string | null;
+  verified: boolean | null;
 }
 
 export function CreatePostDialog({ currentUser, onPostCreated }: CreatePostDialogProps) {
@@ -24,6 +35,127 @@ export function CreatePostDialog({ currentUser, onPostCreated }: CreatePostDialo
   const [videoPreview, setVideoPreview] = useState<string | null>(null);
   const [open, setOpen] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const videoInputRef = useRef<HTMLInputElement>(null);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  // Mention feature state
+  const [mentionQuery, setMentionQuery] = useState("");
+  const [showMentionSuggestions, setShowMentionSuggestions] = useState(false);
+  const [mentionSuggestions, setMentionSuggestions] = useState<FollowerProfile[]>([]);
+  const [cursorPosition, setCursorPosition] = useState(0);
+  const [followers, setFollowers] = useState<FollowerProfile[]>([]);
+
+  // Fetch followers on mount
+  useEffect(() => {
+    const fetchFollowers = async () => {
+      if (!currentUser) return;
+      
+      const { data } = await supabase
+        .from('follows')
+        .select(`
+          following_id,
+          profiles!follows_following_id_fkey (
+            user_id, full_name, nickname, avatar_url, verified
+          )
+        `)
+        .eq('follower_id', currentUser.id)
+        .eq('status', 'accepted');
+      
+      if (data) {
+        const profiles = data
+          .map((f: any) => f.profiles)
+          .filter(Boolean) as FollowerProfile[];
+        setFollowers(profiles);
+      }
+    };
+    
+    if (open) {
+      fetchFollowers();
+    }
+  }, [currentUser, open]);
+
+  const handleContentChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    const value = e.target.value;
+    const cursorPos = e.target.selectionStart || 0;
+    setNewPostContent(value);
+    setCursorPosition(cursorPos);
+    
+    // Detect @ mention
+    const textBeforeCursor = value.slice(0, cursorPos);
+    const mentionMatch = textBeforeCursor.match(/@(\w*)$/);
+    
+    if (mentionMatch) {
+      const query = mentionMatch[1].toLowerCase();
+      setMentionQuery(query);
+      
+      const filtered = followers.filter(f => 
+        f.full_name.toLowerCase().includes(query) || 
+        f.nickname.toLowerCase().includes(query)
+      );
+      setMentionSuggestions(filtered.slice(0, 5));
+      setShowMentionSuggestions(true);
+    } else {
+      setShowMentionSuggestions(false);
+    }
+  };
+
+  const insertMention = (profile: FollowerProfile) => {
+    const textBeforeCursor = newPostContent.slice(0, cursorPosition);
+    const textAfterCursor = newPostContent.slice(cursorPosition);
+    
+    // Find the @ symbol position
+    const mentionStart = textBeforeCursor.lastIndexOf('@');
+    const beforeMention = newPostContent.slice(0, mentionStart);
+    
+    // Insert the mention
+    const mention = `@${profile.nickname} `;
+    const newContent = beforeMention + mention + textAfterCursor;
+    
+    setNewPostContent(newContent);
+    setShowMentionSuggestions(false);
+    
+    // Focus back on textarea
+    setTimeout(() => {
+      textareaRef.current?.focus();
+    }, 0);
+  };
+
+  const insertAtSymbol = () => {
+    const pos = textareaRef.current?.selectionStart || newPostContent.length;
+    const newContent = newPostContent.slice(0, pos) + '@' + newPostContent.slice(pos);
+    setNewPostContent(newContent);
+    setCursorPosition(pos + 1);
+    
+    setTimeout(() => {
+      textareaRef.current?.focus();
+      textareaRef.current?.setSelectionRange(pos + 1, pos + 1);
+    }, 0);
+  };
+
+  // Extract mentions from content
+  const extractMentions = (content: string): string[] => {
+    const mentionPattern = /@(\w+)/g;
+    const mentions: string[] = [];
+    let match;
+    
+    while ((match = mentionPattern.exec(content)) !== null) {
+      mentions.push(match[1]); // nickname without @
+    }
+    
+    return [...new Set(mentions)]; // Remove duplicates
+  };
+
+  // Resolve nicknames to user IDs
+  const resolveMentionsToUserIds = async (nicknames: string[]): Promise<string[]> => {
+    if (nicknames.length === 0) return [];
+    
+    const { data: profiles } = await supabase
+      .from('profiles')
+      .select('user_id, nickname')
+      .in('nickname', nicknames);
+    
+    return profiles?.map(p => p.user_id) || [];
+  };
 
   const handleImageSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -155,15 +287,19 @@ export function CreatePostDialog({ currentUser, onPostCreated }: CreatePostDialo
       videoUrl = publicUrl;
     }
 
-    const { error } = await supabase.from("posts").insert({
-      user_id: currentUser.id,
-      content: newPostContent.trim(),
-      image_url: imageUrl,
-      video_url: videoUrl,
-      is_public: isPublicPost,
-    });
+    const { data: newPost, error } = await supabase
+      .from("posts")
+      .insert({
+        user_id: currentUser.id,
+        content: newPostContent.trim(),
+        image_url: imageUrl,
+        video_url: videoUrl,
+        is_public: isPublicPost,
+      })
+      .select('id')
+      .single();
 
-    if (error) {
+    if (error || !newPost) {
       toast({
         title: "Erreur",
         description: "Impossible de créer le post",
@@ -171,6 +307,41 @@ export function CreatePostDialog({ currentUser, onPostCreated }: CreatePostDialo
       });
       setIsCreatingPost(false);
       return;
+    }
+
+    // Process mentions and send notifications
+    try {
+      const mentionedNicknames = extractMentions(newPostContent);
+      const mentionedUserIds = await resolveMentionsToUserIds(mentionedNicknames);
+
+      // Send notifications to each mentioned user (excluding self)
+      for (const mentionedUserId of mentionedUserIds) {
+        if (mentionedUserId !== currentUser.id) {
+          // 1. Create in-platform notification
+          await supabase.from('notifications').insert({
+            user_id: mentionedUserId,
+            actor_id: currentUser.id,
+            post_id: newPost.id,
+            type: 'mention',
+            content: newPostContent.slice(0, 100),
+            read: false,
+          });
+          
+          // 2. Send browser push notification
+          await supabase.functions.invoke('send-push-notification', {
+            body: {
+              recipientUserId: mentionedUserId,
+              actorId: currentUser.id,
+              type: 'mention',
+              entityId: newPost.id,
+              url: '/feed',
+            }
+          });
+        }
+      }
+    } catch (mentionError) {
+      console.error('Error processing mentions:', mentionError);
+      // Don't fail the post creation if mention notifications fail
     }
 
     setNewPostContent("");
@@ -181,6 +352,7 @@ export function CreatePostDialog({ currentUser, onPostCreated }: CreatePostDialo
     setIsPublicPost(false);
     setIsCreatingPost(false);
     setOpen(false);
+    setShowMentionSuggestions(false);
     
     toast({
       title: "Succès",
@@ -190,6 +362,8 @@ export function CreatePostDialog({ currentUser, onPostCreated }: CreatePostDialo
     onPostCreated();
   };
 
+  const isEmpty = !newPostContent.trim() && !selectedImage && !selectedVideo;
+
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
@@ -197,70 +371,147 @@ export function CreatePostDialog({ currentUser, onPostCreated }: CreatePostDialo
           <Plus size={24} />
         </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[500px] max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle>Créer un post</DialogTitle>
-        </DialogHeader>
-        <div className="space-y-4 pt-4">
-          <Textarea
-            placeholder="Quoi de neuf ?"
-            value={newPostContent}
-            onChange={(e) => setNewPostContent(e.target.value)}
-            className="min-h-[120px] resize-none border-none bg-muted/30 focus-visible:ring-1"
-          />
+      <DialogContent className="sm:max-w-[520px] max-h-[90vh] overflow-y-auto p-0">
+        {/* Gradient Header */}
+        <div className="relative bg-gradient-to-br from-primary/20 via-primary/10 to-accent/20 p-4 sm:p-6 overflow-hidden">
+          {/* Animated background circles */}
+          <div className="absolute inset-0 opacity-30 pointer-events-none">
+            <div className="absolute top-2 right-8 w-16 h-16 bg-primary/20 rounded-full blur-xl animate-pulse" />
+            <div className="absolute bottom-2 left-8 w-12 h-12 bg-accent/20 rounded-full blur-lg animate-pulse" style={{ animationDelay: '150ms' }} />
+          </div>
           
+          <DialogHeader className="relative z-10">
+            <DialogTitle className="flex items-center gap-3 text-lg sm:text-xl">
+              <div className="p-2.5 bg-primary/20 rounded-full shadow-lg shadow-primary/20">
+                <PenSquare className="h-5 w-5 text-primary" />
+              </div>
+              <span>Créer un post</span>
+              <Sparkles className="h-4 w-4 text-primary/60 ml-auto animate-pulse" />
+            </DialogTitle>
+            <DialogDescription className="text-sm text-muted-foreground mt-1">
+              Partagez vos pensées avec vos amis
+            </DialogDescription>
+          </DialogHeader>
+        </div>
+
+        <div className="space-y-4 p-4 sm:p-6 pt-4">
+          {/* Textarea with mention suggestions */}
+          <div className="relative">
+            <Textarea
+              ref={textareaRef}
+              placeholder="Quoi de neuf ? Utilisez @ pour mentionner un ami..."
+              value={newPostContent}
+              onChange={handleContentChange}
+              className="min-h-[140px] resize-none border-2 border-muted bg-background/50 focus-visible:ring-2 focus-visible:ring-primary/30 focus-visible:border-primary/50 rounded-xl transition-all text-base"
+            />
+            
+            {/* Mention suggestions dropdown */}
+            {showMentionSuggestions && mentionSuggestions.length > 0 && (
+              <div className="absolute z-50 mt-1 w-full max-w-xs bg-popover border border-border rounded-xl shadow-xl overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200">
+                <div className="p-2 text-xs text-muted-foreground border-b bg-muted/30 flex items-center gap-2">
+                  <AtSign className="h-3 w-3" />
+                  Mentionner un ami
+                </div>
+                <ScrollArea className="max-h-48">
+                  {mentionSuggestions.map((profile) => (
+                    <div
+                      key={profile.user_id}
+                      className="flex items-center gap-3 p-3 hover:bg-accent cursor-pointer transition-colors"
+                      onClick={() => insertMention(profile)}
+                    >
+                      <Avatar className="h-8 w-8 ring-2 ring-background shadow-sm">
+                        <AvatarImage src={getAvatarUrl(profile.avatar_url)} />
+                        <AvatarFallback className="text-xs bg-primary/10 text-primary">
+                          {profile.full_name[0]}
+                        </AvatarFallback>
+                      </Avatar>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium flex items-center gap-1 truncate">
+                          {profile.full_name}
+                          {profile.verified && <BadgeCheck className="h-3.5 w-3.5 text-primary flex-shrink-0" />}
+                        </p>
+                        <p className="text-xs text-muted-foreground truncate">@{profile.nickname}</p>
+                      </div>
+                    </div>
+                  ))}
+                </ScrollArea>
+              </div>
+            )}
+          </div>
+          
+          {/* Image Preview */}
           {imagePreview && (
-            <div className="relative">
-              <img src={imagePreview} alt="Preview" className="w-full max-h-96 object-contain rounded-lg bg-muted/20" loading="lazy" decoding="async" />
+            <div className="relative rounded-xl overflow-hidden border border-border">
+              <img src={imagePreview} alt="Preview" className="w-full max-h-96 object-contain bg-muted/20" loading="lazy" decoding="async" />
               <Button
                 size="icon"
                 variant="destructive"
-                className="absolute top-2 right-2"
+                className="absolute top-2 right-2 h-8 w-8 rounded-full shadow-lg"
                 onClick={() => {
                   setSelectedImage(null);
                   setImagePreview(null);
                 }}
               >
-                ×
+                <X className="h-4 w-4" />
               </Button>
             </div>
           )}
 
+          {/* Video Preview */}
           {videoPreview && (
-            <div className="relative">
-              <video src={videoPreview} controls className="w-full max-h-96 rounded-lg bg-muted/20" />
+            <div className="relative rounded-xl overflow-hidden border border-border">
+              <video src={videoPreview} controls className="w-full max-h-96 bg-muted/20" />
               <Button
                 size="icon"
                 variant="destructive"
-                className="absolute top-2 right-2"
+                className="absolute top-2 right-2 h-8 w-8 rounded-full shadow-lg"
                 onClick={() => {
                   setSelectedVideo(null);
                   setVideoPreview(null);
                 }}
               >
-                ×
+                <X className="h-4 w-4" />
               </Button>
             </div>
           )}
 
-          {/* Public post toggle */}
-          <div className="flex items-center justify-between p-3 rounded-lg bg-muted/30 border border-border/50">
-            <div className="flex items-center gap-2">
-              <Globe size={18} className={isPublicPost ? "text-primary" : "text-muted-foreground"} />
+          {/* Enhanced Public/Private Toggle */}
+          <div className={`flex items-center justify-between p-4 rounded-xl transition-all duration-300 ${
+            isPublicPost 
+              ? 'bg-primary/10 border-2 border-primary/40 shadow-lg shadow-primary/20' 
+              : 'bg-muted/40 border-2 border-muted-foreground/20 hover:border-muted-foreground/40'
+          }`}>
+            <div className="flex items-center gap-3">
+              <div className={`p-2 rounded-full transition-colors ${
+                isPublicPost ? 'bg-primary/20' : 'bg-muted'
+              }`}>
+                {isPublicPost ? (
+                  <Globe size={20} className="text-primary" />
+                ) : (
+                  <Lock size={20} className="text-muted-foreground" />
+                )}
+              </div>
               <div>
-                <p className="text-sm font-medium">Post public</p>
-                <p className="text-xs text-muted-foreground">Visible par tous les utilisateurs</p>
+                <p className="text-sm font-semibold">
+                  {isPublicPost ? 'Post public' : 'Post privé'}
+                </p>
+                <p className="text-xs text-muted-foreground">
+                  {isPublicPost 
+                    ? 'Visible par tous les utilisateurs' 
+                    : 'Visible uniquement par vos abonnés'}
+                </p>
               </div>
             </div>
             <Switch
               checked={isPublicPost}
               onCheckedChange={setIsPublicPost}
-              className="shadow-sm ring-1 ring-border data-[state=checked]:ring-primary/50"
+              className="shadow-lg ring-2 ring-offset-2 ring-offset-background data-[state=checked]:ring-primary data-[state=unchecked]:ring-muted-foreground/30 data-[state=checked]:bg-primary"
             />
           </div>
 
-          <div className="flex justify-between items-center gap-2">
-            <div className="flex gap-2">
+          {/* Action Buttons */}
+          <div className="flex justify-between items-center gap-2 pt-2 border-t border-border/50">
+            <div className="flex gap-1">
               <input
                 ref={fileInputRef}
                 type="file"
@@ -272,14 +523,16 @@ export function CreatePostDialog({ currentUser, onPostCreated }: CreatePostDialo
               <Button
                 type="button"
                 variant="ghost"
-                size="icon"
+                size="sm"
                 onClick={() => fileInputRef.current?.click()}
-                title="Ajouter une image"
+                className="gap-2 text-muted-foreground hover:text-primary hover:bg-primary/10 transition-colors"
               >
-                <Image size={20} />
+                <Image size={18} />
+                <span className="text-xs hidden sm:inline">Photo</span>
               </Button>
               
               <input
+                ref={videoInputRef}
                 type="file"
                 accept="video/*"
                 onChange={handleVideoSelect}
@@ -289,20 +542,39 @@ export function CreatePostDialog({ currentUser, onPostCreated }: CreatePostDialo
               <Button
                 type="button"
                 variant="ghost"
-                size="icon"
-                onClick={() => document.getElementById('video-upload')?.click()}
-                title="Ajouter une vidéo"
+                size="sm"
+                onClick={() => videoInputRef.current?.click()}
+                className="gap-2 text-muted-foreground hover:text-primary hover:bg-primary/10 transition-colors"
               >
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="23 7 16 12 23 17 23 7"></polygon><rect x="1" y="5" width="15" height="14" rx="2" ry="2"></rect></svg>
+                <Video size={18} />
+                <span className="text-xs hidden sm:inline">Vidéo</span>
+              </Button>
+              
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                onClick={insertAtSymbol}
+                className="gap-2 text-muted-foreground hover:text-primary hover:bg-primary/10 transition-colors"
+              >
+                <AtSign size={18} />
+                <span className="text-xs hidden sm:inline">Mentionner</span>
               </Button>
             </div>
             
             <Button
               onClick={createPost}
-              disabled={(!newPostContent.trim() && !selectedImage && !selectedVideo) || isCreatingPost}
-              className="bg-primary hover:bg-primary/90"
+              disabled={isEmpty || isCreatingPost}
+              className="bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 shadow-lg shadow-primary/20 hover:scale-[1.02] active:scale-[0.98] transition-all font-semibold"
             >
-              {isCreatingPost ? "Publication..." : "Publier"}
+              {isCreatingPost ? (
+                <>
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  Publication...
+                </>
+              ) : (
+                'Publier'
+              )}
             </Button>
           </div>
         </div>
