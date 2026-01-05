@@ -121,25 +121,8 @@ export function useUserGrade(): UseUserGradeResult {
 
   // Function to check if user can access a specific grade
   const canAccessGrade = (gradeId: string): boolean => {
-    // If not authenticated, allow access (will show signup prompts)
-    if (!isAuthenticated) return true;
-    
-    // Super users can access everything
-    if (isSuperUser) return true;
-    
-    // Normalize the grade to check
-    const normalizedGradeToCheck = normalizeGrade(gradeId);
-    
-    // If user grade is not set, deny access (shouldn't happen normally)
-    if (!userGrade) return false;
-    
-    // Special case: NS3 students can access NS4 content (Baccalaureat preparation)
-    if (userGrade === 'NS3' && normalizedGradeToCheck === 'NS4') {
-      return true;
-    }
-    
-    // User can only access their own grade
-    return userGrade === normalizedGradeToCheck;
+    // All users can access all grade levels
+    return true;
   };
 
   return {
