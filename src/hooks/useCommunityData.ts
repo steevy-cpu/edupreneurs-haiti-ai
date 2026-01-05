@@ -1,6 +1,12 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Conversation, Profile, GroupChat } from "@/types/community";
+import { 
+  persistQueryData, 
+  getPersistedQueryData, 
+  getPersistedCacheTimestamp,
+  CACHE_KEYS 
+} from "@/utils/queryPersistence";
 
 // Extended Conversation type for the hook
 interface ConversationWithDetails extends Omit<Conversation, 'otherUser' | 'lastMessage' | 'lastMessageTime'> {
@@ -126,6 +132,9 @@ const fetchConversations = async (): Promise<ConversationWithDetails[]> => {
     };
   });
 
+  // Persist to localStorage for instant loading
+  persistQueryData(CACHE_KEYS.CONVERSATIONS, enrichedConversations);
+
   return enrichedConversations;
 };
 
@@ -137,6 +146,9 @@ export const useCommunityData = () => {
     queryFn: fetchConversations,
     staleTime: 1000 * 60 * 1, // Conversations stay fresh for 1 minute
     gcTime: 1000 * 60 * 10, // Cache for 10 minutes
+    // Initialize with persisted data for instant loading
+    initialData: () => getPersistedQueryData<ConversationWithDetails[]>(CACHE_KEYS.CONVERSATIONS) || undefined,
+    initialDataUpdatedAt: () => getPersistedCacheTimestamp(CACHE_KEYS.CONVERSATIONS),
   });
 
   const refreshConversations = () => {
