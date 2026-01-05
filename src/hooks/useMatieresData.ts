@@ -285,11 +285,9 @@ export function useMatieresData(gradeLevel: string, series: string | null = null
   const isSuperUser = data?.userId ? SUPER_USER_IDS.includes(data.userId) : false;
 
   const canAccessGrade = useCallback((gradeId: string) => {
-    if (!data?.userId) return true; // Non-authenticated can browse
-    if (isSuperUser) return true;
-    if (!userGrade) return true;
-    return userGrade === gradeId;
-  }, [data?.userId, userGrade, isSuperUser]);
+    // All users can access all grade levels
+    return true;
+  }, []);
 
   const getProgress = useCallback((slug: string) => progressMap[slug] || null, [progressMap]);
 
