@@ -19,6 +19,7 @@ import { LessonQuickStats } from "@/components/lesson/LessonQuickStats";
 import { LessonNavigation } from "@/components/lesson/LessonNavigation";
 import { LessonAudioPlayerSimple } from "@/components/LessonAudioPlayerSimple";
 import { MathContent, isMathSubject } from "@/components/MathContent";
+import { ProgressiveContent } from "@/components/lesson/ProgressiveContent";
 
 interface LessonData {
   id: string;
@@ -481,11 +482,11 @@ export const LessonPageTemplate = ({
                   />
                 )}
                 {lesson.introduction ? (
-                  isMathSubject(subjectName) ? (
-                    <MathContent content={lesson.introduction} />
-                  ) : (
-                    <div className="lesson-content prose prose-sm sm:prose-lg max-w-none" dangerouslySetInnerHTML={{ __html: lesson.introduction }} />
-                  )
+                  <ProgressiveContent 
+                    content={lesson.introduction}
+                    subjectName={subjectName}
+                    showProgressBar={false}
+                  />
                 ) : (
                   <p className="text-muted-foreground text-sm sm:text-base">Pas d'introduction disponible</p>
                 )}
@@ -510,11 +511,12 @@ export const LessonPageTemplate = ({
                   />
                 )}
                 {lesson.contenu ? (
-                  isMathSubject(subjectName) ? (
-                    <MathContent content={lesson.contenu} className="overflow-x-auto" />
-                  ) : (
-                    <div className="lesson-content prose prose-sm sm:prose-lg max-w-none overflow-x-auto" dangerouslySetInnerHTML={{ __html: lesson.contenu }} />
-                  )
+                  <ProgressiveContent 
+                    content={lesson.contenu}
+                    subjectName={subjectName}
+                    showProgressBar={true}
+                    className="overflow-x-auto"
+                  />
                 ) : (
                   <p className="text-muted-foreground text-sm sm:text-base">Pas de contenu disponible</p>
                 )}
@@ -537,11 +539,12 @@ export const LessonPageTemplate = ({
                   />
                 )}
                 {lesson.exemples_exercices ? (
-                  isMathSubject(subjectName) ? (
-                    <MathContent content={lesson.exemples_exercices} className="overflow-x-auto" />
-                  ) : (
-                    <div className="lesson-content prose prose-sm sm:prose-lg max-w-none overflow-x-auto" dangerouslySetInnerHTML={{ __html: lesson.exemples_exercices }} />
-                  )
+                  <ProgressiveContent 
+                    content={lesson.exemples_exercices}
+                    subjectName={subjectName}
+                    showProgressBar={true}
+                    className="overflow-x-auto"
+                  />
                 ) : (
                   <p className="text-muted-foreground text-sm sm:text-base">Pas d'exemples disponibles</p>
                 )}
