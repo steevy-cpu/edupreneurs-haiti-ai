@@ -260,6 +260,9 @@ serve(async (req) => {
         case 'post':
           notificationBody = `${actorName} a publié quelque chose`;
           break;
+        case 'mention':
+          notificationBody = `${actorName} vous a mentionné dans une publication`;
+          break;
         default:
           notificationBody = body || 'Nouvelle notification';
       }

@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { Card } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import { Heart, MessageCircle, Share2, UserPlus, Check, X, FileText, MoreVertical, Trash2, Settings } from "lucide-react";
+import { Heart, MessageCircle, Share2, UserPlus, Check, X, FileText, MoreVertical, Trash2, Settings, AtSign } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { getAvatarUrl } from "@/lib/avatarMap";
 import { ThemeToggle } from "@/components/ThemeToggle";
@@ -28,7 +28,7 @@ interface Notification {
   user_id: string;
   actor_id: string;
   post_id: string | null;
-  type: "like" | "comment" | "share" | "follow_request" | "new_post" | "group_invitation" | "group_deleted" | "lesson_comment";
+  type: "like" | "comment" | "share" | "follow_request" | "new_post" | "group_invitation" | "group_deleted" | "lesson_comment" | "mention";
   content: string | null;
   read: boolean;
   created_at: string;
@@ -144,7 +144,7 @@ export default function Notifications() {
 
           return {
             ...notification,
-            type: notification.type as "like" | "comment" | "share" | "follow_request" | "new_post" | "group_invitation" | "group_deleted" | "lesson_comment",
+            type: notification.type as "like" | "comment" | "share" | "follow_request" | "new_post" | "group_invitation" | "group_deleted" | "lesson_comment" | "mention",
             followRequestPending,
             actorProfile: actorProfile || {
               id: "",
@@ -271,6 +271,8 @@ export default function Notifications() {
         return <UserPlus size={16} className="text-primary" />;
       case "group_deleted":
         return <Trash2 size={16} className="text-destructive" />;
+      case "mention":
+        return <AtSign size={16} className="text-primary" />;
       default:
         return null;
     }
@@ -295,6 +297,8 @@ export default function Notifications() {
         return notification.content || `${actor} vous a ajouté à un groupe`;
       case "group_deleted":
         return notification.content || `Un groupe a été supprimé`;
+      case "mention":
+        return `${actor} vous a mentionné dans un post`;
       default:
         return "";
     }
