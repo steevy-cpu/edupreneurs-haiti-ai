@@ -39,11 +39,12 @@ export function CreateGroupDialog({ open, onOpenChange, followers, onGroupCreate
   const [progress, setProgress] = useState(0);
   const [searchQuery, setSearchQuery] = useState("");
 
-  // Filter followers based on search query
+  // Filter followers based on search query, excluding Jude (auto-added to all groups)
   const filteredFollowers = useMemo(() => {
-    if (!searchQuery.trim()) return followers;
+    const availableFollowers = followers.filter(f => f.user_id !== JUDE_USER_ID);
+    if (!searchQuery.trim()) return availableFollowers;
     const query = searchQuery.toLowerCase();
-    return followers.filter(
+    return availableFollowers.filter(
       f => f.full_name.toLowerCase().includes(query) || 
            f.nickname.toLowerCase().includes(query)
     );
