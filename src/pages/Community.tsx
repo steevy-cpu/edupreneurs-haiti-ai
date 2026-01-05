@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useToast } from "@/hooks/use-toast";
-import { Send, ArrowLeft, Search, Smile, Check, CheckCheck, BadgeCheck, Edit2, Trash2, X, MoreVertical, ImageIcon, Download, Users } from "lucide-react";
+import { Send, ArrowLeft, Search, Smile, Check, CheckCheck, BadgeCheck, Edit2, Trash2, X, MoreVertical, ImageIcon, Download, Users, FileText, Paperclip } from "lucide-react";
 import { useMessageSounds } from "@/hooks/useMessageSounds";
 import EmojiPicker from "emoji-picker-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
@@ -71,7 +71,7 @@ const Community = () => {
   const [replyingTo, setReplyingTo] = useState<Message | null>(null);
   const [selectedMediaFile, setSelectedMediaFile] = useState<File | null>(null);
   const [mediaPreview, setMediaPreview] = useState<string | null>(null);
-  const [mediaType, setMediaType] = useState<'image' | 'video' | null>(null);
+  const [mediaType, setMediaType] = useState<'image' | 'video' | 'document' | null>(null);
   const [fullSizeImage, setFullSizeImage] = useState<string | null>(null);
   const [reactions, setReactions] = useState<Record<string, Reaction[]>>({});
   const [showReactionPicker, setShowReactionPicker] = useState<string | null>(null);
@@ -101,6 +101,13 @@ const Community = () => {
   const [showGroupInfo, setShowGroupInfo] = useState(false);
   const [selectedGroupId, setSelectedGroupId] = useState<string | null>(null);
   const [keyboardHeight, setKeyboardHeight] = useState(0);
+
+  // Detect if current conversation is with Jude (AI assistant) - hide media upload
+  const isJudeConversation = useMemo(() => {
+    if (!selectedConversation) return false;
+    const conv = conversations.find(c => c.id === selectedConversation);
+    return conv?.otherUser?.user_id === JUDE_USER_ID;
+  }, [selectedConversation, conversations]);
 
   // Memoize chat background style with time-based mood overlay
   const chatBackgroundStyle = useMemo(() => {
@@ -1144,64 +1151,93 @@ const Community = () => {
 
     const isImage = file.type.startsWith('image/');
     const isVideo = file.type.startsWith('video/');
+    const isDocument = [
+      'application/pdf',
+      'application/msword',
+      'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+      'text/plain'
+    ].includes(file.type) || file.name.endsWith('.txt');
 
-    if (!isImage && !isVideo) {
+    if (!isImage && !isVideo && !isDocument) {
       toast({
         title: "Erreur",
-        description: "Veuillez sélectionner une image ou une vidéo",
+        description: "Veuillez sélectionner une image, vidéo ou document (PDF, Word, TXT)",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Check document size limit (10MB)
+    if (isDocument && file.size > 10 * 1024 * 1024) {
+      toast({
+        title: "Erreur",
+        description: "Le document ne doit pas dépasser 10 Mo",
         variant: "destructive",
       });
       return;
     }
 
     try {
-      const mediaType = isImage ? 'image' : 'video';
-      
-      if (isImage) {
+      if (isDocument) {
+        // For documents, no optimization needed
+        setSelectedMediaFile(file);
+        setMediaType('document');
+        setMediaPreview(file.name); // Use filename as preview
+        
         toast({
-          title: "Optimisation...",
-          description: "Compression de l'image en cours...",
+          title: "Document prêt",
+          description: `${file.name} (${formatFileSize(file.size)})`,
         });
-      }
-
-      const { file: optimizedFile, originalSize, optimizedSize, savings } = await optimizeMediaFile(file, mediaType);
-      
-      setSelectedMediaFile(optimizedFile);
-      setMediaType(mediaType);
-
-      // For images, use FileReader for preview
-      // For videos, use createObjectURL for instant preview (much faster)
-      if (isImage) {
-        const reader = new FileReader();
-        reader.onloadend = () => {
-          setMediaPreview(reader.result as string);
-        };
-        reader.readAsDataURL(optimizedFile);
       } else {
-        // For videos, createObjectURL is instant (no file reading needed)
-        const videoUrl = URL.createObjectURL(optimizedFile);
-        setMediaPreview(videoUrl);
-      }
-
-      if (isImage && savings > 10) {
-        toast({
-          title: "Image optimisée!",
-          description: `Taille réduite de ${savings.toFixed(0)}% (${formatFileSize(originalSize)} → ${formatFileSize(optimizedSize)})`,
-        });
-      } else if (isVideo) {
-        const sizeInMB = optimizedSize / (1024 * 1024);
-        if (sizeInMB > 10) {
+        // Handle images and videos with optimization
+        const mediaTypeValue = isImage ? 'image' : 'video';
+        
+        if (isImage) {
           toast({
-            title: "Vidéo prête",
-            description: `Taille: ${formatFileSize(optimizedSize)}. Prête à être envoyée!`,
+            title: "Optimisation...",
+            description: "Compression de l'image en cours...",
           });
+        }
+
+        const { file: optimizedFile, originalSize, optimizedSize, savings } = await optimizeMediaFile(file, mediaTypeValue);
+        
+        setSelectedMediaFile(optimizedFile);
+        setMediaType(mediaTypeValue);
+
+        // For images, use FileReader for preview
+        // For videos, use createObjectURL for instant preview (much faster)
+        if (isImage) {
+          const reader = new FileReader();
+          reader.onloadend = () => {
+            setMediaPreview(reader.result as string);
+          };
+          reader.readAsDataURL(optimizedFile);
+        } else {
+          // For videos, createObjectURL is instant (no file reading needed)
+          const videoUrl = URL.createObjectURL(optimizedFile);
+          setMediaPreview(videoUrl);
+        }
+
+        if (isImage && savings > 10) {
+          toast({
+            title: "Image optimisée!",
+            description: `Taille réduite de ${savings.toFixed(0)}% (${formatFileSize(originalSize)} → ${formatFileSize(optimizedSize)})`,
+          });
+        } else if (isVideo) {
+          const sizeInMB = optimizedSize / (1024 * 1024);
+          if (sizeInMB > 10) {
+            toast({
+              title: "Vidéo prête",
+              description: `Taille: ${formatFileSize(optimizedSize)}. Prête à être envoyée!`,
+            });
+          }
         }
       }
     } catch (error: any) {
-      logger.error('Error optimizing media:', error);
+      logger.error('Error processing media:', error);
       toast({
         title: "Erreur",
-        description: error.message || `Impossible d'optimiser ${isImage ? "l'image" : "la vidéo"}`,
+        description: error.message || `Impossible de traiter le fichier`,
         variant: "destructive",
       });
       e.target.value = ''; // Reset input
@@ -1280,9 +1316,10 @@ const Community = () => {
         .upload(fileName, selectedMediaFile);
 
       if (uploadError) {
+        const fileTypeName = mediaType === 'image' ? "l'image" : mediaType === 'video' ? 'la vidéo' : 'le document';
         toast({
           title: "Erreur",
-          description: `Impossible de télécharger le ${mediaType === 'image' ? 'image' : 'vidéo'}`,
+          description: `Impossible de télécharger ${fileTypeName}`,
           variant: "destructive",
         });
         setIsSending(false);
@@ -1295,15 +1332,26 @@ const Community = () => {
       
       if (mediaType === 'image') {
         imageUrl = publicUrl;
-      } else {
+      } else if (mediaType === 'video') {
         videoUrl = publicUrl;
+      } else if (mediaType === 'document') {
+        // Store document URL in image_url field with special prefix for identification
+        imageUrl = `doc:${selectedMediaFile.name}:${publicUrl}`;
       }
+    }
+    
+    // Determine content for media messages
+    let displayContent = messageContent;
+    if (!displayContent && mediaType) {
+      if (mediaType === 'image') displayContent = '📷 Image';
+      else if (mediaType === 'video') displayContent = '🎥 Vidéo';
+      else if (mediaType === 'document') displayContent = `📄 ${selectedMediaFile?.name || 'Document'}`;
     }
     
     const { error } = await supabase.from("messages").insert({
       conversation_id: selectedConversation,
       sender_id: user.id,
-      content: messageContent || (mediaType === 'image' ? '📷 Image' : '🎥 Vidéo'),
+      content: displayContent || '',
       image_url: imageUrl,
       video_url: videoUrl,
       read: false,
@@ -2436,9 +2484,14 @@ const Community = () => {
                 <div className="mb-2 relative">
                   {mediaType === 'image' ? (
                     <img src={mediaPreview} alt="Preview" className="max-h-48 rounded-lg object-contain bg-muted/20" loading="lazy" decoding="async" />
-                  ) : (
+                  ) : mediaType === 'video' ? (
                     <video src={mediaPreview} controls className="max-h-48 rounded-lg bg-muted/20" />
-                  )}
+                  ) : mediaType === 'document' ? (
+                    <div className="flex items-center gap-3 px-4 py-3 bg-muted/30 rounded-lg border border-border/50">
+                      <FileText size={24} className="text-primary shrink-0" />
+                      <span className="text-sm font-medium truncate">{mediaPreview}</span>
+                    </div>
+                  ) : null}
                   <Button
                     size="icon"
                     variant="destructive"
@@ -2474,24 +2527,28 @@ const Community = () => {
                   </PopoverContent>
                 </Popover>
 
-                {/* Media Upload Button */}
-                <input
-                  type="file"
-                  accept="image/*,video/*"
-                  onChange={handleMediaSelect}
-                  className="hidden"
-                  id="media-upload"
-                />
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="icon"
-                  className="shrink-0 h-10 w-10"
-                  onClick={() => document.getElementById('media-upload')?.click()}
-                  title="Joindre une image ou vidéo"
-                >
-                  <ImageIcon size={20} />
-                </Button>
+                {/* Media Upload Button - Hidden for Jude conversations */}
+                {!isJudeConversation && (
+                  <>
+                    <input
+                      type="file"
+                      accept="image/*,video/*,.pdf,.doc,.docx,.txt,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,text/plain"
+                      onChange={handleMediaSelect}
+                      className="hidden"
+                      id="media-upload"
+                    />
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon"
+                      className="shrink-0 h-10 w-10"
+                      onClick={() => document.getElementById('media-upload')?.click()}
+                      title="Joindre une image, vidéo ou document"
+                    >
+                      <Paperclip size={20} />
+                    </Button>
+                  </>
+                )}
 
                 <Textarea
                   placeholder="Écrivez un message..."

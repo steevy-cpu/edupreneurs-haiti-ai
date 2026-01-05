@@ -4,7 +4,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Check, CheckCheck, Download, Edit2, Smile, Trash2, X } from "lucide-react";
+import { Check, CheckCheck, Download, Edit2, FileText, Smile, Trash2, X } from "lucide-react";
 import { getAvatarUrl } from "@/lib/avatarMap";
 import { Message, Reaction } from "@/types/community";
 import { FloatingReaction } from "./FloatingReaction";
@@ -211,6 +211,16 @@ export function MessageBubble({
     </div>
   );
 
+  // Check if image_url is actually a document
+  const isDocument = message.image_url?.startsWith('doc:');
+  const documentInfo = isDocument ? (() => {
+    const parts = message.image_url!.split(':');
+    return {
+      name: parts[1],
+      url: parts.slice(2).join(':') // Rejoin in case URL contains colons
+    };
+  })() : null;
+
   // Regular Message Display
   const renderRegularMessage = () => (
     <div className="relative group/message">
@@ -221,11 +231,11 @@ export function MessageBubble({
             : "bg-muted"
         }`}
       >
-        <div className={`flex items-start ${message.image_url ? 'justify-between' : 'justify-start'} gap-2`}>
+        <div className={`flex items-start ${(message.image_url && !isDocument) ? 'justify-between' : 'justify-start'} gap-2`}>
           <p className="text-xs sm:text-sm whitespace-pre-wrap break-words overflow-wrap-anywhere flex-1">
             {message.content}
           </p>
-          {message.image_url && (
+          {message.image_url && !isDocument && (
             <Button
               size="sm"
               variant="ghost"
@@ -239,7 +249,37 @@ export function MessageBubble({
             </Button>
           )}
         </div>
-        {message.image_url && (
+        {/* Document display */}
+        {isDocument && documentInfo && (
+          <div 
+            className={`mt-2 flex items-center gap-3 px-3 py-2 rounded-lg cursor-pointer hover:opacity-80 transition-opacity no-reply-trigger ${
+              isOwn ? 'bg-primary-foreground/20' : 'bg-muted/50'
+            }`}
+            onClick={(e) => {
+              e.stopPropagation();
+              window.open(documentInfo.url, '_blank');
+            }}
+          >
+            <FileText size={20} className="shrink-0" />
+            <span className="text-xs font-medium truncate flex-1">{documentInfo.name}</span>
+            <Button
+              size="sm"
+              variant="ghost"
+              className="h-6 w-6 p-0 hover:bg-background/50 no-reply-trigger shrink-0"
+              onClick={(e) => {
+                e.stopPropagation();
+                const link = document.createElement('a');
+                link.href = documentInfo.url;
+                link.download = documentInfo.name;
+                link.click();
+              }}
+            >
+              <Download size={14} />
+            </Button>
+          </div>
+        )}
+        {/* Image display */}
+        {message.image_url && !isDocument && (
           <img
             src={message.image_url}
             alt="Image"
