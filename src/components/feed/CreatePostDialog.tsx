@@ -88,12 +88,19 @@ export function CreatePostDialog({ currentUser, onPostCreated }: CreatePostDialo
       const query = mentionMatch[1].toLowerCase();
       setMentionQuery(query);
       
-      const filtered = followers.filter(f => 
-        f.full_name.toLowerCase().includes(query) || 
-        f.nickname.toLowerCase().includes(query)
-      );
-      setMentionSuggestions(filtered.slice(0, 5));
-      setShowMentionSuggestions(true);
+      // If query is empty (just @), show all followers
+      // Otherwise filter by name/nickname
+      let filtered;
+      if (query === '') {
+        filtered = followers;
+      } else {
+        filtered = followers.filter(f => 
+          f.full_name.toLowerCase().includes(query) || 
+          f.nickname.toLowerCase().includes(query)
+        );
+      }
+      setMentionSuggestions(filtered.slice(0, 8));
+      setShowMentionSuggestions(filtered.length > 0);
     } else {
       setShowMentionSuggestions(false);
     }
@@ -125,6 +132,11 @@ export function CreatePostDialog({ currentUser, onPostCreated }: CreatePostDialo
     const newContent = newPostContent.slice(0, pos) + '@' + newPostContent.slice(pos);
     setNewPostContent(newContent);
     setCursorPosition(pos + 1);
+    
+    // Show all followers immediately when @ is inserted
+    setMentionQuery('');
+    setMentionSuggestions(followers.slice(0, 8));
+    setShowMentionSuggestions(followers.length > 0);
     
     setTimeout(() => {
       textareaRef.current?.focus();
