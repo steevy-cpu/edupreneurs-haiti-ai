@@ -173,7 +173,7 @@ export const GlobalMusicPlayer = () => {
 
       {/* Playlist Dialog - always mounted, independent of Card */}
       <Dialog open={playlistOpen} onOpenChange={setPlaylistOpen}>
-        <DialogContent className="max-w-[calc(100vw-32px)] sm:max-w-2xl max-h-[80vh]">
+        <DialogContent className="w-[calc(100vw-32px)] max-w-2xl max-h-[80vh] left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2 text-base sm:text-lg">
               <Music className="w-4 h-4 sm:w-5 sm:h-5" />
