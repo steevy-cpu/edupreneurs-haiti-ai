@@ -345,59 +345,24 @@ export function CreatePostDialog({ currentUser, onPostCreated }: CreatePostDialo
       return;
     }
 
-    // Process mentions and send notifications
+    // Process mentions via backend function
     try {
-      const mentionedNicknames = extractMentions(newPostContent);
-      console.log('[Mentions] Extracted nicknames:', mentionedNicknames);
-      
-      if (mentionedNicknames.length > 0) {
-        const mentionedUserIds = await resolveMentionsToUserIds(mentionedNicknames);
-        console.log('[Mentions] Resolved user IDs:', mentionedUserIds);
-
-        // Send notifications to each mentioned user (excluding self)
-        for (const mentionedUserId of mentionedUserIds) {
-          if (mentionedUserId !== currentUser.id) {
-            // 1. Create in-platform notification
-            const { data: notifData, error: notifError } = await supabase
-              .from('notifications')
-              .insert({
-                user_id: mentionedUserId,
-                actor_id: currentUser.id,
-                post_id: newPost.id,
-                type: 'mention',
-                content: newPostContent.slice(0, 100),
-                read: false,
-              })
-              .select()
-              .single();
-            
-            if (notifError) {
-              console.error('[Mentions] Error creating notification:', notifError);
-            } else {
-              console.log('[Mentions] Notification created:', notifData?.id);
-            }
-            
-            // 2. Send browser push notification
-            const { error: pushError } = await supabase.functions.invoke('send-push-notification', {
-              body: {
-                recipientUserId: mentionedUserId,
-                actorId: currentUser.id,
-                type: 'mention',
-                entityId: newPost.id,
-                url: '/feed',
-              }
-            });
-            
-            if (pushError) {
-              console.error('[Mentions] Error sending push:', pushError);
-            } else {
-              console.log('[Mentions] Push notification sent to:', mentionedUserId);
-            }
-          }
+      console.log('[Mentions] Calling notify-mentions backend function...');
+      const { data: mentionResult, error: mentionError } = await supabase.functions.invoke('notify-mentions', {
+        body: {
+          postId: newPost.id,
+          content: newPostContent.trim(),
+          url: '/feed',
         }
+      });
+
+      if (mentionError) {
+        console.error('[Mentions] Backend function error:', mentionError);
+      } else {
+        console.log('[Mentions] Backend function result:', mentionResult);
       }
     } catch (mentionError) {
-      console.error('[Mentions] Error processing mentions:', mentionError);
+      console.error('[Mentions] Error calling backend function:', mentionError);
       // Don't fail the post creation if mention notifications fail
     }
 

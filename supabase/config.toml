@@ -144,5 +144,11 @@ verify_jwt = true
 [functions.elevenlabs-tts]
 verify_jwt = false
 
+[functions.notify-mentions]
+verify_jwt = true
+
+[functions.generate-custom-avatar]
+verify_jwt = false
+
 [functions.generate-custom-avatar]
 verify_jwt = false
