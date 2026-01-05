@@ -273,7 +273,13 @@ export default function Matieres() {
         {/* Grade Level Selection */}
         <div className="mb-8">
           <h3 className="text-lg font-semibold mb-4 text-center">Sélectionnez votre niveau</h3>
-          <div className="flex overflow-x-auto pb-2 gap-2 justify-start sm:justify-center scrollbar-hide touch-pan-x">
+          <div 
+            className="flex overflow-x-auto pb-2 gap-2 justify-start sm:justify-center scrollbar-hide"
+            style={{ touchAction: 'pan-x' }}
+            onTouchStart={(e) => e.stopPropagation()}
+            onTouchMove={(e) => e.stopPropagation()}
+            onTouchEnd={(e) => e.stopPropagation()}
+          >
             {gradeLevels.map((grade) => {
               const isUserGrade = userGrade === grade.id;
               const isLocked = isAuthenticated && !canAccessGrade(grade.id);
