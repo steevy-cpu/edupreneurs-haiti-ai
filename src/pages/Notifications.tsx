@@ -12,6 +12,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { NotificationPermissionBanner } from "@/components/NotificationPermissionBanner";
 import { useNotificationSync } from "@/hooks/useNotificationSync";
+import { useNotificationSound } from "@/hooks/useNotificationSound";
 
 interface Profile {
   id: string;
@@ -43,6 +44,7 @@ export default function Notifications() {
   const [deleteAllDialogOpen, setDeleteAllDialogOpen] = useState(false);
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const navigate = useNavigate();
+  const { playNotificationSound } = useNotificationSound();
 
   // Use notification sync hook for cross-tab synchronization
   useNotificationSync(() => {
@@ -190,6 +192,8 @@ export default function Notifications() {
         },
         async (payload) => {
           console.log('New notification received for current user:', payload);
+          // Play notification sound
+          playNotificationSound();
           // Note: Don't send push notification here - it's already sent from the backend
           // Just refresh the notifications list
           fetchNotifications();
