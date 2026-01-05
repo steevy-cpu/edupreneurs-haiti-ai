@@ -661,39 +661,61 @@ const Index = () => {
       </section>
 
       {/* Footer */}
-      <footer className="bg-card/95 backdrop-blur-lg border-t border-border/50 py-12 px-4">
-        <div className="container mx-auto">
-          <div className="grid md:grid-cols-3 gap-8 mb-8">
-            <div>
-              <h4 className="font-black text-accent mb-4 text-lg">EDUPRENEURS</h4>
-              <ul className="space-y-2">
-                <li><a href="#accueil" className="text-muted-foreground hover:text-accent transition-all duration-300 font-medium hover:translate-x-1 inline-block">→ Accueil</a></li>
-                <li><a href="#courses" className="text-muted-foreground hover:text-accent transition-all duration-300 font-medium hover:translate-x-1 inline-block">→ Cours</a></li>
-                <li><Link to="/dashboard" className="text-muted-foreground hover:text-accent transition-all duration-300 font-medium hover:translate-x-1 inline-block">→ Dashboard</Link></li>
+      <footer className="relative bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 text-white py-16 px-4 overflow-hidden">
+        {/* Decorative top accent */}
+        <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-primary via-accent to-primary"></div>
+        
+        <div className="container mx-auto relative z-10">
+          {/* Logo and Tagline */}
+          <div className="text-center mb-12">
+            <img src={edupreneursLogo} alt="Edupreneurs" className="h-14 mx-auto mb-4 brightness-110" />
+            <p className="text-slate-300 max-w-md mx-auto text-sm font-medium">
+              Révolutionner l'éducation haïtienne avec l'intelligence artificielle
+            </p>
+          </div>
+          
+          {/* Links Grid */}
+          <div className="grid md:grid-cols-3 gap-8 mb-12">
+            {/* Navigation */}
+            <div className="text-center md:text-left">
+              <h4 className="font-black text-white mb-4 text-lg tracking-wide">EDUPRENEURS</h4>
+              <ul className="space-y-3">
+                <li><a href="#accueil" className="text-slate-400 hover:text-primary transition-all duration-300 font-medium hover:translate-x-1 inline-flex items-center gap-2 group"><span className="opacity-0 group-hover:opacity-100 transition-opacity">→</span> Accueil</a></li>
+                <li><a href="#courses" className="text-slate-400 hover:text-primary transition-all duration-300 font-medium hover:translate-x-1 inline-flex items-center gap-2 group"><span className="opacity-0 group-hover:opacity-100 transition-opacity">→</span> Nos Cours</a></li>
+                <li><Link to="/dashboard" className="text-slate-400 hover:text-primary transition-all duration-300 font-medium hover:translate-x-1 inline-flex items-center gap-2 group"><span className="opacity-0 group-hover:opacity-100 transition-opacity">→</span> Dashboard</Link></li>
+                <li><Link to="/resources" className="text-slate-400 hover:text-primary transition-all duration-300 font-medium hover:translate-x-1 inline-flex items-center gap-2 group"><span className="opacity-0 group-hover:opacity-100 transition-opacity">→</span> Ressources</Link></li>
               </ul>
             </div>
-            <div>
-              <h4 className="font-black text-accent mb-4 text-lg">Matières</h4>
-              <ul className="space-y-2">
-                <li><Link to="/dashboard" className="text-muted-foreground hover:text-accent transition-all duration-300 font-medium hover:translate-x-1 inline-block">→ Français</Link></li>
-                <li><Link to="/dashboard" className="text-muted-foreground hover:text-accent transition-all duration-300 font-medium hover:translate-x-1 inline-block">→ Mathématiques</Link></li>
-                <li><Link to="/dashboard" className="text-muted-foreground hover:text-accent transition-all duration-300 font-medium hover:translate-x-1 inline-block">→ Sciences Sociales</Link></li>
+            
+            {/* À Propos */}
+            <div className="text-center md:text-left">
+              <h4 className="font-black text-white mb-4 text-lg tracking-wide">À PROPOS</h4>
+              <ul className="space-y-3">
+                <li><a href="#about" className="text-slate-400 hover:text-primary transition-all duration-300 font-medium hover:translate-x-1 inline-flex items-center gap-2 group"><span className="opacity-0 group-hover:opacity-100 transition-opacity">→</span> Notre Mission</a></li>
+                <li><Link to="/exams-hub" className="text-slate-400 hover:text-primary transition-all duration-300 font-medium hover:translate-x-1 inline-flex items-center gap-2 group"><span className="opacity-0 group-hover:opacity-100 transition-opacity">→</span> Préparation au Bac</Link></li>
+                <li><a href="#about" className="text-slate-400 hover:text-primary transition-all duration-300 font-medium hover:translate-x-1 inline-flex items-center gap-2 group"><span className="opacity-0 group-hover:opacity-100 transition-opacity">→</span> Programme MENFP</a></li>
               </ul>
             </div>
-            <div>
-              <h4 className="font-black text-accent mb-4 text-lg">Support</h4>
-              <ul className="space-y-2">
-                <li><a href="#faq" className="text-muted-foreground hover:text-accent transition-all duration-300 font-medium hover:translate-x-1 inline-block">→ FAQ</a></li>
-                <li><Link to="/auth" className="text-muted-foreground hover:text-accent transition-all duration-300 font-medium hover:translate-x-1 inline-block">→ Contact</Link></li>
+            
+            {/* Support & Legal */}
+            <div className="text-center md:text-left">
+              <h4 className="font-black text-white mb-4 text-lg tracking-wide">SUPPORT</h4>
+              <ul className="space-y-3">
+                <li><a href="#faq" className="text-slate-400 hover:text-primary transition-all duration-300 font-medium hover:translate-x-1 inline-flex items-center gap-2 group"><span className="opacity-0 group-hover:opacity-100 transition-opacity">→</span> FAQ</a></li>
+                <li><Link to="/auth" className="text-slate-400 hover:text-primary transition-all duration-300 font-medium hover:translate-x-1 inline-flex items-center gap-2 group"><span className="opacity-0 group-hover:opacity-100 transition-opacity">→</span> Contact</Link></li>
+                <li><Link to="/privacy-policy" className="text-slate-400 hover:text-primary transition-all duration-300 font-medium hover:translate-x-1 inline-flex items-center gap-2 group"><span className="opacity-0 group-hover:opacity-100 transition-opacity">→</span> Confidentialité</Link></li>
+                <li><Link to="/cookie-settings" className="text-slate-400 hover:text-primary transition-all duration-300 font-medium hover:translate-x-1 inline-flex items-center gap-2 group"><span className="opacity-0 group-hover:opacity-100 transition-opacity">→</span> Paramètres Cookies</Link></li>
               </ul>
             </div>
           </div>
-          <div className="border-t border-border/50 pt-8">
-            <p className="text-center text-muted-foreground text-sm font-medium">
+          
+          {/* Bottom Bar */}
+          <div className="border-t border-slate-700/50 pt-8 flex flex-col md:flex-row justify-between items-center gap-4">
+            <p className="text-slate-400 text-sm font-medium">
               © 2025 EDUPRENEURS. Éducation de qualité pour Haïti 🇭🇹
             </p>
-            <p className="text-center text-muted-foreground/60 text-xs mt-2">
-              Plateforme éducative révolutionnaire basée sur le programme MENFP
+            <p className="text-slate-500 text-xs">
+              Plateforme éducative basée sur le programme officiel du MENFP
             </p>
           </div>
         </div>
