@@ -45,8 +45,9 @@ export const GlobalMusicPlayer = () => {
     return () => subscription.unsubscribe();
   }, []);
 
+  // Unified Pointer Events handler for drag
   useEffect(() => {
-    const handleMouseMove = (e: MouseEvent) => {
+    const handlePointerMove = (e: PointerEvent) => {
       if (!isDragging) return;
       
       // Check if we've passed the drag threshold
@@ -58,6 +59,9 @@ export const GlobalMusicPlayer = () => {
         }
         setHasDragStarted(true);
       }
+      
+      // Prevent default to stop scroll/pan on touch devices
+      e.preventDefault();
       
       setHasMoved(true);
       
@@ -73,74 +77,34 @@ export const GlobalMusicPlayer = () => {
       setPosition({ x: newX, y: newY });
     };
 
-    const handleTouchMove = (e: TouchEvent) => {
-      if (!isDragging) return;
-      
-      const touch = e.touches[0];
-      
-      // Check if we've passed the drag threshold
-      if (!hasDragStarted) {
-        const dx = Math.abs(touch.clientX - dragStartPos.x);
-        const dy = Math.abs(touch.clientY - dragStartPos.y);
-        if (dx < DRAG_THRESHOLD && dy < DRAG_THRESHOLD) {
-          return; // Don't start dragging yet, allow scroll
-        }
-        setHasDragStarted(true);
-      }
-      
-      // Only prevent default scroll after threshold is met
-      e.preventDefault();
-      
-      setHasMoved(true);
-      
-      let newX = touch.clientX - dragOffset.x;
-      let newY = touch.clientY - dragOffset.y;
-      
-      const playerWidth = playerRef.current?.offsetWidth || 0;
-      const playerHeight = playerRef.current?.offsetHeight || 0;
-      
-      newX = Math.max(0, Math.min(newX, window.innerWidth - playerWidth));
-      newY = Math.max(0, Math.min(newY, window.innerHeight - playerHeight));
-      
-      setPosition({ x: newX, y: newY });
-    };
-
-    const handleMouseUp = () => {
-      setIsDragging(false);
-    };
-
-    const handleTouchEnd = () => {
+    const handlePointerUp = () => {
       setIsDragging(false);
     };
 
     if (isDragging) {
-      document.addEventListener("mousemove", handleMouseMove);
-      document.addEventListener("mouseup", handleMouseUp);
-      document.addEventListener("touchmove", handleTouchMove, { passive: false });
-      document.addEventListener("touchend", handleTouchEnd);
+      document.addEventListener("pointermove", handlePointerMove, { passive: false });
+      document.addEventListener("pointerup", handlePointerUp);
+      document.addEventListener("pointercancel", handlePointerUp);
     }
 
     return () => {
-      document.removeEventListener("mousemove", handleMouseMove);
-      document.removeEventListener("mouseup", handleMouseUp);
-      document.removeEventListener("touchmove", handleTouchMove);
-      document.removeEventListener("touchend", handleTouchEnd);
+      document.removeEventListener("pointermove", handlePointerMove);
+      document.removeEventListener("pointerup", handlePointerUp);
+      document.removeEventListener("pointercancel", handlePointerUp);
     };
   }, [isDragging, dragOffset, hasDragStarted, dragStartPos]);
 
-  // Drag handlers - only for specific drag handle areas
-  const handleDragStart = (e: React.MouseEvent | React.TouchEvent) => {
+  // Unified Pointer Event handler for drag start
+  const handleDragStart = (e: React.PointerEvent) => {
     if (!playerRef.current) return;
     
     const rect = playerRef.current.getBoundingClientRect();
-    const clientX = 'touches' in e ? e.touches[0].clientX : e.clientX;
-    const clientY = 'touches' in e ? e.touches[0].clientY : e.clientY;
     
     setDragOffset({
-      x: clientX - rect.left,
-      y: clientY - rect.top,
+      x: e.clientX - rect.left,
+      y: e.clientY - rect.top,
     });
-    setDragStartPos({ x: clientX, y: clientY });
+    setDragStartPos({ x: e.clientX, y: e.clientY });
     setHasDragStarted(false);
     setHasMoved(false);
     setIsDragging(true);
@@ -291,10 +255,10 @@ export const GlobalMusicPlayer = () => {
       >
         {minimized ? (
           <Button
-            onMouseDown={handleDragStart}
-            onTouchStart={handleDragStart}
+            onPointerDown={handleDragStart}
             onClick={handlePlayerClick}
             className="w-14 h-14 rounded-full shadow-2xl cursor-move"
+            style={{ touchAction: 'none' }}
             size="icon"
           >
             <Music className="w-6 h-6" />
@@ -309,8 +273,8 @@ export const GlobalMusicPlayer = () => {
           >
             <CardHeader 
               className="pb-3 bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-950/30 dark:to-pink-950/30 cursor-move"
-              onMouseDown={handleDragStart}
-              onTouchStart={handleDragStart}
+              style={{ touchAction: 'none' }}
+              onPointerDown={handleDragStart}
             >
               <div className="flex items-center justify-between">
                 <CardTitle className="text-sm sm:text-base flex items-center gap-2 truncate">
