@@ -270,16 +270,22 @@ export function CreateGroupDialog({ open, onOpenChange, followers, onGroupCreate
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>
-      <DialogContent className="fixed top-1/2 -translate-y-1/2 -translate-x-1/2 left-1/2 md:left-[calc(50%+10rem)] lg:left-[calc(50%+12rem)] w-[calc(100%-2rem)] max-w-md sm:max-w-lg max-h-[85vh] sm:max-h-[90vh] overflow-hidden flex flex-col p-0 gap-0 mx-0">
-        {/* Gradient Header */}
-        <div className="bg-gradient-to-r from-primary/20 via-primary/10 to-success/20 p-4 sm:p-6 shrink-0">
-          <DialogHeader className="space-y-2">
+      <DialogContent className="w-[calc(100%-2rem)] max-w-md sm:max-w-lg max-h-[85vh] sm:max-h-[90vh] overflow-hidden flex flex-col p-0 gap-0">
+        {/* Enhanced Gradient Header */}
+        <div className="relative bg-gradient-to-br from-primary/20 via-primary/10 to-success/20 p-4 sm:p-6 shrink-0 overflow-hidden">
+          {/* Animated background pattern */}
+          <div className="absolute inset-0 opacity-30 pointer-events-none">
+            <div className="absolute top-2 right-8 w-16 h-16 bg-primary/30 rounded-full blur-xl animate-pulse" />
+            <div className="absolute bottom-2 left-8 w-12 h-12 bg-success/30 rounded-full blur-lg animate-pulse" style={{ animationDelay: '150ms' }} />
+          </div>
+          
+          <DialogHeader className="relative z-10 space-y-2">
             <DialogTitle className="flex items-center gap-3 text-lg sm:text-xl">
-              <div className="p-2.5 bg-primary/20 rounded-full animate-pulse">
+              <div className="p-2.5 bg-primary/20 rounded-full shadow-lg shadow-primary/20">
                 <Users className="h-5 w-5 text-primary" />
               </div>
               <span>Créer un groupe</span>
-              <Sparkles className="h-4 w-4 text-primary/60 ml-auto" />
+              <Sparkles className="h-4 w-4 text-primary/60 ml-auto animate-pulse" />
             </DialogTitle>
             <DialogDescription className="text-sm">
               Rassemblez vos amis et commencez à discuter ensemble
@@ -296,17 +302,17 @@ export function CreateGroupDialog({ open, onOpenChange, followers, onGroupCreate
                 <div className="relative">
                   <div className={`h-24 w-24 sm:h-28 sm:w-28 rounded-full border-2 border-dashed flex items-center justify-center transition-all duration-300 ${
                     avatarPreview 
-                      ? 'border-primary bg-primary/5' 
-                      : 'border-muted-foreground/30 bg-muted/30 hover:border-primary/50 hover:bg-primary/5 group-hover:scale-105'
+                      ? 'border-primary bg-primary/5 shadow-lg shadow-primary/20' 
+                      : 'border-muted-foreground/30 bg-gradient-to-br from-muted/30 to-muted/50 hover:border-primary/50 hover:bg-primary/5 hover:shadow-lg hover:shadow-primary/10 group-hover:scale-105'
                   }`}>
                     {avatarPreview ? (
-                      <Avatar className="h-full w-full">
+                      <Avatar className="h-full w-full ring-2 ring-primary/20">
                         <AvatarImage src={avatarPreview} className="object-cover" />
                       </Avatar>
                     ) : (
-                      <div className="flex flex-col items-center gap-1.5 text-muted-foreground">
+                      <div className="flex flex-col items-center gap-1.5 text-muted-foreground group-hover:text-primary transition-colors">
                         <Upload className="h-6 w-6 sm:h-7 sm:w-7" />
-                        <span className="text-[10px] sm:text-xs">Photo</span>
+                        <span className="text-[10px] sm:text-xs font-medium">Photo</span>
                       </div>
                     )}
                   </div>
@@ -367,16 +373,16 @@ export function CreateGroupDialog({ open, onOpenChange, followers, onGroupCreate
                     <Badge
                       key={member.user_id}
                       variant="secondary"
-                      className="pl-1 pr-1.5 py-1 gap-1.5 bg-primary/10 hover:bg-primary/20 transition-colors cursor-pointer group"
+                      className="pl-1 pr-1.5 py-1 gap-1.5 bg-primary/10 hover:bg-destructive/20 hover:text-destructive transition-all duration-200 cursor-pointer group hover:scale-105 animate-scale-in"
                       onClick={() => removeMember(member.user_id)}
                     >
-                      <Avatar className="h-5 w-5">
+                      <Avatar className="h-5 w-5 ring-1 ring-primary/20">
                         <AvatarImage src={getAvatarUrl(member.avatar_url)} />
                         <AvatarFallback className="text-[10px]">
                           {member.full_name.charAt(0)}
                         </AvatarFallback>
                       </Avatar>
-                      <span className="text-xs max-w-[80px] truncate">{member.nickname || member.full_name}</span>
+                      <span className="text-xs max-w-[80px] truncate font-medium">{member.nickname || member.full_name}</span>
                       <X className="h-3 w-3 opacity-60 group-hover:opacity-100 transition-opacity" />
                     </Badge>
                   ))}
@@ -425,21 +431,21 @@ export function CreateGroupDialog({ open, onOpenChange, followers, onGroupCreate
                         return (
                           <div
                             key={follower.user_id}
-                            className={`flex items-center gap-3 p-2.5 rounded-lg cursor-pointer transition-all duration-200 ${
+                            className={`flex items-center gap-3 p-2.5 rounded-lg cursor-pointer transition-all duration-200 hover:-translate-y-0.5 ${
                               isSelected 
-                                ? 'bg-primary/10 ring-1 ring-primary/30' 
-                                : 'hover:bg-accent'
+                                ? 'bg-primary/10 ring-1 ring-primary/30 shadow-sm' 
+                                : 'hover:bg-accent hover:shadow-sm'
                             }`}
                             onClick={() => toggleMember(follower.user_id)}
                           >
-                            <div className={`flex items-center justify-center h-5 w-5 rounded-md border-2 transition-all ${
+                            <div className={`flex items-center justify-center h-5 w-5 rounded-md border-2 transition-all duration-200 ${
                               isSelected 
-                                ? 'bg-primary border-primary' 
-                                : 'border-muted-foreground/30'
+                                ? 'bg-primary border-primary scale-110' 
+                                : 'border-muted-foreground/30 hover:border-primary/50'
                             }`}>
-                              {isSelected && <Check className="h-3 w-3 text-primary-foreground" />}
+                              {isSelected && <Check className="h-3 w-3 text-primary-foreground animate-scale-in" />}
                             </div>
-                            <Avatar className="h-9 w-9 sm:h-10 sm:w-10">
+                            <Avatar className={`h-9 w-9 sm:h-10 sm:w-10 transition-all duration-200 ${isSelected ? 'ring-2 ring-primary/30' : ''}`}>
                               <AvatarImage src={getAvatarUrl(follower.avatar_url)} />
                               <AvatarFallback className="text-sm">
                                 {follower.full_name.charAt(0)}
@@ -488,7 +494,7 @@ export function CreateGroupDialog({ open, onOpenChange, followers, onGroupCreate
             </Button>
             <Button
               onClick={handleCreateGroup}
-              className="flex-1 h-11 sm:h-10 bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 transition-all"
+              className="flex-1 h-11 sm:h-10 bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 hover:scale-[1.02] active:scale-[0.98] transition-all shadow-lg shadow-primary/20 disabled:opacity-50 disabled:shadow-none disabled:hover:scale-100"
               disabled={isCreating || !groupName.trim() || selectedMembers.size === 0}
             >
               {isCreating ? (
