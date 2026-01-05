@@ -71,28 +71,25 @@ serve(async (req) => {
       });
     }
 
-    // Resolve nicknames to user_ids (case-insensitive)
-    const { data: profiles, error: profilesError } = await supabase
-      .from('profiles')
-      .select('user_id, nickname')
-      .in('nickname', nicknames.map(n => n.toLowerCase()));
-
-    if (profilesError) {
-      console.error('❌ Error fetching profiles:', profilesError);
-      return new Response(JSON.stringify({ error: 'Failed to resolve nicknames' }), {
-        status: 500,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
+    // Resolve nicknames to user_ids using case-insensitive ILIKE
+    const allProfiles: { user_id: string; nickname: string }[] = [];
+    for (const nickname of nicknames) {
+      const { data: matchingProfiles, error } = await supabase
+        .from('profiles')
+        .select('user_id, nickname')
+        .ilike('nickname', nickname);
+      
+      if (error) {
+        console.error(`❌ Error fetching profile for ${nickname}:`, error);
+        continue;
+      }
+      
+      if (matchingProfiles && matchingProfiles.length > 0) {
+        allProfiles.push(...matchingProfiles);
+      }
     }
 
-    // Also try exact case match
-    const { data: profilesExact } = await supabase
-      .from('profiles')
-      .select('user_id, nickname')
-      .in('nickname', nicknames);
-
-    // Combine both results (deduplicated)
-    const allProfiles = [...(profiles || []), ...(profilesExact || [])];
+    // Deduplicate by user_id
     const uniqueProfiles = allProfiles.reduce((acc, p) => {
       if (!acc.find(x => x.user_id === p.user_id)) {
         acc.push(p);
