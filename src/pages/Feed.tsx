@@ -10,6 +10,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Heart, MessageCircle, Send, Plus, Image, Share2, Trash2, Smile, Reply, BadgeCheck, ArrowLeft, RefreshCw, Globe } from "lucide-react";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { CreatePostDialog } from "@/components/feed/CreatePostDialog";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -824,133 +825,7 @@ const Feed = () => {
               <RefreshCw size={18} className={`sm:w-5 sm:h-5 ${isRefreshing ? "animate-spin" : ""}`} />
             </Button>
             <ThemeToggle />
-            <Dialog>
-            <DialogTrigger asChild>
-              <Button size="icon" className="h-9 w-9 bg-primary hover:bg-primary/90">
-                <Plus size={20} />
-              </Button>
-            </DialogTrigger>
-            <DialogContent className="sm:max-w-[500px]">
-              <DialogHeader>
-                <DialogTitle>Créer un post</DialogTitle>
-              </DialogHeader>
-              <div className="space-y-4 pt-4">
-                <Textarea
-                  placeholder="Quoi de neuf ?"
-                  value={newPostContent}
-                  onChange={(e) => setNewPostContent(e.target.value)}
-                  className="min-h-[120px] resize-none border-none bg-muted/30 focus-visible:ring-1"
-                />
-                
-                {imagePreview && (
-                  <div className="relative">
-                    <img src={imagePreview} alt="Preview" className="w-full max-h-96 object-contain rounded-lg bg-muted/20" loading="lazy" decoding="async" />
-                    <Button
-                      size="icon"
-                      variant="destructive"
-                      className="absolute top-2 right-2"
-                      onClick={() => {
-                        setSelectedImage(null);
-                        setImagePreview(null);
-                      }}
-                    >
-                      ×
-                    </Button>
-                  </div>
-                )}
-
-                {videoPreview && (
-                  <div className="relative">
-                    <video src={videoPreview} controls className="w-full max-h-96 rounded-lg bg-muted/20" />
-                    <Button
-                      size="icon"
-                      variant="destructive"
-                      className="absolute top-2 right-2"
-                      onClick={() => {
-                        setSelectedVideo(null);
-                        setVideoPreview(null);
-                      }}
-                    >
-                      ×
-                    </Button>
-                  </div>
-                )}
-
-                {/* Public post toggle */}
-                <div className="flex items-center justify-between p-3 rounded-lg bg-muted/30 border border-border/50">
-                  <div className="flex items-center gap-2">
-                    <Globe size={18} className={isPublicPost ? "text-primary" : "text-muted-foreground"} />
-                    <div>
-                      <p className="text-sm font-medium">Post public</p>
-                      <p className="text-xs text-muted-foreground">Visible par tous les utilisateurs</p>
-                    </div>
-                  </div>
-                  <button
-                    type="button"
-                    role="switch"
-                    aria-checked={isPublicPost}
-                    onClick={() => setIsPublicPost(!isPublicPost)}
-                    className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                      isPublicPost ? "bg-primary" : "bg-muted"
-                    }`}
-                  >
-                    <span
-                      className={`inline-block h-4 w-4 transform rounded-full bg-background transition-transform ${
-                        isPublicPost ? "translate-x-6" : "translate-x-1"
-                      }`}
-                    />
-                  </button>
-                </div>
-
-                <div className="flex justify-between items-center gap-2">
-                  <div className="flex gap-2">
-                    <input
-                      ref={fileInputRef}
-                      type="file"
-                      accept="image/*"
-                      onChange={handleImageSelect}
-                      className="hidden"
-                      id="image-upload"
-                    />
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => fileInputRef.current?.click()}
-                      title="Ajouter une image"
-                    >
-                      <Image size={20} />
-                    </Button>
-                    
-                    <input
-                      type="file"
-                      accept="video/*"
-                      onChange={handleVideoSelect}
-                      className="hidden"
-                      id="video-upload"
-                    />
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => document.getElementById('video-upload')?.click()}
-                      title="Ajouter une vidéo"
-                    >
-                      <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="23 7 16 12 23 17 23 7"></polygon><rect x="1" y="5" width="15" height="14" rx="2" ry="2"></rect></svg>
-                    </Button>
-                  </div>
-                  
-                  <Button
-                    onClick={createPost}
-                    disabled={(!newPostContent.trim() && !selectedImage && !selectedVideo) || isCreatingPost}
-                    className="bg-primary hover:bg-primary/90"
-                  >
-                    {isCreatingPost ? "Publication..." : "Publier"}
-                  </Button>
-                </div>
-              </div>
-            </DialogContent>
-          </Dialog>
+            <CreatePostDialog currentUser={currentUser} onPostCreated={refreshFeed} />
           </div>
         </div>
       </div>
