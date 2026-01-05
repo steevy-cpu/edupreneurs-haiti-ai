@@ -77,6 +77,31 @@ const htmlToLatex = (text: string): string => {
   result = result.replace(/≡/g, "\\equiv ");
   result = result.replace(/∝/g, "\\propto ");
   
+  // Physics-specific Greek letters
+  result = result.replace(/ω/g, "\\omega ");
+  result = result.replace(/Ω/g, "\\Omega ");
+  result = result.replace(/Δ/g, "\\Delta ");
+  result = result.replace(/μ/g, "\\mu ");
+  result = result.replace(/τ/g, "\\tau ");
+  result = result.replace(/ρ/g, "\\rho ");
+  result = result.replace(/φ/g, "\\phi ");
+  result = result.replace(/ε/g, "\\varepsilon ");
+  
+  // Convert underscore subscripts: Q_c → Q_{c}, v_0 → v_{0}
+  result = result.replace(/([A-Za-z])_([A-Za-z0-9]+)/g, '$1_{$2}');
+  
+  // Convert superscript unicode: ² → ^{2}, ³ → ^{3}
+  result = result.replace(/²/g, "^{2}");
+  result = result.replace(/³/g, "^{3}");
+  result = result.replace(/⁻¹/g, "^{-1}");
+  result = result.replace(/⁻²/g, "^{-2}");
+  
+  // Convert subscript unicode
+  result = result.replace(/₀/g, "_{0}");
+  result = result.replace(/₁/g, "_{1}");
+  result = result.replace(/₂/g, "_{2}");
+  result = result.replace(/₃/g, "_{3}");
+  
   // Convert superscript: a<sup>n</sup> -> a^{n}
   result = result.replace(/<sup>([^<]+)<\/sup>/gi, "^{$1}");
   
@@ -88,6 +113,22 @@ const htmlToLatex = (text: string): string => {
   result = result.replace(/√\(([^)]+)\)/g, "\\sqrt{$1}");
   
   return result;
+};
+
+// Check if text contains physics-specific math patterns
+const containsPhysicsMath = (text: string): boolean => {
+  const physicsPatterns = [
+    /[A-Za-z]_[A-Za-z0-9]+/,        // Subscript notation: Q_c, v_0, x_1
+    /[A-Za-z]\d+\s*[=+-]/,          // Variables with numbers: Q1 =, Q2 -
+    /\d+\s*[kμmn]?[FVWAΩH]/,        // Physics units: 51 kVAR, 1896 μF, 10 kΩ
+    /\d+\s*(rad|Hz|Wb|VA|VAR)/i,    // More units
+    /ω|Ω|Δ|τ|ρ|φ|ε/,                // Physics Greek letters
+    /\d+π/,                          // Expressions like 120π, 2πf
+    /[²³⁻¹⁻²₀₁₂₃]/,                 // Unicode super/subscripts
+    /\d+\s*\/\s*\d+/,               // Simple fractions: 1/2
+    /[A-Z]\s*=\s*[A-Z0-9]/,         // Physics formulas: C = Q
+  ];
+  return physicsPatterns.some(pattern => pattern.test(text));
 };
 
 // Check if a string contains mathematical notation (including LaTeX delimiters and plain text math)
@@ -103,14 +144,14 @@ const containsMath = (text: string): boolean => {
     /\\sqrt\s*[\[{]/,            // \sqrt{x} or \sqrt[n]{x}
     /\\sum|\\prod|\\int/,        // Integrals and sums
     /\\neq|\\leq|\\geq|\\times|\\div|\\pm/, // Operators
-    /\\alpha|\\beta|\\gamma|\\delta|\\theta|\\pi|\\lambda|\\mu|\\sigma/, // Greek letters
+    /\\alpha|\\beta|\\gamma|\\delta|\\theta|\\pi|\\lambda|\\mu|\\sigma|\\omega/, // Greek letters
     /\\rightarrow|\\leftarrow|\\Rightarrow/, // Arrows
     /\\binom|\\approx/,          // Binomial and approx
     // HTML patterns
     /<sup>/i,
     /<sub>/i,
     /&times;|&div;|&plusmn;|&le;|&ge;|&ne;|&rarr;|&infin;|&pi;|&radic;/,
-    /×|÷|±|≤|≥|≠|→|∞|π|√|∑|∏|∫|∈|∉|⊂|⊃|∪|∩|∅|≈|λ|μ|σ/,
+    /×|÷|±|≤|≥|≠|→|∞|π|√|∑|∏|∫|∈|∉|⊂|⊃|∪|∩|∅|≈|λ|μ|σ|ω|Ω|Δ|τ|ρ|φ|ε/,
     /\^{|\_{/,
     /sqrt\(/i,
     // Plain text math patterns
@@ -120,8 +161,14 @@ const containsMath = (text: string): boolean => {
     /C\(\d+,\s*\d+\)/,           // Combinations: C(5, 0)
     /P\([^)]+=[^)]+\)/,          // Probability: P(X=0)
     /[A-Za-z]\([A-Za-z]\)\s*=/,  // Function notation: f(x) =
+    // Physics-specific patterns
+    /[A-Za-z]_[A-Za-z0-9]+/,     // Subscript notation: Q_c, v_0
+    /\d+\s*[kμmn]?[FVWAΩH]/,     // Physics units
+    /\d+\s*(rad|Hz|Wb|VA|VAR|kVAR)/i, // More physics units
+    /\d+π/,                       // Expressions like 120π
+    /[²³⁻¹⁻²₀₁₂₃]/,              // Unicode super/subscripts
   ];
-  return mathPatterns.some(pattern => pattern.test(text));
+  return mathPatterns.some(pattern => pattern.test(text)) || containsPhysicsMath(text);
 };
 
 // Check if content has LaTeX delimiters
@@ -519,10 +566,15 @@ export const MathText = React.memo(({ text, className = "" }: { text: string; cl
 
 MathText.displayName = 'MathText';
 
-// Helper to check if a subject is math-related
+// Helper to check if a subject is math-related (includes physics and sciences)
 export const isMathSubject = (subjectName: string): boolean => {
   const lowerName = subjectName.toLowerCase();
   return lowerName.includes("math") || 
          lowerName.includes("mathématiques") || 
-         lowerName.includes("matematik");
+         lowerName.includes("matematik") ||
+         lowerName.includes("physique") ||
+         lowerName.includes("physics") ||
+         lowerName.includes("chimie") ||
+         lowerName.includes("chemistry") ||
+         lowerName.includes("science");
 };
