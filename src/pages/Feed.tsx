@@ -34,27 +34,48 @@ import { useFeedData } from "@/hooks/useFeedData";
 import { formatTimeAgo } from "@/utils/dateUtils";
 import { Profile, Post, Comment } from "@/types/feed";
 
-// Function to render content with clickable links
+// Function to render content with clickable links, @mentions, and plain domains
 const renderContentWithLinks = (content: string) => {
-  // Match internal routes (starting with /) and external URLs
-  const linkRegex = /(\/[a-zA-Z0-9\-_/]+|https?:\/\/[^\s]+)/g;
-  const parts = content.split(linkRegex);
+  // Match:
+  // 1. @mentions (@username)
+  // 2. Full URLs (https://example.com or http://example.com)
+  // 3. Plain domains (example.com, sub.example.com)
+  // 4. Internal routes (/path/to/page)
+  const combinedRegex = /(@\w+|https?:\/\/[^\s]+|(?:[a-zA-Z0-9](?:[a-zA-Z0-9-]*[a-zA-Z0-9])?\.)+(?:com|org|net|io|dev|co|edu|gov|app|ht|fr|info|biz|me|tv|us|uk|ca|au|de|jp|cn|in|br|mx|es|it|nl|be|ch|at|se|no|dk|fi|pl|cz|ru|kr|tw|hk|sg|my|th|ph|vn|id|za|ng|ke|gh|eg|ma|tn|dz)[^\s]*|\/[a-zA-Z0-9\-_/]+)/gi;
+  
+  const parts = content.split(combinedRegex);
   
   return parts.map((part, index) => {
-    // Check if this part is an internal route
-    if (part.startsWith('/') && part.length > 1) {
+    if (!part) return null;
+    
+    // 1. @mentions - styled as clickable text with primary color
+    if (part.startsWith('@')) {
+      const nickname = part.slice(1);
       return (
-        <Link 
+        <span 
           key={index} 
-          to={part} 
-          className="text-primary hover:underline font-medium"
+          className="text-primary font-semibold hover:underline cursor-pointer"
+          onClick={async (e) => {
+            e.stopPropagation();
+            // Lookup user_id by nickname and navigate
+            const { supabase } = await import("@/integrations/supabase/client");
+            const { data } = await supabase
+              .from('profiles')
+              .select('user_id')
+              .ilike('nickname', nickname)
+              .single();
+            if (data?.user_id) {
+              window.location.href = `/profile/${data.user_id}`;
+            }
+          }}
         >
           {part}
-        </Link>
+        </span>
       );
     }
-    // Check if this part is an external URL
-    if (part.match(/^https?:\/\//)) {
+    
+    // 2. Full URLs with http/https
+    if (part.match(/^https?:\/\//i)) {
       return (
         <a 
           key={index} 
@@ -62,11 +83,43 @@ const renderContentWithLinks = (content: string) => {
           target="_blank" 
           rel="noopener noreferrer"
           className="text-primary hover:underline font-medium"
+          onClick={(e) => e.stopPropagation()}
         >
           {part}
         </a>
       );
     }
+    
+    // 3. Plain domains (add https:// for the href)
+    if (part.match(/^(?:[a-zA-Z0-9](?:[a-zA-Z0-9-]*[a-zA-Z0-9])?\.)+(?:com|org|net|io|dev|co|edu|gov|app|ht|fr|info|biz|me|tv|us|uk|ca|au|de|jp|cn|in|br|mx|es|it|nl|be|ch|at|se|no|dk|fi|pl|cz|ru|kr|tw|hk|sg|my|th|ph|vn|id|za|ng|ke|gh|eg|ma|tn|dz)/i)) {
+      return (
+        <a 
+          key={index} 
+          href={`https://${part}`} 
+          target="_blank" 
+          rel="noopener noreferrer"
+          className="text-primary hover:underline font-medium"
+          onClick={(e) => e.stopPropagation()}
+        >
+          {part}
+        </a>
+      );
+    }
+    
+    // 4. Internal routes
+    if (part.startsWith('/') && part.length > 1) {
+      return (
+        <Link 
+          key={index} 
+          to={part} 
+          className="text-primary hover:underline font-medium"
+          onClick={(e) => e.stopPropagation()}
+        >
+          {part}
+        </Link>
+      );
+    }
+    
     return part;
   });
 };
