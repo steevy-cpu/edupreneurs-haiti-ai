@@ -9,27 +9,36 @@ import { Post } from "@/types/feed";
 
 const MAX_CONTENT_LENGTH = 150;
 
-// Function to render content with clickable links
+// Function to render content with clickable links and styled mentions
 const renderContentWithLinks = (content: string) => {
-  // Match internal routes (starting with /) and external URLs
-  const linkRegex = /(\/[a-zA-Z0-9\-_/]+|https?:\/\/[^\s]+)/g;
-  const parts = content.split(linkRegex);
+  // Match:
+  // 1. @mentions (@username)
+  // 2. Full URLs (https://example.com or http://example.com)
+  // 3. Plain domains (example.com, sub.example.com)
+  // 4. Internal routes (/path/to/page)
+  const combinedRegex = /(@\w+|https?:\/\/[^\s]+|(?:[a-zA-Z0-9](?:[a-zA-Z0-9-]*[a-zA-Z0-9])?\.)+(?:com|org|net|io|dev|co|edu|gov|app|ht|fr)[^\s]*|\/[a-zA-Z0-9\-_/]+)/gi;
+  
+  const parts = content.split(combinedRegex);
   
   return parts.map((part, index) => {
-    // Check if this part is an internal route
-    if (part.startsWith('/') && part.length > 1) {
+    if (!part) return null;
+    
+    // 1. @mentions - link to user profile
+    if (part.startsWith('@')) {
+      const nickname = part.slice(1);
       return (
         <Link 
           key={index} 
-          to={part} 
-          className="text-primary hover:underline font-medium"
+          to={`/profile/${nickname}`}
+          className="text-primary font-semibold hover:underline"
         >
           {part}
         </Link>
       );
     }
-    // Check if this part is an external URL
-    if (part.match(/^https?:\/\//)) {
+    
+    // 2. Full URLs with http/https
+    if (part.match(/^https?:\/\//i)) {
       return (
         <a 
           key={index} 
@@ -42,6 +51,35 @@ const renderContentWithLinks = (content: string) => {
         </a>
       );
     }
+    
+    // 3. Plain domains (add https:// for the href)
+    if (part.match(/^(?:[a-zA-Z0-9](?:[a-zA-Z0-9-]*[a-zA-Z0-9])?\.)+(?:com|org|net|io|dev|co|edu|gov|app|ht|fr)/i)) {
+      return (
+        <a 
+          key={index} 
+          href={`https://${part}`} 
+          target="_blank" 
+          rel="noopener noreferrer"
+          className="text-primary hover:underline font-medium"
+        >
+          {part}
+        </a>
+      );
+    }
+    
+    // 4. Internal routes
+    if (part.startsWith('/') && part.length > 1) {
+      return (
+        <Link 
+          key={index} 
+          to={part} 
+          className="text-primary hover:underline font-medium"
+        >
+          {part}
+        </Link>
+      );
+    }
+    
     return part;
   });
 };
