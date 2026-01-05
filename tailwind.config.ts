@@ -160,6 +160,14 @@ export default {
             opacity: "0.6",
           },
         },
+        "music-bar": {
+          "0%, 100%": {
+            height: "4px",
+          },
+          "50%": {
+            height: "16px",
+          },
+        },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
@@ -171,6 +179,9 @@ export default {
         shimmer: "shimmer 2s linear infinite",
         "gradient-x": "gradient-x 3s ease-in-out infinite",
         "border-glow": "border-glow 2s ease-in-out infinite",
+        "music-bar-1": "music-bar 0.5s ease-in-out infinite",
+        "music-bar-2": "music-bar 0.7s ease-in-out infinite 0.1s",
+        "music-bar-3": "music-bar 0.6s ease-in-out infinite 0.2s",
       },
     },
   },

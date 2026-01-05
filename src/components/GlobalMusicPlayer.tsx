@@ -245,11 +245,19 @@ export const GlobalMusicPlayer = () => {
           <Button
             onPointerDown={handleDragStart}
             onClick={handlePlayerClick}
-            className="w-14 h-14 rounded-full shadow-2xl cursor-move"
+            className="w-14 h-14 rounded-full shadow-2xl cursor-move relative overflow-hidden"
             style={{ touchAction: 'none' }}
             size="icon"
           >
-            <Music className="w-6 h-6" />
+            {isPlaying ? (
+              <div className="flex items-end gap-[3px] h-6">
+                <span className="w-1 bg-primary-foreground rounded-full animate-music-bar-1" />
+                <span className="w-1 bg-primary-foreground rounded-full animate-music-bar-2" />
+                <span className="w-1 bg-primary-foreground rounded-full animate-music-bar-3" />
+              </div>
+            ) : (
+              <Music className="w-6 h-6" />
+            )}
             {isPlaying && (
               <span className="absolute -top-1 -right-1 w-4 h-4 bg-green-500 rounded-full animate-pulse" />
             )}
