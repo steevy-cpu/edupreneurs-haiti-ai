@@ -152,29 +152,31 @@ export const JudeChatbot = () => {
     <div 
       ref={setRootRef}
       style={{
-        ...getPositionStyles(isOpen, {
-          closedTop: '5rem',
-          closedRight: '0.75rem',
-          openTop: '5rem',
-          openRight: '0.75rem',
-        }),
+        position: 'fixed',
         zIndex: 1000,
+        ...(isOpen 
+          ? { 
+              // Fixed position when open - below theme toggle
+              top: '4.5rem',
+              right: '0.75rem',
+            }
+          : getPositionStyles(false, {
+              closedTop: '5rem',
+              closedRight: '0.75rem',
+              openTop: '5rem',
+              openRight: '0.75rem',
+            })
+        ),
       }}
-      // Only apply drag to container when chat is open
-      onMouseDown={isOpen ? handleMouseDown : undefined}
-      onTouchStart={isOpen ? handleTouchStart : undefined}
+      // Only allow drag when chat is CLOSED
+      onMouseDown={!isOpen ? handleMouseDown : undefined}
+      onTouchStart={!isOpen ? handleTouchStart : undefined}
     >
-      {/* Jude's image - always visible, draggable when closed, clickable to toggle chat */}
+      {/* Jude's image - always visible, clickable to toggle chat */}
       <div 
         className={`w-14 sm:w-16 md:w-20 lg:w-28 cursor-pointer ${!isOpen ? 'hover:scale-105' : ''} transition-transform`}
-        // Apply drag handlers to Jude's image when chat is closed
-        onMouseDown={!isOpen ? handleMouseDown : undefined}
-        onTouchStart={!isOpen ? handleTouchStart : undefined}
         onClick={() => {
           if (!hasActuallyDragged) {
-            if (isOpen) {
-              resetPosition();
-            }
             setIsOpen(!isOpen);
           }
         }}
