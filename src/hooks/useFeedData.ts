@@ -1,6 +1,12 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Profile, Post, Comment } from "@/types/feed";
+import { 
+  persistQueryData, 
+  getPersistedQueryData, 
+  getPersistedCacheTimestamp,
+  CACHE_KEYS 
+} from "@/utils/queryPersistence";
 
 const fetchFeedPosts = async (): Promise<Post[]> => {
   const { data: { user } } = await supabase.auth.getUser();
@@ -77,6 +83,9 @@ const fetchFeedPosts = async (): Promise<Post[]> => {
     };
   }) || [];
 
+  // Persist to localStorage for instant loading next time
+  persistQueryData(CACHE_KEYS.FEED_POSTS, enrichedPosts);
+
   return enrichedPosts;
 };
 
@@ -88,6 +97,9 @@ export const useFeedData = () => {
     queryFn: fetchFeedPosts,
     staleTime: 1000 * 60 * 2, // Feed stays fresh for 2 minutes
     gcTime: 1000 * 60 * 15, // Cache for 15 minutes
+    // Initialize with persisted data for instant loading
+    initialData: () => getPersistedQueryData<Post[]>(CACHE_KEYS.FEED_POSTS) || undefined,
+    initialDataUpdatedAt: () => getPersistedCacheTimestamp(CACHE_KEYS.FEED_POSTS),
   });
 
   const refreshFeed = () => {

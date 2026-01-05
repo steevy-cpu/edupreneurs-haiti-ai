@@ -9,9 +9,11 @@ import { CookieConsent } from "@/components/CookieConsent";
 import { MusicPlayerProvider } from "@/contexts/MusicPlayerContext";
 import { GlobalMusicPlayer } from "@/components/GlobalMusicPlayer";
 import { ScrollToTop } from "@/components/ScrollToTop";
-import { lazy, Suspense } from "react";
+import { lazy, Suspense, useEffect } from "react";
 import { LegacyRedirect } from "@/components/LegacyRedirect";
 import { JudeChatbot } from "@/components/JudeChatbot";
+import { supabase } from "@/integrations/supabase/client";
+import { clearAllPersistedCache } from "@/utils/queryPersistence";
 
 // Eager load critical pages
 import Index from "./pages/Index";
@@ -102,6 +104,16 @@ const queryClient = new QueryClient({
       retry: 1, // Only retry failed requests once
     },
   },
+});
+
+// Listen for auth changes to clear cache on logout
+supabase.auth.onAuthStateChange((event) => {
+  if (event === 'SIGNED_OUT') {
+    // Clear all persisted cache on logout for security
+    clearAllPersistedCache();
+    queryClient.clear();
+    console.log('User signed out - cleared all caches');
+  }
 });
 
 const App = () => (
