@@ -693,7 +693,7 @@ const Index = () => {
             </p>
           </div>
           
-          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8 max-w-4xl mx-auto">
+          <div className="grid sm:grid-cols-2 gap-6 sm:gap-8 max-w-2xl mx-auto">
             {teamMembers.map((member, idx) => (
               <Card key={idx} className="group hover:scale-105 transition-all duration-300 hover:shadow-2xl border-primary/20 hover:border-primary/40 bg-gradient-to-br from-card to-card/50 text-center overflow-hidden">
                 <CardHeader className="pb-2">

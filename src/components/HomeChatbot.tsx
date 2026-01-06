@@ -5,7 +5,6 @@ import { X, Send } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import ericStudentDesk from "@/assets/eric-student-desk.png";
-import { useEricDraggable } from "@/hooks/useEricDraggable";
 
 interface Message {
   content: string;
@@ -25,6 +24,7 @@ export const HomeChatbot = () => {
   const [showSuggestions, setShowSuggestions] = useState(true);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
+  const chatRef = useRef<HTMLDivElement>(null);
 
   const faqSuggestions = [
     "Qu'est-ce qu'EDUPRENEURS ?",
@@ -32,19 +32,6 @@ export const HomeChatbot = () => {
     "Quels cours sont disponibles ?",
     "Comment fonctionne la plateforme ?"
   ];
-
-  // Use the shared draggable hook
-  const {
-    position,
-    hasMoved,
-    isDragging,
-    hasActuallyDragged,
-    floatingRef,
-    chatRef,
-    handleMouseDown,
-    handleTouchStart,
-    getPositionStyles,
-  } = useEricDraggable(isOpen, { defaultWidth: 320, defaultHeight: 420 });
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -103,17 +90,14 @@ export const HomeChatbot = () => {
     <>
       {!isOpen ? (
         <div 
-          ref={floatingRef}
           style={{
-            ...getPositionStyles(false, {
-              closedRight: '1rem',
-              closedBottom: '1.5rem',
-            }),
+            position: 'fixed',
+            right: '1rem',
+            bottom: '1.5rem',
             zIndex: 1000,
+            cursor: 'pointer',
           }}
           className="w-12 sm:w-14 md:w-16 lg:w-20"
-          onMouseDown={handleMouseDown}
-          onTouchStart={handleTouchStart}
           onClick={() => setIsOpen(true)}
         >
           <div className="eric-floating-tooltip text-[10px] sm:text-xs">
@@ -130,22 +114,17 @@ export const HomeChatbot = () => {
         </div>
       ) : (
         <>
-          {/* Eric avatar above the chat when open - responsive */}
+          {/* Eric avatar above the chat when open - fixed position */}
           <div 
             style={{
               position: 'fixed',
-              left: hasMoved ? `${position.x + 180}px` : 'auto',
-              top: hasMoved ? `${position.y - 30}px` : 'auto',
-              right: hasMoved ? 'auto' : '2rem',
-              bottom: hasMoved ? 'auto' : 'calc(100vh - 20rem)',
+              right: '2rem',
+              bottom: 'calc(60vh + 2rem)',
               zIndex: 1002,
-              cursor: isDragging ? 'grabbing' : 'pointer',
+              cursor: 'pointer',
               userSelect: 'none',
-              transition: isDragging ? 'none' : 'all 0.3s'
             }}
             className="w-10 sm:w-12 md:w-14 lg:w-16"
-            onMouseDown={handleMouseDown}
-            onTouchStart={handleTouchStart}
           >
             <img 
               src={ericStudentDesk} 
@@ -160,10 +139,9 @@ export const HomeChatbot = () => {
           <div 
             ref={chatRef}
             style={{
-              ...getPositionStyles(true, {
-                openRight: '0.5rem',
-                openBottom: '1rem',
-              }),
+              position: 'fixed',
+              right: '0.5rem',
+              bottom: '1rem',
               zIndex: 1001,
               display: 'flex',
               flexDirection: 'column',
@@ -171,8 +149,6 @@ export const HomeChatbot = () => {
               borderRadius: '1.5rem',
             }}
             className="w-[260px] sm:w-[280px] md:w-[300px] lg:w-[320px] max-h-[60vh] sm:max-h-[65vh] md:max-h-[420px] p-3 sm:p-4"
-            onMouseDown={handleMouseDown}
-            onTouchStart={handleTouchStart}
           >
             <Button
               variant="destructive"
