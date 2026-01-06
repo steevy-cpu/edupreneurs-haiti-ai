@@ -1,5 +1,8 @@
 project_id = "xdyavylcmucjpueybdku"
 
+[functions.jude-ai-tutor]
+verify_jwt = false
+
 [functions.bac-philosophy-tutor]
 verify_jwt = true
 
