@@ -8,7 +8,7 @@ import ericCelebrating from "@/assets/eric-celebrating.png";
 import ericMain01 from "@/assets/eric-main01.png";
 import ericThinkingPose from "@/assets/eric-thinking-pose.png";
 import ericPointingRight from "@/assets/eric-right-pointing.png";
-import heroImage from "@/assets/hero-education.jpg";
+
 import edupreneursLogo from "@/assets/edupreneurs-new-logo.png";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { Menu, X, BookOpen, Trophy, MessageCircle, Newspaper, Users, GraduationCap, Heart, FileText, Mail, Phone, MapPin } from "lucide-react";
@@ -339,24 +339,6 @@ const Index = () => {
         </div>
       </section>
 
-      {/* Revolution Section */}
-      <section className="relative py-12 sm:py-16 lg:py-20 px-3 sm:px-4 bg-gradient-to-b from-primary/5 to-background text-center overflow-hidden">
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-px bg-gradient-to-r from-transparent via-primary/50 to-transparent"></div>
-        
-        <div className="container mx-auto">
-          <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-black text-primary mb-4 sm:mb-6 leading-tight animate-fade-in">
-            Une révolution nécessaire pour Haïti 🇭🇹
-          </h2>
-          <p className="text-sm sm:text-base md:text-lg lg:text-xl text-muted-foreground max-w-4xl mx-auto leading-relaxed mb-6 sm:mb-8 px-2 font-medium">
-            En 2025, le système éducatif peine à répondre au besoin éducatif. Nous croyons fermement qu'avec les bonnes méthodes 
-            et la technologie, le programme du MENFP peut enfin impacter positivement notre jeunesse.
-          </p>
-          <div className="relative inline-block group">
-            <div className="absolute inset-0 bg-gradient-to-r from-primary/30 to-accent/30 rounded-2xl blur-xl group-hover:blur-2xl transition-all duration-300"></div>
-            <img src={heroImage} alt="Étudiants haïtiens apprenant avec EDUPRENEURS" className="relative h-32 sm:h-40 lg:h-44 rounded-xl sm:rounded-2xl shadow-2xl mx-auto border-2 border-primary/20 group-hover:scale-105 transition-transform duration-300" loading="eager" decoding="async" />
-          </div>
-        </div>
-      </section>
 
       {/* Features Highlight */}
       <section id="features" className="py-12 sm:py-16 md:py-20 px-4 bg-background">
@@ -512,71 +494,6 @@ const Index = () => {
         </div>
       </section>
 
-      {/* Categories - Learning Features */}
-      <section className="py-12 sm:py-16 md:py-20 px-4 bg-gradient-to-b from-primary/5 to-background">
-        <div className="container mx-auto">
-          <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-center mb-3 sm:mb-4">
-            📚 <span className="text-primary">Apprentissage personnalisé avec Jude</span>
-          </h2>
-          <p className="text-sm sm:text-base text-center text-muted-foreground mb-8 sm:mb-12 max-w-2xl mx-auto px-4">
-            Votre assistant IA personnalisé vous accompagne dans chaque matière du programme MENFP
-          </p>
-          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
-            {[
-              { 
-                icon: "🤖", 
-                title: "Assistant IA Personnalisé", 
-                desc: "Jude explique chaque leçon en créole ou français, s'adapte à votre rythme et répond à toutes vos questions 24h/7j.",
-                features: ["✓ Explications simples", "✓ Support multilingue", "✓ Disponible partout"],
-                featured: true
-              },
-              { 
-                icon: "🏆", 
-                title: "Système Gold Gamifié", 
-                desc: "Gagnez des points Gold à chaque quiz réussi. Débloquez des fonctions premium, changez votre avatar, ou même gagnez de l'argent réel !",
-                features: ["✓ Récompenses réelles", "✓ Motivation constante", "✓ Fonctions premium"]
-              },
-              { 
-                icon: "📚", 
-                title: "Programme MENFP Complet", 
-                desc: "De la 7ème à la Terminale, tous les contenus officiels du Ministère de l'Éducation avec vidéos, schémas et quiz interactifs.",
-                features: ["✓ 100% conforme MENFP", "✓ Vidéos explicatives", "✓ Quiz amusants"]
-              },
-              { 
-                icon: "🌍", 
-                title: "Langues & Culture", 
-                desc: "Français, créole, anglais, espagnol - maîtrisez les langues avec votre assistant multilingue et découvrez la culture haïtienne.",
-                features: ["✓ 4 langues", "✓ Culture haïtienne", "✓ Méthodes modernes"]
-              },
-              { 
-                icon: "📱", 
-                title: "Accessible Partout", 
-                desc: "Smartphone, tablette, PC - apprenez depuis n'importe quel appareil, même avec une connexion lente. Prix dérisoire : 200 gourdes/mois.",
-                features: ["✓ Multi-appareils", "✓ Mode hors ligne", "✓ Prix abordable"]
-              }
-              ].map((cat, idx) => (
-              <Card key={idx} className={`group hover:scale-105 transition-all duration-300 hover:shadow-2xl ${cat.featured ? 'border-2 border-accent bg-gradient-to-br from-accent/10 to-background relative overflow-hidden' : 'border-primary/20 hover:border-primary/40'}`}>
-                {cat.featured && <div className="absolute top-0 right-0 bg-accent text-accent-foreground text-xs font-bold px-3 py-1 rounded-bl-lg">Populaire</div>}
-                <CardHeader>
-                  <div className="text-4xl mb-4 group-hover:scale-110 transition-transform duration-300">{cat.icon}</div>
-                  <CardTitle className="text-xl text-primary font-bold">{cat.title}</CardTitle>
-                  <CardDescription className="font-medium">{cat.desc}</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-1">
-                    {cat.features.map((feature, fidx) => (
-                      <div key={fidx} className="text-sm text-primary font-semibold flex items-center gap-2">
-                        <span className="text-accent">→</span>
-                        {feature}
-                      </div>
-                    ))}
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        </div>
-      </section>
 
       {/* Courses */}
       <section id="courses" className="py-12 sm:py-16 md:py-20 px-4 bg-background">
@@ -800,48 +717,6 @@ const Index = () => {
         </div>
       </section>
 
-      {/* Partnership Section (Placeholder) */}
-      <section id="partners" className="py-12 sm:py-16 md:py-20 px-4 bg-gradient-to-b from-primary/5 to-background">
-        <div className="container mx-auto">
-          <div className="text-center mb-10 sm:mb-14">
-            <h2 className="text-2xl sm:text-3xl md:text-4xl font-black text-primary mb-3 sm:mb-4">
-              🤝 Nos Partenaires
-            </h2>
-            <p className="text-sm sm:text-base text-muted-foreground max-w-2xl mx-auto">
-              Ensemble pour transformer l'éducation haïtienne
-            </p>
-          </div>
-          
-          <div className="flex flex-wrap justify-center items-center gap-8 mb-8">
-            <div className="relative group">
-              <div className="absolute inset-0 bg-gradient-to-r from-primary/20 to-accent/20 rounded-2xl blur-lg group-hover:blur-xl transition-all duration-300"></div>
-              <img 
-                src={edupreneursLogo} 
-                alt="EDUPRENEURS" 
-                className="relative h-20 sm:h-24 object-contain grayscale-0 hover:scale-105 transition-transform duration-300"
-                loading="lazy"
-              />
-            </div>
-          </div>
-          
-          <Card className="max-w-2xl mx-auto bg-gradient-to-br from-card to-card/50 border-primary/20 text-center">
-            <CardContent className="p-6 sm:p-8">
-              <div className="text-4xl mb-4">🚀</div>
-              <h3 className="text-lg font-bold text-primary mb-2">Partenariats en cours de développement</h3>
-              <p className="text-sm text-muted-foreground font-medium">
-                Nous travaillons activement à établir des partenariats avec des organisations éducatives, 
-                des institutions haïtiennes et des acteurs du secteur technologique. 
-                Restez à l'écoute pour les annonces à venir !
-              </p>
-              <div className="mt-4 pt-4 border-t border-border">
-                <p className="text-xs text-muted-foreground">
-                  Intéressé par un partenariat ? <a href="#contact" className="text-primary font-semibold hover:underline">Contactez-nous</a>
-                </p>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-      </section>
 
       {/* Contact Section */}
       <section id="contact" className="py-12 sm:py-16 md:py-20 px-4 bg-background">
