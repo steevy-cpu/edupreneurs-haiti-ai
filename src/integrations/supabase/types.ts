@@ -848,6 +848,81 @@ export type Database = {
           },
         ]
       }
+      jude_animation_config: {
+        Row: {
+          animation_name: string
+          created_at: string | null
+          description: string | null
+          display_name: string
+          duration_ms: number | null
+          id: string
+          loop: boolean | null
+          priority: number | null
+          trigger_keywords: string[] | null
+        }
+        Insert: {
+          animation_name: string
+          created_at?: string | null
+          description?: string | null
+          display_name: string
+          duration_ms?: number | null
+          id?: string
+          loop?: boolean | null
+          priority?: number | null
+          trigger_keywords?: string[] | null
+        }
+        Update: {
+          animation_name?: string
+          created_at?: string | null
+          description?: string | null
+          display_name?: string
+          duration_ms?: number | null
+          id?: string
+          loop?: boolean | null
+          priority?: number | null
+          trigger_keywords?: string[] | null
+        }
+        Relationships: []
+      }
+      jude_audio_cache: {
+        Row: {
+          audio_url: string
+          created_at: string | null
+          duration_ms: number | null
+          id: string
+          last_used_at: string | null
+          phoneme_data: Json | null
+          text_content: string
+          text_hash: string
+          use_count: number | null
+          voice_id: string | null
+        }
+        Insert: {
+          audio_url: string
+          created_at?: string | null
+          duration_ms?: number | null
+          id?: string
+          last_used_at?: string | null
+          phoneme_data?: Json | null
+          text_content: string
+          text_hash: string
+          use_count?: number | null
+          voice_id?: string | null
+        }
+        Update: {
+          audio_url?: string
+          created_at?: string | null
+          duration_ms?: number | null
+          id?: string
+          last_used_at?: string | null
+          phoneme_data?: Json | null
+          text_content?: string
+          text_hash?: string
+          use_count?: number | null
+          voice_id?: string | null
+        }
+        Relationships: []
+      }
       lesson_comments: {
         Row: {
           comment: string
@@ -2130,6 +2205,42 @@ export type Database = {
           target_value?: number
           updated_at?: string
           user_id?: string
+        }
+        Relationships: []
+      }
+      user_jude_preferences: {
+        Row: {
+          animation_speed: number | null
+          created_at: string | null
+          enable_3d: boolean | null
+          enable_voice: boolean | null
+          id: string
+          preferred_language: string | null
+          updated_at: string | null
+          user_id: string
+          voice_speed: number | null
+        }
+        Insert: {
+          animation_speed?: number | null
+          created_at?: string | null
+          enable_3d?: boolean | null
+          enable_voice?: boolean | null
+          id?: string
+          preferred_language?: string | null
+          updated_at?: string | null
+          user_id: string
+          voice_speed?: number | null
+        }
+        Update: {
+          animation_speed?: number | null
+          created_at?: string | null
+          enable_3d?: boolean | null
+          enable_voice?: boolean | null
+          id?: string
+          preferred_language?: string | null
+          updated_at?: string | null
+          user_id?: string
+          voice_speed?: number | null
         }
         Relationships: []
       }
