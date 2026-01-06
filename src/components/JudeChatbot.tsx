@@ -188,7 +188,8 @@ export const JudeChatbot = () => {
                 />
               }>
                 <Jude3DCanvas
-                  usePlaceholder={true} // Use placeholder until GLB is uploaded
+                  modelUrl="/models/jude.glb"
+                  usePlaceholder={false}
                   currentAnimation={currentAnimation}
                   currentEmotion={currentEmotion}
                   phonemes={phonemes}

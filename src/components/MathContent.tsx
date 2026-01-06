@@ -360,16 +360,16 @@ const parseAndRenderMath = (html: string): React.ReactNode => {
           props[name] = attr.value;
         });
         
-        // Map HTML tags to React elements
-        const Tag = tagName as keyof JSX.IntrinsicElements;
+        // Map HTML tags to React elements - use explicit typing to avoid Three.js component inference
+        const Tag = tagName as keyof React.JSX.IntrinsicElements;
         
         // Void elements cannot have children
         const voidElements = ['br', 'hr', 'img', 'input', 'meta', 'link', 'area', 'base', 'col', 'embed', 'param', 'source', 'track', 'wbr'];
         if (voidElements.includes(tagName)) {
-          return <Tag {...props} />;
+          return React.createElement(Tag, props as React.HTMLAttributes<HTMLElement>);
         }
         
-        return <Tag {...props}>{children}</Tag>;
+        return React.createElement(Tag, props as React.HTMLAttributes<HTMLElement>, ...children);
       }
       
       return null;
@@ -461,13 +461,13 @@ const parseAndRenderMath = (html: string): React.ReactNode => {
         return children;
       }
       
-      // Void elements cannot have children
+      // Void elements cannot have children - use explicit createElement to avoid type issues
       const voidElements = ['br', 'hr', 'img', 'input', 'meta', 'link', 'area', 'base', 'col', 'embed', 'param', 'source', 'track', 'wbr'];
       if (voidElements.includes(tagName)) {
-        return <Tag {...props} />;
+        return React.createElement(Tag, props as React.HTMLAttributes<HTMLElement>);
       }
       
-      return <Tag {...props}>{children}</Tag>;
+      return React.createElement(Tag, props as React.HTMLAttributes<HTMLElement>, ...children);
     }
     
     return null;
