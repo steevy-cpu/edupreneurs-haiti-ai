@@ -11,7 +11,7 @@ import ericPointingRight from "@/assets/eric-right-pointing.png";
 import heroImage from "@/assets/hero-education.jpg";
 import edupreneursLogo from "@/assets/edupreneurs-new-logo.png";
 import { ThemeToggle } from "@/components/ThemeToggle";
-import { Menu, X, BookOpen, Trophy, MessageCircle, Newspaper, Users, GraduationCap, Heart, FileText } from "lucide-react";
+import { Menu, X, BookOpen, Trophy, MessageCircle, Newspaper, Users, GraduationCap, Heart, FileText, Mail, Phone, MapPin } from "lucide-react";
 
 // Lazy load chatbot for better initial page load
 const HomeChatbot = lazy(() => import("@/components/HomeChatbot").then(module => ({ default: module.HomeChatbot })));
@@ -147,7 +147,30 @@ const Index = () => {
     { q: "Comment m'inscrire à EDUPRENEURS ?", a: "Créez un compte avec votre email, choisissez votre niveau académique et profitez de votre semaine d'essai gratuite. Ensuite, abonnez-vous pour seulement 200 gourdes par mois." },
     { q: "Comment fonctionne l'assistant IA ?", a: "Votre assistant IA personnalisé vous aide dans toutes les matières, explique les leçons en créole ou français, et s'adapte à votre rythme d'apprentissage." },
     { q: "Qu'est-ce que le système Gold ?", a: "Gagnez des points Gold en réussissant les quiz, utilisez-les pour débloquer des fonctions premium, changer votre avatar ou même gagner de l'argent réel." },
-    { q: "Le contenu suit-il le programme officiel ?", a: "Absolument ! Notre plateforme est entièrement basée sur le programme du Ministère de l'Éducation Nationale (MENFP) de la 7ème à la Terminale." }
+    { q: "Le contenu suit-il le programme officiel ?", a: "Absolument ! Notre plateforme est entièrement basée sur le programme du Ministère de l'Éducation Nationale (MENFP) de la 7ème à la Terminale." },
+    { q: "Comment contacter l'équipe EDUPRENEURS ?", a: "Vous pouvez nous contacter par email à contact@edupreneurs.app ou via WhatsApp. Nous répondons généralement dans les 24 heures." }
+  ], []);
+
+  // Team members data
+  const teamMembers = useMemo(() => [
+    {
+      name: "Fondateur",
+      role: "CEO & Visionnaire",
+      bio: "Passionné par l'éducation et la technologie, dédié à transformer l'éducation haïtienne.",
+      placeholder: true
+    },
+    {
+      name: "Directeur Pédagogique",
+      role: "Contenu & Curriculum",
+      bio: "Expert en pédagogie avec une profonde connaissance du programme MENFP.",
+      placeholder: true
+    },
+    {
+      name: "Directeur Technique",
+      role: "CTO & Innovation",
+      bio: "Spécialiste en intelligence artificielle et développement de plateformes éducatives.",
+      placeholder: true
+    }
   ], []);
 
   return (
@@ -163,6 +186,7 @@ const Index = () => {
         <meta property="og:locale" content="fr_HT" />
         <link rel="canonical" href="https://edupreneurs.app" />
       </Helmet>
+      
       {/* Header */}
       <header className="sticky top-0 z-50 bg-card/95 backdrop-blur-lg border-b border-border/50 shadow-sm transition-all duration-300">
         <div className="container mx-auto px-2 sm:px-4 py-2 sm:py-4 flex justify-between items-center">
@@ -170,21 +194,30 @@ const Index = () => {
             <img src={edupreneursLogo} alt="EDUPRENEURS Logo" className="h-8 sm:h-12 w-auto object-contain" loading="eager" decoding="async" />
           </Link>
           
-          <nav className="hidden md:flex items-center gap-6">
-            <a href="#accueil" className="text-foreground hover:text-primary transition-all duration-300 font-semibold hover:scale-105 relative group">
+          {/* Updated Navigation Menu */}
+          <nav className="hidden md:flex items-center gap-5">
+            <a href="#accueil" className="text-foreground hover:text-primary transition-all duration-300 font-semibold hover:scale-105 relative group text-sm">
               Accueil
               <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-primary transition-all duration-300 group-hover:w-full"></span>
             </a>
-            <a href="#features" className="text-foreground hover:text-primary transition-all duration-300 font-semibold hover:scale-105 relative group">
-              Fonctionnalités
+            <a href="#comment-ca-marche" className="text-foreground hover:text-primary transition-all duration-300 font-semibold hover:scale-105 relative group text-sm">
+              Comment ça marche
               <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-primary transition-all duration-300 group-hover:w-full"></span>
             </a>
-            <a href="#courses" className="text-foreground hover:text-primary transition-all duration-300 font-semibold hover:scale-105 relative group">
+            <a href="#courses" className="text-foreground hover:text-primary transition-all duration-300 font-semibold hover:scale-105 relative group text-sm">
               Cours
               <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-primary transition-all duration-300 group-hover:w-full"></span>
             </a>
-            <a href="#about" className="text-foreground hover:text-primary transition-all duration-300 font-semibold hover:scale-105 relative group">
+            <a href="#about" className="text-foreground hover:text-primary transition-all duration-300 font-semibold hover:scale-105 relative group text-sm">
               À propos
+              <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-primary transition-all duration-300 group-hover:w-full"></span>
+            </a>
+            <a href="#faq" className="text-foreground hover:text-primary transition-all duration-300 font-semibold hover:scale-105 relative group text-sm">
+              FAQ
+              <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-primary transition-all duration-300 group-hover:w-full"></span>
+            </a>
+            <a href="#contact" className="text-foreground hover:text-primary transition-all duration-300 font-semibold hover:scale-105 relative group text-sm">
+              Contact
               <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-primary transition-all duration-300 group-hover:w-full"></span>
             </a>
           </nav>
@@ -205,14 +238,16 @@ const Index = () => {
           </div>
         </div>
 
-        {/* Mobile Menu */}
+        {/* Mobile Menu - Updated */}
         {mobileMenuOpen && (
           <div className="md:hidden bg-card border-t border-border">
             <nav className="flex flex-col p-3 gap-2">
               <a href="#accueil" className="py-2 px-3 hover:bg-muted rounded-md transition-colors text-sm" onClick={() => setMobileMenuOpen(false)}>Accueil</a>
-              <a href="#features" className="py-2 px-3 hover:bg-muted rounded-md transition-colors text-sm" onClick={() => setMobileMenuOpen(false)}>Fonctionnalités</a>
+              <a href="#comment-ca-marche" className="py-2 px-3 hover:bg-muted rounded-md transition-colors text-sm" onClick={() => setMobileMenuOpen(false)}>Comment ça marche</a>
               <a href="#courses" className="py-2 px-3 hover:bg-muted rounded-md transition-colors text-sm" onClick={() => setMobileMenuOpen(false)}>Cours</a>
               <a href="#about" className="py-2 px-3 hover:bg-muted rounded-md transition-colors text-sm" onClick={() => setMobileMenuOpen(false)}>À propos</a>
+              <a href="#faq" className="py-2 px-3 hover:bg-muted rounded-md transition-colors text-sm" onClick={() => setMobileMenuOpen(false)}>FAQ</a>
+              <a href="#contact" className="py-2 px-3 hover:bg-muted rounded-md transition-colors text-sm" onClick={() => setMobileMenuOpen(false)}>Contact</a>
               <Link to="/auth" className="sm:hidden">
                 <Button size="sm" className="w-full bg-gradient-to-r from-accent to-yellow-500 hover:opacity-90 text-sm">
                   Se connecter
@@ -223,7 +258,7 @@ const Index = () => {
         )}
       </header>
 
-      {/* Hero Section */}
+      {/* Enhanced Hero Section */}
       <section id="accueil" className="relative py-6 xs:py-8 sm:py-12 md:py-16 lg:py-20 px-2 xs:px-3 sm:px-4 bg-gradient-to-br from-background via-background to-primary/5 overflow-hidden">
         {/* Decorative background elements */}
         <div className="absolute top-0 right-0 w-72 h-72 bg-primary/5 rounded-full blur-3xl -z-10"></div>
@@ -231,6 +266,12 @@ const Index = () => {
         
         <div className="container mx-auto grid md:grid-cols-2 gap-4 xs:gap-6 sm:gap-8 lg:gap-10 items-center">
           <div className="space-y-2 xs:space-y-3 sm:space-y-4 lg:space-y-6 z-10 px-2 xs:px-0 animate-fade-in">
+            {/* Target Audience Badge */}
+            <div className="inline-flex items-center gap-2 bg-primary/10 border border-primary/20 rounded-full px-4 py-1.5 text-xs sm:text-sm font-semibold text-primary">
+              <GraduationCap className="w-4 h-4" />
+              <span>Pour les élèves de 7AF à NS4</span>
+            </div>
+            
             <h1 className="text-xl xs:text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-black leading-tight">
               L'Éducation Haïtienne{" "}
               <span className="bg-gradient-to-r from-primary via-accent to-primary bg-clip-text text-transparent relative animate-shimmer bg-[length:200%_auto]">
@@ -239,11 +280,35 @@ const Index = () => {
               </span>{" "}
               par l'Intelligence Artificielle
             </h1>
-            <p className="text-xs xs:text-sm sm:text-base lg:text-lg text-muted-foreground leading-relaxed">
-              "L'éducation est l'arme la plus puissante pour transformer une nation" - Nelson Mandela. 
-              En 2025, le système éducatif haïtien peine encore à répondre aux besoins du pays. 
-              EDUPRENEURS change la donne avec un apprentissage entièrement personnalisé, basé sur le programme MENFP.
+            
+            {/* Clear Tagline */}
+            <p className="text-sm sm:text-base lg:text-lg font-semibold text-primary">
+              Plateforme d'éducation interactive en Haïti avec IA pour apprendre et réussir
             </p>
+            
+            <p className="text-xs xs:text-sm sm:text-base text-muted-foreground leading-relaxed">
+              Programme complet du MENFP avec assistant IA personnalisé. Apprenez à votre rythme, 
+              gagnez des récompenses, et préparez-vous aux examens officiels.
+            </p>
+
+            {/* How It Works Quick Steps */}
+            <div className="flex flex-wrap items-center gap-2 sm:gap-4 py-2 sm:py-4">
+              <div className="flex items-center gap-2 text-xs sm:text-sm">
+                <span className="w-6 h-6 sm:w-8 sm:h-8 rounded-full bg-primary text-primary-foreground flex items-center justify-center font-bold text-xs sm:text-sm">1</span>
+                <span className="font-medium">Inscrivez-vous</span>
+              </div>
+              <span className="text-muted-foreground">→</span>
+              <div className="flex items-center gap-2 text-xs sm:text-sm">
+                <span className="w-6 h-6 sm:w-8 sm:h-8 rounded-full bg-accent text-accent-foreground flex items-center justify-center font-bold text-xs sm:text-sm">2</span>
+                <span className="font-medium">Choisissez votre niveau</span>
+              </div>
+              <span className="text-muted-foreground hidden sm:inline">→</span>
+              <div className="flex items-center gap-2 text-xs sm:text-sm">
+                <span className="w-6 h-6 sm:w-8 sm:h-8 rounded-full bg-primary text-primary-foreground flex items-center justify-center font-bold text-xs sm:text-sm">3</span>
+                <span className="font-medium">Apprenez avec Jude</span>
+              </div>
+            </div>
+
             <div className="flex flex-col sm:flex-row flex-wrap gap-1.5 xs:gap-2 sm:gap-3 lg:gap-4">
               <Link to="/auth" className="w-full sm:w-auto group">
                 <Button size="lg" className="w-full sm:w-auto bg-gradient-to-r from-primary via-primary to-accent hover:from-primary/90 hover:to-accent/90 shadow-lg hover:shadow-2xl text-[11px] xs:text-xs sm:text-sm lg:text-base py-2 xs:py-2.5 font-bold transition-all duration-300 hover:scale-105">
@@ -338,8 +403,87 @@ const Index = () => {
         </div>
       </section>
 
+      {/* Enhanced "Comment ça marche" Section */}
+      <section id="comment-ca-marche" className="py-12 sm:py-16 md:py-20 px-4 bg-gradient-to-b from-background to-primary/5">
+        <div className="container mx-auto">
+          <div className="text-center mb-10 sm:mb-14">
+            <h2 className="text-2xl sm:text-3xl md:text-4xl font-black text-primary mb-3 sm:mb-4">
+              🎯 Comment ça marche ?
+            </h2>
+            <p className="text-sm sm:text-base text-muted-foreground max-w-2xl mx-auto">
+              En 4 étapes simples, commencez votre parcours d'apprentissage personnalisé
+            </p>
+          </div>
+          
+          {/* 4 Steps Visual */}
+          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6 sm:gap-8 mb-12">
+            {[
+              { 
+                step: 1, 
+                icon: "📝", 
+                title: "Créez votre compte", 
+                desc: "Inscription gratuite en 2 minutes. Essai gratuit de 7 jours sans engagement.",
+                color: "from-blue-500 to-cyan-500"
+              },
+              { 
+                step: 2, 
+                icon: "🎓", 
+                title: "Choisissez votre niveau", 
+                desc: "De la 7AF à NS4 - Sélectionnez votre classe pour un contenu adapté au programme MENFP.",
+                color: "from-green-500 to-emerald-500"
+              },
+              { 
+                step: 3, 
+                icon: "🤖", 
+                title: "Rencontrez Jude", 
+                desc: "Votre assistant IA personnel vous accompagne 24h/7j en créole ou français.",
+                color: "from-purple-500 to-violet-500"
+              },
+              { 
+                step: 4, 
+                icon: "🏆", 
+                title: "Gagnez des Gold", 
+                desc: "Réussissez les quiz, gagnez des récompenses et débloquez des fonctions premium !",
+                color: "from-yellow-500 to-orange-500"
+              }
+            ].map((item, idx) => (
+              <div key={idx} className="relative group">
+                {/* Connector line */}
+                {idx < 3 && (
+                  <div className="hidden lg:block absolute top-12 left-full w-full h-0.5 bg-gradient-to-r from-primary/30 to-transparent z-0"></div>
+                )}
+                <Card className="relative z-10 h-full hover:scale-105 transition-all duration-300 hover:shadow-2xl border-primary/20 hover:border-primary/40 bg-gradient-to-br from-card to-card/50 overflow-hidden">
+                  <div className={`absolute top-0 left-0 w-full h-1 bg-gradient-to-r ${item.color}`}></div>
+                  <CardHeader className="text-center pb-2">
+                    <div className={`w-16 h-16 mx-auto rounded-2xl bg-gradient-to-br ${item.color} flex items-center justify-center mb-3 shadow-lg group-hover:scale-110 transition-transform duration-300`}>
+                      <span className="text-3xl">{item.icon}</span>
+                    </div>
+                    <div className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-primary text-primary-foreground text-sm font-bold mb-2">
+                      {item.step}
+                    </div>
+                    <CardTitle className="text-lg font-bold text-primary">{item.title}</CardTitle>
+                  </CardHeader>
+                  <CardContent className="text-center">
+                    <p className="text-sm text-muted-foreground font-medium leading-relaxed">{item.desc}</p>
+                  </CardContent>
+                </Card>
+              </div>
+            ))}
+          </div>
+
+          {/* CTA */}
+          <div className="text-center">
+            <Link to="/auth">
+              <Button size="lg" className="bg-gradient-to-r from-primary via-accent to-primary hover:from-primary/90 hover:to-primary/90 shadow-lg hover:shadow-2xl font-bold transition-all duration-300 hover:scale-105">
+                🚀 Commencer maintenant - C'est gratuit !
+              </Button>
+            </Link>
+          </div>
+        </div>
+      </section>
+
       {/* Platform Features Section */}
-      <section className="py-12 sm:py-16 md:py-20 px-4 bg-gradient-to-b from-primary/5 to-background">
+      <section className="py-12 sm:py-16 md:py-20 px-4 bg-background">
         <div className="container mx-auto">
           <div className="text-center mb-8 sm:mb-12">
             <h2 className="text-2xl sm:text-3xl md:text-4xl font-black text-primary mb-3 sm:mb-4">
@@ -374,11 +518,11 @@ const Index = () => {
         </div>
       </section>
 
-      {/* Categories */}
-      <section className="py-12 sm:py-16 md:py-20 px-4 bg-background">
+      {/* Categories - Learning Features */}
+      <section className="py-12 sm:py-16 md:py-20 px-4 bg-gradient-to-b from-primary/5 to-background">
         <div className="container mx-auto">
           <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-center mb-3 sm:mb-4">
-            🎯 Comment ça marche : <span className="text-primary">Apprentissage personnalisé avec Eric</span>
+            📚 <span className="text-primary">Apprentissage personnalisé avec Jude</span>
           </h2>
           <p className="text-sm sm:text-base text-center text-muted-foreground mb-8 sm:mb-12 max-w-2xl mx-auto px-4">
             Votre assistant IA personnalisé vous accompagne dans chaque matière du programme MENFP
@@ -388,7 +532,7 @@ const Index = () => {
               { 
                 icon: "🤖", 
                 title: "Assistant IA Personnalisé", 
-                desc: "Eric explique chaque leçon en créole ou français, s'adapte à votre rythme et répond à toutes vos questions 24h/7j.",
+                desc: "Jude explique chaque leçon en créole ou français, s'adapte à votre rythme et répond à toutes vos questions 24h/7j.",
                 features: ["✓ Explications simples", "✓ Support multilingue", "✓ Disponible partout"],
                 featured: true
               },
@@ -642,6 +786,168 @@ const Index = () => {
         </div>
       </section>
 
+      {/* Team Section */}
+      <section id="team" className="py-12 sm:py-16 md:py-20 px-4 bg-background">
+        <div className="container mx-auto">
+          <div className="text-center mb-10 sm:mb-14">
+            <h2 className="text-2xl sm:text-3xl md:text-4xl font-black text-primary mb-3 sm:mb-4">
+              👥 L'équipe derrière EDUPRENEURS
+            </h2>
+            <p className="text-sm sm:text-base text-muted-foreground max-w-2xl mx-auto">
+              Des passionnés dédiés à transformer l'éducation haïtienne
+            </p>
+          </div>
+          
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8 max-w-4xl mx-auto">
+            {teamMembers.map((member, idx) => (
+              <Card key={idx} className="group hover:scale-105 transition-all duration-300 hover:shadow-2xl border-primary/20 hover:border-primary/40 bg-gradient-to-br from-card to-card/50 text-center overflow-hidden">
+                <CardHeader className="pb-2">
+                  {/* Placeholder Avatar */}
+                  <div className="w-24 h-24 mx-auto rounded-full bg-gradient-to-br from-primary/20 to-accent/20 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300 border-4 border-primary/20">
+                    <Users className="w-12 h-12 text-primary/50" />
+                  </div>
+                  <CardTitle className="text-lg font-bold text-primary">{member.name}</CardTitle>
+                  <CardDescription className="text-sm font-semibold text-accent">{member.role}</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-sm text-muted-foreground font-medium leading-relaxed">{member.bio}</p>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+          
+          <p className="text-center text-muted-foreground mt-8 text-sm italic">
+            Photos et informations détaillées bientôt disponibles
+          </p>
+        </div>
+      </section>
+
+      {/* Partnership Section (Placeholder) */}
+      <section id="partners" className="py-12 sm:py-16 md:py-20 px-4 bg-gradient-to-b from-primary/5 to-background">
+        <div className="container mx-auto">
+          <div className="text-center mb-10 sm:mb-14">
+            <h2 className="text-2xl sm:text-3xl md:text-4xl font-black text-primary mb-3 sm:mb-4">
+              🤝 Nos Partenaires
+            </h2>
+            <p className="text-sm sm:text-base text-muted-foreground max-w-2xl mx-auto">
+              Ensemble pour transformer l'éducation haïtienne
+            </p>
+          </div>
+          
+          <div className="flex flex-wrap justify-center items-center gap-8 mb-8">
+            <div className="relative group">
+              <div className="absolute inset-0 bg-gradient-to-r from-primary/20 to-accent/20 rounded-2xl blur-lg group-hover:blur-xl transition-all duration-300"></div>
+              <img 
+                src={edupreneursLogo} 
+                alt="EDUPRENEURS" 
+                className="relative h-20 sm:h-24 object-contain grayscale-0 hover:scale-105 transition-transform duration-300"
+                loading="lazy"
+              />
+            </div>
+          </div>
+          
+          <Card className="max-w-2xl mx-auto bg-gradient-to-br from-card to-card/50 border-primary/20 text-center">
+            <CardContent className="p-6 sm:p-8">
+              <div className="text-4xl mb-4">🚀</div>
+              <h3 className="text-lg font-bold text-primary mb-2">Partenariats en cours de développement</h3>
+              <p className="text-sm text-muted-foreground font-medium">
+                Nous travaillons activement à établir des partenariats avec des organisations éducatives, 
+                des institutions haïtiennes et des acteurs du secteur technologique. 
+                Restez à l'écoute pour les annonces à venir !
+              </p>
+              <div className="mt-4 pt-4 border-t border-border">
+                <p className="text-xs text-muted-foreground">
+                  Intéressé par un partenariat ? <a href="#contact" className="text-primary font-semibold hover:underline">Contactez-nous</a>
+                </p>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      </section>
+
+      {/* Contact Section */}
+      <section id="contact" className="py-12 sm:py-16 md:py-20 px-4 bg-background">
+        <div className="container mx-auto">
+          <div className="text-center mb-10 sm:mb-14">
+            <h2 className="text-2xl sm:text-3xl md:text-4xl font-black text-primary mb-3 sm:mb-4">
+              📞 Contactez-nous
+            </h2>
+            <p className="text-sm sm:text-base text-muted-foreground max-w-2xl mx-auto">
+              Une question ? Besoin d'aide ? Notre équipe est là pour vous
+            </p>
+          </div>
+          
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8 max-w-4xl mx-auto">
+            {/* Email */}
+            <Card className="group hover:scale-105 transition-all duration-300 hover:shadow-2xl border-primary/20 hover:border-primary/40 bg-gradient-to-br from-card to-card/50 text-center">
+              <CardHeader>
+                <div className="w-16 h-16 mx-auto rounded-2xl bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300 shadow-lg">
+                  <Mail className="w-8 h-8 text-white" />
+                </div>
+                <CardTitle className="text-lg font-bold text-primary">Email</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <a href="mailto:contact@edupreneurs.app" className="text-muted-foreground hover:text-primary font-medium transition-colors">
+                  contact@edupreneurs.app
+                </a>
+                <p className="text-xs text-muted-foreground mt-2">Réponse sous 24h</p>
+              </CardContent>
+            </Card>
+
+            {/* WhatsApp */}
+            <Card className="group hover:scale-105 transition-all duration-300 hover:shadow-2xl border-primary/20 hover:border-primary/40 bg-gradient-to-br from-card to-card/50 text-center">
+              <CardHeader>
+                <div className="w-16 h-16 mx-auto rounded-2xl bg-gradient-to-br from-green-500 to-emerald-500 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300 shadow-lg">
+                  <Phone className="w-8 h-8 text-white" />
+                </div>
+                <CardTitle className="text-lg font-bold text-primary">WhatsApp</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-muted-foreground font-medium">
+                  Bientôt disponible
+                </p>
+                <p className="text-xs text-muted-foreground mt-2">Support en temps réel</p>
+              </CardContent>
+            </Card>
+
+            {/* Location */}
+            <Card className="group hover:scale-105 transition-all duration-300 hover:shadow-2xl border-primary/20 hover:border-primary/40 bg-gradient-to-br from-card to-card/50 text-center sm:col-span-2 lg:col-span-1">
+              <CardHeader>
+                <div className="w-16 h-16 mx-auto rounded-2xl bg-gradient-to-br from-purple-500 to-violet-500 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300 shadow-lg">
+                  <MapPin className="w-8 h-8 text-white" />
+                </div>
+                <CardTitle className="text-lg font-bold text-primary">Localisation</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-muted-foreground font-medium">
+                  Haïti 🇭🇹
+                </p>
+                <p className="text-xs text-muted-foreground mt-2">Plateforme 100% haïtienne</p>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Social Media */}
+          <div className="text-center mt-10">
+            <p className="text-sm text-muted-foreground mb-4 font-medium">Suivez-nous sur les réseaux sociaux</p>
+            <div className="flex justify-center gap-4">
+              <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center hover:bg-primary/20 transition-colors cursor-pointer">
+                <span className="text-lg">📘</span>
+              </div>
+              <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center hover:bg-primary/20 transition-colors cursor-pointer">
+                <span className="text-lg">📸</span>
+              </div>
+              <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center hover:bg-primary/20 transition-colors cursor-pointer">
+                <span className="text-lg">🐦</span>
+              </div>
+              <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center hover:bg-primary/20 transition-colors cursor-pointer">
+                <span className="text-lg">▶️</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* CTA */}
       <section className="relative py-20 px-4 bg-gradient-to-r from-primary via-accent to-primary text-primary-foreground text-center overflow-hidden">
         <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGRlZnM+PHBhdHRlcm4gaWQ9ImdyaWQiIHdpZHRoPSI2MCIgaGVpZ2h0PSI2MCIgcGF0dGVyblVuaXRzPSJ1c2VyU3BhY2VPblVzZSI+PHBhdGggZD0iTSAxMCAwIEwgMCAwIDAgMTAiIGZpbGw9Im5vbmUiIHN0cm9rZT0id2hpdGUiIHN0cm9rZS1vcGFjaXR5PSIwLjEiIHN0cm9rZS13aWR0aD0iMSIvPjwvcGF0dGVybj48L2RlZnM+PHJlY3Qgd2lkdGg9IjEwMCUiIGhlaWdodD0iMTAwJSIgZmlsbD0idXJsKCNncmlkKSIvPjwvc3ZnPg==')] opacity-20"></div>
@@ -660,7 +966,7 @@ const Index = () => {
         </div>
       </section>
 
-      {/* Footer */}
+      {/* Footer - Updated */}
       <footer className="relative bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 text-white py-16 px-4 overflow-hidden">
         {/* Decorative top accent */}
         <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-primary via-accent to-primary"></div>
@@ -674,16 +980,16 @@ const Index = () => {
             </p>
           </div>
           
-          {/* Links Grid */}
-          <div className="grid md:grid-cols-3 gap-8 mb-12">
+          {/* Links Grid - Updated */}
+          <div className="grid md:grid-cols-4 gap-8 mb-12">
             {/* Navigation */}
             <div className="text-center md:text-left">
-              <h4 className="font-black text-white mb-4 text-lg tracking-wide">EDUPRENEURS</h4>
+              <h4 className="font-black text-white mb-4 text-lg tracking-wide">NAVIGATION</h4>
               <ul className="space-y-3">
                 <li><a href="#accueil" className="text-slate-400 hover:text-primary transition-all duration-300 font-medium hover:translate-x-1 inline-flex items-center gap-2 group"><span className="opacity-0 group-hover:opacity-100 transition-opacity">→</span> Accueil</a></li>
+                <li><a href="#comment-ca-marche" className="text-slate-400 hover:text-primary transition-all duration-300 font-medium hover:translate-x-1 inline-flex items-center gap-2 group"><span className="opacity-0 group-hover:opacity-100 transition-opacity">→</span> Comment ça marche</a></li>
                 <li><a href="#courses" className="text-slate-400 hover:text-primary transition-all duration-300 font-medium hover:translate-x-1 inline-flex items-center gap-2 group"><span className="opacity-0 group-hover:opacity-100 transition-opacity">→</span> Nos Cours</a></li>
                 <li><Link to="/dashboard" className="text-slate-400 hover:text-primary transition-all duration-300 font-medium hover:translate-x-1 inline-flex items-center gap-2 group"><span className="opacity-0 group-hover:opacity-100 transition-opacity">→</span> Dashboard</Link></li>
-                <li><Link to="/resources" className="text-slate-400 hover:text-primary transition-all duration-300 font-medium hover:translate-x-1 inline-flex items-center gap-2 group"><span className="opacity-0 group-hover:opacity-100 transition-opacity">→</span> Ressources</Link></li>
               </ul>
             </div>
             
@@ -692,19 +998,29 @@ const Index = () => {
               <h4 className="font-black text-white mb-4 text-lg tracking-wide">À PROPOS</h4>
               <ul className="space-y-3">
                 <li><a href="#about" className="text-slate-400 hover:text-primary transition-all duration-300 font-medium hover:translate-x-1 inline-flex items-center gap-2 group"><span className="opacity-0 group-hover:opacity-100 transition-opacity">→</span> Notre Mission</a></li>
+                <li><a href="#team" className="text-slate-400 hover:text-primary transition-all duration-300 font-medium hover:translate-x-1 inline-flex items-center gap-2 group"><span className="opacity-0 group-hover:opacity-100 transition-opacity">→</span> L'Équipe</a></li>
+                <li><a href="#partners" className="text-slate-400 hover:text-primary transition-all duration-300 font-medium hover:translate-x-1 inline-flex items-center gap-2 group"><span className="opacity-0 group-hover:opacity-100 transition-opacity">→</span> Nos Partenaires</a></li>
                 <li><Link to="/exams-hub" className="text-slate-400 hover:text-primary transition-all duration-300 font-medium hover:translate-x-1 inline-flex items-center gap-2 group"><span className="opacity-0 group-hover:opacity-100 transition-opacity">→</span> Préparation au Bac</Link></li>
-                <li><a href="#about" className="text-slate-400 hover:text-primary transition-all duration-300 font-medium hover:translate-x-1 inline-flex items-center gap-2 group"><span className="opacity-0 group-hover:opacity-100 transition-opacity">→</span> Programme MENFP</a></li>
               </ul>
             </div>
             
-            {/* Support & Legal */}
+            {/* Support */}
             <div className="text-center md:text-left">
               <h4 className="font-black text-white mb-4 text-lg tracking-wide">SUPPORT</h4>
               <ul className="space-y-3">
                 <li><a href="#faq" className="text-slate-400 hover:text-primary transition-all duration-300 font-medium hover:translate-x-1 inline-flex items-center gap-2 group"><span className="opacity-0 group-hover:opacity-100 transition-opacity">→</span> FAQ</a></li>
-                <li><Link to="/auth" className="text-slate-400 hover:text-primary transition-all duration-300 font-medium hover:translate-x-1 inline-flex items-center gap-2 group"><span className="opacity-0 group-hover:opacity-100 transition-opacity">→</span> Contact</Link></li>
+                <li><a href="#contact" className="text-slate-400 hover:text-primary transition-all duration-300 font-medium hover:translate-x-1 inline-flex items-center gap-2 group"><span className="opacity-0 group-hover:opacity-100 transition-opacity">→</span> Contact</a></li>
+                <li><Link to="/resources" className="text-slate-400 hover:text-primary transition-all duration-300 font-medium hover:translate-x-1 inline-flex items-center gap-2 group"><span className="opacity-0 group-hover:opacity-100 transition-opacity">→</span> Ressources</Link></li>
+              </ul>
+            </div>
+
+            {/* Legal */}
+            <div className="text-center md:text-left">
+              <h4 className="font-black text-white mb-4 text-lg tracking-wide">LÉGAL</h4>
+              <ul className="space-y-3">
                 <li><Link to="/privacy-policy" className="text-slate-400 hover:text-primary transition-all duration-300 font-medium hover:translate-x-1 inline-flex items-center gap-2 group"><span className="opacity-0 group-hover:opacity-100 transition-opacity">→</span> Confidentialité</Link></li>
                 <li><Link to="/cookie-settings" className="text-slate-400 hover:text-primary transition-all duration-300 font-medium hover:translate-x-1 inline-flex items-center gap-2 group"><span className="opacity-0 group-hover:opacity-100 transition-opacity">→</span> Paramètres Cookies</Link></li>
+                <li><Link to="/auth" className="text-slate-400 hover:text-primary transition-all duration-300 font-medium hover:translate-x-1 inline-flex items-center gap-2 group"><span className="opacity-0 group-hover:opacity-100 transition-opacity">→</span> Se connecter</Link></li>
               </ul>
             </div>
           </div>
