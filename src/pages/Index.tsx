@@ -154,15 +154,9 @@ const Index = () => {
   // Team members data
   const teamMembers = useMemo(() => [
     {
-      name: "Fondateur",
-      role: "CEO & Visionnaire",
+      name: "Djoodoodson F. FLORENT",
+      role: "Fondateur & CEO",
       bio: "Passionné par l'éducation et la technologie, dédié à transformer l'éducation haïtienne.",
-      placeholder: true
-    },
-    {
-      name: "Directeur Pédagogique",
-      role: "Contenu & Curriculum",
-      bio: "Expert en pédagogie avec une profonde connaissance du programme MENFP.",
       placeholder: true
     },
     {
