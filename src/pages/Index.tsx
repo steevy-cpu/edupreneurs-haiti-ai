@@ -160,6 +160,12 @@ const Index = () => {
       placeholder: true
     },
     {
+      name: "Steeve Andolf Celestin",
+      role: "CTO & Innovation",
+      bio: "Expert en technologie et innovation, architecte des solutions numériques d'EDUPRENEURS.",
+      placeholder: true
+    },
+    {
       name: "Directeur Technique",
       role: "CTO & Innovation",
       bio: "Spécialiste en intelligence artificielle et développement de plateformes éducatives.",
