@@ -86,7 +86,7 @@ const Index = () => {
   ], [stats]);
 
   const features = useMemo(() => [
-    { icon: "🎯", title: "Apprentissage 100% Personnalisé", desc: "L'agent IA s'adapte à votre niveau, de la 7ème à la préparation universitaire" },
+    { icon: "🎯", title: "Apprentissage 100% Personnalisé", desc: "L'agent IA s'adapte à votre niveau, de la 7AF à NS4 (programme MENFP complet)" },
     { icon: "💰", title: "Prix Dérisoire - 200 Gdes/mois", desc: "Accessible à tous avec une semaine d'essai gratuite" },
     { icon: "🏆", title: "Système Gold Révolutionnaire", desc: "Gagnez des points, débloquez des fonctions premium, et même de l'argent réel" },
     { icon: "🌐", title: "Multilingue Intelligent", desc: "Créole, Français, Anglais, Espagnol - Votre IA parle votre langue" }
@@ -178,8 +178,8 @@ const Index = () => {
       {/* SEO Meta Tags */}
       <Helmet>
         <title>EDUPRENEURS - L'Éducation Haïtienne Révolutionnée par l'IA | Plateforme MENFP</title>
-        <meta name="description" content="EDUPRENEURS: Plateforme éducative haïtienne avec assistant IA personnalisé. Programme MENFP complet de la 7AF à NS4. Cours, examens officiels, et préparation universitaire. Essai gratuit 7 jours." />
-        <meta name="keywords" content="éducation haïti, MENFP, cours en ligne, assistant IA, examens officiels, préparation universitaire, apprentissage personnalisé" />
+        <meta name="description" content="EDUPRENEURS: Plateforme éducative haïtienne avec assistant IA personnalisé. Programme MENFP complet de la 7AF à NS4. Cours, examens officiels. Essai gratuit 7 jours." />
+        <meta name="keywords" content="éducation haïti, MENFP, cours en ligne, assistant IA, examens officiels, apprentissage personnalisé, 7AF, NS4" />
         <meta property="og:title" content="EDUPRENEURS - L'Éducation Haïtienne Révolutionnée par l'IA" />
         <meta property="og:description" content="Plateforme éducative avec assistant IA personnalisé. Programme MENFP complet. Essai gratuit 7 jours." />
         <meta property="og:type" content="website" />
@@ -549,12 +549,6 @@ const Index = () => {
                 features: ["✓ 100% conforme MENFP", "✓ Vidéos explicatives", "✓ Quiz amusants"]
               },
               { 
-                icon: "🎓", 
-                title: "Préparation Universitaire", 
-                desc: "Préparez-vous aux concours d'admission avec les sujets des 10 dernières années et un accompagnement personnalisé.",
-                features: ["✓ Archives 10 ans", "✓ Simulations d'examen", "✓ Coaching IA"]
-              },
-              { 
                 icon: "🌍", 
                 title: "Langues & Culture", 
                 desc: "Français, créole, anglais, espagnol - maîtrisez les langues avec votre assistant multilingue et découvrez la culture haïtienne.",
@@ -597,40 +591,30 @@ const Index = () => {
             📚 Nos cours disponibles
           </h2>
           <p className="text-sm sm:text-base text-center text-muted-foreground mb-8 sm:mb-12 max-w-3xl mx-auto px-4">
-            Programme complet du MENFP de la 7ème à la Terminale, avec préparation universitaire
+            Programme complet du MENFP de la 7AF à NS4 (Terminale)
           </p>
           <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
             {[
-              { icon: "🔢", title: "Mathématiques", desc: "Algèbre, géométrie, statistiques, probabilités. Tous les chapitres du programme MENFP avec explications simples et quiz amusants.", levels: ["7ème - Terminale", "Prépa Université"] },
-              { icon: "📝", title: "Français", desc: "Grammaire, conjugaison, expression écrite et orale. Maîtrisez la langue française avec votre assistant IA personnalisé.", levels: ["7ème - Terminale", "Prépa Université"] },
-              { icon: "🔬", title: "Sciences", desc: "Physique, chimie, biologie, sciences de la terre. Expériences virtuelles et schémas explicatifs pour comprendre la nature.", levels: ["7ème - Terminale", "Prépa Université"] },
-              { icon: "🌍", title: "Sciences Sociales", desc: "Histoire d'Haïti, géographie, éducation civique. Découvrez votre pays et le monde avec des cartes interactives.", levels: ["7ème - Terminale", "Prépa Université"] },
-              { icon: "🇺🇸", title: "Anglais", desc: "Grammaire anglaise, vocabulaire, conversation. Apprenez l'anglais avec des méthodes modernes et interactives.", levels: ["7ème - Terminale", "Prépa Université"] },
-              { icon: "🇭🇹", title: "Créole", desc: "Langue maternelle haïtienne, orthographe créole, expression orale. Valorisez votre culture et votre identité.", levels: ["7ème - Terminale", "Prépa Université"] },
-              { icon: "🎓", title: "Préparation Universitaire", desc: "Concours d'admission des 10 dernières années, simulations d'examen, coaching IA. Préparez-vous aux meilleures universités.", levels: ["Archives 10 ans", "Simulations"], featured: true },
-              { icon: "💻", title: "Informatique", desc: "Bureautique, navigation internet, sécurité numérique. Maîtrisez les outils numériques essentiels pour le 21ème siècle.", levels: ["7ème - Terminale", "Compétences numériques"] }
+              { icon: "🔢", title: "Mathématiques", desc: "Algèbre, géométrie, statistiques, probabilités. Tous les chapitres du programme MENFP avec explications simples et quiz amusants.", levels: ["7AF - NS4", "Programme MENFP"] },
+              { icon: "📝", title: "Français", desc: "Grammaire, conjugaison, expression écrite et orale. Maîtrisez la langue française avec votre assistant IA personnalisé.", levels: ["7AF - NS4", "Programme MENFP"] },
+              { icon: "🔬", title: "Sciences", desc: "Physique, chimie, biologie, sciences de la terre. Expériences virtuelles et schémas explicatifs pour comprendre la nature.", levels: ["7AF - NS4", "Programme MENFP"] },
+              { icon: "🌍", title: "Sciences Sociales", desc: "Histoire d'Haïti, géographie, éducation civique. Découvrez votre pays et le monde avec des cartes interactives.", levels: ["7AF - NS4", "Programme MENFP"] },
+              { icon: "🇺🇸", title: "Anglais", desc: "Grammaire anglaise, vocabulaire, conversation. Apprenez l'anglais avec des méthodes modernes et interactives.", levels: ["7AF - NS4", "Programme MENFP"] },
+              { icon: "🇭🇹", title: "Créole", desc: "Langue maternelle haïtienne, orthographe créole, expression orale. Valorisez votre culture et votre identité.", levels: ["7AF - NS4", "Programme MENFP"] },
+              { icon: "💻", title: "Informatique", desc: "Bureautique, navigation internet, sécurité numérique. Maîtrisez les outils numériques essentiels pour le 21ème siècle.", levels: ["7AF - NS4", "Compétences numériques"] }
             ].map((course, idx) => (
-              <Card key={idx} className={`group hover:scale-105 transition-all duration-300 hover:shadow-2xl ${course.featured ? 'bg-gradient-to-br from-primary via-accent to-primary text-primary-foreground border-2 border-accent relative overflow-hidden' : 'border-primary/20 hover:border-primary/40'}`}>
-                {course.featured && (
-                  <div className="absolute top-0 right-0 bg-accent text-accent-foreground text-xs font-bold px-4 py-1.5 rounded-bl-xl shadow-lg">
-                    ⭐ Populaire
-                  </div>
-                )}
+              <Card key={idx} className="group hover:scale-105 transition-all duration-300 hover:shadow-2xl border-primary/20 hover:border-primary/40">
                 <CardHeader>
                   <div className="text-5xl mb-4 group-hover:scale-110 transition-transform duration-300">{course.icon}</div>
-                  <CardTitle className={`font-bold ${course.featured ? 'text-white' : 'text-primary'}`}>{course.title}</CardTitle>
-                  <CardDescription className={`font-medium ${course.featured ? 'text-white/90' : ''}`}>{course.desc}</CardDescription>
+                  <CardTitle className="font-bold text-primary">{course.title}</CardTitle>
+                  <CardDescription className="font-medium">{course.desc}</CardDescription>
                 </CardHeader>
                 <CardContent>
                   <div className="flex flex-wrap gap-2">
                     {course.levels.map((level, lidx) => (
                       <span 
                         key={lidx} 
-                        className={`px-3 py-1 rounded-full text-xs font-bold transition-all duration-300 ${
-                          course.featured 
-                            ? 'bg-white/20 text-white hover:bg-white/30' 
-                            : 'bg-primary/10 text-primary hover:bg-primary/20'
-                        }`}
+                        className="px-3 py-1 rounded-full text-xs font-bold transition-all duration-300 bg-primary/10 text-primary hover:bg-primary/20"
                       >
                         {level}
                       </span>
@@ -739,7 +723,7 @@ const Index = () => {
               <div className="space-y-4 pt-4">
                 {[
                   { icon: "🎯", title: "Apprentissage Personnalisé", desc: "Un système d'apprentissage entièrement personnalisé qui s'adapte au rythme de chaque élève" },
-                  { icon: "📱", title: "Accessible Partout", desc: "Accessible depuis n'importe quel smartphone, tablette ou PC - de la 7ème année jusqu'à la préparation universitaire" },
+                  { icon: "📱", title: "Accessible Partout", desc: "Accessible depuis n'importe quel smartphone, tablette ou PC - de la 7AF jusqu'à NS4 (Terminale)" },
                   { icon: "💰", title: "Prix Abordable", desc: "Seulement 200 gourdes par mois avec une semaine d'essai gratuite pour démocratiser l'éducation" }
                 ].map((point, idx) => (
                   <Card key={idx} className="group hover:shadow-xl transition-all duration-300 hover:scale-[1.02] border-primary/20 hover:border-primary/40 bg-gradient-to-r from-card to-card/50">
