@@ -1,9 +1,12 @@
 import { Suspense, useRef, useState, useEffect } from 'react';
 import { Canvas, RootState } from '@react-three/fiber';
-import { OrbitControls, Environment, ContactShadows } from '@react-three/drei';
+import { OrbitControls, Environment, ContactShadows, useGLTF } from '@react-three/drei';
 import { JudeModel, JudeModelRef } from './JudeModel';
 import { JudePlaceholder } from './JudePlaceholder';
 import { Phoneme } from './JudeLipSync';
+
+// Preload the Jude model for faster loading
+useGLTF.preload('/models/jude.glb');
 
 interface Jude3DCanvasProps {
   modelUrl?: string;
