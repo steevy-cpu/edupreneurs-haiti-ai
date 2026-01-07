@@ -10,7 +10,7 @@ import { ThemeToggle } from "@/components/ThemeToggle";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { generateConfirmationCode } from "@/utils/emailService";
-import { Loader2, Eye, EyeOff } from "lucide-react";
+import { Loader2, Eye, EyeOff, KeyRound } from "lucide-react";
 import { loginSchema, signupSchema, forgotPasswordSchema, verificationCodeSchema, GRADE_OPTIONS } from "@/lib/authValidation";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { getFullDeviceIdentifier } from "@/utils/deviceFingerprint";
@@ -770,43 +770,51 @@ export default function Auth() {
             {/* Auth Card */}
             <section className="auth-panel auth-card bg-card border border-border rounded-2xl shadow-lg overflow-hidden">
               {/* Tabs */}
-              <div className="auth-tabs flex border-b border-border">
-                {activeTab !== "verify" && activeTab !== "forgot-password" && (
-                  <>
+              <div className="auth-tabs p-3">
+                {activeTab !== "verify" && activeTab !== "forgot-password" && activeTab !== "phone-verify" && (
+                  <div className="relative flex bg-muted/50 rounded-xl p-1">
+                    {/* Sliding Background Indicator */}
+                    <div 
+                      className={`absolute top-1 bottom-1 w-[calc(50%-4px)] bg-background rounded-lg shadow-sm transition-all duration-300 ease-out ${
+                        activeTab === "login" ? "left-1" : "left-[calc(50%+2px)]"
+                      }`}
+                    />
+                    
+                    {/* Tab Buttons */}
                     <button
-                      className={`auth-tab flex-1 text-center py-3.5 px-2.5 cursor-pointer font-bold ${
+                      className={`relative z-10 flex-1 text-center py-2.5 px-4 rounded-lg font-semibold text-sm transition-colors duration-200 ${
                         activeTab === "login" 
-                          ? "text-primary border-b-[3px] border-primary" 
-                          : "text-muted-foreground"
+                          ? "text-foreground" 
+                          : "text-muted-foreground hover:text-foreground/80"
                       }`}
                       onClick={() => setActiveTab("login")}
                     >
                       Se connecter
                     </button>
                     <button
-                      className={`auth-tab flex-1 text-center py-3.5 px-2.5 cursor-pointer font-bold ${
+                      className={`relative z-10 flex-1 text-center py-2.5 px-4 rounded-lg font-semibold text-sm transition-colors duration-200 ${
                         activeTab === "signup" 
-                          ? "text-primary border-b-[3px] border-primary" 
-                          : "text-muted-foreground"
+                          ? "text-foreground" 
+                          : "text-muted-foreground hover:text-foreground/80"
                       }`}
                       onClick={() => setActiveTab("signup")}
                     >
                       Créer un compte
                     </button>
-                  </>
+                  </div>
                 )}
                 {activeTab === "forgot-password" && (
-                  <div className="auth-tab flex-1 text-center py-3.5 px-2.5 font-bold text-primary border-b-[3px] border-primary">
+                  <div className="text-center py-3 font-bold text-primary">
                     Réinitialiser le mot de passe
                   </div>
                 )}
                 {activeTab === "verify" && (
-                  <div className="auth-tab flex-1 text-center py-3.5 px-2.5 font-bold text-primary border-b-[3px] border-primary">
+                  <div className="text-center py-3 font-bold text-primary">
                     Vérification de l'email
                   </div>
                 )}
                 {activeTab === "phone-verify" && (
-                  <div className="auth-tab flex-1 text-center py-3.5 px-2.5 font-bold text-primary border-b-[3px] border-primary">
+                  <div className="text-center py-3 font-bold text-primary">
                     Vérification du téléphone
                   </div>
                 )}
@@ -854,7 +862,11 @@ export default function Auth() {
                         </button>
                       </div>
                     </div>
-                    <Button type="submit" disabled={isLoggingIn} className="auth-btn-submit w-full mt-6">
+                    <Button 
+                      type="submit" 
+                      disabled={isLoggingIn} 
+                      className="auth-btn-submit w-full mt-6 transition-transform duration-200 hover:scale-[1.02] active:scale-[0.98]"
+                    >
                       {isLoggingIn ? (
                         <>
                           <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -868,8 +880,9 @@ export default function Auth() {
                     <button
                       type="button"
                       onClick={() => setActiveTab("forgot-password")}
-                      className="text-sm text-primary hover:underline mt-4 text-center w-full"
+                      className="flex items-center justify-center gap-1.5 text-sm text-muted-foreground hover:text-primary transition-colors mt-4 w-full"
                     >
+                      <KeyRound className="h-3.5 w-3.5" />
                       Mot de passe oublié ?
                     </button>
                   </form>
