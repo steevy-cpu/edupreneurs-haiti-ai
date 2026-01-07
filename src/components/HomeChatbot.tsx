@@ -11,50 +11,15 @@ interface Message {
   sender: "user" | "eric";
 }
 
-// Typing sound hook using Web Audio API
-const useTypingSound = () => {
-  const audioContextRef = useRef<AudioContext | null>(null);
-  
-  const playKeystroke = useCallback(() => {
-    try {
-      const ctx = audioContextRef.current || new AudioContext();
-      audioContextRef.current = ctx;
-      
-      const oscillator = ctx.createOscillator();
-      const gainNode = ctx.createGain();
-      
-      // Random pitch variation (800-1200 Hz) for natural typing feel
-      oscillator.frequency.value = 800 + Math.random() * 400;
-      oscillator.type = "sine";
-      
-      // Very short, soft sound
-      const now = ctx.currentTime;
-      gainNode.gain.setValueAtTime(0.03, now);
-      gainNode.gain.exponentialRampToValueAtTime(0.001, now + 0.02);
-      
-      oscillator.connect(gainNode);
-      gainNode.connect(ctx.destination);
-      oscillator.start(now);
-      oscillator.stop(now + 0.02);
-    } catch (error) {
-      // Silently fail if audio context is not available
-    }
-  }, []);
-  
-  return { playKeystroke };
-};
-
 // Typewriter effect component
 const TypewriterText = ({ 
   text, 
   speed = 15, 
-  onComplete,
-  onCharacter
+  onComplete
 }: { 
   text: string; 
   speed?: number; 
   onComplete?: () => void;
-  onCharacter?: () => void;
 }) => {
   const [displayedText, setDisplayedText] = useState('');
   const [isComplete, setIsComplete] = useState(false);
@@ -67,10 +32,6 @@ const TypewriterText = ({
     const timer = setInterval(() => {
       if (index < text.length) {
         setDisplayedText(text.slice(0, index + 1));
-        // Play sound only on non-space characters
-        if (text[index] !== ' ') {
-          onCharacter?.();
-        }
         index++;
       } else {
         setIsComplete(true);
@@ -80,7 +41,7 @@ const TypewriterText = ({
     }, speed);
     
     return () => clearInterval(timer);
-  }, [text, speed, onComplete, onCharacter]);
+  }, [text, speed, onComplete]);
   
   return (
     <span>
@@ -91,7 +52,6 @@ const TypewriterText = ({
 };
 
 export const HomeChatbot = () => {
-  const { playKeystroke } = useTypingSound();
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState<Message[]>([
     {
@@ -264,7 +224,6 @@ export const HomeChatbot = () => {
                         text={message.content} 
                         speed={15} 
                         onComplete={() => setTypingMessageIndex(null)}
-                        onCharacter={playKeystroke}
                       />
                     ) : (
                       message.content
