@@ -719,86 +719,41 @@ export default function Auth() {
       {/* Main Content */}
       <div className="auth-wrap min-h-[calc(100vh-65px)] grid place-items-center p-4 md:p-8">
         <div className="auth-container flex flex-col items-center gap-8 w-full max-w-[1000px]">
-          {/* Desktop Image */}
-          <div className="auth-image-container hidden md:flex justify-center items-center">
-            <img 
-              src={authImage} 
-              alt="Authentification EDUPRENEURS" 
-              className="auth-image w-full max-w-[280px] h-auto animate-gentle-float" 
-              loading="lazy"
-              decoding="async"
-            />
-          </div>
-          
-          <div className="auth-grid grid md:grid-cols-[1.1fr_0.9fr] gap-8 w-full">
-            {/* Info Panel */}
-            <aside className="auth-panel auth-info bg-gradient-to-br from-primary/5 via-background to-accent/5 border border-border rounded-2xl shadow-xl p-8">
-              <div className="space-y-6">
-                <div>
-                  <h1 className="text-3xl md:text-4xl font-bold mb-3 bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
-                    Bienvenue sur EDUPRENEURS
-                  </h1>
-                  <p className="text-foreground/80 text-base leading-relaxed font-medium">
-                    Plateforme d'apprentissage personnalisé alignée au programme du MENFP, avec assistance IA et suivi de progression.
-                  </p>
-                </div>
+          <div className="auth-grid grid md:grid-cols-[1fr_1.2fr] gap-6 md:gap-8 w-full">
+            {/* Encouraging Text Panel */}
+            <aside className="auth-panel auth-info flex flex-col items-center justify-center text-center p-6 md:p-8 gap-4 md:gap-5">
+              {/* Eric Image - smaller, integrated */}
+              <img 
+                src={authImage} 
+                alt="Eric - Assistant EDUPRENEURS" 
+                className="w-28 md:w-36 h-auto drop-shadow-lg" 
+                loading="eager"
+                decoding="async"
+              />
+              
+              {/* Animated Encouraging Text */}
+              <div className="space-y-3 md:space-y-4">
+                <h1 className="text-xl md:text-2xl lg:text-3xl font-bold text-foreground animate-fade-in">
+                  Prêt à apprendre? 🚀
+                </h1>
                 
-                <div className="flex flex-wrap gap-2">
-                  <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-primary/10 text-primary rounded-full text-sm font-medium">
-                    ✨ Essai gratuit 7 jours
+                <p className="text-sm md:text-base text-muted-foreground animate-fade-in font-medium" 
+                   style={{ animationDelay: '0.2s' }}>
+                  Connectez-vous ou créez un compte pour commencer votre aventure éducative.
+                </p>
+                
+                {/* Simple Badges */}
+                <div className="flex flex-wrap justify-center gap-2 animate-fade-in" 
+                     style={{ animationDelay: '0.4s' }}>
+                  <span className="px-3 py-1.5 bg-primary/10 text-primary rounded-full text-xs md:text-sm font-medium">
+                    ✨ 7 jours gratuits
                   </span>
-                  <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-accent/20 text-foreground rounded-full text-sm font-bold">
-                    🇭🇹 Français & Créole
-                  </span>
-                  <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-secondary/20 text-foreground rounded-full text-sm font-bold">
+                  <span className="px-3 py-1.5 bg-accent/20 text-foreground rounded-full text-xs md:text-sm font-medium">
                     🤖 IA personnalisée
                   </span>
                 </div>
-                
-                <div className="space-y-3">
-                  <div className="flex items-start gap-3">
-                    <div className="flex-shrink-0 w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
-                      <span className="text-lg">📚</span>
-                    </div>
-                    <div>
-                      <h3 className="font-semibold text-foreground mb-1">Contenu riche et interactif</h3>
-                      <p className="text-sm text-foreground/70 font-medium">Leçons détaillées, schémas explicatifs et exercices pratiques</p>
-                    </div>
-                  </div>
-                  
-                  <div className="flex items-start gap-3">
-                    <div className="flex-shrink-0 w-8 h-8 rounded-full bg-accent/10 flex items-center justify-center">
-                      <span className="text-lg">🎯</span>
-                    </div>
-                    <div>
-                      <h3 className="font-semibold text-foreground mb-1">Quiz et récompenses</h3>
-                      <p className="text-sm text-foreground/70 font-medium">Testez vos connaissances et gagnez des golds à chaque réussite</p>
-                    </div>
-                  </div>
-                  
-                  <div className="flex items-start gap-3">
-                    <div className="flex-shrink-0 w-8 h-8 rounded-full bg-secondary/10 flex items-center justify-center">
-                      <span className="text-lg">💳</span>
-                    </div>
-                    <div>
-                      <h3 className="font-semibold text-foreground mb-1">Paiement flexible</h3>
-                      <p className="text-sm text-foreground/70 font-medium">MonCash, NatCash - Environ 200 HTG/mois après l'essai</p>
-                    </div>
-                  </div>
-                </div>
               </div>
             </aside>
-
-            {/* Mobile Image */}
-            <div className="auth-image-mobile flex md:hidden justify-center items-center my-5">
-              <img 
-                src={authImage} 
-                alt="Authentification EDUPRENEURS" 
-                className="auth-image max-w-[250px] h-auto animate-gentle-float" 
-                loading="lazy"
-                decoding="async"
-              />
-            </div>
 
             {/* Auth Card */}
             <section className="auth-panel auth-card bg-card border border-border rounded-2xl shadow-lg overflow-hidden">
