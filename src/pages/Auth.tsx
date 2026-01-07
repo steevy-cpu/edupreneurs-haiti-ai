@@ -770,9 +770,9 @@ export default function Auth() {
             {/* Auth Card */}
             <section className="auth-panel auth-card bg-card border border-border rounded-2xl shadow-lg overflow-hidden">
               {/* Tabs */}
-              <div className="auth-tabs p-3">
+              <div className="auth-tabs p-3 flex justify-center">
                 {activeTab !== "verify" && activeTab !== "forgot-password" && activeTab !== "phone-verify" && (
-                  <div className="relative flex bg-muted/50 rounded-xl p-1">
+                  <div className="relative flex bg-muted/50 rounded-xl p-1 w-fit">
                     {/* Sliding Background Indicator */}
                     <div 
                       className={`absolute top-1 bottom-1 w-[calc(50%-4px)] bg-background rounded-lg shadow-sm transition-all duration-300 ease-out ${
