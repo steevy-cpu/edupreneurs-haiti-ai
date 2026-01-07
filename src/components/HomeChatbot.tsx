@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { X, Send } from "lucide-react";
@@ -11,6 +11,46 @@ interface Message {
   sender: "user" | "eric";
 }
 
+// Typewriter effect component
+const TypewriterText = ({ 
+  text, 
+  speed = 15, 
+  onComplete 
+}: { 
+  text: string; 
+  speed?: number; 
+  onComplete?: () => void;
+}) => {
+  const [displayedText, setDisplayedText] = useState('');
+  const [isComplete, setIsComplete] = useState(false);
+  
+  useEffect(() => {
+    setDisplayedText('');
+    setIsComplete(false);
+    let index = 0;
+    
+    const timer = setInterval(() => {
+      if (index < text.length) {
+        setDisplayedText(text.slice(0, index + 1));
+        index++;
+      } else {
+        setIsComplete(true);
+        onComplete?.();
+        clearInterval(timer);
+      }
+    }, speed);
+    
+    return () => clearInterval(timer);
+  }, [text, speed, onComplete]);
+  
+  return (
+    <span>
+      {displayedText}
+      {!isComplete && <span className="inline-block w-0.5 h-4 bg-primary ml-0.5 animate-pulse" />}
+    </span>
+  );
+};
+
 export const HomeChatbot = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState<Message[]>([
@@ -22,6 +62,7 @@ export const HomeChatbot = () => {
   const [input, setInput] = useState("");
   const [isTyping, setIsTyping] = useState(false);
   const [showSuggestions, setShowSuggestions] = useState(true);
+  const [typingMessageIndex, setTypingMessageIndex] = useState<number | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
   const chatRef = useRef<HTMLDivElement>(null);
@@ -63,10 +104,14 @@ export const HomeChatbot = () => {
 
       if (error) throw error;
 
-      setMessages(prev => [...prev, { 
-        content: data.response, 
-        sender: "eric"
-      }]);
+      setMessages(prev => {
+        const newMessages = [...prev, { 
+          content: data.response, 
+          sender: "eric" as const
+        }];
+        setTypingMessageIndex(newMessages.length - 1);
+        return newMessages;
+      });
     } catch (error) {
       console.error('Error sending message:', error);
       toast({
@@ -174,7 +219,15 @@ export const HomeChatbot = () => {
                     decoding="async"
                   />
                   <div className="eric-message-content">
-                    {message.content}
+                    {message.sender === "eric" && index === typingMessageIndex ? (
+                      <TypewriterText 
+                        text={message.content} 
+                        speed={15} 
+                        onComplete={() => setTypingMessageIndex(null)} 
+                      />
+                    ) : (
+                      message.content
+                    )}
                   </div>
                 </div>
               ))}
