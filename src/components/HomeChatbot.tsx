@@ -132,166 +132,125 @@ export const HomeChatbot = () => {
   };
 
   return (
-    <>
-      {/* Mobile backdrop when chat is open */}
+    <div 
+      ref={chatRef}
+      style={{
+        position: 'fixed',
+        right: '0.5rem',
+        bottom: '1rem',
+        zIndex: 1000,
+      }}
+      className="flex flex-row items-end gap-1 sm:gap-2"
+    >
+      {/* Chat content - only visible when open */}
       {isOpen && (
-        <div 
-          className="fixed inset-0 bg-background/80 backdrop-blur-sm z-[999] md:hidden"
-          onClick={() => setIsOpen(false)}
-        />
+        <div className="flex flex-col w-[280px] xs:w-[300px] sm:w-[320px] md:w-[340px] max-h-[60vh] sm:max-h-[65vh]">
+          <Button
+            variant="destructive"
+            size="icon"
+            className="eric-close-btn self-end mb-1"
+            onClick={() => setIsOpen(false)}
+            title="Fermer le chat"
+          >
+            <X className="w-4 h-4" />
+          </Button>
+
+          <div className="eric-chat-messages">
+            {messages.map((message, index) => (
+              <div 
+                key={index} 
+                className={`eric-message ${message.sender === "user" ? "eric-message-user" : "eric-message-eric"}`}
+              >
+                <img 
+                  src={message.sender === "eric" ? ericStudentDesk : "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23059669'><path d='M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z'/></svg>"}
+                  alt={message.sender}
+                  className="eric-message-avatar"
+                  loading="lazy"
+                  decoding="async"
+                />
+                <div className="eric-message-content">
+                  {message.sender === "eric" && index === typingMessageIndex ? (
+                    <TypewriterText 
+                      text={message.content} 
+                      speed={15} 
+                      onComplete={() => setTypingMessageIndex(null)}
+                    />
+                  ) : (
+                    message.content
+                  )}
+                </div>
+              </div>
+            ))}
+            {isTyping && (
+              <div className="eric-typing-indicator">
+                Jude écrit<span className="eric-dots">...</span>
+              </div>
+            )}
+            
+            {showSuggestions && messages[messages.length - 1]?.sender === "eric" && (
+              <div className="flex flex-col gap-1.5 mt-3 px-1">
+                {faqSuggestions.map((suggestion, index) => (
+                  <Button
+                    key={index}
+                    variant="secondary"
+                    className="w-full text-left justify-start shadow-sm transition-all text-xs py-2 h-auto"
+                    onClick={() => sendMessage(suggestion)}
+                  >
+                    {suggestion}
+                  </Button>
+                ))}
+              </div>
+            )}
+            
+            <div ref={messagesEndRef} />
+          </div>
+
+          <div className="eric-chat-input-container flex items-end gap-1.5 mt-2">
+            <Textarea
+              value={input}
+              onChange={(e) => {
+                setInput(e.target.value);
+                e.target.style.height = 'auto';
+                e.target.style.height = Math.min(e.target.scrollHeight, 100) + 'px';
+              }}
+              onKeyDown={handleKeyPress}
+              placeholder="Posez une question..."
+              className="eric-chat-input resize-none flex-1 text-sm"
+              rows={1}
+              style={{ minHeight: '36px', maxHeight: '100px' }}
+            />
+            <Button 
+              onClick={() => sendMessage()}
+              disabled={!input.trim() || isTyping}
+              className="eric-send-btn flex-shrink-0"
+              size="icon"
+              title="Envoyer le message"
+            >
+              <Send className="w-4 h-4" />
+            </Button>
+          </div>
+        </div>
       )}
-      
-      {!isOpen ? (
-        <div 
-          style={{
-            position: 'fixed',
-            right: '0.5rem',
-            bottom: '1rem',
-            zIndex: 1000,
-            cursor: 'pointer',
-          }}
-          className="w-10 xs:w-12 sm:w-14 md:w-16 lg:w-20"
-          onClick={() => setIsOpen(true)}
-        >
-          <div className="eric-floating-tooltip text-[9px] xs:text-[10px] sm:text-xs max-w-[80px] xs:max-w-[90px] sm:max-w-none whitespace-nowrap overflow-hidden text-ellipsis">
+
+      {/* Jude character - always visible, clickable when chat is closed */}
+      <div 
+        className={`w-16 sm:w-20 md:w-24 lg:w-28 flex-shrink-0 ${!isOpen ? 'cursor-pointer' : ''}`}
+        onClick={() => !isOpen && setIsOpen(true)}
+      >
+        {!isOpen && (
+          <div className="eric-floating-tooltip text-[10px] sm:text-xs whitespace-nowrap">
             Cliquez sur moi
           </div>
-          <img 
-            src={ericStudentDesk} 
-            alt="Jude - Assistant IA" 
-            title="Cliquez pour parler avec Jude"
-            className="w-full h-auto pointer-events-none drop-shadow-2xl"
-            loading="lazy"
-            decoding="async"
-          />
-        </div>
-      ) : (
-        <>
-          {/* Eric avatar above the chat when open - fixed position */}
-          <div 
-            style={{
-              position: 'fixed',
-              right: '1rem',
-              bottom: 'calc(70vh + 1rem)',
-              zIndex: 1002,
-              cursor: 'pointer',
-              userSelect: 'none',
-            }}
-            className="w-8 xs:w-10 sm:w-12 md:w-14 lg:w-16 hidden md:block"
-          >
-            <img 
-              src={ericStudentDesk} 
-              alt="Jude - Assistant IA" 
-              title="Jude - Votre assistant"
-              className="w-full h-auto pointer-events-none drop-shadow-2xl"
-              loading="lazy"
-              decoding="async"
-            />
-          </div>
-
-          <div 
-            ref={chatRef}
-            style={{
-              position: 'fixed',
-              left: '50%',
-              bottom: '1rem',
-              transform: 'translateX(-50%)',
-              zIndex: 1001,
-              display: 'flex',
-              flexDirection: 'column',
-              background: 'transparent',
-              borderRadius: '1.5rem',
-            }}
-            className="w-[calc(100vw-1rem)] xs:w-[calc(100vw-1.5rem)] sm:w-[320px] md:w-[340px] lg:w-[360px] max-h-[75vh] sm:max-h-[70vh] md:max-h-[450px] p-2 xs:p-3 sm:p-4 md:left-auto md:right-2 md:transform-none"
-          >
-            <Button
-              variant="destructive"
-              size="icon"
-              className="eric-close-btn"
-              onClick={() => setIsOpen(false)}
-              title="Fermer le chat"
-            >
-              <X className="w-4 h-4" />
-            </Button>
-
-            <div className="eric-chat-messages bg-card/95 backdrop-blur-md rounded-xl border border-border shadow-xl">
-              {messages.map((message, index) => (
-                <div 
-                  key={index} 
-                  className={`eric-message ${message.sender === "user" ? "eric-message-user" : "eric-message-eric"}`}
-                >
-                  <img 
-                    src={message.sender === "eric" ? ericStudentDesk : "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23059669'><path d='M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z'/></svg>"}
-                    alt={message.sender}
-                    className="eric-message-avatar"
-                    loading="lazy"
-                    decoding="async"
-                  />
-                  <div className="eric-message-content">
-                    {message.sender === "eric" && index === typingMessageIndex ? (
-                      <TypewriterText 
-                        text={message.content} 
-                        speed={15} 
-                        onComplete={() => setTypingMessageIndex(null)}
-                      />
-                    ) : (
-                      message.content
-                    )}
-                  </div>
-                </div>
-              ))}
-              {isTyping && (
-                <div className="eric-typing-indicator">
-                  Jude écrit<span className="eric-dots">...</span>
-                </div>
-              )}
-              
-              {showSuggestions && messages[messages.length - 1]?.sender === "eric" && (
-                <div className="flex flex-col gap-1.5 xs:gap-2 mt-3 xs:mt-4 px-1 xs:px-2">
-                  {faqSuggestions.map((suggestion, index) => (
-                    <Button
-                      key={index}
-                      variant="secondary"
-                      className="w-full text-left justify-start shadow-sm transition-all text-xs xs:text-sm py-2 xs:py-2.5 h-auto"
-                      onClick={() => sendMessage(suggestion)}
-                    >
-                      {suggestion}
-                    </Button>
-                  ))}
-                </div>
-              )}
-              
-              <div ref={messagesEndRef} />
-            </div>
-
-            <div className="eric-chat-input-container flex items-end gap-1.5 xs:gap-2 mt-2 bg-card/95 backdrop-blur-md rounded-xl p-2 border border-border shadow-lg">
-              <Textarea
-                value={input}
-                onChange={(e) => {
-                  setInput(e.target.value);
-                  // Auto-resize
-                  e.target.style.height = 'auto';
-                  e.target.style.height = Math.min(e.target.scrollHeight, 100) + 'px';
-                }}
-                onKeyDown={handleKeyPress}
-                placeholder="Posez une question..."
-                className="eric-chat-input resize-none flex-1 text-sm"
-                rows={1}
-                style={{ minHeight: '36px', maxHeight: '100px' }}
-              />
-              <Button 
-                onClick={() => sendMessage()}
-                disabled={!input.trim() || isTyping}
-                className="eric-send-btn flex-shrink-0"
-                size="icon"
-                title="Envoyer le message"
-              >
-                <Send className="w-4 h-4" />
-              </Button>
-            </div>
-          </div>
-        </>
-      )}
-    </>
+        )}
+        <img 
+          src={ericStudentDesk} 
+          alt="Jude - Assistant IA" 
+          title={isOpen ? "Jude - Votre assistant" : "Cliquez pour parler avec Jude"}
+          className="w-full h-auto pointer-events-none drop-shadow-2xl"
+          loading="lazy"
+          decoding="async"
+        />
+      </div>
+    </div>
   );
 };
