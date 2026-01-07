@@ -31,6 +31,9 @@ import ericThumbUp from "@/assets/eric-thumb-up.png";
 import ericPointing from "@/assets/eric-pointing-up.png";
 import ericTeaching from "@/assets/eric-teaching.png";
 import ericComputer from "@/assets/eric-computer.png";
+import { useVisitor } from "@/contexts/VisitorContext";
+import { LockedOverlay } from "@/components/visitor";
+import { visitorPassionCategories } from "@/data/visitorDemoData";
 
 interface QuizQuestion {
   id: number;

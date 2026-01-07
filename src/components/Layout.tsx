@@ -36,6 +36,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import { useVisitor } from "@/contexts/VisitorContext";
 
 interface LayoutProps {
   children: ReactNode;
@@ -44,16 +45,20 @@ interface LayoutProps {
 export const Layout = ({ children }: LayoutProps) => {
   const navigate = useNavigate();
   const location = useLocation();
+  const { isVisitor } = useVisitor();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [totalUnreadMessages, setTotalUnreadMessages] = useState(0);
   const [pendingFollowRequests, setPendingFollowRequests] = useState(0);
   const [unreadNotifications, setUnreadNotifications] = useState(0);
   const [userAvatar, setUserAvatar] = useState<string>(dashboardImage);
-  const [userNickname, setUserNickname] = useState<string>("Étudiant");
+  const [userNickname, setUserNickname] = useState<string>(isVisitor ? "Visiteur" : "Étudiant");
   const presenceChannelRef = useState<{ current: any | null }>({ current: null })[0];
   const { onTouchStart, onTouchMove, onTouchEnd } = useMobileSwipeNavigation();
 
   useEffect(() => {
+    // Skip data fetching for visitors
+    if (isVisitor) return;
+    
     checkAuth();
     fetchUnreadCount();
     fetchPendingFollowRequests();
@@ -66,7 +71,7 @@ export const Layout = ({ children }: LayoutProps) => {
         supabase.removeChannel(presenceChannelRef.current);
       }
     };
-  }, []);
+  }, [isVisitor]);
   
   const fetchUserAvatar = async () => {
     const { data: { user } } = await supabase.auth.getUser();
@@ -96,6 +101,9 @@ export const Layout = ({ children }: LayoutProps) => {
   };
 
   useEffect(() => {
+    // Skip for visitors
+    if (isVisitor) return;
+    
     fetchUnreadCount();
     fetchPendingFollowRequests();
     fetchUnreadNotifications();
@@ -285,6 +293,9 @@ export const Layout = ({ children }: LayoutProps) => {
   };
 
   const checkAuth = async () => {
+    // Skip auth check for visitors - they're allowed to browse
+    if (isVisitor) return;
+    
     const { data: { session } } = await supabase.auth.getSession();
     
     if (!session && location.pathname !== "/auth") {
@@ -345,7 +356,7 @@ export const Layout = ({ children }: LayoutProps) => {
   const hideLayoutNav = isCommunityPage || isLessonPage || isFeedPage || isUserSearchPage || isChessPage;
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className={`min-h-screen bg-background ${isVisitor ? 'pt-10' : ''}`}>
       {/* Menu Button */}
       {!hideLayoutNav && (
         <button

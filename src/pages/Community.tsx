@@ -25,6 +25,9 @@ import { logger } from "@/utils/logger";
 import { preloadImage } from "@/utils/performanceOptimization";
 import { useNetworkAwareAnimations } from "@/hooks/useNetworkAwareAnimations";
 import { useTimeBasedAccent } from "@/hooks/useTimeBasedAccent";
+import { useVisitor } from "@/contexts/VisitorContext";
+import { LockedOverlay } from "@/components/visitor";
+import { visitorConversationPreview } from "@/data/visitorDemoData";
 import { 
   ConversationListItem, 
   ChatHeader, 
@@ -45,6 +48,7 @@ import {
 const Community = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { isVisitor } = useVisitor();
   const [searchParams] = useSearchParams();
   const conversationId = searchParams.get("conversation");
   const { playSendSound, playReceiveSound } = useMessageSounds();

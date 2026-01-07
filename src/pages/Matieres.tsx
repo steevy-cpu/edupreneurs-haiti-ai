@@ -32,6 +32,8 @@ import { ThemeToggle } from "@/components/ThemeToggle";
 import { useMatieresData } from "@/hooks/useMatieresData";
 import { GRADE_LABELS } from "@/hooks/useUserGrade";
 import { toast } from "sonner";
+import { useVisitor } from "@/contexts/VisitorContext";
+import { LockedOverlay } from "@/components/visitor";
 import {
   MatieresSearchFilter,
   ContinueLearningSection,
@@ -87,6 +89,7 @@ const colorMap: Record<string, string> = {
 
 export default function Matieres() {
   const navigate = useNavigate();
+  const { isVisitor } = useVisitor();
   const [selectedGrade, setSelectedGrade] = useState<GradeLevel>("7AF");
   const [selectedSeries, setSelectedSeries] = useState<Series | null>(null);
   const [showContent, setShowContent] = useState(false);

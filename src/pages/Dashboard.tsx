@@ -33,6 +33,9 @@ import { NotificationPermissionBanner } from "@/components/NotificationPermissio
 import { PWAInstallPrompt } from "@/components/PWAInstallPrompt";
 import { getAvatarUrl } from "@/lib/avatarMap";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import { useVisitor } from "@/contexts/VisitorContext";
+import { LockedOverlay } from "@/components/visitor";
+import { visitorDashboardData } from "@/data/visitorDemoData";
 
 interface Note {
   id: string;
@@ -61,21 +64,22 @@ const restartOnboardingTour = () => {
 
 const Dashboard = () => {
   const navigate = useNavigate();
+  const { isVisitor } = useVisitor();
   const [userData, setUserData] = useState({
-    name: "Utilisateur",
+    name: isVisitor ? "Visiteur" : "Utilisateur",
   });
   const [recentNotes, setRecentNotes] = useState<Note[]>([]);
-  const [goldEarned, setGoldEarned] = useState<number>(0);
+  const [goldEarned, setGoldEarned] = useState<number>(isVisitor ? visitorDashboardData.goldEarned : 0);
   const [userId, setUserId] = useState<string>("");
   const [isContentEditor, setIsContentEditor] = useState(false);
   const [leaderboard, setLeaderboard] = useState<LeaderboardUser[]>([]);
   const [leaderboardLoading, setLeaderboardLoading] = useState(true);
-  const [isAuthChecking, setIsAuthChecking] = useState(true);
-  const [isUserDataLoading, setIsUserDataLoading] = useState(true);
-  const [totalLessonsCompleted, setTotalLessonsCompleted] = useState(0);
+  const [isAuthChecking, setIsAuthChecking] = useState(!isVisitor);
+  const [isUserDataLoading, setIsUserDataLoading] = useState(!isVisitor);
+  const [totalLessonsCompleted, setTotalLessonsCompleted] = useState(isVisitor ? visitorDashboardData.lessonsCompleted : 0);
   
   const { showPrompt, isIOS, installApp, dismissPrompt } = usePWAInstall();
-  const { analytics, isLoading: analyticsLoading } = useDashboardAnalytics(userId || null);
+  const { analytics, isLoading: analyticsLoading } = useDashboardAnalytics(isVisitor ? null : userId || null);
 
   // Badge definitions with thresholds
   const badges = useMemo(() => [
@@ -117,8 +121,16 @@ const Dashboard = () => {
     },
   ], []);
 
-  // Auth guard - redirect unauthenticated users
+  // Auth guard - redirect unauthenticated users (skip for visitors)
   useEffect(() => {
+    // Skip auth check for visitors
+    if (isVisitor) {
+      setIsAuthChecking(false);
+      setIsUserDataLoading(false);
+      fetchLeaderboard(); // Still fetch leaderboard for visitors
+      return;
+    }
+    
     const checkAuth = async () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) {
@@ -134,7 +146,7 @@ const Dashboard = () => {
     };
     
     checkAuth();
-  }, [navigate]);
+  }, [navigate, isVisitor]);
 
   // Consolidated data fetching with single user id
   const fetchAllUserData = async (currentUserId: string) => {

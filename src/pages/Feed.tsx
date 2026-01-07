@@ -33,6 +33,9 @@ import { NotificationPermissionBanner } from "@/components/NotificationPermissio
 import { useFeedData } from "@/hooks/useFeedData";
 import { formatTimeAgo } from "@/utils/dateUtils";
 import { Profile, Post, Comment } from "@/types/feed";
+import { useVisitor } from "@/contexts/VisitorContext";
+import { LockedOverlay } from "@/components/visitor";
+import { visitorFeedPosts } from "@/data/visitorDemoData";
 
 // Function to render content with clickable links, @mentions, and plain domains
 const renderContentWithLinks = (content: string) => {
