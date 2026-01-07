@@ -15,6 +15,8 @@ import ChessEloWidget from '@/components/chess/ChessEloWidget';
 import ChessPuzzleTrainer from '@/components/chess/ChessPuzzleTrainer';
 import ChessPostGameAnalysis from '@/components/chess/ChessPostGameAnalysis';
 import { Helmet } from 'react-helmet';
+import { useVisitor } from '@/contexts/VisitorContext';
+import { LockedOverlay } from '@/components/visitor';
 
 export type DifficultyLevel = 'beginner' | 'intermediate' | 'advanced' | 'expert';
 export type TimeControl = 'bullet' | 'blitz' | 'rapid' | 'classic' | 'untimed';
@@ -38,6 +40,7 @@ const getTimeForControl = (control: TimeControl): number => {
 const ChessGame: React.FC = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { isVisitor } = useVisitor();
   const { playSound } = useChessSounds();
   
   const [game, setGame] = useState(new Chess());

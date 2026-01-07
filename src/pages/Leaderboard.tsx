@@ -7,6 +7,8 @@ import { Trophy, Medal, Award, Crown } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { getAvatarUrl } from "@/lib/avatarMap";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import { useVisitor } from "@/contexts/VisitorContext";
+import { toast } from "sonner";
 
 interface LeaderboardUser {
   id: string;
@@ -21,15 +23,19 @@ interface LeaderboardUser {
 
 const Leaderboard = () => {
   const navigate = useNavigate();
+  const { isVisitor } = useVisitor();
   const [loading, setLoading] = useState(true);
   const [leaderboard, setLeaderboard] = useState<LeaderboardUser[]>([]);
   const [currentUserRank, setCurrentUserRank] = useState<number | null>(null);
   const [currentUser, setCurrentUser] = useState<any>(null);
 
   useEffect(() => {
-    checkAuth();
+    // Skip auth check for visitors but still fetch leaderboard
+    if (!isVisitor) {
+      checkAuth();
+    }
     fetchLeaderboard();
-  }, []);
+  }, [isVisitor]);
 
   const checkAuth = async () => {
     const { data: { user } } = await supabase.auth.getUser();
@@ -111,6 +117,10 @@ const Leaderboard = () => {
   };
 
   const handleUserClick = (userId: string) => {
+    if (isVisitor) {
+      toast.info("Créez un compte pour voir les profils des autres utilisateurs");
+      return;
+    }
     navigate(`/profile/${userId}`);
   };
 
@@ -135,10 +145,15 @@ const Leaderboard = () => {
             <p className="text-xs sm:text-sm lg:text-base opacity-90 leading-relaxed">
               Les meilleurs apprenants de la plateforme
             </p>
-            {currentUserRank && (
+            {!isVisitor && currentUserRank && (
               <div className="mt-3 sm:mt-4 inline-flex items-center gap-1.5 sm:gap-2 bg-white/10 backdrop-blur-sm rounded-full px-3 sm:px-4 py-1.5 sm:py-2">
                 <span className="text-xs sm:text-sm font-medium">Votre rang:</span>
                 <span className="text-base sm:text-lg font-bold">#{currentUserRank}</span>
+              </div>
+            )}
+            {isVisitor && (
+              <div className="mt-3 sm:mt-4 inline-flex items-center gap-1.5 sm:gap-2 bg-white/10 backdrop-blur-sm rounded-full px-3 sm:px-4 py-1.5 sm:py-2">
+                <span className="text-xs sm:text-sm font-medium">Classement en temps réel 📊</span>
               </div>
             )}
           </div>
