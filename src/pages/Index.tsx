@@ -456,9 +456,9 @@ const Index = () => {
           {/* CTA */}
           <div className="text-center px-2">
             <Link to="/auth">
-              <Button size="lg" className="bg-gradient-to-r from-primary via-accent to-primary hover:from-primary/90 hover:to-primary/90 shadow-lg hover:shadow-2xl font-bold transition-all duration-300 hover:scale-105 text-xs xs:text-sm sm:text-base px-4 xs:px-6 sm:px-8">
-                <span className="hidden xs:inline">🚀 Commencer maintenant - C'est gratuit !</span>
-                <span className="xs:hidden">🚀 Commencer maintenant</span>
+              <Button size="lg" className="bg-gradient-to-r from-primary via-accent to-primary hover:from-primary/90 hover:to-primary/90 shadow-lg hover:shadow-2xl font-bold transition-all duration-300 hover:scale-105 text-xs sm:text-sm px-4 sm:px-6 md:px-8">
+                <span className="hidden sm:inline">🚀 Commencer maintenant - C'est gratuit !</span>
+                <span className="sm:hidden">🚀 Commencer</span>
               </Button>
             </Link>
           </div>
@@ -554,8 +554,9 @@ const Index = () => {
             </CardHeader>
             <CardContent className="text-center space-y-6 relative z-10 px-3 xs:px-4 sm:px-6">
               <Link to="/auth">
-                <Button size="lg" className="bg-gradient-to-r from-primary via-accent to-primary hover:from-primary/90 hover:to-primary/90 shadow-lg hover:shadow-2xl font-bold transition-all duration-300 hover:scale-105 text-xs xs:text-sm sm:text-base px-4 xs:px-6 sm:px-8">
-                  🚀 Commencer l'apprentissage
+                <Button size="lg" className="bg-gradient-to-r from-primary via-accent to-primary hover:from-primary/90 hover:to-primary/90 shadow-lg hover:shadow-2xl font-bold transition-all duration-300 hover:scale-105 text-xs sm:text-sm px-4 sm:px-6 md:px-8">
+                  <span className="hidden sm:inline">🚀 Commencer l'apprentissage</span>
+                  <span className="sm:hidden">🚀 Commencer</span>
                 </Button>
               </Link>
               <div className="pt-4">
@@ -800,8 +801,9 @@ const Index = () => {
             Transformez votre façon d'apprendre avec la technologie. Apprentissage personnalisé, assistant IA, et récompenses réelles vous attendent.
           </p>
           <Link to="/auth">
-            <Button size="lg" className="bg-white text-primary hover:bg-white/90 shadow-2xl font-bold text-base px-8 py-6 hover:scale-105 transition-all duration-300">
-              Commencez votre essai gratuit ✨
+            <Button size="lg" className="bg-white text-primary hover:bg-white/90 shadow-2xl font-bold text-xs sm:text-sm md:text-base px-4 sm:px-6 md:px-8 py-4 sm:py-5 md:py-6 hover:scale-105 transition-all duration-300">
+              <span className="hidden sm:inline">Commencez votre essai gratuit ✨</span>
+              <span className="sm:hidden">Essai gratuit ✨</span>
             </Button>
           </Link>
         </div>
