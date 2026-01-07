@@ -15,6 +15,7 @@ import { loginSchema, signupSchema, forgotPasswordSchema, verificationCodeSchema
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { getFullDeviceIdentifier } from "@/utils/deviceFingerprint";
 import { PhoneVerificationSection } from "@/components/PhoneVerificationSection";
+import TypewriterText from "@/components/TypewriterText";
 export default function Auth() {
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -733,8 +734,19 @@ export default function Auth() {
               
               {/* Animated Encouraging Text */}
               <div className="space-y-3 md:space-y-4">
-                <h1 className="text-xl md:text-2xl lg:text-3xl font-bold text-foreground animate-fade-in">
-                  Prêt à apprendre? 🚀
+                <h1 className="text-xl md:text-2xl lg:text-3xl font-bold text-foreground min-h-[2.5rem] md:min-h-[3rem]">
+                  <TypewriterText 
+                    phrases={[
+                      "Prêt à apprendre? 🚀",
+                      "Ton aventure commence ici! ✨",
+                      "Apprends à ton rythme 📚",
+                      "Réussis avec nous! 🎯",
+                      "L'éducation sans limites 🌟"
+                    ]}
+                    typingSpeed={80}
+                    deletingSpeed={40}
+                    pauseDuration={2500}
+                  />
                 </h1>
                 
                 <p className="text-sm md:text-base text-muted-foreground animate-fade-in font-medium" 
