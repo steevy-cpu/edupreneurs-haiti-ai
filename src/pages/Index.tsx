@@ -454,10 +454,11 @@ const Index = () => {
           </div>
 
           {/* CTA */}
-          <div className="text-center">
+          <div className="text-center px-2">
             <Link to="/auth">
-              <Button size="lg" className="bg-gradient-to-r from-primary via-accent to-primary hover:from-primary/90 hover:to-primary/90 shadow-lg hover:shadow-2xl font-bold transition-all duration-300 hover:scale-105">
-                🚀 Commencer maintenant - C'est gratuit !
+              <Button size="lg" className="bg-gradient-to-r from-primary via-accent to-primary hover:from-primary/90 hover:to-primary/90 shadow-lg hover:shadow-2xl font-bold transition-all duration-300 hover:scale-105 text-xs xs:text-sm sm:text-base px-4 xs:px-6 sm:px-8">
+                <span className="hidden xs:inline">🚀 Commencer maintenant - C'est gratuit !</span>
+                <span className="xs:hidden">🚀 Commencer maintenant</span>
               </Button>
             </Link>
           </div>
@@ -551,9 +552,9 @@ const Index = () => {
                 Gagnez des Gold en réussissant les quiz et débloquez des fonctions premium !
               </CardDescription>
             </CardHeader>
-            <CardContent className="text-center space-y-6 relative z-10">
+            <CardContent className="text-center space-y-6 relative z-10 px-3 xs:px-4 sm:px-6">
               <Link to="/auth">
-                <Button size="lg" className="bg-gradient-to-r from-primary via-accent to-primary hover:from-primary/90 hover:to-primary/90 shadow-lg hover:shadow-2xl font-bold transition-all duration-300 hover:scale-105">
+                <Button size="lg" className="bg-gradient-to-r from-primary via-accent to-primary hover:from-primary/90 hover:to-primary/90 shadow-lg hover:shadow-2xl font-bold transition-all duration-300 hover:scale-105 text-xs xs:text-sm sm:text-base px-4 xs:px-6 sm:px-8">
                   🚀 Commencer l'apprentissage
                 </Button>
               </Link>

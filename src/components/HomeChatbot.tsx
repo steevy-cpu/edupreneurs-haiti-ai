@@ -133,19 +133,27 @@ export const HomeChatbot = () => {
 
   return (
     <>
+      {/* Mobile backdrop when chat is open */}
+      {isOpen && (
+        <div 
+          className="fixed inset-0 bg-background/80 backdrop-blur-sm z-[999] md:hidden"
+          onClick={() => setIsOpen(false)}
+        />
+      )}
+      
       {!isOpen ? (
         <div 
           style={{
             position: 'fixed',
-            right: '1rem',
-            bottom: '1.5rem',
+            right: '0.5rem',
+            bottom: '1rem',
             zIndex: 1000,
             cursor: 'pointer',
           }}
-          className="w-12 sm:w-14 md:w-16 lg:w-20"
+          className="w-10 xs:w-12 sm:w-14 md:w-16 lg:w-20"
           onClick={() => setIsOpen(true)}
         >
-          <div className="eric-floating-tooltip text-[10px] sm:text-xs">
+          <div className="eric-floating-tooltip text-[9px] xs:text-[10px] sm:text-xs max-w-[80px] xs:max-w-[90px] sm:max-w-none whitespace-nowrap overflow-hidden text-ellipsis">
             Cliquez sur moi
           </div>
           <img 
@@ -163,13 +171,13 @@ export const HomeChatbot = () => {
           <div 
             style={{
               position: 'fixed',
-              right: '2rem',
-              bottom: 'calc(60vh + 2rem)',
+              right: '1rem',
+              bottom: 'calc(70vh + 1rem)',
               zIndex: 1002,
               cursor: 'pointer',
               userSelect: 'none',
             }}
-            className="w-10 sm:w-12 md:w-14 lg:w-16"
+            className="w-8 xs:w-10 sm:w-12 md:w-14 lg:w-16 hidden md:block"
           >
             <img 
               src={ericStudentDesk} 
@@ -185,15 +193,16 @@ export const HomeChatbot = () => {
             ref={chatRef}
             style={{
               position: 'fixed',
-              right: '0.5rem',
+              left: '50%',
               bottom: '1rem',
+              transform: 'translateX(-50%)',
               zIndex: 1001,
               display: 'flex',
               flexDirection: 'column',
               background: 'transparent',
               borderRadius: '1.5rem',
             }}
-            className="w-[260px] sm:w-[280px] md:w-[300px] lg:w-[320px] max-h-[60vh] sm:max-h-[65vh] md:max-h-[420px] p-3 sm:p-4"
+            className="w-[calc(100vw-1rem)] xs:w-[calc(100vw-1.5rem)] sm:w-[320px] md:w-[340px] lg:w-[360px] max-h-[75vh] sm:max-h-[70vh] md:max-h-[450px] p-2 xs:p-3 sm:p-4 md:left-auto md:right-2 md:transform-none"
           >
             <Button
               variant="destructive"
@@ -205,7 +214,7 @@ export const HomeChatbot = () => {
               <X className="w-4 h-4" />
             </Button>
 
-            <div className="eric-chat-messages">
+            <div className="eric-chat-messages bg-card/95 backdrop-blur-md rounded-xl border border-border shadow-xl">
               {messages.map((message, index) => (
                 <div 
                   key={index} 
@@ -238,12 +247,12 @@ export const HomeChatbot = () => {
               )}
               
               {showSuggestions && messages[messages.length - 1]?.sender === "eric" && (
-                <div className="flex flex-col gap-2 mt-4 px-2">
+                <div className="flex flex-col gap-1.5 xs:gap-2 mt-3 xs:mt-4 px-1 xs:px-2">
                   {faqSuggestions.map((suggestion, index) => (
                     <Button
                       key={index}
                       variant="secondary"
-                      className="w-full text-left justify-start shadow-sm transition-all"
+                      className="w-full text-left justify-start shadow-sm transition-all text-xs xs:text-sm py-2 xs:py-2.5 h-auto"
                       onClick={() => sendMessage(suggestion)}
                     >
                       {suggestion}
@@ -255,20 +264,20 @@ export const HomeChatbot = () => {
               <div ref={messagesEndRef} />
             </div>
 
-            <div className="eric-chat-input-container flex items-end gap-2">
+            <div className="eric-chat-input-container flex items-end gap-1.5 xs:gap-2 mt-2 bg-card/95 backdrop-blur-md rounded-xl p-2 border border-border shadow-lg">
               <Textarea
                 value={input}
                 onChange={(e) => {
                   setInput(e.target.value);
                   // Auto-resize
                   e.target.style.height = 'auto';
-                  e.target.style.height = Math.min(e.target.scrollHeight, 120) + 'px';
+                  e.target.style.height = Math.min(e.target.scrollHeight, 100) + 'px';
                 }}
                 onKeyDown={handleKeyPress}
                 placeholder="Posez une question..."
-                className="eric-chat-input resize-none flex-1"
+                className="eric-chat-input resize-none flex-1 text-sm"
                 rows={1}
-                style={{ minHeight: '40px', maxHeight: '120px' }}
+                style={{ minHeight: '36px', maxHeight: '100px' }}
               />
               <Button 
                 onClick={() => sendMessage()}
