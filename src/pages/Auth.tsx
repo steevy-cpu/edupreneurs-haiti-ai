@@ -10,12 +10,13 @@ import { ThemeToggle } from "@/components/ThemeToggle";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { generateConfirmationCode } from "@/utils/emailService";
-import { Loader2, Eye, EyeOff, KeyRound } from "lucide-react";
+import { Loader2, Eye, EyeOff, KeyRound, Telescope } from "lucide-react";
 import { loginSchema, signupSchema, forgotPasswordSchema, verificationCodeSchema, GRADE_OPTIONS } from "@/lib/authValidation";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { getFullDeviceIdentifier } from "@/utils/deviceFingerprint";
 import { PhoneVerificationSection } from "@/components/PhoneVerificationSection";
 import TypewriterText from "@/components/TypewriterText";
+import { VisitorTypeSelector } from "@/components/visitor/VisitorTypeSelector";
 export default function Auth() {
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -54,6 +55,7 @@ export default function Auth() {
   const [showSignupPassword, setShowSignupPassword] = useState(false);
   const [signupStep, setSignupStep] = useState(1);
   const totalSignupSteps = 3;
+  const [showVisitorSelector, setShowVisitorSelector] = useState(false);
 
   // Countdown timer for resend cooldown
   useEffect(() => {
@@ -885,6 +887,26 @@ export default function Auth() {
                       <KeyRound className="h-3.5 w-3.5" />
                       Mot de passe oublié ?
                     </button>
+
+                    {/* Visitor Mode Button */}
+                    <div className="relative my-6">
+                      <div className="absolute inset-0 flex items-center">
+                        <span className="w-full border-t border-border" />
+                      </div>
+                      <div className="relative flex justify-center text-xs uppercase">
+                        <span className="bg-card px-2 text-muted-foreground">ou</span>
+                      </div>
+                    </div>
+
+                    <Button
+                      type="button"
+                      variant="outline"
+                      className="w-full gap-2 border-dashed border-2 hover:border-primary hover:bg-primary/5 transition-all duration-300"
+                      onClick={() => setShowVisitorSelector(true)}
+                    >
+                      <Telescope className="w-4 h-4" />
+                      Découvrir la plateforme sans inscription
+                    </Button>
                   </form>
                 )}
 
@@ -1473,6 +1495,12 @@ export default function Auth() {
         </div>
       </div>
     </div>
+
+    {/* Visitor Type Selector Modal */}
+    <VisitorTypeSelector 
+      open={showVisitorSelector} 
+      onOpenChange={setShowVisitorSelector} 
+    />
     </>
   );
 }

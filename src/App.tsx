@@ -7,6 +7,7 @@ import { ThemeProvider } from "@/components/ThemeProvider";
 import { Layout } from "@/components/Layout";
 import { CookieConsent } from "@/components/CookieConsent";
 import { MusicPlayerProvider } from "@/contexts/MusicPlayerContext";
+import { VisitorProvider } from "@/contexts/VisitorContext";
 import { GlobalMusicPlayer } from "@/components/GlobalMusicPlayer";
 import { ScrollToTop } from "@/components/ScrollToTop";
 import { lazy, Suspense, useEffect } from "react";
@@ -14,6 +15,7 @@ import { LegacyRedirect } from "@/components/LegacyRedirect";
 import { JudeChatbot } from "@/components/JudeChatbot";
 import { supabase } from "@/integrations/supabase/client";
 import { clearAllPersistedCache } from "@/utils/queryPersistence";
+import { VisitorBanner, VisitorTour } from "@/components/visitor";
 
 // Eager load critical pages
 import Index from "./pages/Index";
@@ -123,103 +125,107 @@ const App = () => (
         <Toaster />
         <Sonner />
         <MusicPlayerProvider>
-          <BrowserRouter>
-            <ScrollToTop />
-            <CookieConsent />
-            <GlobalMusicPlayer />
-            <EricChatbotWrapper />
-            <Suspense fallback={<PageLoader />}>
-              <Routes>
-              <Route path="/" element={<Index />} />
-              <Route path="/auth" element={<Auth />} />
-              <Route path="/reset-password" element={<ResetPassword />} />
-              <Route path="/customize-ai" element={<CustomizeAI />} />
-              <Route path="/onboarding" element={<Onboarding />} />
-              <Route path="/dashboard" element={<Layout><Dashboard /></Layout>} />
-              <Route path="/matieres" element={<Layout><Matieres /></Layout>} />
-              <Route path="/community" element={<Layout><Community /></Layout>} />
-              <Route path="/feed" element={<Layout><Feed /></Layout>} />
-              <Route path="/user-search" element={<Layout><UserSearch /></Layout>} />
-              <Route path="/profile/:userId" element={<Layout><Profile /></Layout>} />
-              <Route path="/follow-requests" element={<Layout><FollowRequests /></Layout>} />
-              <Route path="/notifications" element={<Layout><Notifications /></Layout>} />
-              {/* Legacy route redirects - keep old bookmarks working */}
-              <Route path="/math-course" element={<LegacyRedirect to="/course/mathematiques" />} />
-              <Route path="/math-lesson/:topicId" element={<LegacyRedirect to="/course/mathematiques/:topicId" preserveParams />} />
-              <Route path="/math-af8-course" element={<LegacyRedirect to="/course/matematik-8af" />} />
-              <Route path="/math-af8-lesson/:topicId" element={<LegacyRedirect to="/course/matematik-8af/:topicId" preserveParams />} />
-              <Route path="/mathematiques-af9" element={<LegacyRedirect to="/course/mathematiques-af9" />} />
-              <Route path="/mathematiques-af9/:lessonSlug" element={<LegacyRedirect to="/course/mathematiques-af9/:lessonSlug" preserveParams />} />
-              <Route path="/sciences-experimentales-af9" element={<LegacyRedirect to="/course/sciences-experimentales" />} />
-              <Route path="/sciences-experimentales-af9/:lessonSlug" element={<LegacyRedirect to="/course/sciences-experimentales/:lessonSlug" preserveParams />} />
-              <Route path="/sciences-experimentales-7af" element={<LegacyRedirect to="/course/sciences-experimentales-7af" />} />
-              <Route path="/sciences-experimentales-7af/:lessonSlug" element={<LegacyRedirect to="/course/sciences-experimentales-7af/:lessonSlug" preserveParams />} />
-              <Route path="/anglais-af9" element={<LegacyRedirect to="/course/anglais-af9" />} />
-              <Route path="/anglais-af9/:lessonSlug" element={<LegacyRedirect to="/course/anglais-af9/:lessonSlug" preserveParams />} />
-              <Route path="/sciences-course" element={<LegacyRedirect to="/course/sciences-experimentales-7af" />} />
-              <Route path="/sciences-lesson/:topicId" element={<LegacyRedirect to="/course/sciences-experimentales-7af/:topicId" preserveParams />} />
-              <Route path="/sciences-af8-course" element={<LegacyRedirect to="/course/sciences-experimentales-8af" />} />
-              <Route path="/sciences-af8-lesson/:topicId" element={<LegacyRedirect to="/course/sciences-experimentales-8af/:topicId" preserveParams />} />
-              <Route path="/anglais-course" element={<LegacyRedirect to="/course/anglais" />} />
-              <Route path="/anglais-lesson/:topicId" element={<LegacyRedirect to="/course/anglais/:topicId" preserveParams />} />
-              <Route path="/anglais-af8-course" element={<LegacyRedirect to="/course/anglais-8af" />} />
-              <Route path="/anglais-af8-lesson/:topicId" element={<LegacyRedirect to="/course/anglais-8af/:topicId" preserveParams />} />
-              <Route path="/espagnol-course" element={<LegacyRedirect to="/course/espagnol" />} />
-              <Route path="/espagnol-lesson/:topicId" element={<LegacyRedirect to="/course/espagnol/:topicId" preserveParams />} />
-              <Route path="/espagnol-af8-course" element={<LegacyRedirect to="/course/espagnol-8af" />} />
-              <Route path="/espagnol-af8-lesson/:topicId" element={<LegacyRedirect to="/course/espagnol-8af/:topicId" preserveParams />} />
-              <Route path="/espagnol-af9" element={<LegacyRedirect to="/course/espagnol-af9" />} />
-              <Route path="/espagnol-af9/:lessonSlug" element={<LegacyRedirect to="/course/espagnol-af9/:lessonSlug" preserveParams />} />
-              <Route path="/francais-course" element={<LegacyRedirect to="/course/francais" />} />
-              <Route path="/francais-lesson/:topicId" element={<LegacyRedirect to="/course/francais/:topicId" preserveParams />} />
-              <Route path="/francais-af9" element={<LegacyRedirect to="/course/français-9af" />} />
-              <Route path="/francais-af9/:lessonSlug" element={<LegacyRedirect to="/course/français-9af/:lessonSlug" preserveParams />} />
-              <Route path="/sciences-sociales-course" element={<LegacyRedirect to="/course/sciences-sociales" />} />
-              <Route path="/sciences-sociales-lesson/:topicId" element={<LegacyRedirect to="/course/sciences-sociales/:topicId" preserveParams />} />
-              <Route path="/sciences-sociales-af8-course" element={<LegacyRedirect to="/course/sciences-sociales-8af" />} />
-              <Route path="/sciences-sociales-af8-lesson/:topicId" element={<LegacyRedirect to="/course/sciences-sociales-8af/:topicId" preserveParams />} />
-              <Route path="/histoire-geographie-7af-course" element={<LegacyRedirect to="/course/histoire-geographie-7af" />} />
-              <Route path="/creole-course" element={<LegacyRedirect to="/course/creole" />} />
-              <Route path="/creole-lesson/:topicId" element={<LegacyRedirect to="/course/creole/:topicId" preserveParams />} />
-              <Route path="/creole-af8-course" element={<LegacyRedirect to="/course/creole-8af" />} />
-              <Route path="/creole-af8-lesson/:topicId" element={<LegacyRedirect to="/course/creole-8af/:topicId" preserveParams />} />
-              <Route path="/arts-course" element={<LegacyRedirect to="/course/arts" />} />
-              <Route path="/arts-lesson/:topicId" element={<LegacyRedirect to="/course/arts/:topicId" preserveParams />} />
-              <Route path="/education-physique-course" element={<LegacyRedirect to="/course/education-physique" />} />
-              <Route path="/education-physique-lesson/:topicId" element={<LegacyRedirect to="/course/education-physique/:topicId" preserveParams />} />
-              <Route path="/affiliations" element={<Layout><Affiliations /></Layout>} />
-              <Route path="/leaderboard" element={<Layout><Leaderboard /></Layout>} />
-              <Route path="/settings" element={<Layout><Settings /></Layout>} />
-              <Route path="/exam-preparation/:examId" element={<ExamPreparation />} />
-            <Route path="/examens-officiels" element={<ExamsHub />} />
-            <Route path="/resources" element={<Layout><Resources /></Layout>} />
-              <Route path="/privacy-policy" element={<PrivacyPolicy />} />
-              <Route path="/cookie-settings" element={<CookieSettings />} />
-              <Route path="/email-test" element={<EmailTest />} />
-              <Route path="/upload-email-assets" element={<UploadEmailAssets />} />
-          <Route path="/dev/push" element={<DevPush />} />
-              <Route path="/notification-settings" element={<NotificationSettings />} />
-          <Route path="/passion-discovery" element={<PassionDiscovery />} />
-          <Route path="/chess-game" element={<Layout><ChessGame /></Layout>} />
-          <Route path="/content-editor" element={<Layout><ContentEditor /></Layout>} />
-          <Route path="/ai-analytics" element={<Layout><AIGenerationAnalytics /></Layout>} />
-          <Route path="/data-migration" element={<Layout><DataMigration /></Layout>} />
-          <Route path="/migrate-pdfs" element={<MigratePDFs />} />
-          <Route path="/payment-demo" element={<PaymentDemo />} />
-          <Route path="/natcash-demo" element={<NatCashDemo />} />
-          <Route path="/admin/payments" element={<Layout><AdminPayments /></Layout>} />
-          <Route path="/admin/payments-demo" element={<AdminPaymentsDemo />} />
-          <Route path="/baccalaureat" element={<BaccExamsHub />} />
-          <Route path="/baccalaureat/:series" element={<BaccExamsHub />} />
-          <Route path="/baccalaureat/:series/:subject" element={<BaccExamsHub />} />
-              {/* Dynamic routes for content editor generated subjects - MUST be before catch-all */}
-              <Route path="/course/:slug" element={<DynamicCoursePage />} />
-              <Route path="/course/:slug/:lessonSlug" element={<DynamicLessonPage />} />
-              {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-              <Route path="*" element={<NotFound />} />
-              </Routes>
-            </Suspense>
-          </BrowserRouter>
+          <VisitorProvider>
+            <BrowserRouter>
+              <ScrollToTop />
+              <CookieConsent />
+              <GlobalMusicPlayer />
+              <VisitorBanner />
+              <VisitorTour />
+              <EricChatbotWrapper />
+              <Suspense fallback={<PageLoader />}>
+                <Routes>
+                <Route path="/" element={<Index />} />
+                <Route path="/auth" element={<Auth />} />
+                <Route path="/reset-password" element={<ResetPassword />} />
+                <Route path="/customize-ai" element={<CustomizeAI />} />
+                <Route path="/onboarding" element={<Onboarding />} />
+                <Route path="/dashboard" element={<Layout><Dashboard /></Layout>} />
+                <Route path="/matieres" element={<Layout><Matieres /></Layout>} />
+                <Route path="/community" element={<Layout><Community /></Layout>} />
+                <Route path="/feed" element={<Layout><Feed /></Layout>} />
+                <Route path="/user-search" element={<Layout><UserSearch /></Layout>} />
+                <Route path="/profile/:userId" element={<Layout><Profile /></Layout>} />
+                <Route path="/follow-requests" element={<Layout><FollowRequests /></Layout>} />
+                <Route path="/notifications" element={<Layout><Notifications /></Layout>} />
+                {/* Legacy route redirects - keep old bookmarks working */}
+                <Route path="/math-course" element={<LegacyRedirect to="/course/mathematiques" />} />
+                <Route path="/math-lesson/:topicId" element={<LegacyRedirect to="/course/mathematiques/:topicId" preserveParams />} />
+                <Route path="/math-af8-course" element={<LegacyRedirect to="/course/matematik-8af" />} />
+                <Route path="/math-af8-lesson/:topicId" element={<LegacyRedirect to="/course/matematik-8af/:topicId" preserveParams />} />
+                <Route path="/mathematiques-af9" element={<LegacyRedirect to="/course/mathematiques-af9" />} />
+                <Route path="/mathematiques-af9/:lessonSlug" element={<LegacyRedirect to="/course/mathematiques-af9/:lessonSlug" preserveParams />} />
+                <Route path="/sciences-experimentales-af9" element={<LegacyRedirect to="/course/sciences-experimentales" />} />
+                <Route path="/sciences-experimentales-af9/:lessonSlug" element={<LegacyRedirect to="/course/sciences-experimentales/:lessonSlug" preserveParams />} />
+                <Route path="/sciences-experimentales-7af" element={<LegacyRedirect to="/course/sciences-experimentales-7af" />} />
+                <Route path="/sciences-experimentales-7af/:lessonSlug" element={<LegacyRedirect to="/course/sciences-experimentales-7af/:lessonSlug" preserveParams />} />
+                <Route path="/anglais-af9" element={<LegacyRedirect to="/course/anglais-af9" />} />
+                <Route path="/anglais-af9/:lessonSlug" element={<LegacyRedirect to="/course/anglais-af9/:lessonSlug" preserveParams />} />
+                <Route path="/sciences-course" element={<LegacyRedirect to="/course/sciences-experimentales-7af" />} />
+                <Route path="/sciences-lesson/:topicId" element={<LegacyRedirect to="/course/sciences-experimentales-7af/:topicId" preserveParams />} />
+                <Route path="/sciences-af8-course" element={<LegacyRedirect to="/course/sciences-experimentales-8af" />} />
+                <Route path="/sciences-af8-lesson/:topicId" element={<LegacyRedirect to="/course/sciences-experimentales-8af/:topicId" preserveParams />} />
+                <Route path="/anglais-course" element={<LegacyRedirect to="/course/anglais" />} />
+                <Route path="/anglais-lesson/:topicId" element={<LegacyRedirect to="/course/anglais/:topicId" preserveParams />} />
+                <Route path="/anglais-af8-course" element={<LegacyRedirect to="/course/anglais-8af" />} />
+                <Route path="/anglais-af8-lesson/:topicId" element={<LegacyRedirect to="/course/anglais-8af/:topicId" preserveParams />} />
+                <Route path="/espagnol-course" element={<LegacyRedirect to="/course/espagnol" />} />
+                <Route path="/espagnol-lesson/:topicId" element={<LegacyRedirect to="/course/espagnol/:topicId" preserveParams />} />
+                <Route path="/espagnol-af8-course" element={<LegacyRedirect to="/course/espagnol-8af" />} />
+                <Route path="/espagnol-af8-lesson/:topicId" element={<LegacyRedirect to="/course/espagnol-8af/:topicId" preserveParams />} />
+                <Route path="/espagnol-af9" element={<LegacyRedirect to="/course/espagnol-af9" />} />
+                <Route path="/espagnol-af9/:lessonSlug" element={<LegacyRedirect to="/course/espagnol-af9/:lessonSlug" preserveParams />} />
+                <Route path="/francais-course" element={<LegacyRedirect to="/course/francais" />} />
+                <Route path="/francais-lesson/:topicId" element={<LegacyRedirect to="/course/francais/:topicId" preserveParams />} />
+                <Route path="/francais-af9" element={<LegacyRedirect to="/course/français-9af" />} />
+                <Route path="/francais-af9/:lessonSlug" element={<LegacyRedirect to="/course/français-9af/:lessonSlug" preserveParams />} />
+                <Route path="/sciences-sociales-course" element={<LegacyRedirect to="/course/sciences-sociales" />} />
+                <Route path="/sciences-sociales-lesson/:topicId" element={<LegacyRedirect to="/course/sciences-sociales/:topicId" preserveParams />} />
+                <Route path="/sciences-sociales-af8-course" element={<LegacyRedirect to="/course/sciences-sociales-8af" />} />
+                <Route path="/sciences-sociales-af8-lesson/:topicId" element={<LegacyRedirect to="/course/sciences-sociales-8af/:topicId" preserveParams />} />
+                <Route path="/histoire-geographie-7af-course" element={<LegacyRedirect to="/course/histoire-geographie-7af" />} />
+                <Route path="/creole-course" element={<LegacyRedirect to="/course/creole" />} />
+                <Route path="/creole-lesson/:topicId" element={<LegacyRedirect to="/course/creole/:topicId" preserveParams />} />
+                <Route path="/creole-af8-course" element={<LegacyRedirect to="/course/creole-8af" />} />
+                <Route path="/creole-af8-lesson/:topicId" element={<LegacyRedirect to="/course/creole-8af/:topicId" preserveParams />} />
+                <Route path="/arts-course" element={<LegacyRedirect to="/course/arts" />} />
+                <Route path="/arts-lesson/:topicId" element={<LegacyRedirect to="/course/arts/:topicId" preserveParams />} />
+                <Route path="/education-physique-course" element={<LegacyRedirect to="/course/education-physique" />} />
+                <Route path="/education-physique-lesson/:topicId" element={<LegacyRedirect to="/course/education-physique/:topicId" preserveParams />} />
+                <Route path="/affiliations" element={<Layout><Affiliations /></Layout>} />
+                <Route path="/leaderboard" element={<Layout><Leaderboard /></Layout>} />
+                <Route path="/settings" element={<Layout><Settings /></Layout>} />
+                <Route path="/exam-preparation/:examId" element={<ExamPreparation />} />
+              <Route path="/examens-officiels" element={<ExamsHub />} />
+              <Route path="/resources" element={<Layout><Resources /></Layout>} />
+                <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+                <Route path="/cookie-settings" element={<CookieSettings />} />
+                <Route path="/email-test" element={<EmailTest />} />
+                <Route path="/upload-email-assets" element={<UploadEmailAssets />} />
+            <Route path="/dev/push" element={<DevPush />} />
+                <Route path="/notification-settings" element={<NotificationSettings />} />
+            <Route path="/passion-discovery" element={<PassionDiscovery />} />
+            <Route path="/chess-game" element={<Layout><ChessGame /></Layout>} />
+            <Route path="/content-editor" element={<Layout><ContentEditor /></Layout>} />
+            <Route path="/ai-analytics" element={<Layout><AIGenerationAnalytics /></Layout>} />
+            <Route path="/data-migration" element={<Layout><DataMigration /></Layout>} />
+            <Route path="/migrate-pdfs" element={<MigratePDFs />} />
+            <Route path="/payment-demo" element={<PaymentDemo />} />
+            <Route path="/natcash-demo" element={<NatCashDemo />} />
+            <Route path="/admin/payments" element={<Layout><AdminPayments /></Layout>} />
+            <Route path="/admin/payments-demo" element={<AdminPaymentsDemo />} />
+            <Route path="/baccalaureat" element={<BaccExamsHub />} />
+            <Route path="/baccalaureat/:series" element={<BaccExamsHub />} />
+            <Route path="/baccalaureat/:series/:subject" element={<BaccExamsHub />} />
+                {/* Dynamic routes for content editor generated subjects - MUST be before catch-all */}
+                <Route path="/course/:slug" element={<DynamicCoursePage />} />
+                <Route path="/course/:slug/:lessonSlug" element={<DynamicLessonPage />} />
+                {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+                <Route path="*" element={<NotFound />} />
+                </Routes>
+              </Suspense>
+            </BrowserRouter>
+          </VisitorProvider>
         </MusicPlayerProvider>
       </TooltipProvider>
     </ThemeProvider>
