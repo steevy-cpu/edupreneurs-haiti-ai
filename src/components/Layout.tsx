@@ -1,4 +1,4 @@
-import { useState, useEffect, ReactNode } from "react";
+import { useState, useEffect, ReactNode, useRef } from "react";
 import { useNavigate, useLocation, Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -57,13 +57,16 @@ export const Layout = ({ children }: LayoutProps) => {
   const [userNickname, setUserNickname] = useState<string>(isVisitor ? "Visiteur" : "Étudiant");
   const presenceChannelRef = useState<{ current: any | null }>({ current: null })[0];
   const { onTouchStart, onTouchMove, onTouchEnd } = useMobileSwipeNavigation();
+  const wasVisitorRef = useRef<boolean>(isVisitor);
 
-  // Stop music when exiting visitor mode
+  // Stop music ONLY when transitioning FROM visitor mode TO non-visitor mode
   useEffect(() => {
-    if (!isVisitor) {
+    if (wasVisitorRef.current && !isVisitor) {
       stopMusic();
+      console.log('🛑 Exited visitor mode - stopping music');
     }
-  }, [isVisitor]);
+    wasVisitorRef.current = isVisitor;
+  }, [isVisitor, stopMusic]);
 
   useEffect(() => {
     // Skip data fetching for visitors
