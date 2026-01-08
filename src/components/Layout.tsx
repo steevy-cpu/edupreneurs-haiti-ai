@@ -1,4 +1,4 @@
-import { useState, useEffect, ReactNode, useRef } from "react";
+import { useState, useEffect, ReactNode } from "react";
 import { useNavigate, useLocation, Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -38,7 +38,6 @@ import {
 } from "@/components/ui/alert-dialog";
 import { useVisitor } from "@/contexts/VisitorContext";
 import { JudeWelcomePopup } from "@/components/visitor";
-import { useMusicPlayer } from "@/contexts/MusicPlayerContext";
 
 interface LayoutProps {
   children: ReactNode;
@@ -48,7 +47,6 @@ export const Layout = ({ children }: LayoutProps) => {
   const navigate = useNavigate();
   const location = useLocation();
   const { isVisitor, showWelcomePopup, completeWelcomePopup } = useVisitor();
-  const { stopMusic } = useMusicPlayer();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [totalUnreadMessages, setTotalUnreadMessages] = useState(0);
   const [pendingFollowRequests, setPendingFollowRequests] = useState(0);
@@ -57,16 +55,7 @@ export const Layout = ({ children }: LayoutProps) => {
   const [userNickname, setUserNickname] = useState<string>(isVisitor ? "Visiteur" : "Étudiant");
   const presenceChannelRef = useState<{ current: any | null }>({ current: null })[0];
   const { onTouchStart, onTouchMove, onTouchEnd } = useMobileSwipeNavigation();
-  const wasVisitorRef = useRef<boolean>(isVisitor);
-
-  // Stop music ONLY when transitioning FROM visitor mode TO non-visitor mode
-  useEffect(() => {
-    if (wasVisitorRef.current && !isVisitor) {
-      stopMusic();
-      console.log('🛑 Exited visitor mode - stopping music');
-    }
-    wasVisitorRef.current = isVisitor;
-  }, [isVisitor, stopMusic]);
+  // Note: Music stop on visitor exit is handled by VisitorMusicSync in App.tsx
 
   useEffect(() => {
     // Skip data fetching for visitors

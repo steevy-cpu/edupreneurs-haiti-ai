@@ -238,14 +238,36 @@ export const MusicPlayerProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const stopMusic = () => {
-    if (playerRef.current && typeof playerRef.current.pauseVideo === 'function') {
-      try {
-        playerRef.current.pauseVideo();
-        setIsPlaying(false);
-        console.log('🛑 Music stopped');
-      } catch (error) {
-        console.error('Error stopping music:', error);
+    console.log('🛑 stopMusic called, playerRef:', !!playerRef.current);
+    
+    try {
+      if (playerRef.current) {
+        // Try pause first
+        if (typeof playerRef.current.pauseVideo === 'function') {
+          playerRef.current.pauseVideo();
+        }
+        
+        // Also try stopVideo for stronger guarantee
+        if (typeof playerRef.current.stopVideo === 'function') {
+          playerRef.current.stopVideo();
+        }
+        
+        // Destroy the player entirely to guarantee audio stops
+        if (typeof playerRef.current.destroy === 'function') {
+          playerRef.current.destroy();
+          playerRef.current = null;
+          setPlayerReady(false);
+        }
       }
+      
+      setIsPlaying(false);
+      console.log('🛑 Music stopped and player destroyed');
+    } catch (error) {
+      console.error('Error stopping music:', error);
+      // Force cleanup even on error
+      playerRef.current = null;
+      setPlayerReady(false);
+      setIsPlaying(false);
     }
   };
 
