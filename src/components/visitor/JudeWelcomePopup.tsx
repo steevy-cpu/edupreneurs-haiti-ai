@@ -10,9 +10,12 @@ interface JudeWelcomePopupProps {
 }
 
 const JudeWelcomePopup = ({ isOpen, onComplete }: JudeWelcomePopupProps) => {
-  const [phase, setPhase] = useState<'greeting' | 'music' | 'playing' | 'done'>('greeting');
+  const [phase, setPhase] = useState<'greeting' | 'intro' | 'walkthrough' | 'searching' | 'playing' | 'done'>('greeting');
   const [showGreeting, setShowGreeting] = useState(false);
-  const [showMusicMessage, setShowMusicMessage] = useState(false);
+  const [showIntro, setShowIntro] = useState(false);
+  const [showWalkthrough, setShowWalkthrough] = useState(false);
+  const [showSearching, setShowSearching] = useState(false);
+  const [searchProgress, setSearchProgress] = useState(0);
   const { tracks, playTrack } = useMusicPlayer();
 
   const startMusic = useCallback(() => {
@@ -36,7 +39,10 @@ const JudeWelcomePopup = ({ isOpen, onComplete }: JudeWelcomePopupProps) => {
       // Reset state when closed
       setPhase('greeting');
       setShowGreeting(false);
-      setShowMusicMessage(false);
+      setShowIntro(false);
+      setShowWalkthrough(false);
+      setShowSearching(false);
+      setSearchProgress(0);
       return;
     }
 
@@ -48,24 +54,62 @@ const JudeWelcomePopup = ({ isOpen, onComplete }: JudeWelcomePopupProps) => {
     return () => clearTimeout(greetingTimer);
   }, [isOpen]);
 
+  // Progress bar animation during searching phase
+  useEffect(() => {
+    if (phase !== 'searching') return;
+    
+    const interval = setInterval(() => {
+      setSearchProgress(prev => {
+        if (prev >= 100) {
+          clearInterval(interval);
+          return 100;
+        }
+        return prev + 2; // Increment by 2 every 40ms = ~2 seconds total
+      });
+    }, 40);
+    
+    return () => clearInterval(interval);
+  }, [phase]);
+
+  // When progress hits 100%, transition to playing
+  useEffect(() => {
+    if (searchProgress === 100 && phase === 'searching') {
+      setTimeout(() => {
+        setPhase('playing');
+        startMusic();
+        
+        // After music starts, wait and then complete
+        setTimeout(() => {
+          setPhase('done');
+          setTimeout(onComplete, 500);
+        }, 1500);
+      }, 300);
+    }
+  }, [searchProgress, phase, startMusic, onComplete]);
+
   const handleGreetingComplete = () => {
     setTimeout(() => {
-      setPhase('music');
-      setShowMusicMessage(true);
-    }, 800);
+      setPhase('intro');
+      setShowIntro(true);
+    }, 600);
   };
 
-  const handleMusicMessageComplete = () => {
+  const handleIntroComplete = () => {
     setTimeout(() => {
-      setPhase('playing');
-      startMusic();
-      
-      // After music starts, wait and then complete
-      setTimeout(() => {
-        setPhase('done');
-        setTimeout(onComplete, 500);
-      }, 1500);
+      setPhase('walkthrough');
+      setShowWalkthrough(true);
     }, 500);
+  };
+
+  const handleWalkthroughComplete = () => {
+    setTimeout(() => {
+      setPhase('searching');
+      setShowSearching(true);
+    }, 500);
+  };
+
+  const handleSearchingComplete = () => {
+    // Progress bar will handle the transition
   };
 
   return (
@@ -149,25 +193,84 @@ const JudeWelcomePopup = ({ isOpen, onComplete }: JudeWelcomePopupProps) => {
                   <p className="text-xl sm:text-2xl font-bold text-foreground">
                     <SimpleTypewriter
                       text="Salut visiteur! 👋"
-                      speed={70}
+                      speed={100}
                       onComplete={handleGreetingComplete}
                     />
                   </p>
                 )}
                 
-                {/* Music message */}
-                {showMusicMessage && (
+                {/* Introduction */}
+                {showIntro && (
+                  <motion.p
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    className="text-base sm:text-lg text-foreground font-medium"
+                  >
+                    <SimpleTypewriter
+                      text="Moi c'est Jude, ton assistant virtuel!"
+                      speed={90}
+                      onComplete={handleIntroComplete}
+                    />
+                  </motion.p>
+                )}
+                
+                {/* Walkthrough explanation */}
+                {showWalkthrough && (
                   <motion.p
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     className="text-sm sm:text-base text-muted-foreground"
                   >
                     <SimpleTypewriter
-                      text="Avant de commencer, ajoutons un peu de musique... 🎶"
-                      speed={50}
-                      onComplete={handleMusicMessageComplete}
+                      text="Je vais te faire découvrir la plateforme..."
+                      speed={80}
+                      onComplete={handleWalkthroughComplete}
                     />
                   </motion.p>
+                )}
+                
+                {/* Searching for music message */}
+                {showSearching && (
+                  <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                  >
+                    <p className="text-sm sm:text-base text-muted-foreground">
+                      <SimpleTypewriter
+                        text="Mais d'abord, laisse-moi trouver une bonne musique 🎵"
+                        speed={70}
+                        onComplete={handleSearchingComplete}
+                      />
+                    </p>
+                    
+                    {/* Progress bar - shows after the searching text is typed */}
+                    {searchProgress > 0 && (
+                      <motion.div 
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        className="mt-4"
+                      >
+                        <p className="text-xs text-muted-foreground mb-2">
+                          Recherche en cours...
+                        </p>
+                        
+                        {/* Progress bar container */}
+                        <div className="w-full h-2 bg-muted rounded-full overflow-hidden">
+                          <motion.div
+                            className="h-full bg-primary rounded-full"
+                            initial={{ width: "0%" }}
+                            animate={{ width: `${searchProgress}%` }}
+                            transition={{ duration: 0.1 }}
+                          />
+                        </div>
+                        
+                        {/* Percentage */}
+                        <p className="text-xs text-muted-foreground mt-1 text-right">
+                          {searchProgress}%
+                        </p>
+                      </motion.div>
+                    )}
+                  </motion.div>
                 )}
                 
                 {/* Music playing indicator */}
@@ -182,7 +285,7 @@ const JudeWelcomePopup = ({ isOpen, onComplete }: JudeWelcomePopupProps) => {
                       <span className="w-1 h-4 bg-primary rounded-full animate-[music-bar_0.7s_ease-in-out_infinite_0.1s]" />
                       <span className="w-1 h-4 bg-primary rounded-full animate-[music-bar_0.6s_ease-in-out_infinite_0.2s]" />
                     </div>
-                    <span className="text-sm font-medium">Musique activée!</span>
+                    <span className="text-sm font-medium">Musique trouvée!</span>
                   </motion.div>
                 )}
               </div>
