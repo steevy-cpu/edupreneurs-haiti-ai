@@ -778,7 +778,8 @@ export default function Auth() {
                     type="button"
                     variant="outline"
                     className="w-full gap-2 py-5 border-2 border-dashed border-primary/40 text-primary font-medium
-                               hover:border-primary hover:bg-primary hover:text-primary-foreground hover:shadow-md
+                               shadow-lg shadow-primary/25 animate-bounce-subtle
+                               hover:border-primary hover:bg-primary hover:text-primary-foreground hover:shadow-xl
                                transition-all duration-300 group"
                     onClick={() => setShowVisitorSelector(true)}
                   >
