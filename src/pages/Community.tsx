@@ -34,7 +34,8 @@ import {
   TypingIndicator,
   ConversationSkeleton,
   MessageBubble,
-  SystemMessage 
+  SystemMessage,
+  VisitorCommunityOverlay
 } from "@/components/community";
 import { 
   Profile, 
@@ -177,7 +178,49 @@ const Community = () => {
 
   useEffect(() => {
     checkUser();
-  }, []);
+  }, [isVisitor]);
+
+  // Populate demo conversations for visitors
+  useEffect(() => {
+    if (isVisitor) {
+      const demoConversations: Conversation[] = [
+        ...visitorConversationPreview.groups.map((g, i) => ({
+          id: `demo-group-${i}`,
+          created_at: new Date().toISOString(),
+          is_group: true,
+          group: {
+            id: `demo-group-${i}`,
+            name: g.name,
+            member_count: g.members,
+            avatar_url: null,
+            description: null,
+            created_by: 'demo',
+          },
+          lastMessage: g.lastMessage,
+          lastMessageTime: new Date(Date.now() - (i + 1) * 3600000).toISOString(),
+          unreadCount: i === 0 ? 3 : 0,
+        })),
+        ...visitorConversationPreview.directMessages.map((dm, i) => ({
+          id: `demo-dm-${i}`,
+          created_at: new Date().toISOString(),
+          is_group: false,
+          otherUser: {
+            id: `demo-user-${i}`,
+            user_id: `demo-user-${i}`,
+            nickname: dm.name,
+            full_name: dm.name,
+            avatar_url: `avatar-${i + 1}`,
+            verified: i === 0,
+          },
+          lastMessage: dm.lastMessage,
+          lastMessageTime: new Date(Date.now() - (i + 4) * 3600000).toISOString(),
+          unreadCount: dm.unread,
+        })),
+      ];
+      setConversations(demoConversations);
+      setIsLoadingConversations(false);
+    }
+  }, [isVisitor]);
 
   useEffect(() => {
     if (user) {
@@ -419,6 +462,12 @@ const Community = () => {
   };
 
   const checkUser = async () => {
+    // Allow visitors to stay on page and see demo content
+    if (isVisitor) {
+      setIsLoadingConversations(false);
+      return;
+    }
+    
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) {
       navigate("/auth");
@@ -1957,14 +2006,17 @@ const Community = () => {
 
   return (
     <div 
-      className="h-[100dvh] bg-background flex overflow-hidden"
+      className="relative h-[100dvh] bg-background flex overflow-hidden"
       style={{ '--time-accent': accentColor } as React.CSSProperties}
     >
-      {/* Notification Permission Dialog */}
-      {user && <NotificationPermissionBanner userId={user.id} />}
+      {/* Visitor Overlay */}
+      {isVisitor && <VisitorCommunityOverlay />}
+      
+      {/* Notification Permission Dialog - only for logged in users */}
+      {user && !isVisitor && <NotificationPermissionBanner userId={user.id} />}
       
       {/* Conversations List - Fixed sidebar on desktop/tablet */}
-      <div className={`${selectedConversation ? "hidden md:flex" : "flex"} flex-col w-full md:w-80 lg:w-96 border-r border-border/50 md:fixed md:left-0 md:top-0 md:h-[100dvh] md:z-[100] bg-background pb-20 md:pb-0`}>
+      <div className={`${selectedConversation ? "hidden md:flex" : "flex"} flex-col w-full md:w-80 lg:w-96 border-r border-border/50 md:fixed md:left-0 md:top-0 md:h-[100dvh] md:z-[40] bg-background pb-20 md:pb-0`}>
         <div className="sticky top-0 z-50 border-b border-border/50 bg-background/95 backdrop-blur-md p-3 sm:p-4 safe-area-top">
           <div className="flex items-center gap-2 sm:gap-3">
             <Button
@@ -1980,9 +2032,10 @@ const Community = () => {
               <Button
                 variant="outline"
                 size="sm"
-                onClick={() => setShowCreateGroup(true)}
-                className="gap-1.5 bg-gradient-to-r from-primary/10 to-success/10 border-primary/30 hover:border-primary/50 hover:scale-105 transition-all duration-200 h-9 px-2.5 sm:px-3"
-                title="Créer un groupe"
+                onClick={() => !isVisitor && setShowCreateGroup(true)}
+                disabled={isVisitor}
+                className={`gap-1.5 bg-gradient-to-r from-primary/10 to-success/10 border-primary/30 hover:border-primary/50 hover:scale-105 transition-all duration-200 h-9 px-2.5 sm:px-3 ${isVisitor ? 'opacity-50 cursor-not-allowed' : ''}`}
+                title={isVisitor ? "Créez un compte pour créer des groupes" : "Créer un groupe"}
               >
                 <Users size={16} className="shrink-0" />
                 <span className="hidden sm:inline text-xs font-medium">Nouveau</span>
@@ -1991,8 +2044,10 @@ const Community = () => {
               <Button
                 size="icon"
                 variant="ghost"
-                onClick={() => navigate("/user-search")}
-                className="shrink-0 h-9 w-9"
+                onClick={() => !isVisitor && navigate("/user-search")}
+                disabled={isVisitor}
+                className={`shrink-0 h-9 w-9 ${isVisitor ? 'opacity-50 cursor-not-allowed' : ''}`}
+                title={isVisitor ? "Créez un compte pour rechercher des utilisateurs" : undefined}
               >
                 <Search size={18} className="sm:w-5 sm:h-5" />
               </Button>
@@ -2597,21 +2652,23 @@ const Community = () => {
         )}
       </div>
       
-      {/* Create Group Dialog */}
-      <CreateGroupDialog
-        open={showCreateGroup}
-        onOpenChange={setShowCreateGroup}
-        followers={followers}
-        onGroupCreated={async (conversationId) => {
-          await fetchConversations();
-          setShowCreateGroup(false);
-          // Navigate to the new conversation
-          setSelectedConversation(conversationId);
-          navigate(`/community?conversation=${conversationId}`);
-          // Fetch messages for the new conversation
-          await fetchMessages(conversationId);
-        }}
-      />
+      {/* Create Group Dialog - only for non-visitors */}
+      {!isVisitor && (
+        <CreateGroupDialog
+          open={showCreateGroup}
+          onOpenChange={setShowCreateGroup}
+          followers={followers}
+          onGroupCreated={async (conversationId) => {
+            await fetchConversations();
+            setShowCreateGroup(false);
+            // Navigate to the new conversation
+            setSelectedConversation(conversationId);
+            navigate(`/community?conversation=${conversationId}`);
+            // Fetch messages for the new conversation
+            await fetchMessages(conversationId);
+          }}
+        />
+      )}
       
       {/* Delete Conversation Confirmation Dialog */}
       <AlertDialog open={!!deleteConversationId} onOpenChange={(open) => {
