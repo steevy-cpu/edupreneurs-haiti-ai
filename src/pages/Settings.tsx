@@ -213,10 +213,6 @@ const Settings = () => {
       toast.error("Le niveau académique est requis");
       return;
     }
-    if (!profileForm.phoneNumber.trim()) {
-      toast.error("Le numéro de téléphone est requis");
-      return;
-    }
     
     setSavingProfile(true);
 
@@ -539,14 +535,13 @@ const Settings = () => {
                     <div className="space-y-2">
                       <Label htmlFor="phoneNumber" className="flex items-center gap-2">
                         <Phone size={16} />
-                        Numéro de téléphone *
+                        Numéro de téléphone (optionnel)
                       </Label>
                       <Input
                         id="phoneNumber"
                         value={profileForm.phoneNumber}
                         onChange={(e) => setProfileForm({ ...profileForm, phoneNumber: e.target.value })}
                         placeholder="+509 XXXX XXXX"
-                        required
                         maxLength={20}
                       />
                     </div>
