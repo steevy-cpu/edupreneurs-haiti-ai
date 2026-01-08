@@ -15,6 +15,7 @@ const JudeWelcomePopup = ({ isOpen, onComplete }: JudeWelcomePopupProps) => {
   const [showIntro, setShowIntro] = useState(false);
   const [showWalkthrough, setShowWalkthrough] = useState(false);
   const [showSearching, setShowSearching] = useState(false);
+  const [searchingTextComplete, setSearchingTextComplete] = useState(false);
   const [searchProgress, setSearchProgress] = useState(0);
   const { tracks, playTrack } = useMusicPlayer();
 
@@ -42,6 +43,7 @@ const JudeWelcomePopup = ({ isOpen, onComplete }: JudeWelcomePopupProps) => {
       setShowIntro(false);
       setShowWalkthrough(false);
       setShowSearching(false);
+      setSearchingTextComplete(false);
       setSearchProgress(0);
       return;
     }
@@ -54,9 +56,9 @@ const JudeWelcomePopup = ({ isOpen, onComplete }: JudeWelcomePopupProps) => {
     return () => clearTimeout(greetingTimer);
   }, [isOpen]);
 
-  // Progress bar animation during searching phase
+  // Progress bar animation - only starts AFTER searching text is complete
   useEffect(() => {
-    if (phase !== 'searching') return;
+    if (!searchingTextComplete) return;
     
     const interval = setInterval(() => {
       setSearchProgress(prev => {
@@ -69,7 +71,7 @@ const JudeWelcomePopup = ({ isOpen, onComplete }: JudeWelcomePopupProps) => {
     }, 40);
     
     return () => clearInterval(interval);
-  }, [phase]);
+  }, [searchingTextComplete]);
 
   // When progress hits 100%, transition to playing
   useEffect(() => {
@@ -109,7 +111,8 @@ const JudeWelcomePopup = ({ isOpen, onComplete }: JudeWelcomePopupProps) => {
   };
 
   const handleSearchingComplete = () => {
-    // Progress bar will handle the transition
+    // Now trigger the progress bar
+    setSearchingTextComplete(true);
   };
 
   return (
