@@ -16,7 +16,7 @@ interface LoginNotificationRequest {
   timestamp: string;
   location?: string;
   device?: string;
-  userId: string;
+  userId?: string; // Optional - not used directly, kept for API compatibility
 }
 
 const getEmailTemplate = (fullName: string, email: string, timestamp: string, resetUrl: string, device?: string, location?: string) => `
