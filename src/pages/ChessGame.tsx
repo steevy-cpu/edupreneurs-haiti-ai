@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { ArrowLeft, Gamepad2, Target } from 'lucide-react';
+import { ArrowLeft, Gamepad2, Target, Lock } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useChessSounds } from '@/hooks/useChessSounds';
 import { useChessStats } from '@/hooks/useChessStats';
@@ -14,9 +14,9 @@ import ChessPlayerStats from '@/components/chess/ChessPlayerStats';
 import ChessEloWidget from '@/components/chess/ChessEloWidget';
 import ChessPuzzleTrainer from '@/components/chess/ChessPuzzleTrainer';
 import ChessPostGameAnalysis from '@/components/chess/ChessPostGameAnalysis';
+import VisitorChessOverlay from '@/components/chess/VisitorChessOverlay';
 import { Helmet } from 'react-helmet';
 import { useVisitor } from '@/contexts/VisitorContext';
-import { LockedOverlay } from '@/components/visitor';
 
 export type DifficultyLevel = 'beginner' | 'intermediate' | 'advanced' | 'expert';
 export type TimeControl = 'bullet' | 'blitz' | 'rapid' | 'classic' | 'untimed';
@@ -127,6 +127,16 @@ const ChessGame: React.FC = () => {
   }, [game, playSound]);
 
   const saveGameToDatabase = async (result: 'win' | 'loss' | 'draw') => {
+    // For visitors, show signup prompt instead of saving
+    if (isVisitor) {
+      toast({
+        title: result === 'win' ? "🎉 Bravo!" : result === 'draw' ? "🤝 Match nul!" : "Bien joué!",
+        description: "Créez un compte gratuit pour sauvegarder vos parties et suivre votre progression!",
+        duration: 5000
+      });
+      return;
+    }
+    
     if (!userId || !gameStartTime) return;
     
     try {
@@ -409,8 +419,18 @@ const ChessGame: React.FC = () => {
                 <span className="hidden sm:inline">Retour</span>
               </Button>
               
-              {/* ELO Widget - shown when stats exist */}
-              {stats && (
+              {/* ELO Widget - shown when stats exist or as demo for visitors */}
+              {isVisitor ? (
+                <div className="relative group cursor-pointer" onClick={() => setShowStats(true)}>
+                  <ChessEloWidget
+                    elo={1000}
+                    streak={0}
+                    recentChange={0}
+                    onClick={() => setShowStats(true)}
+                  />
+                  <VisitorChessOverlay variant="widget" />
+                </div>
+              ) : stats && (
                 <ChessEloWidget
                   elo={stats.elo_rating}
                   streak={stats.current_winning_streak}
@@ -428,15 +448,34 @@ const ChessGame: React.FC = () => {
 
         <div className="container mx-auto px-2 sm:px-4 py-2 sm:py-4 pb-24 md:pb-4">
           {/* Mode Tabs */}
-          <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as 'play' | 'puzzles')} className="mb-4">
+          <Tabs 
+            value={activeTab} 
+            onValueChange={(v) => {
+              if (v === 'puzzles' && isVisitor) {
+                toast({ 
+                  title: "Puzzles réservés aux membres", 
+                  description: "Créez un compte gratuit pour accéder aux puzzles tactiques!" 
+                });
+                return;
+              }
+              setActiveTab(v as 'play' | 'puzzles');
+            }} 
+            className="mb-4"
+          >
             <TabsList className="grid w-full max-w-md mx-auto grid-cols-2">
               <TabsTrigger value="play" className="gap-2">
                 <Gamepad2 className="w-4 h-4" />
                 Jouer
               </TabsTrigger>
-              <TabsTrigger value="puzzles" className="gap-2">
+              <TabsTrigger 
+                value="puzzles" 
+                className="gap-2"
+                disabled={isVisitor}
+                title={isVisitor ? "Créez un compte pour accéder aux puzzles" : undefined}
+              >
                 <Target className="w-4 h-4" />
                 Puzzles
+                {isVisitor && <Lock className="w-3 h-3 ml-1 text-muted-foreground" />}
               </TabsTrigger>
             </TabsList>
           </Tabs>
@@ -503,6 +542,7 @@ const ChessGame: React.FC = () => {
         achievements={achievements}
         recentGames={recentGames}
         isLoading={statsLoading}
+        isVisitor={isVisitor}
       />
     </>
   );

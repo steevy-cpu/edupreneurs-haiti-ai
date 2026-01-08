@@ -6,6 +6,7 @@ import {
   DialogTitle 
 } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { 
   Trophy, 
@@ -18,12 +19,16 @@ import {
   History,
   CheckCircle,
   XCircle,
-  Minus
+  Minus,
+  Lock,
+  UserPlus
 } from 'lucide-react';
 import { getEloLevel } from './ChessEloWidget';
 import type { PlayerStats, GameHistory, Achievement } from '@/hooks/useChessStats';
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
+import { useVisitor } from '@/contexts/VisitorContext';
+import { useNavigate } from 'react-router-dom';
 
 interface ChessPlayerStatsProps {
   isOpen: boolean;
@@ -32,6 +37,7 @@ interface ChessPlayerStatsProps {
   achievements: Achievement[];
   recentGames: GameHistory[];
   isLoading: boolean;
+  isVisitor?: boolean;
 }
 
 const ChessPlayerStats: React.FC<ChessPlayerStatsProps> = ({ 
@@ -40,8 +46,12 @@ const ChessPlayerStats: React.FC<ChessPlayerStatsProps> = ({
   stats, 
   achievements, 
   recentGames, 
-  isLoading 
+  isLoading,
+  isVisitor = false
 }) => {
+  const { exitVisitorMode } = useVisitor();
+  const navigate = useNavigate();
+  
   const winRate = stats && stats.games_played > 0 
     ? Math.round((stats.games_won / stats.games_played) * 100) 
     : 0;
@@ -70,6 +80,12 @@ const ChessPlayerStats: React.FC<ChessPlayerStatsProps> = ({
     }
   };
 
+  const handleSignup = () => {
+    onClose();
+    exitVisitorMode();
+    navigate('/auth');
+  };
+
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-md max-h-[90vh]">
@@ -81,7 +97,21 @@ const ChessPlayerStats: React.FC<ChessPlayerStatsProps> = ({
         </DialogHeader>
 
         <ScrollArea className="max-h-[70vh] pr-2">
-          {isLoading ? (
+          {isVisitor ? (
+            <div className="text-center py-8 space-y-4">
+              <Lock className="w-12 h-12 mx-auto text-muted-foreground" />
+              <div className="space-y-2">
+                <p className="font-medium">Statistiques réservées aux membres</p>
+                <p className="text-sm text-muted-foreground">
+                  Créez un compte gratuit pour sauvegarder vos parties et suivre votre progression!
+                </p>
+              </div>
+              <Button onClick={handleSignup} className="gap-2">
+                <UserPlus className="w-4 h-4" />
+                Créer un compte
+              </Button>
+            </div>
+          ) : isLoading ? (
             <div className="flex items-center justify-center py-8">
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
             </div>
