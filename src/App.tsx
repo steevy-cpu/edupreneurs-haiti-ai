@@ -18,7 +18,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { clearAllPersistedCache } from "@/utils/queryPersistence";
 import { VisitorBanner, VisitorTour } from "@/components/visitor";
 import { VisitorMusicSync } from "@/components/visitor/VisitorMusicSync";
-import { FirstTimeUserWelcome, FirstTimeUserTour } from "@/components/firsttime";
+import { FirstTimeUserWelcome, FirstTimeUserTour, AvatarGenerationStep } from "@/components/firsttime";
 
 // Eager load critical pages
 import Index from "./pages/Index";
@@ -138,6 +138,7 @@ const App = () => (
                 <VisitorBanner />
                 <VisitorTour />
                 <FirstTimeUserWelcome />
+                <AvatarGenerationStep />
                 <FirstTimeUserTour />
                 <EricChatbotWrapper />
               <Suspense fallback={<PageLoader />}>

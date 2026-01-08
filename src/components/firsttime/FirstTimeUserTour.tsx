@@ -73,7 +73,6 @@ const FirstTimeUserTour = () => {
     userGrade 
   } = useFirstTimeUser();
   
-  const [highlightedElement, setHighlightedElement] = useState<HTMLElement | null>(null);
   const [isNavigating, setIsNavigating] = useState(false);
   const [typewriterKey, setTypewriterKey] = useState(0);
 
@@ -96,25 +95,6 @@ const FirstTimeUserTour = () => {
   useEffect(() => {
     setTypewriterKey(prev => prev + 1);
   }, [tourStep]);
-
-  // Highlight target element
-  useEffect(() => {
-    if (!tourActive || tourCompleted || !currentStep?.target || isNavigating) {
-      setHighlightedElement(null);
-      return;
-    }
-
-    // Wait for the page to render
-    const timeout = setTimeout(() => {
-      const element = document.querySelector(currentStep.target!) as HTMLElement;
-      if (element) {
-        setHighlightedElement(element);
-        element.scrollIntoView({ behavior: "smooth", block: "center" });
-      }
-    }, 600);
-
-    return () => clearTimeout(timeout);
-  }, [tourStep, currentStep, tourActive, tourCompleted, isNavigating, location.pathname]);
 
   if (!tourActive || tourCompleted || !currentStep) return null;
 
@@ -140,43 +120,6 @@ const FirstTimeUserTour = () => {
 
   return (
     <>
-      {/* Spotlight overlay */}
-      {highlightedElement && (
-        <div className="fixed inset-0 z-[1003] pointer-events-none">
-          <div
-            className="absolute bg-black/50 transition-all duration-500"
-            style={{
-              top: 0,
-              left: 0,
-              right: 0,
-              bottom: 0,
-              clipPath: `polygon(
-                0% 0%, 
-                0% 100%, 
-                ${highlightedElement.getBoundingClientRect().left - 10}px 100%, 
-                ${highlightedElement.getBoundingClientRect().left - 10}px ${highlightedElement.getBoundingClientRect().top - 10}px, 
-                ${highlightedElement.getBoundingClientRect().right + 10}px ${highlightedElement.getBoundingClientRect().top - 10}px, 
-                ${highlightedElement.getBoundingClientRect().right + 10}px ${highlightedElement.getBoundingClientRect().bottom + 10}px, 
-                ${highlightedElement.getBoundingClientRect().left - 10}px ${highlightedElement.getBoundingClientRect().bottom + 10}px, 
-                ${highlightedElement.getBoundingClientRect().left - 10}px 100%, 
-                100% 100%, 
-                100% 0%
-              )`,
-            }}
-          />
-          {/* Highlight border */}
-          <div
-            className="absolute border-2 border-primary rounded-lg shadow-lg shadow-primary/30 animate-pulse pointer-events-none"
-            style={{
-              top: highlightedElement.getBoundingClientRect().top - 10,
-              left: highlightedElement.getBoundingClientRect().left - 10,
-              width: highlightedElement.getBoundingClientRect().width + 20,
-              height: highlightedElement.getBoundingClientRect().height + 20,
-            }}
-          />
-        </div>
-      )}
-
       {/* Tour dialog - bottom right card */}
       <div className="fixed bottom-4 left-4 right-4 sm:left-auto sm:right-4 sm:bottom-4 sm:w-96 z-[1004] animate-slide-up">
         <div className="bg-card border border-border rounded-2xl shadow-2xl overflow-hidden">
@@ -207,7 +150,7 @@ const FirstTimeUserTour = () => {
                 <SimpleTypewriter
                   key={typewriterKey}
                   text={getDescription()}
-                  speed={30}
+                  speed={50}
                   enableSound
                   soundVolume={0.04}
                 />

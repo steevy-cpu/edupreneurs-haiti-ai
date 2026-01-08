@@ -1793,6 +1793,7 @@ export type Database = {
           gold_earned: number
           id: string
           is_system_account: boolean | null
+          last_avatar_generated_at: string | null
           last_seen: string | null
           nickname: string
           onboarding_tour_completed: boolean | null
@@ -1824,6 +1825,7 @@ export type Database = {
           gold_earned?: number
           id?: string
           is_system_account?: boolean | null
+          last_avatar_generated_at?: string | null
           last_seen?: string | null
           nickname: string
           onboarding_tour_completed?: boolean | null
@@ -1855,6 +1857,7 @@ export type Database = {
           gold_earned?: number
           id?: string
           is_system_account?: boolean | null
+          last_avatar_generated_at?: string | null
           last_seen?: string | null
           nickname?: string
           onboarding_tour_completed?: boolean | null

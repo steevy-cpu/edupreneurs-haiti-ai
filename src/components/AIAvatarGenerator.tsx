@@ -1,10 +1,10 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
-import { Sparkles, Loader2, RefreshCw, Check, User } from "lucide-react";
+import { Sparkles, Loader2, RefreshCw, Check, User, Clock } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
@@ -13,6 +13,7 @@ interface AIAvatarGeneratorProps {
   onOpenChange: (open: boolean) => void;
   onAvatarGenerated: (avatarUrl: string) => void;
   userId: string;
+  isSuperUser?: boolean;
 }
 
 const styles = [
@@ -72,7 +73,7 @@ const accessories = [
   { id: "mask", label: "Masque", emoji: "😷" },
 ];
 
-export const AIAvatarGenerator = ({ open, onOpenChange, onAvatarGenerated, userId }: AIAvatarGeneratorProps) => {
+export const AIAvatarGenerator = ({ open, onOpenChange, onAvatarGenerated, userId, isSuperUser = false }: AIAvatarGeneratorProps) => {
   const [gender, setGender] = useState<"male" | "female">("male");
   const [selectedStyle, setSelectedStyle] = useState("anime");
   const [selectedHairColor, setSelectedHairColor] = useState("black");
@@ -83,6 +84,49 @@ export const AIAvatarGenerator = ({ open, onOpenChange, onAvatarGenerated, userI
   const [generatedImage, setGeneratedImage] = useState<string | null>(null);
   const [isGenerating, setIsGenerating] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [canRegenerate, setCanRegenerate] = useState(true);
+  const [nextRegenerateDate, setNextRegenerateDate] = useState<Date | null>(null);
+
+  // Check if user can regenerate avatar (3-day limit, except for super users)
+  useEffect(() => {
+    const checkRegenerationLimit = async () => {
+      if (isSuperUser) {
+        setCanRegenerate(true);
+        return;
+      }
+
+      try {
+        const { data, error } = await supabase
+          .from('profiles')
+          .select('last_avatar_generated_at')
+          .eq('user_id', userId)
+          .single();
+
+        if (error || !data?.last_avatar_generated_at) {
+          setCanRegenerate(true);
+          return;
+        }
+
+        const lastGenerated = new Date(data.last_avatar_generated_at);
+        const threeDaysLater = new Date(lastGenerated.getTime() + 3 * 24 * 60 * 60 * 1000);
+        const now = new Date();
+
+        if (now < threeDaysLater) {
+          setCanRegenerate(false);
+          setNextRegenerateDate(threeDaysLater);
+        } else {
+          setCanRegenerate(true);
+        }
+      } catch (error) {
+        console.error('Error checking regeneration limit:', error);
+        setCanRegenerate(true);
+      }
+    };
+
+    if (open && userId) {
+      checkRegenerationLimit();
+    }
+  }, [open, userId, isSuperUser]);
 
   const toggleAccessory = (accessoryId: string) => {
     setSelectedAccessories(prev =>
@@ -153,10 +197,13 @@ export const AIAvatarGenerator = ({ open, onOpenChange, onAvatarGenerated, userI
         .from('user-avatars')
         .getPublicUrl(fileName);
 
-      // Update profile
+      // Update profile with avatar URL and timestamp
       const { error: updateError } = await supabase
         .from('profiles')
-        .update({ avatar_url: publicUrl })
+        .update({ 
+          avatar_url: publicUrl,
+          last_avatar_generated_at: new Date().toISOString()
+        })
         .eq('user_id', userId);
 
       if (updateError) throw updateError;
@@ -360,16 +407,29 @@ export const AIAvatarGenerator = ({ open, onOpenChange, onAvatarGenerated, userI
 
         {/* Footer */}
         <div className="p-4 border-t bg-background shrink-0 space-y-2">
+          {!canRegenerate && nextRegenerateDate && (
+            <div className="flex items-center gap-2 text-sm text-muted-foreground bg-muted/50 rounded-lg p-3 mb-2">
+              <Clock className="h-4 w-4 flex-shrink-0" />
+              <span>
+                Tu pourras générer un nouvel avatar le {nextRegenerateDate.toLocaleDateString('fr-FR', { day: 'numeric', month: 'long' })}
+              </span>
+            </div>
+          )}
           {!generatedImage ? (
             <Button
               onClick={handleGenerate}
-              disabled={isGenerating}
+              disabled={isGenerating || !canRegenerate}
               className="w-full h-12"
             >
               {isGenerating ? (
                 <>
                   <Loader2 className="h-4 w-4 mr-2 animate-spin" />
                   Génération en cours...
+                </>
+              ) : !canRegenerate ? (
+                <>
+                  <Clock className="h-4 w-4 mr-2" />
+                  Reviens dans quelques jours
                 </>
               ) : (
                 <>

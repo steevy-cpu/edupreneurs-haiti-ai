@@ -6,6 +6,10 @@ interface FirstTimeUserContextType {
   showWelcome: boolean;
   welcomeComplete: boolean;
   
+  // Avatar generation step
+  showAvatarGeneration: boolean;
+  avatarGenerationComplete: boolean;
+  
   // Tour state
   tourActive: boolean;
   tourStep: number;
@@ -15,12 +19,15 @@ interface FirstTimeUserContextType {
   userNickname: string | null;
   userGrade: string | null;
   userId: string | null;
+  isSuperUser: boolean;
   
   // Loading
   isLoading: boolean;
   
   // Actions
   completeWelcome: () => void;
+  completeAvatarGeneration: () => void;
+  skipAvatarGeneration: () => void;
   startTour: () => void;
   nextTourStep: () => void;
   previousTourStep: () => void;
@@ -46,13 +53,22 @@ interface FirstTimeUserProviderProps {
 export function FirstTimeUserProvider({ children }: FirstTimeUserProviderProps) {
   const [showWelcome, setShowWelcome] = useState(false);
   const [welcomeComplete, setWelcomeComplete] = useState(false);
+  const [showAvatarGeneration, setShowAvatarGeneration] = useState(false);
+  const [avatarGenerationComplete, setAvatarGenerationComplete] = useState(false);
   const [tourActive, setTourActive] = useState(false);
   const [tourStep, setTourStep] = useState(0);
   const [tourCompleted, setTourCompleted] = useState(false);
   const [userNickname, setUserNickname] = useState<string | null>(null);
   const [userGrade, setUserGrade] = useState<string | null>(null);
   const [userId, setUserId] = useState<string | null>(null);
+  const [isSuperUser, setIsSuperUser] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+
+  // Super user IDs
+  const SUPER_USER_IDS = [
+    '410b9fc5-6df8-4032-8469-df4588089055', // Steevy
+    '9e8c41d7-db17-407e-b02c-be1587e04617'  // Djood
+  ];
 
   // Check tour completion status on mount
   useEffect(() => {
@@ -66,7 +82,7 @@ export function FirstTimeUserProvider({ children }: FirstTimeUserProviderProps) 
         }
 
         setUserId(user.id);
-
+        setIsSuperUser(SUPER_USER_IDS.includes(user.id));
         // Fetch profile data including tour completion status
         const { data: profile, error } = await supabase
           .from('profiles')
@@ -110,6 +126,8 @@ export function FirstTimeUserProvider({ children }: FirstTimeUserProviderProps) 
       } else if (event === 'SIGNED_OUT') {
         setShowWelcome(false);
         setWelcomeComplete(false);
+        setShowAvatarGeneration(false);
+        setAvatarGenerationComplete(false);
         setTourActive(false);
         setTourStep(0);
         setTourCompleted(false);
@@ -125,7 +143,22 @@ export function FirstTimeUserProvider({ children }: FirstTimeUserProviderProps) 
   const completeWelcome = useCallback(() => {
     setWelcomeComplete(true);
     setShowWelcome(false);
-    // Automatically start tour after welcome
+    // Show avatar generation step after welcome
+    setShowAvatarGeneration(true);
+  }, []);
+
+  const completeAvatarGeneration = useCallback(() => {
+    setAvatarGenerationComplete(true);
+    setShowAvatarGeneration(false);
+    // Start tour after avatar generation
+    setTourActive(true);
+    setTourStep(0);
+  }, []);
+
+  const skipAvatarGeneration = useCallback(() => {
+    setAvatarGenerationComplete(true);
+    setShowAvatarGeneration(false);
+    // Start tour even if avatar is skipped
     setTourActive(true);
     setTourStep(0);
   }, []);
@@ -189,6 +222,8 @@ export function FirstTimeUserProvider({ children }: FirstTimeUserProviderProps) 
     // For testing purposes - restart the tour
     setTourCompleted(false);
     setWelcomeComplete(false);
+    setAvatarGenerationComplete(false);
+    setShowAvatarGeneration(false);
     setShowWelcome(true);
     setTourActive(false);
     setTourStep(0);
@@ -203,14 +238,19 @@ export function FirstTimeUserProvider({ children }: FirstTimeUserProviderProps) 
       value={{
         showWelcome,
         welcomeComplete,
+        showAvatarGeneration,
+        avatarGenerationComplete,
         tourActive,
         tourStep,
         tourCompleted,
         userNickname,
         userGrade,
         userId,
+        isSuperUser,
         isLoading,
         completeWelcome,
+        completeAvatarGeneration,
+        skipAvatarGeneration,
         startTour,
         nextTourStep,
         previousTourStep,
