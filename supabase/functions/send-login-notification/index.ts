@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { Resend } from "https://esm.sh/resend@4.0.0";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
 
@@ -15,9 +16,10 @@ interface LoginNotificationRequest {
   timestamp: string;
   location?: string;
   device?: string;
+  userId: string;
 }
 
-const getEmailTemplate = (fullName: string, email: string, timestamp: string, device?: string, location?: string) => `
+const getEmailTemplate = (fullName: string, email: string, timestamp: string, resetUrl: string, device?: string, location?: string) => `
 <!DOCTYPE html>
 <html lang="fr">
   <head>
@@ -147,7 +149,7 @@ const getEmailTemplate = (fullName: string, email: string, timestamp: string, de
                             <p style="margin: 0 0 20px 0; font-size: 14px; color: #b91c1c; line-height: 1.6;">
                               Si vous ne reconnaissez pas cette connexion, sécurisez immédiatement votre compte en changeant votre mot de passe.
                             </p>
-                            <a href="#" style="display: inline-block; background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%); color: #ffffff; text-decoration: none; padding: 12px 32px; border-radius: 10px; font-weight: 600; font-size: 14px;">
+                            <a href="${resetUrl}" style="display: inline-block; background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%); color: #ffffff; text-decoration: none; padding: 12px 32px; border-radius: 10px; font-weight: 600; font-size: 14px;">
                               🔐 Changer mon mot de passe
                             </a>
                           </td>
@@ -200,15 +202,40 @@ const handler = async (req: Request): Promise<Response> => {
   }
 
   try {
-    const { email, fullName, timestamp, location, device }: LoginNotificationRequest = await req.json();
+    const { email, fullName, timestamp, location, device, userId }: LoginNotificationRequest = await req.json();
 
     console.log("Sending login notification to:", email);
+
+    // Initialize Supabase client to generate password reset token
+    const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
+    const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+    const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey);
+
+    // Generate password reset token for the "change password" button
+    let resetUrl = 'https://mon-edupreneur.com/auth';
+    
+    try {
+      const { data: tokenData, error: tokenError } = await supabaseAdmin.rpc(
+        'generate_password_reset_token',
+        { user_email: email }
+      );
+
+      if (!tokenError && tokenData && tokenData.length > 0) {
+        resetUrl = `https://mon-edupreneur.com/reset-password?token=${tokenData[0].token}`;
+        console.log("Password reset token generated successfully");
+      } else if (tokenError) {
+        console.error("Error generating reset token:", tokenError);
+      }
+    } catch (tokenGenError) {
+      console.error("Exception generating reset token:", tokenGenError);
+      // Continue with fallback URL
+    }
 
     const emailResponse = await resend.emails.send({
       from: "Edupreneurs <noreply@mon-edupreneur.com>",
       to: [email],
       subject: "🔔 Nouvelle connexion à votre compte - Edupreneurs",
-      html: getEmailTemplate(fullName, email, timestamp, device, location),
+      html: getEmailTemplate(fullName, email, timestamp, resetUrl, device, location),
     });
 
     console.log("Login notification sent successfully:", emailResponse);
