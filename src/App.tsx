@@ -16,6 +16,7 @@ import { JudeChatbot } from "@/components/JudeChatbot";
 import { supabase } from "@/integrations/supabase/client";
 import { clearAllPersistedCache } from "@/utils/queryPersistence";
 import { VisitorBanner, VisitorTour } from "@/components/visitor";
+import { VisitorMusicSync } from "@/components/visitor/VisitorMusicSync";
 
 // Eager load critical pages
 import Index from "./pages/Index";
@@ -130,6 +131,7 @@ const App = () => (
               <ScrollToTop />
               <CookieConsent />
               <GlobalMusicPlayer />
+              <VisitorMusicSync />
               <VisitorBanner />
               <VisitorTour />
               <EricChatbotWrapper />
