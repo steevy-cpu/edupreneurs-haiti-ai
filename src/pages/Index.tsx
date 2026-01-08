@@ -581,7 +581,7 @@ const Index = () => {
               <img 
                 src={ericThinkingPose} 
                 alt="Eric réfléchit à vos questions" 
-                className="w-32 h-32 sm:w-40 sm:h-40 object-contain animate-float drop-shadow-xl"
+                className="w-40 sm:w-52 md:w-60 h-auto object-contain animate-float"
                 loading="lazy"
                 decoding="async"
               />
