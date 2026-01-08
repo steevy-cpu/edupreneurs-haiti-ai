@@ -44,7 +44,7 @@ export const VisitorPassionOverlay = () => {
         <ul className="text-sm text-left space-y-2.5 text-muted-foreground bg-muted/30 rounded-lg p-4">
           <li className="flex items-center gap-2.5">
             <Sparkles className="w-4 h-4 text-violet-500 shrink-0" />
-            Quiz de personnalité avec Eric
+            Quiz de personnalité avec Jude
           </li>
           <li className="flex items-center gap-2.5">
             <Music className="w-4 h-4 text-primary shrink-0" />
