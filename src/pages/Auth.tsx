@@ -778,8 +778,8 @@ export default function Auth() {
                     type="button"
                     variant="outline"
                     className="w-full gap-2 py-5 border-2 border-dashed border-primary/40 text-primary font-medium
-                               hover:border-primary hover:bg-primary/20 hover:shadow-md
-                               dark:hover:bg-primary/30 transition-all duration-300 group"
+                               hover:border-primary hover:bg-primary hover:text-primary-foreground hover:shadow-md
+                               transition-all duration-300 group"
                     onClick={() => setShowVisitorSelector(true)}
                   >
                     <Telescope className="w-5 h-5 group-hover:scale-110 transition-transform" />
