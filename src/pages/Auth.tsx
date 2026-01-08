@@ -448,7 +448,6 @@ export default function Auth() {
                 device: deviceInfo.deviceName,
                 browser: deviceInfo.browser,
                 os: deviceInfo.os,
-                userId: authData.user.id,
               }
             });
             
