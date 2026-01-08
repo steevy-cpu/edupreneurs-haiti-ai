@@ -453,7 +453,7 @@ export default function Auth() {
             
             console.log('New device detected - notification email sent');
           } else {
-            console.log('Same physical device (same OS), different browser - no notification email sent');
+            console.log('Same physical device (hardware fingerprint match), different browser - no notification email sent');
           }
         }
       } catch (deviceError) {
