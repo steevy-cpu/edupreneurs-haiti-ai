@@ -9,6 +9,7 @@ interface VisitorState {
   tourStep: number;
   tourCompleted: boolean;
   tourActive: boolean;
+  showWelcomePopup: boolean;
   setVisitorType: (type: VisitorType) => void;
   startVisitorMode: (type: VisitorType) => void;
   exitVisitorMode: () => void;
@@ -17,6 +18,7 @@ interface VisitorState {
   skipTour: () => void;
   startTour: () => void;
   completeTour: () => void;
+  completeWelcomePopup: () => void;
 }
 
 const VisitorContext = createContext<VisitorState | undefined>(undefined);
@@ -33,6 +35,7 @@ export const VisitorProvider = ({ children }: VisitorProviderProps) => {
   const [tourStep, setTourStep] = useState(0);
   const [tourCompleted, setTourCompleted] = useState(false);
   const [tourActive, setTourActive] = useState(false);
+  const [showWelcomePopup, setShowWelcomePopup] = useState(false);
 
   // Load visitor state from sessionStorage on mount
   useEffect(() => {
@@ -45,6 +48,7 @@ export const VisitorProvider = ({ children }: VisitorProviderProps) => {
         setTourStep(parsed.tourStep || 0);
         setTourCompleted(parsed.tourCompleted || false);
         setTourActive(parsed.tourActive || false);
+        setShowWelcomePopup(parsed.showWelcomePopup || false);
       }
     } catch (error) {
       console.error("[VisitorContext] Error loading visitor state:", error);
@@ -60,12 +64,13 @@ export const VisitorProvider = ({ children }: VisitorProviderProps) => {
         tourStep,
         tourCompleted,
         tourActive,
+        showWelcomePopup,
       };
       sessionStorage.setItem(VISITOR_STORAGE_KEY, JSON.stringify(state));
     } else {
       sessionStorage.removeItem(VISITOR_STORAGE_KEY);
     }
-  }, [isVisitor, visitorType, tourStep, tourCompleted, tourActive]);
+  }, [isVisitor, visitorType, tourStep, tourCompleted, tourActive, showWelcomePopup]);
 
   const setVisitorType = (type: VisitorType) => {
     setVisitorTypeState(type);
@@ -76,10 +81,18 @@ export const VisitorProvider = ({ children }: VisitorProviderProps) => {
     setVisitorTypeState(type);
     setTourStep(0);
     setTourCompleted(false);
-    setTourActive(true);
+    setTourActive(false); // Tour doesn't start yet - wait for welcome popup
+    setShowWelcomePopup(true); // Show welcome popup first
     
     // Analytics stub - ready for future implementation
     console.log("[Visitor Analytics] visitor_mode_started", { visitorType: type });
+  };
+
+  const completeWelcomePopup = () => {
+    setShowWelcomePopup(false);
+    setTourActive(true); // Now start the tour
+    
+    console.log("[Visitor Analytics] welcome_popup_completed");
   };
 
   const exitVisitorMode = () => {
@@ -88,6 +101,7 @@ export const VisitorProvider = ({ children }: VisitorProviderProps) => {
     setTourStep(0);
     setTourCompleted(false);
     setTourActive(false);
+    setShowWelcomePopup(false);
     sessionStorage.removeItem(VISITOR_STORAGE_KEY);
     
     // Analytics stub
@@ -135,6 +149,7 @@ export const VisitorProvider = ({ children }: VisitorProviderProps) => {
         tourStep,
         tourCompleted,
         tourActive,
+        showWelcomePopup,
         setVisitorType,
         startVisitorMode,
         exitVisitorMode,
@@ -143,6 +158,7 @@ export const VisitorProvider = ({ children }: VisitorProviderProps) => {
         skipTour,
         startTour,
         completeTour,
+        completeWelcomePopup,
       }}
     >
       {children}

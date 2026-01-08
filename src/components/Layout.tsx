@@ -37,6 +37,7 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { useVisitor } from "@/contexts/VisitorContext";
+import { JudeWelcomePopup } from "@/components/visitor";
 
 interface LayoutProps {
   children: ReactNode;
@@ -45,7 +46,7 @@ interface LayoutProps {
 export const Layout = ({ children }: LayoutProps) => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { isVisitor } = useVisitor();
+  const { isVisitor, showWelcomePopup, completeWelcomePopup } = useVisitor();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [totalUnreadMessages, setTotalUnreadMessages] = useState(0);
   const [pendingFollowRequests, setPendingFollowRequests] = useState(0);
@@ -590,6 +591,12 @@ export const Layout = ({ children }: LayoutProps) => {
 
       {/* Mobile Bottom Navigation */}
       <MobileBottomNav />
+
+      {/* Jude Welcome Popup for Visitors */}
+      <JudeWelcomePopup 
+        isOpen={showWelcomePopup} 
+        onComplete={completeWelcomePopup} 
+      />
 
     </div>
   );
