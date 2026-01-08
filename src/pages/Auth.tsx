@@ -14,15 +14,14 @@ import { Loader2, Eye, EyeOff, KeyRound, Telescope } from "lucide-react";
 import { loginSchema, signupSchema, forgotPasswordSchema, verificationCodeSchema, GRADE_OPTIONS } from "@/lib/authValidation";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { getFullDeviceIdentifier, generateDeviceFingerprint } from "@/utils/deviceFingerprint";
-import { PhoneVerificationSection } from "@/components/PhoneVerificationSection";
+
 import TypewriterText from "@/components/TypewriterText";
 import { VisitorTypeSelector } from "@/components/visitor/VisitorTypeSelector";
 export default function Auth() {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [searchParams] = useSearchParams();
-  const [activeTab, setActiveTab] = useState<"login" | "signup" | "verify" | "phone-verify" | "forgot-password">("login");
-  const [pendingPhoneNumber, setPendingPhoneNumber] = useState<string>("");
+  const [activeTab, setActiveTab] = useState<"login" | "signup" | "verify" | "forgot-password">("login");
   const [forgotPasswordEmail, setForgotPasswordEmail] = useState("");
   const [loginData, setLoginData] = useState({ email: "", password: "" });
   const [referralCode, setReferralCode] = useState<string | null>(null);
@@ -221,13 +220,13 @@ export default function Auth() {
 
       toast({
         title: "Email vérifié ! ✅",
-        description: "Vous pouvez maintenant vérifier votre téléphone (optionnel).",
+        description: "Vous pouvez maintenant vous connecter.",
       });
 
-      // Transition to phone verification step (optional)
-      setPendingPhoneNumber(signupData.phoneNumber);
-      setActiveTab("phone-verify");
-      // Keep pendingUserId for phone verification
+      // Redirect to login
+      setPendingUserId(null);
+      setVerificationCode("");
+      setActiveTab("login");
     } catch (error: any) {
       console.error("Verification error:", error);
       toast({
@@ -833,7 +832,7 @@ export default function Auth() {
               
               {/* Tabs */}
               <div className="auth-tabs p-3 flex justify-center">
-                {activeTab !== "verify" && activeTab !== "forgot-password" && activeTab !== "phone-verify" && (
+                {activeTab !== "verify" && activeTab !== "forgot-password" && (
                   <div className="relative flex bg-muted/50 rounded-xl p-1 w-fit">
                     {/* Sliding Background Indicator */}
                     <div 
@@ -873,11 +872,6 @@ export default function Auth() {
                 {activeTab === "verify" && (
                   <div className="text-center py-3 font-bold text-primary">
                     Vérification de l'email
-                  </div>
-                )}
-                {activeTab === "phone-verify" && (
-                  <div className="text-center py-3 font-bold text-primary">
-                    Vérification du téléphone
                   </div>
                 )}
               </div>
@@ -1102,33 +1096,6 @@ export default function Auth() {
                   </form>
                 )}
 
-                {/* Phone Verification (Optional) */}
-                {activeTab === "phone-verify" && pendingUserId && (
-                  <PhoneVerificationSection
-                    userId={pendingUserId}
-                    phoneNumber={pendingPhoneNumber || signupData.phoneNumber}
-                    onVerified={() => {
-                      toast({
-                        title: "Tout est prêt! 🎉",
-                        description: "Email et téléphone vérifiés. Vous pouvez maintenant vous connecter.",
-                      });
-                      setPendingUserId(null);
-                      setVerificationCode("");
-                      setPendingPhoneNumber("");
-                      setActiveTab("login");
-                    }}
-                    onSkip={() => {
-                      toast({
-                        title: "Inscription terminée!",
-                        description: "Vous pouvez vérifier votre téléphone plus tard dans les paramètres.",
-                      });
-                      setPendingUserId(null);
-                      setVerificationCode("");
-                      setPendingPhoneNumber("");
-                      setActiveTab("login");
-                    }}
-                  />
-                )}
 
                 {/* Signup Form - Multi-step Wizard */}
                 {activeTab === "signup" && (
