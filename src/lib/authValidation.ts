@@ -111,17 +111,7 @@ export const verificationCodeSchema = z.object({
     .regex(/^\d+$/, "Le code ne doit contenir que des chiffres"),
 });
 
-// Phone OTP validation schema
-export const phoneOtpSchema = z.object({
-  code: z
-    .string()
-    .trim()
-    .length(6, "Le code doit contenir exactement 6 chiffres")
-    .regex(/^\d+$/, "Le code ne doit contenir que des chiffres"),
-});
-
 export type LoginFormData = z.infer<typeof loginSchema>;
 export type SignupFormData = z.infer<typeof signupSchema>;
 export type ForgotPasswordFormData = z.infer<typeof forgotPasswordSchema>;
 export type VerificationCodeFormData = z.infer<typeof verificationCodeSchema>;
-export type PhoneOtpFormData = z.infer<typeof phoneOtpSchema>;
