@@ -33,7 +33,7 @@ import { useMatieresData } from "@/hooks/useMatieresData";
 import { GRADE_LABELS } from "@/hooks/useUserGrade";
 import { toast } from "sonner";
 import { useVisitor } from "@/contexts/VisitorContext";
-import { LockedOverlay } from "@/components/visitor";
+import { LockedOverlay, VisitorSubjectCard } from "@/components/visitor";
 import {
   MatieresSearchFilter,
   ContinueLearningSection,
@@ -519,22 +519,39 @@ export default function Matieres() {
             {/* Subjects Grid */}
             <div id="subjects-grid" className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6 mb-8">
               {processedSubjects.map((subject) => (
-                <SubjectCardEnhanced
-                  key={subject.id}
-                  id={subject.id}
-                  title={subject.title}
-                  description={subject.description}
-                  icon={subject.icon}
-                  lessons={subject.lessons}
-                  exercises={subject.exercises}
-                  color={subject.color}
-                  isFavorite={isFavorite(subject.id)}
-                  onToggleFavorite={() => toggleFavorite(subject.id)}
-                  progressPercent={subject.progress?.progressPercent}
-                  completedLessons={subject.progress?.completedLessons}
-                  isPopular={subject.lessons > 20}
-                  estimatedHours={Math.round(subject.lessons * 0.5)}
-                />
+                isVisitor ? (
+                  <VisitorSubjectCard
+                    key={subject.id}
+                    id={subject.id}
+                    title={subject.title}
+                    description={subject.description}
+                    icon={subject.icon}
+                    lessons={subject.lessons}
+                    exercises={subject.exercises}
+                    color={subject.color}
+                    progressPercent={subject.progress?.progressPercent}
+                    completedLessons={subject.progress?.completedLessons}
+                    isPopular={subject.lessons > 20}
+                    estimatedHours={Math.round(subject.lessons * 0.5)}
+                  />
+                ) : (
+                  <SubjectCardEnhanced
+                    key={subject.id}
+                    id={subject.id}
+                    title={subject.title}
+                    description={subject.description}
+                    icon={subject.icon}
+                    lessons={subject.lessons}
+                    exercises={subject.exercises}
+                    color={subject.color}
+                    isFavorite={isFavorite(subject.id)}
+                    onToggleFavorite={() => toggleFavorite(subject.id)}
+                    progressPercent={subject.progress?.progressPercent}
+                    completedLessons={subject.progress?.completedLessons}
+                    isPopular={subject.lessons > 20}
+                    estimatedHours={Math.round(subject.lessons * 0.5)}
+                  />
+                )
               ))}
             </div>
           </div>

@@ -37,6 +37,7 @@ interface SubjectCardEnhancedProps {
   isNew?: boolean;
   estimatedHours?: number;
   difficulty?: "easy" | "medium" | "hard";
+  disableNavigation?: boolean;
 }
 
 export function SubjectCardEnhanced({
@@ -54,7 +55,8 @@ export function SubjectCardEnhanced({
   isPopular = false,
   isNew = false,
   estimatedHours,
-  difficulty = "medium"
+  difficulty = "medium",
+  disableNavigation = false
 }: SubjectCardEnhancedProps) {
   const navigate = useNavigate();
   const [isHovered, setIsHovered] = useState(false);
@@ -80,6 +82,7 @@ export function SubjectCardEnhanced({
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
         onClick={() => {
+          if (disableNavigation) return;
           if (hasContent) {
             navigate(`/course/${id}`);
           }
@@ -201,6 +204,7 @@ export function SubjectCardEnhanced({
               variant="default"
               onClick={(e) => {
                 e.stopPropagation();
+                if (disableNavigation) return;
                 navigate(`/course/${id}`);
               }}
             >
