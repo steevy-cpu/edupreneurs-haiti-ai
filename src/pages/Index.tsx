@@ -568,7 +568,7 @@ const Index = () => {
       </section>
 
       {/* FAQ */}
-      <section id="faq" className="relative py-12 sm:py-16 md:py-20 px-4 bg-gradient-to-b from-background to-primary/5 overflow-hidden">
+      <section id="faq" className="relative py-12 sm:py-16 md:py-20 px-4 bg-gradient-to-b from-background to-primary/5 overflow-visible">
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-px bg-gradient-to-r from-transparent via-primary/50 to-transparent"></div>
         
         <div className="container mx-auto max-w-3xl">
