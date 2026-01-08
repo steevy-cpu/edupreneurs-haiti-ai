@@ -13,7 +13,7 @@ import { generateConfirmationCode } from "@/utils/emailService";
 import { Loader2, Eye, EyeOff, KeyRound, Telescope } from "lucide-react";
 import { loginSchema, signupSchema, forgotPasswordSchema, verificationCodeSchema, GRADE_OPTIONS } from "@/lib/authValidation";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { getFullDeviceIdentifier } from "@/utils/deviceFingerprint";
+import { getFullDeviceIdentifier, generateDeviceFingerprint } from "@/utils/deviceFingerprint";
 import { PhoneVerificationSection } from "@/components/PhoneVerificationSection";
 import TypewriterText from "@/components/TypewriterText";
 import { VisitorTypeSelector } from "@/components/visitor/VisitorTypeSelector";
@@ -379,11 +379,11 @@ export default function Auth() {
         return;
       }
 
-      // Smart login notification - only send email for new devices
+      // Smart login notification - only send email for truly new devices
       try {
         const deviceInfo = getFullDeviceIdentifier();
         
-        // Check if this device is already trusted
+        // Check if this exact fingerprint is already trusted
         const { data: existingDevice, error: deviceCheckError } = await supabase
           .from('user_trusted_devices')
           .select('id')
@@ -396,7 +396,7 @@ export default function Auth() {
         }
         
         if (existingDevice) {
-          // Known device - just update last_login_at, NO EMAIL
+          // Known device with exact fingerprint - just update last_login_at, NO EMAIL
           await supabase
             .from('user_trusted_devices')
             .update({ last_login_at: new Date().toISOString() })
@@ -404,7 +404,20 @@ export default function Auth() {
           
           console.log('Known device login - no notification email sent');
         } else {
-          // New device - register it and send notification email
+          // Check if this is the SAME physical device but different browser
+          // by looking for matching OS (same physical device indicator)
+          const { data: sameOsDevices } = await supabase
+            .from('user_trusted_devices')
+            .select('id, browser, os')
+            .eq('user_id', authData.user.id)
+            .eq('os', deviceInfo.os)
+            .limit(10);
+          
+          // If user already has a device with same OS registered, it's likely
+          // the same physical device with a different browser
+          const isSamePhysicalDevice = (sameOsDevices && sameOsDevices.length > 0) || false;
+          
+          // Register this browser session
           const { error: insertError } = await supabase
             .from('user_trusted_devices')
             .insert({
@@ -419,24 +432,28 @@ export default function Auth() {
             console.error('Error registering device:', insertError);
           }
           
-          // Send login notification for new device
-          const timestamp = new Date().toLocaleString('fr-FR', {
-            dateStyle: 'full',
-            timeStyle: 'short',
-          });
-          
-          await supabase.functions.invoke('send-login-notification', {
-            body: {
-              email: loginData.email,
-              fullName: profile?.full_name || 'Utilisateur',
-              timestamp,
-              device: deviceInfo.deviceName,
-              browser: deviceInfo.browser,
-              os: deviceInfo.os,
-            }
-          });
-          
-          console.log('New device detected - notification email sent');
+          if (!isSamePhysicalDevice) {
+            // Truly new device - send notification email
+            const timestamp = new Date().toLocaleString('fr-FR', {
+              dateStyle: 'full',
+              timeStyle: 'short',
+            });
+            
+            await supabase.functions.invoke('send-login-notification', {
+              body: {
+                email: loginData.email,
+                fullName: profile?.full_name || 'Utilisateur',
+                timestamp,
+                device: deviceInfo.deviceName,
+                browser: deviceInfo.browser,
+                os: deviceInfo.os,
+              }
+            });
+            
+            console.log('New device detected - notification email sent');
+          } else {
+            console.log('Same physical device (same OS), different browser - no notification email sent');
+          }
         }
       } catch (deviceError) {
         // Don't block login if device tracking fails

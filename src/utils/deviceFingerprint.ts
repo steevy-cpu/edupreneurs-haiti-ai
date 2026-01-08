@@ -5,6 +5,7 @@
 
 interface DeviceInfo {
   fingerprint: string;
+  hardwareFingerprint: string; // Browser-agnostic device identifier
   deviceName: string;
   browser: string;
   os: string;
@@ -78,6 +79,30 @@ function simpleHash(str: string): string {
 }
 
 /**
+ * Generates a hardware-only fingerprint that stays consistent across browsers
+ * This excludes browser-specific data like userAgent
+ */
+function generateHardwareFingerprint(): string {
+  // Only use hardware/device characteristics that don't change between browsers
+  const hardwareCharacteristics = [
+    screen.width.toString(),
+    screen.height.toString(),
+    screen.colorDepth.toString(),
+    new Date().getTimezoneOffset().toString(),
+    navigator.hardwareConcurrency?.toString() || '',
+    navigator.maxTouchPoints?.toString() || '0',
+    navigator.platform || '',
+    // Device memory is the same across browsers on same device
+    (navigator as any).deviceMemory?.toString() || '',
+    // Screen available dimensions (excludes taskbar, etc.)
+    screen.availWidth?.toString() || '',
+    screen.availHeight?.toString() || '',
+  ];
+  
+  return simpleHash(hardwareCharacteristics.join('|'));
+}
+
+/**
  * Generates a device fingerprint and info
  * Uses multiple browser characteristics to create a semi-unique identifier
  */
@@ -85,8 +110,8 @@ export function generateDeviceFingerprint(): DeviceInfo {
   const browser = detectBrowser();
   const os = detectOS();
   
-  // Collect various browser/device characteristics
-  const characteristics = [
+  // Full fingerprint includes browser-specific data (for exact matching)
+  const fullCharacteristics = [
     navigator.userAgent,
     navigator.language,
     screen.width.toString(),
@@ -95,12 +120,11 @@ export function generateDeviceFingerprint(): DeviceInfo {
     new Date().getTimezoneOffset().toString(),
     navigator.hardwareConcurrency?.toString() || '',
     navigator.maxTouchPoints?.toString() || '0',
-    // Add platform for better uniqueness
     navigator.platform || '',
   ];
   
-  // Create fingerprint from characteristics
-  const fingerprint = simpleHash(characteristics.join('|'));
+  const fingerprint = simpleHash(fullCharacteristics.join('|'));
+  const hardwareFingerprint = generateHardwareFingerprint();
   
   // Generate a friendly device name
   const isMobile = /Mobile|iPhone|iPad|Android/i.test(navigator.userAgent);
@@ -109,6 +133,7 @@ export function generateDeviceFingerprint(): DeviceInfo {
   
   return {
     fingerprint,
+    hardwareFingerprint,
     deviceName,
     browser,
     os,
