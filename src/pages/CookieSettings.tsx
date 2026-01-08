@@ -14,7 +14,25 @@ export default function CookieSettings() {
 
   const handleSave = () => {
     toast.success("Préférences de cookies enregistrées");
-    navigate(-1);
+    navigate("/");
+  };
+
+  const handleAcceptAll = () => {
+    acceptAll();
+    toast.success("Tous les cookies acceptés");
+    navigate("/");
+  };
+
+  const handleAcceptEssential = () => {
+    acceptEssential();
+    toast.success("Cookies essentiels uniquement");
+    navigate("/");
+  };
+
+  const handleReset = () => {
+    resetConsent();
+    toast.success("Préférences réinitialisées");
+    navigate("/");
   };
 
   return (
@@ -114,10 +132,10 @@ export default function CookieSettings() {
           </Card>
 
           <div className="flex flex-col sm:flex-row gap-3">
-            <Button onClick={acceptAll} className="flex-1">
+            <Button onClick={handleAcceptAll} className="flex-1">
               Accepter tout
             </Button>
-            <Button onClick={acceptEssential} variant="outline" className="flex-1">
+            <Button onClick={handleAcceptEssential} variant="outline" className="flex-1">
               Essentiels uniquement
             </Button>
           </div>
@@ -129,7 +147,7 @@ export default function CookieSettings() {
           <div className="text-center">
             <Button 
               variant="link" 
-              onClick={resetConsent}
+              onClick={handleReset}
               className="text-muted-foreground text-sm"
             >
               Réinitialiser mes choix
