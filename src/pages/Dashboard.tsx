@@ -6,7 +6,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Skeleton } from "@/components/ui/skeleton";
-import { OnboardingTour } from "@/components/OnboardingTour";
+import { useFirstTimeUser } from "@/contexts/FirstTimeUserContext";
 import {
   Award,
   BookOpen,
@@ -55,14 +55,8 @@ interface LeaderboardUser {
   rank: number;
 }
 
-
-const restartOnboardingTour = () => {
-  localStorage.removeItem("onboarding_completed");
-  sessionStorage.setItem("restart_onboarding", "true");
-  window.location.reload();
-};
-
 const Dashboard = () => {
+  const { restartTour } = useFirstTimeUser();
   const navigate = useNavigate();
   const { isVisitor } = useVisitor();
   const [userData, setUserData] = useState({
@@ -283,7 +277,6 @@ const Dashboard = () => {
         <meta property="og:title" content="Tableau de bord - Edupreneurs" />
         <meta property="og:description" content="Suivez votre progression d'apprentissage avec Edupreneurs." />
       </Helmet>
-      <OnboardingTour />
       <div className="min-h-screen bg-background">
         {/* Theme Toggle - Top Right */}
         <div className="fixed top-4 right-4 z-50">
@@ -363,7 +356,7 @@ const Dashboard = () => {
             <Card className="bg-gradient-to-br from-blue-500/10 to-cyan-500/10 border-blue-500/20">
               <CardContent className="p-6">
                 <button
-                  onClick={restartOnboardingTour}
+                  onClick={restartTour}
                   className="w-full flex items-center gap-4 text-left hover:opacity-80 transition-opacity"
                 >
                   <div className="p-3 bg-blue-500/20 rounded-full">
