@@ -405,24 +405,25 @@ export default function Auth() {
           console.log('Known device login - no notification email sent');
         } else {
           // Check if this is the SAME physical device but different browser
-          // by looking for matching OS (same physical device indicator)
-          const { data: sameOsDevices } = await supabase
+          // using browser-agnostic hardware fingerprint (screen size, CPU cores, etc.)
+          const { data: sameHardwareDevices } = await supabase
             .from('user_trusted_devices')
-            .select('id, browser, os')
+            .select('id, browser, hardware_fingerprint')
             .eq('user_id', authData.user.id)
-            .eq('os', deviceInfo.os)
-            .limit(10);
+            .eq('hardware_fingerprint', deviceInfo.hardwareFingerprint)
+            .limit(5);
           
-          // If user already has a device with same OS registered, it's likely
-          // the same physical device with a different browser
-          const isSamePhysicalDevice = (sameOsDevices && sameOsDevices.length > 0) || false;
+          // If user already has a device with same hardware fingerprint,
+          // it's the same physical device with a different browser
+          const isSamePhysicalDevice = (sameHardwareDevices && sameHardwareDevices.length > 0) || false;
           
-          // Register this browser session
+          // Register this browser session with hardware fingerprint
           const { error: insertError } = await supabase
             .from('user_trusted_devices')
             .insert({
               user_id: authData.user.id,
               device_fingerprint: deviceInfo.fingerprint,
+              hardware_fingerprint: deviceInfo.hardwareFingerprint,
               device_name: deviceInfo.deviceName,
               browser: deviceInfo.browser,
               os: deviceInfo.os,
