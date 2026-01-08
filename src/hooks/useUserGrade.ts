@@ -121,8 +121,15 @@ export function useUserGrade(): UseUserGradeResult {
 
   // Function to check if user can access a specific grade
   const canAccessGrade = (gradeId: string): boolean => {
-    // All users can access all grade levels
-    return true;
+    // Super users (Steevy & Djood) can access all grades
+    if (isSuperUser) return true;
+    
+    // Normalize the requested grade for comparison
+    const normalizedRequestedGrade = normalizeGrade(gradeId);
+    
+    // User can only access their registered grade
+    if (!userGrade) return false;
+    return userGrade === normalizedRequestedGrade;
   };
 
   return {

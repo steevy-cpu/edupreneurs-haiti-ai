@@ -1795,6 +1795,8 @@ export type Database = {
           is_system_account: boolean | null
           last_seen: string | null
           nickname: string
+          onboarding_tour_completed: boolean | null
+          onboarding_tour_completed_at: string | null
           phone_confirmed: boolean | null
           phone_number: string
           phone_verification_request_id: string | null
@@ -1824,6 +1826,8 @@ export type Database = {
           is_system_account?: boolean | null
           last_seen?: string | null
           nickname: string
+          onboarding_tour_completed?: boolean | null
+          onboarding_tour_completed_at?: string | null
           phone_confirmed?: boolean | null
           phone_number: string
           phone_verification_request_id?: string | null
@@ -1853,6 +1857,8 @@ export type Database = {
           is_system_account?: boolean | null
           last_seen?: string | null
           nickname?: string
+          onboarding_tour_completed?: boolean | null
+          onboarding_tour_completed_at?: string | null
           phone_confirmed?: boolean | null
           phone_number?: string
           phone_verification_request_id?: string | null

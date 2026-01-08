@@ -8,6 +8,7 @@ import { Layout } from "@/components/Layout";
 import { CookieConsent } from "@/components/CookieConsent";
 import { MusicPlayerProvider } from "@/contexts/MusicPlayerContext";
 import { VisitorProvider } from "@/contexts/VisitorContext";
+import { FirstTimeUserProvider } from "@/contexts/FirstTimeUserContext";
 import { GlobalMusicPlayer } from "@/components/GlobalMusicPlayer";
 import { ScrollToTop } from "@/components/ScrollToTop";
 import { lazy, Suspense, useEffect } from "react";
@@ -17,6 +18,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { clearAllPersistedCache } from "@/utils/queryPersistence";
 import { VisitorBanner, VisitorTour } from "@/components/visitor";
 import { VisitorMusicSync } from "@/components/visitor/VisitorMusicSync";
+import { FirstTimeUserWelcome, FirstTimeUserTour } from "@/components/firsttime";
 
 // Eager load critical pages
 import Index from "./pages/Index";
@@ -127,14 +129,17 @@ const App = () => (
         <Sonner />
         <MusicPlayerProvider>
           <VisitorProvider>
-            <BrowserRouter>
-              <ScrollToTop />
-              <CookieConsent />
-              <GlobalMusicPlayer />
-              <VisitorMusicSync />
-              <VisitorBanner />
-              <VisitorTour />
-              <EricChatbotWrapper />
+            <FirstTimeUserProvider>
+              <BrowserRouter>
+                <ScrollToTop />
+                <CookieConsent />
+                <GlobalMusicPlayer />
+                <VisitorMusicSync />
+                <VisitorBanner />
+                <VisitorTour />
+                <FirstTimeUserWelcome />
+                <FirstTimeUserTour />
+                <EricChatbotWrapper />
               <Suspense fallback={<PageLoader />}>
                 <Routes>
                 <Route path="/" element={<Index />} />
@@ -226,7 +231,8 @@ const App = () => (
                 <Route path="*" element={<NotFound />} />
                 </Routes>
               </Suspense>
-            </BrowserRouter>
+              </BrowserRouter>
+            </FirstTimeUserProvider>
           </VisitorProvider>
         </MusicPlayerProvider>
       </TooltipProvider>

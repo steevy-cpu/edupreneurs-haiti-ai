@@ -285,9 +285,22 @@ export function useMatieresData(gradeLevel: string, series: string | null = null
   const isSuperUser = data?.userId ? SUPER_USER_IDS.includes(data.userId) : false;
 
   const canAccessGrade = useCallback((gradeId: string) => {
-    // All users can access all grade levels
-    return true;
-  }, []);
+    // Super users can access all grades
+    if (isSuperUser) return true;
+    
+    // Normalize grades for comparison
+    const normalizeGradeLocal = (g: string) => {
+      const map: Record<string, string> = { 
+        '7e': '7AF', '8e': '8AF', '9e': '9AF', 
+        'S1': 'NS1', 'S2': 'NS2', 'Rheto': 'NS3', 'Philo': 'NS4' 
+      };
+      return map[g] || g;
+    };
+    
+    // User can only access their registered grade
+    if (!userGrade) return false;
+    return normalizeGradeLocal(userGrade) === normalizeGradeLocal(gradeId);
+  }, [isSuperUser, userGrade]);
 
   const getProgress = useCallback((slug: string) => progressMap[slug] || null, [progressMap]);
 
