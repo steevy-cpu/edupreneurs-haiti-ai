@@ -123,11 +123,6 @@ verify_jwt = false
 [functions.chess-ai-tutor]
 verify_jwt = false
 
-[functions.send-phone-otp]
-verify_jwt = false
-
-[functions.verify-phone-otp]
-verify_jwt = false
 
 [functions.analyze-curriculum-pdf]
 verify_jwt = true
