@@ -38,6 +38,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { useVisitor } from "@/contexts/VisitorContext";
 import { JudeWelcomePopup } from "@/components/visitor";
+import { useMusicPlayer } from "@/contexts/MusicPlayerContext";
 
 interface LayoutProps {
   children: ReactNode;
@@ -47,6 +48,7 @@ export const Layout = ({ children }: LayoutProps) => {
   const navigate = useNavigate();
   const location = useLocation();
   const { isVisitor, showWelcomePopup, completeWelcomePopup } = useVisitor();
+  const { stopMusic } = useMusicPlayer();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [totalUnreadMessages, setTotalUnreadMessages] = useState(0);
   const [pendingFollowRequests, setPendingFollowRequests] = useState(0);
@@ -55,6 +57,13 @@ export const Layout = ({ children }: LayoutProps) => {
   const [userNickname, setUserNickname] = useState<string>(isVisitor ? "Visiteur" : "Étudiant");
   const presenceChannelRef = useState<{ current: any | null }>({ current: null })[0];
   const { onTouchStart, onTouchMove, onTouchEnd } = useMobileSwipeNavigation();
+
+  // Stop music when exiting visitor mode
+  useEffect(() => {
+    if (!isVisitor) {
+      stopMusic();
+    }
+  }, [isVisitor]);
 
   useEffect(() => {
     // Skip data fetching for visitors
