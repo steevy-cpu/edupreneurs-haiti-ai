@@ -168,6 +168,14 @@ export default {
             height: "16px",
           },
         },
+        "bounce-subtle": {
+          "0%, 100%": {
+            transform: "translateY(0)",
+          },
+          "50%": {
+            transform: "translateY(-4px)",
+          },
+        },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
@@ -182,6 +190,7 @@ export default {
         "music-bar-1": "music-bar 0.5s ease-in-out infinite",
         "music-bar-2": "music-bar 0.7s ease-in-out infinite 0.1s",
         "music-bar-3": "music-bar 0.6s ease-in-out infinite 0.2s",
+        "bounce-subtle": "bounce-subtle 2s ease-in-out infinite",
       },
     },
   },
