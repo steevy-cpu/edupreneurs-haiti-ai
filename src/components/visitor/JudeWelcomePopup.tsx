@@ -198,6 +198,8 @@ const JudeWelcomePopup = ({ isOpen, onComplete }: JudeWelcomePopupProps) => {
                       text="Salut visiteur! 👋"
                       speed={100}
                       onComplete={handleGreetingComplete}
+                      enableSound
+                      soundVolume={0.06}
                     />
                   </p>
                 )}
@@ -213,6 +215,8 @@ const JudeWelcomePopup = ({ isOpen, onComplete }: JudeWelcomePopupProps) => {
                       text="Moi c'est Jude, ton assistant virtuel!"
                       speed={90}
                       onComplete={handleIntroComplete}
+                      enableSound
+                      soundVolume={0.06}
                     />
                   </motion.p>
                 )}
@@ -228,6 +232,8 @@ const JudeWelcomePopup = ({ isOpen, onComplete }: JudeWelcomePopupProps) => {
                       text="Je vais te faire découvrir la plateforme..."
                       speed={80}
                       onComplete={handleWalkthroughComplete}
+                      enableSound
+                      soundVolume={0.06}
                     />
                   </motion.p>
                 )}
@@ -243,6 +249,8 @@ const JudeWelcomePopup = ({ isOpen, onComplete }: JudeWelcomePopupProps) => {
                         text="Mais d'abord, laisse-moi trouver une bonne musique 🎵"
                         speed={70}
                         onComplete={handleSearchingComplete}
+                        enableSound
+                        soundVolume={0.06}
                       />
                     </p>
                     
