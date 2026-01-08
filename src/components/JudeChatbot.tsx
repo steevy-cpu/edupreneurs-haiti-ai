@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect, useCallback, lazy, Suspense } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Send, Volume2, VolumeX, Box, Image } from "lucide-react";
@@ -10,6 +10,9 @@ import { getAvatarUrl } from "@/lib/avatarMap";
 import { useEricDraggable } from "@/hooks/useEricDraggable";
 import { use3DJude } from "@/hooks/use3DJude";
 import { useVisitor } from "@/contexts/VisitorContext";
+
+// Routes where JudeChatbot should be hidden
+const HIDDEN_ROUTES = ['/cookie-settings', '/privacy-policy'];
 
 // Lazy load 3D canvas for performance
 const Jude3DCanvas = lazy(() => 
@@ -25,6 +28,7 @@ interface Message {
 export const JudeChatbot = () => {
   const { isVisitor } = useVisitor();
   const navigate = useNavigate();
+  const location = useLocation();
   const [isOpen, setIsOpen] = useState(false);
   const [input, setInput] = useState("");
   const [userNickname, setUserNickname] = useState<string>("");
@@ -51,10 +55,11 @@ export const JudeChatbot = () => {
     stopAudio
   } = use3DJude({ userNickname, enableVoice: true, enable3D: true });
 
-  // Hide JudeChatbot in visitor mode
-  if (isVisitor) {
+  // Hide JudeChatbot in visitor mode or on specific routes
+  if (isVisitor || HIDDEN_ROUTES.includes(location.pathname)) {
     return null;
   }
+  
   const {
     hasMoved,
     isDragging,
