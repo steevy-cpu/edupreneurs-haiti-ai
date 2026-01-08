@@ -83,20 +83,15 @@ function simpleHash(str: string): string {
  * This excludes browser-specific data like userAgent
  */
 function generateHardwareFingerprint(): string {
-  // Only use hardware/device characteristics that don't change between browsers
+  // Only use characteristics that are TRULY consistent across ALL browsers
   const hardwareCharacteristics = [
-    screen.width.toString(),
-    screen.height.toString(),
-    screen.colorDepth.toString(),
-    new Date().getTimezoneOffset().toString(),
-    navigator.hardwareConcurrency?.toString() || '',
-    navigator.maxTouchPoints?.toString() || '0',
-    navigator.platform || '',
-    // Device memory is the same across browsers on same device
-    (navigator as any).deviceMemory?.toString() || '',
-    // Screen available dimensions (excludes taskbar, etc.)
-    screen.availWidth?.toString() || '',
-    screen.availHeight?.toString() || '',
+    screen.width.toString(),           // Physical screen resolution
+    screen.height.toString(),          // Physical screen resolution
+    screen.colorDepth.toString(),      // Display color depth
+    new Date().getTimezoneOffset().toString(),  // Timezone
+    navigator.hardwareConcurrency?.toString() || '',  // CPU cores
+    navigator.maxTouchPoints?.toString() || '0',      // Touch capability
+    (navigator as any).deviceMemory?.toString() || '', // RAM (Chrome only, but consistent)
   ];
   
   return simpleHash(hardwareCharacteristics.join('|'));
