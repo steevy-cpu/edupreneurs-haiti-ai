@@ -18,6 +18,7 @@ interface MusicPlayerContextType {
   playPause: () => void;
   nextTrack: () => void;
   initPlayer: (trackIndex?: number) => void;
+  stopMusic: () => void;
 }
 
 const MusicPlayerContext = createContext<MusicPlayerContextType | undefined>(undefined);
@@ -236,6 +237,18 @@ export const MusicPlayerProvider = ({ children }: { children: ReactNode }) => {
     playTrack(nextIndex);
   };
 
+  const stopMusic = () => {
+    if (playerRef.current && typeof playerRef.current.pauseVideo === 'function') {
+      try {
+        playerRef.current.pauseVideo();
+        setIsPlaying(false);
+        console.log('🛑 Music stopped');
+      } catch (error) {
+        console.error('Error stopping music:', error);
+      }
+    }
+  };
+
   return (
     <MusicPlayerContext.Provider
       value={{
@@ -250,6 +263,7 @@ export const MusicPlayerProvider = ({ children }: { children: ReactNode }) => {
         playPause,
         nextTrack,
         initPlayer,
+        stopMusic,
       }}
     >
       {children}
