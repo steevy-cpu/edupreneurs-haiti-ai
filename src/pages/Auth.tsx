@@ -771,6 +771,26 @@ export default function Auth() {
 
             {/* Auth Card */}
             <section className="auth-panel auth-card bg-card border border-border rounded-2xl shadow-lg overflow-hidden">
+              {/* Visitor Mode Button - Prominent Position */}
+              {(activeTab === "login" || activeTab === "signup") && (
+                <div className="px-5 pt-5 pb-2">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className="w-full gap-2 py-5 border-2 border-dashed border-primary/40 text-primary font-medium
+                               hover:border-primary hover:bg-primary/10 dark:hover:bg-primary/20 
+                               transition-all duration-300 group"
+                    onClick={() => setShowVisitorSelector(true)}
+                  >
+                    <Telescope className="w-5 h-5 group-hover:scale-110 transition-transform" />
+                    <span>Découvrir la plateforme sans inscription</span>
+                  </Button>
+                  <p className="text-center text-xs text-muted-foreground mt-2">
+                    Explorez en mode visiteur, inscrivez-vous plus tard
+                  </p>
+                </div>
+              )}
+              
               {/* Tabs */}
               <div className="auth-tabs p-3 flex justify-center">
                 {activeTab !== "verify" && activeTab !== "forgot-password" && activeTab !== "phone-verify" && (
@@ -888,25 +908,6 @@ export default function Auth() {
                       Mot de passe oublié ?
                     </button>
 
-                    {/* Visitor Mode Button */}
-                    <div className="relative my-6">
-                      <div className="absolute inset-0 flex items-center">
-                        <span className="w-full border-t border-border" />
-                      </div>
-                      <div className="relative flex justify-center text-xs uppercase">
-                        <span className="bg-card px-2 text-muted-foreground">ou</span>
-                      </div>
-                    </div>
-
-                    <Button
-                      type="button"
-                      variant="outline"
-                      className="w-full gap-2 border-dashed border-2 hover:border-primary hover:bg-primary/5 transition-all duration-300"
-                      onClick={() => setShowVisitorSelector(true)}
-                    >
-                      <Telescope className="w-4 h-4" />
-                      Découvrir la plateforme sans inscription
-                    </Button>
                   </form>
                 )}
 
