@@ -1365,12 +1365,11 @@ export default function Auth() {
                         <div className="grid md:grid-cols-2 gap-3">
                           <div className="space-y-2">
                             <Label htmlFor="signup-phone" className="text-sm text-muted-foreground">
-                              Numéro de téléphone *
+                              Numéro de téléphone (optionnel)
                             </Label>
                             <Input
                               id="signup-phone"
                               type="tel"
-                              required
                               placeholder="ex: +509 3x xx xx xx"
                               value={signupData.phoneNumber}
                               onChange={(e) => setSignupData({ ...signupData, phoneNumber: e.target.value })}
@@ -1425,7 +1424,7 @@ export default function Auth() {
                             type="button" 
                             className="flex-1"
                             onClick={() => {
-                              if (!signupData.nickname || !signupData.academicGrade || !signupData.gender || !signupData.phoneNumber || !signupData.school) {
+                              if (!signupData.nickname || !signupData.academicGrade || !signupData.gender || !signupData.school) {
                                 toast({ title: "Champs requis", description: "Veuillez remplir tous les champs obligatoires", variant: "destructive" });
                                 return;
                               }
