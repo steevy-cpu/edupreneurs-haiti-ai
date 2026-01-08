@@ -1,6 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Lock, UserPlus } from "lucide-react";
+import { Lock, UserPlus, LogIn } from "lucide-react";
 import { useVisitor } from "@/contexts/VisitorContext";
 
 interface LockedOverlayProps {
@@ -8,7 +8,7 @@ interface LockedOverlayProps {
   description?: string;
   showButton?: boolean;
   className?: string;
-  variant?: "full" | "minimal" | "inline";
+  variant?: "full" | "minimal" | "inline" | "card";
 }
 
 export const LockedOverlay = ({
@@ -31,6 +31,33 @@ export const LockedOverlay = ({
       <div className={`flex items-center gap-2 text-muted-foreground ${className}`}>
         <Lock className="w-4 h-4" />
         <span className="text-sm">{title}</span>
+      </div>
+    );
+  }
+
+  if (variant === "card") {
+    return (
+      <div
+        className={`absolute inset-0 bg-background/60 backdrop-blur-[4px] flex flex-col items-center justify-center z-20 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300 ${className}`}
+      >
+        <div className="w-12 h-12 rounded-full bg-gradient-to-br from-primary/20 to-success/20 flex items-center justify-center mb-3">
+          <Lock className="w-6 h-6 text-primary" />
+        </div>
+        <p className="text-sm font-medium text-foreground mb-3 px-4 text-center">
+          {title}
+        </p>
+        {showButton && (
+          <div className="flex flex-col gap-2">
+            <Button size="sm" onClick={handleUnlock} className="gap-1.5">
+              <UserPlus className="w-4 h-4" />
+              Créer un compte
+            </Button>
+            <Button size="sm" variant="ghost" onClick={handleUnlock} className="text-xs gap-1">
+              <LogIn className="w-3 h-3" />
+              Déjà un compte ? Se connecter
+            </Button>
+          </div>
+        )}
       </div>
     );
   }
