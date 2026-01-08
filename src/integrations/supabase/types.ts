@@ -2290,6 +2290,7 @@ export type Database = {
           device_fingerprint: string
           device_name: string | null
           first_login_at: string | null
+          hardware_fingerprint: string | null
           id: string
           ip_address: string | null
           is_trusted: boolean | null
@@ -2303,6 +2304,7 @@ export type Database = {
           device_fingerprint: string
           device_name?: string | null
           first_login_at?: string | null
+          hardware_fingerprint?: string | null
           id?: string
           ip_address?: string | null
           is_trusted?: boolean | null
@@ -2316,6 +2318,7 @@ export type Database = {
           device_fingerprint?: string
           device_name?: string | null
           first_login_at?: string | null
+          hardware_fingerprint?: string | null
           id?: string
           ip_address?: string | null
           is_trusted?: boolean | null
