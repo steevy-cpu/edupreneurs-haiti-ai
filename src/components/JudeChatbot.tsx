@@ -9,6 +9,7 @@ import judeAvatar from "@/assets/dashboard00.png";
 import { getAvatarUrl } from "@/lib/avatarMap";
 import { useEricDraggable } from "@/hooks/useEricDraggable";
 import { use3DJude } from "@/hooks/use3DJude";
+import { useVisitor } from "@/contexts/VisitorContext";
 
 // Lazy load 3D canvas for performance
 const Jude3DCanvas = lazy(() => 
@@ -22,6 +23,7 @@ interface Message {
 }
 
 export const JudeChatbot = () => {
+  const { isVisitor } = useVisitor();
   const navigate = useNavigate();
   const [isOpen, setIsOpen] = useState(false);
   const [input, setInput] = useState("");
@@ -49,7 +51,10 @@ export const JudeChatbot = () => {
     stopAudio
   } = use3DJude({ userNickname, enableVoice: true, enable3D: true });
 
-  // Use the shared draggable hook
+  // Hide JudeChatbot in visitor mode
+  if (isVisitor) {
+    return null;
+  }
   const {
     hasMoved,
     isDragging,
