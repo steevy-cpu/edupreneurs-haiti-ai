@@ -7,7 +7,7 @@ import {
   SelectTrigger, 
   SelectValue 
 } from '@/components/ui/select';
-import { RefreshCw, GraduationCap, Undo2, Clock, BarChart3 } from 'lucide-react';
+import { RefreshCw, GraduationCap, Undo2, Clock, BarChart3, Lock } from 'lucide-react';
 import type { DifficultyLevel, TimeControl } from '@/hooks/useChessGame';
 
 interface ChessGameControlsProps {
@@ -22,6 +22,7 @@ interface ChessGameControlsProps {
   canUndo: boolean;
   isThinking: boolean;
   isGameOver: boolean;
+  isVisitor?: boolean;
 }
 
 const ChessGameControls: React.FC<ChessGameControlsProps> = ({
@@ -35,7 +36,8 @@ const ChessGameControls: React.FC<ChessGameControlsProps> = ({
   onShowStats,
   canUndo,
   isThinking,
-  isGameOver
+  isGameOver,
+  isVisitor = false
 }) => {
   return (
     <div className="space-y-3">
@@ -118,11 +120,14 @@ const ChessGameControls: React.FC<ChessGameControlsProps> = ({
         <Button
           variant="secondary"
           size="sm"
-          onClick={onShowStats}
+          onClick={isVisitor ? undefined : onShowStats}
+          disabled={isVisitor}
           className="gap-1.5 h-8"
+          title={isVisitor ? "Créez un compte pour voir vos stats" : undefined}
         >
           <BarChart3 className="w-3.5 h-3.5" />
           <span className="hidden sm:inline">Stats</span>
+          {isVisitor && <Lock className="w-3 h-3 ml-0.5 text-muted-foreground" />}
         </Button>
       </div>
     </div>
