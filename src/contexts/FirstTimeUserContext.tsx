@@ -70,6 +70,11 @@ export function FirstTimeUserProvider({ children }: FirstTimeUserProviderProps) 
     '9e8c41d7-db17-407e-b02c-be1587e04617'  // Djood
   ];
 
+  // Test account IDs - always show tour for testing
+  const TEST_ACCOUNT_IDS = [
+    '6698f395-7f46-48b9-b7d3-d1151d9cec8c'  // vibemusical02@gmail.com (Test01)
+  ];
+
   // Check tour completion status on mount
   useEffect(() => {
     const checkTourStatus = async () => {
@@ -99,16 +104,27 @@ export function FirstTimeUserProvider({ children }: FirstTimeUserProviderProps) 
         setUserNickname(profile?.nickname || null);
         setUserGrade(profile?.academic_grade || null);
 
-        // Check if tour was already completed
-        const dbCompleted = profile?.onboarding_tour_completed === true;
-        const localCompleted = localStorage.getItem(`first_time_tour_completed_${user.id}`) === 'true';
-        
-        if (dbCompleted || localCompleted) {
-          setTourCompleted(true);
-          setShowWelcome(false);
-        } else {
-          // First time user - show welcome!
+        // Check if this is a test account - always show tour for testing
+        const isTestAccount = TEST_ACCOUNT_IDS.includes(user.id);
+
+        if (isTestAccount) {
+          // Test accounts always get the tour for testing purposes
+          console.log('Test account detected - showing tour for testing');
+          localStorage.removeItem(`first_time_tour_completed_${user.id}`);
           setShowWelcome(true);
+          setTourCompleted(false);
+        } else {
+          // Check if tour was already completed
+          const dbCompleted = profile?.onboarding_tour_completed === true;
+          const localCompleted = localStorage.getItem(`first_time_tour_completed_${user.id}`) === 'true';
+          
+          if (dbCompleted || localCompleted) {
+            setTourCompleted(true);
+            setShowWelcome(false);
+          } else {
+            // First time user - show welcome!
+            setShowWelcome(true);
+          }
         }
       } catch (error) {
         console.error('Error checking tour status:', error);
