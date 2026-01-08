@@ -624,6 +624,8 @@ export default function Auth() {
           email_confirmed: false,
           phone_confirmed: false,
           confirmation_code: confirmationCode.trim(),
+          promo_code_used: promoCodeValid ? promoCode.toUpperCase().trim() : null,
+          promo_code_used_at: promoCodeValid ? new Date().toISOString() : null,
         });
 
       if (profileError) throw profileError;

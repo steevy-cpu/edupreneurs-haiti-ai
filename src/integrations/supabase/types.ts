@@ -1799,6 +1799,8 @@ export type Database = {
           phone_number: string
           phone_verification_request_id: string | null
           phone_verification_sent_at: string | null
+          promo_code_used: string | null
+          promo_code_used_at: string | null
           referral_code: string | null
           referred_by: string | null
           school: string | null
@@ -1826,6 +1828,8 @@ export type Database = {
           phone_number: string
           phone_verification_request_id?: string | null
           phone_verification_sent_at?: string | null
+          promo_code_used?: string | null
+          promo_code_used_at?: string | null
           referral_code?: string | null
           referred_by?: string | null
           school?: string | null
@@ -1853,6 +1857,8 @@ export type Database = {
           phone_number?: string
           phone_verification_request_id?: string | null
           phone_verification_sent_at?: string | null
+          promo_code_used?: string | null
+          promo_code_used_at?: string | null
           referral_code?: string | null
           referred_by?: string | null
           school?: string | null
