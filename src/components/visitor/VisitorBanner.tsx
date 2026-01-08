@@ -1,7 +1,8 @@
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Eye, X, UserPlus } from "lucide-react";
+import { Eye, X, UserPlus, Moon, Sun } from "lucide-react";
 import { useVisitor, VisitorType } from "@/contexts/VisitorContext";
+import { useTheme } from "next-themes";
 
 const visitorTypeLabels: Record<NonNullable<VisitorType>, string> = {
   student: "Étudiant",
@@ -13,6 +14,7 @@ const visitorTypeLabels: Record<NonNullable<VisitorType>, string> = {
 export const VisitorBanner = () => {
   const navigate = useNavigate();
   const { isVisitor, visitorType, exitVisitorMode } = useVisitor();
+  const { theme, setTheme } = useTheme();
 
   if (!isVisitor) return null;
 
@@ -47,7 +49,19 @@ export const VisitorBanner = () => {
           </span>
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2">
+          {/* Theme toggle */}
+          <Button
+            size="icon"
+            variant="ghost"
+            className="h-8 w-8 text-slate-400 hover:text-white hover:bg-slate-700/50"
+            onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+          >
+            <Sun className="h-4 w-4 rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
+            <Moon className="absolute h-4 w-4 rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
+            <span className="sr-only">Toggle theme</span>
+          </Button>
+          
           <Button
             size="sm"
             className="gap-2 bg-primary hover:bg-primary/90 text-primary-foreground font-semibold shadow-lg shadow-primary/25"
