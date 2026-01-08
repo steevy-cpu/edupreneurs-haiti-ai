@@ -128,6 +128,8 @@ export const useCookieConsent = () => {
       hasAccepted: false,
       preferences: DEFAULT_PREFERENCES,
     });
+    // Emit event to notify CookieConsent banner to reappear
+    emitConsentChange(false);
   }, []);
 
   // Check if a specific cookie type is allowed

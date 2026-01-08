@@ -55,11 +55,6 @@ export const JudeChatbot = () => {
     stopAudio
   } = use3DJude({ userNickname, enableVoice: true, enable3D: true });
 
-  // Hide JudeChatbot in visitor mode or on specific routes
-  if (isVisitor || HIDDEN_ROUTES.includes(location.pathname)) {
-    return null;
-  }
-  
   const {
     hasMoved,
     isDragging,
@@ -71,6 +66,11 @@ export const JudeChatbot = () => {
     getPositionStyles,
     resetPosition,
   } = useEricDraggable(isOpen, { defaultWidth: 380, defaultHeight: 500 });
+
+  // Hide JudeChatbot in visitor mode or on specific routes (AFTER all hooks)
+  if (isVisitor || HIDDEN_ROUTES.includes(location.pathname)) {
+    return null;
+  }
 
   // Use a single DOM node for both open/closed measurements
   const setRootRef = useCallback((node: HTMLDivElement | null) => {

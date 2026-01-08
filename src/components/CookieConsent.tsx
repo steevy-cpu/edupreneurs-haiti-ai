@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { X, Settings } from "lucide-react";
 import { Link } from "react-router-dom";
-import { useCookieConsent, emitConsentChange } from "@/hooks/useCookieConsent";
+import { useCookieConsent, emitConsentChange, onConsentChange } from "@/hooks/useCookieConsent";
 
 export const CookieConsent = () => {
   const [showBanner, setShowBanner] = useState(false);
@@ -17,6 +17,17 @@ export const CookieConsent = () => {
       return () => clearTimeout(timer);
     }
   }, [hasDecided]);
+
+  // Listen for consent reset events to show banner again
+  useEffect(() => {
+    const unsubscribe = onConsentChange((accepted) => {
+      if (!accepted) {
+        // Consent was reset, show the banner again
+        setShowBanner(true);
+      }
+    });
+    return () => { unsubscribe(); };
+  }, []);
 
   const handleAcceptAll = () => {
     acceptAll();
