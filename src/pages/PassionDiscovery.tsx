@@ -32,8 +32,7 @@ import ericPointing from "@/assets/eric-pointing-up.png";
 import ericTeaching from "@/assets/eric-teaching.png";
 import ericComputer from "@/assets/eric-computer.png";
 import { useVisitor } from "@/contexts/VisitorContext";
-import { LockedOverlay } from "@/components/visitor";
-import { visitorPassionCategories } from "@/data/visitorDemoData";
+import { VisitorPassionOverlay } from "@/components/passion/VisitorPassionOverlay";
 
 interface QuizQuestion {
   id: number;
@@ -88,6 +87,7 @@ interface PassionScores {
 
 const PassionDiscoveryContent = () => {
   const navigate = useNavigate();
+  const { isVisitor } = useVisitor();
   const [quizStep, setQuizStep] = useState<"intro" | "quiz" | "results" | "categories">("intro");
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [passionScores, setPassionScores] = useState<PassionScores>({
@@ -124,6 +124,9 @@ const PassionDiscoveryContent = () => {
   const hasUnsavedProgress = Object.keys(activityStates).length > 0;
 
   useEffect(() => {
+    // Skip fetching user for visitors
+    if (isVisitor) return;
+    
     const getUser = async () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (user) {
@@ -131,7 +134,53 @@ const PassionDiscoveryContent = () => {
       }
     };
     getUser();
-  }, []);
+  }, [isVisitor]);
+
+  // For visitors, show intro with overlay
+  if (isVisitor) {
+    return (
+      <div className="relative min-h-screen bg-gradient-to-br from-violet-900 via-fuchsia-900 to-amber-900">
+        {/* Intro screen preview (blurred behind) */}
+        <div className="min-h-screen p-4 flex flex-col items-center justify-center">
+          <div className="max-w-md mx-auto text-center space-y-6 opacity-50 blur-[2px]">
+            <img 
+              src={ericWaving} 
+              alt="Eric" 
+              className="w-40 h-40 mx-auto object-contain"
+            />
+            <h1 className="text-3xl font-bold text-white">
+              Découvre tes Passions
+            </h1>
+            <p className="text-white/80">
+              Réponds à quelques questions pour découvrir ce qui te passionne vraiment !
+            </p>
+            
+            <div className="grid grid-cols-2 gap-3 mt-6">
+              <Card className="p-4 bg-white/10 border-white/20 text-white text-center">
+                <Music className="w-8 h-8 mx-auto mb-2 text-violet-300" />
+                <p className="text-sm font-medium">Musique</p>
+              </Card>
+              <Card className="p-4 bg-white/10 border-white/20 text-white text-center">
+                <Palette className="w-8 h-8 mx-auto mb-2 text-cyan-300" />
+                <p className="text-sm font-medium">Arts</p>
+              </Card>
+              <Card className="p-4 bg-white/10 border-white/20 text-white text-center">
+                <Brain className="w-8 h-8 mx-auto mb-2 text-amber-300" />
+                <p className="text-sm font-medium">Échecs</p>
+              </Card>
+              <Card className="p-4 bg-white/10 border-white/20 text-white text-center">
+                <BookOpen className="w-8 h-8 mx-auto mb-2 text-emerald-300" />
+                <p className="text-sm font-medium">Littérature</p>
+              </Card>
+            </div>
+          </div>
+        </div>
+        
+        {/* Visitor overlay on top */}
+        <VisitorPassionOverlay />
+      </div>
+    );
+  }
 
   // Set quiz step based on preferences
   useEffect(() => {

@@ -10,6 +10,7 @@ import { User, UserPlus, UserCheck, Clock, ArrowLeft, BadgeCheck, MessageCircle,
 import { getAvatarUrl } from '@/lib/avatarMap';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import { useProfileAnalytics } from '@/hooks/useProfileAnalytics';
+import { useVisitor } from '@/contexts/VisitorContext';
 
 interface Profile {
   id: string;
@@ -34,6 +35,7 @@ interface FollowStatus {
 export default function Profile() {
   const { userId } = useParams<{ userId: string }>();
   const navigate = useNavigate();
+  const { isVisitor, exitVisitorMode } = useVisitor();
   const [currentUser, setCurrentUser] = useState<any>(null);
   const [profile, setProfile] = useState<Profile | null>(null);
   const [followStatus, setFollowStatus] = useState<FollowStatus>({
@@ -55,14 +57,27 @@ export default function Profile() {
   }, []);
 
   useEffect(() => {
-    if (currentUser && userId) {
+    if (userId) {
       fetchProfile();
-      fetchFollowStatus();
-      fetchFollowCounts();
+      // Only fetch follow status/counts for logged-in users
+      if (currentUser && !isVisitor) {
+        fetchFollowStatus();
+        fetchFollowCounts();
+      } else if (isVisitor) {
+        // Demo counts for visitors
+        setFollowersCount(42);
+        setFollowingCount(28);
+      }
     }
-  }, [currentUser, userId]);
+  }, [currentUser, userId, isVisitor]);
 
   const checkAuth = async () => {
+    // Allow visitors to view profiles
+    if (isVisitor) {
+      setLoading(false);
+      return;
+    }
+    
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) {
       navigate('/auth');
@@ -135,6 +150,19 @@ export default function Profile() {
   };
 
   const handleFollow = async () => {
+    if (isVisitor) {
+      toast.info("Créez un compte pour suivre cet utilisateur !", {
+        action: {
+          label: "S'inscrire",
+          onClick: () => {
+            exitVisitorMode();
+            navigate("/auth");
+          }
+        }
+      });
+      return;
+    }
+
     setFollowLoading(true);
     try {
       const { error } = await supabase
@@ -206,6 +234,19 @@ export default function Profile() {
   };
 
   const startConversation = async () => {
+    if (isVisitor) {
+      toast.info("Créez un compte pour envoyer un message !", {
+        action: {
+          label: "S'inscrire",
+          onClick: () => {
+            exitVisitorMode();
+            navigate("/auth");
+          }
+        }
+      });
+      return;
+    }
+
     setMessageLoading(true);
     try {
       // First check if a conversation exists between these two users
