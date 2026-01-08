@@ -5,7 +5,7 @@ import { Progress } from "@/components/ui/progress";
 import { ChevronRight, ChevronLeft, X, Sparkles } from "lucide-react";
 import { useVisitor } from "@/contexts/VisitorContext";
 import { useVisitorAnalytics } from "@/hooks/useVisitorAnalytics";
-import ericWaving from "@/assets/eric-waving.png";
+import ericStudentDesk from "@/assets/eric-student-desk.png";
 
 interface TourStep {
   path: string;
@@ -179,15 +179,13 @@ export const VisitorTour = () => {
 
           {/* Content */}
           <div className="p-4 flex gap-4">
-            {/* Eric avatar */}
+            {/* Jude avatar - floating style */}
             <div className="flex-shrink-0">
-              <div className="w-16 h-16 rounded-full bg-gradient-to-br from-primary/20 to-success/20 overflow-hidden">
-                <img
-                  src={ericWaving}
-                  alt="Eric"
-                  className="w-full h-full object-cover"
-                />
-              </div>
+              <img
+                src={ericStudentDesk}
+                alt="Jude"
+                className="w-20 h-20 object-contain drop-shadow-lg"
+              />
             </div>
 
             {/* Text content */}
