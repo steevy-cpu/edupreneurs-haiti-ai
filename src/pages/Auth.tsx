@@ -60,8 +60,8 @@ export default function Auth() {
   const [promoCodeValid, setPromoCodeValid] = useState(false);
   const [showPromoInput, setShowPromoInput] = useState(false);
 
-  // Valid promo codes (can be expanded or moved to backend)
-  const VALID_PROMO_CODES = ['test'];
+  // Valid promo codes (case-insensitive, can be expanded or moved to backend)
+  const VALID_PROMO_CODES = ['cscp2026'];
   const validatePromoCode = (code: string): boolean => {
     return VALID_PROMO_CODES.includes(code.toLowerCase().trim());
   };
