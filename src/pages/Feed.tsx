@@ -36,6 +36,7 @@ import { Profile, Post, Comment } from "@/types/feed";
 import { useVisitor } from "@/contexts/VisitorContext";
 import { LockedOverlay } from "@/components/visitor";
 import { visitorFeedPosts } from "@/data/visitorDemoData";
+import { VisitorFeedOverlay } from "@/components/feed/VisitorFeedOverlay";
 
 // Function to render content with clickable links, @mentions, and plain domains
 const renderContentWithLinks = (content: string) => {
@@ -151,14 +152,53 @@ const Feed = () => {
   const [followingUsers, setFollowingUsers] = useState<Profile[]>([]);
   const [sendingMessage, setSendingMessage] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const { isVisitor } = useVisitor();
+  const [visitorPosts, setVisitorPosts] = useState<Post[]>([]);
+
+  // Transform demo data for visitors
+  useEffect(() => {
+    if (isVisitor) {
+      const demoPosts: Post[] = visitorFeedPosts.map((post, index) => ({
+        id: post.id,
+        user_id: `demo-user-${index}`,
+        content: post.content,
+        image_url: null,
+        video_url: null,
+        created_at: post.created_at,
+        is_public: true,
+        profile: {
+          id: `demo-profile-${index}`,
+          user_id: `demo-user-${index}`,
+          full_name: post.author.nickname,
+          nickname: post.author.nickname,
+          avatar_url: post.author.avatar_url,
+          verified: index === 0,
+        },
+        likes: post.likes_count,
+        isLiked: false,
+        comments: [],
+        commentCount: post.comments_count,
+        shareCount: Math.floor(Math.random() * 5),
+        isShared: false,
+      }));
+      setVisitorPosts(demoPosts);
+    }
+  }, [isVisitor]);
 
   useEffect(() => {
     checkAuth();
-    const cleanup = subscribeToNewPosts();
-    return cleanup;
-  }, []);
+    // Only subscribe to real-time updates for logged-in users
+    if (!isVisitor) {
+      const cleanup = subscribeToNewPosts();
+      return cleanup;
+    }
+  }, [isVisitor]);
 
   const checkAuth = async () => {
+    // Allow visitors to stay on page with demo content
+    if (isVisitor) {
+      return;
+    }
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) {
       navigate("/auth");
@@ -166,6 +206,9 @@ const Feed = () => {
     }
     setCurrentUser(user);
   };
+
+  // Use visitor posts when in visitor mode
+  const displayPosts = isVisitor ? visitorPosts : posts;
 
   const handleRefresh = () => {
     refreshFeed();
@@ -404,6 +447,13 @@ const Feed = () => {
   };
 
   const toggleLike = async (postId: string, isCurrentlyLiked: boolean) => {
+    if (isVisitor) {
+      toast({
+        title: "Créez un compte",
+        description: "Inscrivez-vous pour aimer les publications !",
+      });
+      return;
+    }
     if (!currentUser) return;
 
     const post = posts.find(p => p.id === postId);
@@ -473,6 +523,13 @@ const Feed = () => {
   };
 
   const addComment = async (postId: string, parentCommentId: string | null = null) => {
+    if (isVisitor) {
+      toast({
+        title: "Créez un compte",
+        description: "Inscrivez-vous pour commenter les publications !",
+      });
+      return;
+    }
     if (!currentUser) return;
 
     const commentContent = parentCommentId 
@@ -665,6 +722,13 @@ const Feed = () => {
   };
 
   const toggleShare = async (postId: string, isCurrentlyShared: boolean) => {
+    if (isVisitor) {
+      toast({
+        title: "Créez un compte",
+        description: "Inscrivez-vous pour partager les publications !",
+      });
+      return;
+    }
     if (!currentUser) return;
 
     const post = posts.find(p => p.id === postId);
@@ -850,12 +914,15 @@ const Feed = () => {
   );
 
   return (
-    <div className="min-h-screen bg-background pb-20 sm:pb-6">
-      {/* Notification Permission Banner */}
-      {currentUser && <NotificationPermissionBanner userId={currentUser.id} />}
+    <div className="relative min-h-screen bg-background pb-20 sm:pb-6">
+      {/* Visitor Overlay */}
+      {isVisitor && <VisitorFeedOverlay />}
+      
+      {/* Notification Permission Banner - only for logged in users */}
+      {currentUser && !isVisitor && <NotificationPermissionBanner userId={currentUser.id} />}
       
       {/* Header */}
-      <div className="sticky top-0 z-50 border-b border-border/50 bg-background/95 backdrop-blur-md supports-[backdrop-filter]:bg-background/60 safe-area-top">
+      <div className="sticky top-0 z-40 border-b border-border/50 bg-background/95 backdrop-blur-md supports-[backdrop-filter]:bg-background/60 safe-area-top">
         <div className="max-w-2xl mx-auto px-3 sm:px-4 py-2.5 sm:py-3 flex items-center justify-between">
           <div className="flex items-center gap-2 sm:gap-3">
             <Button
@@ -874,14 +941,14 @@ const Feed = () => {
               size="icon"
               variant="ghost"
               onClick={handleRefresh}
-              disabled={isRefreshing}
+              disabled={isRefreshing || isVisitor}
               className="h-9 w-9 hover:bg-accent/50"
               title="Actualiser"
             >
               <RefreshCw size={18} className={`sm:w-5 sm:h-5 ${isRefreshing ? "animate-spin" : ""}`} />
             </Button>
             <ThemeToggle />
-            <CreatePostDialog currentUser={currentUser} onPostCreated={refreshFeed} />
+            {!isVisitor && <CreatePostDialog currentUser={currentUser} onPostCreated={refreshFeed} />}
           </div>
         </div>
       </div>
@@ -913,7 +980,7 @@ const Feed = () => {
                 </div>
               ))}
             </div>
-          ) : posts.length === 0 ? (
+          ) : displayPosts.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-16 px-6 text-center">
               <div className="w-20 h-20 rounded-full bg-muted/40 flex items-center justify-center mb-4">
                 <MessageCircle size={32} className="text-muted-foreground/50" />
@@ -928,7 +995,7 @@ const Feed = () => {
             </div>
           ) : (
             <div className="space-y-3 px-3 sm:px-4 pt-3 sm:pt-4">
-            {posts.map((post) => (
+            {displayPosts.map((post) => (
               <div
                 key={post.id}
                 className="bg-card rounded-xl shadow-sm border border-border/30 overflow-hidden"
