@@ -572,6 +572,16 @@ export default function Auth() {
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
     
+    // CRITICAL: Require valid promo code since payment methods are not ready yet
+    if (!promoCodeValid) {
+      toast({
+        title: "Code promotionnel requis",
+        description: "Veuillez entrer un code promotionnel valide pour créer votre compte. Les méthodes de paiement seront bientôt disponibles.",
+        variant: "destructive",
+      });
+      return;
+    }
+    
     // Validate with Zod
     const validation = signupSchema.safeParse(signupData);
     if (!validation.success) {
@@ -1437,86 +1447,70 @@ export default function Auth() {
                       <div className="space-y-4 animate-in fade-in slide-in-from-right-4 duration-300">
                         <div className="text-center mb-4">
                           <h3 className="text-lg font-bold">Dernière étape !</h3>
-                          <p className="text-sm text-muted-foreground">Choisissez votre méthode de paiement</p>
+                          <p className="text-sm text-muted-foreground">Entrez votre code promotionnel pour continuer</p>
                         </div>
 
-                        <div className="space-y-3">
-                          <strong className="block text-sm">
-                            Méthode de paiement {promoCodeValid ? '(optionnel)' : '*'}
-                          </strong>
-                          <div className={`grid gap-2 ${promoCodeValid ? 'opacity-50' : ''}`}>
+                        {/* Promo Code Section - Now Primary and Required */}
+                        <div className="space-y-3 p-4 border-2 border-primary rounded-lg bg-primary/5">
+                          <div className="flex items-center gap-2">
+                            <span className="text-xl">🎁</span>
+                            <strong className="text-sm">Code promotionnel *</strong>
+                            <span className="text-xs bg-destructive/10 text-destructive px-2 py-0.5 rounded-full">Requis</span>
+                          </div>
+                          <Input
+                            type="text"
+                            placeholder="Entrez votre code promotionnel"
+                            value={promoCode}
+                            onChange={(e) => {
+                              const code = e.target.value;
+                              setPromoCode(code);
+                              const isValid = validatePromoCode(code);
+                              setPromoCodeValid(isValid);
+                              if (isValid) {
+                                setSignupData({ ...signupData, payment: 'promo_code' });
+                              } else if (signupData.payment === 'promo_code') {
+                                setSignupData({ ...signupData, payment: '' });
+                              }
+                            }}
+                            className="auth-input"
+                          />
+                          {promoCode && (
+                            <p className={`text-xs ${promoCodeValid ? 'text-success' : 'text-destructive'}`}>
+                              {promoCodeValid ? '✓ Code valide ! Vous pouvez créer votre compte.' : '✗ Code invalide'}
+                            </p>
+                          )}
+                          {!promoCode && (
+                            <p className="text-xs text-muted-foreground">
+                              Contactez-nous pour obtenir un code d'accès.
+                            </p>
+                          )}
+                        </div>
+
+                        {/* Payment Methods - Disabled for now */}
+                        <div className="space-y-3 opacity-50">
+                          <div className="flex items-center gap-2">
+                            <strong className="block text-sm">Méthodes de paiement</strong>
+                            <span className="text-xs bg-muted px-2 py-0.5 rounded-full">Bientôt disponible</span>
+                          </div>
+                          <div className="grid gap-2 pointer-events-none">
                             {[
                               { value: 'moncash', label: 'MonCash', icon: '📱' },
                               { value: 'natcash', label: 'NatCash', icon: '💳' },
                               { value: 'carte', label: 'Carte bancaire', icon: '💳' },
                             ].map((method) => (
-                              <label 
+                              <div 
                                 key={method.value}
-                                className={`flex items-center gap-3 p-4 border rounded-lg cursor-pointer transition-all ${
-                                  signupData.payment === method.value 
-                                    ? 'border-primary bg-primary/5 ring-2 ring-primary/20' 
-                                    : 'border-input bg-muted/50 hover:border-primary/50'
-                                } ${promoCodeValid ? 'pointer-events-none' : ''}`}
+                                className="flex items-center gap-3 p-4 border rounded-lg border-input bg-muted/30"
                               >
-                                <input
-                                  type="radio"
-                                  name="payment"
-                                  value={method.value}
-                                  required={!promoCodeValid}
-                                  checked={signupData.payment === method.value}
-                                  onChange={(e) => setSignupData({ ...signupData, payment: e.target.value })}
-                                  className="sr-only"
-                                  disabled={promoCodeValid}
-                                />
-                                <span className="text-xl">{method.icon}</span>
-                                <span className="font-medium">{method.label}</span>
-                                {signupData.payment === method.value && (
-                                  <span className="ml-auto text-primary">✓</span>
-                                )}
-                              </label>
+                                <span className="text-xl grayscale">{method.icon}</span>
+                                <span className="font-medium text-muted-foreground">{method.label}</span>
+                                <span className="ml-auto text-xs text-muted-foreground">Bientôt</span>
+                              </div>
                             ))}
                           </div>
                           <p className="text-xs text-muted-foreground mt-2">
                             ✨ Essai gratuit 7 jours, puis ~200 HTG / mois.
                           </p>
-                        </div>
-
-                        {/* Promo Code Section */}
-                        <div className="pt-4 border-t border-input">
-                          <button
-                            type="button"
-                            onClick={() => setShowPromoInput(!showPromoInput)}
-                            className="text-sm text-primary hover:underline flex items-center gap-1"
-                          >
-                            🎁 J'ai un code promotionnel {showPromoInput ? '▲' : '▼'}
-                          </button>
-                          
-                          {showPromoInput && (
-                            <div className="mt-3 space-y-2 animate-in fade-in duration-200">
-                              <Input
-                                type="text"
-                                placeholder="Entrez votre code"
-                                value={promoCode}
-                                onChange={(e) => {
-                                  const code = e.target.value;
-                                  setPromoCode(code);
-                                  const isValid = validatePromoCode(code);
-                                  setPromoCodeValid(isValid);
-                                  if (isValid) {
-                                    setSignupData({ ...signupData, payment: 'promo_code' });
-                                  } else if (signupData.payment === 'promo_code') {
-                                    setSignupData({ ...signupData, payment: '' });
-                                  }
-                                }}
-                                className="auth-input"
-                              />
-                              {promoCode && (
-                                <p className={`text-xs ${promoCodeValid ? 'text-success' : 'text-destructive'}`}>
-                                  {promoCodeValid ? '✓ Code valide ! Paiement non requis.' : '✗ Code invalide'}
-                                </p>
-                              )}
-                            </div>
-                          )}
                         </div>
 
                         <div className="flex items-start gap-3 p-4 border border-input rounded-lg bg-muted/30">

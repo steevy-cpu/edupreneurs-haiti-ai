@@ -80,6 +80,10 @@ export const signupSchema = z.object({
   gender: z
     .string()
     .min(1, "Le genre est requis"),
+  dateOfBirth: z
+    .string()
+    .trim()
+    .optional(),
   privacy: z.boolean(),
   payment: z.string().optional(),
 }).refine((data) => data.email === data.emailConfirm, {
