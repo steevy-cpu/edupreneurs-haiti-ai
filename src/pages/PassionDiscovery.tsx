@@ -24,21 +24,21 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { getActivitiesForModule, getCategoriesWithActivities, type ActivityContent } from "@/data/passionActivities";
-import ericCelebrating from "@/assets/eric-celebrating.png";
-import ericThinking from "@/assets/eric-thinking-pose.png";
-import ericWaving from "@/assets/eric-waving.png";
-import ericThumbUp from "@/assets/eric-thumb-up.png";
-import ericPointing from "@/assets/eric-pointing-up.png";
-import ericTeaching from "@/assets/eric-teaching.png";
-import ericComputer from "@/assets/eric-computer.png";
+import judeCelebrating from "@/assets/eric-celebrating.png";
+import judeThinking from "@/assets/eric-thinking-pose.png";
+import judeWaving from "@/assets/eric-waving.png";
+import judeThumbUp from "@/assets/eric-thumb-up.png";
+import judePointing from "@/assets/eric-pointing-up.png";
+import judeTeaching from "@/assets/eric-teaching.png";
+import judeComputer from "@/assets/eric-computer.png";
 import { useVisitor } from "@/contexts/VisitorContext";
 import { VisitorPassionOverlay } from "@/components/passion/VisitorPassionOverlay";
 
 interface QuizQuestion {
   id: number;
   question: string;
-  options: Array<{ text: string; passion: string; ericImage: string }>;
-  ericImage: string;
+  options: Array<{ text: string; passion: string; judeImage: string }>;
+  judeImage: string;
 }
 
 interface Activity {
@@ -144,8 +144,8 @@ const PassionDiscoveryContent = () => {
         <div className="min-h-screen p-4 flex flex-col items-center justify-center">
           <div className="max-w-md mx-auto text-center space-y-6 opacity-50 blur-[2px]">
             <img 
-              src={ericWaving} 
-              alt="Eric" 
+              src={judeWaving} 
+              alt="Jude"
               className="w-40 h-40 mx-auto object-contain"
             />
             <h1 className="text-3xl font-bold text-white">
@@ -229,56 +229,56 @@ const PassionDiscoveryContent = () => {
     {
       id: 1,
       question: "Quand tu as du temps libre, qu'est-ce que tu préfères faire?",
-      ericImage: ericWaving,
+      judeImage: judeWaving,
       options: [
-        { text: "Écouter de la musique ou jouer d'un instrument 🎵", passion: "music", ericImage: ericPointing },
-        { text: "Dessiner, peindre ou créer quelque chose 🎨", passion: "arts", ericImage: ericPointing },
-        { text: "Jouer aux échecs ou résoudre des énigmes 🧠", passion: "chess", ericImage: ericPointing },
-        { text: "Lire un livre ou écrire des histoires 📚", passion: "literature", ericImage: ericPointing }
+        { text: "Écouter de la musique ou jouer d'un instrument 🎵", passion: "music", judeImage: judePointing },
+        { text: "Dessiner, peindre ou créer quelque chose 🎨", passion: "arts", judeImage: judePointing },
+        { text: "Jouer aux échecs ou résoudre des énigmes 🧠", passion: "chess", judeImage: judePointing },
+        { text: "Lire un livre ou écrire des histoires 📚", passion: "literature", judeImage: judePointing }
       ]
     },
     {
       id: 2,
       question: "Si tu devais choisir un projet à l'école, lequel t'intéresserait le plus?",
-      ericImage: ericThinking,
+      judeImage: judeThinking,
       options: [
-        { text: "Composer une chanson ou faire un concert 🎼", passion: "music", ericImage: ericPointing },
-        { text: "Créer une œuvre d'art visuelle 🖼️", passion: "arts", ericImage: ericPointing },
-        { text: "Organiser un tournoi de stratégie ♟️", passion: "chess", ericImage: ericPointing },
-        { text: "Écrire un poème ou une pièce de théâtre 📝", passion: "literature", ericImage: ericPointing }
+        { text: "Composer une chanson ou faire un concert 🎼", passion: "music", judeImage: judePointing },
+        { text: "Créer une œuvre d'art visuelle 🖼️", passion: "arts", judeImage: judePointing },
+        { text: "Organiser un tournoi de stratégie ♟️", passion: "chess", judeImage: judePointing },
+        { text: "Écrire un poème ou une pièce de théâtre 📝", passion: "literature", judeImage: judePointing }
       ]
     },
     {
       id: 3,
       question: "Qu'est-ce qui te fait le plus vibrer?",
-      ericImage: ericTeaching,
+      judeImage: judeTeaching,
       options: [
-        { text: "Les rythmes et les mélodies 🎶", passion: "music", ericImage: ericThumbUp },
-        { text: "Les couleurs et les formes 🌈", passion: "arts", ericImage: ericThumbUp },
-        { text: "Les défis intellectuels 🤔", passion: "chess", ericImage: ericThumbUp },
-        { text: "Les belles histoires et les mots 💭", passion: "literature", ericImage: ericThumbUp }
+        { text: "Les rythmes et les mélodies 🎶", passion: "music", judeImage: judeThumbUp },
+        { text: "Les couleurs et les formes 🌈", passion: "arts", judeImage: judeThumbUp },
+        { text: "Les défis intellectuels 🤔", passion: "chess", judeImage: judeThumbUp },
+        { text: "Les belles histoires et les mots 💭", passion: "literature", judeImage: judeThumbUp }
       ]
     },
     {
       id: 4,
       question: "Comment aimes-tu t'exprimer?",
-      ericImage: ericPointing,
+      judeImage: judePointing,
       options: [
-        { text: "À travers la musique et les sons 🎤", passion: "music", ericImage: ericTeaching },
-        { text: "Par l'art visuel et la création 🎭", passion: "arts", ericImage: ericTeaching },
-        { text: "En résolvant des problèmes complexes 🧩", passion: "chess", ericImage: ericTeaching },
-        { text: "Avec des mots et des récits ✍️", passion: "literature", ericImage: ericTeaching }
+        { text: "À travers la musique et les sons 🎤", passion: "music", judeImage: judeTeaching },
+        { text: "Par l'art visuel et la création 🎭", passion: "arts", judeImage: judeTeaching },
+        { text: "En résolvant des problèmes complexes 🧩", passion: "chess", judeImage: judeTeaching },
+        { text: "Avec des mots et des récits ✍️", passion: "literature", judeImage: judeTeaching }
       ]
     },
     {
       id: 5,
       question: "Quel type d'activité te détend le plus?",
-      ericImage: ericThumbUp,
+      judeImage: judeThumbUp,
       options: [
-        { text: "Jouer ou écouter de la musique 🎧", passion: "music", ericImage: ericCelebrating },
-        { text: "Dessiner ou créer des designs 🖌️", passion: "arts", ericImage: ericCelebrating },
-        { text: "Jouer à des jeux de réflexion 🎲", passion: "chess", ericImage: ericCelebrating },
-        { text: "Lire ou écrire tranquillement 📖", passion: "literature", ericImage: ericCelebrating }
+        { text: "Jouer ou écouter de la musique 🎧", passion: "music", judeImage: judeCelebrating },
+        { text: "Dessiner ou créer des designs 🖌️", passion: "arts", judeImage: judeCelebrating },
+        { text: "Jouer à des jeux de réflexion 🎲", passion: "chess", judeImage: judeCelebrating },
+        { text: "Lire ou écrire tranquillement 📖", passion: "literature", judeImage: judeCelebrating }
       ]
     }
   ];
@@ -590,7 +590,7 @@ const PassionDiscoveryContent = () => {
 
     const welcomeMessage = {
       role: "assistant",
-      content: `Bonjour! Je suis Eric, ton guide pour découvrir "${module.title}". 🎓\n\n${module.description}\n\nJe vais t'accompagner dans ce module d'environ ${module.duration}. Nous allons apprendre ensemble de manière interactive!\n\nPour commencer, dis-moi: Qu'est-ce qui t'intéresse le plus dans ${category.title}? As-tu déjà une expérience avec ce sujet?`
+      content: `Bonjour! Je suis Jude, ton guide pour découvrir "${module.title}". 🎓\n\n${module.description}\n\nJe vais t'accompagner dans ce module d'environ ${module.duration}. Nous allons apprendre ensemble de manière interactive!\n\nPour commencer, dis-moi: Qu'est-ce qui t'intéresse le plus dans ${category.title}? As-tu déjà une expérience avec ce sujet?`
     };
     
     setChatMessages([welcomeMessage]);
@@ -737,9 +737,9 @@ const PassionDiscoveryContent = () => {
               <div className="relative">
                 <div className="absolute -inset-4 bg-gradient-to-r from-violet-500 via-fuchsia-500 to-amber-500 rounded-full blur-2xl opacity-30 animate-pulse" />
                 <img 
-                  src={ericCelebrating} 
-                  alt="Eric célèbre" 
-                  className="relative w-40 h-40 md:w-52 md:h-52 drop-shadow-2xl animate-scale-in" 
+                  src={judeCelebrating} 
+                  alt="Jude célèbre" 
+                  className="relative w-40 h-40 md:w-52 md:h-52 drop-shadow-2xl animate-scale-in"
                   loading="lazy" 
                   decoding="async" 
                 />
@@ -749,7 +749,7 @@ const PassionDiscoveryContent = () => {
                   Découvre ta Passion!
                 </h1>
                 <p className="text-lg md:text-xl text-muted-foreground max-w-lg">
-                  Salut! Je suis <span className="font-bold text-foreground">Eric</span>, ton guide personnel. En 2 minutes, découvre ce qui te passionne vraiment!
+                  Salut! Je suis <span className="font-bold text-foreground">Jude</span>, ton guide personnel. En 2 minutes, découvre ce qui te passionne vraiment!
                 </p>
               </div>
             </div>
@@ -828,8 +828,8 @@ const PassionDiscoveryContent = () => {
                 <div className="relative">
                   <div className="absolute -inset-2 bg-gradient-to-r from-violet-500 to-fuchsia-500 rounded-full blur-lg opacity-20" />
                   <img 
-                    src={question.ericImage} 
-                    alt="Eric" 
+                    src={question.judeImage} 
+                    alt="Jude"
                     className="relative w-20 h-20 md:w-24 md:h-24 drop-shadow-lg" 
                     loading="lazy" 
                     decoding="async" 
@@ -905,9 +905,9 @@ const PassionDiscoveryContent = () => {
             <div className="relative inline-block mb-4">
               <div className="absolute -inset-4 bg-gradient-to-r from-violet-500 via-fuchsia-500 to-amber-500 rounded-full blur-2xl opacity-30 animate-pulse" />
               <img 
-                src={ericCelebrating} 
-                alt="Eric célèbre" 
-                className="relative w-36 h-36 md:w-44 md:h-44 drop-shadow-2xl animate-scale-in" 
+                src={judeCelebrating} 
+                alt="Jude célèbre" 
+                className="relative w-36 h-36 md:w-44 md:h-44 drop-shadow-2xl animate-scale-in"
                 loading="lazy" 
                 decoding="async" 
               />
@@ -1005,9 +1005,9 @@ const PassionDiscoveryContent = () => {
                   <div className="relative flex-shrink-0">
                     <div className="absolute -inset-4 bg-gradient-to-r from-violet-500 via-fuchsia-500 to-amber-500 rounded-full blur-2xl opacity-20" />
                     <img 
-                      src={ericComputer} 
-                      alt="Eric" 
-                      className="relative w-28 h-28 md:w-40 md:h-40 drop-shadow-xl" 
+                      src={judeComputer} 
+                      alt="Jude" 
+                      className="relative w-28 h-28 md:w-40 md:h-40 drop-shadow-xl"
                       loading="lazy" 
                       decoding="async" 
                     />
@@ -1529,9 +1529,9 @@ const PassionDiscoveryContent = () => {
             <Card className="lg:sticky lg:top-6 h-[70vh] lg:h-[calc(100vh-6rem)] flex flex-col">
               <CardHeader className="border-b py-3 md:py-4">
                 <div className="flex items-center gap-3">
-                  <img src={ericPointing} alt="Eric" className="w-10 h-10 md:w-12 md:h-12 rounded-full object-cover" loading="lazy" decoding="async" />
+                  <img src={judePointing} alt="Jude" className="w-10 h-10 md:w-12 md:h-12 rounded-full object-cover" loading="lazy" decoding="async" />
                   <div className="min-w-0">
-                    <CardTitle className="text-base md:text-lg">Discute avec Eric</CardTitle>
+                    <CardTitle className="text-base md:text-lg">Discute avec Jude</CardTitle>
                     <CardDescription className="text-xs md:text-sm">Ton tuteur IA personnel</CardDescription>
                   </div>
                 </div>
@@ -1559,7 +1559,7 @@ const PassionDiscoveryContent = () => {
                     <div className="flex justify-start">
                       <div className="bg-muted p-2.5 md:p-3 rounded-2xl flex items-center gap-2">
                         <Loader2 className="w-4 h-4 animate-spin" />
-                        <span className="text-xs md:text-sm">Eric réfléchit...</span>
+                        <span className="text-xs md:text-sm">Jude réfléchit...</span>
                       </div>
                     </div>
                   )}
@@ -1571,10 +1571,10 @@ const PassionDiscoveryContent = () => {
                     value={userInput}
                     onChange={(e) => setUserInput(e.target.value)}
                     onKeyDown={handleKeyDown}
-                    placeholder="Pose une question à Eric..."
+                    placeholder="Pose une question à Jude..."
                     className="flex-1 px-3 md:px-4 py-2 border rounded-full focus:outline-none focus:ring-2 focus:ring-purple-500 text-xs md:text-sm bg-background"
                     disabled={isLoading}
-                    aria-label="Message pour Eric"
+                    aria-label="Message pour Jude"
                   />
                   <Button 
                     onClick={sendMessage} 

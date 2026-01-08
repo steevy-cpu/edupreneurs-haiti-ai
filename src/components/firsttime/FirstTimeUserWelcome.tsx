@@ -144,7 +144,7 @@ const FirstTimeUserWelcome = () => {
                 <p className="text-xl sm:text-2xl font-bold text-foreground">
                   <SimpleTypewriter
                     text={`Bienvenue sur Edupreneurs, ${displayName}! 👋`}
-                    speed={80}
+                    speed={100}
                     onComplete={handleGreetingComplete}
                     enableSound
                     soundVolume={0.06}
@@ -161,7 +161,7 @@ const FirstTimeUserWelcome = () => {
                 >
                   <SimpleTypewriter
                     text="Moi c'est Jude, ton assistant d'apprentissage!"
-                    speed={70}
+                    speed={90}
                     onComplete={handleIntroComplete}
                     enableSound
                     soundVolume={0.06}
@@ -178,7 +178,7 @@ const FirstTimeUserWelcome = () => {
                 >
                   <SimpleTypewriter
                     text="Je vais te faire découvrir la plateforme..."
-                    speed={60}
+                    speed={80}
                     onComplete={handleWalkthroughComplete}
                     enableSound
                     soundVolume={0.06}

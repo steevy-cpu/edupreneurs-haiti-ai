@@ -11,7 +11,7 @@ interface SimpleTypewriterProps {
 
 const SimpleTypewriter = ({
   text,
-  speed = 80,
+  speed = 100,
   onComplete,
   className = "",
   enableSound = false,
