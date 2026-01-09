@@ -1,4 +1,5 @@
 import { createContext, useContext, useState, useEffect, useCallback, ReactNode } from 'react';
+import { useLocation } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 
 interface FirstTimeUserContextType {
@@ -75,9 +76,19 @@ export function FirstTimeUserProvider({ children }: FirstTimeUserProviderProps) 
     '6698f395-7f46-48b9-b7d3-d1151d9cec8c'  // vibemusical02@gmail.com (Test01)
   ];
 
-  // Check tour completion status on mount
+  // Get current location to check if user is on dashboard
+  const location = useLocation();
+  const isOnDashboard = location.pathname === '/dashboard';
+
+  // Check tour completion status when user is on dashboard
   useEffect(() => {
     const checkTourStatus = async () => {
+      // Only proceed if user is on the dashboard
+      if (!isOnDashboard) {
+        setIsLoading(false);
+        return;
+      }
+
       try {
         const { data: { user } } = await supabase.auth.getUser();
         
@@ -137,7 +148,7 @@ export function FirstTimeUserProvider({ children }: FirstTimeUserProviderProps) 
 
     // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      if (event === 'SIGNED_IN' && session?.user) {
+      if (event === 'SIGNED_IN' && session?.user && isOnDashboard) {
         checkTourStatus();
       } else if (event === 'SIGNED_OUT') {
         setShowWelcome(false);
@@ -154,7 +165,7 @@ export function FirstTimeUserProvider({ children }: FirstTimeUserProviderProps) 
     });
 
     return () => subscription.unsubscribe();
-  }, []);
+  }, [isOnDashboard]);
 
   const completeWelcome = useCallback(() => {
     setWelcomeComplete(true);
