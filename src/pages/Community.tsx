@@ -1129,14 +1129,10 @@ const Community = () => {
           if (payload.new.sender_id !== user?.id && conversationId !== selectedConversation) {
             logger.log('🔔 Showing browser notification for new message');
             
-            // Fetch sender profile for notification
-            const { data: senderProfile } = await supabase
-              .from('profiles')
-              .select('full_name, nickname')
-              .eq('user_id', payload.new.sender_id)
-              .single();
-            
-            const senderName = senderProfile?.nickname || senderProfile?.full_name || 'Quelqu\'un';
+          // Use cached profile for notification
+          const senderProfile = await getCachedProfile(payload.new.sender_id);
+
+          const senderName = senderProfile?.nickname || senderProfile?.full_name || 'Quelqu\'un';
             
             // Fetch conversation details for notification
             const { data: conversationData } = await supabase
