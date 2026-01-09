@@ -2,6 +2,7 @@
  * Security-Hardened: Eric Chat (Community AI)
  * 
  * Features:
+ * - JWT authentication (validates userId from token)
  * - Rate limiting (60 req/min for auth, 10 req/min for anon)
  * - Input validation
  * - Security headers
@@ -24,13 +25,44 @@ serve(async (req) => {
   try {
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
-    const supabase = createClient(supabaseUrl, supabaseServiceKey);
+    const supabaseAnonKey = Deno.env.get('SUPABASE_ANON_KEY')!;
+    
+    // Create service role client for database operations
+    const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey);
+
+    // SECURITY FIX: Validate user from JWT token instead of trusting client input
+    const authHeader = req.headers.get('Authorization');
+    if (!authHeader?.startsWith('Bearer ')) {
+      return new Response(
+        JSON.stringify({ error: 'Non autorisé - Token manquant' }),
+        { status: 401, headers: responseHeaders }
+      );
+    }
+
+    // Create client with user's auth token to validate JWT
+    const supabaseAuth = createClient(supabaseUrl, supabaseAnonKey, {
+      global: { headers: { Authorization: authHeader } }
+    });
+
+    const token = authHeader.replace('Bearer ', '');
+    const { data: claims, error: claimsError } = await supabaseAuth.auth.getUser(token);
+    
+    if (claimsError || !claims?.user) {
+      console.error('JWT validation failed:', claimsError);
+      return new Response(
+        JSON.stringify({ error: 'Non autorisé - Token invalide' }),
+        { status: 401, headers: responseHeaders }
+      );
+    }
+
+    // Use verified userId from JWT, not from client input
+    const verifiedUserId = claims.user.id;
 
     const rawBody = await req.json();
-    const { conversationId, userMessage, userId, userNickname } = rawBody;
+    const { conversationId, userMessage, userNickname } = rawBody;
 
     // Basic validation
-    if (!conversationId || !userMessage || !userId) {
+    if (!conversationId || !userMessage) {
       return new Response(
         JSON.stringify({ error: 'Champs requis manquants' }),
         { status: 400, headers: responseHeaders }
@@ -47,17 +79,17 @@ serve(async (req) => {
     // Get client IP for rate limiting
     const clientIp = getClientIp(req);
 
-    // Check rate limit
-    const rateCheck = await checkRateLimit(supabase, RATE_LIMITS.AI_TUTOR, userId, clientIp);
+    // Check rate limit using verified userId
+    const rateCheck = await checkRateLimit(supabaseAdmin, RATE_LIMITS.AI_TUTOR, verifiedUserId, clientIp);
     if (!rateCheck.allowed) {
       console.warn(`Rate limit exceeded for eric-chat`);
       return rateLimitResponse(rateCheck.retryAfter!, rateCheck.remaining, responseHeaders);
     }
 
-    console.log('Jude chat request:', { conversationId, userId: userId.substring(0, 8) });
+    console.log('Jude chat request:', { conversationId, userId: verifiedUserId.substring(0, 8) });
 
     // Get conversation history
-    const { data: messages, error: messagesError } = await supabase
+    const { data: messages, error: messagesError } = await supabaseAdmin
       .from('messages')
       .select('sender_id, content')
       .eq('conversation_id', conversationId)
@@ -69,17 +101,17 @@ serve(async (req) => {
     }
 
     // Fetch profiles for senders
-    const uniqueSenderIds = [...new Set(messages?.map(m => m.sender_id) || [])];
-    const { data: senderProfiles } = await supabase
+    const uniqueSenderIds = [...new Set((messages as Array<{sender_id: string; content: string}>)?.map((m) => m.sender_id) || [])];
+    const { data: senderProfiles } = await supabaseAdmin
       .from('profiles')
       .select('user_id, nickname, full_name')
       .in('user_id', uniqueSenderIds);
 
     const profileMap = new Map(
-      senderProfiles?.map(p => [p.user_id, p.nickname || p.full_name]) || []
+      (senderProfiles as Array<{user_id: string; nickname: string | null; full_name: string}>)?.map((p) => [p.user_id, p.nickname || p.full_name]) || []
     );
 
-    const conversationHistory = messages?.map(msg => {
+    const conversationHistory = (messages as Array<{sender_id: string; content: string}>)?.map((msg) => {
       const isJude = msg.sender_id === JUDE_USER_ID;
       const senderName = profileMap.get(msg.sender_id) || 'Utilisateur';
       return {
@@ -167,16 +199,16 @@ ${greetingInstruction}
     
     aiResponse = aiResponse.replace(/\*\*/g, '').replace(/\*/g, '');
 
-    // Mark user's message as read
-    await supabase
+    // Mark user's message as read (use verifiedUserId)
+    await supabaseAdmin
       .from('messages')
       .update({ read: true })
       .eq('conversation_id', conversationId)
-      .eq('sender_id', userId)
+      .eq('sender_id', verifiedUserId)
       .eq('read', false);
 
     // Insert Jude's response
-    const { error: insertError } = await supabase
+    const { error: insertError } = await supabaseAdmin
       .from('messages')
       .insert({
         conversation_id: conversationId,
@@ -192,14 +224,14 @@ ${greetingInstruction}
 
     console.log('Jude response inserted successfully');
 
-    // Send push notification
+    // Send push notification (use verifiedUserId)
     try {
       const cleanResponse = aiResponse.replace(/\n+/g, ' ').trim();
       const notificationBody = cleanResponse.substring(0, 100) + (cleanResponse.length > 100 ? '...' : '');
       
-      await supabase.functions.invoke('send-push-notification', {
+      await supabaseAdmin.functions.invoke('send-push-notification', {
         body: {
-          recipientUserId: userId,
+          recipientUserId: verifiedUserId,
           title: '🤖 Jude (Assistant IA)',
           body: notificationBody,
           conversationId: conversationId
