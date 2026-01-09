@@ -961,7 +961,12 @@ const Community = () => {
             shared_post: sharedPost,
           };
 
-          setMessages((prev) => [...prev, newMessage]);
+          // Only add if message doesn't already exist (avoid duplicates with optimistic updates)
+          setMessages((prev) => {
+            const exists = prev.some(m => m.id === newMessage.id);
+            if (exists) return prev;
+            return [...prev, newMessage];
+          });
 
           // Check if this is a group message mentioning Eric
           const currentConversation = conversations.find(c => c.id === conversationId);
