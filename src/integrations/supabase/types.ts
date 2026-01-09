@@ -126,6 +126,13 @@ export type Database = {
             foreignKeyName: "fk_ai_generation_logs_generated_by"
             columns: ["generated_by"]
             isOneToOne: false
+            referencedRelation: "leaderboard_profiles"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "fk_ai_generation_logs_generated_by"
+            columns: ["generated_by"]
+            isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["user_id"]
           },
@@ -607,6 +614,13 @@ export type Database = {
           user_id?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "fk_user"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "leaderboard_profiles"
+            referencedColumns: ["user_id"]
+          },
           {
             foreignKeyName: "fk_user"
             columns: ["user_id"]
@@ -1880,6 +1894,13 @@ export type Database = {
             foreignKeyName: "profiles_referred_by_fkey"
             columns: ["referred_by"]
             isOneToOne: false
+            referencedRelation: "leaderboard_profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "profiles_referred_by_fkey"
+            columns: ["referred_by"]
+            isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
@@ -2080,6 +2101,13 @@ export type Database = {
             foreignKeyName: "referrals_referred_id_fkey"
             columns: ["referred_id"]
             isOneToOne: false
+            referencedRelation: "leaderboard_profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "referrals_referred_id_fkey"
+            columns: ["referred_id"]
+            isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
@@ -2088,6 +2116,13 @@ export type Database = {
             columns: ["referred_id"]
             isOneToOne: false
             referencedRelation: "public_profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "referrals_referrer_id_fkey"
+            columns: ["referrer_id"]
+            isOneToOne: false
+            referencedRelation: "leaderboard_profiles"
             referencedColumns: ["id"]
           },
           {
@@ -2402,6 +2437,42 @@ export type Database = {
       }
     }
     Views: {
+      leaderboard_profiles: {
+        Row: {
+          academic_grade: string | null
+          affiliation_points: number | null
+          avatar_url: string | null
+          created_at: string | null
+          gold_earned: number | null
+          id: string | null
+          nickname: string | null
+          user_id: string | null
+          verified: boolean | null
+        }
+        Insert: {
+          academic_grade?: string | null
+          affiliation_points?: number | null
+          avatar_url?: string | null
+          created_at?: string | null
+          gold_earned?: number | null
+          id?: string | null
+          nickname?: string | null
+          user_id?: string | null
+          verified?: boolean | null
+        }
+        Update: {
+          academic_grade?: string | null
+          affiliation_points?: number | null
+          avatar_url?: string | null
+          created_at?: string | null
+          gold_earned?: number | null
+          id?: string | null
+          nickname?: string | null
+          user_id?: string | null
+          verified?: boolean | null
+        }
+        Relationships: []
+      }
       public_profiles: {
         Row: {
           academic_grade: string | null
