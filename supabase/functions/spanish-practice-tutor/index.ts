@@ -1,9 +1,16 @@
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
-};
+/**
+ * Security-Hardened: Spanish Practice Tutor
+ * 
+ * Features:
+ * - Rate limiting
+ * - Input validation
+ * - Security headers
+ */
+import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { checkRateLimit, getClientIp, rateLimitResponse, RATE_LIMITS } from "../_shared/rateLimiter.ts";
+import { validateInput, chatMessageSchema } from "../_shared/validation.ts";
+import { corsHeaders, securityHeaders, corsPreflightResponse } from "../_shared/securityHeaders.ts";
 
 interface Message {
   role: "system" | "user" | "assistant";
@@ -11,13 +18,40 @@ interface Message {
 }
 
 serve(async (req) => {
-  // Handle CORS preflight requests
   if (req.method === "OPTIONS") {
-    return new Response(null, { headers: corsHeaders });
+    return corsPreflightResponse();
   }
 
+  const responseHeaders = { ...corsHeaders, ...securityHeaders, 'Content-Type': 'application/json' };
+
   try {
-    const { message, lessonContext, chatHistory, userNickname, isInitialGreeting } = await req.json();
+    const supabase = createClient(
+      Deno.env.get('SUPABASE_URL')!,
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
+    );
+
+    // Get client IP for rate limiting
+    const clientIp = getClientIp(req);
+
+    // Check rate limit
+    const rateCheck = await checkRateLimit(supabase, RATE_LIMITS.AI_TUTOR, null, clientIp);
+    if (!rateCheck.allowed) {
+      console.warn(`Rate limit exceeded for spanish-practice-tutor from IP ${clientIp}`);
+      return rateLimitResponse(rateCheck.retryAfter!, rateCheck.remaining, responseHeaders);
+    }
+
+    // Parse and validate input
+    const rawBody = await req.json();
+    const validation = validateInput(chatMessageSchema, rawBody);
+    
+    if (!validation.success) {
+      return new Response(
+        JSON.stringify({ error: 'Validation failed', details: validation.errors }),
+        { status: 400, headers: responseHeaders }
+      );
+    }
+
+    const { message, lessonContext, chatHistory, userNickname, isInitialGreeting } = validation.data;
 
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) {
@@ -28,8 +62,8 @@ serve(async (req) => {
     const systemPrompt = `Eres Jude, un profesor de español amigable y entusiasta. Ayudas a ${userNickname || "tu estudiante"} (estudiante haitiano de 7AF) a practicar español.
 
 CONTEXTO DE LA LECCIÓN:
-📚 ${lessonContext.title}
-🎯 ${lessonContext.objective}
+📚 ${lessonContext?.title || 'Práctica de español'}
+🎯 ${lessonContext?.objective || 'Mejorar tu español'}
 
 TU COMPORTAMIENTO:
 1. Habla SIEMPRE en español claro y natural
@@ -60,7 +94,7 @@ ${
 
     const messages: Message[] = [
       { role: "system", content: systemPrompt },
-      ...chatHistory.map((msg: any) => ({
+      ...(chatHistory || []).map((msg: any) => ({
         role: msg.role,
         content: msg.content,
       })),
@@ -94,10 +128,7 @@ ${
           JSON.stringify({
             error: "Rate limit exceeded. Eric necesita un descanso. Intenta de nuevo en un momento.",
           }),
-          {
-            status: 429,
-            headers: { ...corsHeaders, "Content-Type": "application/json" },
-          },
+          { status: 429, headers: responseHeaders }
         );
       }
 
@@ -106,10 +137,7 @@ ${
           JSON.stringify({
             error: "Payment required. Por favor, contacta a tu administrador.",
           }),
-          {
-            status: 402,
-            headers: { ...corsHeaders, "Content-Type": "application/json" },
-          },
+          { status: 402, headers: responseHeaders }
         );
       }
 
@@ -121,7 +149,7 @@ ${
 
     console.log("Spanish practice response generated successfully");
     return new Response(JSON.stringify({ response }), {
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
+      headers: responseHeaders,
       status: 200,
     });
   } catch (error) {
@@ -132,8 +160,8 @@ ${
       }),
       {
         status: 500,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      },
+        headers: { ...corsHeaders, ...securityHeaders, 'Content-Type': 'application/json' },
+      }
     );
   }
 });

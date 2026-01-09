@@ -1,9 +1,16 @@
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
-};
+/**
+ * Security-Hardened: Bac Philosophy Tutor
+ * 
+ * Features:
+ * - Rate limiting
+ * - Input validation
+ * - Security headers
+ */
+import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { checkRateLimit, getClientIp, rateLimitResponse, RATE_LIMITS } from "../_shared/rateLimiter.ts";
+import { validateInput, chatMessageSchema } from "../_shared/validation.ts";
+import { corsHeaders, securityHeaders, corsPreflightResponse } from "../_shared/securityHeaders.ts";
 
 interface DissertationStep {
   step:
@@ -29,10 +36,38 @@ const DISSERTATION_STEPS: DissertationStep[] = [
 
 serve(async (req) => {
   if (req.method === "OPTIONS") {
-    return new Response(null, { headers: corsHeaders });
+    return corsPreflightResponse();
   }
 
+  const responseHeaders = { ...corsHeaders, ...securityHeaders, 'Content-Type': 'application/json' };
+
   try {
+    const supabase = createClient(
+      Deno.env.get('SUPABASE_URL')!,
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
+    );
+
+    // Get client IP for rate limiting
+    const clientIp = getClientIp(req);
+
+    // Check rate limit
+    const rateCheck = await checkRateLimit(supabase, RATE_LIMITS.AI_TUTOR, null, clientIp);
+    if (!rateCheck.allowed) {
+      console.warn(`Rate limit exceeded for bac-philosophy-tutor from IP ${clientIp}`);
+      return rateLimitResponse(rateCheck.retryAfter!, rateCheck.remaining, responseHeaders);
+    }
+
+    // Parse and validate input
+    const rawBody = await req.json();
+    const validation = validateInput(chatMessageSchema, rawBody);
+    
+    if (!validation.success) {
+      return new Response(
+        JSON.stringify({ error: 'Validation failed', details: validation.errors }),
+        { status: 400, headers: responseHeaders }
+      );
+    }
+
     const {
       subjects, // Array of 3 dissertation subjects
       userMessage,
@@ -40,7 +75,7 @@ serve(async (req) => {
       currentStep,
       studentText,
       chosenSubjectIndex,
-    } = await req.json();
+    } = validation.data;
 
     console.log("Bac Philosophy tutor request:", { currentStep, userMessage: userMessage?.substring(0, 50) });
 
@@ -172,11 +207,11 @@ ${studentText ? `\n**TEXTE SOUMIS PAR L'ÉLÈVE:**\n"${studentText}"\n` : ""}`;
     // Build messages array
     const messages = [
       { role: "system", content: systemPrompt },
-      ...conversationHistory.map((msg: any) => ({
+      ...(conversationHistory || []).map((msg: any) => ({
         role: msg.message_role === "user" ? "user" : "assistant",
         content: msg.message_content,
       })),
-      { role: "user", content: userMessage },
+      { role: "user", content: userMessage || "Guidez-moi" },
     ];
 
     // Call Lovable AI
@@ -197,13 +232,13 @@ ${studentText ? `\n**TEXTE SOUMIS PAR L'ÉLÈVE:**\n"${studentText}"\n` : ""}`;
       if (response.status === 429) {
         return new Response(
           JSON.stringify({ error: "Limite de requêtes atteinte, veuillez réessayer dans quelques instants." }),
-          { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+          { status: 429, headers: responseHeaders }
         );
       }
       if (response.status === 402) {
         return new Response(JSON.stringify({ error: "Crédits insuffisants. Veuillez recharger votre compte." }), {
           status: 402,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
+          headers: responseHeaders,
         });
       }
       const errorText = await response.text();
@@ -230,15 +265,13 @@ ${studentText ? `\n**TEXTE SOUMIS PAR L'ÉLÈVE:**\n"${studentText}"\n` : ""}`;
         suggestNextStep,
         dissertationSteps: DISSERTATION_STEPS,
       }),
-      {
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      },
+      { headers: responseHeaders }
     );
   } catch (error) {
     console.error("Error in bac-philosophy-tutor function:", error);
     return new Response(JSON.stringify({ error: error instanceof Error ? error.message : "Unknown error" }), {
       status: 500,
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
+      headers: { ...corsHeaders, ...securityHeaders, 'Content-Type': 'application/json' },
     });
   }
 });

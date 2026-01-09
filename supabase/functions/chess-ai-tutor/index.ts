@@ -1,9 +1,16 @@
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-};
+/**
+ * Security-Hardened: Chess AI Tutor
+ * 
+ * Features:
+ * - Rate limiting
+ * - Input validation
+ * - Security headers
+ */
+import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { checkRateLimit, getClientIp, rateLimitResponse, RATE_LIMITS } from "../_shared/rateLimiter.ts";
+import { validateInput, chessTutorSchema } from "../_shared/validation.ts";
+import { corsHeaders, securityHeaders, corsPreflightResponse } from "../_shared/securityHeaders.ts";
 
 interface Message {
   role: 'user' | 'assistant';
@@ -51,29 +58,55 @@ NIVEAU DE JEU: EXPERT 🏆
 };
 
 serve(async (req) => {
-  // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders });
+    return corsPreflightResponse();
   }
 
+  const responseHeaders = { ...corsHeaders, ...securityHeaders, 'Content-Type': 'application/json' };
+
   try {
+    const supabase = createClient(
+      Deno.env.get('SUPABASE_URL')!,
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
+    );
+
+    // Get client IP for rate limiting
+    const clientIp = getClientIp(req);
+
+    // Check rate limit
+    const rateCheck = await checkRateLimit(supabase, RATE_LIMITS.AI_TUTOR, null, clientIp);
+    if (!rateCheck.allowed) {
+      console.warn(`Rate limit exceeded for chess-ai-tutor from IP ${clientIp}`);
+      return rateLimitResponse(rateCheck.retryAfter!, rateCheck.remaining, responseHeaders);
+    }
+
+    // Parse and validate input
+    const rawBody = await req.json();
+    const validation = validateInput(chessTutorSchema, rawBody);
+    
+    if (!validation.success) {
+      return new Response(
+        JSON.stringify({ error: 'Validation failed', details: validation.errors }),
+        { status: 400, headers: responseHeaders }
+      );
+    }
+
     const { 
       fen, 
       chatHistory, 
       userMessage, 
       userNickname, 
       isEricTurn, 
-      difficulty = 'intermediate',
-      isAnalysis = false,
-      moveHistory = []
-    } = await req.json();
+      difficulty,
+      moveHistory
+    } = validation.data;
 
     const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
     if (!LOVABLE_API_KEY) {
       throw new Error('LOVABLE_API_KEY is not configured');
     }
 
-    const difficultyPrompt = getDifficultyPrompt(difficulty as DifficultyLevel);
+    const difficultyPrompt = getDifficultyPrompt((difficulty || 'intermediate') as DifficultyLevel);
 
     let systemPrompt = `Tu es Jude, un professeur d'échecs patient et encourageant pour des élèves haïtiens. 
 Tu parles en français simple et accessible.
@@ -186,7 +219,7 @@ Donne des conseils stratégiques si approprié.`;
           message: "Trop de requêtes. Veuillez réessayer dans quelques secondes." 
         }), {
           status: 429,
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          headers: responseHeaders,
         });
       }
       if (response.status === 402) {
@@ -195,7 +228,7 @@ Donne des conseils stratégiques si approprié.`;
           message: "Service temporairement indisponible." 
         }), {
           status: 402,
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          headers: responseHeaders,
         });
       }
       const errorText = await response.text();
@@ -206,7 +239,7 @@ Donne des conseils stratégiques si approprié.`;
     const data = await response.json();
     const aiResponse = data.choices[0].message.content;
 
-    console.log('AI Response:', aiResponse);
+    console.log('AI Response:', aiResponse.substring(0, 200));
 
     // If it's Eric's turn, try to parse the move
     if (isEricTurn) {
@@ -227,7 +260,7 @@ Donne des conseils stratégiques si approprié.`;
             explanation: parsed.explanation || "Je joue ce coup! 🎯",
             type: 'move'
           }), {
-            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+            headers: responseHeaders,
           });
         }
       } catch (parseError) {
@@ -238,7 +271,7 @@ Donne des conseils stratégiques si approprié.`;
           type: 'chat',
           parseError: true
         }), {
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          headers: responseHeaders,
         });
       }
     }
@@ -247,7 +280,7 @@ Donne des conseils stratégiques si approprié.`;
       message: aiResponse,
       type: 'chat'
     }), {
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      headers: responseHeaders,
     });
 
   } catch (error) {
@@ -256,7 +289,7 @@ Donne des conseils stratégiques si approprié.`;
       error: error instanceof Error ? error.message : 'Une erreur est survenue' 
     }), {
       status: 500,
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      headers: { ...corsHeaders, ...securityHeaders, 'Content-Type': 'application/json' },
     });
   }
 });

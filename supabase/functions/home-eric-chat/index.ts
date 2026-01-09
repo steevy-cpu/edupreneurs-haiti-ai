@@ -1,24 +1,55 @@
+/**
+ * Security-Hardened: Home Eric Chat
+ * 
+ * Features:
+ * - Rate limiting
+ * - Input validation
+ * - Security headers
+ */
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-};
+import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { checkRateLimit, getClientIp, rateLimitResponse, RATE_LIMITS } from "../_shared/rateLimiter.ts";
+import { validateInput, ericChatSchema } from "../_shared/validation.ts";
+import { corsHeaders, securityHeaders, corsPreflightResponse } from "../_shared/securityHeaders.ts";
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders });
+    return corsPreflightResponse();
   }
 
-  try {
-    const { message, chatHistory } = await req.json();
+  const responseHeaders = { ...corsHeaders, ...securityHeaders, 'Content-Type': 'application/json' };
 
-    if (!message) {
-      throw new Error('Missing message field');
+  try {
+    const supabase = createClient(
+      Deno.env.get('SUPABASE_URL')!,
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
+    );
+
+    // Get client IP for rate limiting
+    const clientIp = getClientIp(req);
+
+    // Check rate limit (AI_TUTOR limits)
+    const rateCheck = await checkRateLimit(supabase, RATE_LIMITS.AI_TUTOR, null, clientIp);
+    if (!rateCheck.allowed) {
+      console.warn(`Rate limit exceeded for home-eric-chat from IP ${clientIp}`);
+      return rateLimitResponse(rateCheck.retryAfter!, rateCheck.remaining, responseHeaders);
     }
 
-    console.log('Home Eric chat request:', { message, historyLength: chatHistory?.length || 0 });
+    // Parse and validate input
+    const rawBody = await req.json();
+    const validation = validateInput(ericChatSchema, rawBody);
+    
+    if (!validation.success) {
+      return new Response(
+        JSON.stringify({ error: 'Validation failed', details: validation.errors }),
+        { status: 400, headers: responseHeaders }
+      );
+    }
+
+    const { message, chatHistory } = validation.data;
+
+    console.log('Home Eric chat request:', { message: message.substring(0, 100), historyLength: chatHistory?.length || 0 });
 
     // Check if the question is about EDUPRENEURS
     const lowerMessage = message.toLowerCase();
@@ -52,9 +83,7 @@ Voulez-vous en savoir plus sur nos fonctionnalités ou comment vous inscrire ? �
 
       return new Response(
         JSON.stringify({ response: edupreneursResponse }),
-        {
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        }
+        { headers: responseHeaders }
       );
     }
 
@@ -119,6 +148,14 @@ Si on te pose des questions hors sujet, rappelle gentiment que tu es là pour pa
     if (!response.ok) {
       const errorText = await response.text();
       console.error('Lovable AI error:', response.status, errorText);
+      
+      if (response.status === 429) {
+        return new Response(
+          JSON.stringify({ error: 'Limite de requêtes AI atteinte. Réessayez dans un moment.' }),
+          { status: 429, headers: responseHeaders }
+        );
+      }
+      
       throw new Error(`AI API error: ${response.status}`);
     }
 
@@ -132,18 +169,13 @@ Si on te pose des questions hors sujet, rappelle gentiment que tu es là pour pa
 
     return new Response(
       JSON.stringify({ response: aiResponse }),
-      {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      }
+      { headers: responseHeaders }
     );
   } catch (error) {
     console.error('Error in home-eric-chat function:', error);
     return new Response(
       JSON.stringify({ error: error instanceof Error ? error.message : 'Unknown error' }),
-      {
-        status: 500,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      }
+      { status: 500, headers: responseHeaders }
     );
   }
 });
