@@ -11,6 +11,7 @@ import { toast } from "sonner";
 import { Sparkles, RefreshCw, Check, X, Eye, Loader2, AlertCircle } from "lucide-react";
 import { DEFAULT_WORD_COUNTS, SECTION_RANGES, SECTION_DESCRIPTIONS, SectionName } from "@/lib/lessonPrompts";
 import { validateGeneratedContent, getGradeColor, getScoreLabel, QualityMetrics } from "@/lib/contentValidation";
+import { sanitizeHtml } from "@/lib/sanitize";
 
 interface SectionGeneratorProps {
   lesson: any;
@@ -342,7 +343,7 @@ export const SectionGenerator = ({
                 <div className="border rounded-lg p-4 bg-background max-h-[400px] overflow-y-auto">
                   <div
                     className="prose prose-sm dark:prose-invert max-w-none"
-                    dangerouslySetInnerHTML={{ __html: generatedContent }}
+                    dangerouslySetInnerHTML={{ __html: sanitizeHtml(generatedContent) }}
                   />
                 </div>
               )}

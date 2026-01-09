@@ -1,9 +1,12 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-};
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { z } from "https://deno.land/x/zod@v3.22.4/mod.ts";
+import { 
+  secureJsonResponse, 
+  secureErrorResponse, 
+  corsPreflightResponse 
+} from "../_shared/securityHeaders.ts";
+import { checkRateLimit, RATE_LIMITS, getClientIp } from "../_shared/rateLimiter.ts";
 
 // Utility function to strip HTML tags and convert to plain text
 function stripHtml(html: string): string {
@@ -24,13 +27,60 @@ function stripHtml(html: string): string {
     .trim();
 }
 
+// Input validation schema
+const generateActivitiesSchema = z.object({
+  exercisesContent: z.string().min(1).max(100000),
+  lessonTitle: z.string().min(1).max(500),
+  gradeLevel: z.string().min(1).max(50),
+  subject: z.string().min(1).max(200)
+}).passthrough();
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders });
+    return corsPreflightResponse();
   }
 
   try {
-    const { exercisesContent, lessonTitle, gradeLevel, subject } = await req.json();
+    // Initialize Supabase for rate limiting
+    const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
+    const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+    const supabase = createClient(supabaseUrl, supabaseServiceKey);
+
+    // Get client IP and user for rate limiting
+    const clientIp = getClientIp(req);
+    const authHeader = req.headers.get('Authorization');
+    let userId: string | null = null;
+    
+    if (authHeader) {
+      const token = authHeader.replace('Bearer ', '');
+      const { data: { user } } = await supabase.auth.getUser(token);
+      userId = user?.id || null;
+    }
+
+    // Check rate limit
+    const rateLimitResult = await checkRateLimit(
+      supabase,
+      RATE_LIMITS.RESOURCE_INTENSIVE,
+      userId,
+      clientIp
+    );
+
+    if (!rateLimitResult.allowed) {
+      console.warn('[generate-interactive-activities] Rate limit exceeded');
+      return secureErrorResponse('Too many requests. Please try again later.', 429);
+    }
+
+    // Parse and validate input
+    const body = await req.json();
+    const validation = generateActivitiesSchema.safeParse(body);
+
+    if (!validation.success) {
+      const errors = validation.error.errors.map(e => `${e.path.join('.')}: ${e.message}`);
+      console.error('[generate-interactive-activities] Validation failed:', errors);
+      return secureErrorResponse('Invalid input', 400, errors);
+    }
+
+    const { exercisesContent, lessonTitle, gradeLevel, subject } = validation.data;
     const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
 
     if (!LOVABLE_API_KEY) {
@@ -43,7 +93,6 @@ serve(async (req) => {
       subject,
       exercisesLength: exercisesContent?.length 
     });
-
     // Detect if this is a Creole lesson
     const subjectNormalized = (subject || '').toLowerCase().trim().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
     const isCreoleLesson = subjectNormalized === 'kreyol ayisyen' || 
@@ -297,29 +346,16 @@ INSTRUCTIONS CRITIQUES:
     console.log('Interactive activities generated and shuffled successfully');
     console.log('First 500 chars:', generatedContent.substring(0, 500));
 
-    return new Response(
-      JSON.stringify({ 
-        content: generatedContent,
-        success: true 
-      }),
-      { 
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        status: 200 
-      }
-    );
+    return secureJsonResponse({ 
+      content: generatedContent,
+      success: true 
+    });
 
   } catch (error) {
     console.error('Error in generate-interactive-activities:', error);
-    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-    return new Response(
-      JSON.stringify({ 
-        error: errorMessage,
-        success: false 
-      }),
-      { 
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        status: 500 
-      }
+    return secureErrorResponse(
+      error instanceof Error ? error.message : 'Unknown error',
+      500
     );
   }
 });
