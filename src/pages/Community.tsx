@@ -2193,7 +2193,7 @@ const Community = () => {
               <Button
                 size="icon"
                 variant="ghost"
-                className="shrink-0"
+                className="shrink-0 md:hidden"
                 onClick={() => setSelectedConversation(null)}
               >
                 <ArrowLeft size={20} />
