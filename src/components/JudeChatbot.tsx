@@ -85,16 +85,16 @@ export const JudeChatbot = () => {
     resetPosition,
   } = useEricDraggable(isOpen, { defaultWidth: 380, defaultHeight: 500 });
 
-  // Hide JudeChatbot in visitor mode or on specific routes (AFTER all hooks)
-  if (isVisitor || HIDDEN_ROUTES.includes(location.pathname)) {
-    return null;
-  }
-
-  // Use a single DOM node for both open/closed measurements
+  // Use a single DOM node for both open/closed measurements - MUST be before early return
   const setRootRef = useCallback((node: HTMLDivElement | null) => {
     (floatingRef as any).current = node;
     (chatRef as any).current = node;
   }, [floatingRef, chatRef]);
+
+  // Hide JudeChatbot in visitor mode or on specific routes (AFTER all hooks)
+  if (isVisitor || HIDDEN_ROUTES.includes(location.pathname)) {
+    return null;
+  }
 
   // Fetch user profile on mount
   useEffect(() => {
@@ -319,7 +319,7 @@ export const JudeChatbot = () => {
               <Textarea
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
-                onKeyPress={handleKeyPress}
+                onKeyDown={handleKeyPress}
                 placeholder="Tapez votre question..."
                 maxLength={200}
                 className="flex-1 min-h-[32px] max-h-[50px] text-xs sm:text-sm resize-none border-0 bg-transparent focus-visible:ring-0 px-0 py-1.5"
