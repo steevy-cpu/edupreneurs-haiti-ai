@@ -13,7 +13,7 @@ import { validateInput, chessTutorSchema } from "../_shared/validation.ts";
 import { corsHeaders, securityHeaders, corsPreflightResponse } from "../_shared/securityHeaders.ts";
 
 interface Message {
-  role: 'user' | 'assistant';
+  role: 'user' | 'assistant' | 'system';
   content: string;
 }
 
@@ -91,15 +91,14 @@ serve(async (req) => {
       );
     }
 
-    const { 
-      fen, 
-      chatHistory, 
-      userMessage, 
-      userNickname, 
-      isEricTurn, 
-      difficulty,
-      moveHistory
-    } = validation.data;
+    const validatedData = validation.data as any;
+    const fen = validatedData.fen || validatedData.gameState?.fen || '';
+    const chatHistory = validatedData.chatHistory || [];
+    const userMessage = validatedData.userMessage || validatedData.message || '';
+    const userNickname = validatedData.userNickname || '';
+    const isEricTurn = validatedData.isEricTurn || false;
+    const difficulty = validatedData.difficulty || 'intermediate';
+    const moveHistory = validatedData.moveHistory || validatedData.gameState?.moveHistory || [];
 
     const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
     if (!LOVABLE_API_KEY) {
@@ -174,7 +173,7 @@ Donne des conseils stratégiques si approprié.`;
     if (chatHistory && chatHistory.length > 0) {
       for (const msg of chatHistory.slice(-10)) {
         messages.push({
-          role: msg.role,
+          role: msg.role as 'user' | 'assistant',
           content: msg.content
         });
       }

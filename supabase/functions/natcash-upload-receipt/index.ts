@@ -1,16 +1,32 @@
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+/**
+ * Security-Hardened: NatCash Upload Receipt
+ * 
+ * Features:
+ * - Rate limiting
+ * - Input validation
+ * - Security headers
+ */
+import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { checkRateLimit, getClientIp, rateLimitResponse, RATE_LIMITS } from "../_shared/rateLimiter.ts";
+import { corsHeaders, securityHeaders, noCacheHeaders, corsPreflightResponse } from "../_shared/securityHeaders.ts";
+import { z } from "https://deno.land/x/zod@v3.22.4/mod.ts";
 
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-};
+// Validation schema
+const uploadReceiptSchema = z.object({
+  orderId: z.string().min(1).max(100),
+  receiptBase64: z.string().max(10000000), // ~7.5MB base64 limit
+  fileName: z.string().max(255).optional(),
+  natcashPhone: z.string().max(20).optional(),
+  natcashReference: z.string().max(100).optional(),
+});
 
 serve(async (req) => {
-  // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders });
+    return corsPreflightResponse();
   }
+
+  const responseHeaders = { ...corsHeaders, ...securityHeaders, ...noCacheHeaders, 'Content-Type': 'application/json' };
 
   try {
     console.log('[NatCash Upload Receipt] Starting receipt upload...');
@@ -21,7 +37,7 @@ serve(async (req) => {
       console.error('[NatCash Upload Receipt] No authorization header');
       return new Response(
         JSON.stringify({ success: false, error: 'Unauthorized' }),
-        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        { status: 401, headers: responseHeaders }
       );
     }
 
@@ -38,30 +54,33 @@ serve(async (req) => {
       console.error('[NatCash Upload Receipt] User authentication failed:', userError);
       return new Response(
         JSON.stringify({ success: false, error: 'Unauthorized' }),
-        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        { status: 401, headers: responseHeaders }
       );
+    }
+
+    // Rate limiting
+    const clientIp = getClientIp(req);
+    const rateCheck = await checkRateLimit(supabase, RATE_LIMITS.PAYMENT, user.id, clientIp);
+    if (!rateCheck.allowed) {
+      console.warn(`Rate limit exceeded for natcash-upload-receipt user ${user.id}`);
+      return rateLimitResponse(rateCheck.retryAfter!, rateCheck.remaining, responseHeaders);
     }
 
     console.log('[NatCash Upload Receipt] User authenticated:', user.id);
 
-    // Parse request body
-    const { orderId, receiptBase64, fileName, natcashPhone, natcashReference } = await req.json();
+    // Parse and validate input
+    const rawBody = await req.json();
+    const validation = uploadReceiptSchema.safeParse(rawBody);
     
-    if (!orderId) {
-      console.error('[NatCash Upload Receipt] Missing orderId');
+    if (!validation.success) {
+      console.error('[NatCash Upload Receipt] Validation failed:', validation.error);
       return new Response(
-        JSON.stringify({ success: false, error: 'Missing orderId' }),
-        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        JSON.stringify({ success: false, error: validation.error.issues.map(i => i.message).join(', ') }),
+        { status: 400, headers: responseHeaders }
       );
     }
 
-    if (!receiptBase64) {
-      console.error('[NatCash Upload Receipt] Missing receipt file');
-      return new Response(
-        JSON.stringify({ success: false, error: 'Missing receipt file' }),
-        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
-    }
+    const { orderId, receiptBase64, fileName, natcashPhone, natcashReference } = validation.data;
 
     // Verify the transaction exists and belongs to the user
     const { data: transaction, error: fetchError } = await supabase
@@ -76,7 +95,7 @@ serve(async (req) => {
       console.error('[NatCash Upload Receipt] Transaction not found:', fetchError);
       return new Response(
         JSON.stringify({ success: false, error: 'Transaction not found' }),
-        { status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        { status: 404, headers: responseHeaders }
       );
     }
 
@@ -84,7 +103,7 @@ serve(async (req) => {
       console.error('[NatCash Upload Receipt] Transaction already processed:', transaction.status);
       return new Response(
         JSON.stringify({ success: false, error: 'Transaction already processed' }),
-        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        { status: 400, headers: responseHeaders }
       );
     }
 
@@ -111,7 +130,7 @@ serve(async (req) => {
       console.error('[NatCash Upload Receipt] Upload error:', uploadError);
       return new Response(
         JSON.stringify({ success: false, error: 'Failed to upload receipt' }),
-        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        { status: 500, headers: responseHeaders }
       );
     }
 
@@ -143,13 +162,11 @@ serve(async (req) => {
       console.error('[NatCash Upload Receipt] Update error:', updateError);
       return new Response(
         JSON.stringify({ success: false, error: 'Failed to update transaction' }),
-        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        { status: 500, headers: responseHeaders }
       );
     }
 
     console.log('[NatCash Upload Receipt] Transaction updated successfully');
-
-    // TODO: Send notification to admin about new receipt for verification
 
     return new Response(
       JSON.stringify({
@@ -162,14 +179,14 @@ serve(async (req) => {
           receiptUrl: receiptUrl
         }
       }),
-      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      { headers: responseHeaders }
     );
 
   } catch (error) {
     console.error('[NatCash Upload Receipt] Unexpected error:', error);
     return new Response(
       JSON.stringify({ success: false, error: 'Internal server error' }),
-      { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      { status: 500, headers: responseHeaders }
     );
   }
 });

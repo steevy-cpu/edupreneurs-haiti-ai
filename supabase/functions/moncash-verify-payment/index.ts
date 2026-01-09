@@ -1,11 +1,25 @@
+/**
+ * Security-Hardened: MonCash Verify Payment
+ * 
+ * Features:
+ * - Rate limiting
+ * - Input validation
+ * - Security headers
+ */
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { checkRateLimit, getClientIp, rateLimitResponse, RATE_LIMITS } from "../_shared/rateLimiter.ts";
+import { corsHeaders, securityHeaders, noCacheHeaders, corsPreflightResponse } from "../_shared/securityHeaders.ts";
+import { z } from "https://deno.land/x/zod@v3.22.4/mod.ts";
 
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-};
+// Validation schema
+const verifySchema = z.object({
+  orderId: z.string().max(100).optional(),
+  transactionId: z.string().max(100).optional(),
+}).refine(data => data.orderId || data.transactionId, {
+  message: "orderId or transactionId required"
+});
 
 // MonCash API endpoints
 const MONCASH_ENDPOINTS = {
@@ -20,11 +34,6 @@ const MONCASH_ENDPOINTS = {
     retrieveByTransactionId: 'https://moncashbutton.digicelgroup.com/Api/v1/RetrieveTransactionPayment',
   }
 };
-
-interface VerifyRequest {
-  orderId?: string;
-  transactionId?: string;
-}
 
 // Get OAuth token from MonCash
 async function getMonCashToken(clientId: string, clientSecret: string, mode: string): Promise<string> {
@@ -99,10 +108,11 @@ async function retrievePaymentByTransactionId(token: string, transactionId: stri
 }
 
 serve(async (req) => {
-  // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders });
+    return corsPreflightResponse();
   }
+
+  const responseHeaders = { ...corsHeaders, ...securityHeaders, ...noCacheHeaders, 'Content-Type': 'application/json' };
 
   try {
     // Get MonCash credentials from secrets
@@ -113,23 +123,36 @@ serve(async (req) => {
     if (!clientId || !clientSecret) {
       console.error('MonCash credentials not configured');
       return new Response(
-        JSON.stringify({ 
-          success: false, 
-          error: 'Payment gateway not configured' 
-        }),
-        { status: 503, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        JSON.stringify({ success: false, error: 'Payment gateway not configured' }),
+        { status: 503, headers: responseHeaders }
       );
     }
 
-    // Parse request body
-    const { orderId, transactionId }: VerifyRequest = await req.json();
+    const supabase = createClient(
+      Deno.env.get('SUPABASE_URL')!,
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
+    );
 
-    if (!orderId && !transactionId) {
+    // Rate limiting
+    const clientIp = getClientIp(req);
+    const rateCheck = await checkRateLimit(supabase, RATE_LIMITS.PAYMENT, null, clientIp);
+    if (!rateCheck.allowed) {
+      console.warn(`Rate limit exceeded for moncash-verify-payment from IP ${clientIp}`);
+      return rateLimitResponse(rateCheck.retryAfter!, rateCheck.remaining, responseHeaders);
+    }
+
+    // Parse and validate input
+    const rawBody = await req.json();
+    const validation = verifySchema.safeParse(rawBody);
+    
+    if (!validation.success) {
       return new Response(
-        JSON.stringify({ success: false, error: 'orderId or transactionId required' }),
-        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        JSON.stringify({ success: false, error: validation.error.issues.map(i => i.message).join(', ') }),
+        { status: 400, headers: responseHeaders }
       );
     }
+
+    const { orderId, transactionId } = validation.data;
 
     console.log(`Verifying MonCash payment: orderId=${orderId}, transactionId=${transactionId}, mode=${mode}`);
 
@@ -155,17 +178,12 @@ serve(async (req) => {
           error: paymentData.message || 'Payment verification failed',
           data: paymentData,
         }),
-        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        { headers: responseHeaders }
       );
     }
 
     const payment = paymentData.payment;
     const paymentStatus = payment?.message === 'successful' ? 'completed' : 'failed';
-
-    // Initialize Supabase client with service role
-    const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
-    const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
-    const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
     // Update transaction in database
     const updateData: Record<string, unknown> = {
@@ -201,18 +219,15 @@ serve(async (req) => {
           message: payment?.message,
         },
       }),
-      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      { headers: responseHeaders }
     );
 
   } catch (error) {
     console.error('Error in moncash-verify-payment:', error);
     const errorMessage = error instanceof Error ? error.message : 'Failed to verify payment';
     return new Response(
-      JSON.stringify({ 
-        success: false, 
-        error: errorMessage 
-      }),
-      { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      JSON.stringify({ success: false, error: errorMessage }),
+      { status: 500, headers: responseHeaders }
     );
   }
 });
