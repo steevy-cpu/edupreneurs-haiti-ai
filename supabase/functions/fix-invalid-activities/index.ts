@@ -1,10 +1,24 @@
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { getSecureHeaders, secureJsonResponse, secureErrorResponse, corsPreflightResponse } from "../_shared/securityHeaders.ts";
+import { z } from "https://deno.land/x/zod@v3.22.4/mod.ts";
 
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-};
+// Security: Input validation schema
+const fixActivitiesSchema = z.object({
+  lessonId: z.string().uuid().optional(),
+  activities: z.array(z.any()).optional(),
+  issues: z.array(z.object({
+    activityIndex: z.number(),
+    issue: z.string(),
+    suggestedFix: z.string().optional(),
+  })).optional(),
+  parsingErrors: z.array(z.string()).optional(),
+  lessonTitle: z.string().max(500).optional(),
+  subject: z.string().max(200).optional(),
+  gradeLevel: z.string().max(10).optional(),
+  originalContent: z.string().max(100000).optional(),
+  needsFullRegeneration: z.boolean().optional(),
+}).strict();
 
 interface ActivityIssue {
   activityIndex: number;
@@ -31,12 +45,26 @@ interface TrueFalseActivity {
 
 type ActivityToFix = QuizActivity | TrueFalseActivity;
 
+const corsHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+};
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders });
+    return corsPreflightResponse();
   }
 
   try {
+    // Security: Validate input
+    const rawInput = await req.json();
+    const parseResult = fixActivitiesSchema.safeParse(rawInput);
+    
+    if (!parseResult.success) {
+      console.error('Validation failed:', parseResult.error.errors);
+      return secureErrorResponse('Invalid input', 400, parseResult.error.errors.map(e => e.message));
+    }
+    
     const { 
       lessonId, 
       activities, 
@@ -47,7 +75,7 @@ serve(async (req) => {
       gradeLevel,
       originalContent,
       needsFullRegeneration 
-    } = await req.json();
+    } = parseResult.data;
 
     console.log(`[fix-invalid-activities] Processing for lesson: ${lessonTitle}`);
     console.log(`[fix-invalid-activities] Activities: ${activities?.length || 0}, Issues: ${issues?.length || 0}, ParsingErrors: ${parsingErrors?.length || 0}`);
@@ -56,7 +84,13 @@ serve(async (req) => {
     // Handle case where activities failed to parse - need full regeneration
     if (needsFullRegeneration) {
       console.log('[fix-invalid-activities] Starting full activity regeneration from scratch');
-      return await handleFullRegeneration(lessonTitle, subject, gradeLevel, originalContent, parsingErrors);
+      return await handleFullRegeneration(
+        lessonTitle || 'Unknown', 
+        subject || 'Unknown', 
+        gradeLevel || '7AF', 
+        originalContent || '', 
+        parsingErrors || []
+      );
     }
 
     if (!activities || activities.length === 0) {

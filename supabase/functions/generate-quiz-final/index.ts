@@ -1,18 +1,33 @@
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { getSecureHeaders, secureJsonResponse, secureErrorResponse, corsPreflightResponse } from "../_shared/securityHeaders.ts";
+import { z } from "https://deno.land/x/zod@v3.22.4/mod.ts";
 
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-};
+// Security: Input validation schema
+const generateQuizSchema = z.object({
+  lessonTitle: z.string().min(1).max(500),
+  contenu: z.string().max(50000).optional(),
+  exemplesExercices: z.string().max(50000).optional(),
+  gradeLevel: z.string().max(10).optional(),
+  subject: z.string().max(200).optional(),
+}).strict();
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders });
+    return corsPreflightResponse();
   }
 
   try {
-    const { lessonTitle, contenu, exemplesExercices, gradeLevel, subject } = await req.json();
+    // Security: Validate input
+    const rawInput = await req.json();
+    const parseResult = generateQuizSchema.safeParse(rawInput);
+    
+    if (!parseResult.success) {
+      console.error('Validation failed:', parseResult.error.errors);
+      return secureErrorResponse('Invalid input', 400, parseResult.error.errors.map(e => e.message));
+    }
+    
+    const { lessonTitle, contenu, exemplesExercices, gradeLevel, subject } = parseResult.data;
 
     console.log('📝 Generating Quiz Final for:', lessonTitle);
     console.log('📋 Request params:', { 
@@ -141,16 +156,10 @@ ${combinedContent}
 
     if (!response.ok) {
       if (response.status === 429) {
-        return new Response(
-          JSON.stringify({ error: 'Rate limits exceeded, please try again later.' }),
-          { status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-        );
+        return secureErrorResponse('Rate limits exceeded, please try again later.', 429);
       }
       if (response.status === 402) {
-        return new Response(
-          JSON.stringify({ error: 'Payment required, please add funds to your Lovable AI workspace.' }),
-          { status: 402, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-        );
+        return secureErrorResponse('Payment required, please add funds to your Lovable AI workspace.', 402);
       }
       const errorText = await response.text();
       console.error('AI gateway error:', response.status, errorText);
@@ -170,16 +179,10 @@ ${combinedContent}
     console.log('✅ Quiz Final generated successfully');
     console.log('First 500 chars:', quizContent.substring(0, 500));
 
-    return new Response(
-      JSON.stringify({ quizContent }),
-      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-    );
+    return secureJsonResponse({ quizContent });
 
   } catch (error) {
     console.error('Error in generate-quiz-final function:', error);
-    return new Response(
-      JSON.stringify({ error: error instanceof Error ? error.message : 'Unknown error' }),
-      { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-    );
+    return secureErrorResponse(error instanceof Error ? error.message : 'Unknown error');
   }
 });

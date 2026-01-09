@@ -12,6 +12,7 @@ import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { Sparkles, Loader2, CheckCircle2, XCircle, Clock, Check } from "lucide-react";
 import { DEFAULT_WORD_COUNTS, type SectionName } from "@/lib/lessonPrompts";
+import { createSanitizedMarkup } from "@/lib/sanitize";
 
 interface SingleLessonGeneratorProps {
   lesson: any;
@@ -1119,13 +1120,13 @@ export const SingleLessonGenerator = ({ lesson, onComplete }: SingleLessonGenera
                         /* Show full quiz for better preview */
                         <div 
                           className="prose prose-sm dark:prose-invert max-w-none bg-background/50 p-4 rounded border max-h-96 overflow-y-auto"
-                          dangerouslySetInnerHTML={{ __html: value }}
+                          dangerouslySetInnerHTML={createSanitizedMarkup(value as string)}
                         />
                       ) : (
                         /* Show truncated content for other sections */
                         <div 
                           className="prose prose-sm dark:prose-invert max-w-none text-xs max-h-32 overflow-y-auto bg-background/50 p-3 rounded border"
-                          dangerouslySetInnerHTML={{ __html: value.substring(0, 500) + (value.length > 500 ? '...' : '') }}
+                          dangerouslySetInnerHTML={createSanitizedMarkup((value as string).substring(0, 500) + ((value as string).length > 500 ? '...' : ''))}
                         />
                       )}
                     </div>

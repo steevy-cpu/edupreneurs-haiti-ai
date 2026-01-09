@@ -15,6 +15,7 @@ import { Save, Eye, FileText, Users, AlertTriangle, Sparkles, Loader2, ToggleLef
 import { useContentEditorRealtime } from "@/hooks/useContentEditorRealtime";
 import { SectionGenerator } from "./SectionGenerator";
 import { InteractiveActivitiesEnhanced } from "@/components/InteractiveActivitiesEnhanced";
+import { createSanitizedMarkup } from "@/lib/sanitize";
 
 interface LessonEditorProps {
   selectedLesson: any;
@@ -490,25 +491,25 @@ export const LessonEditor = ({ selectedLesson, onLessonUpdate }: LessonEditorPro
               {lessonData.objectif && (
                 <div className="mb-4">
                   <h2 className="text-lg md:text-xl font-semibold">Objectif</h2>
-                  <div dangerouslySetInnerHTML={{ __html: lessonData.objectif }} />
+                  <div dangerouslySetInnerHTML={createSanitizedMarkup(lessonData.objectif)} />
                 </div>
               )}
               {lessonData.introduction && (
                 <div className="mb-4">
                   <h2 className="text-lg md:text-xl font-semibold">Introduction</h2>
-                  <div dangerouslySetInnerHTML={{ __html: lessonData.introduction }} />
+                  <div dangerouslySetInnerHTML={createSanitizedMarkup(lessonData.introduction)} />
                 </div>
               )}
               {lessonData.contenu && (
                 <div className="mb-4">
                   <h2 className="text-lg md:text-xl font-semibold">Contenu</h2>
-                  <div dangerouslySetInnerHTML={{ __html: lessonData.contenu }} />
+                  <div dangerouslySetInnerHTML={createSanitizedMarkup(lessonData.contenu)} />
                 </div>
               )}
               {lessonData.exemples_exercices && (
                 <div className="mb-4">
                   <h2 className="text-lg md:text-xl font-semibold">Exemples & Exercices</h2>
-                  <div dangerouslySetInnerHTML={{ __html: lessonData.exemples_exercices }} />
+                  <div dangerouslySetInnerHTML={createSanitizedMarkup(lessonData.exemples_exercices)} />
                 </div>
               )}
               {lessonData.activites_interactives && (
