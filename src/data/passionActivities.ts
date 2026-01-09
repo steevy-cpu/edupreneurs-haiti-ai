@@ -103,7 +103,7 @@ export const musicActivities: CategoryContent = {
         id: "rhythm-game",
         type: "game",
         title: "Pratique le rythme",
-        description: "Tape le rythme avec Eric!",
+        description: "Tape le rythme avec Jude!",
         duration: "5 min",
         content: {
           gameDescription: "Essaie de taper dans tes mains en suivant le rythme de différentes chansons!"
@@ -405,7 +405,7 @@ export const artsActivities: CategoryContent = {
         id: "drawing-game",
         type: "game",
         title: "Exercice pratique",
-        description: "Dessine en suivant les instructions d'Eric",
+        description: "Dessine en suivant les instructions de Jude",
         duration: "8 min",
         content: {
           gameDescription: "Prends un crayon et du papier, et suis les instructions étape par étape!"
