@@ -15,6 +15,7 @@ import { toast } from "sonner";
 import { PlayCircle, PauseCircle, Download, RefreshCw, Loader2, CheckCircle2, XCircle, Clock, Eye, Check } from "lucide-react";
 import { DEFAULT_WORD_COUNTS, type SectionName } from "@/lib/lessonPrompts";
 import { InteractiveActivitiesEnhanced } from "@/components/InteractiveActivitiesEnhanced";
+import { createSanitizedMarkup } from "@/lib/sanitize";
 
 type GenerationStatus = 'pending' | 'in_progress' | 'completed' | 'error';
 
