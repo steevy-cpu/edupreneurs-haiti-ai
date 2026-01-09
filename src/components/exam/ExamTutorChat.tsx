@@ -4,15 +4,14 @@ import { useToast } from "@/hooks/use-toast";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Skeleton } from "@/components/ui/skeleton";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
-import { Send, Loader2, Youtube, MessageCircle, Trash2, ChevronLeft, ChevronRight } from "lucide-react";
+import { Send, Loader2, Youtube, MessageCircle, Trash2, ChevronLeft, ChevronRight, Lightbulb, Eye, CheckCircle2, XCircle } from "lucide-react";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
-import ericAiHelper from "@/assets/eric-ai-helper.png";
+import judeProfile from "@/assets/jude-profile.jpeg";
 import { MathText } from '@/components/MathContent';
-
+import { motion, AnimatePresence } from "framer-motion";
 interface Message {
   id: string;
   message_role: string;
@@ -380,121 +379,158 @@ Prends ton temps pour réfléchir! 💡`;
   };
 
   return (
-    <Card className="flex flex-col h-full overflow-hidden">
-      {/* Header */}
-      <div className="flex items-center gap-3 p-3 border-b bg-muted/30 flex-shrink-0">
-        <Avatar className="h-10 w-10 border-2 border-primary">
-          <AvatarImage src={ericAiHelper} alt="Jude" />
-          <AvatarFallback>J</AvatarFallback>
-        </Avatar>
+    <Card className="flex flex-col h-full overflow-hidden border-2 border-primary/20">
+      {/* Header with gradient */}
+      <div className="flex items-center gap-3 p-4 border-b bg-gradient-to-r from-primary/10 via-secondary/10 to-primary/10 flex-shrink-0">
+        <div className="relative">
+          <Avatar className="h-12 w-12 border-2 border-primary ring-2 ring-primary/20 ring-offset-2 ring-offset-background">
+            <AvatarImage src={judeProfile} alt="Jude" />
+            <AvatarFallback className="bg-primary text-primary-foreground font-bold">J</AvatarFallback>
+          </Avatar>
+          <span className="absolute -bottom-1 -right-1 w-4 h-4 bg-green-500 rounded-full border-2 border-background" />
+        </div>
         <div className="flex-1">
-          <h3 className="font-semibold">Jude - Ton Tuteur</h3>
-          <p className="text-xs text-muted-foreground">
-            Assistant IA pour l'examen
-          </p>
+          <h3 className="font-bold text-lg">Jude - Ton Tuteur IA</h3>
+          <div className="flex items-center gap-2">
+            <Badge variant="secondary" className="text-xs">
+              Q{exercise.exercise_number}/{totalExercises}
+            </Badge>
+            <span className="text-xs text-muted-foreground">
+              {exercise.concept}
+            </span>
+          </div>
         </div>
         <div className="flex gap-2">
           <Button
-            variant="outline"
-            size="sm"
+            variant="ghost"
+            size="icon"
             onClick={handleNewChat}
             disabled={isLoading}
-            className="hidden sm:flex"
+            className="h-8 w-8"
+            title="Nouvelle conversation"
           >
-            <MessageCircle className="h-4 w-4 mr-2" />
-            Nouveau
+            <MessageCircle className="h-4 w-4" />
           </Button>
           <Button
-            variant="outline"
-            size="sm"
+            variant="ghost"
+            size="icon"
             onClick={() => setShowDeleteDialog(true)}
             disabled={isLoading || messages.length === 0}
-            className="hidden sm:flex"
+            className="h-8 w-8"
+            title="Effacer l'historique"
           >
-            <Trash2 className="h-4 w-4 mr-2" />
-            Effacer
+            <Trash2 className="h-4 w-4" />
           </Button>
         </div>
       </div>
 
       {/* Messages */}
-      <ScrollArea className="flex-1 p-6 min-h-0">
+      <ScrollArea className="flex-1 p-4 min-h-0 bg-gradient-to-b from-background to-muted/20">
         <div className="space-y-4">
-          {messages.map((message) => (
-            <div
-              key={message.id}
-              className={`flex gap-3 ${
-                message.message_role === 'user' ? 'justify-end' : 'justify-start'
-              }`}
-            >
-              {message.message_role === 'assistant' && (
-                <Avatar className="h-8 w-8 flex-shrink-0">
-                  <AvatarImage src={ericAiHelper} alt="Jude" />
-                  <AvatarFallback>J</AvatarFallback>
-                </Avatar>
-              )}
-              <Card
-                className={`p-3 max-w-[80%] ${
-                  message.message_role === 'user'
-                    ? 'bg-primary text-primary-foreground'
-                    : 'bg-muted'
+          <AnimatePresence initial={false}>
+            {messages.map((message, index) => (
+              <motion.div
+                key={message.id}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.2, delay: index * 0.05 }}
+                className={`flex gap-3 ${
+                  message.message_role === 'user' ? 'justify-end' : 'justify-start'
                 }`}
               >
-                <div className="text-sm whitespace-pre-wrap leading-relaxed">
-                  <MathText text={message.message_content} />
-                </div>
-              </Card>
-            </div>
-          ))}
+                {message.message_role === 'assistant' && (
+                  <Avatar className="h-8 w-8 flex-shrink-0 border border-primary/30">
+                    <AvatarImage src={judeProfile} alt="Jude" />
+                    <AvatarFallback className="bg-primary/10 text-primary font-bold text-xs">J</AvatarFallback>
+                  </Avatar>
+                )}
+                <Card
+                  className={`p-3 max-w-[85%] shadow-sm ${
+                    message.message_role === 'user'
+                      ? 'bg-primary text-primary-foreground rounded-br-sm'
+                      : 'bg-card border-primary/10 rounded-bl-sm'
+                  }`}
+                >
+                  <div className="text-sm whitespace-pre-wrap leading-relaxed">
+                    <MathText text={message.message_content} />
+                  </div>
+                </Card>
+              </motion.div>
+            ))}
+          </AnimatePresence>
           {isLoading && (
-            <div className="flex gap-3">
-              <Avatar className="h-8 w-8">
-                <AvatarImage src={ericAiHelper} alt="Jude" />
-                <AvatarFallback>J</AvatarFallback>
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="flex gap-3"
+            >
+              <Avatar className="h-8 w-8 border border-primary/30">
+                <AvatarImage src={judeProfile} alt="Jude" />
+                <AvatarFallback className="bg-primary/10 text-primary font-bold text-xs">J</AvatarFallback>
               </Avatar>
-              <Card className="p-3 bg-muted">
-                <div className="flex gap-1">
-                  <div className="w-2 h-2 bg-primary rounded-full animate-bounce" />
-                  <div className="w-2 h-2 bg-primary rounded-full animate-bounce [animation-delay:0.2s]" />
-                  <div className="w-2 h-2 bg-primary rounded-full animate-bounce [animation-delay:0.4s]" />
+              <Card className="p-4 bg-card border-primary/10">
+                <div className="flex gap-1.5">
+                  <div className="w-2.5 h-2.5 bg-primary rounded-full animate-bounce" />
+                  <div className="w-2.5 h-2.5 bg-primary rounded-full animate-bounce [animation-delay:0.15s]" />
+                  <div className="w-2.5 h-2.5 bg-primary rounded-full animate-bounce [animation-delay:0.3s]" />
                 </div>
               </Card>
-            </div>
+            </motion.div>
           )}
           <div ref={messagesEndRef} />
         </div>
       </ScrollArea>
 
       {/* Input Area */}
-      <div className="p-3 border-t bg-background space-y-2 flex-shrink-0">
+      <div className="p-4 border-t bg-gradient-to-t from-muted/30 to-background space-y-3 flex-shrink-0">
         {/* Answer Options - Only show if we have valid options */}
         {showQuestion && options.length > 0 && (
           <div className="space-y-2">
-            <p className="text-xs font-medium text-muted-foreground">
+            <p className="text-sm font-semibold text-foreground flex items-center gap-2">
+              <span className="w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center">
+                <span className="text-primary text-xs font-bold">?</span>
+              </span>
               Sélectionne ta réponse:
             </p>
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-              {options.map((option: string, idx: number) => (
-                <Button
-                  key={idx}
-                  variant={selectedAnswer === letters[idx] ? "default" : "outline"}
-                  size="sm"
-                  onClick={() => handleAnswerSelection(letters[idx])}
-                  disabled={isLoading || selectedAnswer !== null}
-                  className="justify-start text-left h-auto py-2"
-                >
-                  <span className="font-bold mr-1">{letters[idx]})</span>
-                  <span className="text-xs truncate">{option}</span>
-                </Button>
-              ))}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+              {options.map((option: string, idx: number) => {
+                const isSelected = selectedAnswer === letters[idx];
+                return (
+                  <motion.div
+                    key={idx}
+                    whileHover={{ scale: selectedAnswer === null ? 1.02 : 1 }}
+                    whileTap={{ scale: selectedAnswer === null ? 0.98 : 1 }}
+                  >
+                    <Button
+                      variant={isSelected ? "default" : "outline"}
+                      onClick={() => handleAnswerSelection(letters[idx])}
+                      disabled={isLoading || selectedAnswer !== null}
+                      className={`w-full justify-start text-left h-auto py-3 px-4 transition-all ${
+                        isSelected 
+                          ? 'ring-2 ring-primary ring-offset-2' 
+                          : 'hover:border-primary/50 hover:bg-primary/5'
+                      } ${selectedAnswer !== null && !isSelected ? 'opacity-50' : ''}`}
+                    >
+                      <span className={`font-bold mr-3 w-7 h-7 rounded-full flex items-center justify-center ${
+                        isSelected ? 'bg-primary-foreground/20' : 'bg-primary/10'
+                      }`}>
+                        {letters[idx]}
+                      </span>
+                      <span className="text-sm flex-1">{option}</span>
+                      {isSelected && <CheckCircle2 className="h-5 w-5 ml-2" />}
+                    </Button>
+                  </motion.div>
+                );
+              })}
             </div>
           </div>
         )}
         
         {/* Message for exercises without options */}
         {showQuestion && options.length === 0 && (
-          <div className="text-xs text-muted-foreground bg-muted/50 p-2 rounded">
-            Question ouverte - Tape ta réponse ci-dessous ou demande de l'aide à Jude
+          <div className="flex items-center gap-2 text-sm text-muted-foreground bg-muted/50 p-3 rounded-lg border border-dashed border-muted-foreground/30">
+            <Lightbulb className="h-4 w-4 text-amber-500" />
+            <span>Question ouverte - Tape ta réponse ci-dessous ou demande de l'aide à Jude</span>
           </div>
         )}
 
@@ -505,8 +541,9 @@ Prends ton temps pour réfléchir! 💡`;
             size="sm"
             onClick={() => handleQuickAction("Donne-moi un indice pour cette question.")}
             disabled={isLoading}
-            className="flex-1 h-8 text-xs px-2"
+            className="flex-1 h-10 gap-2 hover:border-amber-500/50 hover:text-amber-600 hover:bg-amber-50 dark:hover:bg-amber-950/20"
           >
+            <Lightbulb className="h-4 w-4" />
             Indice
           </Button>
           <Button
@@ -514,28 +551,34 @@ Prends ton temps pour réfléchir! 💡`;
             size="sm"
             onClick={handleRevealAnswer}
             disabled={isLoading}
-            className="flex-1 h-8 text-xs px-2"
+            className="flex-1 h-10 gap-2 hover:bg-secondary/80"
           >
+            <Eye className="h-4 w-4" />
             Révéler la réponse
           </Button>
         </div>
 
         {youtubeQuery && (
-          <Button
-            variant="outline"
-            size="sm"
-            asChild
-            className="w-full"
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
           >
-            <a
-              href={`https://www.youtube.com/results?search_query=${encodeURIComponent(youtubeQuery)}`}
-              target="_blank"
-              rel="noopener noreferrer"
+            <Button
+              variant="outline"
+              size="sm"
+              asChild
+              className="w-full h-10 border-red-500/30 text-red-600 hover:bg-red-50 dark:hover:bg-red-950/20 hover:border-red-500/50"
             >
-              <Youtube className="h-4 w-4 mr-2" />
-              Vidéo recommandée
-            </a>
-          </Button>
+              <a
+                href={`https://www.youtube.com/results?search_query=${encodeURIComponent(youtubeQuery)}`}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                <Youtube className="h-4 w-4 mr-2" />
+                Regarder une vidéo explicative
+              </a>
+            </Button>
+          </motion.div>
         )}
 
         <div className="relative p-[2px] rounded-xl bg-gradient-to-r from-primary via-secondary to-primary bg-[length:200%_100%] animate-gradient-x">
@@ -545,9 +588,14 @@ Prends ton temps pour réfléchir! 💡`;
               onChange={(e) => setInputMessage(e.target.value)}
               placeholder="Pose une question à Jude..."
               disabled={isLoading}
-              className="flex-1 border-0 focus-visible:ring-0 focus-visible:ring-offset-0"
+              className="flex-1 border-0 focus-visible:ring-0 focus-visible:ring-offset-0 h-10"
             />
-            <Button type="submit" disabled={isLoading || !inputMessage.trim()}>
+            <Button 
+              type="submit" 
+              disabled={isLoading || !inputMessage.trim()}
+              size="icon"
+              className="h-10 w-10"
+            >
               {isLoading ? (
                 <Loader2 className="h-4 w-4 animate-spin" />
               ) : (
@@ -558,24 +606,39 @@ Prends ton temps pour réfléchir! 💡`;
         </div>
 
         {/* Navigation Controls */}
-        <div className="flex items-center justify-between pt-2 border-t">
+        <div className="flex items-center justify-between pt-3 border-t">
           <Button
             variant="outline"
             size="sm"
             onClick={onPreviousExercise}
             disabled={currentExerciseIndex === 0}
+            className="h-9"
           >
             <ChevronLeft className="h-4 w-4 mr-1" />
             Précédent
           </Button>
-          <span className="text-xs text-muted-foreground">
-            {currentExerciseIndex + 1} / {totalExercises}
-          </span>
+          <div className="flex items-center gap-1.5">
+            {Array.from({ length: Math.min(totalExercises, 5) }).map((_, i) => {
+              const startIdx = Math.max(0, Math.min(currentExerciseIndex - 2, totalExercises - 5));
+              const exerciseIdx = startIdx + i;
+              return (
+                <span
+                  key={i}
+                  className={`w-2 h-2 rounded-full transition-all ${
+                    exerciseIdx === currentExerciseIndex 
+                      ? 'w-4 bg-primary' 
+                      : 'bg-muted-foreground/30'
+                  }`}
+                />
+              );
+            })}
+          </div>
           <Button
             variant="outline"
             size="sm"
             onClick={onNextExercise}
             disabled={currentExerciseIndex >= totalExercises - 1}
+            className="h-9"
           >
             Suivant
             <ChevronRight className="h-4 w-4 ml-1" />
