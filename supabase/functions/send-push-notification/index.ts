@@ -1,10 +1,18 @@
+/**
+ * Security-Hardened: Send Push Notification
+ * 
+ * Features:
+ * - Rate limiting (10 req/min for auth, 3 req/min for anon)
+ * - Strict input validation with Zod
+ * - Security headers
+ * 
+ * OWASP: API4:2023 - Unrestricted Resource Consumption
+ */
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-};
+import { checkRateLimit, getClientIp, rateLimitResponse, RATE_LIMITS } from "../_shared/rateLimiter.ts";
+import { validateInput, pushNotificationSchema, validationErrorResponse } from "../_shared/validation.ts";
+import { corsHeaders, securityHeaders, corsPreflightResponse } from "../_shared/securityHeaders.ts";
 
 interface PushSubscription {
   endpoint: string;
@@ -26,16 +34,6 @@ function base64UrlToBase64(base64url: string): string {
   return base64url.replace(/-/g, '+').replace(/_/g, '/');
 }
 
-// Helper to convert base64 to Uint8Array
-function base64ToUint8Array(base64: string): Uint8Array {
-  const binaryString = atob(base64);
-  const bytes = new Uint8Array(binaryString.length);
-  for (let i = 0; i < binaryString.length; i++) {
-    bytes[i] = binaryString.charCodeAt(i);
-  }
-  return bytes;
-}
-
 // Helper to convert Uint8Array to base64url
 function uint8ArrayToBase64Url(array: Uint8Array): string {
   const base64 = btoa(String.fromCharCode(...array));
@@ -47,10 +45,7 @@ async function createVapidAuthToken(endpoint: string): Promise<string> {
   const url = new URL(endpoint);
   const audience = `${url.protocol}//${url.host}`;
   
-  const header = {
-    typ: 'JWT',
-    alg: 'ES256'
-  };
+  const header = { typ: 'JWT', alg: 'ES256' };
   
   const payload = {
     aud: audience,
@@ -139,7 +134,7 @@ async function cleanupOldSubscriptions(supabase: any, userId: string): Promise<n
   
   const count = oldSubs?.length || 0;
   if (count > 0) {
-    console.log(`🧹 Cleaned up ${count} old subscriptions for user ${userId}`);
+    console.log(`🧹 Cleaned up ${count} old subscriptions for user ${userId.substring(0, 8)}...`);
   }
   
   return count;
@@ -147,14 +142,16 @@ async function cleanupOldSubscriptions(supabase: any, userId: string): Promise<n
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
-    return new Response('ok', { headers: corsHeaders });
+    return corsPreflightResponse();
   }
+
+  const responseHeaders = { ...corsHeaders, ...securityHeaders, 'Content-Type': 'application/json' };
 
   if (!VAPID_PRIVATE_KEY) {
     console.error('❌ VAPID_PRIVATE_KEY not configured');
     return new Response(
       JSON.stringify({ error: 'Push notification service not configured' }),
-      { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      { status: 500, headers: responseHeaders }
     );
   }
 
@@ -163,14 +160,34 @@ serve(async (req) => {
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     const supabase = createClient(supabaseUrl, supabaseKey);
 
-    const { recipientUserId, title, body, conversationId, url, notificationId, type, entityId, actorId } = await req.json();
+    // Get client IP for rate limiting
+    const clientIp = getClientIp(req);
 
-    if (!recipientUserId) {
-      return new Response(
-        JSON.stringify({ error: 'recipientUserId is required' }), 
-        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
+    // Extract user ID from auth header if present
+    let userId: string | null = null;
+    const authHeader = req.headers.get('Authorization');
+    if (authHeader?.startsWith('Bearer ')) {
+      const { data: { user } } = await supabase.auth.getUser(authHeader.replace('Bearer ', ''));
+      userId = user?.id || null;
     }
+
+    // Check rate limit
+    const rateCheck = await checkRateLimit(supabase, RATE_LIMITS.EMAIL, userId, clientIp);
+    if (!rateCheck.allowed) {
+      console.warn(`Rate limit exceeded for push notification from ${userId ? 'user' : 'IP'}`);
+      return rateLimitResponse(rateCheck.retryAfter!, rateCheck.remaining, responseHeaders);
+    }
+
+    // Parse and validate input
+    const rawBody = await req.json();
+    const validation = validateInput(pushNotificationSchema, rawBody);
+    
+    if (!validation.success) {
+      console.warn("Push notification validation failed:", validation.errors);
+      return validationErrorResponse(validation.errors, responseHeaders);
+    }
+
+    const { recipientUserId, title, body, conversationId, url, type, entityId, actorId } = validation.data;
 
     // Cleanup old subscriptions first
     await cleanupOldSubscriptions(supabase, recipientUserId);
@@ -199,10 +216,10 @@ serve(async (req) => {
       .single();
 
     if (prefData && !prefData.enabled) {
-      console.log(`⏭️ User ${recipientUserId} has disabled ${category} notifications`);
+      console.log(`⏭️ User ${recipientUserId.substring(0, 8)}... has disabled ${category} notifications`);
       return new Response(
         JSON.stringify({ success: false, message: 'User has disabled this notification category', skipped: true }), 
-        { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        { status: 200, headers: responseHeaders }
       );
     }
     
@@ -216,19 +233,19 @@ serve(async (req) => {
       console.error('Error fetching subscriptions:', fetchError);
       return new Response(
         JSON.stringify({ error: 'Failed to fetch subscriptions' }), 
-        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        { status: 500, headers: responseHeaders }
       );
     }
 
     if (!subscriptions || subscriptions.length === 0) {
-      console.log(`⏭️ No push subscriptions found for user ${recipientUserId}`);
+      console.log(`⏭️ No push subscriptions found for user ${recipientUserId.substring(0, 8)}...`);
       return new Response(
         JSON.stringify({ success: true, message: 'No push subscription found', skipped: true }), 
-        { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        { status: 200, headers: responseHeaders }
       );
     }
 
-    console.log(`📤 Sending push to ${subscriptions.length} device(s) for user ${recipientUserId}`);
+    console.log(`📤 Sending push to ${subscriptions.length} device(s) for user ${recipientUserId.substring(0, 8)}...`);
 
     // Build notification payload
     const tag = entityId ? `${category}:${entityId}` : `notif-${Date.now()}`;
@@ -246,17 +263,14 @@ serve(async (req) => {
           notificationBody = `${actorName} a partagé votre publication`;
           break;
         case 'message':
-        case 'group_message':
           notificationBody = `Nouveau message de ${actorName}`;
           break;
-        case 'follow_request':
         case 'follow':
           notificationBody = `${actorName} souhaite vous suivre`;
           break;
         case 'follow_accepted':
           notificationBody = `${actorName} a accepté votre demande de suivi`;
           break;
-        case 'new_post':
         case 'post':
           notificationBody = `${actorName} a publié quelque chose`;
           break;
@@ -264,7 +278,7 @@ serve(async (req) => {
           notificationBody = `${actorName} vous a mentionné dans une publication`;
           break;
         default:
-          notificationBody = body || 'Nouvelle notification';
+          notificationBody = 'Nouvelle notification';
       }
     }
     
@@ -278,7 +292,6 @@ serve(async (req) => {
       requireInteraction: false,
       timestamp: Date.now(),
       data: {
-        notificationId: notificationId || null,
         url: url || '/notifications',
         entityId: entityId || null,
         category,
@@ -308,7 +321,6 @@ serve(async (req) => {
         });
 
         if (pushResponse.ok) {
-          // Update last_used_at for successful delivery
           await supabase
             .from('push_subscriptions')
             .update({ last_used_at: new Date().toISOString() })
@@ -320,7 +332,6 @@ serve(async (req) => {
           const status = pushResponse.status;
           console.error(`❌ Push failed for device ${subData.device_id}: status ${status}`);
           
-          // Delete expired/invalid subscriptions
           if (status === 404 || status === 410) {
             console.log(`🗑️ Removing expired subscription ${subData.id}`);
             await supabase
@@ -353,14 +364,14 @@ serve(async (req) => {
         totalDevices: results.length, 
         results 
       }), 
-      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      { headers: responseHeaders }
     );
 
   } catch (error: any) {
     console.error('❌ Function error:', error);
     return new Response(
-      JSON.stringify({ error: error.message }),
-      { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      JSON.stringify({ error: 'Une erreur est survenue' }),
+      { status: 500, headers: responseHeaders }
     );
   }
 });

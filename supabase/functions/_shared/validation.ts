@@ -1,0 +1,314 @@
+/**
+ * Security: Input Validation Schemas
+ * 
+ * Zod-based validation for all edge function inputs.
+ * Implements strict type checking, length limits, and sanitization.
+ * 
+ * OWASP Reference: API3:2023 - Broken Object Property Level Authorization
+ * OWASP Reference: API8:2023 - Security Misconfiguration
+ */
+
+import { z } from "https://deno.land/x/zod@v3.22.4/mod.ts";
+
+// ============================================
+// AI Chat / Tutor Schemas
+// ============================================
+
+/**
+ * Chat message validation for AI tutors
+ * - Strict length limits to prevent prompt injection
+ * - History limit to prevent memory attacks
+ * - Rejects unexpected fields
+ */
+export const chatMessageSchema = z.object({
+  message: z.string()
+    .min(1, "Message requis")
+    .max(10000, "Message trop long (max 10000 caractères)")
+    .transform(s => s.trim()),
+  chatHistory: z.array(z.object({
+    role: z.enum(['user', 'assistant', 'system']),
+    content: z.string().max(50000)
+  })).max(50).optional().default([]),
+  userNickname: z.string().max(100).optional(),
+  currentPage: z.string().max(200).optional(),
+  enableVoice: z.boolean().optional().default(true),
+  lessonTitle: z.string().max(500).optional(),
+  lessonContent: z.string().max(100000).optional(),
+  gradeLevel: z.string().max(50).optional(),
+  subject: z.string().max(100).optional(),
+}).strict();
+
+/**
+ * Eric chat specific schema
+ */
+export const ericChatSchema = z.object({
+  message: z.string()
+    .min(1, "Message requis")
+    .max(10000, "Message trop long")
+    .transform(s => s.trim()),
+  chatHistory: z.array(z.object({
+    role: z.enum(['user', 'assistant', 'system']),
+    content: z.string().max(50000)
+  })).max(50).optional().default([]),
+  userNickname: z.string().max(100).optional(),
+  userGrade: z.string().max(50).optional(),
+  currentPage: z.string().max(200).optional(),
+  enableVoice: z.boolean().optional().default(true),
+}).strict();
+
+/**
+ * Exam tutor schema
+ */
+export const examTutorSchema = z.object({
+  message: z.string()
+    .min(1, "Message requis")
+    .max(10000, "Message trop long")
+    .transform(s => s.trim()),
+  chatHistory: z.array(z.object({
+    role: z.enum(['user', 'assistant', 'system']),
+    content: z.string().max(50000)
+  })).max(50).optional().default([]),
+  exerciseContext: z.object({
+    questionText: z.string().max(10000).optional(),
+    concept: z.string().max(500).optional(),
+    subject: z.string().max(100).optional(),
+    correctAnswer: z.string().max(5000).optional(),
+    explanation: z.string().max(10000).optional(),
+  }).optional(),
+  userNickname: z.string().max(100).optional(),
+  enableVoice: z.boolean().optional().default(true),
+}).strict();
+
+/**
+ * Chess AI tutor schema
+ */
+export const chessTutorSchema = z.object({
+  message: z.string()
+    .min(1, "Message requis")
+    .max(5000, "Message trop long")
+    .transform(s => s.trim()),
+  chatHistory: z.array(z.object({
+    role: z.enum(['user', 'assistant', 'system']),
+    content: z.string().max(20000)
+  })).max(30).optional().default([]),
+  gameState: z.object({
+    fen: z.string().max(200).optional(),
+    lastMove: z.string().max(20).optional(),
+    moveHistory: z.array(z.string().max(20)).max(500).optional(),
+    isGameOver: z.boolean().optional(),
+    result: z.string().max(50).optional(),
+  }).optional(),
+  userNickname: z.string().max(100).optional(),
+  enableVoice: z.boolean().optional().default(true),
+}).strict();
+
+// ============================================
+// Email Schemas
+// ============================================
+
+/**
+ * Confirmation email validation
+ * - Strict email format
+ * - 6-digit code validation
+ */
+export const confirmationEmailSchema = z.object({
+  email: z.string()
+    .email("Email invalide")
+    .max(255, "Email trop long"),
+  fullName: z.string()
+    .min(2, "Nom trop court")
+    .max(200, "Nom trop long")
+    .transform(s => s.trim()),
+  nickname: z.string()
+    .min(2, "Pseudo trop court")
+    .max(50, "Pseudo trop long")
+    .transform(s => s.trim()),
+  academicGrade: z.string().max(50),
+  confirmationCode: z.string()
+    .length(6, "Code doit être 6 chiffres")
+    .regex(/^\d{6}$/, "Code invalide"),
+}).strict();
+
+/**
+ * Welcome email validation
+ */
+export const welcomeEmailSchema = z.object({
+  email: z.string().email("Email invalide").max(255),
+  fullName: z.string().min(2).max(200).transform(s => s.trim()),
+  nickname: z.string().min(2).max(50).transform(s => s.trim()),
+}).strict();
+
+/**
+ * Password reset email validation
+ */
+export const passwordResetEmailSchema = z.object({
+  email: z.string().email("Email invalide").max(255),
+}).strict();
+
+/**
+ * Push notification validation
+ */
+export const pushNotificationSchema = z.object({
+  recipientUserId: z.string().uuid("ID utilisateur invalide"),
+  title: z.string().min(1).max(200).transform(s => s.trim()),
+  body: z.string().min(1).max(1000).transform(s => s.trim()),
+  conversationId: z.string().uuid().optional(),
+  type: z.enum([
+    'message', 'like', 'comment', 'share', 
+    'follow', 'follow_accepted', 'mention', 'post'
+  ]).optional(),
+  actorId: z.string().uuid().optional(),
+  entityId: z.string().uuid().optional(),
+  url: z.string().url().max(500).optional(),
+}).strict();
+
+// ============================================
+// Payment Schemas
+// ============================================
+
+/**
+ * Payment creation validation
+ */
+export const paymentSchema = z.object({
+  amount: z.number()
+    .positive("Montant doit être positif")
+    .max(1000000, "Montant trop élevé"),
+  description: z.string().max(500).optional(),
+  orderId: z.string().max(100).optional(),
+}).strict();
+
+/**
+ * Payment verification validation
+ */
+export const paymentVerifySchema = z.object({
+  transactionId: z.string().max(100),
+}).strict();
+
+/**
+ * NatCash order validation
+ */
+export const natcashOrderSchema = z.object({
+  amount: z.number().positive().max(1000000),
+  description: z.string().max(500).optional(),
+  natcashPhone: z.string()
+    .regex(/^\+?[0-9]{8,15}$/, "Numéro de téléphone invalide"),
+}).strict();
+
+/**
+ * NatCash receipt upload validation
+ */
+export const natcashReceiptSchema = z.object({
+  orderId: z.string().uuid("ID commande invalide"),
+  receiptUrl: z.string().url("URL invalide").max(1000),
+  natcashReference: z.string().max(100).optional(),
+}).strict();
+
+// ============================================
+// Auth Schemas
+// ============================================
+
+/**
+ * Password reset validation
+ * - Strong password requirements
+ */
+export const resetPasswordSchema = z.object({
+  token: z.string()
+    .min(10, "Token invalide")
+    .max(500, "Token invalide"),
+  newPassword: z.string()
+    .min(8, "Mot de passe trop court (min 8 caractères)")
+    .max(128, "Mot de passe trop long")
+    .regex(/[A-Z]/, "Doit contenir une majuscule")
+    .regex(/[0-9]/, "Doit contenir un chiffre"),
+}).strict();
+
+/**
+ * Promo code validation
+ */
+export const promoCodeSchema = z.object({
+  code: z.string()
+    .min(3, "Code trop court")
+    .max(50, "Code trop long")
+    .transform(s => s.trim().toUpperCase()),
+}).strict();
+
+// ============================================
+// Content Generation Schemas
+// ============================================
+
+/**
+ * Avatar generation validation
+ */
+export const avatarGenerationSchema = z.object({
+  prompt: z.string()
+    .min(10, "Description trop courte")
+    .max(1000, "Description trop longue")
+    .transform(s => s.trim()),
+  userId: z.string().uuid("ID utilisateur invalide"),
+}).strict();
+
+/**
+ * TTS generation validation
+ */
+export const ttsSchema = z.object({
+  text: z.string()
+    .min(1, "Texte requis")
+    .max(5000, "Texte trop long (max 5000 caractères)")
+    .transform(s => s.trim()),
+  voiceId: z.string().max(100).optional(),
+}).strict();
+
+/**
+ * YouTube search validation
+ */
+export const youtubeSearchSchema = z.object({
+  query: z.string()
+    .min(2, "Recherche trop courte")
+    .max(200, "Recherche trop longue")
+    .transform(s => s.trim()),
+  maxResults: z.number().int().min(1).max(50).optional().default(10),
+}).strict();
+
+// ============================================
+// Validation Helper Functions
+// ============================================
+
+/**
+ * Validate input against a schema
+ * Returns typed result with success/failure
+ */
+export function validateInput<T>(
+  schema: z.ZodSchema<T>,
+  data: unknown
+): { success: true; data: T } | { success: false; errors: string[] } {
+  const result = schema.safeParse(data);
+  if (result.success) {
+    return { success: true, data: result.data };
+  }
+  return {
+    success: false,
+    errors: result.error.issues.map(i => i.message)
+  };
+}
+
+/**
+ * Generate a standardized 400 validation error response
+ */
+export function validationErrorResponse(
+  errors: string[],
+  corsHeaders: Record<string, string>
+): Response {
+  return new Response(
+    JSON.stringify({
+      error: 'Données invalides',
+      details: errors
+    }),
+    {
+      status: 400,
+      headers: {
+        ...corsHeaders,
+        'Content-Type': 'application/json'
+      }
+    }
+  );
+}

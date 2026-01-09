@@ -1,11 +1,19 @@
+/**
+ * Security-Hardened: Jude AI Tutor
+ * 
+ * Features:
+ * - Rate limiting (60 req/min for auth, 10 req/min for anon)
+ * - Strict input validation with Zod
+ * - Security headers
+ * 
+ * OWASP: API4:2023 - Unrestricted Resource Consumption
+ */
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.1";
-
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-};
+import { checkRateLimit, getClientIp, rateLimitResponse, RATE_LIMITS } from "../_shared/rateLimiter.ts";
+import { validateInput, chatMessageSchema, validationErrorResponse } from "../_shared/validation.ts";
+import { corsHeaders, securityHeaders, corsPreflightResponse } from "../_shared/securityHeaders.ts";
 
 // Animation trigger keywords mapping
 const ANIMATION_TRIGGERS: Record<string, { animation: string; emotion: string; priority: number }> = {
@@ -69,20 +77,15 @@ function generateTextHash(text: string): string {
   return Math.abs(hash).toString(16);
 }
 
-// Navigation detection from response - enhanced patterns
+// Navigation detection from response
 function detectNavigation(response: string): string | null {
   const navigationPatterns: Record<string, string> = {
-    // Home
     'page d\'accueil': '/',
     'accueil': '/',
-    
-    // Dashboard
     'tableau de bord': '/dashboard',
     'dashboard': '/dashboard',
     'mes stats': '/dashboard',
     'statistiques': '/dashboard',
-    
-    // Courses/Subjects
     'matières': '/matieres',
     'matieres': '/matieres',
     'mes cours': '/matieres',
@@ -100,8 +103,6 @@ function detectNavigation(response: string): string | null {
     'biologie': '/course/biologie',
     'physique': '/course/physique',
     'chimie': '/course/chimie',
-    
-    // Features
     'classement': '/leaderboard',
     'leaderboard': '/leaderboard',
     'mon rang': '/leaderboard',
@@ -122,8 +123,6 @@ function detectNavigation(response: string): string | null {
     'baccalauréat': '/baccalaureat',
     'bac': '/baccalaureat',
     'examens officiels': '/baccalaureat',
-    
-    // User
     'profil': '/profile',
     'mon compte': '/profile',
     'paramètres': '/settings',
@@ -133,7 +132,6 @@ function detectNavigation(response: string): string | null {
 
   const lowerResponse = response.toLowerCase();
   
-  // Check for navigation intent phrases
   const hasNavigationIntent = 
     lowerResponse.includes('allons') || 
     lowerResponse.includes('va voir') || 
@@ -155,33 +153,110 @@ function detectNavigation(response: string): string | null {
   return null;
 }
 
+// Generate simplified phoneme timing for lip sync
+function generateSimplifiedPhonemes(text: string, durationMs: number): Array<{ time: number; phoneme: string }> {
+  const phonemes: Array<{ time: number; phoneme: string }> = [];
+  const words = text.split(/\s+/);
+  const timePerWord = durationMs / words.length;
+  
+  const vowelPatterns: Record<string, string> = {
+    'a': 'aa', 'e': 'E', 'i': 'I', 'o': 'O', 'u': 'U',
+    'ou': 'U', 'eu': 'E', 'ai': 'E', 'au': 'O', 'eau': 'O',
+  };
+
+  let currentTime = 0;
+  
+  for (const word of words) {
+    const lowerWord = word.toLowerCase();
+    
+    for (let i = 0; i < lowerWord.length; i++) {
+      const char = lowerWord[i];
+      const twoChar = lowerWord.substring(i, i + 2);
+      const threeChar = lowerWord.substring(i, i + 3);
+      
+      let phoneme: string | null = null;
+      
+      if (vowelPatterns[threeChar]) {
+        phoneme = vowelPatterns[threeChar];
+        i += 2;
+      } else if (vowelPatterns[twoChar]) {
+        phoneme = vowelPatterns[twoChar];
+        i += 1;
+      } else if (vowelPatterns[char]) {
+        phoneme = vowelPatterns[char];
+      }
+      
+      if (phoneme) {
+        phonemes.push({
+          time: currentTime + (i / lowerWord.length) * timePerWord,
+          phoneme: `viseme_${phoneme}`
+        });
+      }
+    }
+    
+    currentTime += timePerWord;
+  }
+  
+  phonemes.push({ time: durationMs, phoneme: 'viseme_sil' });
+  
+  return phonemes;
+}
+
 serve(async (req) => {
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders });
+    return corsPreflightResponse();
   }
 
+  const responseHeaders = { ...corsHeaders, ...securityHeaders, 'Content-Type': 'application/json' };
+
   try {
+    const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
+    const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+    const supabase = createClient(supabaseUrl, supabaseKey);
+
+    // Extract user ID from auth header if present
+    let userId: string | null = null;
+    const authHeader = req.headers.get('Authorization');
+    if (authHeader?.startsWith('Bearer ')) {
+      const { data: { user } } = await supabase.auth.getUser(authHeader.replace('Bearer ', ''));
+      userId = user?.id || null;
+    }
+
+    // Get client IP for rate limiting
+    const clientIp = getClientIp(req);
+
+    // Check rate limit
+    const rateCheck = await checkRateLimit(supabase, RATE_LIMITS.AI_TUTOR, userId, clientIp);
+    if (!rateCheck.allowed) {
+      console.warn(`Rate limit exceeded for ${userId ? 'user: ' + userId.substring(0, 8) : 'IP: ' + clientIp}`);
+      return rateLimitResponse(rateCheck.retryAfter!, rateCheck.remaining, responseHeaders);
+    }
+
+    // Parse and validate input
+    const rawBody = await req.json();
+    const validation = validateInput(chatMessageSchema, rawBody);
+    
+    if (!validation.success) {
+      console.warn("Jude tutor validation failed:", validation.errors);
+      return validationErrorResponse(validation.errors, responseHeaders);
+    }
+
     const { 
       message, 
       chatHistory = [], 
       userNickname = 'ami(e)',
       currentPage = '/',
       enableVoice = true,
-      voiceId = 'EXAVITQu4vr4xnSDxMaL' // Sarah - friendly female voice
-    } = await req.json();
+    } = validation.data;
 
+    const voiceId = 'EXAVITQu4vr4xnSDxMaL'; // Sarah - friendly female voice
     const lovableApiKey = Deno.env.get('LOVABLE_API_KEY');
     const elevenLabsApiKey = Deno.env.get('ELEVENLABS_API_KEY');
-    const supabaseUrl = Deno.env.get('SUPABASE_URL');
-    const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
 
     if (!lovableApiKey) {
       throw new Error('LOVABLE_API_KEY not configured');
     }
-
-    // Create Supabase client for caching
-    const supabase = createClient(supabaseUrl!, supabaseKey!);
 
     // Get current time in Haiti
     const haitiTime = new Date().toLocaleString('en-US', { timeZone: 'America/Port-au-Prince' });
@@ -214,7 +289,7 @@ serve(async (req) => {
       (currentPage.startsWith('/course/') ? `sur le cours de ${currentPage.replace('/course/', '').replace(/-/g, ' ')}` : 
        currentPage.startsWith('/lesson/') ? 'sur une leçon' : '');
 
-    // System prompt for Jude - French-only platform assistant
+    // System prompt for Jude
     const systemPrompt = `Tu es Jude, l'assistant officiel de la plateforme éducative EDUPRENEURS.
 
 RÈGLES LINGUISTIQUES STRICTES:
@@ -341,7 +416,6 @@ CONTEXTE ACTUEL:
         phonemes = cachedAudio.phoneme_data;
         durationMs = cachedAudio.duration_ms;
         
-        // Update cache usage
         await supabase
           .from('jude_audio_cache')
           .update({ 
@@ -380,19 +454,11 @@ CONTEXTE ACTUEL:
               String.fromCharCode(...new Uint8Array(audioBuffer))
             );
             
-            // Estimate duration (rough: ~150 words per minute for French)
             const wordCount = responseText.split(/\s+/).length;
             durationMs = Math.round((wordCount / 150) * 60 * 1000);
-            
-            // For now, return base64 audio directly
-            // In production, upload to storage and return URL
             audioUrl = `data:audio/mpeg;base64,${audioBase64}`;
-            
-            // Generate simplified phoneme timing for lip sync
-            // This is a basic approximation - real phonemes would come from ElevenLabs streaming
             phonemes = generateSimplifiedPhonemes(responseText, durationMs);
             
-            // Cache the audio (skip for base64, would cache URL in production)
             console.log('Audio generated successfully, duration:', durationMs, 'ms');
           } else {
             console.error('ElevenLabs TTS error:', await ttsResponse.text());
@@ -416,7 +482,7 @@ CONTEXTE ACTUEL:
     console.log('Jude response ready:', { animation, emotion, hasAudio: !!audioUrl });
 
     return new Response(JSON.stringify(result), {
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      headers: responseHeaders,
     });
 
   } catch (error: unknown) {
@@ -429,67 +495,7 @@ CONTEXTE ACTUEL:
       emotion: 'neutral'
     }), {
       status: 500,
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      headers: { ...corsHeaders, ...securityHeaders, 'Content-Type': 'application/json' },
     });
   }
 });
-
-// Generate simplified phoneme timing for lip sync
-function generateSimplifiedPhonemes(text: string, durationMs: number): Array<{ time: number; phoneme: string }> {
-  const phonemes: Array<{ time: number; phoneme: string }> = [];
-  const words = text.split(/\s+/);
-  const timePerWord = durationMs / words.length;
-  
-  // French phoneme approximation based on common letter patterns
-  const vowelPatterns: Record<string, string> = {
-    'a': 'aa',
-    'e': 'E',
-    'i': 'I',
-    'o': 'O',
-    'u': 'U',
-    'ou': 'U',
-    'eu': 'E',
-    'ai': 'E',
-    'au': 'O',
-    'eau': 'O',
-  };
-
-  let currentTime = 0;
-  
-  for (const word of words) {
-    const lowerWord = word.toLowerCase();
-    
-    // Find vowels in word for mouth shapes
-    for (let i = 0; i < lowerWord.length; i++) {
-      const char = lowerWord[i];
-      const twoChar = lowerWord.substring(i, i + 2);
-      const threeChar = lowerWord.substring(i, i + 3);
-      
-      let phoneme: string | null = null;
-      
-      if (vowelPatterns[threeChar]) {
-        phoneme = vowelPatterns[threeChar];
-        i += 2;
-      } else if (vowelPatterns[twoChar]) {
-        phoneme = vowelPatterns[twoChar];
-        i += 1;
-      } else if (vowelPatterns[char]) {
-        phoneme = vowelPatterns[char];
-      }
-      
-      if (phoneme) {
-        phonemes.push({
-          time: currentTime + (i / lowerWord.length) * timePerWord,
-          phoneme: `viseme_${phoneme}`
-        });
-      }
-    }
-    
-    currentTime += timePerWord;
-  }
-  
-  // Add closing mouth at end
-  phonemes.push({ time: durationMs, phoneme: 'viseme_sil' });
-  
-  return phonemes;
-}
