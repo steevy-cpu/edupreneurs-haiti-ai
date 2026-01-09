@@ -383,16 +383,16 @@ Prends ton temps pour réfléchir! 💡`;
   return (
     <Card className="flex flex-col h-full overflow-hidden border-2 border-primary/20">
       {/* Header with gradient */}
-      <div className="flex items-center gap-3 p-4 border-b bg-gradient-to-r from-primary/10 via-secondary/10 to-primary/10 flex-shrink-0">
+      <div className="flex items-center gap-3 p-3 border-b bg-gradient-to-r from-primary/10 via-secondary/10 to-primary/10 flex-shrink-0">
         <div className="relative">
-          <Avatar className="h-12 w-12 border-2 border-primary ring-2 ring-primary/20 ring-offset-2 ring-offset-background">
+          <Avatar className="h-10 w-10 border-2 border-primary ring-2 ring-primary/20 ring-offset-2 ring-offset-background">
             <AvatarImage src={judeProfile} alt="Jude" />
             <AvatarFallback className="bg-primary text-primary-foreground font-bold">J</AvatarFallback>
           </Avatar>
-          <span className="absolute -bottom-1 -right-1 w-4 h-4 bg-green-500 rounded-full border-2 border-background" />
+          <span className="absolute -bottom-1 -right-1 w-4 h-4 bg-primary rounded-full border-2 border-background" />
         </div>
         <div className="flex-1">
-          <h3 className="font-bold text-lg">Jude - Ton Tuteur IA</h3>
+          <h3 className="font-bold text-base">Jude - Ton Tuteur IA</h3>
           <div className="flex items-center gap-2">
             <Badge variant="secondary" className="text-xs">
               Q{exercise.exercise_number}/{totalExercises}
@@ -427,8 +427,8 @@ Prends ton temps pour réfléchir! 💡`;
       </div>
 
       {/* Messages */}
-      <ScrollArea className="flex-1 p-4 min-h-0 bg-gradient-to-b from-background to-muted/20">
-        <div className="space-y-4">
+      <ScrollArea className="flex-1 p-3 min-h-0 bg-gradient-to-b from-background to-muted/20">
+        <div className="space-y-3">
           <AnimatePresence initial={false}>
             {messages.map((message, index) => (
               <motion.div
@@ -484,14 +484,14 @@ Prends ton temps pour réfléchir! 💡`;
       </ScrollArea>
 
       {/* Input Area */}
-      <div className="px-4 py-3 border-t bg-gradient-to-t from-muted/30 to-background space-y-2 flex-shrink-0">
+      <div className="px-3 py-2 border-t bg-gradient-to-t from-muted/30 to-background space-y-2 flex-shrink-0">
         {/* Collapsible tools to keep more space for the conversation */}
         <Button
           type="button"
           variant="ghost"
           size="sm"
           onClick={() => setToolsExpanded((v) => !v)}
-          className="w-full h-8 justify-between px-2 text-xs"
+          className="w-full h-7 justify-between px-2 text-xs"
         >
           <span className="flex items-center gap-2">
             <span className="inline-flex h-2 w-2 rounded-full bg-primary/70" />
@@ -625,13 +625,13 @@ Prends ton temps pour réfléchir! 💡`;
               onChange={(e) => setInputMessage(e.target.value)}
               placeholder="Pose une question à Jude..."
               disabled={isLoading}
-              className="flex-1 border-0 focus-visible:ring-0 focus-visible:ring-offset-0 h-10"
+              className="flex-1 border-0 focus-visible:ring-0 focus-visible:ring-offset-0 h-9"
             />
             <Button
               type="submit"
               disabled={isLoading || !inputMessage.trim()}
               size="icon"
-              className="h-10 w-10"
+              className="h-9 w-9"
             >
               {isLoading ? (
                 <Loader2 className="h-4 w-4 animate-spin" />
@@ -649,7 +649,7 @@ Prends ton temps pour réfléchir! 💡`;
             size="sm"
             onClick={onPreviousExercise}
             disabled={currentExerciseIndex === 0}
-            className="h-9"
+            className="h-8"
           >
             <ChevronLeft className="h-4 w-4 mr-1" />
             Précédent
@@ -675,7 +675,7 @@ Prends ton temps pour réfléchir! 💡`;
             size="sm"
             onClick={onNextExercise}
             disabled={currentExerciseIndex >= totalExercises - 1}
-            className="h-9"
+            className="h-8"
           >
             Suivant
             <ChevronRight className="h-4 w-4 ml-1" />
