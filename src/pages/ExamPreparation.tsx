@@ -242,27 +242,24 @@ export default function ExamPreparation() {
     <Layout>
       <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20">
         <div className="container mx-auto px-4 py-4">
-          {/* Header */}
-          <div className="mb-6">
-            <div className="flex justify-between items-center mb-4">
+          {/* Header - Compact for mobile */}
+          <div className="mb-4">
+            <div className="flex justify-between items-center mb-2">
               <Button
                 variant="ghost"
+                size="sm"
                 onClick={() => navigate("/examens-officiels")}
               >
-                <ArrowLeft className="h-4 w-4 mr-2" />
-                Retour aux examens
+                <ArrowLeft className="h-4 w-4 mr-1" />
+                <span className="hidden sm:inline">Retour aux examens</span>
+                <span className="sm:hidden">Retour</span>
               </Button>
               <ThemeToggle />
             </div>
 
-            <div className="space-y-1">
-              <h1 className="text-xl font-bold">
-                {exam?.title || "Préparation à l'examen"}
-              </h1>
-              <p className="text-sm text-muted-foreground">
-                Consulte l'examen PDF à gauche, Jude te guide exercice par exercice à droite
-              </p>
-            </div>
+            <h1 className="text-lg sm:text-xl font-bold line-clamp-1">
+              {exam?.title || "Préparation à l'examen"}
+            </h1>
           </div>
 
           {/* Progress Bar */}
@@ -276,23 +273,23 @@ export default function ExamPreparation() {
           )}
 
           {/* Main Content */}
-          <div className="mt-6">
+          <div className="mt-4">
             {/* Mobile: Tabs Layout */}
             <div className="lg:hidden">
-              <Tabs defaultValue="pdf" className="w-full">
-                <TabsList className="grid w-full grid-cols-2">
-                  <TabsTrigger value="pdf">
+              <Tabs defaultValue="tutor" className="w-full">
+                <TabsList className="grid w-full grid-cols-2 h-12">
+                  <TabsTrigger value="pdf" className="text-sm">
                     <FileText className="h-4 w-4 mr-2" />
                     Document PDF
                   </TabsTrigger>
-                  <TabsTrigger value="tutor">
+                  <TabsTrigger value="tutor" className="text-sm">
                     <MessageCircle className="h-4 w-4 mr-2" />
                     Tuteur Jude
                   </TabsTrigger>
                 </TabsList>
                 
-                <TabsContent value="pdf" className="mt-6">
-                  <div className="h-[calc(100vh-140px)] min-h-[550px]">
+                <TabsContent value="pdf" className="mt-4">
+                  <div className="h-[calc(100vh-220px)] min-h-[500px]">
                     <ExamPDFViewer
                       pdfUrl={exam?.pdf_url || null}
                       examTitle={exam?.title || "Examen"}
@@ -300,8 +297,8 @@ export default function ExamPreparation() {
                   </div>
                 </TabsContent>
  
-                <TabsContent value="tutor" className="mt-6">
-                  <div className="h-[calc(100vh-140px)] min-h-[550px]">
+                <TabsContent value="tutor" className="mt-4">
+                  <div className="h-[calc(100vh-220px)] min-h-[500px]">
                     {session && currentExerciseData ? (
                     <ExamTutorChat
                         sessionId={session.id}
