@@ -1,5 +1,6 @@
 import { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
+import DOMPurify from "dompurify";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -20,6 +21,23 @@ import { LessonNavigation } from "@/components/lesson/LessonNavigation";
 import { LessonAudioPlayerSimple } from "@/components/LessonAudioPlayerSimple";
 import { MathContent, isMathSubject } from "@/components/MathContent";
 import { ProgressiveContent } from "@/components/lesson/ProgressiveContent";
+
+// Security: DOMPurify configuration for educational content
+const PURIFY_CONFIG = {
+  ALLOWED_TAGS: ['p', 'br', 'strong', 'em', 'b', 'i', 'ul', 'ol', 'li', 
+                  'h1', 'h2', 'h3', 'h4', 'h5', 'h6',
+                  'table', 'tr', 'td', 'th', 'thead', 'tbody',
+                  'img', 'a', 'span', 'div', 'code', 'pre', 'blockquote',
+                  'sup', 'sub', 'hr'],
+  ALLOWED_ATTR: ['href', 'src', 'alt', 'class', 'style', 'target', 'id'],
+  FORBID_TAGS: ['script', 'iframe', 'object', 'embed', 'form', 'input', 'button'],
+  FORBID_ATTR: ['onerror', 'onclick', 'onload', 'onmouseover', 'onfocus', 'onblur']
+};
+
+// Helper to sanitize HTML content
+const sanitizeHtml = (html: string): string => {
+  return DOMPurify.sanitize(html, PURIFY_CONFIG);
+};
 
 interface LessonData {
   id: string;
@@ -299,7 +317,7 @@ export const LessonPageTemplate = ({
               ) : (
                 <div 
                   className="text-muted-foreground lesson-content text-sm sm:text-base" 
-                  dangerouslySetInnerHTML={{ __html: lesson.objectif }}
+                  dangerouslySetInnerHTML={{ __html: sanitizeHtml(lesson.objectif) }}
                 />
               )}
               
@@ -353,7 +371,7 @@ export const LessonPageTemplate = ({
               ) : (
                 <div 
                   className="text-muted-foreground lesson-content text-base" 
-                  dangerouslySetInnerHTML={{ __html: lesson.objectif }}
+                  dangerouslySetInnerHTML={{ __html: sanitizeHtml(lesson.objectif) }}
                 />
               )}
               

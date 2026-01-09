@@ -59,10 +59,30 @@ export default function Auth() {
   const [promoCodeValid, setPromoCodeValid] = useState(false);
   const [showPromoInput, setShowPromoInput] = useState(false);
 
-  // Valid promo codes (case-insensitive, can be expanded or moved to backend)
-  const VALID_PROMO_CODES = ['cscp2026'];
-  const validatePromoCode = (code: string): boolean => {
-    return VALID_PROMO_CODES.includes(code.toLowerCase().trim());
+  // Server-side promo code validation
+  const [isValidatingPromo, setIsValidatingPromo] = useState(false);
+  
+  const validatePromoCode = async (code: string): Promise<{ valid: boolean; goldReward?: number }> => {
+    if (!code.trim()) return { valid: false };
+    
+    setIsValidatingPromo(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('validate-promo-code', {
+        body: { code: code.trim() }
+      });
+      
+      if (error) {
+        console.error('Promo code validation error:', error);
+        return { valid: false };
+      }
+      
+      return { valid: data.valid, goldReward: data.goldReward };
+    } catch (error) {
+      console.error('Promo code validation failed:', error);
+      return { valid: false };
+    } finally {
+      setIsValidatingPromo(false);
+    }
   };
 
   // Countdown timer for resend cooldown
@@ -1427,12 +1447,22 @@ export default function Auth() {
                             type="text"
                             placeholder="Entrez votre code promotionnel"
                             value={promoCode}
-                            onChange={(e) => {
+                            onChange={async (e) => {
                               const code = e.target.value;
                               setPromoCode(code);
-                              const isValid = validatePromoCode(code);
-                              setPromoCodeValid(isValid);
-                              if (isValid) {
+                              
+                              if (!code.trim()) {
+                                setPromoCodeValid(false);
+                                if (signupData.payment === 'promo_code') {
+                                  setSignupData({ ...signupData, payment: '' });
+                                }
+                                return;
+                              }
+                              
+                              // Validate with server
+                              const result = await validatePromoCode(code);
+                              setPromoCodeValid(result.valid);
+                              if (result.valid) {
                                 setSignupData({ ...signupData, payment: 'promo_code' });
                               } else if (signupData.payment === 'promo_code') {
                                 setSignupData({ ...signupData, payment: '' });
@@ -1440,9 +1470,15 @@ export default function Auth() {
                             }}
                             className="auth-input"
                           />
-                          {promoCode && (
+                          {promoCode && !isValidatingPromo && (
                             <p className={`text-xs ${promoCodeValid ? 'text-success' : 'text-destructive'}`}>
                               {promoCodeValid ? '✓ Code valide ! Vous pouvez créer votre compte.' : '✗ Code invalide'}
+                            </p>
+                          )}
+                          {isValidatingPromo && (
+                            <p className="text-xs text-muted-foreground flex items-center gap-1">
+                              <Loader2 className="h-3 w-3 animate-spin" />
+                              Vérification...
                             </p>
                           )}
                           {!promoCode && (
