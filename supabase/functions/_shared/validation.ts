@@ -15,20 +15,33 @@ import { z } from "https://deno.land/x/zod@v3.22.4/mod.ts";
 // ============================================
 
 /**
+ * Base chat history schema - reusable
+ */
+const chatHistoryItemSchema = z.object({
+  role: z.enum(['user', 'assistant', 'system']),
+  content: z.string().max(50000)
+});
+
+/**
+ * Lesson context schema for language tutors
+ */
+const lessonContextSchema = z.object({
+  title: z.string().max(500).optional(),
+  objective: z.string().max(1000).optional(),
+  gradeLevel: z.string().max(50).optional(),
+}).optional();
+
+/**
  * Chat message validation for AI tutors
- * - Strict length limits to prevent prompt injection
- * - History limit to prevent memory attacks
- * - Rejects unexpected fields
+ * - Permissive to handle varied tutor inputs
+ * - Core fields validated, extras passed through
  */
 export const chatMessageSchema = z.object({
   message: z.string()
     .min(1, "Message requis")
     .max(10000, "Message trop long (max 10000 caractères)")
     .transform(s => s.trim()),
-  chatHistory: z.array(z.object({
-    role: z.enum(['user', 'assistant', 'system']),
-    content: z.string().max(50000)
-  })).max(50).optional().default([]),
+  chatHistory: z.array(chatHistoryItemSchema).max(50).optional().default([]),
   userNickname: z.string().max(100).optional(),
   currentPage: z.string().max(200).optional(),
   enableVoice: z.boolean().optional().default(true),
@@ -36,7 +49,25 @@ export const chatMessageSchema = z.object({
   lessonContent: z.string().max(100000).optional(),
   gradeLevel: z.string().max(50).optional(),
   subject: z.string().max(100).optional(),
-}).strict();
+  // Francais tutor specific
+  lessonType: z.string().max(50).optional(),
+  lessonTopic: z.string().max(500).optional(),
+  // Passion tutor specific
+  category: z.string().max(100).optional(),
+  // Language practice specific
+  lessonContext: lessonContextSchema,
+  isInitialGreeting: z.boolean().optional(),
+  // Bac philosophy specific
+  subjects: z.array(z.string().max(2000)).max(5).optional(),
+  userMessage: z.string().max(10000).optional(),
+  conversationHistory: z.array(z.object({
+    message_role: z.string().max(50),
+    message_content: z.string().max(50000)
+  })).max(100).optional(),
+  currentStep: z.string().max(100).optional(),
+  studentText: z.string().max(50000).optional(),
+  chosenSubjectIndex: z.number().int().min(0).max(10).optional(),
+}).passthrough();
 
 /**
  * Eric chat specific schema
@@ -46,51 +77,52 @@ export const ericChatSchema = z.object({
     .min(1, "Message requis")
     .max(10000, "Message trop long")
     .transform(s => s.trim()),
-  chatHistory: z.array(z.object({
-    role: z.enum(['user', 'assistant', 'system']),
-    content: z.string().max(50000)
-  })).max(50).optional().default([]),
+  chatHistory: z.array(chatHistoryItemSchema).max(50).optional().default([]),
   userNickname: z.string().max(100).optional(),
   userGrade: z.string().max(50).optional(),
   currentPage: z.string().max(200).optional(),
   enableVoice: z.boolean().optional().default(true),
-}).strict();
+}).passthrough();
 
 /**
- * Exam tutor schema
+ * Exam tutor schema - comprehensive for exam exercises
  */
 export const examTutorSchema = z.object({
-  message: z.string()
-    .min(1, "Message requis")
-    .max(10000, "Message trop long")
-    .transform(s => s.trim()),
-  chatHistory: z.array(z.object({
-    role: z.enum(['user', 'assistant', 'system']),
-    content: z.string().max(50000)
-  })).max(50).optional().default([]),
-  exerciseContext: z.object({
-    questionText: z.string().max(10000).optional(),
+  message: z.string().max(10000).optional().default(''),
+  userMessage: z.string().max(10000).optional(),
+  exercise: z.object({
+    exercise_number: z.number().optional(),
+    question_text: z.string().max(10000),
+    options: z.array(z.string().max(1000)).max(10).optional(),
+    correct_answer: z.string().max(5000).optional().nullable(),
     concept: z.string().max(500).optional(),
-    subject: z.string().max(100).optional(),
-    correctAnswer: z.string().max(5000).optional(),
+    points: z.number().optional(),
     explanation: z.string().max(10000).optional(),
-  }).optional(),
+  }),
+  conversationHistory: z.array(z.object({
+    message_role: z.string().max(50),
+    message_content: z.string().max(50000)
+  })).max(100).optional().default([]),
+  chatHistory: z.array(chatHistoryItemSchema).max(50).optional(),
+  studentAnswer: z.string().max(5000).optional(),
+  revealAnswer: z.boolean().optional(),
+  referenceTexts: z.array(z.object({
+    section: z.string().max(200).optional(),
+    title: z.string().max(500).optional(),
+    text: z.string().max(50000)
+  })).max(20).optional(),
   userNickname: z.string().max(100).optional(),
   enableVoice: z.boolean().optional().default(true),
-}).strict();
+}).passthrough();
 
 /**
- * Chess AI tutor schema
+ * Chess AI tutor schema - handles game state and moves
  */
 export const chessTutorSchema = z.object({
-  message: z.string()
-    .min(1, "Message requis")
-    .max(5000, "Message trop long")
-    .transform(s => s.trim()),
-  chatHistory: z.array(z.object({
-    role: z.enum(['user', 'assistant', 'system']),
-    content: z.string().max(20000)
-  })).max(30).optional().default([]),
+  message: z.string().max(5000).optional().default(''),
+  userMessage: z.string().max(5000).optional(),
+  fen: z.string().max(200).optional(),
+  chatHistory: z.array(chatHistoryItemSchema).max(30).optional().default([]),
   gameState: z.object({
     fen: z.string().max(200).optional(),
     lastMove: z.string().max(20).optional(),
@@ -99,8 +131,12 @@ export const chessTutorSchema = z.object({
     result: z.string().max(50).optional(),
   }).optional(),
   userNickname: z.string().max(100).optional(),
+  isEricTurn: z.boolean().optional(),
+  difficulty: z.enum(['beginner', 'intermediate', 'expert']).optional(),
+  isAnalysis: z.boolean().optional(),
+  moveHistory: z.array(z.string().max(20)).max(500).optional(),
   enableVoice: z.boolean().optional().default(true),
-}).strict();
+}).passthrough();
 
 // ============================================
 // Email Schemas

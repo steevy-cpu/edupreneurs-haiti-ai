@@ -1,15 +1,22 @@
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+/**
+ * Security-Hardened: NatCash Create Order
+ * 
+ * Features:
+ * - Rate limiting
+ * - Input validation
+ * - Security headers
+ */
+import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { checkRateLimit, getClientIp, rateLimitResponse, RATE_LIMITS } from "../_shared/rateLimiter.ts";
+import { corsHeaders, securityHeaders, noCacheHeaders, corsPreflightResponse } from "../_shared/securityHeaders.ts";
+import { z } from "https://deno.land/x/zod@v3.22.4/mod.ts";
 
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-};
-
-interface OrderRequest {
-  amount: number;
-  description?: string;
-}
+// Validation schema
+const orderSchema = z.object({
+  amount: z.number().positive().max(1000000),
+  description: z.string().max(500).optional(),
+});
 
 function generateOrderId(): string {
   const timestamp = Date.now().toString(36);
@@ -18,10 +25,11 @@ function generateOrderId(): string {
 }
 
 serve(async (req) => {
-  // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders });
+    return corsPreflightResponse();
   }
+
+  const responseHeaders = { ...corsHeaders, ...securityHeaders, ...noCacheHeaders, 'Content-Type': 'application/json' };
 
   try {
     console.log('[NatCash Create Order] Starting order creation...');
@@ -32,7 +40,7 @@ serve(async (req) => {
       console.error('[NatCash Create Order] No authorization header');
       return new Response(
         JSON.stringify({ success: false, error: 'Unauthorized' }),
-        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        { status: 401, headers: responseHeaders }
       );
     }
 
@@ -49,22 +57,33 @@ serve(async (req) => {
       console.error('[NatCash Create Order] User authentication failed:', userError);
       return new Response(
         JSON.stringify({ success: false, error: 'Unauthorized' }),
-        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        { status: 401, headers: responseHeaders }
       );
+    }
+
+    // Rate limiting
+    const clientIp = getClientIp(req);
+    const rateCheck = await checkRateLimit(supabase, RATE_LIMITS.PAYMENT, user.id, clientIp);
+    if (!rateCheck.allowed) {
+      console.warn(`Rate limit exceeded for natcash-create-order user ${user.id}`);
+      return rateLimitResponse(rateCheck.retryAfter!, rateCheck.remaining, responseHeaders);
     }
 
     console.log('[NatCash Create Order] User authenticated:', user.id);
 
-    // Parse request body
-    const { amount, description }: OrderRequest = await req.json();
+    // Parse and validate input
+    const rawBody = await req.json();
+    const validation = orderSchema.safeParse(rawBody);
     
-    if (!amount || amount <= 0) {
-      console.error('[NatCash Create Order] Invalid amount:', amount);
+    if (!validation.success) {
+      console.error('[NatCash Create Order] Validation failed:', validation.error);
       return new Response(
-        JSON.stringify({ success: false, error: 'Invalid amount' }),
-        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        JSON.stringify({ success: false, error: validation.error.issues.map(i => i.message).join(', ') }),
+        { status: 400, headers: responseHeaders }
       );
     }
+
+    const { amount, description } = validation.data;
 
     // Get NatCash account details from environment
     const natcashAccountNumber = Deno.env.get('NATCASH_ACCOUNT_NUMBER') || 'NOT_CONFIGURED';
@@ -98,7 +117,7 @@ serve(async (req) => {
       console.error('[NatCash Create Order] Database insert error:', insertError);
       return new Response(
         JSON.stringify({ success: false, error: 'Failed to create order' }),
-        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        { status: 500, headers: responseHeaders }
       );
     }
 
@@ -140,14 +159,14 @@ serve(async (req) => {
           noteEnglish: 'After payment, please upload your receipt for verification.'
         }
       }),
-      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      { headers: responseHeaders }
     );
 
   } catch (error) {
     console.error('[NatCash Create Order] Unexpected error:', error);
     return new Response(
       JSON.stringify({ success: false, error: 'Internal server error' }),
-      { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      { status: 500, headers: responseHeaders }
     );
   }
 });

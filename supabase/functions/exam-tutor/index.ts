@@ -46,14 +46,13 @@ serve(async (req) => {
       );
     }
 
-    const { 
-      exercise, 
-      userMessage, 
-      conversationHistory,
-      studentAnswer,
-      revealAnswer,
-      referenceTexts
-    } = validation.data;
+    const validatedData = validation.data;
+    const exercise = validatedData.exercise;
+    const userMessage = validatedData.userMessage || validatedData.message || '';
+    const conversationHistory = validatedData.conversationHistory || [];
+    const studentAnswer = validatedData.studentAnswer;
+    const revealAnswer = validatedData.revealAnswer;
+    const referenceTexts = validatedData.referenceTexts;
 
     console.log('Exam tutor request:', { exercise: exercise?.exercise_number, userMessage: userMessage?.substring(0, 100) });
 

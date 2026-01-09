@@ -68,14 +68,13 @@ serve(async (req) => {
       );
     }
 
-    const {
-      subjects, // Array of 3 dissertation subjects
-      userMessage,
-      conversationHistory,
-      currentStep,
-      studentText,
-      chosenSubjectIndex,
-    } = validation.data;
+    const validatedData = validation.data;
+    const subjects = validatedData.subjects || [];
+    const userMessage = validatedData.userMessage || validatedData.message || '';
+    const conversationHistory = validatedData.conversationHistory || [];
+    const currentStep = validatedData.currentStep || 'choosing_subject';
+    const studentText = validatedData.studentText || '';
+    const chosenSubjectIndex = validatedData.chosenSubjectIndex;
 
     console.log("Bac Philosophy tutor request:", { currentStep, userMessage: userMessage?.substring(0, 50) });
 

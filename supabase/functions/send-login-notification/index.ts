@@ -1,23 +1,29 @@
+/**
+ * Security-Hardened: Send Login Notification
+ * 
+ * Features:
+ * - Rate limiting
+ * - Input validation
+ * - Security headers
+ */
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
-import { Resend } from "https://esm.sh/resend@4.0.0";
+import { Resend } from "https://esm.sh/resend@2.0.0";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { checkRateLimit, getClientIp, rateLimitResponse, RATE_LIMITS } from "../_shared/rateLimiter.ts";
+import { corsHeaders, securityHeaders, noCacheHeaders, corsPreflightResponse } from "../_shared/securityHeaders.ts";
+import { z } from "https://deno.land/x/zod@v3.22.4/mod.ts";
 
 const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
 
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers":
-    "authorization, x-client-info, apikey, content-type",
-};
-
-interface LoginNotificationRequest {
-  email: string;
-  fullName: string;
-  timestamp: string;
-  location?: string;
-  device?: string;
-  userId?: string; // Optional - not used directly, kept for API compatibility
-}
+// Validation schema
+const loginNotificationSchema = z.object({
+  email: z.string().email().max(255),
+  fullName: z.string().min(1).max(200).transform(s => s.trim()),
+  timestamp: z.string().max(100),
+  location: z.string().max(200).optional(),
+  device: z.string().max(200).optional(),
+  userId: z.string().uuid().optional(),
+});
 
 const getEmailTemplate = (fullName: string, email: string, timestamp: string, resetUrl: string, device?: string, location?: string) => `
 <!DOCTYPE html>
@@ -198,24 +204,45 @@ const getEmailTemplate = (fullName: string, email: string, timestamp: string, re
 
 const handler = async (req: Request): Promise<Response> => {
   if (req.method === "OPTIONS") {
-    return new Response(null, { headers: corsHeaders });
+    return corsPreflightResponse();
   }
 
+  const responseHeaders = { ...corsHeaders, ...securityHeaders, ...noCacheHeaders, 'Content-Type': 'application/json' };
+
   try {
-    const { email, fullName, timestamp, location, device, userId }: LoginNotificationRequest = await req.json();
+    const supabase = createClient(
+      Deno.env.get('SUPABASE_URL')!,
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
+    );
+
+    // Rate limiting
+    const clientIp = getClientIp(req);
+    const rateCheck = await checkRateLimit(supabase, RATE_LIMITS.EMAIL, null, clientIp);
+    if (!rateCheck.allowed) {
+      console.warn(`Rate limit exceeded for send-login-notification from IP ${clientIp}`);
+      return rateLimitResponse(rateCheck.retryAfter!, rateCheck.remaining, responseHeaders);
+    }
+
+    // Parse and validate input
+    const rawBody = await req.json();
+    const validation = loginNotificationSchema.safeParse(rawBody);
+    
+    if (!validation.success) {
+      return new Response(
+        JSON.stringify({ error: 'Validation failed', details: validation.error.issues.map(i => i.message) }),
+        { status: 400, headers: responseHeaders }
+      );
+    }
+
+    const { email, fullName, timestamp, location, device } = validation.data;
 
     console.log("Sending login notification to:", email);
-
-    // Initialize Supabase client to generate password reset token
-    const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
-    const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
-    const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey);
 
     // Generate password reset token for the "change password" button
     let resetUrl = 'https://mon-edupreneur.com/auth';
     
     try {
-      const { data: tokenData, error: tokenError } = await supabaseAdmin.rpc(
+      const { data: tokenData, error: tokenError } = await supabase.rpc(
         'generate_password_reset_token',
         { user_email: email }
       );
@@ -242,19 +269,13 @@ const handler = async (req: Request): Promise<Response> => {
 
     return new Response(JSON.stringify(emailResponse), {
       status: 200,
-      headers: {
-        "Content-Type": "application/json",
-        ...corsHeaders,
-      },
+      headers: responseHeaders,
     });
   } catch (error: any) {
     console.error("Error sending login notification:", error);
     return new Response(
       JSON.stringify({ error: error.message }),
-      {
-        status: 500,
-        headers: { "Content-Type": "application/json", ...corsHeaders },
-      }
+      { status: 500, headers: responseHeaders }
     );
   }
 };

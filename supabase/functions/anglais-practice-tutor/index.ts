@@ -47,7 +47,12 @@ serve(async (req) => {
       );
     }
 
-    const { message, lessonContext, chatHistory, userNickname, isInitialGreeting } = validation.data;
+    const validatedData = validation.data;
+    const message = validatedData.message;
+    const lessonContext = validatedData.lessonContext || {};
+    const chatHistory = validatedData.chatHistory || [];
+    const userNickname = validatedData.userNickname || 'student';
+    const isInitialGreeting = validatedData.isInitialGreeting || false;
 
     console.log("Anglais practice tutor request:", {
       message: message?.substring(0, 100),
