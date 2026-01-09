@@ -1,26 +1,75 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { z } from "https://deno.land/x/zod@v3.22.4/mod.ts";
+import { 
+  secureJsonResponse, 
+  secureErrorResponse, 
+  corsPreflightResponse 
+} from "../_shared/securityHeaders.ts";
+import { checkRateLimit, RATE_LIMITS, getClientIp } from "../_shared/rateLimiter.ts";
 
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-};
+// Input validation schema
+const generateLessonContentSchema = z.object({
+  lessonTitle: z.string().min(1).max(500),
+  lessonNumber: z.string().min(1).max(50),
+  subject: z.string().min(1).max(200),
+  grade: z.string().min(1).max(50),
+  targetWords: z.string().min(1).max(10)
+}).passthrough();
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders });
+    return corsPreflightResponse();
   }
 
   try {
-    const url = new URL(req.url);
-    const lessonTitle = url.searchParams.get("lessonTitle");
-    const lessonNumber = url.searchParams.get("lessonNumber");
-    const subject = url.searchParams.get("subject");
-    const grade = url.searchParams.get("grade");
-    const targetWords = url.searchParams.get("targetWords");
+    // Initialize Supabase for rate limiting
+    const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
+    const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+    const supabase = createClient(supabaseUrl, supabaseServiceKey);
+
+    // Get client IP and user for rate limiting
+    const clientIp = getClientIp(req);
+    const authHeader = req.headers.get('Authorization');
+    let userId: string | null = null;
     
-    if (!lessonTitle || !lessonNumber || !subject || !grade || !targetWords) {
-      throw new Error("Missing required parameters");
+    if (authHeader) {
+      const token = authHeader.replace('Bearer ', '');
+      const { data: { user } } = await supabase.auth.getUser(token);
+      userId = user?.id || null;
     }
+
+    // Check rate limit
+    const rateLimitResult = await checkRateLimit(
+      supabase,
+      RATE_LIMITS.RESOURCE_INTENSIVE,
+      userId,
+      clientIp
+    );
+
+    if (!rateLimitResult.allowed) {
+      console.warn('[generate-lesson-content] Rate limit exceeded');
+      return secureErrorResponse('Too many requests. Please try again later.', 429);
+    }
+
+    const url = new URL(req.url);
+    const params = {
+      lessonTitle: url.searchParams.get("lessonTitle"),
+      lessonNumber: url.searchParams.get("lessonNumber"),
+      subject: url.searchParams.get("subject"),
+      grade: url.searchParams.get("grade"),
+      targetWords: url.searchParams.get("targetWords"),
+    };
+
+    // Validate input
+    const validation = generateLessonContentSchema.safeParse(params);
+    if (!validation.success) {
+      const errors = validation.error.errors.map(e => `${e.path.join('.')}: ${e.message}`);
+      console.error('[generate-lesson-content] Validation failed:', errors);
+      return secureErrorResponse('Invalid input', 400, errors);
+    }
+
+    const { lessonTitle, lessonNumber, subject, grade, targetWords } = validation.data;
     
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) {
@@ -201,23 +250,14 @@ IMPORTANT:
 
     if (!response.ok) {
       if (response.status === 429) {
-        return new Response(JSON.stringify({ error: "Rate limits exceeded, please try again later." }), {
-          status: 429,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        });
+        return secureErrorResponse("Rate limits exceeded, please try again later.", 429);
       }
       if (response.status === 402) {
-        return new Response(JSON.stringify({ error: "Payment required, please add funds to your Lovable AI workspace." }), {
-          status: 402,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        });
+        return secureErrorResponse("Payment required, please add funds to your Lovable AI workspace.", 402);
       }
       const errorText = await response.text();
       console.error("AI gateway error:", response.status, errorText);
-      return new Response(JSON.stringify({ error: "AI gateway error" }), {
-        status: 500,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
+      return secureErrorResponse("AI gateway error", 500);
     }
 
     const data = await response.json();
@@ -254,21 +294,19 @@ IMPORTANT:
       exemplesExercices = '<div class="mb-4"><p>Exercices à compléter.</p></div>';
     }
 
-    return new Response(JSON.stringify({ 
+    return secureJsonResponse({ 
       introduction,
       contenu,
       exemplesExercices,
       lessonTitle,
       lessonNumber 
-    }), {
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
 
   } catch (error) {
     console.error('Error in generate-lesson-content function:', error);
-    return new Response(JSON.stringify({ error: error instanceof Error ? error.message : "Unknown error" }), {
-      status: 500,
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-    });
+    return secureErrorResponse(
+      error instanceof Error ? error.message : "Unknown error",
+      500
+    );
   }
 });

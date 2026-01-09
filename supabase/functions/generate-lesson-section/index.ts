@@ -1,7 +1,11 @@
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-};
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { z } from "https://deno.land/x/zod@v3.22.4/mod.ts";
+import { 
+  secureJsonResponse, 
+  secureErrorResponse, 
+  corsPreflightResponse 
+} from "../_shared/securityHeaders.ts";
+import { checkRateLimit, RATE_LIMITS, getClientIp } from "../_shared/rateLimiter.ts";
 
 interface GenerateRequest {
   lessonId: string;
@@ -86,18 +90,68 @@ const HTML_TEMPLATES = {
   exerciseBox: '<div class="bg-purple-50 dark:bg-purple-950/30 border-l-4 border-purple-500 p-4 mb-4 rounded-lg"><h4 class="font-semibold text-purple-700 dark:text-purple-300 mb-2 flex items-center gap-2">✏️ Exercice</h4><div class="text-gray-700 dark:text-gray-300">{{content}}</div></div>',
 };
 
+// Input validation schema
+const generateSectionSchema = z.object({
+  lessonId: z.string().uuid().optional(),
+  sectionName: z.enum(['objectif', 'introduction', 'contenu', 'exemples_exercices']),
+  lessonTitle: z.string().min(1).max(500),
+  subject: z.string().min(1).max(200),
+  gradeLevel: z.string().min(1).max(50),
+  targetWords: z.number().min(50).max(2000),
+  context: z.string().max(2000).optional(),
+  currentContent: z.string().max(50000).optional()
+}).passthrough();
+
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders });
+    return corsPreflightResponse();
   }
 
   try {
+    // Initialize Supabase for rate limiting
+    const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
+    const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+    const supabase = createClient(supabaseUrl, supabaseServiceKey);
+
+    // Get client IP and user for rate limiting
+    const clientIp = getClientIp(req);
+    const authHeader = req.headers.get('Authorization');
+    let userId: string | null = null;
+    
+    if (authHeader) {
+      const token = authHeader.replace('Bearer ', '');
+      const { data: { user } } = await supabase.auth.getUser(token);
+      userId = user?.id || null;
+    }
+
+    // Check rate limit
+    const rateLimitResult = await checkRateLimit(
+      supabase,
+      RATE_LIMITS.RESOURCE_INTENSIVE,
+      userId,
+      clientIp
+    );
+
+    if (!rateLimitResult.allowed) {
+      console.warn('[generate-lesson-section] Rate limit exceeded');
+      return secureErrorResponse('Too many requests. Please try again later.', 429);
+    }
+
     const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
     if (!LOVABLE_API_KEY) {
       throw new Error('LOVABLE_API_KEY is not configured');
     }
 
-    const body: GenerateRequest = await req.json();
+    // Parse and validate input
+    const body = await req.json();
+    const validation = generateSectionSchema.safeParse(body);
+
+    if (!validation.success) {
+      const errors = validation.error.errors.map(e => `${e.path.join('.')}: ${e.message}`);
+      console.error('[generate-lesson-section] Validation failed:', errors);
+      return secureErrorResponse('Invalid input', 400, errors);
+    }
+
     const { 
       lessonId, 
       sectionName, 
@@ -107,7 +161,7 @@ Deno.serve(async (req) => {
       targetWords, 
       context, 
       currentContent 
-    } = body;
+    } = validation.data;
 
     console.log('📚 Generating section:', { lessonId, sectionName, lessonTitle, subject, gradeLevel });
 
@@ -277,22 +331,10 @@ COMMENCE TON CONTENU ICI (directement par la première balise HTML):`;
 
     if (!response.ok) {
       if (response.status === 429) {
-        return new Response(JSON.stringify({ 
-          error: 'Rate limit exceeded',
-          message: 'Trop de requêtes. Veuillez attendre quelques secondes.' 
-        }), {
-          status: 429,
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        });
+        return secureErrorResponse('Rate limit exceeded. Please wait a few seconds.', 429);
       }
       if (response.status === 402) {
-        return new Response(JSON.stringify({ 
-          error: 'Payment required',
-          message: 'Crédits Lovable AI épuisés. Veuillez recharger votre compte.' 
-        }), {
-          status: 402,
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        });
+        return secureErrorResponse('Lovable AI credits exhausted.', 402);
       }
       const errorText = await response.text();
       console.error('AI Gateway error:', response.status, errorText);
@@ -303,55 +345,35 @@ COMMENCE TON CONTENU ICI (directement par la première balise HTML):`;
     let generatedContent = data.choices?.[0]?.message?.content || '';
 
     if (!generatedContent || generatedContent.trim().length < 50) {
-      throw new Error('Contenu généré trop court ou vide');
+      throw new Error('Generated content too short or empty');
     }
 
     // Clean up the generated content
-    // Remove markdown code blocks if present
     generatedContent = generatedContent.replace(/```html\s*/g, '').replace(/```\s*/g, '');
-    // Remove leading/trailing whitespace
     generatedContent = generatedContent.trim();
-    // Remove any text before the first HTML tag
     const firstTagIndex = generatedContent.search(/<[a-zA-Z]/);
     if (firstTagIndex > 0) {
       generatedContent = generatedContent.substring(firstTagIndex);
     }
 
-    // Validation: check for unreplaced placeholders
-    if (/\{\{.*?\}\}|\[.*?\]/.test(generatedContent)) {
-      console.warn('⚠️ Content contains unreplaced placeholders');
-    }
-
     const generationTime = Date.now() - startTime;
     const wordCount = generatedContent.split(/\s+/).length;
 
-    console.log('✅ Generation successful:', { 
-      sectionName, 
-      wordCount, 
-      generationTime: `${generationTime}ms` 
-    });
+    console.log('✅ Generation successful:', { sectionName, wordCount, generationTime: `${generationTime}ms` });
 
-    return new Response(JSON.stringify({ 
+    return secureJsonResponse({ 
       content: generatedContent,
       wordCount,
       generationTimeMs: generationTime,
       sectionName,
       lessonId,
-    }), {
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
 
   } catch (error) {
     console.error('❌ Generation error:', error);
-    console.error('❌ Error stack:', error instanceof Error ? error.stack : 'No stack trace');
-    
-    return new Response(JSON.stringify({ 
-      error: error instanceof Error ? error.message : 'Unknown error',
-      message: 'Erreur lors de la génération du contenu',
-      details: error instanceof Error ? error.stack : String(error)
-    }), {
-      status: 500,
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-    });
+    return secureErrorResponse(
+      error instanceof Error ? error.message : 'Unknown error',
+      500
+    );
   }
 });
