@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import {
@@ -9,6 +9,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Search, Filter, SortAsc, SortDesc, X } from "lucide-react";
+import { debounce } from "@/utils/performanceOptimization";
 
 export type SortOption = "name-asc" | "name-desc" | "lessons-desc" | "lessons-asc" | "progress-desc";
 export type FilterOption = "all" | "with-content" | "favorites";
@@ -33,6 +34,36 @@ export function MatieresSearchFilter({
   totalResults
 }: MatieresSearchFilterProps) {
   const [isExpanded, setIsExpanded] = useState(false);
+  const [localSearch, setLocalSearch] = useState(searchQuery);
+
+  // Sync local state when parent searchQuery changes (e.g., reset)
+  useEffect(() => {
+    setLocalSearch(searchQuery);
+  }, [searchQuery]);
+
+  // Debounced search handler (300ms delay for better performance)
+  const debouncedSearch = useMemo(
+    () => debounce((value: string) => onSearchChange(value), 300),
+    [onSearchChange]
+  );
+
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setLocalSearch(value); // Immediate local update for responsive UI
+    debouncedSearch(value); // Debounced parent update
+  };
+
+  const handleClearSearch = () => {
+    setLocalSearch("");
+    onSearchChange("");
+  };
+
+  const handleReset = () => {
+    setLocalSearch("");
+    onSearchChange("");
+    onFilterChange("all");
+    onSortChange("name-asc");
+  };
 
   return (
     <div className="mb-6 space-y-3">
@@ -43,13 +74,13 @@ export function MatieresSearchFilter({
           <Input
             type="text"
             placeholder="Rechercher une matière..."
-            value={searchQuery}
-            onChange={(e) => onSearchChange(e.target.value)}
+            value={localSearch}
+            onChange={handleSearchChange}
             className="pl-10 pr-10"
           />
-          {searchQuery && (
+          {localSearch && (
             <button
-              onClick={() => onSearchChange("")}
+              onClick={handleClearSearch}
               className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
             >
               <X className="w-4 h-4" />
@@ -101,15 +132,11 @@ export function MatieresSearchFilter({
             </SelectContent>
           </Select>
 
-          {(searchQuery || filterOption !== "all" || sortOption !== "name-asc") && (
+          {(localSearch || filterOption !== "all" || sortOption !== "name-asc") && (
             <Button
               variant="ghost"
               size="sm"
-              onClick={() => {
-                onSearchChange("");
-                onFilterChange("all");
-                onSortChange("name-asc");
-              }}
+              onClick={handleReset}
               className="text-muted-foreground"
             >
               <X className="w-3 h-3 mr-1" />
