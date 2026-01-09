@@ -31,7 +31,7 @@ interface LessonVideo {
   is_primary: boolean;
 }
 
-const YOUTUBE_API_KEY = "AIzaSyDu6sWsM5NEgb48nFFIz49guKR5amdsGWA";
+// YouTube API key is now securely stored in edge function
 
 export const YouTubeManager = ({ lesson, onUpdate }: YouTubeManagerProps) => {
   const [newVideoUrl, setNewVideoUrl] = useState("");
@@ -126,41 +126,30 @@ export const YouTubeManager = ({ lesson, onUpdate }: YouTubeManagerProps) => {
     try {
       const searchQuery = buildSearchQuery();
       
-      const response = await fetch(
-        `https://www.googleapis.com/youtube/v3/search?` +
-        `part=snippet&` +
-        `maxResults=5&` +
-        `q=${encodeURIComponent(searchQuery)}&` +
-        `type=video&` +
-        `videoEmbeddable=true&` +
-        `videoDuration=medium&` +
-        `relevanceLanguage=fr&` +
-        `regionCode=HT&` +
-        `videoDefinition=any&` +
-        `safeSearch=strict&` +
-        `order=relevance&` +
-        `key=${YOUTUBE_API_KEY}`
-      );
+      // Use the secure edge function instead of direct API call
+      const { data, error } = await supabase.functions.invoke('youtube-search', {
+        body: { query: searchQuery, maxResults: 5 }
+      });
 
-      if (!response.ok) throw new Error("Erreur YouTube API");
+      if (error) throw new Error(error.message || "Erreur YouTube API");
 
-      const data = await response.json();
-      
-      const videoList: YouTubeVideo[] = data.items
+      if (!data?.videos) {
+        setSearchVideos([]);
+        return;
+      }
+
+      const videoList: YouTubeVideo[] = data.videos
         .filter((item: any) => {
-          const title = item.snippet.title.toLowerCase();
-          const description = item.snippet.description.toLowerCase();
+          const title = (item.title || '').toLowerCase();
           const englishIndicators = ['english', 'in english', 'english lesson'];
-          const isBanned = bannedVideoIds.has(item.id.videoId);
-          return !isBanned && !englishIndicators.some(indicator => 
-            title.includes(indicator) || description.includes(indicator)
-          );
+          const isBanned = bannedVideoIds.has(item.id);
+          return !isBanned && !englishIndicators.some(indicator => title.includes(indicator));
         })
         .map((item: any) => ({
-          id: item.id.videoId,
-          title: item.snippet.title,
-          description: item.snippet.description,
-          thumbnail: item.snippet.thumbnails.medium.url,
+          id: item.id,
+          title: item.title,
+          description: '', // Edge function returns minimal data for security
+          thumbnail: item.thumbnail,
         }))
         .slice(0, 3);
 

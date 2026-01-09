@@ -31,8 +31,6 @@ interface YouTubeVideoSectionProps {
   customYoutubeUrl?: string;
 }
 
-const YOUTUBE_API_KEY = "AIzaSyDu6sWsM5NEgb48nFFIz49guKR5amdsGWA";
-
 export const YouTubeVideoSection = ({ 
   lessonId, 
   lessonTitle, 
@@ -124,51 +122,33 @@ export const YouTubeVideoSection = ({
     try {
       const searchQuery = buildOptimalSearchQuery();
 
-      const response = await fetch(
-        `https://www.googleapis.com/youtube/v3/search?` +
-        `part=snippet&` +
-        `maxResults=4&` +
-        `q=${encodeURIComponent(searchQuery)}&` +
-        `type=video&` +
-        `videoEmbeddable=true&` +
-        `videoDuration=medium&` +
-        `relevanceLanguage=fr&` +
-        `videoDefinition=any&` +
-        `safeSearch=strict&` +
-        `order=relevance&` +
-        `key=${YOUTUBE_API_KEY}`
-      );
+      // Use the secure edge function instead of direct API call
+      const { data, error } = await supabase.functions.invoke('youtube-search', {
+        body: { query: searchQuery, maxResults: 4 }
+      });
 
-      if (!response.ok) {
-        throw new Error("Erreur lors de la recherche de vidéos");
+      if (error) {
+        throw new Error(error.message || "Erreur lors de la recherche de vidéos");
       }
 
-      const data = await response.json();
-      
-      if (!data.items || data.items.length === 0) {
+      if (!data?.videos || data.videos.length === 0) {
         setSearchVideos([]);
         return;
       }
 
-      const videoList: YouTubeVideo[] = data.items
+      // Filter out English content
+      const videoList: YouTubeVideo[] = data.videos
         .filter((item: any) => {
-          const title = item.snippet.title.toLowerCase();
-          const description = item.snippet.description.toLowerCase();
-          
+          const title = (item.title || '').toLowerCase();
           const englishIndicators = ['english', 'in english', 'english lesson', 
                                       'learn in english', 'tutorial in english', 'english version'];
-          
-          const hasEnglishIndicators = englishIndicators.some(indicator => 
-            title.includes(indicator) || description.includes(indicator)
-          );
-          
-          return !hasEnglishIndicators;
+          return !englishIndicators.some(indicator => title.includes(indicator));
         })
         .map((item: any) => ({
-          id: item.id.videoId,
-          title: item.snippet.title,
-          description: item.snippet.description,
-          thumbnail: item.snippet.thumbnails.medium.url,
+          id: item.id,
+          title: item.title,
+          description: '', // Edge function doesn't return description
+          thumbnail: item.thumbnail,
         }));
 
       setSearchVideos(videoList);
