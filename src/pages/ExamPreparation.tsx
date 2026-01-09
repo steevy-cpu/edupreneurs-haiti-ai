@@ -289,7 +289,7 @@ export default function ExamPreparation() {
                 </TabsList>
                 
                 <TabsContent value="pdf" className="mt-4">
-                  <div className="h-[calc(100vh-220px)] min-h-[500px]">
+                  <div className="h-[calc(100dvh-200px)] min-h-[560px]">
                     <ExamPDFViewer
                       pdfUrl={exam?.pdf_url || null}
                       examTitle={exam?.title || "Examen"}
@@ -298,7 +298,7 @@ export default function ExamPreparation() {
                 </TabsContent>
  
                 <TabsContent value="tutor" className="mt-4">
-                  <div className="h-[calc(100vh-220px)] min-h-[500px]">
+                  <div className="h-[calc(100dvh-200px)] min-h-[560px]">
                     {session && currentExerciseData ? (
                     <ExamTutorChat
                         sessionId={session.id}
