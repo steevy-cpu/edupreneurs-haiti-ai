@@ -1,17 +1,52 @@
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-};
+/**
+ * Security-Hardened: Passion AI Tutor
+ * 
+ * Features:
+ * - Rate limiting
+ * - Input validation
+ * - Security headers
+ */
+import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { checkRateLimit, getClientIp, rateLimitResponse, RATE_LIMITS } from "../_shared/rateLimiter.ts";
+import { validateInput, chatMessageSchema } from "../_shared/validation.ts";
+import { corsHeaders, securityHeaders, corsPreflightResponse } from "../_shared/securityHeaders.ts";
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders });
+    return corsPreflightResponse();
   }
 
+  const responseHeaders = { ...corsHeaders, ...securityHeaders, 'Content-Type': 'application/json' };
+
   try {
-    const { message, category, chatHistory } = await req.json();
+    const supabase = createClient(
+      Deno.env.get('SUPABASE_URL')!,
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
+    );
+
+    // Get client IP for rate limiting
+    const clientIp = getClientIp(req);
+
+    // Check rate limit
+    const rateCheck = await checkRateLimit(supabase, RATE_LIMITS.AI_TUTOR, null, clientIp);
+    if (!rateCheck.allowed) {
+      console.warn(`Rate limit exceeded for passion-ai-tutor from IP ${clientIp}`);
+      return rateLimitResponse(rateCheck.retryAfter!, rateCheck.remaining, responseHeaders);
+    }
+
+    // Parse and validate input
+    const rawBody = await req.json();
+    const validation = validateInput(chatMessageSchema, rawBody);
+    
+    if (!validation.success) {
+      return new Response(
+        JSON.stringify({ error: 'Validation failed', details: validation.errors }),
+        { status: 400, headers: responseHeaders }
+      );
+    }
+
+    const { message, category, chatHistory } = validation.data;
     const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
 
     if (!LOVABLE_API_KEY) {
@@ -93,19 +128,19 @@ Sois motivant, donne des conseils pratiques applicables, utilise des techniques 
 Inspire le leadership éthique, utilise des exemples de leaders haïtiens, encourage l'action communautaire et aide à développer une vision positive. Valorise la responsabilité sociale.`
     };
 
-    const systemPrompt = systemPrompts[category] || systemPrompts.personal;
+    const systemPrompt = systemPrompts[category || 'personal'] || systemPrompts.personal;
 
     // Prepare messages for AI
     const messages = [
       { role: 'system', content: systemPrompt },
-      ...chatHistory.map((msg: { role: string; content: string }) => ({
+      ...(chatHistory || []).map((msg: { role: string; content: string }) => ({
         role: msg.role,
         content: msg.content
       })),
       { role: 'user', content: message }
     ];
 
-    console.log(`Processing ${category} query:`, message);
+    console.log(`Processing ${category} query:`, message.substring(0, 100));
 
     // Call Lovable AI Gateway
     const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
@@ -129,14 +164,14 @@ Inspire le leadership éthique, utilise des exemples de leaders haïtiens, encou
       if (response.status === 429) {
         return new Response(
           JSON.stringify({ error: 'Limite de requêtes atteinte. Réessaye dans quelques instants.' }),
-          { status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          { status: 429, headers: responseHeaders }
         );
       }
       
       if (response.status === 402) {
         return new Response(
           JSON.stringify({ error: 'Crédits épuisés. Contacte l\'administrateur.' }),
-          { status: 402, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          { status: 402, headers: responseHeaders }
         );
       }
 
@@ -150,14 +185,14 @@ Inspire le leadership éthique, utilise des exemples de leaders haïtiens, encou
 
     return new Response(
       JSON.stringify({ response: aiResponse }),
-      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      { headers: responseHeaders }
     );
 
   } catch (error) {
     console.error('Error in passion-ai-tutor:', error);
     return new Response(
       JSON.stringify({ error: error instanceof Error ? error.message : 'Une erreur inconnue s\'est produite' }),
-      { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      { status: 500, headers: { ...corsHeaders, ...securityHeaders, 'Content-Type': 'application/json' } }
     );
   }
 });

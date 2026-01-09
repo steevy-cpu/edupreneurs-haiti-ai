@@ -1,26 +1,61 @@
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-};
+/**
+ * Security-Hardened: Exam Tutor
+ * 
+ * Features:
+ * - Rate limiting
+ * - Input validation
+ * - Security headers
+ */
+import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { checkRateLimit, getClientIp, rateLimitResponse, RATE_LIMITS } from "../_shared/rateLimiter.ts";
+import { validateInput, examTutorSchema } from "../_shared/validation.ts";
+import { corsHeaders, securityHeaders, corsPreflightResponse } from "../_shared/securityHeaders.ts";
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders });
+    return corsPreflightResponse();
   }
 
+  const responseHeaders = { ...corsHeaders, ...securityHeaders, 'Content-Type': 'application/json' };
+
   try {
-const { 
+    const supabase = createClient(
+      Deno.env.get('SUPABASE_URL')!,
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
+    );
+
+    // Get client IP for rate limiting
+    const clientIp = getClientIp(req);
+
+    // Check rate limit
+    const rateCheck = await checkRateLimit(supabase, RATE_LIMITS.AI_TUTOR, null, clientIp);
+    if (!rateCheck.allowed) {
+      console.warn(`Rate limit exceeded for exam-tutor from IP ${clientIp}`);
+      return rateLimitResponse(rateCheck.retryAfter!, rateCheck.remaining, responseHeaders);
+    }
+
+    // Parse and validate input
+    const rawBody = await req.json();
+    const validation = validateInput(examTutorSchema, rawBody);
+    
+    if (!validation.success) {
+      return new Response(
+        JSON.stringify({ error: 'Validation failed', details: validation.errors }),
+        { status: 400, headers: responseHeaders }
+      );
+    }
+
+    const { 
       exercise, 
       userMessage, 
       conversationHistory,
       studentAnswer,
       revealAnswer,
       referenceTexts
-    } = await req.json();
+    } = validation.data;
 
-    console.log('Exam tutor request:', { exercise: exercise?.exercise_number, userMessage });
+    console.log('Exam tutor request:', { exercise: exercise?.exercise_number, userMessage: userMessage?.substring(0, 100) });
 
     const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
     if (!LOVABLE_API_KEY) {
@@ -80,7 +115,7 @@ Donne une explication complète mais concise (maximum 150 mots).`;
     // Build messages array
     const messages = [
       { role: 'system', content: systemPrompt },
-      ...conversationHistory.map((msg: any) => ({
+      ...(conversationHistory || []).map((msg: any) => ({
         role: msg.message_role === 'user' ? 'user' : 'assistant',
         content: msg.message_content
       })),
@@ -152,9 +187,7 @@ Donne une explication complète mais concise (maximum 150 mots).`;
         youtubeQuery,
         explanation: isCorrect ? exercise.explanation : null,
       }),
-      {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      }
+      { headers: responseHeaders }
     );
   } catch (error) {
     console.error('Error in exam-tutor function:', error);
@@ -162,7 +195,7 @@ Donne une explication complète mais concise (maximum 150 mots).`;
       JSON.stringify({ error: error instanceof Error ? error.message : 'Unknown error' }),
       {
         status: 500,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        headers: { ...corsHeaders, ...securityHeaders, 'Content-Type': 'application/json' },
       }
     );
   }

@@ -1,21 +1,56 @@
+/**
+ * Security-Hardened: Anglais Practice Tutor
+ * 
+ * Features:
+ * - Rate limiting
+ * - Input validation
+ * - Security headers
+ */
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
-};
+import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { checkRateLimit, getClientIp, rateLimitResponse, RATE_LIMITS } from "../_shared/rateLimiter.ts";
+import { validateInput, chatMessageSchema } from "../_shared/validation.ts";
+import { corsHeaders, securityHeaders, corsPreflightResponse } from "../_shared/securityHeaders.ts";
 
 serve(async (req) => {
   if (req.method === "OPTIONS") {
-    return new Response(null, { headers: corsHeaders });
+    return corsPreflightResponse();
   }
 
+  const responseHeaders = { ...corsHeaders, ...securityHeaders, 'Content-Type': 'application/json' };
+
   try {
-    const { message, lessonContext, chatHistory, userNickname, isInitialGreeting } = await req.json();
+    const supabase = createClient(
+      Deno.env.get('SUPABASE_URL')!,
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
+    );
+
+    // Get client IP for rate limiting
+    const clientIp = getClientIp(req);
+
+    // Check rate limit
+    const rateCheck = await checkRateLimit(supabase, RATE_LIMITS.AI_TUTOR, null, clientIp);
+    if (!rateCheck.allowed) {
+      console.warn(`Rate limit exceeded for anglais-practice-tutor from IP ${clientIp}`);
+      return rateLimitResponse(rateCheck.retryAfter!, rateCheck.remaining, responseHeaders);
+    }
+
+    // Parse and validate input
+    const rawBody = await req.json();
+    const validation = validateInput(chatMessageSchema, rawBody);
+    
+    if (!validation.success) {
+      return new Response(
+        JSON.stringify({ error: 'Validation failed', details: validation.errors }),
+        { status: 400, headers: responseHeaders }
+      );
+    }
+
+    const { message, lessonContext, chatHistory, userNickname, isInitialGreeting } = validation.data;
 
     console.log("Anglais practice tutor request:", {
-      message,
+      message: message?.substring(0, 100),
       lessonContext,
       userNickname,
       isInitialGreeting,
@@ -28,19 +63,19 @@ serve(async (req) => {
     }
 
     // Build the system prompt with French feedback instructions
-    const systemPrompt = `You are Jude, a friendly and patient English teacher helping a ${lessonContext.gradeLevel} grade student practice conversational English.
+    const systemPrompt = `You are Jude, a friendly and patient English teacher helping a ${lessonContext?.gradeLevel || 'AF7'} grade student practice conversational English.
 
-LESSON TOPIC: "${lessonContext.title}"
-LESSON OBJECTIVE: "${lessonContext.objective}"
-STUDENT NAME: ${userNickname}
-GRADE LEVEL: ${lessonContext.gradeLevel}
+LESSON TOPIC: "${lessonContext?.title || 'English Practice'}"
+LESSON OBJECTIVE: "${lessonContext?.objective || 'Improve English skills'}"
+STUDENT NAME: ${userNickname || 'student'}
+GRADE LEVEL: ${lessonContext?.gradeLevel || 'AF7'}
 
 YOUR ROLE:
 - Have a natural English conversation related to the lesson topic
 - Guide the student to practice relevant vocabulary and phrases
 - Ask simple, clear questions to keep the conversation flowing
 - Be encouraging, supportive, and patient
-- Use appropriate vocabulary for ${lessonContext.gradeLevel} level
+- Use appropriate vocabulary for ${lessonContext?.gradeLevel || 'AF7'} level
 
 ERROR CORRECTION PROTOCOL (CRITICAL):
 When the student makes a grammatical or vocabulary mistake:
@@ -74,7 +109,7 @@ ${
     ? `
 INITIAL GREETING:
 Start the conversation warmly:
-"Hello ${userNickname}! 👋😊 Let's practice English together! We'll focus on '${lessonContext.title}'. I'm here to help you, so don't worry about making mistakes - that's how we learn! Are you ready to start?"
+"Hello ${userNickname || 'student'}! 👋😊 Let's practice English together! We'll focus on '${lessonContext?.title || 'English'}'. I'm here to help you, so don't worry about making mistakes - that's how we learn! Are you ready to start?"
 `
     : ""
 }
@@ -85,7 +120,7 @@ IMPORTANT REMINDERS:
 - Keep it fun, encouraging, and stress-free
 - Always give error explanations in French for better understanding
 - Help the student feel comfortable and confident speaking English
-- Stay on topic related to: ${lessonContext.title}`;
+- Stay on topic related to: ${lessonContext?.title || 'English Practice'}`;
 
     // Build messages array
     const messages = [{ role: "system", content: systemPrompt }];
@@ -96,7 +131,7 @@ IMPORTANT REMINDERS:
         ...chatHistory.map((msg: any) => ({
           role: msg.role,
           content: msg.content,
-        })),
+        }))
       );
     }
 
@@ -129,14 +164,14 @@ IMPORTANT REMINDERS:
       if (response.status === 429) {
         return new Response(JSON.stringify({ error: "Rate limit exceeded. Please try again in a moment." }), {
           status: 429,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
+          headers: responseHeaders,
         });
       }
 
       if (response.status === 402) {
         return new Response(JSON.stringify({ error: "Payment required. Please contact your administrator." }), {
           status: 402,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
+          headers: responseHeaders,
         });
       }
 
@@ -153,7 +188,7 @@ IMPORTANT REMINDERS:
     }
 
     return new Response(JSON.stringify({ response: aiResponse }), {
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
+      headers: responseHeaders,
     });
   } catch (error) {
     console.error("Error in anglais-practice-tutor:", error);
@@ -164,8 +199,8 @@ IMPORTANT REMINDERS:
       }),
       {
         status: 500,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      },
+        headers: { ...corsHeaders, ...securityHeaders, 'Content-Type': 'application/json' },
+      }
     );
   }
 });
