@@ -1,23 +1,17 @@
-import { useState, useRef, useEffect, useCallback, lazy, Suspense } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { Send, Volume2, VolumeX, Box, Image } from "lucide-react";
+import { Send } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import judeAvatar from "@/assets/dashboard00.png";
 import { getAvatarUrl } from "@/lib/avatarMap";
 import { useEricDraggable } from "@/hooks/useEricDraggable";
-import { use3DJude } from "@/hooks/use3DJude";
 import { useVisitor } from "@/contexts/VisitorContext";
 
 // Routes where JudeChatbot should be hidden
 const HIDDEN_ROUTES = ['/cookie-settings', '/privacy-policy'];
-
-// Lazy load 3D canvas for performance
-const Jude3DCanvas = lazy(() => 
-  import('@/components/jude3d/Jude3DCanvas').then(m => ({ default: m.Jude3DCanvas }))
-);
 
 interface Message {
   content: string;
@@ -25,35 +19,59 @@ interface Message {
   navigationPath?: string;
 }
 
+// Typewriter effect component
+const TypewriterText = ({ 
+  text, 
+  speed = 15, 
+  onComplete
+}: { 
+  text: string; 
+  speed?: number; 
+  onComplete?: () => void;
+}) => {
+  const [displayedText, setDisplayedText] = useState('');
+  const [isComplete, setIsComplete] = useState(false);
+  
+  useEffect(() => {
+    setDisplayedText('');
+    setIsComplete(false);
+    let index = 0;
+    
+    const timer = setInterval(() => {
+      if (index < text.length) {
+        setDisplayedText(text.slice(0, index + 1));
+        index++;
+      } else {
+        setIsComplete(true);
+        onComplete?.();
+        clearInterval(timer);
+      }
+    }, speed);
+    
+    return () => clearInterval(timer);
+  }, [text, speed, onComplete]);
+  
+  return (
+    <span>
+      {displayedText}
+      {!isComplete && <span className="inline-block w-0.5 h-4 bg-primary ml-0.5 animate-pulse" />}
+    </span>
+  );
+};
+
 export const JudeChatbot = () => {
   const { isVisitor } = useVisitor();
   const navigate = useNavigate();
   const location = useLocation();
   const [isOpen, setIsOpen] = useState(false);
+  const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
+  const [isTyping, setIsTyping] = useState(false);
+  const [typingMessageIndex, setTypingMessageIndex] = useState<number | null>(null);
   const [userNickname, setUserNickname] = useState<string>("");
   const [userAvatarUrl, setUserAvatarUrl] = useState<string>("");
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
-
-  // Use the 3D Jude hook
-  const {
-    isLoading,
-    isSpeaking,
-    currentAnimation,
-    currentEmotion,
-    messages,
-    setMessages,
-    phonemes,
-    audioRef,
-    isAudioPlaying,
-    enable3D,
-    enableVoice,
-    sendMessage: send3DMessage,
-    toggleVoice,
-    toggle3D,
-    stopAudio
-  } = use3DJude({ userNickname, enableVoice: true, enable3D: true });
 
   const {
     hasMoved,
@@ -122,7 +140,7 @@ export const JudeChatbot = () => {
     };
 
     fetchUserProfile();
-  }, [setMessages]);
+  }, []);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -133,10 +151,56 @@ export const JudeChatbot = () => {
   }, [messages]);
 
   const handleSendMessage = async () => {
-    if (!input.trim()) return;
+    if (!input.trim() || isTyping) return;
+    
     const userMessage = input.trim();
     setInput("");
-    await send3DMessage(userMessage);
+    
+    // Add user message
+    setMessages(prev => [...prev, { content: userMessage, sender: "user" }]);
+    setIsTyping(true);
+
+    try {
+      const { data, error } = await supabase.functions.invoke('jude-ai-tutor', {
+        body: {
+          message: userMessage,
+          chatHistory: messages.map(m => ({
+            role: m.sender === "user" ? "user" : "assistant",
+            content: m.content
+          })),
+          userNickname,
+          enableVoice: false // No voice needed
+        }
+      });
+
+      if (error) throw error;
+
+      const responseText = data.response || data.text || "Désolé, je n'ai pas pu traiter votre message.";
+      const navigationPath = data.navigation?.path;
+
+      setMessages(prev => {
+        const newMessages = [...prev, { 
+          content: responseText, 
+          sender: "jude" as const,
+          navigationPath
+        }];
+        setTypingMessageIndex(newMessages.length - 1);
+        return newMessages;
+      });
+    } catch (error) {
+      console.error('Error sending message:', error);
+      toast({
+        title: "Erreur",
+        description: "Impossible d'envoyer le message",
+        variant: "destructive"
+      });
+      setMessages(prev => [...prev, { 
+        content: "Désolé, une erreur s'est produite. Veuillez réessayer.", 
+        sender: "jude" 
+      }]);
+    } finally {
+      setIsTyping(false);
+    }
   };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
@@ -147,182 +211,132 @@ export const JudeChatbot = () => {
   };
 
   return (
-    <>
-      {/* Hidden audio element for TTS */}
-      <audio ref={audioRef} className="hidden" />
-      
-      <div 
-        ref={setRootRef}
-        style={{
-          position: 'fixed',
-          zIndex: 1000,
-          ...(isOpen 
-            ? { 
-                top: '4.5rem',
-                right: '0.75rem',
-              }
-            : getPositionStyles(false, {
-                closedTop: '5rem',
-                closedRight: '0.75rem',
-                openTop: '5rem',
-                openRight: '0.75rem',
-              })
-          ),
-        }}
-        onMouseDown={!isOpen ? handleMouseDown : undefined}
-        onTouchStart={!isOpen ? handleTouchStart : undefined}
-      >
-        {/* Jude's avatar - 3D or 2D */}
-        <div 
-          className={`cursor-pointer ${!isOpen ? 'hover:scale-105' : ''} transition-transform`}
-          onClick={() => {
-            if (!hasActuallyDragged) {
-              setIsOpen(!isOpen);
+    <div 
+      ref={setRootRef}
+      style={{
+        position: 'fixed',
+        zIndex: 1000,
+        ...(isOpen 
+          ? { 
+              top: '4.5rem',
+              right: '0.75rem',
             }
-          }}
-        >
-          {!isOpen && (
-            <div className="eric-floating-tooltip text-[10px] sm:text-xs">
-              Cliquez sur moi
-            </div>
-          )}
-          
-          {enable3D && isOpen ? (
-            // 3D Canvas when open and 3D enabled
-            <div className="w-[120px] h-[120px] sm:w-[140px] sm:h-[140px] md:w-[160px] md:h-[160px]">
-              <Suspense fallback={
-                <img 
-                  src={judeAvatar} 
-                  alt="Jude - Assistant IA" 
-                  className="w-full h-auto pointer-events-none drop-shadow-2xl"
-                />
-              }>
-                <Jude3DCanvas
-                  modelUrl="/models/jude.glb"
-                  usePlaceholder={false}
-                  currentAnimation={currentAnimation}
-                  currentEmotion={currentEmotion}
-                  phonemes={phonemes}
-                  audioElement={audioRef.current}
-                  isPlaying={isAudioPlaying}
-                  className="w-full h-full rounded-xl overflow-hidden"
-                />
-              </Suspense>
-            </div>
-          ) : (
-            // 2D image fallback
-            <div className="w-14 sm:w-16 md:w-20 lg:w-28">
-              <img 
-                src={judeAvatar} 
-                alt="Jude - Assistant IA" 
-                title={isOpen ? "Cliquez pour fermer" : "Cliquez pour parler avec Jude"}
-                className="w-full h-auto pointer-events-none drop-shadow-2xl"
-                loading="lazy"
-                decoding="async"
-              />
-            </div>
-          )}
-        </div>
-
-        {/* Chat Interface */}
-        {isOpen && (
-          <div className="relative w-[260px] sm:w-[300px] md:w-[340px] lg:w-[380px] flex flex-col mt-2">
-            {/* Toggle buttons for voice and 3D */}
-            <div className="flex gap-2 mb-2 justify-end">
-              <Button
-                size="sm"
-                variant={enableVoice ? "default" : "outline"}
-                className="h-7 w-7 p-0"
-                onClick={toggleVoice}
-                title={enableVoice ? "Désactiver la voix" : "Activer la voix"}
-              >
-                {enableVoice ? <Volume2 className="h-3.5 w-3.5" /> : <VolumeX className="h-3.5 w-3.5" />}
-              </Button>
-              <Button
-                size="sm"
-                variant={enable3D ? "default" : "outline"}
-                className="h-7 w-7 p-0"
-                onClick={toggle3D}
-                title={enable3D ? "Mode 2D" : "Mode 3D"}
-              >
-                {enable3D ? <Box className="h-3.5 w-3.5" /> : <Image className="h-3.5 w-3.5" />}
-              </Button>
-            </div>
-
-            {/* Messages */}
-            <div className="flex-1 overflow-y-auto space-y-3 max-h-[40vh] sm:max-h-[45vh] md:max-h-[50vh]">
-              {messages.map((message, index) => (
-                <div 
-                  key={index} 
-                  className={`flex items-start gap-2 ${message.sender === "user" ? "flex-row-reverse" : "flex-row"}`}
-                >
-                  {message.sender === "user" && (
-                    <img 
-                      src={getAvatarUrl(userAvatarUrl) || "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23059669'><path d='M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z'/></svg>"}
-                      alt="user"
-                      className="w-6 h-6 sm:w-8 sm:h-8 rounded-full object-cover flex-shrink-0"
-                      loading="lazy"
-                      decoding="async"
-                    />
-                  )}
-                  <div className={`max-w-[90%] p-2.5 sm:p-3 rounded-2xl text-xs sm:text-sm shadow-md ${
-                    message.sender === "user" 
-                      ? "bg-primary text-primary-foreground rounded-br-sm" 
-                      : "bg-background/95 backdrop-blur-sm rounded-bl-sm border border-border/20"
-                  }`}>
-                    {message.content}
-                    {message.navigationPath && (
-                      <Button
-                        className="mt-2 w-full text-xs"
-                        size="sm"
-                        onClick={() => navigate(message.navigationPath!)}
-                      >
-                        Aller à cette page
-                      </Button>
-                    )}
-                  </div>
-                </div>
-              ))}
-              {isLoading && (
-                <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                  <span>Jude réfléchit</span>
-                  <span className="animate-pulse">...</span>
-                </div>
-              )}
-              {isSpeaking && !isLoading && (
-                <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                  <span>Jude parle</span>
-                  <Volume2 className="h-3 w-3 animate-pulse" />
-                </div>
-              )}
-              <div ref={messagesEndRef} />
-            </div>
-
-            {/* Input Area */}
-            <div className="pt-2 sm:pt-3">
-              <div className="flex items-center gap-2 bg-background/95 backdrop-blur-sm rounded-full shadow-md p-1.5 pl-4">
-                <Textarea
-                  value={input}
-                  onChange={(e) => setInput(e.target.value)}
-                  onKeyPress={handleKeyPress}
-                  placeholder="Tapez votre question..."
-                  maxLength={200}
-                  className="flex-1 min-h-[32px] max-h-[50px] text-xs sm:text-sm resize-none border-0 bg-transparent focus-visible:ring-0 px-0 py-1.5"
-                  rows={1}
-                />
-                <Button
-                  size="icon"
-                  className="rounded-full w-9 h-9 sm:w-10 sm:h-10 flex-shrink-0"
-                  onClick={handleSendMessage}
-                  disabled={!input.trim() || isLoading}
-                >
-                  <Send className="w-4 h-4" />
-                </Button>
-              </div>
-            </div>
+          : getPositionStyles(false, {
+              closedTop: '5rem',
+              closedRight: '0.75rem',
+              openTop: '5rem',
+              openRight: '0.75rem',
+            })
+        ),
+      }}
+      onMouseDown={!isOpen ? handleMouseDown : undefined}
+      onTouchStart={!isOpen ? handleTouchStart : undefined}
+    >
+      {/* Jude's 2D avatar */}
+      <div 
+        className={`cursor-pointer ${!isOpen ? 'hover:scale-105' : ''} transition-transform`}
+        onClick={() => {
+          if (!hasActuallyDragged) {
+            setIsOpen(!isOpen);
+          }
+        }}
+      >
+        {!isOpen && (
+          <div className="eric-floating-tooltip text-[10px] sm:text-xs">
+            Cliquez sur moi
           </div>
         )}
+        
+        <div className="w-14 sm:w-16 md:w-20 lg:w-28">
+          <img 
+            src={judeAvatar} 
+            alt="Jude - Assistant IA" 
+            title={isOpen ? "Cliquez pour fermer" : "Cliquez pour parler avec Jude"}
+            className="w-full h-auto pointer-events-none drop-shadow-2xl"
+            loading="lazy"
+            decoding="async"
+          />
+        </div>
       </div>
-    </>
+
+      {/* Chat Interface */}
+      {isOpen && (
+        <div className="relative w-[260px] sm:w-[300px] md:w-[340px] lg:w-[380px] flex flex-col mt-2">
+          {/* Messages */}
+          <div className="flex-1 overflow-y-auto space-y-3 max-h-[40vh] sm:max-h-[45vh] md:max-h-[50vh]">
+            {messages.map((message, index) => (
+              <div 
+                key={index} 
+                className={`flex items-start gap-2 ${message.sender === "user" ? "flex-row-reverse" : "flex-row"}`}
+              >
+                {message.sender === "user" && (
+                  <img 
+                    src={getAvatarUrl(userAvatarUrl) || "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23059669'><path d='M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z'/></svg>"}
+                    alt="user"
+                    className="w-6 h-6 sm:w-8 sm:h-8 rounded-full object-cover flex-shrink-0"
+                    loading="lazy"
+                    decoding="async"
+                  />
+                )}
+                <div className={`max-w-[90%] p-2.5 sm:p-3 rounded-2xl text-xs sm:text-sm shadow-md ${
+                  message.sender === "user" 
+                    ? "bg-primary text-primary-foreground rounded-br-sm" 
+                    : "bg-background/95 backdrop-blur-sm rounded-bl-sm border border-border/20"
+                }`}>
+                  {message.sender === "jude" && index === typingMessageIndex ? (
+                    <TypewriterText 
+                      text={message.content} 
+                      speed={15} 
+                      onComplete={() => setTypingMessageIndex(null)}
+                    />
+                  ) : (
+                    message.content
+                  )}
+                  {message.navigationPath && (
+                    <Button
+                      className="mt-2 w-full text-xs"
+                      size="sm"
+                      onClick={() => navigate(message.navigationPath!)}
+                    >
+                      Aller à cette page
+                    </Button>
+                  )}
+                </div>
+              </div>
+            ))}
+            {isTyping && (
+              <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                <span>Jude réfléchit</span>
+                <span className="animate-pulse">...</span>
+              </div>
+            )}
+            <div ref={messagesEndRef} />
+          </div>
+
+          {/* Input Area */}
+          <div className="pt-2 sm:pt-3">
+            <div className="flex items-center gap-2 bg-background/95 backdrop-blur-sm rounded-full shadow-md p-1.5 pl-4">
+              <Textarea
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
+                onKeyPress={handleKeyPress}
+                placeholder="Tapez votre question..."
+                maxLength={200}
+                className="flex-1 min-h-[32px] max-h-[50px] text-xs sm:text-sm resize-none border-0 bg-transparent focus-visible:ring-0 px-0 py-1.5"
+                rows={1}
+              />
+              <Button
+                size="icon"
+                className="rounded-full w-9 h-9 sm:w-10 sm:h-10 flex-shrink-0"
+                onClick={handleSendMessage}
+                disabled={!input.trim() || isTyping}
+              >
+                <Send className="w-4 h-4" />
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
   );
 };
