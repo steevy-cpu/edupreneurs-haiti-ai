@@ -169,7 +169,8 @@ export const JudeChatbot = () => {
             content: m.content
           })),
           userNickname,
-          enableVoice: false // No voice needed
+          currentPage: location.pathname, // Pass current page for context
+          enableVoice: false
         }
       });
 
@@ -262,6 +263,28 @@ export const JudeChatbot = () => {
       {/* Chat Interface */}
       {isOpen && (
         <div className="relative w-[260px] sm:w-[300px] md:w-[340px] lg:w-[380px] flex flex-col mt-2">
+          {/* FAQ Quick Actions - show only when no user messages yet */}
+          {messages.length <= 1 && (
+            <div className="flex flex-wrap gap-1.5 mb-2">
+              {[
+                "Comment voir mes cours ?",
+                "Où est le classement ?",
+                "Aide-moi à étudier",
+              ].map((faq) => (
+                <button
+                  key={faq}
+                  onClick={() => {
+                    setInput(faq);
+                    setTimeout(() => handleSendMessage(), 100);
+                  }}
+                  className="text-[10px] sm:text-xs px-2 py-1 bg-muted/80 hover:bg-muted rounded-full text-muted-foreground hover:text-foreground transition-colors"
+                >
+                  {faq}
+                </button>
+              ))}
+            </div>
+          )}
+          
           {/* Messages */}
           <div className="flex-1 overflow-y-auto space-y-3 max-h-[40vh] sm:max-h-[45vh] md:max-h-[50vh]">
             {messages.map((message, index) => (
