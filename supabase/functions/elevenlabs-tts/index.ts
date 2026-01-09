@@ -1,34 +1,69 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.58.0";
+import { checkRateLimit, getClientIp, rateLimitResponse, RATE_LIMITS } from "../_shared/rateLimiter.ts";
+import { corsHeaders, securityHeaders, corsPreflightResponse } from "../_shared/securityHeaders.ts";
+import { z } from "https://deno.land/x/zod@v3.22.4/mod.ts";
 
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-};
+// Input validation schema
+const ttsSchema = z.object({
+  text: z.string().min(1).max(10000),
+  lessonId: z.string().uuid(),
+  sectionName: z.enum(['objectif', 'introduction', 'contenu', 'exemples']),
+  voiceId: z.string().max(100).optional(),
+}).strict();
 
 serve(async (req) => {
   // Handle CORS preflight
   if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders });
+    return corsPreflightResponse();
   }
 
   try {
-    const { text, lessonId, sectionName, voiceId } = await req.json();
-
-    if (!text || !lessonId || !sectionName) {
-      throw new Error('Missing required parameters: text, lessonId, sectionName');
-    }
-
-    const ELEVENLABS_API_KEY = Deno.env.get('ELEVENLABS_API_KEY');
     const SUPABASE_URL = Deno.env.get('SUPABASE_URL');
     const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
+    const supabase = createClient(SUPABASE_URL!, SUPABASE_SERVICE_ROLE_KEY!);
+
+    // Get auth token
+    const authHeader = req.headers.get('Authorization');
+    let userId: string | null = null;
+
+    if (authHeader) {
+      const token = authHeader.replace('Bearer ', '');
+      const { data: { user } } = await supabase.auth.getUser(token);
+      userId = user?.id || null;
+    }
+
+    // Rate limiting - resource intensive
+    const clientIp = getClientIp(req);
+    const rateLimit = await checkRateLimit(
+      supabase,
+      RATE_LIMITS.RESOURCE_INTENSIVE,
+      userId,
+      clientIp
+    );
+
+    if (!rateLimit.allowed) {
+      return rateLimitResponse(rateLimit.retryAfter!, rateLimit.remaining, corsHeaders);
+    }
+
+    // Validate input
+    const body = await req.json();
+    const validation = ttsSchema.safeParse(body);
+    
+    if (!validation.success) {
+      return new Response(
+        JSON.stringify({ error: 'Invalid input', details: validation.error.errors }),
+        { status: 400, headers: { ...corsHeaders, ...securityHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    const { text, lessonId, sectionName, voiceId } = validation.data;
+
+    const ELEVENLABS_API_KEY = Deno.env.get('ELEVENLABS_API_KEY');
 
     if (!ELEVENLABS_API_KEY) {
       throw new Error('ELEVENLABS_API_KEY is not configured');
     }
-
-    // Initialize Supabase client with service role for storage access
-    const supabase = createClient(SUPABASE_URL!, SUPABASE_SERVICE_ROLE_KEY!);
 
     // Get lesson and subject info for the path
     const { data: lessonData, error: lessonError } = await supabase
@@ -119,9 +154,6 @@ serve(async (req) => {
     };
 
     const columnName = columnMap[sectionName];
-    if (!columnName) {
-      throw new Error(`Unknown section name: ${sectionName}`);
-    }
 
     // Update the lesson record with the audio URL
     const updateData: Record<string, any> = {
@@ -147,7 +179,7 @@ serve(async (req) => {
         sectionName,
         success: true 
       }),
-      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      { headers: { ...corsHeaders, ...securityHeaders, 'Content-Type': 'application/json' } }
     );
 
   } catch (error) {
@@ -157,7 +189,7 @@ serve(async (req) => {
       JSON.stringify({ error: errorMessage }),
       { 
         status: 500, 
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+        headers: { ...corsHeaders, ...securityHeaders, 'Content-Type': 'application/json' } 
       }
     );
   }

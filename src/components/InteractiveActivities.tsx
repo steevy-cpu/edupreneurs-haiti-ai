@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import DOMPurify from "dompurify";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
@@ -7,6 +8,17 @@ import { useSoundEffects } from "@/hooks/useSoundEffects";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { TrueFalseGame, TrueFalseQuestion } from "@/components/interactive-activities/TrueFalseGame";
+
+// Security: DOMPurify configuration
+const PURIFY_CONFIG = {
+  ALLOWED_TAGS: ['p', 'br', 'strong', 'em', 'b', 'i', 'ul', 'ol', 'li', 
+                  'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'span', 'div', 'code', 'pre'],
+  ALLOWED_ATTR: ['class', 'style', 'id'],
+  FORBID_TAGS: ['script', 'iframe', 'object', 'embed', 'form', 'input', 'button'],
+  FORBID_ATTR: ['onerror', 'onclick', 'onload', 'onmouseover', 'onfocus', 'onblur']
+};
+
+const sanitizeHtml = (html: string): string => DOMPurify.sanitize(html, PURIFY_CONFIG);
 
 interface Question {
   question: string;
@@ -274,7 +286,7 @@ export const InteractiveActivities = ({ content, isLoading, onRegenerate, onGold
             Voici le contenu original:
           </p>
           <div className="prose prose-sm max-w-none dark:prose-invert overflow-x-hidden">
-            <div dangerouslySetInnerHTML={{ __html: content }} />
+            <div dangerouslySetInnerHTML={{ __html: sanitizeHtml(content) }} />
           </div>
           {onRegenerate && (
             <Button onClick={onRegenerate} variant="outline" className="w-full">

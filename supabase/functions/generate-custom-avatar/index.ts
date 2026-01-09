@@ -1,27 +1,77 @@
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.58.0";
+import { checkRateLimit, getClientIp, rateLimitResponse, RATE_LIMITS } from "../_shared/rateLimiter.ts";
+import { corsHeaders, securityHeaders, corsPreflightResponse } from "../_shared/securityHeaders.ts";
+import { z } from "https://deno.land/x/zod@v3.22.4/mod.ts";
 
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-};
+// Input validation schema
+const avatarSchema = z.object({
+  style: z.enum(['anime', 'manga', 'chibi', 'cartoon', 'realistic']).optional().default('anime'),
+  hairColor: z.string().max(50).optional().default('black'),
+  eyeColor: z.string().max(50).optional().default('brown'),
+  expression: z.string().max(100).optional().default('friendly smile'),
+  accessories: z.array(z.string().max(50)).max(5).optional().default([]),
+  skinTone: z.string().max(50).optional().default('medium'),
+  gender: z.enum(['male', 'female']),
+}).strict();
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders });
+    return corsPreflightResponse();
   }
 
   try {
-    const { style, hairColor, eyeColor, expression, accessories, skinTone, gender } = await req.json();
+    const SUPABASE_URL = Deno.env.get('SUPABASE_URL');
+    const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
+    const supabase = createClient(SUPABASE_URL!, SUPABASE_SERVICE_ROLE_KEY!);
+
+    // Get auth token - require authentication for avatar generation
+    const authHeader = req.headers.get('Authorization');
+    let userId: string | null = null;
+
+    if (authHeader) {
+      const token = authHeader.replace('Bearer ', '');
+      const { data: { user } } = await supabase.auth.getUser(token);
+      userId = user?.id || null;
+    }
+
+    if (!userId) {
+      return new Response(
+        JSON.stringify({ error: 'Authentication required' }),
+        { status: 401, headers: { ...corsHeaders, ...securityHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    // Rate limiting - resource intensive
+    const clientIp = getClientIp(req);
+    const rateLimit = await checkRateLimit(
+      supabase,
+      RATE_LIMITS.RESOURCE_INTENSIVE,
+      userId,
+      clientIp
+    );
+
+    if (!rateLimit.allowed) {
+      return rateLimitResponse(rateLimit.retryAfter!, rateLimit.remaining, corsHeaders);
+    }
+
+    // Validate input
+    const body = await req.json();
+    const validation = avatarSchema.safeParse(body);
+    
+    if (!validation.success) {
+      return new Response(
+        JSON.stringify({ error: 'Invalid input', details: validation.error.errors }),
+        { status: 400, headers: { ...corsHeaders, ...securityHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    const { style, hairColor, eyeColor, expression, accessories, skinTone, gender } = validation.data;
     
     const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
     if (!LOVABLE_API_KEY) {
       throw new Error('LOVABLE_API_KEY not configured');
-    }
-
-    // Validate gender
-    if (!gender || (gender !== 'male' && gender !== 'female')) {
-      throw new Error('Gender must be either "male" or "female"');
     }
 
     // Build accessory string
@@ -33,13 +83,13 @@ serve(async (req) => {
 
 CHARACTER SPECIFICATIONS (DO NOT DEVIATE):
 - Gender: ${gender} (MUST be clearly ${gender}, this is NON-NEGOTIABLE)
-- Skin tone: ${skinTone || 'medium'} (EXACT shade required - if "dark" use dark skin, if "light" use light skin)
-- Hair color: ${hairColor || 'black'} (MUST be this EXACT color: ${hairColor || 'black'}, not similar, not close - EXACTLY this color)
-- Eye color: ${eyeColor || 'brown'} (MUST be this EXACT color: ${eyeColor || 'brown'}, clearly visible)
-- Facial expression: ${expression || 'friendly smile'}
+- Skin tone: ${skinTone} (EXACT shade required - if "dark" use dark skin, if "light" use light skin)
+- Hair color: ${hairColor} (MUST be this EXACT color: ${hairColor}, not similar, not close - EXACTLY this color)
+- Eye color: ${eyeColor} (MUST be this EXACT color: ${eyeColor}, clearly visible)
+- Facial expression: ${expression}
 - Accessories: ${accessoryList === 'none' ? 'NO accessories at all - the character must have NO glasses, NO headwear, NO earrings, NOTHING' : `MUST include these and ONLY these: ${accessoryList}`}
 
-STYLE: ${style || 'anime'} style avatar portrait
+STYLE: ${style} style avatar portrait
 ${style === 'anime' || style === 'manga' ? '- Japanese anime/manga art style with large expressive eyes, clean lines' : ''}
 ${style === 'chibi' ? '- Cute chibi style with oversized head, small body, very cute proportions' : ''}
 ${style === 'cartoon' ? '- Western cartoon style with bold outlines, bright saturated colors' : ''}
@@ -53,7 +103,7 @@ MANDATORY REQUIREMENTS:
 - Square aspect ratio (1:1)
 - NO text or watermarks
 - The character MUST match ALL specified characteristics EXACTLY as described above
-- Double-check: Hair is ${hairColor || 'black'}, Eyes are ${eyeColor || 'brown'}, Skin is ${skinTone || 'medium'}, Gender is ${gender}`;
+- Double-check: Hair is ${hairColor}, Eyes are ${eyeColor}, Skin is ${skinTone}, Gender is ${gender}`;
 
     console.log('Generating avatar with prompt:', prompt);
 
@@ -77,13 +127,13 @@ MANDATORY REQUIREMENTS:
       if (response.status === 429) {
         return new Response(
           JSON.stringify({ error: 'Rate limit exceeded. Please try again in a moment.' }),
-          { status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          { status: 429, headers: { ...corsHeaders, ...securityHeaders, 'Content-Type': 'application/json' } }
         );
       }
       if (response.status === 402) {
         return new Response(
           JSON.stringify({ error: 'Usage limit reached. Please add credits to continue.' }),
-          { status: 402, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          { status: 402, headers: { ...corsHeaders, ...securityHeaders, 'Content-Type': 'application/json' } }
         );
       }
       throw new Error(`AI Gateway error: ${response.status}`);
@@ -106,7 +156,7 @@ MANDATORY REQUIREMENTS:
         imageUrl: imageData,
         message: data.choices?.[0]?.message?.content || 'Avatar generated successfully'
       }),
-      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      { headers: { ...corsHeaders, ...securityHeaders, 'Content-Type': 'application/json' } }
     );
 
   } catch (error) {
@@ -115,7 +165,7 @@ MANDATORY REQUIREMENTS:
       JSON.stringify({ 
         error: error instanceof Error ? error.message : 'Failed to generate avatar' 
       }),
-      { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      { status: 500, headers: { ...corsHeaders, ...securityHeaders, 'Content-Type': 'application/json' } }
     );
   }
 });
