@@ -268,7 +268,6 @@ const Community = () => {
   useEffect(() => {
     const handleVisibilityChange = () => {
       if (document.visibilityState === 'visible' && user) {
-        logger.log('📱 Page visible, refreshing conversations');
         fetchConversations();
       }
     };
@@ -280,8 +279,6 @@ const Community = () => {
   // Subscribe to typing presence for all conversations - only when conversation IDs change
   useEffect(() => {
     if (user && conversations.length > 0) {
-      logger.log('🔔 Setting up typing presence for all conversations');
-      
       // Only set up channels for new conversations
       conversations.forEach(conv => {
         if (!presenceChannelsRef.current[conv.id]) {
@@ -293,7 +290,6 @@ const Community = () => {
       const currentConvIds = new Set(conversations.map(c => c.id));
       Object.keys(presenceChannelsRef.current).forEach(convId => {
         if (!currentConvIds.has(convId)) {
-          logger.log('🧹 Cleaning up removed conversation presence channel:', convId);
           supabase.removeChannel(presenceChannelsRef.current[convId]);
           delete presenceChannelsRef.current[convId];
         }
@@ -303,7 +299,6 @@ const Community = () => {
     return () => {
       // Cleanup all presence channels on unmount
       Object.keys(presenceChannelsRef.current).forEach(convId => {
-        logger.log('🧹 Cleaning up typing presence channel for conversation:', convId);
         supabase.removeChannel(presenceChannelsRef.current[convId]);
       });
       presenceChannelsRef.current = {};
@@ -311,9 +306,7 @@ const Community = () => {
   }, [conversations.map(c => c.id).join(','), user?.id]);
 
   useEffect(() => {
-    logger.log('🔍 useEffect triggered - selectedConversation:', selectedConversation, 'user:', user?.id);
     if (selectedConversation && user) {
-      logger.log('✅ Conditions met, loading conversation and subscribing');
       const loadConversation = async () => {
         await fetchMessages(selectedConversation);
         await markMessagesAsRead(selectedConversation);
@@ -322,8 +315,6 @@ const Community = () => {
       loadConversation();
       subscribeToConversationMessages(selectedConversation);
       subscribeToReactions(selectedConversation);
-    } else {
-      logger.log('❌ Conditions not met - selectedConversation:', !!selectedConversation, 'user:', !!user);
     }
     return () => {
       if (messageChannelRef.current) {
@@ -383,12 +374,9 @@ const Community = () => {
     if (globalPresenceChannelRef.current) {
       const state = globalPresenceChannelRef.current.state;
       if (state === 'joined') {
-        logger.log('✅ [Community] Global presence listener already active');
         return;
       }
     }
-
-    logger.log('🌐 [Community] Setting up presence listener for user:', user.id);
     
     // Create a unique channel name for Community's listener
     const channel = supabase.channel(`community-presence-${user.id}`);
@@ -401,19 +389,16 @@ const Community = () => {
         
         if (onlineChannel) {
           const state = onlineChannel.presenceState();
-          logger.log('🔄 [Community] Presence sync from Layout channel:', state);
           const userIds = new Set<string>([JUDE_USER_ID]); // Jude is always online
           Object.values(state).forEach((presences: any) => {
             presences.forEach((p: any) => {
               if (p.user_id) userIds.add(p.user_id);
             });
           });
-          logger.log('👥 [Community] Online users:', Array.from(userIds));
           setOnlineUsers(userIds);
         }
       })
       .subscribe((status) => {
-        logger.log('📡 [Community] Presence listener status:', status);
         
         // Poll for presence updates every 5 seconds
         if (status === 'SUBSCRIBED') {
@@ -434,12 +419,9 @@ const Community = () => {
                 const prevArray = Array.from(prev).sort();
                 const newArray = Array.from(userIds).sort();
                 if (JSON.stringify(prevArray) !== JSON.stringify(newArray)) {
-                  logger.log('👥 [Community] Online users updated:', Array.from(userIds));
-                  
                   // Track who went offline and update their last_seen in database
                   prev.forEach(async (userId) => {
                     if (!userIds.has(userId) && userId !== JUDE_USER_ID) {
-                      logger.log('📴 [Community] User went offline:', userId);
                       const now = new Date().toISOString();
                       
                       // Update last_seen in database
@@ -448,9 +430,8 @@ const Community = () => {
                           .from('profiles')
                           .update({ last_seen: now })
                           .eq('user_id', userId);
-                        logger.log('✅ [Community] Updated last_seen in DB for:', userId);
                       } catch (error) {
-                        logger.error('❌ [Community] Error updating last_seen:', error);
+                        logger.error('Error updating last_seen:', error);
                       }
                       
                       // Update local state
@@ -636,12 +617,6 @@ const Community = () => {
       }
     });
 
-    logger.log('📊 Visible messages per conversation:', Object.fromEntries(
-      Array.from(visibleMessages.entries()).map(([id, msgs]) => [id, msgs.length])
-    ));
-    
-    logger.log('🔍 [FETCH] Starting to build conversation list...');
-
     // Build conversations list - deduplicate both group and 1-on-1
     const groupedByUser = new Map<string, Conversation>();
     const groupedByGroup = new Map<string, Conversation>();
@@ -655,11 +630,8 @@ const Community = () => {
       
       // Skip this conversation if no visible messages (deleted conversation with no new messages)
       if (convVisibleMessages.length === 0) {
-        logger.log(`🚫 [FETCH] Skipping conversation ${convId} - no visible messages (user deleted it)`);
         return;
       }
-
-      logger.log(`✅ [FETCH] Including conversation ${convId} - ${convVisibleMessages.length} visible messages`);
 
       const lastMsg = convVisibleMessages[convVisibleMessages.length - 1];
       const unreadCount = convVisibleMessages.filter(m => !m.read && m.sender_id !== user.id).length;
@@ -739,9 +711,7 @@ const Community = () => {
             });
           }
         }
-        
-        logger.log(`💬 Conversation ${convId} with ${otherUserProfile?.full_name}: ${unreadCount} unread`);
-      }
+        }
     });
 
     // Combine group and 1-on-1 conversations and sort
@@ -794,11 +764,10 @@ const Community = () => {
       .single();
     
     if (participantError) {
-      logger.error('❌ Error fetching participant visibility:', participantError);
+      logger.error('Error fetching participant visibility:', participantError);
     }
 
     const visibilityThreshold = participantData?.visible_from_message_id;
-    logger.log('🔍 Message visibility threshold:', visibilityThreshold || 'ALL MESSAGES');
 
     // Fetch all messages for this conversation first
     let query = supabase
@@ -810,7 +779,7 @@ const Community = () => {
     const { data: allMessages, error: messagesError } = await query;
     
     if (messagesError) {
-      logger.error('❌ Messages error:', messagesError);
+      logger.error('Messages error:', messagesError);
     }
 
     // Filter messages on the client side based on visibility threshold
@@ -821,11 +790,8 @@ const Community = () => {
       if (thresholdIndex !== -1) {
         // Show messages FROM the threshold message onwards (inclusive)
         messagesData = allMessages.slice(thresholdIndex);
-        logger.log(`📊 Filtered from ${allMessages.length} to ${messagesData.length} messages (starting from threshold)`);
       }
     }
-    
-    logger.log('💬 Final visible messages count:', messagesData.length);
 
     if (!messagesData) return;
 
@@ -921,8 +887,6 @@ const Community = () => {
       supabase.removeChannel(messageChannelRef.current);
     }
 
-    logger.log('🔔 Setting up realtime subscription for conversation:', conversationId);
-
     // Subscribe to real-time updates for this specific conversation
     const channel = supabase
       .channel(`messages-${conversationId}`, {
@@ -1006,8 +970,6 @@ const Community = () => {
           
           // If in group chat and mentions Jude, trigger Jude's response (including user's own messages)
           if (isGroupChat && mentionsJude && payload.new.sender_id !== JUDE_USER_ID) {
-            logger.log('🤖 Jude mentioned in group chat, triggering response...');
-            
             // Get sender's profile info
             supabase.functions.invoke('eric-chat', {
               body: { 
@@ -1024,7 +986,6 @@ const Community = () => {
           // Show notification if message is from another user AND this is the CURRENT conversation
           // (notifications for other conversations are handled in subscribeToMessages)
           if (payload.new.sender_id !== user?.id && conversationId === selectedConversation) {
-            logger.log('🔔 Message in current conversation, showing notification');
             if ('Notification' in window && Notification.permission === 'granted') {
               const senderName = profile?.nickname || profile?.full_name || 'Quelqu\'un';
               const messageContent = sharedPost 
@@ -1094,8 +1055,6 @@ const Community = () => {
           table: "messages",
         },
         async (payload) => {
-          logger.log('📨 New message received:', payload);
-          
           // Only play sound once here (not in conversation-specific subscription)
           if (payload.new.sender_id !== user?.id) {
             playReceiveSound();
@@ -1127,8 +1086,6 @@ const Community = () => {
           // Show browser notification for messages in other conversations
           // (messages in the current conversation are handled by subscribeToConversationMessages)
           if (payload.new.sender_id !== user?.id && conversationId !== selectedConversation) {
-            logger.log('🔔 Showing browser notification for new message');
-            
           // Use cached profile for notification
           const senderProfile = await getCachedProfile(payload.new.sender_id);
 
@@ -1191,8 +1148,7 @@ const Community = () => {
           schema: "public",
           table: "messages",
         },
-        async (payload) => {
-          logger.log('✅ Message updated:', payload);
+        (payload) => {
           // If message was marked as read, update the conversation's unread count
           if (payload.new.read && !payload.old.read) {
             // Update conversation unread count immediately
@@ -1206,9 +1162,7 @@ const Community = () => {
           }
         }
       )
-      .subscribe((status) => {
-        logger.log('📡 Messages subscription status:', status);
-      });
+      .subscribe();
 
     return () => {
       supabase.removeChannel(channel);
@@ -1733,15 +1687,12 @@ const Community = () => {
 
   const subscribeToTypingPresence = (conversationId: string) => {
     if (!user) {
-      logger.log('❌ Cannot setup typing presence - no user');
       return;
     }
 
     if (presenceChannelsRef.current[conversationId]) {
       supabase.removeChannel(presenceChannelsRef.current[conversationId]);
     }
-
-    logger.log('🔄 Setting up typing presence for conversation:', conversationId, 'User:', user.id);
 
     const channel = supabase.channel(`typing-${conversationId}`, {
       config: {
@@ -1754,27 +1705,19 @@ const Community = () => {
     channel
       .on('presence', { event: 'sync' }, () => {
         const state = channel.presenceState();
-        logger.log('👥 Presence state synced for conversation:', conversationId, state);
         setTypingUsers(prev => ({
           ...prev,
           [conversationId]: state
         }));
       })
-      .on('presence', { event: 'join' }, ({ key, newPresences }) => {
-        logger.log('👋 User joined:', key, newPresences);
-      })
-      .on('presence', { event: 'leave' }, ({ key, leftPresences }) => {
-        logger.log('👋 User left:', key, leftPresences);
-      })
+      .on('presence', { event: 'join' }, () => {})
+      .on('presence', { event: 'leave' }, () => {})
       .subscribe(async (status) => {
-        logger.log('📡 Typing presence subscription status:', status);
         if (status === 'SUBSCRIBED') {
-          logger.log('✅ Tracking initial typing state for user:', user.id);
-          const trackResult = await channel.track({
+          await channel.track({
             user_id: user.id,
             typing: false,
           });
-          logger.log('Track result:', trackResult);
         }
       });
 
@@ -1783,19 +1726,16 @@ const Community = () => {
 
   const sendTypingStatus = async (isTyping: boolean) => {
     if (!selectedConversation || !presenceChannelsRef.current[selectedConversation] || !user) {
-      logger.log('❌ Cannot send typing status - no channel or user');
       return;
     }
 
     try {
-      logger.log('📤 Sending typing status:', isTyping, 'for user:', user.id);
-      const result = await presenceChannelsRef.current[selectedConversation].track({
+      await presenceChannelsRef.current[selectedConversation].track({
         user_id: user.id,
         typing: isTyping,
       });
-      logger.log('✅ Typing status sent:', result);
     } catch (error) {
-      logger.error('❌ Error sending typing status:', error);
+      logger.error('Error sending typing status:', error);
     }
   };
 
@@ -1831,11 +1771,8 @@ const Community = () => {
   }, []);
 
   const handleDeleteConversation = async (conversationId: string) => {
-    logger.log('🚀 [DELETE] Function called with conversationId:', conversationId);
-    
     try {
       if (!user?.id) {
-        logger.error('❌ [DELETE] No user ID found');
         toast({
           title: "Erreur",
           description: "Utilisateur non authentifié",
@@ -1844,21 +1781,11 @@ const Community = () => {
         return;
       }
 
-      logger.log('✅ [DELETE] User ID:', user.id);
-      logger.log('📋 [DELETE] Current conversations:', conversations.length);
-
       // Find if this is a group or single conversation
       const conversation = conversations.find(c => c.id === conversationId);
       const isGroup = conversation?.is_group;
 
-      logger.log('🔍 [DELETE] Found conversation:', { 
-        found: !!conversation, 
-        isGroup, 
-        conversationName: isGroup ? conversation?.group?.name : conversation?.otherUser?.nickname 
-      });
-
       if (isGroup) {
-        logger.log('🗂️ [DELETE] Deleting messages from group conversation');
         // For group conversations: delete only user's messages
         const { error: deleteError } = await supabase
           .from("messages")
@@ -1867,12 +1794,10 @@ const Community = () => {
           .eq("sender_id", user.id);
 
         if (deleteError) {
-          logger.error("❌ [DELETE] Error deleting messages:", deleteError);
+          logger.error("Error deleting messages:", deleteError);
           throw deleteError;
         }
-        logger.log('✅ [DELETE] Deleted user messages from group');
       } else {
-        logger.log('💬 [DELETE] Hiding messages in single conversation');
         // For single conversations (WhatsApp-like behavior):
         // Set visible_from_message_id to hide all current messages
         
@@ -1886,11 +1811,9 @@ const Community = () => {
           .maybeSingle();
 
         if (fetchError) {
-          logger.error("❌ [DELETE] Error fetching last message:", fetchError);
+          logger.error("Error fetching last message:", fetchError);
           throw fetchError;
         }
-
-        logger.log('📨 [DELETE] Last message ID:', lastMessage?.id);
 
         // Update visible_from_message_id to exclude all current messages
         const { error: updateError } = await supabase
@@ -1902,24 +1825,19 @@ const Community = () => {
           .eq("user_id", user.id);
 
         if (updateError) {
-          logger.error("❌ [DELETE] Error updating visibility:", updateError);
+          logger.error("Error updating visibility:", updateError);
           throw updateError;
         }
-        logger.log('✅ [DELETE] Updated visibility threshold to:', lastMessage?.id);
       }
 
       // Clear local messages state
       setMessages([]);
-      logger.log('🧹 [DELETE] Cleared local messages');
 
       // Clear selection if this conversation was selected
       if (selectedConversation === conversationId) {
         setSelectedConversation(null);
-        // Update URL to reflect no conversation selected
         navigate('/community');
-        logger.log('🔄 [DELETE] Cleared selection and navigated to /community');
       }
-
       toast({
         title: "Succès",
         description: isGroup 
@@ -1927,12 +1845,10 @@ const Community = () => {
           : "La conversation a été supprimée de votre liste",
       });
 
-      // Refresh conversations list to hide the deleted conversation
-      logger.log('🔄 [DELETE] Refreshing conversations list...');
+      // Refresh conversations list
       await fetchConversations();
-      logger.log('✅ [DELETE] Conversations refreshed');
     } catch (error) {
-      logger.error("❌ [DELETE] Critical error:", error);
+      logger.error("Error deleting conversation:", error);
       toast({
         title: "Erreur",
         description: "Impossible de supprimer la conversation",
@@ -1940,7 +1856,6 @@ const Community = () => {
       });
     } finally {
       setDeleteConversationId(null);
-      logger.log('🏁 [DELETE] Cleanup complete');
     }
   };
 
@@ -2490,13 +2405,10 @@ const Community = () => {
                   if (!selectedConversation) return null;
                   
                   const conversationTypingUsers = typingUsers[selectedConversation] || {};
-                  logger.log('🎨 Rendering typing indicator for conversation:', selectedConversation, conversationTypingUsers);
                   
                   return Object.entries(conversationTypingUsers).map(([key, value]) => {
                     const presence = Array.isArray(value) ? value[0] : value;
-                    logger.log('🔍 Presence:', presence, 'typing:', presence?.typing, 'user_id:', presence?.user_id, 'current user:', user?.id);
                     if (presence?.typing && presence?.user_id !== user?.id) {
-                      logger.log('✅ Showing typing indicator for user:', presence?.user_id);
                       const conversation = conversations.find(c => c.id === selectedConversation);
                       
                       // Find the actual user profile for group chats
@@ -2511,7 +2423,6 @@ const Community = () => {
                         <TypingIndicator key={key} profile={typingUserProfile} />
                       );
                     }
-                    logger.log('❌ Not showing typing indicator for this presence');
                     return null;
                   });
                 })()}
