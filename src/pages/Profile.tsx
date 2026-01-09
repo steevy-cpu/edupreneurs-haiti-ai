@@ -11,6 +11,7 @@ import { getAvatarUrl } from '@/lib/avatarMap';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import { useProfileAnalytics } from '@/hooks/useProfileAnalytics';
 import { useVisitor } from '@/contexts/VisitorContext';
+import { isFounder } from '@/lib/founderConstants';
 
 interface Profile {
   id: string;
@@ -354,6 +355,7 @@ export default function Profile() {
   };
 
   const isOwnProfile = currentUser?.id === userId;
+  const isFounderProfile = isFounder(profile?.user_id);
 
   if (loading) {
     return (
@@ -436,7 +438,7 @@ export default function Profile() {
                 <p className="text-xl sm:text-2xl font-bold">{followingCount}</p>
                 <p className="text-xs sm:text-sm text-muted-foreground">Abonnements</p>
               </div>
-              {!profile.is_system_account && (
+              {!profile.is_system_account && !isFounderProfile && (
                 <div className="text-center">
                   <p className="text-xl sm:text-2xl font-bold">{profile.affiliation_points}</p>
                   <p className="text-xs sm:text-sm text-muted-foreground">Points</p>
@@ -528,7 +530,7 @@ export default function Profile() {
           )}
 
           {/* Achievements/Badges Section - Visible to everyone */}
-          {!profile.is_system_account && (
+          {!profile.is_system_account && !isFounderProfile && (
             <div className="mt-6 pt-6 border-t">
               <h3 className="font-semibold mb-4 flex items-center gap-2">
                 <Trophy className="w-5 h-5 text-yellow-500" />
@@ -601,7 +603,7 @@ export default function Profile() {
               </div>
             )}
 
-            {!profile.is_system_account && (
+            {!profile.is_system_account && !isFounderProfile && (
               <div className="grid grid-cols-2 gap-4">
                 {profile.school && (
                   <div className="bg-gradient-to-br from-secondary/50 to-muted/30 rounded-xl p-4">

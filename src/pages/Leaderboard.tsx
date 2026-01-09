@@ -9,6 +9,7 @@ import { getAvatarUrl } from "@/lib/avatarMap";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { useVisitor } from "@/contexts/VisitorContext";
 import { toast } from "sonner";
+import { FOUNDER_USER_IDS } from "@/lib/founderConstants";
 
 interface LeaderboardUser {
   id: string;
@@ -65,15 +66,17 @@ const Leaderboard = () => {
       return;
     }
 
-    // Add rank to each user
-    const rankedUsers = topUsers?.map((user, index) => ({
-      ...user,
-      rank: index + 1,
-    })) || [];
+    // Filter out founders and add rank to each user
+    const rankedUsers = topUsers
+      ?.filter(user => !FOUNDER_USER_IDS.includes(user.user_id))
+      .map((user, index) => ({
+        ...user,
+        rank: index + 1,
+      })) || [];
 
     setLeaderboard(rankedUsers);
 
-    // Find current user's rank (excluding system accounts)
+    // Find current user's rank (excluding system accounts and founders)
     if (user) {
       const { data: allUsers } = await supabase
         .from("profiles")
@@ -81,8 +84,10 @@ const Leaderboard = () => {
         .eq("is_system_account", false)
         .order("gold_earned", { ascending: false });
 
-      const userRank = allUsers?.findIndex(u => u.user_id === user.id);
-      if (userRank !== undefined && userRank !== -1) {
+      // Filter out founders before calculating rank
+      const filteredUsers = allUsers?.filter(u => !FOUNDER_USER_IDS.includes(u.user_id)) || [];
+      const userRank = filteredUsers.findIndex(u => u.user_id === user.id);
+      if (userRank !== -1) {
         setCurrentUserRank(userRank + 1);
       }
     }
