@@ -91,13 +91,13 @@ export const examTutorSchema = z.object({
   message: z.string().max(10000).optional().default(''),
   userMessage: z.string().max(10000).optional(),
   exercise: z.object({
-    exercise_number: z.number().optional(),
+    exercise_number: z.number().optional().nullable(),
     question_text: z.string().max(10000),
-    options: z.array(z.string().max(1000)).max(10).optional(),
+    options: z.array(z.string().max(1000)).max(10).optional().nullable(),
     correct_answer: z.string().max(5000).optional().nullable(),
-    concept: z.string().max(500).optional(),
-    points: z.number().optional(),
-    explanation: z.string().max(10000).optional(),
+    concept: z.string().max(500).optional().nullable(),
+    points: z.number().optional().nullable(),
+    explanation: z.string().max(10000).optional().nullable(),
   }),
   conversationHistory: z.array(z.object({
     message_role: z.string().max(50),
