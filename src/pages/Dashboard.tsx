@@ -193,20 +193,19 @@ const Dashboard = () => {
   const fetchLeaderboard = async () => {
     setLeaderboardLoading(true);
     
+    // Use RPC function to bypass RLS complexity
     const { data: topUsers, error } = await supabase
-      .from("profiles")
-      .select("id, user_id, full_name, nickname, avatar_url, gold_earned, academic_grade")
-      .eq("is_system_account", false)
-      .order("gold_earned", { ascending: false })
-      .limit(5);
+      .rpc('get_leaderboard_profiles', { limit_count: 5 });
 
     if (error) {
+      console.error("Leaderboard fetch error:", error);
       setLeaderboardLoading(false);
       return;
     }
 
-    const rankedUsers = topUsers?.map((user, index) => ({
+    const rankedUsers = topUsers?.map((user: any, index: number) => ({
       ...user,
+      full_name: user.nickname || "Étudiant",
       rank: index + 1,
     })) || [];
 

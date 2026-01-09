@@ -52,13 +52,9 @@ const Leaderboard = () => {
     
     const { data: { user } } = await supabase.auth.getUser();
     
-    // Fetch top 10 users by gold earned (excluding system accounts)
+    // Use RPC function to bypass RLS complexity
     const { data: topUsers, error } = await supabase
-      .from("profiles")
-      .select("id, user_id, full_name, nickname, avatar_url, gold_earned, academic_grade")
-      .eq("is_system_account", false)
-      .order("gold_earned", { ascending: false })
-      .limit(10);
+      .rpc('get_leaderboard_profiles', { limit_count: 20 });
 
     if (error) {
       console.error("Error fetching leaderboard:", error);
@@ -68,25 +64,21 @@ const Leaderboard = () => {
 
     // Filter out founders and add rank to each user
     const rankedUsers = topUsers
-      ?.filter(user => !FOUNDER_USER_IDS.includes(user.user_id))
-      .map((user, index) => ({
-        ...user,
+      ?.filter((u: any) => !FOUNDER_USER_IDS.includes(u.user_id))
+      .slice(0, 10)
+      .map((u: any, index: number) => ({
+        ...u,
+        full_name: u.nickname || "Étudiant",
         rank: index + 1,
       })) || [];
 
     setLeaderboard(rankedUsers);
 
-    // Find current user's rank (excluding system accounts and founders)
+    // Find current user's rank
     if (user) {
-      const { data: allUsers } = await supabase
-        .from("profiles")
-        .select("user_id, gold_earned")
-        .eq("is_system_account", false)
-        .order("gold_earned", { ascending: false });
-
-      // Filter out founders before calculating rank
-      const filteredUsers = allUsers?.filter(u => !FOUNDER_USER_IDS.includes(u.user_id)) || [];
-      const userRank = filteredUsers.findIndex(u => u.user_id === user.id);
+      const allRanked = topUsers
+        ?.filter((u: any) => !FOUNDER_USER_IDS.includes(u.user_id)) || [];
+      const userRank = allRanked.findIndex((u: any) => u.user_id === user.id);
       if (userRank !== -1) {
         setCurrentUserRank(userRank + 1);
       }
