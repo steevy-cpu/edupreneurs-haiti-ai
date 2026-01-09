@@ -129,8 +129,8 @@ const App = () => (
         <Sonner />
         <MusicPlayerProvider>
           <VisitorProvider>
-            <FirstTimeUserProvider>
               <BrowserRouter>
+                <FirstTimeUserProvider>
                 <ScrollToTop />
                 <CookieConsent />
                 <GlobalMusicPlayer />
@@ -232,8 +232,8 @@ const App = () => (
                 <Route path="*" element={<NotFound />} />
                 </Routes>
               </Suspense>
+                </FirstTimeUserProvider>
               </BrowserRouter>
-            </FirstTimeUserProvider>
           </VisitorProvider>
         </MusicPlayerProvider>
       </TooltipProvider>
