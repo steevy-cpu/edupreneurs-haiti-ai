@@ -767,31 +767,35 @@ const Community = () => {
 
     const visibilityThreshold = participantData?.visible_from_message_id;
 
-    // Fetch all messages for this conversation first
+    // Fetch messages with pagination (limit 50 for better performance)
     let query = supabase
       .from("messages")
       .select("id, content, sender_id, created_at, read, shared_post_id, conversation_id, replied_to_id, image_url, video_url")
       .eq("conversation_id", conversationId)
-      .order("created_at", { ascending: true });
+      .order("created_at", { ascending: false })
+      .limit(50); // Optimized: only fetch last 50 messages initially
 
     const { data: allMessages, error: messagesError } = await query;
+    
+    // Reverse to display in chronological order (oldest first)
+    const reversedMessages = allMessages ? [...allMessages].reverse() : [];
     
     if (messagesError) {
       logger.error('Messages error:', messagesError);
     }
 
     // Filter messages on the client side based on visibility threshold
-    let messagesData = allMessages || [];
-    if (visibilityThreshold && allMessages) {
+    let messagesData = reversedMessages;
+    if (visibilityThreshold && reversedMessages.length > 0) {
       // Find the index of the threshold message
-      const thresholdIndex = allMessages.findIndex(m => m.id === visibilityThreshold);
+      const thresholdIndex = reversedMessages.findIndex(m => m.id === visibilityThreshold);
       if (thresholdIndex !== -1) {
         // Show messages FROM the threshold message onwards (inclusive)
-        messagesData = allMessages.slice(thresholdIndex);
+        messagesData = reversedMessages.slice(thresholdIndex);
       }
     }
 
-    if (!messagesData) return;
+    if (!messagesData || messagesData.length === 0) return;
 
     const senderIds = [...new Set(messagesData.map(m => m.sender_id))];
     const { data: profiles } = await supabase

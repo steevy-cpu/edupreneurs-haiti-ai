@@ -10,10 +10,33 @@ export const avatarMap: Record<string, string> = {
   "eric-profile": ericProfile,
 };
 
-export const getAvatarUrl = (avatarId: string | null | undefined): string | undefined => {
+/**
+ * Get avatar URL with optional size optimization for Supabase storage URLs
+ * @param avatarId - Avatar identifier (URL, data URI, or special avatar key)
+ * @param size - Optional size in pixels for image optimization (default: 80)
+ * @returns Optimized avatar URL or undefined
+ */
+export const getAvatarUrl = (
+  avatarId: string | null | undefined, 
+  size: number = 80
+): string | undefined => {
   if (!avatarId) return undefined;
   
-  // Check if it's a full URL (AI-generated avatars stored in Supabase)
+  // For Supabase storage URLs, add size transformation for bandwidth optimization
+  if (avatarId.includes('supabase') && avatarId.includes('/storage/')) {
+    try {
+      const url = new URL(avatarId);
+      url.searchParams.set('width', size.toString());
+      url.searchParams.set('height', size.toString());
+      url.searchParams.set('quality', '80');
+      return url.toString();
+    } catch {
+      // If URL parsing fails, return as-is
+      return avatarId;
+    }
+  }
+  
+  // Full URLs (AI-generated or external) - return as-is
   if (avatarId.startsWith('http') || avatarId.startsWith('data:')) {
     return avatarId;
   }
