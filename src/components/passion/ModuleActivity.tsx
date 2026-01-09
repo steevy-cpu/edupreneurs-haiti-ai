@@ -257,7 +257,7 @@ export const ModuleActivity = ({
             <div className="prose dark:prose-invert max-w-none">
               <p className="text-muted-foreground">
                 Contenu éducatif enrichissant sur {moduleTitle}. Prends le temps de bien comprendre 
-                chaque concept présenté. Eric est là pour t'aider si tu as des questions!
+                chaque concept présenté. Jude est là pour t'aider si tu as des questions!
               </p>
             </div>
           )}

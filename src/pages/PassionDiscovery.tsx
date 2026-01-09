@@ -113,6 +113,7 @@ const PassionDiscoveryContent = () => {
   const [selectedAnswerIndex, setSelectedAnswerIndex] = useState<number | null>(null);
   const [isTransitioning, setIsTransitioning] = useState(false);
   const [saveError, setSaveError] = useState(false);
+  const [answerHistory, setAnswerHistory] = useState<Array<{ passion: keyof PassionScores; answerIndex: number }>>([]);
   
   // React Query hooks
   const { data: preferences, isLoading: preferencesLoading } = usePassionPreferences(userId);
@@ -220,9 +221,30 @@ const PassionDiscoveryContent = () => {
           setQuizStep("intro");
           setCurrentQuestion(0);
           setPassionScores({ music: 0, arts: 0, chess: 0, literature: 0 });
+          setAnswerHistory([]);
         }
       });
     }
+  };
+
+  // Handle going back to previous question
+  const handleQuizBack = () => {
+    if (currentQuestion === 0 || answerHistory.length === 0) return;
+    
+    const lastAnswer = answerHistory[answerHistory.length - 1];
+    
+    // Subtract the previous answer's score
+    setPassionScores(prev => ({
+      ...prev,
+      [lastAnswer.passion]: Math.max(0, prev[lastAnswer.passion] - 1)
+    }));
+    
+    // Remove last answer from history
+    setAnswerHistory(prev => prev.slice(0, -1));
+    
+    // Go back to previous question
+    setCurrentQuestion(prev => prev - 1);
+    setSelectedAnswerIndex(null);
   };
 
   const quizQuestions: QuizQuestion[] = [
@@ -492,6 +514,9 @@ const PassionDiscoveryContent = () => {
     setSelectedAnswerIndex(answerIndex);
     setIsTransitioning(true);
     
+    // Save to answer history for back functionality
+    setAnswerHistory(prev => [...prev, { passion, answerIndex }]);
+    
     // Calculate new scores immediately to avoid race condition
     const newScores = {
       ...passionScores,
@@ -597,10 +622,11 @@ const PassionDiscoveryContent = () => {
     setIsLoading(false);
   };
 
-  const sendMessage = async () => {
-    if (!userInput.trim() || !selectedCategory) return;
+  const sendMessage = async (messageOverride?: string) => {
+    const messageToSend = messageOverride || userInput;
+    if (!messageToSend.trim() || !selectedCategory) return;
 
-    const userMessage = { role: "user", content: userInput };
+    const userMessage = { role: "user", content: messageToSend };
     const newMessages = [...chatMessages, userMessage];
     setChatMessages(newMessages);
     setUserInput("");
@@ -609,7 +635,7 @@ const PassionDiscoveryContent = () => {
     try {
       const { data, error } = await supabase.functions.invoke('passion-ai-tutor', {
         body: {
-          message: userInput,
+          message: messageToSend,
           category: selectedCategory,
           chatHistory: newMessages.slice(-10)
         }
@@ -810,15 +836,32 @@ const PassionDiscoveryContent = () => {
 
     return (
       <div className="min-h-screen bg-gradient-to-br from-violet-100 via-fuchsia-50 to-amber-50 dark:from-violet-950/30 dark:via-fuchsia-950/20 dark:to-amber-950/20 flex items-center justify-center p-4">
-        <div className="max-w-2xl w-full space-y-6">
-          {/* Progress Header */}
-          <div className="flex items-center justify-between text-sm">
-            <Badge variant="secondary" className="font-semibold">
-              Question {currentQuestion + 1} sur {quizQuestions.length}
-            </Badge>
-            <span className="text-muted-foreground font-medium">{Math.round(progress)}%</span>
+        <div className="max-w-2xl w-full space-y-4 md:space-y-6">
+          {/* Progress Header - Sticky on mobile */}
+          <div className="sticky top-2 z-10 bg-background/80 backdrop-blur-md rounded-lg p-3 md:p-0 md:bg-transparent md:backdrop-blur-none md:static">
+            <div className="flex items-center justify-between text-sm mb-2">
+              <div className="flex items-center gap-2">
+                {currentQuestion > 0 && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={handleQuizBack}
+                    disabled={isTransitioning || isLoading}
+                    className="h-8 px-2 text-muted-foreground hover:text-foreground"
+                    aria-label="Question précédente"
+                  >
+                    <ArrowLeft className="w-4 h-4 mr-1" />
+                    <span className="hidden sm:inline">Retour</span>
+                  </Button>
+                )}
+                <Badge variant="secondary" className="font-semibold">
+                  Question {currentQuestion + 1} sur {quizQuestions.length}
+                </Badge>
+              </div>
+              <span className="text-muted-foreground font-medium">{Math.round(progress)}%</span>
+            </div>
+            <Progress value={progress} className="h-2 md:h-2" />
           </div>
-          <Progress value={progress} className="h-2" />
 
           {/* Question Card */}
           <Card className="backdrop-blur-md bg-background/90 border-2 border-primary/10 shadow-2xl overflow-hidden">
@@ -863,12 +906,13 @@ const PassionDiscoveryContent = () => {
                     key={index}
                     onClick={() => handleAnswerSelect(option.passion as keyof PassionScores, index)}
                     variant="outline"
-                    className={`w-full h-auto py-4 px-5 text-left justify-between transition-all duration-300 text-sm md:text-base group ${
+                    className={`w-full h-auto min-h-[56px] py-4 px-5 text-left justify-between transition-all duration-300 text-sm md:text-base group ${
                       isSelected 
                         ? "bg-primary/10 border-primary shadow-lg scale-[1.02] ring-2 ring-primary/30" 
-                        : "hover:bg-primary/5 hover:border-primary/50 hover:shadow-md"
+                        : "hover:bg-primary/5 hover:border-primary/50 hover:shadow-md active:scale-[0.98]"
                     }`}
                     disabled={isTransitioning || isLoading}
+                    aria-pressed={isSelected}
                   >
                     <span className="flex-1 pr-2">{option.text}</span>
                     {isSelected ? (
@@ -887,6 +931,13 @@ const PassionDiscoveryContent = () => {
               )}
             </CardContent>
           </Card>
+          
+          {/* Mobile navigation hint */}
+          {currentQuestion > 0 && (
+            <p className="text-center text-xs text-muted-foreground md:hidden">
+              Tu peux revenir en arrière pour changer ta réponse
+            </p>
+          )}
         </div>
       </div>
     );
@@ -1565,6 +1616,26 @@ const PassionDiscoveryContent = () => {
                   )}
                 </div>
                 
+                {/* Suggested questions */}
+                {chatMessages.length <= 1 && !isLoading && (
+                  <div className="flex flex-wrap gap-2 mb-3 pb-3 border-b">
+                    {[
+                      "Qu'est-ce que je vais apprendre?",
+                      "Donne-moi un exemple",
+                      "Comment progresser?"
+                    ].map((question, idx) => (
+                      <button
+                        key={idx}
+                        onClick={() => sendMessage(question)}
+                        className="text-xs px-3 py-1.5 rounded-full bg-primary/10 hover:bg-primary/20 text-primary transition-colors border border-primary/20"
+                        disabled={isLoading}
+                      >
+                        {question}
+                      </button>
+                    ))}
+                  </div>
+                )}
+                
                 <div className="flex gap-2 pt-2 border-t">
                   <input
                     type="text"
@@ -1577,7 +1648,7 @@ const PassionDiscoveryContent = () => {
                     aria-label="Message pour Jude"
                   />
                   <Button 
-                    onClick={sendMessage} 
+                    onClick={() => sendMessage()} 
                     disabled={isLoading || !userInput.trim()}
                     className="bg-gradient-to-r from-purple-500 to-pink-500 hover:opacity-90 rounded-full px-3 md:px-4"
                     size="icon"
