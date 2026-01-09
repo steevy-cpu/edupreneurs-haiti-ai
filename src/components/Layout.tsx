@@ -19,6 +19,7 @@ import {
   ArrowLeft,
   Palette,
   Gamepad2,
+  Lock,
 } from "lucide-react";
 import dashboardImage from "@/assets/dashboard00.png";
 import edupreneursLogo from "@/assets/edupreneurs-new-logo.png";
@@ -515,8 +516,11 @@ export const Layout = ({ children }: LayoutProps) => {
                 : "text-foreground hover:bg-gradient-to-br hover:from-[hsl(var(--primary))] hover:to-[hsl(var(--success))] hover:text-white hover:translate-x-1"
             }`}
           >
-            <LinkIcon size={16} className="sm:w-[17px] sm:h-[17px] lg:w-[18px] lg:h-[18px]" />
+            <Lock size={16} className="sm:w-[17px] sm:h-[17px] lg:w-[18px] lg:h-[18px]" />
             Affiliations
+            <span className="ml-auto text-[10px] sm:text-xs px-1.5 py-0.5 rounded-full bg-muted text-muted-foreground font-medium">
+              Bientôt
+            </span>
           </Link>
           <Link 
             to="/leaderboard" 
