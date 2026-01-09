@@ -89,7 +89,7 @@ export interface RateLimitResult {
  * @returns RateLimitResult indicating if request is allowed
  */
 export async function checkRateLimit(
-  supabase: SupabaseClient,
+  supabase: SupabaseClientType,
   config: RateLimitConfig,
   userId: string | null,
   clientIp: string

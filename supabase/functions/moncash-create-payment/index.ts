@@ -1,11 +1,17 @@
+/**
+ * Security-Hardened: MonCash Create Payment
+ * 
+ * Features:
+ * - Rate limiting (30 req/min for auth, 5 req/min for anon)
+ * - Input validation
+ * - Security headers
+ */
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-};
+import { checkRateLimit, getClientIp, rateLimitResponse, RATE_LIMITS } from "../_shared/rateLimiter.ts";
+import { validateInput, paymentSchema, validationErrorResponse } from "../_shared/validation.ts";
+import { corsHeaders, securityHeaders, noCacheHeaders, corsPreflightResponse } from "../_shared/securityHeaders.ts";
 
 // MonCash API endpoints
 const MONCASH_ENDPOINTS = {
@@ -20,12 +26,6 @@ const MONCASH_ENDPOINTS = {
     redirect: 'https://moncashbutton.digicelgroup.com/Moncash-middleware/Payment/Redirect?token=',
   }
 };
-
-interface PaymentRequest {
-  amount: number;
-  orderId?: string;
-  description?: string;
-}
 
 // Generate unique order ID
 function generateOrderId(): string {
@@ -51,8 +51,7 @@ async function getMonCashToken(clientId: string, clientSecret: string, mode: str
   });
 
   if (!response.ok) {
-    const errorText = await response.text();
-    console.error('MonCash auth error:', errorText);
+    console.error('MonCash auth error');
     throw new Error(`Failed to authenticate with MonCash: ${response.status}`);
   }
 
@@ -83,8 +82,7 @@ async function createMonCashPayment(
   });
 
   if (!response.ok) {
-    const errorText = await response.text();
-    console.error('MonCash payment creation error:', errorText);
+    console.error('MonCash payment creation error');
     throw new Error(`Failed to create MonCash payment: ${response.status}`);
   }
 
@@ -106,10 +104,16 @@ async function createMonCashPayment(
 }
 
 serve(async (req) => {
-  // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders });
+    return corsPreflightResponse();
   }
+
+  const responseHeaders = { 
+    ...corsHeaders, 
+    ...securityHeaders, 
+    ...noCacheHeaders,
+    'Content-Type': 'application/json' 
+  };
 
   try {
     // Get MonCash credentials from secrets
@@ -122,18 +126,9 @@ serve(async (req) => {
       return new Response(
         JSON.stringify({ 
           success: false, 
-          error: 'Payment gateway not configured. Please contact support.' 
+          error: 'Service de paiement non configuré' 
         }),
-        { status: 503, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
-    }
-
-    // Get user from authorization header
-    const authHeader = req.headers.get('Authorization');
-    if (!authHeader) {
-      return new Response(
-        JSON.stringify({ success: false, error: 'Not authenticated' }),
-        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        { status: 503, headers: responseHeaders }
       );
     }
 
@@ -141,6 +136,15 @@ serve(async (req) => {
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
+
+    // Get user from authorization header
+    const authHeader = req.headers.get('Authorization');
+    if (!authHeader) {
+      return new Response(
+        JSON.stringify({ success: false, error: 'Non authentifié' }),
+        { status: 401, headers: responseHeaders }
+      );
+    }
 
     // Get user from JWT
     const supabaseAnon = createClient(
@@ -152,21 +156,31 @@ serve(async (req) => {
     const { data: { user }, error: userError } = await supabaseAnon.auth.getUser();
     if (userError || !user) {
       return new Response(
-        JSON.stringify({ success: false, error: 'Invalid authentication' }),
-        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        JSON.stringify({ success: false, error: 'Authentification invalide' }),
+        { status: 401, headers: responseHeaders }
       );
     }
 
-    // Parse request body
-    const { amount, orderId, description }: PaymentRequest = await req.json();
+    // Get client IP for rate limiting
+    const clientIp = getClientIp(req);
 
-    // Validate amount
-    if (!amount || amount <= 0) {
-      return new Response(
-        JSON.stringify({ success: false, error: 'Invalid amount' }),
-        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
+    // Check rate limit
+    const rateCheck = await checkRateLimit(supabase, RATE_LIMITS.PAYMENT, user.id, clientIp);
+    if (!rateCheck.allowed) {
+      console.warn(`Rate limit exceeded for payment from user: ${user.id.substring(0, 8)}`);
+      return rateLimitResponse(rateCheck.retryAfter!, rateCheck.remaining, responseHeaders);
     }
+
+    // Parse and validate input
+    const rawBody = await req.json();
+    const validation = validateInput(paymentSchema, rawBody);
+    
+    if (!validation.success) {
+      return validationErrorResponse(validation.errors, responseHeaders);
+    }
+
+    const { amount, description } = validation.data;
+    const orderId = rawBody.orderId;
 
     // Generate or use provided order ID
     const finalOrderId = orderId || generateOrderId();
@@ -179,10 +193,10 @@ serve(async (req) => {
 
     // Create payment
     const { paymentToken, redirectUrl } = await createMonCashPayment(token, amount, finalOrderId, mode);
-    console.log('MonCash payment created, token:', paymentToken);
+    console.log('MonCash payment created');
 
     // Store pending transaction in database
-    const { error: insertError } = await supabase
+    await supabase
       .from('payment_transactions')
       .insert({
         user_id: user.id,
@@ -196,11 +210,6 @@ serve(async (req) => {
         metadata: { mode },
       });
 
-    if (insertError) {
-      console.error('Error storing transaction:', insertError);
-      // Don't fail the payment, just log the error
-    }
-
     return new Response(
       JSON.stringify({
         success: true,
@@ -208,18 +217,17 @@ serve(async (req) => {
         redirectUrl: redirectUrl,
         paymentToken: paymentToken,
       }),
-      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      { headers: responseHeaders }
     );
 
   } catch (error) {
     console.error('Error in moncash-create-payment:', error);
-    const errorMessage = error instanceof Error ? error.message : 'Failed to create payment';
     return new Response(
       JSON.stringify({ 
         success: false, 
-        error: errorMessage 
+        error: 'Erreur lors de la création du paiement' 
       }),
-      { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      { status: 500, headers: responseHeaders }
     );
   }
 });

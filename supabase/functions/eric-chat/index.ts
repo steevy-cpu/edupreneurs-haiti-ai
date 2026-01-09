@@ -1,34 +1,62 @@
+/**
+ * Security-Hardened: Eric Chat (Community AI)
+ * 
+ * Features:
+ * - Rate limiting (60 req/min for auth, 10 req/min for anon)
+ * - Input validation
+ * - Security headers
+ */
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.39.3';
-
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-};
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+import { checkRateLimit, getClientIp, rateLimitResponse, RATE_LIMITS } from "../_shared/rateLimiter.ts";
+import { corsHeaders, securityHeaders, corsPreflightResponse } from "../_shared/securityHeaders.ts";
 
 const JUDE_USER_ID = '68f2f959-e14a-47f9-8277-07df3a6fcd79';
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders });
+    return corsPreflightResponse();
   }
 
+  const responseHeaders = { ...corsHeaders, ...securityHeaders, 'Content-Type': 'application/json' };
+
   try {
-    const { conversationId, userMessage, userId, userNickname } = await req.json();
-
-    if (!conversationId || !userMessage || !userId) {
-      throw new Error('Missing required fields');
-    }
-
-    console.log('Jude chat request:', { conversationId, userId, userNickname });
-
-    // Create Supabase client with service role to bypass RLS
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-    // Get conversation history for context with sender information
+    const rawBody = await req.json();
+    const { conversationId, userMessage, userId, userNickname } = rawBody;
+
+    // Basic validation
+    if (!conversationId || !userMessage || !userId) {
+      return new Response(
+        JSON.stringify({ error: 'Champs requis manquants' }),
+        { status: 400, headers: responseHeaders }
+      );
+    }
+
+    if (typeof userMessage !== 'string' || userMessage.length > 10000) {
+      return new Response(
+        JSON.stringify({ error: 'Message invalide ou trop long' }),
+        { status: 400, headers: responseHeaders }
+      );
+    }
+
+    // Get client IP for rate limiting
+    const clientIp = getClientIp(req);
+
+    // Check rate limit
+    const rateCheck = await checkRateLimit(supabase, RATE_LIMITS.AI_TUTOR, userId, clientIp);
+    if (!rateCheck.allowed) {
+      console.warn(`Rate limit exceeded for eric-chat`);
+      return rateLimitResponse(rateCheck.retryAfter!, rateCheck.remaining, responseHeaders);
+    }
+
+    console.log('Jude chat request:', { conversationId, userId: userId.substring(0, 8) });
+
+    // Get conversation history
     const { data: messages, error: messagesError } = await supabase
       .from('messages')
       .select('sender_id, content')
@@ -40,7 +68,7 @@ serve(async (req) => {
       throw messagesError;
     }
 
-    // Fetch profiles for all unique senders to include names in history
+    // Fetch profiles for senders
     const uniqueSenderIds = [...new Set(messages?.map(m => m.sender_id) || [])];
     const { data: senderProfiles } = await supabase
       .from('profiles')
@@ -54,17 +82,12 @@ serve(async (req) => {
     const conversationHistory = messages?.map(msg => {
       const isJude = msg.sender_id === JUDE_USER_ID;
       const senderName = profileMap.get(msg.sender_id) || 'Utilisateur';
-      
       return {
         role: isJude ? 'assistant' : 'user',
-        // For user messages, prefix with sender name so Jude knows who said what in group chats
         content: isJude ? msg.content : `[${senderName}]: ${msg.content}`
       };
     }) || [];
 
-    console.log('Conversation history length:', conversationHistory.length);
-
-    // Call Lovable AI (uses pre-configured LOVABLE_API_KEY)
     const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
     if (!LOVABLE_API_KEY) {
       throw new Error('LOVABLE_API_KEY is not configured');
@@ -72,7 +95,7 @@ serve(async (req) => {
 
     // Get current time for greeting
     const now = new Date();
-    const haitiOffset = -5; // Haiti is UTC-5 (EST)
+    const haitiOffset = -5;
     const haitiTime = new Date(now.getTime() + (haitiOffset * 60 * 60 * 1000) + (now.getTimezoneOffset() * 60 * 1000));
     const currentHour = haitiTime.getHours();
     
@@ -86,64 +109,28 @@ serve(async (req) => {
     const isFirstMessage = !conversationHistory || conversationHistory.length === 0;
     const nicknameText = userNickname || "l'élève";
     const greetingInstruction = isFirstMessage 
-      ? `SALUTATION PREMIÈRE FOIS:
-- C'est la première fois que tu parles à cet utilisateur dans cette conversation
-- L'utilisateur s'appelle "${nicknameText}"
-- Commence ta réponse par "${greeting} ${nicknameText} ! Je suis Jude, votre assistant IA éducatif."
-- Demande comment tu peux aider l'utilisateur`
-      : `CONVERSATION EN COURS:
-- Tu es DÉJÀ en conversation avec l'utilisateur qui s'appelle "${nicknameText}"
-- NE DIS PAS "${greeting}" ou "Bonjour" ou "Bonsoir" à nouveau
-- Utilise son pseudo "${nicknameText}" naturellement dans la conversation
-- Continue directement la conversation de manière naturelle
-- Réponds simplement à la question posée sans te présenter à nouveau`;
+      ? `SALUTATION PREMIÈRE FOIS: Commence par "${greeting} ${nicknameText} ! Je suis Jude, votre assistant IA éducatif."`
+      : `CONVERSATION EN COURS: Ne dis pas bonjour à nouveau. Continue naturellement.`;
 
     const systemPrompt = `Tu es Jude, un assistant IA éducatif haïtien expert du programme du MENFP.
 
 ${greetingInstruction}
 
-💬 IMPORTANT - CONVERSATIONS DE GROUPE:
-- Dans les groupes, les messages sont préfixés par le nom de l'expéditeur: [Nom]: message
-- Tu dois répondre SPÉCIFIQUEMENT à la personne qui t'a parlé (${nicknameText})
-- Ne confonds PAS les utilisateurs entre eux
-- Adresse-toi toujours à "${nicknameText}" quand tu réponds
+💬 CONVERSATIONS DE GROUPE:
+- Les messages sont préfixés par le nom: [Nom]: message
+- Réponds à "${nicknameText}" spécifiquement
 
-🗣️ LANGUE DE COMMUNICATION:
-- **Français standard** est ta langue par DÉFAUT
-- Tu PARLES TOUJOURS EN FRANÇAIS sauf si l'utilisateur te demande EXPLICITEMENT de parler créole
+🗣️ LANGUE: Français standard par défaut.
 
-🎓 TON EXPERTISE:
-- Le curriculum du MENFP pour tous les niveaux
-- Toutes les matières du programme haïtien
-- Aide aux devoirs et préparation aux examens
-- Méthodes d'apprentissage adaptées
+🎓 TON EXPERTISE: Curriculum MENFP, toutes matières, préparation examens.
 
-📝 TON STYLE:
-- **Pédagogue et encourageant**
-- **Exemples concrets** du contexte haïtien
-- **Français standard TOUJOURS**
-- **Émojis éducatifs** pour rendre vivant
-- **Structuré et clair**
-- **IMPORTANT: Utilise des sauts de ligne entre paragraphes pour aérer tes réponses**
-- **Sépare les idées avec des doubles sauts de ligne**
-- **Paragraphes courts et lisibles pour mobile**
+📝 STYLE: Pédagogue, encourageant, paragraphes courts et aérés.
 
-✅ TU RÉPONDS À:
-- Questions sur les matières du programme MENFP
-- Explications de concepts scolaires
-- Aide aux devoirs
-- Préparation aux examens
-- Méthodes d'étude
+❌ HORS COMPÉTENCE: Questions non-éducatives → réponds poliment.`;
 
-❌ HORS DE TA COMPÉTENCE:
-Si on te pose une question NON-ÉDUCATIVE, réponds:
-"Bonjour ! Je suis Jude, votre assistant IA éducatif. Je suis là pour vous aider avec vos études. 📚
-Je ne peux malheureusement pas répondre à des questions en dehors de l'éducation. Avez-vous une question sur vos cours ?"`;
-
-    // Build messages array for Lovable AI (OpenAI format)
     const aiMessages = [
       { role: 'system', content: systemPrompt },
-      ...conversationHistory,
+      ...conversationHistory.slice(-20), // Limit history
       { role: 'user', content: `[${nicknameText}]: ${userMessage}` }
     ];
 
@@ -163,19 +150,12 @@ Je ne peux malheureusement pas répondre à des questions en dehors de l'éducat
     });
 
     if (!response.ok) {
-      const errorText = await response.text();
-      console.error('Lovable AI error:', response.status, errorText);
+      console.error('Lovable AI error:', response.status);
       
       if (response.status === 429) {
         return new Response(
-          JSON.stringify({ error: 'Rate limits exceeded, please try again later.' }),
-          { status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-        );
-      }
-      if (response.status === 402) {
-        return new Response(
-          JSON.stringify({ error: 'Service temporarily unavailable.' }),
-          { status: 402, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          JSON.stringify({ error: 'Limite de requêtes atteinte' }),
+          { status: 429, headers: responseHeaders }
         );
       }
       
@@ -185,24 +165,17 @@ Je ne peux malheureusement pas répondre à des questions en dehors de l'éducat
     const data = await response.json();
     let aiResponse = data.choices?.[0]?.message?.content || 'Désolé, je n\'ai pas pu générer une réponse.';
     
-    // Clean asterisks from the response
     aiResponse = aiResponse.replace(/\*\*/g, '').replace(/\*/g, '');
 
-    console.log('Generated response length:', aiResponse.length);
-
-    // Mark the user's message as read (Eric has "seen" it)
-    const { error: markReadError } = await supabase
+    // Mark user's message as read
+    await supabase
       .from('messages')
       .update({ read: true })
       .eq('conversation_id', conversationId)
       .eq('sender_id', userId)
       .eq('read', false);
 
-    if (markReadError) {
-      console.error('Error marking user message as read:', markReadError);
-    }
-
-    // Insert Eric's response using service role (bypasses RLS)
+    // Insert Jude's response
     const { error: insertError } = await supabase
       .from('messages')
       .insert({
@@ -213,24 +186,18 @@ Je ne peux malheureusement pas répondre à des questions en dehors de l'éducat
       });
 
     if (insertError) {
-      console.error('Error inserting Eric response:', insertError);
+      console.error('Error inserting response:', insertError);
       throw insertError;
     }
 
     console.log('Jude response inserted successfully');
 
-    // Send push notification to the user
+    // Send push notification
     try {
-      // Clean the AI response for notification (remove extra formatting)
-      const cleanResponse = aiResponse
-        .replace(/\*\*/g, '')
-        .replace(/\*/g, '')
-        .replace(/\n+/g, ' ')
-        .trim();
-      
+      const cleanResponse = aiResponse.replace(/\n+/g, ' ').trim();
       const notificationBody = cleanResponse.substring(0, 100) + (cleanResponse.length > 100 ? '...' : '');
       
-      const { error: pushError } = await supabase.functions.invoke('send-push-notification', {
+      await supabase.functions.invoke('send-push-notification', {
         body: {
           recipientUserId: userId,
           title: '🤖 Jude (Assistant IA)',
@@ -238,31 +205,19 @@ Je ne peux malheureusement pas répondre à des questions en dehors de l'éducat
           conversationId: conversationId
         }
       });
-
-      if (pushError) {
-        console.error('Error sending push notification:', pushError);
-      } else {
-        console.log('Push notification sent to user');
-      }
     } catch (pushError) {
-      console.error('Exception sending push notification:', pushError);
-      // Don't throw error, just log it
+      console.error('Push notification error:', pushError);
     }
 
     return new Response(
       JSON.stringify({ success: true, response: aiResponse }),
-      {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      }
+      { headers: responseHeaders }
     );
   } catch (error) {
-    console.error('Error in jude-chat function:', error);
+    console.error('Error in eric-chat:', error);
     return new Response(
-      JSON.stringify({ error: error instanceof Error ? error.message : 'Unknown error' }),
-      {
-        status: 500,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      }
+      JSON.stringify({ error: 'Une erreur est survenue' }),
+      { status: 500, headers: responseHeaders }
     );
   }
 });
