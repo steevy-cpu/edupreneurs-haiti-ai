@@ -69,30 +69,82 @@ function generateTextHash(text: string): string {
   return Math.abs(hash).toString(16);
 }
 
-// Navigation detection from response
+// Navigation detection from response - enhanced patterns
 function detectNavigation(response: string): string | null {
   const navigationPatterns: Record<string, string> = {
+    // Home
     'page d\'accueil': '/',
     'accueil': '/',
+    
+    // Dashboard
     'tableau de bord': '/dashboard',
     'dashboard': '/dashboard',
+    'mes stats': '/dashboard',
+    'statistiques': '/dashboard',
+    
+    // Courses/Subjects
     'matières': '/matieres',
     'matieres': '/matieres',
-    'mathématiques': '/matieres/mathematiques',
-    'français': '/matieres/francais',
-    'sciences': '/matieres/sciences',
+    'mes cours': '/matieres',
+    'sujets': '/matieres',
+    'mathématiques': '/course/mathematiques',
+    'math': '/course/mathematiques',
+    'français': '/course/francais',
+    'anglais': '/course/anglais',
+    'espagnol': '/course/espagnol',
+    'sciences expérimentales': '/course/sciences-experimentales',
+    'sciences sociales': '/course/sciences-sociales',
+    'histoire': '/course/sciences-sociales',
+    'géographie': '/course/sciences-sociales',
+    'créole': '/course/creole',
+    'biologie': '/course/biologie',
+    'physique': '/course/physique',
+    'chimie': '/course/chimie',
+    
+    // Features
     'classement': '/leaderboard',
+    'leaderboard': '/leaderboard',
+    'mon rang': '/leaderboard',
     'communauté': '/community',
+    'community': '/community',
+    'discuter': '/community',
+    'messages': '/community',
+    'chat': '/community',
+    'fil d\'actualité': '/feed',
+    'feed': '/feed',
+    'publications': '/feed',
+    'échecs': '/chess-game',
+    'chess': '/chess-game',
+    'jouer aux échecs': '/chess-game',
+    'passions': '/passion-discovery',
+    'découvrir': '/passion-discovery',
+    'activités': '/passion-discovery',
+    'baccalauréat': '/baccalaureat',
+    'bac': '/baccalaureat',
+    'examens officiels': '/baccalaureat',
+    
+    // User
     'profil': '/profile',
+    'mon compte': '/profile',
     'paramètres': '/settings',
-    'échecs': '/chess',
-    'chess': '/chess',
+    'réglages': '/settings',
+    'notifications': '/notifications',
   };
 
   const lowerResponse = response.toLowerCase();
   
-  if (lowerResponse.includes('allons') || lowerResponse.includes('va voir') || 
-      lowerResponse.includes('visite') || lowerResponse.includes('clique')) {
+  // Check for navigation intent phrases
+  const hasNavigationIntent = 
+    lowerResponse.includes('allons') || 
+    lowerResponse.includes('va voir') || 
+    lowerResponse.includes('visite') || 
+    lowerResponse.includes('clique') ||
+    lowerResponse.includes('rends-toi') ||
+    lowerResponse.includes('direction') ||
+    lowerResponse.includes('accède') ||
+    lowerResponse.includes('va sur');
+    
+  if (hasNavigationIntent) {
     for (const [keyword, path] of Object.entries(navigationPatterns)) {
       if (lowerResponse.includes(keyword)) {
         return path;
@@ -114,8 +166,7 @@ serve(async (req) => {
       message, 
       chatHistory = [], 
       userNickname = 'ami(e)',
-      lessonTopic = '',
-      lessonType = 'tutor',
+      currentPage = '/',
       enableVoice = true,
       voiceId = 'EXAVITQu4vr4xnSDxMaL' // Sarah - friendly female voice
     } = await req.json();
@@ -143,29 +194,83 @@ serve(async (req) => {
       greeting = 'Bon après-midi';
     }
 
-    // System prompt for Jude - the 3D AI tutor
-    const systemPrompt = `Tu es Jude, un tuteur IA haïtien bienveillant et expressif. Tu es maintenant un personnage 3D animé qui peut montrer des émotions et faire des gestes!
+    // Page context for awareness
+    const pageContextMap: Record<string, string> = {
+      '/': 'sur la page d\'accueil',
+      '/dashboard': 'sur ton tableau de bord',
+      '/matieres': 'sur la page des matières',
+      '/leaderboard': 'sur le classement',
+      '/community': 'dans la communauté',
+      '/feed': 'sur le fil d\'actualité',
+      '/chess-game': 'sur la page d\'échecs',
+      '/passion-discovery': 'sur la page des passions',
+      '/baccalaureat': 'sur la préparation au bac',
+      '/profile': 'sur ton profil',
+      '/settings': 'dans les paramètres',
+      '/notifications': 'sur les notifications',
+    };
+    
+    const pageContext = pageContextMap[currentPage] || 
+      (currentPage.startsWith('/course/') ? `sur le cours de ${currentPage.replace('/course/', '').replace(/-/g, ' ')}` : 
+       currentPage.startsWith('/lesson/') ? 'sur une leçon' : '');
 
-PERSONNALITÉ:
-- Tu es chaleureux, patient et encourageant
-- Tu utilises des expressions haïtiennes naturellement
-- Tu célèbres les succès des élèves avec enthousiasme
-- Tu guides doucement quand ils font des erreurs
+    // System prompt for Jude - French-only platform assistant
+    const systemPrompt = `Tu es Jude, l'assistant officiel de la plateforme éducative EDUPRENEURS.
+
+RÈGLES LINGUISTIQUES STRICTES:
+- Tu réponds UNIQUEMENT en français
+- Tu passes au créole haïtien SEULEMENT si l'utilisateur le demande explicitement (ex: "parle en créole", "répon an kreyòl")
+- Si l'utilisateur écrit en créole, réponds en français mais mentionne: "Je peux répondre en créole si tu préfères, dis-le moi!"
+
+RÔLE ET LIMITES:
+- Tu es un ASSISTANT de navigation et d'aide à la plateforme éducative
+- Tu peux aider avec: questions sur la plateforme, navigation, sujets éducatifs, conseils d'étude, encouragements
+- Tu NE DOIS PAS répondre aux: questions personnelles non liées à l'éducation, sujets politiques, controversés, ou inappropriés
+- Pour les questions hors sujet, réponds poliment: "Je suis spécialisé dans l'aide éducative et la navigation sur EDUPRENEURS. Comment puis-je t'aider avec tes études ou la plateforme?"
+
+CONNAISSANCE DE LA PLATEFORME:
+Pages principales:
+- Tableau de bord (/dashboard): Statistiques d'apprentissage, progression, temps d'étude
+- Matières (/matieres): Toutes les matières disponibles
+- Classement (/leaderboard): Voir ton rang parmi les autres élèves
+- Communauté (/community): Discuter avec d'autres élèves
+- Fil d'actualité (/feed): Voir les publications des autres
+- Échecs (/chess-game): Jouer aux échecs avec moi comme coach!
+- Passions (/passion-discovery): Découvrir des activités extra-scolaires
+- Baccalauréat (/baccalaureat): Préparation aux examens officiels
+- Profil (/profile): Voir et modifier ton profil
+- Paramètres (/settings): Gérer ton compte
+- Notifications (/notifications): Voir tes notifications
+
+MATIÈRES DISPONIBLES:
+- Mathématiques (7AF à NS4)
+- Français (7AF à NS4)
+- Anglais (7AF à NS4)
+- Espagnol (7AF à 9AF)
+- Sciences Expérimentales (7AF à 9AF)
+- Sciences Sociales / Histoire-Géographie
+- Créole Haïtien
+- Biologie et Géologie (Nouveau Secondaire)
+- Physique et Chimie (Nouveau Secondaire)
+
+NAVIGATION:
+Quand tu suggères une page, utilise TOUJOURS une de ces phrases pour déclencher la navigation:
+- "Allons voir..."
+- "Va visiter..."
+- "Clique ici pour..."
+- "Rends-toi sur..."
+- "Direction..."
 
 STYLE DE COMMUNICATION:
-- Réponds en français, avec occasionnellement du créole haïtien
-- Utilise des phrases courtes et claires pour les animations
-- Commence souvent par des mots d'encouragement
-- ${lessonTopic ? `Le sujet actuel est: ${lessonTopic}` : ''}
+- Sois bref et clair (2-3 phrases maximum par réponse)
+- Sois encourageant et amical
+- Utilise 1-2 émojis maximum par message
+- Tutoie l'utilisateur
+- Appelle l'élève par son prénom: ${userNickname}
 
-EXPRESSIONS À UTILISER (pour déclencher les animations):
-- Pour saluer: "Bonjour!", "Salut!", "Bienvenue!"
-- Pour féliciter: "Bravo!", "Excellent!", "Parfait!", "Super!"
-- Pour réfléchir: "Hmm, voyons...", "Laisse-moi réfléchir..."
-- Pour montrer: "Regarde ici...", "Voici..."
-- Pour approuver: "Oui, exactement!", "C'est ça!"
-
-L'élève s'appelle ${userNickname}. ${greeting}!`;
+CONTEXTE ACTUEL:
+- L'élève est actuellement ${pageContext || 'sur la plateforme'}
+- ${greeting}!`;
 
     // Prepare messages for AI
     const messages = [
