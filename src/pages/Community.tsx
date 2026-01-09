@@ -400,7 +400,7 @@ const Community = () => {
       })
       .subscribe((status) => {
         
-        // Poll for presence updates every 5 seconds
+      // Poll for presence updates every 15 seconds (optimized for 200+ users)
         if (status === 'SUBSCRIBED') {
           const pollInterval = setInterval(async () => {
             const allChannels = supabase.getChannels();
@@ -447,7 +447,7 @@ const Community = () => {
                 return prev;
               });
             }
-          }, 5000);
+          }, 15000); // Increased from 5s to 15s for better scalability
           
           // Store interval for cleanup
           (channel as any).pollInterval = pollInterval;
@@ -522,17 +522,15 @@ const Community = () => {
         .select("*")
         .in("id", groupIds);
       
-      // Fetch all user IDs involved in conversations
+      // Fetch all participants in a single batch query (optimized for 200+ users)
+      const { data: allConvParticipants } = await supabase
+        .from("conversation_participants")
+        .select("user_id, conversation_id")
+        .in("conversation_id", conversationIds)
+        .neq("user_id", user.id);
+      
       const allParticipantIds = new Set<string>();
-      for (const convId of conversationIds) {
-        const { data: participants } = await supabase
-          .from("conversation_participants")
-          .select("user_id")
-          .eq("conversation_id", convId)
-          .neq("user_id", user.id);
-        
-        participants?.forEach(p => allParticipantIds.add(p.user_id));
-      }
+      allConvParticipants?.forEach(p => allParticipantIds.add(p.user_id));
       
       // Fetch profiles with last_seen for all participants
       if (allParticipantIds.size > 0) {
