@@ -2,6 +2,8 @@ import { useState, useEffect, ReactNode } from "react";
 import { useNavigate, useLocation, Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { useMessageSounds } from "@/hooks/useMessageSounds";
+import { useNotificationSound } from "@/hooks/useNotificationSound";
 import {
   Menu,
   X,
@@ -56,6 +58,8 @@ export const Layout = ({ children }: LayoutProps) => {
   const [userNickname, setUserNickname] = useState<string>(isVisitor ? "Visiteur" : "Étudiant");
   const presenceChannelRef = useState<{ current: any | null }>({ current: null })[0];
   const { onTouchStart, onTouchMove, onTouchEnd } = useMobileSwipeNavigation();
+  const { playReceiveSound } = useMessageSounds();
+  const { playNotificationSound } = useNotificationSound();
   // Note: Music stop on visitor exit is handled by VisitorMusicSync in App.tsx
 
   useEffect(() => {
@@ -116,12 +120,32 @@ export const Layout = ({ children }: LayoutProps) => {
       .on(
         "postgres_changes",
         {
-          event: "*",
+          event: "INSERT",
           schema: "public",
           table: "messages",
         },
         async (payload) => {
           console.log("Message change detected:", payload);
+          
+          // Get current user to check if message is from someone else
+          const { data: { user } } = await supabase.auth.getUser();
+          
+          // Only play sound if the message is from another user and not on community page
+          if (user && payload.new && (payload.new as any).sender_id !== user.id) {
+            // Check if user is part of this conversation
+            const { data: participation } = await supabase
+              .from("conversation_participants")
+              .select("user_id")
+              .eq("conversation_id", (payload.new as any).conversation_id)
+              .eq("user_id", user.id)
+              .maybeSingle();
+            
+            // Play sound only if not on community page (to avoid double sounds)
+            if (participation && location.pathname !== '/community') {
+              playReceiveSound();
+            }
+          }
+          
           await fetchUnreadCount();
         }
       )
@@ -157,6 +181,11 @@ export const Layout = ({ children }: LayoutProps) => {
           // Show toast for new notifications
           if (payload.eventType === "INSERT" && payload.new) {
             const notification = payload.new as any;
+            
+            // Play notification sound (unless on notifications page)
+            if (location.pathname !== '/notifications') {
+              playNotificationSound();
+            }
             
             // Fetch actor profile
             const { data: actorProfile } = await supabase
