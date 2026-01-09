@@ -1,32 +1,62 @@
+/**
+ * Security-Hardened: Reset Password
+ * 
+ * Features:
+ * - Rate limiting (5 req/min to prevent brute force)
+ * - Strict input validation with Zod
+ * - Strong password requirements
+ * - Security headers
+ * 
+ * OWASP: API2:2023 - Broken Authentication
+ */
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers":
-    "authorization, x-client-info, apikey, content-type",
-};
-
-interface ResetPasswordRequest {
-  token: string;
-  newPassword: string;
-}
+import { checkRateLimit, getClientIp, rateLimitResponse, RATE_LIMITS } from "../_shared/rateLimiter.ts";
+import { validateInput, resetPasswordSchema, validationErrorResponse } from "../_shared/validation.ts";
+import { corsHeaders, securityHeaders, noCacheHeaders, corsPreflightResponse } from "../_shared/securityHeaders.ts";
 
 const handler = async (req: Request): Promise<Response> => {
+  // CORS preflight
   if (req.method === "OPTIONS") {
-    return new Response(null, { headers: corsHeaders });
+    return corsPreflightResponse();
   }
 
+  const responseHeaders = {
+    "Content-Type": "application/json",
+    ...corsHeaders,
+    ...securityHeaders,
+    ...noCacheHeaders,
+  };
+
   try {
-    const { token, newPassword }: ResetPasswordRequest = await req.json();
-
-    console.log("Processing password reset request");
-
     // Create Supabase client with service role key
     const supabaseAdmin = createClient(
       Deno.env.get("SUPABASE_URL") ?? "",
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
     );
+
+    // Get client IP for rate limiting
+    const clientIp = getClientIp(req);
+
+    // Check rate limit (auth endpoints need strict limiting)
+    const rateCheck = await checkRateLimit(supabaseAdmin, RATE_LIMITS.AUTH, null, clientIp);
+    if (!rateCheck.allowed) {
+      console.warn(`Rate limit exceeded for password reset from IP: ${clientIp}`);
+      return rateLimitResponse(rateCheck.retryAfter!, rateCheck.remaining, responseHeaders);
+    }
+
+    // Parse and validate input
+    const rawBody = await req.json();
+    const validation = validateInput(resetPasswordSchema, rawBody);
+    
+    if (!validation.success) {
+      console.warn("Password reset validation failed:", validation.errors);
+      return validationErrorResponse(validation.errors, responseHeaders);
+    }
+
+    const { token, newPassword } = validation.data;
+
+    console.log("Processing password reset request");
 
     // Verify the token
     const { data: tokenData, error: tokenError } = await supabaseAdmin
@@ -34,15 +64,13 @@ const handler = async (req: Request): Promise<Response> => {
         reset_token: token
       });
 
-    console.log("Token verification result:", { tokenData, tokenError });
-
     if (tokenError) {
-      console.error("Token error:", tokenError);
+      console.error("Token error:", tokenError.message);
       return new Response(
-        JSON.stringify({ error: "Token invalide ou expiré", details: tokenError.message }),
+        JSON.stringify({ error: "Token invalide ou expiré" }),
         {
           status: 400,
-          headers: { "Content-Type": "application/json", ...corsHeaders },
+          headers: responseHeaders,
         }
       );
     }
@@ -53,15 +81,13 @@ const handler = async (req: Request): Promise<Response> => {
         JSON.stringify({ error: "Token invalide ou expiré" }),
         {
           status: 400,
-          headers: { "Content-Type": "application/json", ...corsHeaders },
+          headers: responseHeaders,
         }
       );
     }
 
     // Handle both array and object responses
     const tokenResult = Array.isArray(tokenData) ? tokenData[0] : tokenData;
-    console.log("Token result:", tokenResult);
-    
     const { valid, user_id } = tokenResult;
 
     if (!valid) {
@@ -69,7 +95,7 @@ const handler = async (req: Request): Promise<Response> => {
         JSON.stringify({ error: "Token invalide ou expiré" }),
         {
           status: 400,
-          headers: { "Content-Type": "application/json", ...corsHeaders },
+          headers: responseHeaders,
         }
       );
     }
@@ -81,35 +107,32 @@ const handler = async (req: Request): Promise<Response> => {
     );
 
     if (updateError) {
-      console.error("Error updating password:", updateError);
+      console.error("Error updating password:", updateError.message);
       return new Response(
         JSON.stringify({ error: "Erreur lors de la mise à jour du mot de passe" }),
         {
           status: 500,
-          headers: { "Content-Type": "application/json", ...corsHeaders },
+          headers: responseHeaders,
         }
       );
     }
 
-    console.log("Password reset successfully for user:", user_id);
+    console.log("Password reset successfully for user:", user_id.substring(0, 8) + "...");
 
     return new Response(
       JSON.stringify({ success: true, message: "Mot de passe réinitialisé avec succès" }),
       {
         status: 200,
-        headers: {
-          "Content-Type": "application/json",
-          ...corsHeaders,
-        },
+        headers: responseHeaders,
       }
     );
   } catch (error: any) {
-    console.error("Error in reset-password function:", error);
+    console.error("Error in reset-password function:", error.message);
     return new Response(
-      JSON.stringify({ error: error.message }),
+      JSON.stringify({ error: "Une erreur est survenue" }),
       {
         status: 500,
-        headers: { "Content-Type": "application/json", ...corsHeaders },
+        headers: responseHeaders,
       }
     );
   }

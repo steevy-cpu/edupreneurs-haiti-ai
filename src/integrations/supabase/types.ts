@@ -1892,6 +1892,39 @@ export type Database = {
           },
         ]
       }
+      promo_codes: {
+        Row: {
+          code: string
+          created_at: string | null
+          current_uses: number | null
+          expires_at: string | null
+          gold_reward: number
+          id: string
+          is_active: boolean | null
+          max_uses: number | null
+        }
+        Insert: {
+          code: string
+          created_at?: string | null
+          current_uses?: number | null
+          expires_at?: string | null
+          gold_reward?: number
+          id?: string
+          is_active?: boolean | null
+          max_uses?: number | null
+        }
+        Update: {
+          code?: string
+          created_at?: string | null
+          current_uses?: number | null
+          expires_at?: string | null
+          gold_reward?: number
+          id?: string
+          is_active?: boolean | null
+          max_uses?: number | null
+        }
+        Relationships: []
+      }
       push_subscriptions: {
         Row: {
           browser: string | null
@@ -1989,6 +2022,30 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      rate_limits: {
+        Row: {
+          expires_at: string
+          id: string
+          key: string
+          request_count: number | null
+          window_start: string | null
+        }
+        Insert: {
+          expires_at: string
+          id?: string
+          key: string
+          request_count?: number | null
+          window_start?: string | null
+        }
+        Update: {
+          expires_at?: string
+          id?: string
+          key?: string
+          request_count?: number | null
+          window_start?: string | null
+        }
+        Relationships: []
       }
       referrals: {
         Row: {
@@ -2423,6 +2480,7 @@ export type Database = {
           valid: boolean
         }[]
       }
+      cleanup_expired_rate_limits: { Args: never; Returns: number }
       count_activities_in_html: {
         Args: { html_content: string }
         Returns: number

@@ -1,21 +1,21 @@
+/**
+ * Security-Hardened: Send Confirmation Email
+ * 
+ * Features:
+ * - Rate limiting (10 req/min for auth, 3 req/min for anon)
+ * - Strict input validation with Zod
+ * - Security headers
+ * 
+ * OWASP: API4:2023 - Unrestricted Resource Consumption
+ */
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { Resend } from "https://esm.sh/resend@4.0.0";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { checkRateLimit, getClientIp, rateLimitResponse, RATE_LIMITS } from "../_shared/rateLimiter.ts";
+import { validateInput, confirmationEmailSchema, validationErrorResponse } from "../_shared/validation.ts";
+import { corsHeaders, securityHeaders, noCacheHeaders, corsPreflightResponse } from "../_shared/securityHeaders.ts";
 
 const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
-
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers":
-    "authorization, x-client-info, apikey, content-type",
-};
-
-interface ConfirmationEmailRequest {
-  email: string;
-  fullName: string;
-  nickname: string;
-  academicGrade: string;
-  confirmationCode: string;
-}
 
 const getEmailTemplate = (fullName: string, nickname: string, academicGrade: string, email: string, confirmationCode: string) => `
 <!DOCTYPE html>
@@ -182,15 +182,48 @@ const getEmailTemplate = (fullName: string, nickname: string, academicGrade: str
 `;
 
 const handler = async (req: Request): Promise<Response> => {
+  // CORS preflight
   if (req.method === "OPTIONS") {
-    return new Response(null, { headers: corsHeaders });
+    return corsPreflightResponse();
   }
 
-  try {
-    const { email, fullName, nickname, academicGrade, confirmationCode }: ConfirmationEmailRequest = 
-      await req.json();
+  const responseHeaders = {
+    "Content-Type": "application/json",
+    ...corsHeaders,
+    ...securityHeaders,
+    ...noCacheHeaders,
+  };
 
-    console.log("Sending confirmation email to:", email);
+  try {
+    // Initialize Supabase for rate limiting
+    const supabase = createClient(
+      Deno.env.get("SUPABASE_URL") ?? "",
+      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
+    );
+
+    // Get client IP for rate limiting
+    const clientIp = getClientIp(req);
+
+    // Check rate limit (email endpoints are strictly limited)
+    const rateCheck = await checkRateLimit(supabase, RATE_LIMITS.EMAIL, null, clientIp);
+    if (!rateCheck.allowed) {
+      console.warn(`Rate limit exceeded for IP: ${clientIp}`);
+      return rateLimitResponse(rateCheck.retryAfter!, rateCheck.remaining, responseHeaders);
+    }
+
+    // Parse and validate input
+    const rawBody = await req.json();
+    const validation = validateInput(confirmationEmailSchema, rawBody);
+    
+    if (!validation.success) {
+      console.warn("Validation failed:", validation.errors);
+      return validationErrorResponse(validation.errors, responseHeaders);
+    }
+
+    const { email, fullName, nickname, academicGrade, confirmationCode } = validation.data;
+
+    // Log without sensitive data
+    console.log("Sending confirmation email to:", email.substring(0, 3) + "***");
 
     const emailResponse = await resend.emails.send({
       from: "Edupreneurs <noreply@mon-edupreneur.com>",
@@ -199,22 +232,19 @@ const handler = async (req: Request): Promise<Response> => {
       html: getEmailTemplate(fullName, nickname, academicGrade, email, confirmationCode),
     });
 
-    console.log("Email sent successfully:", emailResponse);
+    console.log("Email sent successfully");
 
     return new Response(JSON.stringify(emailResponse), {
       status: 200,
-      headers: {
-        "Content-Type": "application/json",
-        ...corsHeaders,
-      },
+      headers: responseHeaders,
     });
   } catch (error: any) {
-    console.error("Error sending confirmation email:", error);
+    console.error("Error sending confirmation email:", error.message);
     return new Response(
-      JSON.stringify({ error: error.message }),
+      JSON.stringify({ error: "Erreur lors de l'envoi de l'email" }),
       {
         status: 500,
-        headers: { "Content-Type": "application/json", ...corsHeaders },
+        headers: responseHeaders,
       }
     );
   }
