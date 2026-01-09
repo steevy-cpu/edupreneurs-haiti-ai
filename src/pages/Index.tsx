@@ -156,15 +156,17 @@ const Index = () => {
   const teamMembers = useMemo(() => [
     {
       name: "Djoodoodson F. FLORENT",
+      initials: "DF",
       role: "Fondateur & CEO",
       bio: "Passionné par l'éducation et la technologie, dédié à transformer l'éducation haïtienne.",
-      placeholder: true
+      color: "from-primary to-accent"
     },
     {
       name: "Steeve Andolf Celestin",
+      initials: "SC",
       role: "CTO & Innovation",
       bio: "Expert en technologie et innovation, architecte des solutions numériques d'EDUPRENEURS.",
-      placeholder: true
+      color: "from-accent to-primary"
     }
   ], []);
 
@@ -701,27 +703,23 @@ const Index = () => {
             </p>
           </div>
           
-          <div className="grid sm:grid-cols-2 gap-6 sm:gap-8 max-w-2xl mx-auto">
+          <div className="grid sm:grid-cols-2 gap-6 sm:gap-8 max-w-3xl mx-auto">
             {teamMembers.map((member, idx) => (
-              <Card key={idx} className="group hover:scale-105 transition-all duration-300 hover:shadow-2xl border-primary/20 hover:border-primary/40 bg-gradient-to-br from-card to-card/50 text-center overflow-hidden">
-                <CardHeader className="pb-2">
-                  {/* Placeholder Avatar */}
-                  <div className="w-24 h-24 mx-auto rounded-full bg-gradient-to-br from-primary/20 to-accent/20 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300 border-4 border-primary/20">
-                    <Users className="w-12 h-12 text-primary/50" />
+              <Card key={idx} className="group hover:scale-[1.02] transition-all duration-300 hover:shadow-xl border-0 bg-card text-center overflow-hidden">
+                <CardHeader className="pb-3 pt-8">
+                  {/* Stylized Initials Avatar */}
+                  <div className={`w-20 h-20 mx-auto rounded-2xl bg-gradient-to-br ${member.color} flex items-center justify-center mb-4 group-hover:scale-110 group-hover:rotate-3 transition-all duration-300 shadow-lg`}>
+                    <span className="text-2xl font-black text-white tracking-tight">{member.initials}</span>
                   </div>
-                  <CardTitle className="text-lg font-bold text-primary">{member.name}</CardTitle>
-                  <CardDescription className="text-sm font-semibold text-accent">{member.role}</CardDescription>
+                  <CardTitle className="text-xl font-bold text-foreground">{member.name}</CardTitle>
+                  <CardDescription className="text-base font-semibold text-accent mt-1">{member.role}</CardDescription>
                 </CardHeader>
-                <CardContent>
-                  <p className="text-sm text-muted-foreground font-medium leading-relaxed">{member.bio}</p>
+                <CardContent className="pb-8">
+                  <p className="text-sm text-muted-foreground leading-relaxed max-w-xs mx-auto">{member.bio}</p>
                 </CardContent>
               </Card>
             ))}
           </div>
-          
-          <p className="text-center text-muted-foreground mt-8 text-sm italic">
-            Photos et informations détaillées bientôt disponibles
-          </p>
         </div>
       </section>
 
