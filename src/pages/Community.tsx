@@ -106,6 +106,9 @@ const Community = () => {
   const [showGroupInfo, setShowGroupInfo] = useState(false);
   const [selectedGroupId, setSelectedGroupId] = useState<string | null>(null);
   const [keyboardHeight, setKeyboardHeight] = useState(0);
+  
+  // Cached user profile for optimistic updates - prevents redundant fetches
+  const [cachedUserProfile, setCachedUserProfile] = useState<Profile | null>(null);
 
   // Detect if current conversation is with Jude (AI assistant) - hide media upload
   const isJudeConversation = useMemo(() => {
@@ -221,6 +224,23 @@ const Community = () => {
       setIsLoadingConversations(false);
     }
   }, [isVisitor]);
+
+  // Cache user profile on mount for optimistic updates
+  useEffect(() => {
+    const cacheUserProfile = async () => {
+      if (user && !cachedUserProfile) {
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('*')
+          .eq('user_id', user.id)
+          .single();
+        if (profile) {
+          setCachedUserProfile(profile as Profile);
+        }
+      }
+    };
+    cacheUserProfile();
+  }, [user?.id]);
 
   useEffect(() => {
     if (user) {
@@ -1163,8 +1183,8 @@ const Community = () => {
             }
           }
           
-          // Also refresh from database after a small delay to ensure consistency
-          setTimeout(() => fetchConversations(), 100);
+          // Local state is already updated above - no need to refetch from database
+          // This was causing performance issues by triggering heavy DB operations after every message
         }
       )
       .on(
@@ -1310,171 +1330,176 @@ const Community = () => {
   const sendMessage = async () => {
     if ((!newMessage.trim() && !selectedMediaFile) || !selectedConversation || !user) return;
 
-    setIsSending(true);
     const messageContent = newMessage.trim();
-    let imageUrl = null;
-    let videoUrl = null;
+    const currentMediaFile = selectedMediaFile;
+    const currentMediaType = mediaType;
+    const currentMediaPreview = mediaPreview;
+    const currentReplyingTo = replyingTo;
     
-    // Clear typing indicator when sending
-    sendTypingStatus(false);
-
-    // Check if user is a participant and their visibility settings
-    const { data: participation } = await supabase
-      .from("conversation_participants")
-      .select("id, visible_from_message_id")
-      .eq("conversation_id", selectedConversation)
-      .eq("user_id", user.id)
-      .maybeSingle();
-
-    if (!participation) {
-      // User is not a participant - re-add them (WhatsApp-like behavior)
-      const { error: addError } = await supabase
-        .from("conversation_participants")
-        .insert({
-          conversation_id: selectedConversation,
-          user_id: user.id,
-          visible_from_message_id: null,
-        });
-
-      if (addError) {
-        logger.error("Error re-adding user to conversation:", addError);
-        toast({
-          title: "Erreur",
-          description: "Impossible de rejoindre la conversation",
-          variant: "destructive",
-        });
-        setIsSending(false);
-        return;
-      }
-    } else if (participation.visible_from_message_id) {
-      // User deleted the conversation before - reset visibility to see all new messages
-      const { error: resetError } = await supabase
-        .from("conversation_participants")
-        .update({ visible_from_message_id: null })
-        .eq("conversation_id", selectedConversation)
-        .eq("user_id", user.id);
-
-      if (resetError) {
-        logger.error("Error resetting visibility:", resetError);
-      }
-    }
-
-    // Upload media if present
-    if (selectedMediaFile) {
-      const fileExt = selectedMediaFile.name.split('.').pop();
-      const fileName = `${user.id}/${Date.now()}.${fileExt}`;
-      
-      const { error: uploadError } = await supabase.storage
-        .from('message-media')
-        .upload(fileName, selectedMediaFile);
-
-      if (uploadError) {
-        const fileTypeName = mediaType === 'image' ? "l'image" : mediaType === 'video' ? 'la vidéo' : 'le document';
-        toast({
-          title: "Erreur",
-          description: `Impossible de télécharger ${fileTypeName}`,
-          variant: "destructive",
-        });
-        setIsSending(false);
-        return;
-      }
-
-      const { data: { publicUrl } } = supabase.storage
-        .from('message-media')
-        .getPublicUrl(fileName);
-      
-      if (mediaType === 'image') {
-        imageUrl = publicUrl;
-      } else if (mediaType === 'video') {
-        videoUrl = publicUrl;
-      } else if (mediaType === 'document') {
-        // Store document URL in image_url field with special prefix for identification
-        imageUrl = `doc:${selectedMediaFile.name}:${publicUrl}`;
-      }
-    }
-    
-    // Determine content for media messages
+    // Determine display content for optimistic update
     let displayContent = messageContent;
-    if (!displayContent && mediaType) {
-      if (mediaType === 'image') displayContent = '📷 Image';
-      else if (mediaType === 'video') displayContent = '🎥 Vidéo';
-      else if (mediaType === 'document') displayContent = `📄 ${selectedMediaFile?.name || 'Document'}`;
+    if (!displayContent && currentMediaType) {
+      if (currentMediaType === 'image') displayContent = '📷 Image';
+      else if (currentMediaType === 'video') displayContent = '🎥 Vidéo';
+      else if (currentMediaType === 'document') displayContent = `📄 ${currentMediaFile?.name || 'Document'}`;
     }
-    
-    const { error } = await supabase.from("messages").insert({
-      conversation_id: selectedConversation,
-      sender_id: user.id,
+
+    // 1. CREATE OPTIMISTIC MESSAGE - Show instantly in UI
+    const optimisticId = `temp-${Date.now()}`;
+    const optimisticMessage: Message = {
+      id: optimisticId,
       content: displayContent || '',
-      image_url: imageUrl,
-      video_url: videoUrl,
+      sender_id: user.id,
+      created_at: new Date().toISOString(),
       read: false,
-      replied_to_id: replyingTo?.id || null,
-    });
+      conversation_id: selectedConversation,
+      profile: cachedUserProfile || undefined,
+      replied_to: currentReplyingTo || undefined,
+      replied_to_id: currentReplyingTo?.id || null,
+      // Show local preview for images immediately
+      image_url: currentMediaType === 'image' ? currentMediaPreview : null,
+      video_url: currentMediaType === 'video' ? currentMediaPreview : null,
+    };
 
-    if (error) {
-      toast({
-        title: "Erreur",
-        description: "Impossible d'envoyer le message",
-        variant: "destructive",
-      });
-      setIsSending(false);
-      return;
-    }
-
-    playSendSound();
+    // 2. INSTANT UI UPDATE - Message appears immediately
+    setMessages(prev => [...prev, optimisticMessage]);
     setNewMessage("");
     setReplyingTo(null);
     clearMedia();
+    playSendSound();
     
-    // Send notification to recipient
-    const conversation = conversations.find(c => c.id === selectedConversation);
-    if (conversation?.otherUser) {
-      // Get sender's profile for better notification
-      const { data: senderProfile } = await supabase
-        .from('profiles')
-        .select('full_name, nickname')
-        .eq('user_id', user.id)
-        .single();
-      
-      const senderName = senderProfile?.full_name || user.email || 'Someone';
-      
-      // Check if messaging Jude (AI assistant)
-      if (conversation.otherUser.user_id === JUDE_USER_ID) {
-        try {
-          // Call Jude's chat function (handles AI and message insertion)
-          const { error: judeError } = await supabase.functions.invoke('eric-chat', {
+    // Clear typing indicator
+    sendTypingStatus(false);
+
+    // Update conversation list immediately
+    setConversations(prev => {
+      const updated = prev.map(conv => 
+        conv.id === selectedConversation 
+          ? { ...conv, lastMessage: displayContent, lastMessageTime: new Date().toISOString() }
+          : conv
+      );
+      return updated.sort((a, b) => 
+        new Date(b.lastMessageTime || b.created_at).getTime() - 
+        new Date(a.lastMessageTime || a.created_at).getTime()
+      );
+    });
+
+    // 3. BACKGROUND DATABASE OPERATIONS - Non-blocking
+    (async () => {
+      try {
+        let imageUrl = null;
+        let videoUrl = null;
+
+        // Check participation (fast query)
+        const { data: participation } = await supabase
+          .from("conversation_participants")
+          .select("id, visible_from_message_id")
+          .eq("conversation_id", selectedConversation)
+          .eq("user_id", user.id)
+          .maybeSingle();
+
+        // Handle participation in background
+        if (!participation) {
+          await supabase
+            .from("conversation_participants")
+            .insert({
+              conversation_id: selectedConversation,
+              user_id: user.id,
+              visible_from_message_id: null,
+            });
+        } else if (participation.visible_from_message_id) {
+          await supabase
+            .from("conversation_participants")
+            .update({ visible_from_message_id: null })
+            .eq("conversation_id", selectedConversation)
+            .eq("user_id", user.id);
+        }
+
+        // Upload media if present
+        if (currentMediaFile) {
+          const fileExt = currentMediaFile.name.split('.').pop();
+          const fileName = `${user.id}/${Date.now()}.${fileExt}`;
+          
+          const { error: uploadError } = await supabase.storage
+            .from('message-media')
+            .upload(fileName, currentMediaFile);
+
+          if (uploadError) {
+            logger.error('Media upload error:', uploadError);
+            // Remove optimistic message on error
+            setMessages(prev => prev.filter(m => m.id !== optimisticId));
+            toast({
+              title: "Erreur",
+              description: `Impossible de télécharger le fichier`,
+              variant: "destructive",
+            });
+            return;
+          }
+
+          const { data: { publicUrl } } = supabase.storage
+            .from('message-media')
+            .getPublicUrl(fileName);
+          
+          if (currentMediaType === 'image') {
+            imageUrl = publicUrl;
+          } else if (currentMediaType === 'video') {
+            videoUrl = publicUrl;
+          } else if (currentMediaType === 'document') {
+            imageUrl = `doc:${currentMediaFile.name}:${publicUrl}`;
+          }
+        }
+
+        // Insert message to database
+        const { data: insertedMessage, error } = await supabase.from("messages").insert({
+          conversation_id: selectedConversation,
+          sender_id: user.id,
+          content: displayContent || '',
+          image_url: imageUrl,
+          video_url: videoUrl,
+          read: false,
+          replied_to_id: currentReplyingTo?.id || null,
+        }).select('id').single();
+
+        if (error) {
+          logger.error('Message insert error:', error);
+          // Remove optimistic message on error
+          setMessages(prev => prev.filter(m => m.id !== optimisticId));
+          toast({
+            title: "Erreur",
+            description: "Impossible d'envoyer le message",
+            variant: "destructive",
+          });
+          return;
+        }
+
+        // Update optimistic message with real ID and URLs
+        setMessages(prev => prev.map(m => 
+          m.id === optimisticId 
+            ? { ...m, id: insertedMessage.id, image_url: imageUrl, video_url: videoUrl }
+            : m
+        ));
+
+        // 4. FIRE-AND-FORGET NOTIFICATIONS - Don't await
+        const conversation = conversations.find(c => c.id === selectedConversation);
+        const senderName = cachedUserProfile?.nickname || cachedUserProfile?.full_name || user.email || 'Someone';
+        
+        if (conversation?.otherUser?.user_id === JUDE_USER_ID) {
+          // Call Jude in background
+          supabase.functions.invoke('eric-chat', {
             body: { 
               conversationId: selectedConversation,
               userMessage: messageContent,
               userId: user.id,
-              userNickname: senderProfile?.nickname || senderProfile?.full_name
+              userNickname: senderName
             }
-          });
-
-          if (judeError) {
-            logger.error('Error calling Jude chat:', judeError);
-            toast({
-              title: "Erreur",
-              description: "Impossible d'obtenir une réponse de Jude",
-              variant: "destructive",
-            });
-          }
-        } catch (aiError) {
-          logger.error('Error getting AI response:', aiError);
-          toast({
-            title: "Erreur",
-            description: "Impossible d'obtenir une réponse de Jude",
-            variant: "destructive",
-          });
-        }
-      } else {
-        // Regular user - send push notification
-        try {
+          }).catch(err => logger.error('Jude chat error:', err));
+        } else if (conversation?.otherUser) {
+          // Send push notification in background
           const messagePreview = messageContent 
             ? messageContent.substring(0, 80) 
-            : (imageUrl ? '📷 Vous a envoyé une image' : '🎥 Vous a envoyé une vidéo');
-            
-          await supabase.functions.invoke('send-push-notification', {
+            : (imageUrl ? '📷 Image' : '🎥 Vidéo');
+          
+          supabase.functions.invoke('send-push-notification', {
             body: {
               recipientUserId: conversation.otherUser.user_id,
               title: `💬 ${senderName}`,
@@ -1482,57 +1507,54 @@ const Community = () => {
               conversationId: selectedConversation,
               type: 'message'
             }
-          });
-        } catch (pushError) {
-          logger.error('Error sending push notification:', pushError);
-        }
-      }
-    } else if (conversation?.is_group && conversation?.group?.id) {
-      // Group message - send push notifications to all members except sender
-      try {
-        const { data: groupMembers } = await supabase
-          .from('group_members')
-          .select('user_id')
-          .eq('group_id', conversation.group.id)
-          .neq('user_id', user.id);
-
-        if (groupMembers) {
-          // Get sender profile
-          const { data: senderProfile } = await supabase
-            .from('profiles')
-            .select('full_name, nickname')
-            .eq('user_id', user.id)
-            .single();
-
-          const senderName = senderProfile?.nickname || senderProfile?.full_name || 'Someone';
-          const groupName = conversation.group?.name || 'Group';
-
-          // Send push notification to each group member
-          for (const member of groupMembers) {
+          }).catch(err => logger.error('Push notification error:', err));
+        } else if (conversation?.is_group && conversation?.group?.id) {
+          // Group notifications in background - use Promise.all for parallel sends
+          (async () => {
             try {
-              const messagePreview = messageContent 
-                ? messageContent.substring(0, 80) 
-                : (imageUrl ? '📷 Image' : '🎥 Vidéo');
+              const { data: groupMembers } = await supabase
+                .from('group_members')
+                .select('user_id')
+                .eq('group_id', conversation.group!.id)
+                .neq('user_id', user.id);
+              
+              if (groupMembers) {
+                const groupName = conversation.group?.name || 'Group';
+                const messagePreview = messageContent 
+                  ? messageContent.substring(0, 80) 
+                  : (imageUrl ? '📷 Image' : '🎥 Vidéo');
                 
-              await supabase.functions.invoke('send-push-notification', {
-                body: {
-                  recipientUserId: member.user_id,
-                  title: `👥 ${senderName} dans ${groupName}`,
-                  body: messagePreview,
-                  conversationId: selectedConversation,
-                  type: 'message'
-                }
-              });
-            } catch (error) {
-              logger.error(`Error sending push to ${member.user_id}:`, error);
+                // Send all notifications in parallel
+                await Promise.all(
+                  groupMembers.map(member => 
+                    supabase.functions.invoke('send-push-notification', {
+                      body: {
+                        recipientUserId: member.user_id,
+                        title: `👥 ${senderName} dans ${groupName}`,
+                        body: messagePreview,
+                        conversationId: selectedConversation,
+                        type: 'message'
+                      }
+                    }).catch(err => logger.error(`Push to ${member.user_id} failed:`, err))
+                  )
+                );
+              }
+            } catch (err) {
+              logger.error('Group members fetch error:', err);
             }
-          }
+          })();
         }
       } catch (error) {
-        logger.error('Error sending group push notifications:', error);
+        logger.error('Background send error:', error);
+        // Remove optimistic message on error
+        setMessages(prev => prev.filter(m => m.id !== optimisticId));
+        toast({
+          title: "Erreur",
+          description: "Impossible d'envoyer le message",
+          variant: "destructive",
+        });
       }
-    }
-    setIsSending(false);
+    })();
   };
 
   const fetchReactions = async (conversationId: string) => {
