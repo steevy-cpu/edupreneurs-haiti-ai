@@ -5,6 +5,8 @@ import { toast } from "sonner";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { isFounder } from "@/lib/founderConstants";
+import ComingSoonOverlay from "@/components/ComingSoonOverlay";
 
 import {
   Copy,
@@ -53,6 +55,8 @@ const Affiliations = () => {
     pending: 0,
     totalPoints: 0,
   });
+  const [isUserFounder, setIsUserFounder] = useState(false);
+  const [userId, setUserId] = useState<string | null>(null);
 
   useEffect(() => {
     checkAuth();
@@ -65,6 +69,9 @@ const Affiliations = () => {
       navigate("/auth");
       return;
     }
+    // Check if user is a founder
+    setUserId(session.user.id);
+    setIsUserFounder(isFounder(session.user.id));
   };
 
   const fetchAffiliationData = async () => {
@@ -171,9 +178,12 @@ const Affiliations = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background">
-      {/* Main Content */}
-      <div className="pt-4 px-4 lg:px-8 pb-8">
+    <div className="min-h-screen bg-background relative">
+      {/* Coming Soon Overlay for non-founders */}
+      {!isUserFounder && userId && <ComingSoonOverlay />}
+      
+      {/* Main Content - blurred for non-founders */}
+      <div className={`pt-4 px-4 lg:px-8 pb-8 ${!isUserFounder && userId ? "blur-md pointer-events-none select-none" : ""}`}>
         {/* Header */}
         <div className="bg-gradient-to-br from-primary to-success text-primary-foreground p-8 rounded-[20px] mb-8 relative overflow-hidden">
           <div className="absolute top-0 right-0 w-1/2 h-full opacity-10">
