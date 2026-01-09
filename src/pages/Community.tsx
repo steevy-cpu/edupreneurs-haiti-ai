@@ -88,6 +88,7 @@ const Community = () => {
   const messageChannelRef = useRef<any>(null);
   const reactionChannelRef = useRef<any>(null);
   const presenceChannelsRef = useRef<Record<string, any>>({});
+  const profileCacheRef = useRef<Map<string, Profile>>(new Map());
   const typingTimeoutRef = useRef<any>(null);
   const [typingUsers, setTypingUsers] = useState<Record<string, Record<string, any>>>({});
   const [onlineUsers, setOnlineUsers] = useState<Set<string>>(() => new Set([JUDE_USER_ID]));
@@ -346,12 +347,7 @@ const Community = () => {
       .eq("read", false);
     
     if (!error) {
-      // Refresh conversations to update unread counts
-      await fetchConversations();
-    }
-
-    if (!error) {
-      // Immediately update local state for messages
+      // Update local state ONLY - no refetch needed (performance optimization)
       setMessages(prev =>
         prev.map(msg =>
           msg.sender_id !== user.id && !msg.read
@@ -360,7 +356,6 @@ const Community = () => {
         )
       );
       
-      // Update conversations state to remove badge
       setConversations(prev => 
         prev.map(conv => 
           conv.id === conversationId 
@@ -902,6 +897,24 @@ const Community = () => {
     setMessages(enrichedMessages);
   };
 
+  // Helper to get cached profile or fetch if not cached
+  const getCachedProfile = async (userId: string): Promise<Profile | null> => {
+    if (profileCacheRef.current.has(userId)) {
+      return profileCacheRef.current.get(userId)!;
+    }
+    
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("*")
+      .eq("user_id", userId)
+      .single();
+      
+    if (profile) {
+      profileCacheRef.current.set(userId, profile as Profile);
+    }
+    return profile as Profile | null;
+  };
+
   const subscribeToConversationMessages = (conversationId: string) => {
     // Unsubscribe from previous channel if exists
     if (messageChannelRef.current) {
@@ -927,12 +940,8 @@ const Community = () => {
           filter: `conversation_id=eq.${conversationId}`,
         },
         async (payload) => {
-          // Fetch the sender profile
-          const { data: profile } = await supabase
-            .from("profiles")
-            .select("*")
-            .eq("user_id", payload.new.sender_id)
-            .single();
+          // Fetch the sender profile from cache
+          const profile = await getCachedProfile(payload.new.sender_id);
 
           // Fetch replied message if exists
           let repliedToMessage = undefined;
@@ -944,11 +953,7 @@ const Community = () => {
               .single();
 
             if (repliedData) {
-              const { data: repliedProfile } = await supabase
-                .from("profiles")
-                .select("*")
-                .eq("user_id", repliedData.sender_id)
-                .single();
+              const repliedProfile = await getCachedProfile(repliedData.sender_id);
 
               repliedToMessage = {
                 ...repliedData,
@@ -967,11 +972,7 @@ const Community = () => {
               .single();
 
             if (postData) {
-              const { data: postProfile } = await supabase
-                .from("profiles")
-                .select("*")
-                .eq("user_id", postData.user_id)
-                .single();
+              const postProfile = await getCachedProfile(postData.user_id);
 
               sharedPost = {
                 ...postData,
@@ -1803,7 +1804,6 @@ const Community = () => {
   };
 
   const handleTyping = (value: string) => {
-    logger.log('⌨️ handleTyping called with value length:', value.length);
     setNewMessage(value);
 
     // Clear existing timeout
@@ -1813,16 +1813,13 @@ const Community = () => {
 
     // Send typing status
     if (value.trim()) {
-      logger.log('⌨️ User is typing, sending status true');
       sendTypingStatus(true);
 
       // Auto-clear typing status after 3 seconds of inactivity
       typingTimeoutRef.current = setTimeout(() => {
-        logger.log('⌨️ Typing timeout reached, sending status false');
         sendTypingStatus(false);
       }, 3000);
     } else {
-      logger.log('⌨️ Input empty, sending status false');
       sendTypingStatus(false);
     }
   };
