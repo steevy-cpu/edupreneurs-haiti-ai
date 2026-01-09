@@ -515,41 +515,43 @@ const Community = () => {
       ?.filter(c => c.is_group && c.group_id)
       .map(c => c.group_id!) || [];
 
+    // Fetch all participants in a single batch query (optimized - one query for all conversations)
+    const { data: allParticipants } = await supabase
+      .from("conversation_participants")
+      .select("user_id, conversation_id")
+      .in("conversation_id", conversationIds);
+
+    // Get other user IDs (excluding current user) for profile fetching
+    const otherUserIds = allParticipants
+      ?.filter(p => p.user_id !== user.id)
+      .map(p => p.user_id) || [];
+    const uniqueOtherUserIds = [...new Set(otherUserIds)];
+
+    // Fetch profiles for all other participants
+    const { data: profiles } = uniqueOtherUserIds.length > 0
+      ? await supabase
+          .from("profiles")
+          .select("*")
+          .in("user_id", uniqueOtherUserIds)
+      : { data: [] };
+
+    // Update lastSeenTimes with actual database values
+    if (profiles && profiles.length > 0) {
+      const newLastSeenTimes: Record<string, string> = {};
+      profiles.forEach(profile => {
+        if (profile.last_seen) {
+          newLastSeenTimes[profile.user_id] = profile.last_seen;
+        }
+      });
+      setLastSeenTimes(prev => ({ ...prev, ...newLastSeenTimes }));
+    }
+
     let groupDetails: any[] = [];
     if (groupIds.length > 0) {
       const { data: groups } = await supabase
         .from("group_chats")
         .select("*")
         .in("id", groupIds);
-      
-      // Fetch all participants in a single batch query (optimized for 200+ users)
-      const { data: allConvParticipants } = await supabase
-        .from("conversation_participants")
-        .select("user_id, conversation_id")
-        .in("conversation_id", conversationIds)
-        .neq("user_id", user.id);
-      
-      const allParticipantIds = new Set<string>();
-      allConvParticipants?.forEach(p => allParticipantIds.add(p.user_id));
-      
-      // Fetch profiles with last_seen for all participants
-      if (allParticipantIds.size > 0) {
-        const { data: profiles } = await supabase
-          .from("profiles")
-          .select("user_id, full_name, nickname, avatar_url, verified, last_seen")
-          .in("user_id", Array.from(allParticipantIds));
-        
-        // Update lastSeenTimes with actual database values
-        if (profiles) {
-          const newLastSeenTimes: Record<string, string> = {};
-          profiles.forEach(profile => {
-            if (profile.last_seen) {
-              newLastSeenTimes[profile.user_id] = profile.last_seen;
-            }
-          });
-          setLastSeenTimes(prev => ({ ...prev, ...newLastSeenTimes }));
-        }
-      }
       
       // Fetch member counts for each group
       const { data: memberCounts } = await supabase
@@ -567,22 +569,6 @@ const Community = () => {
         member_count: memberCountMap.get(g.id) || 0
       })) || [];
     }
-
-    // Fetch 1-on-1 conversation participants
-    const { data: allParticipants } = await supabase
-      .from("conversation_participants")
-      .select("conversation_id, user_id")
-      .in("conversation_id", conversationIds);
-
-    const otherUserIds = allParticipants
-      ?.filter(p => p.user_id !== user.id)
-      .map(p => p.user_id) || [];
-
-    const { data: profiles } = await supabase
-      .from("profiles")
-      .select("*")
-      .in("user_id", otherUserIds);
-
     // Fetch ALL messages to check visibility
     const { data: allMessagesData } = await supabase
       .from("messages")
