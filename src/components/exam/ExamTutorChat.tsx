@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
-import { Send, Loader2, Youtube, MessageCircle, Trash2, ChevronLeft, ChevronRight, Lightbulb, Eye, CheckCircle2, XCircle } from "lucide-react";
+import { Send, Loader2, Youtube, MessageCircle, Trash2, ChevronLeft, ChevronRight, Lightbulb, Eye, CheckCircle2, XCircle, ChevronDown, ChevronUp } from "lucide-react";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import judeProfile from "@/assets/jude-profile.jpeg";
 import { MathText } from '@/components/MathContent';
@@ -71,6 +71,7 @@ export const ExamTutorChat = ({
   const [showQuestion, setShowQuestion] = useState(true);
   const [selectedAnswer, setSelectedAnswer] = useState<string | null>(null);
   const [hasGreeted, setHasGreeted] = useState(false);
+  const [toolsExpanded, setToolsExpanded] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
 
@@ -104,6 +105,7 @@ export const ExamTutorChat = ({
   useEffect(() => {
     loadConversation();
     setSelectedAnswer(null); // Reset answer selection when exercise changes
+    setToolsExpanded(false); // Keep the conversation area large by default
   }, [exerciseId]);
 
   const loadConversation = async () => {
@@ -482,105 +484,140 @@ Prends ton temps pour réfléchir! 💡`;
       </ScrollArea>
 
       {/* Input Area */}
-      <div className="p-4 border-t bg-gradient-to-t from-muted/30 to-background space-y-3 flex-shrink-0">
-        {/* Answer Options - Only show if we have valid options */}
-        {showQuestion && options.length > 0 && (
-          <div className="space-y-2">
-            <p className="text-sm font-semibold text-foreground flex items-center gap-2">
-              <span className="w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center">
-                <span className="text-primary text-xs font-bold">?</span>
-              </span>
-              Sélectionne ta réponse:
-            </p>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-              {options.map((option: string, idx: number) => {
-                const isSelected = selectedAnswer === letters[idx];
-                return (
-                  <motion.div
-                    key={idx}
-                    whileHover={{ scale: selectedAnswer === null ? 1.02 : 1 }}
-                    whileTap={{ scale: selectedAnswer === null ? 0.98 : 1 }}
-                  >
-                    <Button
-                      variant={isSelected ? "default" : "outline"}
-                      onClick={() => handleAnswerSelection(letters[idx])}
-                      disabled={isLoading || selectedAnswer !== null}
-                      className={`w-full justify-start text-left h-auto py-3 px-4 transition-all ${
-                        isSelected 
-                          ? 'ring-2 ring-primary ring-offset-2' 
-                          : 'hover:border-primary/50 hover:bg-primary/5'
-                      } ${selectedAnswer !== null && !isSelected ? 'opacity-50' : ''}`}
-                    >
-                      <span className={`font-bold mr-3 w-7 h-7 rounded-full flex items-center justify-center ${
-                        isSelected ? 'bg-primary-foreground/20' : 'bg-primary/10'
-                      }`}>
-                        {letters[idx]}
+      <div className="px-4 py-3 border-t bg-gradient-to-t from-muted/30 to-background space-y-2 flex-shrink-0">
+        {/* Collapsible tools to keep more space for the conversation */}
+        <Button
+          type="button"
+          variant="ghost"
+          size="sm"
+          onClick={() => setToolsExpanded((v) => !v)}
+          className="w-full h-8 justify-between px-2 text-xs"
+        >
+          <span className="flex items-center gap-2">
+            <span className="inline-flex h-2 w-2 rounded-full bg-primary/70" />
+            Options & outils
+          </span>
+          {toolsExpanded ? (
+            <ChevronUp className="h-4 w-4" />
+          ) : (
+            <ChevronDown className="h-4 w-4" />
+          )}
+        </Button>
+
+        {!toolsExpanded && showQuestion && options.length > 0 && selectedAnswer === null && (
+          <p className="text-xs text-muted-foreground px-2">
+            Ouvre “Options & outils” pour voir les choix de réponse.
+          </p>
+        )}
+
+        <AnimatePresence initial={false}>
+          {toolsExpanded && (
+            <motion.div
+              key="tools"
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: "auto", opacity: 1 }}
+              exit={{ height: 0, opacity: 0 }}
+              transition={{ duration: 0.2 }}
+              className="overflow-hidden"
+            >
+              <div className="space-y-2 pt-1">
+                {/* Answer Options - Only show if we have valid options */}
+                {showQuestion && options.length > 0 && (
+                  <div className="space-y-2">
+                    <p className="text-sm font-semibold text-foreground flex items-center gap-2">
+                      <span className="w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center">
+                        <span className="text-primary text-xs font-bold">?</span>
                       </span>
-                      <span className="text-sm flex-1">{option}</span>
-                      {isSelected && <CheckCircle2 className="h-5 w-5 ml-2" />}
+                      Sélectionne ta réponse:
+                    </p>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                      {options.map((option: string, idx: number) => {
+                        const isSelected = selectedAnswer === letters[idx];
+                        return (
+                          <motion.div
+                            key={idx}
+                            whileHover={{ scale: selectedAnswer === null ? 1.02 : 1 }}
+                            whileTap={{ scale: selectedAnswer === null ? 0.98 : 1 }}
+                          >
+                            <Button
+                              variant={isSelected ? "default" : "outline"}
+                              onClick={() => handleAnswerSelection(letters[idx])}
+                              disabled={isLoading || selectedAnswer !== null}
+                              className={`w-full justify-start text-left h-auto py-3 px-4 transition-all ${
+                                isSelected
+                                  ? "ring-2 ring-primary ring-offset-2"
+                                  : "hover:border-primary/50 hover:bg-muted/40"
+                              } ${selectedAnswer !== null && !isSelected ? "opacity-50" : ""}`}
+                            >
+                              <span
+                                className={`font-bold mr-3 w-7 h-7 rounded-full flex items-center justify-center ${
+                                  isSelected ? "bg-primary-foreground/20" : "bg-primary/10"
+                                }`}
+                              >
+                                {letters[idx]}
+                              </span>
+                              <span className="text-sm flex-1">{option}</span>
+                              {isSelected && <CheckCircle2 className="h-5 w-5 ml-2" />}
+                            </Button>
+                          </motion.div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+
+                {/* Message for exercises without options */}
+                {showQuestion && options.length === 0 && (
+                  <div className="flex items-center gap-2 text-sm text-muted-foreground bg-muted/50 p-3 rounded-lg border border-dashed border-muted-foreground/30">
+                    <Lightbulb className="h-4 w-4" />
+                    <span>Question ouverte - Tape ta réponse ci-dessous ou demande de l'aide à Jude</span>
+                  </div>
+                )}
+
+                {/* Quick Actions */}
+                <div className="flex gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => handleQuickAction("Donne-moi un indice pour cette question.")}
+                    disabled={isLoading}
+                    className="flex-1 h-9 gap-2"
+                  >
+                    <Lightbulb className="h-4 w-4" />
+                    Indice
+                  </Button>
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    onClick={handleRevealAnswer}
+                    disabled={isLoading}
+                    className="flex-1 h-9 gap-2"
+                  >
+                    <Eye className="h-4 w-4" />
+                    Révéler la réponse
+                  </Button>
+                </div>
+
+                {youtubeQuery && (
+                  <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
+                    <Button variant="outline" size="sm" asChild className="w-full h-9">
+                      <a
+                        href={`https://www.youtube.com/results?search_query=${encodeURIComponent(youtubeQuery)}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        <Youtube className="h-4 w-4 mr-2" />
+                        Regarder une vidéo explicative
+                      </a>
                     </Button>
                   </motion.div>
-                );
-              })}
-            </div>
-          </div>
-        )}
-        
-        {/* Message for exercises without options */}
-        {showQuestion && options.length === 0 && (
-          <div className="flex items-center gap-2 text-sm text-muted-foreground bg-muted/50 p-3 rounded-lg border border-dashed border-muted-foreground/30">
-            <Lightbulb className="h-4 w-4 text-amber-500" />
-            <span>Question ouverte - Tape ta réponse ci-dessous ou demande de l'aide à Jude</span>
-          </div>
-        )}
+                )}
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
 
-        {/* Quick Actions */}
-        <div className="flex gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => handleQuickAction("Donne-moi un indice pour cette question.")}
-            disabled={isLoading}
-            className="flex-1 h-10 gap-2 hover:border-amber-500/50 hover:text-amber-600 hover:bg-amber-50 dark:hover:bg-amber-950/20"
-          >
-            <Lightbulb className="h-4 w-4" />
-            Indice
-          </Button>
-          <Button
-            variant="secondary"
-            size="sm"
-            onClick={handleRevealAnswer}
-            disabled={isLoading}
-            className="flex-1 h-10 gap-2 hover:bg-secondary/80"
-          >
-            <Eye className="h-4 w-4" />
-            Révéler la réponse
-          </Button>
-        </div>
-
-        {youtubeQuery && (
-          <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-          >
-            <Button
-              variant="outline"
-              size="sm"
-              asChild
-              className="w-full h-10 border-red-500/30 text-red-600 hover:bg-red-50 dark:hover:bg-red-950/20 hover:border-red-500/50"
-            >
-              <a
-                href={`https://www.youtube.com/results?search_query=${encodeURIComponent(youtubeQuery)}`}
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                <Youtube className="h-4 w-4 mr-2" />
-                Regarder une vidéo explicative
-              </a>
-            </Button>
-          </motion.div>
-        )}
-
+        {/* Message input (always visible) */}
         <div className="relative p-[2px] rounded-xl bg-gradient-to-r from-primary via-secondary to-primary bg-[length:200%_100%] animate-gradient-x">
           <form onSubmit={handleSendMessage} className="flex gap-2 bg-card rounded-[10px] p-2">
             <Input
@@ -590,8 +627,8 @@ Prends ton temps pour réfléchir! 💡`;
               disabled={isLoading}
               className="flex-1 border-0 focus-visible:ring-0 focus-visible:ring-offset-0 h-10"
             />
-            <Button 
-              type="submit" 
+            <Button
+              type="submit"
               disabled={isLoading || !inputMessage.trim()}
               size="icon"
               className="h-10 w-10"
@@ -606,7 +643,7 @@ Prends ton temps pour réfléchir! 💡`;
         </div>
 
         {/* Navigation Controls */}
-        <div className="flex items-center justify-between pt-3 border-t">
+        <div className="flex items-center justify-between pt-2 border-t">
           <Button
             variant="outline"
             size="sm"
@@ -625,8 +662,8 @@ Prends ton temps pour réfléchir! 💡`;
                 <span
                   key={i}
                   className={`w-2 h-2 rounded-full transition-all ${
-                    exerciseIdx === currentExerciseIndex 
-                      ? 'w-4 bg-primary' 
+                    exerciseIdx === currentExerciseIndex
+                      ? 'w-4 bg-primary'
                       : 'bg-muted-foreground/30'
                   }`}
                 />
