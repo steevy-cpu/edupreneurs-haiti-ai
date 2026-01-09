@@ -2571,9 +2571,38 @@ export type Database = {
         }[]
       }
       generate_referral_code: { Args: never; Returns: string }
+      get_leaderboard_profiles: {
+        Args: { limit_count?: number }
+        Returns: {
+          academic_grade: string
+          affiliation_points: number
+          avatar_url: string
+          created_at: string
+          gold_earned: number
+          id: string
+          nickname: string
+          user_id: string
+          verified: boolean
+        }[]
+      }
       get_notification_preference: {
         Args: { p_category: string; p_user_id: string }
         Returns: boolean
+      }
+      get_public_profile: {
+        Args: { profile_user_id: string }
+        Returns: {
+          academic_grade: string
+          affiliation_points: number
+          avatar_url: string
+          bio: string
+          created_at: string
+          gold_earned: number
+          id: string
+          nickname: string
+          user_id: string
+          verified: boolean
+        }[]
       }
       is_content_editor: {
         Args: {
