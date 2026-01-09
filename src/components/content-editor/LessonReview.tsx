@@ -2,6 +2,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { BookOpen, GraduationCap } from "lucide-react";
 import { MathContent, isMathSubject } from "@/components/MathContent";
+import { sanitizeHtml } from "@/lib/sanitize";
 
 interface LessonReviewProps {
   lesson: any;
@@ -61,9 +62,9 @@ export const LessonReview = ({ lesson }: LessonReviewProps) => {
           {lesson.introduction && (
             <div className="mb-6">
               {isMathSubject(lesson.subjects?.name || '') ? (
-                <MathContent content={lesson.introduction} />
-              ) : (
-                <div dangerouslySetInnerHTML={{ __html: lesson.introduction }} />
+              <MathContent content={lesson.introduction} />
+            ) : (
+              <div dangerouslySetInnerHTML={{ __html: sanitizeHtml(lesson.introduction) }} />
               )}
             </div>
           )}
@@ -71,9 +72,9 @@ export const LessonReview = ({ lesson }: LessonReviewProps) => {
           {lesson.contenu && (
             <div className="mb-6">
               {isMathSubject(lesson.subjects?.name || '') ? (
-                <MathContent content={lesson.contenu} />
-              ) : (
-                <div dangerouslySetInnerHTML={{ __html: lesson.contenu }} />
+              <MathContent content={lesson.contenu} />
+            ) : (
+              <div dangerouslySetInnerHTML={{ __html: sanitizeHtml(lesson.contenu) }} />
               )}
             </div>
           )}
@@ -81,9 +82,9 @@ export const LessonReview = ({ lesson }: LessonReviewProps) => {
           {lesson.exemples_exercices && (
             <div className="mb-6">
               {isMathSubject(lesson.subjects?.name || '') ? (
-                <MathContent content={lesson.exemples_exercices} />
-              ) : (
-                <div dangerouslySetInnerHTML={{ __html: lesson.exemples_exercices }} />
+              <MathContent content={lesson.exemples_exercices} />
+            ) : (
+              <div dangerouslySetInnerHTML={{ __html: sanitizeHtml(lesson.exemples_exercices) }} />
               )}
             </div>
           )}

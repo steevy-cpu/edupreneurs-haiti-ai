@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { ChevronDown, Eye, Sparkles } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { sanitizeHtml } from '@/lib/sanitize';
 
 interface ProgressiveContentProps {
   content: string;
@@ -49,7 +50,7 @@ export const ProgressiveContent = ({
     ) : (
       <div 
         className={cn("lesson-content prose prose-sm sm:prose-lg max-w-none", className)} 
-        dangerouslySetInnerHTML={{ __html: content }} 
+        dangerouslySetInnerHTML={{ __html: sanitizeHtml(content) }} 
       />
     );
   }
@@ -107,7 +108,7 @@ export const ProgressiveContent = ({
                   ) : (
                     <div 
                       className="lesson-content prose prose-sm sm:prose-lg max-w-none" 
-                      dangerouslySetInnerHTML={{ __html: section.content }} 
+                      dangerouslySetInnerHTML={{ __html: sanitizeHtml(section.content) }} 
                     />
                   )}
                 </div>
@@ -126,7 +127,7 @@ export const ProgressiveContent = ({
                     ) : (
                       <div 
                         className="lesson-content prose prose-sm sm:prose-lg max-w-none" 
-                        dangerouslySetInnerHTML={{ __html: section.content }} 
+                        dangerouslySetInnerHTML={{ __html: sanitizeHtml(section.content) }} 
                       />
                     )}
                   </div>

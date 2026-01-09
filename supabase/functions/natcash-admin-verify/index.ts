@@ -1,21 +1,24 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { z } from "https://deno.land/x/zod@v3.22.4/mod.ts";
+import { 
+  secureJsonResponse, 
+  secureErrorResponse, 
+  corsPreflightResponse 
+} from "../_shared/securityHeaders.ts";
+import { checkRateLimit, RATE_LIMITS, getClientIp } from "../_shared/rateLimiter.ts";
 
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-};
-
-interface VerifyRequest {
-  orderId: string;
-  action: 'approve' | 'reject';
-  notes?: string;
-}
+// Input validation schema
+const adminVerifySchema = z.object({
+  orderId: z.string().min(1).max(100),
+  action: z.enum(['approve', 'reject']),
+  notes: z.string().max(1000).optional()
+}).strict();
 
 serve(async (req) => {
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders });
+    return corsPreflightResponse();
   }
 
   try {
@@ -25,10 +28,7 @@ serve(async (req) => {
     const authHeader = req.headers.get('Authorization');
     if (!authHeader) {
       console.error('[NatCash Admin Verify] No authorization header');
-      return new Response(
-        JSON.stringify({ success: false, error: 'Unauthorized' }),
-        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
+      return secureErrorResponse('Unauthorized', 401);
     }
 
     // Initialize Supabase client
@@ -42,13 +42,26 @@ serve(async (req) => {
     
     if (userError || !user) {
       console.error('[NatCash Admin Verify] User authentication failed:', userError);
-      return new Response(
-        JSON.stringify({ success: false, error: 'Unauthorized' }),
-        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
+      return secureErrorResponse('Unauthorized', 401);
     }
 
     console.log('[NatCash Admin Verify] User authenticated:', user.id);
+
+    // Get client IP for rate limiting
+    const clientIp = getClientIp(req);
+
+    // Check rate limit
+    const rateLimitResult = await checkRateLimit(
+      supabase,
+      RATE_LIMITS.PAYMENT,
+      user.id,
+      clientIp
+    );
+
+    if (!rateLimitResult.allowed) {
+      console.warn('[NatCash Admin Verify] Rate limit exceeded for user:', user.id);
+      return secureErrorResponse('Too many requests. Please try again later.', 429);
+    }
 
     // Check if user is admin
     const { data: adminRole, error: roleError } = await supabase
@@ -60,32 +73,22 @@ serve(async (req) => {
 
     if (roleError || !adminRole) {
       console.error('[NatCash Admin Verify] User is not admin:', roleError);
-      return new Response(
-        JSON.stringify({ success: false, error: 'Admin access required' }),
-        { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
+      return secureErrorResponse('Admin access required', 403);
     }
 
     console.log('[NatCash Admin Verify] Admin verified');
 
-    // Parse request body
-    const { orderId, action, notes }: VerifyRequest = await req.json();
-    
-    if (!orderId || !action) {
-      console.error('[NatCash Admin Verify] Missing required fields');
-      return new Response(
-        JSON.stringify({ success: false, error: 'Missing orderId or action' }),
-        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
+    // Parse and validate request body
+    const body = await req.json();
+    const validation = adminVerifySchema.safeParse(body);
+
+    if (!validation.success) {
+      const errors = validation.error.errors.map(e => `${e.path.join('.')}: ${e.message}`);
+      console.error('[NatCash Admin Verify] Validation failed:', errors);
+      return secureErrorResponse('Invalid input', 400, errors);
     }
 
-    if (!['approve', 'reject'].includes(action)) {
-      console.error('[NatCash Admin Verify] Invalid action:', action);
-      return new Response(
-        JSON.stringify({ success: false, error: 'Invalid action. Must be "approve" or "reject"' }),
-        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
-    }
+    const { orderId, action, notes } = validation.data;
 
     // Get the transaction
     const { data: transaction, error: fetchError } = await supabase
@@ -97,18 +100,12 @@ serve(async (req) => {
 
     if (fetchError || !transaction) {
       console.error('[NatCash Admin Verify] Transaction not found:', fetchError);
-      return new Response(
-        JSON.stringify({ success: false, error: 'Transaction not found' }),
-        { status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
+      return secureErrorResponse('Transaction not found', 404);
     }
 
     if (transaction.admin_verified) {
       console.error('[NatCash Admin Verify] Transaction already verified');
-      return new Response(
-        JSON.stringify({ success: false, error: 'Transaction already verified' }),
-        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
+      return secureErrorResponse('Transaction already verified', 400);
     }
 
     console.log('[NatCash Admin Verify] Transaction found:', transaction.id, 'Action:', action);
@@ -137,37 +134,26 @@ serve(async (req) => {
 
     if (updateError) {
       console.error('[NatCash Admin Verify] Update error:', updateError);
-      return new Response(
-        JSON.stringify({ success: false, error: 'Failed to update transaction' }),
-        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
+      return secureErrorResponse('Failed to update transaction', 500);
     }
 
     console.log('[NatCash Admin Verify] Transaction', action === 'approve' ? 'approved' : 'rejected');
 
-    // TODO: Send notification to user about verification result
-
-    return new Response(
-      JSON.stringify({
-        success: true,
-        message: action === 'approve' 
-          ? 'Payment verified and approved successfully'
-          : 'Payment rejected',
-        transaction: {
-          orderId: orderId,
-          status: newStatus,
-          verifiedAt: now,
-          verifiedBy: user.id
-        }
-      }),
-      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-    );
+    return secureJsonResponse({
+      success: true,
+      message: action === 'approve' 
+        ? 'Payment verified and approved successfully'
+        : 'Payment rejected',
+      transaction: {
+        orderId: orderId,
+        status: newStatus,
+        verifiedAt: now,
+        verifiedBy: user.id
+      }
+    }, 200, true);
 
   } catch (error) {
     console.error('[NatCash Admin Verify] Unexpected error:', error);
-    return new Response(
-      JSON.stringify({ success: false, error: 'Internal server error' }),
-      { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-    );
+    return secureErrorResponse('Internal server error', 500);
   }
 });

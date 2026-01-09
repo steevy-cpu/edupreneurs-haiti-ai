@@ -1,15 +1,24 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { z } from "https://deno.land/x/zod@v3.22.4/mod.ts";
+import { 
+  secureJsonResponse, 
+  secureErrorResponse, 
+  corsPreflightResponse 
+} from "../_shared/securityHeaders.ts";
+import { checkRateLimit, RATE_LIMITS, getClientIp } from "../_shared/rateLimiter.ts";
 
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-};
+// Input validation schema
+const mentionsSchema = z.object({
+  postId: z.string().uuid("Invalid post ID"),
+  content: z.string().min(1).max(10000),
+  url: z.string().max(500).optional().default('/feed')
+}).strict();
 
 serve(async (req) => {
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders });
+    return corsPreflightResponse();
   }
 
   try {
@@ -21,10 +30,7 @@ serve(async (req) => {
     const authHeader = req.headers.get('Authorization');
     if (!authHeader) {
       console.error('❌ No authorization header');
-      return new Response(JSON.stringify({ error: 'Unauthorized' }), {
-        status: 401,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
+      return secureErrorResponse('Unauthorized', 401);
     }
 
     // Get the user from the JWT token
@@ -33,25 +39,40 @@ serve(async (req) => {
     
     if (authError || !user) {
       console.error('❌ Auth error:', authError);
-      return new Response(JSON.stringify({ error: 'Invalid token' }), {
-        status: 401,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
+      return secureErrorResponse('Invalid token', 401);
     }
 
     const actorId = user.id;
     console.log('✅ Actor ID from JWT:', actorId);
 
-    const { postId, content, url = '/feed' } = await req.json();
-    console.log('📝 Processing mentions for post:', postId);
-    console.log('📝 Content:', content?.substring(0, 100));
+    // Get client IP for rate limiting
+    const clientIp = getClientIp(req);
 
-    if (!postId || !content) {
-      return new Response(JSON.stringify({ error: 'Missing postId or content' }), {
-        status: 400,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
+    // Check rate limit
+    const rateLimitResult = await checkRateLimit(
+      supabase,
+      RATE_LIMITS.GENERAL,
+      actorId,
+      clientIp
+    );
+
+    if (!rateLimitResult.allowed) {
+      console.warn('[notify-mentions] Rate limit exceeded for user:', actorId);
+      return secureErrorResponse('Too many requests. Please try again later.', 429);
     }
+
+    // Parse and validate input
+    const body = await req.json();
+    const validation = mentionsSchema.safeParse(body);
+
+    if (!validation.success) {
+      const errors = validation.error.errors.map(e => `${e.path.join('.')}: ${e.message}`);
+      console.error('[notify-mentions] Validation failed:', errors);
+      return secureErrorResponse('Invalid input', 400, errors);
+    }
+
+    const { postId, content, url } = validation.data;
+    console.log('📝 Processing mentions for post:', postId);
 
     // Extract @mentions from content
     const mentionRegex = /@(\w+)/g;
@@ -62,12 +83,10 @@ serve(async (req) => {
 
     if (nicknames.length === 0) {
       console.log('ℹ️ No mentions found in content');
-      return new Response(JSON.stringify({ 
+      return secureJsonResponse({ 
         success: true, 
         message: 'No mentions found',
         notificationsCreated: 0 
-      }), {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
     }
 
@@ -101,12 +120,10 @@ serve(async (req) => {
 
     if (uniqueProfiles.length === 0) {
       console.log('⚠️ No profiles found for nicknames:', nicknames);
-      return new Response(JSON.stringify({ 
+      return secureJsonResponse({ 
         success: true, 
         message: 'No matching users found',
         notificationsCreated: 0 
-      }), {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
     }
 
@@ -126,12 +143,10 @@ serve(async (req) => {
 
     if (notificationsToCreate.length === 0) {
       console.log('ℹ️ No notifications to create (user mentioned themselves)');
-      return new Response(JSON.stringify({ 
+      return secureJsonResponse({ 
         success: true, 
         message: 'No notifications needed',
         notificationsCreated: 0 
-      }), {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
     }
 
@@ -143,10 +158,7 @@ serve(async (req) => {
 
     if (insertError) {
       console.error('❌ Error inserting notifications:', insertError);
-      return new Response(JSON.stringify({ error: 'Failed to create notifications' }), {
-        status: 500,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
+      return secureErrorResponse('Failed to create notifications', 500);
     }
 
     console.log('✅ Created notifications:', createdNotifications?.length);
@@ -183,20 +195,15 @@ serve(async (req) => {
 
     console.log('📊 Push results:', pushResults);
 
-    return new Response(JSON.stringify({ 
+    return secureJsonResponse({ 
       success: true,
       notificationsCreated: createdNotifications?.length || 0,
       pushResults,
-    }), {
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
 
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : 'Unknown error';
     console.error('❌ Unexpected error:', errorMessage);
-    return new Response(JSON.stringify({ error: errorMessage }), {
-      status: 500,
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-    });
+    return secureErrorResponse(errorMessage, 500);
   }
 });

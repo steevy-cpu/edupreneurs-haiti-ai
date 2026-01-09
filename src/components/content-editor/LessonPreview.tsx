@@ -3,6 +3,7 @@ import { Badge } from "@/components/ui/badge";
 import { BookOpen, Target, FileText, PenTool, GraduationCap, Video, Gamepad2 } from "lucide-react";
 import { InteractiveActivitiesEnhanced } from "@/components/InteractiveActivitiesEnhanced";
 import { MathContent, isMathSubject } from "@/components/MathContent";
+import { sanitizeHtml } from "@/lib/sanitize";
 
 interface LessonPreviewProps {
   lesson: any;
@@ -69,7 +70,7 @@ export const LessonPreview = ({ lesson }: LessonPreviewProps) => {
             ) : (
               <div 
                 className="prose dark:prose-invert max-w-none lesson-content"
-                dangerouslySetInnerHTML={{ __html: lesson.objectif }}
+                dangerouslySetInnerHTML={{ __html: sanitizeHtml(lesson.objectif) }}
               />
             )
           ) : (
@@ -93,7 +94,7 @@ export const LessonPreview = ({ lesson }: LessonPreviewProps) => {
             ) : (
               <div 
                 className="prose dark:prose-invert max-w-none lesson-content"
-                dangerouslySetInnerHTML={{ __html: lesson.introduction }}
+                dangerouslySetInnerHTML={{ __html: sanitizeHtml(lesson.introduction) }}
               />
             )
           ) : (
@@ -117,7 +118,7 @@ export const LessonPreview = ({ lesson }: LessonPreviewProps) => {
             ) : (
               <div 
                 className="prose dark:prose-invert max-w-none lesson-content"
-                dangerouslySetInnerHTML={{ __html: lesson.contenu }}
+                dangerouslySetInnerHTML={{ __html: sanitizeHtml(lesson.contenu) }}
               />
             )
           ) : (
@@ -141,7 +142,7 @@ export const LessonPreview = ({ lesson }: LessonPreviewProps) => {
             ) : (
               <div 
                 className="prose dark:prose-invert max-w-none lesson-content"
-                dangerouslySetInnerHTML={{ __html: lesson.exemples_exercices }}
+                dangerouslySetInnerHTML={{ __html: sanitizeHtml(lesson.exemples_exercices) }}
               />
             )
           ) : (
@@ -182,7 +183,7 @@ export const LessonPreview = ({ lesson }: LessonPreviewProps) => {
           {lesson.quiz_final && lesson.quiz_final.trim() ? (
             <div 
               className="prose dark:prose-invert max-w-none lesson-content"
-              dangerouslySetInnerHTML={{ __html: lesson.quiz_final }}
+              dangerouslySetInnerHTML={{ __html: sanitizeHtml(lesson.quiz_final) }}
             />
           ) : (
             <p className="text-muted-foreground italic">Contenu pas encore généré</p>

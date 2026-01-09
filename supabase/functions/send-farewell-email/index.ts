@@ -1,18 +1,22 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { Resend } from "https://esm.sh/resend@4.0.0";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { z } from "https://deno.land/x/zod@v3.22.4/mod.ts";
+import { 
+  getSecureHeaders, 
+  secureJsonResponse, 
+  secureErrorResponse, 
+  corsPreflightResponse 
+} from "../_shared/securityHeaders.ts";
+import { checkRateLimit, RATE_LIMITS, getClientIp } from "../_shared/rateLimiter.ts";
 
 const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
 
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers":
-    "authorization, x-client-info, apikey, content-type",
-};
-
-interface FarewellEmailRequest {
-  email: string;
-  fullName: string;
-}
+// Input validation schema
+const farewellEmailSchema = z.object({
+  email: z.string().email().max(255),
+  fullName: z.string().min(1).max(200).trim()
+}).strict();
 
 const getEmailTemplate = (fullName: string) => `
 <!DOCTYPE html>
@@ -130,14 +134,46 @@ const getEmailTemplate = (fullName: string) => `
 `;
 
 const handler = async (req: Request): Promise<Response> => {
+  // Handle CORS preflight
   if (req.method === "OPTIONS") {
-    return new Response(null, { headers: corsHeaders });
+    return corsPreflightResponse();
   }
 
   try {
-    const { email, fullName }: FarewellEmailRequest = await req.json();
+    // Initialize Supabase for rate limiting
+    const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
+    const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+    const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-    console.log("Sending farewell email to:", email);
+    // Get client IP for rate limiting
+    const clientIp = getClientIp(req);
+
+    // Check rate limit (no auth required for this endpoint typically, but we limit by IP)
+    const rateLimitResult = await checkRateLimit(
+      supabase,
+      RATE_LIMITS.EMAIL,
+      null, // No user ID for this endpoint
+      clientIp
+    );
+
+    if (!rateLimitResult.allowed) {
+      console.warn('[send-farewell-email] Rate limit exceeded for IP:', clientIp);
+      return secureErrorResponse('Too many requests. Please try again later.', 429);
+    }
+
+    // Parse and validate input
+    const body = await req.json();
+    const validation = farewellEmailSchema.safeParse(body);
+
+    if (!validation.success) {
+      const errors = validation.error.errors.map(e => `${e.path.join('.')}: ${e.message}`);
+      console.error('[send-farewell-email] Validation failed:', errors);
+      return secureErrorResponse('Invalid input', 400, errors);
+    }
+
+    const { email, fullName } = validation.data;
+
+    console.log("[send-farewell-email] Sending farewell email to:", email);
 
     const emailResponse = await resend.emails.send({
       from: "Edupreneurs <noreply@mon-edupreneur.com>",
@@ -146,24 +182,12 @@ const handler = async (req: Request): Promise<Response> => {
       html: getEmailTemplate(fullName),
     });
 
-    console.log("Farewell email sent successfully:", emailResponse);
+    console.log("[send-farewell-email] Farewell email sent successfully:", emailResponse);
 
-    return new Response(JSON.stringify(emailResponse), {
-      status: 200,
-      headers: {
-        "Content-Type": "application/json",
-        ...corsHeaders,
-      },
-    });
+    return secureJsonResponse(emailResponse, 200, true);
   } catch (error: any) {
-    console.error("Error sending farewell email:", error);
-    return new Response(
-      JSON.stringify({ error: error.message }),
-      {
-        status: 500,
-        headers: { "Content-Type": "application/json", ...corsHeaders },
-      }
-    );
+    console.error("[send-farewell-email] Error:", error);
+    return secureErrorResponse(error.message || 'Internal server error', 500);
   }
 };
 

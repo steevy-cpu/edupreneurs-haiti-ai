@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { sanitizeHtml } from "@/lib/sanitize";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
@@ -247,7 +248,7 @@ export const ModuleActivity = ({
           {selectedActivity.type === "reading" && currentRealActivity?.content?.readingContent && (
             <div 
               className="prose dark:prose-invert max-w-none p-4 bg-muted/50 rounded-lg"
-              dangerouslySetInnerHTML={{ __html: currentRealActivity.content.readingContent }}
+              dangerouslySetInnerHTML={{ __html: sanitizeHtml(currentRealActivity.content.readingContent) }}
               role="article"
               aria-label="Contenu de lecture"
             />

@@ -1,19 +1,69 @@
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.38.1';
+import { z } from "https://deno.land/x/zod@v3.22.4/mod.ts";
+import { 
+  secureJsonResponse, 
+  secureErrorResponse, 
+  corsPreflightResponse 
+} from "../_shared/securityHeaders.ts";
+import { checkRateLimit, RATE_LIMITS, getClientIp } from "../_shared/rateLimiter.ts";
 
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-};
+// Input validation schema
+const suggestVideosSchema = z.object({
+  lessonTitle: z.string().min(1).max(500),
+  contenu: z.string().max(50000).optional().default(''),
+  exemplesExercices: z.string().max(50000).optional().default(''),
+  subject: z.string().max(200).optional().default(''),
+  gradeLevel: z.string().max(50).optional().default('')
+}).passthrough();
 
 serve(async (req) => {
+  // Handle CORS preflight
   if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders });
+    return corsPreflightResponse();
   }
 
   try {
-    const { lessonTitle, contenu, exemplesExercices, subject, gradeLevel } = await req.json();
+    const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
+    const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+    const supabase = createClient(supabaseUrl, supabaseServiceKey);
+
+    // Get client IP and user for rate limiting
+    const clientIp = getClientIp(req);
+    const authHeader = req.headers.get('Authorization');
+    let userId: string | null = null;
+    
+    if (authHeader) {
+      const token = authHeader.replace('Bearer ', '');
+      const { data: { user } } = await supabase.auth.getUser(token);
+      userId = user?.id || null;
+    }
+
+    // Check rate limit
+    const rateLimitResult = await checkRateLimit(
+      supabase,
+      RATE_LIMITS.GENERAL,
+      userId,
+      clientIp
+    );
+
+    if (!rateLimitResult.allowed) {
+      console.warn('[suggest-youtube-videos] Rate limit exceeded');
+      return secureErrorResponse('Too many requests. Please try again later.', 429);
+    }
+
+    // Parse and validate input
+    const body = await req.json();
+    const validation = suggestVideosSchema.safeParse(body);
+
+    if (!validation.success) {
+      const errors = validation.error.errors.map(e => `${e.path.join('.')}: ${e.message}`);
+      console.error('[suggest-youtube-videos] Validation failed:', errors);
+      return secureErrorResponse('Invalid input', 400, errors);
+    }
+
+    const { lessonTitle, contenu, exemplesExercices, subject, gradeLevel } = validation.data;
 
     console.log('🎥 Generating YouTube video suggestions for:', lessonTitle);
 
@@ -99,12 +149,6 @@ ${combinedContent.substring(0, 1000)}...`
     }
 
     console.log('🔍 Search queries generated:', searchQueries);
-
-    // Step 2: Search YouTube for each query
-    const supabase = createClient(
-      Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
-    );
 
     // Get banned videos
     const { data: bannedVideos } = await supabase
@@ -232,16 +276,13 @@ ${combinedContent.substring(0, 1000)}...`
       console.log('⚠️ No quality videos found with sufficient relevance score');
     }
 
-    return new Response(
-      JSON.stringify({ videos: topVideos }),
-      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-    );
+    return secureJsonResponse({ videos: topVideos });
 
   } catch (error) {
     console.error('Error in suggest-youtube-videos function:', error);
-    return new Response(
-      JSON.stringify({ error: error instanceof Error ? error.message : 'Unknown error' }),
-      { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+    return secureErrorResponse(
+      error instanceof Error ? error.message : 'Unknown error',
+      500
     );
   }
 });
