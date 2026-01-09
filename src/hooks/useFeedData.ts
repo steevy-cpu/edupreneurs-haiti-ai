@@ -5,6 +5,7 @@ import {
   persistQueryData, 
   getPersistedQueryData, 
   getPersistedCacheTimestamp,
+  clearPersistedCache,
   CACHE_KEYS 
 } from "@/utils/queryPersistence";
 
@@ -103,6 +104,8 @@ export const useFeedData = () => {
   });
 
   const refreshFeed = () => {
+    // Clear persisted cache to force fresh data fetch
+    clearPersistedCache(CACHE_KEYS.FEED_POSTS);
     queryClient.invalidateQueries({ queryKey: ["feed-posts"] });
   };
 
