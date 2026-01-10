@@ -185,11 +185,12 @@ export const passwordResetEmailSchema = z.object({
 
 /**
  * Push notification validation
+ * Note: url accepts both full URLs and relative paths (e.g., "/feed", "/notifications")
  */
 export const pushNotificationSchema = z.object({
   recipientUserId: z.string().uuid("ID utilisateur invalide"),
-  title: z.string().min(1).max(200).transform(s => s.trim()),
-  body: z.string().min(1).max(1000).transform(s => s.trim()),
+  title: z.string().max(200).transform(s => s.trim()).optional(),
+  body: z.string().max(1000).transform(s => s.trim()).optional(),
   conversationId: z.string().uuid().optional(),
   type: z.enum([
     'message', 'like', 'comment', 'share', 
@@ -197,7 +198,8 @@ export const pushNotificationSchema = z.object({
   ]).optional(),
   actorId: z.string().uuid().optional(),
   entityId: z.string().uuid().optional(),
-  url: z.string().url().max(500).optional(),
+  notificationId: z.string().uuid().optional(),
+  url: z.string().max(500).optional(),
 }).strict();
 
 // ============================================
