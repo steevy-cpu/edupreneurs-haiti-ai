@@ -323,7 +323,7 @@ export default function ReportsModule() {
                 <Button
                   variant="ghost"
                   size="sm"
-                  onClick={() => navigate(`/profile/${selectedReport.reporter_id}`)}
+                  onClick={() => navigate(`/profile/${selectedReport.reporter?.nickname || selectedReport.reporter_id}`)}
                 >
                   <ExternalLink className="h-4 w-4" />
                 </Button>
@@ -342,7 +342,7 @@ export default function ReportsModule() {
                 <Button
                   variant="ghost"
                   size="sm"
-                  onClick={() => navigate(`/profile/${selectedReport.reported_user_id}`)}
+                  onClick={() => navigate(`/profile/${selectedReport.reported_user?.nickname || selectedReport.reported_user_id}`)}
                 >
                   <ExternalLink className="h-4 w-4" />
                 </Button>
