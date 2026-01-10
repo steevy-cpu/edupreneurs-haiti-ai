@@ -193,6 +193,11 @@ const Settings = () => {
     }
   };
 
+  // Helper function to validate nickname format (letters, numbers, underscores only)
+  const isValidNicknameFormat = (nickname: string): boolean => {
+    return /^[a-zA-Z0-9_]*$/.test(nickname);
+  };
+
   const handleProfileUpdate = async (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -207,6 +212,10 @@ const Settings = () => {
     }
     if (profileForm.nickname.length < 3) {
       toast.error("Le pseudo doit contenir au moins 3 caractères");
+      return;
+    }
+    if (!isValidNicknameFormat(profileForm.nickname)) {
+      toast.error("Le pseudo ne peut contenir que des lettres, chiffres et underscores");
       return;
     }
     if (!profileForm.academicGrade) {
@@ -507,6 +516,11 @@ const Settings = () => {
                         minLength={3}
                         maxLength={30}
                       />
+                      {profileForm.nickname && !isValidNicknameFormat(profileForm.nickname) && (
+                        <p className="text-xs text-destructive mt-1">
+                          Le pseudo ne peut contenir que des lettres, chiffres et underscores (pas d'emojis)
+                        </p>
+                      )}
                     </div>
                   </div>
 
