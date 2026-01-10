@@ -1805,6 +1805,7 @@ export type Database = {
           full_name: string
           gender: string | null
           gold_earned: number
+          has_free_access: boolean | null
           id: string
           is_system_account: boolean | null
           last_avatar_generated_at: string | null
@@ -1837,6 +1838,7 @@ export type Database = {
           full_name: string
           gender?: string | null
           gold_earned?: number
+          has_free_access?: boolean | null
           id?: string
           is_system_account?: boolean | null
           last_avatar_generated_at?: string | null
@@ -1869,6 +1871,7 @@ export type Database = {
           full_name?: string
           gender?: string | null
           gold_earned?: number
+          has_free_access?: boolean | null
           id?: string
           is_system_account?: boolean | null
           last_avatar_generated_at?: string | null
@@ -1920,6 +1923,7 @@ export type Database = {
           current_uses: number | null
           expires_at: string | null
           gold_reward: number
+          grants_free_access: boolean | null
           id: string
           is_active: boolean | null
           max_uses: number | null
@@ -1930,6 +1934,7 @@ export type Database = {
           current_uses?: number | null
           expires_at?: string | null
           gold_reward?: number
+          grants_free_access?: boolean | null
           id?: string
           is_active?: boolean | null
           max_uses?: number | null
@@ -1940,6 +1945,7 @@ export type Database = {
           current_uses?: number | null
           expires_at?: string | null
           gold_reward?: number
+          grants_free_access?: boolean | null
           id?: string
           is_active?: boolean | null
           max_uses?: number | null

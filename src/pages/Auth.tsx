@@ -61,8 +61,9 @@ export default function Auth() {
 
   // Server-side promo code validation
   const [isValidatingPromo, setIsValidatingPromo] = useState(false);
+  const [promoGrantsFreeAccess, setPromoGrantsFreeAccess] = useState(false);
   
-  const validatePromoCode = async (code: string): Promise<{ valid: boolean; goldReward?: number }> => {
+  const validatePromoCode = async (code: string): Promise<{ valid: boolean; goldReward?: number; grantsFreeAccess?: boolean }> => {
     if (!code.trim()) return { valid: false };
     
     setIsValidatingPromo(true);
@@ -76,7 +77,7 @@ export default function Auth() {
         return { valid: false };
       }
       
-      return { valid: data.valid, goldReward: data.goldReward };
+      return { valid: data.valid, goldReward: data.goldReward, grantsFreeAccess: data.grantsFreeAccess };
     } catch (error) {
       console.error('Promo code validation failed:', error);
       return { valid: false };
@@ -655,6 +656,7 @@ export default function Auth() {
           confirmation_code: confirmationCode.trim(),
           promo_code_used: promoCodeValid ? promoCode.toUpperCase().trim() : null,
           promo_code_used_at: promoCodeValid ? new Date().toISOString() : null,
+          has_free_access: promoGrantsFreeAccess,
         });
 
       if (profileError) throw profileError;
@@ -1453,6 +1455,7 @@ export default function Auth() {
                               
                               if (!code.trim()) {
                                 setPromoCodeValid(false);
+                                setPromoGrantsFreeAccess(false);
                                 if (signupData.payment === 'promo_code') {
                                   setSignupData({ ...signupData, payment: '' });
                                 }
@@ -1462,6 +1465,7 @@ export default function Auth() {
                               // Validate with server
                               const result = await validatePromoCode(code);
                               setPromoCodeValid(result.valid);
+                              setPromoGrantsFreeAccess(result.grantsFreeAccess || false);
                               if (result.valid) {
                                 setSignupData({ ...signupData, payment: 'promo_code' });
                               } else if (signupData.payment === 'promo_code') {
