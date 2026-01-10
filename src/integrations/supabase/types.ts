@@ -2396,6 +2396,59 @@ export type Database = {
         }
         Relationships: []
       }
+      user_reports: {
+        Row: {
+          admin_notes: string | null
+          created_at: string
+          description: string | null
+          id: string
+          post_id: string | null
+          reason: string
+          reported_user_id: string
+          reporter_id: string
+          reviewed_at: string | null
+          reviewed_by: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          admin_notes?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          post_id?: string | null
+          reason: string
+          reported_user_id: string
+          reporter_id: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          admin_notes?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          post_id?: string | null
+          reason?: string
+          reported_user_id?: string
+          reporter_id?: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_reports_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "posts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_trusted_devices: {
         Row: {
           browser: string | null
@@ -2621,6 +2674,7 @@ export type Database = {
         Args: { conversation_uuid: string; user_uuid: string }
         Returns: boolean
       }
+      is_founder: { Args: { check_user_id: string }; Returns: boolean }
       is_group_admin: {
         Args: { _group_id: string; _user_id: string }
         Returns: boolean
