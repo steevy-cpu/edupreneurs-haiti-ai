@@ -233,6 +233,7 @@ export default function Auth() {
           body: {
             email: signupData.email || loginData.email,
             fullName: result.full_name || result.nickname || 'Utilisateur',
+            nickname: result.nickname || result.full_name || 'Utilisateur',
           }
         });
       } catch (emailError) {
