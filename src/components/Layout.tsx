@@ -22,7 +22,9 @@ import {
   Palette,
   Gamepad2,
   Lock,
+  Shield,
 } from "lucide-react";
+import { isFounder } from "@/lib/founderConstants";
 import dashboardImage from "@/assets/dashboard00.png";
 import edupreneursLogo from "@/assets/edupreneurs-new-logo.png";
 
@@ -56,6 +58,7 @@ export const Layout = ({ children }: LayoutProps) => {
   const [unreadNotifications, setUnreadNotifications] = useState(0);
   const [userAvatar, setUserAvatar] = useState<string>(dashboardImage);
   const [userNickname, setUserNickname] = useState<string>(isVisitor ? "Visiteur" : "Étudiant");
+  const [userId, setUserId] = useState<string | null>(null);
   const presenceChannelRef = useState<{ current: any | null }>({ current: null })[0];
   const { onTouchStart, onTouchMove, onTouchEnd } = useMobileSwipeNavigation();
   const { playReceiveSound } = useMessageSounds();
@@ -83,6 +86,8 @@ export const Layout = ({ children }: LayoutProps) => {
   const fetchUserAvatar = async () => {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return;
+    
+    setUserId(user.id);
     
     const { data: profile, error } = await supabase
       .from("profiles")
@@ -584,6 +589,22 @@ export const Layout = ({ children }: LayoutProps) => {
             <Settings size={16} className="sm:w-[17px] sm:h-[17px] lg:w-[18px] lg:h-[18px]" />
             Paramètres
           </Link>
+          
+          {/* Founder-only Control Center link */}
+          {userId && isFounder(userId) && (
+            <Link 
+              to="/control-center" 
+              className={`flex items-center gap-2 sm:gap-2.5 lg:gap-3 px-3 sm:px-4 lg:px-5 py-2.5 sm:py-3 lg:py-3.5 mx-2 sm:mx-2.5 lg:mx-3 my-0.5 sm:my-1 rounded-lg sm:rounded-xl text-sm sm:text-base font-medium transition-all duration-300 ${
+                isActive("/control-center") 
+                  ? "bg-gradient-to-br from-amber-500 to-orange-500 text-white" 
+                  : "text-amber-600 dark:text-amber-400 hover:bg-gradient-to-br hover:from-amber-500 hover:to-orange-500 hover:text-white hover:translate-x-1"
+              }`}
+            >
+              <Shield size={16} className="sm:w-[17px] sm:h-[17px] lg:w-[18px] lg:h-[18px]" />
+              Centre de Contrôle
+            </Link>
+          )}
+          
           <hr className="border-border my-2 sm:my-3 lg:my-4 mx-2 sm:mx-2.5 lg:mx-3" />
           <AlertDialog>
             <AlertDialogTrigger asChild>

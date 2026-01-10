@@ -53,7 +53,7 @@ const UploadEmailAssets = lazy(() => import("./pages/UploadEmailAssets"));
 const CustomizeAI = lazy(() => import("./pages/CustomizeAI"));
 const PassionDiscovery = lazy(() => import("./pages/PassionDiscovery"));
 const ChessGame = lazy(() => import("./pages/ChessGame"));
-
+const ControlCenter = lazy(() => import("./pages/ControlCenter"));
 const ContentEditor = lazy(() => import("./pages/ContentEditor"));
 const DataMigration = lazy(() => import("./pages/DataMigration"));
 const AIGenerationAnalytics = lazy(() => import("./pages/AIGenerationAnalytics"));
@@ -214,6 +214,7 @@ const App = () => (
                 <Route path="/notification-settings" element={<NotificationSettings />} />
             <Route path="/passion-discovery" element={<PassionDiscovery />} />
             <Route path="/chess-game" element={<Layout><ChessGame /></Layout>} />
+            <Route path="/control-center" element={<ControlCenter />} />
             <Route path="/content-editor" element={<Layout><ContentEditor /></Layout>} />
             <Route path="/ai-analytics" element={<Layout><AIGenerationAnalytics /></Layout>} />
             <Route path="/data-migration" element={<Layout><DataMigration /></Layout>} />
