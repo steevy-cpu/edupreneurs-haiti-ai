@@ -523,7 +523,14 @@ export default function Auth() {
       const tokenData = data as unknown as Array<{ token: string; user_id: string; full_name: string }>;
       
       if (!tokenData || tokenData.length === 0) {
-        throw new Error("Utilisateur non trouvé");
+        // Don't reveal if email exists - show generic success message
+        toast({
+          title: "Vérifiez votre boîte mail",
+          description: "Si un compte existe avec cette adresse, vous recevrez un lien de réinitialisation.",
+        });
+        setForgotPasswordEmail("");
+        setActiveTab("login");
+        return;
       }
 
       const { token, full_name } = tokenData[0];
@@ -546,11 +553,15 @@ export default function Auth() {
       setForgotPasswordEmail("");
       setActiveTab("login");
     } catch (error: any) {
+      // Show generic message for security (don't reveal if email exists)
       toast({
-        title: "Erreur",
-        description: error.message,
-        variant: "destructive",
+        title: "Vérifiez votre boîte mail",
+        description: "Si un compte existe avec cette adresse, vous recevrez un lien de réinitialisation.",
       });
+      setForgotPasswordEmail("");
+      setActiveTab("login");
+    } finally {
+      setIsResettingPassword(false);
     }
   };
 
