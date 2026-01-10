@@ -553,8 +553,9 @@ export default function Auth() {
     }
   };
 
-  // Debounce timer ref
+  // Debounce timer refs
   const nicknameCheckTimer = useRef<NodeJS.Timeout>();
+  const promoCodeCheckTimer = useRef<NodeJS.Timeout>();
 
   const checkNicknameAvailability = async (nickname: string) => {
     // Clear previous timer
@@ -587,6 +588,37 @@ export default function Auth() {
         setCheckingNickname(false);
       }
     }, 500); // Wait 500ms after user stops typing
+  };
+
+  // Debounced promo code validation
+  const debouncedValidatePromoCode = (code: string) => {
+    // Clear previous timer
+    if (promoCodeCheckTimer.current) {
+      clearTimeout(promoCodeCheckTimer.current);
+    }
+
+    if (!code.trim() || code.trim().length < 3) {
+      setPromoCodeValid(false);
+      setPromoGrantsFreeAccess(false);
+      if (signupData.payment === 'promo_code') {
+        setSignupData({ ...signupData, payment: '' });
+      }
+      return;
+    }
+
+    setIsValidatingPromo(true);
+
+    // Debounce the API call - wait 600ms after user stops typing
+    promoCodeCheckTimer.current = setTimeout(async () => {
+      const result = await validatePromoCode(code);
+      setPromoCodeValid(result.valid);
+      setPromoGrantsFreeAccess(result.grantsFreeAccess || false);
+      if (result.valid) {
+        setSignupData(prev => ({ ...prev, payment: 'promo_code' }));
+      } else if (signupData.payment === 'promo_code') {
+        setSignupData(prev => ({ ...prev, payment: '' }));
+      }
+    }, 600);
   };
 
   const handleSignup = async (e: React.FormEvent) => {
@@ -1449,39 +1481,14 @@ export default function Auth() {
                             type="text"
                             placeholder="Entrez votre code promotionnel"
                             value={promoCode}
-                            onChange={async (e) => {
+                            onChange={(e) => {
                               const code = e.target.value;
                               setPromoCode(code);
-                              
-                              if (!code.trim()) {
-                                setPromoCodeValid(false);
-                                setPromoGrantsFreeAccess(false);
-                                if (signupData.payment === 'promo_code') {
-                                  setSignupData({ ...signupData, payment: '' });
-                                }
-                                return;
-                              }
-                              
-                              // Only validate if code is at least 3 characters (matches server validation)
-                              if (code.trim().length < 3) {
-                                setPromoCodeValid(false);
-                                setPromoGrantsFreeAccess(false);
-                                return;
-                              }
-                              
-                              // Validate with server
-                              const result = await validatePromoCode(code);
-                              setPromoCodeValid(result.valid);
-                              setPromoGrantsFreeAccess(result.grantsFreeAccess || false);
-                              if (result.valid) {
-                                setSignupData({ ...signupData, payment: 'promo_code' });
-                              } else if (signupData.payment === 'promo_code') {
-                                setSignupData({ ...signupData, payment: '' });
-                              }
+                              debouncedValidatePromoCode(code);
                             }}
                             className="auth-input"
                           />
-                          {promoCode && !isValidatingPromo && (
+                          {promoCode && promoCode.trim().length >= 3 && !isValidatingPromo && (
                             <p className={`text-xs ${promoCodeValid ? 'text-success' : 'text-destructive'}`}>
                               {promoCodeValid ? '✓ Code valide ! Vous pouvez créer votre compte.' : '✗ Code invalide'}
                             </p>
