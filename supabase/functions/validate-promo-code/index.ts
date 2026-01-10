@@ -49,11 +49,11 @@ serve(async (req) => {
 
     console.log('Validating promo code:', code);
 
-    // Look up promo code in database
+    // Look up promo code in database (case-insensitive)
     const { data: promoCode, error } = await supabase
       .from('promo_codes')
-      .select('id, code, gold_reward, max_uses, current_uses, expires_at, is_active')
-      .eq('code', code)
+      .select('id, code, gold_reward, max_uses, current_uses, expires_at, is_active, grants_free_access')
+      .eq('code', code.toUpperCase())
       .eq('is_active', true)
       .single();
 
@@ -101,7 +101,8 @@ serve(async (req) => {
       JSON.stringify({ 
         valid: true, 
         goldReward: promoCode.gold_reward,
-        code: promoCode.code
+        code: promoCode.code,
+        grantsFreeAccess: promoCode.grants_free_access || false
       }),
       { status: 200, headers: responseHeaders }
     );
