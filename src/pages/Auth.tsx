@@ -569,10 +569,22 @@ export default function Auth() {
   const nicknameCheckTimer = useRef<NodeJS.Timeout>();
   const promoCodeCheckTimer = useRef<NodeJS.Timeout>();
 
+  // Helper function to validate nickname format (letters, numbers, underscores only)
+  const isValidNicknameFormat = (nickname: string): boolean => {
+    return /^[a-zA-Z0-9_]*$/.test(nickname);
+  };
+
   const checkNicknameAvailability = async (nickname: string) => {
     // Clear previous timer
     if (nicknameCheckTimer.current) {
       clearTimeout(nicknameCheckTimer.current);
+    }
+
+    // Validate format first - don't check DB if format is invalid
+    if (!isValidNicknameFormat(nickname)) {
+      setNicknameAvailable(null);
+      setCheckingNickname(false);
+      return;
     }
 
     if (!nickname || nickname.length < 3) {
@@ -1342,15 +1354,20 @@ export default function Auth() {
                               }}
                               className="auth-input"
                             />
+                            {signupData.nickname && !isValidNicknameFormat(signupData.nickname) && (
+                              <p className="text-xs text-destructive">
+                                Le pseudo ne peut contenir que des lettres, chiffres et underscores (pas d'emojis)
+                              </p>
+                            )}
                             {checkingNickname && (
                               <p className="text-xs text-muted-foreground flex items-center gap-1">
                                 <Loader2 className="h-3 w-3 animate-spin" /> Vérification...
                               </p>
                             )}
-                            {nicknameAvailable === false && (
+                            {nicknameAvailable === false && isValidNicknameFormat(signupData.nickname) && (
                               <p className="text-xs text-destructive">Ce pseudo est déjà utilisé</p>
                             )}
-                            {nicknameAvailable === true && (
+                            {nicknameAvailable === true && isValidNicknameFormat(signupData.nickname) && (
                               <p className="text-xs text-success">Ce pseudo est disponible ✓</p>
                             )}
                           </div>
