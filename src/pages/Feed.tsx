@@ -7,7 +7,15 @@ import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useToast } from "@/hooks/use-toast";
-import { Heart, MessageCircle, Send, Plus, Image, Share2, Trash2, Smile, Reply, BadgeCheck, ArrowLeft, RefreshCw, Globe } from "lucide-react";
+import { Heart, MessageCircle, Send, Plus, Image, Share2, Trash2, Smile, Reply, BadgeCheck, ArrowLeft, RefreshCw, Globe, MoreHorizontal, Flag } from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { ReportDialog } from "@/components/feed/ReportDialog";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { CreatePostDialog } from "@/components/feed/CreatePostDialog";
@@ -154,6 +162,9 @@ const Feed = () => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { isVisitor } = useVisitor();
   const [visitorPosts, setVisitorPosts] = useState<Post[]>([]);
+  const [reportDialogOpen, setReportDialogOpen] = useState(false);
+  const [postToReport, setPostToReport] = useState<Post | null>(null);
+  const [isFounder, setIsFounder] = useState(false);
 
   // Transform demo data for visitors
   useEffect(() => {
@@ -193,6 +204,21 @@ const Feed = () => {
       return cleanup;
     }
   }, [isVisitor]);
+
+  // Check if current user is a founder
+  useEffect(() => {
+    const checkFounderStatus = async () => {
+      if (!currentUser) return;
+      
+      const { data, error } = await supabase.rpc('is_founder');
+      
+      if (!error && data) {
+        setIsFounder(true);
+      }
+    };
+    
+    checkFounderStatus();
+  }, [currentUser]);
 
   const checkAuth = async () => {
     // Allow visitors to stay on page with demo content
@@ -1032,15 +1058,45 @@ const Feed = () => {
                       {formatTimeAgo(post.created_at)}
                     </p>
                   </div>
-                  {post.user_id === currentUser?.id && (
-                    <Button
-                      size="icon"
-                      variant="ghost"
-                      onClick={() => setDeletePostId(post.id)}
-                      className="h-8 w-8 shrink-0"
-                    >
-                      <Trash2 size={16} className="text-destructive" />
-                    </Button>
+                  {currentUser && (
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" size="icon" className="h-8 w-8 shrink-0">
+                          <MoreHorizontal className="h-4 w-4 text-muted-foreground" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end" className="bg-background border z-50">
+                        {/* Delete option - shown for own posts OR if user is founder */}
+                        {(post.user_id === currentUser?.id || isFounder) && (
+                          <DropdownMenuItem 
+                            onClick={() => setDeletePostId(post.id)}
+                            className="text-destructive focus:text-destructive"
+                          >
+                            <Trash2 className="h-4 w-4 mr-2" />
+                            Supprimer
+                          </DropdownMenuItem>
+                        )}
+                        
+                        {/* Separator if both options are shown */}
+                        {isFounder && post.user_id !== currentUser?.id && (
+                          <DropdownMenuSeparator />
+                        )}
+                        
+                        {/* Report option - shown for other users' posts */}
+                        {post.user_id !== currentUser?.id && (
+                          <DropdownMenuItem 
+                            onClick={() => {
+                              setPostToReport(post);
+                              setReportDialogOpen(true);
+                            }}
+                            className="text-amber-600 focus:text-amber-600"
+                          >
+                            <Flag className="h-4 w-4 mr-2" />
+                            Signaler
+                          </DropdownMenuItem>
+                        )}
+                      </DropdownMenuContent>
+                    </DropdownMenu>
                   )}
                 </div>
 
@@ -1263,6 +1319,18 @@ const Feed = () => {
           </ScrollArea>
         </DialogContent>
       </Dialog>
+
+      {/* Report Post Dialog */}
+      <ReportDialog
+        isOpen={reportDialogOpen}
+        onClose={() => {
+          setReportDialogOpen(false);
+          setPostToReport(null);
+        }}
+        postId={postToReport?.id || ""}
+        reportedUserId={postToReport?.user_id || ""}
+        reportedUserName={postToReport?.profile?.full_name || postToReport?.profile?.nickname}
+      />
     </div>
   );
 };
