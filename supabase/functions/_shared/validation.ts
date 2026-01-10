@@ -179,6 +179,8 @@ export const welcomeEmailSchema = z.object({
  */
 export const passwordResetEmailSchema = z.object({
   email: z.string().email("Email invalide").max(255),
+  resetUrl: z.string().url("URL invalide").max(500),
+  fullName: z.string().max(200).optional(),
 }).strict();
 
 /**

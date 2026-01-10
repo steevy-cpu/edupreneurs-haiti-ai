@@ -150,13 +150,7 @@ const handler = async (req: Request): Promise<Response> => {
       return validationErrorResponse(validation.errors, responseHeaders);
     }
 
-    const { email } = validation.data;
-    const resetUrl = rawBody.resetUrl;
-    const fullName = rawBody.fullName;
-
-    if (!resetUrl || typeof resetUrl !== 'string') {
-      return validationErrorResponse(['URL de réinitialisation invalide'], responseHeaders);
-    }
+    const { email, resetUrl, fullName } = validation.data;
 
     console.log("Sending password reset email to:", email.substring(0, 3) + "***");
 
