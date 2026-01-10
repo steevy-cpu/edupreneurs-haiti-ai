@@ -11,7 +11,7 @@ import { useEricDraggable } from "@/hooks/useEricDraggable";
 import { useVisitor } from "@/contexts/VisitorContext";
 
 // Routes where JudeChatbot should be hidden
-const HIDDEN_ROUTES = ['/cookie-settings', '/privacy-policy'];
+const HIDDEN_ROUTES = ['/cookie-settings', '/privacy-policy', '/control-center'];
 
 interface Message {
   content: string;
