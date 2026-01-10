@@ -1462,6 +1462,13 @@ export default function Auth() {
                                 return;
                               }
                               
+                              // Only validate if code is at least 3 characters (matches server validation)
+                              if (code.trim().length < 3) {
+                                setPromoCodeValid(false);
+                                setPromoGrantsFreeAccess(false);
+                                return;
+                              }
+                              
                               // Validate with server
                               const result = await validatePromoCode(code);
                               setPromoCodeValid(result.valid);
