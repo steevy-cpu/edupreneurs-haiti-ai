@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -7,7 +7,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import edupreneursLogo from "@/assets/edupreneurs-new-logo.png";
-import { Loader2, Eye, EyeOff } from "lucide-react";
+import { Loader2, Eye, EyeOff, Check, X } from "lucide-react";
 
 export default function ResetPassword() {
   const navigate = useNavigate();
@@ -79,14 +79,43 @@ export default function ResetPassword() {
     checkToken();
   }, [navigate, toast, searchParams]);
 
+  // Password validation requirements (matching backend schema)
+  const passwordRequirements = useMemo(() => ({
+    minLength: newPassword.length >= 8,
+    hasUppercase: /[A-Z]/.test(newPassword),
+    hasDigit: /[0-9]/.test(newPassword),
+  }), [newPassword]);
+
+  const isPasswordValid = passwordRequirements.minLength && 
+                          passwordRequirements.hasUppercase && 
+                          passwordRequirements.hasDigit;
+
   const handleResetPassword = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    // Validation
-    if (newPassword.length < 6) {
+    // Validation - must match backend requirements
+    if (!passwordRequirements.minLength) {
       toast({
         title: "Mot de passe trop court",
-        description: "Le mot de passe doit contenir au moins 6 caractères",
+        description: "Le mot de passe doit contenir au moins 8 caractères",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (!passwordRequirements.hasUppercase) {
+      toast({
+        title: "Majuscule requise",
+        description: "Le mot de passe doit contenir au moins une lettre majuscule",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (!passwordRequirements.hasDigit) {
+      toast({
+        title: "Chiffre requis",
+        description: "Le mot de passe doit contenir au moins un chiffre",
         variant: "destructive",
       });
       return;
@@ -217,7 +246,7 @@ export default function ResetPassword() {
                   value={newPassword}
                   onChange={(e) => setNewPassword(e.target.value)}
                   required
-                  minLength={6}
+                  minLength={8}
                   className="pr-10"
                 />
                 <button
@@ -228,9 +257,39 @@ export default function ResetPassword() {
                   {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                 </button>
               </div>
-              <p className="text-xs text-muted-foreground">
-                Au moins 6 caractères
-              </p>
+              {/* Password requirements checklist */}
+              <div className="space-y-1 pt-1">
+                <div className="flex items-center gap-2 text-xs">
+                  {passwordRequirements.minLength ? (
+                    <Check className="h-3 w-3 text-green-500" />
+                  ) : (
+                    <X className="h-3 w-3 text-muted-foreground" />
+                  )}
+                  <span className={passwordRequirements.minLength ? "text-green-600 dark:text-green-400" : "text-muted-foreground"}>
+                    Au moins 8 caractères
+                  </span>
+                </div>
+                <div className="flex items-center gap-2 text-xs">
+                  {passwordRequirements.hasUppercase ? (
+                    <Check className="h-3 w-3 text-green-500" />
+                  ) : (
+                    <X className="h-3 w-3 text-muted-foreground" />
+                  )}
+                  <span className={passwordRequirements.hasUppercase ? "text-green-600 dark:text-green-400" : "text-muted-foreground"}>
+                    Une lettre majuscule
+                  </span>
+                </div>
+                <div className="flex items-center gap-2 text-xs">
+                  {passwordRequirements.hasDigit ? (
+                    <Check className="h-3 w-3 text-green-500" />
+                  ) : (
+                    <X className="h-3 w-3 text-muted-foreground" />
+                  )}
+                  <span className={passwordRequirements.hasDigit ? "text-green-600 dark:text-green-400" : "text-muted-foreground"}>
+                    Un chiffre
+                  </span>
+                </div>
+              </div>
             </div>
 
             <div className="space-y-2">
@@ -245,7 +304,7 @@ export default function ResetPassword() {
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
                   required
-                  minLength={6}
+                  minLength={8}
                   className="pr-10"
                 />
                 <button
@@ -256,13 +315,25 @@ export default function ResetPassword() {
                   {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                 </button>
               </div>
+              {confirmPassword && newPassword !== confirmPassword && (
+                <p className="text-xs text-destructive flex items-center gap-1">
+                  <X className="h-3 w-3" />
+                  Les mots de passe ne correspondent pas
+                </p>
+              )}
+              {confirmPassword && newPassword === confirmPassword && isPasswordValid && (
+                <p className="text-xs text-green-600 dark:text-green-400 flex items-center gap-1">
+                  <Check className="h-3 w-3" />
+                  Les mots de passe correspondent
+                </p>
+              )}
             </div>
 
             <Button 
               type="submit" 
               className="w-full" 
               size="lg"
-              disabled={isResetting}
+              disabled={isResetting || !isPasswordValid || newPassword !== confirmPassword}
             >
               {isResetting ? (
                 <>
