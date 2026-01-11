@@ -10,20 +10,17 @@ import { useFirstTimeUser } from "@/contexts/FirstTimeUserContext";
 import {
   Award,
   BookOpen,
-  Clock,
-  Flame,
   Target,
   TrendingUp,
   Trophy,
   Edit3,
-  Brain,
-  GraduationCap,
   FileText,
   Medal,
   Crown,
-  Star,
   Sparkles,
   X,
+  Play,
+  ArrowRight,
 } from "lucide-react";
 import { usePWAInstall } from "@/hooks/usePWAInstall";
 import { useDashboardAnalytics } from "@/hooks/useDashboardAnalytics";
@@ -32,6 +29,9 @@ import { WeeklyActivityChart } from "@/components/dashboard/WeeklyActivityChart"
 import { SubjectProgressChart } from "@/components/dashboard/SubjectProgressChart";
 import { QuickActionsCard } from "@/components/dashboard/QuickActionsCard";
 import { CollapsibleSection } from "@/components/dashboard/CollapsibleSection";
+import { LearningStreakWidget } from "@/components/dashboard/LearningStreakWidget";
+import { LearningInsightsPanel } from "@/components/dashboard/LearningInsightsPanel";
+import { AchievementsBadges } from "@/components/dashboard/AchievementsBadges";
 import { Progress } from "@/components/ui/progress";
 import { NotificationPermissionBanner } from "@/components/NotificationPermissionBanner";
 import { PWAInstallPrompt } from "@/components/PWAInstallPrompt";
@@ -66,6 +66,15 @@ interface LeaderboardUser {
   rank: number;
 }
 
+interface RecentSubjectProgress {
+  subject: string;
+  subjectSlug: string;
+  lastLessonSlug: string;
+  lastLessonTitle: string;
+  progress: number;
+  lastActivity: string;
+}
+
 const Dashboard = () => {
   const { restartTour } = useFirstTimeUser();
   const navigate = useNavigate();
@@ -82,50 +91,11 @@ const Dashboard = () => {
   const [isAuthChecking, setIsAuthChecking] = useState(!isVisitor);
   const [isUserDataLoading, setIsUserDataLoading] = useState(!isVisitor);
   const [totalLessonsCompleted, setTotalLessonsCompleted] = useState(isVisitor ? visitorDashboardData.lessonsCompleted : 0);
+  const [recentSubjects, setRecentSubjects] = useState<RecentSubjectProgress[]>([]);
   
   const { showPrompt, isIOS, installApp, dismissPrompt } = usePWAInstall();
   const { analytics, isLoading: analyticsLoading } = useDashboardAnalytics(isVisitor ? null : userId || null);
   const { dismissBanner, isBannerDismissed, getActiveBanner } = useBannerPriority();
-
-  // Badge definitions with thresholds
-  const badges = useMemo(() => [
-    { 
-      id: "first_lesson", 
-      name: "Première Leçon", 
-      description: "Complète ta première leçon",
-      icon: Star,
-      threshold: 1,
-      color: "text-yellow-500",
-      bgColor: "bg-yellow-500/20 border-yellow-500/50"
-    },
-    { 
-      id: "dedicated_learner", 
-      name: "Apprenant Assidu", 
-      description: "Complète 10 leçons",
-      icon: Award,
-      threshold: 10,
-      color: "text-blue-500",
-      bgColor: "bg-blue-500/20 border-blue-500/50"
-    },
-    { 
-      id: "master", 
-      name: "Maître", 
-      description: "Complète 50 leçons",
-      icon: Trophy,
-      threshold: 50,
-      color: "text-purple-500",
-      bgColor: "bg-purple-500/20 border-purple-500/50"
-    },
-    { 
-      id: "legend", 
-      name: "Légende", 
-      description: "Complète 100 leçons",
-      icon: Flame,
-      threshold: 100,
-      color: "text-orange-500",
-      bgColor: "bg-orange-500/20 border-orange-500/50"
-    },
-  ], []);
 
   // Auth guard - redirect unauthenticated users (skip for visitors)
   useEffect(() => {
@@ -159,7 +129,7 @@ const Dashboard = () => {
     setIsUserDataLoading(true);
     
     // Parallel fetch for efficiency
-    const [profileResult, notesResult, editorResult, completionsResult] = await Promise.all([
+    const [profileResult, notesResult, editorResult, completionsResult, recentActivityResult] = await Promise.all([
       supabase
         .from("profiles")
         .select("nickname, gold_earned")
@@ -179,7 +149,13 @@ const Dashboard = () => {
       supabase
         .from("lesson_completions")
         .select("id", { count: "exact" })
+        .eq("user_id", currentUserId),
+      supabase
+        .from("lesson_completions")
+        .select("subject, lesson_slug, completed_at")
         .eq("user_id", currentUserId)
+        .order("completed_at", { ascending: false })
+        .limit(20)
     ]);
 
     // Process profile data
@@ -198,6 +174,52 @@ const Dashboard = () => {
     
     // Process lesson completions count
     setTotalLessonsCompleted(completionsResult.count || 0);
+    
+    // Process recent activity for "Continue Learning" section
+    if (recentActivityResult.data && !recentActivityResult.error) {
+      const subjectMap = new Map<string, { subject: string; lastLessonSlug: string; lastActivity: string; count: number }>();
+      
+      for (const completion of recentActivityResult.data) {
+        if (!subjectMap.has(completion.subject)) {
+          subjectMap.set(completion.subject, {
+            subject: completion.subject,
+            lastLessonSlug: completion.lesson_slug,
+            lastActivity: completion.completed_at,
+            count: 1
+          });
+        } else {
+          const existing = subjectMap.get(completion.subject)!;
+          existing.count++;
+        }
+      }
+      
+      // Convert to array and get top 3 most recent
+      const recentSubjectsData: RecentSubjectProgress[] = Array.from(subjectMap.values())
+        .slice(0, 3)
+        .map(item => {
+          // Create proper subject display name
+          const subjectDisplayNames: Record<string, string> = {
+            'mathematiques': 'Mathématiques',
+            'francais': 'Français',
+            'sciences': 'Sciences',
+            'sciences-sociales': 'Sciences Sociales',
+            'espagnol': 'Espagnol',
+            'anglais': 'Anglais',
+            'creole': 'Créole'
+          };
+          
+          return {
+            subject: subjectDisplayNames[item.subject] || item.subject,
+            subjectSlug: item.subject,
+            lastLessonSlug: item.lastLessonSlug,
+            lastLessonTitle: item.lastLessonSlug.replace(/-/g, ' '),
+            progress: Math.min(item.count * 10, 100), // Rough progress estimate
+            lastActivity: item.lastActivity
+          };
+        });
+      
+      setRecentSubjects(recentSubjectsData);
+    }
     
     setIsUserDataLoading(false);
   };
@@ -264,12 +286,6 @@ const Dashboard = () => {
     return date.toLocaleDateString("fr-FR", { day: "numeric", month: "short", year: "numeric" });
   }, []);
 
-  const subjects = useMemo(() => [
-    { id: "math", name: "Mathématiques", icon: "🔢", description: "Algèbre, géométrie et calcul", path: "/matieres" },
-    { id: "french", name: "Français", icon: "🇫🇷", description: "Grammaire et littérature", path: "/matieres" },
-    { id: "science", name: "Sciences", icon: "🔬", description: "Physique, chimie et biologie", path: "/matieres" },
-    { id: "history", name: "Histoire", icon: "📜", description: "Histoire d'Haïti et mondiale", path: "/matieres" },
-  ], []);
 
   // Show loading state while checking auth
   if (isAuthChecking) {
@@ -302,6 +318,50 @@ const Dashboard = () => {
 
           {/* Quick Actions Card */}
           <QuickActionsCard />
+
+          {/* Continue Learning Section - Shows recent subjects with progress */}
+          {recentSubjects.length > 0 && (
+            <Card className="border-none rounded-[20px] shadow-md bg-gradient-to-br from-primary/5 to-success/5">
+              <CardHeader className="pb-3">
+                <CardTitle className="font-semibold tracking-tight text-xl flex items-center gap-2">
+                  <Play className="w-5 h-5 text-primary" />
+                  Continuer l'apprentissage
+                </CardTitle>
+                <p className="text-muted-foreground text-sm">
+                  Reprends là où tu t'es arrêté
+                </p>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  {recentSubjects.map((subject, index) => (
+                    <div
+                      key={subject.subjectSlug}
+                      onClick={() => navigate(`/matieres/${subject.subjectSlug}`)}
+                      className="group p-4 bg-background rounded-xl border border-border hover:border-primary/50 hover:shadow-lg hover:-translate-y-1 transition-all cursor-pointer"
+                    >
+                      <div className="flex items-center justify-between mb-3">
+                        <h4 className="font-semibold text-foreground">{subject.subject}</h4>
+                        <ArrowRight className="w-4 h-4 text-muted-foreground group-hover:text-primary transition-colors" />
+                      </div>
+                      <div className="mb-2">
+                        <Progress value={subject.progress} className="h-2" />
+                      </div>
+                      <p className="text-xs text-muted-foreground">
+                        {subject.progress}% complété
+                      </p>
+                    </div>
+                  ))}
+                </div>
+                <Button
+                  variant="ghost"
+                  className="w-full mt-4 text-primary hover:text-primary/80"
+                  onClick={() => navigate("/matieres")}
+                >
+                  Voir toutes les matières →
+                </Button>
+              </CardContent>
+            </Card>
+          )}
 
           {/* Notification & PWA Banners - Show one at a time based on priority */}
           {(() => {
@@ -457,23 +517,9 @@ const Dashboard = () => {
 
           {/* Analytics Widgets - Collapsible */}
           <CollapsibleSection title="Objectifs" icon={<Target className="w-5 h-5" />} storageKey="analytics-widgets">
-          <div data-tour="analytics-widgets" className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            {/* Learning Streak */}
-            <Card className="bg-gradient-to-br from-orange-500/10 to-red-500/10 border-orange-500/20">
-              <CardContent className="p-6">
-                <div className="flex items-center gap-4">
-                  <div className="p-3 bg-orange-500/20 rounded-full">
-                    <Flame className="w-8 h-8 text-orange-500" />
-                  </div>
-                  <div>
-                    <p className="text-sm text-muted-foreground">Série d'apprentissage</p>
-                    <p className="text-3xl font-bold text-foreground">
-                      {analytics.streak} {analytics.streak === 1 ? "jour" : "jours"}
-                    </p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+          <div data-tour="analytics-widgets" className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {/* Learning Streak - Using reusable component */}
+            <LearningStreakWidget streak={analytics.streak} />
 
             {/* Weekly Goal */}
             <Card className="bg-gradient-to-br from-blue-500/10 to-cyan-500/10 border-blue-500/20">
@@ -495,24 +541,6 @@ const Dashboard = () => {
                 />
               </CardContent>
             </Card>
-
-            {/* Study Time */}
-            <Card className="bg-gradient-to-br from-purple-500/10 to-pink-500/10 border-purple-500/20">
-              <CardContent className="p-6">
-                <div className="flex items-center gap-4">
-                  <div className="p-3 bg-purple-500/20 rounded-full">
-                    <Clock className="w-8 h-8 text-purple-500" />
-                  </div>
-                  <div>
-                    <p className="text-sm text-muted-foreground">Temps d'étude</p>
-                    <p className="text-2xl font-bold text-foreground">
-                      {Math.floor(analytics.studyTimeThisWeek / 60)}h {analytics.studyTimeThisWeek % 60}min
-                    </p>
-                    <p className="text-xs text-muted-foreground">Cette semaine</p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
           </div>
           </CollapsibleSection>
 
@@ -524,60 +552,14 @@ const Dashboard = () => {
           </div>
           </CollapsibleSection>
 
-          {/* Insights and Achievements - Collapsible */}
+          {/* Insights and Achievements - Using reusable components */}
           <CollapsibleSection title="Réalisations" icon={<Award className="w-5 h-5" />} storageKey="achievements">
           <div className="space-y-6">
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-2xl font-semibold">Insights d'Apprentissage</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                <div className="flex items-start gap-3 p-3 rounded-lg bg-blue-500/10">
-                  <TrendingUp className="w-5 h-5 mt-0.5 text-blue-500" />
-                  <p className="text-sm text-foreground">Commence une leçon pour débloquer tes insights!</p>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-2xl font-semibold">Badges & Réalisations</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                  {badges.map((badge) => {
-                    const isUnlocked = totalLessonsCompleted >= badge.threshold;
-                    const IconComponent = badge.icon;
-                    
-                    return (
-                      <div 
-                        key={badge.id}
-                        className={`flex flex-col items-center p-4 rounded-lg border transition-all ${
-                          isUnlocked 
-                            ? `${badge.bgColor} shadow-md` 
-                            : "bg-muted/50 border-muted opacity-50"
-                        }`}
-                      >
-                        <IconComponent 
-                          className={`w-8 h-8 mb-2 ${isUnlocked ? badge.color : "text-muted-foreground"}`} 
-                        />
-                        <p className={`text-xs font-medium text-center mb-1 ${isUnlocked ? "text-foreground" : ""}`}>
-                          {badge.name}
-                        </p>
-                        <p className="text-xs text-muted-foreground text-center">
-                          {isUnlocked ? "✓ Débloqué!" : badge.description}
-                        </p>
-                      </div>
-                    );
-                  })}
-                </div>
-                {totalLessonsCompleted > 0 && (
-                  <p className="text-sm text-muted-foreground text-center mt-4">
-                    Tu as complété {totalLessonsCompleted} leçon{totalLessonsCompleted > 1 ? "s" : ""} au total!
-                  </p>
-                )}
-              </CardContent>
-            </Card>
+            {/* Personalized Learning Insights */}
+            <LearningInsightsPanel analytics={analytics} />
+            
+            {/* Badges using reusable component */}
+            <AchievementsBadges achievements={[]} totalLessons={totalLessonsCompleted} />
           </div>
           </CollapsibleSection>
 
@@ -633,39 +615,6 @@ const Dashboard = () => {
           </Card>
           </CollapsibleSection>
 
-          {/* Choose Your Path Section */}
-          <Card data-tour="parcours-section" className="border-none rounded-[20px] shadow-md mb-6">
-            <CardHeader>
-              <CardTitle className="font-semibold tracking-tight text-xl">Choisissez votre parcours</CardTitle>
-              <p className="text-muted-foreground text-sm mt-2">
-                Programme complet par chapitres ou rattrapage ciblé. Votre agent IA vous guidera, expliquera simplement, puis vous proposera des quiz.
-              </p>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <Card className="border border-border rounded-2xl hover:shadow-md transition-all" onClick={() => navigate("/matieres")}>
-                  <CardContent className="p-6">
-                    <strong className="block mb-2">Programme complet</strong>
-                    <p className="text-muted-foreground text-sm mb-4">Chapitres du MENFP pour votre niveau.</p>
-                    <button className="px-4 py-2 bg-gradient-to-br from-[hsl(var(--primary))] to-[hsl(var(--success))] text-white rounded-md text-sm font-medium hover:opacity-90">
-                      Suivre le programme
-                    </button>
-                  </CardContent>
-                </Card>
-
-                <Card className="border border-border rounded-2xl hover:shadow-md transition-all" onClick={() => navigate("/matieres")}>
-                  <CardContent className="p-6">
-                    <strong className="block mb-2">Rattrapage</strong>
-                    <p className="text-muted-foreground text-sm mb-4">Révisez des matières précises.</p>
-                    <button className="px-4 py-2 border-2 border-[hsl(var(--primary))] text-[hsl(var(--primary))] bg-background rounded-md text-sm font-medium hover:bg-[hsl(var(--primary))] hover:text-white transition-colors">
-                      Je veux réviser
-                    </button>
-                  </CardContent>
-                </Card>
-              </div>
-            </CardContent>
-          </Card>
-
           {/* Recent Notes */}
           <Card className="border-none rounded-[20px] shadow-md">
             <CardHeader>
@@ -710,30 +659,6 @@ const Dashboard = () => {
             </CardContent>
           </Card>
 
-          {/* Subjects */}
-          <Card className="border-none rounded-[20px] shadow-md">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Star className="w-6 h-6" />
-                Matières
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                {subjects.map((subject) => (
-                  <div 
-                    key={subject.id} 
-                    onClick={() => navigate(subject.path)}
-                    className="p-4 bg-gradient-to-br from-muted/50 to-muted/30 rounded-lg hover:shadow-lg hover:-translate-y-1 transition-all cursor-pointer"
-                  >
-                    <div className="text-3xl mb-3">{subject.icon}</div>
-                    <h3 className="font-bold text-foreground mb-1">{subject.name}</h3>
-                    <p className="text-xs text-muted-foreground mb-3">{subject.description}</p>
-                  </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
         </div>
       </div>
     </>
