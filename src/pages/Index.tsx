@@ -13,6 +13,7 @@ import judeProfile from "@/assets/jude-profile.jpeg";
 import edupreneursLogo from "@/assets/edupreneurs-new-logo.png";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { Menu, X, BookOpen, Trophy, MessageCircle, Newspaper, Users, GraduationCap, Heart, FileText, Mail, Phone, MapPin } from "lucide-react";
+import { VisitorTypeSelector } from "@/components/visitor/VisitorTypeSelector";
 
 // Lazy load chatbot for better initial page load
 const HomeChatbot = lazy(() => import("@/components/HomeChatbot").then(module => ({ default: module.HomeChatbot })));
@@ -25,6 +26,7 @@ const Index = () => {
   const [expandedFaq, setExpandedFaq] = useState<number | null>(null);
   const [stats, setStats] = useState(DEFAULT_STATS);
   const [statsLoaded, setStatsLoaded] = useState(false);
+  const [showVisitorSelector, setShowVisitorSelector] = useState(false);
 
   const fetchStats = useCallback(async () => {
     try {
@@ -333,10 +335,13 @@ const Index = () => {
             
             {/* Explorer sans inscription link */}
             <div className="mt-2">
-              <Link to="/dashboard" className="inline-flex items-center gap-1.5 text-xs sm:text-sm text-muted-foreground hover:text-primary transition-colors">
+              <button 
+                onClick={() => setShowVisitorSelector(true)}
+                className="inline-flex items-center gap-1.5 text-xs sm:text-sm text-muted-foreground hover:text-primary transition-colors cursor-pointer"
+              >
                 <span>👀</span>
                 <span className="underline underline-offset-2">Explorer sans inscription</span>
-              </Link>
+              </button>
             </div>
             <div className="flex flex-wrap justify-center gap-2 sm:gap-3 lg:gap-4 pt-3 sm:pt-4 lg:pt-6">
               {heroStats.map((stat, idx) => (
@@ -902,6 +907,12 @@ const Index = () => {
       <Suspense fallback={<div />}>
         <HomeChatbot />
       </Suspense>
+
+      {/* Visitor Type Selector Modal */}
+      <VisitorTypeSelector 
+        open={showVisitorSelector} 
+        onOpenChange={setShowVisitorSelector} 
+      />
     </div>
   );
 };
