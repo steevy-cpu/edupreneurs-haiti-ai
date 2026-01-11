@@ -191,8 +191,8 @@ const Index = () => {
             <img src={edupreneursLogo} alt="EDUPRENEURS Logo" className="h-8 sm:h-12 w-auto object-contain" loading="eager" decoding="async" />
           </Link>
           
-          {/* Updated Navigation Menu */}
-          <nav className="hidden md:flex items-center gap-5">
+          {/* Navigation Menu - Hidden on tablet, shown on large screens */}
+          <nav className="hidden lg:flex items-center gap-5">
             <a href="#accueil" className="text-foreground hover:text-primary transition-all duration-300 font-semibold hover:scale-105 relative group text-sm">
               Accueil
               <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-primary transition-all duration-300 group-hover:w-full"></span>
@@ -219,20 +219,20 @@ const Index = () => {
             </a>
           </nav>
 
-          <div className="flex items-center gap-1 sm:gap-2 md:gap-3">
+          <div className="flex items-center gap-1 sm:gap-2 lg:gap-3">
             <ThemeToggle />
-            <Link to="/auth?tab=login" className="hidden sm:inline-block">
+            <Link to="/auth?tab=login" className="hidden lg:inline-block">
               <Button size="sm" variant="outline" className="border-primary text-primary hover:bg-primary hover:text-primary-foreground text-xs sm:text-sm font-semibold transition-all duration-300 hover:scale-105">
                 Se connecter
               </Button>
             </Link>
-            <Link to="/auth?tab=signup" className="hidden sm:inline-block">
+            <Link to="/auth?tab=signup" className="hidden lg:inline-block">
               <Button size="sm" className="bg-gradient-to-r from-accent to-yellow-500 hover:from-accent/90 hover:to-yellow-400 text-xs sm:text-sm font-semibold shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105">
                 Créer un compte
               </Button>
             </Link>
             <button 
-              className="md:hidden p-1.5 sm:p-2"
+              className="lg:hidden p-1.5 sm:p-2"
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
             >
               {mobileMenuOpen ? <X className="h-5 w-5 sm:h-6 sm:w-6" /> : <Menu className="h-5 w-5 sm:h-6 sm:w-6" />}
@@ -240,9 +240,9 @@ const Index = () => {
           </div>
         </div>
 
-        {/* Mobile Menu - Updated */}
+        {/* Mobile/Tablet Menu */}
         {mobileMenuOpen && (
-          <div className="md:hidden bg-card border-t border-border">
+          <div className="lg:hidden bg-card border-t border-border">
             <nav className="flex flex-col p-3 gap-2">
               <a href="#accueil" className="py-2 px-3 hover:bg-muted rounded-md transition-colors text-sm" onClick={() => setMobileMenuOpen(false)}>Accueil</a>
               <a href="#comment-ca-marche" className="py-2 px-3 hover:bg-muted rounded-md transition-colors text-sm" onClick={() => setMobileMenuOpen(false)}>Comment ça marche</a>
@@ -250,16 +250,18 @@ const Index = () => {
               <a href="#about" className="py-2 px-3 hover:bg-muted rounded-md transition-colors text-sm" onClick={() => setMobileMenuOpen(false)}>À propos</a>
               <a href="#faq" className="py-2 px-3 hover:bg-muted rounded-md transition-colors text-sm" onClick={() => setMobileMenuOpen(false)}>FAQ</a>
               <a href="#contact" className="py-2 px-3 hover:bg-muted rounded-md transition-colors text-sm" onClick={() => setMobileMenuOpen(false)}>Contact</a>
-              <Link to="/auth?tab=login" className="sm:hidden">
-                <Button size="sm" variant="outline" className="w-full border-primary text-primary hover:bg-primary hover:text-primary-foreground text-sm">
-                  Se connecter
-                </Button>
-              </Link>
-              <Link to="/auth?tab=signup" className="sm:hidden mt-2">
-                <Button size="sm" className="w-full bg-gradient-to-r from-accent to-yellow-500 hover:opacity-90 text-sm">
-                  Créer un compte
-                </Button>
-              </Link>
+              <div className="flex flex-col gap-2 mt-2 pt-2 border-t border-border">
+                <Link to="/auth?tab=login" onClick={() => setMobileMenuOpen(false)}>
+                  <Button size="sm" variant="outline" className="w-full border-primary text-primary hover:bg-primary hover:text-primary-foreground text-sm">
+                    Se connecter
+                  </Button>
+                </Link>
+                <Link to="/auth?tab=signup" onClick={() => setMobileMenuOpen(false)}>
+                  <Button size="sm" className="w-full bg-gradient-to-r from-accent to-yellow-500 hover:opacity-90 text-sm">
+                    Créer un compte
+                  </Button>
+                </Link>
+              </div>
             </nav>
           </div>
         )}
