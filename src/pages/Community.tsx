@@ -68,6 +68,7 @@ const Community = () => {
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [isLoadingConversations, setIsLoadingConversations] = useState(true);
   const [selectedConversation, setSelectedConversation] = useState<string | null>(conversationId);
+  const [selectedConversationDetails, setSelectedConversationDetails] = useState<Conversation | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
   const [isLoadingMessages, setIsLoadingMessages] = useState(false);
   const [newMessage, setNewMessage] = useState("");
@@ -114,9 +115,9 @@ const Community = () => {
   // Detect if current conversation is with Jude (AI assistant) - hide media upload
   const isJudeConversation = useMemo(() => {
     if (!selectedConversation) return false;
-    const conv = conversations.find(c => c.id === selectedConversation);
+    const conv = selectedConversationDetails ?? conversations.find(c => c.id === selectedConversation);
     return conv?.otherUser?.user_id === JUDE_USER_ID;
-  }, [selectedConversation, conversations]);
+  }, [selectedConversation, conversations, selectedConversationDetails]);
 
   // Memoize chat background style with time-based mood overlay
   const chatBackgroundStyle = useMemo(() => {
@@ -382,15 +383,21 @@ const Community = () => {
     if (selectedConversation && user) {
       const loadConversation = async () => {
         // Check if conversation exists in list
-        const existingConv = conversations.find(c => c.id === selectedConversation);
+        let convDetails = conversations.find(c => c.id === selectedConversation);
         
-        if (!existingConv) {
+        if (!convDetails) {
           // Fetch single conversation data (for new/empty conversations from profile "Envoyer un message")
           const newConv = await fetchSingleConversation(selectedConversation);
           if (newConv) {
+            convDetails = newConv;
             // Add to conversations list
             setConversations(prev => [newConv, ...prev.filter(c => c.id !== newConv.id)]);
           }
+        }
+        
+        // Store conversation details in persistent state to prevent header flicker
+        if (convDetails) {
+          setSelectedConversationDetails(convDetails);
         }
         
         await fetchMessages(selectedConversation);
@@ -400,6 +407,9 @@ const Community = () => {
       loadConversation();
       subscribeToConversationMessages(selectedConversation);
       subscribeToReactions(selectedConversation);
+    } else {
+      // Clear details when no conversation is selected
+      setSelectedConversationDetails(null);
     }
     return () => {
       if (messageChannelRef.current) {
@@ -697,12 +707,16 @@ const Community = () => {
       // Get visible messages for this conversation
       const convVisibleMessages = visibleMessages.get(convId) || [];
       
-      // Skip this conversation if no visible messages (deleted conversation with no new messages)
-      if (convVisibleMessages.length === 0) {
+      // Get total messages (before visibility filter) to distinguish "new empty" from "deleted"
+      const totalMessagesInConv = allMessagesData?.filter(m => m.conversation_id === convId).length || 0;
+      
+      // Skip only if: there ARE messages but none are visible (user deleted/left conversation)
+      // BUT keep it if: there are NO messages at all (brand new conversation)
+      if (convVisibleMessages.length === 0 && totalMessagesInConv > 0) {
         return;
       }
 
-      const lastMsg = convVisibleMessages[convVisibleMessages.length - 1];
+      const lastMsg = convVisibleMessages.length > 0 ? convVisibleMessages[convVisibleMessages.length - 1] : null;
       const unreadCount = convVisibleMessages.filter(m => !m.read && m.sender_id !== user.id).length;
 
       if (convInfo.is_group && convInfo.group_id) {
@@ -866,7 +880,12 @@ const Community = () => {
       }
     }
 
-    if (!messagesData || messagesData.length === 0) return;
+    // Handle empty conversations (new chats with no messages yet)
+    if (!messagesData || messagesData.length === 0) {
+      setMessages([]);
+      setIsLoadingMessages(false);
+      return;
+    }
 
     const senderIds = [...new Set(messagesData.map(m => m.sender_id))];
     const { data: profiles } = await supabase
@@ -2272,7 +2291,8 @@ const Community = () => {
                 <ArrowLeft size={20} />
               </Button>
               {(() => {
-                const currentConv = conversations.find(c => c.id === selectedConversation);
+                // Use persisted details first (prevents flicker during list refresh)
+                const currentConv = selectedConversationDetails ?? conversations.find(c => c.id === selectedConversation);
                 const isGroup = currentConv?.is_group;
                 
                 return (
@@ -2385,7 +2405,7 @@ const Community = () => {
 
             {/* Fixed Jude Banner for Group Chats - positioned below header */}
             {(() => {
-              const currentConv = conversations.find(c => c.id === selectedConversation);
+              const currentConv = selectedConversationDetails ?? conversations.find(c => c.id === selectedConversation);
               const isGroup = currentConv?.is_group;
               
               if (!isGroup) return null;
@@ -2426,7 +2446,7 @@ const Community = () => {
               className="flex-1 overflow-y-auto overflow-x-hidden md:pb-[96px]"
               style={{
                 paddingTop: (() => {
-                  const currentConv = conversations.find(c => c.id === selectedConversation);
+                  const currentConv = selectedConversationDetails ?? conversations.find(c => c.id === selectedConversation);
                   return currentConv?.is_group ? '132px' : '72px';
                 })(),
                 paddingBottom: keyboardHeight > 0
@@ -2487,7 +2507,7 @@ const Community = () => {
                   return Object.entries(conversationTypingUsers).map(([key, value]) => {
                     const presence = Array.isArray(value) ? value[0] : value;
                     if (presence?.typing && presence?.user_id !== user?.id) {
-                      const conversation = conversations.find(c => c.id === selectedConversation);
+                      const conversation = selectedConversationDetails ?? conversations.find(c => c.id === selectedConversation);
                       
                       // Find the actual user profile for group chats
                       let typingUserProfile = conversation?.otherUser;
