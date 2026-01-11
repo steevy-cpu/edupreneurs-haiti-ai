@@ -41,7 +41,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { AvatarSelector } from "@/components/AvatarSelector";
 import { getAvatarUrl } from "@/lib/avatarMap";
-import { PageHeader } from "@/components/shared";
+import { PageHeader, SettingsPageSkeleton } from "@/components/shared";
 
 interface UserProfile {
   id: string;
@@ -351,14 +351,7 @@ const Settings = () => {
   };
 
   if (pageLoading) {
-    return (
-      <div className="pt-20 px-4 sm:px-6 lg:px-8 pb-24 max-w-7xl mx-auto flex items-center justify-center min-h-[60vh]">
-        <div className="flex flex-col items-center gap-4">
-          <Loader2 className="h-8 w-8 animate-spin text-primary" />
-          <p className="text-muted-foreground">Chargement des paramètres...</p>
-        </div>
-      </div>
-    );
+    return <SettingsPageSkeleton />;
   }
 
   return (
