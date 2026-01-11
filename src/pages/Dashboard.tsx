@@ -41,6 +41,12 @@ import { useVisitor } from "@/contexts/VisitorContext";
 import { LockedOverlay } from "@/components/visitor";
 import { visitorDashboardData } from "@/data/visitorDemoData";
 import { Button } from "@/components/ui/button";
+import { EmptyState } from "@/components/shared/EmptyState";
+import { 
+  DashboardKPISkeleton, 
+  LeaderboardSkeleton,
+  NotesListSkeleton 
+} from "@/components/shared/SkeletonLoaders";
 
 interface Note {
   id: string;
@@ -606,11 +612,7 @@ const Dashboard = () => {
             </CardHeader>
             <CardContent>
               {leaderboardLoading ? (
-                <div className="space-y-4">
-                  {[...Array(5)].map((_, i) => (
-                    <Skeleton key={i} className="h-20 w-full" />
-                  ))}
-                </div>
+                <LeaderboardSkeleton count={5} />
               ) : leaderboard.length === 0 ? (
                 <p className="text-center text-muted-foreground py-8">
                   Aucun utilisateur dans le classement pour le moment
@@ -679,15 +681,26 @@ const Dashboard = () => {
           </Card>
 
           {/* Recent Notes */}
-          {recentNotes.length > 0 && (
-            <Card className="border-none rounded-[20px] shadow-md">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <FileText className="w-6 h-6" />
-                  Notes récentes
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
+          <Card className="border-none rounded-[20px] shadow-md">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <FileText className="w-6 h-6" />
+                Notes récentes
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              {isUserDataLoading ? (
+                <NotesListSkeleton count={3} />
+              ) : recentNotes.length === 0 ? (
+                <EmptyState
+                  illustration="no-notes"
+                  title="Aucune note"
+                  description="Commence une leçon et prends des notes pour les retrouver ici"
+                  ctaLabel="Explorer les matières"
+                  ctaAction={() => navigate("/matieres")}
+                  compact
+                />
+              ) : (
                 <div className="space-y-3">
                   {recentNotes.map((note) => (
                     <div key={note.id} className="p-4 bg-muted/50 rounded-lg hover:bg-muted transition-colors">
@@ -707,9 +720,9 @@ const Dashboard = () => {
                     </div>
                   ))}
                 </div>
-              </CardContent>
-            </Card>
-          )}
+              )}
+            </CardContent>
+          </Card>
 
           {/* Subjects */}
           <Card className="border-none rounded-[20px] shadow-md">

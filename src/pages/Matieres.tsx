@@ -362,12 +362,22 @@ export default function Matieres() {
 
         {/* Loading State */}
         {isLoading && (
-          <div className="flex flex-col items-center justify-center py-16 gap-4">
-            <div className="relative">
-              <div className="animate-spin rounded-full h-12 w-12 border-4 border-primary/20 border-t-primary"></div>
-              <GraduationCap className="absolute inset-0 m-auto w-5 h-5 text-primary" />
-            </div>
-            <p className="text-sm text-muted-foreground animate-pulse">Chargement des matières...</p>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {[...Array(6)].map((_, i) => (
+              <Card key={i} className="border-none rounded-xl overflow-hidden">
+                <div className="p-0">
+                  <div className="h-32 w-full bg-muted animate-pulse" />
+                  <div className="p-4">
+                    <div className="h-5 w-3/4 mb-2 bg-muted animate-pulse rounded" />
+                    <div className="h-4 w-full mb-3 bg-muted animate-pulse rounded" />
+                    <div className="flex justify-between">
+                      <div className="h-4 w-16 bg-muted animate-pulse rounded" />
+                      <div className="h-4 w-20 bg-muted animate-pulse rounded" />
+                    </div>
+                  </div>
+                </div>
+              </Card>
+            ))}
           </div>
         )}
 

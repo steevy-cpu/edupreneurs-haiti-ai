@@ -45,6 +45,7 @@ import { useVisitor } from "@/contexts/VisitorContext";
 import { LockedOverlay } from "@/components/visitor";
 import { visitorFeedPosts } from "@/data/visitorDemoData";
 import { VisitorFeedOverlay } from "@/components/feed/VisitorFeedOverlay";
+import { EmptyState } from "@/components/shared/EmptyState";
 
 // Function to render content with clickable links, @mentions, and plain domains
 const renderContentWithLinks = (content: string) => {
@@ -1007,17 +1008,14 @@ const Feed = () => {
               ))}
             </div>
           ) : displayPosts.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-16 px-6 text-center">
-              <div className="w-20 h-20 rounded-full bg-muted/40 flex items-center justify-center mb-4">
-                <MessageCircle size={32} className="text-muted-foreground/50" />
-              </div>
-              <h3 className="text-lg font-medium mb-2">Aucun post pour le moment</h3>
-              <p className="text-sm text-muted-foreground max-w-[200px] mb-4">
-                Suivez des personnes pour voir leurs posts ici
-              </p>
-              <Button onClick={() => navigate('/user-search')} variant="outline" className="gap-2">
-                Rechercher des utilisateurs
-              </Button>
+            <div className="py-8 px-4">
+              <EmptyState
+                illustration="empty-feed"
+                title="Aucun post pour le moment"
+                description="Suivez des personnes pour voir leurs posts ici"
+                ctaLabel="Rechercher des utilisateurs"
+                ctaAction={() => navigate('/user-search')}
+              />
             </div>
           ) : (
             <div className="space-y-3 px-3 sm:px-4 pt-3 sm:pt-4">
