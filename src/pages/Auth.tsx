@@ -902,8 +902,7 @@ export default function Auth() {
                     type="button"
                     variant="outline"
                     className="w-full gap-2 py-5 border-2 border-dashed border-primary/40 text-primary font-medium
-                               shadow-lg shadow-primary/25 animate-bounce-subtle
-                               hover:border-primary hover:bg-primary hover:text-primary-foreground hover:shadow-xl
+                               hover:border-primary hover:bg-primary hover:text-primary-foreground hover:shadow-lg
                                transition-all duration-300 group"
                     onClick={() => setShowVisitorSelector(true)}
                   >
@@ -1186,18 +1185,33 @@ export default function Auth() {
                 {/* Signup Form - Multi-step Wizard */}
                 {activeTab === "signup" && (
                   <form onSubmit={handleSignup} className="space-y-4">
-                    {/* Progress Indicator */}
+                    {/* Visual Step Progress Indicator */}
                     <div className="mb-6">
-                      <div className="flex items-center justify-between mb-2">
-                        <span className="text-sm font-medium text-foreground">Étape {signupStep} sur {totalSignupSteps}</span>
-                        <span className="text-xs text-muted-foreground">
-                          {signupStep === 1 && "Compte"}
-                          {signupStep === 2 && "Profil"}
-                          {signupStep === 3 && "Finalisation"}
-                        </span>
+                      <div className="flex items-center justify-between mb-3">
+                        {[1, 2, 3].map((step) => (
+                          <div key={step} className="flex items-center flex-1">
+                            <div className={`flex items-center justify-center w-8 h-8 rounded-full text-sm font-bold transition-all duration-300 ${
+                              signupStep >= step 
+                                ? 'bg-primary text-primary-foreground shadow-md' 
+                                : 'bg-muted text-muted-foreground'
+                            }`}>
+                              {signupStep > step ? '✓' : step}
+                            </div>
+                            {step < 3 && (
+                              <div className={`flex-1 h-1 mx-2 rounded-full transition-all duration-300 ${
+                                signupStep > step ? 'bg-primary' : 'bg-muted'
+                              }`} />
+                            )}
+                          </div>
+                        ))}
                       </div>
-                      <div className="w-full h-2 bg-muted rounded-full overflow-hidden">
-                        <div 
+                      <div className="flex justify-between text-xs text-muted-foreground">
+                        <span className={signupStep >= 1 ? 'text-primary font-medium' : ''}>Compte</span>
+                        <span className={signupStep >= 2 ? 'text-primary font-medium' : ''}>Profil</span>
+                        <span className={signupStep >= 3 ? 'text-primary font-medium' : ''}>Finalisation</span>
+                      </div>
+                      <div className="w-full h-2 bg-muted rounded-full overflow-hidden mt-3">
+                        <div
                           className="h-full bg-primary rounded-full transition-all duration-300"
                           style={{ width: `${(signupStep / totalSignupSteps) * 100}%` }}
                         />
