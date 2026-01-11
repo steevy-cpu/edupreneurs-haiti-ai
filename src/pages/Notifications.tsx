@@ -13,6 +13,8 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { NotificationPermissionBanner } from "@/components/NotificationPermissionBanner";
 import { useNotificationSync } from "@/hooks/useNotificationSync";
 import { useNotificationSound } from "@/hooks/useNotificationSound";
+import { EmptyState } from "@/components/shared/EmptyState";
+import { NotificationsListSkeleton } from "@/components/shared/SkeletonLoaders";
 
 interface Profile {
   id: string;
@@ -546,29 +548,15 @@ export default function Notifications() {
         )}
 
         {isLoading ? (
-          // Loading skeleton
-          <div className="space-y-2">
-            {[1, 2, 3, 4].map((i) => (
-              <Card key={i} className="p-3 sm:p-4 animate-pulse">
-                <div className="flex items-start gap-2 sm:gap-3">
-                  <div className="h-8 w-8 sm:h-10 sm:w-10 rounded-full bg-muted/50 flex-shrink-0" />
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-start justify-between gap-2">
-                      <div className="flex-1">
-                        <div className="h-4 w-3/4 bg-muted/50 rounded mb-2" />
-                        <div className="h-3 w-1/2 bg-muted/30 rounded" />
-                      </div>
-                      <div className="h-3 w-8 bg-muted/30 rounded" />
-                    </div>
-                  </div>
-                </div>
-              </Card>
-            ))}
-          </div>
+          <NotificationsListSkeleton count={5} />
         ) : notifications.length === 0 ? (
-          <Card className="p-6 sm:p-8 text-center">
-            <p className="text-muted-foreground text-sm sm:text-base">Aucune notification pour le moment</p>
-          </Card>
+          <EmptyState
+            illustration="no-notifications"
+            title="Tout est calme"
+            description="Tu n'as pas encore de notifications. Interagis avec la communauté pour en recevoir!"
+            ctaLabel="Explorer le feed"
+            ctaAction={() => navigate("/feed")}
+          />
         ) : (
           <div className="space-y-2">
             {notifications.map((notification) => (
