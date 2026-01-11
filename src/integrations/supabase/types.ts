@@ -2701,6 +2701,10 @@ export type Database = {
         Returns: undefined
       }
       resend_verification_code: { Args: { p_user_id: string }; Returns: Json }
+      start_direct_conversation: {
+        Args: { other_user_id: string }
+        Returns: string
+      }
       verify_email_code: {
         Args: { p_code: string; p_user_id: string }
         Returns: Json
