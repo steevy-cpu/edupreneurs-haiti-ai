@@ -169,6 +169,14 @@ export default function Auth() {
     
     checkVerificationStatus();
     
+    // Check for tab parameter in URL (for direct navigation to login/signup)
+    const tabParam = searchParams.get("tab");
+    if (tabParam === "signup") {
+      setActiveTab("signup");
+    } else if (tabParam === "login") {
+      setActiveTab("login");
+    }
+    
     // Check for referral code in URL
     const refCode = searchParams.get("ref");
     if (refCode) {
