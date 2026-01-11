@@ -23,6 +23,8 @@ import {
   Gamepad2,
   Lock,
   Shield,
+  ChevronLeft,
+  ChevronRight,
 } from "lucide-react";
 import { isFounder } from "@/lib/founderConstants";
 import dashboardImage from "@/assets/dashboard00.png";
@@ -48,11 +50,30 @@ interface LayoutProps {
   children: ReactNode;
 }
 
+// Hook to persist sidebar collapsed state
+const useSidebarCollapsed = () => {
+  const [isCollapsed, setIsCollapsed] = useState(() => {
+    if (typeof window !== 'undefined') {
+      const stored = localStorage.getItem('sidebar-collapsed');
+      return stored === 'true';
+    }
+    return false;
+  });
+
+  const setCollapsed = (collapsed: boolean) => {
+    setIsCollapsed(collapsed);
+    localStorage.setItem('sidebar-collapsed', String(collapsed));
+  };
+
+  return [isCollapsed, setCollapsed] as const;
+};
+
 export const Layout = ({ children }: LayoutProps) => {
   const navigate = useNavigate();
   const location = useLocation();
   const { isVisitor, showWelcomePopup, completeWelcomePopup } = useVisitor();
-  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [sidebarOpen, setSidebarOpen] = useState(false); // Mobile overlay state
+  const [sidebarCollapsed, setSidebarCollapsed] = useSidebarCollapsed(); // Desktop collapsed state
   const [totalUnreadMessages, setTotalUnreadMessages] = useState(0);
   const [pendingFollowRequests, setPendingFollowRequests] = useState(0);
   const [unreadNotifications, setUnreadNotifications] = useState(0);
@@ -394,19 +415,19 @@ export const Layout = ({ children }: LayoutProps) => {
 
   return (
     <div className={`min-h-screen bg-background ${isVisitor ? 'pt-10' : ''}`}>
-      {/* Menu Button */}
+      {/* Menu Button - Mobile only (hidden on lg+) */}
       {!hideLayoutNav && (
         <button
           data-tour="menu-button"
           onClick={() => setSidebarOpen(!sidebarOpen)}
-          className="fixed top-3 left-3 z-[1001] bg-gradient-to-br from-primary to-success text-primary-foreground p-2 sm:p-2.5 rounded-lg sm:rounded-xl shadow-md hover:shadow-lg transition-all duration-300 hover:scale-105"
+          className="fixed top-3 left-3 z-[1001] lg:hidden bg-gradient-to-br from-primary to-success text-primary-foreground p-2 sm:p-2.5 rounded-lg sm:rounded-xl shadow-md hover:shadow-lg transition-all duration-300 hover:scale-105"
           aria-label="Menu"
         >
           {sidebarOpen ? <X size={20} className="sm:w-5 sm:h-5" /> : <Menu size={20} className="sm:w-5 sm:h-5" />}
         </button>
       )}
 
-      {/* Sidebar Overlay */}
+      {/* Sidebar Overlay - Mobile only */}
       {!hideLayoutNav && sidebarOpen && (
         <div 
           className="fixed inset-0 bg-background/80 backdrop-blur-sm z-[999] lg:hidden"
@@ -414,33 +435,46 @@ export const Layout = ({ children }: LayoutProps) => {
         />
       )}
 
-      {/* Sidebar */}
+      {/* Sidebar - Persistent on desktop, overlay on mobile */}
       {!hideLayoutNav && (
         <div
           data-tour="sidebar-content"
-          className={`fixed top-0 left-0 h-screen w-[240px] sm:w-[260px] lg:w-[280px] bg-card border-r border-border shadow-lg z-[1000] transition-transform duration-300 overflow-y-auto pb-20 lg:pb-0 ${sidebarOpen ? "translate-x-0" : "-translate-x-full"}`}
+          className={`
+            fixed top-0 left-0 h-screen bg-card border-r border-border shadow-lg z-[1000] 
+            transition-all duration-300 overflow-y-auto pb-20 lg:pb-0
+            ${sidebarCollapsed ? 'lg:w-[72px]' : 'lg:w-[260px]'}
+            ${sidebarOpen ? 'translate-x-0 w-[240px] sm:w-[260px]' : '-translate-x-full lg:translate-x-0'}
+          `}
         >
         {/* Sidebar Header */}
-        <div className="bg-gradient-to-br from-primary to-success text-primary-foreground p-3 sm:p-4 lg:p-5 border-b border-border/10 flex items-center justify-center">
-          <img 
-            src={edupreneursLogo} 
-            alt="EDUPRENEURS" 
-            className="h-12 sm:h-14 w-auto object-contain logo-no-filter"
-            loading="eager"
-            decoding="async"
-          />
+        <div className={`bg-gradient-to-br from-primary to-success text-primary-foreground border-b border-border/10 flex items-center justify-center ${sidebarCollapsed ? 'p-2 lg:p-3' : 'p-3 sm:p-4 lg:p-5'}`}>
+          {sidebarCollapsed ? (
+            <div className="hidden lg:flex w-10 h-10 rounded-full bg-white/20 items-center justify-center text-white font-bold text-lg">
+              E
+            </div>
+          ) : (
+            <img 
+              src={edupreneursLogo} 
+              alt="EDUPRENEURS" 
+              className="h-12 sm:h-14 w-auto object-contain logo-no-filter"
+              loading="eager"
+              decoding="async"
+            />
+          )}
         </div>
 
         {/* User Profile Section */}
-        <div className="p-3 sm:p-4 lg:p-6 text-center border-b border-border bg-gradient-to-br from-muted/30 to-muted/10">
-          <div className="w-12 h-12 sm:w-14 sm:h-14 lg:w-16 lg:h-16 mx-auto mb-2 sm:mb-3 lg:mb-4 rounded-full overflow-hidden bg-gradient-to-br from-[hsl(var(--primary))] to-[hsl(var(--success))] shadow-md animate-[gentle-bob_8s_ease-in-out_infinite]">
+        <div className={`text-center border-b border-border bg-gradient-to-br from-muted/30 to-muted/10 ${sidebarCollapsed ? 'p-2 lg:p-3' : 'p-3 sm:p-4 lg:p-6'}`}>
+          <div className={`mx-auto rounded-full overflow-hidden bg-gradient-to-br from-[hsl(var(--primary))] to-[hsl(var(--success))] shadow-md animate-[gentle-bob_8s_ease-in-out_infinite] ${sidebarCollapsed ? 'w-10 h-10 lg:mb-0 mb-2' : 'w-12 h-12 sm:w-14 sm:h-14 lg:w-16 lg:h-16 mb-2 sm:mb-3 lg:mb-4'}`}>
             <img src={userAvatar} alt="User Avatar" className="w-full h-full object-cover" loading="lazy" decoding="async" />
           </div>
-          <div className="font-bold text-sm sm:text-base lg:text-lg text-foreground">{userNickname}</div>
+          {!sidebarCollapsed && (
+            <div className="font-bold text-sm sm:text-base lg:text-lg text-foreground">{userNickname}</div>
+          )}
         </div>
 
         {/* Navigation */}
-        <nav className="py-3 sm:py-4 lg:py-5" data-tour="nav-section">
+        <nav className={`${sidebarCollapsed ? 'py-2 lg:py-3' : 'py-3 sm:py-4 lg:py-5'}`} data-tour="nav-section">
           <Link 
             to="/dashboard" 
             className={`flex items-center gap-2 sm:gap-2.5 lg:gap-3 px-3 sm:px-4 lg:px-5 py-2.5 sm:py-3 lg:py-3.5 mx-2 sm:mx-2.5 lg:mx-3 rounded-lg sm:rounded-xl text-sm sm:text-base font-medium transition-all duration-300 ${
@@ -605,14 +639,36 @@ export const Layout = ({ children }: LayoutProps) => {
             </Link>
           )}
           
-          <hr className="border-border my-2 sm:my-3 lg:my-4 mx-2 sm:mx-2.5 lg:mx-3" />
+          <hr className={`border-border ${sidebarCollapsed ? 'my-2 mx-1' : 'my-2 sm:my-3 lg:my-4 mx-2 sm:mx-2.5 lg:mx-3'}`} />
+          
+          {/* Collapse Toggle - Desktop only */}
+          <button
+            onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
+            className={`hidden lg:flex items-center gap-2 px-3 py-2.5 mx-2 rounded-lg text-sm font-medium text-muted-foreground hover:bg-muted hover:text-foreground transition-all duration-300 ${sidebarCollapsed ? 'justify-center' : ''}`}
+            title={sidebarCollapsed ? "Agrandir la barre latérale" : "Réduire la barre latérale"}
+          >
+            {sidebarCollapsed ? (
+              <ChevronRight size={18} />
+            ) : (
+              <>
+                <ChevronLeft size={18} />
+                <span>Réduire</span>
+              </>
+            )}
+          </button>
+
           <AlertDialog>
             <AlertDialogTrigger asChild>
               <button
-                className="flex items-center gap-2 sm:gap-2.5 lg:gap-3 px-3 sm:px-4 lg:px-5 py-2.5 sm:py-3 lg:py-3.5 mx-2 sm:mx-2.5 lg:mx-3 rounded-lg sm:rounded-xl text-sm sm:text-base text-destructive font-medium hover:bg-destructive hover:text-destructive-foreground hover:translate-x-1 transition-all duration-300 w-[calc(100%-1rem)] sm:w-[calc(100%-1.25rem)] lg:w-[calc(100%-1.5rem)]"
+                className={`flex items-center gap-2 sm:gap-2.5 lg:gap-3 py-2.5 sm:py-3 lg:py-3.5 rounded-lg sm:rounded-xl text-sm sm:text-base text-destructive font-medium hover:bg-destructive hover:text-destructive-foreground transition-all duration-300 ${
+                  sidebarCollapsed 
+                    ? 'px-3 mx-1 lg:justify-center' 
+                    : 'px-3 sm:px-4 lg:px-5 mx-2 sm:mx-2.5 lg:mx-3 w-[calc(100%-1rem)] sm:w-[calc(100%-1.25rem)] lg:w-[calc(100%-1.5rem)] hover:translate-x-1'
+                }`}
+                title={sidebarCollapsed ? "Déconnexion" : undefined}
               >
-                <LogOut size={16} className="sm:w-[17px] sm:h-[17px] lg:w-[18px] lg:h-[18px]" />
-                Déconnexion
+                <LogOut size={16} className="sm:w-[17px] sm:h-[17px] lg:w-[18px] lg:h-[18px] flex-shrink-0" />
+                {!sidebarCollapsed && <span>Déconnexion</span>}
               </button>
             </AlertDialogTrigger>
             <AlertDialogContent>
@@ -634,9 +690,15 @@ export const Layout = ({ children }: LayoutProps) => {
         </div>
       )}
 
-      {/* Main Content */}
+      {/* Main Content - Adjust margin for persistent sidebar on desktop */}
       <div 
-        className={`transition-all duration-300 pb-20 lg:pb-0 ${!isCommunityPage && sidebarOpen ? "lg:ml-[240px] xl:ml-[260px] 2xl:ml-[280px]" : ""}`}
+        className={`transition-all duration-300 pb-20 lg:pb-0 ${
+          !hideLayoutNav 
+            ? sidebarCollapsed 
+              ? 'lg:ml-[72px]' 
+              : 'lg:ml-[260px]'
+            : ''
+        }`}
         onTouchStart={onTouchStart}
         onTouchMove={onTouchMove}
         onTouchEnd={onTouchEnd}
