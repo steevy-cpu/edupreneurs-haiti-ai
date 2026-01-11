@@ -250,99 +250,10 @@ export default function Profile() {
 
     setMessageLoading(true);
     try {
-      // First check if a conversation exists between these two users
-      // by looking at the other user's conversations
-      const { data: otherUserConversations, error: otherUserError } = await supabase
-        .from('conversation_participants')
-        .select('conversation_id')
-        .eq('user_id', userId);
+      const { data: conversationId, error } = await supabase
+        .rpc('start_direct_conversation', { other_user_id: userId });
 
-      if (otherUserError) throw otherUserError;
-
-      let sharedConversationId: string | null = null;
-
-      // Check if any of the other user's conversations are non-group conversations
-      // that might be with the current user (even if current user left it)
-      if (otherUserConversations && otherUserConversations.length > 0) {
-        for (const conv of otherUserConversations) {
-          // Check if this is a non-group conversation
-          const { data: conversationInfo } = await supabase
-            .from('conversations')
-            .select('is_group')
-            .eq('id', conv.conversation_id)
-            .single();
-
-          if (conversationInfo && !conversationInfo.is_group) {
-            // Check all participants of this conversation
-            const { data: participants } = await supabase
-              .from('conversation_participants')
-              .select('user_id')
-              .eq('conversation_id', conv.conversation_id);
-
-            const participantIds = participants?.map(p => p.user_id) || [];
-            
-            // If it's just the other user (current user left), or includes both users
-            if (participantIds.includes(userId) && participantIds.length <= 2) {
-              sharedConversationId = conv.conversation_id;
-              break;
-            }
-          }
-        }
-      }
-
-      if (sharedConversationId) {
-        // Conversation exists - check if current user is a participant
-        const { data: currentUserParticipation } = await supabase
-          .from('conversation_participants')
-          .select('id, visible_from_message_id')
-          .eq('conversation_id', sharedConversationId)
-          .eq('user_id', currentUser.id)
-          .maybeSingle();
-
-        if (!currentUserParticipation) {
-          // Re-add current user to the conversation (WhatsApp-like behavior)
-          const { error: addError } = await supabase
-            .from('conversation_participants')
-            .insert({
-              conversation_id: sharedConversationId,
-              user_id: currentUser.id,
-              visible_from_message_id: null,
-            });
-
-          if (addError) throw addError;
-        } else if (currentUserParticipation.visible_from_message_id) {
-          // User deleted the conversation before - reset visibility
-          const { error: resetError } = await supabase
-            .from('conversation_participants')
-            .update({ visible_from_message_id: null })
-            .eq('conversation_id', sharedConversationId)
-            .eq('user_id', currentUser.id);
-
-          if (resetError) throw resetError;
-        }
-
-        // Navigate to the conversation
-        navigate(`/community?conversation=${sharedConversationId}`);
-        return;
-      }
-
-      // No existing conversation - create a new one
-      const { data: conversationData, error: conversationError } = await supabase
-        .rpc('create_conversation');
-
-      if (conversationError) throw conversationError;
-
-      const conversationId = conversationData;
-
-      // Add both users as participants
-      const { error: participantsError } = await supabase
-        .from('conversation_participants')
-        .insert([
-          { conversation_id: conversationId, user_id: currentUser.id },
-          { conversation_id: conversationId, user_id: userId }
-        ]);
-
-      if (participantsError) throw participantsError;
+      if (error) throw error;
 
       toast.success('Conversation démarrée!');
       navigate(`/community?conversation=${conversationId}`);
