@@ -305,9 +305,94 @@ const Community = () => {
     };
   }, [conversations.map(c => c.id).join(','), user?.id]);
 
+  // Fetch single conversation data when navigating via URL (for new/empty conversations)
+  const fetchSingleConversation = async (convId: string): Promise<Conversation | null> => {
+    if (!user) return null;
+    
+    // Fetch conversation details
+    const { data: convData, error: convError } = await supabase
+      .from("conversations")
+      .select("id, created_at, is_group, group_id")
+      .eq("id", convId)
+      .single();
+    
+    if (convError || !convData) {
+      logger.error('Error fetching single conversation:', convError);
+      return null;
+    }
+    
+    // Fetch all participants
+    const { data: participants } = await supabase
+      .from("conversation_participants")
+      .select("user_id")
+      .eq("conversation_id", convId);
+    
+    // Find the other user
+    const otherUserId = participants?.find(p => p.user_id !== user.id)?.user_id;
+    
+    if (!otherUserId && !convData.is_group) return null;
+    
+    // Fetch the other user's profile
+    let otherUserProfile = null;
+    if (otherUserId) {
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("*")
+        .eq("user_id", otherUserId)
+        .single();
+      otherUserProfile = profile as Profile | null;
+    }
+    
+    // Fetch group details if group conversation
+    let groupData = null;
+    if (convData.is_group && convData.group_id) {
+      const { data: group } = await supabase
+        .from("group_chats")
+        .select("*")
+        .eq("id", convData.group_id)
+        .single();
+      
+      if (group) {
+        // Get member count
+        const { data: members } = await supabase
+          .from("group_members")
+          .select("id")
+          .eq("group_id", convData.group_id);
+        
+        groupData = {
+          ...group,
+          member_count: members?.length || 0
+        };
+      }
+    }
+    
+    return {
+      id: convId,
+      created_at: convData.created_at,
+      is_group: convData.is_group,
+      otherUser: otherUserProfile || undefined,
+      group: groupData || undefined,
+      lastMessage: undefined,
+      lastMessageTime: undefined,
+      unreadCount: 0,
+    };
+  };
+
   useEffect(() => {
     if (selectedConversation && user) {
       const loadConversation = async () => {
+        // Check if conversation exists in list
+        const existingConv = conversations.find(c => c.id === selectedConversation);
+        
+        if (!existingConv) {
+          // Fetch single conversation data (for new/empty conversations from profile "Envoyer un message")
+          const newConv = await fetchSingleConversation(selectedConversation);
+          if (newConv) {
+            // Add to conversations list
+            setConversations(prev => [newConv, ...prev.filter(c => c.id !== newConv.id)]);
+          }
+        }
+        
         await fetchMessages(selectedConversation);
         await markMessagesAsRead(selectedConversation);
         await fetchReactions(selectedConversation);
