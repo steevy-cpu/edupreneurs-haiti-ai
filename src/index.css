@@ -6,6 +6,37 @@
 All colors MUST be HSL.
 */
 
+/* Mobile Touch Optimizations */
+@layer utilities {
+  /* Faster tap feedback - prevents blue flash on Android */
+  .tap-highlight-none {
+    -webkit-tap-highlight-color: transparent;
+  }
+  
+  /* Prevent pull-to-refresh on certain elements */
+  .overscroll-none {
+    overscroll-behavior: none;
+  }
+  
+  /* Momentum scrolling for iOS */
+  .scroll-smooth-touch {
+    -webkit-overflow-scrolling: touch;
+    scroll-behavior: smooth;
+  }
+  
+  /* Touch-friendly tap targets (min 44px as per Apple/Google guidelines) */
+  .touch-target {
+    min-height: 44px;
+    min-width: 44px;
+  }
+  
+  /* Active state for touch feedback */
+  .touch-active:active {
+    transform: scale(0.97);
+    opacity: 0.9;
+  }
+}
+
 @layer base {
   :root {
     --background: 0 0% 98%;
