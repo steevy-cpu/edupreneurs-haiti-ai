@@ -45,6 +45,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { useVisitor } from "@/contexts/VisitorContext";
 import { JudeWelcomePopup } from "@/components/visitor";
+import { GlobalSearch, QuickMessageFAB } from "@/components/shared";
 
 interface LayoutProps {
   children: ReactNode;
@@ -473,6 +474,13 @@ export const Layout = ({ children }: LayoutProps) => {
           )}
         </div>
 
+        {/* Global Search - Desktop only when not collapsed */}
+        {!sidebarCollapsed && (
+          <div className="hidden lg:block px-3 py-2 border-b border-border">
+            <GlobalSearch />
+          </div>
+        )}
+
         {/* Navigation */}
         <nav className={`${sidebarCollapsed ? 'py-2 lg:py-3' : 'py-3 sm:py-4 lg:py-5'}`} data-tour="nav-section">
           <Link 
@@ -708,6 +716,9 @@ export const Layout = ({ children }: LayoutProps) => {
 
       {/* Mobile Bottom Navigation */}
       <MobileBottomNav />
+
+      {/* Quick Message FAB */}
+      {!hideLayoutNav && <QuickMessageFAB isVisitor={isVisitor} />}
 
       {/* Jude Welcome Popup for Visitors */}
       <JudeWelcomePopup 
