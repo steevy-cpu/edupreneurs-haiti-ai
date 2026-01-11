@@ -8,7 +8,8 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { toast } from 'sonner';
 import { User, UserPlus, UserCheck, Clock, ArrowLeft, BadgeCheck, MessageCircle, Flame, Trophy } from 'lucide-react';
 import { getAvatarUrl } from '@/lib/avatarMap';
-import { ThemeToggle } from '@/components/ThemeToggle';
+import { PageHeader } from '@/components/shared/PageHeader';
+import { ProfileStatsSkeleton } from '@/components/shared/SkeletonLoaders';
 import { useProfileAnalytics } from '@/hooks/useProfileAnalytics';
 import { useVisitor } from '@/contexts/VisitorContext';
 import { isFounder } from '@/lib/founderConstants';
@@ -278,11 +279,7 @@ export default function Profile() {
               <Skeleton className="h-24 w-24 sm:h-32 sm:w-32 rounded-full" />
               <Skeleton className="h-8 w-40" />
               <Skeleton className="h-4 w-32" />
-              <div className="flex gap-8 py-4">
-                <Skeleton className="h-12 w-16" />
-                <Skeleton className="h-12 w-16" />
-                <Skeleton className="h-12 w-16" />
-              </div>
+              <ProfileStatsSkeleton />
               <Skeleton className="h-10 w-full max-w-xs" />
               <Skeleton className="h-10 w-full max-w-xs" />
             </div>
@@ -309,19 +306,15 @@ export default function Profile() {
 
   return (
     <div className="min-h-screen bg-background pb-24">
-      <div className="fixed top-4 right-4 z-50">
-        <ThemeToggle />
-      </div>
       <div className="max-w-2xl mx-auto p-3 sm:p-4 space-y-4 sm:space-y-6">
-        <Button
-          variant="ghost"
-          onClick={() => navigate(-1)}
-          className="mb-2 sm:mb-4"
-          size="sm"
-        >
-          <ArrowLeft className="w-4 h-4 mr-2" />
-          Retour
-        </Button>
+        <PageHeader
+          title={profile.nickname}
+          subtitle={profile.full_name}
+          variant="simple"
+          backPath="/dashboard"
+          backLabel="Retour"
+          showThemeToggle={true}
+        />
 
         <Card className="p-4 sm:p-8">
           <div className="flex flex-col items-center space-y-3 sm:space-y-4">

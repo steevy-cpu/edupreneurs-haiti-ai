@@ -37,6 +37,7 @@ import {
   SystemMessage,
   VisitorCommunityOverlay
 } from "@/components/community";
+import { EmptyState } from "@/components/shared/EmptyState";
 import { 
   Profile, 
   GroupChat, 
@@ -2114,21 +2115,14 @@ const Community = () => {
               ))}
             </div>
           ) : conversations.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-16 px-6 text-center">
-              <div className="h-20 w-20 rounded-full bg-muted/50 flex items-center justify-center mb-4">
-                <Users className="h-10 w-10 text-muted-foreground/50" />
-              </div>
-              <h3 className="text-lg font-medium mb-2">Aucune conversation</h3>
-              <p className="text-sm text-muted-foreground mb-4 max-w-[200px]">
-                Commencez à discuter avec d'autres utilisateurs
-              </p>
-              <Button
-                onClick={() => navigate("/user-search")}
-                className="gap-2"
-              >
-                <Search className="h-4 w-4" />
-                Rechercher des utilisateurs
-              </Button>
+            <div className="py-8 px-4">
+              <EmptyState
+                illustration="no-messages"
+                title="Aucune conversation"
+                description="Commencez à discuter avec d'autres utilisateurs ou créez un groupe!"
+                ctaLabel="Rechercher des utilisateurs"
+                ctaAction={() => navigate("/user-search")}
+              />
             </div>
           ) : (
             <div className="divide-y divide-border/30">

@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Heart, MessageCircle, Share2, UserPlus, Check, X, FileText, MoreVertical, Trash2, Settings, AtSign } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { getAvatarUrl } from "@/lib/avatarMap";
-import { ThemeToggle } from "@/components/ThemeToggle";
+import { PageHeader } from "@/components/shared/PageHeader";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { NotificationPermissionBanner } from "@/components/NotificationPermissionBanner";
@@ -500,18 +500,13 @@ export default function Notifications() {
       {currentUserId && <NotificationPermissionBanner userId={currentUserId} />}
       
       <div className="max-w-2xl mx-auto">
-        {/* Header with title and actions */}
-        <div className="flex items-center justify-between gap-2 mb-4 sm:mb-6">
-          <div className="flex items-center gap-2">
-            <h1 className="text-xl sm:text-2xl md:text-3xl font-bold">Notifications</h1>
-            {unreadCount > 0 && (
-              <span className="bg-primary text-primary-foreground text-[10px] sm:text-xs font-medium px-1.5 sm:px-2 py-0.5 rounded-full">
-                {unreadCount}
-              </span>
-            )}
-          </div>
-          <div className="flex items-center gap-1 sm:gap-2">
-            <ThemeToggle />
+        {/* Header using PageHeader component */}
+        <PageHeader
+          title="Notifications"
+          subtitle={unreadCount > 0 ? `${unreadCount} non lue${unreadCount > 1 ? 's' : ''}` : undefined}
+          variant="simple"
+          showThemeToggle={true}
+          actions={
             <Button
               variant="ghost"
               size="icon"
@@ -521,8 +516,8 @@ export default function Notifications() {
             >
               <Settings className="h-4 w-4 sm:h-5 sm:w-5" />
             </Button>
-          </div>
-        </div>
+          }
+        />
 
         {/* Action buttons row */}
         {(unreadCount > 0 || notifications.length > 0) && (
