@@ -421,6 +421,23 @@ const Community = () => {
     };
   }, [selectedConversation, user]);
 
+  // Keep selectedConversationDetails in sync with conversations list updates
+  // This ensures lastMessage, unreadCount, etc. stay current without losing otherUser data
+  useEffect(() => {
+    if (selectedConversation && selectedConversationDetails) {
+      const updatedConv = conversations.find(c => c.id === selectedConversation);
+      if (updatedConv) {
+        // Merge: keep otherUser from details (in case list temporarily loses it), but update other fields
+        setSelectedConversationDetails(prev => ({
+          ...prev!,
+          ...updatedConv,
+          // Preserve otherUser if the updated conv doesn't have it (race condition protection)
+          otherUser: updatedConv.otherUser || prev?.otherUser,
+          group: updatedConv.group || prev?.group,
+        }));
+      }
+    }
+  }, [conversations, selectedConversation]);
 
   const markMessagesAsRead = async (conversationId: string) => {
     if (!user) return;
@@ -883,7 +900,6 @@ const Community = () => {
     // Handle empty conversations (new chats with no messages yet)
     if (!messagesData || messagesData.length === 0) {
       setMessages([]);
-      setIsLoadingMessages(false);
       return;
     }
 
