@@ -307,14 +307,14 @@ const Index = () => {
             </div>
 
             <div className="flex flex-col sm:flex-row flex-wrap gap-1.5 xs:gap-2 sm:gap-3 lg:gap-4">
-              <Link to="/auth" className="w-full sm:w-auto group">
+              <Link to="/auth?tab=signup" className="w-full sm:w-auto group">
                 <Button size="lg" className="w-full sm:w-auto bg-gradient-to-r from-primary via-primary to-accent hover:from-primary/90 hover:to-accent/90 shadow-lg hover:shadow-2xl text-[11px] xs:text-xs sm:text-sm lg:text-base py-2 xs:py-2.5 font-bold transition-all duration-300 hover:scale-105">
-                  🚀 Commencer Maintenant
+                  ✨ Créer un compte
                 </Button>
               </Link>
-              <Link to="/auth" className="w-full sm:w-auto group">
+              <Link to="/auth?tab=login" className="w-full sm:w-auto group">
                 <Button size="lg" variant="outline" className="w-full sm:w-auto border-2 border-primary text-primary hover:bg-primary hover:text-primary-foreground text-[11px] xs:text-xs sm:text-sm lg:text-base py-2 xs:py-2.5 font-bold shadow-md hover:shadow-xl transition-all duration-300 hover:scale-105">
-                  📱 Essai Gratuit 7 Jours
+                  🔐 Se connecter
                 </Button>
               </Link>
             </div>
