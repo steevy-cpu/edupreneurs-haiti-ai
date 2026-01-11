@@ -840,7 +840,7 @@ export default function Auth() {
         <div className="auth-container flex flex-col items-center gap-8 w-full max-w-[1000px]">
           <div className="auth-grid grid md:grid-cols-[1fr_1.2fr] gap-6 md:gap-8 w-full">
             {/* Encouraging Text Panel */}
-            <aside className="auth-panel auth-info flex flex-col items-center justify-center text-center p-6 md:p-8 gap-4 md:gap-5">
+            <aside className="auth-panel auth-info flex flex-col items-center justify-center text-center p-6 md:p-8 gap-4 md:gap-5 order-2 md:order-1">
               {/* Eric Image - smaller, integrated */}
               <img 
                 src={authImage} 
@@ -886,7 +886,7 @@ export default function Auth() {
             </aside>
 
             {/* Auth Card */}
-            <section className="auth-panel auth-card bg-card border border-border rounded-2xl shadow-lg overflow-hidden">
+            <section className="auth-panel auth-card bg-card border border-border rounded-2xl shadow-lg overflow-hidden order-1 md:order-2">
               {/* Visitor Mode Button - Prominent Position */}
               {(activeTab === "login" || activeTab === "signup") && (
                 <div className="px-5 pt-5 pb-2">
