@@ -7,6 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useFirstTimeUser } from "@/contexts/FirstTimeUserContext";
+import { useNetworkAwareAnimations } from "@/hooks/useNetworkAwareAnimations";
 import {
   Award,
   BookOpen,
@@ -79,6 +80,7 @@ const Dashboard = () => {
   const { restartTour } = useFirstTimeUser();
   const navigate = useNavigate();
   const { isVisitor } = useVisitor();
+  const { shouldAnimate, animationLevel } = useNetworkAwareAnimations();
   const [userData, setUserData] = useState({
     name: isVisitor ? "Visiteur" : "Utilisateur",
   });
@@ -322,26 +324,30 @@ const Dashboard = () => {
           {/* Continue Learning Section - Shows recent subjects with progress */}
           {recentSubjects.length > 0 && (
             <Card className="border-none rounded-[20px] shadow-md bg-gradient-to-br from-primary/5 to-success/5">
-              <CardHeader className="pb-3">
-                <CardTitle className="font-semibold tracking-tight text-xl flex items-center gap-2">
+              <CardHeader className="pb-3 px-4 sm:px-6">
+                <CardTitle className="font-semibold tracking-tight text-lg sm:text-xl flex items-center gap-2">
                   <Play className="w-5 h-5 text-primary" />
                   Continuer l'apprentissage
                 </CardTitle>
-                <p className="text-muted-foreground text-sm">
+                <p className="text-muted-foreground text-xs sm:text-sm">
                   Reprends là où tu t'es arrêté
                 </p>
               </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <CardContent className="px-4 sm:px-6">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
                   {recentSubjects.map((subject, index) => (
                     <div
                       key={subject.subjectSlug}
                       onClick={() => navigate(`/matieres/${subject.subjectSlug}`)}
-                      className="group p-4 bg-background rounded-xl border border-border hover:border-primary/50 hover:shadow-lg hover:-translate-y-1 transition-all cursor-pointer"
+                      className={`group p-4 bg-background rounded-xl border border-border cursor-pointer tap-highlight-none touch-target active:scale-[0.98] ${
+                        shouldAnimate 
+                          ? 'hover:border-primary/50 hover:shadow-lg hover:-translate-y-1 transition-all duration-300' 
+                          : 'transition-colors duration-150'
+                      }`}
                     >
                       <div className="flex items-center justify-between mb-3">
-                        <h4 className="font-semibold text-foreground">{subject.subject}</h4>
-                        <ArrowRight className="w-4 h-4 text-muted-foreground group-hover:text-primary transition-colors" />
+                        <h4 className="font-semibold text-foreground text-sm sm:text-base">{subject.subject}</h4>
+                        <ArrowRight className={`w-4 h-4 text-muted-foreground ${shouldAnimate ? 'group-hover:text-primary transition-colors' : ''}`} />
                       </div>
                       <div className="mb-2">
                         <Progress value={subject.progress} className="h-2" />
@@ -354,7 +360,7 @@ const Dashboard = () => {
                 </div>
                 <Button
                   variant="ghost"
-                  className="w-full mt-4 text-primary hover:text-primary/80"
+                  className="w-full mt-4 text-primary hover:text-primary/80 touch-target"
                   onClick={() => navigate("/matieres")}
                 >
                   Voir toutes les matières →
@@ -460,56 +466,56 @@ const Dashboard = () => {
 
           {/* KPI Cards - Collapsible */}
           <CollapsibleSection title="Statistiques" icon={<TrendingUp className="w-5 h-5" />} storageKey="kpi-cards">
-          <div data-tour="kpi-cards" className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-            <Card className="border-none rounded-xl shadow-md hover:shadow-lg hover:-translate-y-1 transition-all duration-300">
-              <CardContent className="p-4 sm:p-6 text-center">
-                <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-yellow-400 to-orange-500 flex items-center justify-center text-white mx-auto mb-3">
-                  <Trophy className="w-6 h-6" />
+          <div data-tour="kpi-cards" className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+            <Card className={`border-none rounded-xl shadow-md tap-highlight-none ${shouldAnimate ? 'hover:shadow-lg hover:-translate-y-1 transition-all duration-300' : ''}`}>
+              <CardContent className="p-3 sm:p-4 md:p-6 text-center">
+                <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-gradient-to-br from-yellow-400 to-orange-500 flex items-center justify-center text-white mx-auto mb-2 sm:mb-3">
+                  <Trophy className="w-5 h-5 sm:w-6 sm:h-6" />
                 </div>
-                <div className="text-2xl sm:text-3xl font-extrabold bg-gradient-to-br from-yellow-500 to-orange-600 bg-clip-text text-transparent mb-1">
-                  {isUserDataLoading ? <Skeleton className="h-8 w-12 mx-auto" /> : goldEarned}
+                <div className="text-xl sm:text-2xl md:text-3xl font-extrabold bg-gradient-to-br from-yellow-500 to-orange-600 bg-clip-text text-transparent mb-1">
+                  {isUserDataLoading ? <Skeleton className="h-6 sm:h-8 w-10 sm:w-12 mx-auto" /> : goldEarned}
                 </div>
-                <div className="text-xs font-semibold text-muted-foreground mb-1">Golds gagnés</div>
-                <p className="text-xs text-muted-foreground">Total cumulé</p>
+                <div className="text-[10px] sm:text-xs font-semibold text-muted-foreground mb-0.5 sm:mb-1">Golds gagnés</div>
+                <p className="text-[10px] sm:text-xs text-muted-foreground hidden sm:block">Total cumulé</p>
               </CardContent>
             </Card>
 
-            <Card className="border-none rounded-xl shadow-md hover:shadow-lg hover:-translate-y-1 transition-all duration-300">
-              <CardContent className="p-4 sm:p-6 text-center">
-                <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center text-white mx-auto mb-3">
-                  <BookOpen className="w-6 h-6" />
+            <Card className={`border-none rounded-xl shadow-md tap-highlight-none ${shouldAnimate ? 'hover:shadow-lg hover:-translate-y-1 transition-all duration-300' : ''}`}>
+              <CardContent className="p-3 sm:p-4 md:p-6 text-center">
+                <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center text-white mx-auto mb-2 sm:mb-3">
+                  <BookOpen className="w-5 h-5 sm:w-6 sm:h-6" />
                 </div>
-                <div className="text-2xl sm:text-3xl font-extrabold bg-gradient-to-br from-blue-500 to-blue-700 bg-clip-text text-transparent mb-1">
+                <div className="text-xl sm:text-2xl md:text-3xl font-extrabold bg-gradient-to-br from-blue-500 to-blue-700 bg-clip-text text-transparent mb-1">
                   {analytics.totalLessonsCompleted}
                 </div>
-                <div className="text-xs font-semibold text-muted-foreground mb-1">Leçons complétées</div>
-                <p className="text-xs text-muted-foreground">+{analytics.weeklyLessons} cette semaine</p>
+                <div className="text-[10px] sm:text-xs font-semibold text-muted-foreground mb-0.5 sm:mb-1">Leçons</div>
+                <p className="text-[10px] sm:text-xs text-muted-foreground hidden sm:block">+{analytics.weeklyLessons} cette semaine</p>
               </CardContent>
             </Card>
 
-            <Card className="border-none rounded-xl shadow-md hover:shadow-lg hover:-translate-y-1 transition-all duration-300">
-              <CardContent className="p-4 sm:p-6 text-center">
-                <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-green-400 to-green-600 flex items-center justify-center text-white mx-auto mb-3">
-                  <Award className="w-6 h-6" />
+            <Card className={`border-none rounded-xl shadow-md tap-highlight-none ${shouldAnimate ? 'hover:shadow-lg hover:-translate-y-1 transition-all duration-300' : ''}`}>
+              <CardContent className="p-3 sm:p-4 md:p-6 text-center">
+                <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-gradient-to-br from-green-400 to-green-600 flex items-center justify-center text-white mx-auto mb-2 sm:mb-3">
+                  <Award className="w-5 h-5 sm:w-6 sm:h-6" />
                 </div>
-                <div className="text-2xl sm:text-3xl font-extrabold bg-gradient-to-br from-green-500 to-green-700 bg-clip-text text-transparent mb-1">
+                <div className="text-xl sm:text-2xl md:text-3xl font-extrabold bg-gradient-to-br from-green-500 to-green-700 bg-clip-text text-transparent mb-1">
                   {analytics.averageScore}%
                 </div>
-                <div className="text-xs font-semibold text-muted-foreground mb-1">Score moyen</div>
-                <p className="text-xs text-muted-foreground">Continue! 💪</p>
+                <div className="text-[10px] sm:text-xs font-semibold text-muted-foreground mb-0.5 sm:mb-1">Score moyen</div>
+                <p className="text-[10px] sm:text-xs text-muted-foreground hidden sm:block">Continue! 💪</p>
               </CardContent>
             </Card>
 
-            <Card className="border-none rounded-xl shadow-md hover:shadow-lg hover:-translate-y-1 transition-all duration-300">
-              <CardContent className="p-4 sm:p-6 text-center">
-                <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-purple-400 to-purple-600 flex items-center justify-center text-white mx-auto mb-3">
-                  <Target className="w-6 h-6" />
+            <Card className={`border-none rounded-xl shadow-md tap-highlight-none ${shouldAnimate ? 'hover:shadow-lg hover:-translate-y-1 transition-all duration-300' : ''}`}>
+              <CardContent className="p-3 sm:p-4 md:p-6 text-center">
+                <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-gradient-to-br from-purple-400 to-purple-600 flex items-center justify-center text-white mx-auto mb-2 sm:mb-3">
+                  <Target className="w-5 h-5 sm:w-6 sm:h-6" />
                 </div>
-                <div className="text-2xl sm:text-3xl font-extrabold bg-gradient-to-br from-purple-500 to-purple-700 bg-clip-text text-transparent mb-1">
+                <div className="text-xl sm:text-2xl md:text-3xl font-extrabold bg-gradient-to-br from-purple-500 to-purple-700 bg-clip-text text-transparent mb-1">
                   {Math.round(analytics.studyTimeThisWeek / 60)}h
                 </div>
-                <div className="text-xs font-semibold text-muted-foreground mb-1">Temps d'étude</div>
-                <p className="text-xs text-muted-foreground">Cette semaine</p>
+                <div className="text-[10px] sm:text-xs font-semibold text-muted-foreground mb-0.5 sm:mb-1">Temps d'étude</div>
+                <p className="text-[10px] sm:text-xs text-muted-foreground hidden sm:block">Cette semaine</p>
               </CardContent>
             </Card>
           </div>
@@ -590,22 +596,28 @@ const Dashboard = () => {
                   {leaderboard.map((user) => (
                     <div
                       key={user.id}
-                      className={`flex items-center gap-4 p-4 rounded-lg bg-gradient-to-br ${getRankBgColor(user.rank)} border transition-all hover:scale-[1.02]`}
+                      className={`flex items-center gap-3 sm:gap-4 p-3 sm:p-4 rounded-lg bg-gradient-to-br ${getRankBgColor(user.rank)} border tap-highlight-none ${
+                        shouldAnimate ? 'transition-all hover:scale-[1.02]' : ''
+                      }`}
                     >
-                      <div className="flex items-center justify-center w-10 h-10">
+                      <div className="flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10">
                         {getRankIcon(user.rank)}
                       </div>
-                      <Avatar className="w-12 h-12">
-                        <AvatarImage src={user.avatar_url ? getAvatarUrl(user.avatar_url) : undefined} />
+                      <Avatar className="w-10 h-10 sm:w-12 sm:h-12">
+                        <AvatarImage 
+                          src={user.avatar_url ? getAvatarUrl(user.avatar_url) : undefined}
+                          loading="lazy"
+                          decoding="async"
+                        />
                         <AvatarFallback>{user.nickname?.[0] || user.full_name?.[0]}</AvatarFallback>
                       </Avatar>
-                      <div className="flex-1">
-                        <p className="font-semibold text-foreground">{user.nickname || user.full_name}</p>
-                        <p className="text-sm text-muted-foreground">{user.academic_grade}</p>
+                      <div className="flex-1 min-w-0">
+                        <p className="font-semibold text-foreground text-sm sm:text-base truncate">{user.nickname || user.full_name}</p>
+                        <p className="text-xs sm:text-sm text-muted-foreground">{user.academic_grade}</p>
                       </div>
-                      <div className="text-right">
-                        <p className="font-bold text-lg text-yellow-600">{user.gold_earned}</p>
-                        <p className="text-xs text-muted-foreground">Gold</p>
+                      <div className="text-right flex-shrink-0">
+                        <p className="font-bold text-base sm:text-lg text-yellow-600">{user.gold_earned}</p>
+                        <p className="text-[10px] sm:text-xs text-muted-foreground">Gold</p>
                       </div>
                     </div>
                   ))}

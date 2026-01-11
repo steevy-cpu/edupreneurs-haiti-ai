@@ -155,7 +155,7 @@ export const MobileBottomNav = () => {
 
   return (
     <nav
-      className="fixed bottom-0 inset-x-0 z-[1000] bg-card/95 backdrop-blur-lg border-t border-border lg:hidden"
+      className="fixed bottom-0 inset-x-0 z-[1000] bg-card/95 backdrop-blur-lg border-t border-border lg:hidden tap-highlight-none"
       style={{ 
         position: 'fixed',
         paddingBottom: 'env(safe-area-inset-bottom, 0px)'
@@ -172,17 +172,17 @@ export const MobileBottomNav = () => {
               onClick={() => navigate(item.path)}
               onTouchStart={() => handlePrefetch(item.prefetchKey)}
               onMouseEnter={() => handlePrefetch(item.prefetchKey)}
-              className={`relative flex items-center justify-center flex-1 h-full transition-all duration-200 ${
+              className={`relative flex items-center justify-center flex-1 h-full touch-target tap-highlight-none active:bg-muted/50 transition-colors duration-150 ${
                 active 
                   ? "text-primary" 
                   : "text-muted-foreground hover:text-foreground"
               }`}
             >
-              <div className="relative">
+              <div className={`relative transition-transform duration-150 ${active ? '' : 'active:scale-90'}`}>
                 <Icon 
                   size={24} 
                   strokeWidth={active ? 2.5 : 2}
-                  className={`transition-transform duration-200 ${active ? "scale-110" : ""}`}
+                  className={active ? "scale-110" : ""}
                 />
                 {item.badge && item.badge > 0 && (
                   <span className="absolute -top-1.5 -right-2 flex items-center justify-center min-w-[18px] h-[18px] px-1 rounded-full bg-destructive text-destructive-foreground text-[10px] font-bold">
