@@ -41,7 +41,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { AvatarSelector } from "@/components/AvatarSelector";
 import { getAvatarUrl } from "@/lib/avatarMap";
-import { ThemeToggle } from "@/components/ThemeToggle";
+import { PageHeader } from "@/components/shared";
 
 interface UserProfile {
   id: string;
@@ -363,34 +363,18 @@ const Settings = () => {
 
   return (
     <div className="pt-20 px-4 sm:px-6 lg:px-8 pb-24 max-w-7xl mx-auto">
-        <div className="fixed top-4 right-4 z-50">
-          <ThemeToggle />
-        </div>
-        {/* Header */}
-        <div className="bg-gradient-to-br from-[hsl(var(--primary))] to-[hsl(var(--success))] text-white p-6 sm:p-8 rounded-[20px] mb-6 sm:mb-8 relative overflow-hidden">
-          <div className="absolute top-0 right-0 w-1/2 h-full opacity-10">
-            <div className="w-full h-full bg-gradient-radial from-white/20 to-transparent animate-[float_20s_ease-in-out_infinite]" />
-          </div>
-          <div className="flex flex-col md:flex-row items-center gap-6">
-            <div className="flex-1 relative z-10">
-              <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold mb-2">Paramètres</h1>
-              <p className="text-sm sm:text-base opacity-90">
-                Gérez votre profil, votre compte et vos préférences
-              </p>
-            </div>
-            <div className="flex-shrink-0 relative z-10">
-              <img 
-                src={ericArmsCrossed} 
-                alt="Eric - Confident" 
-                className="w-24 h-24 sm:w-32 sm:h-32 object-contain animate-[float_4s_ease-in-out_infinite]"
-              />
-            </div>
-          </div>
-        </div>
+        {/* Header using PageHeader component */}
+        <PageHeader
+          title="Paramètres"
+          subtitle="Gérez votre profil, votre compte et vos préférences"
+          image={ericArmsCrossed}
+          backPath="/dashboard"
+          backLabel="Dashboard"
+        />
 
-        {/* Settings Tabs */}
+        {/* Settings Tabs - Simplified to 4 tabs */}
         <Tabs defaultValue="profile" className="space-y-4 sm:space-y-6">
-          <TabsList className="grid w-full grid-cols-5 gap-1 sm:gap-2 h-auto p-1">
+          <TabsList className="grid w-full grid-cols-4 gap-1 sm:gap-2 h-auto p-1">
             <TabsTrigger value="profile" className="flex flex-col sm:flex-row items-center gap-1 sm:gap-2 py-2 px-1 sm:px-3">
               <User size={16} className="shrink-0" />
               <span className="text-xs sm:text-sm">Profil</span>
@@ -403,11 +387,6 @@ const Settings = () => {
               <Bell size={16} className="shrink-0" />
               <span className="text-xs sm:text-sm hidden sm:inline">Notifications</span>
               <span className="text-xs sm:hidden">Notifs</span>
-            </TabsTrigger>
-            <TabsTrigger value="subscription" className="flex flex-col sm:flex-row items-center gap-1 sm:gap-2 py-2 px-1 sm:px-3">
-              <CreditCard size={16} className="shrink-0" />
-              <span className="text-xs sm:text-sm hidden sm:inline">Abonnement</span>
-              <span className="text-xs sm:hidden">Abon.</span>
             </TabsTrigger>
             <TabsTrigger value="preferences" className="flex flex-col sm:flex-row items-center gap-1 sm:gap-2 py-2 px-1 sm:px-3">
               <Globe size={16} className="shrink-0" />
@@ -784,8 +763,9 @@ const Settings = () => {
             </Card>
           </TabsContent>
 
-          {/* Subscription Tab */}
-          <TabsContent value="subscription" className="mt-4 sm:mt-6">
+          {/* Preferences Tab - Now includes Subscription */}
+          <TabsContent value="preferences" className="mt-4 sm:mt-6 space-y-6">
+            {/* Subscription Section */}
             <Card className="border-none rounded-[20px] shadow-md">
               <CardHeader className="p-4 sm:p-6">
                 <CardTitle className="flex items-center gap-2 text-lg sm:text-xl">
@@ -833,35 +813,10 @@ const Settings = () => {
                     Les abonnements premium arrivent bientôt!
                   </div>
                 </div>
-
-                <Separator />
-
-                <div className="space-y-4">
-                  <h4 className="font-semibold">Méthode de paiement</h4>
-                  <div className="flex items-center gap-4 p-4 border border-border rounded-lg bg-muted/50">
-                    <div className="flex-1">
-                      <p className="font-medium text-muted-foreground">Aucune méthode de paiement</p>
-                      <p className="text-sm text-muted-foreground">Ajoutez une méthode de paiement pour passer en Premium</p>
-                    </div>
-                  </div>
-                </div>
-
-                <Separator />
-
-                <div className="flex gap-3">
-                  <Button 
-                    className="flex-1 bg-gradient-to-br from-[hsl(var(--primary))] to-[hsl(var(--success))] hover:opacity-90"
-                    disabled
-                  >
-                    Passer en Premium (Bientôt)
-                  </Button>
-                </div>
               </CardContent>
             </Card>
-          </TabsContent>
 
-          {/* Preferences Tab */}
-          <TabsContent value="preferences" className="mt-4 sm:mt-6">
+            {/* App Preferences Section */}
             <Card className="border-none rounded-[20px] shadow-md">
               <CardHeader className="p-4 sm:p-6">
                 <CardTitle className="flex items-center gap-2 text-lg sm:text-xl">
