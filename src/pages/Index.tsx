@@ -221,9 +221,14 @@ const Index = () => {
 
           <div className="flex items-center gap-1 sm:gap-2 md:gap-3">
             <ThemeToggle />
-            <Link to="/auth" className="hidden sm:inline-block">
-              <Button size="sm" className="bg-gradient-to-r from-accent to-yellow-500 hover:from-accent/90 hover:to-yellow-400 text-xs sm:text-sm font-semibold shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105">
+            <Link to="/auth?tab=login" className="hidden sm:inline-block">
+              <Button size="sm" variant="outline" className="border-primary text-primary hover:bg-primary hover:text-primary-foreground text-xs sm:text-sm font-semibold transition-all duration-300 hover:scale-105">
                 Se connecter
+              </Button>
+            </Link>
+            <Link to="/auth?tab=signup" className="hidden sm:inline-block">
+              <Button size="sm" className="bg-gradient-to-r from-accent to-yellow-500 hover:from-accent/90 hover:to-yellow-400 text-xs sm:text-sm font-semibold shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105">
+                Créer un compte
               </Button>
             </Link>
             <button 
@@ -245,9 +250,14 @@ const Index = () => {
               <a href="#about" className="py-2 px-3 hover:bg-muted rounded-md transition-colors text-sm" onClick={() => setMobileMenuOpen(false)}>À propos</a>
               <a href="#faq" className="py-2 px-3 hover:bg-muted rounded-md transition-colors text-sm" onClick={() => setMobileMenuOpen(false)}>FAQ</a>
               <a href="#contact" className="py-2 px-3 hover:bg-muted rounded-md transition-colors text-sm" onClick={() => setMobileMenuOpen(false)}>Contact</a>
-              <Link to="/auth" className="sm:hidden">
-                <Button size="sm" className="w-full bg-gradient-to-r from-accent to-yellow-500 hover:opacity-90 text-sm">
+              <Link to="/auth?tab=login" className="sm:hidden">
+                <Button size="sm" variant="outline" className="w-full border-primary text-primary hover:bg-primary hover:text-primary-foreground text-sm">
                   Se connecter
+                </Button>
+              </Link>
+              <Link to="/auth?tab=signup" className="sm:hidden mt-2">
+                <Button size="sm" className="w-full bg-gradient-to-r from-accent to-yellow-500 hover:opacity-90 text-sm">
+                  Créer un compte
                 </Button>
               </Link>
             </nav>
@@ -316,6 +326,14 @@ const Index = () => {
                 <Button size="lg" variant="outline" className="w-full sm:w-auto border-2 border-primary text-primary hover:bg-primary hover:text-primary-foreground text-[11px] xs:text-xs sm:text-sm lg:text-base py-2 xs:py-2.5 font-bold shadow-md hover:shadow-xl transition-all duration-300 hover:scale-105">
                   🔐 Se connecter
                 </Button>
+              </Link>
+            </div>
+            
+            {/* Explorer sans inscription link */}
+            <div className="mt-2">
+              <Link to="/dashboard" className="inline-flex items-center gap-1.5 text-xs sm:text-sm text-muted-foreground hover:text-primary transition-colors">
+                <span>👀</span>
+                <span className="underline underline-offset-2">Explorer sans inscription</span>
               </Link>
             </div>
             <div className="flex flex-wrap justify-center gap-2 sm:gap-3 lg:gap-4 pt-3 sm:pt-4 lg:pt-6">
@@ -457,10 +475,10 @@ const Index = () => {
 
           {/* CTA */}
           <div className="text-center px-2">
-            <Link to="/auth">
+            <Link to="/auth?tab=signup">
               <Button size="lg" className="bg-gradient-to-r from-primary via-accent to-primary hover:from-primary/90 hover:to-primary/90 shadow-lg hover:shadow-2xl font-bold transition-all duration-300 hover:scale-105 text-xs sm:text-sm px-4 sm:px-6 md:px-8">
-                <span className="hidden sm:inline">🚀 Commencer maintenant - C'est gratuit !</span>
-                <span className="sm:hidden">🚀 Commencer</span>
+                <span className="hidden sm:inline">✨ Créer un compte - C'est gratuit !</span>
+                <span className="sm:hidden">✨ Créer un compte</span>
               </Button>
             </Link>
           </div>
@@ -798,10 +816,10 @@ const Index = () => {
           <p className="text-lg mb-8 opacity-90 max-w-2xl mx-auto font-medium leading-relaxed">
             Transformez votre façon d'apprendre avec la technologie. Apprentissage personnalisé, assistant IA, et récompenses réelles vous attendent.
           </p>
-          <Link to="/auth">
+          <Link to="/auth?tab=signup">
             <Button size="lg" className="bg-white text-primary hover:bg-white/90 shadow-2xl font-bold text-xs sm:text-sm md:text-base px-4 sm:px-6 md:px-8 py-4 sm:py-5 md:py-6 hover:scale-105 transition-all duration-300">
-              <span className="hidden sm:inline">Commencez votre essai gratuit ✨</span>
-              <span className="sm:hidden">Essai gratuit ✨</span>
+              <span className="hidden sm:inline">Créer un compte gratuitement ✨</span>
+              <span className="sm:hidden">Créer un compte ✨</span>
             </Button>
           </Link>
         </div>
