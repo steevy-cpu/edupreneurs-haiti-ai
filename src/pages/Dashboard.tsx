@@ -23,11 +23,15 @@ import {
   Crown,
   Star,
   Sparkles,
+  X,
 } from "lucide-react";
 import { usePWAInstall } from "@/hooks/usePWAInstall";
 import { useDashboardAnalytics } from "@/hooks/useDashboardAnalytics";
+import { useBannerPriority } from "@/hooks/useBannerPriority";
 import { WeeklyActivityChart } from "@/components/dashboard/WeeklyActivityChart";
 import { SubjectProgressChart } from "@/components/dashboard/SubjectProgressChart";
+import { QuickActionsCard } from "@/components/dashboard/QuickActionsCard";
+import { CollapsibleSection } from "@/components/dashboard/CollapsibleSection";
 import { Progress } from "@/components/ui/progress";
 import { NotificationPermissionBanner } from "@/components/NotificationPermissionBanner";
 import { PWAInstallPrompt } from "@/components/PWAInstallPrompt";
@@ -36,6 +40,7 @@ import { ThemeToggle } from "@/components/ThemeToggle";
 import { useVisitor } from "@/contexts/VisitorContext";
 import { LockedOverlay } from "@/components/visitor";
 import { visitorDashboardData } from "@/data/visitorDemoData";
+import { Button } from "@/components/ui/button";
 
 interface Note {
   id: string;
@@ -74,6 +79,7 @@ const Dashboard = () => {
   
   const { showPrompt, isIOS, installApp, dismissPrompt } = usePWAInstall();
   const { analytics, isLoading: analyticsLoading } = useDashboardAnalytics(isVisitor ? null : userId || null);
+  const { dismissBanner, isBannerDismissed, getActiveBanner } = useBannerPriority();
 
   // Badge definitions with thresholds
   const badges = useMemo(() => [
@@ -302,47 +308,77 @@ const Dashboard = () => {
             </div>
           </div>
 
-          {/* Notification & PWA Banners */}
-          {userId && <NotificationPermissionBanner userId={userId} />}
-          {showPrompt && (
-            <PWAInstallPrompt
-              isIOS={isIOS}
-              onInstall={installApp}
-              onDismiss={dismissPrompt}
-            />
-          )}
+          {/* Quick Actions Card */}
+          <QuickActionsCard />
 
-          {/* Passion Discovery Banner */}
-          <Link to="/passion-discovery">
-            <Card className="border-2 border-purple-500 bg-gradient-to-br from-purple-50/50 to-pink-50/50 dark:from-purple-950/20 dark:to-pink-950/20 rounded-xl mb-4 hover:border-purple-500/70 transition-all">
-              <CardContent className="p-4 flex items-center gap-4">
-                <div className="flex-shrink-0 text-4xl">🎨</div>
-                <div className="flex-1">
-                  <h3 className="font-bold text-lg mb-1">
-                    Découvre ta passion & Développement personnel
-                  </h3>
-                  <p className="text-sm text-muted-foreground mb-3">
-                    Explore la musique, les arts, les échecs, l'éducation civique et le développement personnel avec Jude en IA
-                  </p>
-                  <button className="px-4 py-2 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-md text-sm font-medium hover:opacity-90 transition-opacity">
-                    Découvrir mes passions →
-                  </button>
-                </div>
-              </CardContent>
-            </Card>
-          </Link>
+          {/* Notification & PWA Banners - Show one at a time based on priority */}
+          {(() => {
+            const activeBanner = getActiveBanner([
+              { id: 'pwa', priority: 1, show: showPrompt },
+              { id: 'notification', priority: 2, show: !!userId },
+              { id: 'passion', priority: 3, show: !isBannerDismissed('passion') },
+            ]);
+
+            return (
+              <>
+                {activeBanner === 'pwa' && (
+                  <PWAInstallPrompt
+                    isIOS={isIOS}
+                    onInstall={installApp}
+                    onDismiss={dismissPrompt}
+                  />
+                )}
+                {activeBanner === 'notification' && userId && (
+                  <NotificationPermissionBanner userId={userId} />
+                )}
+                {activeBanner === 'passion' && (
+                  <div className="relative">
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="absolute top-2 right-2 z-10 h-8 w-8 rounded-full bg-background/50 hover:bg-background/80"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        dismissBanner('passion', 7);
+                      }}
+                    >
+                      <X className="h-4 w-4" />
+                    </Button>
+                    <Link to="/passion-discovery">
+                      <Card className="border-2 border-purple-500 bg-gradient-to-br from-purple-50/50 to-pink-50/50 dark:from-purple-950/20 dark:to-pink-950/20 rounded-xl mb-4 hover:border-purple-500/70 transition-all">
+                        <CardContent className="p-4 flex items-center gap-4">
+                          <div className="flex-shrink-0 text-4xl">🎨</div>
+                          <div className="flex-1">
+                            <h3 className="font-bold text-lg mb-1">
+                              Découvre ta passion & Développement personnel
+                            </h3>
+                            <p className="text-sm text-muted-foreground mb-3">
+                              Explore la musique, les arts, les échecs, l'éducation civique et le développement personnel avec Jude en IA
+                            </p>
+                            <button className="px-4 py-2 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-md text-sm font-medium hover:opacity-90 transition-opacity">
+                              Découvrir mes passions →
+                            </button>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    </Link>
+                  </div>
+                )}
+              </>
+            );
+          })()}
 
           {isContentEditor && (
             <Link to="/content-editor">
-              <Card className="bg-gradient-to-br from-purple-500/10 to-pink-500/10 border-purple-500/20 hover:border-purple-500/40 transition-all cursor-pointer">
-                <CardContent className="p-6">
+              <Card className="bg-gradient-to-br from-purple-500/10 to-pink-500/10 border-purple-500/20 hover:border-purple-500/40 transition-all cursor-pointer mb-4">
+                <CardContent className="p-4 sm:p-6">
                   <div className="flex items-center gap-4">
                     <div className="p-3 bg-purple-500/20 rounded-full">
-                      <Edit3 className="w-8 h-8 text-purple-500" />
+                      <Edit3 className="w-6 h-6 sm:w-8 sm:h-8 text-purple-500" />
                     </div>
                     <div>
-                      <h3 className="text-lg font-semibold text-foreground">Éditeur de Contenu</h3>
-                      <p className="text-sm text-muted-foreground">Gérer et créer du contenu</p>
+                      <h3 className="text-base sm:text-lg font-semibold text-foreground">Éditeur de Contenu</h3>
+                      <p className="text-xs sm:text-sm text-muted-foreground">Gérer et créer du contenu</p>
                     </div>
                   </div>
                 </CardContent>
@@ -352,26 +388,27 @@ const Dashboard = () => {
 
           {/* Test Onboarding Button - Only for specific account */}
           {userId === "48d1e98c-a62c-4d46-ba89-b5bf3faa44be" && (
-            <Card className="bg-gradient-to-br from-blue-500/10 to-cyan-500/10 border-blue-500/20">
-              <CardContent className="p-6">
+            <Card className="bg-gradient-to-br from-blue-500/10 to-cyan-500/10 border-blue-500/20 mb-4">
+              <CardContent className="p-4 sm:p-6">
                 <button
                   onClick={restartTour}
                   className="w-full flex items-center gap-4 text-left hover:opacity-80 transition-opacity"
                 >
                   <div className="p-3 bg-blue-500/20 rounded-full">
-                    <Sparkles className="w-8 h-8 text-blue-500" />
+                    <Sparkles className="w-6 h-6 sm:w-8 sm:h-8 text-blue-500" />
                   </div>
                   <div>
-                    <h3 className="text-lg font-semibold text-foreground">🎓 Tester le guide</h3>
-                    <p className="text-sm text-muted-foreground">Relancer la visite guidée</p>
+                    <h3 className="text-base sm:text-lg font-semibold text-foreground">🎓 Tester le guide</h3>
+                    <p className="text-xs sm:text-sm text-muted-foreground">Relancer la visite guidée</p>
                   </div>
                 </button>
               </CardContent>
             </Card>
           )}
 
-          {/* KPI Cards */}
-          <div data-tour="kpi-cards" className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+          {/* KPI Cards - Collapsible */}
+          <CollapsibleSection title="Statistiques" icon={<TrendingUp className="w-5 h-5" />} storageKey="kpi-cards">
+          <div data-tour="kpi-cards" className="grid grid-cols-2 lg:grid-cols-4 gap-4">
             <Card className="border-none rounded-xl shadow-md hover:shadow-lg hover:-translate-y-1 transition-all duration-300">
               <CardContent className="p-4 sm:p-6 text-center">
                 <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-yellow-400 to-orange-500 flex items-center justify-center text-white mx-auto mb-3">
@@ -424,9 +461,11 @@ const Dashboard = () => {
               </CardContent>
             </Card>
           </div>
+          </CollapsibleSection>
 
-          {/* Analytics Widgets */}
-          <div data-tour="analytics-widgets" className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+          {/* Analytics Widgets - Collapsible */}
+          <CollapsibleSection title="Objectifs" icon={<Target className="w-5 h-5" />} storageKey="analytics-widgets">
+          <div data-tour="analytics-widgets" className="grid grid-cols-1 md:grid-cols-3 gap-4">
             {/* Learning Streak */}
             <Card className="bg-gradient-to-br from-orange-500/10 to-red-500/10 border-orange-500/20">
               <CardContent className="p-6">
@@ -483,15 +522,19 @@ const Dashboard = () => {
               </CardContent>
             </Card>
           </div>
+          </CollapsibleSection>
 
-          {/* Charts Section */}
-          <div data-tour="charts-section" className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+          {/* Charts Section - Collapsible */}
+          <CollapsibleSection title="Graphiques" icon={<TrendingUp className="w-5 h-5" />} storageKey="charts-section">
+          <div data-tour="charts-section" className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <WeeklyActivityChart data={analytics.weeklyActivity} />
             <SubjectProgressChart data={analytics.subjectProgress} />
           </div>
+          </CollapsibleSection>
 
-          {/* Insights and Achievements */}
-          <div className="space-y-6 mb-8">
+          {/* Insights and Achievements - Collapsible */}
+          <CollapsibleSection title="Réalisations" icon={<Award className="w-5 h-5" />} storageKey="achievements">
+          <div className="space-y-6">
             <Card>
               <CardHeader>
                 <CardTitle className="text-2xl font-semibold">Insights d'Apprentissage</CardTitle>
@@ -544,8 +587,10 @@ const Dashboard = () => {
               </CardContent>
             </Card>
           </div>
+          </CollapsibleSection>
 
-          {/* Leaderboard Section */}
+          {/* Leaderboard Section - Collapsible */}
+          <CollapsibleSection title="Classement" icon={<Trophy className="w-5 h-5" />} storageKey="leaderboard">
           <Card data-tour="leaderboard-section" className="border-none rounded-[20px] shadow-md">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="font-semibold tracking-tight text-xl flex items-center gap-2">
@@ -598,9 +643,10 @@ const Dashboard = () => {
               )}
             </CardContent>
           </Card>
+          </CollapsibleSection>
 
           {/* Choose Your Path Section */}
-          <Card data-tour="parcours-section" className="border-none rounded-[20px] shadow-md mb-8">
+          <Card data-tour="parcours-section" className="border-none rounded-[20px] shadow-md mb-6">
             <CardHeader>
               <CardTitle className="font-semibold tracking-tight text-xl">Choisissez votre parcours</CardTitle>
               <p className="text-muted-foreground text-sm mt-2">
