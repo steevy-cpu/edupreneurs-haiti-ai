@@ -36,7 +36,7 @@ import { Progress } from "@/components/ui/progress";
 import { NotificationPermissionBanner } from "@/components/NotificationPermissionBanner";
 import { PWAInstallPrompt } from "@/components/PWAInstallPrompt";
 import { getAvatarUrl } from "@/lib/avatarMap";
-import { ThemeToggle } from "@/components/ThemeToggle";
+import { PageHeader } from "@/components/shared/PageHeader";
 import { useVisitor } from "@/contexts/VisitorContext";
 import { LockedOverlay } from "@/components/visitor";
 import { visitorDashboardData } from "@/data/visitorDemoData";
@@ -289,29 +289,15 @@ const Dashboard = () => {
         <meta property="og:description" content="Suivez votre progression d'apprentissage avec Edupreneurs." />
       </Helmet>
       <div className="min-h-screen bg-background">
-        {/* Theme Toggle - Top Right */}
-        <div className="fixed top-4 right-4 z-50">
-          <ThemeToggle />
-        </div>
-        
         <div className="container mx-auto px-4 py-6 space-y-8 pb-24">
-          {/* Welcome Header */}
-          <div data-tour="welcome-header" className="bg-gradient-to-br from-[hsl(var(--primary))] to-[hsl(var(--success))] text-white p-3 xs:p-4 sm:p-6 lg:p-8 rounded-xl xs:rounded-2xl sm:rounded-[20px] mb-3 xs:mb-4 sm:mb-6 lg:mb-8 relative overflow-hidden">
-            <div className="absolute top-0 right-0 w-1/2 h-full opacity-10">
-              <div className="w-full h-full bg-gradient-radial from-white/20 to-transparent animate-[float_20s_ease-in-out_infinite]"></div>
-            </div>
-            <div className="relative z-10">
-              <h2 className="text-base xs:text-lg sm:text-xl lg:text-2xl xl:text-3xl font-bold mb-1 xs:mb-1.5 sm:mb-2">
-                Bienvenue, {isUserDataLoading ? (
-                  <Skeleton className="inline-block h-6 w-24 bg-white/20" />
-                ) : (
-                  <span className="break-words">{userData.name}</span>
-                )}!
-              </h2>
-              <p className="text-[11px] xs:text-xs sm:text-sm lg:text-base opacity-75 leading-relaxed">
-                Continuez votre apprentissage personnalisé avec Jude, votre assistant IA
-              </p>
-            </div>
+          {/* Welcome Header using PageHeader component */}
+          <div data-tour="welcome-header">
+            <PageHeader
+              title={isUserDataLoading ? "Bienvenue..." : `Bienvenue, ${userData.name}!`}
+              subtitle="Continuez votre apprentissage personnalisé avec Jude, votre assistant IA"
+              variant="gradient"
+              showThemeToggle={true}
+            />
           </div>
 
           {/* Quick Actions Card */}
