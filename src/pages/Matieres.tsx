@@ -125,16 +125,22 @@ export default function Matieres() {
   const currentGrade = gradeLevels.find(g => g.id === selectedGrade);
   const isNS3OrNS4 = selectedGrade === "NS3" || selectedGrade === "NS4";
 
-  // Auto-select user's grade on initial load
+  // Auto-select user's grade on initial load with toast notification
   useEffect(() => {
     if (userGrade && isAuthenticated) {
       // Only set if userGrade is a valid grade level
       if (VALID_GRADES.includes(userGrade as GradeLevel)) {
         setSelectedGrade(userGrade as GradeLevel);
+        // Show toast notification confirming auto-detection
+        const gradeLabel = gradeLevels.find(g => g.id === userGrade)?.fullName || userGrade;
+        toast.success(`Niveau détecté: ${gradeLabel}`, {
+          description: "Votre niveau a été automatiquement sélectionné",
+          duration: 3000,
+        });
       }
       // If invalid grade (like "Philo"), keep default "7AF"
     }
-  }, [userGrade, isAuthenticated]);
+  }, []); // Only run once on mount
 
   const filteredSubjects = dbSubjects.filter(s => {
     if (s.grade_level !== selectedGrade) return false;
