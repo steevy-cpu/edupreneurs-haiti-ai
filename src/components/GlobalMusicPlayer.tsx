@@ -228,7 +228,7 @@ export const GlobalMusicPlayer = () => {
       {/* Floating Music Player */}
       <div 
         ref={playerRef}
-        className="fixed z-[500]"
+        className="fixed z-50"
         style={{
           left: position.x !== 0 ? `${position.x}px` : 'auto',
           top: position.y !== 0 ? `${position.y}px` : 'auto',
@@ -237,7 +237,7 @@ export const GlobalMusicPlayer = () => {
             position.x === 0 && position.y === 0
               ? (location.pathname === "/community"
                   ? 'calc(160px + env(safe-area-inset-bottom, 0px))'
-                  : 'calc(80px + env(safe-area-inset-bottom, 0px))')
+                  : 'calc(148px + env(safe-area-inset-bottom, 0px))')
               : 'auto',
         }}
       >
