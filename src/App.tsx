@@ -17,13 +17,14 @@ import { LegacyRedirect } from "@/components/LegacyRedirect";
 import { JudeChatbot } from "@/components/JudeChatbot";
 import { supabase } from "@/integrations/supabase/client";
 import { clearAllPersistedCache } from "@/utils/queryPersistence";
-import { VisitorBanner, VisitorTour } from "@/components/visitor";
+import { VisitorBanner } from "@/components/visitor";
+const VisitorTour = lazy(() => import("@/components/visitor/VisitorTour").then(m => ({ default: m.VisitorTour })));
 import { VisitorMusicSync } from "@/components/visitor/VisitorMusicSync";
 import { FirstTimeUserWelcome, FirstTimeUserTour, AvatarGenerationStep } from "@/components/firsttime";
 
-// Eager load critical pages
-import Index from "./pages/Index";
-import Auth from "./pages/Auth";
+// Lazy load all pages for better 3G performance
+const Index = lazy(() => import("./pages/Index"));
+const Auth = lazy(() => import("./pages/Auth"));
 const Dashboard = lazy(() => import("./pages/Dashboard"));
 
 // Lazy load non-critical pages for better performance
@@ -138,7 +139,9 @@ const App = () => (
                 <GlobalMusicPlayer />
                 <VisitorMusicSync />
                 <VisitorBanner />
-                <VisitorTour />
+                <Suspense fallback={null}>
+                  <VisitorTour />
+                </Suspense>
                 <FirstTimeUserWelcome />
                 <AvatarGenerationStep />
                 <FirstTimeUserTour />

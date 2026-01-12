@@ -98,6 +98,38 @@ export const ChartSkeleton = ({ height = 200 }: { height?: number }) => (
   </Card>
 );
 
+// Hero Section Skeleton for Index page (LCP optimization)
+export const HeroSkeleton = () => (
+  <div className="container mx-auto grid md:grid-cols-2 gap-8 items-center py-8 px-4">
+    <div className="space-y-4">
+      <Skeleton className="h-6 w-48 rounded-full" />
+      <Skeleton className="h-12 w-full" />
+      <Skeleton className="h-12 w-3/4" />
+      <Skeleton className="h-4 w-full" />
+      <Skeleton className="h-4 w-2/3" />
+      <div className="flex gap-3 pt-4">
+        <Skeleton className="h-12 w-36 rounded-lg" />
+        <Skeleton className="h-12 w-36 rounded-lg" />
+      </div>
+    </div>
+    <Skeleton className="h-64 w-64 mx-auto rounded-full" />
+  </div>
+);
+
+// Auth Form Skeleton for Auth page (3G optimization)
+export const AuthFormSkeleton = () => (
+  <div className="w-full max-w-md mx-auto p-6 space-y-4">
+    <Skeleton className="h-12 w-12 mx-auto rounded-full" />
+    <Skeleton className="h-8 w-48 mx-auto" />
+    <Skeleton className="h-4 w-64 mx-auto" />
+    <div className="space-y-3 pt-4">
+      <Skeleton className="h-10 w-full rounded-lg" />
+      <Skeleton className="h-10 w-full rounded-lg" />
+      <Skeleton className="h-12 w-full rounded-lg" />
+    </div>
+  </div>
+);
+
 // Profile Stats Skeleton
 export const ProfileStatsSkeleton = () => (
   <div className="flex gap-6 justify-center">
@@ -276,6 +308,8 @@ export default {
   NotificationSkeleton,
   NotificationsListSkeleton,
   ChartSkeleton,
+  HeroSkeleton,
+  AuthFormSkeleton,
   ProfileStatsSkeleton,
   NoteCardSkeleton,
   NotesListSkeleton,
