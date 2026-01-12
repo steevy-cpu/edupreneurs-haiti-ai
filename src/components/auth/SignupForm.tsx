@@ -165,21 +165,22 @@ export default function SignupForm() {
         
         // Only sign out after email sent successfully
         await supabase.auth.signOut();
+        
+        // Only show success toast if email was actually sent
+        toast({
+          title: "Inscription réussie ! 🎉",
+          description: "Un code de vérification a été envoyé à votre email",
+        });
       } catch (emailError) {
         // Sign out anyway but provide clear recovery message
         await supabase.auth.signOut();
         toast({
-          title: "Problème d'envoi d'email",
-          description: "Votre compte est créé. Connectez-vous et nous renverrons le code de vérification.",
+          title: "Compte créé avec avertissement",
+          description: "Votre compte est créé mais l'email n'a pas pu être envoyé. Vous pouvez demander un renvoi du code.",
           variant: "destructive",
         });
         // Still proceed to verify tab so user can request resend
       }
-
-      toast({
-        title: "Inscription réussie ! 🎉",
-        description: "Un code de vérification a été envoyé à votre email",
-      });
 
       setPendingUserId(authData.user.id);
       setActiveTab("verify");
