@@ -151,8 +151,7 @@ export default function SignupForm() {
         }
       }
 
-      await supabase.auth.signOut();
-
+      // Send confirmation email BEFORE signing out
       try {
         await supabase.functions.invoke('send-confirmation-email', {
           body: {
@@ -163,13 +162,18 @@ export default function SignupForm() {
             confirmationCode: confirmationCode,
           }
         });
+        
+        // Only sign out after email sent successfully
+        await supabase.auth.signOut();
       } catch (emailError) {
+        // Sign out anyway but provide clear recovery message
+        await supabase.auth.signOut();
         toast({
-          title: "Erreur d'envoi",
-          description: "Impossible d'envoyer l'email de vérification",
+          title: "Problème d'envoi d'email",
+          description: "Votre compte est créé. Connectez-vous et nous renverrons le code de vérification.",
           variant: "destructive",
         });
-        return;
+        // Still proceed to verify tab so user can request resend
       }
 
       toast({
@@ -521,19 +525,47 @@ export default function SignupForm() {
             <Button 
               type="button" 
               className="flex-1"
+              disabled={checkingNickname}
               onClick={() => {
-                if (!signupData.nickname || !signupData.academicGrade || !signupData.gender || !signupData.school) {
-                  toast({ title: "Champs requis", description: "Veuillez remplir tous les champs obligatoires", variant: "destructive" });
+                if (!signupData.nickname || signupData.nickname.length < 3) {
+                  toast({ title: "Pseudo requis", description: "Le pseudo doit contenir au moins 3 caractères", variant: "destructive" });
+                  return;
+                }
+                if (!isValidNicknameFormat(signupData.nickname)) {
+                  toast({ title: "Format invalide", description: "Le pseudo ne peut contenir que des lettres, chiffres et underscores", variant: "destructive" });
                   return;
                 }
                 if (nicknameAvailable === false) {
-                  toast({ title: "Pseudo non disponible", description: "Veuillez choisir un autre pseudo", variant: "destructive" });
+                  toast({ title: "Pseudo non disponible", description: "Ce pseudo est déjà utilisé, veuillez en choisir un autre", variant: "destructive" });
+                  return;
+                }
+                if (nicknameAvailable === null && !checkingNickname) {
+                  toast({ title: "Vérification requise", description: "Veuillez attendre la vérification du pseudo", variant: "destructive" });
+                  return;
+                }
+                if (!signupData.academicGrade) {
+                  toast({ title: "Niveau requis", description: "Veuillez sélectionner votre niveau académique", variant: "destructive" });
+                  return;
+                }
+                if (!signupData.gender) {
+                  toast({ title: "Genre requis", description: "Veuillez sélectionner votre genre", variant: "destructive" });
+                  return;
+                }
+                if (!signupData.school || signupData.school.trim().length === 0) {
+                  toast({ title: "École requise", description: "Veuillez entrer le nom de votre école", variant: "destructive" });
                   return;
                 }
                 setSignupStep(3);
               }}
             >
-              Continuer →
+              {checkingNickname ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Vérification...
+                </>
+              ) : (
+                "Continuer →"
+              )}
             </Button>
           </div>
         </div>
