@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useMemo, useCallback } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { Helmet } from "react-helmet";
 import { Button } from "@/components/ui/button";
@@ -576,11 +576,30 @@ export default function Auth() {
   // Debounce timer refs
   const nicknameCheckTimer = useRef<NodeJS.Timeout>();
   const promoCodeCheckTimer = useRef<NodeJS.Timeout>();
+  
+  // OTP input refs for better focus management
+  const otpInputRefs = useRef<(HTMLInputElement | null)[]>([]);
 
   // Helper function to validate nickname format (letters, numbers, underscores only)
   const isValidNicknameFormat = (nickname: string): boolean => {
     return /^[a-zA-Z0-9_]*$/.test(nickname);
   };
+  
+  // Memoized password validation to prevent re-computation on every render
+  const passwordValidation = useMemo(() => ({
+    hasMinLength: signupData.password.length >= 6,
+    hasNumber: /[0-9]/.test(signupData.password),
+    hasUppercase: /[A-Z]/.test(signupData.password),
+    hasSpecial: /[!@#$%^&*(),.?":{}|<>]/.test(signupData.password),
+  }), [signupData.password]);
+  
+  // Smooth scroll to input on focus for mobile keyboards
+  const handleInputFocus = useCallback((e: React.FocusEvent<HTMLInputElement>) => {
+    // Delay slightly to let keyboard appear first
+    requestAnimationFrame(() => {
+      e.target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    });
+  }, []);
 
   const checkNicknameAvailability = async (nickname: string) => {
     // Clear previous timer
@@ -977,6 +996,12 @@ export default function Auth() {
                         placeholder="ex: nom@domaine.com"
                         value={loginData.email}
                         onChange={(e) => setLoginData({ ...loginData, email: e.target.value })}
+                        onFocus={handleInputFocus}
+                        autoComplete="email"
+                        autoCapitalize="none"
+                        spellCheck="false"
+                        enterKeyHint="next"
+                        inputMode="email"
                         className="auth-input"
                       />
                     </div>
@@ -992,6 +1017,10 @@ export default function Auth() {
                           placeholder="Votre mot de passe"
                           value={loginData.password}
                           onChange={(e) => setLoginData({ ...loginData, password: e.target.value })}
+                          onFocus={handleInputFocus}
+                          autoComplete="current-password"
+                          autoCapitalize="none"
+                          enterKeyHint="done"
                           className="auth-input pr-10"
                         />
                         <button
@@ -1050,6 +1079,12 @@ export default function Auth() {
                         placeholder="ex: nom@domaine.com"
                         value={forgotPasswordEmail}
                         onChange={(e) => setForgotPasswordEmail(e.target.value)}
+                        onFocus={handleInputFocus}
+                        autoComplete="email"
+                        autoCapitalize="none"
+                        spellCheck="false"
+                        enterKeyHint="done"
+                        inputMode="email"
                         className="auth-input"
                       />
                     </div>
@@ -1093,10 +1128,12 @@ export default function Auth() {
                         {[0, 1, 2, 3, 4, 5].map((index) => (
                           <input
                             key={index}
-                            id={`otp-${index}`}
+                            ref={(el) => { otpInputRefs.current[index] = el; }}
                             type="text"
                             inputMode="numeric"
+                            pattern="[0-9]*"
                             maxLength={1}
+                            autoComplete="one-time-code"
                             value={verificationCode[index] || ''}
                             onChange={(e) => {
                               const value = e.target.value.replace(/\D/g, '');
@@ -1105,16 +1142,20 @@ export default function Auth() {
                                 newCode[index] = value;
                                 const updatedCode = newCode.join('').slice(0, 6);
                                 setVerificationCode(updatedCode);
-                                // Auto-focus next input
+                                // Auto-focus next input using refs and requestAnimationFrame for smooth transition
                                 if (value && index < 5) {
-                                  document.getElementById(`otp-${index + 1}`)?.focus();
+                                  requestAnimationFrame(() => {
+                                    otpInputRefs.current[index + 1]?.focus();
+                                  });
                                 }
                               }
                             }}
                             onKeyDown={(e) => {
                               // Handle backspace to go to previous input
                               if (e.key === 'Backspace' && !verificationCode[index] && index > 0) {
-                                document.getElementById(`otp-${index - 1}`)?.focus();
+                                requestAnimationFrame(() => {
+                                  otpInputRefs.current[index - 1]?.focus();
+                                });
                               }
                             }}
                             onPaste={(e) => {
@@ -1123,9 +1164,11 @@ export default function Auth() {
                               setVerificationCode(pastedData);
                               // Focus last filled input or last input
                               const focusIndex = Math.min(pastedData.length, 5);
-                              document.getElementById(`otp-${focusIndex}`)?.focus();
+                              requestAnimationFrame(() => {
+                                otpInputRefs.current[focusIndex]?.focus();
+                              });
                             }}
-                            className="w-12 h-14 text-center text-2xl font-bold border border-input rounded-lg bg-muted/50 focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all"
+                            className="w-12 h-14 text-center text-2xl font-bold border border-input rounded-lg bg-muted/50 focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all auth-input"
                           />
                         ))}
                       </div>
@@ -1253,6 +1296,12 @@ export default function Auth() {
                             placeholder="ex: nom@domaine.com"
                             value={signupData.email}
                             onChange={(e) => setSignupData({ ...signupData, email: e.target.value })}
+                            onFocus={handleInputFocus}
+                            autoComplete="email"
+                            autoCapitalize="none"
+                            spellCheck="false"
+                            enterKeyHint="next"
+                            inputMode="email"
                             className="auth-input"
                           />
                         </div>
@@ -1268,6 +1317,12 @@ export default function Auth() {
                             placeholder="Confirmez votre email"
                             value={signupData.emailConfirm}
                             onChange={(e) => setSignupData({ ...signupData, emailConfirm: e.target.value })}
+                            onFocus={handleInputFocus}
+                            autoComplete="email"
+                            autoCapitalize="none"
+                            spellCheck="false"
+                            enterKeyHint="next"
+                            inputMode="email"
                             className="auth-input"
                           />
                           {signupData.email && signupData.emailConfirm && signupData.email !== signupData.emailConfirm && (
@@ -1288,6 +1343,10 @@ export default function Auth() {
                               placeholder="Créez un mot de passe sécurisé"
                               value={signupData.password}
                               onChange={(e) => setSignupData({ ...signupData, password: e.target.value })}
+                              onFocus={handleInputFocus}
+                              autoComplete="new-password"
+                              autoCapitalize="none"
+                              enterKeyHint="next"
                               className="auth-input pr-10"
                             />
                             <button
@@ -1299,17 +1358,17 @@ export default function Auth() {
                             </button>
                           </div>
                           <div className="space-y-1 text-xs mt-2">
-                            <p className={`flex items-center gap-1 ${signupData.password.length >= 6 ? 'text-success' : 'text-muted-foreground'}`}>
-                              {signupData.password.length >= 6 ? '✓' : '○'} Au moins 6 caractères
+                            <p className={`flex items-center gap-1 ${passwordValidation.hasMinLength ? 'text-success' : 'text-muted-foreground'}`}>
+                              {passwordValidation.hasMinLength ? '✓' : '○'} Au moins 6 caractères
                             </p>
-                            <p className={`flex items-center gap-1 ${/[0-9]/.test(signupData.password) ? 'text-success' : 'text-muted-foreground'}`}>
-                              {/[0-9]/.test(signupData.password) ? '✓' : '○'} Au moins un chiffre
+                            <p className={`flex items-center gap-1 ${passwordValidation.hasNumber ? 'text-success' : 'text-muted-foreground'}`}>
+                              {passwordValidation.hasNumber ? '✓' : '○'} Au moins un chiffre
                             </p>
-                            <p className={`flex items-center gap-1 ${/[A-Z]/.test(signupData.password) ? 'text-success' : 'text-muted-foreground'}`}>
-                              {/[A-Z]/.test(signupData.password) ? '✓' : '○'} Au moins une majuscule
+                            <p className={`flex items-center gap-1 ${passwordValidation.hasUppercase ? 'text-success' : 'text-muted-foreground'}`}>
+                              {passwordValidation.hasUppercase ? '✓' : '○'} Au moins une majuscule
                             </p>
-                            <p className={`flex items-center gap-1 ${/[!@#$%^&*(),.?":{}|<>]/.test(signupData.password) ? 'text-success' : 'text-muted-foreground'}`}>
-                              {/[!@#$%^&*(),.?":{}|<>]/.test(signupData.password) ? '✓' : '○'} Au moins un caractère spécial
+                            <p className={`flex items-center gap-1 ${passwordValidation.hasSpecial ? 'text-success' : 'text-muted-foreground'}`}>
+                              {passwordValidation.hasSpecial ? '✓' : '○'} Au moins un caractère spécial
                             </p>
                           </div>
                         </div>
@@ -1357,6 +1416,10 @@ export default function Auth() {
                               placeholder="Votre nom complet"
                               value={signupData.fullName}
                               onChange={(e) => setSignupData({ ...signupData, fullName: e.target.value })}
+                              onFocus={handleInputFocus}
+                              autoComplete="name"
+                              autoCapitalize="words"
+                              enterKeyHint="next"
                               className="auth-input"
                             />
                           </div>
@@ -1374,6 +1437,11 @@ export default function Auth() {
                                 setSignupData({ ...signupData, nickname: e.target.value });
                                 checkNicknameAvailability(e.target.value);
                               }}
+                              onFocus={handleInputFocus}
+                              autoComplete="username"
+                              autoCapitalize="none"
+                              spellCheck="false"
+                              enterKeyHint="next"
                               className="auth-input"
                             />
                             {signupData.nickname && !isValidNicknameFormat(signupData.nickname) && (
@@ -1445,6 +1513,10 @@ export default function Auth() {
                               placeholder="ex: +509 3x xx xx xx"
                               value={signupData.phoneNumber}
                               onChange={(e) => setSignupData({ ...signupData, phoneNumber: e.target.value })}
+                              onFocus={handleInputFocus}
+                              autoComplete="tel"
+                              inputMode="tel"
+                              enterKeyHint="next"
                               className="auth-input"
                             />
                           </div>
@@ -1459,6 +1531,10 @@ export default function Auth() {
                               placeholder="ex: Collège Sacré-coeur"
                               value={signupData.school}
                               onChange={(e) => setSignupData({ ...signupData, school: e.target.value })}
+                              onFocus={handleInputFocus}
+                              autoComplete="organization"
+                              autoCapitalize="words"
+                              enterKeyHint="next"
                               className="auth-input"
                             />
                           </div>
@@ -1537,6 +1613,10 @@ export default function Auth() {
                               setPromoCode(code);
                               debouncedValidatePromoCode(code);
                             }}
+                            onFocus={handleInputFocus}
+                            autoCapitalize="characters"
+                            spellCheck="false"
+                            enterKeyHint="done"
                             className="auth-input"
                           />
                           {promoCode && promoCode.trim().length >= 3 && !isValidatingPromo && (
