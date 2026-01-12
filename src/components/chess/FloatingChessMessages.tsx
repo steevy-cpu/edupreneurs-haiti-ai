@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useCallback, type FocusEvent } from 'react';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -42,6 +42,12 @@ const FloatingChessMessages: React.FC<FloatingChessMessagesProps> = ({
       setInputMessage('');
     }
   };
+
+  const handleInputFocus = useCallback((e: FocusEvent<HTMLInputElement>) => {
+    setTimeout(() => {
+      e.target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }, 300);
+  }, []);
 
   const quickReplies = [
     "Pourquoi?",
@@ -169,8 +175,13 @@ const FloatingChessMessages: React.FC<FloatingChessMessagesProps> = ({
               <Input
                 value={inputMessage}
                 onChange={(e) => setInputMessage(e.target.value)}
+                onFocus={handleInputFocus}
                 placeholder="Question..."
-                className="flex-1 h-9 text-sm"
+                className="flex-1 h-9 text-sm mobile-input tap-highlight-none"
+                autoCapitalize="sentences"
+                autoCorrect="on"
+                spellCheck={false}
+                enterKeyHint="send"
                 disabled={isLoading}
               />
               <Button 

@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, type FocusEvent } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
@@ -60,6 +60,12 @@ export const MessageInput = ({
       setIsSendAnimating(false);
     }, 150);
   }, [newMessage, mediaPreview, isSending, onSend]);
+
+  const handleInputFocus = useCallback((e: FocusEvent<HTMLInputElement>) => {
+    setTimeout(() => {
+      e.target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }, 300);
+  }, []);
 
   return (
     <div className="border-t border-border/50 bg-background/95 backdrop-blur-md shrink-0" style={{
@@ -162,8 +168,13 @@ export const MessageInput = ({
             value={newMessage}
             onChange={(e) => onMessageChange(e.target.value)}
             onKeyDown={handleKeyDown}
+            onFocus={handleInputFocus}
             placeholder="Écrivez un message..."
-            className="flex-1 bg-muted/30 border-border/50 focus-visible:ring-primary/50 min-h-[40px]"
+            className="flex-1 bg-muted/30 border-border/50 focus-visible:ring-primary/50 min-h-[40px] mobile-input tap-highlight-none"
+            autoCapitalize="sentences"
+            autoCorrect="on"
+            spellCheck={false}
+            enterKeyHint="send"
             disabled={isSending}
           />
           <Button

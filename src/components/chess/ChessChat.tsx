@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useCallback, type FocusEvent } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -54,6 +54,12 @@ const ChessChat: React.FC<ChessChatProps> = ({
       setInputMessage('');
     }
   };
+
+  const handleInputFocus = useCallback((e: FocusEvent<HTMLInputElement>) => {
+    setTimeout(() => {
+      e.target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }, 300);
+  }, []);
 
   const quickReplies = [
     "Pourquoi ce coup?",
@@ -153,8 +159,13 @@ const ChessChat: React.FC<ChessChatProps> = ({
             ref={inputRef}
             value={inputMessage}
             onChange={(e) => setInputMessage(e.target.value)}
+            onFocus={handleInputFocus}
             placeholder="Pose une question à Eric..."
-            className="flex-1"
+            className="flex-1 mobile-input tap-highlight-none"
+            autoCapitalize="sentences"
+            autoCorrect="on"
+            spellCheck={false}
+            enterKeyHint="send"
             disabled={isLoading}
           />
           <Button 
