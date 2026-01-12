@@ -85,7 +85,9 @@ export const signupSchema = z.object({
     .string()
     .trim()
     .optional(),
-  privacy: z.boolean(),
+  privacy: z.literal(true, { 
+    errorMap: () => ({ message: "Vous devez accepter les politiques de confidentialité" }) 
+  }),
   payment: z.string().optional(),
 }).refine((data) => data.email === data.emailConfirm, {
   message: "Les emails ne correspondent pas",
