@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect, useCallback } from "react";
+import { useState, useRef, useEffect, useCallback, type FocusEvent } from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { X, Send } from "lucide-react";
@@ -131,6 +131,12 @@ export const HomeChatbot = () => {
     }
   };
 
+  const handleInputFocus = useCallback((e: FocusEvent<HTMLTextAreaElement>) => {
+    setTimeout(() => {
+      e.target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }, 300);
+  }, []);
+
   return (
     <div 
       ref={chatRef}
@@ -214,8 +220,13 @@ export const HomeChatbot = () => {
                 e.target.style.height = Math.min(e.target.scrollHeight, 100) + 'px';
               }}
               onKeyDown={handleKeyPress}
+              onFocus={handleInputFocus}
               placeholder="Posez une question..."
-              className="eric-chat-input resize-none flex-1 text-sm"
+              className="eric-chat-input resize-none flex-1 text-sm mobile-input tap-highlight-none"
+              autoCapitalize="sentences"
+              autoCorrect="on"
+              spellCheck={false}
+              enterKeyHint="send"
               rows={1}
               style={{ minHeight: '36px', maxHeight: '100px' }}
             />

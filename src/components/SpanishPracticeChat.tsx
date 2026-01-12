@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useCallback, type FocusEvent } from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Card } from "@/components/ui/card";
@@ -297,6 +297,12 @@ export const SpanishPracticeChat = ({
     }
   };
 
+  const handleInputFocus = useCallback((e: FocusEvent<HTMLTextAreaElement>) => {
+    setTimeout(() => {
+      e.target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }, 300);
+  }, []);
+
   const quickReplies = [
     "¡Hola!",
     "¿Cómo estás?",
@@ -428,8 +434,13 @@ export const SpanishPracticeChat = ({
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 onKeyDown={handleKeyPress}
+                onFocus={handleInputFocus}
                 placeholder="Escribe tu mensaje en español..."
-                className="min-h-[50px] sm:min-h-[60px] md:min-h-[80px] resize-none text-xs sm:text-sm md:text-base flex-1"
+                className="min-h-[50px] sm:min-h-[60px] md:min-h-[80px] resize-none text-xs sm:text-sm md:text-base flex-1 mobile-input tap-highlight-none"
+                autoCapitalize="sentences"
+                autoCorrect="on"
+                spellCheck={false}
+                enterKeyHint="send"
                 disabled={isLoading}
               />
               <Button

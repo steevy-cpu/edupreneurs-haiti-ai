@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect, useCallback } from "react";
+import { useState, useRef, useEffect, useCallback, type FocusEvent } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -211,6 +211,12 @@ export const JudeChatbot = () => {
     }
   };
 
+  const handleInputFocus = useCallback((e: FocusEvent<HTMLTextAreaElement>) => {
+    setTimeout(() => {
+      e.target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }, 300);
+  }, []);
+
   return (
     <div 
       ref={setRootRef}
@@ -343,9 +349,14 @@ export const JudeChatbot = () => {
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 onKeyDown={handleKeyPress}
+                onFocus={handleInputFocus}
                 placeholder="Tapez votre question..."
                 maxLength={200}
-                className="flex-1 min-h-[32px] max-h-[50px] text-xs sm:text-sm resize-none border-0 bg-transparent focus-visible:ring-0 px-0 py-1.5"
+                className="flex-1 min-h-[32px] max-h-[50px] text-xs sm:text-sm resize-none border-0 bg-transparent focus-visible:ring-0 px-0 py-1.5 mobile-input tap-highlight-none"
+                autoCapitalize="sentences"
+                autoCorrect="on"
+                spellCheck={false}
+                enterKeyHint="send"
                 rows={1}
               />
               <Button

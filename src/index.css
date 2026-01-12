@@ -37,14 +37,27 @@ All colors MUST be HSL.
   }
 }
 
-/* Auth form mobile keyboard optimizations */
-.auth-input {
+/* Mobile input keyboard optimizations - generic for all inputs */
+.mobile-input {
   touch-action: manipulation;
   -webkit-user-select: text;
   user-select: text;
 }
 
 /* Prevent zoom on input focus (iOS) - 16px minimum prevents auto-zoom */
+@media screen and (max-width: 768px) {
+  .mobile-input {
+    font-size: 16px !important;
+  }
+}
+
+/* Legacy auth-input class (maps to mobile-input) */
+.auth-input {
+  touch-action: manipulation;
+  -webkit-user-select: text;
+  user-select: text;
+}
+
 @media screen and (max-width: 768px) {
   .auth-input {
     font-size: 16px !important;
