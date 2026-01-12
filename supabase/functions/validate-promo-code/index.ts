@@ -17,8 +17,8 @@ import { corsHeaders, securityHeaders, corsPreflightResponse } from "../_shared/
 // Custom rate limit for promo code validation - more lenient for signup UX
 const PROMO_CODE_RATE_LIMIT = {
   windowMs: 60 * 1000,      // 1 minute
-  maxRequests: 30,          // Auth users: 30 req/min (unlikely during signup)
-  maxAnonRequests: 15,      // Anon: 15 req/min (allows typing without blocking)
+  maxRequests: 30,          // Auth users: 30 req/min
+  maxAnonRequests: 25,      // Anon: 25 req/min (allows typing without blocking)
   keyPrefix: 'promo_code'
 };
 
