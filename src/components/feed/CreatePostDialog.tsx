@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useCallback, type FocusEvent } from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogDescription } from "@/components/ui/dialog";
@@ -45,7 +45,13 @@ export function CreatePostDialog({ currentUser, onPostCreated }: CreatePostDialo
   const [cursorPosition, setCursorPosition] = useState(0);
   const [followers, setFollowers] = useState<FollowerProfile[]>([]);
 
-  // Fetch followers on mount (two-step query to avoid join issues)
+  // Mobile keyboard optimization - scroll input into view
+  const handleInputFocus = useCallback((e: FocusEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    setTimeout(() => {
+      e.target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }, 300);
+  }, []);
+
   useEffect(() => {
     const fetchFollowers = async () => {
       if (!currentUser) return;
@@ -424,7 +430,11 @@ export function CreatePostDialog({ currentUser, onPostCreated }: CreatePostDialo
               placeholder="Quoi de neuf ? Utilisez @ pour mentionner un ami..."
               value={newPostContent}
               onChange={handleContentChange}
-              className="min-h-[140px] resize-none border-2 border-muted bg-background/50 focus-visible:ring-2 focus-visible:ring-primary/30 focus-visible:border-primary/50 rounded-xl transition-all text-base"
+              onFocus={handleInputFocus}
+              className="min-h-[140px] resize-none border-2 border-muted bg-background/50 focus-visible:ring-2 focus-visible:ring-primary/30 focus-visible:border-primary/50 rounded-xl transition-all text-base mobile-input tap-highlight-none"
+              autoCapitalize="sentences"
+              autoCorrect="on"
+              spellCheck={false}
             />
             
             {/* Mention suggestions dropdown */}
