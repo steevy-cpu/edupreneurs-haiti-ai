@@ -149,7 +149,8 @@ serve(async (req) => {
 ${greetingInstruction}
 
 💬 CONVERSATIONS DE GROUPE:
-- Les messages sont préfixés par le nom: [Nom]: message
+- Les messages des utilisateurs sont préfixés par leur nom: [Nom]: message
+- Toi, Jude, tu NE DOIS JAMAIS préfixer tes réponses avec [nom]: - réponds directement
 - Réponds à "${nicknameText}" spécifiquement
 
 🗣️ LANGUE: Français standard par défaut.
@@ -157,6 +158,8 @@ ${greetingInstruction}
 🎓 TON EXPERTISE: Curriculum MENFP, toutes matières, préparation examens.
 
 📝 STYLE: Pédagogue, encourageant, paragraphes courts et aérés.
+
+❌ IMPORTANT: Ne commence JAMAIS tes réponses par "[nom]:" ou "[Jude]:" - commence directement par ta réponse.
 
 ❌ HORS COMPÉTENCE: Questions non-éducatives → réponds poliment.`;
 
@@ -197,7 +200,18 @@ ${greetingInstruction}
     const data = await response.json();
     let aiResponse = data.choices?.[0]?.message?.content || 'Désolé, je n\'ai pas pu générer une réponse.';
     
+    // Remove markdown formatting
     aiResponse = aiResponse.replace(/\*\*/g, '').replace(/\*/g, '');
+    
+    // CRITICAL FIX: Remove any [username]: prefix that the AI might have incorrectly added
+    // This pattern matches [any text]: at the start of the response
+    aiResponse = aiResponse.replace(/^\[.*?\]:\s*/i, '');
+    
+    // Also remove if AI started with the specific nickname format (case insensitive)
+    if (nicknameText) {
+      const escapedNickname = nicknameText.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      aiResponse = aiResponse.replace(new RegExp(`^\\[?${escapedNickname}\\]?:?\\s*`, 'i'), '');
+    }
 
     // Mark user's message as read (use verifiedUserId)
     await supabaseAdmin

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { Sparkles, SkipForward } from 'lucide-react';
@@ -6,6 +6,8 @@ import ericStudentDesk from '@/assets/eric-student-desk.png';
 import SimpleTypewriter from '@/components/visitor/SimpleTypewriter';
 import { useFirstTimeUser } from '@/contexts/FirstTimeUserContext';
 import { AIAvatarGenerator } from '@/components/AIAvatarGenerator';
+import { useNetworkAwareAnimations } from '@/hooks/useNetworkAwareAnimations';
+import { preloadImage } from '@/utils/performanceOptimization';
 
 const AvatarGenerationStep = () => {
   const { 
@@ -16,9 +18,15 @@ const AvatarGenerationStep = () => {
     isSuperUser,
     isLoading 
   } = useFirstTimeUser();
+  const { shouldAnimate, shouldShowGlow } = useNetworkAwareAnimations();
   
   const [showAvatarDialog, setShowAvatarDialog] = useState(false);
   const [textComplete, setTextComplete] = useState(false);
+
+  // Preload Eric image on mount
+  useEffect(() => {
+    preloadImage(ericStudentDesk).catch(() => {});
+  }, []);
 
   const handleAvatarGenerated = (avatarUrl: string) => {
     setShowAvatarDialog(false);
@@ -27,44 +35,50 @@ const AvatarGenerationStep = () => {
 
   if (!showAvatarGeneration || isLoading || !userId) return null;
 
+  // Network-aware animation config
+  const overlayAnimation = shouldAnimate 
+    ? { initial: { opacity: 0 }, animate: { opacity: 1 }, exit: { opacity: 0 } }
+    : {};
+  const containerAnimation = shouldAnimate
+    ? { initial: { scale: 0.8, opacity: 0 }, animate: { scale: 1, opacity: 1 }, exit: { scale: 0.9, opacity: 0 } }
+    : {};
+  const imageAnimation = shouldAnimate
+    ? { initial: { scale: 0, rotate: -10 }, animate: { scale: 1, rotate: 0 } }
+    : {};
+
   return (
     <>
       <AnimatePresence mode="wait">
         {!showAvatarDialog && (
           <motion.div
             key="avatar-step-overlay"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
+            {...overlayAnimation}
             transition={{ duration: 0.3 }}
             className="fixed inset-0 z-[9998] flex items-center justify-center"
           >
-            {/* Dark overlay */}
+            {/* Dark overlay - disable blur on slow connections */}
             <motion.div 
-              initial={{ opacity: 0 }}
+              initial={shouldAnimate ? { opacity: 0 } : undefined}
               animate={{ opacity: 0.5 }}
-              exit={{ opacity: 0 }}
-              className="absolute inset-0 bg-black/50 backdrop-blur-sm"
+              exit={shouldAnimate ? { opacity: 0 } : undefined}
+              className={`absolute inset-0 bg-black/50 ${shouldShowGlow ? 'backdrop-blur-sm' : ''}`}
             />
             
             {/* Content */}
             <motion.div
-              initial={{ scale: 0.8, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.9, opacity: 0 }}
-              transition={{ type: "spring", damping: 20, stiffness: 300 }}
+              {...containerAnimation}
+              transition={shouldAnimate ? { type: "spring", damping: 20, stiffness: 300 } : { duration: 0.1 }}
               className="relative flex flex-col items-center gap-4 sm:gap-6 p-4 sm:p-8 max-w-md"
             >
               {/* Jude Image */}
               <motion.div
-                initial={{ scale: 0, rotate: -10 }}
-                animate={{ scale: 1, rotate: 0 }}
-                transition={{ type: "spring", damping: 15, stiffness: 200, delay: 0.2 }}
+                {...imageAnimation}
+                transition={shouldAnimate ? { type: "spring", damping: 15, stiffness: 200, delay: 0.2 } : { duration: 0.1 }}
               >
                 <img
                   src={ericStudentDesk}
                   alt="Jude"
-                  className="w-28 h-28 sm:w-36 sm:h-36 object-contain drop-shadow-2xl"
+                  className={`w-28 h-28 sm:w-36 sm:h-36 object-contain ${shouldShowGlow ? 'drop-shadow-2xl' : 'drop-shadow-md'}`}
                 />
               </motion.div>
 
