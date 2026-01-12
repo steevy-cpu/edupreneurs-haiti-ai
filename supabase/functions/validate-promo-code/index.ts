@@ -4,15 +4,23 @@
  * Server-side promo code validation to replace hardcoded frontend values.
  * 
  * Features:
- * - Rate limiting
+ * - Rate limiting (relaxed for signup flow)
  * - Input validation
  * - Database lookup with usage tracking
  */
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-import { checkRateLimit, getClientIp, rateLimitResponse, RATE_LIMITS } from "../_shared/rateLimiter.ts";
+import { checkRateLimit, getClientIp, rateLimitResponse } from "../_shared/rateLimiter.ts";
 import { validateInput, promoCodeSchema, validationErrorResponse } from "../_shared/validation.ts";
 import { corsHeaders, securityHeaders, corsPreflightResponse } from "../_shared/securityHeaders.ts";
+
+// Custom rate limit for promo code validation - more lenient for signup UX
+const PROMO_CODE_RATE_LIMIT = {
+  windowMs: 60 * 1000,      // 1 minute
+  maxRequests: 30,          // Auth users: 30 req/min (unlikely during signup)
+  maxAnonRequests: 15,      // Anon: 15 req/min (allows typing without blocking)
+  keyPrefix: 'promo_code'
+};
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -30,10 +38,10 @@ serve(async (req) => {
     // Get client IP for rate limiting
     const clientIp = getClientIp(req);
 
-    // Check rate limit (use AUTH limits - moderate)
-    const rateCheck = await checkRateLimit(supabase, RATE_LIMITS.AUTH, null, clientIp);
+    // Check rate limit with relaxed promo code limits
+    const rateCheck = await checkRateLimit(supabase, PROMO_CODE_RATE_LIMIT, null, clientIp);
     if (!rateCheck.allowed) {
-      console.warn(`Rate limit exceeded for promo code validation`);
+      console.warn(`Rate limit exceeded for promo code validation from IP: ${clientIp}`);
       return rateLimitResponse(rateCheck.retryAfter!, rateCheck.remaining, responseHeaders);
     }
 
