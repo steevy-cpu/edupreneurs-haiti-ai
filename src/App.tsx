@@ -9,6 +9,7 @@ import { CookieConsent } from "@/components/CookieConsent";
 import { MusicPlayerProvider } from "@/contexts/MusicPlayerContext";
 import { VisitorProvider } from "@/contexts/VisitorContext";
 import { FirstTimeUserProvider } from "@/contexts/FirstTimeUserContext";
+import { NetworkProvider } from "@/contexts/NetworkContext";
 import { GlobalMusicPlayer } from "@/components/GlobalMusicPlayer";
 import { ScrollToTop } from "@/components/ScrollToTop";
 import { lazy, Suspense, useEffect } from "react";
@@ -124,11 +125,12 @@ supabase.auth.onAuthStateChange((event) => {
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <ThemeProvider attribute="class" defaultTheme="light" enableSystem={false} forcedTheme={undefined}>
-      <TooltipProvider>
-        <Toaster />
-        <Sonner />
-        <MusicPlayerProvider>
-          <VisitorProvider>
+      <NetworkProvider>
+        <TooltipProvider>
+          <Toaster />
+          <Sonner />
+          <MusicPlayerProvider>
+            <VisitorProvider>
               <BrowserRouter>
                 <FirstTimeUserProvider>
                 <ScrollToTop />
@@ -235,9 +237,10 @@ const App = () => (
               </Suspense>
                 </FirstTimeUserProvider>
               </BrowserRouter>
-          </VisitorProvider>
-        </MusicPlayerProvider>
-      </TooltipProvider>
+            </VisitorProvider>
+          </MusicPlayerProvider>
+        </TooltipProvider>
+      </NetworkProvider>
     </ThemeProvider>
   </QueryClientProvider>
 );
