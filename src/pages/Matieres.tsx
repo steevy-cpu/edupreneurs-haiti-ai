@@ -1,95 +1,57 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, lazy, Suspense } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Skeleton } from "@/components/ui/skeleton";
 import { 
   BookOpen, 
-  Calculator, 
-  Globe, 
-  Beaker, 
-  Users, 
-  Palette, 
-  Activity,
-  Languages,
   ChevronLeft,
   GraduationCap,
-  Flag,
-  Award,
-  FlaskConical,
-  MessageCircle,
-  Map,
   Lock,
   Star,
-  Sparkles,
-  Construction
+  Construction,
+  Award
 } from "lucide-react";
 
-import ericPointingImage from "@/assets/eric-right-pointing.png";
-import edupreneursBg from "@/assets/edupreneurs-bg.png";
 import menfpLogo from "@/assets/menfp-logo.webp";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { useMatieresData } from "@/hooks/useMatieresData";
 import { GRADE_LABELS } from "@/hooks/useUserGrade";
+import { useNetworkAwareAnimations } from "@/hooks/useNetworkAwareAnimations";
 import { toast } from "sonner";
 import { useVisitor } from "@/contexts/VisitorContext";
 import { LockedOverlay, VisitorSubjectCard } from "@/components/visitor";
-import {
-  MatieresSearchFilter,
-  ContinueLearningSection,
-  SubjectCardEnhanced,
-  SeriesComparisonCards,
-  UserStatsWidget,
-  type SortOption,
-  type FilterOption
-} from "@/components/matieres";
+import { MatieresSearchFilter, type SortOption, type FilterOption } from "@/components/matieres";
+import { 
+  type GradeLevel, 
+  type Series, 
+  VALID_GRADES, 
+  gradeLevels, 
+  iconMap, 
+  colorMap 
+} from "@/lib/matieresConstants";
+import { MatieresGridSkeleton } from "@/components/shared/SkeletonLoaders";
 
-type GradeLevel = "7AF" | "8AF" | "9AF" | "NS1" | "NS2" | "NS3" | "NS4";
-type Series = "LLA" | "SES" | "SMP" | "SVT";
-
-// Valid grades for validation
-const VALID_GRADES: GradeLevel[] = ["7AF", "8AF", "9AF", "NS1", "NS2", "NS3", "NS4"];
-
-const gradeLevels = [
-  { id: "7AF" as GradeLevel, label: "7AF", fullName: "7ème année fondamentale" },
-  { id: "8AF" as GradeLevel, label: "8AF", fullName: "8ème année fondamentale" },
-  { id: "9AF" as GradeLevel, label: "9AF", fullName: "9ème année fondamentale" },
-  { id: "NS1" as GradeLevel, label: "NS1", fullName: "1ère secondaire" },
-  { id: "NS2" as GradeLevel, label: "NS2", fullName: "2ème secondaire" },
-  { id: "NS3" as GradeLevel, label: "NS3", fullName: "3ème secondaire" },
-  { id: "NS4" as GradeLevel, label: "NS4", fullName: "4ème secondaire" }
-];
-
-const iconMap: Record<string, any> = {
-  'calculator': Calculator, 'book-open': BookOpen, 'flask-conical': FlaskConical,
-  'globe': Globe, 'flag': Flag, 'message-circle': MessageCircle, 'map': Map,
-  'beaker': Beaker, 'users': Users, 'palette': Palette, 'activity': Activity,
-  'languages': Languages, 'Calculator': Calculator, 'BookOpen': BookOpen,
-  'Languages': Languages, 'Globe': Globe, 'MessageSquare': MessageCircle,
-  'BookA': BookOpen, 'PieChart': Calculator, 'Binary': Calculator, 'Sigma': Calculator,
-  'FlaskConical': FlaskConical, 'Flask': Beaker, 'Atom': Beaker, 'Microscope': Beaker,
-  'Dna': Beaker, 'Leaf': Beaker, 'Beaker': Beaker, 'Landmark': Map, 'Users': Users,
-  'Globe2': Globe, 'BookText': BookOpen, 'Map': Map, 'Scale': Users, 'Palette': Palette,
-  'Music': Palette, 'Drama': Palette, 'Paintbrush': Palette, 'Dumbbell': Activity,
-  'Trophy': Award, 'Activity': Activity, 'Heart': Activity, 'Laptop': Calculator,
-  'Code': Calculator, 'Database': Calculator, 'Monitor': Calculator, 'Cpu': Calculator,
-  'Brain': BookOpen, 'Lightbulb': BookOpen, 'GraduationCap': GraduationCap,
-  'Book': BookOpen, 'Flag': Flag
-};
-
-const colorMap: Record<string, string> = {
-  'blue': 'from-blue-500 to-blue-600', 'purple': 'from-purple-500 to-purple-600',
-  'green': 'from-green-500 to-green-600', 'orange': 'from-orange-500 to-orange-600',
-  'indigo': 'from-indigo-500 to-indigo-600', 'red': 'from-red-500 to-red-600',
-  'teal': 'from-teal-500 to-teal-600', 'emerald': 'from-emerald-500 to-emerald-600',
-  'amber': 'from-amber-500 to-amber-600', 'cyan': 'from-cyan-500 to-cyan-600',
-  'rose': 'from-rose-500 to-rose-600', 'pink': 'from-pink-500 to-pink-600',
-  'slate': 'from-slate-500 to-slate-600'
-};
+// Lazy-load heavy sub-components for 3G optimization
+const ContinueLearningSection = lazy(() => 
+  import("@/components/matieres/ContinueLearningSection").then(m => ({ default: m.ContinueLearningSection }))
+);
+const SubjectCardEnhanced = lazy(() => 
+  import("@/components/matieres/SubjectCardEnhanced").then(m => ({ default: m.SubjectCardEnhanced }))
+);
+const SeriesComparisonCards = lazy(() => 
+  import("@/components/matieres/SeriesComparisonCards").then(m => ({ default: m.SeriesComparisonCards }))
+);
+const UserStatsWidget = lazy(() => 
+  import("@/components/matieres/UserStatsWidget").then(m => ({ default: m.UserStatsWidget }))
+);
 
 export default function Matieres() {
   const navigate = useNavigate();
   const { isVisitor } = useVisitor();
+  const { shouldAnimate, animationLevel, shouldShowGlow } = useNetworkAwareAnimations();
+  const isSlowConnection = animationLevel === 'minimal' || animationLevel === 'reduced';
   const [selectedGrade, setSelectedGrade] = useState<GradeLevel>("7AF");
   const [selectedSeries, setSelectedSeries] = useState<Series | null>(null);
   const [showContent, setShowContent] = useState(false);
@@ -98,6 +60,27 @@ export default function Matieres() {
   const [searchQuery, setSearchQuery] = useState("");
   const [sortOption, setSortOption] = useState<SortOption>("name-asc");
   const [filterOption, setFilterOption] = useState<FilterOption>("all");
+  
+  // Lazy-loaded images for 3G optimization
+  const [lazyImages, setLazyImages] = useState<{
+    ericPointing?: string;
+    edupreneursBg?: string;
+  }>({});
+  
+  // Load heavy images after initial render
+  useEffect(() => {
+    const loadImages = async () => {
+      // Only load background on fast connections
+      if (!isSlowConnection) {
+        const bgMod = await import("@/assets/edupreneurs-bg.png");
+        setLazyImages(prev => ({ ...prev, edupreneursBg: bgMod.default }));
+      }
+      // Always load Eric image but after initial render
+      const ericMod = await import("@/assets/eric-right-pointing.png");
+      setLazyImages(prev => ({ ...prev, ericPointing: ericMod.default }));
+    };
+    loadImages();
+  }, [isSlowConnection]);
 
   // UNIFIED DATA HOOK - single source of all data with parallel fetching
   const {
@@ -227,13 +210,24 @@ export default function Matieres() {
         </div>
       </nav>
 
-      {/* Hero Header */}
+      {/* Hero Header - Network-aware with lazy-loaded background */}
       <div className="relative pt-20 pb-12 md:pt-24 md:pb-16 overflow-hidden">
-        <div className="absolute inset-0 bg-cover bg-center scale-105" style={{ backgroundImage: `url(${edupreneursBg})` }} />
+        {/* Background image - only show if loaded and not slow connection */}
+        {lazyImages.edupreneursBg && !isSlowConnection && (
+          <div 
+            className="absolute inset-0 bg-cover bg-center scale-105" 
+            style={{ backgroundImage: `url(${lazyImages.edupreneursBg})` }} 
+          />
+        )}
         <div className="absolute inset-0 bg-gradient-to-b from-black/80 via-black/70 to-background" />
-        <div className="absolute inset-0 bg-gradient-to-r from-primary/10 to-transparent mix-blend-overlay" />
-        <div className="absolute top-20 left-10 w-32 h-32 bg-primary/20 rounded-full blur-3xl animate-pulse" />
-        <div className="absolute bottom-10 right-10 w-40 h-40 bg-primary/15 rounded-full blur-3xl animate-pulse delay-700" />
+        {/* Blur effects - only show on fast connections */}
+        {shouldShowGlow && (
+          <>
+            <div className="absolute inset-0 bg-gradient-to-r from-primary/10 to-transparent mix-blend-overlay" />
+            <div className="absolute top-20 left-10 w-32 h-32 bg-primary/20 rounded-full blur-3xl animate-pulse" />
+            <div className="absolute bottom-10 right-10 w-40 h-40 bg-primary/15 rounded-full blur-3xl animate-pulse delay-700" />
+          </>
+        )}
         
         <div className="container mx-auto px-4 relative z-10">
           <div className="flex flex-col items-center text-center max-w-4xl mx-auto">
@@ -609,8 +603,14 @@ export default function Matieres() {
           <div className="flex flex-col md:flex-row items-center gap-6 relative">
             <div className="flex-shrink-0">
               <div className="relative">
-                <div className="absolute inset-0 bg-primary/20 rounded-full blur-xl animate-pulse" />
-                <img src={ericPointingImage} alt="Jude - Assistant IA" className="w-32 h-32 sm:w-48 sm:h-48 object-contain relative z-10" loading="lazy" />
+                {shouldShowGlow && (
+                  <div className="absolute inset-0 bg-primary/20 rounded-full blur-xl animate-pulse" />
+                )}
+                {lazyImages.ericPointing ? (
+                  <img src={lazyImages.ericPointing} alt="Jude - Assistant IA" className="w-32 h-32 sm:w-48 sm:h-48 object-contain relative z-10" loading="lazy" />
+                ) : (
+                  <Skeleton className="w-32 h-32 sm:w-48 sm:h-48 rounded-full" />
+                )}
               </div>
             </div>
             <div className="flex-1 text-center md:text-left">
