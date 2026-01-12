@@ -46,8 +46,10 @@ import { EmptyState } from "@/components/shared/EmptyState";
 import { 
   DashboardKPISkeleton, 
   LeaderboardSkeleton,
-  NotesListSkeleton 
+  NotesListSkeleton,
+  ChartSkeleton
 } from "@/components/shared/SkeletonLoaders";
+import { ChartErrorBoundary } from "@/components/dashboard/ChartErrorBoundary";
 
 interface Note {
   id: string;
@@ -553,8 +555,21 @@ const Dashboard = () => {
           {/* Charts Section - Collapsible */}
           <CollapsibleSection title="Graphiques" icon={<TrendingUp className="w-5 h-5" />} storageKey="charts-section">
           <div data-tour="charts-section" className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <WeeklyActivityChart data={analytics.weeklyActivity} />
-            <SubjectProgressChart data={analytics.subjectProgress} />
+            {analyticsLoading ? (
+              <>
+                <ChartSkeleton height={250} />
+                <ChartSkeleton height={250} />
+              </>
+            ) : (
+              <>
+                <ChartErrorBoundary fallbackHeight={250}>
+                  <WeeklyActivityChart data={analytics.weeklyActivity} />
+                </ChartErrorBoundary>
+                <ChartErrorBoundary fallbackHeight={250}>
+                  <SubjectProgressChart data={analytics.subjectProgress} />
+                </ChartErrorBoundary>
+              </>
+            )}
           </div>
           </CollapsibleSection>
 
