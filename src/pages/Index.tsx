@@ -925,10 +925,12 @@ const Index = () => {
         </div>
       </footer>
 
-      {/* Home Page Chatbot - Lazy loaded for performance */}
-      <Suspense fallback={<div />}>
-        <HomeChatbot />
-      </Suspense>
+      {/* Home Page Chatbot - Lazy loaded for performance, skip on slow connections */}
+      {!isSlowConnection && (
+        <Suspense fallback={<div />}>
+          <HomeChatbot />
+        </Suspense>
+      )}
 
       {/* Visitor Type Selector Modal */}
       <VisitorTypeSelector 

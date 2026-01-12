@@ -5,7 +5,6 @@ import { Progress } from "@/components/ui/progress";
 import { ChevronRight, ChevronLeft, X, Sparkles } from "lucide-react";
 import { useVisitor } from "@/contexts/VisitorContext";
 import { useVisitorAnalytics } from "@/hooks/useVisitorAnalytics";
-import ericStudentDesk from "@/assets/eric-student-desk.png";
 
 interface TourStep {
   path: string;
@@ -67,6 +66,12 @@ export const VisitorTour = () => {
   const { trackTourStep, trackTourSkip, trackTourComplete } = useVisitorAnalytics();
   const [highlightedElement, setHighlightedElement] = useState<HTMLElement | null>(null);
   const [isNavigating, setIsNavigating] = useState(false);
+  const [ericImage, setEricImage] = useState<string | null>(null);
+  
+  // Lazy load the Eric image for 3G optimization
+  useEffect(() => {
+    import("@/assets/eric-student-desk.png").then(m => setEricImage(m.default));
+  }, []);
 
   const currentStep = tourSteps[tourStep];
   const isLastStep = tourStep === tourSteps.length - 1;
@@ -181,11 +186,15 @@ export const VisitorTour = () => {
           <div className="p-4 flex gap-4">
             {/* Jude avatar - floating style */}
             <div className="flex-shrink-0">
-              <img
-                src={ericStudentDesk}
-                alt="Jude"
-                className="w-20 h-20 object-contain drop-shadow-lg"
-              />
+              {ericImage ? (
+                <img
+                  src={ericImage}
+                  alt="Jude"
+                  className="w-20 h-20 object-contain drop-shadow-lg"
+                />
+              ) : (
+                <div className="w-20 h-20 rounded-full bg-muted animate-pulse" />
+              )}
             </div>
 
             {/* Text content */}
