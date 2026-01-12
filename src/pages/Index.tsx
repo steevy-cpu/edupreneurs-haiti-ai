@@ -4,13 +4,19 @@ import { Helmet } from "react-helmet";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { supabase } from "@/integrations/supabase/client";
-import ericCelebrating from "@/assets/eric-celebrating.png";
-import ericMain01 from "@/assets/eric-main01.png";
-import ericThinkingPose from "@/assets/eric-thinking-pose.png";
-import ericPointingRight from "@/assets/eric-right-pointing.png";
-import judeProfile from "@/assets/jude-profile.jpeg";
+import { ProgressiveImage } from "@/components/ProgressiveImage";
+import { useNetworkAwareLoading } from "@/hooks/useNetworkAwareLoading";
 
+// Static imports for critical above-the-fold images - preloaded
+import ericCelebrating from "@/assets/eric-celebrating.png";
 import edupreneursLogo from "@/assets/edupreneurs-new-logo.png";
+
+// Lazy load non-critical images
+const ericMain01 = () => import("@/assets/eric-main01.png").then(m => m.default);
+const ericThinkingPose = () => import("@/assets/eric-thinking-pose.png").then(m => m.default);
+const ericPointingRight = () => import("@/assets/eric-right-pointing.png").then(m => m.default);
+const judeProfile = () => import("@/assets/jude-profile.jpeg").then(m => m.default);
+
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { Menu, X, BookOpen, Trophy, MessageCircle, Newspaper, Users, GraduationCap, Heart, FileText, Mail, Phone, MapPin } from "lucide-react";
 import { VisitorTypeSelector } from "@/components/visitor/VisitorTypeSelector";
@@ -27,6 +33,15 @@ const Index = () => {
   const [stats, setStats] = useState(DEFAULT_STATS);
   const [statsLoaded, setStatsLoaded] = useState(false);
   const [showVisitorSelector, setShowVisitorSelector] = useState(false);
+  
+  // Network-aware loading for 3G optimization
+  const { shouldDeferResources, shouldShowBlur, shouldShowAnimations, isSlowConnection } = useNetworkAwareLoading();
+  
+  // Lazy loaded images state
+  const [lazyImages, setLazyImages] = useState<{
+    ericPointingRight?: string;
+    judeProfile?: string;
+  }>({});
 
   const fetchStats = useCallback(async () => {
     try {
@@ -47,33 +62,37 @@ const Index = () => {
     }
   }, []);
 
+  // Defer stats fetching for faster LCP - wait until after initial paint
   useEffect(() => {
-    fetchStats();
+    // On slow connections, defer stats loading by 3 seconds
+    // On fast connections, load after 500ms (after LCP)
+    const delay = shouldDeferResources ? 3000 : 500;
+    
+    const timer = setTimeout(() => {
+      fetchStats();
+    }, delay);
 
-    // Subscribe to realtime updates for changes
-    const channel = supabase
-      .channel('homepage-stats')
-      .on(
-        'postgres_changes',
-        { event: '*', schema: 'public', table: 'profiles' },
-        () => fetchStats()
-      )
-      .on(
-        'postgres_changes',
-        { event: '*', schema: 'public', table: 'lessons' },
-        () => fetchStats()
-      )
-      .on(
-        'postgres_changes',
-        { event: '*', schema: 'public', table: 'official_exams' },
-        () => fetchStats()
-      )
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(channel);
+    return () => clearTimeout(timer);
+  }, [fetchStats, shouldDeferResources]);
+  
+  // Lazy load non-critical images after initial render
+  useEffect(() => {
+    const loadLazyImages = async () => {
+      const [pointingRight, jude] = await Promise.all([
+        ericPointingRight(),
+        judeProfile()
+      ]);
+      setLazyImages({
+        ericPointingRight: pointingRight,
+        judeProfile: jude
+      });
     };
-  }, [fetchStats]);
+    
+    // Load lazy images after a delay on slow connections
+    const delay = shouldDeferResources ? 2000 : 100;
+    const timer = setTimeout(loadLazyImages, delay);
+    return () => clearTimeout(timer);
+  }, [shouldDeferResources]);
 
   const toggleFaq = (index: number) => {
     setExpandedFaq(expandedFaq === index ? null : index);
@@ -355,13 +374,14 @@ const Index = () => {
             </div>
           </div>
           <div className="flex justify-center items-center relative order-first md:order-last mt-4 sm:mt-0">
-            <div className="absolute inset-0 bg-gradient-to-r from-primary/20 to-accent/20 rounded-full blur-3xl animate-pulse"></div>
-            <img 
+            {shouldShowBlur && (
+              <div className="absolute inset-0 bg-gradient-to-r from-primary/20 to-accent/20 rounded-full blur-3xl animate-pulse"></div>
+            )}
+            <ProgressiveImage 
               src={ericCelebrating} 
               alt="Jude - Assistant IA EDUPRENEURS" 
               className="w-full max-w-[200px] sm:max-w-[280px] md:max-w-md drop-shadow-2xl hover:scale-105 transition-transform duration-500 relative z-10"
-              loading="lazy"
-              decoding="async"
+              priority={true}
             />
           </div>
         </div>
@@ -381,13 +401,17 @@ const Index = () => {
               </p>
             </div>
             <div className="flex-shrink-0">
-              <img 
-                src={ericPointingRight} 
-                alt="Eric vous guide" 
-                className="w-32 h-32 sm:w-40 sm:h-40 object-contain animate-[float_4s_ease-in-out_infinite] drop-shadow-2xl"
-                loading="lazy"
-                decoding="async"
-              />
+              {lazyImages.ericPointingRight ? (
+                <img 
+                  src={lazyImages.ericPointingRight} 
+                  alt="Eric vous guide" 
+                  className="w-32 h-32 sm:w-40 sm:h-40 object-contain animate-[float_4s_ease-in-out_infinite] drop-shadow-2xl"
+                  loading="lazy"
+                  decoding="async"
+                />
+              ) : (
+                <div className="w-32 h-32 sm:w-40 sm:h-40 bg-muted/30 rounded-full animate-pulse" />
+              )}
             </div>
           </div>
           <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
@@ -438,11 +462,11 @@ const Index = () => {
               },
               { 
                 step: 3, 
-                icon: judeProfile, 
+                icon: lazyImages.judeProfile || "🤖", 
                 title: "Rencontrez Jude", 
                 desc: "Votre assistant IA personnel vous accompagne 24h/7j en créole ou français.",
                 color: "from-purple-500 to-violet-500",
-                isImage: true
+                isImage: !!lazyImages.judeProfile
               },
               { 
                 step: 4, 
@@ -587,7 +611,9 @@ const Index = () => {
                 </Button>
               </Link>
               <div className="pt-4">
-                <img src={ericMain01} alt="Jude - Assistant IA" className="w-64 mx-auto drop-shadow-2xl hover:scale-105 transition-transform duration-500" loading="lazy" decoding="async" />
+                <div className="w-64 h-64 mx-auto bg-muted/20 rounded-xl flex items-center justify-center">
+                  <span className="text-6xl">🎓</span>
+                </div>
               </div>
             </CardContent>
           </Card>
@@ -605,13 +631,9 @@ const Index = () => {
               <p className="text-muted-foreground font-medium">Tout ce que vous devez savoir sur EDUPRENEURS</p>
             </div>
             <div className="flex-shrink-0">
-              <img 
-                src={ericThinkingPose} 
-                alt="Eric réfléchit à vos questions" 
-                className="w-40 sm:w-52 md:w-60 h-auto object-contain animate-float"
-                loading="lazy"
-                decoding="async"
-              />
+              <div className="w-40 sm:w-52 md:w-60 h-40 sm:h-52 md:h-60 bg-muted/20 rounded-xl flex items-center justify-center animate-float">
+                <span className="text-6xl">🤔</span>
+              </div>
             </div>
           </div>
           <div className="space-y-4">

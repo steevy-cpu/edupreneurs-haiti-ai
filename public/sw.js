@@ -1,6 +1,14 @@
-// Service Worker for Push Notifications - Multi-browser support
-const SW_VERSION = '1.2.0';
+// Service Worker for Push Notifications and Asset Caching - Optimized for 3G
+const SW_VERSION = '1.3.0';
 const CACHE_NAME = `edupreneurs-v${SW_VERSION}`;
+const STATIC_CACHE_NAME = `edupreneurs-static-v${SW_VERSION}`;
+
+// Critical assets to precache for offline/slow network support
+const PRECACHE_ASSETS = [
+  '/logo.png',
+  '/pwa-icon.jpeg',
+  '/manifest.webmanifest'
+];
 
 // BroadcastChannel for cross-tab sync
 const notificationChannel = new BroadcastChannel('edupreneurs-notifications');
@@ -28,12 +36,96 @@ self.addEventListener('install', (event) => {
   const env = detectEnvironment();
   console.log(`📦 Service Worker ${SW_VERSION} installing...`);
   console.log(`🌐 Browser: ${env.browser}, iOS: ${env.isIOS}`);
-  self.skipWaiting();
+  
+  // Precache critical assets
+  event.waitUntil(
+    caches.open(STATIC_CACHE_NAME)
+      .then(cache => {
+        console.log('📦 Precaching critical assets...');
+        return cache.addAll(PRECACHE_ASSETS);
+      })
+      .then(() => {
+        console.log('✅ Critical assets cached');
+        return self.skipWaiting();
+      })
+      .catch(err => {
+        console.warn('⚠️ Precaching failed:', err);
+        return self.skipWaiting();
+      })
+  );
 });
 
 self.addEventListener('activate', (event) => {
   console.log(`✅ Service Worker ${SW_VERSION} activated`);
-  event.waitUntil(clients.claim());
+  
+  // Clean up old caches
+  event.waitUntil(
+    caches.keys().then(cacheNames => {
+      return Promise.all(
+        cacheNames
+          .filter(name => name.startsWith('edupreneurs-') && name !== CACHE_NAME && name !== STATIC_CACHE_NAME)
+          .map(name => {
+            console.log(`🗑️ Deleting old cache: ${name}`);
+            return caches.delete(name);
+          })
+      );
+    }).then(() => clients.claim())
+  );
+});
+
+// Fetch handler with stale-while-revalidate for images
+self.addEventListener('fetch', (event) => {
+  const { request } = event;
+  const url = new URL(request.url);
+  
+  // Skip non-GET requests
+  if (request.method !== 'GET') return;
+  
+  // Skip cross-origin requests except for fonts and CDN assets
+  if (url.origin !== location.origin && 
+      !url.hostname.includes('fonts.googleapis.com') &&
+      !url.hostname.includes('fonts.gstatic.com')) {
+    return;
+  }
+  
+  // Handle images with cache-first strategy
+  if (request.destination === 'image' || url.pathname.match(/\.(png|jpg|jpeg|gif|webp|svg|avif)$/i)) {
+    event.respondWith(
+      caches.open(STATIC_CACHE_NAME).then(cache => {
+        return cache.match(request).then(cached => {
+          const fetchPromise = fetch(request).then(response => {
+            if (response.ok) {
+              cache.put(request, response.clone());
+            }
+            return response;
+          }).catch(() => cached);
+          
+          // Return cached immediately, update in background
+          return cached || fetchPromise;
+        });
+      })
+    );
+    return;
+  }
+  
+  // Handle fonts with cache-first (they rarely change)
+  if (request.destination === 'font' || url.pathname.match(/\.(woff2?|ttf|otf|eot)$/i)) {
+    event.respondWith(
+      caches.open(STATIC_CACHE_NAME).then(cache => {
+        return cache.match(request).then(cached => {
+          if (cached) return cached;
+          
+          return fetch(request).then(response => {
+            if (response.ok) {
+              cache.put(request, response.clone());
+            }
+            return response;
+          });
+        });
+      })
+    );
+    return;
+  }
 });
 
 // Handle push events - Multi-browser compatible

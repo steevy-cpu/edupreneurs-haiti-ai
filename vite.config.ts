@@ -24,20 +24,53 @@ export default defineConfig(({ mode }) => ({
     },
   },
   build: {
-    // Optimizations for production
-    minify: 'esbuild', // esbuild is faster and included by default
+    // Optimizations for production - especially 3G connections
+    minify: 'esbuild',
+    target: 'es2020',
+    cssCodeSplit: true,
     rollupOptions: {
       output: {
-        manualChunks: {
-          // Split vendor chunks for better caching
-          'react-vendor': ['react', 'react-dom', 'react-router-dom'],
-          'ui-vendor': ['@radix-ui/react-dialog', '@radix-ui/react-dropdown-menu'],
-          'query-vendor': ['@tanstack/react-query'],
-          'supabase-vendor': ['@supabase/supabase-js'],
+        manualChunks: (id) => {
+          // React core - smallest possible initial bundle
+          if (id.includes('node_modules/react/') || id.includes('node_modules/react-dom/')) {
+            return 'react-core';
+          }
+          // Router separate for code splitting
+          if (id.includes('react-router')) {
+            return 'router';
+          }
+          // Supabase client
+          if (id.includes('@supabase/')) {
+            return 'supabase';
+          }
+          // TanStack Query
+          if (id.includes('@tanstack/')) {
+            return 'query';
+          }
+          // Radix UI components - load on demand
+          if (id.includes('@radix-ui/')) {
+            return 'ui-radix';
+          }
+          // Framer motion - heavy, defer
+          if (id.includes('framer-motion')) {
+            return 'motion';
+          }
+          // Charts - only needed on specific pages
+          if (id.includes('recharts')) {
+            return 'charts';
+          }
+          // Chess - only needed on chess page
+          if (id.includes('chess') || id.includes('react-chessboard')) {
+            return 'chess';
+          }
+          // 3D/Three.js - only needed for 3D features
+          if (id.includes('three') || id.includes('@react-three/')) {
+            return 'three';
+          }
         },
       },
     },
-    // Increase chunk size warning limit (500kb)
-    chunkSizeWarningLimit: 500,
+    // Reduce chunk size for faster loading on 3G
+    chunkSizeWarningLimit: 300,
   },
 }));

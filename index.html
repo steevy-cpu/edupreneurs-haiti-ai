@@ -20,10 +20,35 @@
     <meta name="keywords" content="éducation Haïti, apprentissage IA, MENFP, cours en ligne, plateforme éducative, assistant IA, école Haïti, 7AF, 8AF, 9AF, baccalauréat Haïti">
     <meta name="robots" content="index, follow" />
     
-    <!-- Google Fonts -->
+    <!-- Preload critical fonts with display swap -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800;900&family=Playfair+Display:wght@500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800;900&family=Playfair+Display:wght@500;600;700&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
+    <noscript><link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800;900&family=Playfair+Display:wght@500;600;700&display=swap" rel="stylesheet"></noscript>
+    
+    <!-- Critical CSS for fast first paint -->
+    <style>
+      /* Critical above-the-fold styles */
+      body { font-family: system-ui, -apple-system, sans-serif; margin: 0; }
+      #root { min-height: 100vh; }
+      .hero-skeleton { 
+        background: linear-gradient(90deg, #f0f0f0 25%, #e8e8e8 50%, #f0f0f0 75%);
+        background-size: 200% 100%;
+        animation: shimmer 1.5s infinite;
+      }
+      @keyframes shimmer { to { background-position: -200% 0; } }
+      .loading-placeholder {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 100vh;
+        background: #fafafa;
+      }
+      @media (prefers-color-scheme: dark) {
+        .loading-placeholder { background: #0a0a0a; }
+        .hero-skeleton { background: linear-gradient(90deg, #1a1a1a 25%, #2a2a2a 50%, #1a1a1a 75%); }
+      }
+    </style>
 
     <!-- Open Graph / Facebook -->
     <meta property="og:type" content="website" />
@@ -118,7 +143,12 @@
 </head>
 
   <body>
-    <div id="root"></div>
+    <div id="root">
+      <!-- Loading placeholder for fast first paint -->
+      <div class="loading-placeholder">
+        <div class="hero-skeleton" style="width: 120px; height: 120px; border-radius: 12px;"></div>
+      </div>
+    </div>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>
