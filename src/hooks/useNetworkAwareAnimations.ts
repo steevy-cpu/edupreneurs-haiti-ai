@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
+import { addMediaQueryListener, addConnectionListener } from '@/lib/eventListeners';
 
 export type AnimationLevel = 'full' | 'reduced' | 'minimal';
 
@@ -59,21 +60,17 @@ export function useNetworkAwareAnimations(): NetworkAwareAnimations {
     // Initial check
     updateLevel();
     
-    // Listen for network changes
+    // Listen for network changes using cross-browser compatible helper
     const connection = (navigator as any).connection;
-    if (connection) {
-      connection.addEventListener('change', updateLevel);
-    }
+    const cleanupConnection = addConnectionListener(connection, updateLevel);
     
-    // Listen for reduced motion preference changes
+    // Listen for reduced motion preference changes using cross-browser compatible helper
     const mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
-    mediaQuery.addEventListener('change', updateLevel);
+    const cleanupMediaQuery = addMediaQueryListener(mediaQuery, updateLevel);
     
     return () => {
-      if (connection) {
-        connection.removeEventListener('change', updateLevel);
-      }
-      mediaQuery.removeEventListener('change', updateLevel);
+      cleanupConnection();
+      cleanupMediaQuery();
     };
   }, [updateLevel]);
 
