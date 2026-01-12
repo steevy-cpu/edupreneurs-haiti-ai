@@ -1,4 +1,5 @@
 import * as React from "react";
+import { addMediaQueryListener } from "@/lib/eventListeners";
 
 const MOBILE_BREAKPOINT = 768;
 
@@ -10,9 +11,14 @@ export function useIsMobile() {
     const onChange = () => {
       setIsMobile(window.innerWidth < MOBILE_BREAKPOINT);
     };
-    mql.addEventListener("change", onChange);
+    
+    // Use cross-browser compatible listener
+    const cleanup = addMediaQueryListener(mql, onChange);
+    
+    // Set initial value
     setIsMobile(window.innerWidth < MOBILE_BREAKPOINT);
-    return () => mql.removeEventListener("change", onChange);
+    
+    return cleanup;
   }, []);
 
   return !!isMobile;

@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
+import { addMediaQueryListener, addConnectionListener } from '@/lib/eventListeners';
 
 export type ConnectionSpeed = 'slow-2g' | '2g' | '3g' | '4g' | 'unknown';
 export type LoadingStrategy = 'minimal' | 'reduced' | 'full';
@@ -73,24 +74,20 @@ export function useNetworkAwareLoading(): NetworkAwareLoading {
     // Initial check
     updateNetworkInfo();
     
-    // Listen for network changes
+    // Listen for network changes using cross-browser compatible helper
     const connection = (navigator as any).connection || 
                        (navigator as any).mozConnection || 
                        (navigator as any).webkitConnection;
     
-    if (connection) {
-      connection.addEventListener('change', updateNetworkInfo);
-    }
+    const cleanupConnection = addConnectionListener(connection, updateNetworkInfo);
     
-    // Listen for reduced motion preference changes
+    // Listen for reduced motion preference changes using cross-browser compatible helper
     const mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
-    mediaQuery.addEventListener('change', updateNetworkInfo);
+    const cleanupMediaQuery = addMediaQueryListener(mediaQuery, updateNetworkInfo);
     
     return () => {
-      if (connection) {
-        connection.removeEventListener('change', updateNetworkInfo);
-      }
-      mediaQuery.removeEventListener('change', updateNetworkInfo);
+      cleanupConnection();
+      cleanupMediaQuery();
     };
   }, [updateNetworkInfo]);
 
