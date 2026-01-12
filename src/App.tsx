@@ -24,7 +24,7 @@ import { FirstTimeUserWelcome, FirstTimeUserTour, AvatarGenerationStep } from "@
 // Eager load critical pages
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
-import Dashboard from "./pages/Dashboard";
+const Dashboard = lazy(() => import("./pages/Dashboard"));
 
 // Lazy load non-critical pages for better performance
 const Onboarding = lazy(() => import("./pages/Onboarding"));
