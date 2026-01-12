@@ -29,11 +29,13 @@ export default function SignupForm() {
     promoCodeValid,
     isValidatingPromo,
     promoGrantsFreeAccess,
+    promoNetworkError,
     handleInputFocus,
     isValidNicknameFormat,
     passwordValidation,
     checkNicknameAvailability,
     debouncedValidatePromoCode,
+    retryPromoValidation,
     referralCode,
     setActiveTab,
     setPendingUserId,
@@ -566,16 +568,33 @@ export default function SignupForm() {
               enterKeyHint="done"
               className="auth-input"
             />
-            {promoCode && promoCode.trim().length >= 3 && !isValidatingPromo && (
-              <p className={`text-xs ${promoCodeValid ? 'text-success' : 'text-destructive'}`}>
-                {promoCodeValid ? '✓ Code valide ! Vous pouvez créer votre compte.' : '✗ Code invalide'}
-              </p>
-            )}
             {isValidatingPromo && (
               <p className="text-xs text-muted-foreground flex items-center gap-1">
                 <Loader2 className="h-3 w-3 animate-spin" />
-                Vérification...
+                Vérification du code...
               </p>
+            )}
+            {promoCode && promoCode.trim().length >= 3 && !isValidatingPromo && (
+              <>
+                {promoNetworkError ? (
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <p className="text-xs text-amber-600">
+                      ⚠️ Erreur de connexion - vérifiez votre internet
+                    </p>
+                    <button
+                      type="button"
+                      onClick={retryPromoValidation}
+                      className="text-xs text-primary underline hover:text-primary/80 transition-colors"
+                    >
+                      Réessayer
+                    </button>
+                  </div>
+                ) : (
+                  <p className={`text-xs ${promoCodeValid ? 'text-success' : 'text-destructive'}`}>
+                    {promoCodeValid ? '✓ Code valide ! Vous pouvez créer votre compte.' : '✗ Code invalide'}
+                  </p>
+                )}
+              </>
             )}
             {!promoCode && (
               <p className="text-xs text-muted-foreground">

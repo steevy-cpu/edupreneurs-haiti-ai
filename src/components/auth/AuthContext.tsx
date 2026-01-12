@@ -64,6 +64,8 @@ export interface AuthContextType {
   isValidatingPromo: boolean;
   setIsValidatingPromo: (validating: boolean) => void;
   promoGrantsFreeAccess: boolean;
+  promoNetworkError: boolean;
+  setPromoNetworkError: (error: boolean) => void;
   setPromoGrantsFreeAccess: (grants: boolean) => void;
   
   // Verification state
@@ -108,9 +110,10 @@ export interface AuthContextType {
     hasUppercase: boolean;
     hasSpecial: boolean;
   };
-  validatePromoCode: (code: string) => Promise<{ valid: boolean; goldReward?: number; grantsFreeAccess?: boolean }>;
+  validatePromoCode: (code: string) => Promise<{ valid: boolean; goldReward?: number; grantsFreeAccess?: boolean; networkError?: boolean }>;
   checkNicknameAvailability: (nickname: string) => void;
   debouncedValidatePromoCode: (code: string) => void;
+  retryPromoValidation: () => void;
 }
 
 const AuthContext = createContext<AuthContextType | null>(null);
@@ -155,6 +158,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [showPromoInput, setShowPromoInput] = useState(false);
   const [isValidatingPromo, setIsValidatingPromo] = useState(false);
   const [promoGrantsFreeAccess, setPromoGrantsFreeAccess] = useState(false);
+  const [promoNetworkError, setPromoNetworkError] = useState(false);
   
   // Verification state
   const [verificationCode, setVerificationCode] = useState("");
@@ -199,28 +203,49 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     });
   }, []);
   
-  // Validate promo code with server
-  const validatePromoCode = async (code: string): Promise<{ valid: boolean; goldReward?: number; grantsFreeAccess?: boolean }> => {
-    if (!code.trim()) return { valid: false };
+  // Validate promo code with server (with retry logic for network errors)
+  const validatePromoCode = async (code: string, retries = 2): Promise<{ valid: boolean; goldReward?: number; grantsFreeAccess?: boolean; networkError?: boolean }> => {
+    if (!code.trim()) return { valid: false, networkError: false };
     
     setIsValidatingPromo(true);
-    try {
-      const { data, error } = await supabase.functions.invoke('validate-promo-code', {
-        body: { code: code.trim() }
-      });
-      
-      if (error) {
-        console.error('Promo code validation error:', error);
-        return { valid: false };
+    
+    for (let attempt = 0; attempt <= retries; attempt++) {
+      try {
+        const { data, error } = await supabase.functions.invoke('validate-promo-code', {
+          body: { code: code.trim() }
+        });
+        
+        if (error) {
+          console.error(`Promo code validation error (attempt ${attempt + 1}):`, error);
+          // Check if it's a network error
+          if (error.message?.includes('fetch') || error.message?.includes('network') || error.message?.includes('Failed')) {
+            if (attempt < retries) {
+              await new Promise(resolve => setTimeout(resolve, 500));
+              continue;
+            }
+            return { valid: false, networkError: true };
+          }
+          return { valid: false, networkError: false };
+        }
+        
+        return { 
+          valid: data.valid, 
+          goldReward: data.goldReward, 
+          grantsFreeAccess: data.grantsFreeAccess,
+          networkError: false 
+        };
+      } catch (error: any) {
+        console.error(`Promo code validation failed (attempt ${attempt + 1}):`, error);
+        if (attempt < retries) {
+          await new Promise(resolve => setTimeout(resolve, 500));
+          continue;
+        }
+        return { valid: false, networkError: true };
       }
-      
-      return { valid: data.valid, goldReward: data.goldReward, grantsFreeAccess: data.grantsFreeAccess };
-    } catch (error) {
-      console.error('Promo code validation failed:', error);
-      return { valid: false };
-    } finally {
-      setIsValidatingPromo(false);
     }
+    
+    setIsValidatingPromo(false);
+    return { valid: false, networkError: true };
   };
   
   // Check nickname availability
@@ -262,17 +287,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
   
   // Debounced promo code validation
-  const debouncedValidatePromoCode = (code: string) => {
+  const debouncedValidatePromoCode = useCallback((code: string) => {
     if (promoCodeCheckTimer.current) {
       clearTimeout(promoCodeCheckTimer.current);
     }
 
+    // Reset network error on new input
+    setPromoNetworkError(false);
+
     if (!code.trim() || code.trim().length < 3) {
       setPromoCodeValid(false);
       setPromoGrantsFreeAccess(false);
-      if (signupData.payment === 'promo_code') {
-        setSignupData(prev => ({ ...prev, payment: '' }));
-      }
+      setSignupData(prev => prev.payment === 'promo_code' ? { ...prev, payment: '' } : prev);
       return;
     }
 
@@ -282,13 +308,24 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const result = await validatePromoCode(code);
       setPromoCodeValid(result.valid);
       setPromoGrantsFreeAccess(result.grantsFreeAccess || false);
+      setPromoNetworkError(result.networkError || false);
+      
       if (result.valid) {
         setSignupData(prev => ({ ...prev, payment: 'promo_code' }));
-      } else if (signupData.payment === 'promo_code') {
-        setSignupData(prev => ({ ...prev, payment: '' }));
+      } else {
+        setSignupData(prev => prev.payment === 'promo_code' ? { ...prev, payment: '' } : prev);
       }
-    }, 600);
-  };
+      setIsValidatingPromo(false);
+    }, 400); // Reduced from 600ms to 400ms for faster feedback
+  }, []);
+
+  // Retry promo validation (for manual retry button)
+  const retryPromoValidation = useCallback(() => {
+    if (promoCode.trim().length >= 3) {
+      setPromoNetworkError(false);
+      debouncedValidatePromoCode(promoCode);
+    }
+  }, [promoCode, debouncedValidatePromoCode]);
   
   // Countdown timer for resend cooldown
   useEffect(() => {
@@ -418,6 +455,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setIsValidatingPromo,
     promoGrantsFreeAccess,
     setPromoGrantsFreeAccess,
+    promoNetworkError,
+    setPromoNetworkError,
     verificationCode,
     setVerificationCode,
     pendingUserId,
@@ -447,6 +486,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     validatePromoCode,
     checkNicknameAvailability,
     debouncedValidatePromoCode,
+    retryPromoValidation,
   };
   
   return (
