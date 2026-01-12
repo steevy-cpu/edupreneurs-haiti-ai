@@ -37,6 +37,27 @@ All colors MUST be HSL.
   }
 }
 
+/* Auth form mobile keyboard optimizations */
+.auth-input {
+  touch-action: manipulation;
+  -webkit-user-select: text;
+  user-select: text;
+}
+
+/* Prevent zoom on input focus (iOS) - 16px minimum prevents auto-zoom */
+@media screen and (max-width: 768px) {
+  .auth-input {
+    font-size: 16px !important;
+  }
+}
+
+/* Smooth keyboard appearance for auth page */
+.auth-page {
+  min-height: 100vh;
+  min-height: 100dvh;
+  min-height: -webkit-fill-available;
+}
+
 @layer base {
   :root {
     --background: 0 0% 98%;
