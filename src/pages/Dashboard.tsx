@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, useCallback } from "react";
+import { useState, useEffect, useMemo, useCallback, lazy, Suspense } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { Helmet } from "react-helmet";
 import { supabase } from "@/integrations/supabase/client";
@@ -26,13 +26,8 @@ import {
 import { usePWAInstall } from "@/hooks/usePWAInstall";
 import { useDashboardAnalytics } from "@/hooks/useDashboardAnalytics";
 import { useBannerPriority } from "@/hooks/useBannerPriority";
-import { WeeklyActivityChart } from "@/components/dashboard/WeeklyActivityChart";
-import { SubjectProgressChart } from "@/components/dashboard/SubjectProgressChart";
 import { QuickActionsCard } from "@/components/dashboard/QuickActionsCard";
 import { CollapsibleSection } from "@/components/dashboard/CollapsibleSection";
-import { LearningStreakWidget } from "@/components/dashboard/LearningStreakWidget";
-import { LearningInsightsPanel } from "@/components/dashboard/LearningInsightsPanel";
-import { AchievementsBadges } from "@/components/dashboard/AchievementsBadges";
 import { Progress } from "@/components/ui/progress";
 import { NotificationPermissionBanner } from "@/components/NotificationPermissionBanner";
 import { PWAInstallPrompt } from "@/components/PWAInstallPrompt";
@@ -47,9 +42,28 @@ import {
   DashboardKPISkeleton, 
   LeaderboardSkeleton,
   NotesListSkeleton,
-  ChartSkeleton
+  ChartSkeleton,
+  AnalyticsWidgetSkeleton,
+  DashboardFullSkeleton
 } from "@/components/shared/SkeletonLoaders";
 import { ChartErrorBoundary } from "@/components/dashboard/ChartErrorBoundary";
+
+// Lazy-load heavy chart and widget components for 3G optimization
+const WeeklyActivityChart = lazy(() => 
+  import("@/components/dashboard/WeeklyActivityChart").then(m => ({ default: m.WeeklyActivityChart }))
+);
+const SubjectProgressChart = lazy(() => 
+  import("@/components/dashboard/SubjectProgressChart").then(m => ({ default: m.SubjectProgressChart }))
+);
+const LearningStreakWidget = lazy(() => 
+  import("@/components/dashboard/LearningStreakWidget").then(m => ({ default: m.LearningStreakWidget }))
+);
+const LearningInsightsPanel = lazy(() => 
+  import("@/components/dashboard/LearningInsightsPanel").then(m => ({ default: m.LearningInsightsPanel }))
+);
+const AchievementsBadges = lazy(() => 
+  import("@/components/dashboard/AchievementsBadges").then(m => ({ default: m.AchievementsBadges }))
+);
 
 interface Note {
   id: string;
@@ -526,8 +540,10 @@ const Dashboard = () => {
           {/* Analytics Widgets - Collapsible */}
           <CollapsibleSection title="Objectifs" icon={<Target className="w-5 h-5" />} storageKey="analytics-widgets">
           <div data-tour="analytics-widgets" className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {/* Learning Streak - Using reusable component */}
-            <LearningStreakWidget streak={analytics.streak} />
+            {/* Learning Streak - Using lazy-loaded component */}
+            <Suspense fallback={<AnalyticsWidgetSkeleton />}>
+              <LearningStreakWidget streak={analytics.streak} />
+            </Suspense>
 
             {/* Weekly Goal */}
             <Card className="bg-gradient-to-br from-blue-500/10 to-cyan-500/10 border-blue-500/20">
@@ -552,7 +568,7 @@ const Dashboard = () => {
           </div>
           </CollapsibleSection>
 
-          {/* Charts Section - Collapsible */}
+          {/* Charts Section - Collapsible with Lazy Loading */}
           <CollapsibleSection title="Graphiques" icon={<TrendingUp className="w-5 h-5" />} storageKey="charts-section">
           <div data-tour="charts-section" className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             {analyticsLoading ? (
@@ -562,25 +578,33 @@ const Dashboard = () => {
               </>
             ) : (
               <>
-                <ChartErrorBoundary fallbackHeight={250}>
-                  <WeeklyActivityChart data={analytics.weeklyActivity} />
-                </ChartErrorBoundary>
-                <ChartErrorBoundary fallbackHeight={250}>
-                  <SubjectProgressChart data={analytics.subjectProgress} />
-                </ChartErrorBoundary>
+                <Suspense fallback={<ChartSkeleton height={250} />}>
+                  <ChartErrorBoundary fallbackHeight={250}>
+                    <WeeklyActivityChart data={analytics.weeklyActivity} />
+                  </ChartErrorBoundary>
+                </Suspense>
+                <Suspense fallback={<ChartSkeleton height={250} />}>
+                  <ChartErrorBoundary fallbackHeight={250}>
+                    <SubjectProgressChart data={analytics.subjectProgress} />
+                  </ChartErrorBoundary>
+                </Suspense>
               </>
             )}
           </div>
           </CollapsibleSection>
 
-          {/* Insights and Achievements - Using reusable components */}
+          {/* Insights and Achievements - Using lazy-loaded components */}
           <CollapsibleSection title="Réalisations" icon={<Award className="w-5 h-5" />} storageKey="achievements">
           <div className="space-y-6">
             {/* Personalized Learning Insights */}
-            <LearningInsightsPanel analytics={analytics} />
+            <Suspense fallback={<AnalyticsWidgetSkeleton />}>
+              <LearningInsightsPanel analytics={analytics} />
+            </Suspense>
             
-            {/* Badges using reusable component */}
-            <AchievementsBadges achievements={[]} totalLessons={totalLessonsCompleted} />
+            {/* Badges using lazy-loaded component */}
+            <Suspense fallback={<Skeleton className="h-32 w-full rounded-xl" />}>
+              <AchievementsBadges achievements={[]} totalLessons={totalLessonsCompleted} />
+            </Suspense>
           </div>
           </CollapsibleSection>
 
