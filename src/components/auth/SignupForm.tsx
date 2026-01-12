@@ -30,6 +30,7 @@ export default function SignupForm() {
     isValidatingPromo,
     promoGrantsFreeAccess,
     promoNetworkError,
+    promoRateLimitSeconds,
     handleInputFocus,
     isValidNicknameFormat,
     passwordValidation,
@@ -574,7 +575,15 @@ export default function SignupForm() {
                 Vérification du code...
               </p>
             )}
-            {promoCode && promoCode.trim().length >= 3 && !isValidatingPromo && (
+            {promoRateLimitSeconds > 0 && (
+              <div className="flex items-center gap-2 p-2 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 rounded-md">
+                <span className="text-amber-600 dark:text-amber-400">⏳</span>
+                <p className="text-xs text-amber-700 dark:text-amber-300">
+                  Trop de tentatives. Patientez {promoRateLimitSeconds}s avant de réessayer.
+                </p>
+              </div>
+            )}
+            {promoCode && promoCode.trim().length >= 3 && !isValidatingPromo && promoRateLimitSeconds === 0 && (
               <>
                 {promoNetworkError ? (
                   <div className="flex items-center gap-2 flex-wrap">
@@ -596,7 +605,7 @@ export default function SignupForm() {
                 )}
               </>
             )}
-            {!promoCode && (
+            {!promoCode && promoRateLimitSeconds === 0 && (
               <p className="text-xs text-muted-foreground">
                 Contactez-nous pour obtenir un code d'accès.
               </p>

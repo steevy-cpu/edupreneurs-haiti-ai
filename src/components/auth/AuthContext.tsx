@@ -66,6 +66,7 @@ export interface AuthContextType {
   promoGrantsFreeAccess: boolean;
   promoNetworkError: boolean;
   setPromoNetworkError: (error: boolean) => void;
+  promoRateLimitSeconds: number;
   setPromoGrantsFreeAccess: (grants: boolean) => void;
   
   // Verification state
@@ -159,6 +160,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [isValidatingPromo, setIsValidatingPromo] = useState(false);
   const [promoGrantsFreeAccess, setPromoGrantsFreeAccess] = useState(false);
   const [promoNetworkError, setPromoNetworkError] = useState(false);
+  const [promoRateLimitSeconds, setPromoRateLimitSeconds] = useState(0);
+  const rateLimitTimerRef = useRef<NodeJS.Timeout>();
   
   // Verification state
   const [verificationCode, setVerificationCode] = useState("");
@@ -203,9 +206,31 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     });
   }, []);
   
+  // Start rate limit countdown
+  const startRateLimitCountdown = useCallback((seconds: number) => {
+    setPromoRateLimitSeconds(seconds);
+    if (rateLimitTimerRef.current) {
+      clearInterval(rateLimitTimerRef.current);
+    }
+    rateLimitTimerRef.current = setInterval(() => {
+      setPromoRateLimitSeconds(prev => {
+        if (prev <= 1) {
+          clearInterval(rateLimitTimerRef.current);
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+  }, []);
+
   // Validate promo code with server (with retry logic for network errors)
-  const validatePromoCode = async (code: string, retries = 2): Promise<{ valid: boolean; goldReward?: number; grantsFreeAccess?: boolean; networkError?: boolean }> => {
+  const validatePromoCode = async (code: string, retries = 1): Promise<{ valid: boolean; goldReward?: number; grantsFreeAccess?: boolean; networkError?: boolean; rateLimited?: boolean }> => {
     if (!code.trim()) return { valid: false, networkError: false };
+    
+    // Don't make requests while rate limited
+    if (promoRateLimitSeconds > 0) {
+      return { valid: false, networkError: false, rateLimited: true };
+    }
     
     setIsValidatingPromo(true);
     
@@ -217,6 +242,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         
         if (error) {
           console.error(`Promo code validation error (attempt ${attempt + 1}):`, error);
+          
+          // Check for rate limit error (429)
+          if (error.message?.includes('429') || error.message?.includes('rate') || error.message?.includes('Limite')) {
+            const retryAfter = 60; // Default to 60 seconds
+            startRateLimitCountdown(retryAfter);
+            return { valid: false, networkError: false, rateLimited: true };
+          }
+          
           // Check if it's a network error
           if (error.message?.includes('fetch') || error.message?.includes('network') || error.message?.includes('Failed')) {
             if (attempt < retries) {
@@ -228,14 +261,29 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           return { valid: false, networkError: false };
         }
         
+        // Check if response indicates rate limit
+        if (data?.error?.includes('Limite') || data?.retryAfter) {
+          const retryAfter = data.retryAfter || 60;
+          startRateLimitCountdown(retryAfter);
+          return { valid: false, networkError: false, rateLimited: true };
+        }
+        
         return { 
           valid: data.valid, 
           goldReward: data.goldReward, 
           grantsFreeAccess: data.grantsFreeAccess,
-          networkError: false 
+          networkError: false,
+          rateLimited: false
         };
       } catch (error: any) {
         console.error(`Promo code validation failed (attempt ${attempt + 1}):`, error);
+        
+        // Check for 429 in catch block
+        if (error?.status === 429 || error?.message?.includes('429')) {
+          startRateLimitCountdown(60);
+          return { valid: false, networkError: false, rateLimited: true };
+        }
+        
         if (attempt < retries) {
           await new Promise(resolve => setTimeout(resolve, 500));
           continue;
@@ -295,6 +343,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     // Reset network error on new input
     setPromoNetworkError(false);
 
+    // Don't validate while rate limited
+    if (promoRateLimitSeconds > 0) {
+      return;
+    }
+
     if (!code.trim() || code.trim().length < 3) {
       setPromoCodeValid(false);
       setPromoGrantsFreeAccess(false);
@@ -304,28 +357,54 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     setIsValidatingPromo(true);
 
+    // Increase debounce to 800ms to reduce rate limit hits
     promoCodeCheckTimer.current = setTimeout(async () => {
       const result = await validatePromoCode(code);
+      
+      // Don't update state if rate limited (will retry automatically when countdown ends)
+      if (result.rateLimited) {
+        setIsValidatingPromo(false);
+        return;
+      }
+      
       setPromoCodeValid(result.valid);
       setPromoGrantsFreeAccess(result.grantsFreeAccess || false);
       setPromoNetworkError(result.networkError || false);
-      
       if (result.valid) {
         setSignupData(prev => ({ ...prev, payment: 'promo_code' }));
       } else {
         setSignupData(prev => prev.payment === 'promo_code' ? { ...prev, payment: '' } : prev);
       }
       setIsValidatingPromo(false);
-    }, 400); // Reduced from 600ms to 400ms for faster feedback
-  }, []);
+    }, 800); // Increased to 800ms to reduce rate limit hits
+  }, [promoRateLimitSeconds]);
 
   // Retry promo validation (for manual retry button)
   const retryPromoValidation = useCallback(() => {
-    if (promoCode.trim().length >= 3) {
+    if (promoCode.trim().length >= 3 && promoRateLimitSeconds === 0) {
       setPromoNetworkError(false);
       debouncedValidatePromoCode(promoCode);
     }
-  }, [promoCode, debouncedValidatePromoCode]);
+  }, [promoCode, promoRateLimitSeconds, debouncedValidatePromoCode]);
+
+  // Auto-retry promo validation when rate limit expires
+  const prevRateLimitRef = useRef(promoRateLimitSeconds);
+  useEffect(() => {
+    // If rate limit just expired (was > 0, now is 0) and there's a pending code
+    if (prevRateLimitRef.current > 0 && promoRateLimitSeconds === 0 && promoCode.trim().length >= 3) {
+      debouncedValidatePromoCode(promoCode);
+    }
+    prevRateLimitRef.current = promoRateLimitSeconds;
+  }, [promoRateLimitSeconds, promoCode, debouncedValidatePromoCode]);
+
+  // Cleanup rate limit timer on unmount
+  useEffect(() => {
+    return () => {
+      if (rateLimitTimerRef.current) {
+        clearInterval(rateLimitTimerRef.current);
+      }
+    };
+  }, []);
   
   // Countdown timer for resend cooldown
   useEffect(() => {
@@ -457,6 +536,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setPromoGrantsFreeAccess,
     promoNetworkError,
     setPromoNetworkError,
+    promoRateLimitSeconds,
     verificationCode,
     setVerificationCode,
     pendingUserId,
