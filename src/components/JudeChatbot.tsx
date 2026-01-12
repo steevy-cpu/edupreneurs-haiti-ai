@@ -91,14 +91,12 @@ export const JudeChatbot = () => {
     (chatRef as any).current = node;
   }, [floatingRef, chatRef]);
 
-  // Hide JudeChatbot in visitor mode or on specific routes (AFTER all hooks)
-  if (isVisitor || HIDDEN_ROUTES.includes(location.pathname)) {
-    return null;
-  }
-
-  // Fetch user profile on mount
+  // Fetch user profile on mount - MUST be before early return (React Hooks Rule)
   useEffect(() => {
     const fetchUserProfile = async () => {
+      // Skip fetch if visitor or hidden route
+      if (isVisitor || HIDDEN_ROUTES.includes(location.pathname)) return;
+      
       try {
         const { data: { user } } = await supabase.auth.getUser();
         if (user) {
@@ -140,15 +138,20 @@ export const JudeChatbot = () => {
     };
 
     fetchUserProfile();
-  }, []);
+  }, [isVisitor, location.pathname]);
 
-  const scrollToBottom = () => {
+  const scrollToBottom = useCallback(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  };
+  }, []);
 
   useEffect(() => {
     scrollToBottom();
-  }, [messages]);
+  }, [messages, scrollToBottom]);
+
+  // Hide JudeChatbot in visitor mode or on specific routes - AFTER all hooks
+  if (isVisitor || HIDDEN_ROUTES.includes(location.pathname)) {
+    return null;
+  }
 
   const handleSendMessage = async () => {
     if (!input.trim() || isTyping) return;
