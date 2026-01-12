@@ -2657,7 +2657,16 @@ const Community = () => {
                       sendMessage();
                     }
                   }}
-                  className="text-base resize-none min-h-[40px] max-h-[120px] overflow-y-auto"
+                  onFocus={(e) => {
+                    setTimeout(() => {
+                      e.target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    }, 300);
+                  }}
+                  className="text-base resize-none min-h-[40px] max-h-[120px] overflow-y-auto mobile-input tap-highlight-none"
+                  autoCapitalize="sentences"
+                  autoCorrect="on"
+                  spellCheck={false}
+                  enterKeyHint="send"
                   rows={1}
                   style={{
                     height: 'auto',

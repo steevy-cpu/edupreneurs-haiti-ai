@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback, type FocusEvent } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -166,6 +166,13 @@ const Feed = () => {
   const [reportDialogOpen, setReportDialogOpen] = useState(false);
   const [postToReport, setPostToReport] = useState<Post | null>(null);
   const [isFounder, setIsFounder] = useState(false);
+
+  // Mobile keyboard optimization - scroll input into view
+  const handleInputFocus = useCallback((e: FocusEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    setTimeout(() => {
+      e.target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }, 300);
+  }, []);
 
   // Transform demo data for visitors
   useEffect(() => {
@@ -904,7 +911,12 @@ const Feed = () => {
                   addComment(postId, comment.id);
                 }
               }}
-              className="flex-1 h-8 text-sm"
+              onFocus={handleInputFocus}
+              className="flex-1 h-8 text-sm mobile-input tap-highlight-none"
+              autoCapitalize="sentences"
+              autoCorrect="on"
+              spellCheck={false}
+              enterKeyHint="send"
             />
             <Popover>
               <PopoverTrigger asChild>
@@ -1210,7 +1222,12 @@ const Feed = () => {
                             addComment(post.id);
                           }
                         }}
-                        className="flex-1 h-9 text-sm"
+                        onFocus={handleInputFocus}
+                        className="flex-1 h-9 text-sm mobile-input tap-highlight-none"
+                        autoCapitalize="sentences"
+                        autoCorrect="on"
+                        spellCheck={false}
+                        enterKeyHint="send"
                       />
                       <Popover>
                         <PopoverTrigger asChild>
