@@ -222,22 +222,6 @@ export default function SignupForm() {
             style={{ width: `${(signupStep / totalSignupSteps) * 100}%` }}
           />
         </div>
-        <div className="flex justify-between mt-2">
-          {[1, 2, 3].map((step) => (
-            <div 
-              key={step}
-              className={`flex items-center justify-center w-8 h-8 rounded-full text-sm font-bold transition-all ${
-                step < signupStep 
-                  ? 'bg-primary text-primary-foreground' 
-                  : step === signupStep 
-                    ? 'bg-primary text-primary-foreground ring-4 ring-primary/20' 
-                    : 'bg-muted text-muted-foreground'
-              }`}
-            >
-              {step < signupStep ? '✓' : step}
-            </div>
-          ))}
-        </div>
       </div>
 
       {/* Step 1: Account Info */}
