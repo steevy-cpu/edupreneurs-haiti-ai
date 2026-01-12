@@ -95,28 +95,30 @@ export const ProgressiveImage = ({
       ref={imgRef as React.RefObject<HTMLDivElement>}
       className={cn("relative overflow-hidden", placeholderClassName)}
     >
-      {/* Placeholder/blur background */}
-      {!isLoaded && !hasError && (
-        <div 
-          className="absolute inset-0 bg-muted animate-pulse"
-          style={{
-            backgroundImage: `url(${placeholder})`,
-            backgroundSize: 'cover',
-            backgroundPosition: 'center',
-            filter: 'blur(10px)',
-            transform: 'scale(1.1)'
-          }}
-        />
-      )}
+      {/* Placeholder/blur background - always render to maintain layout */}
+      <div 
+        className={cn(
+          "absolute inset-0 bg-muted transition-opacity duration-300",
+          isLoaded || hasError ? "opacity-0" : "opacity-100 animate-pulse"
+        )}
+        style={{
+          backgroundImage: `url(${placeholder})`,
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          filter: 'blur(10px)',
+          transform: 'scale(1.1)'
+        }}
+        aria-hidden="true"
+      />
       
-      {/* Actual image */}
+      {/* Actual image - always in DOM to preserve layout */}
       <img
         src={currentSrc}
         alt={alt}
         loading={priority ? "eager" : "lazy"}
         decoding="async"
         className={cn(
-          "transition-opacity duration-500 ease-out",
+          "relative w-full h-auto transition-opacity duration-500 ease-out",
           isLoaded ? "opacity-100" : "opacity-0",
           className
         )}
