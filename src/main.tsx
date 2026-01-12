@@ -76,8 +76,15 @@ if (rootElement) {
     </ErrorBoundary>
   );
 
-  // Clear watchdog after a short delay to ensure React has replaced the placeholder
-  requestAnimationFrame(() => {
-    clearTimeout(mountWatchdog);
+  // Use MutationObserver to detect when React actually replaces the placeholder
+  const observer = new MutationObserver(() => {
+    const placeholder = rootElement.querySelector('.loading-placeholder');
+    if (!placeholder) {
+      // Placeholder is gone - React mounted successfully
+      clearTimeout(mountWatchdog);
+      observer.disconnect();
+    }
   });
+
+  observer.observe(rootElement, { childList: true, subtree: true });
 }
