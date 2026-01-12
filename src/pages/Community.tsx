@@ -2111,19 +2111,7 @@ const Community = () => {
 
         <ScrollArea className="flex-1 h-[calc(100dvh-80px)] md:h-[calc(100dvh-80px)]">
           {isLoadingConversations ? (
-            // Loading skeleton
-            <div className="space-y-0">
-              {[1, 2, 3, 4, 5].map((i) => (
-                <div key={i} className="flex items-center gap-3 p-3 sm:p-4 border-b border-border/50 animate-pulse">
-                  <div className="h-10 w-10 sm:h-12 sm:w-12 rounded-full bg-muted/50 flex-shrink-0" />
-                  <div className="flex-1 min-w-0">
-                    <div className="h-4 w-32 bg-muted/50 rounded mb-2" />
-                    <div className="h-3 w-48 bg-muted/30 rounded" />
-                  </div>
-                  <div className="h-3 w-8 bg-muted/30 rounded" />
-                </div>
-              ))}
-            </div>
+            <ConversationSkeleton />
           ) : conversations.length === 0 ? (
             <div className="py-8 px-4">
               <EmptyState
@@ -2619,14 +2607,20 @@ const Community = () => {
                     </Button>
                   </PopoverTrigger>
                   <PopoverContent className="w-full p-0 border-0" align="start">
-                    <EmojiPicker
-                      onEmojiClick={(emojiData) => {
-                        setNewMessage((prev) => prev + emojiData.emoji);
-                        setShowEmojiPicker(false);
-                      }}
-                      width="100%"
-                      height="400px"
-                    />
+                    <Suspense fallback={
+                      <div className="w-full h-[400px] flex items-center justify-center bg-background">
+                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+                      </div>
+                    }>
+                      <EmojiPicker
+                        onEmojiClick={(emojiData) => {
+                          setNewMessage((prev) => prev + emojiData.emoji);
+                          setShowEmojiPicker(false);
+                        }}
+                        width="100%"
+                        height="400px"
+                      />
+                    </Suspense>
                   </PopoverContent>
                 </Popover>
 
