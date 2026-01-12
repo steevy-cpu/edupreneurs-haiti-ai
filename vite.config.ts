@@ -47,18 +47,8 @@ export default defineConfig(({ mode }) => ({
           if (id.includes('@tanstack/')) {
             return 'query';
           }
-          // Radix UI components - load on demand
-          if (id.includes('@radix-ui/')) {
-            return 'ui-radix';
-          }
-          // Framer motion - heavy, defer
-          if (id.includes('framer-motion')) {
-            return 'motion';
-          }
-          // Charts - only needed on specific pages
-          if (id.includes('recharts')) {
-            return 'charts';
-          }
+          // Note: Removed aggressive chunking for radix-ui, framer-motion, and recharts
+          // These libraries have internal circular dependencies that cause TDZ errors when manually split
           // Chess - only needed on chess page
           if (id.includes('chess') || id.includes('react-chessboard')) {
             return 'chess';
