@@ -6,6 +6,8 @@ import { ChevronRight, ChevronLeft, X, Sparkles } from "lucide-react";
 import { useFirstTimeUser } from "@/contexts/FirstTimeUserContext";
 import ericStudentDesk from "@/assets/eric-student-desk.png";
 import SimpleTypewriter from "@/components/visitor/SimpleTypewriter";
+import { useNetworkAwareAnimations } from "@/hooks/useNetworkAwareAnimations";
+import { preloadImage } from "@/utils/performanceOptimization";
 
 interface TourStep {
   path: string;
@@ -72,9 +74,15 @@ const FirstTimeUserTour = () => {
     completeTour,
     userGrade 
   } = useFirstTimeUser();
+  const { shouldShowGlow } = useNetworkAwareAnimations();
   
   const [isNavigating, setIsNavigating] = useState(false);
   const [typewriterKey, setTypewriterKey] = useState(0);
+
+  // Preload Eric image on mount
+  useEffect(() => {
+    preloadImage(ericStudentDesk).catch(() => {});
+  }, []);
 
   const currentStep = tourSteps[tourStep];
   const isLastStep = tourStep === tourSteps.length - 1;
@@ -139,7 +147,7 @@ const FirstTimeUserTour = () => {
               <img
                 src={ericStudentDesk}
                 alt="Jude"
-                className="w-20 h-20 object-contain drop-shadow-lg"
+                className={`w-20 h-20 object-contain ${shouldShowGlow ? 'drop-shadow-lg' : 'drop-shadow'}`}
               />
             </div>
 

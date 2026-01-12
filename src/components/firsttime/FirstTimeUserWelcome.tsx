@@ -4,15 +4,23 @@ import ericStudentDesk from '@/assets/eric-student-desk.png';
 import SimpleTypewriter from '@/components/visitor/SimpleTypewriter';
 import { useFirstTimeUser } from '@/contexts/FirstTimeUserContext';
 import { Progress } from '@/components/ui/progress';
+import { useNetworkAwareAnimations } from '@/hooks/useNetworkAwareAnimations';
+import { preloadImage } from '@/utils/performanceOptimization';
 
 const FirstTimeUserWelcome = () => {
   const { showWelcome, userNickname, completeWelcome, isLoading } = useFirstTimeUser();
+  const { shouldAnimate, shouldShowGlow } = useNetworkAwareAnimations();
   
   const [phase, setPhase] = useState<'greeting' | 'intro' | 'walkthrough' | 'progress' | 'done'>('greeting');
   const [showGreeting, setShowGreeting] = useState(false);
   const [showIntro, setShowIntro] = useState(false);
   const [showWalkthrough, setShowWalkthrough] = useState(false);
   const [progressValue, setProgressValue] = useState(0);
+
+  // Preload Eric image on mount for better UX
+  useEffect(() => {
+    preloadImage(ericStudentDesk).catch(() => {});
+  }, []);
 
   useEffect(() => {
     if (!showWelcome || isLoading) {
@@ -84,56 +92,57 @@ const FirstTimeUserWelcome = () => {
 
   const displayName = userNickname || 'ami(e)';
 
+  // Network-aware animation config - reduce animations on slow connections
+  const overlayAnimation = shouldAnimate 
+    ? { initial: { opacity: 0 }, animate: { opacity: 1 }, exit: { opacity: 0 } }
+    : {};
+  const containerAnimation = shouldAnimate
+    ? { initial: { scale: 0.8, opacity: 0 }, animate: { scale: 1, opacity: 1 }, exit: { scale: 0.9, opacity: 0 } }
+    : {};
+  const imageAnimation = shouldAnimate
+    ? { initial: { scale: 0, rotate: -10 }, animate: { scale: 1, rotate: 0 } }
+    : {};
+
   return (
     <AnimatePresence>
       <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        exit={{ opacity: 0 }}
+        {...overlayAnimation}
         transition={{ duration: 0.3 }}
         className="fixed inset-0 z-[9999] flex items-center justify-center"
       >
-        {/* Dark overlay */}
+        {/* Dark overlay - disable blur on slow connections */}
         <motion.div 
-          initial={{ opacity: 0 }}
+          initial={shouldAnimate ? { opacity: 0 } : undefined}
           animate={{ opacity: 0.5 }}
-          exit={{ opacity: 0 }}
-          className="absolute inset-0 bg-black/50 backdrop-blur-sm"
+          exit={shouldAnimate ? { opacity: 0 } : undefined}
+          className={`absolute inset-0 bg-black/50 ${shouldShowGlow ? 'backdrop-blur-sm' : ''}`}
         />
         
         {/* Floating container */}
         <motion.div
-          initial={{ scale: 0.8, opacity: 0 }}
-          animate={{ scale: 1, opacity: 1 }}
-          exit={{ scale: 0.9, opacity: 0 }}
-          transition={{ type: "spring", damping: 20, stiffness: 300 }}
+          {...containerAnimation}
+          transition={shouldAnimate ? { type: "spring", damping: 20, stiffness: 300 } : { duration: 0.1 }}
           className="relative flex flex-col items-center gap-4 sm:gap-6 p-4 sm:p-8"
         >
           {/* Jude Image */}
           <motion.div
-            initial={{ scale: 0, rotate: -10 }}
-            animate={{ scale: 1, rotate: 0 }}
-            transition={{ 
-              type: "spring", 
-              damping: 15, 
-              stiffness: 200,
-              delay: 0.2 
-            }}
+            {...imageAnimation}
+            transition={shouldAnimate ? { type: "spring", damping: 15, stiffness: 200, delay: 0.2 } : { duration: 0.1 }}
             className="relative"
           >
             <img
               src={ericStudentDesk}
               alt="Jude"
-              className="w-32 h-32 sm:w-40 sm:h-40 lg:w-48 lg:h-48 object-contain drop-shadow-2xl"
+              className={`w-32 h-32 sm:w-40 sm:h-40 lg:w-48 lg:h-48 object-contain ${shouldShowGlow ? 'drop-shadow-2xl' : 'drop-shadow-md'}`}
             />
           </motion.div>
 
           {/* Speech Bubble */}
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
+            initial={shouldAnimate ? { opacity: 0, y: 20 } : undefined}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.4 }}
-            className="relative bg-card/95 backdrop-blur-md rounded-2xl px-6 py-4 sm:px-8 sm:py-5 max-w-xs sm:max-w-sm lg:max-w-md shadow-xl border border-border/50"
+            className={`relative bg-card/95 ${shouldShowGlow ? 'backdrop-blur-md' : ''} rounded-2xl px-6 py-4 sm:px-8 sm:py-5 max-w-xs sm:max-w-sm lg:max-w-md shadow-xl border border-border/50`}
           >
             {/* Speech bubble tail */}
             <div className="absolute -top-3 left-1/2 -translate-x-1/2 w-0 h-0 border-l-[12px] border-l-transparent border-r-[12px] border-r-transparent border-b-[12px] border-b-card/95" />

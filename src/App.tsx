@@ -20,7 +20,11 @@ import { clearAllPersistedCache } from "@/utils/queryPersistence";
 import { VisitorBanner } from "@/components/visitor";
 const VisitorTour = lazy(() => import("@/components/visitor/VisitorTour").then(m => ({ default: m.VisitorTour })));
 import { VisitorMusicSync } from "@/components/visitor/VisitorMusicSync";
-import { FirstTimeUserWelcome, FirstTimeUserTour, AvatarGenerationStep } from "@/components/firsttime";
+
+// Lazy load first-time user components for better 3G performance (~100KB deferred)
+const FirstTimeUserWelcome = lazy(() => import("@/components/firsttime/FirstTimeUserWelcome"));
+const FirstTimeUserTour = lazy(() => import("@/components/firsttime/FirstTimeUserTour"));
+const AvatarGenerationStep = lazy(() => import("@/components/firsttime/AvatarGenerationStep"));
 
 // Lazy load all pages for better 3G performance
 const Index = lazy(() => import("./pages/Index"));
@@ -142,9 +146,11 @@ const App = () => (
                 <Suspense fallback={null}>
                   <VisitorTour />
                 </Suspense>
-                <FirstTimeUserWelcome />
-                <AvatarGenerationStep />
-                <FirstTimeUserTour />
+                <Suspense fallback={null}>
+                  <FirstTimeUserWelcome />
+                  <AvatarGenerationStep />
+                  <FirstTimeUserTour />
+                </Suspense>
                 <EricChatbotWrapper />
               <Suspense fallback={<PageLoader />}>
                 <Routes>

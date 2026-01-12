@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback, useMemo } from "react";
+import { useState, useEffect, useRef, useCallback, useMemo, lazy, Suspense } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -7,7 +7,8 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { useToast } from "@/hooks/use-toast";
 import { Send, ArrowLeft, Search, Smile, Check, CheckCheck, BadgeCheck, Edit2, Trash2, X, MoreVertical, ImageIcon, Download, Users, FileText, Paperclip } from "lucide-react";
 import { useMessageSounds } from "@/hooks/useMessageSounds";
-import EmojiPicker from "emoji-picker-react";
+// Lazy load EmojiPicker (~200KB) - only loaded when user opens emoji picker
+const EmojiPicker = lazy(() => import("emoji-picker-react"));
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
@@ -24,6 +25,7 @@ import chatBackground from "@/assets/background-chat.png";
 import { logger } from "@/utils/logger";
 import { preloadImage } from "@/utils/performanceOptimization";
 import { useNetworkAwareAnimations } from "@/hooks/useNetworkAwareAnimations";
+import { useNetworkAwareLoading } from "@/hooks/useNetworkAwareLoading";
 import { useTimeBasedAccent } from "@/hooks/useTimeBasedAccent";
 import { useVisitor } from "@/contexts/VisitorContext";
 import { LockedOverlay } from "@/components/visitor";
@@ -63,6 +65,14 @@ const Community = () => {
     shouldStaggerMessages,
     shouldShowGlow 
   } = useNetworkAwareAnimations();
+  
+  // Network-aware loading for 3G optimization
+  const {
+    isSlowConnection,
+    shouldDeferResources,
+    imageQuality
+  } = useNetworkAwareLoading();
+  
   const { accentColor, period } = useTimeBasedAccent();
   
   const [user, setUser] = useState<any>(null);
@@ -560,7 +570,7 @@ const Community = () => {
                 return prev;
               });
             }
-          }, 15000); // Increased from 5s to 15s for better scalability
+          }, isSlowConnection ? 30000 : 15000); // 30s on slow connections, 15s otherwise
           
           // Store interval for cleanup
           (channel as any).pollInterval = pollInterval;
