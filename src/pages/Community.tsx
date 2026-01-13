@@ -2070,7 +2070,7 @@ const Community = () => {
       {user && !isVisitor && <NotificationPermissionBanner userId={user.id} />}
       
       {/* Conversations List - Fixed sidebar on desktop/tablet */}
-      <div className={`${selectedConversation ? "hidden md:flex" : "flex"} flex-col w-full md:w-80 lg:w-96 border-r border-border/50 md:fixed md:left-0 md:top-0 md:h-[100dvh] md:z-[40] bg-background pb-20 md:pb-0`}>
+      <div className={`${selectedConversation ? "hidden md:flex" : "flex"} flex-col w-full md:w-80 lg:w-96 border-r border-border/50 md:fixed md:left-0 md:top-0 md:bottom-0 md:z-[40] bg-background pb-20 md:pb-0`}>
         <div className="shrink-0 z-50 border-b border-border/50 bg-background/95 backdrop-blur-md p-3 sm:p-4 safe-area-top">
           <div className="flex items-center gap-2 sm:gap-3">
             <Button
@@ -2109,7 +2109,7 @@ const Community = () => {
           </div>
         </div>
 
-        <ScrollArea className="flex-1 min-h-0">
+        <ScrollArea className="flex-1 min-h-0 overflow-y-auto overscroll-contain">
           {isLoadingConversations ? (
             <ConversationSkeleton />
           ) : conversations.length === 0 ? (
