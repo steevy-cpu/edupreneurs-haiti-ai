@@ -66,11 +66,14 @@ export const MobileBottomNav = () => {
   // Track keyboard visibility using visualViewport
   useEffect(() => {
     const handleResize = () => {
-      if (window.visualViewport) {
-        const kbHeight = window.innerHeight - window.visualViewport.height;
-        // Lower threshold (80px) for faster keyboard detection
-        setKeyboardOpen(kbHeight > 80);
-      }
+      const vv = window.visualViewport;
+      if (!vv) return;
+
+      // Robust keyboard offset calculation (handles iOS offsetTop)
+      const kbHeight = Math.max(0, window.innerHeight - (vv.height + vv.offsetTop));
+
+      // Lower threshold (80px) for faster keyboard detection
+      setKeyboardOpen(kbHeight > 80);
     };
     
     if (window.visualViewport) {
