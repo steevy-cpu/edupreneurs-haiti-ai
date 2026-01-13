@@ -103,6 +103,12 @@ export const MobileBottomNav = () => {
   useEffect(() => {
     fetchCounts();
     
+    // Listen for feed visited event to clear badge immediately
+    const handleFeedVisited = () => {
+      setUnreadFeedPosts(0);
+    };
+    window.addEventListener('feed-visited', handleFeedVisited);
+    
     const messagesChannel = supabase
       .channel("mobile-nav-messages")
       .on("postgres_changes", { event: "*", schema: "public", table: "messages" }, fetchCounts)
@@ -119,6 +125,7 @@ export const MobileBottomNav = () => {
       .subscribe();
 
     return () => {
+      window.removeEventListener('feed-visited', handleFeedVisited);
       supabase.removeChannel(messagesChannel);
       supabase.removeChannel(notificationsChannel);
       supabase.removeChannel(postsChannel);

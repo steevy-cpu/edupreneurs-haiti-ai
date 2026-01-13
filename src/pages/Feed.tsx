@@ -225,6 +225,9 @@ const Feed = () => {
           .from('profiles')
           .update({ last_feed_visit: new Date().toISOString() })
           .eq('user_id', user.id);
+        
+        // Dispatch event to notify navigation components to clear badge
+        window.dispatchEvent(new CustomEvent('feed-visited'));
       }
     };
     

@@ -145,6 +145,12 @@ export const Layout = ({ children }: LayoutProps) => {
     fetchUnreadNotifications();
     fetchUnreadFeedPosts();
 
+    // Listen for feed visited event to clear badge immediately
+    const handleFeedVisited = () => {
+      setUnreadFeedPosts(0);
+    };
+    window.addEventListener('feed-visited', handleFeedVisited);
+
     const messagesChannel = supabase
       .channel("message-notifications")
       .on(
@@ -268,6 +274,7 @@ export const Layout = ({ children }: LayoutProps) => {
       .subscribe();
 
     return () => {
+      window.removeEventListener('feed-visited', handleFeedVisited);
       supabase.removeChannel(messagesChannel);
       supabase.removeChannel(followsChannel);
       supabase.removeChannel(notificationsChannel);
