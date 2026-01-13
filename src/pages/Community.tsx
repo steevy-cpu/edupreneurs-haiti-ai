@@ -2460,8 +2460,8 @@ const Community = () => {
                   return currentConv?.is_group ? '132px' : '72px';
                 })(),
                 paddingBottom: keyboardHeight > 0
-                  ? `calc(8rem + ${keyboardHeight}px)`
-                  : `calc(8rem + 3.5rem + env(safe-area-inset-bottom, 0px))`
+                  ? `calc(6rem + ${keyboardHeight}px)`
+                  : `calc(6rem + 3.5rem + env(safe-area-inset-bottom, 0px))`
               }}
             >
 
@@ -2540,17 +2540,14 @@ const Community = () => {
             </div>
             </div>
 
-            {/* Composer - pinned above keyboard (mobile) and above bottom nav */}
+            {/* Composer - pinned directly above keyboard (mobile) */}
             <div 
-              className="fixed left-0 right-0 md:left-80 lg:left-96 border-t border-border/50 bg-background/95 backdrop-blur-md shrink-0 z-[9999] md:bottom-0 will-change-transform transition-transform duration-100 ease-out"
+              className="fixed left-0 right-0 md:left-80 lg:left-96 border-t border-border/50 bg-background/95 backdrop-blur-md shrink-0 z-[9999] md:bottom-0 will-change-[bottom] transition-[bottom] duration-100 ease-out"
               style={{
-                // When keyboard is open, the bottom nav is hidden, so we must NOT keep the 3.5rem offset.
+                // Direct bottom positioning: keyboard open = stick to keyboard, closed = above nav
                 bottom: keyboardHeight > 0
-                  ? `env(safe-area-inset-bottom, 0px)`
-                  : `calc(3.5rem + env(safe-area-inset-bottom, 0px))`,
-                transform: keyboardHeight > 0
-                  ? 'translate3d(0, calc(-1 * var(--kb)), 0)'
-                  : 'translate3d(0, 0, 0)'
+                  ? `${keyboardHeight}px`
+                  : `calc(3.5rem + env(safe-area-inset-bottom, 0px))`
               }}
             >
               <div className="p-3 pt-2 md:p-4 md:pt-2">
