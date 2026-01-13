@@ -286,7 +286,7 @@ export const JudeChatbot = () => {
                     setInput(faq);
                     setTimeout(() => handleSendMessage(), 100);
                   }}
-                  className="text-[10px] sm:text-xs px-3 py-1.5 bg-background/95 backdrop-blur-sm border border-border/40 hover:bg-accent hover:border-primary/30 rounded-full text-foreground shadow-sm hover:shadow-md transition-all duration-200"
+                  className="text-[10px] sm:text-xs px-3 py-1.5 bg-accent/90 backdrop-blur-sm border border-primary/30 hover:bg-accent rounded-full text-accent-foreground shadow-md hover:shadow-lg transition-all duration-200"
                 >
                   {faq}
                 </button>
