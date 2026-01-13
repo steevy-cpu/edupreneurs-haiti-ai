@@ -2303,8 +2303,8 @@ const Community = () => {
         />
         {selectedConversation ? (
           <div className="h-full flex flex-col relative">
-            {/* Sticky Header - part of layout flow, not fixed */}
-            <div className="sticky top-0 z-20 border-b border-border/50 bg-background/95 backdrop-blur-md p-4 flex items-center gap-3 shrink-0 h-[72px]">
+            {/* Fixed Header - chat scrolls under it */}
+            <div className="fixed top-0 left-0 right-0 md:left-80 lg:left-96 z-20 border-b border-border/50 bg-background/95 backdrop-blur-md p-4 flex items-center gap-3 h-[72px]">
               <Button
                 size="icon"
                 variant="ghost"
@@ -2426,7 +2426,7 @@ const Community = () => {
               </DropdownMenu>
             </div>
 
-            {/* Jude Banner for Group Chats - in-flow element */}
+            {/* Jude Banner for Group Chats - fixed below header */}
             {(() => {
               const currentConv = selectedConversationDetails ?? conversations.find(c => c.id === selectedConversation);
               const isGroup = currentConv?.is_group;
@@ -2434,7 +2434,7 @@ const Community = () => {
               if (!isGroup) return null;
               
               return (
-                <div className="shrink-0 px-2 sm:px-4 py-2 z-[15]">
+                <div className="fixed top-[72px] left-0 right-0 md:left-80 lg:left-96 px-2 sm:px-4 py-2 z-[15] bg-background/80 backdrop-blur-sm">
                   <div className="px-3 py-2.5 bg-gradient-to-r from-primary/10 via-primary/5 to-success/10 border border-primary/20 rounded-xl backdrop-blur-md shadow-lg">
                     <div className="flex items-center gap-2.5 sm:gap-3">
                       <div className="relative">
@@ -2461,9 +2461,15 @@ const Community = () => {
               );
             })()}
 
-            {/* Scrollable Messages Area - flex-1 fills remaining space, no manual padding needed */}
+            {/* Scrollable Messages Area - paddingTop accounts for fixed header (and Jude banner if group) */}
             <div 
               className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden"
+              style={{ 
+                paddingTop: (() => {
+                  const currentConv = selectedConversationDetails ?? conversations.find(c => c.id === selectedConversation);
+                  return currentConv?.is_group ? '132px' : '72px'; // 72px header + 60px banner for groups
+                })()
+              }}
             >
 
               {/* Messages */}
