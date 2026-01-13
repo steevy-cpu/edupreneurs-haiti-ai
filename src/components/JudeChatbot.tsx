@@ -144,6 +144,13 @@ export const JudeChatbot = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, []);
 
+  // MUST be before early return to respect React's hooks rules
+  const handleInputFocus = useCallback((e: FocusEvent<HTMLTextAreaElement>) => {
+    setTimeout(() => {
+      e.target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }, 300);
+  }, []);
+
   useEffect(() => {
     scrollToBottom();
   }, [messages, scrollToBottom]);
@@ -213,12 +220,6 @@ export const JudeChatbot = () => {
       handleSendMessage();
     }
   };
-
-  const handleInputFocus = useCallback((e: FocusEvent<HTMLTextAreaElement>) => {
-    setTimeout(() => {
-      e.target.scrollIntoView({ behavior: 'smooth', block: 'center' });
-    }, 300);
-  }, []);
 
   return (
     <div 
