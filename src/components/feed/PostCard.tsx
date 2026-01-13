@@ -13,6 +13,7 @@ import { getAvatarUrl } from "@/lib/avatarMap";
 import { formatTimeAgo } from "@/utils/dateUtils";
 import { Post } from "@/types/feed";
 import { ReportDialog } from "./ReportDialog";
+import { NetworkAwareImage, NetworkAwareVideo } from "./NetworkAwareMedia";
 
 const MAX_CONTENT_LENGTH = 150;
 
@@ -193,20 +194,16 @@ export function PostCard({
             )}
           </p>
           {post.image_url && (
-            <img 
+            <NetworkAwareImage 
               src={post.image_url} 
               alt="Post" 
-              loading="lazy"
-              decoding="async"
-              className="mt-2 xs:mt-3 w-full rounded-lg object-contain bg-muted/20 max-h-[400px]"
+              className="mt-2 xs:mt-3 w-full rounded-lg object-contain max-h-[400px]"
             />
           )}
           {post.video_url && (
-            <video 
+            <NetworkAwareVideo 
               src={post.video_url} 
-              controls 
-              preload="metadata"
-              className="mt-2 xs:mt-3 w-full rounded-lg bg-muted/20 max-h-[400px]"
+              className="mt-2 xs:mt-3 w-full rounded-lg max-h-[400px]"
             />
           )}
         </div>

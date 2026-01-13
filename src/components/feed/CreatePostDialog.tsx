@@ -5,11 +5,12 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, Dialog
 import { Switch } from "@/components/ui/switch";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
-import { Plus, Image, Globe, Lock, Video, AtSign, Loader2, BadgeCheck, X, PenSquare, Sparkles } from "lucide-react";
+import { Plus, Image, Globe, Lock, Video, AtSign, Loader2, BadgeCheck, X, PenSquare, Sparkles, Play } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { optimizeMediaFile, formatFileSize } from "@/utils/mediaOptimization";
+import { optimizeMediaFile, formatFileSize, generateVideoThumbnail } from "@/utils/mediaOptimization";
 import { getAvatarUrl } from "@/lib/avatarMap";
+import { useNetworkAwareLoading } from "@/hooks/useNetworkAwareLoading";
 
 interface CreatePostDialogProps {
   currentUser: any;
@@ -26,6 +27,7 @@ interface FollowerProfile {
 
 export function CreatePostDialog({ currentUser, onPostCreated }: CreatePostDialogProps) {
   const { toast } = useToast();
+  const { isSlowConnection } = useNetworkAwareLoading();
   const [newPostContent, setNewPostContent] = useState("");
   const [isCreatingPost, setIsCreatingPost] = useState(false);
   const [isPublicPost, setIsPublicPost] = useState(false);
@@ -33,6 +35,7 @@ export function CreatePostDialog({ currentUser, onPostCreated }: CreatePostDialo
   const [selectedVideo, setSelectedVideo] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [videoPreview, setVideoPreview] = useState<string | null>(null);
+  const [videoThumbnail, setVideoThumbnail] = useState<string | null>(null);
   const [open, setOpen] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const videoInputRef = useRef<HTMLInputElement>(null);
@@ -248,6 +251,15 @@ export function CreatePostDialog({ currentUser, onPostCreated }: CreatePostDialo
       setSelectedImage(null);
       setImagePreview(null);
       
+      // Generate thumbnail for preview (saves bandwidth on slow connections)
+      try {
+        const thumbnailBlob = await generateVideoThumbnail(validatedFile);
+        setVideoThumbnail(URL.createObjectURL(thumbnailBlob));
+      } catch (thumbError) {
+        console.warn('Could not generate video thumbnail:', thumbError);
+        setVideoThumbnail(null);
+      }
+      
       const reader = new FileReader();
       reader.onloadend = () => {
         setVideoPreview(reader.result as string);
@@ -377,6 +389,7 @@ export function CreatePostDialog({ currentUser, onPostCreated }: CreatePostDialo
     setSelectedVideo(null);
     setImagePreview(null);
     setVideoPreview(null);
+    setVideoThumbnail(null);
     setIsPublicPost(false);
     setIsCreatingPost(false);
     setOpen(false);
@@ -435,6 +448,8 @@ export function CreatePostDialog({ currentUser, onPostCreated }: CreatePostDialo
               autoCapitalize="sentences"
               autoCorrect="on"
               spellCheck={false}
+              enterKeyHint="done"
+              inputMode="text"
             />
             
             {/* Mention suggestions dropdown */}
@@ -471,10 +486,16 @@ export function CreatePostDialog({ currentUser, onPostCreated }: CreatePostDialo
             )}
           </div>
           
-          {/* Image Preview */}
+          {/* Image Preview - smaller on slow connections */}
           {imagePreview && (
             <div className="relative rounded-xl overflow-hidden border border-border">
-              <img src={imagePreview} alt="Preview" className="w-full max-h-96 object-contain bg-muted/20" loading="lazy" decoding="async" />
+              <img 
+                src={imagePreview} 
+                alt="Preview" 
+                className={`w-full object-contain bg-muted/20 ${isSlowConnection ? 'max-h-48' : 'max-h-96'}`}
+                loading="lazy" 
+                decoding="async" 
+              />
               <Button
                 size="icon"
                 variant="destructive"
@@ -489,10 +510,30 @@ export function CreatePostDialog({ currentUser, onPostCreated }: CreatePostDialo
             </div>
           )}
 
-          {/* Video Preview */}
+          {/* Video Preview - show thumbnail on slow connections */}
           {videoPreview && (
             <div className="relative rounded-xl overflow-hidden border border-border">
-              <video src={videoPreview} controls className="w-full max-h-96 bg-muted/20" />
+              {isSlowConnection && videoThumbnail ? (
+                // Show thumbnail with play icon on slow connections
+                <div className="relative">
+                  <img 
+                    src={videoThumbnail} 
+                    alt="Aperçu vidéo" 
+                    className="w-full max-h-64 object-contain bg-muted/20"
+                    loading="lazy"
+                  />
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <div className="bg-black/60 rounded-full p-4">
+                      <Play className="w-10 h-10 text-white fill-white drop-shadow-lg" />
+                    </div>
+                  </div>
+                  <div className="absolute bottom-2 left-2 bg-black/70 text-white text-xs px-2 py-1 rounded-full">
+                    Vidéo prête à publier
+                  </div>
+                </div>
+              ) : (
+                <video src={videoPreview} controls className="w-full max-h-96 bg-muted/20" preload="metadata" />
+              )}
               <Button
                 size="icon"
                 variant="destructive"
@@ -500,6 +541,10 @@ export function CreatePostDialog({ currentUser, onPostCreated }: CreatePostDialo
                 onClick={() => {
                   setSelectedVideo(null);
                   setVideoPreview(null);
+                  if (videoThumbnail) {
+                    URL.revokeObjectURL(videoThumbnail);
+                    setVideoThumbnail(null);
+                  }
                 }}
               >
                 <X className="h-4 w-4" />

@@ -34,7 +34,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import EmojiPicker from "emoji-picker-react";
+import { LazyEmojiPicker } from "@/components/LazyEmojiPicker";
 import { getAvatarUrl } from "@/lib/avatarMap";
 import { optimizeMediaFile, formatFileSize } from "@/utils/mediaOptimization";
 import { NotificationPermissionBanner } from "@/components/NotificationPermissionBanner";
@@ -47,6 +47,7 @@ import { visitorFeedPosts } from "@/data/visitorDemoData";
 import { VisitorFeedOverlay } from "@/components/feed/VisitorFeedOverlay";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { useNetworkAwareLoading } from "@/hooks/useNetworkAwareLoading";
+import { NetworkAwareImage, NetworkAwareVideo } from "@/components/feed/NetworkAwareMedia";
 
 // Function to render content with clickable links, @mentions, and plain domains
 const renderContentWithLinks = (content: string) => {
@@ -935,13 +936,14 @@ const Feed = () => {
                   addComment(postId, comment.id);
                 }
               }}
-              onFocus={handleInputFocus}
-              className="flex-1 h-8 text-sm mobile-input tap-highlight-none"
-              autoCapitalize="sentences"
-              autoCorrect="on"
-              spellCheck={false}
-              enterKeyHint="send"
-            />
+                              onFocus={handleInputFocus}
+                              className="flex-1 h-8 text-sm mobile-input tap-highlight-none"
+                              autoCapitalize="sentences"
+                              autoCorrect="on"
+                              spellCheck={false}
+                              enterKeyHint="send"
+                              inputMode="text"
+                            />
             <Popover>
               <PopoverTrigger asChild>
                 <Button size="icon" variant="ghost" className="h-8 w-8 shrink-0">
@@ -949,9 +951,8 @@ const Feed = () => {
                 </Button>
               </PopoverTrigger>
               <PopoverContent className="w-full p-0" align="end">
-                <EmojiPicker
+                <LazyEmojiPicker
                   onEmojiClick={(emojiData) => handleEmojiSelect(emojiData, postId, comment.id)}
-                  width="100%"
                 />
               </PopoverContent>
             </Popover>
@@ -1158,20 +1159,16 @@ const Feed = () => {
                     )}
                   </p>
                   {post.image_url && (
-                    <img 
+                    <NetworkAwareImage 
                       src={post.image_url} 
                       alt="Post" 
-                      loading={shouldDeferResources ? "lazy" : "eager"}
-                      decoding="async"
-                      className="mt-3 w-full rounded-lg object-contain bg-muted/20"
+                      className="mt-3 w-full rounded-lg object-contain max-h-[500px]"
                     />
                   )}
                   {post.video_url && (
-                    <video 
+                    <NetworkAwareVideo 
                       src={post.video_url} 
-                      controls 
-                      className="mt-3 w-full rounded-lg bg-muted/20"
-                      preload="metadata"
+                      className="mt-3 w-full rounded-lg max-h-[500px]"
                     />
                   )}
                 </div>
@@ -1254,6 +1251,7 @@ const Feed = () => {
                         autoCorrect="on"
                         spellCheck={false}
                         enterKeyHint="send"
+                        inputMode="text"
                       />
                       <Popover>
                         <PopoverTrigger asChild>
@@ -1262,9 +1260,8 @@ const Feed = () => {
                           </Button>
                         </PopoverTrigger>
                         <PopoverContent className="w-full p-0" align="end">
-                          <EmojiPicker
+                          <LazyEmojiPicker
                             onEmojiClick={(emojiData) => handleEmojiSelect(emojiData, post.id)}
-                            width="100%"
                           />
                         </PopoverContent>
                       </Popover>
