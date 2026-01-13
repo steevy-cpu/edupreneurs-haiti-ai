@@ -119,10 +119,6 @@ const Community = () => {
   const [showGroupInfo, setShowGroupInfo] = useState(false);
   const [selectedGroupId, setSelectedGroupId] = useState<string | null>(null);
   
-  // Visual viewport height for mobile keyboard handling
-  // This tracks the actual visible height, which shrinks when keyboard opens
-  const [vvHeight, setVvHeight] = useState<number | null>(null);
-  
   // Cached user profile for optimistic updates - prevents redundant fetches
   const [cachedUserProfile, setCachedUserProfile] = useState<Profile | null>(null);
 
@@ -159,41 +155,6 @@ const Community = () => {
     });
   }, []);
 
-  // Visual viewport tracking for mobile keyboard handling
-  // Instead of calculating keyboard height, we size the container to the visual viewport
-  // This means the bottom of our container is always the top of the keyboard
-  useEffect(() => {
-    const updateVvHeight = () => {
-      const vv = window.visualViewport;
-      if (vv) {
-        // Use visual viewport height - this shrinks when keyboard opens
-        setVvHeight(vv.height);
-      } else {
-        // Fallback for browsers without visualViewport API
-        setVvHeight(window.innerHeight);
-      }
-    };
-
-    const vv = window.visualViewport;
-    if (vv) {
-      vv.addEventListener('resize', updateVvHeight);
-      vv.addEventListener('scroll', updateVvHeight);
-      updateVvHeight();
-    } else {
-      // Fallback: listen to window resize
-      window.addEventListener('resize', updateVvHeight);
-      updateVvHeight();
-    }
-
-    return () => {
-      if (vv) {
-        vv.removeEventListener('resize', updateVvHeight);
-        vv.removeEventListener('scroll', updateVvHeight);
-      } else {
-        window.removeEventListener('resize', updateVvHeight);
-      }
-    };
-  }, []);
 
   // Save lastSeenTimes to localStorage whenever it changes
   useEffect(() => {
@@ -2283,18 +2244,13 @@ const Community = () => {
         </ScrollArea>
       </div>
 
-      {/* Messages View - Visual Viewport-based layout for keyboard handling */}
+      {/* Messages View - 100dvh for mobile keyboard handling (browser auto-resizes viewport) */}
       <div
         className={`${
           selectedConversation
             ? "fixed inset-x-0 top-0 md:relative md:inset-auto md:w-auto"
             : "hidden md:block"
-        } md:flex-1 bg-background md:ml-80 lg:ml-96 relative`}
-        style={{
-          // On mobile, size container to visual viewport height
-          // This ensures the bottom of the container is always the top of the keyboard
-          height: selectedConversation && vvHeight ? `${vvHeight}px` : undefined
-        }}
+        } md:flex-1 bg-background md:ml-80 lg:ml-96 relative h-dvh`}
       >
         {/* Persistent background layer - always mounted to prevent reloading */}
         <div 
