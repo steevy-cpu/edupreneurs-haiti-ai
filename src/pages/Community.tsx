@@ -118,7 +118,10 @@ const Community = () => {
   const [followers, setFollowers] = useState<Profile[]>([]);
   const [showGroupInfo, setShowGroupInfo] = useState(false);
   const [selectedGroupId, setSelectedGroupId] = useState<string | null>(null);
-  const [keyboardHeight, setKeyboardHeight] = useState(0);
+  
+  // Visual viewport height for mobile keyboard handling
+  // This tracks the actual visible height, which shrinks when keyboard opens
+  const [vvHeight, setVvHeight] = useState<number | null>(null);
   
   // Cached user profile for optimistic updates - prevents redundant fetches
   const [cachedUserProfile, setCachedUserProfile] = useState<Profile | null>(null);
@@ -156,32 +159,39 @@ const Community = () => {
     });
   }, []);
 
-  // Handle virtual keyboard on mobile (robust across iOS/Android)
+  // Visual viewport tracking for mobile keyboard handling
+  // Instead of calculating keyboard height, we size the container to the visual viewport
+  // This means the bottom of our container is always the top of the keyboard
   useEffect(() => {
-    const handleResize = () => {
+    const updateVvHeight = () => {
       const vv = window.visualViewport;
-      if (!vv) return;
-
-      // iOS Safari often uses offsetTop when the keyboard opens.
-      // This formula is more reliable than (innerHeight - vv.height) alone.
-      const kbHeight = Math.max(0, window.innerHeight - (vv.height + vv.offsetTop));
-      setKeyboardHeight(kbHeight);
-      document.documentElement.style.setProperty('--kb', `${kbHeight}px`);
+      if (vv) {
+        // Use visual viewport height - this shrinks when keyboard opens
+        setVvHeight(vv.height);
+      } else {
+        // Fallback for browsers without visualViewport API
+        setVvHeight(window.innerHeight);
+      }
     };
 
     const vv = window.visualViewport;
     if (vv) {
-      vv.addEventListener('resize', handleResize);
-      vv.addEventListener('scroll', handleResize);
-      handleResize();
+      vv.addEventListener('resize', updateVvHeight);
+      vv.addEventListener('scroll', updateVvHeight);
+      updateVvHeight();
+    } else {
+      // Fallback: listen to window resize
+      window.addEventListener('resize', updateVvHeight);
+      updateVvHeight();
     }
 
     return () => {
       if (vv) {
-        vv.removeEventListener('resize', handleResize);
-        vv.removeEventListener('scroll', handleResize);
+        vv.removeEventListener('resize', updateVvHeight);
+        vv.removeEventListener('scroll', updateVvHeight);
+      } else {
+        window.removeEventListener('resize', updateVvHeight);
       }
-      document.documentElement.style.setProperty('--kb', '0px');
     };
   }, []);
 
@@ -2273,13 +2283,18 @@ const Community = () => {
         </ScrollArea>
       </div>
 
-      {/* Messages View - WhatsApp-style keyboard-adaptive layout */}
+      {/* Messages View - Visual Viewport-based layout for keyboard handling */}
       <div
         className={`${
           selectedConversation
-            ? "fixed inset-0 w-screen md:relative md:inset-auto md:w-auto"
+            ? "fixed inset-x-0 top-0 md:relative md:inset-auto md:w-auto"
             : "hidden md:block"
         } md:flex-1 bg-background md:ml-80 lg:ml-96 relative`}
+        style={{
+          // On mobile, size container to visual viewport height
+          // This ensures the bottom of the container is always the top of the keyboard
+          height: selectedConversation && vvHeight ? `${vvHeight}px` : undefined
+        }}
       >
         {/* Persistent background layer - always mounted to prevent reloading */}
         <div 
@@ -2287,11 +2302,9 @@ const Community = () => {
           style={chatBackgroundStyle}
         />
         {selectedConversation ? (
-          <div className="h-full flex flex-col relative" style={{
-            height: '100dvh'
-          }}>
-            {/* Fixed Header - Always stays at top */}
-            <div className="fixed top-0 left-0 right-0 md:left-80 lg:left-96 z-20 border-b border-border/50 bg-background/95 backdrop-blur-md p-4 flex items-center gap-3 shrink-0 h-[72px]">
+          <div className="h-full flex flex-col relative">
+            {/* Sticky Header - part of layout flow, not fixed */}
+            <div className="sticky top-0 z-20 border-b border-border/50 bg-background/95 backdrop-blur-md p-4 flex items-center gap-3 shrink-0 h-[72px]">
               <Button
                 size="icon"
                 variant="ghost"
@@ -2413,7 +2426,7 @@ const Community = () => {
               </DropdownMenu>
             </div>
 
-            {/* Fixed Jude Banner for Group Chats - positioned below header */}
+            {/* Jude Banner for Group Chats - in-flow element */}
             {(() => {
               const currentConv = selectedConversationDetails ?? conversations.find(c => c.id === selectedConversation);
               const isGroup = currentConv?.is_group;
@@ -2421,10 +2434,7 @@ const Community = () => {
               if (!isGroup) return null;
               
               return (
-                <div 
-                  className="fixed left-0 right-0 md:left-80 lg:left-96 z-[15] px-2 sm:px-4 pt-2"
-                  style={{ top: '72px' }}
-                >
+                <div className="shrink-0 px-2 sm:px-4 py-2 z-[15]">
                   <div className="px-3 py-2.5 bg-gradient-to-r from-primary/10 via-primary/5 to-success/10 border border-primary/20 rounded-xl backdrop-blur-md shadow-lg">
                     <div className="flex items-center gap-2.5 sm:gap-3">
                       <div className="relative">
@@ -2451,18 +2461,9 @@ const Community = () => {
               );
             })()}
 
-            {/* Scrollable Messages Area - with top padding for fixed header + banner and bottom for composer + nav */}
+            {/* Scrollable Messages Area - flex-1 fills remaining space, no manual padding needed */}
             <div 
-              className="flex-1 overflow-y-auto overflow-x-hidden md:pb-[96px] transition-[padding] duration-100 ease-out"
-              style={{
-                paddingTop: (() => {
-                  const currentConv = selectedConversationDetails ?? conversations.find(c => c.id === selectedConversation);
-                  return currentConv?.is_group ? '132px' : '72px';
-                })(),
-                paddingBottom: keyboardHeight > 0
-                  ? `calc(6rem + ${keyboardHeight}px)`
-                  : `calc(6rem + 3.5rem + env(safe-area-inset-bottom, 0px))`
-              }}
+              className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden"
             >
 
               {/* Messages */}
@@ -2540,14 +2541,12 @@ const Community = () => {
             </div>
             </div>
 
-            {/* Composer - pinned directly above keyboard (mobile) */}
+            {/* Composer - part of flex layout, naturally sits at bottom */}
             <div 
-              className="fixed left-0 right-0 md:left-80 lg:left-96 border-t border-border/50 bg-background/95 backdrop-blur-md shrink-0 z-[9999] md:bottom-0 will-change-[bottom] transition-[bottom] duration-100 ease-out"
+              className="shrink-0 border-t border-border/50 bg-background/95 backdrop-blur-md z-10"
               style={{
-                // Direct bottom positioning: keyboard open = stick to keyboard, closed = above nav
-                bottom: keyboardHeight > 0
-                  ? `${keyboardHeight}px`
-                  : `calc(3.5rem + env(safe-area-inset-bottom, 0px))`
+                // Safe area padding for devices with home indicator
+                paddingBottom: 'env(safe-area-inset-bottom, 0px)'
               }}
             >
               <div className="p-3 pt-2 md:p-4 md:pt-2">
