@@ -274,7 +274,7 @@ export const JudeChatbot = () => {
         <div className="relative w-[260px] sm:w-[300px] md:w-[340px] lg:w-[380px] flex flex-col mt-2">
           {/* FAQ Quick Actions - show only when no user messages yet */}
           {messages.length <= 1 && (
-            <div className="flex flex-wrap gap-1.5 mb-2">
+            <div className="flex flex-wrap gap-2 mb-3 mr-16 sm:mr-20 md:mr-24 lg:mr-28">
               {[
                 "Comment voir mes cours ?",
                 "Où est le classement ?",
@@ -286,7 +286,7 @@ export const JudeChatbot = () => {
                     setInput(faq);
                     setTimeout(() => handleSendMessage(), 100);
                   }}
-                  className="text-[10px] sm:text-xs px-2 py-1 bg-muted/80 hover:bg-muted rounded-full text-muted-foreground hover:text-foreground transition-colors"
+                  className="text-[10px] sm:text-xs px-3 py-1.5 bg-background/95 backdrop-blur-sm border border-border/40 hover:bg-accent hover:border-primary/30 rounded-full text-foreground shadow-sm hover:shadow-md transition-all duration-200"
                 >
                   {faq}
                 </button>
