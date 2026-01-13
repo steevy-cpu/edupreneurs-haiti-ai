@@ -61,6 +61,7 @@ export const MobileBottomNav = () => {
   const queryClient = useQueryClient();
   const [unreadMessages, setUnreadMessages] = useState(0);
   const [unreadNotifications, setUnreadNotifications] = useState(0);
+  const [unreadFeedPosts, setUnreadFeedPosts] = useState(0);
   const [keyboardOpen, setKeyboardOpen] = useState(false);
 
   // Track keyboard visibility using visualViewport
@@ -93,7 +94,7 @@ export const MobileBottomNav = () => {
   const navItems: NavItem[] = [
     { icon: Home, path: "/dashboard" },
     { icon: BookOpen, path: "/matieres" },
-    { icon: Rss, path: "/feed", prefetchKey: ["feed-posts"] },
+    { icon: Rss, path: "/feed", badge: unreadFeedPosts > 0 ? unreadFeedPosts : undefined, prefetchKey: ["feed-posts"] },
     { icon: MessageSquare, path: "/community", badge: unreadMessages > 0 ? unreadMessages : undefined, prefetchKey: ["conversations"] },
     { icon: Bell, path: "/notifications", badge: unreadNotifications > 0 ? unreadNotifications : undefined },
     { icon: Settings, path: "/settings" },
@@ -112,9 +113,15 @@ export const MobileBottomNav = () => {
       .on("postgres_changes", { event: "*", schema: "public", table: "notifications" }, fetchCounts)
       .subscribe();
 
+    const postsChannel = supabase
+      .channel("mobile-nav-posts")
+      .on("postgres_changes", { event: "INSERT", schema: "public", table: "posts" }, fetchCounts)
+      .subscribe();
+
     return () => {
       supabase.removeChannel(messagesChannel);
       supabase.removeChannel(notificationsChannel);
+      supabase.removeChannel(postsChannel);
     };
   }, []);
 
@@ -122,20 +129,24 @@ export const MobileBottomNav = () => {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return;
 
-    const { data: messages } = await supabase
-      .from("messages")
-      .select("id")
-      .eq("read", false)
-      .neq("sender_id", user.id);
-    
-    const { count: notifCount } = await supabase
-      .from("notifications")
-      .select("id", { count: "exact", head: true })
-      .eq("user_id", user.id)
-      .eq("read", false);
+    // Fetch all counts in parallel for efficiency
+    const [messagesResult, notifResult, feedResult] = await Promise.all([
+      supabase
+        .from("messages")
+        .select("id")
+        .eq("read", false)
+        .neq("sender_id", user.id),
+      supabase
+        .from("notifications")
+        .select("id", { count: "exact", head: true })
+        .eq("user_id", user.id)
+        .eq("read", false),
+      supabase.rpc('get_new_feed_posts_count', { p_user_id: user.id })
+    ]);
 
-    setUnreadMessages(messages?.length || 0);
-    setUnreadNotifications(notifCount || 0);
+    setUnreadMessages(messagesResult.data?.length || 0);
+    setUnreadNotifications(notifResult.count || 0);
+    setUnreadFeedPosts(feedResult.data || 0);
   };
 
   const isActive = (path: string) => location.pathname === path;

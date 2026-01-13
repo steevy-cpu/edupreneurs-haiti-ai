@@ -78,6 +78,7 @@ export const Layout = ({ children }: LayoutProps) => {
   const [totalUnreadMessages, setTotalUnreadMessages] = useState(0);
   const [pendingFollowRequests, setPendingFollowRequests] = useState(0);
   const [unreadNotifications, setUnreadNotifications] = useState(0);
+  const [unreadFeedPosts, setUnreadFeedPosts] = useState(0);
   const [userAvatar, setUserAvatar] = useState<string>(dashboardImage);
   const [userNickname, setUserNickname] = useState<string>(isVisitor ? "Visiteur" : "Étudiant");
   const [userId, setUserId] = useState<string | null>(null);
@@ -95,6 +96,7 @@ export const Layout = ({ children }: LayoutProps) => {
     fetchUnreadCount();
     fetchPendingFollowRequests();
     fetchUnreadNotifications();
+    fetchUnreadFeedPosts();
     fetchUserAvatar();
     setupGlobalPresence();
     
@@ -141,6 +143,7 @@ export const Layout = ({ children }: LayoutProps) => {
     fetchUnreadCount();
     fetchPendingFollowRequests();
     fetchUnreadNotifications();
+    fetchUnreadFeedPosts();
 
     const messagesChannel = supabase
       .channel("message-notifications")
@@ -249,10 +252,26 @@ export const Layout = ({ children }: LayoutProps) => {
       )
       .subscribe();
 
+    const postsChannel = supabase
+      .channel("sidebar-posts-notifications")
+      .on(
+        "postgres_changes",
+        {
+          event: "INSERT",
+          schema: "public",
+          table: "posts",
+        },
+        async () => {
+          await fetchUnreadFeedPosts();
+        }
+      )
+      .subscribe();
+
     return () => {
       supabase.removeChannel(messagesChannel);
       supabase.removeChannel(followsChannel);
       supabase.removeChannel(notificationsChannel);
+      supabase.removeChannel(postsChannel);
     };
   }, []);
 
@@ -349,6 +368,15 @@ export const Layout = ({ children }: LayoutProps) => {
       .eq("read", false);
 
     setUnreadNotifications(count || 0);
+  };
+
+  const fetchUnreadFeedPosts = async () => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+
+    const { data: count } = await supabase.rpc('get_new_feed_posts_count', { p_user_id: user.id });
+
+    setUnreadFeedPosts(count || 0);
   };
 
   const checkAuth = async () => {
@@ -526,6 +554,11 @@ export const Layout = ({ children }: LayoutProps) => {
           >
             <Users size={16} className="sm:w-[17px] sm:h-[17px] lg:w-[18px] lg:h-[18px]" />
             Fil d'actualité
+            {unreadFeedPosts > 0 && (
+              <span className="ml-auto flex items-center justify-center h-4 sm:h-5 min-w-[16px] sm:min-w-[20px] px-1 sm:px-1.5 rounded-full bg-destructive text-destructive-foreground text-[10px] sm:text-xs font-semibold">
+                {unreadFeedPosts > 99 ? "99+" : unreadFeedPosts}
+              </span>
+            )}
           </Link>
           <Link 
             to="/community" 

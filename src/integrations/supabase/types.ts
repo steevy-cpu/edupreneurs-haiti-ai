@@ -1809,6 +1809,7 @@ export type Database = {
           id: string
           is_system_account: boolean | null
           last_avatar_generated_at: string | null
+          last_feed_visit: string | null
           last_seen: string | null
           nickname: string
           onboarding_tour_completed: boolean | null
@@ -1842,6 +1843,7 @@ export type Database = {
           id?: string
           is_system_account?: boolean | null
           last_avatar_generated_at?: string | null
+          last_feed_visit?: string | null
           last_seen?: string | null
           nickname: string
           onboarding_tour_completed?: boolean | null
@@ -1875,6 +1877,7 @@ export type Database = {
           id?: string
           is_system_account?: boolean | null
           last_avatar_generated_at?: string | null
+          last_feed_visit?: string | null
           last_seen?: string | null
           nickname?: string
           onboarding_tour_completed?: boolean | null
@@ -2644,6 +2647,7 @@ export type Database = {
           verified: boolean
         }[]
       }
+      get_new_feed_posts_count: { Args: { p_user_id: string }; Returns: number }
       get_notification_preference: {
         Args: { p_category: string; p_user_id: string }
         Returns: boolean
