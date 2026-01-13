@@ -2451,7 +2451,7 @@ const Community = () => {
 
             {/* Scrollable Messages Area - with top padding for fixed header + banner and bottom for composer + nav */}
             <div 
-              className="flex-1 overflow-y-auto overflow-x-hidden md:pb-[96px]"
+              className="flex-1 overflow-y-auto overflow-x-hidden md:pb-[96px] transition-[padding] duration-100 ease-out"
               style={{
                 paddingTop: (() => {
                   const currentConv = selectedConversationDetails ?? conversations.find(c => c.id === selectedConversation);
@@ -2540,7 +2540,7 @@ const Community = () => {
 
             {/* Composer - Fixed at bottom, above bottom nav on mobile */}
             <div 
-              className="fixed left-0 right-0 md:left-80 lg:left-96 border-t border-border/50 bg-background/95 backdrop-blur-md shrink-0 z-[9999] md:bottom-0"
+              className="fixed left-0 right-0 md:left-80 lg:left-96 border-t border-border/50 bg-background/95 backdrop-blur-md shrink-0 z-[9999] md:bottom-0 transition-[bottom] duration-100 ease-out will-change-[bottom]"
               style={{
                 bottom: keyboardHeight > 0 
                   ? `${keyboardHeight}px` 

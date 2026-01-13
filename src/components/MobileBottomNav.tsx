@@ -68,7 +68,8 @@ export const MobileBottomNav = () => {
     const handleResize = () => {
       if (window.visualViewport) {
         const kbHeight = window.innerHeight - window.visualViewport.height;
-        setKeyboardOpen(kbHeight > 100);
+        // Lower threshold (80px) for faster keyboard detection
+        setKeyboardOpen(kbHeight > 80);
       }
     };
     
@@ -155,7 +156,7 @@ export const MobileBottomNav = () => {
 
   return (
     <nav
-      className="fixed bottom-0 inset-x-0 z-[1000] bg-card/95 backdrop-blur-lg border-t border-border lg:hidden tap-highlight-none"
+      className="fixed bottom-0 inset-x-0 z-[1000] bg-card/95 backdrop-blur-lg border-t border-border lg:hidden tap-highlight-none transition-transform duration-100 ease-out"
       style={{ 
         position: 'fixed',
         paddingBottom: 'env(safe-area-inset-bottom, 0px)'

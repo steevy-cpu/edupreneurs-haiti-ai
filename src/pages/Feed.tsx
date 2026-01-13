@@ -46,6 +46,7 @@ import { LockedOverlay } from "@/components/visitor";
 import { visitorFeedPosts } from "@/data/visitorDemoData";
 import { VisitorFeedOverlay } from "@/components/feed/VisitorFeedOverlay";
 import { EmptyState } from "@/components/shared/EmptyState";
+import { useNetworkAwareLoading } from "@/hooks/useNetworkAwareLoading";
 
 // Function to render content with clickable links, @mentions, and plain domains
 const renderContentWithLinks = (content: string) => {
@@ -141,6 +142,7 @@ const Feed = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const { posts, isLoading, isRefreshing, refreshFeed, updatePostOptimistically, removePostOptimistically } = useFeedData();
+  const { isSlowConnection, shouldDeferResources, imageQuality } = useNetworkAwareLoading();
   const [currentUser, setCurrentUser] = useState<any>(null);
   const [newPostContent, setNewPostContent] = useState("");
   const [isCreatingPost, setIsCreatingPost] = useState(false);
@@ -166,6 +168,34 @@ const Feed = () => {
   const [reportDialogOpen, setReportDialogOpen] = useState(false);
   const [postToReport, setPostToReport] = useState<Post | null>(null);
   const [isFounder, setIsFounder] = useState(false);
+  const [keyboardHeight, setKeyboardHeight] = useState(0);
+
+  // Handle virtual keyboard on mobile
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.visualViewport) {
+        const vvHeight = window.visualViewport.height;
+        const windowHeight = window.innerHeight;
+        const kbHeight = Math.max(0, windowHeight - vvHeight);
+        setKeyboardHeight(kbHeight);
+        document.documentElement.style.setProperty('--kb', `${kbHeight}px`);
+      }
+    };
+
+    if (window.visualViewport) {
+      window.visualViewport.addEventListener('resize', handleResize);
+      window.visualViewport.addEventListener('scroll', handleResize);
+      handleResize();
+    }
+
+    return () => {
+      if (window.visualViewport) {
+        window.visualViewport.removeEventListener('resize', handleResize);
+        window.visualViewport.removeEventListener('scroll', handleResize);
+      }
+      document.documentElement.style.setProperty('--kb', '0px');
+    };
+  }, []);
 
   // Mobile keyboard optimization - scroll input into view
   const handleInputFocus = useCallback((e: FocusEvent<HTMLInputElement | HTMLTextAreaElement>) => {
@@ -173,6 +203,7 @@ const Feed = () => {
       e.target.scrollIntoView({ behavior: 'smooth', block: 'center' });
     }, 300);
   }, []);
+
 
   // Transform demo data for visitors
   useEffect(() => {
