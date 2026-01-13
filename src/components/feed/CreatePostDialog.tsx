@@ -11,6 +11,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { optimizeMediaFile, formatFileSize, generateVideoThumbnail } from "@/utils/mediaOptimization";
 import { getAvatarUrl } from "@/lib/avatarMap";
 import { useNetworkAwareLoading } from "@/hooks/useNetworkAwareLoading";
+import { uploadWithProgress } from "@/utils/uploadWithProgress";
 
 interface CreatePostDialogProps {
   currentUser: any;
@@ -23,6 +24,12 @@ interface FollowerProfile {
   nickname: string;
   avatar_url: string | null;
   verified: boolean | null;
+}
+
+interface UploadProgressState {
+  progress: number;
+  stage: 'idle' | 'uploading-image' | 'uploading-video' | 'saving' | 'complete';
+  fileName?: string;
 }
 
 export function CreatePostDialog({ currentUser, onPostCreated }: CreatePostDialogProps) {
@@ -40,6 +47,9 @@ export function CreatePostDialog({ currentUser, onPostCreated }: CreatePostDialo
   const fileInputRef = useRef<HTMLInputElement>(null);
   const videoInputRef = useRef<HTMLInputElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  // Upload progress tracking
+  const [uploadProgress, setUploadProgress] = useState<UploadProgressState | null>(null);
 
   // Mention feature state
   const [mentionQuery, setMentionQuery] = useState("");
@@ -291,15 +301,31 @@ export function CreatePostDialog({ currentUser, onPostCreated }: CreatePostDialo
     let imageUrl = null;
     let videoUrl = null;
 
+    // Upload image with progress tracking
     if (selectedImage) {
       const fileExt = selectedImage.name.split('.').pop();
       const fileName = `${currentUser.id}/${Math.random()}.${fileExt}`;
       
-      const { error: uploadError } = await supabase.storage
-        .from('post-images')
-        .upload(fileName, selectedImage);
+      setUploadProgress({ 
+        progress: 0, 
+        stage: 'uploading-image',
+        fileName: selectedImage.name 
+      });
+      
+      const { data: uploadData, error: uploadError } = await uploadWithProgress(
+        'post-images',
+        fileName,
+        selectedImage,
+        (progress) => {
+          setUploadProgress(prev => prev ? ({
+            ...prev,
+            progress: progress.progress
+          }) : null);
+        }
+      );
 
       if (uploadError) {
+        setUploadProgress(null);
         toast({
           title: "Erreur",
           description: "Impossible de télécharger l'image",
@@ -316,15 +342,31 @@ export function CreatePostDialog({ currentUser, onPostCreated }: CreatePostDialo
       imageUrl = publicUrl;
     }
 
+    // Upload video with progress tracking
     if (selectedVideo) {
       const fileExt = selectedVideo.name.split('.').pop();
       const fileName = `${currentUser.id}/${Math.random()}.${fileExt}`;
       
-      const { error: uploadError } = await supabase.storage
-        .from('post-images')
-        .upload(fileName, selectedVideo);
+      setUploadProgress({ 
+        progress: 0, 
+        stage: 'uploading-video',
+        fileName: selectedVideo.name 
+      });
+      
+      const { data: uploadData, error: uploadError } = await uploadWithProgress(
+        'post-images',
+        fileName,
+        selectedVideo,
+        (progress) => {
+          setUploadProgress(prev => prev ? ({
+            ...prev,
+            progress: progress.progress
+          }) : null);
+        }
+      );
 
       if (uploadError) {
+        setUploadProgress(null);
         toast({
           title: "Erreur",
           description: "Impossible de télécharger la vidéo",
@@ -341,6 +383,9 @@ export function CreatePostDialog({ currentUser, onPostCreated }: CreatePostDialo
       videoUrl = publicUrl;
     }
 
+    // Update progress to saving stage
+    setUploadProgress(prev => prev ? { ...prev, stage: 'saving', progress: 100 } : { progress: 100, stage: 'saving' });
+
     const { data: newPost, error } = await supabase
       .from("posts")
       .insert({
@@ -354,6 +399,7 @@ export function CreatePostDialog({ currentUser, onPostCreated }: CreatePostDialo
       .single();
 
     if (error || !newPost) {
+      setUploadProgress(null);
       toast({
         title: "Erreur",
         description: "Impossible de créer le post",
@@ -384,6 +430,12 @@ export function CreatePostDialog({ currentUser, onPostCreated }: CreatePostDialo
       // Don't fail the post creation if mention notifications fail
     }
 
+    // Clean up video thumbnail URL object to prevent memory leak
+    if (videoThumbnail) {
+      URL.revokeObjectURL(videoThumbnail);
+    }
+
+    setUploadProgress(null);
     setNewPostContent("");
     setSelectedImage(null);
     setSelectedVideo(null);
@@ -404,15 +456,24 @@ export function CreatePostDialog({ currentUser, onPostCreated }: CreatePostDialo
   };
 
   const isEmpty = !newPostContent.trim() && !selectedImage && !selectedVideo;
+  const isUploading = !!uploadProgress;
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <Dialog open={open} onOpenChange={(newOpen) => {
+      // Prevent closing during upload
+      if (!newOpen && isUploading) return;
+      setOpen(newOpen);
+    }}>
       <DialogTrigger asChild>
         <Button size="icon" variant="ghost" className="hover:bg-accent/50">
           <Plus size={24} />
         </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[520px] max-h-[90vh] overflow-y-auto p-0">
+      <DialogContent 
+        className="sm:max-w-[520px] max-h-[90vh] overflow-y-auto p-0"
+        onInteractOutside={(e) => isUploading && e.preventDefault()}
+        onEscapeKeyDown={(e) => isUploading && e.preventDefault()}
+      >
         {/* Gradient Header */}
         <div className="relative bg-gradient-to-br from-primary/20 via-primary/10 to-accent/20 p-4 sm:p-6 overflow-hidden">
           {/* Animated background circles */}
@@ -450,6 +511,7 @@ export function CreatePostDialog({ currentUser, onPostCreated }: CreatePostDialo
               spellCheck={false}
               enterKeyHint="done"
               inputMode="text"
+              disabled={isUploading}
             />
             
             {/* Mention suggestions dropdown */}
@@ -486,8 +548,53 @@ export function CreatePostDialog({ currentUser, onPostCreated }: CreatePostDialo
             )}
           </div>
           
+          {/* Upload Progress Indicator */}
+          {uploadProgress && uploadProgress.stage !== 'idle' && (
+            <div className="flex flex-col items-center gap-3 py-4 animate-in fade-in duration-200">
+              {/* Circular Progress */}
+              <div className="relative w-20 h-20">
+                <svg className="w-20 h-20 transform -rotate-90">
+                  <circle
+                    cx="40" cy="40" r="34"
+                    stroke="currentColor"
+                    strokeWidth="6"
+                    fill="transparent"
+                    className="text-muted/30"
+                  />
+                  <circle
+                    cx="40" cy="40" r="34"
+                    stroke="currentColor"
+                    strokeWidth="6"
+                    fill="transparent"
+                    strokeDasharray={213.6}
+                    strokeDashoffset={213.6 - (213.6 * uploadProgress.progress) / 100}
+                    strokeLinecap="round"
+                    className="text-primary transition-all duration-300 ease-out"
+                  />
+                </svg>
+                <span className="absolute inset-0 flex items-center justify-center text-lg font-bold">
+                  {uploadProgress.progress}%
+                </span>
+              </div>
+              
+              {/* Stage label */}
+              <p className="text-sm font-medium text-foreground">
+                {uploadProgress.stage === 'uploading-image' && "Téléchargement de l'image..."}
+                {uploadProgress.stage === 'uploading-video' && "Téléchargement de la vidéo..."}
+                {uploadProgress.stage === 'saving' && 'Enregistrement du post...'}
+              </p>
+              
+              {/* File name */}
+              {uploadProgress.fileName && (
+                <p className="text-xs text-muted-foreground truncate max-w-[250px]">
+                  {uploadProgress.fileName}
+                </p>
+              )}
+            </div>
+          )}
+          
           {/* Image Preview - smaller on slow connections */}
-          {imagePreview && (
+          {imagePreview && !isUploading && (
             <div className="relative rounded-xl overflow-hidden border border-border">
               <img 
                 src={imagePreview} 
@@ -500,6 +607,7 @@ export function CreatePostDialog({ currentUser, onPostCreated }: CreatePostDialo
                 size="icon"
                 variant="destructive"
                 className="absolute top-2 right-2 h-8 w-8 rounded-full shadow-lg"
+                disabled={isUploading}
                 onClick={() => {
                   setSelectedImage(null);
                   setImagePreview(null);
@@ -511,7 +619,7 @@ export function CreatePostDialog({ currentUser, onPostCreated }: CreatePostDialo
           )}
 
           {/* Video Preview - show thumbnail on slow connections */}
-          {videoPreview && (
+          {videoPreview && !isUploading && (
             <div className="relative rounded-xl overflow-hidden border border-border">
               {isSlowConnection && videoThumbnail ? (
                 // Show thumbnail with play icon on slow connections
@@ -538,6 +646,7 @@ export function CreatePostDialog({ currentUser, onPostCreated }: CreatePostDialo
                 size="icon"
                 variant="destructive"
                 className="absolute top-2 right-2 h-8 w-8 rounded-full shadow-lg"
+                disabled={isUploading}
                 onClick={() => {
                   setSelectedVideo(null);
                   setVideoPreview(null);
@@ -582,6 +691,7 @@ export function CreatePostDialog({ currentUser, onPostCreated }: CreatePostDialo
             <Switch
               checked={isPublicPost}
               onCheckedChange={setIsPublicPost}
+              disabled={isUploading}
               className="shadow-lg ring-2 ring-offset-2 ring-offset-background data-[state=checked]:ring-primary data-[state=unchecked]:ring-muted-foreground/30 data-[state=checked]:bg-primary"
             />
           </div>
@@ -596,12 +706,14 @@ export function CreatePostDialog({ currentUser, onPostCreated }: CreatePostDialo
                 onChange={handleImageSelect}
                 className="hidden"
                 id="image-upload"
+                disabled={isUploading}
               />
               <Button
                 type="button"
                 variant="ghost"
                 size="sm"
                 onClick={() => fileInputRef.current?.click()}
+                disabled={isUploading}
                 className="gap-2 text-muted-foreground hover:text-primary hover:bg-primary/10 transition-colors"
               >
                 <Image size={18} />
@@ -615,12 +727,14 @@ export function CreatePostDialog({ currentUser, onPostCreated }: CreatePostDialo
                 onChange={handleVideoSelect}
                 className="hidden"
                 id="video-upload"
+                disabled={isUploading}
               />
               <Button
                 type="button"
                 variant="ghost"
                 size="sm"
                 onClick={() => videoInputRef.current?.click()}
+                disabled={isUploading}
                 className="gap-2 text-muted-foreground hover:text-primary hover:bg-primary/10 transition-colors"
               >
                 <Video size={18} />
@@ -632,6 +746,7 @@ export function CreatePostDialog({ currentUser, onPostCreated }: CreatePostDialo
                 variant="ghost"
                 size="sm"
                 onClick={insertAtSymbol}
+                disabled={isUploading}
                 className="gap-2 text-muted-foreground hover:text-primary hover:bg-primary/10 transition-colors"
               >
                 <AtSign size={18} />
@@ -641,10 +756,15 @@ export function CreatePostDialog({ currentUser, onPostCreated }: CreatePostDialo
             
             <Button
               onClick={createPost}
-              disabled={isEmpty || isCreatingPost}
+              disabled={isEmpty || isCreatingPost || isUploading}
               className="bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 shadow-lg shadow-primary/20 hover:scale-[1.02] active:scale-[0.98] transition-all font-semibold"
             >
-              {isCreatingPost ? (
+              {uploadProgress ? (
+                <>
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  {uploadProgress.progress}%
+                </>
+              ) : isCreatingPost ? (
                 <>
                   <Loader2 className="h-4 w-4 mr-2 animate-spin" />
                   Publication...
