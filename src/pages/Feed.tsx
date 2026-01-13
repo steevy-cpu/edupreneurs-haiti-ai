@@ -168,34 +168,6 @@ const Feed = () => {
   const [reportDialogOpen, setReportDialogOpen] = useState(false);
   const [postToReport, setPostToReport] = useState<Post | null>(null);
   const [isFounder, setIsFounder] = useState(false);
-  const [keyboardHeight, setKeyboardHeight] = useState(0);
-
-  // Handle virtual keyboard on mobile
-  useEffect(() => {
-    const handleResize = () => {
-      if (window.visualViewport) {
-        const vvHeight = window.visualViewport.height;
-        const windowHeight = window.innerHeight;
-        const kbHeight = Math.max(0, windowHeight - vvHeight);
-        setKeyboardHeight(kbHeight);
-        document.documentElement.style.setProperty('--kb', `${kbHeight}px`);
-      }
-    };
-
-    if (window.visualViewport) {
-      window.visualViewport.addEventListener('resize', handleResize);
-      window.visualViewport.addEventListener('scroll', handleResize);
-      handleResize();
-    }
-
-    return () => {
-      if (window.visualViewport) {
-        window.visualViewport.removeEventListener('resize', handleResize);
-        window.visualViewport.removeEventListener('scroll', handleResize);
-      }
-      document.documentElement.style.setProperty('--kb', '0px');
-    };
-  }, []);
 
   // Mobile keyboard optimization - scroll input into view
   const handleInputFocus = useCallback((e: FocusEvent<HTMLInputElement | HTMLTextAreaElement>) => {
@@ -1168,6 +1140,8 @@ const Feed = () => {
                     <img 
                       src={post.image_url} 
                       alt="Post" 
+                      loading={shouldDeferResources ? "lazy" : "eager"}
+                      decoding="async"
                       className="mt-3 w-full rounded-lg object-contain bg-muted/20"
                     />
                   )}
