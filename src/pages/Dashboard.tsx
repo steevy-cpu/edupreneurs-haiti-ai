@@ -146,11 +146,11 @@ const Dashboard = () => {
   const fetchAllUserData = async (currentUserId: string) => {
     setIsUserDataLoading(true);
     
-    // Parallel fetch for efficiency
-    const [profileResult, notesResult, editorResult, completionsResult, recentActivityResult] = await Promise.all([
+    // Parallel fetch for efficiency - now includes academic_grade and subjects
+    const [profileResult, notesResult, editorResult, completionsResult, recentActivityResult, subjectsResult] = await Promise.all([
       supabase
         .from("profiles")
-        .select("nickname, gold_earned")
+        .select("nickname, gold_earned, academic_grade")
         .eq("user_id", currentUserId)
         .single(),
       supabase
@@ -173,7 +173,10 @@ const Dashboard = () => {
         .select("subject, lesson_slug, completed_at")
         .eq("user_id", currentUserId)
         .order("completed_at", { ascending: false })
-        .limit(20)
+        .limit(20),
+      supabase
+        .from("subjects")
+        .select("id, slug, name, grade_level")
     ]);
 
     // Process profile data
@@ -211,6 +214,41 @@ const Dashboard = () => {
         }
       }
       
+      // Get user's grade and available subjects for proper slug mapping
+      const userGrade = profileResult.data?.academic_grade || '9AF';
+      const availableSubjects = subjectsResult.data || [];
+      
+      // Helper function to find the best matching subject slug
+      const findSubjectSlug = (subjectName: string): string => {
+        const normalizedName = subjectName.toLowerCase().replace('é', 'e');
+        const normalizedGrade = userGrade.toLowerCase();
+        
+        // Try exact match with grade suffix (e.g., "anglais-af9" for grade "9AF")
+        const gradeSlugVariants = [
+          `${normalizedName}-${normalizedGrade}`,
+          `${normalizedName}-af${normalizedGrade.replace(/\D/g, '')}`,
+          `${normalizedName}-${normalizedGrade.replace(/(\d+)(\w+)/i, '$2$1').toLowerCase()}`
+        ];
+        
+        for (const variant of gradeSlugVariants) {
+          const match = availableSubjects.find(s => s.slug === variant);
+          if (match) return match.slug;
+        }
+        
+        // Try matching by subject name and user's grade_level
+        const gradeMatch = availableSubjects.find(s => 
+          s.slug.startsWith(normalizedName) && s.grade_level === userGrade
+        );
+        if (gradeMatch) return gradeMatch.slug;
+        
+        // Try any subject that starts with the name
+        const partialMatch = availableSubjects.find(s => s.slug.startsWith(normalizedName));
+        if (partialMatch) return partialMatch.slug;
+        
+        // Fallback to original name
+        return subjectName;
+      };
+      
       // Convert to array and get top 3 most recent
       const recentSubjectsData: RecentSubjectProgress[] = Array.from(subjectMap.values())
         .slice(0, 3)
@@ -218,6 +256,7 @@ const Dashboard = () => {
           // Create proper subject display name
           const subjectDisplayNames: Record<string, string> = {
             'mathematiques': 'Mathématiques',
+            'mathématiques': 'Mathématiques',
             'francais': 'Français',
             'sciences': 'Sciences',
             'sciences-sociales': 'Sciences Sociales',
@@ -228,7 +267,7 @@ const Dashboard = () => {
           
           return {
             subject: subjectDisplayNames[item.subject] || item.subject,
-            subjectSlug: item.subject,
+            subjectSlug: findSubjectSlug(item.subject),
             lastLessonSlug: item.lastLessonSlug,
             lastLessonTitle: item.lastLessonSlug.replace(/-/g, ' '),
             progress: Math.min(item.count * 10, 100), // Rough progress estimate
@@ -354,7 +393,7 @@ const Dashboard = () => {
                   {recentSubjects.map((subject, index) => (
                     <div
                       key={subject.subjectSlug}
-                      onClick={() => navigate(`/matieres/${subject.subjectSlug}`)}
+                      onClick={() => navigate(`/course/${subject.subjectSlug}`)}
                       className={`group p-4 bg-background rounded-xl border border-border cursor-pointer tap-highlight-none touch-target active:scale-[0.98] ${
                         shouldAnimate 
                           ? 'hover:border-primary/50 hover:shadow-lg hover:-translate-y-1 transition-all duration-300' 
