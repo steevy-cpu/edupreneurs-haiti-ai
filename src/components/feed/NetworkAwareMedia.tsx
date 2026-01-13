@@ -55,7 +55,7 @@ export function NetworkAwareVideo({ src, className, poster }: NetworkAwareVideoP
   if (!shouldLoad) {
     return (
       <div 
-        className={`relative bg-muted/30 cursor-pointer group ${className}`}
+        className={`relative bg-muted/30 cursor-pointer group overflow-hidden ${className}`}
         onClick={handleTapToLoad}
         role="button"
         aria-label="Appuyez pour charger la vidéo"
@@ -88,7 +88,7 @@ export function NetworkAwareVideo({ src, className, poster }: NetworkAwareVideoP
   }
   
   return (
-    <div className={`relative ${className}`}>
+    <div className={`relative overflow-hidden ${className}`}>
       {isLoading && (
         <div className="absolute inset-0 flex items-center justify-center bg-muted/50 z-10">
           <Loader2 className="w-8 h-8 animate-spin text-primary" />
@@ -97,7 +97,7 @@ export function NetworkAwareVideo({ src, className, poster }: NetworkAwareVideoP
       <video 
         src={src} 
         controls 
-        className="w-full h-full bg-muted/20"
+        className="w-full max-h-full object-contain bg-muted/20"
         preload="metadata"
         onLoadedData={() => setIsLoading(false)}
         onCanPlay={() => setIsLoading(false)}
