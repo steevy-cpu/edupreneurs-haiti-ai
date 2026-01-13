@@ -156,28 +156,30 @@ const Community = () => {
     });
   }, []);
 
-  // Handle virtual keyboard on mobile
+  // Handle virtual keyboard on mobile (robust across iOS/Android)
   useEffect(() => {
     const handleResize = () => {
-      if (window.visualViewport) {
-        const vvHeight = window.visualViewport.height;
-        const windowHeight = window.innerHeight;
-        const kbHeight = Math.max(0, windowHeight - vvHeight);
-        setKeyboardHeight(kbHeight);
-        document.documentElement.style.setProperty('--kb', `${kbHeight}px`);
-      }
+      const vv = window.visualViewport;
+      if (!vv) return;
+
+      // iOS Safari often uses offsetTop when the keyboard opens.
+      // This formula is more reliable than (innerHeight - vv.height) alone.
+      const kbHeight = Math.max(0, window.innerHeight - (vv.height + vv.offsetTop));
+      setKeyboardHeight(kbHeight);
+      document.documentElement.style.setProperty('--kb', `${kbHeight}px`);
     };
 
-    if (window.visualViewport) {
-      window.visualViewport.addEventListener('resize', handleResize);
-      window.visualViewport.addEventListener('scroll', handleResize);
+    const vv = window.visualViewport;
+    if (vv) {
+      vv.addEventListener('resize', handleResize);
+      vv.addEventListener('scroll', handleResize);
       handleResize();
     }
 
     return () => {
-      if (window.visualViewport) {
-        window.visualViewport.removeEventListener('resize', handleResize);
-        window.visualViewport.removeEventListener('scroll', handleResize);
+      if (vv) {
+        vv.removeEventListener('resize', handleResize);
+        vv.removeEventListener('scroll', handleResize);
       }
       document.documentElement.style.setProperty('--kb', '0px');
     };
@@ -2538,13 +2540,17 @@ const Community = () => {
             </div>
             </div>
 
-            {/* Composer - Fixed at bottom, above bottom nav on mobile */}
+            {/* Composer - pinned above keyboard (mobile) and above bottom nav */}
             <div 
-              className="fixed left-0 right-0 md:left-80 lg:left-96 border-t border-border/50 bg-background/95 backdrop-blur-md shrink-0 z-[9999] md:bottom-0 transition-[bottom] duration-100 ease-out will-change-[bottom]"
+              className="fixed left-0 right-0 md:left-80 lg:left-96 border-t border-border/50 bg-background/95 backdrop-blur-md shrink-0 z-[9999] md:bottom-0 will-change-transform transition-transform duration-100 ease-out"
               style={{
-                bottom: keyboardHeight > 0 
-                  ? `${keyboardHeight}px` 
-                  : `calc(3.5rem + env(safe-area-inset-bottom, 0px))`
+                // When keyboard is open, the bottom nav is hidden, so we must NOT keep the 3.5rem offset.
+                bottom: keyboardHeight > 0
+                  ? `env(safe-area-inset-bottom, 0px)`
+                  : `calc(3.5rem + env(safe-area-inset-bottom, 0px))`,
+                transform: keyboardHeight > 0
+                  ? 'translate3d(0, calc(-1 * var(--kb)), 0)'
+                  : 'translate3d(0, 0, 0)'
               }}
             >
               <div className="p-3 pt-2 md:p-4 md:pt-2">
