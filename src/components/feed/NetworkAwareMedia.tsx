@@ -106,52 +106,6 @@ export function NetworkAwareVideo({ src, className, poster }: NetworkAwareVideoP
   );
 }
 
-interface VideoPreviewProps {
-  videoUrl: string;
-  thumbnailUrl?: string | null;
-  onRemove: () => void;
-}
-
-/**
- * Video preview component for post creation.
- * Shows thumbnail on slow connections, full video on fast.
- */
-export function VideoPreview({ videoUrl, thumbnailUrl, onRemove }: VideoPreviewProps) {
-  const { isSlowConnection } = useNetworkAwareLoading();
-  
-  return (
-    <div className="relative rounded-xl overflow-hidden border border-border">
-      {isSlowConnection && thumbnailUrl ? (
-        // Show thumbnail with play icon on slow connections
-        <div className="relative">
-          <img 
-            src={thumbnailUrl} 
-            alt="Aperçu vidéo" 
-            className="w-full max-h-96 object-contain bg-muted/20"
-            loading="lazy"
-          />
-          <div className="absolute inset-0 flex items-center justify-center">
-            <div className="bg-black/60 rounded-full p-4">
-              <Play className="w-10 h-10 text-white fill-white drop-shadow-lg" />
-            </div>
-          </div>
-          <div className="absolute bottom-2 left-2 bg-black/70 text-white text-xs px-2 py-1 rounded-full">
-            Vidéo prête
-          </div>
-        </div>
-      ) : (
-        // Show actual video player on fast connections
-        <video 
-          src={videoUrl} 
-          controls 
-          className="w-full max-h-96 bg-muted/20" 
-          preload="metadata"
-        />
-      )}
-    </div>
-  );
-}
-
 /**
  * Get optimized image URL with quality parameter for Supabase storage.
  * @param url - Original image URL
@@ -174,6 +128,5 @@ export function getOptimizedImageUrl(url: string, quality: number): string {
 export default {
   NetworkAwareImage,
   NetworkAwareVideo,
-  VideoPreview,
   getOptimizedImageUrl
 };
