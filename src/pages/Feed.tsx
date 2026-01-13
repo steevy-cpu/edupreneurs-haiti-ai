@@ -143,7 +143,7 @@ const Feed = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const { posts, isLoading, isRefreshing, refreshFeed, updatePostOptimistically, removePostOptimistically } = useFeedData();
-  const { isSlowConnection, shouldDeferResources, imageQuality } = useNetworkAwareLoading();
+  const { isSlowConnection, imageQuality } = useNetworkAwareLoading();
   const [currentUser, setCurrentUser] = useState<any>(null);
   const [newPostContent, setNewPostContent] = useState("");
   const [isCreatingPost, setIsCreatingPost] = useState(false);
