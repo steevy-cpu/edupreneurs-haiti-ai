@@ -216,6 +216,24 @@ const Feed = () => {
     }
   }, [isVisitor]);
 
+  // Mark feed as visited when page loads (resets unread count)
+  useEffect(() => {
+    const updateLastFeedVisit = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        await supabase
+          .from('profiles')
+          .update({ last_feed_visit: new Date().toISOString() })
+          .eq('user_id', user.id);
+      }
+    };
+    
+    // Only update for logged-in users
+    if (!isVisitor) {
+      updateLastFeedVisit();
+    }
+  }, [isVisitor]);
+
   // Check if current user is a founder
   useEffect(() => {
     const checkFounderStatus = async () => {
