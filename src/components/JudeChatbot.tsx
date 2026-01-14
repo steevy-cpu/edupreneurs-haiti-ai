@@ -382,7 +382,8 @@ export const JudeChatbot = () => {
                 className="flex-1 min-h-[32px] max-h-[50px] text-xs sm:text-sm resize-none border-0 bg-transparent focus-visible:ring-0 px-0 py-1.5 mobile-input tap-highlight-none"
                 autoCapitalize="sentences"
                 autoCorrect="on"
-                spellCheck={false}
+              lang="fr"
+              spellCheck={true}
                 enterKeyHint="send"
                 rows={1}
               />
