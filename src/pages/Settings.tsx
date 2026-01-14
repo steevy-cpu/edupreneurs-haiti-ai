@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo, lazy, Suspense } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -39,9 +39,13 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { AvatarSelector } from "@/components/AvatarSelector";
 import { getAvatarUrl } from "@/lib/avatarMap";
 import { PageHeader, SettingsPageSkeleton } from "@/components/shared";
+import { useNetworkAwareLoading } from "@/hooks/useNetworkAwareLoading";
+import { debounce } from "@/utils/performanceOptimization";
+
+// Lazy load heavy components
+const AvatarSelector = lazy(() => import('@/components/AvatarSelector').then(m => ({ default: m.AvatarSelector })));
 
 interface UserProfile {
   id: string;
@@ -71,6 +75,8 @@ const DEFAULT_NOTIFICATION_CATEGORIES: Omit<NotificationCategory, 'enabled'>[] =
 
 const Settings = () => {
   const navigate = useNavigate();
+  const { isSlowConnection, shouldShowAnimations } = useNetworkAwareLoading();
+  const [activeTab, setActiveTab] = useState("profile");
   const [loading, setLoading] = useState(false);
   const [pageLoading, setPageLoading] = useState(true);
   const [savingProfile, setSavingProfile] = useState(false);
@@ -284,22 +290,13 @@ const Settings = () => {
     }
   };
 
-  const handleNotificationToggle = async (category: string, enabled: boolean) => {
-    if (!userId) return;
-    
-    setSavingNotification(category);
-    
-    try {
-      // Update local state optimistically
-      setNotificationCategories(prev => 
-        prev.map(cat => cat.category === category ? { ...cat, enabled } : cat)
-      );
-
-      // Upsert to database
+// Debounced notification database update
+  const debouncedNotificationUpdate = useMemo(
+    () => debounce(async (category: string, enabled: boolean, uid: string) => {
       const { error } = await supabase
         .from("notification_preferences")
         .upsert({
-          user_id: userId,
+          user_id: uid,
           category,
           enabled,
           updated_at: new Date().toISOString(),
@@ -307,19 +304,33 @@ const Settings = () => {
           onConflict: 'user_id,category',
         });
 
-      if (error) throw error;
-      
-      toast.success("Préférence mise à jour");
-    } catch (error: any) {
-      // Revert on error
-      setNotificationCategories(prev => 
-        prev.map(cat => cat.category === category ? { ...cat, enabled: !enabled } : cat)
-      );
-      toast.error("Erreur lors de la mise à jour");
-    } finally {
+      if (error) {
+        // Revert on error
+        setNotificationCategories(prev => 
+          prev.map(cat => cat.category === category ? { ...cat, enabled: !enabled } : cat)
+        );
+        toast.error("Erreur lors de la mise à jour");
+      } else {
+        toast.success("Préférence mise à jour");
+      }
       setSavingNotification(null);
-    }
-  };
+    }, 500),
+    []
+  );
+
+  const handleNotificationToggle = useCallback((category: string, enabled: boolean) => {
+    if (!userId) return;
+    
+    setSavingNotification(category);
+    
+    // Optimistic update
+    setNotificationCategories(prev => 
+      prev.map(cat => cat.category === category ? { ...cat, enabled } : cat)
+    );
+    
+    // Debounced database update
+    debouncedNotificationUpdate(category, enabled, userId);
+  }, [userId, debouncedNotificationUpdate]);
 
   const handleDeleteAccount = async () => {
     setLoading(true);
@@ -350,23 +361,33 @@ const Settings = () => {
     }
   };
 
-  if (pageLoading) {
-    return <SettingsPageSkeleton />;
+if (pageLoading) {
+    return <SettingsPageSkeleton simplified={isSlowConnection} />;
   }
 
   return (
     <div className="pt-20 px-4 sm:px-6 lg:px-8 pb-24 max-w-7xl mx-auto">
-        {/* Header using PageHeader component */}
-        <PageHeader
-          title="Paramètres"
-          subtitle="Gérez votre profil, votre compte et vos préférences"
-          image={ericArmsCrossed}
-          backPath="/dashboard"
-          backLabel="Dashboard"
-        />
+{/* Header using PageHeader component - skip image on slow connections to save data */}
+        {isSlowConnection ? (
+          <PageHeader
+            title="Paramètres"
+            subtitle="Gérez votre profil, votre compte et vos préférences"
+            backPath="/dashboard"
+            backLabel="Dashboard"
+            variant="simple"
+          />
+        ) : (
+          <PageHeader
+            title="Paramètres"
+            subtitle="Gérez votre profil, votre compte et vos préférences"
+            image={ericArmsCrossed}
+            backPath="/dashboard"
+            backLabel="Dashboard"
+          />
+        )}
 
-        {/* Settings Tabs - Simplified to 4 tabs */}
-        <Tabs defaultValue="profile" className="space-y-4 sm:space-y-6">
+{/* Settings Tabs - Simplified to 4 tabs */}
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4 sm:space-y-6">
           <TabsList className="grid w-full grid-cols-4 gap-1 sm:gap-2 h-auto p-1">
             <TabsTrigger value="profile" className="flex flex-col sm:flex-row items-center gap-1 sm:gap-2 py-2 px-1 sm:px-3">
               <User size={16} className="shrink-0" />
@@ -388,7 +409,7 @@ const Settings = () => {
             </TabsTrigger>
           </TabsList>
 
-          {/* Profile Tab */}
+          {/* Profile Tab - Always render since it's the default */}
           <TabsContent value="profile" className="mt-4 sm:mt-6">
             {/* Profile Overview Card */}
             <Card className="border-none rounded-[20px] shadow-md mb-6">
@@ -444,17 +465,24 @@ const Settings = () => {
               </CardHeader>
               <CardContent className="p-4 sm:p-6 pt-0">
                 <form onSubmit={handleProfileUpdate} className="space-y-4 sm:space-y-6">
-                  {/* Avatar Selection */}
+{/* Avatar Selection - Lazy loaded */}
                   <div className="space-y-3">
                     <Label className="text-base font-semibold">Photo de profil</Label>
                     <p className="text-sm text-muted-foreground mb-3">
                       Choisis un avatar qui te représente
                     </p>
-                    <AvatarSelector 
-                      selectedAvatar={selectedAvatar}
-                      onSelect={handleAvatarSelect}
-                      userId={userId || undefined}
-                    />
+                    <Suspense fallback={
+                      <div className="flex items-center justify-center p-8 bg-muted/50 rounded-xl">
+                        <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+                        <span className="ml-2 text-sm text-muted-foreground">Chargement...</span>
+                      </div>
+                    }>
+                      <AvatarSelector 
+                        selectedAvatar={selectedAvatar}
+                        onSelect={handleAvatarSelect}
+                        userId={userId || undefined}
+                      />
+                    </Suspense>
                   </div>
 
                   <Separator />
