@@ -198,7 +198,7 @@ export default function SignupForm() {
   };
 
   return (
-    <form onSubmit={handleSignup} className="space-y-4">
+    <form onSubmit={handleSignup} className="space-y-4" name="signup-form" autoComplete="on">
       {/* Visual Step Progress Indicator */}
       <div className="mb-6">
         <div className="flex items-center justify-between mb-3">
@@ -273,7 +273,7 @@ export default function SignupForm() {
               value={signupData.emailConfirm}
               onChange={(e) => setSignupData({ ...signupData, emailConfirm: e.target.value })}
               onFocus={handleInputFocus}
-              autoComplete="email"
+              autoComplete="off"
               autoCapitalize="none"
               spellCheck="false"
               enterKeyHint="next"

@@ -64,6 +64,26 @@ All colors MUST be HSL.
   }
 }
 
+/* Improve autocomplete dropdown behavior on mobile */
+.auth-input:-webkit-autofill,
+.auth-input:-webkit-autofill:hover,
+.auth-input:-webkit-autofill:focus {
+  -webkit-text-fill-color: inherit;
+  -webkit-box-shadow: 0 0 0px 1000px hsl(var(--background)) inset;
+  transition: background-color 5000s ease-in-out 0s;
+}
+
+/* Ensure proper z-index for auth form elements */
+.auth-card {
+  position: relative;
+  z-index: 1;
+}
+
+.auth-card input {
+  position: relative;
+  z-index: 2;
+}
+
 /* Smooth keyboard appearance for auth page */
 .auth-page {
   min-height: 100vh;

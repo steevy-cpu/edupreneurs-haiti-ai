@@ -71,7 +71,7 @@ export default function ForgotPasswordForm() {
   };
 
   return (
-    <form onSubmit={handleForgotPassword} className="space-y-4">
+    <form onSubmit={handleForgotPassword} className="space-y-4" name="forgot-password-form" autoComplete="on">
       <div className="text-center mb-6">
         <h2 className="text-xl font-bold mb-2">Mot de passe oublié ?</h2>
         <p className="text-sm text-muted-foreground">
