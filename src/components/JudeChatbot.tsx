@@ -2,13 +2,33 @@ import { useState, useRef, useEffect, useCallback, type FocusEvent } from "react
 import { useNavigate, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { Send } from "lucide-react";
+import { Send, ArrowRight } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import judeAvatar from "@/assets/dashboard00.png";
 import { getAvatarUrl } from "@/lib/avatarMap";
 import { useEricDraggable } from "@/hooks/useEricDraggable";
 import { useVisitor } from "@/contexts/VisitorContext";
+import { useNetworkAwareLoading } from "@/hooks/useNetworkAwareLoading";
+
+// Get human-readable page name from path
+const getPageName = (path: string): string => {
+  const pageNames: Record<string, string> = {
+    '/dashboard': 'Tableau de bord',
+    '/leaderboard': 'Classement',
+    '/matieres': 'Matières',
+    '/community': 'Communauté',
+    '/feed': 'Fil d\'actualité',
+    '/chess-game': 'Échecs',
+    '/passion-discovery': 'Passions',
+    '/profile': 'Profil',
+    '/settings': 'Paramètres',
+    '/notifications': 'Notifications',
+    '/baccalaureat': 'Baccalauréat',
+    '/exams': 'Examens',
+  };
+  return pageNames[path] || 'Aller à cette page';
+};
 
 // Routes where JudeChatbot should be hidden
 const HIDDEN_ROUTES = ['/cookie-settings', '/privacy-policy', '/control-center'];
@@ -72,6 +92,7 @@ export const JudeChatbot = () => {
   const [userAvatarUrl, setUserAvatarUrl] = useState<string>("");
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
+  const { isSlowConnection, shouldShowAnimations, shouldShowBlur } = useNetworkAwareLoading();
 
   const {
     hasMoved,
@@ -187,7 +208,7 @@ export const JudeChatbot = () => {
       if (error) throw error;
 
       const responseText = data.response || data.text || "Désolé, je n'ai pas pu traiter votre message.";
-      const navigationPath = data.navigation?.path;
+      const navigationPath = data.navigate;
 
       setMessages(prev => {
         const newMessages = [...prev, { 
@@ -253,7 +274,7 @@ export const JudeChatbot = () => {
         }}
       >
         {!isOpen && (
-          <div className="eric-floating-tooltip text-[10px] sm:text-xs">
+          <div className={`eric-floating-tooltip text-[10px] sm:text-xs ${shouldShowAnimations ? '' : '[animation:none]'}`}>
             Cliquez sur moi
           </div>
         )}
@@ -314,12 +335,12 @@ export const JudeChatbot = () => {
                 <div className={`max-w-[90%] p-2.5 sm:p-3 rounded-2xl text-xs sm:text-sm shadow-md ${
                   message.sender === "user" 
                     ? "bg-primary text-primary-foreground rounded-br-sm" 
-                    : "bg-background/95 backdrop-blur-sm rounded-bl-sm border border-border/20"
+                    : `${shouldShowBlur ? 'bg-background/95 backdrop-blur-sm' : 'bg-background'} rounded-bl-sm border border-border/20`
                 }`}>
                   {message.sender === "jude" && index === typingMessageIndex ? (
                     <TypewriterText 
                       text={message.content} 
-                      speed={15} 
+                      speed={isSlowConnection ? 5 : 15} 
                       onComplete={() => setTypingMessageIndex(null)}
                     />
                   ) : (
@@ -327,11 +348,13 @@ export const JudeChatbot = () => {
                   )}
                   {message.navigationPath && (
                     <Button
-                      className="mt-2 w-full text-xs"
+                      className="mt-2 w-full text-xs bg-primary/10 hover:bg-primary/20 text-primary border border-primary/30"
                       size="sm"
+                      variant="ghost"
                       onClick={() => navigate(message.navigationPath!)}
                     >
-                      Aller à cette page
+                      <ArrowRight className="w-3 h-3 mr-1.5" />
+                      {getPageName(message.navigationPath)}
                     </Button>
                   )}
                 </div>
@@ -348,7 +371,7 @@ export const JudeChatbot = () => {
 
           {/* Input Area */}
           <div className="pt-2 sm:pt-3">
-            <div className="flex items-center gap-2 bg-background/95 backdrop-blur-sm rounded-full shadow-md p-1.5 pl-4">
+            <div className={`flex items-center gap-2 ${shouldShowBlur ? 'bg-background/95 backdrop-blur-sm' : 'bg-background'} rounded-full shadow-md p-1.5 pl-4`}>
               <Textarea
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
