@@ -62,35 +62,33 @@ export const useChessStats = (userId: string | null) => {
 
     setIsLoading(true);
     try {
-      // Fetch player stats
-      const { data: statsData } = await supabase
-        .from('chess_player_stats')
-        .select('*')
-        .eq('user_id', userId)
-        .single();
+      // Run all queries in parallel for better 3G performance
+      const [statsResult, achievementsResult, gamesResult] = await Promise.all([
+        supabase
+          .from('chess_player_stats')
+          .select('*')
+          .eq('user_id', userId)
+          .single(),
+        supabase
+          .from('chess_achievements')
+          .select('*')
+          .eq('user_id', userId)
+          .order('earned_at', { ascending: false }),
+        supabase
+          .from('chess_games')
+          .select('id, result, difficulty, moves_count, elo_change, created_at')
+          .eq('user_id', userId)
+          .order('created_at', { ascending: false })
+          .limit(5)
+      ]);
 
-      // Fetch achievements
-      const { data: achievementsData } = await supabase
-        .from('chess_achievements')
-        .select('*')
-        .eq('user_id', userId)
-        .order('earned_at', { ascending: false });
-
-      // Fetch recent games
-      const { data: gamesData } = await supabase
-        .from('chess_games')
-        .select('id, result, difficulty, moves_count, elo_change, created_at')
-        .eq('user_id', userId)
-        .order('created_at', { ascending: false })
-        .limit(5);
-
-      setStats(statsData);
-      setAchievements(achievementsData || []);
-      setRecentGames((gamesData || []) as GameHistory[]);
+      setStats(statsResult.data);
+      setAchievements(achievementsResult.data || []);
+      setRecentGames((gamesResult.data || []) as GameHistory[]);
 
       // Calculate recent ELO change (from last game)
-      if (gamesData && gamesData.length > 0) {
-        setRecentEloChange(gamesData[0].elo_change || 0);
+      if (gamesResult.data && gamesResult.data.length > 0) {
+        setRecentEloChange(gamesResult.data[0].elo_change || 0);
       }
     } catch (error) {
       console.error('Error fetching chess stats:', error);

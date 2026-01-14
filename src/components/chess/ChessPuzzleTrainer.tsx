@@ -385,6 +385,8 @@ const ChessPuzzleTrainer: React.FC<ChessPuzzleTrainerProps> = ({ userId, onBack 
                 src={ericThinking} 
                 alt="Eric" 
                 className="w-12 h-12 rounded-full object-cover"
+                loading="lazy"
+                decoding="async"
               />
               <div>
                 <p className="font-semibold text-sm mb-1">Eric dit:</p>

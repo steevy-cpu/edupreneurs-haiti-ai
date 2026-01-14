@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Send } from 'lucide-react';
+import { Send, Loader2 } from 'lucide-react';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Input } from '@/components/ui/input';
 import {
@@ -10,6 +10,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import judeChairDesk from '@/assets/eric-chair-desk.png';
+import { useNetworkAwareLoading } from '@/hooks/useNetworkAwareLoading';
 
 interface Message {
   role: 'user' | 'assistant';
@@ -44,6 +45,7 @@ const JudeCoachBanner: React.FC<JudeCoachBannerProps> = ({
   const [inputMessage, setInputMessage] = useState('');
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const latestJudeMessage = [...messages].reverse().find(m => m.role === 'assistant');
+  const { shouldShowAnimations } = useNetworkAwareLoading();
   
   const handleSend = () => {
     if (inputMessage.trim() && onSendMessage) {
@@ -71,6 +73,8 @@ const JudeCoachBanner: React.FC<JudeCoachBannerProps> = ({
           alt="Jude" 
           className="w-10 h-10 sm:w-12 sm:h-12 rounded-full object-cover flex-shrink-0 border-2 border-primary/30 shadow-md cursor-pointer hover:scale-105 transition-transform"
           onClick={() => setIsDialogOpen(true)}
+          loading="lazy"
+          decoding="async"
         />
         
         {/* Speech Bubble */}
@@ -84,11 +88,15 @@ const JudeCoachBanner: React.FC<JudeCoachBannerProps> = ({
           >
             {isThinking ? (
               <p className="text-xs sm:text-sm text-muted-foreground animate-pulse flex items-center gap-2">
-                <span className="flex gap-1">
-                  <span className="w-1.5 h-1.5 bg-primary rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
-                  <span className="w-1.5 h-1.5 bg-primary rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
-                  <span className="w-1.5 h-1.5 bg-primary rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
-                </span>
+                {shouldShowAnimations ? (
+                  <span className="flex gap-1">
+                    <span className="w-1.5 h-1.5 bg-primary rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
+                    <span className="w-1.5 h-1.5 bg-primary rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
+                    <span className="w-1.5 h-1.5 bg-primary rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
+                  </span>
+                ) : (
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                )}
                 Jude réfléchit...
               </p>
             ) : latestJudeMessage ? (
@@ -109,6 +117,8 @@ const JudeCoachBanner: React.FC<JudeCoachBannerProps> = ({
                 src={judeChairDesk} 
                 alt="Jude" 
                 className="w-10 h-10 rounded-full object-cover border-2 border-primary/30"
+                loading="lazy"
+                decoding="async"
               />
               <span>Chat avec Jude</span>
             </DialogTitle>
@@ -127,6 +137,8 @@ const JudeCoachBanner: React.FC<JudeCoachBannerProps> = ({
                       src={judeChairDesk} 
                       alt="Jude" 
                       className="w-7 h-7 rounded-full object-cover flex-shrink-0"
+                      loading="lazy"
+                      decoding="async"
                     />
                   )}
                   <div
@@ -146,13 +158,19 @@ const JudeCoachBanner: React.FC<JudeCoachBannerProps> = ({
                     src={judeChairDesk} 
                     alt="Jude" 
                     className="w-7 h-7 rounded-full object-cover flex-shrink-0"
+                    loading="lazy"
+                    decoding="async"
                   />
                   <div className="bg-muted rounded-xl px-3 py-2">
-                    <span className="flex gap-1">
-                      <span className="w-1.5 h-1.5 bg-primary rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
-                      <span className="w-1.5 h-1.5 bg-primary rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
-                      <span className="w-1.5 h-1.5 bg-primary rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
-                    </span>
+                    {shouldShowAnimations ? (
+                      <span className="flex gap-1">
+                        <span className="w-1.5 h-1.5 bg-primary rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
+                        <span className="w-1.5 h-1.5 bg-primary rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
+                        <span className="w-1.5 h-1.5 bg-primary rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
+                      </span>
+                    ) : (
+                      <Loader2 className="w-4 h-4 animate-spin text-primary" />
+                    )}
                   </div>
                 </div>
               )}

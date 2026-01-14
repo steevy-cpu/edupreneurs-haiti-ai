@@ -191,6 +191,8 @@ const ChessPostGameAnalysis: React.FC<ChessPostGameAnalysisProps> = ({
             src={ericThinking} 
             alt="Eric thinking" 
             className="w-24 h-24 object-contain animate-pulse"
+            loading="lazy"
+            decoding="async"
           />
         </CardContent>
       </Card>
@@ -207,6 +209,8 @@ const ChessPostGameAnalysis: React.FC<ChessPostGameAnalysisProps> = ({
             src={gameResult === 'win' ? ericCelebrating : ericThinking} 
             alt="Eric" 
             className="w-16 h-16 object-contain"
+            loading="lazy"
+            decoding="async"
           />
           <div>
             <CardTitle className={`text-2xl ${resultInfo.color}`}>
