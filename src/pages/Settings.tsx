@@ -464,7 +464,7 @@ if (pageLoading) {
                 </CardDescription>
               </CardHeader>
               <CardContent className="p-4 sm:p-6 pt-0">
-                <form onSubmit={handleProfileUpdate} className="space-y-4 sm:space-y-6">
+                <form onSubmit={handleProfileUpdate} className="space-y-4 sm:space-y-6" name="profile-form" autoComplete="on">
 {/* Avatar Selection - Lazy loaded */}
                   <div className="space-y-3">
                     <Label className="text-base font-semibold">Photo de profil</Label>
@@ -645,7 +645,7 @@ if (pageLoading) {
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="p-4 sm:p-6 pt-0">
-                  <form onSubmit={handlePasswordChange} className="space-y-4">
+                  <form onSubmit={handlePasswordChange} className="space-y-4" name="password-change-form" autoComplete="off">
                     <div className="space-y-2">
                       <Label htmlFor="newPassword">Nouveau mot de passe</Label>
                       <Input
@@ -656,6 +656,7 @@ if (pageLoading) {
                         placeholder="Au moins 8 caractères"
                         required
                         minLength={8}
+                        autoComplete="new-password"
                       />
                       {passwordForm.newPassword && passwordForm.newPassword.length < 8 && (
                         <p className="text-xs text-destructive">Le mot de passe doit contenir au moins 8 caractères</p>
@@ -670,6 +671,7 @@ if (pageLoading) {
                         onChange={(e) => setPasswordForm({ ...passwordForm, confirmPassword: e.target.value })}
                         placeholder="Retapez le mot de passe"
                         required
+                        autoComplete="off"
                       />
                       {passwordForm.confirmPassword && passwordForm.newPassword !== passwordForm.confirmPassword && (
                         <p className="text-xs text-destructive">Les mots de passe ne correspondent pas</p>

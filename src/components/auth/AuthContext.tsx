@@ -198,10 +198,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }), [signupData.password]);
   
   // Smooth scroll to input on focus for mobile keyboards
+  // Added 100ms delay to let autocomplete dropdowns settle before scrolling
   const handleInputFocus = useCallback((e: React.FocusEvent<HTMLInputElement>) => {
-    requestAnimationFrame(() => {
-      e.target.scrollIntoView({ behavior: 'smooth', block: 'center' });
-    });
+    setTimeout(() => {
+      requestAnimationFrame(() => {
+        e.target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      });
+    }, 100);
   }, []);
   
   // Start rate limit countdown

@@ -233,7 +233,7 @@ export default function ResetPassword() {
           </div>
 
           {/* Reset Password Form */}
-          <form onSubmit={handleResetPassword} className="space-y-6">
+          <form onSubmit={handleResetPassword} className="space-y-6" name="reset-password-form" autoComplete="off">
             <div className="space-y-2">
               <Label htmlFor="new-password" className="text-sm text-muted-foreground">
                 Nouveau mot de passe
@@ -247,6 +247,7 @@ export default function ResetPassword() {
                   onChange={(e) => setNewPassword(e.target.value)}
                   required
                   minLength={8}
+                  autoComplete="new-password"
                   className="pr-10"
                 />
                 <button
@@ -305,6 +306,7 @@ export default function ResetPassword() {
                   onChange={(e) => setConfirmPassword(e.target.value)}
                   required
                   minLength={8}
+                  autoComplete="off"
                   className="pr-10"
                 />
                 <button

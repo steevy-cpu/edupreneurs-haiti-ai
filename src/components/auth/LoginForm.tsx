@@ -196,7 +196,7 @@ export default function LoginForm() {
   };
 
   return (
-    <form onSubmit={handleLogin} className="space-y-4">
+    <form onSubmit={handleLogin} className="space-y-4" name="login-form" autoComplete="on">
       <div className="space-y-2">
         <Label htmlFor="login-email" className="text-sm text-muted-foreground">
           Adresse e-mail
