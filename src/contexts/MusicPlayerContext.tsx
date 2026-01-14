@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useRef, useEffect, ReactNode } from "react";
+import { createContext, useContext, useState, useRef, useEffect, useCallback, ReactNode } from "react";
 
 interface PlaylistTrack {
   id: string;
@@ -29,21 +29,38 @@ export const MusicPlayerProvider = ({ children }: { children: ReactNode }) => {
   const [currentTrackIndex, setCurrentTrackIndex] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
   const [playerReady, setPlayerReady] = useState(false);
+  const [youtubeApiLoaded, setYoutubeApiLoaded] = useState(false);
   const playerRef = useRef<any>(null);
+
+  // Check if on slow connection
+  const isSlowConnection = useCallback(() => {
+    const connection = (navigator as any).connection;
+    if (!connection) return false;
+    const { effectiveType, saveData } = connection;
+    return saveData || effectiveType === 'slow-2g' || effectiveType === '2g' || effectiveType === '3g';
+  }, []);
 
   useEffect(() => {
     fetchPlaylistTracks();
-    loadYouTubeAPI();
-  }, []);
-
-  const loadYouTubeAPI = () => {
-    if (!window.YT) {
-      const tag = document.createElement("script");
-      tag.src = "https://www.youtube.com/iframe_api";
-      const firstScriptTag = document.getElementsByTagName("script")[0];
-      firstScriptTag.parentNode?.insertBefore(tag, firstScriptTag);
+    
+    // Defer YouTube API loading on slow connections
+    if (!isSlowConnection()) {
+      loadYouTubeAPI();
     }
-  };
+  }, [isSlowConnection]);
+
+  const loadYouTubeAPI = useCallback(() => {
+    if (youtubeApiLoaded || window.YT) {
+      setYoutubeApiLoaded(true);
+      return;
+    }
+    
+    const tag = document.createElement("script");
+    tag.src = "https://www.youtube.com/iframe_api";
+    const firstScriptTag = document.getElementsByTagName("script")[0];
+    firstScriptTag.parentNode?.insertBefore(tag, firstScriptTag);
+    setYoutubeApiLoaded(true);
+  }, [youtubeApiLoaded]);
 
   const fetchPlaylistTracks = async () => {
     setIsLoading(true);
@@ -186,6 +203,11 @@ export const MusicPlayerProvider = ({ children }: { children: ReactNode }) => {
   const playTrack = (index: number) => {
     console.log('▶️ Playing track:', index, tracks[index]?.title);
     setCurrentTrackIndex(index);
+    
+    // Ensure YouTube API is loaded on first play (for slow connections)
+    if (!youtubeApiLoaded) {
+      loadYouTubeAPI();
+    }
     
     if (playerRef.current && playerReady && typeof playerRef.current.loadVideoById === 'function') {
       try {
