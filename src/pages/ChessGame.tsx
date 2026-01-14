@@ -1,22 +1,35 @@
-import React, { useState, useCallback, useEffect } from 'react';
+import React, { useState, useCallback, useEffect, lazy, Suspense } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { ArrowLeft, Gamepad2, Target, Lock } from 'lucide-react';
+import { ArrowLeft, Gamepad2, Target, Lock, Loader2 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useChessSounds } from '@/hooks/useChessSounds';
 import { useChessStats } from '@/hooks/useChessStats';
 import { useToast } from '@/hooks/use-toast';
 import { Chess } from 'chess.js';
 import ChessBoardEnhanced from '@/components/chess/ChessBoardEnhanced';
-import ChessPlayerStats from '@/components/chess/ChessPlayerStats';
 import ChessEloWidget from '@/components/chess/ChessEloWidget';
-import ChessPuzzleTrainer from '@/components/chess/ChessPuzzleTrainer';
-import ChessPostGameAnalysis from '@/components/chess/ChessPostGameAnalysis';
 import VisitorChessOverlay from '@/components/chess/VisitorChessOverlay';
 import { Helmet } from 'react-helmet';
 import { useVisitor } from '@/contexts/VisitorContext';
+import { useNetworkAwareLoading } from '@/hooks/useNetworkAwareLoading';
+import { Skeleton } from '@/components/ui/skeleton';
+import { cn } from '@/lib/utils';
+
+// Lazy load heavy components that aren't immediately visible
+const ChessPlayerStats = lazy(() => import('@/components/chess/ChessPlayerStats'));
+const ChessPuzzleTrainer = lazy(() => import('@/components/chess/ChessPuzzleTrainer'));
+const ChessPostGameAnalysis = lazy(() => import('@/components/chess/ChessPostGameAnalysis'));
+
+// Skeleton for lazy-loaded components
+const ChessComponentSkeleton = () => (
+  <div className="flex flex-col items-center justify-center py-12 gap-4">
+    <Loader2 className="w-8 h-8 animate-spin text-primary" />
+    <Skeleton className="h-4 w-48" />
+  </div>
+);
 
 export type DifficultyLevel = 'beginner' | 'intermediate' | 'advanced' | 'expert';
 export type TimeControl = 'bullet' | 'blitz' | 'rapid' | 'classic' | 'untimed';
@@ -42,6 +55,7 @@ const ChessGame: React.FC = () => {
   const { toast } = useToast();
   const { isVisitor } = useVisitor();
   const { playSound } = useChessSounds();
+  const { isSlowConnection, shouldShowAnimations } = useNetworkAwareLoading();
   
   const [game, setGame] = useState(new Chess());
   const [messages, setMessages] = useState<ChatMessage[]>([]);
@@ -411,7 +425,10 @@ const ChessGame: React.FC = () => {
       </Helmet>
 
       <div className="min-h-screen bg-background">
-        <div className="border-b bg-card/50 backdrop-blur-sm sticky top-0 z-50">
+        <div className={cn(
+          "border-b sticky top-0 z-50",
+          isSlowConnection ? "bg-card" : "bg-card/50 backdrop-blur-sm"
+        )}>
           <div className="container mx-auto px-4 py-3">
             <div className="flex items-center justify-between gap-2">
               <Button variant="ghost" size="sm" onClick={() => navigate('/passion-discovery')} className="gap-2">
@@ -512,22 +529,27 @@ const ChessGame: React.FC = () => {
               )}
 
               {activeTab === 'play' && showAnalysis && gameResult && (
-                <ChessPostGameAnalysis
-                  gameResult={gameResult}
-                  moveHistory={moveHistory}
-                  fen={game.fen()}
-                  difficulty={difficulty}
-                  onClose={() => setShowAnalysis(false)}
-                  onNewGame={handleNewGame}
-                />
+                <Suspense fallback={<ChessComponentSkeleton />}>
+                  <ChessPostGameAnalysis
+                    gameResult={gameResult}
+                    moveHistory={moveHistory}
+                    fen={game.fen()}
+                    difficulty={difficulty}
+                    onClose={() => setShowAnalysis(false)}
+                    onNewGame={handleNewGame}
+                  />
+                </Suspense>
               )}
 
-              {activeTab === 'puzzles' && (
+              {/* Defer puzzles tab on slow connections - only render when active */}
+              {(activeTab === 'puzzles' || !isSlowConnection) && activeTab === 'puzzles' && (
                 <Card className="p-2 sm:p-4">
-                  <ChessPuzzleTrainer
-                    userId={userId}
-                    onBack={() => setActiveTab('play')}
-                  />
+                  <Suspense fallback={<ChessComponentSkeleton />}>
+                    <ChessPuzzleTrainer
+                      userId={userId}
+                      onBack={() => setActiveTab('play')}
+                    />
+                  </Suspense>
                 </Card>
               )}
             </div>
@@ -535,15 +557,17 @@ const ChessGame: React.FC = () => {
         </div>
       </div>
 
-      <ChessPlayerStats 
-        isOpen={showStats} 
-        onClose={() => setShowStats(false)} 
-        stats={stats}
-        achievements={achievements}
-        recentGames={recentGames}
-        isLoading={statsLoading}
-        isVisitor={isVisitor}
-      />
+      <Suspense fallback={null}>
+        <ChessPlayerStats 
+          isOpen={showStats} 
+          onClose={() => setShowStats(false)} 
+          stats={stats}
+          achievements={achievements}
+          recentGames={recentGames}
+          isLoading={statsLoading}
+          isVisitor={isVisitor}
+        />
+      </Suspense>
     </>
   );
 };
