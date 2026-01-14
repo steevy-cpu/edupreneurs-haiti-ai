@@ -100,12 +100,14 @@ export const PageHeader = ({
             {actions && <div className="mt-4">{actions}</div>}
           </div>
 
-          {image && (
+{image && (
             <div className="flex-shrink-0 relative z-10">
               <img
                 src={image}
                 alt=""
                 className="w-20 h-20 sm:w-24 sm:h-24 lg:w-32 lg:h-32 object-contain animate-[float_4s_ease-in-out_infinite]"
+                loading="lazy"
+                decoding="async"
               />
             </div>
           )}
