@@ -12,10 +12,13 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import { useNetworkAwareLoading } from "@/hooks/useNetworkAwareLoading";
+import { cn } from "@/lib/utils";
 
 export const MusicSelector = () => {
   const { tracks, isLoading, playTrack, currentTrackIndex, isPlaying } = useMusicPlayer();
   const [open, setOpen] = useState(false);
+  const { isSlowConnection, shouldShowAnimations, shouldShowBlur } = useNetworkAwareLoading();
 
   const handleTrackSelect = (index: number) => {
     playTrack(index);
@@ -23,7 +26,12 @@ export const MusicSelector = () => {
   };
 
   return (
-    <Card className="p-3 sm:p-6 bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-950/20 dark:to-pink-950/20 border-purple-200 dark:border-purple-800">
+    <Card className={cn(
+      "p-3 sm:p-6 border-purple-200 dark:border-purple-800",
+      shouldShowBlur
+        ? "bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-950/20 dark:to-pink-950/20"
+        : "bg-muted"
+    )}>
       <div className="flex items-center justify-between gap-2 sm:gap-4">
         <div className="flex items-center gap-2 sm:gap-4 min-w-0 flex-1">
           <div className="w-10 h-10 sm:w-14 sm:h-14 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center flex-shrink-0">
@@ -74,7 +82,10 @@ export const MusicSelector = () => {
                       }`}
                     >
                       <img
-                        src={track.thumbnail}
+                        src={isSlowConnection 
+                          ? track.thumbnail.replace('hqdefault', 'mqdefault')
+                          : track.thumbnail
+                        }
                         alt={track.title}
                         className="w-20 h-20 rounded-lg object-cover flex-shrink-0"
                         loading="lazy"
@@ -89,7 +100,10 @@ export const MusicSelector = () => {
                         </p>
                       </div>
                       {index === currentTrackIndex && isPlaying ? (
-                        <Music className="w-6 h-6 text-primary animate-pulse flex-shrink-0" />
+                        <Music className={cn(
+                          "w-6 h-6 text-primary flex-shrink-0",
+                          shouldShowAnimations && "animate-pulse"
+                        )} />
                       ) : (
                         <Play className="w-6 h-6 text-muted-foreground flex-shrink-0" />
                       )}

@@ -3,6 +3,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 import ericStudentDesk from '@/assets/eric-student-desk.png';
 import SimpleTypewriter from './SimpleTypewriter';
 import { useMusicPlayer } from '@/contexts/MusicPlayerContext';
+import { useNetworkAwareLoading } from '@/hooks/useNetworkAwareLoading';
+import { Volume2 } from 'lucide-react';
 
 interface JudeWelcomePopupProps {
   isOpen: boolean;
@@ -18,6 +20,7 @@ const JudeWelcomePopup = ({ isOpen, onComplete }: JudeWelcomePopupProps) => {
   const [searchingTextComplete, setSearchingTextComplete] = useState(false);
   const [searchProgress, setSearchProgress] = useState(0);
   const { tracks, playTrack } = useMusicPlayer();
+  const { shouldShowAnimations } = useNetworkAwareLoading();
 
   const startMusic = useCallback(() => {
     // Find "Meilleure Musique Classique Étude" track
@@ -291,11 +294,15 @@ const JudeWelcomePopup = ({ isOpen, onComplete }: JudeWelcomePopupProps) => {
                     animate={{ opacity: 1, scale: 1 }}
                     className="flex items-center justify-center gap-2 text-primary mt-2"
                   >
-                    <div className="flex gap-1">
-                      <span className="w-1 h-4 bg-primary rounded-full animate-[music-bar_0.5s_ease-in-out_infinite]" />
-                      <span className="w-1 h-4 bg-primary rounded-full animate-[music-bar_0.7s_ease-in-out_infinite_0.1s]" />
-                      <span className="w-1 h-4 bg-primary rounded-full animate-[music-bar_0.6s_ease-in-out_infinite_0.2s]" />
-                    </div>
+                    {shouldShowAnimations ? (
+                      <div className="flex gap-1">
+                        <span className="w-1 h-4 bg-primary rounded-full animate-[music-bar_0.5s_ease-in-out_infinite]" />
+                        <span className="w-1 h-4 bg-primary rounded-full animate-[music-bar_0.7s_ease-in-out_infinite_0.1s]" />
+                        <span className="w-1 h-4 bg-primary rounded-full animate-[music-bar_0.6s_ease-in-out_infinite_0.2s]" />
+                      </div>
+                    ) : (
+                      <Volume2 className="w-5 h-5 text-primary" />
+                    )}
                     <span className="text-sm font-medium">Musique trouvée!</span>
                   </motion.div>
                 )}

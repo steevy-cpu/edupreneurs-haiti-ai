@@ -7,6 +7,8 @@ import { useMusicPlayer } from "@/contexts/MusicPlayerContext";
 import { useState, useEffect, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useLocation } from "react-router-dom";
+import { useNetworkAwareLoading } from "@/hooks/useNetworkAwareLoading";
+import { cn } from "@/lib/utils";
 
 export const GlobalMusicPlayer = () => {
   const location = useLocation();
@@ -19,6 +21,8 @@ export const GlobalMusicPlayer = () => {
     playPause,
     nextTrack,
   } = useMusicPlayer();
+  
+  const { isSlowConnection, shouldShowAnimations, shouldShowBlur } = useNetworkAwareLoading();
 
   const [playlistOpen, setPlaylistOpen] = useState(false);
   const [minimized, setMinimized] = useState(true);
@@ -199,7 +203,10 @@ export const GlobalMusicPlayer = () => {
                   }`}
                 >
                   <img
-                    src={track.thumbnail}
+                    src={isSlowConnection 
+                      ? track.thumbnail.replace('hqdefault', 'mqdefault')
+                      : track.thumbnail
+                    }
                     alt={track.title}
                     className="w-16 h-16 sm:w-20 sm:h-20 rounded-lg object-cover flex-shrink-0"
                     loading="lazy"
@@ -214,7 +221,10 @@ export const GlobalMusicPlayer = () => {
                     </p>
                   </div>
                   {index === currentTrackIndex && isPlaying ? (
-                    <Music className="w-5 h-5 sm:w-6 sm:h-6 text-primary animate-pulse flex-shrink-0" />
+                    <Music className={cn(
+                      "w-5 h-5 sm:w-6 sm:h-6 text-primary flex-shrink-0",
+                      shouldShowAnimations && "animate-pulse"
+                    )} />
                   ) : (
                     <Play className="w-5 h-5 sm:w-6 sm:h-6 text-muted-foreground flex-shrink-0" />
                   )}
@@ -250,16 +260,23 @@ export const GlobalMusicPlayer = () => {
             size="icon"
           >
             {isPlaying ? (
-              <div className="flex items-end gap-[3px] h-6">
-                <span className="w-1 bg-primary-foreground rounded-full animate-music-bar-1" />
-                <span className="w-1 bg-primary-foreground rounded-full animate-music-bar-2" />
-                <span className="w-1 bg-primary-foreground rounded-full animate-music-bar-3" />
-              </div>
+              shouldShowAnimations ? (
+                <div className="flex items-end gap-[3px] h-6">
+                  <span className="w-1 bg-primary-foreground rounded-full animate-music-bar-1" />
+                  <span className="w-1 bg-primary-foreground rounded-full animate-music-bar-2" />
+                  <span className="w-1 bg-primary-foreground rounded-full animate-music-bar-3" />
+                </div>
+              ) : (
+                <Volume2 className="w-6 h-6" />
+              )
             ) : (
               <Music className="w-6 h-6" />
             )}
             {isPlaying && (
-              <span className="absolute -top-1 -right-1 w-4 h-4 bg-green-500 rounded-full animate-pulse" />
+              <span className={cn(
+                "absolute -top-1 -right-1 w-4 h-4 bg-green-500 rounded-full",
+                shouldShowAnimations && "animate-pulse"
+              )} />
             )}
           </Button>
         ) : (
@@ -268,7 +285,12 @@ export const GlobalMusicPlayer = () => {
             style={getExpandedPlayerStyle()}
           >
             <CardHeader 
-              className="pb-3 bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-950/30 dark:to-pink-950/30 cursor-move"
+              className={cn(
+                "pb-3 cursor-move",
+                shouldShowBlur 
+                  ? "bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-950/30 dark:to-pink-950/30"
+                  : "bg-muted"
+              )}
               style={{ touchAction: 'none' }}
               onPointerDown={handleDragStart}
             >
@@ -301,7 +323,10 @@ export const GlobalMusicPlayer = () => {
                     <div className="p-3 sm:p-4">
                       <div className="flex items-start gap-2 sm:gap-3 mb-3">
                         <img
-                          src={tracks[currentTrackIndex].thumbnail}
+                          src={isSlowConnection 
+                            ? tracks[currentTrackIndex].thumbnail.replace('hqdefault', 'mqdefault')
+                            : tracks[currentTrackIndex].thumbnail
+                          }
                           alt={tracks[currentTrackIndex].title}
                           className="w-14 h-14 sm:w-16 sm:h-16 rounded object-cover flex-shrink-0"
                           loading="lazy"
